@@ -38,7 +38,7 @@ class ThumbnailGenerator;
 class WatchDogThread;
 
 #if defined(OS_CHROMEOS)
-namespace browser {
+namespace chromeos {
 class OomPriorityManager;
 }
 #endif  // defined(OS_CHROMEOS)
@@ -95,7 +95,7 @@ class BrowserProcess {
 
 #if defined(OS_CHROMEOS)
   // Returns the out-of-memory priority manager.
-  virtual browser::OomPriorityManager* oom_priority_manager() = 0;
+  virtual chromeos::OomPriorityManager* oom_priority_manager() = 0;
 #endif  // defined(OS_CHROMEOS)
 
   virtual ExtensionEventRouterForwarder*

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -85,8 +86,8 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/oom_priority_manager.h"
 #include "chrome/browser/chromeos/version_loader.h"
-#include "chrome/browser/oom_priority_manager.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
@@ -591,7 +592,7 @@ std::string AboutDiscards(const std::string& path) {
       "<p>Tabs sorted from most interesting to least interesting. The least "
       "interesting tab may be discarded if we run out of physical memory.</p>");
 
-  browser::OomPriorityManager* oom = g_browser_process->oom_priority_manager();
+  chromeos::OomPriorityManager* oom = g_browser_process->oom_priority_manager();
   std::vector<string16> titles = oom->GetTabTitles();
   if (!titles.empty()) {
     output.append("<ol>");

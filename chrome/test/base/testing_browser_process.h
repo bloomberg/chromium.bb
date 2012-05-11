@@ -68,7 +68,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
 
 #if defined(OS_CHROMEOS)
-  virtual browser::OomPriorityManager* oom_priority_manager() OVERRIDE;
+  virtual chromeos::OomPriorityManager* oom_priority_manager() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
 
   virtual ui::Clipboard* clipboard() OVERRIDE;

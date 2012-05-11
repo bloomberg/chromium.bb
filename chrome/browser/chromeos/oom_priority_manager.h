@@ -1,10 +1,9 @@
-
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OOM_PRIORITY_MANAGER_H_
-#define CHROME_BROWSER_OOM_PRIORITY_MANAGER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_OOM_PRIORITY_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_OOM_PRIORITY_MANAGER_H_
 
 #include <vector>
 
@@ -20,7 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-namespace browser {
+namespace chromeos {
 
 class LowMemoryObserver;
 
@@ -138,6 +137,6 @@ class OomPriorityManager : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);
 };
 
-}  // namespace browser
+}  // namespace chrome
 
-#endif  // CHROME_BROWSER_OOM_PRIORITY_MANAGER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_OOM_PRIORITY_MANAGER_H_

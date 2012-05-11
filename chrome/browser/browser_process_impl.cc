@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_process_impl.h"
 
+#include <algorithm>
 #include <map>
 #include <set>
 #include <vector>
@@ -91,7 +92,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/oom_priority_manager.h"
+#include "chrome/browser/chromeos/oom_priority_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -395,10 +396,10 @@ net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
 }
 
 #if defined(OS_CHROMEOS)
-browser::OomPriorityManager* BrowserProcessImpl::oom_priority_manager() {
+chromeos::OomPriorityManager* BrowserProcessImpl::oom_priority_manager() {
   DCHECK(CalledOnValidThread());
   if (!oom_priority_manager_.get())
-    oom_priority_manager_.reset(new browser::OomPriorityManager());
+    oom_priority_manager_.reset(new chromeos::OomPriorityManager());
   return oom_priority_manager_.get();
 }
 #endif  // defined(OS_CHROMEOS)

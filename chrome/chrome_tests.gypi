@@ -1170,6 +1170,7 @@
         'browser/chromeos/mobile_config_unittest.cc',
         'browser/chromeos/network_message_observer_unittest.cc',
         'browser/chromeos/offline/offline_load_page_unittest.cc',
+        'browser/chromeos/oom_priority_manager_unittest.cc',
         'browser/chromeos/preferences_unittest.cc',
         'browser/chromeos/process_proxy/process_output_watcher_unittest.cc',
         'browser/chromeos/proxy_config_service_impl_unittest.cc',
@@ -1374,7 +1375,6 @@
         'browser/net/url_fixer_upper_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/notifications/desktop_notification_service_unittest.cc',
-        'browser/oom_priority_manager_unittest.cc',
         'browser/parsers/metadata_parser_filebase_unittest.cc',
         'browser/password_manager/encryptor_password_mac_unittest.cc',
         'browser/password_manager/encryptor_unittest.cc',
@@ -2155,7 +2155,6 @@
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],
-            ['exclude', '^browser/oom_priority_manager_unittest.cc'],
             ['exclude', '^browser/policy/auto_enrollment_client_unittest.cc' ],
             ['exclude', '^browser/policy/configuration_policy_handler_chromeos_unittest.cc' ],
             ['exclude', '^browser/policy/cros_user_policy_cache_unittest.cc'],
@@ -2683,6 +2682,7 @@
         'browser/chromeos/login/wizard_in_process_browser_test.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.h',
         'browser/chromeos/media/media_player_browsertest.cc',
+        'browser/chromeos/oom_priority_manager_browsertest.cc',
         'browser/chromeos/process_proxy/process_proxy_browsertest.cc',
         'browser/chromeos/ui/idle_logout_dialog_view_browsertest.cc',
         'browser/content_settings/content_settings_browsertest.cc',
@@ -2831,7 +2831,6 @@
         'browser/net/load_timing_observer_browsertest.cc',
         'browser/notifications/desktop_notifications_unittest.cc',
         'browser/notifications/desktop_notifications_unittest.h',
-        'browser/oom_priority_manager_browsertest.cc',
         'browser/policy/device_management_service_browsertest.cc',
         'browser/popup_blocker_browsertest.cc',
         'browser/prefs/pref_service_browsertest.cc',
@@ -3095,7 +3094,6 @@
           ],
           'sources!': [
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
-            'browser/oom_priority_manager_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',
             'test/data/webui/certificate_viewer_ui_test-inl.h',
           ],

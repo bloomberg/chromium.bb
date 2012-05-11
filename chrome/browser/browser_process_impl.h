@@ -69,7 +69,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual ui::Clipboard* clipboard() OVERRIDE;
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
 #if defined(OS_CHROMEOS)
-  virtual browser::OomPriorityManager* oom_priority_manager() OVERRIDE;
+  virtual chromeos::OomPriorityManager* oom_priority_manager() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
   virtual ExtensionEventRouterForwarder*
         extension_event_router_forwarder() OVERRIDE;
@@ -250,7 +250,7 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif  // defined(OS_WIN) || defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<browser::OomPriorityManager> oom_priority_manager_;
+  scoped_ptr<chromeos::OomPriorityManager> oom_priority_manager_;
 #else
   scoped_ptr<ComponentUpdateService> component_updater_;
 

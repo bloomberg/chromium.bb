@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/chromeos/chromeos_version.h"
@@ -32,8 +35,10 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/session_manager_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/low_memory_observer.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
+#include "chrome/browser/chromeos/oom_priority_manager.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 #include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
@@ -48,10 +53,8 @@
 #include "chrome/browser/chromeos/web_socket_proxy_controller.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/low_memory_observer.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/oom_priority_manager.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -71,7 +74,6 @@
 #include "grit/platform_locale_settings.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
-#include "ui/base/l10n/l10n_util.h"
 
 class MessageLoopObserver : public MessageLoopForUI::Observer {
   virtual base::EventStatus WillProcessEvent(
@@ -522,25 +524,24 @@ void ChromeBrowserMainPartsChromeos::SetupLowMemoryHeadroomFieldTrial() {
     int margin_200mb = trial->AppendGroup("200mb", kEnableProbability);
     if (trial->group() == disable) {
       LOG(WARNING) << "low_mem: Part of 'off' experiment";
-      browser::LowMemoryObserver::SetLowMemoryMargin(0);
+      chromeos::LowMemoryObserver::SetLowMemoryMargin(0);
     } else if (trial->group() == margin_0mb) {
       LOG(WARNING) << "low_mem: Part of '0MB' experiment";
-      browser::LowMemoryObserver::SetLowMemoryMargin(50);
+      chromeos::LowMemoryObserver::SetLowMemoryMargin(50);
     } else if (trial->group() == margin_25mb) {
       LOG(WARNING) << "low_mem: Part of '25MB' experiment";
-      browser::LowMemoryObserver::SetLowMemoryMargin(50);
+      chromeos::LowMemoryObserver::SetLowMemoryMargin(50);
     } else if (trial->group() == margin_50mb) {
       LOG(WARNING) << "low_mem: Part of '50MB' experiment";
-      browser::LowMemoryObserver::SetLowMemoryMargin(50);
+      chromeos::LowMemoryObserver::SetLowMemoryMargin(50);
     } else if (trial->group() == margin_100mb) {
       LOG(WARNING) << "low_mem: Part of '100MB' experiment";
-      browser::LowMemoryObserver::SetLowMemoryMargin(100);
+      chromeos::LowMemoryObserver::SetLowMemoryMargin(100);
     } else if (trial->group() == margin_200mb) {
       LOG(WARNING) << "low_mem: Part of '200MB' experiment";
-      browser::LowMemoryObserver::SetLowMemoryMargin(200);
+      chromeos::LowMemoryObserver::SetLowMemoryMargin(200);
     } else {
       LOG(WARNING) << "low_mem: Part of 'default' experiment";
     }
   }
 }
-

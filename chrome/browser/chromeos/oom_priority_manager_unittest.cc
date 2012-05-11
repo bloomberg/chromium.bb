@@ -1,18 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/oom_priority_manager.h"
-
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/oom_priority_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser {
+namespace chromeos {
 
 typedef testing::Test OomPriorityManagerTest;
 
@@ -31,7 +30,7 @@ enum TestIndicies {
 // Tests the sorting comparator so that we know it's producing the
 // desired order.
 TEST_F(OomPriorityManagerTest, Comparator) {
-  browser::OomPriorityManager::TabStatsList test_list;
+  chromeos::OomPriorityManager::TabStatsList test_list;
   const base::TimeTicks now = base::TimeTicks::Now();
 
   {
@@ -103,17 +102,17 @@ TEST_F(OomPriorityManagerTest, Comparator) {
             test_list.end(),
             OomPriorityManager::CompareTabStats);
 
-  EXPECT_EQ(test_list[0].renderer_handle, kMostImportant);
-  EXPECT_EQ(test_list[1].renderer_handle, kNotPinned);
-  EXPECT_EQ(test_list[2].renderer_handle, kOldButPinned);
+  EXPECT_EQ(kMostImportant, test_list[0].renderer_handle);
+  EXPECT_EQ(kNotPinned, test_list[1].renderer_handle);
+  EXPECT_EQ(kOldButPinned, test_list[2].renderer_handle);
   // The order of kNotSelected and kSimilarTime is indeterminate:
   // they are equal in the eyes of the sort.
   EXPECT_TRUE((test_list[3].renderer_handle == kNotSelected &&
                test_list[4].renderer_handle == kSimilarTime) ||
               (test_list[3].renderer_handle == kSimilarTime &&
                test_list[4].renderer_handle == kNotSelected));
-  EXPECT_EQ(test_list[5].renderer_handle, kSimilarTimeOverThreshold);
-  EXPECT_EQ(test_list[6].renderer_handle, kReallyOld);
+  EXPECT_EQ(kSimilarTimeOverThreshold, test_list[5].renderer_handle);
+  EXPECT_EQ(kReallyOld, test_list[6].renderer_handle);
 }
 
-}  // namespace browser
+}  // namespace chromeos

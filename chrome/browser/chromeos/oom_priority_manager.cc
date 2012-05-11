@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/oom_priority_manager.h"
+#include "chrome/browser/chromeos/oom_priority_manager.h"
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -18,11 +19,11 @@
 #include "base/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "base/timer.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/low_memory_observer.h"
+#include "chrome/browser/chromeos/low_memory_observer.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -37,18 +38,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/zygote_host_linux.h"
 
-#if !defined(OS_CHROMEOS)
-#error This file only meant to be compiled on ChromeOS
-#endif
-
-using base::ProcessHandle;
-using base::ProcessMetrics;
 using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
 using content::WebContents;
 
-namespace browser {
+namespace chromeos {
 
 namespace {
 
@@ -504,4 +499,4 @@ void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
   }
 }
 
-}  // namespace browser
+}  // namespace chromeos

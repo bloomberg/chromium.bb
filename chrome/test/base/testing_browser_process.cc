@@ -116,7 +116,7 @@ net::URLRequestContextGetter* TestingBrowserProcess::system_request_context() {
 }
 
 #if defined(OS_CHROMEOS)
-browser::OomPriorityManager* TestingBrowserProcess::oom_priority_manager() {
+chromeos::OomPriorityManager* TestingBrowserProcess::oom_priority_manager() {
   return NULL;
 }
 #endif  // defined(OS_CHROMEOS)

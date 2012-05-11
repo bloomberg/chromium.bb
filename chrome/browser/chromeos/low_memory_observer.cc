@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/low_memory_observer.h"
+#include "chrome/browser/chromeos/low_memory_observer.h"
 
 #include <fcntl.h>
 
@@ -13,17 +13,13 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/oom_priority_manager.h"
+#include "chrome/browser/chromeos/oom_priority_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/zygote_host_linux.h"
 
-#if !defined(OS_CHROMEOS)
-#error This file only meant to be compiled on ChromeOS
-#endif
-
 using content::BrowserThread;
 
-namespace browser {
+namespace chromeos {
 
 namespace {
 // This is the file that will exist if low memory notification is available
@@ -97,6 +93,7 @@ class LowMemoryObserverImpl
       if (g_browser_process && g_browser_process->oom_priority_manager())
         g_browser_process->oom_priority_manager()->LogMemoryAndDiscardTab();
     }
+
    private:
     LowMemoryObserverImpl* owner_;
     DISALLOW_COPY_AND_ASSIGN(FileWatcherDelegate);
@@ -140,10 +137,10 @@ void LowMemoryObserverImpl::StopObservingOnFileThread() {
 }
 
 void LowMemoryObserverImpl::ScheduleNextObservation() {
-   timer_.Start(FROM_HERE,
-                base::TimeDelta::FromMilliseconds(kLowMemoryCheckTimeoutMs),
-                this,
-                &LowMemoryObserverImpl::StartWatchingDescriptor);
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromMilliseconds(kLowMemoryCheckTimeoutMs),
+               this,
+               &LowMemoryObserverImpl::StartWatchingDescriptor);
 }
 
 void LowMemoryObserverImpl::StartWatchingDescriptor() {
@@ -190,4 +187,4 @@ void LowMemoryObserver::SetLowMemoryMargin(int64 margin_mb) {
   content::ZygoteHost::GetInstance()->AdjustLowMemoryMargin(margin_mb);
 }
 
-}  // namespace browser
+}  // namespace chromeos
