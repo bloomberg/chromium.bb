@@ -197,6 +197,10 @@ const char kButtonEventSignal[] = "ButtonEvent";
 const char kStateOverrideCancel[] = "StateOverrideCancel";
 const char kSoftwareScreenDimmingRequestedSignal[] =
     "SoftwareScreenDimmingRequested";
+// kUseNewMonitorConfigSignal is temporary until Chrome monitor configuration
+// lands.
+const char kUseNewMonitorConfigSignal[] = "UseNewMonitorConfigSignal";
+const char kSetScreenPowerSignal[] = "SetScreenPowerSignal";
 // Values
 const char kPowerButtonName[] = "power";
 const char kLockButtonName[] = "lock";
