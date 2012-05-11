@@ -244,6 +244,8 @@ cr.define('options', function() {
 
     // Update tab title.
     this.setTitle_(overlay.title);
+    // Try to focus the first element of the new overlay.
+    options.FocusManager.getInstance().focusFirstElement();
 
     return true;
   };
@@ -286,6 +288,8 @@ cr.define('options', function() {
 
     if (overlay.didClosePage) overlay.didClosePage();
     this.updateHistoryState_(false, {ignoreHash: true});
+
+    // TODO(khorimoto): Set correct focus on new topmost dialog.
   };
 
   /**

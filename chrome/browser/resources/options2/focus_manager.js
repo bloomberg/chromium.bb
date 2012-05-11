@@ -107,7 +107,7 @@ cr.define('options', function() {
      * the first one.
      * @private
      */
-    tryFocusFirstElement_: function() {
+    focusFirstElement_: function() {
       var focusableElements = this.getFocusableElements_();
       if (focusableElements.length != 0)
         focusableElements[0].focus();
@@ -118,45 +118,59 @@ cr.define('options', function() {
      * the last one.
      * @private
      */
-    tryFocusLastElement_: function() {
+    focusLastElement_: function() {
       var focusableElements = this.getFocusableElements_();
       if (focusableElements.length != 0)
         focusableElements[focusableElements.length - 1].focus();
     },
 
     /**
-     * Handler for focus events on the page.
+     * Attempts to focus the appropriate element in the current dialog.
      * @private
      */
-    checkFocus_: function(event) {
-      var topmostPage = this.getTopmostPage_();
-
-      // If the element being focused is a descendant of the topmost page,
-      // the focus is in a valid area of the page, so nothing else needs to
-      // be done.
-      if (this.isDescendantOf_(topmostPage, event.target))
-        return;
-
-      // If control reaches here, then the target of the focus event is not
-      // in the topmost visible page. The target should not be focused.
-      event.target.blur();
-
+    setFocus_: function() {
       // If |this.focusDirBackwards_| is true, the user has pressed "Shift+Tab"
       // and has caused the focus to be transferred backward, outside of the
       // current dialog. In this case, loop around and try to focus the last
       // element of the dialog; otherwise, try to focus the first element of the
       // dialog.
       if (this.focusDirBackwards_)
-        this.tryFocusLastElement_();
+        this.focusLastElement_();
       else
-        this.tryFocusFirstElement_();
+        this.focusFirstElement_();
+    },
+
+    /**
+     * Attempts to focus the first element in the current dialog.
+     */
+    focusFirstElement: function() {
+      this.focusFirstElement_();
+    },
+
+    /**
+     * Handler for focus events on the page.
+     * @param {Event} event The focus event.
+     * @private
+     */
+    onDocumentFocus_: function(event) {
+      // If the element being focused is a descendant of the currently visible
+      // page, focus is valid.
+      if (this.isDescendantOf_(this.getTopmostPage_(), event.target))
+        return;
+
+      // The target of the focus event is not in the topmost visible page and
+      // should not be focused.
+      event.target.blur();
+
+      this.setFocus_();
     },
 
     /**
      * Handler for keydown events on the page.
+     * @param {Event} event The keydown event.
      * @private
      */
-    checkKeyDown_: function(event) {
+    onDocumentKeyDown_: function(event) {
       /** @const */ var tabKeyCode = 9;
 
       if (event.keyCode == tabKeyCode) {
@@ -170,8 +184,9 @@ cr.define('options', function() {
      * Initializes the FocusManager by listening for events in the document.
      */
     initialize: function() {
-      document.addEventListener('focus', this.checkFocus_.bind(this), true);
-      document.addEventListener('keydown', this.checkKeyDown_.bind(this),
+      document.addEventListener('focus', this.onDocumentFocus_.bind(this),
+          true);
+      document.addEventListener('keydown', this.onDocumentKeyDown_.bind(this),
           true);
     },
   };
