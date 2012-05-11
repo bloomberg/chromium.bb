@@ -110,8 +110,7 @@ bool InitPipeline(MessageLoop* message_loop,
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
-  collection->SetDemuxer(new media::FFmpegDemuxer(
-      message_loop, data_source, true));
+  collection->SetDemuxer(new media::FFmpegDemuxer(message_loop, data_source));
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
