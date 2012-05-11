@@ -259,7 +259,11 @@ int UdpPacketSocket::Send(const void* data, size_t data_size) {
 int UdpPacketSocket::SendTo(const void* data,
                             size_t data_size,
                             const talk_base::SocketAddress& address) {
-  DCHECK_EQ(state_, STATE_BOUND);
+  if (state_ != STATE_BOUND) {
+    // TODO(sergeyu): StunPort may try to send stun request before we
+    // are bound. Fix that problem and change this to DCHECK.
+    return EINVAL;
+  }
 
   if (error_ != 0) {
     return error_;
