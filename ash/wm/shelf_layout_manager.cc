@@ -127,11 +127,13 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
       status_(status),
       workspace_manager_(NULL),
       window_overlaps_shelf_(false) {
+  Shell::GetInstance()->AddShellObserver(this);
   root_window_->AddObserver(this);
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
   root_window_->RemoveObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
@@ -310,6 +312,10 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
   SetChildBoundsDirect(child, requested_bounds);
   if (!in_layout_)
     LayoutShelf();
+}
+
+void ShelfLayoutManager::OnLockStateChanged(bool locked) {
+  UpdateVisibilityState();
 }
 
 void ShelfLayoutManager::OnWindowPropertyChanged(aura::Window* window,

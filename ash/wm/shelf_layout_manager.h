@@ -8,6 +8,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher.h"
+#include "ash/shell_observer.h"
 #include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -38,6 +39,7 @@ class WorkspaceManager;
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
 class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
+                                      public ash::ShellObserver,
                                       public aura::WindowObserver {
  public:
   enum VisibilityState {
@@ -135,6 +137,9 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
                                               bool visible) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
+
+  // Overridden from ash::ShellObserver:
+  virtual void OnLockStateChanged(bool locked) OVERRIDE;
 
   // Overriden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,
