@@ -11,6 +11,8 @@
 #include "content/test/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::BrowserThread;
+
 class MockUbertokenConsumer : public UbertokenConsumer {
  public:
   MockUbertokenConsumer()

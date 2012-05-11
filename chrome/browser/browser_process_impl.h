@@ -127,7 +127,6 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
   void CreateTemplateURLService();
   void CreateProfileManager();
-  void CreateWebDataService();
   void CreateLocalState();
   void CreateViewedPageTracker();
   void CreateIconManager();

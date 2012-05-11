@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_vector.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
@@ -140,6 +141,7 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   virtual void TearDown() OVERRIDE;
 
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
 
   // A map between renderer child id and a pair represending the bridge id and
   // whether the requested permission was allowed.
@@ -148,7 +150,8 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
 
 GeolocationPermissionContextTests::GeolocationPermissionContextTests()
     : TabContentsWrapperTestHarness(),
-      ui_thread_(BrowserThread::UI, MessageLoop::current()) {
+      ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      db_thread_(BrowserThread::DB) {
 }
 
 GeolocationPermissionContextTests::~GeolocationPermissionContextTests() {
@@ -228,6 +231,7 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
 }
 
 void GeolocationPermissionContextTests::SetUp() {
+  db_thread_.Start();
   TabContentsWrapperTestHarness::SetUp();
   geolocation_permission_context_ =
       new ChromeGeolocationPermissionContext(profile());
@@ -236,6 +240,13 @@ void GeolocationPermissionContextTests::SetUp() {
 void GeolocationPermissionContextTests::TearDown() {
   extra_tabs_.reset();
   TabContentsWrapperTestHarness::TearDown();
+  // Schedule another task on the DB thread to notify us that it's safe to
+  // carry on with the test.
+  base::WaitableEvent done(false, false);
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
+  done.Wait();
+  db_thread_.Stop();
 }
 
 

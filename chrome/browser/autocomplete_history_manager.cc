@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
@@ -115,7 +116,8 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       external_delegate_(NULL) {
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   // May be NULL in unit tests.
-  web_data_service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  web_data_service_ = WebDataServiceFactory::GetForProfile(
+      profile_, Profile::EXPLICIT_ACCESS);
   autofill_enabled_.Init(prefs::kAutofillEnabled, profile_->GetPrefs(), NULL);
 }
 

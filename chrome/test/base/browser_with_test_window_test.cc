@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/browser_with_test_window_test.h"
 
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -34,9 +35,11 @@ using content::WebContents;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
     : ui_thread_(BrowserThread::UI, message_loop()),
+      db_thread_(BrowserThread::DB),
       file_thread_(BrowserThread::FILE, message_loop()),
       file_user_blocking_thread_(
           BrowserThread::FILE_USER_BLOCKING, message_loop()) {
+  db_thread_.Start();
 }
 
 void BrowserWithTestWindowTest::SetUp() {
@@ -72,6 +75,13 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
   DestroyBrowser();
   profile_.reset(NULL);
 
+  // Schedule another task on the DB thread to notify us that it's safe to
+  // carry on with the test.
+  base::WaitableEvent done(false, false);
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
+  done.Wait();
+  db_thread_.Stop();
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 }

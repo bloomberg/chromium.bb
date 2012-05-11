@@ -106,11 +106,8 @@ class TestingProfile : public Profile {
   // registry is NULL.
   void CreateProtocolHandlerRegistry();
 
-  // Creates the webdata service.  If |delete_file| is true, the webdata file is
-  // deleted first, then the WebDataService is created.  As TestingProfile
-  // deletes the directory containing the files used by WebDataService, this
-  // only matters if you're recreating the WebDataService.
-  void CreateWebDataService(bool delete_file);
+  // Creates a WebDataService. If not invoked, the web data service is NULL.
+  void CreateWebDataService();
 
   // Blocks until the BookmarkModel finishes loaded. This is NOT invoked from
   // CreateBookmarkModel.
@@ -179,8 +176,6 @@ class TestingProfile : public Profile {
   net::CookieMonster* GetCookieMonster();
   virtual AutocompleteClassifier* GetAutocompleteClassifier() OVERRIDE;
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
-  virtual WebDataService* GetWebDataService(ServiceAccessType access) OVERRIDE;
-  virtual WebDataService* GetWebDataServiceWithoutCreating() OVERRIDE;
   // Sets the profile's PrefService. If a pref service hasn't been explicitly
   // set GetPrefs creates one, so normally you need not invoke this. If you need
   // to set a pref service you must invoke this before GetPrefs.
@@ -265,10 +260,6 @@ class TestingProfile : public Profile {
   // Destroys favicon service if it has been created.
   void DestroyFaviconService();
 
-  // If the webdata service has been created, it is destroyed.  This is invoked
-  // from the destructor.
-  void DestroyWebDataService();
-
   // Creates a TestingPrefService and associates it with the TestingProfile.
   void CreateTestingPrefService();
 
@@ -288,15 +279,9 @@ class TestingProfile : public Profile {
   // is invoked.
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
-  // The ProfileSyncService.  Created by CreateProfileSyncService.
-  scoped_ptr<ProfileSyncService> profile_sync_service_;
-
   // The AutocompleteClassifier.  Only created if CreateAutocompleteClassifier
   // is invoked.
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
-
-  // The WebDataService.  Only created if CreateWebDataService is invoked.
-  scoped_refptr<WebDataService> web_data_service_;
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.

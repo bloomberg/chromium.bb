@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -230,8 +231,8 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     fake_url_fetcher_factory_.reset(
         new FakeURLFetcherFactory(default_url_fetcher_factory_.get()));
 
-    web_data_service_ =
-        GetBrowser()->profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
+    web_data_service_ = WebDataServiceFactory::GetForProfile(
+        GetBrowser()->profile(), Profile::EXPLICIT_ACCESS);
     favicon_service_ =
         GetBrowser()->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
     controller_ = GetBrowser()->
@@ -323,7 +324,7 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   }
 
   WebIntentPickerMock picker_;
-  WebDataService* web_data_service_;
+  scoped_refptr<WebDataService> web_data_service_;
   FaviconService* favicon_service_;
   WebIntentPickerController* controller_;
   scoped_ptr<DummyURLFetcherFactory> default_url_fetcher_factory_;
