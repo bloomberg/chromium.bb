@@ -306,7 +306,7 @@ void BurnManager::CancelImageFetch() {
   image_fetcher_.reset();
 }
 
-void BurnManager::OnURLFetchComplete(const content::URLFetcher* source) {
+void BurnManager::OnURLFetchComplete(const net::URLFetcher* source) {
   const bool success =
       source->GetStatus().status() == net::URLRequestStatus::SUCCESS;
   if (source == config_fetcher_.get()) {
@@ -323,7 +323,7 @@ void BurnManager::OnURLFetchComplete(const content::URLFetcher* source) {
   }
 }
 
-void BurnManager::OnURLFetchDownloadProgress(const content::URLFetcher* source,
+void BurnManager::OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                              int64 current,
                                              int64 total) {
   if (source == image_fetcher_.get()) {

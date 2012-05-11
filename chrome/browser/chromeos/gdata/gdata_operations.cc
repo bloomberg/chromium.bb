@@ -309,7 +309,7 @@ void UrlFetchOperationBase::DoCancel() {
   RunCallbackOnPrematureFailure(GDATA_CANCELLED);
 }
 
-void UrlFetchOperationBase::OnURLFetchComplete(const URLFetcher* source) {
+void UrlFetchOperationBase::OnURLFetchComplete(const net::URLFetcher* source) {
   GDataErrorCode code =
       static_cast<GDataErrorCode>(source->GetResponseCode());
   DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
@@ -352,7 +352,7 @@ void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
 }
 
 std::string UrlFetchOperationBase::GetResponseHeadersAsString(
-    const URLFetcher* url_fetcher) {
+    const net::URLFetcher* url_fetcher) {
   // net::HttpResponseHeaders::raw_headers(), as the name implies, stores
   // all headers in their raw format, i.e each header is null-terminated.
   // So logging raw_headers() only shows the first header, which is probably
@@ -387,7 +387,8 @@ GURL EntryActionOperation::GetURL() const {
   return AddStandardUrlParams(document_url_);
 }
 
-bool EntryActionOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool EntryActionOperation::ProcessURLFetchResults(
+    const net::URLFetcher* source) {
   if (!callback_.is_null()) {
     GDataErrorCode code =
         static_cast<GDataErrorCode>(source->GetResponseCode());
@@ -411,7 +412,7 @@ GetDataOperation::GetDataOperation(GDataOperationRegistry* registry,
 
 GetDataOperation::~GetDataOperation() {}
 
-bool GetDataOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool GetDataOperation::ProcessURLFetchResults(const net::URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   scoped_ptr<base::Value> root_value;
@@ -544,9 +545,10 @@ GURL DownloadFileOperation::GetURL() const {
   return document_url_;
 }
 
-void DownloadFileOperation::OnURLFetchDownloadProgress(const URLFetcher* source,
-                                                       int64 current,
-                                                       int64 total) {
+void DownloadFileOperation::OnURLFetchDownloadProgress(
+    const net::URLFetcher* source,
+    int64 current,
+    int64 total) {
   NotifyProgress(current, total);
 }
 
@@ -555,13 +557,14 @@ bool DownloadFileOperation::ShouldSendDownloadData() {
 }
 
 void DownloadFileOperation::OnURLFetchDownloadData(
-    const URLFetcher* source,
+    const net::URLFetcher* source,
     scoped_ptr<std::string> download_data) {
   if (!get_download_data_callback_.is_null())
     get_download_data_callback_.Run(HTTP_SUCCESS, download_data.Pass());
 }
 
-bool DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool DownloadFileOperation::ProcessURLFetchResults(
+    const net::URLFetcher* source) {
   GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
 
   // Take over the ownership of the the downloaded temp file.
@@ -848,7 +851,8 @@ GURL InitiateUploadOperation::GetURL() const {
   return initiate_upload_url_;
 }
 
-bool InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool InitiateUploadOperation::ProcessURLFetchResults(
+    const net::URLFetcher* source) {
   GDataErrorCode code =
       static_cast<GDataErrorCode>(source->GetResponseCode());
 
@@ -933,7 +937,8 @@ GURL ResumeUploadOperation::GetURL() const {
   return params_.upload_location;
 }
 
-bool ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
+bool ResumeUploadOperation::ProcessURLFetchResults(
+    const net::URLFetcher* source) {
   GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
   int64 start_range_received = -1;
@@ -1043,7 +1048,7 @@ bool ResumeUploadOperation::GetContentData(std::string* upload_content_type,
 }
 
 void ResumeUploadOperation::OnURLFetchUploadProgress(
-    const content::URLFetcher* source, int64 current, int64 total) {
+    const net::URLFetcher* source, int64 current, int64 total) {
   // Adjust the progress values according to the range currently uploaded.
   NotifyProgress(params_.start_range + current, params_.content_length);
 }

@@ -108,7 +108,7 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
     // Cancel pending requests.
     model_fetcher_.reset();
     // Invoke pending callbacks with a false verdict.
-    for (std::map<const content::URLFetcher*, ClientReportInfo*>::iterator it =
+    for (std::map<const net::URLFetcher*, ClientReportInfo*>::iterator it =
              client_phishing_reports_.begin();
          it != client_phishing_reports_.end(); ++it) {
       ClientReportInfo* info = it->second;
@@ -181,7 +181,7 @@ bool ClientSideDetectionService::IsBadIpAddress(
 }
 
 void ClientSideDetectionService::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   std::string data;
   source->GetResponseAsString(&data);
   if (source == model_fetcher_.get()) {
@@ -322,7 +322,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
 }
 
 void ClientSideDetectionService::HandleModelResponse(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,
@@ -363,7 +363,7 @@ void ClientSideDetectionService::HandleModelResponse(
 }
 
 void ClientSideDetectionService::HandlePhishingVerdict(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code,

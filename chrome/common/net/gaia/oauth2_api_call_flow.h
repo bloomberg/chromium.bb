@@ -57,7 +57,7 @@ class OAuth2ApiCallFlow
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:
   // Template methods for sub-classes.
@@ -69,9 +69,9 @@ class OAuth2ApiCallFlow
   // Sub-classes can expose an appropriate observer interface by implementing
   // these template methods.
   // Called when the API call finished successfully.
-  virtual void ProcessApiCallSuccess(const content::URLFetcher* source) = 0;
+  virtual void ProcessApiCallSuccess(const net::URLFetcher* source) = 0;
   // Called when the API call failed.
-  virtual void ProcessApiCallFailure(const content::URLFetcher* source) = 0;
+  virtual void ProcessApiCallFailure(const net::URLFetcher* source) = 0;
   // Called when a new access token is generated.
   virtual void ProcessNewAccessToken(const std::string& access_token) = 0;
   virtual void ProcessMintAccessTokenFailure(
@@ -105,7 +105,7 @@ class OAuth2ApiCallFlow
 
   // Helper methods to implement the state machine for the flow.
   void BeginApiCall();
-  void EndApiCall(const content::URLFetcher* source);
+  void EndApiCall(const net::URLFetcher* source);
   void BeginMintAccessToken();
   void EndMintAccessToken(const GoogleServiceAuthError* error);
 

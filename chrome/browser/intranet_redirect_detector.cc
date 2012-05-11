@@ -94,12 +94,12 @@ void IntranetRedirectDetector::FinishSleep() {
 }
 
 void IntranetRedirectDetector::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   // Delete the fetcher on this function's exit.
   Fetchers::iterator fetcher = fetchers_.find(
-      const_cast<content::URLFetcher*>(source));
+      const_cast<net::URLFetcher*>(source));
   DCHECK(fetcher != fetchers_.end());
-  scoped_ptr<content::URLFetcher> clean_up_fetcher(*fetcher);
+  scoped_ptr<net::URLFetcher> clean_up_fetcher(*fetcher);
   fetchers_.erase(fetcher);
 
   // If any two fetches result in the same domain/host, we set the redirect

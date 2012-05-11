@@ -183,17 +183,17 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
 //              do will report all the chunks we have. If that chunk is still
 //              required, the SafeBrowsing servers will tell us to get it again.
 void SafeBrowsingProtocolManager::OnURLFetchComplete(
-    const content::URLFetcher* source) {
-  scoped_ptr<const content::URLFetcher> fetcher;
+    const net::URLFetcher* source) {
+  scoped_ptr<const net::URLFetcher> fetcher;
   bool parsed_ok = true;
   bool must_back_off = false;  // Reduce SafeBrowsing service query frequency.
 
   // See if this is a safebrowsing report fetcher. We don't take any action for
   // the response to those.
-  std::set<const content::URLFetcher*>::iterator sit =
+  std::set<const net::URLFetcher*>::iterator sit =
       safebrowsing_reports_.find(source);
   if (sit != safebrowsing_reports_.end()) {
-    const content::URLFetcher* report = *sit;
+    const net::URLFetcher* report = *sit;
     safebrowsing_reports_.erase(sit);
     delete report;
     return;

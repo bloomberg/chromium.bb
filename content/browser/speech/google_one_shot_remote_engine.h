@@ -68,7 +68,7 @@ class CONTENT_EXPORT GoogleOneShotRemoteEngine
   virtual int GetDesiredAudioChunkDurationMs() const OVERRIDE;
 
   // content::URLFetcherDelegate methods.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   GoogleOneShotRemoteEngineConfig config_;

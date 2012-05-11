@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ class CloudPrintURLFetcher
     // returns CONTINUE_PROCESSING, we will then check for network
     // errors. Most implementations will not override this.
     virtual ResponseAction HandleRawResponse(
-        const content::URLFetcher* source,
+        const net::URLFetcher* source,
         const GURL& url,
         const net::URLRequestStatus& status,
         int response_code,
@@ -62,7 +62,7 @@ class CloudPrintURLFetcher
     // Handling the raw data is needed when the expected response is NOT JSON
     // (like in the case of a print ticket response or a print job download
     // response).
-    virtual ResponseAction HandleRawData(const content::URLFetcher* source,
+    virtual ResponseAction HandleRawData(const net::URLFetcher* source,
                                          const GURL& url,
                                          const std::string& data) {
       return CONTINUE_PROCESSING;
@@ -70,7 +70,7 @@ class CloudPrintURLFetcher
     // This will be invoked only if HandleRawResponse and HandleRawData return
     // CONTINUE_PROCESSING AND if the response contains a valid JSON dictionary.
     // |succeeded| is the value of the "success" field in the response JSON.
-    virtual ResponseAction HandleJSONData(const content::URLFetcher* source,
+    virtual ResponseAction HandleJSONData(const net::URLFetcher* source,
                                           const GURL& url,
                                           base::DictionaryValue* json_data,
                                           bool succeeded) {
@@ -93,7 +93,7 @@ class CloudPrintURLFetcher
   };
   CloudPrintURLFetcher();
 
-  bool IsSameRequest(const content::URLFetcher* source);
+  bool IsSameRequest(const net::URLFetcher* source);
 
   void StartGetRequest(const GURL& url,
                        Delegate* delegate,
@@ -107,7 +107,7 @@ class CloudPrintURLFetcher
                         const std::string& additional_headers);
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:
   friend class base::RefCountedThreadSafe<CloudPrintURLFetcher>;

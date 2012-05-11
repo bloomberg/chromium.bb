@@ -395,7 +395,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   // From the content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(source, fetcher_.get());
     VLOG(2) << "Received a response for URL: "

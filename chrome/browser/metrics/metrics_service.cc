@@ -1195,7 +1195,7 @@ static const char* StatusToString(const net::URLRequestStatus& status) {
 // lose protobuf uploads when XML ones succeed; but we will never duplicate any
 // protobuf uploads.  Protobuf failures should be rare enough to where this
 // should be ok while we have the two pipelines running in parallel.
-void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
+void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(waiting_for_asynchronus_reporting_step_);
 
   // We're not allowed to re-use the existing |URLFetcher|s, so free them here.

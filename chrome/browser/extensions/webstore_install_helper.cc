@@ -84,7 +84,7 @@ void WebstoreInstallHelper::StartWorkOnIOThread() {
 }
 
 void WebstoreInstallHelper::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(source == url_fetcher_.get());
   if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||

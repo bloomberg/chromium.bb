@@ -100,7 +100,7 @@ bool NetworkLocationRequest::MakeRequest(const string16& access_token,
 }
 
 void NetworkLocationRequest::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
   net::URLRequestStatus status = source->GetStatus();

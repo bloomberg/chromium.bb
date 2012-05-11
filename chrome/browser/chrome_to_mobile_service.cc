@@ -285,7 +285,7 @@ void ChromeToMobileService::LogMetric(Metric metric) {
 }
 
 void ChromeToMobileService::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   if (source == account_info_request_.get())
     HandleAccountInfoResponse();
   else if (source == search_request_.get())
@@ -481,7 +481,7 @@ void ChromeToMobileService::HandleSearchResponse() {
 }
 
 void ChromeToMobileService::HandleSubmitResponse(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   // Get the observer for this response; bail if there is none or it is NULL.
   RequestObserverMap::iterator i = request_observer_map_.find(source);
   if (i == request_observer_map_.end())

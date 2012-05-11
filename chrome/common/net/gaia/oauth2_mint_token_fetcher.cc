@@ -109,7 +109,7 @@ void OAuth2MintTokenFetcher::StartMintToken() {
   fetcher_->Start();  // OnURLFetchComplete will be called.
 }
 
-void OAuth2MintTokenFetcher::EndMintToken(const URLFetcher* source) {
+void OAuth2MintTokenFetcher::EndMintToken(const net::URLFetcher* source) {
   CHECK_EQ(MINT_TOKEN_STARTED, state_);
   state_ = MINT_TOKEN_DONE;
 
@@ -143,7 +143,7 @@ void OAuth2MintTokenFetcher::OnMintTokenFailure(
   consumer_->OnMintTokenFailure(error);
 }
 
-void OAuth2MintTokenFetcher::OnURLFetchComplete(const URLFetcher* source) {
+void OAuth2MintTokenFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   CHECK(source);
   CHECK_EQ(MINT_TOKEN_STARTED, state_);
   EndMintToken(source);
@@ -174,7 +174,7 @@ std::string OAuth2MintTokenFetcher::MakeMintTokenBody(
 
 // static
 bool OAuth2MintTokenFetcher::ParseMintTokenResponse(
-    const URLFetcher* source,
+    const net::URLFetcher* source,
     std::string* access_token) {
   CHECK(source);
   CHECK(access_token);

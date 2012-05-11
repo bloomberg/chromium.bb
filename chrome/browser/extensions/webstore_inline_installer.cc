@@ -19,9 +19,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -189,7 +189,7 @@ void WebstoreInlineInstaller::BeginInstall() {
 WebstoreInlineInstaller::~WebstoreInlineInstaller() {}
 
 void WebstoreInlineInstaller::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   CHECK_EQ(webstore_data_url_fetcher_.get(), source);
   // We shouldn't be getting UrlFetcher callbacks if the WebContents has gone
   // away; we stop any in in-progress fetches in WebContentsDestroyed.

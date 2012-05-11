@@ -29,9 +29,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
@@ -84,7 +84,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   }
 
   // From the content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
@@ -208,7 +208,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
 
   // Called by OnURLFetchComplete to handle the response from fetching the
   // model.
-  void HandleModelResponse(const content::URLFetcher* source,
+  void HandleModelResponse(const net::URLFetcher* source,
                            const GURL& url,
                            const net::URLRequestStatus& status,
                            int response_code,
@@ -217,7 +217,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
 
   // Called by OnURLFetchComplete to handle the server response from
   // sending the client-side phishing request.
-  void HandlePhishingVerdict(const content::URLFetcher* source,
+  void HandlePhishingVerdict(const net::URLFetcher* source,
                              const GURL& url,
                              const net::URLRequestStatus& status,
                              int response_code,
@@ -263,7 +263,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.
   struct ClientReportInfo;
-  std::map<const content::URLFetcher*, ClientReportInfo*>
+  std::map<const net::URLFetcher*, ClientReportInfo*>
       client_phishing_reports_;
 
   // Cache of completed requests. Used to satisfy requests for the same urls

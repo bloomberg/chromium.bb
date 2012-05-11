@@ -15,8 +15,8 @@
 #include "base/string16.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/cws_intents_registry.h"
+#include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -132,7 +132,7 @@ class WebIntentPickerController : public content::NotificationObserver,
 
   // Called when a suggested extension's icon is fetched.
   void OnExtensionIconURLFetchComplete(const string16& extension_id,
-                                       const content::URLFetcher* source);
+                                       const net::URLFetcher* source);
 
   typedef base::Callback<void(const gfx::Image&)>
       ExtensionIconAvailableCallback;

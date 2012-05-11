@@ -110,7 +110,8 @@ void OAuth2AccessTokenFetcher::StartGetAccessToken() {
   fetcher_->Start();  // OnURLFetchComplete will be called.
 }
 
-void OAuth2AccessTokenFetcher::EndGetAccessToken(const URLFetcher* source) {
+void OAuth2AccessTokenFetcher::EndGetAccessToken(
+    const net::URLFetcher* source) {
   CHECK_EQ(GET_ACCESS_TOKEN_STARTED, state_);
   state_ = GET_ACCESS_TOKEN_DONE;
 
@@ -144,7 +145,8 @@ void OAuth2AccessTokenFetcher::OnGetTokenFailure(
   consumer_->OnGetTokenFailure(error);
 }
 
-void OAuth2AccessTokenFetcher::OnURLFetchComplete(const URLFetcher* source) {
+void OAuth2AccessTokenFetcher::OnURLFetchComplete(
+    const net::URLFetcher* source) {
   CHECK(source);
   CHECK(state_ == GET_ACCESS_TOKEN_STARTED);
   EndGetAccessToken(source);
@@ -185,7 +187,7 @@ std::string OAuth2AccessTokenFetcher::MakeGetAccessTokenBody(
 
 // static
 bool OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
-    const URLFetcher* source,
+    const net::URLFetcher* source,
     std::string* access_token) {
   CHECK(source);
   CHECK(access_token);

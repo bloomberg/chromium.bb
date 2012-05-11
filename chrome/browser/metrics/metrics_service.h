@@ -261,7 +261,7 @@ class MetricsService
 
   // Implementation of content::URLFetcherDelegate. Called after transmission
   // completes (either successfully or with failure).
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Logs debugging details, for the case where the server returns a response
   // code other than 200.

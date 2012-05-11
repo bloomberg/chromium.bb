@@ -93,9 +93,9 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
   MOCK_METHOD0(CreateApiCallUrl, GURL ());
   MOCK_METHOD0(CreateApiCallBody, std::string ());
   MOCK_METHOD1(ProcessApiCallSuccess,
-      void (const content::URLFetcher* source));
+      void (const net::URLFetcher* source));
   MOCK_METHOD1(ProcessApiCallFailure,
-      void (const content::URLFetcher* source));
+      void (const net::URLFetcher* source));
   MOCK_METHOD1(ProcessNewAccessToken,
       void (const std::string& access_token));
   MOCK_METHOD1(ProcessMintAccessTokenFailure,

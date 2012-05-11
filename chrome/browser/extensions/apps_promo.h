@@ -149,7 +149,7 @@ class AppsPromoLogoFetcher : public content::URLFetcherDelegate {
                        const AppsPromo::PromoData& promo_data);
   virtual ~AppsPromoLogoFetcher();
 
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   // Fetches the logo and stores the result as a data URL.

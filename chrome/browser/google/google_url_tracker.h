@@ -14,10 +14,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 
@@ -118,7 +118,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   void StartFetchIfDesirable();
 
   // content::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,

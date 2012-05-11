@@ -11,9 +11,9 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -410,12 +410,12 @@ void TranslateManager::Observe(int type,
   }
 }
 
-void TranslateManager::OnURLFetchComplete(const content::URLFetcher* source) {
+void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
   if (translate_script_request_pending_.get() != source &&
       language_list_request_pending_.get() != source) {
     // Looks like crash on Mac is possibly caused with callback entering here
     // with unknown fetcher when network is refreshed.
-    scoped_ptr<const content::URLFetcher> delete_ptr(source);
+    scoped_ptr<const net::URLFetcher> delete_ptr(source);
     return;
   }
 

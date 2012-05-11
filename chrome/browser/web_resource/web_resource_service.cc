@@ -220,7 +220,7 @@ void WebResourceService::StartFetch() {
   url_fetcher_->Start();
 }
 
-void WebResourceService::OnURLFetchComplete(const content::URLFetcher* source) {
+void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
   // Delete the URLFetcher when this function exits.
   scoped_ptr<content::URLFetcher> clean_up_fetcher(url_fetcher_.release());
 

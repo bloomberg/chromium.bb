@@ -268,7 +268,7 @@ void GoogleOneShotRemoteEngine::AudioChunksEnded() {
 }
 
 void GoogleOneShotRemoteEngine::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
   SpeechRecognitionResult result;
   SpeechRecognitionError error(content::SPEECH_RECOGNITION_ERROR_NETWORK);

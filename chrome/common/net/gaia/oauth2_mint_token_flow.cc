@@ -179,7 +179,7 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
 }
 
 void OAuth2MintTokenFlow::ProcessApiCallSuccess(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   // TODO(munjal): Change error code paths in this method to report an
   // internal error.
   std::string response_body;
@@ -213,7 +213,7 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
 }
 
 void OAuth2MintTokenFlow::ProcessApiCallFailure(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   ReportFailure(CreateAuthError(source->GetStatus()));
 }
 void OAuth2MintTokenFlow::ProcessNewAccessToken(

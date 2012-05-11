@@ -60,7 +60,7 @@ struct WebPluginAction;
 //     }
 //     virtual ~MyTask() {
 //     }
-//     virtual void OnURLFetchComplete(const content::URLFetcher* source,
+//     virtual void OnURLFetchComplete(const net::URLFetcher* source,
 //                                     const GURL& url,
 //                                     const net::URLRequestStatus& status,
 //                                     int response,

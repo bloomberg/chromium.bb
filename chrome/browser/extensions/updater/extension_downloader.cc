@@ -355,7 +355,7 @@ void ExtensionDownloader::StartUpdateCheck(ManifestFetchData* fetch_data) {
 }
 
 void ExtensionDownloader::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   VLOG(2) << source->GetResponseCode() << " " << source->GetURL();
 
   if (source == manifest_fetcher_.get()) {
@@ -576,7 +576,7 @@ void ExtensionDownloader::FetchUpdatedExtension(const std::string& id,
 }
 
 void ExtensionDownloader::OnCRXFetchComplete(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     const GURL& url,
     const net::URLRequestStatus& status,
     int response_code) {

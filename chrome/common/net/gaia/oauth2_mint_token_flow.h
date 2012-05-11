@@ -119,9 +119,9 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   virtual std::string CreateApiCallBody() OVERRIDE;
 
   virtual void ProcessApiCallSuccess(
-      const content::URLFetcher* source) OVERRIDE;
+      const net::URLFetcher* source) OVERRIDE;
   virtual void ProcessApiCallFailure(
-      const content::URLFetcher* source) OVERRIDE;
+      const net::URLFetcher* source) OVERRIDE;
   virtual void ProcessNewAccessToken(const std::string& access_token) OVERRIDE;
   virtual void ProcessMintAccessTokenFailure(
       const GoogleServiceAuthError& error) OVERRIDE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/image_decoder.h"
+#include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 
 class ProfileDownloaderDelegate;
 class OAuth2AccessTokenFetcher;
@@ -68,7 +68,7 @@ class ProfileDownloader : public content::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, DefaultURL);
 
   // Overriden from content::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Overriden from ImageDecoder::Delegate:
   virtual void OnImageDecoded(const ImageDecoder* decoder,

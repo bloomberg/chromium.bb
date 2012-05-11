@@ -298,7 +298,7 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   fetcher_->Start();
 }
 
-void GoogleURLTracker::OnURLFetchComplete(const content::URLFetcher* source) {
+void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   // Delete the fetcher on this function's exit.
   scoped_ptr<content::URLFetcher> clean_up_fetcher(fetcher_.release());
 

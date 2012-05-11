@@ -155,7 +155,7 @@ void CloudPrintAuth::OnNetworkError(int response_code) {
 }
 
 CloudPrintURLFetcher::ResponseAction CloudPrintAuth::HandleJSONData(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     const GURL& url,
     base::DictionaryValue* json_data,
     bool succeeded) {

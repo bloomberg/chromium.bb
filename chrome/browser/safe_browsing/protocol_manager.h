@@ -32,8 +32,8 @@
 // specifying this).
 namespace __gnu_cxx {
 template<>
-struct hash<const content::URLFetcher*> {
-  size_t operator()(const content::URLFetcher* fetcher) const {
+struct hash<const net::URLFetcher*> {
+  size_t operator()(const net::URLFetcher* fetcher) const {
     return reinterpret_cast<size_t>(fetcher);
   }
 };
@@ -92,7 +92,7 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   virtual void Initialize();
 
   // content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // API used by the SafeBrowsingService for issuing queries. When the results
   // are available, SafeBrowsingService::HandleGetHashResults is called.
@@ -310,7 +310,7 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   std::deque<ChunkUrl> chunk_request_urls_;
 
   // Map of GetHash requests.
-  typedef base::hash_map<const content::URLFetcher*,
+  typedef base::hash_map<const net::URLFetcher*,
                          SafeBrowsingService::SafeBrowsingCheck*> HashRequests;
   HashRequests hash_requests_;
 
@@ -343,7 +343,7 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
 
   // Track outstanding SafeBrowsing report fetchers for clean up.
   // We add both "hit" and "detail" fetchers in this set.
-  std::set<const content::URLFetcher*> safebrowsing_reports_;
+  std::set<const net::URLFetcher*> safebrowsing_reports_;
 
   // The safe browsing client name sent in each request.
   std::string client_name_;

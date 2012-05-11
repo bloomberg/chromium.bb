@@ -55,7 +55,7 @@ class OAuth2MintTokenFetcher : public content::URLFetcherDelegate {
   void CancelRequest();
 
   // Implementation of content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   enum State {
@@ -67,7 +67,7 @@ class OAuth2MintTokenFetcher : public content::URLFetcherDelegate {
 
   // Helper methods for the flow.
   void StartMintToken();
-  void EndMintToken(const content::URLFetcher* source);
+  void EndMintToken(const net::URLFetcher* source);
 
   // Helper methods for reporting back results.
   void OnMintTokenSuccess(const std::string& access_token);
@@ -79,7 +79,7 @@ class OAuth2MintTokenFetcher : public content::URLFetcherDelegate {
   static std::string MakeMintTokenBody(const std::string& client_id,
                                        const std::vector<std::string>& scopes,
                                        const std::string& origin);
-  static bool ParseMintTokenResponse(const content::URLFetcher* source,
+  static bool ParseMintTokenResponse(const net::URLFetcher* source,
                                      std::string* access_token);
 
   // State that is set during construction.

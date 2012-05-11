@@ -109,7 +109,7 @@ bool SpellingServiceClient::RequestTextCheck(
 }
 
 void SpellingServiceClient::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   scoped_ptr<content::URLFetcher> clean_up_fetcher(fetcher_.release());
   bool success = false;
   std::vector<SpellCheckResult> results;

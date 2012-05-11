@@ -21,7 +21,7 @@ CloudPrintURLFetcher::CloudPrintURLFetcher()
       num_retries_(0) {
 }
 
-bool CloudPrintURLFetcher::IsSameRequest(const content::URLFetcher* source) {
+bool CloudPrintURLFetcher::IsSameRequest(const net::URLFetcher* source) {
   return (request_.get() == source);
 }
 
@@ -56,7 +56,7 @@ void CloudPrintURLFetcher::StartPostRequest(
 }
 
 void CloudPrintURLFetcher::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   VLOG(1) << "CP_PROXY: OnURLFetchComplete, url: " << source->GetURL()
           << ", response code: " << source->GetResponseCode();
   // Make sure we stay alive through the body of this function.

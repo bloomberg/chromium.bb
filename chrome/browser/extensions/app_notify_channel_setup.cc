@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop.h"
 #include "base/json/json_reader.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -126,7 +126,7 @@ void AppNotifyChannelSetup::OnSyncSetupResult(bool enabled) {
   EndLogin(enabled);
 }
 
-void AppNotifyChannelSetup::OnURLFetchComplete(const URLFetcher* source) {
+void AppNotifyChannelSetup::OnURLFetchComplete(const net::URLFetcher* source) {
   CHECK(source);
   switch (state_) {
     case RECORD_GRANT_STARTED:
@@ -269,7 +269,7 @@ void AppNotifyChannelSetup::BeginRecordGrant() {
   url_fetcher_->Start();
 }
 
-void AppNotifyChannelSetup::EndRecordGrant(const URLFetcher* source) {
+void AppNotifyChannelSetup::EndRecordGrant(const net::URLFetcher* source) {
   CHECK_EQ(RECORD_GRANT_STARTED, state_);
 
   net::URLRequestStatus status = source->GetStatus();
@@ -300,7 +300,7 @@ void AppNotifyChannelSetup::BeginGetChannelId() {
   url_fetcher_->Start();
 }
 
-void AppNotifyChannelSetup::EndGetChannelId(const URLFetcher* source) {
+void AppNotifyChannelSetup::EndGetChannelId(const net::URLFetcher* source) {
   CHECK_EQ(CHANNEL_ID_SETUP_STARTED, state_);
   net::URLRequestStatus status = source->GetStatus();
 

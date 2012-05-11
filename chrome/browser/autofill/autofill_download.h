@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,10 @@
 class AutofillMetrics;
 class FormStructure;
 class Profile;
+
+namespace net {
+class URLFetcher;
+}  // namespace net
 
 // Handles getting and updating Autofill heuristics.
 class AutofillDownloadManager : public content::URLFetcherDelegate {
@@ -111,7 +115,7 @@ class AutofillDownloadManager : public content::URLFetcherDelegate {
       const std::vector<std::string>& forms_in_query) const;
 
   // content::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Probability of the form upload. Between 0 (no upload) and 1 (upload all).
   // GetPositiveUploadRate() is for matched forms,
@@ -132,7 +136,7 @@ class AutofillDownloadManager : public content::URLFetcherDelegate {
   // For each requested form for both query and upload we create a separate
   // request and save its info. As url fetcher is identified by its address
   // we use a map between fetchers and info.
-  std::map<content::URLFetcher*, FormRequestData> url_fetchers_;
+  std::map<net::URLFetcher*, FormRequestData> url_fetchers_;
 
   // Cached QUERY requests.
   QueryRequestCache cached_forms_;

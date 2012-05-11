@@ -84,7 +84,7 @@ class SyncServerStatusChecker : public content::URLFetcherDelegate {
  public:
   SyncServerStatusChecker() : running_(false) {}
 
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) {
     std::string data;
     source->GetResponseAsString(&data);
     running_ =

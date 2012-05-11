@@ -51,7 +51,7 @@ class WebResourceService
   friend class base::RefCountedThreadSafe<WebResourceService>;
 
   // content::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Schedules a fetch after |delay_ms| milliseconds.
   void ScheduleFetch(int64 delay_ms);

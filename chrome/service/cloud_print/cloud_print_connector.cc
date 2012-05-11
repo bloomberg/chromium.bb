@@ -129,7 +129,7 @@ void CloudPrintConnector::OnAuthError() {
 
 // CloudPrintURLFetcher::Delegate implementation.
 CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleRawData(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     const GURL& url,
     const std::string& data) {
   // If this notification came as a result of user message call, stop it.
@@ -141,7 +141,7 @@ CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleRawData(
 }
 
 CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleJSONData(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -165,7 +165,7 @@ CloudPrintConnector::~CloudPrintConnector() {}
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterListResponse(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -232,7 +232,7 @@ CloudPrintConnector::HandlePrinterListResponse(
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterDeleteResponse(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {
@@ -244,7 +244,7 @@ CloudPrintConnector::HandlePrinterDeleteResponse(
 
 CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandleRegisterPrinterResponse(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     const GURL& url,
     DictionaryValue* json_data,
     bool succeeded) {

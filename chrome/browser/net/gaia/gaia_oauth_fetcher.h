@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,7 +136,7 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
                                 bool detail);
 
   // Implementation of content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // StartGetOAuthToken (or other Start* routine) been called, but results
   // are not back yet.

@@ -21,11 +21,11 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -305,7 +305,7 @@ void SearchProvider::Stop() {
   default_provider_suggest_text_.clear();
 }
 
-void SearchProvider::OnURLFetchComplete(const content::URLFetcher* source) {
+void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(!done_);
   suggest_results_pending_--;
   DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.

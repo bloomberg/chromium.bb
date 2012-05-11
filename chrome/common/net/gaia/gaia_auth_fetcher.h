@@ -170,7 +170,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
                        const std::string& service);
 
   // Implementation of content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // StartClientLogin been called && results not back yet?
   bool HasPendingFetch();

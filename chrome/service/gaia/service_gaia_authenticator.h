@@ -31,7 +31,7 @@ class ServiceGaiaAuthenticator
                            base::MessageLoopProxy* io_message_loop_proxy);
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:
   // GaiaAuthenticator overrides.

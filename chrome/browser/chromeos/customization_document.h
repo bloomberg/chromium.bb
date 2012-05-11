@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,7 +149,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   static void SetApplied(bool val);
 
   // Overriden from content::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Initiate file fetching.
   void StartFileFetch();

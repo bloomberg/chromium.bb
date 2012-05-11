@@ -96,7 +96,7 @@ class FeedbackUtil::PostCleanup : public content::URLFetcherDelegate {
                                       post_body_(post_body),
                                       previous_delay_(previous_delay) { }
   // Overridden from content::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const net::URLFetcher* source);
 
  protected:
   virtual ~PostCleanup() {}
@@ -113,7 +113,7 @@ class FeedbackUtil::PostCleanup : public content::URLFetcherDelegate {
 // post cleanup object - that pointer will be deleted and deleted only on a
 // successful post to the feedback server.
 void FeedbackUtil::PostCleanup::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   std::stringstream error_stream;
   int response_code = source->GetResponseCode();
   if (response_code == kHttpPostSuccessNoContent) {

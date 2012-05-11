@@ -239,9 +239,9 @@ std::string AutofillDownloadManager::GetCombinedSignature(
 }
 
 void AutofillDownloadManager::OnURLFetchComplete(
-    const content::URLFetcher* source) {
-  std::map<content::URLFetcher *, FormRequestData>::iterator it =
-      url_fetchers_.find(const_cast<content::URLFetcher*>(source));
+    const net::URLFetcher* source) {
+  std::map<net::URLFetcher *, FormRequestData>::iterator it =
+      url_fetchers_.find(const_cast<net::URLFetcher*>(source));
   if (it == url_fetchers_.end()) {
     // Looks like crash on Mac is possibly caused with callback entering here
     // with unknown fetcher when network is refreshed.

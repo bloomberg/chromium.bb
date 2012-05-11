@@ -62,11 +62,11 @@ class CloudPrintConnector
 
   // CloudPrintURLFetcher::Delegate implementation.
   virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       const std::string& data) OVERRIDE;
   virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded) OVERRIDE;
@@ -79,7 +79,7 @@ class CloudPrintConnector
   // Prototype for a response handler.
   typedef CloudPrintURLFetcher::ResponseAction
       (CloudPrintConnector::*ResponseHandler)(
-          const content::URLFetcher* source,
+          const net::URLFetcher* source,
           const GURL& url,
           DictionaryValue* json_data,
           bool succeeded);
@@ -106,19 +106,19 @@ class CloudPrintConnector
 
   // Begin response handlers
   CloudPrintURLFetcher::ResponseAction HandlePrinterListResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandlePrinterDeleteResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleRegisterPrinterResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       DictionaryValue* json_data,
       bool succeeded);

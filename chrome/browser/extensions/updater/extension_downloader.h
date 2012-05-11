@@ -119,7 +119,7 @@ class ExtensionDownloader : public content::URLFetcherDelegate {
   void StartUpdateCheck(ManifestFetchData* fetch_data);
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Handles the result of a manifest fetch.
   void OnManifestFetchComplete(const GURL& url,
@@ -145,7 +145,7 @@ class ExtensionDownloader : public content::URLFetcherDelegate {
                              const std::string& version);
 
   // Handles the result of a crx fetch.
-  void OnCRXFetchComplete(const content::URLFetcher* source,
+  void OnCRXFetchComplete(const net::URLFetcher* source,
                           const GURL& url,
                           const net::URLRequestStatus& status,
                           int response_code);

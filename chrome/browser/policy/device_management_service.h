@@ -104,14 +104,14 @@ class DeviceManagementService : public content::URLFetcherDelegate {
   void Shutdown();
 
  private:
-  typedef std::map<const content::URLFetcher*,
+  typedef std::map<const net::URLFetcher*,
                    DeviceManagementRequestJobImpl*> JobFetcherMap;
   typedef std::deque<DeviceManagementRequestJobImpl*> JobQueue;
 
   friend class DeviceManagementRequestJobImpl;
 
   // content::URLFetcherDelegate override.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Does the actual initialization using the request context specified for
   // |PrepareInitialization|. This will also fire any pending network requests.

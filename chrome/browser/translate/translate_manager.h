@@ -18,9 +18,9 @@
 #include "base/time.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/translate_errors.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/url_fetcher_delegate.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;
@@ -80,7 +80,7 @@ class TranslateManager : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // content::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Used by unit-tests to override the default delay after which the translate
   // script is fetched again from the translation server.

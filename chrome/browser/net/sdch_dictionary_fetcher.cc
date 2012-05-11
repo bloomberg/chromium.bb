@@ -76,7 +76,7 @@ void SdchDictionaryFetcher::StartFetching() {
 }
 
 void SdchDictionaryFetcher::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   if ((200 == source->GetResponseCode()) &&
       (source->GetStatus().status() == net::URLRequestStatus::SUCCESS)) {
     std::string data;

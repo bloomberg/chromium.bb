@@ -275,7 +275,7 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
 
 ProfileDownloader::~ProfileDownloader() {}
 
-void ProfileDownloader::OnURLFetchComplete(const content::URLFetcher* source) {
+void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string data;
   source->GetResponseAsString(&data);

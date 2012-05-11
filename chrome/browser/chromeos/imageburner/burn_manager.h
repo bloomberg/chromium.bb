@@ -201,8 +201,8 @@ class BurnManager : content::URLFetcherDelegate {
   void CancelImageFetch();
 
   // URLFetcherDelegate overrides:
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
-  virtual void OnURLFetchDownloadProgress(const content::URLFetcher* source,
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current,
                                           int64 total) OVERRIDE;
 

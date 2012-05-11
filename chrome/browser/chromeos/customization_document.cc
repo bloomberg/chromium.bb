@@ -303,7 +303,7 @@ void ServicesCustomizationDocument::StartFileFetch() {
 }
 
 void ServicesCustomizationDocument::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   if (source->GetResponseCode() == 200) {
     std::string data;
     source->GetResponseAsString(&data);

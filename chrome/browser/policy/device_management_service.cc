@@ -93,7 +93,7 @@ bool IsProxyError(const net::URLRequestStatus status) {
   return false;
 }
 
-bool IsProtobufMimeType(const content::URLFetcher* source) {
+bool IsProtobufMimeType(const net::URLFetcher* source) {
   return source->GetResponseHeaders()->HasHeaderValue(
       "content-type", "application/x-protobuffer");
 }
@@ -523,7 +523,7 @@ void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job,
 }
 
 void DeviceManagementService::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   JobFetcherMap::iterator entry(pending_jobs_.find(source));
   if (entry == pending_jobs_.end()) {
     NOTREACHED() << "Callback from foreign URL fetcher";

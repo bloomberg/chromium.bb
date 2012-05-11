@@ -1114,7 +1114,7 @@ void GaiaAuthFetcher::OnOAuthLoginFetched(const std::string& data,
   }
 }
 
-void GaiaAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
+void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   fetch_pending_ = false;
   // Some of the GAIA requests perform redirects, which results in the final
   // URL of the fetcher not being the original URL requested.  Therefore use

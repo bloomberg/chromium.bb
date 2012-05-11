@@ -86,7 +86,7 @@ class URLFetcherTest : public testing::Test,
   virtual void CreateFetcher(const GURL& url);
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy() {
     return io_message_loop_proxy_;
@@ -132,7 +132,7 @@ void URLFetcherTest::CreateFetcher(const GURL& url) {
   fetcher_->Start();
 }
 
-void URLFetcherTest::OnURLFetchComplete(const content::URLFetcher* source) {
+void URLFetcherTest::OnURLFetchComplete(const net::URLFetcher* source) {
   EXPECT_TRUE(source->GetStatus().is_success());
   EXPECT_EQ(200, source->GetResponseCode());  // HTTP OK
 
@@ -158,7 +158,7 @@ class URLFetcherPostTest : public URLFetcherTest {
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 };
 
 // Version of URLFetcherTest that tests download progress reports.
@@ -168,7 +168,7 @@ class URLFetcherDownloadProgressTest : public URLFetcherTest {
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchDownloadProgress(const content::URLFetcher* source,
+  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current, int64 total) OVERRIDE;
  protected:
   int64 previous_progress_;
@@ -182,8 +182,8 @@ class URLFetcherDownloadProgressCancelTest : public URLFetcherTest {
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
-  virtual void OnURLFetchDownloadProgress(const content::URLFetcher* source,
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                           int64 current, int64 total) OVERRIDE;
  protected:
   bool cancelled_;
@@ -195,7 +195,7 @@ class URLFetcherUploadProgressTest : public URLFetcherTest {
   virtual void CreateFetcher(const GURL& url);
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchUploadProgress(const content::URLFetcher* source,
+  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
                                         int64 current, int64 total);
  protected:
   int64 previous_progress_;
@@ -207,14 +207,14 @@ class URLFetcherUploadProgressTest : public URLFetcherTest {
 class URLFetcherHeadersTest : public URLFetcherTest {
  public:
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 };
 
 // Version of URLFetcherTest that tests SocketAddress.
 class URLFetcherSocketAddressTest : public URLFetcherTest {
  public:
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
  protected:
   std::string expected_host_;
   uint16 expected_port_;
@@ -226,7 +226,7 @@ class URLFetcherProtectTest : public URLFetcherTest {
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
  private:
   Time start_time_;
 };
@@ -238,7 +238,7 @@ class URLFetcherProtectTestPassedThrough : public URLFetcherTest {
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
  private:
   Time start_time_;
 };
@@ -249,7 +249,7 @@ class URLFetcherBadHTTPSTest : public URLFetcherTest {
   URLFetcherBadHTTPSTest();
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   FilePath cert_dir_;
@@ -261,7 +261,7 @@ class URLFetcherCancelTest : public URLFetcherTest {
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   void CancelRequest();
 };
@@ -333,7 +333,7 @@ class CancelTestURLRequestContextGetter
 class URLFetcherMultipleAttemptTest : public URLFetcherTest {
  public:
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
  private:
   std::string data_;
 };
@@ -347,7 +347,7 @@ class URLFetcherFileTest : public URLFetcherTest {
   void CreateFetcherForTempFile(const GURL& url);
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:
   FilePath expected_file_;
@@ -372,7 +372,7 @@ void URLFetcherPostTest::CreateFetcher(const GURL& url) {
   fetcher_->Start();
 }
 
-void URLFetcherPostTest::OnURLFetchComplete(const content::URLFetcher* source) {
+void URLFetcherPostTest::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string data;
   EXPECT_TRUE(source->GetResponseAsString(&data));
   EXPECT_EQ(std::string("bobsyeruncle"), data);
@@ -388,7 +388,7 @@ void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherDownloadProgressTest::OnURLFetchDownloadProgress(
-    const content::URLFetcher* source, int64 current, int64 total) {
+    const net::URLFetcher* source, int64 current, int64 total) {
   // Increasing between 0 and total.
   EXPECT_LE(0, current);
   EXPECT_GE(total, current);
@@ -406,7 +406,7 @@ void URLFetcherDownloadProgressCancelTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherDownloadProgressCancelTest::OnURLFetchDownloadProgress(
-    const content::URLFetcher* source, int64 current, int64 total) {
+    const net::URLFetcher* source, int64 current, int64 total) {
   EXPECT_FALSE(cancelled_);
   if (!cancelled_) {
     delete fetcher_;
@@ -416,7 +416,7 @@ void URLFetcherDownloadProgressCancelTest::OnURLFetchDownloadProgress(
 }
 
 void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   // Should have been cancelled.
   ADD_FAILURE();
   delete fetcher_;
@@ -438,7 +438,7 @@ void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherUploadProgressTest::OnURLFetchUploadProgress(
-    const content::URLFetcher* source, int64 current, int64 total) {
+    const net::URLFetcher* source, int64 current, int64 total) {
   // Increasing between 0 and total.
   EXPECT_LE(0, current);
   EXPECT_GE(static_cast<int64>(chunk_.size()) * number_of_chunks_added_,
@@ -454,7 +454,7 @@ void URLFetcherUploadProgressTest::OnURLFetchUploadProgress(
 }
 
 void URLFetcherHeadersTest::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   std::string header;
   EXPECT_TRUE(source->GetResponseHeaders()->GetNormalizedHeader("cache-control",
                                                                 &header));
@@ -463,7 +463,7 @@ void URLFetcherHeadersTest::OnURLFetchComplete(
 }
 
 void URLFetcherSocketAddressTest::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   EXPECT_EQ("127.0.0.1", source->GetSocketAddress().host());
   EXPECT_EQ(expected_port_, source->GetSocketAddress().port());
   URLFetcherTest::OnURLFetchComplete(source);
@@ -479,7 +479,7 @@ void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherProtectTest::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   const TimeDelta one_second = TimeDelta::FromMilliseconds(1000);
   if (source->GetResponseCode() >= 500) {
     // Now running ServerUnavailable test.
@@ -520,7 +520,7 @@ void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherProtectTestPassedThrough::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   const TimeDelta one_minute = TimeDelta::FromMilliseconds(60000);
   if (source->GetResponseCode() >= 500) {
     // Now running ServerUnavailable test.
@@ -556,7 +556,7 @@ URLFetcherBadHTTPSTest::URLFetcherBadHTTPSTest() {
 // cancellation of the request by
 // net::URLRequest::Delegate::OnSSLCertificateError.
 void URLFetcherBadHTTPSTest::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   // This part is different from URLFetcherTest::OnURLFetchComplete
   // because this test expects the request to be cancelled.
   EXPECT_EQ(net::URLRequestStatus::CANCELED, source->GetStatus().status());
@@ -587,7 +587,7 @@ void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherCancelTest::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   // We should have cancelled the request before completion.
   ADD_FAILURE();
   delete fetcher_;
@@ -602,7 +602,7 @@ void URLFetcherCancelTest::CancelRequest() {
 }
 
 void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   EXPECT_TRUE(source->GetStatus().is_success());
   EXPECT_EQ(200, source->GetResponseCode());  // HTTP OK
   std::string data;
@@ -646,7 +646,7 @@ void URLFetcherFileTest::CreateFetcherForTempFile(const GURL& url) {
   fetcher_->Start();
 }
 
-void URLFetcherFileTest::OnURLFetchComplete(const content::URLFetcher* source) {
+void URLFetcherFileTest::OnURLFetchComplete(const net::URLFetcher* source) {
   if (expected_file_error_ == base::PLATFORM_FILE_OK) {
     EXPECT_TRUE(source->GetStatus().is_success());
     EXPECT_EQ(source->GetResponseCode(), 200);

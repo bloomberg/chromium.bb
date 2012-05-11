@@ -123,7 +123,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
       const std::string& name) const OVERRIDE;
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
 #if defined(UNIT_TEST)
   net::URLRequestContextGetter* GetRequestContextGetter() const {

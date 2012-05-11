@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,9 +16,9 @@
 #include "base/message_loop_helpers.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/url_fetcher_delegate.h"
 
 // This class implements the SpellCheckHost interface to provide the
 // functionalities listed below:
@@ -109,7 +109,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // content::URLFetcherDelegate implementation.  Called when we finish
   // downloading the spellcheck dictionary; saves the dictionary to |data_|.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // NotificationProfile implementation.
   virtual void Observe(int type,

@@ -73,7 +73,7 @@ class CWSIntentsRegistry : public ProfileKeyedService,
   virtual ~CWSIntentsRegistry();
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Map for all in-flight web data requests/intent queries.
   QueryMap queries_;

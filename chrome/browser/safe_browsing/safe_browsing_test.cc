@@ -505,7 +505,7 @@ class SafeBrowsingServiceTestHelper
   }
 
   // Callback for URLFetcher.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) {
     source->GetResponseAsString(&response_data_);
     response_status_ = source->GetStatus().status();
     StopUILoop();

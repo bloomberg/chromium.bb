@@ -661,7 +661,7 @@ void GaiaOAuthFetcher::OnUserInfoFetched(
   }
 }
 
-void GaiaOAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
+void GaiaOAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   // Keep |fetcher_| around to avoid invalidating its |status| (accessed below).
   scoped_ptr<content::URLFetcher> current_fetcher(fetcher_.release());
   fetch_pending_ = false;

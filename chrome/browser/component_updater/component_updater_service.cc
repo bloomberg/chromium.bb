@@ -28,8 +28,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/common/url_fetcher.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -117,7 +117,7 @@ class DelegateWithContext : public content::URLFetcherDelegate {
   DelegateWithContext(Del* delegate, Ctx* context)
     : delegate_(delegate), context_(context) {}
 
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
     delegate_->OnURLFetchComplete(source, context_);
     delete this;
   }
@@ -152,7 +152,7 @@ void StartFetch(content::URLFetcher* fetcher,
 }
 
 // Returs true if the url request of |fetcher| was succesful.
-bool FetchSuccess(const content::URLFetcher& fetcher) {
+bool FetchSuccess(const net::URLFetcher& fetcher) {
   return (fetcher.GetStatus().status() == net::URLRequestStatus::SUCCESS) &&
          (fetcher.GetResponseCode() == 200);
 }
@@ -289,10 +289,10 @@ class CrxUpdateService : public ComponentUpdateService {
     CRXContext() : installer(NULL) {}
   };
 
-  void OnURLFetchComplete(const content::URLFetcher* source,
+  void OnURLFetchComplete(const net::URLFetcher* source,
                           UpdateContext* context);
 
-  void OnURLFetchComplete(const content::URLFetcher* source,
+  void OnURLFetchComplete(const net::URLFetcher* source,
                           CRXContext* context);
 
  private:
@@ -574,7 +574,7 @@ void CrxUpdateService::ProcessPendingItems() {
 
 // Caled when we got a response from the update server. It consists of an xml
 // document following the omaha update scheme.
-void CrxUpdateService::OnURLFetchComplete(const content::URLFetcher* source,
+void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
                                           UpdateContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (FetchSuccess(*source)) {
@@ -679,7 +679,7 @@ void CrxUpdateService::OnParseUpdateManifestFailed(
 // Called when the CRX package has been downloaded to a temporary location.
 // Here we fire the notifications and schedule the component-specific installer
 // to be called in the file thread.
-void CrxUpdateService::OnURLFetchComplete(const content::URLFetcher* source,
+void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
                                           CRXContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::PlatformFileError error_code;

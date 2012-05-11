@@ -12,9 +12,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/intents/cws_intents_registry_factory.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
-#include "chrome/browser/intents/cws_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -101,14 +101,14 @@ string16 GetIntentActionString(const std::string& action) {
 // Self-deleting trampoline that forwards A URLFetcher response to a callback.
 class URLFetcherTrampoline : public content::URLFetcherDelegate {
  public:
-  typedef base::Callback<void(const content::URLFetcher* source)>
+  typedef base::Callback<void(const net::URLFetcher* source)>
       ForwardingCallback;
 
   explicit URLFetcherTrampoline(const ForwardingCallback& callback);
   ~URLFetcherTrampoline();
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   // Fowarding callback from |OnURLFetchComplete|.
@@ -123,7 +123,7 @@ URLFetcherTrampoline::~URLFetcherTrampoline() {
 }
 
 void URLFetcherTrampoline::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   DCHECK(!callback_.is_null());
   callback_.Run(source);
   delete source;
@@ -575,7 +575,7 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
 }
 
 void WebIntentPickerController::OnExtensionIconURLFetchComplete(
-    const string16& extension_id, const content::URLFetcher* source) {
+    const string16& extension_id, const net::URLFetcher* source) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (source->GetResponseCode() != 200) {
     AsyncOperationFinished();

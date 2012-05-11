@@ -102,7 +102,7 @@ void Toolbar5Importer::Cancel() {
   }
 }
 
-void Toolbar5Importer::OnURLFetchComplete(const content::URLFetcher* source) {
+void Toolbar5Importer::OnURLFetchComplete(const net::URLFetcher* source) {
   if (cancelled()) {
     EndImport();
     return;

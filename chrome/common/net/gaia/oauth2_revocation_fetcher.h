@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ class OAuth2RevocationFetcher : public content::URLFetcherDelegate {
   void CancelRequest();
 
   // Implementation of content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   enum State {
@@ -64,7 +64,7 @@ class OAuth2RevocationFetcher : public content::URLFetcherDelegate {
 
   // Helper methods for the flow.
   void StartRevocation();
-  void EndRevocation(const content::URLFetcher* source);
+  void EndRevocation(const net::URLFetcher* source);
 
   // Helper mehtods for reporting back results.
   void OnRevocationSuccess();

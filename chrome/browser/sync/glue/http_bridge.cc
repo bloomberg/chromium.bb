@@ -281,7 +281,7 @@ void HttpBridge::DestroyURLFetcherOnIOThread(content::URLFetcher* fetcher) {
   delete fetcher;
 }
 
-void HttpBridge::OnURLFetchComplete(const content::URLFetcher *source) {
+void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::AutoLock lock(fetch_state_lock_);
   if (fetch_state_.aborted)

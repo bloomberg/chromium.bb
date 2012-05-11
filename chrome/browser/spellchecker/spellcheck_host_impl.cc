@@ -321,7 +321,7 @@ void SpellCheckHostImpl::WriteWordToCustomDictionary(const std::string& word) {
     profile_->WriteWordToCustomDictionary(word);
 }
 
-void SpellCheckHostImpl::OnURLFetchComplete(const content::URLFetcher* source) {
+void SpellCheckHostImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(source);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<content::URLFetcher> fetcher_destructor(fetcher_.release());

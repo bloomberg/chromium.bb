@@ -61,7 +61,7 @@ CWSIntentsRegistry::~CWSIntentsRegistry() {
   STLDeleteValues(&queries_);
 }
 
-void CWSIntentsRegistry::OnURLFetchComplete(const content::URLFetcher* source) {
+void CWSIntentsRegistry::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(source);
 
   URLFetcherHandle handle = reinterpret_cast<URLFetcherHandle>(source);

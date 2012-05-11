@@ -11,9 +11,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
+#include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -48,7 +48,7 @@ class TemplateURLFetcher::RequestDelegate
   // content::URLFetcherDelegate:
   // If data contains a valid OSDD, a TemplateURL is created and added to
   // the TemplateURLService.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const net::URLFetcher* source);
 
   // URL of the OSDD.
   GURL url() const { return osdd_url_; }
@@ -130,7 +130,7 @@ void TemplateURLFetcher::RequestDelegate::Observe(
 }
 
 void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   // Validation checks.
   // Make sure we can still replace the keyword, i.e. the fetch was successful.
   // If the OSDD file was loaded HTTP, we also have to check the response_code.

@@ -105,7 +105,7 @@ void OAuth2RevocationFetcher::StartRevocation() {
   fetcher_->Start();  // OnURLFetchComplete will be called.
 }
 
-void OAuth2RevocationFetcher::EndRevocation(const URLFetcher* source) {
+void OAuth2RevocationFetcher::EndRevocation(const net::URLFetcher* source) {
   CHECK_EQ(REVOCATION_STARTED, state_);
   state_ = REVOCATION_DONE;
 
@@ -134,7 +134,8 @@ void OAuth2RevocationFetcher::OnRevocationFailure(
   consumer_->OnRevocationFailure(error);
 }
 
-void OAuth2RevocationFetcher::OnURLFetchComplete(const URLFetcher* source) {
+void OAuth2RevocationFetcher::OnURLFetchComplete(
+    const net::URLFetcher* source) {
   CHECK(source);
   EndRevocation(source);
 }

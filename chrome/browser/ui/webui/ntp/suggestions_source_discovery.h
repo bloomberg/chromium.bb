@@ -29,7 +29,7 @@ class SuggestionsSourceDiscovery : public SuggestionsSource,
   virtual ~SuggestionsSourceDiscovery();
 
   // content::URLFetcherDelegate override and implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:
   // SuggestionsSource overrides:

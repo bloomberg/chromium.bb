@@ -82,7 +82,7 @@ void SuggestionsSourceDiscovery::SetCombiner(SuggestionsCombiner* combiner) {
 }
 
 void SuggestionsSourceDiscovery::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   DCHECK(combiner_);
   STLDeleteElements(&items_);
   if (source->GetStatus().status() == net::URLRequestStatus::SUCCESS &&

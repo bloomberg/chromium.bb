@@ -73,7 +73,7 @@ class SearchProvider : public AutocompleteProvider,
   virtual void Stop() OVERRIDE;
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // ID used in creating URLFetcher for default provider's suggest results.
   static const int kDefaultProviderURLFetcherID;

@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher.h"
 
-namespace content {
+namespace net {
 
-bool URLFetcherDelegate::ShouldSendDownloadData() {
-  return false;
-}
+URLFetcher::~URLFetcher() {}
 
-}  // namespace content
+}  // namespace net

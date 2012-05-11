@@ -79,7 +79,7 @@ class WebstoreInstallHelper : public content::UtilityProcessHostClient,
   void ReportResultFromUIThread();
 
   // Implementing the content::URLFetcherDelegate interface.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Implementing pieces of the UtilityProcessHostClient interface.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

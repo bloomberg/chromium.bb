@@ -44,7 +44,7 @@ class GaiaOAuthClient::Core
                     GaiaOAuthClient::Delegate* delegate);
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const net::URLFetcher* source);
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
@@ -53,7 +53,7 @@ class GaiaOAuthClient::Core
   void MakeGaiaRequest(std::string post_body,
                        int max_retries,
                        GaiaOAuthClient::Delegate* delegate);
-  void HandleResponse(const content::URLFetcher* source,
+  void HandleResponse(const net::URLFetcher* source,
                       bool* should_retry_request);
 
   GURL gaia_url_;
@@ -110,7 +110,7 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
 
 // URLFetcher::Delegate implementation.
 void GaiaOAuthClient::Core::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const net::URLFetcher* source) {
   bool should_retry = false;
   HandleResponse(source, &should_retry);
   if (should_retry) {
@@ -130,7 +130,7 @@ void GaiaOAuthClient::Core::OnURLFetchComplete(
 }
 
 void GaiaOAuthClient::Core::HandleResponse(
-    const content::URLFetcher* source,
+    const net::URLFetcher* source,
     bool* should_retry_request) {
   *should_retry_request = false;
   // RC_BAD_REQUEST means the arguments are invalid. No point retrying. We are

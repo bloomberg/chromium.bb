@@ -110,18 +110,18 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   // CloudPrintURLFetcher::Delegate implementation.
   virtual CloudPrintURLFetcher::ResponseAction HandleRawResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       const net::URLRequestStatus& status,
       int response_code,
       const net::ResponseCookies& cookies,
       const std::string& data) OVERRIDE;
   virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       const std::string& data) OVERRIDE;
   virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded) OVERRIDE;
@@ -158,13 +158,13 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   // Prototype for a JSON data handler.
   typedef CloudPrintURLFetcher::ResponseAction
-      (PrinterJobHandler::*JSONDataHandler)(const content::URLFetcher* source,
+      (PrinterJobHandler::*JSONDataHandler)(const net::URLFetcher* source,
                                             const GURL& url,
                                             base::DictionaryValue* json_data,
                                             bool succeeded);
   // Prototype for a data handler.
   typedef CloudPrintURLFetcher::ResponseAction
-      (PrinterJobHandler::*DataHandler)(const content::URLFetcher* source,
+      (PrinterJobHandler::*DataHandler)(const net::URLFetcher* source,
                                         const GURL& url,
                                         const std::string& data);
 
@@ -185,35 +185,35 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   // Begin request handlers for each state in the state machine
   CloudPrintURLFetcher::ResponseAction HandlePrinterUpdateResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleJobMetadataResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandlePrintTicketResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       const std::string& data);
 
   CloudPrintURLFetcher::ResponseAction HandlePrintDataResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       const std::string& data);
 
   CloudPrintURLFetcher::ResponseAction HandleSuccessStatusUpdateResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleFailureStatusUpdateResponse(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded);

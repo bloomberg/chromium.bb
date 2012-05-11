@@ -74,7 +74,7 @@ class CloudPrintAuth
 
   // CloudPrintURLFetcher::Delegate implementation.
   virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
-      const content::URLFetcher* source,
+      const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
       bool succeeded) OVERRIDE;

@@ -60,7 +60,7 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
   void CancelRequest();
 
   // Implementation of content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   enum State {
@@ -72,7 +72,7 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
 
   // Helper methods for the flow.
   void StartGetAccessToken();
-  void EndGetAccessToken(const content::URLFetcher* source);
+  void EndGetAccessToken(const net::URLFetcher* source);
 
   // Helper mehtods for reporting back results.
   void OnGetTokenSuccess(const std::string& access_token);
@@ -85,7 +85,7 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
       const std::string& client_secret,
       const std::string& refresh_token,
       const std::vector<std::string>& scopes);
-  static bool ParseGetAccessTokenResponse(const content::URLFetcher* source,
+  static bool ParseGetAccessTokenResponse(const net::URLFetcher* source,
                                           std::string* access_token);
 
   // State that is set during construction.

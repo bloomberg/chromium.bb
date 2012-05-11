@@ -72,7 +72,7 @@ class SpellingServiceClient : public content::URLFetcherDelegate {
   virtual ~SpellingServiceClient();
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Sends a text-check request to the Spelling service. When we send a request
   // to the Spelling service successfully, this function returns true. (This

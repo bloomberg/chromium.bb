@@ -98,7 +98,7 @@ class AppNotifyChannelSetup
 
  protected:
   // content::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // AppNotifyChannelUI::Delegate.
   virtual void OnSyncSetupResult(bool enabled) OVERRIDE;
@@ -132,9 +132,9 @@ class AppNotifyChannelSetup
   void BeginGetAccessToken();
   void EndGetAccessToken(bool success);
   void BeginRecordGrant();
-  void EndRecordGrant(const content::URLFetcher* source);
+  void EndRecordGrant(const net::URLFetcher* source);
   void BeginGetChannelId();
-  void EndGetChannelId(const content::URLFetcher* source);
+  void EndGetChannelId(const net::URLFetcher* source);
 
   void ReportResult(const std::string& channel_id, SetupError error);
 

@@ -120,7 +120,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   virtual void LogMetric(Metric metric);
 
   // content::URLFetcherDelegate method.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver method.
   virtual void Observe(int type,
@@ -155,7 +155,7 @@ class ChromeToMobileService : public ProfileKeyedService,
 
   void HandleAccountInfoResponse();
   void HandleSearchResponse();
-  void HandleSubmitResponse(const content::URLFetcher* source);
+  void HandleSubmitResponse(const net::URLFetcher* source);
 
   base::WeakPtrFactory<ChromeToMobileService> weak_ptr_factory_;
 
@@ -175,7 +175,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   std::set<FilePath> snapshots_;
 
   // Map URLFetchers to observers for reporting OnSendComplete.
-  typedef std::map<const content::URLFetcher*, base::WeakPtr<Observer> >
+  typedef std::map<const net::URLFetcher*, base::WeakPtr<Observer> >
       RequestObserverMap;
   RequestObserverMap request_observer_map_;
 

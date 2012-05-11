@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_resolver_proc.h"
 #include "net/base/network_change_notifier.h"
@@ -60,14 +60,14 @@ class IntranetRedirectDetector
   static const size_t kNumCharsInHostnames;
 
  private:
-  typedef std::set<content::URLFetcher*> Fetchers;
+  typedef std::set<net::URLFetcher*> Fetchers;
 
   // Called when the seven second startup sleep or the one second network
   // switch sleep has finished.  Runs any pending fetch.
   void FinishSleep();
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // NetworkChangeNotifier::IPAddressObserver
   virtual void OnIPAddressChanged() OVERRIDE;

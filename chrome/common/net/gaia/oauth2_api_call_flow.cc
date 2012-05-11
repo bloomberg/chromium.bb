@@ -63,7 +63,7 @@ void OAuth2ApiCallFlow::BeginApiCall() {
   }
 }
 
-void OAuth2ApiCallFlow::EndApiCall(const URLFetcher* source) {
+void OAuth2ApiCallFlow::EndApiCall(const net::URLFetcher* source) {
   CHECK_EQ(API_CALL_STARTED, state_);
   state_ = API_CALL_DONE;
 
@@ -128,7 +128,7 @@ OAuth2AccessTokenFetcher* OAuth2ApiCallFlow::CreateAccessTokenFetcher() {
   return new OAuth2AccessTokenFetcher(this, context_);
 }
 
-void OAuth2ApiCallFlow::OnURLFetchComplete(const URLFetcher* source) {
+void OAuth2ApiCallFlow::OnURLFetchComplete(const net::URLFetcher* source) {
   CHECK(source);
   CHECK_EQ(API_CALL_STARTED, state_);
   EndApiCall(source);

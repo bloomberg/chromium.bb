@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ class Toolbar5Importer : public content::URLFetcherDelegate, public Importer {
   virtual void Cancel() OVERRIDE;
 
   // content::URLFetcherDelegate method called back from the URLFetcher object.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);
