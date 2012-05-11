@@ -566,6 +566,7 @@
 {
   bug_93932_i
   ThreadSanitizer:Race
+  ...
   fun:ff_thread_flush
   ...
   fun:media::FFmpegVideoDecoder::DoReset
