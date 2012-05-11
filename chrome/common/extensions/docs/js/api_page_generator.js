@@ -211,13 +211,12 @@ function fetchSchema() {
     }
   }
 
-  for (var i = 0; i < schemas_to_retrieve.length; ++i) {
-    var schema_path = schemas_to_retrieve[i];
+  schemas_to_retrieve.forEach(function(schema_path) {
     fetchContent(schema_path, onSchemaContent, function(path, error) {
       console.error('Failed to load schema', path, error);
       onSchemaContent();
-    }.bind(null, schema_path));
-  }
+    });
+  });
 }
 
 function fetchSamples() {
