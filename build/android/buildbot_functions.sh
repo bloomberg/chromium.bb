@@ -203,11 +203,11 @@ function bb_native_test_compile_run_tests {
   echo "@@@BUILD_STEP Native test runner template test@@@"
   tempfile=/tmp/tempfile-$$.txt
   build/android/run_tests.py --xvfb --verbose \
-    -s out/Release/replaceme_apk/ChromeNativeTests-debug.apk \
+    -s out/Release/replaceme_apk/replaceme-debug.apk \
     | sed 's/@@@STEP_FAILURE@@@//g' | tee $tempfile
   happy_failure=$(cat $tempfile | grep RUNNER_FAILED | wc -l)
   if [[ $happy_failure -eq 0 ]] ; then
-    echo "@@@STEP_FAILURE@@@"
+    echo "@@@STEP_WARNINGS@@@"
   fi
 }
 

@@ -112,7 +112,7 @@
               'inputs': [
                 '../testing/android/generate_native_test.py',
                 '<(PRODUCT_DIR)/lib.target/libipc_tests.so',
-                '<(PRODUCT_DIR)/chromium_base.jar'
+                '<(PRODUCT_DIR)/lib.java/chromium_base.jar'
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/ChromeNativeTests_ipc_tests-debug.apk',
@@ -124,7 +124,7 @@
                 # TODO(jrg): find a better way to specify jar
                 # dependencies.  Hard coding seems fragile.
                 '--jar',
-                '<(PRODUCT_DIR)/chromium_base.jar',
+                '<(PRODUCT_DIR)/lib.java/chromium_base.jar',
                 '--output',
                 '<(PRODUCT_DIR)/ipc_tests_apk',
                 '--ant-args', 
