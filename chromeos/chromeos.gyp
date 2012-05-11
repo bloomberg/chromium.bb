@@ -66,6 +66,9 @@
         'dbus/flimflam_profile_client.h',
         'dbus/flimflam_service_client.cc',
         'dbus/flimflam_service_client.h',
+        'dbus/ibus/ibus_client.cc',
+        'dbus/ibus/ibus_client.h',
+        'dbus/ibus/ibus_constants.h',
         'dbus/image_burner_client.cc',
         'dbus/image_burner_client.h',
         'dbus/introspectable_client.cc',
@@ -92,6 +95,8 @@
         'chromeos',
       ],
       'sources': [
+        'dbus/ibus/mock_ibus_client.cc',
+        'dbus/ibus/mock_ibus_client.h',
         'dbus/mock_bluetooth_adapter_client.cc',
         'dbus/mock_bluetooth_adapter_client.h',
         'dbus/mock_bluetooth_device_client.cc',
@@ -166,6 +171,7 @@
         'dbus/flimflam_profile_client_unittest.cc',
         'dbus/flimflam_service_client_unittest.cc',
         'dbus/gsm_sms_client_unittest.cc',
+        'dbus/ibus/ibus_client_unittest.cc',
       ],
       'include_dirs': [
         '..',
