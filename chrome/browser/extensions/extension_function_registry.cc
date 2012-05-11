@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
+#include "chrome/browser/extensions/api/media_gallery/media_gallery_api.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
@@ -515,6 +516,11 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Runtime
   RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();
+
+  // Media Gallery
+  RegisterFunction<extensions::GetMediaFileSystemsFunction>();
+  RegisterFunction<extensions::OpenMediaGalleryManagerFunction>();
+  RegisterFunction<extensions::AssembleMediaFileFunction>();
 
   // Generated APIs
   extensions::api::GeneratedFunctionRegistry::RegisterAll(this);

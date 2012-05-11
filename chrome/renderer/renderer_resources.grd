@@ -50,6 +50,7 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_FILE_BROWSER_PRIVATE_CUSTOM_BINDINGS_JS" file="resources\extensions\file_browser_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_I18N_CUSTOM_BINDINGS_JS" file="resources\extensions\i18n_custom_bindings.js" type="BINDATA" />
         <include name="IDR_INPUT_IME_CUSTOM_BINDINGS_JS" file="resources\extensions\input.ime_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_MEDIA_GALLERY_CUSTOM_BINDINGS_JS" file="resources\extensions\experimental.media_galleries_custom_bindings.js" type="BINDATA" />
         <include name="IDR_OMNIBOX_CUSTOM_BINDINGS_JS" file="resources\extensions\omnibox_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS" file="resources\extensions\page_actions_custom_bindings.js" type="BINDATA" />
         <include name="IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS" file="resources\extensions\page_action_custom_bindings.js" type="BINDATA" />

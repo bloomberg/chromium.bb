@@ -112,6 +112,8 @@
         'browser/extensions/api/idltest/idltest_api.h',
         'browser/extensions/api/identity/identity_api.cc',
         'browser/extensions/api/identity/identity_api.h',
+        'browser/extensions/api/media_gallery/media_gallery_api.cc',
+        'browser/extensions/api/media_gallery/media_gallery_api.h',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_api.cc',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h',
         'browser/extensions/api/offscreen_tabs/offscreen_tabs_constants.cc',

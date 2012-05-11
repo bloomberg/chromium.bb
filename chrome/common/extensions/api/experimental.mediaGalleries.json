@@ -1,0 +1,92 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "experimental.mediaGalleries",
+    "functions": [
+      {
+        "name": "getMediaFileSystems",
+        "type": "function",
+        "description": "Get the media galleries configured in this user agent. If none are configured or available, the callback will receive an empty array.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "mediaFileSystems",
+                "type": "array",
+                // TODO(vandebo) Specify the item type with isInstanceOf when
+                // http://crbug.com/119372 is resolved.
+                "items": { "type": "object"}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "openMediaGalleryManager",
+        "type": "function",
+        "description": "The user can configure which directories on their computer are exposed as media galleries. Calling this function will cause the UI which configures media galleris to be visible in the current tab.",
+        "parameters": []
+      },
+      {
+        "name": "extractEmbeddedThumbnails",
+        "type": "function",
+        "description": "Get any thumbnails contained in the passed media file. The resulting directory reader refers to a virtual directory that can not be navigated to. If there are no thumbnails in the passed file entry, the virtual directory will have no entries.",
+        "parameters": [
+          {
+            // TODO(vandebo) Make this a non-optional FileEntry when
+            // http://crbug.com/119372 is resolved.
+            "type": "object",
+            "optional": true,
+            "name": "mediaFile"
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "optional": true
+        }
+      },
+      {
+        "name": "assembleMediaFile",
+        "type": "function",
+        "description": "Create a new MediaFile setting the metadata in the Blob to the supplied values, overriding any existing metadata in the media file. If user agent does not recognize the Blob as a supported file format, it will return null in the callback.",
+        // TODO(vandebo) Remove allowAmbiguousOptionalArguments when
+        // http://crbug.com/119372 is resolved.
+        "allowAmbiguousOptionalArguments": true,
+        "parameters": [
+          {
+            // TODO(vandebo) Make this a non-optional Blob when
+            // http://crbug.com/119372 is resolved.
+            "type": "object",
+            "optional": true,
+            "name": "mediaFileContents"
+          },
+          {
+            // TODO(vandebo) Make this a non-optional Metafile when
+            // http://crbug.com/119372 is resolved.
+            "type": "object",
+            "optional": true,
+            "name": "metadata"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "mediaFile",
+                // TODO(vandebo) Make this an optional Blob when
+                // http://crbug.com/119372 is resolved.
+                "type": "object",
+                "optional": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

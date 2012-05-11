@@ -95,6 +95,8 @@
         'renderer/extensions/file_browser_private_custom_bindings.h',
         'renderer/extensions/i18n_custom_bindings.cc',
         'renderer/extensions/i18n_custom_bindings.h',
+        'renderer/extensions/media_gallery_custom_bindings.cc',
+        'renderer/extensions/media_gallery_custom_bindings.h',
         'renderer/extensions/miscellaneous_bindings.cc',
         'renderer/extensions/miscellaneous_bindings.h',
         'renderer/extensions/page_actions_custom_bindings.cc',
