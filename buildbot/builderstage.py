@@ -42,11 +42,15 @@ class BuilderStage(object):
   def SetManifestBranch(branch):
     BuilderStage._target_manifest_branch = branch
 
+  @classmethod
+  def StageNamePrefix(cls):
+    return cls.name_stage_re.match(cls.__name__).group(1)
+
   def __init__(self, options, build_config, suffix=None):
     self._bot_id = build_config['name']
     self._options = options
     self._build_config = build_config
-    self.name = self.name_stage_re.match(self.__class__.__name__).group(1)
+    self.name = self.StageNamePrefix()
     if suffix:
       self.name += suffix
     self._boards = self._build_config['boards']
