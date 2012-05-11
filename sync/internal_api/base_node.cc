@@ -118,10 +118,18 @@ bool BaseNode::DecryptIfNecessary() {
   const sync_pb::EncryptedData& encrypted = specifics.encrypted();
   std::string plaintext_data = GetTransaction()->GetCryptographer()->
       DecryptToString(encrypted);
-  if (plaintext_data.length() == 0 ||
-      !unencrypted_data_.ParseFromString(plaintext_data)) {
+  if (plaintext_data.length() == 0) {
     LOG(ERROR) << "Failed to decrypt encrypted node of type " <<
       syncable::ModelTypeToString(GetModelType()) << ".";
+    // Debugging for crbug.com/123223. We failed to decrypt the data, which
+    // means we applied an update without having the key or lost the key at a
+    // later point.
+    CHECK(false);
+    return false;
+  } else if (!unencrypted_data_.ParseFromString(plaintext_data)) {
+    // Debugging for crbug.com/123223. We should never succeed in decrypting
+    // but fail to parse into a protobuf.
+    CHECK(false);
     return false;
   }
   DVLOG(2) << "Decrypted specifics of type "
