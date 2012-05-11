@@ -31,10 +31,10 @@ class PluginChannel : public NPChannelBase {
   // Send a message to all renderers that the process is going to shutdown.
   static void NotifyRenderersOfPendingShutdown();
 
-  virtual ~PluginChannel();
-
+  // IPC::Channel::Listener:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   int renderer_id() { return renderer_id_; }
 
@@ -57,12 +57,10 @@ class PluginChannel : public NPChannelBase {
 #endif
 
  protected:
-  // IPC::Channel::Listener implementation:
-  virtual void OnChannelError() OVERRIDE;
+  virtual ~PluginChannel();
 
+  // NPChannelBase::
   virtual void CleanUp() OVERRIDE;
-
-  // Overrides NPChannelBase::Init.
   virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
                     bool create_pipe_now,
                     base::WaitableEvent* shutdown_event) OVERRIDE;

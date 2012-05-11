@@ -20,11 +20,13 @@ namespace content {
 class CONTENT_EXPORT ResourceDispatcherHostLoginDelegate
     : public base::RefCountedThreadSafe<ResourceDispatcherHostLoginDelegate> {
  public:
-  virtual ~ResourceDispatcherHostLoginDelegate() {}
-
   // Notify the login delegate that the request was cancelled.
   // This function can only be called from the IO thread.
   virtual void OnRequestCancelled() = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<ResourceDispatcherHostLoginDelegate>;
+  virtual ~ResourceDispatcherHostLoginDelegate() {}
 };
 
 }  // public content

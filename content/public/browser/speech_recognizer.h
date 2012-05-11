@@ -25,7 +25,6 @@ class SpeechRecognitionEventListener;
 // extensions.
 class SpeechRecognizer : public base::RefCountedThreadSafe<SpeechRecognizer> {
  public:
-
   CONTENT_EXPORT static SpeechRecognizer* Create(
       SpeechRecognitionEventListener* event_listener,
       int session_id,
@@ -35,8 +34,6 @@ class SpeechRecognizer : public base::RefCountedThreadSafe<SpeechRecognizer> {
       bool filter_profanities,
       const std::string& hardware_info,
       const std::string& origin_url);
-
-  virtual ~SpeechRecognizer() {}
 
   // Starts audio recording and the recognition process. The same
   // SpeechRecognizer instance can be used multiple times for speech recognition
@@ -56,8 +53,12 @@ class SpeechRecognizer : public base::RefCountedThreadSafe<SpeechRecognizer> {
   // or waiting for a result.
   virtual bool IsActive() const = 0;
 
-  // Checks wether the recognizer is capturing audio.
+  // Checks whether the recognizer is capturing audio.
   virtual bool IsCapturingAudio() const = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<SpeechRecognizer>;
+  virtual ~SpeechRecognizer() {}
 };
 
 }  // namespace content

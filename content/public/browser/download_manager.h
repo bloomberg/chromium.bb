@@ -60,8 +60,6 @@ class DownloadUrlParameters;
 class CONTENT_EXPORT DownloadManager
     : public base::RefCountedThreadSafe<DownloadManager> {
  public:
-  virtual ~DownloadManager() {}
-
   static DownloadManager* Create(
       DownloadManagerDelegate* delegate,
       net::NetLog* net_log);
@@ -247,11 +245,11 @@ class CONTENT_EXPORT DownloadManager
   virtual void SetDownloadManagerDelegate(
       DownloadManagerDelegate* delegate) = 0;
 
+ protected:
+  virtual ~DownloadManager() {}
+
  private:
-  friend class base::RefCountedThreadSafe<
-      DownloadManager, BrowserThread::DeleteOnUIThread>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
-  friend class base::DeleteHelper<DownloadManager>;
+  friend class base::RefCountedThreadSafe<DownloadManager>;
 };
 
 }  // namespace content

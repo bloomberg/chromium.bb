@@ -44,9 +44,11 @@ namespace {
 class EnsureTerminateMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   EnsureTerminateMessageFilter() {}
-  ~EnsureTerminateMessageFilter() {}
 
- private:
+ protected:
+  virtual ~EnsureTerminateMessageFilter() {}
+
+  // IPC::ChannelProxy::MessageFilter:
   virtual void OnChannelError() {
     // How long we wait before forcibly shutting down the process.
     const base::TimeDelta kPluginProcessTerminateTimeout =
@@ -60,6 +62,7 @@ class EnsureTerminateMessageFilter : public IPC::ChannelProxy::MessageFilter {
         kPluginProcessTerminateTimeout);
   }
 
+ private:
   void Terminate() {
     base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
   }

@@ -31,8 +31,6 @@ class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
  public:
   // Threading: IO thread.
   ShellLoginDialog(net::AuthChallengeInfo* auth_info, net::URLRequest* request);
-  // Threading: any
-  virtual ~ShellLoginDialog();
 
   // ResourceDispatcherHostLoginDelegate implementation:
   // Threading: IO thread.
@@ -44,6 +42,10 @@ class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
   // Threading: UI thread.
   void UserAcceptedAuth(const string16& username, const string16& password);
   void UserCancelledAuth();
+
+ protected:
+  // Threading: any
+  virtual ~ShellLoginDialog();
 
  private:
   // All the methods that begin with Platform need to be implemented by the

@@ -39,8 +39,7 @@ const char kXdgConfigHomeEnvVar[] = "XDG_CONFIG_HOME";
 
 class ShellGeolocationPermissionContext : public GeolocationPermissionContext {
  public:
-  ShellGeolocationPermissionContext() {
-  }
+  ShellGeolocationPermissionContext() {}
 
   // GeolocationPermissionContext implementation).
   virtual void RequestGeolocationPermission(
@@ -60,22 +59,26 @@ class ShellGeolocationPermissionContext : public GeolocationPermissionContext {
     NOTIMPLEMENTED();
   }
 
+ protected:
+  virtual ~ShellGeolocationPermissionContext() {};
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellGeolocationPermissionContext);
 };
 
 class ShellSpeechRecognitionPreferences : public SpeechRecognitionPreferences {
  public:
-  ShellSpeechRecognitionPreferences() {
-  }
+  ShellSpeechRecognitionPreferences() {}
 
   // Overridden from SpeechRecognitionPreferences:
   virtual bool FilterProfanities() const OVERRIDE {
     return false;
   }
 
-  virtual void SetFilterProfanities(bool filter_profanities) OVERRIDE {
-  }
+  virtual void SetFilterProfanities(bool filter_profanities) OVERRIDE {}
+
+ protected:
+  virtual ~ShellSpeechRecognitionPreferences() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellSpeechRecognitionPreferences);

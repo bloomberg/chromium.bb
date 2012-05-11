@@ -21,7 +21,6 @@ namespace content {
 class MockDownloadManager : public content::DownloadManager {
  public:
   MockDownloadManager();
-  virtual ~MockDownloadManager();
 
   // DownloadManager:
   MOCK_METHOD0(Shutdown, void());
@@ -91,6 +90,9 @@ class MockDownloadManager : public content::DownloadManager {
                                               const FilePath& chosen_file));
   MOCK_METHOD1(GetActiveDownload, content::DownloadItem*(int32 download_id));
   MOCK_METHOD1(SetFileManager, void(DownloadFileManager* file_manager));
+
+ protected:
+  virtual ~MockDownloadManager();
 };
 
 }  // namespace content

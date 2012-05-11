@@ -24,7 +24,6 @@ class CONTENT_EXPORT BrowserMessageFilter :
     public IPC::Message::Sender {
  public:
   BrowserMessageFilter();
-  virtual ~BrowserMessageFilter();
 
   // IPC::ChannelProxy::MessageFilter methods.  If you override them, make sure
   // to call them as well.  These are always called on the IO thread.
@@ -73,6 +72,8 @@ class CONTENT_EXPORT BrowserMessageFilter :
                                    IPC::Message::Sender* sender);
 
  protected:
+  virtual ~BrowserMessageFilter();
+
   // Call this if a message couldn't be deserialized.  This kills the renderer.
   // Can be called on any thread.
   virtual void BadMessageReceived();

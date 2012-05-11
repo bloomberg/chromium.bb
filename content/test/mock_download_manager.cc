@@ -6,10 +6,8 @@
 
 namespace content {
 
-MockDownloadManager::MockDownloadManager() {
-}
+MockDownloadManager::MockDownloadManager() {}
 
-MockDownloadManager::~MockDownloadManager() {
-}
+MockDownloadManager::~MockDownloadManager() {}
 
 }

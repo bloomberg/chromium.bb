@@ -27,37 +27,11 @@ ShellLoginDialog::ShellLoginDialog(
                  UTF8ToUTF16(auth_info->realm)));
 }
 
-ShellLoginDialog::~ShellLoginDialog() {
-  // Cannot post any tasks here; this object is going away and cannot be
-  // referenced/dereferenced.
-}
-
 void ShellLoginDialog::OnRequestCancelled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ShellLoginDialog::PlatformRequestCancelled, this));
-}
-
-void ShellLoginDialog::PrepDialog(const string16& host,
-                                  const string16& realm) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // The realm is controlled by the remote server, so there is no reason to
-  // believe it is of a reasonable length.
-  string16 elided_realm;
-  ui::ElideString(realm, 120, &elided_realm);
-
-  string16 explanation =
-      ASCIIToUTF16("The server ") + host +
-      ASCIIToUTF16(" requires a username and password.");
-
-  if (!elided_realm.empty()) {
-    explanation += ASCIIToUTF16(" The server says: ");
-    explanation += elided_realm;
-    explanation += ASCIIToUTF16(".");
-  }
-
-  PlatformCreateDialog(explanation);
 }
 
 void ShellLoginDialog::UserAcceptedAuth(const string16& username,
@@ -80,6 +54,41 @@ void ShellLoginDialog::UserCancelledAuth() {
       base::Bind(&ShellLoginDialog::PlatformCleanUp, this));
 }
 
+ShellLoginDialog::~ShellLoginDialog() {
+  // Cannot post any tasks here; this object is going away and cannot be
+  // referenced/dereferenced.
+}
+
+#if !defined(OS_MACOSX)
+// Bogus implementations for linking. They are never called because
+// ResourceDispatcherHostDelegate::CreateLoginDelegate returns NULL.
+// TODO: implement ShellLoginDialog for other platforms, drop this #if
+void ShellLoginDialog::PlatformCreateDialog(const string16& message) {}
+void ShellLoginDialog::PlatformCleanUp() {}
+void ShellLoginDialog::PlatformRequestCancelled() {}
+#endif
+
+void ShellLoginDialog::PrepDialog(const string16& host,
+                                  const string16& realm) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // The realm is controlled by the remote server, so there is no reason to
+  // believe it is of a reasonable length.
+  string16 elided_realm;
+  ui::ElideString(realm, 120, &elided_realm);
+
+  string16 explanation =
+      ASCIIToUTF16("The server ") + host +
+      ASCIIToUTF16(" requires a username and password.");
+
+  if (!elided_realm.empty()) {
+    explanation += ASCIIToUTF16(" The server says: ");
+    explanation += elided_realm;
+    explanation += ASCIIToUTF16(".");
+  }
+
+  PlatformCreateDialog(explanation);
+}
+
 void ShellLoginDialog::SendAuthToRequester(bool success,
                                            const string16& username,
                                            const string16& password) {
@@ -94,14 +103,5 @@ void ShellLoginDialog::SendAuthToRequester(bool success,
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ShellLoginDialog::PlatformCleanUp, this));
 }
-
-#if !defined(OS_MACOSX)
-// Bogus implementations for linking. They are never called because
-// ResourceDispatcherHostDelegate::CreateLoginDelegate returns NULL.
-// TODO: implement ShellLoginDialog for other platforms, drop this #if
-void ShellLoginDialog::PlatformCreateDialog(const string16& message) {}
-void ShellLoginDialog::PlatformCleanUp() {}
-void ShellLoginDialog::PlatformRequestCancelled() {}
-#endif
 
 }  // namespace content
