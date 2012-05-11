@@ -29,12 +29,12 @@ class AndroidViewSurface : public NativeViewGLSurfaceEGL {
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual EGLSurface GetHandle() OVERRIDE;
-  virtual void SetNativeWindow(NativeWindowInterface* window) OVERRIDE;
+  virtual void SetNativeWindow(AndroidNativeWindow* window) OVERRIDE;
 
  private:
-  bool CreateWindowSurface(NativeWindowInterface* window);
+  bool CreateWindowSurface(AndroidNativeWindow* window);
   scoped_refptr<PbufferGLSurfaceEGL>  pbuffer_surface_;
-  NativeWindowInterface* window_;
+  AndroidNativeWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidViewSurface);
 };

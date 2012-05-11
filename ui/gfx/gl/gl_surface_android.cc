@@ -12,7 +12,7 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/native_window_interface_android.h"
+#include "ui/gfx/gl/android_native_window.h"
 
 namespace gfx {
 
@@ -143,7 +143,7 @@ bool AndroidViewSurface::Resize(const gfx::Size& size) {
   return true;
 }
 
-bool AndroidViewSurface::CreateWindowSurface(NativeWindowInterface* window) {
+bool AndroidViewSurface::CreateWindowSurface(AndroidNativeWindow* window) {
   DCHECK(window->GetNativeHandle());
   window_ = window;
   EGLSurface surface = eglCreateWindowSurface(GetDisplay(),
@@ -161,7 +161,7 @@ bool AndroidViewSurface::CreateWindowSurface(NativeWindowInterface* window) {
   return true;
 }
 
-void AndroidViewSurface::SetNativeWindow(NativeWindowInterface* window) {
+void AndroidViewSurface::SetNativeWindow(AndroidNativeWindow* window) {
   if (window->GetNativeHandle()) {
     DCHECK(pbuffer_surface_.get());
     pbuffer_surface_->Destroy();

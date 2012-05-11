@@ -17,7 +17,7 @@ namespace gfx {
 class GLContext;
 
 #if defined(OS_ANDROID)
-class NativeWindowInterface;
+class AndroidNativeWindow;
 #endif
 
 // Encapsulates a surface that can be rendered to with GL, hiding platform
@@ -48,7 +48,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual gfx::Size GetSize() = 0;
 
 #if defined(OS_ANDROID)
-  virtual void SetNativeWindow(NativeWindowInterface* window) { }
+  virtual void SetNativeWindow(AndroidNativeWindow* window) { }
 #endif
 
   // Get the underlying platform specific surface "handle".

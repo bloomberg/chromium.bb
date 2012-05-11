@@ -76,7 +76,6 @@
         'gl_surface_osmesa.h',
         'gl_switches.cc',
         'gl_switches.h',
-        'native_window_interface_android.h',
         'scoped_make_current.cc',
         'scoped_make_current.h',
         '<(gl_binding_output_dir)/gl_bindings_autogen_gl.cc',
@@ -187,7 +186,11 @@
           ],
         }],
         ['OS=="android"', {
-          'sources!': [            
+          'sources': [
+            'android_native_window.cc',
+            'android_native_window.h',
+          ],
+          'sources!': [
             '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.h',
             'system_monitor_posix.cc',
