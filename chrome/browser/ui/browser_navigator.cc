@@ -335,8 +335,7 @@ class ScopedTargetContentsOwner {
 void InitializeExtraHeaders(browser::NavigateParams* params,
                             Profile* profile,
                             std::string* extra_headers) {
-#if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(ENABLE_RLZ)
   if (!profile)
     profile = params->profile;
 
@@ -351,18 +350,17 @@ void InitializeExtraHeaders(browser::NavigateParams* params,
       if (!pref_service->GetBoolean(prefs::kHomePageChanged)) {
         std::string homepage = pref_service->GetString(prefs::kHomePage);
         if (google_util::IsGoogleHomePageUrl(homepage)) {
-          std::wstring rlz_string;
+          string16 rlz_string;
           RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_HOME_PAGE, &rlz_string);
           if (!rlz_string.empty()) {
             net::HttpUtil::AppendHeaderIfMissing("X-Rlz-String",
-                                                 WideToUTF8(rlz_string),
+                                                 UTF16ToUTF8(rlz_string),
                                                  extra_headers);
           }
         }
       }
     }
   }
-#endif
 #endif
 }
 
