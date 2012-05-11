@@ -19,6 +19,7 @@
 #include "base/string_split.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
@@ -36,6 +37,20 @@ namespace {
 std::wstring GetExtensionWithoutLeadingDot(const std::wstring& extension) {
   DCHECK(extension.empty() || extension[0] == L'.');
   return extension.empty() ? extension : extension.substr(1);
+}
+
+bool CallGetOpenFileName(OPENFILENAME* ofn) {
+  HMODULE metro_module = base::win::GetMetroModule();
+  if (metro_module != NULL) {
+    typedef BOOL (*MetroGetOpenFileName)(OPENFILENAME*);
+    MetroGetOpenFileName metro_get_open_file_name =
+        reinterpret_cast<MetroGetOpenFileName>(
+            ::GetProcAddress(metro_module, "MetroGetOpenFileName"));
+
+    return !!metro_get_open_file_name(ofn);
+  } else {
+    return !!GetOpenFileName(ofn);
+  }
 }
 
 }  // namespace
@@ -749,7 +764,7 @@ bool SelectFileDialogImpl::RunOpenFileDialog(
 
   if (!filter.empty())
     ofn.lpstrFilter = filter.c_str();
-  bool success = !!GetOpenFileName(&ofn);
+  bool success = CallGetOpenFileName(&ofn);
   DisableOwner(owner);
   if (success)
     *path = FilePath(filename);
@@ -781,7 +796,8 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
   if (!filter.empty()) {
     ofn.lpstrFilter = filter.c_str();
   }
-  bool success = !!GetOpenFileName(&ofn);
+
+  bool success = CallGetOpenFileName(&ofn);
   DisableOwner(owner);
   if (success) {
     std::vector<FilePath> files;
