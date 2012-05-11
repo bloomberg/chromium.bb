@@ -99,7 +99,7 @@
       ></command>
     </commands>
 
-    <menu class=file-context-menu>
+    <menu class="file-context-menu chrome-menu">
       <menuitem command='#cut' visibleif='full-page'></menuitem>
       <menuitem command='#copy' visibleif='full-page'></menuitem>
       <menuitem command='#paste' visibleif='full-page'></menuitem>
@@ -111,12 +111,12 @@
           visibleif='saveas-file full-page'></menuitem>
     </menu>
 
-    <menu class=roots-context-menu>
+    <menu class="roots-context-menu chrome-menu" >
       <menuitem command='#unmount'></menuitem>
       <menuitem command='#format'></menuitem>
     </menu>
     
-    <menu id=docs-settings>
+    <menu id=docs-settings class="chrome-menu">
       <menuitem id=gdata-sync-settings
           i18n-content=GDATA_MOBILE_CONNECTION_OPTION></menuitem>
       <menuitem id=gdata-hosted-settings

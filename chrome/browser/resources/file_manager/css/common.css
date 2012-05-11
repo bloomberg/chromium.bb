@@ -191,3 +191,46 @@ span.disclosureindicator {
   height: 7px;
   width: 5px;
 }
+
+/* "chrome-menu" class overrides some standard menu.css styles, to make custom
+   menus in FileBrowser look like native ChromeOS menus. */
+
+menu.chrome-menu {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  outline: none;
+  padding: 2px 0;
+}
+
+menu.chrome-menu > :not(hr) {
+  color: rgb(34, 34, 34);
+  height: 30px;
+  line-height: 28px;
+  padding-left: 28px;
+  padding-right: 20px;
+}
+
+menu.chrome-menu > :not(hr)[disabled] {
+  background-color: rgb(255, 255, 255);
+  color: rgb(153, 153, 153);
+}
+
+menu.chrome-menu > :not(hr):not([disabled])[selected],
+menu.chrome-menu > :not(hr):not([disabled])[selected]:active {
+  background-color: rgb(241, 241, 241);
+  color: rgb(34, 34, 34);
+}
+
+menu.chrome-menu > hr {
+  background: rgb(218, 218, 218);
+  height: 1px;
+  margin: 2px 0;
+}
+
+menu.chrome-menu > :not(hr)[checked] {
+  background: url('../images/common/check_no_box.png') no-repeat 2px center;
+}
+
+menu.chrome-menu > [checked]:before {
+  display: none;
+}
