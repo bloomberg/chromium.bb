@@ -4,6 +4,8 @@
 
 #include "ui/aura/root_window.h"
 
+#include <vector>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
@@ -13,10 +15,12 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/screen.h"
 
 namespace aura {
 namespace {
@@ -335,6 +339,190 @@ TEST_F(RootWindowTest, IgnoreUnknownKeys) {
   KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   EXPECT_TRUE(root_window()->DispatchKeyEvent(&known_event));
   EXPECT_EQ(1, filter->num_key_events());
+}
+
+namespace {
+
+// FilterFilter that tracks the types of events it's seen.
+class EventFilterRecorder : public EventFilter {
+ public:
+  typedef std::vector<ui::EventType> Events;
+
+  EventFilterRecorder() {}
+
+  Events& events() { return events_; }
+
+  // EventFilter overrides:
+  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE {
+    events_.push_back(event->type());
+    return true;
+  }
+  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE {
+    events_.push_back(event->type());
+    return true;
+  }
+  virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
+                                              TouchEvent* event) OVERRIDE {
+    events_.push_back(event->type());
+    return ui::TOUCH_STATUS_UNKNOWN;
+  }
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      Window* target,
+      GestureEvent* event) OVERRIDE {
+    events_.push_back(event->type());
+    return ui::GESTURE_STATUS_UNKNOWN;
+  }
+
+ private:
+  Events events_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventFilterRecorder);
+};
+
+// Converts an EventType to a string.
+std::string EventTypeToString(ui::EventType type) {
+  switch (type) {
+    case ui::ET_TOUCH_RELEASED:
+      return "TOUCH_RELEASED";
+
+    case ui::ET_TOUCH_PRESSED:
+      return "TOUCH_PRESSED";
+
+    case ui::ET_TOUCH_MOVED:
+      return "TOUCH_MOVED";
+
+    case ui::ET_MOUSE_PRESSED:
+      return "MOUSE_PRESSED";
+
+    case ui::ET_MOUSE_DRAGGED:
+      return "MOUSE_DRAGGED";
+
+    case ui::ET_MOUSE_RELEASED:
+      return "MOUSE_RELEASED";
+
+    case ui::ET_MOUSE_MOVED:
+      return "MOUSE_MOVED";
+
+    case ui::ET_MOUSE_ENTERED:
+      return "MOUSE_ENTERED";
+
+    case ui::ET_MOUSE_EXITED:
+      return "MOUSE_EXITED";
+
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      return "GESTURE_SCROLL_BEGIN";
+
+    case ui::ET_GESTURE_SCROLL_END:
+      return "GESTURE_SCROLL_END";
+
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      return "GESTURE_SCROLL_UPDATE";
+
+    case ui::ET_GESTURE_TAP:
+      return "GESTURE_TAP";
+
+    case ui::ET_GESTURE_TAP_DOWN:
+      return "GESTURE_TAP_DOWN";
+
+    case ui::ET_GESTURE_DOUBLE_TAP:
+      return "GESTURE_DOUBLE_TAP";
+
+    default:
+      break;
+  }
+  return "";
+}
+
+std::string EventTypesToString(const EventFilterRecorder::Events& events) {
+  std::string result;
+  for (size_t i = 0; i < events.size(); ++i) {
+    if (i != 0)
+      result += " ";
+    result += EventTypeToString(events[i]);
+  }
+  return result;
+}
+
+}  // namespace
+
+// Makes sure touch events are mapped to mouse events.
+TEST_F(RootWindowTest, GestureToMouseEventTest) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  test::TestWindowDelegate delegate;
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  gfx::Rect bounds1(100, 200, kWindowWidth, kWindowHeight);
+  gfx::Rect bounds2(300, 400, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window1(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(0, 0, 250, 250), NULL));
+
+  gfx::Point location(100, 101);
+
+  // ET_TOUCH_PRESSED/RELEASED should generate mouse pressed/released.
+  {
+    TouchEvent touch_pressed_event(ui::ET_TOUCH_PRESSED, gfx::Point(100, 101),
+                                   1, base::TimeDelta());
+    int time_ms =
+        static_cast<int>(ui::GestureConfiguration::
+                         min_touch_down_duration_in_seconds_for_click() * 1000);
+    TouchEvent touch_released_event(
+        ui::ET_TOUCH_RELEASED, gfx::Point(100, 101), 1,
+        base::TimeDelta::FromMilliseconds(time_ms));
+    root_window()->DispatchTouchEvent(&touch_pressed_event);
+    root_window()->DispatchTouchEvent(&touch_released_event);
+    EXPECT_EQ("TOUCH_PRESSED GESTURE_TAP_DOWN TOUCH_RELEASED GESTURE_TAP "
+              "MOUSE_ENTERED MOUSE_PRESSED MOUSE_RELEASED MOUSE_EXITED",
+              EventTypesToString(filter->events()));
+    filter->events().clear();
+  }
+
+  // ET_TOUCH_PRESSED should generate a GESTURE_TAP_DOWN.
+  {
+    TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(100, 101), 1,
+                           base::TimeDelta());
+    root_window()->DispatchTouchEvent(&touch_event);
+    EXPECT_EQ("TOUCH_PRESSED GESTURE_TAP_DOWN",
+              EventTypesToString(filter->events()));
+    filter->events().clear();
+  }
+
+  // ET_TOUCH_MOVED should start a scroll and generate mouse drags (among other
+  // things).
+  {
+    TouchEvent touch_event(ui::ET_TOUCH_MOVED, gfx::Point(200, 201), 1,
+                           base::TimeDelta());
+    root_window()->DispatchTouchEvent(&touch_event);
+    EXPECT_EQ("TOUCH_MOVED GESTURE_SCROLL_BEGIN MOUSE_ENTERED "
+              "MOUSE_PRESSED MOUSE_DRAGGED GESTURE_SCROLL_UPDATE MOUSE_DRAGGED",
+              EventTypesToString(filter->events()));
+    filter->events().clear();
+  }
+
+  // The location of the cursor should have been updated.
+  EXPECT_EQ("200,201", gfx::Screen::GetCursorScreenPoint().ToString());
+
+  // ET_TOUCH_MOVED should generate a scroll and drag.
+  {
+    TouchEvent touch_event(ui::ET_TOUCH_MOVED, gfx::Point(300, 201), 1,
+                           base::TimeDelta());
+    root_window()->DispatchTouchEvent(&touch_event);
+    EXPECT_EQ("TOUCH_MOVED GESTURE_SCROLL_UPDATE MOUSE_DRAGGED",
+              EventTypesToString(filter->events()));
+    filter->events().clear();
+  }
+
+  // ET_TOUCH_RELEASED should end the scroll and release the mouse.
+  {
+    TouchEvent touch_event(ui::ET_TOUCH_RELEASED, gfx::Point(300, 201), 1,
+                           base::TimeDelta());
+    root_window()->DispatchTouchEvent(&touch_event);
+    EXPECT_EQ("TOUCH_RELEASED GESTURE_SCROLL_END MOUSE_DRAGGED MOUSE_RELEASED "
+              "MOUSE_EXITED",
+              EventTypesToString(filter->events()));
+    filter->events().clear();
+  }
 }
 
 }  // namespace aura

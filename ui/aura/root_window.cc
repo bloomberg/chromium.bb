@@ -39,6 +39,21 @@ namespace aura {
 
 namespace {
 
+const ui::EventType kScrollBeginTypes[] = {
+  ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_DRAGGED,
+  ui::ET_UNKNOWN };
+
+const ui::EventType kScrollEndTypes[] = {
+  ui::ET_MOUSE_DRAGGED, ui::ET_MOUSE_RELEASED, ui::ET_MOUSE_EXITED,
+  ui::ET_UNKNOWN };
+
+const ui::EventType kScrollUpdateTypes[] = {
+  ui::ET_MOUSE_DRAGGED, ui::ET_UNKNOWN };
+
+const ui::EventType kTapTypes[] = {
+  ui::ET_MOUSE_ENTERED, ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_RELEASED,
+  ui::ET_MOUSE_EXITED, ui::ET_UNKNOWN };
+
 // Returns true if |target| has a non-client (frame) component at |location|,
 // in window coordinates.
 bool IsNonClientLocation(Window* target, const gfx::Point& location) {
@@ -718,38 +733,50 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
     // (e.g. tap to click).
     // TODO(tdresser|sadrul): We may need to stop firing mouse events
     // if a mouse lock exists and target != capture_window_.
+    const ui::EventType* types = NULL;
     switch (event->type()) {
       case ui::ET_GESTURE_TAP:
-      case ui::ET_GESTURE_DOUBLE_TAP: {
-        // Tap should be processed as a click. So generate the following
-        // sequence of mouse events: MOUSE_ENTERED, MOUSE_PRESSED,
-        // MOUSE_RELEASED and MOUSE_EXITED.
-        // Double-tap generates a double click.
-        ui::EventType types[] = { ui::ET_MOUSE_ENTERED,
-                                  ui::ET_MOUSE_PRESSED,
-                                  ui::ET_MOUSE_RELEASED,
-                                  ui::ET_MOUSE_EXITED,
-                                  ui::ET_UNKNOWN
-                                };
-        for (ui::EventType* type = types; *type != ui::ET_UNKNOWN; ++type) {
-          int flags = event->flags();
-          if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
-              *type == ui::ET_MOUSE_PRESSED)
-            flags |= ui::EF_IS_DOUBLE_CLICK;
-
-          // It is necessary to set this explicitly when using XI2.2. When using
-          // XI < 2.2, this is always set anyway.
-          flags |= ui::EF_LEFT_MOUSE_BUTTON;
-
-          MouseEvent synth(
-              *type, event->location(), event->root_location(), flags);
-          if (ProcessMouseEvent(target, &synth))
-            status = ui::GESTURE_STATUS_SYNTH_MOUSE;
-        }
+      case ui::ET_GESTURE_DOUBLE_TAP:  // Double click is special cased below.
+        types = kTapTypes;
         break;
-      }
+
+      case ui::ET_GESTURE_SCROLL_BEGIN:
+        types = kScrollBeginTypes;
+        break;
+
+      case ui::ET_GESTURE_SCROLL_UPDATE:
+        types = kScrollUpdateTypes;
+        break;
+
+      case ui::ET_GESTURE_SCROLL_END:
+        types = kScrollEndTypes;
+        break;
+
       default:
         break;
+    }
+    if (types) {
+      // TODO: remove this. Once we use DispatchMouseEventImpl this shouldn't
+      // be necessary.
+      last_mouse_location_ = event->location();
+      for (const ui::EventType* type = types; *type != ui::ET_UNKNOWN;
+           ++type) {
+        int flags = event->flags();
+        if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
+            *type == ui::ET_MOUSE_PRESSED)
+          flags |= ui::EF_IS_DOUBLE_CLICK;
+
+        // It is necessary to set this explicitly when using XI2.2. When using
+        // XI < 2.2, this is always set anyway.
+        flags |= ui::EF_LEFT_MOUSE_BUTTON;
+
+        MouseEvent synth(
+            *type, event->location(), event->root_location(), flags);
+        // TODO: this is all wrong. We should be going through
+        // DispatchMouseEventImpl.
+        if (ProcessMouseEvent(target, &synth))
+          status = ui::GESTURE_STATUS_SYNTH_MOUSE;
+      }
     }
   }
 
