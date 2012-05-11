@@ -107,8 +107,18 @@ if [[ "$found" = "0" ]]; then
   # This will take a little bit long time.
   echo "Install platform, platform-tool and tool ..."
 
-  "${ANDROID_SDK_ROOT}"/tools/android update sdk -o --no-ui \
-      --filter platform,platform-tool,tool,system-image
+  # Check the SDK revision
+  SDK_VER=$(sed '/^\#/d' ${ANDROID_SDK_ROOT}/tools/source.properties | \
+      grep 'Pkg.Revision' |tail -n 1 | cut -d "=" -f2- | \
+      sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+  if [[ ${SDK_VER} -lt 17 ]]; then
+    update_flag=" -o "
+  else
+    update_flag=" --all "
+  fi
+  # Updates the SDK to latest version firstly.
+    "${ANDROID_SDK_ROOT}"/tools/android update sdk ${update_flag} --no-ui \
+        --filter platform,platform-tool,tool,system-image
 fi
 
 # Create a Android Virtual Device named 'buildbot' with default hardware
