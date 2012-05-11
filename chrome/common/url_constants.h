@@ -354,7 +354,10 @@ extern int kNumberOfChromeDebugURLs;
 extern const char kExtensionScheme[];
 #if defined(OS_CHROMEOS)
 extern const char kDriveScheme[];
-#endif  // defined(OS_CHROMEOS)
+#endif
+#if defined(OS_ANDROID)
+extern const char kContentScheme[];
+#endif
 
 #if defined(OS_CHROMEOS)
 // "Learn more" URL for the Cloud Print section under Options.

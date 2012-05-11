@@ -212,6 +212,11 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsLocal(drive_scheme);
 #endif
 
+#if defined(OS_ANDROID)
+  WebString content_scheme(ASCIIToUTF16(chrome::kContentScheme));
+  WebSecurityPolicy::registerURLSchemeAsLocal(content_scheme);
+#endif
+
   // chrome: pages should not be accessible by bookmarklets or javascript:
   // URLs typed in the omnibox.
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
