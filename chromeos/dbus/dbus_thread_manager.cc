@@ -5,7 +5,9 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 #include "base/chromeos/chromeos_version.h"
+#include "base/command_line.h"
 #include "base/threading/thread.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
@@ -38,8 +40,15 @@ static DBusThreadManager* g_dbus_thread_manager = NULL;
 // The DBusThreadManager implementation used in production.
 class DBusThreadManagerImpl : public DBusThreadManager {
  public:
-  DBusThreadManagerImpl() {
-    // Create the D-Bus thread.
+  explicit DBusThreadManagerImpl(DBusClientImplementationType client_type) {
+    // If --dbus-stub was requested, pass STUB to specific components;
+    // Many components like login are not useful with a stub implementation.
+    DBusClientImplementationType client_type_maybe_stub = client_type;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kDbusStub))
+      client_type_maybe_stub = STUB_DBUS_CLIENT_IMPLEMENTATION;
+
+  // Create the D-Bus thread.
     base::Thread::Options thread_options;
     thread_options.message_loop_type = MessageLoop::TYPE_IO;
     dbus_thread_.reset(new base::Thread("D-Bus thread"));
@@ -52,11 +61,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     system_bus_options.dbus_thread_message_loop_proxy =
         dbus_thread_->message_loop_proxy();
     system_bus_ = new dbus::Bus(system_bus_options);
-
-    // Determine whether we use stub or real client implementations.
-    const DBusClientImplementationType client_type =
-        base::chromeos::IsRunningOnChromeOS() ?
-        REAL_DBUS_CLIENT_IMPLEMENTATION : STUB_DBUS_CLIENT_IMPLEMENTATION;
 
     // Create the bluetooth clients.
     bluetooth_manager_client_.reset(BluetoothManagerClient::Create(
@@ -108,8 +112,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     introspectable_client_.reset(
         IntrospectableClient::Create(client_type, system_bus_.get()));
     // Create the power manager client.
-    power_manager_client_.reset(PowerManagerClient::Create(client_type,
-                                                           system_bus_.get()));
+    power_manager_client_.reset(
+        PowerManagerClient::Create(client_type_maybe_stub, system_bus_.get()));
     // Create the session manager client.
     session_manager_client_.reset(
         SessionManagerClient::Create(client_type, system_bus_.get()));
@@ -277,8 +281,16 @@ void DBusThreadManager::Initialize() {
     LOG(WARNING) << "DBusThreadManager was already initialized";
     return;
   }
-  g_dbus_thread_manager = new DBusThreadManagerImpl;
-  VLOG(1) << "DBusThreadManager initialized";
+  // Determine whether we use stub or real client implementations.
+  if (base::chromeos::IsRunningOnChromeOS()) {
+    g_dbus_thread_manager =
+        new DBusThreadManagerImpl(REAL_DBUS_CLIENT_IMPLEMENTATION);
+    VLOG(1) << "DBusThreadManager initialized for ChromeOS";
+  } else {
+    g_dbus_thread_manager =
+        new DBusThreadManagerImpl(STUB_DBUS_CLIENT_IMPLEMENTATION);
+    VLOG(1) << "DBusThreadManager initialized with Stub";
+  }
 }
 
 // static
@@ -288,8 +300,14 @@ void DBusThreadManager::InitializeForTesting(
     LOG(WARNING) << "DBusThreadManager was already initialized";
     return;
   }
-  g_dbus_thread_manager = dbus_thread_manager;
-  VLOG(1) << "DBusThreadManager initialized";
+  if (dbus_thread_manager) {
+    g_dbus_thread_manager = dbus_thread_manager;
+    VLOG(1) << "DBusThreadManager initialized with test implementation";
+  } else {
+    g_dbus_thread_manager =
+        new DBusThreadManagerImpl(STUB_DBUS_CLIENT_IMPLEMENTATION);
+    VLOG(1) << "DBusThreadManager initialized with stub implementation";
+  }
 }
 
 // static

@@ -69,6 +69,7 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -1041,62 +1042,63 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
     const CommandLine& base_command_line,
     CommandLine* command_line) {
   static const char* kForwardSwitches[] = {
-      switches::kCompressSystemFeedback,
-      switches::kDeviceManagementUrl,
-      switches::kDefaultDeviceScaleFactor,
-      switches::kDisableAccelerated2dCanvas,
-      switches::kDisableAcceleratedPlugins,
-      switches::kDisableGpuWatchdog,
-      switches::kDisableLoginAnimations,
-      switches::kDisableSeccompFilterSandbox,
-      switches::kDisableSeccompSandbox,
-      switches::kDisableThreadedAnimation,
-      switches::kEnableDevicePolicy,
-      switches::kEnableGView,
-      switches::kEnableLogging,
-      switches::kEnablePartialSwap,
-      switches::kEnableSmoothScrolling,
-      switches::kEnableThreadedCompositing,
-      switches::kEnableTouchEvents,
-      switches::kEnableViewport,
-      switches::kDisableThreadedCompositing,
-      switches::kForceCompositingMode,
-      switches::kGpuStartupDialog,
-      switches::kLoginProfile,
-      switches::kScrollPixels,
-      switches::kNoFirstRun,
-      switches::kNoSandbox,
-      switches::kPpapiFlashArgs,
-      switches::kPpapiFlashInProcess,
-      switches::kPpapiFlashPath,
-      switches::kPpapiFlashVersion,
-      switches::kRendererStartupDialog,
-      switches::kFlingTapSuppressMaxDown,
-      switches::kFlingTapSuppressMaxGap,
-      switches::kTouchDevices,
-      switches::kTouchOptimizedUI,
+      ::switches::kCompressSystemFeedback,
+      ::switches::kDeviceManagementUrl,
+      ::switches::kDefaultDeviceScaleFactor,
+      ::switches::kDisableAccelerated2dCanvas,
+      ::switches::kDisableAcceleratedPlugins,
+      ::switches::kDisableGpuWatchdog,
+      ::switches::kDisableLoginAnimations,
+      ::switches::kDisableSeccompFilterSandbox,
+      ::switches::kDisableSeccompSandbox,
+      ::switches::kDisableThreadedAnimation,
+      ::switches::kEnableDevicePolicy,
+      ::switches::kEnableGView,
+      ::switches::kEnableLogging,
+      ::switches::kEnablePartialSwap,
+      ::switches::kEnableSmoothScrolling,
+      ::switches::kEnableThreadedCompositing,
+      ::switches::kEnableTouchEvents,
+      ::switches::kEnableViewport,
+      ::switches::kDisableThreadedCompositing,
+      ::switches::kForceCompositingMode,
+      ::switches::kGpuStartupDialog,
+      ::switches::kLoginProfile,
+      ::switches::kScrollPixels,
+      ::switches::kNoFirstRun,
+      ::switches::kNoSandbox,
+      ::switches::kPpapiFlashArgs,
+      ::switches::kPpapiFlashInProcess,
+      ::switches::kPpapiFlashPath,
+      ::switches::kPpapiFlashVersion,
+      ::switches::kRendererStartupDialog,
+      ::switches::kFlingTapSuppressMaxDown,
+      ::switches::kFlingTapSuppressMaxGap,
+      ::switches::kTouchDevices,
+      ::switches::kTouchOptimizedUI,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
       ash::switches::kAuraPanelManager,
       ash::switches::kAuraWindowAnimationsDisabled,
-      switches::kUIEnablePartialSwap,
-      switches::kUseGL,
-      switches::kUserDataDir,
+      ::switches::kUIEnablePartialSwap,
+      ::switches::kUseGL,
+      ::switches::kUserDataDir,
 #if defined(USE_VIRTUAL_KEYBOARD)
       // The virtual keyboard extension (chrome://keyboard) highly relies on
       // experimental APIs.
-      switches::kEnableExperimentalExtensionApis,
+      ::switches::kEnableExperimentalExtensionApis,
 #endif
+      chromeos::switches::kDbusStub,
   };
   command_line->CopySwitchesFrom(base_command_line,
                                  kForwardSwitches,
                                  arraysize(kForwardSwitches));
-  command_line->AppendSwitch(switches::kGuestSession);
-  command_line->AppendSwitch(switches::kIncognito);
-  command_line->AppendSwitchASCII(switches::kLoggingLevel,
+  command_line->AppendSwitch(::switches::kGuestSession);
+  command_line->AppendSwitch(::switches::kIncognito);
+  command_line->AppendSwitchASCII(::switches::kLoggingLevel,
                                  kGuestModeLoggingLevel);
 
-  command_line->AppendSwitchASCII(switches::kLoginUser, kGuestUserName);
+  command_line->AppendSwitchASCII(::switches::kLoginUser, kGuestUserName);
 
   if (start_url.is_valid())
     command_line->AppendArg(start_url.spec());
@@ -1104,19 +1106,19 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
   // Override the value of the homepage that is set in first run mode.
   // TODO(altimofeev): extend action of the |kNoFirstRun| to cover this case.
   command_line->AppendSwitchASCII(
-      switches::kHomePage,
+      ::switches::kHomePage,
       GURL(chrome::kChromeUINewTabURL).spec());
 
   std::string cmd_line_str = command_line->GetCommandLineString();
   // Special workaround for the arguments that should be quoted.
   // Copying switches won't be needed when Guest mode won't need restart
   // http://crosbug.com/6924
-  if (base_command_line.HasSwitch(switches::kRegisterPepperPlugins)) {
+  if (base_command_line.HasSwitch(::switches::kRegisterPepperPlugins)) {
     cmd_line_str += base::StringPrintf(
         kSwitchFormatString,
-        switches::kRegisterPepperPlugins,
+        ::switches::kRegisterPepperPlugins,
         base_command_line.GetSwitchValueNative(
-            switches::kRegisterPepperPlugins).c_str());
+            ::switches::kRegisterPepperPlugins).c_str());
   }
 
   return cmd_line_str;

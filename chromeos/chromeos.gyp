@@ -20,6 +20,8 @@
       ],
       'sources': [
         'chromeos_export.h',
+        'chromeos_switches.cc',
+        'chromeos_switches.h',
         'dbus/blocking_method_caller.cc',
         'dbus/blocking_method_caller.h',
         'dbus/bluetooth_adapter_client.cc',
