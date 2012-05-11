@@ -1,0 +1,38 @@
+# -*- python -*-
+# Copyright 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# suspend_test_guest.nexe fails to link when Valgrind is enabled
+# because of a problem with the TLS ".tbss" section.
+if env.IsRunningUnderValgrind():
+  Return()
+
+if 'TRUSTED_ENV' not in env:
+  Return()
+trusted_env = env['TRUSTED_ENV']
+
+test_guest = env.ComponentProgram(
+    'suspend_test_guest', ['suspend_test_guest.c'],
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+if env.Bit('pnacl_generate_pexe'):
+  test_guest = env.GetTranslatedNexe(test_guest)
+
+test_host = trusted_env.ComponentProgram(
+    'suspend_test_host', ['suspend_test_host.c'],
+    EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+
+test_command = [test_host, test_guest]
+bootstrap, _ = env.GetBootstrap()
+if bootstrap is not None:
+  test_command = [bootstrap] + test_command
+
+node = env.CommandTest('thread_suspension_test.out', test_command)
+# Thread suspension is currently on implemented for Windows.
+# TODO(mseaborn): Implement thread suspension for all other platforms.
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_thread_suspension_test',
+                       is_broken=(not env.Bit('nacl_static_link') or
+                                  not env.Bit('host_windows')))

@@ -3307,6 +3307,7 @@ nonvariant_tests = ExtendFileList([
     'tests/pnacl_shared_lib_test/nacl.scons',
     'tests/pyauto_nacl/nacl.scons',
     'tests/signal_handler_single_step/nacl.scons',
+    'tests/thread_suspension/nacl.scons',
     'tests/translator_size_limits/nacl.scons',
     'tests/trusted_crash/osx_crash_filter/nacl.scons',
     'tests/trusted_crash/osx_crash_forwarding/nacl.scons',

@@ -12,6 +12,13 @@
 #include "gtest/gtest.h"
 
 
+// These test cases test suspension of untrusted threads.  They use
+// mock untrusted threads, so they do not test interactions between
+// thread suspension and context switches between trusted and
+// untrusted code.  See tests/thread_suspension for similar tests that
+// operate on real untrusted threads.
+
+
 class ThreadSuspensionTest : public testing::Test {
  protected:
   virtual void SetUp();
