@@ -170,8 +170,8 @@ class WebRTCAudioDeviceTest
   scoped_ptr<MockMediaObserver> media_observer_;
   scoped_ptr<media_stream::MediaStreamManager> media_stream_manager_;
   scoped_ptr<media::AudioManager> audio_manager_;
-  scoped_ptr<content::MockResourceContext> resource_context_;
-  scoped_refptr<net::URLRequestContext> test_request_context_;
+  scoped_ptr<net::URLRequestContext> test_request_context_;
+  scoped_ptr<content::ResourceContext> resource_context_;
   scoped_ptr<IPC::Channel> channel_;
   scoped_refptr<AudioRendererHost> audio_render_host_;
   scoped_refptr<AudioInputRendererHost> audio_input_renderer_host_;

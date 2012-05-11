@@ -217,8 +217,6 @@ class IOThread : public base::Thread {
       g_request_context = new TestShellRequestContext();
     }
 
-    g_request_context->AddRef();
-
     g_network_delegate = new TestShellNetworkDelegate();
     g_request_context->set_network_delegate(g_network_delegate);
 
@@ -241,7 +239,7 @@ class IOThread : public base::Thread {
 
     if (g_request_context) {
       g_request_context->set_network_delegate(NULL);
-      g_request_context->Release();
+      delete g_request_context;
       g_request_context = NULL;
     }
 

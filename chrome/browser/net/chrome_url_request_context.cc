@@ -30,7 +30,7 @@ class ChromeURLRequestContextFactory {
   virtual ~ChromeURLRequestContextFactory() {}
 
   // Called to create a new instance (will only be called once).
-  virtual scoped_refptr<ChromeURLRequestContext> Create() = 0;
+  virtual ChromeURLRequestContext* Create() = 0;
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextFactory);
@@ -48,7 +48,7 @@ class FactoryForMain : public ChromeURLRequestContextFactory {
   explicit FactoryForMain(const ProfileIOData* profile_io_data)
       : profile_io_data_(profile_io_data) {}
 
-  virtual scoped_refptr<ChromeURLRequestContext> Create() {
+  virtual ChromeURLRequestContext* Create() OVERRIDE {
     return profile_io_data_->GetMainRequestContext();
   }
 
@@ -62,7 +62,7 @@ class FactoryForExtensions : public ChromeURLRequestContextFactory {
   explicit FactoryForExtensions(const ProfileIOData* profile_io_data)
       : profile_io_data_(profile_io_data) {}
 
-  virtual scoped_refptr<ChromeURLRequestContext> Create() {
+  virtual ChromeURLRequestContext* Create() OVERRIDE {
     return profile_io_data_->GetExtensionsRequestContext();
   }
 
@@ -80,7 +80,7 @@ class FactoryForIsolatedApp : public ChromeURLRequestContextFactory {
         app_id_(app_id),
         main_request_context_getter_(main_context) {}
 
-  virtual scoped_refptr<ChromeURLRequestContext> Create() {
+  virtual ChromeURLRequestContext* Create() OVERRIDE {
     // We will copy most of the state from the main request context.
     return profile_io_data_->GetIsolatedAppRequestContext(
         main_request_context_getter_->GetIOContext(), app_id_);
@@ -100,7 +100,7 @@ class FactoryForMedia : public ChromeURLRequestContextFactory {
       : profile_io_data_(profile_io_data) {
   }
 
-  virtual scoped_refptr<ChromeURLRequestContext> Create() {
+  virtual ChromeURLRequestContext* Create() OVERRIDE {
     return profile_io_data_->GetMediaRequestContext();
   }
 
@@ -315,7 +315,12 @@ void ChromeURLRequestContextGetter::OnClearSiteDataOnExitChange(
 // ----------------------------------------------------------------------------
 
 ChromeURLRequestContext::ChromeURLRequestContext()
-    : is_incognito_(false) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      is_incognito_(false) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+}
+
+ChromeURLRequestContext::~ChromeURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
@@ -336,10 +341,6 @@ void ChromeURLRequestContext::set_chrome_url_data_manager_backend(
         ChromeURLDataManagerBackend* backend) {
   DCHECK(backend);
   chrome_url_data_manager_backend_ = backend;
-}
-
-ChromeURLRequestContext::~ChromeURLRequestContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 const std::string& ChromeURLRequestContext::GetUserAgent(

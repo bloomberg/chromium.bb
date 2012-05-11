@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,9 +36,8 @@ class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThreadImpl {
 
  private:
   // These methods encapsulate cleanup that needs to happen on the IO thread
-  // before/after we call the embedder's CleanUp function.
+  // before we call the embedder's CleanUp function.
   void IOThreadPreCleanUp();
-  void IOThreadPostCleanUp();
 
   // Each specialized thread has its own notification service.
   // Note: We don't use scoped_ptr because the destructor runs on the wrong

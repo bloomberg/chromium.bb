@@ -514,7 +514,7 @@ class SafeBrowsingService
       url_request_context_getter_;
 
   // The SafeBrowsingURLRequestContext.
-  scoped_refptr<net::URLRequestContext> url_request_context_;
+  scoped_ptr<net::URLRequestContext> url_request_context_;
 
   // Handles interaction with SafeBrowsing servers.
   SafeBrowsingProtocolManager* protocol_manager_;

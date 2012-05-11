@@ -39,8 +39,8 @@ class TrackingTestURLRequestContextGetter
   }
 
   virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
-    if (!context_) {
-      context_ = new TestURLRequestContext(true);
+    if (!context_.get()) {
+      context_.reset(new TestURLRequestContext(true));
       context_->set_throttler_manager(throttler_manager_);
       context_->Init();
     }
@@ -55,7 +55,7 @@ class TrackingTestURLRequestContextGetter
  private:
   // Not owned here.
   net::URLRequestThrottlerManager* throttler_manager_;
-  scoped_refptr<TestURLRequestContext> context_;
+  scoped_ptr<TestURLRequestContext> context_;
 };
 
 class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {

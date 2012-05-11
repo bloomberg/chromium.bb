@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/resource_context.h"
 
 namespace content {
@@ -16,19 +16,14 @@ namespace content {
 class MockResourceContext : public ResourceContext {
  public:
   MockResourceContext();
-  explicit MockResourceContext(net::URLRequestContext* context);
   virtual ~MockResourceContext();
-
-  void set_request_context(net::URLRequestContext* context) {
-    test_request_context_ = context;
-  }
 
   // ResourceContext implementation:
   virtual net::HostResolver* GetHostResolver() OVERRIDE;
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
 
  private:
-  scoped_refptr<net::URLRequestContext> test_request_context_;
+  scoped_ptr<net::URLRequestContext> test_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MockResourceContext);
 };

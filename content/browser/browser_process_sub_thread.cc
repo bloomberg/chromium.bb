@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,9 +53,6 @@ void BrowserProcessSubThread::CleanUp() {
 
   BrowserThreadImpl::CleanUp();
 
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO))
-    IOThreadPostCleanUp();
-
   delete notification_service_;
   notification_service_ = NULL;
 
@@ -79,11 +76,6 @@ void BrowserProcessSubThread::IOThreadPreCleanUp() {
   // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.
   BrowserChildProcessHostImpl::TerminateAll();
-}
-
-void BrowserProcessSubThread::IOThreadPostCleanUp() {
-  // net::URLRequest instances must NOT outlive the IO thread.
-  base::debug::LeakTracker<net::URLRequest>::CheckForLeaks();
 }
 
 }  // namespace content

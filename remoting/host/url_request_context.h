@@ -52,9 +52,9 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
   virtual ~URLRequestContextGetter();
 
  private:
-  scoped_refptr<net::URLRequestContext> url_request_context_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
+  scoped_ptr<net::URLRequestContext> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextGetter);
 };

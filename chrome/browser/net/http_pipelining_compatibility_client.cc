@@ -297,7 +297,7 @@ void HttpPipeliningCompatibilityClient::Start(
   http_transaction_factory_.reset(
       net::HttpNetworkLayer::CreateFactory(session.get()));
 
-  url_request_context_ = new net::URLRequestContext;
+  url_request_context_.reset(new net::URLRequestContext);
   url_request_context_->CopyFrom(url_request_context);
   url_request_context_->set_http_transaction_factory(
       http_transaction_factory_.get());

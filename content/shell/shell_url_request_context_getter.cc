@@ -49,11 +49,12 @@ ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (!url_request_context_) {
-    url_request_context_ = new net::URLRequestContext();
+  if (!url_request_context_.get()) {
+    url_request_context_.reset(new net::URLRequestContext());
     network_delegate_.reset(new ShellNetworkDelegate);
     url_request_context_->set_network_delegate(network_delegate_.get());
-    storage_.reset(new net::URLRequestContextStorage(url_request_context_));
+    storage_.reset(
+        new net::URLRequestContextStorage(url_request_context_.get()));
     storage_->set_cookie_store(new net::CookieMonster(NULL, NULL));
     storage_->set_server_bound_cert_service(new net::ServerBoundCertService(
         new net::DefaultServerBoundCertStore(NULL),
@@ -106,7 +107,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     storage_->set_job_factory(new net::URLRequestJobFactory);
   }
 
-  return url_request_context_;
+  return url_request_context_.get();
 }
 
 scoped_refptr<base::MessageLoopProxy>

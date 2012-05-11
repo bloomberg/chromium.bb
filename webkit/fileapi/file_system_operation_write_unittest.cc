@@ -154,12 +154,11 @@ class TestURLRequestContext : public net::URLRequestContext {
   TestURLRequestContext()
       : blob_storage_controller_(new webkit_blob::BlobStorageController) {}
 
+  virtual ~TestURLRequestContext() {}
+
   webkit_blob::BlobStorageController* blob_storage_controller() const {
     return blob_storage_controller_.get();
   }
-
- protected:
-  virtual ~TestURLRequestContext() {}
 
  private:
   scoped_ptr<webkit_blob::BlobStorageController> blob_storage_controller_;
@@ -211,16 +210,15 @@ TEST_F(FileSystemOperationWriteTest, TestWriteSuccess) {
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("Hello, world!\n");
 
-  scoped_refptr<TestURLRequestContext> url_request_context(
-      new TestURLRequestContext());
-  url_request_context->blob_storage_controller()->AddFinishedBlob(
+  TestURLRequestContext url_request_context;
+  url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
-  operation()->Write(url_request_context, URLForPath(virtual_path_), blob_url,
+  operation()->Write(&url_request_context, URLForPath(virtual_path_), blob_url,
                      0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
-  url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
+  url_request_context.blob_storage_controller()->RemoveBlob(blob_url);
 
   EXPECT_EQ(14, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
@@ -232,16 +230,15 @@ TEST_F(FileSystemOperationWriteTest, TestWriteZero) {
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("");
 
-  scoped_refptr<TestURLRequestContext> url_request_context(
-      new TestURLRequestContext());
-  url_request_context->blob_storage_controller()->AddFinishedBlob(
+  TestURLRequestContext url_request_context;
+  url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
-  operation()->Write(url_request_context, URLForPath(virtual_path_),
+  operation()->Write(&url_request_context, URLForPath(virtual_path_),
                      blob_url, 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
-  url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
+  url_request_context.blob_storage_controller()->RemoveBlob(blob_url);
 
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
@@ -249,10 +246,9 @@ TEST_F(FileSystemOperationWriteTest, TestWriteZero) {
 }
 
 TEST_F(FileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
-  scoped_refptr<TestURLRequestContext> url_request_context(
-      new TestURLRequestContext());
+  TestURLRequestContext url_request_context;
 
-  operation()->Write(url_request_context, URLForPath(virtual_path_),
+  operation()->Write(&url_request_context, URLForPath(virtual_path_),
       GURL("blob:invalid"), 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
@@ -266,17 +262,16 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidFile) {
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("It\'ll not be written.");
 
-  scoped_refptr<TestURLRequestContext> url_request_context(
-      new TestURLRequestContext());
-  url_request_context->blob_storage_controller()->AddFinishedBlob(
+  TestURLRequestContext url_request_context;
+  url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
-  operation()->Write(url_request_context,
+  operation()->Write(&url_request_context,
                      URLForPath(FilePath(FILE_PATH_LITERAL("nonexist"))),
                      blob_url, 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
-  url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
+  url_request_context.blob_storage_controller()->RemoveBlob(blob_url);
 
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, status());
@@ -294,16 +289,15 @@ TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("It\'ll not be written, too.");
 
-  scoped_refptr<TestURLRequestContext> url_request_context(
-      new TestURLRequestContext());
-  url_request_context->blob_storage_controller()->AddFinishedBlob(
+  TestURLRequestContext url_request_context;
+  url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
-  operation()->Write(url_request_context, URLForPath(virtual_subdir_path),
+  operation()->Write(&url_request_context, URLForPath(virtual_subdir_path),
                      blob_url, 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
-  url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
+  url_request_context.blob_storage_controller()->RemoveBlob(blob_url);
 
   EXPECT_EQ(0, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_ACCESS_DENIED, status());
@@ -315,17 +309,16 @@ TEST_F(FileSystemOperationWriteTest, TestWriteFailureByQuota) {
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("Hello, world!\n");
 
-  scoped_refptr<TestURLRequestContext> url_request_context(
-      new TestURLRequestContext());
-  url_request_context->blob_storage_controller()->AddFinishedBlob(
+  TestURLRequestContext url_request_context;
+  url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
   quota_manager_->set_quota(10);
-  operation()->Write(url_request_context, URLForPath(virtual_path_), blob_url,
+  operation()->Write(&url_request_context, URLForPath(virtual_path_), blob_url,
                      0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
-  url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
+  url_request_context.blob_storage_controller()->RemoveBlob(blob_url);
 
   EXPECT_EQ(10, bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, status());
@@ -337,13 +330,12 @@ TEST_F(FileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("Hello, world!\n");
 
-  scoped_refptr<TestURLRequestContext> url_request_context(
-      new TestURLRequestContext());
-  url_request_context->blob_storage_controller()->AddFinishedBlob(
+  TestURLRequestContext url_request_context;
+  url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
   FileSystemOperationInterface* write_operation = operation();
-  write_operation->Write(url_request_context, URLForPath(virtual_path_),
+  write_operation->Write(&url_request_context, URLForPath(virtual_path_),
                          blob_url, 0, RecordWriteCallback());
   write_operation->Cancel(RecordCancelCallback());
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
@@ -351,7 +343,7 @@ TEST_F(FileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   // to run another write cycle.
   MessageLoop::current()->RunAllPending();
 
-  url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
+  url_request_context.blob_storage_controller()->RemoveBlob(blob_url);
 
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.
@@ -366,13 +358,12 @@ TEST_F(FileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("It\'ll not be written.");
 
-  scoped_refptr<TestURLRequestContext> url_request_context(
-      new TestURLRequestContext());
-  url_request_context->blob_storage_controller()->AddFinishedBlob(
+  TestURLRequestContext url_request_context;
+  url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
   FileSystemOperationInterface* write_operation = operation();
-  write_operation->Write(url_request_context,
+  write_operation->Write(&url_request_context,
                          URLForPath(FilePath(FILE_PATH_LITERAL("nonexist"))),
                          blob_url, 0, RecordWriteCallback());
   write_operation->Cancel(RecordCancelCallback());
@@ -381,7 +372,7 @@ TEST_F(FileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
   // to run another write cycle.
   MessageLoop::current()->RunAllPending();
 
-  url_request_context->blob_storage_controller()->RemoveBlob(blob_url);
+  url_request_context.blob_storage_controller()->RemoveBlob(blob_url);
 
   // Issued Cancel() before receiving any response from Write(),
   // so nothing should have happen.

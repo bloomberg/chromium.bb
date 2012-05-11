@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,6 +32,8 @@ class TestShellRequestContext : public net::URLRequestContext {
                           net::HttpCache::Mode cache_mode,
                           bool no_proxy);
 
+  virtual ~TestShellRequestContext();
+
   virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
 
   webkit_blob::BlobStorageController* blob_storage_controller() const {
@@ -43,8 +45,6 @@ class TestShellRequestContext : public net::URLRequestContext {
   }
 
  private:
-  virtual ~TestShellRequestContext();
-
   void Init(const FilePath& cache_path, net::HttpCache::Mode cache_mode,
             bool no_proxy);
 

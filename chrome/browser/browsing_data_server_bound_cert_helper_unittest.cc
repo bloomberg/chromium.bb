@@ -28,7 +28,7 @@ class BrowsingDataServerBoundCertHelperTest : public testing::Test {
   }
 
   void CreateCertsForTest() {
-    scoped_refptr<net::URLRequestContext> context =
+    net::URLRequestContext* context =
         testing_profile_->GetRequestContext()->GetURLRequestContext();
     net::ServerBoundCertStore* cert_store =
         context->server_bound_cert_service()->GetCertStore();

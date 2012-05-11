@@ -186,10 +186,9 @@ const std::string& GetPlatformString() {
 class DeviceManagementRequestContext : public net::URLRequestContext {
  public:
   explicit DeviceManagementRequestContext(net::URLRequestContext* base_context);
-
- private:
   virtual ~DeviceManagementRequestContext();
 
+ private:
   // Overridden from net::URLRequestContext:
   virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
 };
@@ -243,7 +242,7 @@ class DeviceManagementRequestContextGetter
   virtual ~DeviceManagementRequestContextGetter() {}
 
  private:
-  scoped_refptr<net::URLRequestContext> context_;
+  scoped_ptr<net::URLRequestContext> context_;
   scoped_refptr<net::URLRequestContextGetter> base_context_getter_;
 };
 
@@ -251,9 +250,9 @@ class DeviceManagementRequestContextGetter
 net::URLRequestContext*
 DeviceManagementRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!context_) {
-    context_ = new DeviceManagementRequestContext(
-        base_context_getter_->GetURLRequestContext());
+  if (!context_.get()) {
+    context_.reset(new DeviceManagementRequestContext(
+        base_context_getter_->GetURLRequestContext()));
   }
 
   return context_.get();

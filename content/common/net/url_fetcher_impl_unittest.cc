@@ -59,13 +59,13 @@ class ThrottlingTestURLRequestContextGetter
   }
 
   virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
-    return context_.get();
+    return context_;
   }
 
  protected:
   virtual ~ThrottlingTestURLRequestContextGetter() {}
 
-  scoped_refptr<TestURLRequestContext> context_;
+  TestURLRequestContext* const context_;
 };
 
 }  // namespace
@@ -122,7 +122,7 @@ class URLFetcherTest : public testing::Test,
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
   URLFetcherImpl* fetcher_;
-  scoped_refptr<TestURLRequestContext> context_;
+  const scoped_ptr<TestURLRequestContext> context_;
 };
 
 void URLFetcherTest::CreateFetcher(const GURL& url) {
@@ -293,8 +293,8 @@ class CancelTestURLRequestContextGetter
         throttle_for_url_(throttle_for_url) {
   }
   virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
-    if (!context_) {
-      context_ = new CancelTestURLRequestContext();
+    if (!context_.get()) {
+      context_.reset(new CancelTestURLRequestContext());
       DCHECK(context_->throttler_manager());
 
       // Registers an entry for test url. The backoff time is calculated by:
@@ -310,7 +310,7 @@ class CancelTestURLRequestContextGetter
 
       context_created_.Signal();
     }
-    return context_;
+    return context_.get();
   }
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
     return io_message_loop_proxy_;
@@ -323,7 +323,7 @@ class CancelTestURLRequestContextGetter
   virtual ~CancelTestURLRequestContextGetter() {}
 
  private:
-  scoped_refptr<ThrottlingTestURLRequestContext> context_;
+  scoped_ptr<TestURLRequestContext> context_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   base::WaitableEvent context_created_;
   GURL throttle_for_url_;

@@ -272,13 +272,14 @@ ProfileIOData::~ProfileIOData() {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO))
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (main_request_context_)
+  if (main_request_context_.get())
     main_request_context_->AssertNoURLRequests();
-  if (extensions_request_context_)
+  if (extensions_request_context_.get())
     extensions_request_context_->AssertNoURLRequests();
   for (AppRequestContextMap::iterator it = app_request_context_map_.begin();
        it != app_request_context_map_.end(); ++it) {
     it->second->AssertNoURLRequests();
+    delete it->second;
   }
 }
 
@@ -328,33 +329,33 @@ ProfileIOData::GetChromeURLDataManagerBackend() const {
   return chrome_url_data_manager_backend_.get();
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 ProfileIOData::GetMainRequestContext() const {
   LazyInitialize();
-  return main_request_context_;
+  return main_request_context_.get();
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 ProfileIOData::GetMediaRequestContext() const {
   LazyInitialize();
-  scoped_refptr<ChromeURLRequestContext> context =
+  ChromeURLRequestContext* context =
       AcquireMediaRequestContext();
   DCHECK(context);
   return context;
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 ProfileIOData::GetExtensionsRequestContext() const {
   LazyInitialize();
-  return extensions_request_context_;
+  return extensions_request_context_.get();
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 ProfileIOData::GetIsolatedAppRequestContext(
-    scoped_refptr<ChromeURLRequestContext> main_context,
+    ChromeURLRequestContext* main_context,
     const std::string& app_id) const {
   LazyInitialize();
-  scoped_refptr<ChromeURLRequestContext> context;
+  ChromeURLRequestContext* context;
   if (ContainsKey(app_request_context_map_, app_id)) {
     context = app_request_context_map_[app_id];
   } else {
@@ -467,8 +468,8 @@ void ProfileIOData::LazyInitialize() const {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Create the common request contexts.
-  main_request_context_ = new ChromeURLRequestContext;
-  extensions_request_context_ = new ChromeURLRequestContext;
+  main_request_context_.reset(new ChromeURLRequestContext);
+  extensions_request_context_.reset(new ChromeURLRequestContext);
 
   chrome_url_data_manager_backend_.reset(new ChromeURLDataManagerBackend);
 
@@ -482,7 +483,7 @@ void ProfileIOData::LazyInitialize() const {
 
   fraudulent_certificate_reporter_.reset(
       new chrome_browser_net::ChromeFraudulentCertificateReporter(
-          main_request_context_));
+          main_request_context_.get()));
 
   proxy_service_.reset(
       ProxyServiceFactory::CreateProxyService(
@@ -545,7 +546,7 @@ void ProfileIOData::LazyInitialize() const {
   extension_info_map_ = profile_params_->extension_info_map;
 
   resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();
-  resource_context_->request_context_ = main_request_context_;
+  resource_context_->request_context_ = main_request_context_.get();
 
   LazyInitializeInternal(profile_params_.get());
 

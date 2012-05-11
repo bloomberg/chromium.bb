@@ -113,8 +113,8 @@ class ConnectionTesterTest : public PlatformTest {
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
   scoped_ptr<net::HttpTransactionFactory> http_transaction_factory_;
   net::HttpAuthHandlerRegistryFactory http_auth_handler_factory_;
-  scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context_;
   net::HttpServerPropertiesImpl http_server_properties_impl_;
+  scoped_ptr<net::URLRequestContext> proxy_script_fetcher_context_;
 
  private:
   void InitializeRequestContext() {
@@ -148,7 +148,7 @@ class ConnectionTesterTest : public PlatformTest {
 TEST_F(ConnectionTesterTest, RunAllTests) {
   ASSERT_TRUE(test_server_.Start());
 
-  ConnectionTester tester(&test_delegate_, proxy_script_fetcher_context_);
+  ConnectionTester tester(&test_delegate_, proxy_script_fetcher_context_.get());
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?
@@ -173,7 +173,8 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_ptr<ConnectionTester> tester(
-      new ConnectionTester(&test_delegate_, proxy_script_fetcher_context_));
+      new ConnectionTester(&test_delegate_,
+                           proxy_script_fetcher_context_.get()));
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?

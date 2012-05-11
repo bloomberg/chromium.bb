@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -174,7 +174,7 @@ class ConnectionTester {
   // of the list is the one currently in progress.
   ExperimentList remaining_experiments_;
 
-  const scoped_refptr<net::URLRequestContext> proxy_request_context_;
+  net::URLRequestContext* const proxy_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionTester);
 };

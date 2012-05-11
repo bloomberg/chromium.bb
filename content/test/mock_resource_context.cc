@@ -13,10 +13,6 @@ MockResourceContext::MockResourceContext()
     : test_request_context_(new TestURLRequestContext) {
 }
 
-MockResourceContext::MockResourceContext(net::URLRequestContext* context)
-    : test_request_context_(context) {
-}
-
 MockResourceContext::~MockResourceContext() {}
 
 net::HostResolver* MockResourceContext::GetHostResolver()  {
@@ -24,7 +20,7 @@ net::HostResolver* MockResourceContext::GetHostResolver()  {
 }
 
 net::URLRequestContext* MockResourceContext::GetRequestContext()  {
-  return test_request_context_;
+  return test_request_context_.get();
 }
 
 }  // namespace content

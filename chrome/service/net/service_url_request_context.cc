@@ -170,11 +170,11 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
 
 net::URLRequestContext*
 ServiceURLRequestContextGetter::GetURLRequestContext() {
-  if (!url_request_context_)
-    url_request_context_ =
+  if (!url_request_context_.get())
+    url_request_context_.reset(
         new ServiceURLRequestContext(user_agent_,
-                                     proxy_config_service_.release());
-  return url_request_context_;
+                                     proxy_config_service_.release()));
+  return url_request_context_.get();
 }
 
 scoped_refptr<base::MessageLoopProxy>

@@ -46,10 +46,9 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   MessageLoop* file_loop_;
 
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-
-  scoped_refptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<net::URLRequestContextStorage> storage_;
   scoped_ptr<net::NetworkDelegate> network_delegate_;
+  scoped_ptr<net::URLRequestContextStorage> storage_;
+  scoped_ptr<net::URLRequestContext> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellURLRequestContextGetter);
 };

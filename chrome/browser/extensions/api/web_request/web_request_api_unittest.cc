@@ -127,7 +127,7 @@ class ExtensionWebRequestTest : public testing::Test {
     network_delegate_.reset(new ChromeNetworkDelegate(
         event_router_.get(), NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_));
-    context_ = new TestURLRequestContext();
+    context_.reset(new TestURLRequestContext());
     context_->set_network_delegate(network_delegate_.get());
   }
 
@@ -141,7 +141,7 @@ class ExtensionWebRequestTest : public testing::Test {
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
-  scoped_refptr<TestURLRequestContext> context_;
+  scoped_ptr<TestURLRequestContext> context_;
 };
 
 // Tests that we handle disagreements among extensions about responses to
@@ -166,7 +166,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   GURL not_chosen_redirect_url("about:not_chosen");
 
   net::URLRequest request(GURL("about:blank"), &delegate_);
-  request.set_context(context_);
+  request.set_context(context_.get());
   {
     // onBeforeRequest will be dispatched twice initially. The second response -
     // the redirect - should win, since it has a later |install_time|. The
@@ -221,7 +221,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
 
   // Now test the same thing but the extensions answer in reverse order.
   net::URLRequest request2(GURL("about:blank"), &delegate_);
-  request2.set_context(context_);
+  request2.set_context(context_.get());
   {
     ExtensionWebRequestEventRouter::EventResponse* response = NULL;
 
@@ -295,7 +295,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
 
   GURL request_url("about:blank");
   net::URLRequest request(request_url, &delegate_);
-  request.set_context(context_);
+  request.set_context(context_.get());
 
   // onBeforeRequest will be dispatched twice. The second response -
   // the redirect - would win, since it has a later |install_time|, but
@@ -363,7 +363,7 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
 
   GURL request_url("about:blank");
   net::URLRequest request(request_url, &delegate_);
-  request.set_context(context_);
+  request.set_context(context_.get());
 
   ExtensionWebRequestEventRouter::EventResponse* response = NULL;
 
@@ -444,7 +444,7 @@ class ExtensionWebRequestHeaderModificationTest :
     network_delegate_.reset(new ChromeNetworkDelegate(
         event_router_.get(), NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_));
-    context_ = new TestURLRequestContext();
+    context_.reset(new TestURLRequestContext());
     context_->set_network_delegate(network_delegate_.get());
   }
 
@@ -458,7 +458,7 @@ class ExtensionWebRequestHeaderModificationTest :
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
-  scoped_refptr<TestURLRequestContext> context_;
+  scoped_ptr<TestURLRequestContext> context_;
 };
 
 TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
@@ -489,7 +489,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
 
   GURL request_url("http://doesnotexist/does_not_exist.html");
   net::URLRequest request(request_url, &delegate_);
-  request.set_context(context_);
+  request.set_context(context_.get());
 
   // Initialize headers available before extensions are notified of the
   // onBeforeSendHeaders event.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,22 +151,22 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
 };
 
 static void DoReportIsSent() {
-  scoped_refptr<ChromeURLRequestContext> context = new ChromeURLRequestContext;
-  SendingTestReporter reporter(context.get());
+  ChromeURLRequestContext context;
+  SendingTestReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
   reporter.SendReport("mail.google.com", info, true);
 }
 
 static void DoReportIsNotSent() {
-  scoped_refptr<ChromeURLRequestContext> context = new ChromeURLRequestContext;
-  NotSendingTestReporter reporter(context.get());
+  ChromeURLRequestContext context;
+  NotSendingTestReporter reporter(&context);
   SSLInfo info = GetBadSSLInfo();
   reporter.SendReport("www.example.com", info, true);
 }
 
 static void DoMockReportIsSent() {
-  scoped_refptr<ChromeURLRequestContext> context = new ChromeURLRequestContext;
-  MockReporter reporter(context.get());
+  ChromeURLRequestContext context;
+  MockReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
   reporter.SendReport("mail.google.com", info, true);
 }
@@ -201,4 +201,3 @@ TEST(ChromeFraudulentCertificateReporterTest, ReportIsNotSent) {
 }
 
 }  // namespace chrome_browser_net
-

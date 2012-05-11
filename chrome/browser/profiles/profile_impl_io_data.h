@@ -125,14 +125,14 @@ class ProfileImplIOData : public ProfileIOData {
 
   virtual void LazyInitializeInternal(
       ProfileParams* profile_params) const OVERRIDE;
-  virtual scoped_refptr<ChromeURLRequestContext> InitializeAppRequestContext(
-      scoped_refptr<ChromeURLRequestContext> main_context,
+  virtual ChromeURLRequestContext* InitializeAppRequestContext(
+      ChromeURLRequestContext* main_context,
       const std::string& app_id) const OVERRIDE;
-  virtual scoped_refptr<ChromeURLRequestContext>
+  virtual ChromeURLRequestContext*
       AcquireMediaRequestContext() const OVERRIDE;
-  virtual scoped_refptr<ChromeURLRequestContext>
+  virtual ChromeURLRequestContext*
       AcquireIsolatedAppRequestContext(
-          scoped_refptr<ChromeURLRequestContext> main_context,
+          ChromeURLRequestContext* main_context,
           const std::string& app_id) const OVERRIDE;
 
   // Clears the networking history since |time|.
@@ -147,7 +147,7 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
 
-  mutable scoped_refptr<ChromeURLRequestContext> media_request_context_;
+  mutable scoped_ptr<ChromeURLRequestContext> media_request_context_;
 
   // Parameters needed for isolated apps.
   FilePath app_path_;

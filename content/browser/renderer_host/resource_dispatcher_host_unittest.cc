@@ -377,6 +377,9 @@ class ResourceDispatcherHostTest : public testing::Test,
     ChildProcessSecurityPolicyImpl::GetInstance()->Remove(0);
 
     // Flush the message loop to make application verifiers happy.
+    if (ResourceDispatcherHostImpl::Get())
+      ResourceDispatcherHostImpl::Get()->CancelRequestsForContext(
+          browser_context_->GetResourceContext());
     browser_context_.reset();
     message_loop_.RunAllPending();
   }

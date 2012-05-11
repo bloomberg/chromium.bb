@@ -536,8 +536,8 @@ class IOThread : public base::Thread {
     Stop();
   }
 
-  const scoped_refptr<net::URLRequestContext>& request_context() {
-    return request_context_;
+  net::URLRequestContext* request_context() {
+    return request_context_.get();
   }
 
   void SetNewJobFactory(net::URLRequestJobFactory* job_factory) {
@@ -550,18 +550,18 @@ class IOThread : public base::Thread {
     job_factory_.reset(new net::URLRequestJobFactory);
     job_factory_->SetProtocolHandler("http", new MockHttpServerJobFactory);
     job_factory_->SetProtocolHandler("https", new MockHttpServerJobFactory);
-    request_context_ = new TestURLRequestContext();
+    request_context_.reset(new TestURLRequestContext());
     request_context_->set_job_factory(job_factory_.get());
   }
 
   virtual void CleanUp() {
-    request_context_ = NULL;
+    request_context_.reset();
     job_factory_.reset();
   }
 
  private:
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
-  scoped_refptr<net::URLRequestContext> request_context_;
+  scoped_ptr<net::URLRequestContext> request_context_;
 };
 
 class AppCacheUpdateJobTest : public testing::Test,

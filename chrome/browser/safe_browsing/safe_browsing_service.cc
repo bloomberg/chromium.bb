@@ -145,9 +145,9 @@ SafeBrowsingURLRequestContextGetter::~SafeBrowsingURLRequestContextGetter() {}
 net::URLRequestContext*
 SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(sb_service_->url_request_context_);
+  DCHECK(sb_service_->url_request_context_.get());
 
-  return sb_service_->url_request_context_;
+  return sb_service_->url_request_context_.get();
 }
 
 scoped_refptr<base::MessageLoopProxy>
@@ -614,7 +614,7 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
           FilePath(BaseFilename().value() + kCookiesFile), false),
       NULL);
 
-  url_request_context_ = new SafeBrowsingURLRequestContext;
+  url_request_context_.reset(new SafeBrowsingURLRequestContext);
   // |system_url_request_context_getter| may be NULL during tests.
   if (system_url_request_context_getter)
     url_request_context_->CopyFrom(
@@ -633,8 +633,7 @@ void SafeBrowsingService::DestroyURLRequestContextOnIOThread() {
   using base::debug::LeakTracker;
   LeakTracker<SafeBrowsingURLRequestContextGetter>::CheckForLeaks();
 
-  DCHECK(url_request_context_.get());
-  url_request_context_ = NULL;
+  url_request_context_.reset();
 }
 
 void SafeBrowsingService::StartOnIOThread() {

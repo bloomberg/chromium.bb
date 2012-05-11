@@ -252,7 +252,7 @@ ProfileImplIOData::ProfileImplIOData()
 ProfileImplIOData::~ProfileImplIOData() {
   DestroyResourceContext();
 
-  if (media_request_context_)
+  if (media_request_context_.get())
     media_request_context_->AssertNoURLRequests();
 }
 
@@ -263,7 +263,7 @@ void ProfileImplIOData::LazyInitializeInternal(
 
   ChromeURLRequestContext* main_context = main_request_context();
   ChromeURLRequestContext* extensions_context = extensions_request_context();
-  media_request_context_ = new ChromeURLRequestContext;
+  media_request_context_.reset(new ChromeURLRequestContext);
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
@@ -275,7 +275,7 @@ void ProfileImplIOData::LazyInitializeInternal(
   // Initialize context members.
 
   ApplyProfileParamsToContext(main_context);
-  ApplyProfileParamsToContext(media_request_context_);
+  ApplyProfileParamsToContext(media_request_context_.get());
   ApplyProfileParamsToContext(extensions_context);
 
   if (http_server_properties_manager())
@@ -449,9 +449,9 @@ void ProfileImplIOData::LazyInitializeInternal(
   lazy_params_.reset();
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 ProfileImplIOData::InitializeAppRequestContext(
-    scoped_refptr<ChromeURLRequestContext> main_context,
+    ChromeURLRequestContext* main_context,
     const std::string& app_id) const {
   AppRequestContext* context = new AppRequestContext;
 
@@ -511,18 +511,18 @@ ProfileImplIOData::InitializeAppRequestContext(
   return context;
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 ProfileImplIOData::AcquireMediaRequestContext() const {
-  DCHECK(media_request_context_);
-  return media_request_context_;
+  DCHECK(media_request_context_.get());
+  return media_request_context_.get();
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 ProfileImplIOData::AcquireIsolatedAppRequestContext(
-    scoped_refptr<ChromeURLRequestContext> main_context,
+    ChromeURLRequestContext* main_context,
     const std::string& app_id) const {
   // We create per-app contexts on demand, unlike the others above.
-  scoped_refptr<ChromeURLRequestContext> app_request_context =
+  ChromeURLRequestContext* app_request_context =
       InitializeAppRequestContext(main_context, app_id);
   DCHECK(app_request_context);
   return app_request_context;

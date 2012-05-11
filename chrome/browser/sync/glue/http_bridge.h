@@ -51,6 +51,9 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // currently active profile.
     explicit RequestContext(net::URLRequestContext* baseline_context);
 
+    // The destructor MUST be called on the IO thread.
+    virtual ~RequestContext();
+
     // Set the user agent for requests using this context. The default is
     // the browser's UA string.
     void set_user_agent(const std::string& ua) { user_agent_ = ua; }
@@ -63,9 +66,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     }
 
    private:
-    // The destructor MUST be called on the IO thread.
-    virtual ~RequestContext();
-
     std::string user_agent_;
     net::URLRequestContext* baseline_context_;
 
@@ -96,7 +96,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     scoped_refptr<net::URLRequestContextGetter> baseline_context_getter_;
 
     // Lazily initialized by GetURLRequestContext().
-    scoped_refptr<RequestContext> context_;
+    scoped_ptr<RequestContext> context_;
 
     DISALLOW_COPY_AND_ASSIGN(RequestContextGetter);
   };

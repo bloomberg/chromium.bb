@@ -35,10 +35,10 @@ HttpBridge::RequestContextGetter::~RequestContextGetter() {}
 net::URLRequestContext*
 HttpBridge::RequestContextGetter::GetURLRequestContext() {
   // Lazily create the context.
-  if (!context_) {
+  if (!context_.get()) {
     net::URLRequestContext* baseline_context =
         baseline_context_getter_->GetURLRequestContext();
-    context_ = new RequestContext(baseline_context);
+    context_.reset(new RequestContext(baseline_context));
     baseline_context_getter_ = NULL;
   }
 
@@ -46,7 +46,7 @@ HttpBridge::RequestContextGetter::GetURLRequestContext() {
   if (is_user_agent_set())
     context_->set_user_agent(user_agent_);
 
-  return context_;
+  return context_.get();
 }
 
 scoped_refptr<base::MessageLoopProxy>

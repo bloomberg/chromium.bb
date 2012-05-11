@@ -81,11 +81,34 @@ class ReplaceContentClientRenderer {
 
 namespace {
 
+class MockResourceContext : public content::ResourceContext {
+ public:
+  MockResourceContext() : test_request_context_(NULL) {}
+  virtual ~MockResourceContext() {}
+
+  void set_request_context(net::URLRequestContext* request_context) {
+    test_request_context_ = request_context;
+  }
+
+  // ResourceContext implementation:
+  virtual net::HostResolver* GetHostResolver() OVERRIDE {
+    return NULL;
+  }
+  virtual net::URLRequestContext* GetRequestContext() OVERRIDE {
+    return test_request_context_;
+  }
+
+ private:
+  net::URLRequestContext* test_request_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockResourceContext);
+};
+
 ACTION_P(QuitMessageLoop, loop_or_proxy) {
   loop_or_proxy->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-}  // end namespace
+}  // namespace
 
 WebRTCAudioDeviceTest::WebRTCAudioDeviceTest()
     : render_thread_(NULL), audio_util_callback_(NULL),
@@ -106,7 +129,7 @@ void WebRTCAudioDeviceTest::SetUp() {
                                                   MessageLoop::current()));
 
   // Construct the resource context on the UI thread.
-  resource_context_.reset(new content::MockResourceContext(NULL));
+  resource_context_.reset(new MockResourceContext);
 
   static const char kThreadName[] = "RenderThread";
   ChildProcess::current()->io_message_loop()->PostTask(FROM_HERE,
@@ -168,8 +191,10 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   audio_manager_.reset(media::AudioManager::Create());
 
   // Populate our resource context.
-  test_request_context_ = new TestURLRequestContext();
-  resource_context_->set_request_context(test_request_context_.get());
+  test_request_context_.reset(new TestURLRequestContext());
+  MockResourceContext* resource_context =
+      static_cast<MockResourceContext*>(resource_context_.get());
+  resource_context->set_request_context(test_request_context_.get());
   media_observer_.reset(new MockMediaObserver());
 
   has_input_devices_ = audio_manager_->HasAudioInputDevices();
@@ -183,7 +208,7 @@ void WebRTCAudioDeviceTest::UninitializeIOThread() {
   resource_context_.reset();
 
   audio_manager_.reset();
-  test_request_context_ = NULL;
+  test_request_context_.reset();
   initialize_com_.reset();
 }
 

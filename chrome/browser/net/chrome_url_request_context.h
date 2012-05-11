@@ -29,6 +29,11 @@ class ProfileIOData;
 class ChromeURLRequestContext : public net::URLRequestContext {
  public:
   ChromeURLRequestContext();
+  virtual ~ChromeURLRequestContext();
+
+  base::WeakPtr<ChromeURLRequestContext> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
   // Copies the state from |other| into this context.
   void CopyFrom(ChromeURLRequestContext* other);
@@ -56,10 +61,9 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // Callback for when the default charset changes.
   void OnDefaultCharsetChange(const std::string& default_charset);
 
- protected:
-  virtual ~ChromeURLRequestContext();
-
  private:
+  base::WeakPtrFactory<ChromeURLRequestContext> weak_factory_;
+
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to
   // be added to CopyFrom.
@@ -177,10 +181,10 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   // Access only from the IO thread.
   scoped_ptr<ChromeURLRequestContextFactory> factory_;
 
-  // NULL if not yet initialized. Otherwise, it is the net::URLRequestContext
+  // NULL if not yet initialized. Otherwise, it is the ChromeURLRequestContext
   // instance that was lazily created by GetURLRequestContext().
   // Access only from the IO thread.
-  base::WeakPtr<net::URLRequestContext> url_request_context_;
+  base::WeakPtr<ChromeURLRequestContext> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextGetter);
 };

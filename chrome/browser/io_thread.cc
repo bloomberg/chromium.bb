@@ -197,13 +197,13 @@ class LoggingNetworkChangeObserver
   DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
 };
 
-// Create a separate request context for PAC fetches to avoid reference cycles.
+// TODO(willchan): Remove proxy script fetcher context since it's not necessary
+// now that I got rid of refcounting URLRequestContexts.
 // See IOThread::Globals for details.
-scoped_refptr<net::URLRequestContext>
+net::URLRequestContext*
 ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
                                    net::NetLog* net_log) {
-  scoped_refptr<net::URLRequestContext> context(
-      new URLRequestContextWithUserAgent);
+  net::URLRequestContext* context = new URLRequestContextWithUserAgent;
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
   context->set_cert_verifier(globals->cert_verifier.get());
@@ -226,11 +226,10 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   return context;
 }
 
-scoped_refptr<net::URLRequestContext>
+net::URLRequestContext*
 ConstructSystemRequestContext(IOThread::Globals* globals,
                               net::NetLog* net_log) {
-  scoped_refptr<net::URLRequestContext> context(
-      new SystemURLRequestContext);
+  net::URLRequestContext* context = new SystemURLRequestContext;
   context->set_net_log(net_log);
   context->set_host_resolver(globals->host_resolver.get());
   context->set_cert_verifier(globals->cert_verifier.get());
@@ -281,9 +280,9 @@ SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
 net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(io_thread_->globals()->system_request_context);
+  DCHECK(io_thread_->globals()->system_request_context.get());
 
-  return io_thread_->globals()->system_request_context;
+  return io_thread_->globals()->system_request_context.get();
 }
 
 scoped_refptr<base::MessageLoopProxy>
@@ -456,8 +455,8 @@ void IOThread::Init() {
   }
   globals_->throttler_manager->set_net_log(net_log_);
 
-  globals_->proxy_script_fetcher_context =
-      ConstructProxyScriptFetcherContext(globals_, net_log_);
+  globals_->proxy_script_fetcher_context.reset(
+      ConstructProxyScriptFetcherContext(globals_, net_log_));
 
   sdch_manager_ = new net::SdchManager();
 
@@ -602,7 +601,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   globals_->system_proxy_service.reset(
       ProxyServiceFactory::CreateProxyService(
           net_log_,
-          globals_->proxy_script_fetcher_context,
+          globals_->proxy_script_fetcher_context.get(),
           system_proxy_config_service_.release(),
           command_line));
   net::HttpNetworkSession::Params system_params;
@@ -625,8 +624,8 @@ void IOThread::InitSystemRequestContextOnIOThread() {
           new net::HttpNetworkSession(system_params)));
   globals_->system_ftp_transaction_factory.reset(
       new net::FtpNetworkLayer(globals_->host_resolver.get()));
-  globals_->system_request_context =
-      ConstructSystemRequestContext(globals_, net_log_);
+  globals_->system_request_context.reset(
+      ConstructSystemRequestContext(globals_, net_log_));
 
   sdch_manager_->set_sdch_fetcher(
       new SdchDictionaryFetcher(system_url_request_context_getter_.get()));

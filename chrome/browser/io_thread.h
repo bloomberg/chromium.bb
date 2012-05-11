@@ -89,17 +89,17 @@ class IOThread : public content::BrowserThreadDelegate {
         proxy_script_fetcher_ftp_transaction_factory;
     scoped_ptr<net::URLRequestThrottlerManager> throttler_manager;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
-    // We use a separate URLRequestContext for PAC fetches, in order to break
-    // the reference cycle:
-    // URLRequestContext=>PAC fetch=>URLRequest=>URLRequestContext.
+    // TODO(willchan): Remove proxy script fetcher context since it's not
+    // necessary now that I got rid of refcounting URLRequestContexts.
+    //
     // The first URLRequestContext is |system_url_request_context|. We introduce
     // |proxy_script_fetcher_context| for the second context. It has a direct
     // ProxyService, since we always directly connect to fetch the PAC script.
-    scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context;
+    scoped_ptr<net::URLRequestContext> proxy_script_fetcher_context;
     scoped_ptr<net::ProxyService> system_proxy_service;
     scoped_ptr<net::HttpTransactionFactory> system_http_transaction_factory;
     scoped_ptr<net::FtpTransactionFactory> system_ftp_transaction_factory;
-    scoped_refptr<net::URLRequestContext> system_request_context;
+    scoped_ptr<net::URLRequestContext> system_request_context;
     SystemRequestContextLeakChecker system_request_context_leak_checker;
     // |system_cookie_store| and |system_server_bound_cert_service| are shared
     // between |proxy_script_fetcher_context| and |system_request_context|.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ AutomationResourceMessageFilter::AutomationDetails::~AutomationDetails() {}
 
 struct AutomationResourceMessageFilter::CookieCompletionInfo {
   scoped_refptr<BrowserMessageFilter> filter;
-  scoped_refptr<net::URLRequestContext> context;
+  net::URLRequestContext* context;
   int render_process_id;
   IPC::Message* reply_msg;
   scoped_refptr<AutomationResourceMessageFilter> automation_message_filter;

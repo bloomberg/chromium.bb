@@ -122,11 +122,11 @@ URLRequestContextGetter::URLRequestContextGetter(
 }
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
-  if (!url_request_context_) {
-    url_request_context_ =
-        new URLRequestContext(proxy_config_service_.Pass());
+  if (!url_request_context_.get()) {
+    url_request_context_.reset(
+        new URLRequestContext(proxy_config_service_.Pass()));
   }
-  return url_request_context_;
+  return url_request_context_.get();
 }
 
 scoped_refptr<base::MessageLoopProxy>

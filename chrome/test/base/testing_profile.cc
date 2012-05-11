@@ -99,7 +99,6 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
     set_cookie_store(cookie_monster);
   }
 
- private:
   virtual ~TestExtensionURLRequestContext() {}
 };
 
@@ -107,8 +106,8 @@ class TestExtensionURLRequestContextGetter
     : public net::URLRequestContextGetter {
  public:
   virtual net::URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestExtensionURLRequestContext();
+    if (!context_.get())
+      context_.reset(new TestExtensionURLRequestContext());
     return context_.get();
   }
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
@@ -119,7 +118,7 @@ class TestExtensionURLRequestContextGetter
   virtual ~TestExtensionURLRequestContextGetter() {}
 
  private:
-  scoped_refptr<net::URLRequestContext> context_;
+  scoped_ptr<net::URLRequestContext> context_;
 };
 
 ProfileKeyedService* CreateTestDesktopNotificationService(Profile* profile) {

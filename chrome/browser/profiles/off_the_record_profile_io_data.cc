@@ -250,9 +250,9 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   extensions_context->set_job_factory(job_factory());
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 OffTheRecordProfileIOData::InitializeAppRequestContext(
-    scoped_refptr<ChromeURLRequestContext> main_context,
+    ChromeURLRequestContext* main_context,
     const std::string& app_id) const {
   AppRequestContext* context = new AppRequestContext;
 
@@ -276,18 +276,18 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
   return context;
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 OffTheRecordProfileIOData::AcquireMediaRequestContext() const {
   NOTREACHED();
   return NULL;
 }
 
-scoped_refptr<ChromeURLRequestContext>
+ChromeURLRequestContext*
 OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
-    scoped_refptr<ChromeURLRequestContext> main_context,
+    ChromeURLRequestContext* main_context,
     const std::string& app_id) const {
   // We create per-app contexts on demand, unlike the others above.
-  scoped_refptr<ChromeURLRequestContext> app_request_context =
+  ChromeURLRequestContext* app_request_context =
       InitializeAppRequestContext(main_context, app_id);
   DCHECK(app_request_context);
   return app_request_context;

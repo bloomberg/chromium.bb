@@ -74,11 +74,11 @@ class ProfileIOData {
   // These should only be called at most once each. Ownership is reversed when
   // they get called, from ProfileIOData owning ChromeURLRequestContext to vice
   // versa.
-  scoped_refptr<ChromeURLRequestContext> GetMainRequestContext() const;
-  scoped_refptr<ChromeURLRequestContext> GetMediaRequestContext() const;
-  scoped_refptr<ChromeURLRequestContext> GetExtensionsRequestContext() const;
-  scoped_refptr<ChromeURLRequestContext> GetIsolatedAppRequestContext(
-      scoped_refptr<ChromeURLRequestContext> main_context,
+  ChromeURLRequestContext* GetMainRequestContext() const;
+  ChromeURLRequestContext* GetMediaRequestContext() const;
+  ChromeURLRequestContext* GetExtensionsRequestContext() const;
+  ChromeURLRequestContext* GetIsolatedAppRequestContext(
+      ChromeURLRequestContext* main_context,
       const std::string& app_id) const;
 
   // These are useful when the Chrome layer is called from the content layer
@@ -225,7 +225,7 @@ class ProfileIOData {
       chrome_browser_net::HttpServerPropertiesManager* manager) const;
 
   ChromeURLRequestContext* main_request_context() const {
-    return main_request_context_;
+    return main_request_context_.get();
   }
 
   // Destroys the ResourceContext first, to cancel any URLRequests that are
@@ -254,7 +254,7 @@ class ProfileIOData {
     net::URLRequestContext* request_context_;
   };
 
-  typedef base::hash_map<std::string, scoped_refptr<ChromeURLRequestContext> >
+  typedef base::hash_map<std::string, ChromeURLRequestContext*>
       AppRequestContextMap;
 
   // --------------------------------------------
@@ -267,17 +267,17 @@ class ProfileIOData {
 
   // Does an on-demand initialization of a RequestContext for the given
   // isolated app.
-  virtual scoped_refptr<ChromeURLRequestContext> InitializeAppRequestContext(
-      scoped_refptr<ChromeURLRequestContext> main_context,
+  virtual ChromeURLRequestContext* InitializeAppRequestContext(
+      ChromeURLRequestContext* main_context,
       const std::string& app_id) const = 0;
 
   // These functions are used to transfer ownership of the lazily initialized
   // context from ProfileIOData to the URLRequestContextGetter.
-  virtual scoped_refptr<ChromeURLRequestContext>
+  virtual ChromeURLRequestContext*
       AcquireMediaRequestContext() const = 0;
-  virtual scoped_refptr<ChromeURLRequestContext>
+  virtual ChromeURLRequestContext*
       AcquireIsolatedAppRequestContext(
-          scoped_refptr<ChromeURLRequestContext> main_context,
+          ChromeURLRequestContext* main_context,
           const std::string& app_id) const = 0;
 
   // The order *DOES* matter for the majority of these member variables, so
@@ -341,8 +341,8 @@ class ProfileIOData {
 
   // These are only valid in between LazyInitialize() and their accessor being
   // called.
-  mutable scoped_refptr<ChromeURLRequestContext> main_request_context_;
-  mutable scoped_refptr<ChromeURLRequestContext> extensions_request_context_;
+  mutable scoped_ptr<ChromeURLRequestContext> main_request_context_;
+  mutable scoped_ptr<ChromeURLRequestContext> extensions_request_context_;
   // One AppRequestContext per isolated app.
   mutable AppRequestContextMap app_request_context_map_;
 
