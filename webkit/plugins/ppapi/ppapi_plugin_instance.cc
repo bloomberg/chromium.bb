@@ -1614,6 +1614,9 @@ void PluginInstance::ClosePendingUserGesture(PP_Instance instance,
 
 PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
                                      PP_Resource device) {
+  // The Graphics3D instance can't be destroyed until we call
+  // setBackingTextureId.
+  scoped_refptr< ::ppapi::Resource> old_graphics = bound_graphics_;
   if (bound_graphics_.get()) {
     if (GetBoundGraphics2D()) {
       GetBoundGraphics2D()->BindToInstance(NULL);
