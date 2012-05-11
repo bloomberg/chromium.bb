@@ -349,8 +349,12 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .wifi-details', !this.wireless);
       updateHidden('#details-internet-page .vpn-details', !this.vpn);
       updateHidden('#details-internet-page .proxy-details', !this.showProxy);
-      /* Network information merged into the Wifi tab for wireless networks. */
-      updateHidden('#details-internet-page .network-details', this.wireless);
+      /* Network information merged into the Wifi tab for wireless networks
+         unless the option is set for enabling a static IP configuration. */
+      updateHidden('#details-internet-page .network-details',
+                   this.wireless && !this.showStaticIPConfig);
+      updateHidden('#details-internet-page .wifi-network-setting',
+                   this.showStaticIPConfig);
 
       // Cell plan related.
       $('plan-list').hidden = this.cellplanloading;
@@ -638,6 +642,7 @@ cr.define('options.internet', function() {
     detailsPage.connecting = data.connecting;
     detailsPage.connected = data.connected;
     detailsPage.showProxy = data.showProxy;
+    detailsPage.showStaticIPConfig = data.showStaticIPConfig;
     $('connection-state').textContent = data.connectionState;
 
     var inetAddress = '';
