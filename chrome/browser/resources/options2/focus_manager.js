@@ -18,6 +18,13 @@ cr.define('options', function() {
 
   FocusManager.prototype = {
     /**
+     * Whether focus is being transferred backward or forward through the DOM.
+     * @type {boolean}
+     * @private
+     */
+    focusDirBackwards_: false,
+
+    /**
      * Determines whether the |child| is a descendant of |parent| in the page's
      * DOM.
      * @param {Element} parent The parent element to test.
@@ -134,17 +141,38 @@ cr.define('options', function() {
       // in the topmost visible page. The target should not be focused.
       event.target.blur();
 
-      // TODO(khorimoto): Figure out whether to focus first or last element.
-      // (Determine if Tab or Shift+Tab was pressed.)
-      this.tryFocusFirstElement_();
+      // If |this.focusDirBackwards_| is true, the user has pressed "Shift+Tab"
+      // and has caused the focus to be transferred backward, outside of the
+      // current dialog. In this case, loop around and try to focus the last
+      // element of the dialog; otherwise, try to focus the first element of the
+      // dialog.
+      if (this.focusDirBackwards_)
+        this.tryFocusLastElement_();
+      else
+        this.tryFocusFirstElement_();
     },
 
     /**
-     * Initializes the FocusManager by listening for focus events in the
-     * document.
+     * Handler for keydown events on the page.
+     * @private
+     */
+    checkKeyDown_: function(event) {
+      /** @const */ var tabKeyCode = 9;
+
+      if (event.keyCode == tabKeyCode) {
+        // If the "Shift" key is held, focus is being transferred backward in
+        // the page.
+        this.focusDirBackwards_ = event.shiftKey ? true : false;
+      }
+    },
+
+    /**
+     * Initializes the FocusManager by listening for events in the document.
      */
     initialize: function() {
       document.addEventListener('focus', this.checkFocus_.bind(this), true);
+      document.addEventListener('keydown', this.checkKeyDown_.bind(this),
+          true);
     },
   };
 
