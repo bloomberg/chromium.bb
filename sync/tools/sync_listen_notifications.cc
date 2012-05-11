@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
                 "after logging into\n"
                 "sync to get the token to pass into this utility.\n",
                 argv[0],
-                kTokenSwitch, kEmailSwitch, kHostPortSwitch,
+                kEmailSwitch, kTokenSwitch, kHostPortSwitch,
                 kTrySslTcpFirstSwitch, kAllowInsecureConnectionSwitch,
                 kNotificationMethodSwitch);
     return -1;
