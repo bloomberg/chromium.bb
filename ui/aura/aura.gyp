@@ -19,6 +19,8 @@
         '../ui.gyp:gfx_resources',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_resources_2x',
+        '../ui.gyp:ui_resources_standard',
       ],
       'defines': [
         'AURA_IMPLEMENTATION',
@@ -130,6 +132,7 @@
         '../../testing/gtest.gyp:gtest',
         '../ui.gyp:ui',
         'aura',
+        'test_support_aura_pak',
       ],
       'include_dirs': [
         '..',
@@ -143,6 +146,8 @@
         'test/event_generator.h',
         'test/test_activation_client.cc',
         'test/test_activation_client.h',
+        'test/test_aura_initializer.cc',
+        'test/test_aura_initializer.h',
         'test/test_event_filter.cc',
         'test/test_event_filter.h',
         'test/test_screen.cc',
@@ -155,6 +160,36 @@
         'test/test_window_delegate.h',
       ],
     },
+    {
+      # We build a minimal set of resources required for test_support_aura.
+      'target_name': 'test_support_aura_pak',
+      'type': 'none',
+      'dependencies': [
+        '<(DEPTH)/ui/ui.gyp:ui_resources_standard',
+      ],
+      'variables': {
+        'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
+      },
+      'actions': [
+        {
+          'action_name': 'repack_test_support_aura_pack',
+          'variables': {
+            'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
+            ],
+          },
+          'inputs': [
+            '<(repack_path)',
+            '<@(pak_inputs)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/test_support_aura_resources.pak',
+          ],
+          'action': ['python', '<(repack_path)', '<@(_outputs)',
+                     '<@(pak_inputs)'],
+        },
+      ],
+    },                                                                  
     {
       'target_name': 'aura_demo',
       'type': 'executable',

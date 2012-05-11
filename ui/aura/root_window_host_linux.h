@@ -101,6 +101,9 @@ class RootWindowHostLinux : public RootWindowHost,
 
   scoped_ptr<ui::ViewProp> prop_;
 
+  class ImageCursors;
+  scoped_ptr<ImageCursors> image_cursors_;
+
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostLinux);
 };
 

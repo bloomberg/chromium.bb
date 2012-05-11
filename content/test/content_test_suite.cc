@@ -13,6 +13,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/test/test_aura_initializer.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
@@ -45,6 +49,9 @@ class TestInitializationListener : public testing::EmptyTestEventListener {
 
 ContentTestSuite::ContentTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv) {
+#if defined(USE_AURA)
+  aura_initializer_.reset(new aura::test::TestAuraInitializer);
+#endif
 }
 
 ContentTestSuite::~ContentTestSuite() {

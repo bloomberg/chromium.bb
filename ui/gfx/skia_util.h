@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,11 @@ UI_EXPORT string16 RemoveAcceleratorChar(const string16& s,
                                          char16 accelerator_char,
                                          int* accelerated_char_pos,
                                          int* accelerated_char_span);
+
+// Converts Skia ARGB format pixels in |skia| to RGBA.
+UI_EXPORT void ConvertSkiaToRGBA(const unsigned char* skia,
+                                 int pixel_width,
+                                 unsigned char* rgba);
 
 }  // namespace gfx
 

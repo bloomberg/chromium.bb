@@ -3,5 +3,6 @@ include_rules = [
   # Testing utilities can access anything in content/
   "+content",
   "+media/base",  # For ChannelLayout in WebRTC tests.
-  "+ui/base/resource/data_pack.h"
+  "+ui/aura/test/test_aura_initializer.h",
+  "+ui/base/resource/data_pack.h",
 ]

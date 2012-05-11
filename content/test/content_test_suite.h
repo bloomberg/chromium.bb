@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,14 @@
 #include "base/test/test_suite.h"
 #include "base/win/scoped_com_initializer.h"
 
+#if defined(USE_AURA)
+namespace aura {
+namespace test {
+class TestAuraInitializer;
+}  // namespace test
+}  // namespace aura
+#endif
+
 class ContentTestSuite : public base::TestSuite {
  public:
   ContentTestSuite(int argc, char** argv);
@@ -20,6 +28,10 @@ class ContentTestSuite : public base::TestSuite {
 
  private:
   base::win::ScopedCOMInitializer com_initializer_;
+
+#if defined(USE_AURA)
+  scoped_ptr<aura::test::TestAuraInitializer> aura_initializer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentTestSuite);
 };

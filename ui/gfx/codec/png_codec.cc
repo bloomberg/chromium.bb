@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -76,25 +77,7 @@ void ConvertSkiatoRGB(const unsigned char* skia, int pixel_width,
 
 void ConvertSkiatoRGBA(const unsigned char* skia, int pixel_width,
                        unsigned char* rgba, bool* is_opaque) {
-  int total_length = pixel_width * 4;
-  for (int i = 0; i < total_length; i += 4) {
-    const uint32_t pixel_in = *reinterpret_cast<const uint32_t*>(&skia[i]);
-
-    // Pack the components here.
-    int alpha = SkGetPackedA32(pixel_in);
-    if (alpha != 0 && alpha != 255) {
-      SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(pixel_in);
-      rgba[i + 0] = SkColorGetR(unmultiplied);
-      rgba[i + 1] = SkColorGetG(unmultiplied);
-      rgba[i + 2] = SkColorGetB(unmultiplied);
-      rgba[i + 3] = alpha;
-    } else {
-      rgba[i + 0] = SkGetPackedR32(pixel_in);
-      rgba[i + 1] = SkGetPackedG32(pixel_in);
-      rgba[i + 2] = SkGetPackedB32(pixel_in);
-      rgba[i + 3] = alpha;
-    }
-  }
+  gfx::ConvertSkiaToRGBA(skia, pixel_width, rgba);
 }
 
 }  // namespace
