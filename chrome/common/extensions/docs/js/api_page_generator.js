@@ -200,7 +200,8 @@ function fetchSchema() {
   schema = [];
 
   function onSchemaContent(content) {
-    schema = schema.concat(JSON.parse(JSON.minify(content)));
+    if (content)
+      schema = schema.concat(JSON.parse(JSON.minify(content)));
     if (++schemas_retrieved < schemas_to_retrieve.length)
       return;
     if (pageName.toLowerCase() == 'samples') {
@@ -212,9 +213,10 @@ function fetchSchema() {
 
   for (var i = 0; i < schemas_to_retrieve.length; ++i) {
     var schema_path = schemas_to_retrieve[i];
-    fetchContent(schema_path, onSchemaContent, function(error) {
-      alert('Failed to load ' + schema_path);
-    });
+    fetchContent(schema_path, onSchemaContent, function(path, error) {
+      console.error('Failed to load schema', path, error);
+      onSchemaContent();
+    }.bind(null, schema_path));
   }
 }
 
