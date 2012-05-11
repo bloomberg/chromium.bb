@@ -115,10 +115,9 @@ class PanelStrip {
   // in this strip.
   virtual void StartDraggingPanelWithinStrip(Panel* panel) = 0;
 
-  // Drags |panel| within this strip.
-  // |delta_x| and |delta_y| represents the offset from the last mouse location
-  // when StartDraggingPanelWithinStrip or DragPanelWithinStrip is called.
-  virtual void DragPanelWithinStrip(Panel* panel, int delta_x, int delta_y) = 0;
+  // Drags |panel| within this strip to |target_position|.
+  virtual void DragPanelWithinStrip(Panel* panel,
+                                    const gfx::Point& target_position) = 0;
 
   // Ends dragging |panel| within this strip. |aborted| means the drag within
   // this strip is aborted due to one of the following:

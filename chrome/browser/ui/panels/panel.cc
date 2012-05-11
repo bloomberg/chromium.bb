@@ -105,8 +105,8 @@ void Panel::LimitSizeToDisplayArea(const gfx::Rect& display_area) {
   int max_width = manager()->GetMaxPanelWidth();
   int max_height = manager()->GetMaxPanelHeight();
 
-  // If the panel has been user-resized, ensure that max size does not exceed
-  // the display area.
+  // If the custom max size is used, ensure that it does not exceed the display
+  // area.
   if (max_size_policy_ == CUSTOM_MAX_SIZE) {
     int current_max_width = max_size_.width();
     if (current_max_width > max_width)

@@ -25,6 +25,11 @@ PanelDragController::PanelDragController(PanelManager* panel_manager)
 PanelDragController::~PanelDragController() {
 }
 
+gfx::Point PanelDragController::GetPanelPositionForMouseLocation(
+    const gfx::Point& mouse_location) const {
+  return mouse_location.Subtract(offset_from_mouse_location_on_drag_start_);
+}
+
 void PanelDragController::StartDragging(Panel* panel,
                                         const gfx::Point& mouse_location) {
   DCHECK(!dragging_panel_);
@@ -69,10 +74,21 @@ void PanelDragController::Drag(const gfx::Point& mouse_location) {
     // Start the dragging in new strip.
     target_strip->StartDraggingPanelWithinStrip(dragging_panel_);
   } else {
-    current_strip->DragPanelWithinStrip(
-        dragging_panel_,
-        mouse_location.x() - last_mouse_location_.x(),
-        mouse_location.y() - last_mouse_location_.y());
+    gfx::Point target_panel_position =
+        GetPanelPositionForMouseLocation(mouse_location);
+
+    // If the mouse is within the main screen area, make sure that the top
+    // border of panel cannot go outside the work area. This is to prevent
+    // panel's titlebar from being moved under the taskbar or OSX menu bar
+    // that is aligned to top screen edge.
+    int display_area_top_position = panel_manager_->display_area().y();
+    if (panel_manager_->display_settings_provider()->
+            GetPrimaryScreenArea().Contains(mouse_location) &&
+        target_panel_position.y() < display_area_top_position) {
+      target_panel_position.set_y(display_area_top_position);
+    }
+
+    current_strip->DragPanelWithinStrip(dragging_panel_, target_panel_position);
   }
 
   last_mouse_location_ = mouse_location;
@@ -138,11 +154,11 @@ bool PanelDragController::CanDragToDockedStrip(
   if (dragging_panel_->panel_strip()->type() != PanelStrip::DETACHED)
     return false;
 
-  // Compute target panel bounds. The origin is computed based on the fact that
-  // the panel should follow the mouse movement. The size remains unchanged.
+  // Compute target panel bounds. Only the origin is computed based on the mouse
+  // location. The size remains unchanged.
   gfx::Rect target_panel_bounds = dragging_panel_->GetBounds();
   target_panel_bounds.set_origin(
-      mouse_location.Subtract(offset_from_mouse_location_on_drag_start_));
+      GetPanelPositionForMouseLocation(mouse_location));
 
   // If the target panel bounds is outside the main display area where the
   // docked strip resides, as in the multi-monitor scenario, we want it to be

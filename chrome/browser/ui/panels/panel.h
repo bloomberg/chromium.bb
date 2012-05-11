@@ -331,8 +331,8 @@ class Panel : public BrowserWindow,
   friend class PanelBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, RestoredBounds);
 
-  enum MAX_SIZE_POLICY {
-    // Default maximum size is propontial to the work area.
+  enum MaxSizePolicy {
+    // Default maximum size is proportional to the work area.
     DEFAULT_MAX_SIZE,
     // Custom maximum size is used when the panel is resized by the user.
     CUSTOM_MAX_SIZE
@@ -369,7 +369,7 @@ class Panel : public BrowserWindow,
   // the growing content and WebKit would add the scrollbars in such case.
   gfx::Size max_size_;
 
-  MAX_SIZE_POLICY max_size_policy_;
+  MaxSizePolicy max_size_policy_;
 
   // True if this panel auto resizes based on content.
   bool auto_resizable_;

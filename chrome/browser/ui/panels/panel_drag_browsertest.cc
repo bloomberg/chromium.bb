@@ -22,11 +22,12 @@ class PanelDragBrowserTest : public BasePanelBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     BasePanelBrowserTest::SetUpOnMainThread();
 
-    // All the tests here assume 800x600 work area. Do the check now.
-    gfx::Rect display_area = PanelManager::GetInstance()->
-        display_settings_provider()->GetDisplayArea();
-    DCHECK(display_area.width() == 800);
-    DCHECK(display_area.height() == 600);
+    // All the tests here assume using mocked 800x600 screen area for the
+    // primary monitor. Do the check now.
+    gfx::Rect primary_screen_area = PanelManager::GetInstance()->
+        display_settings_provider()->GetPrimaryScreenArea();
+    DCHECK(primary_screen_area.width() == 800);
+    DCHECK(primary_screen_area.height() == 600);
   }
 
   // Drag |panel| from its origin by the offset |delta|.
@@ -1219,6 +1220,33 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachWithSqueeze) {
   EXPECT_EQ(PanelStrip::DOCKED, panel5->panel_strip()->type());
   EXPECT_EQ(PanelStrip::DOCKED, panel6->panel_strip()->type());
   EXPECT_EQ(PanelStrip::DOCKED, panel7->panel_strip()->type());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragDetachedPanelToTop) {
+  // Setup the test areas to have top-aligned bar excluded from work area.
+  const gfx::Rect primary_screen_area(0, 0, 800, 600);
+  const gfx::Rect work_area(0, 10, 800, 590);
+  SetTestingAreas(primary_screen_area, work_area);
+
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
+
+  // Drag up the panel. Expect that the panel should not go outside the top of
+  // the work area.
+  gfx::Point drag_to_location(250, 0);
+  DragPanelToMouseLocation(panel, drag_to_location);
+  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  EXPECT_EQ(drag_to_location.x(), panel->GetBounds().origin().x());
+  EXPECT_EQ(work_area.y(), panel->GetBounds().origin().y());
+
+  // Drag down the panel. Expect that the panel can be dragged without
+  // constraint.
+  drag_to_location = gfx::Point(280, 150);
+  DragPanelToMouseLocation(panel, drag_to_location);
+  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  EXPECT_EQ(drag_to_location, panel->GetBounds().origin());
 
   panel_manager->CloseAll();
 }

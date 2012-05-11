@@ -61,8 +61,25 @@ class DisplaySettingsProvider {
   void AddFullScreenObserver(FullScreenObserver* observer);
   void RemoveFullScreenObserver(FullScreenObserver* observer);
 
+  //
+  // Primary Screen Area:
+  //   This is the screen area of the primary monitor.
+  // Work Area:
+  //   This is the standard work area returned by the system. It is usually
+  //   computed by the system as the part of primary screen area that excludes
+  //   top-most system menu or bars aligned to the screen edges.
+  // Display Area:
+  //   This is the area further trimmed down for the purpose of showing panels.
+  //   On Windows, we also exclude auto-hiding taskbars. For all other
+  //   platforms, it is same as work area.
+  //
+
   // Returns the bounds of the display area.
   gfx::Rect GetDisplayArea();
+
+  // Returns the bounds of the primary screen area. This can be overridden by
+  // the testing code.
+  virtual gfx::Rect GetPrimaryScreenArea() const;
 
   // Invoked when the display settings has changed, due to any of the following:
   // 1) screen resolution changes

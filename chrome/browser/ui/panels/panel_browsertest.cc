@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   panel_manager->enable_auto_sizing(true);
   // Bigger space is needed by this test.
-  SetTestingWorkArea(gfx::Rect(0, 0, 1200, 900));
+  SetTestingAreas(gfx::Rect(0, 0, 1200, 900), gfx::Rect());
 
   // Create a test panel with tab contents loaded.
   CreatePanelParams params("PanelTest1", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -1512,7 +1512,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
   // Shrink the work area. Expect max size and full size become smaller.
   gfx::Size smaller_work_area_size = gfx::Size(500, 300);
-  SetTestingWorkArea(gfx::Rect(gfx::Point(0, 0), smaller_work_area_size));
+  SetTestingAreas(gfx::Rect(gfx::Point(0, 0), smaller_work_area_size),
+                  gfx::Rect());
   EXPECT_GT(old_max_size.width(), panel->max_size().width());
   EXPECT_GT(old_max_size.height(), panel->max_size().height());
   EXPECT_GT(smaller_work_area_size.width(), panel->max_size().width());
@@ -1527,16 +1528,19 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
                        CustomMaxSizeOnDisplaySettingsChange) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanelWithBounds("1", gfx::Rect(0, 0, 240, 220));
 
-  // Simulate user resizing.
+  // Trigger custom max size by user resizing.
   gfx::Size bigger_size = gfx::Size(550, 400);
-  panel->IncreaseMaxSize(bigger_size);
-  gfx::Rect bounds = panel->GetBounds();
-  bounds.set_size(bigger_size);
-  panel->OnPanelStartUserResizing();
-  panel->panel_strip()->OnPanelResizedByMouse(panel, bounds);
-  panel->OnPanelEndUserResizing();
+  gfx::Point mouse_location = panel->GetBounds().origin();
+  panel_manager->StartResizingByMouse(panel,
+                                      mouse_location,
+                                      panel::RESIZE_TOP_LEFT);
+  mouse_location.Offset(panel->GetBounds().width() - bigger_size.width(),
+                        panel->GetBounds().height() - bigger_size.height());
+  panel_manager->ResizeByMouse(mouse_location);
+  panel_manager->EndResizingByMouse(false);
 
   gfx::Size old_max_size = panel->max_size();
   EXPECT_EQ(bigger_size, old_max_size);
@@ -1545,7 +1549,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 
   // Shrink the work area. Expect max size and full size become smaller.
   gfx::Size smaller_work_area_size = gfx::Size(500, 300);
-  SetTestingWorkArea(gfx::Rect(gfx::Point(0, 0), smaller_work_area_size));
+  SetTestingAreas(gfx::Rect(gfx::Point(0, 0), smaller_work_area_size),
+                  gfx::Rect());
   EXPECT_GT(old_max_size.width(), panel->max_size().width());
   EXPECT_GT(old_max_size.height(), panel->max_size().height());
   EXPECT_GE(smaller_work_area_size.width(), panel->max_size().width());
@@ -1749,11 +1754,11 @@ class PanelAndNotificationTest : public PanelBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    PanelBrowserTest::SetUpOnMainThread();
-
     // Do not use our own testing work area since desktop notification code
     // does not have the hook up for testing work area.
-    SetTestingWorkArea(gfx::Rect());
+    disable_display_settings_mock();
+
+    PanelBrowserTest::SetUpOnMainThread();
 
     g_browser_process->local_state()->SetInteger(
         prefs::kDesktopNotificationPosition, BalloonCollection::LOWER_RIGHT);

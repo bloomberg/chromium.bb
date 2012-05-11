@@ -68,6 +68,10 @@ gfx::Rect DisplaySettingsProvider::GetDisplayArea() {
   return adjusted_work_area_;
 }
 
+gfx::Rect DisplaySettingsProvider::GetPrimaryScreenArea() const {
+  return gfx::Screen::GetPrimaryMonitor().bounds();
+}
+
 gfx::Rect DisplaySettingsProvider::GetWorkArea() const {
 #if defined(OS_MACOSX)
   // On OSX, panels should be dropped all the way to the bottom edge of the

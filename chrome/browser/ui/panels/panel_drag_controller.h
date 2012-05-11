@@ -58,6 +58,11 @@ class PanelDragController {
   bool CanDragToDetachedStrip(
       const gfx::Point& mouse_location, gfx::Rect* new_panel_bounds) const;
 
+  // The potential panel position is computed based on the fact that the panel
+  // should follow the mouse movement.
+  gfx::Point GetPanelPositionForMouseLocation(
+      const gfx::Point& mouse_location) const;
+
   PanelManager* panel_manager_;  // Weak, owns us.
 
   // Panel currently being dragged.

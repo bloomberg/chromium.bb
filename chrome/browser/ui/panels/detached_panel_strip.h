@@ -54,8 +54,7 @@ class DetachedPanelStrip : public PanelStrip {
   virtual void DiscardSavedPanelPlacement()  OVERRIDE;
   virtual void StartDraggingPanelWithinStrip(Panel* panel) OVERRIDE;
   virtual void DragPanelWithinStrip(Panel* panel,
-                                    int delta_x,
-                                    int delta_y) OVERRIDE;
+                                    const gfx::Point& target_position) OVERRIDE;
   virtual void EndDraggingPanelWithinStrip(Panel* panel,
                                            bool aborted) OVERRIDE;
   virtual void ClearDraggingStateWhenPanelClosed() OVERRIDE;

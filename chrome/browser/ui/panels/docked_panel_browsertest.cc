@@ -14,11 +14,12 @@ class DockedPanelBrowserTest : public BasePanelBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     BasePanelBrowserTest::SetUpOnMainThread();
 
-    // All the tests here assume 800x600 work area. Do the check now.
-    gfx::Rect display_area = PanelManager::GetInstance()->
-        display_settings_provider()->GetDisplayArea();
-    DCHECK(display_area.width() == 800);
-    DCHECK(display_area.height() == 600);
+    // All the tests here assume using mocked 800x600 screen area for the
+    // primary monitor. Do the check now.
+    gfx::Rect primary_screen_area = PanelManager::GetInstance()->
+        display_settings_provider()->GetPrimaryScreenArea();
+    DCHECK(primary_screen_area.width() == 800);
+    DCHECK(primary_screen_area.height() == 600);
   }
 };
 

@@ -19,11 +19,12 @@ class PanelResizeBrowserTest : public BasePanelBrowserTest {
   virtual void SetUpOnMainThread() OVERRIDE {
     BasePanelBrowserTest::SetUpOnMainThread();
 
-    // All the tests here assume 800x600 work area. Do the check now.
-    gfx::Rect display_area = PanelManager::GetInstance()->
-        display_settings_provider()->GetDisplayArea();
-    DCHECK(display_area.width() == 800);
-    DCHECK(display_area.height() == 600);
+    // All the tests here assume using mocked 800x600 screen area for the
+    // primary monitor. Do the check now.
+    gfx::Rect primary_screen_area = PanelManager::GetInstance()->
+        display_settings_provider()->GetPrimaryScreenArea();
+    DCHECK(primary_screen_area.width() == 800);
+    DCHECK(primary_screen_area.height() == 600);
   }
 };
 
@@ -362,6 +363,50 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeAndCancel) {
   panel_manager->EndResizingByMouse(true);
   EXPECT_EQ(original_bounds, panel->GetBounds());
   EXPECT_FALSE(resize_controller->IsResizing());
+
+  panel_manager->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToTop) {
+  // Setup the test areas to have top-aligned bar excluded from work area.
+  const gfx::Rect primary_scren_area(0, 0, 800, 600);
+  const gfx::Rect work_area(0, 10, 800, 590);
+  SetTestingAreas(primary_scren_area, work_area);
+
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
+  gfx::Rect bounds = panel->GetBounds();
+
+  // Try resizing by the top left corner.
+  gfx::Point mouse_location = bounds.origin();
+  panel_manager->StartResizingByMouse(panel,
+                                      mouse_location,
+                                      panel::RESIZE_TOP_LEFT);
+
+  // Try moving the mouse outside the top of the work area. Expect that panel's
+  // top position will not exceed the top of the work area.
+  mouse_location = gfx::Point(250, 2);
+  panel_manager->ResizeByMouse(mouse_location);
+
+  bounds.set_width(bounds.width() + bounds.x() - mouse_location.x());
+  bounds.set_height(bounds.height() + bounds.y() - work_area.y());
+  bounds.set_x(mouse_location.x());
+  bounds.set_y(work_area.y());
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  // Try moving the mouse inside the work area. Expect that the panel can be
+  // resized without constraint.
+  mouse_location = gfx::Point(280, 50);
+  panel_manager->ResizeByMouse(mouse_location);
+
+  bounds.set_width(bounds.width() + bounds.x() - mouse_location.x());
+  bounds.set_height(bounds.height() + bounds.y() - mouse_location.y());
+  bounds.set_x(mouse_location.x());
+  bounds.set_y(mouse_location.y());
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  panel_manager->EndResizingByMouse(false);
+  EXPECT_EQ(bounds, panel->GetBounds());
 
   panel_manager->CloseAll();
 }

@@ -84,8 +84,22 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
                      mouse_location_at_start_.x() - mouse_location.x(), 0));
   }
   if (ResizingTop(sides_resized_)) {
-    bounds.set_height(std::max(bounds_at_start_.height() +
-                      mouse_location_at_start_.y() - mouse_location.y(), 0));
+    int new_height = std::max(bounds_at_start_.height() +
+                     mouse_location_at_start_.y() - mouse_location.y(), 0);
+    int new_y = bounds_at_start_.bottom() - new_height;
+
+    // If the mouse is within the main screen area, make sure that the top
+    // border of panel cannot go outside the work area. This is to prevent
+    // panel's titlebar from being resized under the taskbar or OSX menu bar
+    // that is aligned to top screen edge.
+    int display_area_top_position = panel_manager_->display_area().y();
+    if (panel_manager_->display_settings_provider()->
+            GetPrimaryScreenArea().Contains(mouse_location) &&
+        new_y < display_area_top_position) {
+      new_height -= display_area_top_position - new_y;
+    }
+
+    bounds.set_height(new_height);
   }
 
   resizing_panel_->IncreaseMaxSize(bounds.size());
@@ -94,15 +108,11 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
   // updated above.
   bounds.set_size(resizing_panel_->ClampSize(bounds.size()));
 
-  if (ResizingLeft(sides_resized_)) {
-    bounds.set_x(bounds_at_start_.x() -
-                 (bounds.width() - bounds_at_start_.width()));
-  }
+  if (ResizingLeft(sides_resized_))
+    bounds.set_x(bounds_at_start_.right() - bounds.width());
 
-  if (ResizingTop(sides_resized_)) {
-    bounds.set_y(bounds_at_start_.y() -
-                 (bounds.height() - bounds_at_start_.height()));
-  }
+  if (ResizingTop(sides_resized_))
+    bounds.set_y(bounds_at_start_.bottom() - bounds.height());
 
   if (bounds != resizing_panel_->GetBounds())
     panel_manager_->OnPanelResizedByMouse(resizing_panel_, bounds);

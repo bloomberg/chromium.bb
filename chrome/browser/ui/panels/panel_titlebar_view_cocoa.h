@@ -75,15 +75,6 @@ enum PanelDragState {
 
   // Drag support.
   NSPoint dragStartLocation_;  // In cocoa's screen coordinates.
-  // Vertical distance, in screen coordinates, from the top edge of the window
-  // to the drag start mouse location. Used to prevent dragging the window under
-  // the top level menu.
-  double dragStartYOffset_;
-  // Capture the visible frame and full screen bounds used during drag.
-  // These are used to prevent dragging the panel under the system menu bar in
-  // the way the system drag does.
-  NSRect visibleFrameForDrag_;
-  NSRect screenBoundsForDrag_;
 }
 
 // Callbacks from Close, Minimize, and Restore buttons.

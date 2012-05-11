@@ -319,16 +319,16 @@ void DockedPanelStrip::StartDraggingPanelWithinStrip(Panel* panel) {
 }
 
 void DockedPanelStrip::DragPanelWithinStrip(Panel* panel,
-                                            int delta_x,
-                                            int delta_y) {
+                                            const gfx::Point& target_position) {
   // Moves this panel to the dragging position.
   // Note that we still allow the panel to be moved vertically until it gets
   // aligned to the bottom area.
   gfx::Rect new_bounds(panel->GetBounds());
-  new_bounds.set_x(new_bounds.x() + delta_x);
+  new_bounds.set_x(target_position.x());
+  int delta_x = new_bounds.x() - panel->GetBounds().x();
   int bottom = GetBottomPositionForExpansionState(panel->expansion_state());
   if (new_bounds.bottom() != bottom) {
-    new_bounds.set_y(new_bounds.y() + delta_y);
+    new_bounds.set_y(target_position.y());
     if (new_bounds.bottom() > bottom)
       new_bounds.set_y(bottom - new_bounds.height());
   }

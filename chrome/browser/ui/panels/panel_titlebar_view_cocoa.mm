@@ -465,10 +465,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (void)mouseDown:(NSEvent*)event {
   dragState_ = PANEL_DRAG_CAN_START;
-  NSWindow* window = [self window];
-  NSPoint mouseLocationInWindow = [event locationInWindow];
-  dragStartLocation_ = [window convertBaseToScreen:mouseLocationInWindow];
-  dragStartYOffset_ = NSMaxY([window frame]) - dragStartLocation_.y;
+  dragStartLocation_ =
+      [[self window] convertBaseToScreen:[event locationInWindow]];
 }
 
 - (void)mouseUp:(NSEvent*)event {
@@ -547,25 +545,9 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   }
 }
 
-- (NSPoint)clampDragMouseLocation:(NSPoint)mouseLocation {
-  DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
-  // If mouse is on the main screen and would cause the window to move
-  // under the system menu, clamp the reported y coordinate to prevent this.
-  if (NSMouseInRect(mouseLocation, screenBoundsForDrag_, NO) &&
-      mouseLocation.y > NSMaxY(visibleFrameForDrag_) - dragStartYOffset_) {
-    mouseLocation.y = NSMaxY(visibleFrameForDrag_) - dragStartYOffset_;
-  }
-  return mouseLocation;
-}
-
 - (void)startDrag:(NSPoint)mouseLocation {
   DCHECK(dragState_ == PANEL_DRAG_CAN_START);
   dragState_ = PANEL_DRAG_IN_PROGRESS;
-  NSScreen* screenWithMenuBar = [[NSScreen screens] objectAtIndex:0];
-  visibleFrameForDrag_ = [screenWithMenuBar visibleFrame];
-  screenBoundsForDrag_ = [screenWithMenuBar frame];
-
-  mouseLocation = [self clampDragMouseLocation:mouseLocation];
   [controller_ startDrag:mouseLocation];
 }
 
@@ -573,16 +555,12 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   if (dragState_ == PANEL_DRAG_IN_PROGRESS)
     [controller_ endDrag:cancelled];
   dragState_ = PANEL_DRAG_SUPPRESSED;
-  visibleFrameForDrag_ = NSZeroRect;
-  screenBoundsForDrag_ = NSZeroRect;
-  dragStartYOffset_ = 0;
   dragStartLocation_ = NSZeroPoint;
 }
 
 - (void)drag:(NSPoint)mouseLocation {
   if (dragState_ != PANEL_DRAG_IN_PROGRESS)
     return;
-  mouseLocation = [self clampDragMouseLocation:mouseLocation];
   [controller_ drag:mouseLocation];
 }
 

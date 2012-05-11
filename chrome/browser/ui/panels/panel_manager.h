@@ -110,6 +110,8 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
     return display_settings_provider_.get();
   }
 
+  gfx::Rect display_area() const { return display_area_; }
+
   PanelMouseWatcher* mouse_watcher() const {
     return panel_mouse_watcher_.get();
   }

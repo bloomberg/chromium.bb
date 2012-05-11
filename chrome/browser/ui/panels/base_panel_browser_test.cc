@@ -43,8 +43,8 @@ using content::WebContentsTester;
 
 namespace {
 
-const int kTestingWorkAreaWidth = 800;
-const int kTestingWorkAreaHeight = 600;
+const gfx::Rect kTestingPrimaryScreenArea = gfx::Rect(0, 0, 800, 600);
+const gfx::Rect kTestingWorkArea = gfx::Rect(0, 0, 800, 580);
 
 struct MockDesktopBar {
   bool auto_hiding_enabled;
@@ -59,6 +59,7 @@ class MockDisplaySettingsProviderImpl :
   virtual ~MockDisplaySettingsProviderImpl() { }
 
   // Overridden from DisplaySettingsProvider:
+  virtual gfx::Rect GetPrimaryScreenArea() const OVERRIDE;
   virtual gfx::Rect GetWorkArea() const OVERRIDE;
   virtual bool IsAutoHidingDesktopBarEnabled(
       DesktopBarAlignment alignment) OVERRIDE;
@@ -68,6 +69,8 @@ class MockDisplaySettingsProviderImpl :
       DesktopBarAlignment alignment) const OVERRIDE;
 
   // Overridden from MockDisplaySettingsProvider:
+  virtual void SetPrimaryScreenArea(
+      const gfx::Rect& primary_screen_area) OVERRIDE;
   virtual void SetWorkArea(const gfx::Rect& work_area) OVERRIDE;
   virtual void EnableAutoHidingDesktopBar(DesktopBarAlignment alignment,
                                           bool enabled,
@@ -78,6 +81,7 @@ class MockDisplaySettingsProviderImpl :
                                       int thickness) OVERRIDE;
 
  private:
+  gfx::Rect testing_primary_screen_area_;
   gfx::Rect testing_work_area_;
   MockDesktopBar mock_desktop_bars[3];
 
@@ -110,11 +114,12 @@ MockDisplaySettingsProviderImpl::MockDisplaySettingsProviderImpl(
   memset(mock_desktop_bars, 0, sizeof(mock_desktop_bars));
 }
 
+gfx::Rect MockDisplaySettingsProviderImpl::GetPrimaryScreenArea() const {
+  return testing_primary_screen_area_;
+}
+
 gfx::Rect MockDisplaySettingsProviderImpl::GetWorkArea() const {
-  // Some test might want to use the actual work area, that is indicated by
-  // passing empty testing work area.
-  return testing_work_area_.IsEmpty() ? DisplaySettingsProvider::GetWorkArea()
-                                      : testing_work_area_;
+  return testing_work_area_;
 }
 
 bool MockDisplaySettingsProviderImpl::IsAutoHidingDesktopBarEnabled(
@@ -139,6 +144,11 @@ void MockDisplaySettingsProviderImpl::EnableAutoHidingDesktopBar(
   bar->auto_hiding_enabled = enabled;
   bar->thickness = thickness;
   OnAutoHidingDesktopBarChanged();
+}
+
+void MockDisplaySettingsProviderImpl::SetPrimaryScreenArea(
+    const gfx::Rect& primary_screen_area) {
+  testing_primary_screen_area_ = primary_screen_area;
 }
 
 void MockDisplaySettingsProviderImpl::SetWorkArea(const gfx::Rect& work_area) {
@@ -179,7 +189,8 @@ const FilePath::CharType* BasePanelBrowserTest::kTestDir =
     FILE_PATH_LITERAL("panels");
 
 BasePanelBrowserTest::BasePanelBrowserTest()
-    : InProcessBrowserTest() {
+    : InProcessBrowserTest(),
+      mock_display_settings_enabled_(true) {
 #if defined(OS_MACOSX)
   FindBarBridge::disable_animations_during_testing_ = true;
 #endif
@@ -215,10 +226,11 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   // Setup the work area and desktop bar so that we have consistent testing
   // environment for all panel related tests.
   PanelManager* panel_manager = PanelManager::GetInstance();
-  mock_display_settings_provider_ =
-      new MockDisplaySettingsProviderImpl(panel_manager);
-  SetTestingWorkArea(gfx::Rect(
-      0, 0, kTestingWorkAreaWidth, kTestingWorkAreaHeight));
+  if (mock_display_settings_enabled_) {
+    mock_display_settings_provider_ =
+        new MockDisplaySettingsProviderImpl(panel_manager);
+    SetTestingAreas(kTestingPrimaryScreenArea, kTestingWorkArea);
+  }
 
   panel_manager->enable_auto_sizing(false);
 
@@ -444,8 +456,12 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
   return extension;
 }
 
-void BasePanelBrowserTest::SetTestingWorkArea(const gfx::Rect& work_area) {
-  mock_display_settings_provider_->SetWorkArea(work_area);
+void BasePanelBrowserTest::SetTestingAreas(const gfx::Rect& primary_screen_area,
+                                           const gfx::Rect& work_area) {
+  DCHECK(primary_screen_area.Contains(work_area));
+  mock_display_settings_provider_->SetPrimaryScreenArea(primary_screen_area);
+  mock_display_settings_provider_->SetWorkArea(
+      work_area.IsEmpty() ? primary_screen_area : work_area);
 }
 
 void BasePanelBrowserTest::CloseWindowAndWait(Browser* browser) {
