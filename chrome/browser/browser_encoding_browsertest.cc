@@ -74,7 +74,14 @@ class BrowserEncodingTest : public InProcessBrowserTest {
 // encoding name). Webkit layout tests cover some, but testing in the UI test is
 // also necessary.
 // SLOW_ is added for XP debug bots. These tests should really be unittests...
-IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, SLOW_TestEncodingAliasMapping) {
+//
+// The tests times out under ASan, see http://crbug.com/127748.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_TestEncodingAliasMapping DISABLED_TestEncodingAliasMapping
+#else
+#define MAYBE_TestEncodingAliasMapping SLOW_TestEncodingAliasMapping
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAliasMapping) {
   struct EncodingTestData {
     const char* file_name;
     const char* encoding_name;
