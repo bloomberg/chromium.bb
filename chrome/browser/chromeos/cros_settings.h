@@ -55,7 +55,11 @@ class CrosSettings : public base::NonThreadSafe {
   void SetDouble(const std::string& path, double in_value);
   void SetString(const std::string& path, const std::string& in_value);
 
-  // Convenience functions for manipulating lists.
+  // Convenience functions for manipulating lists. Note that the following
+  // functions employs a read, modify and write pattern. If underlying settings
+  // provider updates its value asynchronously such as DeviceSettingsProvider,
+  // value cache they read from might not be fresh and multiple calls to those
+  // function would lose data. See http://crbug.com/127215
   void AppendToList(const std::string& path, const base::Value* value);
   void RemoveFromList(const std::string& path, const base::Value* value);
 

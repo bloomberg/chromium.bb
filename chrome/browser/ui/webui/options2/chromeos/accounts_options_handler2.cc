@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options2/chromeos/accounts_options_handler2.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
@@ -68,15 +70,15 @@ void AccountsOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString("allow_BWSI", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION));
-  localized_strings->SetString("use_whitelist",l10n_util::GetStringUTF16(
+  localized_strings->SetString("use_whitelist", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_USE_WHITELIST_DESCRIPTION));
-  localized_strings->SetString("show_user_on_signin",l10n_util::GetStringUTF16(
+  localized_strings->SetString("show_user_on_signin", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION));
-  localized_strings->SetString("username_edit_hint",l10n_util::GetStringUTF16(
+  localized_strings->SetString("username_edit_hint", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_USERNAME_EDIT_HINT));
-  localized_strings->SetString("username_format",l10n_util::GetStringUTF16(
+  localized_strings->SetString("username_format", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_USERNAME_FORMAT));
-  localized_strings->SetString("add_users",l10n_util::GetStringUTF16(
+  localized_strings->SetString("add_users", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ADD_USERS));
   localized_strings->SetString("owner_only", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
@@ -115,10 +117,23 @@ void AccountsOptionsHandler::HandleWhitelistExistingUsers(
     const base::ListValue* args) {
   DCHECK(args && args->empty());
 
+  // Creates one list to set. This is needed because user white list update is
+  // asynchronous and sequential. Before previous write comes back, cached list
+  // is stale and should not be used for appending. See http://crbug.com/127215
+  scoped_ptr<base::ListValue> new_list;
+
+  CrosSettings* cros_settings = CrosSettings::Get();
+  const base::ListValue* existing = NULL;
+  if (cros_settings->GetList(kAccountsPrefUsers, &existing) && existing)
+    new_list.reset(existing->DeepCopy());
+  else
+    new_list.reset(new base::ListValue);
+
   const UserList& users = UserManager::Get()->GetUsers();
-  for (UserList::const_iterator it = users.begin(); it < users.end(); ++it) {
-    WhitelistUser((*it)->email());
-  }
+  for (UserList::const_iterator it = users.begin(); it < users.end(); ++it)
+    new_list->AppendIfNotPresent(new base::StringValue((*it)->email()));
+
+  cros_settings->Set(kAccountsPrefUsers, *new_list.get());
 }
 
 }  // namespace options2
