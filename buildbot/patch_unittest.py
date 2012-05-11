@@ -304,9 +304,9 @@ I am the first commit.
     self._CheckPaladin(git1, cid1, ['1'], 'CQ-DEPEND=1 1')
 
 
-class TestLocalGitRepoPatchGit(TestGitRepoPatch):
+class TestLocalPatchGit(TestGitRepoPatch):
 
-  class patch_kls(_PatchSuppression, cros_patch.LocalGitRepoPatch):
+  class patch_kls(_PatchSuppression, cros_patch.LocalPatch):
     pass
 
   def testUpload(self):
@@ -344,6 +344,27 @@ class TestLocalGitRepoPatchGit(TestGitRepoPatch):
     self.assertEqual(
         self._run(base + ['refs/testing/test1'], git2),
         self._run(base + ['refs/testing/test2'], git2))
+
+
+class TestUploadedLocalPatch(TestGitRepoPatch):
+
+  PROJECT = 'chromiumos/chromite'
+  ORIGINAL_BRANCH = 'original_branch'
+  ORIGINAL_SHA1 = 'ffffffff'
+
+  class patch_kls(_PatchSuppression, cros_patch.UploadedLocalPatch):
+    pass
+
+  def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
+    return self.patch_kls(source, self.PROJECT, ref,
+                          'origin/master', self.ORIGINAL_BRANCH,
+                          self.ORIGINAL_SHA1, sha1, **kwds)
+
+  def testStringRepresentation(self):
+    git1, git2, patch = self._CommonGitSetup()
+    str_rep = str(patch).split(':')
+    for element in [self.PROJECT, self.ORIGINAL_BRANCH, self.ORIGINAL_SHA1]:
+      self.assertTrue(element in str_rep)
 
 
 class TestGerritPatch(TestGitRepoPatch):

@@ -12,7 +12,6 @@ import re
 
 from chromite.lib import cros_build_lib as cros_lib
 
-
 class PatchException(Exception):
   """Exception thrown by GetGerritPatchInfo."""
 
@@ -427,7 +426,7 @@ class GitRepoPatch(object):
     return s
 
 
-class LocalGitRepoPatch(GitRepoPatch):
+class LocalPatch(GitRepoPatch):
   """Represents patch coming from an on-disk git repo."""
 
   def __init__(self, project_url, project, ref, tracking_branch, sha1):
@@ -516,6 +515,23 @@ class LocalGitRepoPatch(GitRepoPatch):
       cmd.append('--dry-run')
 
     cros_lib.RunCommand(cmd, cwd=self.ProjectDir(constants.SOURCE_ROOT))
+
+
+class UploadedLocalPatch(GitRepoPatch):
+  """Represents an uploaded local patch passed in using --remote-patch."""
+  def __init__(self, project_url, project, ref, tracking_branch,
+               original_branch, original_sha1, carbon_copy_sha1):
+    GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
+                          sha1=carbon_copy_sha1)
+    self.original_branch = original_branch
+    self.original_sha1 = original_sha1
+
+  def __str__(self):
+    """Returns custom string to identify this patch."""
+    # TODO(ferringb): fold subject line in here.
+    s = '%s:%s:%s' % (self.project, self.original_branch,
+                      self.original_sha1[:8])
+    return s
 
 
 class GerritPatch(GitRepoPatch):
@@ -662,8 +678,50 @@ def PrepareLocalPatches(patches, manifest_branch):
       raise PatchException('%s:%s needs to track a remote branch!'
                            % (project, branch))
 
-    patch_info.append(LocalGitRepoPatch(os.path.join(project_dir, '.git'),
+    patch_info.append(LocalPatch(os.path.join(project_dir, '.git'),
                                         project, branch, tracking_branch,
                                         sha1))
+
+  return patch_info
+
+
+def PrepareRemotePatches(patches):
+  """Generate patch objects from list of --remote-patch parameters.
+
+  Args:
+    patches: A list of --remote-patches strings that the user specified on
+             the commandline.  Patch strings are colon-delimited.  Patches come
+             in the format
+             <project>:<original_branch>:<ref>:<tracking_branch>:<tag>.
+             A description of each element:
+             project: The manifest project name that the patch is for.
+             original_branch: The name of the development branch that the local
+                              patch came from.
+             ref: The remote ref that points to the patch.
+             tracking_branch: The upstream branch that the original_branch was
+                              tracking.  Should be a manifest branch.
+             tag: Denotes whether the project is an internal or external
+                  project.
+  """
+  patch_info = []
+  for patch in patches:
+    try:
+      project, original_branch, ref, tracking_branch, tag = patch.split(':')
+    except ValueError:
+      raise PatchException("Unexpected tryjob format.  You may be running an "
+                           "older version of chromite.  Run 'repo sync "
+                           "chromiumos/chromite'.")
+
+    if tag == constants.EXTERNAL_PATCH_TAG:
+      push_url = constants.GERRIT_SSH_URL
+    elif tag == constants.INTERNAL_PATCH_TAG:
+      push_url = constants.GERRIT_INT_SSH_URL
+    else:
+      raise PatchException('Bad remote patch format.  Unknown tag %s' % tag)
+
+    patch_info.append(UploadedLocalPatch(os.path.join(push_url, project),
+                                         project, ref, tracking_branch,
+                                         original_branch,
+                                         os.path.basename(ref)))
 
   return patch_info

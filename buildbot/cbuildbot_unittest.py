@@ -63,7 +63,7 @@ class RunBuildStagesTest(mox.MoxTestBase):
     self.options.prebuilts = False
 
     self.mox.StubOutWithMock(cbuildbot, '_GetChromiteTrackingBranch')
-    cbuildbot._GetChromiteTrackingBranch().AndReturn('master')
+    cbuildbot._GetChromiteTrackingBranch().MultipleTimes().AndReturn('master')
     self.mox.StubOutWithMock(stages.SyncStage, 'HandleSkip')
     stages.SyncStage.HandleSkip()
 

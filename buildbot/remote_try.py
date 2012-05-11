@@ -27,9 +27,8 @@ class RemoteTryJob(object):
   INT_SSH_URL = os.path.join(constants.GERRIT_INT_SSH_URL,
                              'chromeos/tryjobs')
 
-  # In version 2, the tryjob submission code handles adding the
-  # --remote-trybot flag.
-  TRYJOB_FORMAT_VERSION = 2
+  # In version 3, remote patches have an extra field.
+  TRYJOB_FORMAT_VERSION = 3
   TRYSERVER_URL = 'http://chromegw/p/tryserver.chromiumos'
 
   def __init__(self, options, bots, local_patches):
@@ -38,7 +37,7 @@ class RemoteTryJob(object):
     Args:
       options: The parsed options passed into cbuildbot.
       bots: A list of configs to run tryjobs for.
-      local_patches: A list of LocalGitRepoPatch objects.
+      local_patches: A list of LocalPatch objects.
     """
     self.options = options
     self.user = getpass.getuser()
@@ -50,7 +49,6 @@ class RemoteTryJob(object):
     self.bots = bots[:]
     self.description = ('name: %s\n patches: %s\nbots: %s' %
                         (self.name, patch_list, self.bots))
-    self.buildroot = options.buildroot
     self.extra_args = options.pass_through_args
     if '--buildbot' not in self.extra_args:
       self.extra_args.append('--remote-trybot')
@@ -81,9 +79,16 @@ class RemoteTryJob(object):
       local_branch = os.path.basename(patch.ref)
       ref_final = os.path.join(ref_base, local_branch, sha1)
       patch.Upload(ref_final, dryrun=dryrun)
-      self.extra_args.append('--remote-patches=%s:%s:%s:%s'
+      internal = cros_lib.IsProjectInternal(constants.SOURCE_ROOT,
+                                            patch.project)
+
+      internal_external_tag = constants.EXTERNAL_PATCH_TAG
+      if internal:
+        internal_external_tag = constants.INTERNAL_PATCH_TAG
+
+      self.extra_args.append('--remote-patches=%s:%s:%s:%s:%s'
                              % (patch.project, local_branch, ref_final,
-                                patch.tracking_branch))
+                                patch.tracking_branch, internal_external_tag))
 
     # TODO(rcui): convert to shallow clone when that's available.
     repository.CloneGitRepo(self.tryjob_repo, self.ssh_url)
