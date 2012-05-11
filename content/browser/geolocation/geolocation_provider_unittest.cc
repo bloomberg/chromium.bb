@@ -201,7 +201,14 @@ TEST_F(GeolocationProviderTest, StartStop) {
   EXPECT_TRUE(provider_->IsRunning());
 }
 
-TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
+#if defined(OS_WIN)
+// This test is flaky on Vista and Win7. See http://crbug.com/127572
+#define MAYBE_OverrideLocationForTesting DISABLED_OverrideLocationForTesting
+#else
+#define MAYBE_OverrideLocationForTesting OverrideLocationForTesting
+#endif
+
+TEST_F(GeolocationProviderTest, MAYBE_OverrideLocationForTesting) {
   content::Geoposition position;
   position.error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   provider_->OverrideLocationForTesting(position);
