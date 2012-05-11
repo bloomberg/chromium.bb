@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/startup/startup_tab.h"
 #include "googleurl/src/gurl.h"
 
 namespace base {
@@ -27,8 +27,6 @@ class Profile;
 // dictionary describing the entry.
 class PinnedTabCodec {
  public:
-  typedef std::vector<StartupBrowserCreator::LaunchWithProfile::Tab> Tabs;
-
   // Registers the preference used by this class.
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -36,11 +34,11 @@ class PinnedTabCodec {
   static void WritePinnedTabs(Profile* profile);
 
   // Sets the preferences state from the specified tab list.
-  static void WritePinnedTabs(Profile* profile, const Tabs& tabs);
+  static void WritePinnedTabs(Profile* profile, const StartupTabs& tabs);
 
   // Reads and returns the set of pinned tabs to restore from preferences.
-  static Tabs ReadPinnedTabs(Profile* profile);
-  static Tabs ReadPinnedTabs(const base::Value* value);
+  static StartupTabs ReadPinnedTabs(Profile* profile);
+  static StartupTabs ReadPinnedTabs(const base::Value* value);
 
  private:
   PinnedTabCodec();

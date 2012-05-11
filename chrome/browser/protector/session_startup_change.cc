@@ -12,6 +12,7 @@
 #include "chrome/browser/protector/histograms.h"
 #include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
+#include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -27,9 +28,9 @@ namespace protector {
 class SessionStartupChange : public BasePrefsChange {
  public:
   SessionStartupChange(const SessionStartupPref& actual_startup_pref,
-                       const PinnedTabCodec::Tabs& actual_pinned_tabs,
+                       const StartupTabs& actual_pinned_tabs,
                        const SessionStartupPref& backup_startup_pref,
-                       const PinnedTabCodec::Tabs& backup_pinned_tabs);
+                       const StartupTabs& backup_pinned_tabs);
 
   // BaseSettingChange overrides:
   virtual bool Init(Profile* profile) OVERRIDE;
@@ -55,21 +56,21 @@ class SessionStartupChange : public BasePrefsChange {
   GURL GetFirstNewURL() const;
 
   // Opens all tabs in |tabs| and makes them pinned.
-  void OpenPinnedTabs(Browser* browser, const PinnedTabCodec::Tabs& tabs);
+  void OpenPinnedTabs(Browser* browser, const StartupTabs& tabs);
 
   const SessionStartupPref new_startup_pref_;
   const SessionStartupPref backup_startup_pref_;
-  const PinnedTabCodec::Tabs new_pinned_tabs_;
-  const PinnedTabCodec::Tabs backup_pinned_tabs_;
+  const StartupTabs new_pinned_tabs_;
+  const StartupTabs backup_pinned_tabs_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStartupChange);
 };
 
 SessionStartupChange::SessionStartupChange(
     const SessionStartupPref& actual_startup_pref,
-    const PinnedTabCodec::Tabs& actual_pinned_tabs,
+    const StartupTabs& actual_pinned_tabs,
     const SessionStartupPref& backup_startup_pref,
-    const PinnedTabCodec::Tabs& backup_pinned_tabs)
+    const StartupTabs& backup_pinned_tabs)
     : new_startup_pref_(actual_startup_pref),
       backup_startup_pref_(backup_startup_pref),
       new_pinned_tabs_(actual_pinned_tabs),
@@ -204,9 +205,8 @@ GURL SessionStartupChange::GetFirstNewURL() const {
   return new_urls[0];
 }
 
-void SessionStartupChange::OpenPinnedTabs(
-    Browser* browser,
-    const PinnedTabCodec::Tabs& tabs) {
+void SessionStartupChange::OpenPinnedTabs(Browser* browser,
+                                          const StartupTabs& tabs) {
   for (size_t i = 0; i < tabs.size(); ++i) {
     browser::NavigateParams params(browser, tabs[i].url,
                                    content::PAGE_TRANSITION_START_PAGE);
@@ -220,9 +220,9 @@ void SessionStartupChange::OpenPinnedTabs(
 
 BaseSettingChange* CreateSessionStartupChange(
     const SessionStartupPref& actual_startup_pref,
-    const PinnedTabCodec::Tabs& actual_pinned_tabs,
+    const StartupTabs& actual_pinned_tabs,
     const SessionStartupPref& backup_startup_pref,
-    const PinnedTabCodec::Tabs& backup_pinned_tabs) {
+    const StartupTabs& backup_pinned_tabs) {
   return new SessionStartupChange(actual_startup_pref, actual_pinned_tabs,
                                   backup_startup_pref, backup_pinned_tabs);
 }

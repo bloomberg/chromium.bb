@@ -36,8 +36,8 @@ void OnProfileCreated(bool always_create,
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
     ProfileManager::FindOrCreateNewWindowForProfile(
         profile,
-        StartupBrowserCreator::IS_NOT_PROCESS_STARTUP,
-        StartupBrowserCreator::IS_NOT_FIRST_RUN,
+        browser::startup::IS_NOT_PROCESS_STARTUP,
+        browser::startup::IS_NOT_FIRST_RUN,
         always_create);
   }
 }

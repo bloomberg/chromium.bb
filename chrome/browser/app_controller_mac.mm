@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -999,8 +1000,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     StartupBrowserCreator browser_creator;
     browser_creator.LaunchBrowser(
         command_line, [self lastProfile], FilePath(),
-        StartupBrowserCreator::IS_NOT_PROCESS_STARTUP,
-        StartupBrowserCreator::IS_NOT_FIRST_RUN, &return_code);
+        browser::startup::IS_NOT_PROCESS_STARTUP,
+        browser::startup::IS_NOT_FIRST_RUN, &return_code);
   }
 
   // We've handled the reopen event, so return NO to tell AppKit not
@@ -1105,10 +1106,9 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   }
 
   CommandLine dummy(CommandLine::NO_PROGRAM);
-  StartupBrowserCreator::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      StartupBrowserCreator::IS_FIRST_RUN :
-      StartupBrowserCreator::IS_NOT_FIRST_RUN;
-  StartupBrowserCreator::LaunchWithProfile launch(FilePath(), dummy, first_run);
+  browser::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      browser::startup::IS_FIRST_RUN : browser::startup::IS_NOT_FIRST_RUN;
+  StartupBrowserCreatorImpl launch(FilePath(), dummy, first_run);
   launch.OpenURLsInBrowser(browser, false, urls);
 }
 
