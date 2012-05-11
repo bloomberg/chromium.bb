@@ -25,7 +25,6 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -171,11 +170,10 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
     if (sync_service && (!sync_service->HasSyncSetupCompleted() ||
         !profile_->GetPrefs()->GetBoolean(prefs::kSyncAutofill))) {
-      scoped_refptr<WebDataService> web_data_service =
-          WebDataServiceFactory::GetForProfile(profile_,
-                                               Profile::EXPLICIT_ACCESS);
-      if (web_data_service)
-        web_data_service->RemoveExpiredFormElements();
+      WebDataService* wds =
+          profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+      if (wds)
+        wds->RemoveExpiredFormElements();
     }
   }
 }
@@ -200,9 +198,9 @@ void PersonalDataManager::OnStateChanged() {
   if (!profile_ || profile_->IsOffTheRecord())
     return;
 
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get()) {
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
     NOTREACHED();
     return;
   }
@@ -228,12 +226,12 @@ void PersonalDataManager::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_AUTOFILL_MULTIPLE_CHANGED);
-  scoped_refptr<WebDataService> web_data_service =
+  WebDataService* web_data_service =
       content::Source<WebDataService>(source).ptr();
 
-  DCHECK(web_data_service.get() &&
-         web_data_service.get() == WebDataServiceFactory::GetForProfile(
-             profile_, Profile::EXPLICIT_ACCESS).get());
+  DCHECK(web_data_service &&
+         web_data_service ==
+             profile_->GetWebDataService(Profile::EXPLICIT_ACCESS));
   Refresh();
 }
 
@@ -366,9 +364,8 @@ void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
   if (FindByGUID<AutofillProfile>(web_profiles_, profile.guid()))
     return;
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
     return;
 
   // Don't add a duplicate.
@@ -394,9 +391,8 @@ void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
     return;
   }
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
     return;
 
   // Make the update.
@@ -413,9 +409,8 @@ void PersonalDataManager::RemoveProfile(const std::string& guid) {
   if (!FindByGUID<AutofillProfile>(web_profiles_, guid))
     return;
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
     return;
 
   // Remove the profile.
@@ -445,9 +440,8 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   if (FindByGUID<CreditCard>(credit_cards_, credit_card.guid()))
     return;
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
     return;
 
   // Don't add a duplicate.
@@ -473,9 +467,8 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
     return;
   }
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
     return;
 
   // Make the update.
@@ -492,9 +485,8 @@ void PersonalDataManager::RemoveCreditCard(const std::string& guid) {
   if (!FindByGUID<CreditCard>(credit_cards_, guid))
     return;
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
     return;
 
   // Remove the credit card.
@@ -580,9 +572,9 @@ void PersonalDataManager::Init(Profile* profile) {
   metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
 
   // WebDataService may not be available in tests.
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get())
+  WebDataService* web_data_service =
+    profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service)
     return;
 
   LoadProfiles();
@@ -675,9 +667,8 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
       address_of<AutofillProfile>);
   AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
     return;
 
   // Any profiles that are not in the new profile list should be removed from
@@ -727,9 +718,8 @@ void PersonalDataManager::SetCreditCards(
           std::mem_fun_ref(&CreditCard::IsEmpty)),
       credit_cards->end());
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
-  if (!wds.get())
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
     return;
 
   // Any credit cards that are not in the new credit card list should be
@@ -767,9 +757,9 @@ void PersonalDataManager::SetCreditCards(
 }
 
 void PersonalDataManager::LoadProfiles() {
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get()) {
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
     NOTREACHED();
     return;
   }
@@ -787,9 +777,9 @@ void PersonalDataManager::LoadAuxiliaryProfiles() const {
 #endif
 
 void PersonalDataManager::LoadCreditCards() {
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get()) {
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
     NOTREACHED();
     return;
   }
@@ -838,10 +828,9 @@ void PersonalDataManager::ReceiveLoadedCreditCards(
 
 void PersonalDataManager::CancelPendingQuery(WebDataService::Handle* handle) {
   if (*handle) {
-    scoped_refptr<WebDataService> web_data_service =
-        WebDataServiceFactory::GetForProfile(profile_,
-                                             Profile::EXPLICIT_ACCESS);
-    if (!web_data_service.get()) {
+    WebDataService* web_data_service =
+        profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+    if (!web_data_service) {
       NOTREACHED();
       return;
     }
@@ -909,9 +898,9 @@ void PersonalDataManager::EmptyMigrationTrash() {
   if (!profile_ || profile_->IsOffTheRecord())
     return;
 
-  scoped_refptr<WebDataService> web_data_service =
-      WebDataServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (!web_data_service.get()) {
+  WebDataService* web_data_service =
+      profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!web_data_service) {
     NOTREACHED();
     return;
   }

@@ -20,7 +20,6 @@
 #include "base/message_loop_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/keyword_table.h"
@@ -185,7 +184,9 @@ template <class T> class WDObjectResult : public WDTypedResult {
 
 class WebDataServiceConsumer;
 
-class WebDataService : public RefcountedProfileKeyedService {
+class WebDataService
+    : public base::RefCountedThreadSafe<
+          WebDataService, content::BrowserThread::DeleteOnUIThread> {
  public:
   // All requests return an opaque handle of the following type.
   typedef int Handle;
@@ -299,14 +300,13 @@ class WebDataService : public RefcountedProfileKeyedService {
   // |web_data_service| may be NULL for testing purposes.
   static void NotifyOfMultipleAutofillChanges(WebDataService* web_data_service);
 
-  // RefcountedProfileKeyedService override:
-  // Shutdown the web data service. The service can no longer be used after this
-  // call.
-  virtual void ShutdownOnUIThread() OVERRIDE;
-
   // Initializes the web data service. Returns false on failure
   // Takes the path of the profile directory as its argument.
   bool Init(const FilePath& profile_path);
+
+  // Shutdown the web data service. The service can no longer be used after this
+  // call.
+  void Shutdown();
 
   // Returns false if Shutdown() has been called.
   bool IsRunning() const;

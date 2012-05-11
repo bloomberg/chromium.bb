@@ -13,7 +13,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
@@ -73,8 +72,7 @@ void TokenServiceTestHarness::SetUp() {
   ASSERT_TRUE(db_thread_.Start());
 
   profile_.reset(new TestingProfile());
-  profile_->CreateWebDataService();
-
+  profile_->CreateWebDataService(false);
   WaitForDBLoadCompletion();
   service_ = TokenServiceFactory::GetForProfile(profile_.get());
 
@@ -91,12 +89,6 @@ void TokenServiceTestHarness::TearDown() {
   if (profile_.get()) {
     profile_.reset(NULL);
   }
-  // Schedule another task on the DB thread to notify us that it's safe to
-  // carry on with the test.
-  base::WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
 
   db_thread_.Stop();
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -104,10 +96,6 @@ void TokenServiceTestHarness::TearDown() {
 }
 
 void TokenServiceTestHarness::WaitForDBLoadCompletion() {
-  // Force the loading of the WebDataService.
-  WebDataServiceFactory::GetForProfile(profile_.get(),
-                                       Profile::IMPLICIT_ACCESS);
-
   // The WebDB does all work on the DB thread. This will add an event
   // to the end of the DB thread, so when we reach this task, all DB
   // operations should be complete.

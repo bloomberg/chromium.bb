@@ -226,6 +226,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       host_content_settings_map_(NULL),
       history_service_created_(false),
       favicon_service_created_(false),
+      created_web_data_service_(false),
       clear_local_state_on_exit_(false),
       start_time_(Time::Now()),
       delegate_(delegate),
@@ -509,12 +510,14 @@ ProfileImpl::~ProfileImpl() {
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
-  // The HistoryService maintains threads for background processing. Its
-  // possible each thread still has tasks on it that have increased the ref
-  // count of the service. In such a situation, when we decrement the refcount,
-  // it won't be 0, and the threads/databases aren't properly shut down. By
-  // explicitly calling Cleanup/Shutdown we ensure the databases are properly
-  // closed.
+  // Both HistoryService and WebDataService maintain threads for background
+  // processing. Its possible each thread still has tasks on it that have
+  // increased the ref count of the service. In such a situation, when we
+  // decrement the refcount, it won't be 0, and the threads/databases aren't
+  // properly shut down. By explicitly calling Cleanup/Shutdown we ensure the
+  // databases are properly closed.
+  if (web_data_service_.get())
+    web_data_service_->Shutdown();
 
   if (top_sites_.get())
     top_sites_->Shutdown();
@@ -827,6 +830,25 @@ history::ShortcutsBackend* ProfileImpl::GetShortcutsBackend() {
     CHECK(shortcuts_backend_->Init());
   }
   return shortcuts_backend_.get();
+}
+
+WebDataService* ProfileImpl::GetWebDataService(ServiceAccessType sat) {
+  if (!created_web_data_service_)
+    CreateWebDataService();
+  return web_data_service_.get();
+}
+
+WebDataService* ProfileImpl::GetWebDataServiceWithoutCreating() {
+  return web_data_service_.get();
+}
+
+void ProfileImpl::CreateWebDataService() {
+  DCHECK(!created_web_data_service_ && web_data_service_.get() == NULL);
+  created_web_data_service_ = true;
+  scoped_refptr<WebDataService> wds(new WebDataService());
+  if (!wds->Init(GetPath()))
+    return;
+  web_data_service_.swap(wds);
 }
 
 DownloadManager* ProfileImpl::GetDownloadManager() {

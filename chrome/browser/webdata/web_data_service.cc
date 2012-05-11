@@ -28,9 +28,6 @@
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#ifdef DEBUG
-#include "content/public/browser/browser_thread.h"
-#endif
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -81,19 +78,14 @@ WDKeywordsResult::WDKeywordsResult()
 WDKeywordsResult::~WDKeywordsResult() {}
 
 WebDataService::WebDataService()
-    : RefcountedProfileKeyedService(BrowserThread::UI),
-      is_running_(false),
-      db_(NULL),
-      autocomplete_syncable_service_(NULL),
-      autofill_profile_syncable_service_(NULL),
-      failed_init_(false),
-      should_commit_(false),
-      next_request_handle_(1),
-      main_loop_(MessageLoop::current()) {
-  // WebDataService requires DB thread if instantiated.
-  // Set WebDataServiceFactory::GetInstance()->SetTestingFactory(&profile, NULL)
-  // if you do not want to instantiate WebDataService in your test.
-  DCHECK(BrowserThread::IsWellKnownThread(BrowserThread::DB));
+  : is_running_(false),
+    db_(NULL),
+    autocomplete_syncable_service_(NULL),
+    autofill_profile_syncable_service_(NULL),
+    failed_init_(false),
+    should_commit_(false),
+    next_request_handle_(1),
+    main_loop_(MessageLoop::current()) {
 }
 
 // static
@@ -110,16 +102,16 @@ void WebDataService::NotifyOfMultipleAutofillChanges(
            make_scoped_refptr(web_data_service)));
 }
 
-void WebDataService::ShutdownOnUIThread() {
-  ScheduleTask(FROM_HERE,
-               Bind(&WebDataService::ShutdownSyncableServices, this));
-  UnloadDatabase();
-}
-
 bool WebDataService::Init(const FilePath& profile_path) {
   FilePath path = profile_path;
   path = path.Append(chrome::kWebDataFilename);
   return InitWithPath(path);
+}
+
+void WebDataService::Shutdown() {
+  ScheduleTask(FROM_HERE,
+               Bind(&WebDataService::ShutdownSyncableServices, this));
+  UnloadDatabase();
 }
 
 bool WebDataService::IsRunning() const {
@@ -562,7 +554,6 @@ void WebDataService::RemoveAutofillProfilesAndCreditCardsModifiedBetween(
 WebDataService::~WebDataService() {
   if (is_running_ && db_) {
     DLOG_ASSERT("WebDataService dtor called without Shutdown");
-    NOTREACHED();
   }
 }
 
@@ -574,9 +565,7 @@ bool WebDataService::InitWithPath(const FilePath& path) {
   // [ http://crbug.com/100745 ], call |AutofillCountry::ApplicationLocale()| to
   // cache the application locale before we try to access it on the DB thread.
   // This should be safe to remove once [ http://crbug.com/100845 ] is fixed.
-  // Do not do it if the thread is not UI (can happen only in some tests).
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI))
-    AutofillCountry::ApplicationLocale();
+  AutofillCountry::ApplicationLocale();
 
   ScheduleTask(FROM_HERE,
                Bind(&WebDataService::InitializeDatabaseIfNecessary, this));

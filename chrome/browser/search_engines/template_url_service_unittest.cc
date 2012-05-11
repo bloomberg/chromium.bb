@@ -21,7 +21,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
@@ -1257,9 +1256,8 @@ TEST_F(TemplateURLServiceTest, FailedInit) {
   test_util_.VerifyLoad();
 
   test_util_.ClearModel();
-  scoped_refptr<WebDataService> web_service =
-      WebDataServiceFactory::GetForProfile(test_util_.profile(),
-                                           Profile::EXPLICIT_ACCESS);
+  WebDataService* web_service =
+      test_util_.profile()->GetWebDataService(Profile::EXPLICIT_ACCESS);
   web_service->UnloadDatabase();
   web_service->set_failed_init(true);
 

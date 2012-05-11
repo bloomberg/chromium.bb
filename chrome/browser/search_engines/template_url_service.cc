@@ -35,7 +35,6 @@
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/sync_error_factory.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
@@ -556,10 +555,8 @@ void TemplateURLService::Load() {
   if (loaded_ || load_handle_)
     return;
 
-  if (!service_.get()) {
-    service_ = WebDataServiceFactory::GetForProfile(profile_,
-                                                    Profile::EXPLICIT_ACCESS);
-  }
+  if (!service_.get())
+    service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
 
   if (service_.get()) {
     load_handle_ = service_->GetKeywords(this);
@@ -899,9 +896,9 @@ SyncError TemplateURLService::ProcessSyncChanges(
       //  . Trying to ADD a search engine that already exists.
       NOTREACHED() << "Unexpected sync change state.";
       error = sync_error_factory_->CreateAndUploadError(
-          FROM_HERE,
-          "ProcessSyncChanges failed on ChangeType " +
-              SyncChange::ChangeTypeToString(iter->change_type()));
+            FROM_HERE,
+            "ProcessSyncChanges failed on ChangeType " +
+                SyncChange::ChangeTypeToString(iter->change_type()));
     }
   }
   PreventDuplicateGUIDUpdates(&new_changes);

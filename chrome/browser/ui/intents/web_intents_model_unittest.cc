@@ -34,12 +34,9 @@ class WebIntentsModelTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    wds_->ShutdownOnUIThread();
-    wds_ = NULL;
-    base::WaitableEvent done(false, false);
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-    done.Wait();
+    if (wds_.get())
+      wds_->Shutdown();
+
     db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();

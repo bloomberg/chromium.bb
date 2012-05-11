@@ -43,10 +43,11 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
+
 #if defined(USE_AURA)
 #include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
 #endif
-#include "chrome/browser/webdata/web_data_service_factory.h"
+
 #ifndef NDEBUG
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -228,7 +229,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_WEB_INTENTS)
   WebIntentsRegistryFactory::GetInstance();
 #endif
-  WebDataServiceFactory::GetInstance();
 
   built_factories_ = true;
 }

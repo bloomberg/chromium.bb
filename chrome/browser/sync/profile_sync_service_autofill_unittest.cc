@@ -42,8 +42,6 @@
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
-#include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/public/browser/notification_source.h"
@@ -162,17 +160,9 @@ syncable::ModelType GetModelType<AutofillProfile>() {
 
 class WebDataServiceFake : public WebDataService {
  public:
-  WebDataServiceFake()
-      : web_database_(NULL),
+  explicit WebDataServiceFake(WebDatabase* web_database)
+      : web_database_(web_database),
         syncable_service_created_or_destroyed_(false, false) {
-  }
-
-  static scoped_refptr<RefcountedProfileKeyedService> Build(Profile* profile) {
-    return new WebDataServiceFake;
-  }
-
-  void SetDatabase(WebDatabase* web_database) {
-    web_database_ = web_database;
   }
 
   void StartSyncableService() {
@@ -228,8 +218,6 @@ class WebDataServiceFake : public WebDataService {
 
     return autofill_profile_syncable_service_;
   }
-
-  virtual void ShutdownOnUIThread() OVERRIDE {}
 
  private:
   virtual ~WebDataServiceFake() {}
@@ -357,8 +345,6 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
  protected:
   ProfileSyncServiceAutofillTest() {
   }
-  virtual ~ProfileSyncServiceAutofillTest() {
-  }
 
   AutofillProfileFactory profile_factory_;
   AutofillEntryFactory entry_factory_;
@@ -378,10 +364,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     AbstractProfileSyncServiceTest::SetUp();
     profile_.CreateRequestContext();
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
-    web_data_service_ = static_cast<WebDataServiceFake*>(
-        WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, WebDataServiceFake::Build).get());
-    web_data_service_->SetDatabase(web_database_.get());
+    web_data_service_ = new WebDataServiceFake(web_database_.get());
     personal_data_manager_ = static_cast<PersonalDataManagerMock*>(
         PersonalDataManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             &profile_, PersonalDataManagerMock::Build));
@@ -394,7 +377,12 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
         WillRepeatedly(Return(static_cast<HistoryService*>(NULL)));
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
-
+    EXPECT_CALL(profile_, GetWebDataService(_)).
+        // TokenService::Initialize
+        // AutofillDataTypeController::StartModels()
+        // In some tests:
+        // AutofillProfileSyncableService::AutofillProfileSyncableService()
+        WillRepeatedly(Return(web_data_service_.get()));
     personal_data_manager_->Init(&profile_);
 
     // Note: This must be called *after* the notification service is created.

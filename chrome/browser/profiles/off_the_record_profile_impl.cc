@@ -246,6 +246,19 @@ history::ShortcutsBackend* OffTheRecordProfileImpl::GetShortcutsBackend() {
   return NULL;
 }
 
+WebDataService* OffTheRecordProfileImpl::GetWebDataService(
+    ServiceAccessType sat) {
+  if (sat == EXPLICIT_ACCESS)
+    return profile_->GetWebDataService(sat);
+
+  NOTREACHED() << "This profile is OffTheRecord";
+  return NULL;
+}
+
+WebDataService* OffTheRecordProfileImpl::GetWebDataServiceWithoutCreating() {
+  return profile_->GetWebDataServiceWithoutCreating();
+}
+
 PrefService* OffTheRecordProfileImpl::GetPrefs() {
   return prefs_;
 }

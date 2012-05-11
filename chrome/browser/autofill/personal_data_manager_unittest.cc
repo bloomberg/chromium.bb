@@ -14,7 +14,6 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_observer.h"
 #include "chrome/browser/password_manager/encryptor.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/guid.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -55,7 +54,7 @@ class PersonalDataManagerTest : public testing::Test {
     db_thread_.Start();
 
     profile_.reset(new TestingProfile);
-    profile_->CreateWebDataService();
+    profile_->CreateWebDataService(false);
 
     autofill_test::DisableSystemServices(profile_.get());
     ResetPersonalDataManager();
@@ -439,9 +438,8 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   profile_pointers.push_back(&profile2);
   AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
-  scoped_refptr<WebDataService> wds = WebDataServiceFactory::GetForProfile(
-      profile_.get(), Profile::EXPLICIT_ACCESS);
-  ASSERT_TRUE(wds.get());
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  ASSERT_TRUE(wds);
   wds->AddAutofillProfile(profile2);
 
   personal_data_->Refresh();

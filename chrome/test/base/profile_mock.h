@@ -18,6 +18,7 @@ class ProfileMock : public TestingProfile {
   MOCK_METHOD0(GetBookmarkModel, BookmarkModel*());
   MOCK_METHOD1(GetHistoryService, HistoryService*(ServiceAccessType access));
   MOCK_METHOD0(GetHistoryServiceWithoutCreating, HistoryService*());
+  MOCK_METHOD1(GetWebDataService, WebDataService*(ServiceAccessType access));
   MOCK_METHOD1(GetPasswordStore, PasswordStore* (ServiceAccessType access));
 };
 

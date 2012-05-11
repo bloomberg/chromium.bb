@@ -37,8 +37,7 @@ class MockWebDataService : public WebDataService {
 class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   AutocompleteHistoryManagerTest()
-      : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()),
-        db_thread_(BrowserThread::DB) {
+      : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {
   }
 
   virtual void SetUp() {
@@ -49,7 +48,6 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
 
   TestingProfile profile_;
   scoped_refptr<MockWebDataService> web_data_service_;

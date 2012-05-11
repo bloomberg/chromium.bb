@@ -8,12 +8,10 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -64,8 +62,9 @@ class TemplateURLServiceTestingProfile : public TestingProfile {
     io_thread_.StartIOThread();
   }
 
-  static scoped_refptr<RefcountedProfileKeyedService>
-      GetWebDataServiceForTemplateURLServiceTestingProfile(Profile* profile);
+  virtual WebDataService* GetWebDataService(ServiceAccessType access) {
+    return service_.get();
+  }
 
  private:
   scoped_refptr<WebDataService> service_;
@@ -73,7 +72,6 @@ class TemplateURLServiceTestingProfile : public TestingProfile {
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread io_thread_;
 };
-
 
 // Trivial subclass of TemplateURLService that records the last invocation of
 // SetKeywordSearchTermsForURL.
@@ -130,29 +128,13 @@ void TemplateURLServiceTestingProfile::TearDown() {
   io_thread_.Stop();
 
   // Clean up the test directory.
-  if (service_.get()) {
-    service_->ShutdownOnUIThread();
-    service_ = NULL;
-  }
+  if (service_.get())
+    service_->Shutdown();
   // Note that we must ensure the DB thread is stopped after WDS
   // shutdown (so it can commit pending transactions) but before
   // deleting the test profile directory, otherwise we may not be
   // able to delete it due to an open transaction.
-  // Schedule another task on the DB thread to notify us that it's safe to
-  // carry on with the test.
-  base::WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
   db_thread_.Stop();
-}
-
-scoped_refptr<RefcountedProfileKeyedService>
-TemplateURLServiceTestingProfile::
-    GetWebDataServiceForTemplateURLServiceTestingProfile(Profile* profile) {
-  TemplateURLServiceTestingProfile* test_profile =
-      reinterpret_cast<TemplateURLServiceTestingProfile*>(profile);
-  return test_profile->service_;
 }
 
 TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
@@ -165,10 +147,6 @@ TemplateURLServiceTestUtil::~TemplateURLServiceTestUtil() {
 
 void TemplateURLServiceTestUtil::SetUp() {
   profile_.reset(new TemplateURLServiceTestingProfile());
-  WebDataServiceFactory::GetInstance()->SetTestingFactory(
-      profile_.get(), TemplateURLServiceTestingProfile::
-          GetWebDataServiceForTemplateURLServiceTestingProfile);
-
   profile_->SetUp();
   TemplateURLService* service = static_cast<TemplateURLService*>(
       TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -219,8 +197,7 @@ void TemplateURLServiceTestUtil::ChangeModelToLoadState() {
   model()->ChangeToLoadedState();
   // Initialize the web data service so that the database gets updated with
   // any changes made.
-  model()->service_ = WebDataServiceFactory::GetForProfile(
-      profile_.get(), Profile::EXPLICIT_ACCESS);
+  model()->service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
 }
 
 void TemplateURLServiceTestUtil::ClearModel() {

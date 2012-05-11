@@ -40,7 +40,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
-        db_thread_(BrowserThread::DB),
         file_thread_(BrowserThread::FILE),
         io_thread_(BrowserThread::IO),
         profile_(new TestingProfile) {}
@@ -99,7 +98,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   MessageLoop ui_loop_;
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;

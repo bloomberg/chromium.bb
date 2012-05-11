@@ -89,6 +89,8 @@ class ProfileImpl : public Profile,
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
   virtual AutocompleteClassifier* GetAutocompleteClassifier() OVERRIDE;
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
+  virtual WebDataService* GetWebDataService(ServiceAccessType sat) OVERRIDE;
+  virtual WebDataService* GetWebDataServiceWithoutCreating() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter*
@@ -153,6 +155,7 @@ class ProfileImpl : public Profile,
   // Does final prefs initialization and calls Init().
   void OnPrefsLoaded(bool success);
 
+  void CreateWebDataService();
   FilePath GetPrefFilePath();
 
 #if defined(ENABLE_SESSION_SERVICE)
@@ -222,8 +225,10 @@ class ProfileImpl : public Profile,
   scoped_ptr<FaviconService> favicon_service_;
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
+  scoped_refptr<WebDataService> web_data_service_;
   bool history_service_created_;
   bool favicon_service_created_;
+  bool created_web_data_service_;
   bool clear_local_state_on_exit_;
 
   // Whether or not the last session exited cleanly. This is set only once.

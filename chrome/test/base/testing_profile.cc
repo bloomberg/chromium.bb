@@ -39,7 +39,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -238,6 +238,7 @@ TestingProfile::~TestingProfile() {
   DestroyHistoryService();
   // FaviconService depends on HistoryServce so destroying it later.
   DestroyFaviconService();
+  DestroyWebDataService();
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
@@ -330,17 +331,19 @@ void TestingProfile::CreateProtocolHandlerRegistry() {
       new ProtocolHandlerRegistry::Delegate());
 }
 
-static scoped_refptr<RefcountedProfileKeyedService> BuildWebDataService(
-    Profile* profile) {
-  WebDataService* web_data_service = new WebDataService();
-  if (web_data_service)
-    web_data_service->Init(profile->GetPath());
-  return scoped_refptr<WebDataService>(web_data_service);
-}
+void TestingProfile::CreateWebDataService(bool delete_file) {
+  if (web_data_service_.get())
+    web_data_service_->Shutdown();
 
-void TestingProfile::CreateWebDataService() {
-  WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      this, BuildWebDataService);
+  if (delete_file) {
+    FilePath path = GetPath();
+    path = path.Append(chrome::kWebDataFilename);
+    file_util::Delete(path, false);
+  }
+
+  web_data_service_ = new WebDataService;
+  if (web_data_service_.get())
+    web_data_service_->Init(GetPath());
 }
 
 void TestingProfile::BlockUntilBookmarkModelLoaded() {
@@ -486,6 +489,14 @@ AutocompleteClassifier* TestingProfile::GetAutocompleteClassifier() {
 
 history::ShortcutsBackend* TestingProfile::GetShortcutsBackend() {
   return NULL;
+}
+
+WebDataService* TestingProfile::GetWebDataService(ServiceAccessType access) {
+  return web_data_service_.get();
+}
+
+WebDataService* TestingProfile::GetWebDataServiceWithoutCreating() {
+  return web_data_service_.get();
 }
 
 void TestingProfile::SetPrefService(PrefService* prefs) {
@@ -691,6 +702,13 @@ PrefService* TestingProfile::GetOffTheRecordPrefs() {
 
 quota::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
   return GetExtensionSpecialStoragePolicy();
+}
+
+void TestingProfile::DestroyWebDataService() {
+  if (!web_data_service_.get())
+    return;
+
+  web_data_service_->Shutdown();
 }
 
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {

@@ -930,7 +930,6 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   EXPECT_CALL(*personal_data_.metric_logger(),
               LogIsAutofillEnabledAtStartup(true)).Times(1);
   personal_data_.Init(profile());
-  personal_data_.Shutdown();
 
   personal_data_.set_autofill_enabled(false);
   EXPECT_CALL(*personal_data_.metric_logger(),

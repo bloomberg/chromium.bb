@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
@@ -103,16 +102,9 @@ class WebIntentsRegistryTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    // Clear all references to wds to force it destruction.
-    wds_->ShutdownOnUIThread();
-    wds_ = NULL;
+    if (wds_.get())
+      wds_->Shutdown();
 
-    // Schedule another task on the DB thread to notify us that it's safe to
-    // carry on with the test.
-    base::WaitableEvent done(false, false);
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-    done.Wait();
     db_thread_.Stop();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();

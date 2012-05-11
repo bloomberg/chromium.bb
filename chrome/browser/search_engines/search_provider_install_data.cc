@@ -20,7 +20,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -159,8 +158,7 @@ SearchProviderInstallData::SearchProviderInstallData(
     Profile* profile,
     int ui_death_notification,
     const content::NotificationSource& ui_death_source)
-    : web_service_(WebDataServiceFactory::GetForProfile(profile,
-          Profile::EXPLICIT_ACCESS)),
+    : web_service_(profile->GetWebDataService(Profile::EXPLICIT_ACCESS)),
       load_handle_(0),
       google_base_url_(UIThreadSearchTermsData(profile).GoogleBaseURLValue()) {
   // GoogleURLObserver is responsible for killing itself when

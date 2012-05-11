@@ -21,7 +21,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 
 // static
@@ -55,13 +54,13 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
   DependsOn(ExtensionSystemFactory::GetInstance());
-  DependsOn(WebDataServiceFactory::GetInstance());
 
   // The following have not been converted to ProfileKeyedServices yet, and for
   // now they are explicitly destroyed after the ProfileDependencyManager is
   // told to DestroyProfileServices, so they will be around when the
   // ProfileSyncService is destroyed.
 
+  // DependsOn(WebDataServiceFactory::GetInstance());
   // DependsOn(HistoryServiceFactory::GetInstance());
   // DependsOn(BookmarkBarModelFactory::GetInstance());
   // DependsOn(FaviconServiceFactory::GetInstance());

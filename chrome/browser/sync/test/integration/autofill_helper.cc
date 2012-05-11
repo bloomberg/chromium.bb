@@ -17,7 +17,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/autofill_table.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/thread_observer_helper.h"
@@ -61,8 +60,7 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
 
   EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
       WillOnce(SignalEvent(&done_event));
-  scoped_refptr<WebDataService> wds =
-      autofill_helper::GetWebDataService(profile);
+  WebDataService* wds = autofill_helper::GetWebDataService(profile);
   wds->RemoveFormValueForElementName(key.name(), key.value());
   done_event.Wait();
 }
@@ -148,9 +146,8 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
   return profile;
 }
 
-scoped_refptr<WebDataService> GetWebDataService(int index) {
-  return WebDataServiceFactory::GetForProfile(
-      test()->GetProfile(index), Profile::EXPLICIT_ACCESS);
+WebDataService* GetWebDataService(int index) {
+  return test()->GetProfile(index)->GetWebDataService(Profile::EXPLICIT_ACCESS);
 }
 
 PersonalDataManager* GetPersonalDataManager(int index) {
@@ -175,7 +172,7 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
 
   EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
       WillOnce(SignalEvent(&done_event));
-  scoped_refptr<WebDataService> wds = GetWebDataService(profile);
+  WebDataService* wds = GetWebDataService(profile);
   wds->AddFormFields(form_fields);
   done_event.Wait();
   BlockForPendingDBThreadTasks();
@@ -196,7 +193,7 @@ void RemoveKeys(int profile) {
 }
 
 std::set<AutofillEntry> GetAllKeys(int profile) {
-  scoped_refptr<WebDataService> wds = GetWebDataService(profile);
+  WebDataService* wds = GetWebDataService(profile);
   std::vector<AutofillEntry> all_entries = GetAllAutofillEntries(wds);
   std::set<AutofillEntry> all_keys;
   for (std::vector<AutofillEntry>::const_iterator it = all_entries.begin();

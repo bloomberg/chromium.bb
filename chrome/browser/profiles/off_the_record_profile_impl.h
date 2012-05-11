@@ -52,6 +52,8 @@ class OffTheRecordProfileImpl : public Profile,
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;
   virtual AutocompleteClassifier* GetAutocompleteClassifier() OVERRIDE;
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
+  virtual WebDataService* GetWebDataService(ServiceAccessType sat) OVERRIDE;
+  virtual WebDataService* GetWebDataServiceWithoutCreating() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
   virtual net::URLRequestContextGetter*

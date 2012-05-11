@@ -8,7 +8,6 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
 
 // static
 PersonalDataManager* PersonalDataManagerFactory::GetForProfile(
@@ -25,7 +24,8 @@ PersonalDataManagerFactory* PersonalDataManagerFactory::GetInstance() {
 PersonalDataManagerFactory::PersonalDataManagerFactory()
     : ProfileKeyedServiceFactory("PersonalDataManager",
                                  ProfileDependencyManager::GetInstance()) {
-  DependsOn(WebDataServiceFactory::GetInstance());
+  // TODO(erg): For Shutdown() order, we need to:
+  //     DependsOn(WebDataServiceFactory::GetInstance());
 }
 
 PersonalDataManagerFactory::~PersonalDataManagerFactory() {

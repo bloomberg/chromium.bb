@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry.h"
@@ -39,14 +38,12 @@ class RegisterIntentHandlerInfoBarDelegateTest
     : public TabContentsWrapperTestHarness {
  protected:
   RegisterIntentHandlerInfoBarDelegateTest()
-      : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()),
-        db_thread_(BrowserThread::DB) {}
+      : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {}
 
   virtual void SetUp() {
-    db_thread_.Start();
     TabContentsWrapperTestHarness::SetUp();
 
-    profile()->CreateWebDataService();
+    profile()->CreateWebDataService(false);
     web_intents_registry_ = BuildForProfile(profile());
   }
 
@@ -54,20 +51,12 @@ class RegisterIntentHandlerInfoBarDelegateTest
     web_intents_registry_ = NULL;
 
     TabContentsWrapperTestHarness::TearDown();
-    // Schedule another task on the DB thread to notify us that it's safe to
-    // carry on with the test.
-    base::WaitableEvent done(false, false);
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-    done.Wait();
-    db_thread_.Stop();
   }
 
   MockWebIntentsRegistry* web_intents_registry_;
 
  private:
   content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(RegisterIntentHandlerInfoBarDelegateTest);
 };

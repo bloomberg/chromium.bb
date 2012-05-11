@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 
@@ -32,7 +31,7 @@ enum ProfileType {
 };
 
 // Used to access the web data service within a particular sync profile.
-scoped_refptr<WebDataService> GetWebDataService(int index) WARN_UNUSED_RESULT;
+WebDataService* GetWebDataService(int index) WARN_UNUSED_RESULT;
 
 // Used to access the personal data manager within a particular sync profile.
 PersonalDataManager* GetPersonalDataManager(int index) WARN_UNUSED_RESULT;
