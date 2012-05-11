@@ -208,6 +208,18 @@ class ResetDraggingStateDelegate
   DISALLOW_COPY_AND_ASSIGN(ResetDraggingStateDelegate);
 };
 
+// If |dest| contains the point |point_in_source| the event handler from |dest|
+// is returned. Otherwise NULL is returned.
+views::View* ConvertPointToViewAndGetEventHandler(
+    views::View* source,
+    views::View* dest,
+    const gfx::Point& point_in_source) {
+  gfx::Point dest_point(point_in_source);
+  views::View::ConvertPointToView(source, dest, &dest_point);
+  return dest->HitTest(dest_point) ?
+      dest->GetEventHandlerForPoint(dest_point) : NULL;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1120,23 +1132,23 @@ views::View* TabStrip::GetEventHandlerForPoint(const gfx::Point& point) {
     }
   } else {
     if (newtab_button_->visible()) {
-      gfx::Point newtab_button_point(point);
-      View::ConvertPointToView(this, newtab_button_, &newtab_button_point);
-      if (newtab_button_->HitTest(newtab_button_point))
-        return newtab_button_->GetEventHandlerForPoint(newtab_button_point);
+      views::View* view =
+          ConvertPointToViewAndGetEventHandler(this, newtab_button_, point);
+      if (view)
+        return view;
     }
 
     int active_tab_index = touch_layout_->active_index();
+    Tab* tab = NULL;
     if (active_tab_index != -1) {
-      Tab* tab = FindTabForEvent(point, active_tab_index, -1);
+      tab = FindTabForEvent(point, active_tab_index, -1);
       if (!tab)
         tab = FindTabForEvent(point, active_tab_index + 1, 1);
-      if (tab) {
-        gfx::Point point_in_tab_coords(point);
-        View::ConvertPointToView(this, tab, &point_in_tab_coords);
-        return tab->GetEventHandlerForPoint(point_in_tab_coords);
-      }
+    } else if (tab_count()) {
+      tab = FindTabForEvent(point, 0, 1);
     }
+    if (tab)
+      return ConvertPointToViewAndGetEventHandler(this, tab, point);
   }
   return this;
 }
@@ -1982,6 +1994,9 @@ int TabStrip::GetStartXForNormalTabs() const {
 }
 
 Tab* TabStrip::FindTabForEvent(const gfx::Point& point, int start, int delta) {
+  // |start| equals tab_count() when there are only pinned tabs.
+  if (start == tab_count())
+    start += delta;
   for (int i = start; i >= 0 && i < tab_count(); i += delta) {
     if (IsPointInTab(tab_at(i), point))
       return tab_at(i);
