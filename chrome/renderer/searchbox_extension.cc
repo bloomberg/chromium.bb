@@ -386,8 +386,10 @@ void Dispatch(WebFrame* frame,
 
   v8::Handle<v8::Value> result = frame->executeScriptAndReturnValue(
     WebScriptSource(event_dispatch_script));
-  if (result.IsEmpty())
+  if (result.IsEmpty() || result->IsUndefined() || result->IsNull() ||
+      result->IsFalse()) {
     frame->executeScript(WebScriptSource(no_event_handler_script));
+  }
 }
 
 // static
