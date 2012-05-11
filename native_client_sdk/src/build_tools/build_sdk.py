@@ -242,6 +242,8 @@ HEADER_MAP = {
       'irt.h': 'src/untrusted/irt/irt.h',
       'irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
   },
+  'libs': {
+  },
 }
 
 
@@ -615,6 +617,7 @@ def main(args):
   buildbot_common.RemoveDir(pepperold)
   if not skip_untar:
     buildbot_common.RemoveDir(pepperdir)
+    buildbot_common.MakeDir(os.path.join(pepperdir, 'libraries'))
     buildbot_common.MakeDir(os.path.join(pepperdir, 'toolchain'))
     buildbot_common.MakeDir(os.path.join(pepperdir, 'tools'))
   else:
@@ -633,6 +636,7 @@ def main(args):
 
   if not skip_build:
     BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
+    InstallHeaders(os.path.join(pepperdir, 'libraries'), pepper_ver, 'libs')
 
   if not skip_build:
     buildbot_common.BuildStep('Copy make OS helpers')
@@ -668,7 +672,7 @@ def main(args):
     BuildUpdater()
 
   # start local server sharing a manifest + the new bundle
-  if not skip_test_updater:
+  if not skip_test_updater and not skip_tar:
     buildbot_common.BuildStep('Move bundle to localserver dir')
     buildbot_common.MakeDir(SERVER_DIR)
     buildbot_common.Move(tarfile, SERVER_DIR)

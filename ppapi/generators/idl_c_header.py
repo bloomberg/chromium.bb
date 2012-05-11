@@ -7,6 +7,7 @@
 
 import glob
 import os
+import re
 import sys
 
 from idl_log import ErrOut, InfoOut, WarnOut
@@ -171,6 +172,15 @@ class HGen(GeneratorByFile):
     for include in includes:
       if include == cur_include: continue
       out.Write('#include "%s"\n' % include)
+
+    # If we are generating a single release, then create a macro for the highest
+    # available release number.
+    if filenode.GetProperty('NAME').endswith('pp_macros.idl'):
+      releasestr = GetOption('release')
+      if releasestr:
+        release_numbers = re.findall('\d+', releasestr)
+        if release_numbers:
+          out.Write('\n#define PPAPI_RELEASE %s\n' % release_numbers[0])
 
     # Generate all interface defines
     out.Write('\n')
