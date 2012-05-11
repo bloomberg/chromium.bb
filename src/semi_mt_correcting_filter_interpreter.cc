@@ -21,9 +21,6 @@ SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
       interpreter_enabled_(prop_reg, "SemiMT Correcting Filter Enable", 0),
       pressure_threshold_(prop_reg, "SemiMT Pressure Threshold", 30),
       hysteresis_pressure_(prop_reg, "SemiMT Hysteresis Pressure", 25),
-      transfer_factor_(prop_reg, "SemiMT Velocity Accumulation Factor", 0.5),
-      speed_ratio_(prop_reg, "SemiMT Speed Ratio", 2.5),
-      speed_threshold_(prop_reg, "SemiMT Speed Threshold", 20.0),
       clip_non_linear_edge_(prop_reg, "SemiMT Clip Non Linear Area", 1),
       non_linear_top_(prop_reg, "SemiMT Non Linear Area Top", 1250.0),
       non_linear_bottom_(prop_reg, "SemiMT Non Linear Area Bottom", 4570.0),
@@ -163,53 +160,6 @@ void SemiMtCorrectingFilterInterpreter::InitCurrentPattern(
   Log("current pattern:0x%X ", current_pattern_);
 }
 
-void SemiMtCorrectingFilterInterpreter::DetectMovingFinger(
-    HardwareState* hwstate) {
-  MovingDirection direction = kUnknown;
-  float speed_x = 0.0;
-  float speed_y = 0.0;
-
-  for (size_t i = 0; i < 2; i++) {
-    float dx = hwstate->fingers[i].position_x -
-        prev_hwstate_.fingers[i].position_x;
-    float dy = hwstate->fingers[i].position_y -
-        prev_hwstate_.fingers[i].position_y;
-
-    // Accumulate past velocities to detect which finger moves more
-    velocity_x_[i] = velocity_x_[i] * transfer_factor_.val_ +
-      dx * (1 - transfer_factor_.val_);
-    velocity_y_[i] = velocity_y_[i] * transfer_factor_.val_ +
-      dy * (1 - transfer_factor_.val_);
-    if (fabs(velocity_x_[i]) > speed_x)
-      speed_x = fabs(velocity_x_[i]);
-    if (fabs(velocity_y_[i]) > speed_y)
-      speed_y = fabs(velocity_y_[i]);
-  }
-  if ((speed_x > speed_y) && (speed_x > speed_threshold_.val_))
-    direction = kHorizontalMove;
-  else if ((speed_x < speed_y) && (speed_y > speed_threshold_.val_))
-    direction = kVerticalMove;
-  else
-    return;
-
-  size_t moving_finger;
-  float faster_v, slower_v;
-
-  if (direction == kVerticalMove) {
-    moving_finger = (fabsf(velocity_y_[0]) > fabsf(velocity_y_[1])) ? 0 : 1;
-    faster_v = fabsf(velocity_y_[moving_finger]);
-    slower_v = fabsf(velocity_y_[1 - moving_finger]);
-  } else {
-    moving_finger = (fabsf(velocity_x_[0]) > fabsf(velocity_x_[1])) ? 0 : 1;
-    faster_v = fabsf(velocity_x_[moving_finger]);
-    slower_v = fabsf(velocity_x_[1 - moving_finger]);
-  }
-  if (faster_v > slower_v * speed_ratio_.val_)  {
-    moving_finger_ = moving_finger;
-    Log("Moving finger detected, finger is %zu", moving_finger);
-  }
-}
-
 void SemiMtCorrectingFilterInterpreter::UpdateAbsolutePosition(
     HardwareState* hwstate, const FingerPosition& center,
     float min_x, float min_y, float max_x, float max_y) {
@@ -287,23 +237,20 @@ void SemiMtCorrectingFilterInterpreter::CorrectFingerPosition(
   // skip the first event for velocity calculation. Also, if the first finger
   // is clicking, then we enforce the arriving finger as the moving finger.
   if (prev_hwstate_.finger_cnt < 2) {
-    if ((prev_hwstate_.finger_cnt == 1) &&
-        (prev_hwstate_.buttons_down & GESTURES_BUTTON_LEFT))
-      moving_finger_ = 1;
-    else
-      moving_finger_ = kInvalidFinger;
+    // TODO(cywang): Fix the cases for which the moving finger is the one with
+    // higher Y, especially for one-finger scroll vertically.
+
+    // Assume the the moving finger is the one with lower Y. If both finger
+    // arrives at the same time, i.e. the previous finger count is zero, then we
+    // neither figure out the correct pattern nor make the moving_finger_ index
+    // correct.
+    moving_finger_ = (finger0->position_y < finger1->position_y) ? 0 : 1;
     SetPosition(start_pos_, hwstate);
-    velocity_x_[0] = velocity_y_[0] = 0;
-    velocity_x_[1] = velocity_y_[1] = 0;
   } else {
-    if (moving_finger_ == kInvalidFinger)
-      DetectMovingFinger(hwstate);
-    if (moving_finger_ != kInvalidFinger) {
-      UpdateFingerPattern(hwstate, center);
-      size_t stationary_finger = 1 - moving_finger_;
-      hwstate->fingers[stationary_finger].flags |= GESTURES_FINGER_WARP_X;
-      hwstate->fingers[stationary_finger].flags |= GESTURES_FINGER_WARP_Y;
-    }
+    UpdateFingerPattern(hwstate, center);
+    size_t stationary_finger = 1 - moving_finger_;
+    hwstate->fingers[stationary_finger].flags |= GESTURES_FINGER_WARP_X;
+    hwstate->fingers[stationary_finger].flags |= GESTURES_FINGER_WARP_Y;
   }
 }
 

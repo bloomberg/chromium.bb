@@ -64,6 +64,7 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest);
 
  public:
   SemiMtCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
@@ -143,12 +144,6 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // The last used id number.
   unsigned short last_id_;
 
-  // Horizontal velocities of fingers.
-  float velocity_x_[kMaxSemiMtFingers];
-
-  // Veritical velocities of fingers.
-  float velocity_y_[kMaxSemiMtFingers];
-
   // Current moving finger index.
   size_t moving_finger_;
 
@@ -166,15 +161,6 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
 
   // The hysteresis pressure of an active finger.
   DoubleProperty hysteresis_pressure_;
-
-  // The accumulation factor for calculating the velocity of a finger.
-  DoubleProperty transfer_factor_;
-
-  // The speed ratio in decision-making between one-finger moving or both.
-  DoubleProperty speed_ratio_;
-
-  // The speed threshold for detecting if a finger is moving.
-  DoubleProperty speed_threshold_;
 
   // True if the touchpad has non-linear edges.
   BoolProperty clip_non_linear_edge_;

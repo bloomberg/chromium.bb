@@ -385,4 +385,144 @@ TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest) {
   base_interpreter->expected_coordinates_.push_back(result);
   interpreter.SyncInterpret(&hs[3], NULL);
 }
+
+TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  // Test one, second finger arrives below the first finger, then move the first
+  // finger. Expect moving finger will be the first finger(Y=1942) as the
+  // second finger's starting Y(Y=4370) is higher.
+  FingerState fs[] = {
+
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 80, 0, 3424, 1942, 48, 0},
+
+    // index 1
+    { 0, 0, 0, 0, 80, 0, 3426, 4370, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3598, 1938, 49, 0},
+
+    // index 3
+    { 0, 0, 0, 0, 80, 0, 3427, 4406, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3502, 1934, 49, 0},
+
+    // index 5
+    { 0, 0, 0, 0, 80, 0, 3458, 4449, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3516, 1920, 49, 0},
+
+    // index 7
+    { 0, 0, 0, 0, 80, 0, 3480, 4449, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3521, 1920, 49, 0},
+
+    // index 9
+    { 0, 0, 0, 0, 80, 0, 3486, 4449, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3527, 1918, 49, 0},
+
+    // index 11
+    { 0, 0, 0, 0, 80, 0, 3492, 4449, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3532, 1918, 49, 0},
+
+    // index 13
+    { 0, 0, 0, 0, 80, 0, 3510, 4449, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3539, 1918, 49, 0},
+
+    // index 15
+    { 0, 0, 0, 0, 80, 0, 3516, 4449, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3546, 1918, 49, 0},
+
+    // index 17
+    { 0, 0, 0, 0, 80, 0, 3539, 4449, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3564, 1918, 49, 0},
+
+    // index 19
+    { 0, 0, 0, 0, 80, 0, 3546, 4449, 48, 0},
+    { 0, 0, 0, 0, 80, 0, 3568, 1918, 49, 0},
+  };
+
+  // Test two, have a resting thumb in the center of the touchpad, then the
+  // index finger tries to cross the thumb horizontally. Expect the moving
+  // finger will be the index finger as its starting position (Y=1873) is lower
+  // than the first finger (Y=3325).
+  FingerState fs2[] = {
+    { 0, 0, 0, 0, 108, 0, 3202, 3325, 99, 0},
+
+    // index 1
+    { 0, 0, 0, 0, 108, 0, 3198, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2424, 1873, 100, 0},
+
+    // index 3
+    { 0, 0, 0, 0, 108, 0, 3198, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2471, 1873, 100, 0},
+
+    // index 5
+    { 0, 0, 0, 0, 108, 0, 3196, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2500, 1867, 100, 0},
+
+    // index 7
+    { 0, 0, 0, 0, 108, 0, 3192, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2546, 1850, 100, 0},
+
+    // index 9
+    { 0, 0, 0, 0, 108, 0, 3185, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2594, 1844, 100, 0},
+
+    // index 11
+    { 0, 0, 0, 0, 108, 0, 3177, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2654, 1822, 100, 0},
+
+    // index 13
+    { 0, 0, 0, 0, 108, 0, 3152, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2707, 1820, 100, 0},
+
+    // index 15
+    { 0, 0, 0, 0, 108, 0, 3130, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2749, 1818, 100, 0},
+
+    // index 17
+    { 0, 0, 0, 0, 108, 0, 3098, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2780, 1801, 100, 0},
+
+    // index 19
+    { 0, 0, 0, 0, 108, 0, 3082, 3325, 99, 0},
+    { 0, 0, 0, 0, 108, 0, 2804, 1797, 100, 0},
+  };
+
+  HardwareState hs[] = {
+    { 0.00, 0, 1, 1, &fs[0] },
+    { 0.02, 0, 2, 2, &fs[1] },
+  };
+
+  HardwareState hs2[] = {
+    { 0.00, 0, 1, 1, &fs2[0] },
+    { 0.02, 0, 2, 2, &fs2[1] },
+  };
+
+  HardwareProperties hwprops = {
+    1217, 5733, 1061, 4798,  // left, top, right, bottom
+    1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = true;
+
+  // Test one, the moving finger should be the first finger.
+  interpreter.SyncInterpret(&hs[0], NULL);
+  for (size_t i = 0; i < (arraysize(fs) - 1) / 2; i++) {
+    hs[1].fingers = &fs[2 * i + 1];  // update the finger array
+    hs[1].timestamp += 0.02;
+    interpreter.SyncInterpret(&hs[1], NULL);
+    EXPECT_EQ(interpreter.moving_finger_, 0);
+  }
+
+  // Test two, the moving finger should be the second finger.
+  interpreter.SyncInterpret(&hs2[0], NULL);
+  for (size_t i = 0; i < (arraysize(fs2) - 1) / 2; i++) {
+    hs2[1].fingers = &fs2[2 * i + 1];  // update the finger array
+    hs2[1].timestamp += 0.02;
+    interpreter.SyncInterpret(&hs2[1], NULL);
+    EXPECT_EQ(interpreter.moving_finger_, 1);
+  }
+}
 }  // namespace gestures
