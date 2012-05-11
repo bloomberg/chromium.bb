@@ -8,9 +8,7 @@
 #include "ash/shell/toplevel_window.h"
 #include "base/basictypes.h"
 #include "ui/app_list/app_list_item_model.h"
-#include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/app_list_model.h"
-#include "ui/app_list/app_list_view.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/views/examples/examples_window.h"
 
