@@ -376,11 +376,12 @@ int pthread_create(pthread_t *thread_id,
     if (NULL == tls_node)
       break;
 
-    __nacl_tls_data_bss_initialize_from_template(NODE_TO_PAYLOAD(tls_node),
-                                                 TDB_SIZE);
+    new_tp = __nacl_tls_data_bss_initialize_from_template(
+      NODE_TO_PAYLOAD(tls_node), TDB_SIZE);
 
     new_tdb = (nc_thread_descriptor_t *)
-              __nacl_tls_tdb_start(NODE_TO_PAYLOAD(tls_node), TDB_SIZE);
+              ((char *) new_tp + __nacl_tp_tdb_offset(TDB_SIZE));
+
     /* TODO(gregoryd): consider creating a pool of basic_data structs,
      * similar to stack and TLS+TDB (probably when adding the support for
      * variable stack size).
@@ -455,8 +456,6 @@ int pthread_create(pthread_t *thread_id,
   size_t stack_padding = __nacl_thread_stack_padding();
   esp = (void *) (thread_stack + stacksize - stack_padding);
   memset(esp, 0, stack_padding);
-
-  new_tp = (char *) new_tdb - __nacl_tp_tdb_offset(TDB_SIZE);
 
   /* start the thread */
   retval = irt_thread.thread_create(

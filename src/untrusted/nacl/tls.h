@@ -33,16 +33,12 @@ void __newlib_thread_exit();
 size_t __nacl_tls_combined_size(size_t tdb_size);
 
 /*
- * Returns the address of the TDB within a combined area.
- */
-void *__nacl_tls_tdb_start(void *combined_area, size_t tdb_size);
-
-/*
  * Initializes the TLS of a combined area by copying the TLS data area
  * from the template (ELF image .tdata) and zeroing the TLS BSS area.
+ * Returns the pointer that should go in the thread register.
  */
-void __nacl_tls_data_bss_initialize_from_template(void *combined_area,
-                                                  size_t tdb_size);
+void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
+                                                   size_t tdb_size);
 
 /*
  * Fills in the memory of the size __nacl_tls_combined_size returned.

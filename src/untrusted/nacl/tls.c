@@ -95,18 +95,14 @@ static void *tls_from_tp(void *tp, size_t tls_size) {
                       TLS_ALIGNMENT);
 }
 
-void *__nacl_tls_tdb_start(void *combined_area, size_t tdb_size) {
-  return (tp_from_combined_area(combined_area, tdb_size) +
-          __nacl_tp_tdb_offset(tdb_size));
-}
-
-void __nacl_tls_data_bss_initialize_from_template(void *combined_area,
-                                                  size_t tdb_size) {
+void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
+                                                   size_t tdb_size) {
   size_t tls_size = TLS_TDATA_SIZE + TLS_TBSS_SIZE;
   void *tp = tp_from_combined_area(combined_area, tdb_size);
   char *start = tls_from_tp(tp, tls_size);
   memcpy(start, TLS_TDATA_START, TLS_TDATA_SIZE);
   memset(start + TLS_TDATA_SIZE, 0, TLS_TBSS_SIZE);
+  return tp;
 }
 
 size_t __nacl_tls_combined_size(size_t tdb_size) {
@@ -152,17 +148,17 @@ size_t __nacl_tls_combined_size(size_t tdb_size) {
  * Final setup of the memory allocated for TLS space.
  */
 void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size) {
-  __nacl_tls_data_bss_initialize_from_template(combined_area, tdb_size);
+  void *tp = __nacl_tls_data_bss_initialize_from_template(combined_area,
+                                                          tdb_size);
 
   if (__nacl_tp_tdb_offset(tdb_size) == 0) {
     /*
      * The TDB sits directly at $tp and the first word there must
      * hold the $tp pointer itself.
      */
-    void *tdb = __nacl_tls_tdb_start(combined_area, tdb_size);
+    void *tdb = (char *) tp + __nacl_tp_tdb_offset(tdb_size);
     *(void **) tdb = tdb;
   }
 
-  void *tp = tp_from_combined_area(combined_area, tdb_size);
   return tp;
 }

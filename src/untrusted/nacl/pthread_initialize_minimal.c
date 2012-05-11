@@ -27,13 +27,13 @@ int __pthread_initialize_minimal(size_t tdb_size) {
   /*
    * Fill in that memory with its initializer data.
    */
-  void *tdb = __nacl_tls_initialize_memory(combined_area, tdb_size);
+  void *tp = __nacl_tls_initialize_memory(combined_area, tdb_size);
 
   /*
    * Set %gs, r9, or equivalent platform-specific mechanism.  Requires
    * a syscall since certain bitfields of these registers are trusted.
    */
-  nacl_tls_init(tdb);
+  nacl_tls_init(tp);
 
   /*
    * Initialize newlib's thread-specific pointer.
