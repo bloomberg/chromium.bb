@@ -154,10 +154,6 @@
       # -imports.ImportsTest.testFirefoxImportFromPrefs
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
-      # crbug.com/121731
-      '-omnibox.OmniboxTest.testIncognitoAppComboNameWithSpecialCharSearch',
-      '-omnibox.OmniboxTest.testIncognitoAppNameWithSpaceSearch',
-      '-omnibox.OmniboxTest.testIncognitoAppSearchWithVeryLongAppName',
       # crbug.com/117569
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       # crbug.com/104227
@@ -533,6 +529,12 @@
       # ===========================
       # Consistently failing on Mac QA bots only: crbug.com/97810
       '-process_count',
+
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      # crbug.com/127880
+      '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
     ],
 
     'linux': [
