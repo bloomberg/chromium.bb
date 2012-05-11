@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,14 +76,11 @@ bool CustomButton::IsMouseHovered() const {
   return HitTest(cursor_pos);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// CustomButton, View overrides:
-
-void CustomButton::SetHotTracked(bool flag) {
+void CustomButton::SetHotTracked(bool is_hot_tracked) {
   if (state_ != BS_DISABLED)
-    SetState(flag ? BS_HOT : BS_NORMAL);
+    SetState(is_hot_tracked ? BS_HOT : BS_NORMAL);
 
-  if (flag && GetWidget()) {
+  if (is_hot_tracked && GetWidget()) {
     GetWidget()->NotifyAccessibilityEvent(
         this, ui::AccessibilityTypes::EVENT_FOCUS, true);
   }
@@ -92,6 +89,9 @@ void CustomButton::SetHotTracked(bool flag) {
 bool CustomButton::IsHotTracked() const {
   return state_ == BS_HOT;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// CustomButton, View overrides:
 
 void CustomButton::OnEnabledChanged() {
   if (enabled() ? (state_ != BS_DISABLED) : (state_ == BS_DISABLED))

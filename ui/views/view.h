@@ -100,18 +100,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
  public:
   typedef std::vector<View*> Views;
 
-  // TO BE MOVED ---------------------------------------------------------------
-  // TODO(beng): These methods are to be moved to other files/classes.
-
-  // TODO(beng): delete
-  // Set whether this view is hottracked. A disabled view cannot be hottracked.
-  // If flag differs from the current value, SchedulePaint is invoked.
-  virtual void SetHotTracked(bool flag);
-
-  // TODO(beng): delete
-  // Returns whether the view is hot-tracked.
-  virtual bool IsHotTracked() const;
-
   // Creation and lifetime -----------------------------------------------------
 
   View();

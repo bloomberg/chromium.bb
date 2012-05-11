@@ -17,6 +17,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/atl_module.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/widget/native_widget_win.h"
 #include "ui/views/widget/widget.h"
 
@@ -1035,8 +1036,11 @@ void NativeViewAccessibilityWin::SetState(
     msaa_state->lVal |= STATE_SYSTEM_UNAVAILABLE;
   if (!view->visible())
     msaa_state->lVal |= STATE_SYSTEM_INVISIBLE;
-  if (view->IsHotTracked())
-    msaa_state->lVal |= STATE_SYSTEM_HOTTRACKED;
+  if (view->GetClassName() == views::CustomButton::kViewClassName) {
+    views::CustomButton* button = static_cast<views::CustomButton*>(view);
+    if (button->IsHotTracked())
+      msaa_state->lVal |= STATE_SYSTEM_HOTTRACKED;
+  }
   if (view->HasFocus())
     msaa_state->lVal |= STATE_SYSTEM_FOCUSED;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,9 +72,10 @@ class VIEWS_EXPORT CustomButton : public Button,
   // when it's disabled.
   bool IsMouseHovered() const;
 
+  void SetHotTracked(bool is_hot_tracked);
+  bool IsHotTracked() const;
+
   // Overridden from View:
-  virtual void SetHotTracked(bool flag) OVERRIDE;
-  virtual bool IsHotTracked() const OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;

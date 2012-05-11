@@ -93,15 +93,6 @@ const char View::kViewClassName[] = "views/View";
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
 
-// TO BE MOVED -----------------------------------------------------------------
-
-void View::SetHotTracked(bool flag) {
-}
-
-bool View::IsHotTracked() const {
-  return false;
-}
-
 // Creation and lifetime -------------------------------------------------------
 
 View::View()

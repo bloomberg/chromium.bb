@@ -77,8 +77,11 @@ static View* GetFirstHotTrackedView(View* view) {
   if (!view)
     return NULL;
 
-  if (view->IsHotTracked())
-    return view;
+  if (view->GetClassName() == CustomButton::kViewClassName) {
+    CustomButton* button = static_cast<CustomButton*>(view);
+    if (button->IsHotTracked())
+      return button;
+  }
 
   for (int i = 0; i < view->child_count(); ++i) {
     View* hot_view = GetFirstHotTrackedView(view->child_at(i));
@@ -722,8 +725,11 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   bool pending_item_changed = pending_state_.item != menu_item;
   if (pending_item_changed && pending_state_.item) {
     View* current_hot_view = GetFirstHotTrackedView(pending_state_.item);
-    if (current_hot_view)
-      current_hot_view->SetHotTracked(false);
+    if (current_hot_view &&
+        current_hot_view->GetClassName() == CustomButton::kViewClassName) {
+      CustomButton* button = static_cast<CustomButton*>(current_hot_view);
+      button->SetHotTracked(false);
+    }
   }
 
   // Notify the old path it isn't selected.
@@ -1057,7 +1063,10 @@ MenuController::SendAcceleratorResultType
 
   ui::Accelerator accelerator(ui::VKEY_RETURN, false, false, false);
   hot_view->AcceleratorPressed(accelerator);
-  hot_view->SetHotTracked(true);
+  if (hot_view->GetClassName() == CustomButton::kViewClassName) {
+    CustomButton* button = static_cast<CustomButton*>(hot_view);
+    button->SetHotTracked(true);
+  }
   return (exit_type_ == EXIT_NONE) ?
       ACCELERATOR_PROCESSED : ACCELERATOR_PROCESSED_EXIT;
 }
@@ -1643,17 +1652,22 @@ void MenuController::IncrementSelection(int delta) {
 
   if (item->has_children()) {
     View* hot_view = GetFirstHotTrackedView(item);
-    if (hot_view) {
-      hot_view->SetHotTracked(false);
-      View* to_make_hot = GetNextFocusableView(item, hot_view, delta == 1);
-      if (to_make_hot) {
-        to_make_hot->SetHotTracked(true);
+    if (hot_view && hot_view->GetClassName() == CustomButton::kViewClassName) {
+      CustomButton* button = static_cast<CustomButton*>(hot_view);
+      button->SetHotTracked(false);
+      View* to_make_hot = GetNextFocusableView(item, button, delta == 1);
+      if (to_make_hot &&
+          to_make_hot->GetClassName() == CustomButton::kViewClassName) {
+        CustomButton* button_hot = static_cast<CustomButton*>(to_make_hot);
+        button_hot->SetHotTracked(true);
         return;
       }
     } else {
       View* to_make_hot = GetInitialFocusableView(item, delta == 1);
-      if (to_make_hot) {
-        to_make_hot->SetHotTracked(true);
+      if (to_make_hot &&
+          to_make_hot->GetClassName() == CustomButton::kViewClassName) {
+        CustomButton* button_hot = static_cast<CustomButton*>(to_make_hot);
+        button_hot->SetHotTracked(true);
         return;
       }
     }
@@ -1672,8 +1686,11 @@ void MenuController::IncrementSelection(int delta) {
           ScrollToVisible(to_select);
           SetSelection(to_select, SELECTION_DEFAULT);
           View* to_make_hot = GetInitialFocusableView(to_select, delta == 1);
-          if (to_make_hot)
-            to_make_hot->SetHotTracked(true);
+          if (to_make_hot &&
+              to_make_hot->GetClassName() == CustomButton::kViewClassName) {
+            CustomButton* button_hot = static_cast<CustomButton*>(to_make_hot);
+            button_hot->SetHotTracked(true);
+          }
           break;
         }
       }
