@@ -33,8 +33,6 @@
 
 #include "window.h"
 
-#include <X11/keysym.h>
-
 struct spring {
 	double current;
 	double target;
@@ -158,35 +156,35 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		resizor->height.target = allocation.height;
 
 	switch (sym) {
-	case XK_Up:
+	case XKB_KEY_Up:
 		if (allocation.height < 400)
 			break;
 
 		resizor->height.target = allocation.height - 200;
 		break;
 
-	case XK_Down:
+	case XKB_KEY_Down:
 		if (allocation.height > 1000)
 			break;
 
 		resizor->height.target = allocation.height + 200;
 		break;
 
-	case XK_Left:
+	case XKB_KEY_Left:
 		if (allocation.width < 400)
 			break;
 
 		resizor->width.target = allocation.width - 200;
 		break;
 
-	case XK_Right:
+	case XKB_KEY_Right:
 		if (allocation.width > 1000)
 			break;
 
 		resizor->width.target = allocation.width + 200;
 		break;
 
-	case XK_Escape:
+	case XKB_KEY_Escape:
 		display_exit(resizor->display);
 		break;
 	}

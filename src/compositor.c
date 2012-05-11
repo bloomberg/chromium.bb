@@ -2614,7 +2614,7 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 static int weston_compositor_xkb_init(struct weston_compositor *ec,
 				      struct xkb_rule_names *names)
 {
-	ec->xkb_info.context = xkb_context_new();
+	ec->xkb_info.context = xkb_context_new(0);
 	if (ec->xkb_info.context == NULL) {
 		fprintf(stderr, "failed to create XKB context\n");
 		return -1;
@@ -2629,7 +2629,7 @@ static int weston_compositor_xkb_init(struct weston_compositor *ec,
 		ec->xkb_info.names.layout = strdup("us");
 
 	ec->xkb_info.keymap = xkb_map_new_from_names(ec->xkb_info.context,
-	                                             &ec->xkb_info.names);
+	                                             &ec->xkb_info.names, 0);
 	if (ec->xkb_info.keymap == NULL) {
 		fprintf(stderr, "failed to compile XKB keymap\n");
 		return -1;
@@ -2650,11 +2650,11 @@ static void weston_compositor_xkb_destroy(struct weston_compositor *ec)
 	xkb_map_unref(ec->xkb_info.keymap);
 	xkb_context_unref(ec->xkb_info.context);
 
-	free(ec->xkb_info.names.rules);
-	free(ec->xkb_info.names.model);
-	free(ec->xkb_info.names.layout);
-	free(ec->xkb_info.names.variant);
-	free(ec->xkb_info.names.options);
+	free((char *) ec->xkb_info.names.rules);
+	free((char *) ec->xkb_info.names.model);
+	free((char *) ec->xkb_info.names.layout);
+	free((char *) ec->xkb_info.names.variant);
+	free((char *) ec->xkb_info.names.options);
 }
 
 static int on_term_signal(int signal_number, void *data)

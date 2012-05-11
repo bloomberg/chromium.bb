@@ -35,8 +35,6 @@
 
 #include "window.h"
 
-#include <X11/keysym.h>
-
 struct clickdot {
 	struct display *display;
 	struct window *window;
@@ -190,7 +188,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		return;
 
 	switch (sym) {
-	case XK_Escape:
+	case XKB_KEY_Escape:
 		display_exit(clickdot->display);
 		break;
 	}

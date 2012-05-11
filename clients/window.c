@@ -56,8 +56,6 @@
 #endif
 
 #include <xkbcommon/xkbcommon.h>
-#include <X11/keysym.h>
-#include <X11/X.h>
 #include <X11/Xcursor/Xcursor.h>
 
 #include <linux/input.h>
@@ -1833,7 +1831,7 @@ input_handle_key(void *data, struct wl_input_device *input_device,
 	xkb_state_update_key(d->xkb.state, code,
 			     state ? XKB_KEY_DOWN : XKB_KEY_UP);
 
-	mask = xkb_state_serialise_mods(d->xkb.state, 
+	mask = xkb_state_serialize_mods(d->xkb.state, 
 					XKB_STATE_DEPRESSED | 
 					XKB_STATE_LATCHED);
 	input->modifiers = 0;
@@ -1844,7 +1842,7 @@ input_handle_key(void *data, struct wl_input_device *input_device,
 	if (mask & input->display->xkb.shift_mask)
 		input->modifiers |= MOD_SHIFT_MASK;
 
-	if (num_syms == 1 && syms[0] == XK_F5 &&
+	if (num_syms == 1 && syms[0] == XKB_KEY_F5 &&
 	    input->modifiers == MOD_ALT_MASK) {
 		if (state)
 			window_set_maximized(window,
@@ -3121,14 +3119,13 @@ init_xkb(struct display *d)
 	d->xkb.names.variant = (char *) option_xkb_variant;
 	d->xkb.names.options = (char *) option_xkb_options;
 
-	d->xkb.context = xkb_context_new();
+	d->xkb.context = xkb_context_new(0);
 	if (!d->xkb.context) {
 		fprintf(stderr, "Failed to create XKB context\n");
 		exit(1);
 	}
 
-	d->xkb.keymap =
-		xkb_map_new_from_names(d->xkb.context, &d->xkb.names);
+	d->xkb.keymap = xkb_map_new_from_names(d->xkb.context, &d->xkb.names, 0);
 	if (!d->xkb.keymap) {
 		fprintf(stderr, "Failed to compile keymap\n");
 		exit(1);

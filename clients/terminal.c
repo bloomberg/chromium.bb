@@ -34,8 +34,6 @@
 #include <glib.h>
 #include <sys/epoll.h>
 
-#include <X11/keysym.h>
-
 #include <wayland-client.h>
 
 #include "window.h"
@@ -241,28 +239,28 @@ struct key_map {
 typedef struct key_map *keyboard_mode;
 
 static struct key_map KM_NORMAL[] = {
-	{XK_Left,  1, '[', 'D'},
-	{XK_Right, 1, '[', 'C'},
-	{XK_Up,    1, '[', 'A'},
-	{XK_Down,  1, '[', 'B'},
-	{XK_Home,  1, '[', 'H'},
-	{XK_End,   1, '[', 'F'},
-	{0, 0, 0, 0}
+	{ XKB_KEY_Left,  1, '[', 'D' },
+	{ XKB_KEY_Right, 1, '[', 'C' },
+	{ XKB_KEY_Up,    1, '[', 'A' },
+	{ XKB_KEY_Down,  1, '[', 'B' },
+	{ XKB_KEY_Home,  1, '[', 'H' },
+	{ XKB_KEY_End,   1, '[', 'F' },
+	{ 0, 0, 0, 0 }
 };
 static struct key_map KM_APPLICATION[] = {
-	{XK_Left,          1, 'O', 'D'},
-	{XK_Right,         1, 'O', 'C'},
-	{XK_Up,            1, 'O', 'A'},
-	{XK_Down,          1, 'O', 'B'},
-	{XK_Home,          1, 'O', 'H'},
-	{XK_End,           1, 'O', 'F'},
-	{XK_KP_Enter,      1, 'O', 'M'},
-	{XK_KP_Multiply,   1, 'O', 'j'},
-	{XK_KP_Add,        1, 'O', 'k'},
-	{XK_KP_Separator,  1, 'O', 'l'},
-	{XK_KP_Subtract,   1, 'O', 'm'},
-	{XK_KP_Divide,     1, 'O', 'o'},
-	{0, 0, 0, 0}
+	{ XKB_KEY_Left,          1, 'O', 'D' },
+	{ XKB_KEY_Right,         1, 'O', 'C' },
+	{ XKB_KEY_Up,            1, 'O', 'A' },
+	{ XKB_KEY_Down,          1, 'O', 'B' },
+	{ XKB_KEY_Home,          1, 'O', 'H' },
+	{ XKB_KEY_End,           1, 'O', 'F' },
+	{ XKB_KEY_KP_Enter,      1, 'O', 'M' },
+	{ XKB_KEY_KP_Multiply,   1, 'O', 'j' },
+	{ XKB_KEY_KP_Add,        1, 'O', 'k' },
+	{ XKB_KEY_KP_Separator,  1, 'O', 'l' },
+	{ XKB_KEY_KP_Subtract,   1, 'O', 'm' },
+	{ XKB_KEY_KP_Divide,     1, 'O', 'o' },
+	{ 0, 0, 0, 0 }
 };
 
 static int
@@ -2045,10 +2043,10 @@ handle_bound_key(struct terminal *terminal,
 		 struct input *input, uint32_t sym, uint32_t time)
 {
 	switch (sym) {
-	case XK_X:
+	case XKB_KEY_X:
 		/* Cut selection; terminal doesn't do cut, fall
 		 * through to copy. */
-	case XK_C:
+	case XKB_KEY_C:
 		terminal->selection =
 			display_create_data_source(terminal->display);
 		wl_data_source_offer(terminal->selection,
@@ -2057,7 +2055,7 @@ handle_bound_key(struct terminal *terminal,
 					    &data_source_listener, terminal);
 		input_set_selection(input, terminal->selection, time);
 		return 1;
-	case XK_V:
+	case XKB_KEY_V:
 		input_receive_selection_data_to_fd(input,
 						   "text/plain;charset=utf-8",
 						   terminal->master);
@@ -2084,25 +2082,25 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		return;
 
 	switch (sym) {
-	case XK_F11:
+	case XKB_KEY_F11:
 		if (!state)
 			break;
 		terminal->fullscreen ^= 1;
 		window_set_fullscreen(window, terminal->fullscreen);
 		break;
 
-	case XK_BackSpace:
-	case XK_Tab:
-	case XK_Linefeed:
-	case XK_Clear:
-	case XK_Pause:
-	case XK_Scroll_Lock:
-	case XK_Sys_Req:
-	case XK_Escape:
+	case XKB_KEY_BackSpace:
+	case XKB_KEY_Tab:
+	case XKB_KEY_Linefeed:
+	case XKB_KEY_Clear:
+	case XKB_KEY_Pause:
+	case XKB_KEY_Scroll_Lock:
+	case XKB_KEY_Sys_Req:
+	case XKB_KEY_Escape:
 		ch[len++] = sym & 0x7f;
 		break;
 
-	case XK_Return:
+	case XKB_KEY_Return:
 		if (terminal->mode & MODE_LF_NEWLINE) {
 			ch[len++] = 0x0D;
 			ch[len++] = 0x0A;
@@ -2111,61 +2109,61 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		}
 		break;
 
-	case XK_Shift_L:
-	case XK_Shift_R:
-	case XK_Control_L:
-	case XK_Control_R:
-	case XK_Alt_L:
-	case XK_Alt_R:
+	case XKB_KEY_Shift_L:
+	case XKB_KEY_Shift_R:
+	case XKB_KEY_Control_L:
+	case XKB_KEY_Control_R:
+	case XKB_KEY_Alt_L:
+	case XKB_KEY_Alt_R:
 		break;
 
-	case XK_Insert:
+	case XKB_KEY_Insert:
 		len = function_key_response('[', 2, modifiers, '~', ch);
 		break;
-	case XK_Delete:
+	case XKB_KEY_Delete:
 		if (terminal->mode & MODE_DELETE_SENDS_DEL) {
 			ch[len++] = '\x04';
 		} else {
 			len = function_key_response('[', 3, modifiers, '~', ch);
 		}
 		break;
-	case XK_Page_Up:
+	case XKB_KEY_Page_Up:
 		len = function_key_response('[', 5, modifiers, '~', ch);
 		break;
-	case XK_Page_Down:
+	case XKB_KEY_Page_Down:
 		len = function_key_response('[', 6, modifiers, '~', ch);
 		break;
-	case XK_F1:
+	case XKB_KEY_F1:
 		len = function_key_response('O', 1, modifiers, 'P', ch);
 		break;
-	case XK_F2:
+	case XKB_KEY_F2:
 		len = function_key_response('O', 1, modifiers, 'Q', ch);
 		break;
-	case XK_F3:
+	case XKB_KEY_F3:
 		len = function_key_response('O', 1, modifiers, 'R', ch);
 		break;
-	case XK_F4:
+	case XKB_KEY_F4:
 		len = function_key_response('O', 1, modifiers, 'S', ch);
 		break;
-	case XK_F5:
+	case XKB_KEY_F5:
 		len = function_key_response('[', 15, modifiers, '~', ch);
 		break;
-	case XK_F6:
+	case XKB_KEY_F6:
 		len = function_key_response('[', 17, modifiers, '~', ch);
 		break;
-	case XK_F7:
+	case XKB_KEY_F7:
 		len = function_key_response('[', 18, modifiers, '~', ch);
 		break;
-	case XK_F8:
+	case XKB_KEY_F8:
 		len = function_key_response('[', 19, modifiers, '~', ch);
 		break;
-	case XK_F9:
+	case XKB_KEY_F9:
 		len = function_key_response('[', 20, modifiers, '~', ch);
 		break;
-	case XK_F10:
+	case XKB_KEY_F10:
 		len = function_key_response('[', 21, modifiers, '~', ch);
 		break;
-	case XK_F12:
+	case XKB_KEY_F12:
 		len = function_key_response('[', 24, modifiers, '~', ch);
 		break;
 	default:
