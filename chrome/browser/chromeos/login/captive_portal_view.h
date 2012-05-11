@@ -22,7 +22,7 @@ class CaptivePortalView : public SimpleWebViewDialog {
   void StartLoad();
 
   // Overridden from views::WidgetDelegate:
-  bool CanResize() const OVERRIDE;
+  virtual bool CanResize() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
