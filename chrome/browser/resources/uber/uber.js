@@ -151,6 +151,8 @@ cr.define('uber', function() {
    */
   function backgroundNavigation() {
     navFrame.classList.add('background');
+    navFrame.firstChild.tabIndex = -1;
+    navFrame.firstChild.setAttribute('aria-hidden', true);
   }
 
   /**
@@ -158,6 +160,8 @@ cr.define('uber', function() {
    */
   function foregroundNavigation() {
     navFrame.classList.remove('background');
+    navFrame.firstChild.tabIndex = 0;
+    navFrame.firstChild.removeAttribute('aria-hidden');
   }
 
   /**
