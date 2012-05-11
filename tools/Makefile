@@ -830,8 +830,7 @@ BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 	  CFLAGS="$(USER_CFLAGS)" \
 	  ../../SRC/gdb/configure \
 	    --prefix=$(PREFIX) \
-	    --enable-64-bit-bfd \
-	    --target=i686-linux
+	    --target=x86_64-nacl
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
