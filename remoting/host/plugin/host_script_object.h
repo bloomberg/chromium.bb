@@ -153,6 +153,13 @@ class HostNPScriptObject : public HostStatusObserver {
                        uint32_t arg_count,
                        NPVariant* result);
 
+  // Loads daemon config version. The first argument specifies the
+  // callback to be called with the config is loaded. The version is
+  // returned as a dotted version string, described in daemon_controller.h.
+  bool GetDaemonVersion(const NPVariant* args,
+                        uint32_t arg_count,
+                        NPVariant* result);
+
   // Start the daemon process with the specified config. Args are:
   //   string config
   //   function(number) done_callback
@@ -228,6 +235,10 @@ class HostNPScriptObject : public HostStatusObserver {
   // Callback handler for DaemonController::GetConfig().
   void InvokeGetDaemonConfigCallback(const ScopedRefNPObject& callback,
                                      scoped_ptr<base::DictionaryValue> config);
+
+  // Callback handler for DaemonController::GetVersion().
+  void InvokeGetDaemonVersionCallback(const ScopedRefNPObject& callback,
+                                      const std::string& version);
 
   //////////////////////////////////////////////////////////
   // Basic helper methods used for both It2Me and Me2me.

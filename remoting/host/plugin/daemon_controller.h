@@ -76,6 +76,9 @@ class DaemonController {
   // starting/stopping the service.
   typedef base::Callback<void (AsyncResult result)> CompletionCallback;
 
+  // Callback type for GetVersion().
+  typedef base::Callback<void (const std::string&)> GetVersionCallback;
+
   virtual ~DaemonController() {}
 
   // Return the "installed/running" state of the daemon process.
@@ -121,6 +124,10 @@ class DaemonController {
   // Caches the native handle of the plugin window so it can be used to focus
   // elevation prompts properly.
   virtual void SetWindow(void* window_handle) = 0;
+
+  // Get the version of the daemon as a dotted decimal string of the form
+  // major.minor.build.patch, if it is installed, or "" otherwise.
+  virtual void GetVersion(const GetVersionCallback& done_callback) = 0;
 
   static scoped_ptr<DaemonController> Create();
 };

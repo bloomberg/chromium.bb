@@ -81,6 +81,7 @@ class DaemonControllerWin : public remoting::DaemonController {
                             const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
   virtual void SetWindow(void* window_handle) OVERRIDE;
+  virtual void GetVersion(const GetVersionCallback& done_callback) OVERRIDE;
 
  private:
   // Activates an unprivileged instance of the daemon controller and caches it.
@@ -244,6 +245,11 @@ void DaemonControllerWin::SetWindow(void* window_handle) {
       FROM_HERE, base::Bind(
           &DaemonControllerWin::DoSetWindow, base::Unretained(this),
           window_handle));
+}
+
+void DaemonControllerWin::GetVersion(const GetVersionCallback& done_callback) {
+  NOTIMPLEMENTED();
+  done_callback.Run("");
 }
 
 HRESULT DaemonControllerWin::ActivateController() {

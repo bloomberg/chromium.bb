@@ -66,6 +66,7 @@ class DaemonControllerMac : public remoting::DaemonController {
                             const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
   virtual void SetWindow(void* window_handle) OVERRIDE;
+  virtual void GetVersion(const GetVersionCallback& done_callback) OVERRIDE;
 
  private:
   void DoGetConfig(const GetConfigCallback& callback);
@@ -140,6 +141,11 @@ void DaemonControllerMac::Stop(const CompletionCallback& done_callback) {
 
 void DaemonControllerMac::SetWindow(void* window_handle) {
   // noop
+}
+
+void DaemonControllerMac::GetVersion(const GetVersionCallback& done_callback) {
+  NOTIMPLEMENTED();
+  done_callback.Run("");
 }
 
 void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {

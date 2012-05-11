@@ -53,10 +53,15 @@ remoting.HostPlugin.prototype.generateKeyPair = function(callback) {};
 remoting.HostPlugin.prototype.updateDaemonConfig =
     function(config, callback) {};
 
-/** @param {function(string):void} callback Callback to be called for
- *  the config.
+/** @param {function(string):void} callback Callback to be called with
+ *      the config.
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.getDaemonConfig = function(callback) {};
+
+/** @param {function(string):void} callback Callback to be called with
+ *      the version, as a dotted string.
+ *  @return {void} Nothing. */
+remoting.HostPlugin.prototype.getDaemonVersion = function(callback) {};
 
 /** @param {string} config Host configuration.
  *  @param {function(remoting.HostController.AsyncResult):void} callback

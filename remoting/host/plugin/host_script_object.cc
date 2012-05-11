@@ -51,6 +51,7 @@ const char* kFuncNameGetPinHash = "getPinHash";
 const char* kFuncNameGenerateKeyPair = "generateKeyPair";
 const char* kFuncNameUpdateDaemonConfig = "updateDaemonConfig";
 const char* kFuncNameGetDaemonConfig = "getDaemonConfig";
+const char* kFuncNameGetDaemonVersion = "getDaemonVersion";
 const char* kFuncNameStartDaemon = "startDaemon";
 const char* kFuncNameStopDaemon = "stopDaemon";
 
@@ -158,6 +159,7 @@ bool HostNPScriptObject::HasMethod(const std::string& method_name) {
           method_name == kFuncNameGenerateKeyPair ||
           method_name == kFuncNameUpdateDaemonConfig ||
           method_name == kFuncNameGetDaemonConfig ||
+          method_name == kFuncNameGetDaemonVersion ||
           method_name == kFuncNameStartDaemon ||
           method_name == kFuncNameStopDaemon);
 }
@@ -193,6 +195,8 @@ bool HostNPScriptObject::Invoke(const std::string& method_name,
     return UpdateDaemonConfig(args, arg_count, result);
   } else if (method_name == kFuncNameGetDaemonConfig) {
     return GetDaemonConfig(args, arg_count, result);
+  } else if (method_name == kFuncNameGetDaemonVersion) {
+    return GetDaemonVersion(args, arg_count, result);
   } else if (method_name == kFuncNameStartDaemon) {
     return StartDaemon(args, arg_count, result);
   } else if (method_name == kFuncNameStopDaemon) {
@@ -365,6 +369,7 @@ bool HostNPScriptObject::Enumerate(std::vector<std::string>* values) {
     kFuncNameGenerateKeyPair,
     kFuncNameUpdateDaemonConfig,
     kFuncNameGetDaemonConfig,
+    kFuncNameGetDaemonVersion,
     kFuncNameStartDaemon,
     kFuncNameStopDaemon
   };
@@ -719,6 +724,29 @@ bool HostNPScriptObject::GetDaemonConfig(const NPVariant* args,
   // use base::Unretained() here.
   daemon_controller_->GetConfig(
       base::Bind(&HostNPScriptObject::InvokeGetDaemonConfigCallback,
+                 base::Unretained(this), callback_obj));
+
+  return true;
+}
+
+bool HostNPScriptObject::GetDaemonVersion(const NPVariant* args,
+                                          uint32_t arg_count,
+                                          NPVariant* result) {
+  if (arg_count != 1) {
+    SetException("getDaemonVersion: bad number of arguments");
+    return false;
+  }
+
+  ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[0]));
+  if (!callback_obj.get()) {
+    SetException("getDaemonVersion: invalid callback parameter");
+    return false;
+  }
+
+  // We control lifetime of the |daemon_controller_| so it's safe to
+  // use base::Unretained() here.
+  daemon_controller_->GetVersion(
+      base::Bind(&HostNPScriptObject::InvokeGetDaemonVersionCallback,
                  base::Unretained(this), callback_obj));
 
   return true;
@@ -1087,6 +1115,21 @@ void HostNPScriptObject::InvokeGetDaemonConfigCallback(
   NPVariant config_val = NPVariantFromString(config_str);
   InvokeAndIgnoreResult(callback.get(), &config_val, 1);
   g_npnetscape_funcs->releasevariantvalue(&config_val);
+}
+
+void HostNPScriptObject::InvokeGetDaemonVersionCallback(
+    const ScopedRefNPObject& callback, const std::string& version) {
+  if (!plugin_message_loop_proxy_->BelongsToCurrentThread()) {
+    plugin_message_loop_proxy_->PostTask(
+        FROM_HERE, base::Bind(
+            &HostNPScriptObject::InvokeGetDaemonVersionCallback,
+            base::Unretained(this), callback, version));
+    return;
+  }
+
+  NPVariant version_val = NPVariantFromString(version);
+  InvokeAndIgnoreResult(callback.get(), &version_val, 1);
+  g_npnetscape_funcs->releasevariantvalue(&version_val);
 }
 
 void HostNPScriptObject::LogDebugInfo(const std::string& message) {

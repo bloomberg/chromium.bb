@@ -64,6 +64,7 @@ class DaemonControllerLinux : public remoting::DaemonController {
                             const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
   virtual void SetWindow(void* window_handle) OVERRIDE;
+  virtual void GetVersion(const GetVersionCallback& done_callback) OVERRIDE;
 
  private:
   FilePath GetConfigPath();
@@ -183,6 +184,12 @@ void DaemonControllerLinux::Stop(const CompletionCallback& done_callback) {
 
 void DaemonControllerLinux::SetWindow(void* window_handle) {
   // noop
+}
+
+void DaemonControllerLinux::GetVersion(
+    const GetVersionCallback& done_callback) {
+  NOTIMPLEMENTED();
+  done_callback.Run("");
 }
 
 FilePath DaemonControllerLinux::GetConfigPath() {

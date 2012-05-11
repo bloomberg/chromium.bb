@@ -16,6 +16,15 @@ remoting.HostController = function() {
   this.container_.appendChild(this.plugin_);
   /** @type {remoting.Host?} */
   this.localHost = null;
+  /** @param {string} version */
+  var printVersion = function(version) {
+    if (version == '') {
+      console.log('Host not installed.');
+    } else {
+      console.log('Host version:', version);
+    }
+  };
+  this.plugin_.getDaemonVersion(printVersion);
 };
 
 // Note that the values in the enums below are copied from
