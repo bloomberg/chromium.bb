@@ -488,6 +488,7 @@ class TestTreeStatus(mox.MoxTestBase):
         message, general_state)
     return my_response
 
+  @cros_build_lib.TimeoutDecorator(3)
   def _TreeStatusTestHelper(self, tree_status, general_state, expected_return,
                             retries_500=0, max_timeout=0):
     """Tests whether we return the correct value based on tree_status."""

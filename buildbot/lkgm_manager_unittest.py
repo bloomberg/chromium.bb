@@ -409,6 +409,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.assertEqual(statuses['build2'], 'pass')
     self.mox.VerifyAll()
 
+  @cros_lib.TimeoutDecorator(10)
   def testGetBuildersStatusWaitForOne(self):
     """Tests GetBuilderStatus where both builds have finished with one delay."""
     fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
@@ -434,6 +435,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.assertEqual(statuses['build2'], 'pass')
     self.mox.VerifyAll()
 
+  @cros_lib.TimeoutDecorator(10)
   def testGetBuildersStatusReachTimeout(self):
     """Tests GetBuilderStatus where one build finishes and one never does."""
     fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
@@ -450,15 +452,17 @@ class LKGMManagerTest(mox.MoxTestBase):
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail', wait=3)
     thread = self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=10)
 
-    lkgm_manager._SyncGitRepo(self.manager.manifest_dir).MultipleTimes()
-    self.mox.ReplayAll()
-    # Let's reduce this.
-    self.manager.LONG_MAX_TIMEOUT_SECONDS = 5
-    statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
+    try:
+      lkgm_manager._SyncGitRepo(self.manager.manifest_dir).MultipleTimes()
+      self.mox.ReplayAll()
+      # Let's reduce this.
+      self.manager.LONG_MAX_TIMEOUT_SECONDS = 5
+      statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
                                               fake_version_file)
-    self.assertEqual(statuses['build1'], 'fail')
-    self.assertEqual(statuses['build2'], None)
-    thread.join()
+      self.assertEqual(statuses['build1'], 'fail')
+      self.assertEqual(statuses['build2'], None)
+    finally:
+      thread.join()
     self.mox.VerifyAll()
 
   def testGenerateBlameListSinceLKGM(self):

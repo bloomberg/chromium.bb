@@ -1234,6 +1234,20 @@ def Timeout(max_run_time):
     signal.signal(signal.SIGALRM, original_handler)
 
 
+def TimeoutDecorator(max_time):
+  """Decorator used to ensure a func is interrupted if it's running too long."""
+  def decorator(functor):
+    def wrapper(self, *args, **kwds):
+      with Timeout(max_time):
+        return functor(self, *args, **kwds)
+
+    wrapper.__module__ = functor.__module__
+    wrapper.__name__ = functor.__name__
+    wrapper.__doc__ = functor.__doc__
+    return wrapper
+  return decorator
+
+
 # Support having this module test itself if run as __main__, by leveraging
 # the corresponding unittest module.
 # Also, the unittests serve as extra documentation.
