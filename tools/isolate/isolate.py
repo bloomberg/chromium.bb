@@ -706,9 +706,9 @@ def main():
            'For the other modes, defaults to the directory containing --result')
 
   options, args = parser.parse_args()
-  level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
+  levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
   logging.basicConfig(
-      level=level,
+      level=levels[min(len(levels)-1, options.verbose)],
       format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
 
   if not options.mode:

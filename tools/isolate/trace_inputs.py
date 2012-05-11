@@ -201,6 +201,17 @@ def posix_relpath(path, root):
   return out
 
 
+def cleanup_path(x):
+  """Cleans up a relative path. Converts any os.path.sep to '/' on Windows."""
+  if x:
+    x = x.rstrip(os.path.sep).replace(os.path.sep, '/')
+  if x == '.':
+    x = ''
+  if x:
+    x += '/'
+  return x
+
+
 class Strace(object):
   """strace implies linux."""
   IGNORED = (
@@ -379,18 +390,22 @@ class Strace(object):
           self.non_existent.add(filepath)
 
   @classmethod
-  def gen_trace(cls, cmd, cwd, logname):
+  def gen_trace(cls, cmd, cwd, logname, output):
     """Runs strace on an executable."""
-    logging.info('gen_trace(%s, %s, %s)' % (cmd, cwd, logname))
-    silent = not isEnabledFor(logging.INFO)
+    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
     stdout = stderr = None
-    if silent:
-      stdout = stderr = subprocess.PIPE
+    if output:
+      stdout = subprocess.PIPE
+      stderr = subprocess.STDOUT
     traces = ','.join(cls.Context.traces())
     trace_cmd = ['strace', '-f', '-e', 'trace=%s' % traces, '-o', logname]
     child = subprocess.Popen(
-        trace_cmd + cmd, cwd=cwd, stdout=stdout, stderr=stderr)
-    out, err = child.communicate()
+        trace_cmd + cmd,
+        cwd=cwd,
+        stdin=subprocess.PIPE,
+        stdout=stdout,
+        stderr=stderr)
+    out = child.communicate()[0]
     # Once it's done, inject a chdir() call to cwd to be able to reconstruct
     # the full paths.
     # TODO(maruel): cwd should be saved at each process creation, so forks needs
@@ -402,15 +417,7 @@ class Strace(object):
         pid = content.split(' ', 1)[0]
         f.write('%s chdir("%s") = 0\n' % (pid, cwd))
         f.write(content)
-
-    if child.returncode != 0:
-      print 'Failure: %d' % child.returncode
-      # pylint: disable=E1103
-      if out:
-        print ''.join(out.splitlines(True)[-100:])
-      if err:
-        print ''.join(err.splitlines(True)[-100:])
-    return child.returncode
+    return child.returncode, out
 
   @classmethod
   def parse_log(cls, filename, blacklist):
@@ -693,18 +700,18 @@ class Dtrace(object):
       logging.debug('%d %s(%s) = %s' % (pid, function, args, result))
 
   @classmethod
-  def gen_trace(cls, cmd, cwd, logname):
+  def gen_trace(cls, cmd, cwd, logname, output):
     """Runs dtrace on an executable."""
-    logging.info('gen_trace(%s, %s, %s)' % (cmd, cwd, logname))
-    silent = not isEnabledFor(logging.INFO)
+    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
     logging.info('Running: %s' % cmd)
     signal = 'Go!'
     logging.debug('Our pid: %d' % os.getpid())
 
     # Part 1: start the child process.
     stdout = stderr = None
-    if silent:
-      stdout = stderr = subprocess.PIPE
+    if output:
+      stdout = subprocess.PIPE
+      stderr = subprocess.STDOUT
     child_cmd = [
       sys.executable, os.path.join(BASE_DIR, 'trace_child_process.py'),
     ]
@@ -745,7 +752,7 @@ class Dtrace(object):
       # Part 4: We can now tell our child to go.
       # TODO(maruel): Another pipe than stdin could be used instead. This would
       # be more consistent with the other tracing methods.
-      out, err = child.communicate(signal)
+      out = child.communicate(signal)[0]
 
       dtrace.wait()
       if dtrace.returncode != 0:
@@ -758,19 +765,12 @@ class Dtrace(object):
         # Short the log right away to simplify our life. There isn't much
         # advantage in keeping it out of order.
         cls._sort_log(logname)
-      if child.returncode != 0:
-        print 'Failure: %d' % child.returncode
-        # pylint: disable=E1103
-        if out:
-          print ''.join(out.splitlines(True)[-100:])
-        if err:
-          print ''.join(err.splitlines(True)[-100:])
     except KeyboardInterrupt:
       # Still sort when testing.
       cls._sort_log(logname)
       raise
 
-    return dtrace.returncode or child.returncode
+    return dtrace.returncode or child.returncode, out
 
   @classmethod
   def parse_log(cls, filename, blacklist):
@@ -1014,16 +1014,16 @@ class LogmanTrace(object):
     self.IGNORED = tuple(sorted(self.IGNORED))
 
   @classmethod
-  def gen_trace(cls, cmd, cwd, logname):
-    logging.info('gen_trace(%s, %s, %s)' % (cmd, cwd, logname))
+  def gen_trace(cls, cmd, cwd, logname, output):
+    logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
     # Use "logman -?" for help.
 
     etl = logname + '.etl'
 
-    silent = not isEnabledFor(logging.INFO)
     stdout = stderr = None
-    if silent:
-      stdout = stderr = subprocess.PIPE
+    if output:
+      stdout = subprocess.PIPE
+      stderr = subprocess.STDOUT
 
     # 1. Start the log collection. Requires administrative access. logman.exe is
     # synchronous so no need for a "warmup" call.
@@ -1039,13 +1039,18 @@ class LogmanTrace(object):
       '-ets',  # Send directly to kernel
     ]
     logging.debug('Running: %s' % cmd_start)
-    subprocess.check_call(cmd_start, stdout=stdout, stderr=stderr)
+    subprocess.check_call(
+        cmd_start,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
 
     # 2. Run the child process.
     logging.debug('Running: %s' % cmd)
     try:
-      child = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
-      out, err = child.communicate()
+      child = subprocess.Popen(
+          cmd, cwd=cwd, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr)
+      out = child.communicate()[0]
     finally:
       # 3. Stop the log collection.
       cmd_stop = [
@@ -1055,7 +1060,11 @@ class LogmanTrace(object):
         '-ets',  # Send directly to kernel
       ]
       logging.debug('Running: %s' % cmd_stop)
-      subprocess.check_call(cmd_stop, stdout=stdout, stderr=stderr)
+      subprocess.check_call(
+          cmd_stop,
+          stdin=subprocess.PIPE,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.STDOUT)
 
     # 4. Convert the traces to text representation.
     # Use "tracerpt -?" for help.
@@ -1086,16 +1095,10 @@ class LogmanTrace(object):
     else:
       assert False, logformat
     logging.debug('Running: %s' % cmd_convert)
-    subprocess.check_call(cmd_convert, stdout=stdout, stderr=stderr)
+    subprocess.check_call(
+        cmd_convert, stdin=subprocess.PIPE, stdout=stdout, stderr=stderr)
 
-    if child.returncode != 0:
-      print 'Failure: %d' % child.returncode
-      # pylint: disable=E1103
-      if out:
-        print ''.join(out.splitlines(True)[-100:])
-      if err:
-        print ''.join(err.splitlines(True)[-100:])
-    return child.returncode
+    return child.returncode, out
 
   @classmethod
   def parse_log(cls, filename, blacklist):
@@ -1265,6 +1268,99 @@ def pretty_print(variables, stdout):
   stdout.write('}\n')
 
 
+def get_api():
+  flavor = get_flavor()
+  if flavor == 'linux':
+    return Strace()
+  elif flavor == 'mac':
+    return Dtrace()
+  elif sys.platform == 'win32':
+    return LogmanTrace()
+  else:
+    print >> sys.stderr, 'Unsupported platform %s' % sys.platform
+    sys.exit(1)
+
+
+def get_blacklist(api):
+  """Returns a function to filter unimportant files normally ignored."""
+  git_path = os.path.sep + '.git' + os.path.sep
+  svn_path = os.path.sep + '.svn' + os.path.sep
+  return lambda f: (
+      f.startswith(api.IGNORED) or
+      f.endswith('.pyc') or
+      git_path in f or
+      svn_path in f)
+
+
+def generate_dict(files, cwd_dir, product_dir):
+  """Converts the list of files into a .isolate dictionary.
+
+  Arguments:
+  - files: list of files to generate a dictionary out of.
+  - cwd_dir: directory to base all the files from, relative to root_dir.
+  - product_dir: directory to replace with <(PRODUCT_DIR), relative to root_dir.
+  """
+  cwd_dir = cleanup_path(cwd_dir)
+  product_dir = cleanup_path(product_dir)
+
+  def fix(f):
+    """Bases the file on the most restrictive variable."""
+    logging.debug('fix(%s)' % f)
+    # Important, GYP stores the files with / and not \.
+    f = f.replace(os.path.sep, '/')
+    if product_dir and f.startswith(product_dir):
+      return '<(PRODUCT_DIR)/%s' % f[len(product_dir):]
+    else:
+      # cwd_dir is usually the directory containing the gyp file. It may be
+      # empty if the whole directory containing the gyp file is needed.
+      return posix_relpath(f, cwd_dir) or './'
+
+  corrected = [fix(f) for f in files]
+  tracked = [f for f in corrected if not f.endswith('/') and ' ' not in f]
+  untracked = [f for f in corrected if f.endswith('/') or ' ' in f]
+  variables = {}
+  if tracked:
+    variables[KEY_TRACKED] = tracked
+  if untracked:
+    variables[KEY_UNTRACKED] = untracked
+  return variables
+
+
+def trace(logfile, cmd, cwd, api, output):
+  """Traces an executable. Returns (returncode, output) from api.
+
+  Arguments:
+  - logfile: file to write to.
+  - cmd: command to run.
+  - cwd: current directory to start the process in.
+  - api: a tracing api instance.
+  - output: if True, returns output, otherwise prints it at the console.
+  """
+  cmd = fix_python_path(cmd)
+  assert os.path.isabs(cmd[0]), cmd[0]
+  if os.path.isfile(logfile):
+    os.remove(logfile)
+  return api.gen_trace(cmd, cwd, logfile, output)
+
+
+def load_trace(logfile, root_dir, api):
+  """Loads a trace file and returns the processed file lists.
+
+  Arguments:
+  - logfile: file to load.
+  - root_dir: root directory to use to determine if a file is relevant to the
+              trace or not.
+  - api: a tracing api instance.
+  """
+  files, non_existent = api.parse_log(logfile, get_blacklist(api))
+  expected, unexpected = relevant_files(
+      files, root_dir.rstrip(os.path.sep) + os.path.sep)
+  # In case the file system is case insensitive.
+  expected = sorted(set(get_native_path_case(root_dir, f) for f in expected))
+  simplified = extract_directories(expected, root_dir)
+  return files, expected, unexpected, non_existent, simplified
+
+
 def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
   """Tries to load the logs if available. If not, trace the test.
 
@@ -1286,121 +1382,49 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
       'trace_inputs(%s, %s, %s, %s, %s, %s)' % (
         logfile, cmd, root_dir, cwd_dir, product_dir, force_trace))
 
+  def print_if(txt):
+    if cwd_dir is None:
+      print txt
+
   # It is important to have unambiguous path.
   assert os.path.isabs(root_dir), root_dir
   assert os.path.isabs(logfile), logfile
   assert not cwd_dir or not os.path.isabs(cwd_dir), cwd_dir
   assert not product_dir or not os.path.isabs(product_dir), product_dir
 
-  cmd = fix_python_path(cmd)
-  assert (
-      (os.path.isfile(logfile) and not force_trace) or os.path.isabs(cmd[0])
-      ), cmd[0]
-
+  api = get_api()
   # Resolve any symlink
   root_dir = os.path.realpath(root_dir)
-
-  def print_if(txt):
-    if cwd_dir is None:
-      print(txt)
-
-  flavor = get_flavor()
-  if flavor == 'linux':
-    api = Strace()
-  elif flavor == 'mac':
-    api = Dtrace()
-  elif sys.platform == 'win32':
-    api = LogmanTrace()
-  else:
-    print >> sys.stderr, 'Unsupported platform %s' % sys.platform
-    return 1
-
   if not os.path.isfile(logfile) or force_trace:
-    if os.path.isfile(logfile):
-      os.remove(logfile)
     print_if('Tracing... %s' % cmd)
-    cwd = root_dir
     # Use the proper relative directory.
-    if cwd_dir:
-      cwd = os.path.join(cwd, cwd_dir)
-    returncode = api.gen_trace(cmd, cwd, logfile)
+    cwd = root_dir if not cwd_dir else os.path.join(root_dir, cwd_dir)
+    silent = not isEnabledFor(logging.WARNING)
+    returncode, _ = trace(logfile, cmd, cwd, api, silent)
     if returncode and not force_trace:
       return returncode
 
-  git_path = os.path.sep + '.git' + os.path.sep
-  svn_path = os.path.sep + '.svn' + os.path.sep
-  def blacklist(f):
-    """Strips ignored paths."""
-    return (
-        f.startswith(api.IGNORED) or
-        f.endswith('.pyc') or
-        git_path in f or
-        svn_path in f)
-
   print_if('Loading traces... %s' % logfile)
-  files, non_existent = api.parse_log(logfile, blacklist)
+  files, expected, unexpected, non_existent, simplified = load_trace(
+      logfile, root_dir, api)
 
   print_if('Total: %d' % len(files))
   print_if('Non existent: %d' % len(non_existent))
   for f in non_existent:
     print_if('  %s' % f)
-
-  expected, unexpected = relevant_files(
-      files, root_dir.rstrip(os.path.sep) + os.path.sep)
   if unexpected:
     print_if('Unexpected: %d' % len(unexpected))
     for f in unexpected:
       print_if('  %s' % f)
-
-  # In case the file system is case insensitive.
-  expected = sorted(set(get_native_path_case(root_dir, f) for f in expected))
-
-  simplified = extract_directories(expected, root_dir)
   print_if('Interesting: %d reduced to %d' % (len(expected), len(simplified)))
   for f in simplified:
     print_if('  %s' % f)
 
   if cwd_dir is not None:
-    def cleanuppath(x):
-      """Cleans up a relative path. Converts any os.path.sep to '/' on Windows.
-      """
-      if x:
-        x = x.rstrip(os.path.sep).replace(os.path.sep, '/')
-      if x == '.':
-        x = ''
-      if x:
-        x += '/'
-      return x
-
-    # Both are relative directories to root_dir.
-    cwd_dir = cleanuppath(cwd_dir)
-    product_dir = cleanuppath(product_dir)
-
-    def fix(f):
-      """Bases the file on the most restrictive variable."""
-      logging.debug('fix(%s)' % f)
-      # Important, GYP stores the files with / and not \.
-      f = f.replace(os.path.sep, '/')
-
-      if product_dir and f.startswith(product_dir):
-        return '<(PRODUCT_DIR)/%s' % f[len(product_dir):]
-      else:
-        # cwd_dir is usually the directory containing the gyp file. It may be
-        # empty if the whole directory containing the gyp file is needed.
-        return posix_relpath(f, cwd_dir) or './'
-
-    corrected = [fix(f) for f in simplified]
-    tracked = [f for f in corrected if not f.endswith('/') and ' ' not in f]
-    untracked = [f for f in corrected if f.endswith('/') or ' ' in f]
-    variables = {}
-    if tracked:
-      variables[KEY_TRACKED] = tracked
-    if untracked:
-      variables[KEY_UNTRACKED] = untracked
     value = {
       'conditions': [
-        ['OS=="%s"' % flavor, {
-          'variables': variables,
+        ['OS=="%s"' % get_flavor(), {
+          'variables': generate_dict(simplified, cwd_dir, product_dir),
         }],
       ],
     }

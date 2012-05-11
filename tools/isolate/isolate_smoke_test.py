@@ -460,7 +460,7 @@ class Isolate_trace(IsolateBase):
 
   def test_fail(self):
     try:
-      self._execute('trace', 'fail.isolate', [], True)
+      self._execute('trace', 'fail.isolate', ['-v'], True)
       self.fail()
     except subprocess.CalledProcessError, e:
       out = e.output
@@ -469,7 +469,7 @@ class Isolate_trace(IsolateBase):
     # In theory, there should be 2 \n at the end of expected but for an
     # unknown reason there's 3 \n on Windows so just rstrip() and compare the
     # text, that's sufficient for this test.
-    expected = 'Failure: 1\nFailing'
+    expected = 'Failing'
     self.assertEquals(expected, out.rstrip())
 
   def test_missing_trailing_slash(self):
