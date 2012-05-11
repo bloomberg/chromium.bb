@@ -485,7 +485,6 @@
         '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',
         'image_decoder_unittest.cc',
         'image_decoder_unittest.h',
-        'media_leak_test.cc',
         'mock_spellcheck_unittest.cc',
         'plugin_tests.cc',
         'run_all_tests.cc',
