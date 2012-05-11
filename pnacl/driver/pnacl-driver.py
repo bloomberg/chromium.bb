@@ -74,7 +74,7 @@ EXTRA_ENV = {
     # This is used only for newlib bootstrapping.
     '${BASE_LIBMODE}/sysroot/include',
 
-  'ISYSTEM_CLANG'  : '${BASE_LLVM}/lib/clang/3.2/include',
+  'ISYSTEM_CLANG'  : '${BASE_LLVM}/lib/clang/3.1/include',
 
   'ISYSTEM_CXX' : '${INCLUDE_CXX_HEADERS ? ${ISYSTEM_CXX_%LIBMODE%}}',
 
