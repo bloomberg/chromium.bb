@@ -155,8 +155,6 @@ WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
 UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
 UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
 
-UNFILED LINUX NVIDIA : conformance_ogles_GL_vec3_vec3_001_to_008 = FAIL
-
 UNFILED LINUX INTEL : conformance_renderbuffers_framebuffer_object_attachment = FAIL
 UNFILED LINUX INTEL : conformance_state_gl_object_get_calls = FAIL
 UNFILED LINUX INTEL : conformance_textures_texture_npot = FAIL
@@ -167,8 +165,29 @@ UNFILED LINUX INTEL : conformance_glsl_samplers_glsl_function_texture2dlod = FAI
 
 UNFILED LINUX INTEL : conformance_glsl_functions_glsl_function_cos = FAIL
 
+UNFILED LINUX INTEL : conformance_ogles_GL_array_array_001_to_006 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_009_to_016 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_017_to_024 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_025_to_032 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_033_to_040 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_041_to_048 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_049_to_056 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_057_to_064 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_065_to_072 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_073_to_080 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_081_to_088 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_089_to_096 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_097_to_104 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_105_to_112 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_113_to_120 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_121_to_126 = FAIL
+UNFILED LINUX INTEL : conformance_ogles_GL_gl_FragCoord_gl_FragCoord_001_to_003 = FAIL
+
 UNFILED LINUX AMD : conformance_misc_object_deletion_behaviour = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
+
+// This is actually a bug in the test: an un-used uniform might be opted out.
+UNFILED LINUX WIN : conformance_ogles_GL_vec3_vec3_001_to_008 = FAIL
 
 121139 MAC : conformance_textures_texture_size = FAIL
 121139 WIN INTEL : conformance_textures_texture_size = FAIL
