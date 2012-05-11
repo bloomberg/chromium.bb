@@ -88,7 +88,6 @@ readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_GOLD="${TC_SRC}/gold"
-readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 
 # LLVM sources (svn)
 readonly TC_SRC_LLVM_MASTER="${TC_SRC}/llvm-master"
@@ -100,6 +99,7 @@ readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
 readonly TC_SRC_GLIBC="${PNACL_GIT_ROOT}/glibc"
 readonly TC_SRC_NEWLIB="${PNACL_GIT_ROOT}/nacl-newlib"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/libstdc++-v3"
+readonly TC_SRC_COMPILER_RT="${PNACL_GIT_ROOT}/compiler-rt"
 
 # Unfortunately, binutils/configure generates this untracked file
 # in the binutils source directory
@@ -268,7 +268,6 @@ readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 #       recent revision to pull in all the latest gold changes
 # TODO(robertm): merge the two repos -- ideally when we migrate to git
 readonly REPO_GOLD="nacl-llvm-branches.gold"
-readonly REPO_COMPILER_RT="nacl-llvm-branches.compiler-rt"
 
 # LLVM repos (svn)
 readonly REPO_LLVM_MASTER="http://llvm.org/svn/llvm-project/llvm/trunk"
@@ -366,7 +365,6 @@ hg-info-all() {
   hg-info "${TC_SRC_UPSTREAM}"   ${UPSTREAM_REV}
   hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
   hg-info "${TC_SRC_GOLD}"       ${GOLD_REV}
-  hg-info "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
 }
 
 update-all() {
@@ -374,7 +372,6 @@ update-all() {
   svn-update-clang
   hg-update-binutils
   hg-update-gold
-  hg-update-compiler-rt
 }
 
 # TODO(pdox): Remove after completely moved to new git pnacl repository
@@ -590,10 +587,6 @@ hg-update-gold() {
   hg-update-common "gold" ${GOLD_REV} "${TC_SRC_GOLD}"
 }
 
-#@ hg-update-compiler-rt - Update compiler-rt to the stable revision
-hg-update-compiler-rt() {
-  hg-update-common "compiler-rt" ${COMPILER_RT_REV} "${TC_SRC_COMPILER_RT}"
-}
 
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
@@ -603,7 +596,6 @@ hg-pull-all() {
   hg-pull-upstream
   hg-pull-binutils
   hg-pull-gold
-  hg-pull-compiler-rt
 }
 
 hg-pull-upstream() {
@@ -618,9 +610,6 @@ hg-pull-gold() {
   hg-pull "${TC_SRC_GOLD}"
 }
 
-hg-pull-compiler-rt() {
-  hg-pull "${TC_SRC_COMPILER_RT}"
-}
 
 #@ checkout-all          - check out repos needed to build toolchain
 #@                          (skips repos which are already checked out)
@@ -630,7 +619,6 @@ checkout-all() {
   svn-checkout-clang
   hg-checkout-binutils
   hg-checkout-gold
-  hg-checkout-compiler-rt
   if ${PNACL_IN_CROS_CHROOT}; then
     git-sync-no-gclient
   else
@@ -661,9 +649,6 @@ hg-checkout-gold() {
   hg-checkout ${REPO_GOLD} "${TC_SRC_GOLD}" ${GOLD_REV}
 }
 
-hg-checkout-compiler-rt() {
-  hg-checkout ${REPO_COMPILER_RT} "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
-}
 
 git-grab() {
   local baseurl="http://git.chromium.org/native_client/"
@@ -1590,7 +1575,7 @@ compiler-rt-all() {
 #+ compiler-rt           - build/install llvm's replacement for libgcc.a
 compiler-rt() {
   local arch=$1
-  local src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
+  local src="${TC_SRC_COMPILER_RT}/lib"
   local objdir="${TC_BUILD_COMPILER_RT}-${arch}"
   local installdir="${INSTALL_LIB_NATIVE}${arch}"
   StepBanner "compiler rt" "build (${arch})"

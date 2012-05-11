@@ -4,6 +4,7 @@ vars = {
   "glibc_rev": "52e607964e9a432fffe4e88caaafa9c5ed83de4f",
   "newlib_rev": "67e351079b71e78eaad782a19ffa9f3ff2c1d78d",
   "pnacl_llvm_testsuite_rev": "fe59b29a5837b4c83b631624f1cffc1118bbfddb",
+  "compiler_rt_rev": "b149e0d35b49b7b52e0769837f847794ad97b7b1",
   "nacl_base_readonly": "http://git.chromium.org/native_client",
   "nacl_base_readwrite": "ssh://gerrit.chromium.org:29418/native_client",
 }
@@ -17,4 +18,6 @@ deps = {
     Var("nacl_base_readonly") + "/pnacl-llvm-testsuite.git@" + Var("pnacl_llvm_testsuite_rev"),
   "nacl-newlib":
     Var("nacl_base_readonly") + "/nacl-newlib.git@" + Var("newlib_rev"),
+  "compiler-rt":
+    Var("nacl_base_readonly") + "/pnacl-compiler-rt.git@" + Var("compiler_rt_rev"),
 }
