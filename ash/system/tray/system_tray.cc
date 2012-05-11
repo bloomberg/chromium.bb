@@ -23,7 +23,6 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/system_tray_widget_delegate.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_empty.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
 #include "ash/system/tray_update.h"
@@ -195,7 +194,6 @@ void SystemTray::CreateItems() {
   user_observer_ = tray_user;
 
   AddTrayItem(tray_user);
-  AddTrayItem(new internal::TrayEmpty());
   AddTrayItem(tray_power);
   AddTrayItem(tray_network);
   AddTrayItem(tray_bluetooth);

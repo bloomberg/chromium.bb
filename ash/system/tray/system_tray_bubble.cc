@@ -148,18 +148,18 @@ class SystemTrayBubbleBackground : public views::Background {
             gfx::Point(v->x() + v->width(), v->y() - 1),
             !last_view || last_view->border() ? kBorderDarkColor :
                                                 kBorderLightColor);
-        canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
-            gfx::Point(v->x() - 1, v->y() + v->height() + 1),
-            kBorderDarkColor);
-        canvas->DrawLine(gfx::Point(v->x() + v->width(), v->y() - 1),
-            gfx::Point(v->x() + v->width(), v->y() + v->height() + 1),
-            kBorderDarkColor);
       } else if (last_view && !last_view->border()) {
         canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
             gfx::Point(v->x() + v->width() + 1, v->y() - 1),
             kBorderDarkColor);
       }
 
+      canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
+          gfx::Point(v->x() - 1, v->y() + v->height() + 1),
+          kBorderDarkColor);
+      canvas->DrawLine(gfx::Point(v->x() + v->width(), v->y() - 1),
+          gfx::Point(v->x() + v->width(), v->y() + v->height() + 1),
+          kBorderDarkColor);
       last_view = v;
     }
   }
@@ -190,29 +190,10 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
   // Overridden from views::Border.
   virtual void Paint(const views::View& view,
                      gfx::Canvas* canvas) const OVERRIDE {
-    views::View* first = NULL, *last = NULL;
     gfx::Insets inset;
     GetInsets(&inset);
-    for (int i = 0; i < owner_->child_count(); i++) {
-      views::View* v = owner_->child_at(i);
-      if (v->border()) {
-        if (first) {
-          DrawBlurredShadowAroundView(canvas, first->y(),
-              last->y() + last->height(), owner_->width(), inset);
-          first = NULL;
-          last = NULL;
-        }
-        continue;
-      }
-
-      if (!first)
-        first = v;
-      last = v;
-    }
-    if (first) {
-      DrawBlurredShadowAroundView(canvas, first->y(),
-          last->y() + last->height(), owner_->width(), inset);
-    }
+    DrawBlurredShadowAroundView(canvas, 0, owner_->height(), owner_->width(),
+        inset);
 
     // Draw the bottom line.
     int y = owner_->height() + 1;
@@ -238,7 +219,7 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
 
       SkPaint paint;
       paint.setStyle(SkPaint::kFill_Style);
-      paint.setColor(kBackgroundColor);
+      paint.setColor(kHeaderBackgroundColorDark);
       canvas->DrawPath(path, paint);
 
       // Now draw the arrow border.

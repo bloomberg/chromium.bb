@@ -207,10 +207,28 @@ class TrayPopupHeaderButton : public views::ToggleImageButton {
   DISALLOW_COPY_AND_ASSIGN(TrayPopupHeaderButton);
 };
 
-// Creates a container for the various detailed popups. Clicking on the view
-// triggers the callback in ViewClickListener.
-views::View* CreateDetailedHeaderEntry(int string_id,
-                                       ViewClickListener* listener);
+// The 'special' looking row in the uber-tray popups. This is usually the bottom
+// row in the popups.
+class SpecialPopupRow : public views::View {
+ public:
+  SpecialPopupRow();
+  virtual ~SpecialPopupRow();
+
+  void SetTextLabel(int string_id, ViewClickListener* listener);
+  void SetContent(views::View* view);
+
+  void AddButton(TrayPopupHeaderButton* button);
+
+  views::View* content() const { return content_; }
+
+ private:
+  // Overridden from views::View.
+  virtual void Layout() OVERRIDE;
+
+  views::View* content_;
+  views::View* button_container_;
+  DISALLOW_COPY_AND_ASSIGN(SpecialPopupRow);
+};
 
 // Sets up a Label properly for the tray (sets color, font etc.).
 void SetupLabelForTray(views::Label* label);

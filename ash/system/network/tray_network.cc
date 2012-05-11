@@ -157,8 +157,6 @@ class NetworkDetailedView : public views::View,
   explicit NetworkDetailedView(user::LoginStatus login)
       : login_(login),
         header_(NULL),
-        header_text_(NULL),
-        header_buttons_(NULL),
         airplane_(NULL),
         info_icon_(NULL),
         button_wifi_(NULL),
@@ -190,8 +188,6 @@ class NetworkDetailedView : public views::View,
     RemoveAllChildViews(true);
 
     header_ = NULL;
-    header_text_ = NULL;
-    header_buttons_ = NULL;
     airplane_ = NULL;
     info_icon_ = NULL;
     button_wifi_ = NULL;
@@ -205,10 +201,10 @@ class NetworkDetailedView : public views::View,
     settings_ = NULL;
     proxy_settings_ = NULL;
 
-    AppendHeaderEntry();
-    AppendHeaderButtons();
     AppendNetworkEntries();
     AppendNetworkExtra();
+    AppendHeaderEntry();
+    AppendHeaderButtons();
 
     Update();
   }
@@ -223,35 +219,26 @@ class NetworkDetailedView : public views::View,
 
  private:
   void AppendHeaderEntry() {
-    header_ = new views::View;
-    header_->SetLayoutManager(new
-        views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-    header_text_ = CreateDetailedHeaderEntry(IDS_ASH_STATUS_TRAY_NETWORK, this);
-    header_->AddChildView(header_text_);
+    header_ = new SpecialPopupRow();
+    header_->SetTextLabel(IDS_ASH_STATUS_TRAY_NETWORK, this);
     AddChildView(header_);
   }
 
   void AppendHeaderButtons() {
-    header_buttons_ = new views::View;
-    header_buttons_->SetLayoutManager(new
-        views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-
     button_wifi_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED,
         IDR_AURA_UBER_TRAY_WIFI_DISABLED);
-    header_buttons_->AddChildView(button_wifi_);
+    header_->AddButton(button_wifi_);
 
     button_cellular_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
         IDR_AURA_UBER_TRAY_CELLULAR_DISABLED);
-    header_buttons_->AddChildView(button_cellular_);
+    header_->AddButton(button_cellular_);
 
     info_icon_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_NETWORK_INFO,
         IDR_AURA_UBER_TRAY_NETWORK_INFO);
-    header_buttons_->AddChildView(info_icon_);
-
-    header_->AddChildView(header_buttons_);
+    header_->AddButton(info_icon_);
   }
 
   void UpdateHeaderButtons() {
@@ -461,21 +448,6 @@ class NetworkDetailedView : public views::View,
     return true;
   }
 
-  // Overridden from views::View.
-  virtual void Layout() OVERRIDE {
-    views::View::Layout();
-
-    // Align the network info view and icon.
-    gfx::Rect header_bounds = header_->bounds();
-    gfx::Size buttons_size = header_buttons_->size();
-
-    header_buttons_->SetBounds(
-        header_->width() - buttons_size.width(), 0,
-        buttons_size.width(), header_->height());
-    header_text_->SetBounds(0, 0,
-        header_->width() - buttons_size.width(), header_->height());
-  }
-
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
@@ -513,7 +485,7 @@ class NetworkDetailedView : public views::View,
     // on.
     ResetInfoBubble();
 
-    if (sender == header_text_)
+    if (sender == header_->content())
       Shell::GetInstance()->tray()->ShowDefaultView();
 
     if (login_ == user::LOGGED_IN_LOCKED)
@@ -541,13 +513,11 @@ class NetworkDetailedView : public views::View,
 
   user::LoginStatus login_;
   std::map<views::View*, std::string> network_map_;
-  views::View* header_;
-  views::View* header_text_;
-  views::View* header_buttons_;
+  SpecialPopupRow* header_;
   views::View* airplane_;
-  views::ImageButton* info_icon_;
-  views::ToggleImageButton* button_wifi_;
-  views::ToggleImageButton* button_cellular_;
+  TrayPopupHeaderButton* info_icon_;
+  TrayPopupHeaderButton* button_wifi_;
+  TrayPopupHeaderButton* button_cellular_;
   views::View* view_mobile_account_;
   views::View* setup_mobile_account_;
   views::View* networks_list_;

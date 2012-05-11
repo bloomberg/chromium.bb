@@ -16,6 +16,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 namespace internal {
@@ -23,6 +24,15 @@ namespace internal {
 namespace {
 const int kIconPaddingLeft = 5;
 const int kPaddingAroundButtons = 5;
+
+views::View* CreatePopupHeaderButtonsContainer() {
+  views::View* view = new views::View;
+  view->SetLayoutManager(new
+      views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, -1));
+  view->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 5));
+  return view;
+}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -291,7 +301,7 @@ void TrayPopupTextButtonContainer::AddTextButton(TrayPopupTextButton* button) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TrayPopupTextButtonContainer
+// TrayPopupHeaderButton
 
 TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
                                              int enabled_resource_id,
@@ -304,8 +314,6 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
       bundle.GetImageNamed(disabled_resource_id).ToSkBitmap());
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
-  set_background(views::Background::CreateSolidBackground(
-      ash::kHeaderBackgroundColor));
   set_focusable(true);
 }
 
@@ -316,8 +324,11 @@ gfx::Size TrayPopupHeaderButton::GetPreferredSize() {
 }
 
 void TrayPopupHeaderButton::OnPaintBorder(gfx::Canvas* canvas) {
-  // Left border.
-  canvas->FillRect(gfx::Rect(0, 0, 1, height()), ash::kBorderDarkColor);
+  // Just the left border.
+  const int kBorderHeight = 25;
+  int padding = (height() - kBorderHeight) / 2;
+  canvas->FillRect(gfx::Rect(0, padding, 1, height() - padding * 2),
+      ash::kBorderDarkColor);
 }
 
 void TrayPopupHeaderButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
@@ -328,13 +339,26 @@ void TrayPopupHeaderButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
 }
 
 void TrayPopupHeaderButton::StateChanged() {
-  set_background(views::Background::CreateSolidBackground(
-      IsHotTracked() ? ash::kHeaderHoverBackgroundColor :
-                       ash::kHeaderBackgroundColor));
+  SchedulePaint();
 }
 
-views::View* CreateDetailedHeaderEntry(int string_id,
-                                       ViewClickListener* listener) {
+SpecialPopupRow::SpecialPopupRow()
+    : content_(NULL),
+      button_container_(NULL) {
+  set_background(views::Background::CreateBackgroundPainter(true,
+      views::Painter::CreateVerticalGradient(
+        kHeaderBackgroundColorLight,
+        kHeaderBackgroundColorDark)));
+  set_border(views::Border::CreateSolidSidedBorder(2, 0, 0, 0,
+      ash::kBorderDarkColor));
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+}
+
+SpecialPopupRow::~SpecialPopupRow() {
+}
+
+void SpecialPopupRow::SetTextLabel(int string_id, ViewClickListener* listener) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   HoverHighlightView* container = new HoverHighlightView(listener);
   container->set_fixed_height(kTrayPopupItemHeight);
@@ -347,13 +371,49 @@ views::View* CreateDetailedHeaderEntry(int string_id,
   container->AddChildView(back);
   views::Label* header = new views::Label(rb.GetLocalizedString(string_id));
   header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  header->SetFont(header->font().DeriveFont(4));
+  header->SetFont(header->font().DeriveFont(0, gfx::Font::BOLD));
   container->AddChildView(header);
   container->SetAccessibleName(
       rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
-  container->set_highlight_color(kHeaderHoverBackgroundColor);
-  container->set_default_color(kHeaderBackgroundColor);
-  return container;
+  container->set_highlight_color(SkColorSetARGB(0, 0, 0, 0));
+  container->set_default_color(SkColorSetARGB(0, 0, 0, 0));
+  SetContent(container);
+}
+
+void SpecialPopupRow::SetContent(views::View* view) {
+  CHECK(!content_);
+  content_ = view;
+  AddChildViewAt(content_, 0);
+}
+
+void SpecialPopupRow::AddButton(TrayPopupHeaderButton* button) {
+  if (!button_container_) {
+    button_container_ = CreatePopupHeaderButtonsContainer();
+    AddChildView(button_container_);
+  }
+
+  button_container_->AddChildView(button);
+}
+
+void SpecialPopupRow::Layout() {
+  views::View::Layout();
+  gfx::Rect content_bounds = GetContentsBounds();
+  if (content_bounds.IsEmpty())
+    return;
+  if (!button_container_) {
+    content_->SetBoundsRect(GetContentsBounds());
+    return;
+  }
+
+  gfx::Rect bounds(button_container_->GetPreferredSize());
+  bounds.set_height(content_bounds.height());
+  bounds = content_bounds.Center(bounds.size());
+  bounds.set_x(content_bounds.width() - bounds.width());
+  button_container_->SetBoundsRect(bounds);
+
+  bounds = content_->bounds();
+  bounds.set_width(button_container_->x());
+  content_->SetBoundsRect(bounds);
 }
 
 void SetupLabelForTray(views::Label* label) {

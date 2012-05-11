@@ -27,6 +27,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "unicode/datefmt.h"
@@ -41,11 +42,10 @@ class DateDefaultView : public views::View,
                         public views::ButtonListener {
  public:
   explicit DateDefaultView(ash::user::LoginStatus login)
-      : button_container_(NULL) {
-    SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal, 0, 0, 0));
-    set_background(views::Background::CreateSolidBackground(
-        ash::kHeaderBackgroundColor));
+      : help_(NULL),
+        shutdown_(NULL),
+        lock_(NULL) {
+    SetLayoutManager(new views::FillLayout);
 
     ash::internal::tray::DateView* date_view =
         new ash::internal::tray::DateView();
@@ -53,12 +53,9 @@ class DateDefaultView : public views::View,
         ash::kTrayPopupPaddingHorizontal,
         kPaddingVertical,
         ash::kTrayPopupPaddingHorizontal));
-    ash::internal::HoverHighlightView* view =
-        new ash::internal::HoverHighlightView(NULL);
-    view->SetLayoutManager(new views::FillLayout);
-    view->set_focusable(false);
-    view->set_highlight_color(SkColorSetARGB(0, 0, 0, 0));
-    view->AddChildView(date_view);
+
+    ash::internal::SpecialPopupRow* view = new ash::internal::SpecialPopupRow();
+    view->SetContent(date_view);
     AddChildView(view);
 
     if (login == ash::user::LOGGED_IN_LOCKED ||
@@ -66,57 +63,31 @@ class DateDefaultView : public views::View,
       return;
 
     date_view->SetActionable(true);
-    view->set_highlight_color(ash::kHeaderHoverBackgroundColor);
-    date_ = view;
-
-    button_container_ = new views::View;
-    button_container_->SetLayoutManager(new
-        views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
     help_ = new ash::internal::TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_HELP,
         IDR_AURA_UBER_TRAY_HELP);
-    button_container_->AddChildView(help_);
-
-    shutdown_ = lock_ = NULL;
+    view->AddButton(help_);
 
     if (login != ash::user::LOGGED_IN_LOCKED &&
         login != ash::user::LOGGED_IN_KIOSK) {
       shutdown_ = new ash::internal::TrayPopupHeaderButton(this,
           IDR_AURA_UBER_TRAY_SHUTDOWN,
           IDR_AURA_UBER_TRAY_SHUTDOWN);
-      button_container_->AddChildView(shutdown_);
+      view->AddButton(shutdown_);
 
       if (login != ash::user::LOGGED_IN_GUEST) {
         lock_ = new ash::internal::TrayPopupHeaderButton(this,
             IDR_AURA_UBER_TRAY_LOCKSCREEN,
             IDR_AURA_UBER_TRAY_LOCKSCREEN);
-        button_container_->AddChildView(lock_);
+        view->AddButton(lock_);
       }
     }
-    AddChildView(button_container_);
   }
 
   virtual ~DateDefaultView() {}
 
  private:
-  // Overridden from views::View.
-  virtual void Layout() OVERRIDE {
-    views::View::Layout();
-    if (!button_container_)
-      return;
-
-    gfx::Rect bounds(button_container_->GetPreferredSize());
-    bounds.set_height(height());
-    bounds = gfx::Rect(size()).Center(bounds.size());
-    bounds.set_x(width() - bounds.width());
-    button_container_->SetBoundsRect(bounds);
-
-    bounds = date_->bounds();
-    bounds.set_width(button_container_->x());
-    date_->SetBoundsRect(bounds);
-  }
-
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
@@ -131,11 +102,9 @@ class DateDefaultView : public views::View,
       NOTREACHED();
   }
 
-  views::View* button_container_;
-  views::View* date_;
-  views::ToggleImageButton* help_;
-  views::ToggleImageButton* shutdown_;
-  views::ToggleImageButton* lock_;
+  ash::internal::TrayPopupHeaderButton* help_;
+  ash::internal::TrayPopupHeaderButton* shutdown_;
+  ash::internal::TrayPopupHeaderButton* lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DateDefaultView);
 };

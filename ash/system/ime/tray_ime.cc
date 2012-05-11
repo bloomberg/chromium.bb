@@ -79,12 +79,12 @@ class IMEDetailedView : public views::View,
 
     header_ = NULL;
 
-    AppendHeaderEntry();
     AppendIMEList(list);
     if (!property_list.empty())
       AppendIMEProperties(property_list);
     if (login_ != user::LOGGED_IN_NONE && login_ != user::LOGGED_IN_LOCKED)
       AppendSettings();
+    AppendHeaderEntry();
 
     Layout();
     SchedulePaint();
@@ -92,7 +92,8 @@ class IMEDetailedView : public views::View,
 
  private:
   void AppendHeaderEntry() {
-    header_ = CreateDetailedHeaderEntry(IDS_ASH_STATUS_TRAY_IME, this);
+    header_ = new SpecialPopupRow();
+    header_->SetTextLabel(IDS_ASH_STATUS_TRAY_IME, this);
     AddChildView(header_);
   }
 
@@ -146,7 +147,7 @@ class IMEDetailedView : public views::View,
   // Overridden from ViewClickListener.
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
-    if (sender == header_) {
+    if (sender == header_->content()) {
       Shell::GetInstance()->tray()->ShowDefaultView();
     } else if (sender == settings_) {
       delegate->ShowIMESettings();
@@ -173,7 +174,7 @@ class IMEDetailedView : public views::View,
 
   std::map<views::View*, std::string> ime_map_;
   std::map<views::View*, std::string> property_map_;
-  views::View* header_;
+  SpecialPopupRow* header_;
   views::View* settings_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEDetailedView);

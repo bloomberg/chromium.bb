@@ -116,9 +116,10 @@ class DriveDetailedView : public views::View,
   }
 
   void Update(const DriveOperationStatusList* list) {
-    AppendHeaderEntry(list);
     AppendOperationList(list);
     AppendSettings();
+    AppendHeaderEntry(list);
+
     PreferredSizeChanged();
     SchedulePaint();
   }
@@ -267,7 +268,8 @@ class DriveDetailedView : public views::View,
   void AppendHeaderEntry(const DriveOperationStatusList* list) {
     if (header_)
       return;
-    header_ = CreateDetailedHeaderEntry(IDS_ASH_STATUS_TRAY_DRIVE, this);
+    header_ = new SpecialPopupRow();
+    header_->SetTextLabel(IDS_ASH_STATUS_TRAY_DRIVE, this);
     AddChildView(header_);
   }
 
@@ -361,7 +363,7 @@ class DriveDetailedView : public views::View,
   // Overridden from ViewClickListener.
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
-    if (sender == header_) {
+    if (sender == header_->content()) {
       Shell::GetInstance()->tray()->ShowDefaultView();
     } else if (sender == settings_) {
       delegate->ShowDriveSettings();
@@ -370,7 +372,7 @@ class DriveDetailedView : public views::View,
 
   // Maps operation entries to their file paths.
   std::map<FilePath, RowView*> update_map_;
-  views::View* header_;
+  SpecialPopupRow* header_;
   views::View* operations_;
   views::View* settings_;
   SkBitmap* in_progress_img_;
