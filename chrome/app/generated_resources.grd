@@ -4546,7 +4546,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_INSPECT_VIEWS" desc="The text for the label in front of the links to inspect views (some of which may not be loaded yet).">
         Inspect views:
       </message>
-      <message name="IDS_EXTENSIONS_INSTALL_WARNINGS" desc="The text which says that an extension has warnings when it was installed..">
+      <message name="IDS_EXTENSIONS_INSTALL_WARNINGS" desc="The text which says that an extension has warnings when it was installed.">
         There were warnings when trying to install this extension:
       </message>
       <message name="IDS_EXTENSIONS_ENABLE" desc="The link for enabling extensions.">

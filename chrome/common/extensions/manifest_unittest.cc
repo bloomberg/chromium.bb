@@ -68,7 +68,7 @@ TEST_F(ManifestTest, Extension) {
   std::vector<std::string> warnings;
   manifest->ValidateManifest(&error, &warnings);
   EXPECT_TRUE(error.empty());
-  EXPECT_TRUE(warnings.empty());
+  ASSERT_EQ(1u, warnings.size());
   AssertType(manifest.get(), Extension::TYPE_EXTENSION);
 
   // The known key 'background_page' should be accessible.
@@ -92,7 +92,7 @@ TEST_F(ManifestTest, Extension) {
   warnings.clear();
   manifest->ValidateManifest(&error, &warnings);
   EXPECT_TRUE(error.empty());
-  ASSERT_EQ(1u, warnings.size());
+  ASSERT_EQ(2u, warnings.size());
   {
     Feature feature;
     feature.set_name("background_page");

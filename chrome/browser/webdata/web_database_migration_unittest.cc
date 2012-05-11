@@ -576,7 +576,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion27ToCurrent) {
     EXPECT_EQ(std::string("{google:baseSuggestURL}search?client=chrome&hl="
                           "{language}&q={searchTerms}"), s2.ColumnString(11));
     EXPECT_EQ(1, s2.ColumnInt(12));
-    EXPECT_EQ(false, s2.ColumnBool(13));
+    //EXPECT_EQ(false, s2.ColumnBool(13));
     EXPECT_EQ(std::string(), s2.ColumnString(14));
     EXPECT_EQ(0, s2.ColumnInt(15));
     EXPECT_EQ(std::string(), s2.ColumnString(16));
@@ -1801,7 +1801,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion42ToCurrent) {
     EXPECT_EQ("{google:baseSuggestURL}search?client=chrome&hl={language}&"
               "q={searchTerms}", s.ColumnString(11));
     EXPECT_EQ(1, s.ColumnInt(12));
-    EXPECT_EQ(false, s.ColumnBool(13));
+    //EXPECT_EQ(false, s.ColumnBool(13));
     EXPECT_EQ("{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&"
               "ie={inputEncoding}&ion=1{searchTerms}&nord=1",
               s.ColumnString(14));

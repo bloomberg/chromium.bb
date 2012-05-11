@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_split.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -76,6 +77,15 @@ void Manifest::ValidateManifest(std::string* error,
         GetManifestVersion());
     if (result != Feature::IS_AVAILABLE)
       warnings->push_back(feature->GetErrorMessage(result));
+  }
+
+  // Also generate warnings for keys that are not features.
+  for (DictionaryValue::key_iterator key = value_->begin_keys();
+      key != value_->end_keys(); ++key) {
+    if (!SimpleFeatureProvider::GetManifestFeatures()->GetFeature(*key)) {
+      warnings->push_back(base::StringPrintf("Unrecognized manifest key '%s'.",
+          (*key).c_str()));
+    }
   }
 }
 
