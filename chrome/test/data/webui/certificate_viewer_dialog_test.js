@@ -45,17 +45,6 @@ CertificateViewerUITestAsync.prototype = {
 // viewers.
 GEN('#include "chrome/test/data/webui/certificate_viewer_ui_test-inl.h"');
 GEN('')
-GEN('#if (!defined(USE_NSS) && !defined(USE_OPENSSL)) || \')
-GEN('    !defined(USE_AURA)')
-GEN('#define MAYBE_testDialogURL DISABLED_testDialogURL')
-GEN('#define MAYBE_testCN DISABLED_testCN')
-GEN('#define MAYBE_testDetails DISABLED_testDetails')
-GEN('#else')
-GEN('#define MAYBE_testDialogURL testDialogURL')
-GEN('#define MAYBE_testCN testCN')
-GEN('#define MAYBE_testDetails testDetails')
-GEN('#endif')
-GEN('');
 
 // Constructors and destructors must be provided in .cc to prevent clang errors.
 GEN('CertificateViewerUITest::CertificateViewerUITest() {}');
@@ -64,14 +53,14 @@ GEN('CertificateViewerUITest::~CertificateViewerUITest() {}');
 /**
  * Tests that the dialog opened to the correct URL.
  */
-TEST_F('CertificateViewerUITest', 'MAYBE_testDialogURL', function() {
+TEST_F('CertificateViewerUITest', 'testDialogURL', function() {
   assertEquals(chrome.expectedUrl, window.location.href);
 });
 
 /**
  * Tests for the correct common name in the test certificate.
  */
-TEST_F('CertificateViewerUITest', 'MAYBE_testCN', function() {
+TEST_F('CertificateViewerUITest', 'testCN', function() {
   assertEquals('www.google.com', $('issued-cn').textContent);
 });
 
@@ -79,8 +68,9 @@ TEST_F('CertificateViewerUITest', 'MAYBE_testCN', function() {
  * Test the details pane of the certificate viewer. This verifies that a
  * certificate in the chain can be selected to view the fields. And that fields
  * can be selected to view their values.
+ * TODO(flackr,kgr): Re-enable this (http://crbug.com/127732).
  */
-TEST_F('CertificateViewerUITestAsync', 'MAYBE_testDetails', function() {
+TEST_F('CertificateViewerUITestAsync', 'DISABLED_testDetails', function() {
   var certHierarchy = $('hierarchy');
   var certFields = $('cert-fields');
   var certFieldVal = $('cert-field-value');

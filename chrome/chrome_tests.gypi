@@ -3109,16 +3109,6 @@
             # chromeos does not use cross-platform panels
             'browser/ui/panels/panel_app_browsertest.cc',
             'browser/ui/panels/panel_browser_view_browsertest.cc',
-            'test/data/webui/certificate_viewer_dialog_test.js',
-            'test/data/webui/certificate_viewer_ui_test-inl.h',
-          ],
-          'conditions': [
-            ['use_aura==1', {
-              'sources': [
-                'test/data/webui/certificate_viewer_dialog_test.js',
-                'test/data/webui/certificate_viewer_ui_test-inl.h',
-              ],
-            }],
           ],
         }],
         ['use_virtual_keyboard==1', {
