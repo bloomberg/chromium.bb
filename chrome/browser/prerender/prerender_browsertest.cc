@@ -2216,4 +2216,23 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
   ASSERT_TRUE(display_test_result);
 }
 
+// Checks that the referrer policy is used when prerendering.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrerPolicy) {
+  set_loader_path("files/prerender/prerender_loader_with_referrer_policy.html");
+  PrerenderTestURL("files/prerender/prerender_referrer_policy.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
+// Checks that the referrer policy is used when prerendering on HTTPS.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLReferrerPolicy) {
+  set_use_https_src(true);
+  set_loader_path("files/prerender/prerender_loader_with_referrer_policy.html");
+  PrerenderTestURL("files/prerender/prerender_referrer_policy.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestURL();
+}
+
 }  // namespace prerender

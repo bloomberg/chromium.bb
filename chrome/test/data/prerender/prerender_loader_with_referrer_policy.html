@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>Preloader</title>
+
+<script>
+  function Click() {
+    var eventObject = document.createEvent('MouseEvents');
+    eventObject.initMouseEvent('click');
+    document.getElementById('toClick').dispatchEvent(eventObject);
+  }
+
+</script>
+
+<meta name="referrer" content="origin" />
+
+</head>
+<body>
+<script>
+  function loader() {
+     document.write(
+         '<link rel="prerender" href="REPLACE_WITH_PRERENDER_URL"/>');
+  }
+
+  window.onload = loader;
+</script>
+<a id="toClick" href="REPLACE_WITH_DESTINATION_URL">Link to click</a>
+</body>
+</html>
