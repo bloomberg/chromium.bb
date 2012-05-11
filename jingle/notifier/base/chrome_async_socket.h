@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -34,10 +34,11 @@ class ResolvingClientSocketFactory;
 
 class ChromeAsyncSocket : public buzz::AsyncSocket {
  public:
-  // Takes ownership of |client_socket_factory|.
-  ChromeAsyncSocket(ResolvingClientSocketFactory* client_socket_factory,
-                    size_t read_buf_size,
-                    size_t write_buf_size);
+  // Takes ownership of |resolving_client_socket_factory|.
+  ChromeAsyncSocket(
+      ResolvingClientSocketFactory* resolving_client_socket_factory,
+      size_t read_buf_size,
+      size_t write_buf_size);
 
   // Does not raise any signals.
   virtual ~ChromeAsyncSocket();
@@ -62,8 +63,11 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // If state() is not STATE_CLOSED, sets error to ERROR_WRONGSTATE
   // and returns false.
   //
-  // If |address| is not resolved, sets error to ERROR_DNS and returns
-  // false.
+  // If |address| has an empty hostname or a zero port, sets error to
+  // ERROR_DNS and returns false.  (We don't use the IP address even
+  // if it's present, as DNS resolution is done by
+  // |resolving_client_socket_factory_|.  But it's perfectly fine if
+  // the hostname is a stringified IP address.)
   //
   // Otherwise, starts the connection process and returns true.
   // SignalConnected will be raised when the connection is successful;
@@ -176,19 +180,15 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // Close functions.
   void DoClose();
 
-  scoped_ptr<ResolvingClientSocketFactory> client_socket_factory_;
+  base::WeakPtrFactory<ChromeAsyncSocket> weak_ptr_factory_;
+  scoped_ptr<ResolvingClientSocketFactory> resolving_client_socket_factory_;
 
   // buzz::AsyncSocket state.
   buzz::AsyncSocket::State state_;
   buzz::AsyncSocket::Error error_;
   net::Error net_error_;
 
-  // Used by read/write loops.
-  base::WeakPtrFactory<ChromeAsyncSocket> weak_factory_;
-
   // NULL iff state() == STATE_CLOSED.
-  //
-  // TODO(akalin): Use ClientSocketPool.
   scoped_ptr<net::StreamSocket> transport_socket_;
 
   // State for the read loop.  |read_start_| <= |read_end_| <=

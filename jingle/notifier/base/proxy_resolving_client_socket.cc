@@ -44,6 +44,8 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   net::URLRequestContext* request_context =
       request_context_getter->GetURLRequestContext();
   DCHECK(request_context);
+  DCHECK(!dest_host_port_pair_.host().empty());
+  DCHECK_GT(dest_host_port_pair_.port(), 0);
   net::HttpNetworkSession::Params session_params;
   session_params.client_socket_factory = socket_factory;
   session_params.host_resolver = request_context->host_resolver();
@@ -108,6 +110,7 @@ int ProxyResolvingClientSocket::Connect(
 
   // First we try and resolve the proxy.
   GURL url("http://" + dest_host_port_pair_.ToString());
+  DCHECK(url.is_valid());
   int status = network_session_->proxy_service()->ResolveProxy(
       url,
       &proxy_info_,

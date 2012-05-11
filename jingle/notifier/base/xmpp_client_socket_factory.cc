@@ -30,6 +30,7 @@ XmppClientSocketFactory::~XmppClientSocketFactory() {}
 
 net::StreamSocket* XmppClientSocketFactory::CreateTransportClientSocket(
     const net::HostPortPair& host_and_port) {
+  // TODO(akalin): Use socket pools.
   net::StreamSocket* transport_socket = new ProxyResolvingClientSocket(
       NULL,
       request_context_getter_,

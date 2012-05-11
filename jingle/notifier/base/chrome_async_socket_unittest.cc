@@ -11,15 +11,17 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/sys_byteorder.h"
 #include "jingle/notifier/base/resolving_client_socket_factory.h"
+#include "net/base/address_list.h"
 #include "net/base/mock_cert_verifier.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "talk/base/sigslot.h"
+#include "talk/base/ipaddress.h"
 #include "talk/base/socketaddress.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,22 +100,6 @@ class AsyncSocketDataProvider : public net::SocketDataProvider {
   DISALLOW_COPY_AND_ASSIGN(AsyncSocketDataProvider);
 };
 
-// Takes a 32-bit integer in host byte order and converts it to a
-// net::IPAddressNumber.
-net::IPAddressNumber Uint32ToIPAddressNumber(uint32 ip) {
-  uint32 ip_nbo = base::HostToNet32(ip);
-  const unsigned char* const ip_start =
-      reinterpret_cast<const unsigned char*>(&ip_nbo);
-  return net::IPAddressNumber(ip_start, ip_start + (sizeof ip_nbo));
-}
-
-net::AddressList SocketAddressToAddressList(
-    const talk_base::SocketAddress& address) {
-  DCHECK_NE(address.ip(), 0U);
-  return net::AddressList::CreateFromIPAddress(
-      Uint32ToIPAddressNumber(address.ip()), address.port());
-}
-
 class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
  public:
   MockXmppClientSocketFactory(
@@ -153,7 +139,7 @@ class ChromeAsyncSocketTest
  protected:
   ChromeAsyncSocketTest()
       : ssl_socket_data_provider_(net::ASYNC, net::OK),
-        addr_(0xaabbccdd, 35) {}
+        addr_("localhost", 35) {}
 
   virtual ~ChromeAsyncSocketTest() {}
 
@@ -165,10 +151,15 @@ class ChromeAsyncSocketTest
     mock_client_socket_factory->AddSSLSocketDataProvider(
         &ssl_socket_data_provider_);
 
+    // Fake DNS resolution for |addr_| and pass it to the factory.
+    net::IPAddressNumber resolved_addr;
+    EXPECT_TRUE(net::ParseIPLiteralToNumber("127.0.0.1", &resolved_addr));
+    const net::AddressList address_list =
+        net::AddressList::CreateFromIPAddress(resolved_addr, addr_.port());
     scoped_ptr<MockXmppClientSocketFactory> mock_xmpp_client_socket_factory(
         new MockXmppClientSocketFactory(
             mock_client_socket_factory.release(),
-            SocketAddressToAddressList(addr_)));
+            address_list));
     chrome_async_socket_.reset(
         new ChromeAsyncSocket(mock_xmpp_client_socket_factory.release(),
                               14, 20)),
@@ -468,9 +459,21 @@ TEST_F(ChromeAsyncSocketTest, DoubleClose) {
   ExpectClosed();
 }
 
-TEST_F(ChromeAsyncSocketTest, UnresolvedConnect) {
-  const talk_base::SocketAddress unresolved_addr(0, 0);
-  EXPECT_FALSE(chrome_async_socket_->Connect(unresolved_addr));
+TEST_F(ChromeAsyncSocketTest, NoHostnameConnect) {
+  talk_base::IPAddress ip_address;
+  EXPECT_TRUE(talk_base::IPFromString("127.0.0.1", &ip_address));
+  const talk_base::SocketAddress no_hostname_addr(ip_address, addr_.port());
+  EXPECT_FALSE(chrome_async_socket_->Connect(no_hostname_addr));
+  ExpectErrorState(ChromeAsyncSocket::STATE_CLOSED,
+                   ChromeAsyncSocket::ERROR_DNS);
+
+  EXPECT_TRUE(chrome_async_socket_->Close());
+  ExpectClosed();
+}
+
+TEST_F(ChromeAsyncSocketTest, ZeroPortConnect) {
+  const talk_base::SocketAddress zero_port_addr(addr_.hostname(), 0);
+  EXPECT_FALSE(chrome_async_socket_->Connect(zero_port_addr));
   ExpectErrorState(ChromeAsyncSocket::STATE_CLOSED,
                    ChromeAsyncSocket::ERROR_DNS);
 
