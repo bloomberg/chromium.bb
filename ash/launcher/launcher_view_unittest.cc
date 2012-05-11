@@ -4,6 +4,9 @@
 
 #include "ash/launcher/launcher_view.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_icon_observer.h"
@@ -15,8 +18,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "grit/ui_resources.h"
+#include "ui/aura/event.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
+#include "ui/base/events.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -108,6 +114,38 @@ TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
 ////////////////////////////////////////////////////////////////////////////////
 // LauncherView tests.
 
+class MockLauncherDelegate : public ash::LauncherDelegate {
+ public:
+  MockLauncherDelegate() {}
+  virtual ~MockLauncherDelegate() {}
+
+  // LauncherDelegate overrides:
+  virtual void CreateNewTab() OVERRIDE {}
+  virtual void CreateNewWindow() OVERRIDE {}
+  virtual void ItemClicked(const ash::LauncherItem& item,
+                           int event_flags) OVERRIDE {}
+  virtual int GetBrowserShortcutResourceId() OVERRIDE {
+    return IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
+  }
+  virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE {
+    return string16();
+  }
+  virtual ui::MenuModel* CreateContextMenu(
+      const ash::LauncherItem& item) OVERRIDE {
+    return NULL;
+  }
+  virtual ui::MenuModel* CreateContextMenuForLauncher() OVERRIDE {
+    return NULL;
+  }
+  virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE {
+    NOTREACHED();
+    return -1;
+  }
+  virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE {
+    return true;
+  }
+};
+
 class LauncherViewTest : public aura::test::AuraTestBase {
  public:
   LauncherViewTest() {}
@@ -118,7 +156,7 @@ class LauncherViewTest : public aura::test::AuraTestBase {
 
     model_.reset(new LauncherModel);
 
-    launcher_view_.reset(new internal::LauncherView(model_.get(), NULL));
+    launcher_view_.reset(new internal::LauncherView(model_.get(), &delegate_));
     launcher_view_->Init();
     // The bounds should be big enough for 4 buttons + overflow chevron.
     launcher_view_->SetBounds(0, 0, 500, 50);
@@ -165,6 +203,36 @@ class LauncherViewTest : public aura::test::AuraTestBase {
     return test_api_->GetButton(index);
   }
 
+  void CheckModelIDs(
+      const std::vector<std::pair<LauncherID, views::View*> >& id_map) {
+    ASSERT_EQ(static_cast<int>(id_map.size()), test_api_->GetButtonCount());
+    ASSERT_EQ(id_map.size(), model_->items().size());
+    for (size_t i = 0; i < id_map.size(); ++i) {
+      EXPECT_EQ(id_map[i].first, model_->items()[i].id);
+      EXPECT_EQ(id_map[i].second, test_api_->GetButton(i));
+    }
+  }
+
+  views::View* SimulateDrag(int button_index, int destination_index) {
+    internal::LauncherButtonHost* button_host = launcher_view_.get();
+
+    // Mouse down.
+    views::View* button = test_api_->GetButton(button_index);
+    aura::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
+                                 button->bounds().origin(),
+                                 button->bounds().origin(), 0);
+    button_host->MousePressedOnButton(button, views::MouseEvent(&click_event));
+
+    // Drag.
+    views::View* destination = test_api_->GetButton(destination_index);
+    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
+                                destination->bounds().origin(),
+                                destination->bounds().origin(), 0);
+    button_host->MouseDraggedOnButton(button, views::MouseEvent(&drag_event));
+    return button;
+  }
+
+  MockLauncherDelegate delegate_;
   scoped_ptr<LauncherModel> model_;
   scoped_ptr<internal::LauncherView> launcher_view_;
   scoped_ptr<LauncherViewTestAPI> test_api_;
@@ -287,6 +355,53 @@ TEST_F(LauncherViewTest, AddButtonQuickly) {
     EXPECT_TRUE(button->visible()) << "button index=" << i;
     EXPECT_EQ(1.0f, button->layer()->opacity()) << "button index=" << i;
   }
+}
+
+// Check that model changes are handled correctly while a launcher icon is being
+// dragged.
+TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
+  internal::LauncherButtonHost* button_host = launcher_view_.get();
+
+  // Initialize |id_map| with the automatically-created launcher buttons.
+  std::vector<std::pair<LauncherID, views::View*> > id_map;
+  for (size_t i = 0; i < model_->items().size(); ++i) {
+    id_map.push_back(std::make_pair(model_->items()[i].id,
+                                    test_api_->GetButton(i)));
+  }
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // Add 5 app launcher buttons for testing.
+  for (int i = 1; i <= 5; ++i) {
+    LauncherID id = AddAppShortcut();
+    id_map.insert(id_map.begin() + i,
+                  std::make_pair(id, test_api_->GetButton(i)));
+  }
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // Dragging changes model order.
+  views::View* dragged_button = SimulateDrag(1, 3);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // Cancelling the drag operation restores previous order.
+  button_host->MouseReleasedOnButton(dragged_button, true);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 3, id_map.begin() + 4);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+
+  // Deleting an item keeps the remaining intact.
+  dragged_button = SimulateDrag(1, 3);
+  model_->RemoveItemAt(3);
+  id_map.erase(id_map.begin() + 3);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  button_host->MouseReleasedOnButton(dragged_button, false);
+
+  // Adding a launcher item cancels the drag and respects the order.
+  dragged_button = SimulateDrag(1, 3);
+  LauncherID new_id = AddAppShortcut();
+  id_map.insert(id_map.begin() + 5,
+                std::make_pair(new_id, test_api_->GetButton(5)));
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  button_host->MouseReleasedOnButton(dragged_button, false);
 }
 
 }  // namespace test
