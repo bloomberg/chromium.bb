@@ -20,6 +20,7 @@ class GPUTestExpectationsParser {
     kGpuTestFail = 1 << 1,
     kGpuTestFlaky = 1 << 2,
     kGpuTestTimeout = 1 << 3,
+    kGpuTestSkip = 1 << 4,
   };
 
   enum GPUTestProfile {

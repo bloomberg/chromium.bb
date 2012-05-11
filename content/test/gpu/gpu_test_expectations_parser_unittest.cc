@@ -90,7 +90,8 @@ TEST_F(GPUTestExpectationsParserTest, ValidUnrelatedTestEntry) {
 TEST_F(GPUTestExpectationsParserTest, AllModifiers) {
   const std::string text =
       "BUG12345 XP VISTA WIN7 LEOPARD SNOWLEOPARD LION LINUX CHROMEOS "
-      "NVIDIA INTEL AMD RELEASE DEBUG : MyTest = PASS FAIL FLAKY TIMEOUT";
+      "NVIDIA INTEL AMD RELEASE DEBUG : MyTest = "
+      "PASS FAIL FLAKY TIMEOUT SKIP";
 
   GPUTestExpectationsParser parser;
   EXPECT_TRUE(parser.LoadTestExpectations(text));
@@ -98,7 +99,8 @@ TEST_F(GPUTestExpectationsParserTest, AllModifiers) {
   EXPECT_EQ(GPUTestExpectationsParser::kGpuTestPass |
             GPUTestExpectationsParser::kGpuTestFail |
             GPUTestExpectationsParser::kGpuTestFlaky |
-            GPUTestExpectationsParser::kGpuTestTimeout,
+            GPUTestExpectationsParser::kGpuTestTimeout |
+            GPUTestExpectationsParser::kGpuTestSkip,
             parser.GetTestExpectation("MyTest", bot_config()));
 }
 
@@ -114,7 +116,8 @@ TEST_F(GPUTestExpectationsParserTest, DuplicateModifiers) {
 TEST_F(GPUTestExpectationsParserTest, AllModifiersLowerCase) {
   const std::string text =
       "BUG12345 xp vista win7 leopard snowleopard lion linux chromeos "
-      "nvidia intel amd release debug : MyTest = pass fail flaky timeout";
+      "nvidia intel amd release debug : MyTest = "
+      "pass fail flaky timeout skip";
 
   GPUTestExpectationsParser parser;
   EXPECT_TRUE(parser.LoadTestExpectations(text));
@@ -122,7 +125,8 @@ TEST_F(GPUTestExpectationsParserTest, AllModifiersLowerCase) {
   EXPECT_EQ(GPUTestExpectationsParser::kGpuTestPass |
             GPUTestExpectationsParser::kGpuTestFail |
             GPUTestExpectationsParser::kGpuTestFlaky |
-            GPUTestExpectationsParser::kGpuTestTimeout,
+            GPUTestExpectationsParser::kGpuTestTimeout |
+            GPUTestExpectationsParser::kGpuTestSkip,
             parser.GetTestExpectation("MyTest", bot_config()));
 }
 
@@ -219,6 +223,19 @@ TEST_F(GPUTestExpectationsParserTest, ValidMultipleEntries) {
   EXPECT_EQ(0u, parser.GetErrorMessages().size());
   EXPECT_EQ(GPUTestExpectationsParser::kGpuTestFail,
             parser.GetTestExpectation("MyTest", bot_config()));
+}
+
+TEST_F(GPUTestExpectationsParserTest, StarMatching) {
+  const std::string text =
+      "BUG12345 WIN7 RELEASE NVIDIA 0x0640 : MyTest* = FAIL";
+
+  GPUTestExpectationsParser parser;
+  EXPECT_TRUE(parser.LoadTestExpectations(text));
+  EXPECT_EQ(0u, parser.GetErrorMessages().size());
+  EXPECT_EQ(GPUTestExpectationsParser::kGpuTestFail,
+            parser.GetTestExpectation("MyTest0", bot_config()));
+  EXPECT_EQ(GPUTestExpectationsParser::kGpuTestPass,
+            parser.GetTestExpectation("OtherTest", bot_config()));
 }
 
 TEST_F(GPUTestExpectationsParserTest, WebGLTestExpectationsValidation) {

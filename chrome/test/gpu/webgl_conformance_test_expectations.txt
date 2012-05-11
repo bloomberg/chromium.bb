@@ -4,7 +4,7 @@
 
 // This file contains a list of defective WebGL conformance tests. The expected
 // format is:
-//  {BUG#} {MODIFIERS} : {TEST_NAME} = {PASS,FAIL,FLAKY,TIMEOUT}
+//  {BUG#} {MODIFIERS} : {TEST_NAME} = {PASS,FAIL,FLAKY,TIMEOUT,SKIP}
 //
 // MODIFIERS can be a combination of the below list:
 //  WIN XP VISTA WIN7 MAC LEOPARD SNOWLEOPARD LION LINUX CHROMEOS
@@ -12,12 +12,19 @@
 //  0x**** (this is a gpu's PCI device ID)
 //  DEBUG RELEASE
 //
+// TEST_NAME can be a specific test name, or have a '*' in the end, which
+// indicates a prefix matching.
+//
 // Any tests whose expectations are not PASS will be skipped on the bots.
 //
 // Examples:
 //  91530 MAC WIN LINUX : context_lost_restored = TIMEOUT
 //  91533 WIN : gl_min_uniforms = FAIL
+//  91531 MAC WIN LINUX : conformance_more_* = SKIP
 //  91532 MAC NVIDIA 0x0640 : tex_image_and_sub_image_2d_with_video = PASS FAIL
+
+UNFILED MAC WIN LINUX : conformance_more_* = SKIP
+UNFILED MAC WIN LINUX : conformance_ogles_* = SKIP
 
 125963 MAC AMD : conformance_programs_use_program_crash_with_discard_in_fragment_shader = FAIL
 125963 MAC AMD : conformance_typedarrays_data_view_test = FAIL
@@ -34,10 +41,6 @@
 
 125864 MAC : conformance_glsl_misc_glsl_vertex_branch = FAIL
 125864 MAC : conformance_glsl_misc_shader_with_gles_1_frag = FAIL
-
-103759 MAC WIN LINUX : conformance_more_functions_readPixelsBadArgs = FAIL
-103759 MAC WIN LINUX : conformance_more_functions_texImage2DHTML = FAIL
-103759 MAC WIN LINUX : conformance_more_functions_texSubImage2DHTML = FAIL
 
 UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_conditional_scoping = FAIL
 UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_do_scoping = FAIL
@@ -63,17 +66,6 @@ UNFILED WIN : conformance_extensions_webgl_compressed_texture_s3tc = FAIL
 UNFILED WIN : conformance_glsl_samplers_glsl_function_texture2d_bias = FAIL
 
 UNFILED XP NVIDIA : conformance_textures_texture_mips = FAIL
-
-113731 WIN7 INTEL : conformance_more_conformance_webGLArrays = FAIL
-113731 WIN7 INTEL : conformance_more_functions_copyTexImage2D = FAIL
-113731 WIN7 INTEL : conformance_more_functions_copyTexSubImage2D = FAIL
-113731 WIN7 INTEL : conformance_more_functions_uniformf = FAIL
-113731 WIN7 INTEL : conformance_more_functions_uniformfBadArgs = FAIL
-113731 WIN7 INTEL : conformance_more_functions_uniformfArrayLen1 = FAIL
-113731 WIN7 INTEL : conformance_more_functions_uniformi = FAIL
-113731 WIN7 INTEL : conformance_more_functions_uniformiBadArgs = FAIL
-113731 WIN7 INTEL : conformance_more_functions_uniformMatrix = FAIL
-113731 WIN7 INTEL : conformance_more_functions_uniformMatrixBadArgs = FAIL
 
 UNFILED WIN7 INTEL : conformance_context_context_attributes_alpha_depth_stencil_antialias = FAIL
 UNFILED WIN7 INTEL : conformance_context_context_lost_restored = FAIL
@@ -118,23 +110,6 @@ UNFILED MAC INTEL : conformance_glsl_variables_gl_pointcoord = FAIL
 UNFILED MAC INTEL : conformance_limits_gl_max_texture_dimensions = FAIL
 UNFILED MAC INTEL : conformance_rendering_line_loop_tri_fan = FAIL
 
-UNFILED MAC INTEL : conformance_ogles_GL_asin_asin_001_to_006 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_dot_dot_001_to_006 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_faceforward_faceforward_001_to_006 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_057_to_064 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_065_to_072 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_073_to_080 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_081_to_088 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_089_to_096 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_097_to_104 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_105_to_112 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_113_to_120 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_functions_functions_121_to_126 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_length_length_001_to_006 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_normalize_normalize_001_to_006 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_reflect_reflect_001_to_006 = FAIL
-UNFILED MAC INTEL : conformance_ogles_GL_refract_refract_001_to_006 = FAIL
-
 UNFILED MAC AMD : conformance_attribs_gl_vertex_attrib = FAIL
 UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer_offsets = FAIL
 UNFILED MAC AMD : conformance_attribs_gl_vertexattribpointer = FAIL
@@ -149,9 +124,6 @@ UNFILED MAC AMD : conformance_glsl_variables_gl_pointcoord = FAIL
 UNFILED MAC AMD : conformance_reading_read_pixels_test = TIMEOUT
 122651 MAC AMD : conformance_misc_object_deletion_behaviour = TIMEOUT
 
-WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_B1 = TIMEOUT
-WONTFIX LINUX DEBUG : conformance_more_conformance_quickCheckAPI_G_I = TIMEOUT
-
 UNFILED LINUX NVIDIA : conformance_uniforms_uniform_location = FAIL
 UNFILED LINUX NVIDIA : conformance_textures_texture_mips = FAIL
 
@@ -165,29 +137,8 @@ UNFILED LINUX INTEL : conformance_glsl_samplers_glsl_function_texture2dlod = FAI
 
 UNFILED LINUX INTEL : conformance_glsl_functions_glsl_function_cos = FAIL
 
-UNFILED LINUX INTEL : conformance_ogles_GL_array_array_001_to_006 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_009_to_016 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_017_to_024 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_025_to_032 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_033_to_040 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_041_to_048 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_049_to_056 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_057_to_064 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_065_to_072 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_073_to_080 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_081_to_088 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_089_to_096 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_097_to_104 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_105_to_112 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_113_to_120 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_functions_functions_121_to_126 = FAIL
-UNFILED LINUX INTEL : conformance_ogles_GL_gl_FragCoord_gl_FragCoord_001_to_003 = FAIL
-
 UNFILED LINUX AMD : conformance_misc_object_deletion_behaviour = FAIL
 UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
-
-// This is actually a bug in the test: an un-used uniform might be opted out.
-UNFILED LINUX WIN : conformance_ogles_GL_vec3_vec3_001_to_008 = FAIL
 
 121139 MAC : conformance_textures_texture_size = FAIL
 121139 WIN INTEL : conformance_textures_texture_size = FAIL

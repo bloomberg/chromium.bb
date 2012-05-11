@@ -49,6 +49,7 @@ enum Token {
   kExpectationFail,
   kExpectationFlaky,
   kExpectationTimeout,
+  kExpectationSkip,
   // separator
   kSeparatorColon,
   kSeparatorEqual,
@@ -86,6 +87,7 @@ const TokenInfo kTokenData[] = {
   { "fail", GPUTestExpectationsParser::kGpuTestFail },
   { "flaky", GPUTestExpectationsParser::kGpuTestFlaky },
   { "timeout", GPUTestExpectationsParser::kGpuTestTimeout },
+  { "skip", GPUTestExpectationsParser::kGpuTestSkip },
   { ":", 0 },
   { "=", 0 },
 };
@@ -127,6 +129,20 @@ Token ParseToken(const std::string& word) {
       return static_cast<Token>(i);
   }
   return kTokenWord;
+}
+
+// reference name can have the last character as *.
+bool NamesMatching(const std::string& ref, const std::string& test_name) {
+  size_t len = ref.length();
+  if (len == 0)
+    return false;
+  if (ref[len - 1] == '*') {
+    if (test_name.length() > len -1 &&
+        ref.compare(0, len - 1, test_name, 0, len - 1) == 0)
+      return true;
+    return false;
+  }
+  return (ref == test_name);
 }
 
 }  // namespace anonymous
@@ -185,7 +201,7 @@ int32 GPUTestExpectationsParser::GetTestExpectation(
     const std::string& test_name,
     const GPUTestBotConfig& bot_config) const {
   for (size_t i = 0; i < entries_.size(); ++i) {
-    if (entries_[i].test_name == test_name &&
+    if (NamesMatching(entries_[i].test_name, test_name) &&
         bot_config.Matches(entries_[i].test_config))
       return entries_[i].test_expectation;
   }
@@ -279,6 +295,7 @@ bool GPUTestExpectationsParser::ParseLine(
       case kExpectationFail:
       case kExpectationFlaky:
       case kExpectationTimeout:
+      case kExpectationSkip:
         // TEST_EXPECTATIONS
         if (stage != kLineParserEqual && stage != kLineParserExpectations) {
           PushErrorMessage(kErrorMessage[kErrorIllegalEntry],
