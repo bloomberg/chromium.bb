@@ -1028,13 +1028,17 @@ list .detail-name > .file-checkbox::before,
 
 /* GData-specfic styles */
 
-[gdata][offline] .table-row:not(.gdata-present),
-[gdata][offline] .thumbnail-item:not(.gdata-present) {
+[gdata][connection='offline'] .table-row.dim-offline,
+[gdata][connection='offline'] .thumbnail-item.dim-offline,
+[gdata][connection='metered'] .table-row.dim-metered,
+[gdata][connection='metered'] .thumbnail-item.dim-metered {
   color: #808080;
 }
 
-[gdata][offline] .table-row:not(.gdata-present) .detail-icon,
-[gdata][offline] .thumbnail-item:not(.gdata-present) .img-container {
+[gdata][connection='offline'] .table-row.dim-offline .detail-icon,
+[gdata][connection='offline'] .thumbnail-item.dim-offline .img-container,
+[gdata][connection='metered'] .table-row.dim-metered .detail-icon,
+[gdata][connection='metered'] .thumbnail-item.dim-metered .img-container {
   opacity: 0.3;
 }
 

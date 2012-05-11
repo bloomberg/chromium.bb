@@ -604,4 +604,13 @@ class GetPathForDriveSearchResultFunction : public AsyncExtensionFunction {
       "fileBrowserPrivate.getPathForDriveSearchResult");
 };
 
+// Implements the chrome.fileBrowserPrivate.getNetworkConnectionState method.
+class GetNetworkConnectionStateFunction : public SyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "fileBrowserPrivate.getNetworkConnectionState");
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

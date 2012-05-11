@@ -858,7 +858,7 @@
       },
       {
         "name": "getGDataPreferences",
-        "description": "Retrieves File Browser preference.",
+        "description": "Retrieves GData-related preferences .",
         "parameters": [
           {
             "name": "callback",
@@ -878,7 +878,7 @@
       },
       {
         "name": "setGDataPreferences",
-        "description": "Sets File Browser preference.",
+        "description": "Sets GData-related preferences.",
         "parameters": [
           {
             "name": "changeInfo",
@@ -908,6 +908,26 @@
                 "type": "string",
                 "description": "File path of the search result"
               }  
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getNetworkConnectionState",
+        "description": "Retrieves the state of the currently active network connection.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "object",
+                "properties": {
+                  "type": {"type": "string"},
+                  "online": {"type": "boolean"}
+                }
+              }
             ]
           }
         ]
@@ -974,6 +994,18 @@
             "description": "Number of entries fetched so far."
           }
         ]
+      },
+      {
+        "name": "onGDataPreferencesChanged",
+        "type": "function",
+        "description": "Fired when GData-related preferences change. The preferences can be retrieved via 'getGDataPreferences'.",
+        "parameters": []
+      },
+      {
+        "name": "onNetworkConnectionChanged",
+        "type": "function",
+        "description": "Fired when the active network connection state changes. The network connection state can be retrieved via 'getNetworkConnectionState'.",
+        "parameters": []
       }
     ]
   }

@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
@@ -19,9 +20,12 @@
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -87,6 +91,7 @@ FileBrowserEventRouter::FileBrowserEventRouter(
     Profile* profile)
     : delegate_(new FileBrowserEventRouter::FileWatcherDelegate(this)),
       notifications_(new FileBrowserNotifications(profile)),
+      pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
       num_remote_update_requests_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -115,6 +120,11 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
         RemoveObserver(this);
   }
 
+  chromeos::NetworkLibrary* network_library =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  if (network_library)
+     network_library->RemoveNetworkManagerObserver(this);
+
   profile_ = NULL;
 }
 
@@ -139,6 +149,15 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
   }
   system_service->file_system()->GetOperationRegistry()->AddObserver(this);
   system_service->file_system()->AddObserver(this);
+
+  chromeos::NetworkLibrary* network_library =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  if (network_library)
+     network_library->AddNetworkManagerObserver(this);
+
+  pref_change_registrar_->Init(profile_->GetPrefs());
+  pref_change_registrar_->Add(prefs::kDisableGDataOverCellular, this);
+  pref_change_registrar_->Add(prefs::kDisableGDataHostedFiles, this);
 }
 
 // File watch setup routines.
@@ -303,6 +322,30 @@ void FileBrowserEventRouter::MountCompleted(
                                      gdata::SetMountedStateCallback());
     }
   }
+}
+
+void FileBrowserEventRouter::OnNetworkManagerChanged(
+    chromeos::NetworkLibrary* network_library) {
+  if (!profile_ || !profile_->GetExtensionEventRouter()) {
+    NOTREACHED();
+    return;
+  }
+  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+      extension_event_names::kOnFileBrowserNetworkConnectionChanged,
+      "[]", NULL, GURL());
+}
+
+void FileBrowserEventRouter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (!profile_ || !profile_->GetExtensionEventRouter()) {
+    NOTREACHED();
+    return;
+  }
+  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+      extension_event_names::kOnFileBrowserGDataPreferencesChanged,
+      "[]", NULL, GURL());
 }
 
 void FileBrowserEventRouter::OnProgressUpdate(

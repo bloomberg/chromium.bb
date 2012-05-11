@@ -15,6 +15,8 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
@@ -2020,7 +2022,7 @@ void TransferFileFunction::OnTransferCompleted(base::PlatformFileError error) {
   }
 }
 
-// Read setting value.
+// Read GData-related preferences.
 bool GetGDataPreferencesFunction::RunImpl() {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
 
@@ -2036,7 +2038,7 @@ bool GetGDataPreferencesFunction::RunImpl() {
   return true;
 }
 
-// Write setting value.
+// Write GData-related preferences.
 bool SetGDataPreferencesFunction::RunImpl() {
   base::DictionaryValue* value = NULL;
 
@@ -2086,4 +2088,29 @@ void GetPathForDriveSearchResultFunction::OnEntryFound(
 
   result_.reset(Value::CreateStringValue(entry_path.value()));
   SendResponse(true);
+}
+
+bool GetNetworkConnectionStateFunction::RunImpl() {
+  chromeos::NetworkLibrary* network_library =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  if (!network_library)
+    return false;
+
+  const chromeos::Network* active_network = network_library->active_network();
+
+  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  value->SetBoolean("online", active_network && active_network->online());
+
+  std::string type_string;
+  if (!active_network)
+    type_string = "none";
+  else if (active_network->type() == chromeos::TYPE_CELLULAR)
+    type_string = "cellular";
+  else
+    type_string = "ethernet";  // Currently we do not care about other types.
+
+  value->SetString("type", type_string);
+  result_.reset(value.release());
+
+  return true;
 }

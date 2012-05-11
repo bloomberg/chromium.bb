@@ -342,7 +342,9 @@ FileTransferController.prototype = {
   },
 
   canCopyOrDrag_: function() {
-    if (this.isOnGData && util.isOffline() && !this.allGDataFilesAvailable)
+    if (this.isOnGData &&
+        this.directoryModel_.isOffline() &&
+        !this.allGDataFilesAvailable)
       return false;
     return this.selectedEntries_.length > 0;
   },

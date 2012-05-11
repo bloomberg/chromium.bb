@@ -622,6 +622,15 @@ GDataProvider.isAvailableOffline = function(data) {
 };
 
 /**
+ * @param {GDataFileProperties} data GData file properties.
+ * @return {boolean} True if opening the file does not require downloading it
+ *    via a metered connection.
+ */
+GDataProvider.isAvailableWhenMetered = function(data) {
+  return data.isPresent || data.isHosted;
+};
+
+/**
  * Converts API metadata to internal format.
  * @param {Object} data Metadata from API call.
  * @return {Object} Metadata in internal format.
@@ -635,6 +644,7 @@ GDataProvider.prototype.convert_ = function(data) {
     hosted: data.isHosted,
     dirty: data.isDirty,
     availableOffline: GDataProvider.isAvailableOffline(data),
+    availableWhenMetered: GDataProvider.isAvailableWhenMetered(data),
     contentUrl: (data.contentUrl || '').replace(/\?.*$/gi, ''),
     editUrl: data.editUrl || ''
   };

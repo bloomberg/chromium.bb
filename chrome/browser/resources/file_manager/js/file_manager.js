@@ -341,11 +341,6 @@ FileManager.prototype = {
     window.addEventListener('popstate', this.onPopState_.bind(this));
     window.addEventListener('unload', this.onUnload_.bind(this));
 
-    var offlineHandler = this.onOnlineOffline_.bind(this);
-    window.addEventListener('online', offlineHandler);
-    window.addEventListener('offline', offlineHandler);
-    offlineHandler();  // Sync with the current state.
-
     this.directoryModel_.addEventListener('directory-changed',
                                           this.onDirectoryChanged_.bind(this));
     var self = this;
@@ -376,6 +371,15 @@ FileManager.prototype = {
 
     chrome.fileBrowserPrivate.onFileChanged.addListener(
         this.onFileChanged_.bind(this));
+
+    this.networkConnectionState_ = null;
+    var queryNetworkConnectionState = function() {
+      chrome.fileBrowserPrivate.getNetworkConnectionState(
+          this.onNetworkConnectionChanged_.bind(this));
+    }.bind(this);
+    queryNetworkConnectionState();
+    chrome.fileBrowserPrivate.onNetworkConnectionChanged.
+        addListener(queryNetworkConnectionState);
 
     var invokeHandler = !this.params_.selectOnly;
     if (this.isStartingOnGData_()) {
@@ -571,21 +575,21 @@ FileManager.prototype = {
       this.dialogContainer_.setAttribute('gdata', true);
 
     this.syncButton = this.dialogDom_.querySelector('#gdata-sync-settings');
-    this.syncButton.addEventListener('click',
-        this.onGDataPrefClick_.bind(this, 'cellularDisabled'));
+    this.syncButton.addEventListener('click', this.onGDataPrefClick_.bind(
+        this, 'cellularDisabled', false /* not inverted */));
 
     this.hostedButton = this.dialogDom_.querySelector('#gdata-hosted-settings');
-    this.hostedButton.addEventListener('click',
-        this.onGDataPrefClick_.bind(this, 'hostedFilesDisabled'));
+    this.hostedButton.addEventListener('click', this.onGDataPrefClick_.bind(
+        this, 'hostedFilesDisabled', true /* inverted */));
 
-    chrome.fileBrowserPrivate.getGDataPreferences(
-        function(result) {
-          if (!result.cellularDisabled)
-            this.syncButton.setAttribute('checked', 'checked');
-          if (!result.hostedFilesDisabled)
-            this.hostedButton.setAttribute('checked', 'checked');
-        }.bind(this)
-    );
+    this.gdataPreferences_ = null;
+    var queryGDataPreferences = function() {
+      chrome.fileBrowserPrivate.getGDataPreferences(
+          this.onGDataPreferencesChanged_.bind(this));
+    }.bind(this);
+    queryGDataPreferences();
+    chrome.fileBrowserPrivate.onGDataPreferencesChanged.
+        addListener(queryGDataPreferences);
 
     cr.ui.ComboButton.decorate(this.taskItems_);
     this.taskItems_.addEventListener('select',
@@ -1819,11 +1823,11 @@ FileManager.prototype = {
     if (!this.isOnGData() || !gdata)
       return;
 
-    if (gdata.hosted) {
-      listItem.classList.add('gdata-hosted');
-    }
-    if (entry.isDirectory || gdata.availableOffline) {
-      listItem.classList.add('gdata-present');
+    if (!entry.isDirectory) {
+      if (!gdata.availableOffline)
+        listItem.classList.add('dim-offline');
+      if (!gdata.availableWhenMetered)
+        listItem.classList.add('dim-metered');
     }
   };
 
@@ -2201,7 +2205,9 @@ FileManager.prototype = {
    *                    available.
     */
   FileManager.prototype.isSelectionAvailable = function() {
-    return !this.isOnGDataOffline() || this.selection.allGDataFilesPresent;
+    return !this.isOnGData() ||
+        !this.isOffline() ||
+        this.selection.allGDataFilesPresent;
   };
 
   /**
@@ -2521,7 +2527,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.executeIfAvailable_ = function(urls, callback) {
-    if (this.isOnGDataOffline()) {
+    if (this.isOnGData() && this.isOffline()) {
       this.metadataCache_.get(urls, 'gdata', function(props) {
         if (props.filter(function(p) {return !p.availableOffline}).length) {
           this.alert.showHtml(
@@ -2540,23 +2546,74 @@ FileManager.prototype = {
         }
         callback(urls);
       }.bind(this));
+    } else if (this.isOnGData() && this.isOnMeteredConnection()) {
+      this.metadataCache_.get(urls, 'gdata', function(gdataProps) {
+        if (gdataProps.filter(
+            function(p) { return !p.availableWhenMetered}).length) {
+          this.metadataCache_.get(urls, 'filesystem', function(fileProps) {
+            var sizeToDownload = 0;
+            for (var i = 0; i != urls.length; i++) {
+              if (!gdataProps[i].availableWhenMetered)
+                sizeToDownload += fileProps[i].size;
+            }
+            this.confirm.show(
+                strf(
+                    urls.length == 1 ?
+                        'CONFIRM_MOBILE_DATA_USE' :
+                        'CONFIRM_MOBILE_DATA_USE_PLURAL',
+                    util.bytesToSi(sizeToDownload)),
+                callback.bind(null, urls));
+          }.bind(this));
+          return;
+        }
+        callback(urls);
+      }.bind(this));
     } else {
       callback(urls);
     }
   };
 
-  FileManager.prototype.onOnlineOffline_ = function() {
-    if (util.isOffline()) {
-      console.log('OFFLINE');
-      this.dialogContainer_.setAttribute('offline', true);
-    } else {
-      console.log('ONLINE');
-      this.dialogContainer_.removeAttribute('offline');
-    }
+  FileManager.prototype.onNetworkConnectionChanged_ = function(state) {
+    console.log(state.online, state.type);
+    this.networkConnectionState_ = state;
+    this.directoryModel_.setOffline(!state.online);
+    this.updateConnectionState_();
   };
 
-  FileManager.prototype.isOnGDataOffline = function() {
-    return this.isOnGData() && util.isOffline();
+  FileManager.prototype.onGDataPreferencesChanged_ = function(preferences) {
+    this.gdataPreferences_ = preferences;
+    if (preferences.cellularDisabled)
+      this.syncButton.setAttribute('checked', 'checked');
+    else
+      this.syncButton.removeAttribute('checked');
+
+    if (!preferences.hostedFilesDisabled)
+      this.hostedButton.setAttribute('checked', 'checked');
+    else
+      this.hostedButton.removeAttribute('checked');
+
+    this.updateConnectionState_();
+  };
+
+  FileManager.prototype.updateConnectionState_ = function() {
+    if (this.isOffline())
+      this.dialogContainer_.setAttribute('connection', 'offline');
+    else if (this.isOnMeteredConnection())
+      this.dialogContainer_.setAttribute('connection', 'metered');
+    else
+      this.dialogContainer_.removeAttribute('connection');
+  };
+
+  FileManager.prototype.isOnMeteredConnection = function() {
+    return this.gdataPreferences_ &&
+        this.gdataPreferences_.cellularDisabled &&
+        this.networkConnectionState_ &&
+        this.networkConnectionState_.online &&
+        this.networkConnectionState_.type == 'cellular';
+  };
+
+  FileManager.prototype.isOffline = function() {
+    return this.networkConnectionState_ && !this.networkConnectionState_.online;
   };
 
   FileManager.prototype.isOnReadonlyDirectory = function() {
@@ -4250,20 +4307,19 @@ FileManager.prototype = {
   /**
    * Handler invoked on preference setting in gdata context menu.
    * @param {String} pref  The preference to alter.
+   * @param {boolean} invert Invert the value if true.
    * @param {Event}  event The click event.
    */
-  FileManager.prototype.onGDataPrefClick_ = function(pref, event) {
-    var oldValue = event.target.hasAttribute('checked');
-    var changeInfo = {};
-    changeInfo[pref] = oldValue;
-
-    chrome.fileBrowserPrivate.setGDataPreferences(changeInfo);
-
-    if (oldValue) {
-      event.target.removeAttribute('checked');
-    } else {
+  FileManager.prototype.onGDataPrefClick_ = function(pref, inverted, event) {
+    var newValue = !event.target.hasAttribute('checked');
+    if (newValue)
       event.target.setAttribute('checked', 'checked');
-    }
+    else
+      event.target.removeAttribute('checked');
+
+    var changeInfo = {};
+    changeInfo[pref] = inverted ? !newValue : newValue;
+    chrome.fileBrowserPrivate.setGDataPreferences(changeInfo);
   };
 
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {

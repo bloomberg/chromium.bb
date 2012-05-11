@@ -317,8 +317,38 @@ chrome.fileBrowserPrivate = {
     setTimeout(callback, 0, response);
   },
 
+  gdataPreferences_: {
+    cellularDisabled: true,
+    hostedFilesDisabled: false
+  },
+
+  onGDataPreferencesChanged: new MockEventSource(),
+
   getGDataPreferences: function(callback) {
-    setTimeout(callback, 0, {});
+    setTimeout(callback, 0, chrome.fileBrowserPrivate.gdataPreferences_);
+  },
+
+  setGDataPreferences: function(preferences) {
+    for (var prop in preferences) {
+      chrome.fileBrowserPrivate.gdataPreferences_[prop] = preferences[prop];
+    }
+    chrome.fileBrowserPrivate.onGDataPreferencesChanged.notify();
+  },
+
+  networkConnectionState_: {
+    type: 'cellular',
+    online: true
+  },
+
+  onNetworkConnectionChanged: new MockEventSource(),
+
+  getNetworkConnectionState: function(callback) {
+    setTimeout(callback, 0, chrome.fileBrowserPrivate.networkConnectionState_);
+  },
+
+  setConnectionState_: function(state) {
+    chrome.fileBrowserPrivate.networkConnectionState_ = state;
+    chrome.fileBrowserPrivate.onNetworkConnectionChanged.notify();
   },
 
   pinGDataFile: function(urls, on, callback) {
@@ -375,7 +405,6 @@ chrome.fileBrowserPrivate = {
       TYPE_COLUMN_LABEL: 'Type',
       DATE_COLUMN_LABEL: 'Date',
       PREVIEW_COLUMN_LABEL: 'Preview',
-      OFFILE_COLUMN_LABEL: 'Available offline',
 
       ERROR_CREATING_FOLDER: 'Unable to create folder "$1". $2',
       ERROR_INVALID_CHARACTER: 'Invalid character: $1',
@@ -472,6 +501,15 @@ chrome.fileBrowserPrivate = {
           '<p><strong>Share, create and collaborate</strong> ' +
           'on files with others all in one place .</p>',
       GDATA_WELCOME_DISMISS: 'Dismiss',
+
+      OFFLINE_HEADER: 'You are offline',
+      OFFLINE_MESSAGE: 'To save this file for offline use, get back online and<br>select the \'$1\' checkbox for this file.',
+      OFFLINE_MESSAGE_PLURAL: 'To save these files for offline use, get back online and<br>select the \'$1\' checkbox for this file.',
+      HOSTED_OFFLINE_MESSAGE: 'You must be online to access this file.',
+      HOSTED_OFFLINE_MESSAGE_PLURAL: 'You must be online to access these files.',
+
+      CONFIRM_MOBILE_DATA_USE: 'Fetching this file will use approximately $1 of mobile data.',
+      CONFIRM_MOBILE_DATA_USE_PLURAL: 'Fetching these files will use approximately $1 of mobile data.',
 
       GDOC_DOCUMENT_FILE_TYPE: 'Google document',
       GSHEET_DOCUMENT_FILE_TYPE: 'Google spreadsheet',

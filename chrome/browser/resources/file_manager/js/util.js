@@ -506,13 +506,5 @@ var util = {
            (event.altKey ? 'Alt-' : '') +
            (event.shiftKey ? 'Shift-' : '') +
            (event.metaKey ? 'Meta-' : '');
-  },
-
-  /**
-   * A wrapper for navigator.onLine that allows for easy debug override.
-   * @return {boolean} True if offline.
-   */
-  isOffline: function() {
-    return !navigator.onLine;
   }
 };

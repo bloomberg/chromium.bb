@@ -15,20 +15,27 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_source.h"
 
 class FileBrowserNotifications;
+class PrefChangeRegistrar;
 class Profile;
 
-// Used to monitor disk mount changes and signal when new mounted usb device is
-// found.
+// Monitors changes in disk mounts, network connection state and preferences
+// affecting File Manager. Dispatches appropriate File Browser events.
 class FileBrowserEventRouter
     : public RefcountedProfileKeyedService,
       public chromeos::disks::DiskMountManager::Observer,
+      public chromeos::NetworkLibrary::NetworkManagerObserver,
+      public content::NotificationObserver,
       public gdata::GDataOperationRegistry::Observer,
       public gdata::GDataFileSystem::Observer {
  public:
@@ -57,6 +64,15 @@ class FileBrowserEventRouter
       chromeos::MountError error_code,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info)
       OVERRIDE;
+
+  // chromeos::NetworkLibrary::NetworkManagerObserver override.
+  virtual void OnNetworkManagerChanged(
+      chromeos::NetworkLibrary* network_library) OVERRIDE;
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // GDataOperationRegistry::Observer overrides.
   virtual void OnProgressUpdate(
@@ -170,6 +186,7 @@ class FileBrowserEventRouter
   scoped_refptr<FileWatcherDelegate> delegate_;
   WatcherMap file_watchers_;
   scoped_ptr<FileBrowserNotifications> notifications_;
+  scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   Profile* profile_;
   base::Lock lock_;
 

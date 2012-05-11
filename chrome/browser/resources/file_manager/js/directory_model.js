@@ -143,6 +143,20 @@ DirectoryModel.prototype.getRootName = function() {
 };
 
 /**
+ * @return {boolean} on True if offline.
+ */
+DirectoryModel.prototype.isOffline = function() {
+  return this.offline_;
+};
+
+/**
+ * @param {boolean} offline True if offline.
+ */
+DirectoryModel.prototype.setOffline = function(offline) {
+  this.offline_ = offline;
+};
+
+/**
  * @return {boolean} True if current directory is read only.
  */
 DirectoryModel.prototype.isReadOnly = function() {
@@ -150,7 +164,7 @@ DirectoryModel.prototype.isReadOnly = function() {
 };
 
 /**
- * @param {strin} path Path to check.
+ * @param {string} path Path to check.
  * @return {boolean} True if the |path| is read only.
  */
 DirectoryModel.prototype.isPathReadOnly = function(path) {
@@ -162,7 +176,7 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
     case DirectoryModel.RootType.DOWNLOADS:
       return false;
     case DirectoryModel.RootType.GDATA:
-      return util.isOffline();
+      return this.isOffline();
     default:
       return true;
   }
