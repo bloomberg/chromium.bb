@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/image/image_skia.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -29,6 +30,7 @@ class MockThemeProvider : public ui::ThemeProvider {
   // Cross platform methods
   MOCK_METHOD1(Init, void(Profile*));
   MOCK_CONST_METHOD1(GetBitmapNamed, SkBitmap*(int));
+  MOCK_CONST_METHOD1(GetImageSkiaNamed, gfx::ImageSkia*(int));
   MOCK_CONST_METHOD1(GetColor, SkColor(int));
   MOCK_CONST_METHOD2(GetDisplayProperty, bool(int, int*));
   MOCK_CONST_METHOD0(ShouldUseNativeFrame, bool());

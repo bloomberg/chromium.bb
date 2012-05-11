@@ -33,6 +33,7 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/image/image_skia.h"
 
 // Unit tests don't need time-consuming asynchronous animations.
 @interface BookmarkBarControllerTestable : BookmarkBarController {
@@ -189,7 +190,8 @@ class FakeTheme : public ui::ThemeProvider {
   FakeTheme(NSColor* color) : color_(color) {}
   scoped_nsobject<NSColor> color_;
 
-  virtual SkBitmap* GetBitmapNamed(int id) const { return nil; }
+  virtual SkBitmap* GetBitmapNamed(int id) const { return NULL; }
+  virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const { return NULL; }
   virtual SkColor GetColor(int id) const { return SkColor(); }
   virtual bool GetDisplayProperty(int id, int* result) const { return false; }
   virtual bool ShouldUseNativeFrame() const { return false; }

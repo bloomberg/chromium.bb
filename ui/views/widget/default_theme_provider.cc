@@ -5,6 +5,7 @@
 #include "ui/views/widget/default_theme_provider.h"
 
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "ui/views/widget/native_widget_win.h"
@@ -18,6 +19,10 @@ DefaultThemeProvider::~DefaultThemeProvider() {}
 
 SkBitmap* DefaultThemeProvider::GetBitmapNamed(int id) const {
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
+}
+
+gfx::ImageSkia* DefaultThemeProvider::GetImageSkiaNamed(int id) const {
+  return ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
 SkColor DefaultThemeProvider::GetColor(int id) const {

@@ -301,6 +301,12 @@ SkBitmap* GtkThemeService::GetBitmapNamed(int id) const {
   return const_cast<SkBitmap*>(GetImageNamed(id)->ToSkBitmap());
 }
 
+gfx::ImageSkia* GtkThemeService::GetImageSkiaNamed(int id) const {
+  // TODO(pkotwicz): Remove this const cast.  The gfx::Image interface returns
+  // its images const. GetImageSkiaNamed() also should but has many callsites.
+  return const_cast<gfx::ImageSkia*>(GetImageNamed(id)->ToImageSkia());
+}
+
 const gfx::Image* GtkThemeService::GetImageNamed(int id) const {
   // Try to get our cached version:
   ImageCache::const_iterator it = gtk_images_.find(id);

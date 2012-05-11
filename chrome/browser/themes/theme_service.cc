@@ -22,6 +22,7 @@
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "ui/views/widget/native_widget_win.h"
@@ -244,17 +245,20 @@ const gfx::Image* ThemeService::GetImageNamed(int id) const {
 }
 
 SkBitmap* ThemeService::GetBitmapNamed(int id) const {
-  DCHECK(CalledOnValidThread());
+  const gfx::Image* image = GetImageNamed(id);
+  if (!image)
+    return NULL;
 
-  SkBitmap* bitmap = NULL;
+  return const_cast<SkBitmap*>(image->ToSkBitmap());
+}
 
-  if (theme_pack_.get())
-    bitmap = theme_pack_->GetBitmapNamed(id);
-
-  if (!bitmap)
-    bitmap = rb_.GetBitmapNamed(id);
-
-  return bitmap;
+gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id) const {
+  const gfx::Image* image = GetImageNamed(id);
+  if (!image)
+    return NULL;
+  // TODO(pkotwicz): Remove this const cast.  The gfx::Image interface returns
+  // its images const. GetImageSkiaNamed() also should but has many callsites.
+  return const_cast<gfx::ImageSkia*>(image->ToImageSkia());
 }
 
 SkColor ThemeService::GetColor(int id) const {

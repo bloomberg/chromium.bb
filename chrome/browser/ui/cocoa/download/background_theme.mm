@@ -28,7 +28,11 @@ BackgroundTheme::BackgroundTheme(ui::ThemeProvider* provider) :
 BackgroundTheme::~BackgroundTheme() {}
 
 SkBitmap* BackgroundTheme::GetBitmapNamed(int id) const {
-  return nil;
+  return NULL;
+}
+
+gfx::ImageSkia* BackgroundTheme::GetImageSkiaNamed(int id) const {
+  return NULL;
 }
 
 SkColor BackgroundTheme::GetColor(int id) const {

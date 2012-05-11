@@ -212,6 +212,11 @@ SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
   return const_cast<SkBitmap*>(bitmap);
 }
 
+gfx::ImageSkia* ResourceBundle::GetImageSkiaNamed(int resource_id) {
+  const gfx::ImageSkia* image = GetImageNamed(resource_id).ToImageSkia();
+  return const_cast<gfx::ImageSkia*>(image);
+}
+
 gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   // Check to see if the image is already in the cache.
   {

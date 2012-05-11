@@ -154,6 +154,15 @@ class UI_EXPORT ResourceBundle {
   // !! THIS IS DEPRECATED. PLEASE USE THE METHOD BELOW. !!
   SkBitmap* GetBitmapNamed(int resource_id);
 
+  // Gets image with the specified resource_id from the current module data.
+  // Returns a pointer to a shared instance of gfx::ImageSkia. This shared
+  // instance is owned by the resource bundle and should not be freed.
+  // TODO(pkotwicz): Make method return const gfx::ImageSkia*
+  //
+  // NOTE: It is preferrable to use GetImageNamed such that code is more
+  // portable.
+  gfx::ImageSkia* GetImageSkiaNamed(int resource_id);
+
   // Gets an image resource from the current module data. This will load the
   // image in Skia format by default. The ResourceBundle owns this.
   gfx::Image& GetImageNamed(int resource_id);
