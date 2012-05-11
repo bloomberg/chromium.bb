@@ -1,30 +1,58 @@
-/* jconfig.vc --- jconfig.h for Microsoft Visual C++ on Windows 95 or NT. */
-/* see jconfig.doc for explanations */
+/* jconfig.h.  Generated from jconfig.h.in by configure.  */
+/* Version ID for the JPEG library.
+ * Might be useful for tests like "#if JPEG_LIB_VERSION >= 60".
+ */
+#define JPEG_LIB_VERSION 62
 
-#define HAVE_PROTOTYPES
-#define HAVE_UNSIGNED_CHAR
-#define HAVE_UNSIGNED_SHORT
-/* #define void char */
-/* #define const */
-#undef CHAR_IS_UNSIGNED
-#define HAVE_STDDEF_H
-#define HAVE_STDLIB_H
-#undef NEED_BSD_STRINGS
-#undef NEED_SYS_TYPES_H
-#undef NEED_FAR_POINTERS	/* we presume a 32-bit flat memory model */
-#undef NEED_SHORT_EXTERNAL_NAMES
-#undef INCOMPLETE_TYPES_BROKEN
+/* libjpeg-turbo version */
+#define LIBJPEG_TURBO_VERSION 1.2.80
 
-/* Define "boolean" as unsigned char, not int, per Windows custom */
-#ifndef __RPCNDR_H__		/* don't conflict if rpcndr.h already read */
-typedef unsigned char boolean;
+/* Support arithmetic encoding */
+/* #undef C_ARITH_CODING_SUPPORTED */
+
+/* Support arithmetic decoding */
+/* #undef D_ARITH_CODING_SUPPORTED */
+
+/* Compiler supports function prototypes. */
+#define HAVE_PROTOTYPES 1
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#define HAVE_STDDEF_H 1
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#define HAVE_STDLIB_H 1
+
+/* Compiler supports 'unsigned char'. */
+#define HAVE_UNSIGNED_CHAR 1
+
+/* Compiler supports 'unsigned short'. */
+#define HAVE_UNSIGNED_SHORT 1
+
+/* Compiler does not support pointers to unspecified structures. */
+/* #undef INCOMPLETE_TYPES_BROKEN */
+
+/* Compiler has <strings.h> rather than standard <string.h>. */
+/* #undef NEED_BSD_STRINGS */
+
+/* Linker requires that global names be unique in first 15 characters. */
+/* #undef NEED_SHORT_EXTERNAL_NAMES */
+
+/* Need to include <sys/types.h> in order to obtain size_t. */
+/* #undef NEED_SYS_TYPES_H 1 */
+
+/* Broken compiler shifts signed values as an unsigned shift. */
+/* #undef RIGHT_SHIFT_IS_UNSIGNED */
+
+/* Use accelerated SIMD routines. */
+#define WITH_SIMD 1
+
+/* Define to 1 if type `char' is unsigned and you are not using gcc.  */
+#ifndef __CHAR_UNSIGNED__
+/* # undef __CHAR_UNSIGNED__ */
 #endif
-#define HAVE_BOOLEAN		/* prevent jmorecfg.h from redefining it */
 
-#define inline __inline
+/* Define to empty if `const' does not conform to ANSI C. */
+/* #undef const */
 
-#ifdef JPEG_INTERNALS
-
-#undef RIGHT_SHIFT_IS_UNSIGNED
-
-#endif /* JPEG_INTERNALS */
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+/* #undef size_t */

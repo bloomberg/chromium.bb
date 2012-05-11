@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2011 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2009-2012 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -110,7 +110,7 @@ int decomptest(unsigned char *srcbuf, unsigned char **jpegbuf,
 	if((handle=tjInitDecompress())==NULL)
 		_throwtj("executing tjInitDecompress()");
 
-	bufsize=(yuv==YUVDECODE? yuvsize:pitch*h);
+	bufsize=(yuv==YUVDECODE? yuvsize:pitch*scaledh);
 	if(dstbuf==NULL)
 	{
 		if((dstbuf=(unsigned char *)malloc(bufsize)) == NULL)
@@ -681,7 +681,7 @@ void usage(char *progname)
 	printf("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =\n");
 	printf("     Test the specified color conversion path in the codec (default: BGR)\n");
 	printf("-fastupsample = Use fast, inaccurate upsampling code to perform 4:2:2 and 4:2:0\n");
-	printf("     YUV decoding in libjpeg decompressor\n");
+	printf("     YUV decoding\n");
 	printf("-quiet = Output results in tabular rather than verbose format\n");
 	printf("-yuvencode = Encode RGB input as planar YUV rather than compressing as JPEG\n");
 	printf("-yuvdecode = Decode JPEG image to planar YUV rather than RGB\n");
@@ -696,6 +696,7 @@ void usage(char *progname)
 			if(i!=nsf-1) printf(", ");
 			if(i==nsf-2) printf("or ");
 		}
+		if(i%8==0 && i!=0) printf("\n     ");
 	}
 	printf(")\n");
 	printf("-hflip, -vflip, -transpose, -transverse, -rot90, -rot180, -rot270 =\n");
@@ -811,7 +812,8 @@ int main(int argc, char *argv[])
 				{
 					for(j=0; j<nsf; j++)
 					{
-						if(temp1==scalingfactors[j].num && temp2==scalingfactors[j].denom)
+						if((double)temp1/(double)temp2
+							== (double)scalingfactors[j].num/(double)scalingfactors[j].denom)
 						{
 							sf=scalingfactors[j];
 							match=1;  break;

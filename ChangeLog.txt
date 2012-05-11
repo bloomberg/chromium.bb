@@ -1,3 +1,36 @@
+1.3 pre-beta
+============
+
+[1] Added support for additional scaling factors (3/8, 5/8, 3/4, 7/8, 9/8, 5/4,
+11/8, 3/2, 13/8, 7/4, 15/8, and 2) when decompressing.  Note that the IDCT will
+not be SIMD-accelerated when using any of these new scaling factors.
+
+[2] Added SIMD acceleration for performing 4:2:2 upsampling on NEON-capable ARM
+platforms.  This speeds up the decompression of 4:2:2 JPEGs by 20-25% on such
+platforms.
+
+[3] Creating or decoding a JPEG file that uses the RGB colorspace should now
+properly work when the input or output colorspace is one of the libjpeg-turbo
+colorspace extensions.
+
+[4] When libjpeg-turbo was built without SIMD support and merged (non-fancy)
+upsampling was used along with an alpha-enabled colorspace during
+decompression, the unused byte of the decompressed pixels was not being set to
+0xFF.  This has been fixed.  TJUnitTest has also been extended to test for the
+correct behavior of the colorspace extensions when merged upsampling is used.
+
+[5] The TurboJPEG dynamic library is now versioned.  It was not strictly
+necessary to do so, because TurboJPEG uses versioned symbols, and if a function
+changes in an ABI-incompatible way, that function is renamed and a legacy
+function is provided to maintain backward compatibility.  However, certain
+Linux distro maintainers will blindly reject any library that is not versioned,
+so this was an attempt to make them happy.
+
+[6] Fixed a bug whereby the libjpeg-turbo SSE2 SIMD code would not preserve the
+upper 64 bits of xmm6 and xmm7 on Win64 platforms, which violated the Win64
+calling conventions.
+
+
 1.2.0
 =====
 
@@ -18,6 +51,20 @@ check the version of libjpeg-turbo against which an application was compiled.
 and pixel formats (TurboJPEG API), which allow applications to specify that,
 when decompressing to a 4-component RGB buffer, the unused byte should be set
 to 0xFF so that it can be interpreted as an opaque alpha channel.
+
+[5] Fixed regression issue whereby DevIL failed to build against libjpeg-turbo
+because libjpeg-turbo's distributed version of jconfig.h contained an INLINE
+macro, which conflicted with a similar macro in DevIL.  This macro is used only
+internally when building libjpeg-turbo, so it was moved into config.h.
+
+[6] libjpeg-turbo will now correctly decompress erroneous CMYK/YCCK JPEGs whose
+K component is assigned a component ID of 1 instead of 4.  Although these files
+are in violation of the spec, other JPEG implementations handle them
+correctly.
+
+[7] Added ARM v6 and ARM v7 architectures to libjpeg.a and libturbojpeg.a in
+the official OS X distribution package, so that those libraries can be used to
+build both OS X and iOS applications.
 
 
 1.1.90 (1.2 beta1)
@@ -170,7 +217,8 @@ README-turbo.txt for more details.  This feature was sponsored by CamTrace SAS.
 
 [2] Created a new CMake-based build system for the Visual C++ and MinGW builds.
 
-[3] TurboJPEG/OSS can now compress from/decompress to grayscale bitmaps.
+[3] Grayscale bitmaps can now be compressed from/decompressed to using the
+TurboJPEG API.
 
 [4] jpgtest can now be used to test decompression performance with existing
 JPEG images.
@@ -186,11 +234,12 @@ when the library is built with libjpeg v6b emulation.
 [7] Added arithmetic encoding and decoding support (can be disabled with
 configure or CMake options)
 
-[8] Added a TJ_YUV flag to TurboJPEG/OSS which causes both the compressor and
-decompressor to output planar YUV images.
+[8] Added a TJ_YUV flag to the TurboJPEG API, which causes both the compressor
+and decompressor to output planar YUV images.
 
-[9] Added an extended version of tjDecompressHeader() to TurboJPEG/OSS which
-allows the caller to determine the type of subsampling used in a JPEG image.
+[9] Added an extended version of tjDecompressHeader() to the TurboJPEG API,
+which allows the caller to determine the type of subsampling used in a JPEG
+image.
 
 [10] Added further protections against invalid Huffman codes.
 
@@ -202,7 +251,7 @@ allows the caller to determine the type of subsampling used in a JPEG image.
 from a corrupt JPEG image.)  Previously, these would cause libjpeg-turbo to
 crash under certain circumstances.
 
-[2] Fixed typo in SIMD dispatch routines which was causing 4:2:2 upsampling to
+[2] Fixed typo in SIMD dispatch routines that was causing 4:2:2 upsampling to
 be used instead of 4:2:0 when decompressing JPEG images using SSE2 code.
 
 [3] configure script will now automatically determine whether the
@@ -223,7 +272,7 @@ static libraries can always be found in /opt/libjpeg-turbo/lib32, and the
 [3] The Unix/Linux distribution packages now include the libjpeg run-time
 programs (cjpeg, etc.) and man pages.
 
-[4] Created a 32-bit supplementary package for amd64 Debian systems which
+[4] Created a 32-bit supplementary package for amd64 Debian systems, which
 contains just the 32-bit libjpeg-turbo libraries.
 
 [5] Moved the libraries from */lib32 to */lib in the i386 Debian package.

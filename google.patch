@@ -1,8 +1,8 @@
 Index: jdmarker.c
 ===================================================================
---- jdmarker.c	(revision 733)
+--- jdmarker.c	(revision 829)
 +++ jdmarker.c	(working copy)
-@@ -906,7 +906,7 @@
+@@ -910,7 +910,7 @@
    }
  
    if (cinfo->marker->discarded_bytes != 0) {
@@ -11,7 +11,7 @@ Index: jdmarker.c
      cinfo->marker->discarded_bytes = 0;
    }
  
-@@ -940,7 +940,144 @@
+@@ -944,7 +944,144 @@
    return TRUE;
  }
  
@@ -156,7 +156,7 @@ Index: jdmarker.c
  /*
   * Read markers until SOS or EOI.
   *
-@@ -1009,6 +1146,7 @@
+@@ -1013,6 +1150,7 @@
        break;
  
      case M_SOS:
@@ -166,7 +166,7 @@ Index: jdmarker.c
        cinfo->unread_marker = 0;	/* processed the marker */
 Index: jmorecfg.h
 ===================================================================
---- jmorecfg.h	(revision 733)
+--- jmorecfg.h	(revision 829)
 +++ jmorecfg.h	(working copy)
 @@ -153,14 +153,18 @@
  /* INT16 must hold at least the values -32768..32767. */
@@ -203,7 +203,7 @@ Index: jmorecfg.h
  /*
 Index: jpeglib.h
 ===================================================================
---- jpeglib.h	(revision 733)
+--- jpeglib.h	(revision 829)
 +++ jpeglib.h	(working copy)
 @@ -15,6 +15,10 @@
  #ifndef JPEGLIB_H
@@ -336,7 +336,7 @@ Index: jpeglibmangler.h
 +#endif  // THIRD_PARTY_LIBJPEG_TURBO_JPEGLIBMANGLER_H_
 Index: simd/jcgrass2-64.asm
 ===================================================================
---- simd/jcgrass2-64.asm	(revision 733)
+--- simd/jcgrass2-64.asm	(revision 829)
 +++ simd/jcgrass2-64.asm	(working copy)
 @@ -30,7 +30,7 @@
  	SECTION	SEG_CONST
@@ -349,7 +349,7 @@ Index: simd/jcgrass2-64.asm
  
 Index: simd/jiss2fst.asm
 ===================================================================
---- simd/jiss2fst.asm	(revision 733)
+--- simd/jiss2fst.asm	(revision 829)
 +++ simd/jiss2fst.asm	(working copy)
 @@ -59,7 +59,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
@@ -369,9 +369,22 @@ Index: simd/jiss2fst.asm
  
  EXTN(jsimd_idct_ifast_sse2):
  	push	ebp
+Index: simd/jcclrss2-64.asm
+===================================================================
+--- simd/jcclrss2-64.asm	(revision 829)
++++ simd/jcclrss2-64.asm	(working copy)
+@@ -37,7 +37,7 @@
+ 
+ 	align	16
+ 
+-	global	EXTN(jsimd_rgb_ycc_convert_sse2)
++	global	EXTN(jsimd_rgb_ycc_convert_sse2) PRIVATE
+ 
+ EXTN(jsimd_rgb_ycc_convert_sse2):
+ 	push	rbp
 Index: simd/jiss2red-64.asm
 ===================================================================
---- simd/jiss2red-64.asm	(revision 733)
+--- simd/jiss2red-64.asm	(revision 829)
 +++ simd/jiss2red-64.asm	(working copy)
 @@ -73,7 +73,7 @@
  	SECTION	SEG_CONST
@@ -400,22 +413,9 @@ Index: simd/jiss2red-64.asm
  
  EXTN(jsimd_idct_2x2_sse2):
  	push	rbp
-Index: simd/jcclrss2-64.asm
-===================================================================
---- simd/jcclrss2-64.asm	(revision 733)
-+++ simd/jcclrss2-64.asm	(working copy)
-@@ -37,7 +37,7 @@
- 
- 	align	16
- 
--	global	EXTN(jsimd_rgb_ycc_convert_sse2)
-+	global	EXTN(jsimd_rgb_ycc_convert_sse2) PRIVATE
- 
- EXTN(jsimd_rgb_ycc_convert_sse2):
- 	push	rbp
 Index: simd/ji3dnflt.asm
 ===================================================================
---- simd/ji3dnflt.asm	(revision 733)
+--- simd/ji3dnflt.asm	(revision 829)
 +++ simd/ji3dnflt.asm	(working copy)
 @@ -27,7 +27,7 @@
  	SECTION	SEG_CONST
@@ -437,7 +437,7 @@ Index: simd/ji3dnflt.asm
  	push	ebp
 Index: simd/jsimdcpu.asm
 ===================================================================
---- simd/jsimdcpu.asm	(revision 733)
+--- simd/jsimdcpu.asm	(revision 829)
 +++ simd/jsimdcpu.asm	(working copy)
 @@ -29,7 +29,7 @@
  ;
@@ -448,9 +448,22 @@ Index: simd/jsimdcpu.asm
  
  EXTN(jpeg_simd_cpu_support):
  	push	ebx
+Index: simd/jdmerss2-64.asm
+===================================================================
+--- simd/jdmerss2-64.asm	(revision 829)
++++ simd/jdmerss2-64.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_merged_upsample_sse2)
++	global	EXTN(jconst_merged_upsample_sse2) PRIVATE
+ 
+ EXTN(jconst_merged_upsample_sse2):
+ 
 Index: simd/jdsammmx.asm
 ===================================================================
---- simd/jdsammmx.asm	(revision 733)
+--- simd/jdsammmx.asm	(revision 829)
 +++ simd/jdsammmx.asm	(working copy)
 @@ -22,7 +22,7 @@
  	SECTION	SEG_CONST
@@ -497,22 +510,9 @@ Index: simd/jdsammmx.asm
  
  EXTN(jsimd_h2v2_upsample_mmx):
  	push	ebp
-Index: simd/jdmerss2-64.asm
-===================================================================
---- simd/jdmerss2-64.asm	(revision 733)
-+++ simd/jdmerss2-64.asm	(working copy)
-@@ -35,7 +35,7 @@
- 	SECTION	SEG_CONST
- 
- 	alignz	16
--	global	EXTN(jconst_merged_upsample_sse2)
-+	global	EXTN(jconst_merged_upsample_sse2) PRIVATE
- 
- EXTN(jconst_merged_upsample_sse2):
- 
 Index: simd/jdmrgmmx.asm
 ===================================================================
---- simd/jdmrgmmx.asm	(revision 733)
+--- simd/jdmrgmmx.asm	(revision 829)
 +++ simd/jdmrgmmx.asm	(working copy)
 @@ -40,7 +40,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -534,7 +534,7 @@ Index: simd/jdmrgmmx.asm
  	push	ebp
 Index: simd/jdsamss2.asm
 ===================================================================
---- simd/jdsamss2.asm	(revision 733)
+--- simd/jdsamss2.asm	(revision 829)
 +++ simd/jdsamss2.asm	(working copy)
 @@ -22,7 +22,7 @@
  	SECTION	SEG_CONST
@@ -583,7 +583,7 @@ Index: simd/jdsamss2.asm
  	push	ebp
 Index: simd/jiss2flt-64.asm
 ===================================================================
---- simd/jiss2flt-64.asm	(revision 733)
+--- simd/jiss2flt-64.asm	(revision 829)
 +++ simd/jiss2flt-64.asm	(working copy)
 @@ -38,7 +38,7 @@
  	SECTION	SEG_CONST
@@ -605,7 +605,7 @@ Index: simd/jiss2flt-64.asm
  	push	rbp
 Index: simd/jfss2int-64.asm
 ===================================================================
---- simd/jfss2int-64.asm	(revision 733)
+--- simd/jfss2int-64.asm	(revision 829)
 +++ simd/jfss2int-64.asm	(working copy)
 @@ -67,7 +67,7 @@
  	SECTION	SEG_CONST
@@ -627,7 +627,7 @@ Index: simd/jfss2int-64.asm
  	push	rbp
 Index: simd/jcqnts2f.asm
 ===================================================================
---- simd/jcqnts2f.asm	(revision 733)
+--- simd/jcqnts2f.asm	(revision 829)
 +++ simd/jcqnts2f.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; FAST_FLOAT * workspace
@@ -649,7 +649,7 @@ Index: simd/jcqnts2f.asm
  	push	ebp
 Index: simd/jdmrgss2.asm
 ===================================================================
---- simd/jdmrgss2.asm	(revision 733)
+--- simd/jdmrgss2.asm	(revision 829)
 +++ simd/jdmrgss2.asm	(working copy)
 @@ -40,7 +40,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -671,7 +671,7 @@ Index: simd/jdmrgss2.asm
  	push	ebp
 Index: simd/jfmmxint.asm
 ===================================================================
---- simd/jfmmxint.asm	(revision 733)
+--- simd/jfmmxint.asm	(revision 829)
 +++ simd/jfmmxint.asm	(working copy)
 @@ -66,7 +66,7 @@
  	SECTION	SEG_CONST
@@ -693,7 +693,7 @@ Index: simd/jfmmxint.asm
  	push	ebp
 Index: simd/jcgryss2-64.asm
 ===================================================================
---- simd/jcgryss2-64.asm	(revision 733)
+--- simd/jcgryss2-64.asm	(revision 829)
 +++ simd/jcgryss2-64.asm	(working copy)
 @@ -37,7 +37,7 @@
  
@@ -706,7 +706,7 @@ Index: simd/jcgryss2-64.asm
  	push	rbp
 Index: simd/jcqnts2i.asm
 ===================================================================
---- simd/jcqnts2i.asm	(revision 733)
+--- simd/jcqnts2i.asm	(revision 829)
 +++ simd/jcqnts2i.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; DCTELEM * workspace
@@ -728,7 +728,7 @@ Index: simd/jcqnts2i.asm
  	push	ebp
 Index: simd/jiss2fst-64.asm
 ===================================================================
---- simd/jiss2fst-64.asm	(revision 733)
+--- simd/jiss2fst-64.asm	(revision 829)
 +++ simd/jiss2fst-64.asm	(working copy)
 @@ -60,7 +60,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
@@ -750,7 +750,7 @@ Index: simd/jiss2fst-64.asm
  	push	rbp
 Index: simd/jiss2flt.asm
 ===================================================================
---- simd/jiss2flt.asm	(revision 733)
+--- simd/jiss2flt.asm	(revision 829)
 +++ simd/jiss2flt.asm	(working copy)
 @@ -37,7 +37,7 @@
  	SECTION	SEG_CONST
@@ -772,7 +772,7 @@ Index: simd/jiss2flt.asm
  	push	ebp
 Index: simd/jiss2int.asm
 ===================================================================
---- simd/jiss2int.asm	(revision 733)
+--- simd/jiss2int.asm	(revision 829)
 +++ simd/jiss2int.asm	(working copy)
 @@ -66,7 +66,7 @@
  	SECTION	SEG_CONST
@@ -794,7 +794,7 @@ Index: simd/jiss2int.asm
  	push	ebp
 Index: simd/jfsseflt-64.asm
 ===================================================================
---- simd/jfsseflt-64.asm	(revision 733)
+--- simd/jfsseflt-64.asm	(revision 829)
 +++ simd/jfsseflt-64.asm	(working copy)
 @@ -38,7 +38,7 @@
  	SECTION	SEG_CONST
@@ -816,7 +816,7 @@ Index: simd/jfsseflt-64.asm
  	push	rbp
 Index: simd/jccolss2-64.asm
 ===================================================================
---- simd/jccolss2-64.asm	(revision 733)
+--- simd/jccolss2-64.asm	(revision 829)
 +++ simd/jccolss2-64.asm	(working copy)
 @@ -34,7 +34,7 @@
  	SECTION	SEG_CONST
@@ -829,7 +829,7 @@ Index: simd/jccolss2-64.asm
  
 Index: simd/jcsamss2-64.asm
 ===================================================================
---- simd/jcsamss2-64.asm	(revision 733)
+--- simd/jcsamss2-64.asm	(revision 829)
 +++ simd/jcsamss2-64.asm	(working copy)
 @@ -41,7 +41,7 @@
  ; r15 = JSAMPARRAY output_data
@@ -851,7 +851,7 @@ Index: simd/jcsamss2-64.asm
  	push	rbp
 Index: simd/jdclrss2-64.asm
 ===================================================================
---- simd/jdclrss2-64.asm	(revision 733)
+--- simd/jdclrss2-64.asm	(revision 829)
 +++ simd/jdclrss2-64.asm	(working copy)
 @@ -39,7 +39,7 @@
  %define WK_NUM		2
@@ -864,7 +864,7 @@ Index: simd/jdclrss2-64.asm
  	push	rbp
 Index: simd/jdcolmmx.asm
 ===================================================================
---- simd/jdcolmmx.asm	(revision 733)
+--- simd/jdcolmmx.asm	(revision 829)
 +++ simd/jdcolmmx.asm	(working copy)
 @@ -35,7 +35,7 @@
  	SECTION	SEG_CONST
@@ -877,7 +877,7 @@ Index: simd/jdcolmmx.asm
  
 Index: simd/jcclrmmx.asm
 ===================================================================
---- simd/jcclrmmx.asm	(revision 733)
+--- simd/jcclrmmx.asm	(revision 829)
 +++ simd/jcclrmmx.asm	(working copy)
 @@ -40,7 +40,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -890,7 +890,7 @@ Index: simd/jcclrmmx.asm
  	push	ebp
 Index: simd/jfsseflt.asm
 ===================================================================
---- simd/jfsseflt.asm	(revision 733)
+--- simd/jfsseflt.asm	(revision 829)
 +++ simd/jfsseflt.asm	(working copy)
 @@ -37,7 +37,7 @@
  	SECTION	SEG_CONST
@@ -912,7 +912,7 @@ Index: simd/jfsseflt.asm
  	push	ebp
 Index: simd/jdmrgss2-64.asm
 ===================================================================
---- simd/jdmrgss2-64.asm	(revision 733)
+--- simd/jdmrgss2-64.asm	(revision 829)
 +++ simd/jdmrgss2-64.asm	(working copy)
 @@ -39,7 +39,7 @@
  %define WK_NUM		3
@@ -932,22 +932,9 @@ Index: simd/jdmrgss2-64.asm
  
  EXTN(jsimd_h2v2_merged_upsample_sse2):
  	push	rbp
-Index: simd/jdmermmx.asm
-===================================================================
---- simd/jdmermmx.asm	(revision 733)
-+++ simd/jdmermmx.asm	(working copy)
-@@ -35,7 +35,7 @@
- 	SECTION	SEG_CONST
- 
- 	alignz	16
--	global	EXTN(jconst_merged_upsample_mmx)
-+	global	EXTN(jconst_merged_upsample_mmx) PRIVATE
- 
- EXTN(jconst_merged_upsample_mmx):
- 
 Index: simd/jdcolss2.asm
 ===================================================================
---- simd/jdcolss2.asm	(revision 733)
+--- simd/jdcolss2.asm	(revision 829)
 +++ simd/jdcolss2.asm	(working copy)
 @@ -35,7 +35,7 @@
  	SECTION	SEG_CONST
@@ -958,9 +945,35 @@ Index: simd/jdcolss2.asm
  
  EXTN(jconst_ycc_rgb_convert_sse2):
  
+Index: simd/jdmermmx.asm
+===================================================================
+--- simd/jdmermmx.asm	(revision 829)
++++ simd/jdmermmx.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_merged_upsample_mmx)
++	global	EXTN(jconst_merged_upsample_mmx) PRIVATE
+ 
+ EXTN(jconst_merged_upsample_mmx):
+ 
+Index: simd/jcclrss2.asm
+===================================================================
+--- simd/jcclrss2.asm	(revision 829)
++++ simd/jcclrss2.asm	(working copy)
+@@ -38,7 +38,7 @@
+ 
+ 	align	16
+ 
+-	global	EXTN(jsimd_rgb_ycc_convert_sse2)
++	global	EXTN(jsimd_rgb_ycc_convert_sse2) PRIVATE
+ 
+ EXTN(jsimd_rgb_ycc_convert_sse2):
+ 	push	ebp
 Index: simd/jiss2red.asm
 ===================================================================
---- simd/jiss2red.asm	(revision 733)
+--- simd/jiss2red.asm	(revision 829)
 +++ simd/jiss2red.asm	(working copy)
 @@ -72,7 +72,7 @@
  	SECTION	SEG_CONST
@@ -989,22 +1002,9 @@ Index: simd/jiss2red.asm
  
  EXTN(jsimd_idct_2x2_sse2):
  	push	ebp
-Index: simd/jcclrss2.asm
-===================================================================
---- simd/jcclrss2.asm	(revision 733)
-+++ simd/jcclrss2.asm	(working copy)
-@@ -38,7 +38,7 @@
- 
- 	align	16
- 
--	global	EXTN(jsimd_rgb_ycc_convert_sse2)
-+	global	EXTN(jsimd_rgb_ycc_convert_sse2) PRIVATE
- 
- EXTN(jsimd_rgb_ycc_convert_sse2):
- 	push	ebp
 Index: simd/jdmerss2.asm
 ===================================================================
---- simd/jdmerss2.asm	(revision 733)
+--- simd/jdmerss2.asm	(revision 829)
 +++ simd/jdmerss2.asm	(working copy)
 @@ -35,7 +35,7 @@
  	SECTION	SEG_CONST
@@ -1017,7 +1017,7 @@ Index: simd/jdmerss2.asm
  
 Index: simd/jfss2fst-64.asm
 ===================================================================
---- simd/jfss2fst-64.asm	(revision 733)
+--- simd/jfss2fst-64.asm	(revision 829)
 +++ simd/jfss2fst-64.asm	(working copy)
 @@ -53,7 +53,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
@@ -1037,31 +1037,9 @@ Index: simd/jfss2fst-64.asm
  
  EXTN(jsimd_fdct_ifast_sse2):
  	push	rbp
-Index: simd/jimmxfst.asm
-===================================================================
---- simd/jimmxfst.asm	(revision 733)
-+++ simd/jimmxfst.asm	(working copy)
-@@ -59,7 +59,7 @@
- %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
- 
- 	alignz	16
--	global	EXTN(jconst_idct_ifast_mmx)
-+	global	EXTN(jconst_idct_ifast_mmx) PRIVATE
- 
- EXTN(jconst_idct_ifast_mmx):
- 
-@@ -94,7 +94,7 @@
- 					; JCOEF workspace[DCTSIZE2]
- 
- 	align	16
--	global	EXTN(jsimd_idct_ifast_mmx)
-+	global	EXTN(jsimd_idct_ifast_mmx) PRIVATE
- 
- EXTN(jsimd_idct_ifast_mmx):
- 	push	ebp
 Index: simd/jcqntmmx.asm
 ===================================================================
---- simd/jcqntmmx.asm	(revision 733)
+--- simd/jcqntmmx.asm	(revision 829)
 +++ simd/jcqntmmx.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; DCTELEM * workspace
@@ -1081,9 +1059,31 @@ Index: simd/jcqntmmx.asm
  
  EXTN(jsimd_quantize_mmx):
  	push	ebp
+Index: simd/jimmxfst.asm
+===================================================================
+--- simd/jimmxfst.asm	(revision 829)
++++ simd/jimmxfst.asm	(working copy)
+@@ -59,7 +59,7 @@
+ %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
+ 
+ 	alignz	16
+-	global	EXTN(jconst_idct_ifast_mmx)
++	global	EXTN(jconst_idct_ifast_mmx) PRIVATE
+ 
+ EXTN(jconst_idct_ifast_mmx):
+ 
+@@ -94,7 +94,7 @@
+ 					; JCOEF workspace[DCTSIZE2]
+ 
+ 	align	16
+-	global	EXTN(jsimd_idct_ifast_mmx)
++	global	EXTN(jsimd_idct_ifast_mmx) PRIVATE
+ 
+ EXTN(jsimd_idct_ifast_mmx):
+ 	push	ebp
 Index: simd/jfss2fst.asm
 ===================================================================
---- simd/jfss2fst.asm	(revision 733)
+--- simd/jfss2fst.asm	(revision 829)
 +++ simd/jfss2fst.asm	(working copy)
 @@ -52,7 +52,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
@@ -1105,7 +1105,7 @@ Index: simd/jfss2fst.asm
  	push	ebp
 Index: simd/jcgrammx.asm
 ===================================================================
---- simd/jcgrammx.asm	(revision 733)
+--- simd/jcgrammx.asm	(revision 829)
 +++ simd/jcgrammx.asm	(working copy)
 @@ -33,7 +33,7 @@
  	SECTION	SEG_CONST
@@ -1116,9 +1116,22 @@ Index: simd/jcgrammx.asm
  
  EXTN(jconst_rgb_gray_convert_mmx):
  
+Index: simd/jdcolss2-64.asm
+===================================================================
+--- simd/jdcolss2-64.asm	(revision 829)
++++ simd/jdcolss2-64.asm	(working copy)
+@@ -35,7 +35,7 @@
+ 	SECTION	SEG_CONST
+ 
+ 	alignz	16
+-	global	EXTN(jconst_ycc_rgb_convert_sse2)
++	global	EXTN(jconst_ycc_rgb_convert_sse2) PRIVATE
+ 
+ EXTN(jconst_ycc_rgb_convert_sse2):
+ 
 Index: simd/jf3dnflt.asm
 ===================================================================
---- simd/jf3dnflt.asm	(revision 733)
+--- simd/jf3dnflt.asm	(revision 829)
 +++ simd/jf3dnflt.asm	(working copy)
 @@ -27,7 +27,7 @@
  	SECTION	SEG_CONST
@@ -1138,22 +1151,9 @@ Index: simd/jf3dnflt.asm
  
  EXTN(jsimd_fdct_float_3dnow):
  	push	ebp
-Index: simd/jdcolss2-64.asm
-===================================================================
---- simd/jdcolss2-64.asm	(revision 733)
-+++ simd/jdcolss2-64.asm	(working copy)
-@@ -35,7 +35,7 @@
- 	SECTION	SEG_CONST
- 
- 	alignz	16
--	global	EXTN(jconst_ycc_rgb_convert_sse2)
-+	global	EXTN(jconst_ycc_rgb_convert_sse2) PRIVATE
- 
- EXTN(jconst_ycc_rgb_convert_sse2):
- 
 Index: simd/jdsamss2-64.asm
 ===================================================================
---- simd/jdsamss2-64.asm	(revision 733)
+--- simd/jdsamss2-64.asm	(revision 829)
 +++ simd/jdsamss2-64.asm	(working copy)
 @@ -23,7 +23,7 @@
  	SECTION	SEG_CONST
@@ -1202,7 +1202,7 @@ Index: simd/jdsamss2-64.asm
  	push	rbp
 Index: simd/jcgrass2.asm
 ===================================================================
---- simd/jcgrass2.asm	(revision 733)
+--- simd/jcgrass2.asm	(revision 829)
 +++ simd/jcgrass2.asm	(working copy)
 @@ -30,7 +30,7 @@
  	SECTION	SEG_CONST
@@ -1215,7 +1215,7 @@ Index: simd/jcgrass2.asm
  
 Index: simd/jcsammmx.asm
 ===================================================================
---- simd/jcsammmx.asm	(revision 733)
+--- simd/jcsammmx.asm	(revision 829)
 +++ simd/jcsammmx.asm	(working copy)
 @@ -40,7 +40,7 @@
  %define output_data(b)	(b)+28	; JSAMPARRAY output_data
@@ -1235,9 +1235,82 @@ Index: simd/jcsammmx.asm
  
  EXTN(jsimd_h2v2_downsample_mmx):
  	push	ebp
+Index: simd/jsimd_i386.c
+===================================================================
+--- simd/jsimd_i386.c	(revision 829)
++++ simd/jsimd_i386.c	(working copy)
+@@ -61,6 +61,7 @@
+     simd_support &= JSIMD_SSE2;
+ }
+ 
++#ifndef JPEG_DECODE_ONLY
+ GLOBAL(int)
+ jsimd_can_rgb_ycc (void)
+ {
+@@ -82,6 +83,7 @@
+ 
+   return 0;
+ }
++#endif
+ 
+ GLOBAL(int)
+ jsimd_can_rgb_gray (void)
+@@ -127,6 +129,7 @@
+   return 0;
+ }
+ 
++#ifndef JPEG_DECODE_ONLY
+ GLOBAL(void)
+ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
+                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+@@ -179,6 +182,7 @@
+     mmxfct(cinfo->image_width, input_buf,
+         output_buf, output_row, num_rows);
+ }
++#endif
+ 
+ GLOBAL(void)
+ jsimd_rgb_gray_convert (j_compress_ptr cinfo,
+@@ -286,6 +290,7 @@
+         input_row, output_buf, num_rows);
+ }
+ 
++#ifndef JPEG_DECODE_ONLY
+ GLOBAL(int)
+ jsimd_can_h2v2_downsample (void)
+ {
+@@ -351,6 +356,7 @@
+         compptr->v_samp_factor, compptr->width_in_blocks,
+         input_data, output_data);
+ }
++#endif
+ 
+ GLOBAL(int)
+ jsimd_can_h2v2_upsample (void)
+@@ -636,6 +642,7 @@
+         in_row_group_ctr, output_buf);
+ }
+ 
++#ifndef JPEG_DECODE_ONLY
+ GLOBAL(int)
+ jsimd_can_convsamp (void)
+ {
+@@ -855,6 +862,7 @@
+   else if (simd_support & JSIMD_3DNOW)
+     jsimd_quantize_float_3dnow(coef_block, divisors, workspace);
+ }
++#endif
+ 
+ GLOBAL(int)
+ jsimd_can_idct_2x2 (void)
+@@ -1045,4 +1053,3 @@
+     jsimd_idct_float_3dnow(compptr->dct_table, coef_block,
+         output_buf, output_col);
+ }
+-
 Index: simd/jcqnts2f-64.asm
 ===================================================================
---- simd/jcqnts2f-64.asm	(revision 733)
+--- simd/jcqnts2f-64.asm	(revision 829)
 +++ simd/jcqnts2f-64.asm	(working copy)
 @@ -36,7 +36,7 @@
  ; r12 = FAST_FLOAT * workspace
@@ -1259,7 +1332,7 @@ Index: simd/jcqnts2f-64.asm
  	push	rbp
 Index: simd/jcqnt3dn.asm
 ===================================================================
---- simd/jcqnt3dn.asm	(revision 733)
+--- simd/jcqnt3dn.asm	(revision 829)
 +++ simd/jcqnt3dn.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; FAST_FLOAT * workspace
@@ -1281,7 +1354,7 @@ Index: simd/jcqnt3dn.asm
  	push	ebp
 Index: simd/jcsamss2.asm
 ===================================================================
---- simd/jcsamss2.asm	(revision 733)
+--- simd/jcsamss2.asm	(revision 829)
 +++ simd/jcsamss2.asm	(working copy)
 @@ -40,7 +40,7 @@
  %define output_data(b)	(b)+28		; JSAMPARRAY output_data
@@ -1301,9 +1374,82 @@ Index: simd/jcsamss2.asm
  
  EXTN(jsimd_h2v2_downsample_sse2):
  	push	ebp
+Index: simd/jsimd_x86_64.c
+===================================================================
+--- simd/jsimd_x86_64.c	(revision 829)
++++ simd/jsimd_x86_64.c	(working copy)
+@@ -29,6 +29,7 @@
+ 
+ #define IS_ALIGNED_SSE(ptr) (IS_ALIGNED(ptr, 4)) /* 16 byte alignment */
+ 
++#ifndef JPEG_DECODE_ONLY
+ GLOBAL(int)
+ jsimd_can_rgb_ycc (void)
+ {
+@@ -45,6 +46,7 @@
+ 
+   return 1;
+ }
++#endif
+ 
+ GLOBAL(int)
+ jsimd_can_rgb_gray (void)
+@@ -80,6 +82,7 @@
+   return 1;
+ }
+ 
++#ifndef JPEG_DECODE_ONLY
+ GLOBAL(void)
+ jsimd_rgb_ycc_convert (j_compress_ptr cinfo,
+                        JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
+@@ -118,6 +121,7 @@
+ 
+   sse2fct(cinfo->image_width, input_buf, output_buf, output_row, num_rows);
+ }
++#endif
+ 
+ GLOBAL(void)
+ jsimd_rgb_gray_convert (j_compress_ptr cinfo,
+@@ -197,6 +201,7 @@
+   sse2fct(cinfo->output_width, input_buf, input_row, output_buf, num_rows);
+ }
+ 
++#ifndef JPEG_DECODE_ONLY
+ GLOBAL(int)
+ jsimd_can_h2v2_downsample (void)
+ {
+@@ -242,6 +247,7 @@
+                              compptr->width_in_blocks,
+                              input_data, output_data);
+ }
++#endif
+ 
+ GLOBAL(int)
+ jsimd_can_h2v2_upsample (void)
+@@ -451,6 +457,7 @@
+   sse2fct(cinfo->output_width, input_buf, in_row_group_ctr, output_buf);
+ }
+ 
++#ifndef JPEG_DECODE_ONLY
+ GLOBAL(int)
+ jsimd_can_convsamp (void)
+ {
+@@ -601,6 +608,7 @@
+ {
+   jsimd_quantize_float_sse2(coef_block, divisors, workspace);
+ }
++#endif
+ 
+ GLOBAL(int)
+ jsimd_can_idct_2x2 (void)
+@@ -750,4 +758,3 @@
+   jsimd_idct_float_sse2(compptr->dct_table, coef_block,
+                         output_buf, output_col);
+ }
+-
 Index: simd/jimmxint.asm
 ===================================================================
---- simd/jimmxint.asm	(revision 733)
+--- simd/jimmxint.asm	(revision 829)
 +++ simd/jimmxint.asm	(working copy)
 @@ -66,7 +66,7 @@
  	SECTION	SEG_CONST
@@ -1325,7 +1471,7 @@ Index: simd/jimmxint.asm
  	push	ebp
 Index: simd/jcgrymmx.asm
 ===================================================================
---- simd/jcgrymmx.asm	(revision 733)
+--- simd/jcgrymmx.asm	(revision 829)
 +++ simd/jcgrymmx.asm	(working copy)
 @@ -41,7 +41,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -1338,7 +1484,7 @@ Index: simd/jcgrymmx.asm
  	push	ebp
 Index: simd/jfss2int.asm
 ===================================================================
---- simd/jfss2int.asm	(revision 733)
+--- simd/jfss2int.asm	(revision 829)
 +++ simd/jfss2int.asm	(working copy)
 @@ -66,7 +66,7 @@
  	SECTION	SEG_CONST
@@ -1360,7 +1506,7 @@ Index: simd/jfss2int.asm
  	push	ebp
 Index: simd/jcgryss2.asm
 ===================================================================
---- simd/jcgryss2.asm	(revision 733)
+--- simd/jcgryss2.asm	(revision 829)
 +++ simd/jcgryss2.asm	(working copy)
 @@ -39,7 +39,7 @@
  
@@ -1373,7 +1519,7 @@ Index: simd/jcgryss2.asm
  	push	ebp
 Index: simd/jccolmmx.asm
 ===================================================================
---- simd/jccolmmx.asm	(revision 733)
+--- simd/jccolmmx.asm	(revision 829)
 +++ simd/jccolmmx.asm	(working copy)
 @@ -37,7 +37,7 @@
  	SECTION	SEG_CONST
@@ -1386,7 +1532,7 @@ Index: simd/jccolmmx.asm
  
 Index: simd/jimmxred.asm
 ===================================================================
---- simd/jimmxred.asm	(revision 733)
+--- simd/jimmxred.asm	(revision 829)
 +++ simd/jimmxred.asm	(working copy)
 @@ -72,7 +72,7 @@
  	SECTION	SEG_CONST
@@ -1417,7 +1563,7 @@ Index: simd/jimmxred.asm
  	push	ebp
 Index: simd/jsimdext.inc
 ===================================================================
---- simd/jsimdext.inc	(revision 733)
+--- simd/jsimdext.inc	(revision 829)
 +++ simd/jsimdext.inc	(working copy)
 @@ -73,6 +73,9 @@
  ; * *BSD family Unix using elf format
@@ -1446,7 +1592,7 @@ Index: simd/jsimdext.inc
  ; --------------------------------------------------------------------------
 Index: simd/jdclrmmx.asm
 ===================================================================
---- simd/jdclrmmx.asm	(revision 733)
+--- simd/jdclrmmx.asm	(revision 829)
 +++ simd/jdclrmmx.asm	(working copy)
 @@ -40,7 +40,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -1459,7 +1605,7 @@ Index: simd/jdclrmmx.asm
  	push	ebp
 Index: simd/jccolss2.asm
 ===================================================================
---- simd/jccolss2.asm	(revision 733)
+--- simd/jccolss2.asm	(revision 829)
 +++ simd/jccolss2.asm	(working copy)
 @@ -34,7 +34,7 @@
  	SECTION	SEG_CONST
@@ -1472,7 +1618,7 @@ Index: simd/jccolss2.asm
  
 Index: simd/jisseflt.asm
 ===================================================================
---- simd/jisseflt.asm	(revision 733)
+--- simd/jisseflt.asm	(revision 829)
 +++ simd/jisseflt.asm	(working copy)
 @@ -37,7 +37,7 @@
  	SECTION	SEG_CONST
@@ -1494,7 +1640,7 @@ Index: simd/jisseflt.asm
  	push	ebp
 Index: simd/jcqnts2i-64.asm
 ===================================================================
---- simd/jcqnts2i-64.asm	(revision 733)
+--- simd/jcqnts2i-64.asm	(revision 829)
 +++ simd/jcqnts2i-64.asm	(working copy)
 @@ -36,7 +36,7 @@
  ; r12 = DCTELEM * workspace
@@ -1516,7 +1662,7 @@ Index: simd/jcqnts2i-64.asm
  	push	rbp
 Index: simd/jdclrss2.asm
 ===================================================================
---- simd/jdclrss2.asm	(revision 733)
+--- simd/jdclrss2.asm	(revision 829)
 +++ simd/jdclrss2.asm	(working copy)
 @@ -40,7 +40,7 @@
  %define gotptr		wk(0)-SIZEOF_POINTER	; void * gotptr
@@ -1529,7 +1675,7 @@ Index: simd/jdclrss2.asm
  	push	ebp
 Index: simd/jcqntsse.asm
 ===================================================================
---- simd/jcqntsse.asm	(revision 733)
+--- simd/jcqntsse.asm	(revision 829)
 +++ simd/jcqntsse.asm	(working copy)
 @@ -35,7 +35,7 @@
  %define workspace	ebp+16		; FAST_FLOAT * workspace
@@ -1551,7 +1697,7 @@ Index: simd/jcqntsse.asm
  	push	ebp
 Index: simd/jiss2int-64.asm
 ===================================================================
---- simd/jiss2int-64.asm	(revision 733)
+--- simd/jiss2int-64.asm	(revision 829)
 +++ simd/jiss2int-64.asm	(working copy)
 @@ -67,7 +67,7 @@
  	SECTION	SEG_CONST
@@ -1573,7 +1719,7 @@ Index: simd/jiss2int-64.asm
  	push	rbp
 Index: simd/jfmmxfst.asm
 ===================================================================
---- simd/jfmmxfst.asm	(revision 733)
+--- simd/jfmmxfst.asm	(revision 829)
 +++ simd/jfmmxfst.asm	(working copy)
 @@ -52,7 +52,7 @@
  %define CONST_SHIFT     (16 - PRE_MULTIPLY_SCALE_BITS - CONST_BITS)
@@ -1595,7 +1741,7 @@ Index: simd/jfmmxfst.asm
  	push	ebp
 Index: jdarith.c
 ===================================================================
---- jdarith.c	(revision 733)
+--- jdarith.c	(revision 829)
 +++ jdarith.c	(working copy)
 @@ -150,8 +150,8 @@
     */
@@ -1610,7 +1756,7 @@ Index: jdarith.c
    temp = e->a - qe;
 Index: jdhuff.c
 ===================================================================
---- jdhuff.c	(revision 733)
+--- jdhuff.c	(revision 829)
 +++ jdhuff.c	(working copy)
 @@ -742,7 +742,7 @@
   * this module, since we'll just re-assign them on the next call.)

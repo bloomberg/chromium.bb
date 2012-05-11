@@ -478,7 +478,7 @@ EXTN(jsimd_h2v1_merged_upsample_sse2):
 	movq	MMWORD [edi], xmmA
 	add	edi, byte SIZEOF_XMMWORD/2
 	sub	ecx, byte SIZEOF_XMMWORD/8
-	psrldq	xmmA, SIZEOF_XMMWORD/8*4
+	psrldq	xmmA, 64
 .column_st7:
 	; Store one pixel (4 bytes) of xmmA to the output when it has enough
 	; space.
