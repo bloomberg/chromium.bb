@@ -5,6 +5,7 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_CONTEXT_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_CONTEXT_H_
 
+#include <map>
 #include <string>
 
 #include "base/callback.h"
@@ -135,6 +136,11 @@ class FileSystemContext
       const GURL& url,
       int64 offset);
 
+  // Register a filesystem provider. The ownership of |provider| is
+  // transferred to this instance.
+  void RegisterMountPointProvider(FileSystemType type,
+                                  FileSystemMountPointProvider* provider);
+
  private:
   friend struct DefaultContextDeleter;
   friend class base::DeleteHelper<FileSystemContext>;
@@ -147,10 +153,13 @@ class FileSystemContext
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
 
-  // Mount point providers.
+  // Regular mount point providers.
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;
   scoped_ptr<IsolatedMountPointProvider> isolated_provider_;
   scoped_ptr<ExternalFileSystemMountPointProvider> external_provider_;
+
+  // Registered mount point providers.
+  std::map<FileSystemType, FileSystemMountPointProvider*> provider_map_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemContext);
 };

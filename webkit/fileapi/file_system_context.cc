@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/stl_util.h"
 #include "base/single_thread_task_runner.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -96,12 +97,11 @@ bool FileSystemContext::DeleteDataForOriginAndTypeOnFileThread(
 
 FileSystemQuotaUtil*
 FileSystemContext::GetQuotaUtil(FileSystemType type) const {
-  if (type == fileapi::kFileSystemTypeTemporary ||
-      type == fileapi::kFileSystemTypePersistent) {
-    DCHECK(sandbox_provider());
-    return sandbox_provider()->quota_util();
-  }
-  return NULL;
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(type);
+  if (!mount_point_provider)
+    return NULL;
+  return mount_point_provider->GetQuotaUtil();
 }
 
 FileSystemFileUtil* FileSystemContext::GetFileUtil(
@@ -123,8 +123,11 @@ FileSystemMountPointProvider* FileSystemContext::GetMountPointProvider(
       return external_provider_.get();
     case kFileSystemTypeIsolated:
       return isolated_provider_.get();
-    case kFileSystemTypeUnknown:
     default:
+      if (provider_map_.find(type) != provider_map_.end())
+        return provider_map_.find(type)->second;
+      // Fall through.
+    case kFileSystemTypeUnknown:
       NOTREACHED();
       return NULL;
   }
@@ -192,6 +195,14 @@ webkit_blob::FileReader* FileSystemContext::CreateFileReader(
   return mount_point_provider->CreateFileReader(url, offset, this);
 }
 
+void FileSystemContext::RegisterMountPointProvider(
+    FileSystemType type,
+    FileSystemMountPointProvider* provider) {
+  DCHECK(provider);
+  DCHECK(provider_map_.find(type) == provider_map_.end());
+  provider_map_[type] = provider;
+}
+
 FileSystemContext::~FileSystemContext() {}
 
 void FileSystemContext::DeleteOnCorrectThread() const {
@@ -199,6 +210,8 @@ void FileSystemContext::DeleteOnCorrectThread() const {
       io_task_runner_->DeleteSoon(FROM_HERE, this)) {
     return;
   }
+  STLDeleteContainerPairSecondPointers(provider_map_.begin(),
+                                       provider_map_.end());
   delete this;
 }
 

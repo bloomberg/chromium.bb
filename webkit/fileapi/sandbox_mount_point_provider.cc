@@ -457,6 +457,10 @@ webkit_blob::FileReader* SandboxMountPointProvider::CreateFileReader(
   return new FileSystemFileReader(context, url, offset);
 }
 
+FileSystemQuotaUtil* SandboxMountPointProvider::GetQuotaUtil() {
+  return this;
+}
+
 FilePath SandboxMountPointProvider::old_base_path() const {
   return profile_path_.Append(kOldFileSystemDirectory);
 }

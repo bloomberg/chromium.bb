@@ -76,6 +76,8 @@
         'obfuscated_file_util.h',
         'sandbox_mount_point_provider.cc',
         'sandbox_mount_point_provider.h',
+        'test_mount_point_provider.cc',
+        'test_mount_point_provider.h',
         'webfilewriter_base.cc',
         'webfilewriter_base.h',
       ],

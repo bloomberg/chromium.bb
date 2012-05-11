@@ -2,25 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
+#ifndef WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
+#define WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
+#pragma once
 
-#include <vector>
-
+#include "base/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace fileapi {
 
-class IsolatedContext;
+class FileSystemQuotaUtil;
 
-class IsolatedMountPointProvider : public FileSystemMountPointProvider {
+// This should be only used for testing.
+// This mount point provider uses LocalFileUtil and stores data file
+// under the given directory.
+class TestMountPointProvider : public FileSystemMountPointProvider {
  public:
   typedef FileSystemMountPointProvider::ValidateFileSystemCallback
       ValidateFileSystemCallback;
 
-  IsolatedMountPointProvider();
-  virtual ~IsolatedMountPointProvider();
+  TestMountPointProvider(
+      base::SequencedTaskRunner* task_runner,
+      const FilePath& base_path);
+  virtual ~TestMountPointProvider();
 
   // FileSystemMountPointProvider implementation.
   virtual void ValidateFileSystemRoot(
@@ -53,11 +63,11 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
  private:
-  IsolatedContext* isolated_context() const;
-
-  scoped_ptr<FileSystemFileUtil> isolated_file_util_;
+  FilePath base_path_;
+  scoped_ptr<FileSystemFileUtil> local_file_util_;
+  scoped_ptr<FileSystemQuotaUtil> quota_util_;
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_ISOLATED_MOUNT_POINT_PROVIDER_H_
+#endif  // WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_

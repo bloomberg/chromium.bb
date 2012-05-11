@@ -25,6 +25,7 @@ namespace fileapi {
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperationInterface;
+class FileSystemQuotaUtil;
 class RemoteFileSystemProxyInterface;
 
 // An interface to provide mount-point-specific path-related utilities
@@ -99,6 +100,10 @@ class FileSystemMountPointProvider {
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const = 0;
+
+  // Returns the specialized FileSystemQuotaUtil for this mount point.
+  // This could return NULL if this mount point does not support quota.
+  virtual FileSystemQuotaUtil* GetQuotaUtil() = 0;
 };
 
 // An interface to control external file system access permissions.

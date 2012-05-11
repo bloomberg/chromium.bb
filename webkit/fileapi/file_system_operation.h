@@ -121,6 +121,7 @@ class FileSystemOperation : public FileSystemOperationInterface {
   friend class FileSystemTestHelper;
   friend class IsolatedMountPointProvider;
   friend class SandboxMountPointProvider;
+  friend class TestMountPointProvider;
   friend class chromeos::CrosMountPointProvider;
 
   friend class FileSystemOperationTest;
@@ -129,7 +130,7 @@ class FileSystemOperation : public FileSystemOperationInterface {
   friend class FileSystemTestOriginHelper;
   friend class FileSystemQuotaTest;
 
-  FileSystemOperation(FileSystemContext* file_system_context);
+  explicit FileSystemOperation(FileSystemContext* file_system_context);
 
   FileSystemContext* file_system_context() const {
     return operation_context_.file_system_context();

@@ -54,6 +54,8 @@ class FileSystemQuotaUtil {
     DISALLOW_COPY_AND_ASSIGN(Proxy);
   };
 
+  virtual ~FileSystemQuotaUtil();
+
   // Called by quota client.
   virtual void GetOriginsForTypeOnFileThread(fileapi::FileSystemType type,
                                              std::set<GURL>* origins) = 0;
@@ -98,7 +100,6 @@ class FileSystemQuotaUtil {
 
  protected:
   explicit FileSystemQuotaUtil(base::SequencedTaskRunner* file_task_runner);
-  virtual ~FileSystemQuotaUtil();
 
  private:
   scoped_refptr<Proxy> proxy_;

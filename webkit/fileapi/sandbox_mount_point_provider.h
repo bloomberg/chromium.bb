@@ -99,6 +99,7 @@ class SandboxMountPointProvider
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const OVERRIDE;
+  virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
   FilePath old_base_path() const;
   FilePath new_base_path() const;
@@ -155,7 +156,6 @@ class SandboxMountPointProvider
   virtual void InvalidateUsageCache(const GURL& origin_url,
                                     FileSystemType type) OVERRIDE;
 
-  FileSystemQuotaUtil* quota_util() { return this; }
   void CollectOpenFileSystemMetrics(base::PlatformFileError error_code);
 
  private:

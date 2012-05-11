@@ -131,6 +131,11 @@ bool CrosMountPointProvider::IsRestrictedFileName(const FilePath& path) const {
   return false;
 }
 
+fileapi::FileSystemQuotaUtil* CrosMountPointProvider::GetQuotaUtil() {
+  // No quota support.
+  return NULL;
+}
+
 bool CrosMountPointProvider::HasMountPoint(const FilePath& mount_point) {
   base::AutoLock locker(mount_point_map_lock_);
   MountPointMap::const_iterator iter = mount_point_map_.find(

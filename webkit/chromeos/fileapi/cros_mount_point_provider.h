@@ -72,6 +72,7 @@ class CrosMountPointProvider
     const GURL& path,
     int64 offset,
     fileapi::FileSystemContext* context) const OVERRIDE;
+  virtual fileapi::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
   // fileapi::ExternalFileSystemMountPointProvider overrides.
   virtual void GrantFullAccessToExtension(

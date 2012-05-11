@@ -24,11 +24,13 @@ const char kPersistentDir[] = "/persistent";
 const char kTemporaryDir[] = "/temporary";
 const char kIsolatedDir[] = "/isolated";
 const char kExternalDir[] = "/external";
+const char kTestDir[] = "/test";
 
 const char kPersistentName[] = "Persistent";
 const char kTemporaryName[] = "Temporary";
 const char kIsolatedName[] = "Isolated";
 const char kExternalName[] = "External";
+const char kTestName[] = "Test";
 
 bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
                         FilePath* file_path) {
@@ -49,6 +51,7 @@ bool CrackFileSystemURL(const GURL& url, GURL* origin_url, FileSystemType* type,
     { kFileSystemTypeTemporary, kTemporaryDir },
     { kFileSystemTypeIsolated, kIsolatedDir },
     { kFileSystemTypeExternal, kExternalDir },
+    { kFileSystemTypeTest, kTestDir },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kValidTypes); ++i) {
     if (StartsWithASCII(inner_path, kValidTypes[i].dir, true)) {
@@ -146,6 +149,9 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
   case kFileSystemTypeExternal:
     url += (kExternalDir + 1);  // We don't want the leading slash.
     return GURL(url + "/");
+  case kFileSystemTypeTest:
+    url += (kTestDir + 1);  // We don't want the leading slash.
+    return GURL(url + "/");
   case kFileSystemTypeIsolated:
     // Falling through; we won't call this for isolated filesystems.
   case kFileSystemTypeUnknown:
@@ -216,6 +222,8 @@ std::string GetFileSystemTypeString(FileSystemType type) {
       return fileapi::kPersistentName;
     case kFileSystemTypeExternal:
       return fileapi::kExternalName;
+    case kFileSystemTypeTest:
+      return fileapi::kTestName;
     case kFileSystemTypeUnknown:
     default:
       return std::string();

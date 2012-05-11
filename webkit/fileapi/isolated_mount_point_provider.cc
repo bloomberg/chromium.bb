@@ -120,6 +120,11 @@ webkit_blob::FileReader* IsolatedMountPointProvider::CreateFileReader(
       context->file_task_runner(), path, offset, base::Time());
 }
 
+FileSystemQuotaUtil* IsolatedMountPointProvider::GetQuotaUtil() {
+  // No quota support.
+  return NULL;
+}
+
 IsolatedContext* IsolatedMountPointProvider::isolated_context() const {
   return IsolatedContext::GetInstance();
 }
