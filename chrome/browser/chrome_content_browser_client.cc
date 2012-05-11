@@ -761,6 +761,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kCloudPrintServiceURL,
       switches::kDebugPrint,
       switches::kDisableBundledPpapiFlash,
+      switches::kDisableExtensionsResourceWhitelist,
       switches::kDumpHistogramsOnExit,
       switches::kEnableAsynchronousSpellChecking,
       switches::kEnableBenchmarking,
