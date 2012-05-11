@@ -69,8 +69,8 @@ cr.define('options', function() {
       var node = template.cloneNode(true);
       node.id = extension.id;
 
-      if (!extension.enabled)
-        node.classList.add('disabled-extension');
+      if (!extension.enabled || extension.terminated)
+        node.classList.add('inactive-extension');
 
       if (!extension.mayDisable)
         node.classList.add('may-not-disable');

@@ -125,7 +125,7 @@ html[dir='rtl'] .extension-list-item {
 }
 
 .extension-description,
-.extension-list-item-wrapper.disabled-extension .extension-details,
+.extension-list-item-wrapper.inactive-extension .extension-details,
 .enable-checkbox input:disabled + .enable-checkbox-text {
   color: rgb(151, 156, 160);
 }
@@ -149,10 +149,10 @@ html[dir='rtl'] .extension-list-item {
   font-weight: bold;
 }
 
-.extension-list-item-wrapper.disabled-extension .enabled-text,
-.extension-list-item-wrapper:not(.disabled-extension) .enable-text,
-.extension-list-item-wrapper.disabled-extension .optional-controls,
-.extension-list-item-wrapper.disabled-extension .butter-bar {
+.extension-list-item-wrapper.inactive-extension .enabled-text,
+.extension-list-item-wrapper:not(.inactive-extension) .enable-text,
+.extension-list-item-wrapper.inactive-extension .optional-controls,
+.extension-list-item-wrapper.inactive-extension .butter-bar {
   display: none;
 }
 

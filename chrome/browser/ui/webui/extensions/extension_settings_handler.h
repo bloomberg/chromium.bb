@@ -143,7 +143,8 @@ class ExtensionSettingsHandler : public content::WebUIMessageHandler,
   void ShowAlert(const std::string& message);
 
   // Utility for callbacks that get an extension ID as the sole argument.
-  const Extension* GetExtension(const base::ListValue* args);
+  // Returns NULL if the extension isn't active.
+  const Extension* GetActiveExtension(const base::ListValue* args);
 
   // Forces a UI update if appropriate after a notification is received.
   void MaybeUpdateAfterNotification();

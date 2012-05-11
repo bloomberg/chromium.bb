@@ -560,8 +560,8 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
   CHECK(args->GetString(1, &enable_str));
 
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, true);
-  if (!Extension::UserMayDisable(extension->location())) {
+      extension_service_->GetInstalledExtension(extension_id);
+  if (!extension || !Extension::UserMayDisable(extension->location())) {
     LOG(ERROR) << "Attempt to enable an extension that is non-usermanagable was"
                << "made. Extension id: " << extension->id();
     return;
@@ -588,8 +588,9 @@ void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetString(1, &enable_str));
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, true);
-  DCHECK(extension);
+      extension_service_->GetInstalledExtension(extension_id);
+  if (!extension)
+    return;
 
   // Flipping the incognito bit will generate unload/load notifications for the
   // extension, but we don't want to reload the page, because a) we've already
@@ -614,8 +615,9 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetString(1, &allow_str));
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, true);
-  DCHECK(extension);
+      extension_service_->GetInstalledExtension(extension_id);
+  if (!extension)
+    return;
 
   if (!Extension::UserMayDisable(extension->location())) {
     LOG(ERROR) << "Attempt to change allow file access of an extension that is "
@@ -628,12 +630,11 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
 }
 
 void ExtensionSettingsHandler::HandleUninstallMessage(const ListValue* args) {
-  std::string extension_id = UTF16ToUTF8(ExtractStringValue(args));
-  CHECK(!extension_id.empty());
+  CHECK_EQ(1U, args->GetSize());
+  std::string extension_id;
+  CHECK(args->GetString(0, &extension_id));
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, true);
-  if (!extension)
-    extension = extension_service_->GetTerminatedExtension(extension_id);
+      extension_service_->GetInstalledExtension(extension_id);
   if (!extension)
     return;
 
@@ -652,7 +653,7 @@ void ExtensionSettingsHandler::HandleUninstallMessage(const ListValue* args) {
 }
 
 void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
-  const Extension* extension = GetExtension(args);
+  const Extension* extension = GetActiveExtension(args);
   if (!extension || extension->options_url().is_empty())
     return;
   Profile::FromWebUI(web_ui())->GetExtensionProcessManager()->OpenOptionsPage(
@@ -660,7 +661,9 @@ void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
 }
 
 void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
-  const Extension* extension = GetExtension(args);
+  const Extension* extension = GetActiveExtension(args);
+  if (!extension)
+    return;
   extension_service_->SetBrowserActionVisibility(extension, true);
 }
 
@@ -692,10 +695,11 @@ void ExtensionSettingsHandler::ShowAlert(const std::string& message) {
   web_ui()->CallJavascriptFunction("alert", arguments);
 }
 
-const Extension* ExtensionSettingsHandler::GetExtension(const ListValue* args) {
+const Extension* ExtensionSettingsHandler::GetActiveExtension(
+    const ListValue* args) {
   std::string extension_id = UTF16ToUTF8(ExtractStringValue(args));
   CHECK(!extension_id.empty());
-  return extension_service_->GetExtensionById(extension_id, true);
+  return extension_service_->GetExtensionById(extension_id, false);
 }
 
 void ExtensionSettingsHandler::MaybeUpdateAfterNotification() {
