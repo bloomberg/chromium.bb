@@ -32,6 +32,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+#if defined(USE_ASH)
+#include "ash/wm/window_animations.h"
+#endif  // USE_ASH
+
 namespace chromeos {
 namespace input_method {
 
@@ -1552,6 +1556,11 @@ void CandidateWindowControllerImpl::CreateView() {
   // Show the candidate window always on top
   params.keep_on_top = true;
   frame_->Init(params);
+#if defined(USE_ASH)
+  ash::SetWindowVisibilityAnimationType(
+      frame_->GetNativeView(),
+      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+#endif  // USE_ASH
 
   // Create the candidate window.
   candidate_window_ = new CandidateWindowView(frame_.get());
@@ -1564,6 +1573,12 @@ void CandidateWindowControllerImpl::CreateView() {
   // Create the infolist window.
   infolist_frame_.reset(new views::Widget);
   infolist_frame_->Init(params);
+#if defined(USE_ASH)
+  ash::SetWindowVisibilityAnimationType(
+      infolist_frame_->GetNativeView(),
+      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+#endif  // USE_ASH
+
   infolist_window_ = new InfolistWindowView(
       infolist_frame_.get(), frame_.get());
   infolist_window_->Init();
