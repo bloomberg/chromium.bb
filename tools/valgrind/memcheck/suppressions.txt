@@ -5773,6 +5773,15 @@
    fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
    fun:_ZN30ChromeBrowserMainExtraPartsAsh14PreProfileInitEv
 }
+{
+   bug_127716
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gfx5ImageC1ERK8SkBitmap
+   fun:_ZN16BrowserThemePack16LoadRawBitmapsToERKSt3mapIi8FilePathSt4lessIiESaISt4pairIKiS1_EEEPS0_IiPKN3gfx5ImageES3_SaIS4_IS5_SE_EEE
+   fun:_ZN16BrowserThemePack18BuildFromExtensionEPK9Extension
+   fun:_ZN45BrowserThemePackTest_CanBuildAndReadPack_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

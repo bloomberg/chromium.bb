@@ -1850,3 +1850,11 @@
    fun:base::Thread::ThreadMain
    fun:base::::ThreadFunc
 }
+{
+   bug_127716
+   Heapcheck:Leak
+   fun:*Image
+   fun:BrowserThemePack::LoadRawBitmapsTo
+   fun:BrowserThemePack::BuildFromExtension
+   fun:BrowserThemePackTest_CanBuildAndReadPack_Test::TestBody
+}
