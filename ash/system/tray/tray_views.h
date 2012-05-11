@@ -99,6 +99,8 @@ class HoverHighlightView : public ActionableView {
 
   void set_highlight_color(SkColor color) { highlight_color_ = color; }
   void set_default_color(SkColor color) { default_color_ = color; }
+  void set_text_highlight_color(SkColor c) { text_highlight_color_ = c; }
+  void set_text_default_color(SkColor color) { text_default_color_ = color; }
   void set_fixed_height(int height) { fixed_height_ = height; }
 
  private:
@@ -114,8 +116,11 @@ class HoverHighlightView : public ActionableView {
   virtual void OnFocus() OVERRIDE;
 
   ViewClickListener* listener_;
+  views::Label* text_label_;
   SkColor highlight_color_;
   SkColor default_color_;
+  SkColor text_highlight_color_;
+  SkColor text_default_color_;
   int fixed_height_;
   bool hover_;
 
@@ -192,7 +197,9 @@ class TrayPopupHeaderButton : public views::ToggleImageButton {
  public:
   TrayPopupHeaderButton(views::ButtonListener* listener,
                         int enabled_resource_id,
-                        int disabled_resource_id);
+                        int disabled_resource_id,
+                        int enabled_resource_id_hover,
+                        int disabled_resource_id_hover);
   virtual ~TrayPopupHeaderButton();
 
  private:
@@ -227,6 +234,7 @@ class SpecialPopupRow : public views::View {
 
   views::View* content_;
   views::View* button_container_;
+  views::Label* text_label_;
   DISALLOW_COPY_AND_ASSIGN(SpecialPopupRow);
 };
 

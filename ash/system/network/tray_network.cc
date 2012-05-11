@@ -227,17 +227,23 @@ class NetworkDetailedView : public views::View,
   void AppendHeaderButtons() {
     button_wifi_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED,
-        IDR_AURA_UBER_TRAY_WIFI_DISABLED);
+        IDR_AURA_UBER_TRAY_WIFI_DISABLED,
+        IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER,
+        IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER);
     header_->AddButton(button_wifi_);
 
     button_cellular_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
-        IDR_AURA_UBER_TRAY_CELLULAR_DISABLED);
+        IDR_AURA_UBER_TRAY_CELLULAR_DISABLED,
+        IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER,
+        IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER);
     header_->AddButton(button_cellular_);
 
     info_icon_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_NETWORK_INFO,
-        IDR_AURA_UBER_TRAY_NETWORK_INFO);
+        IDR_AURA_UBER_TRAY_NETWORK_INFO,
+        IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
+        IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER);
     header_->AddButton(info_icon_);
   }
 

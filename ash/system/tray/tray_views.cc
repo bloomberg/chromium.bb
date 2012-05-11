@@ -97,8 +97,11 @@ void ActionableView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
     : listener_(listener),
+      text_label_(NULL),
       highlight_color_(kHoverBackgroundColor),
       default_color_(0),
+      text_highlight_color_(0),
+      text_default_color_(0),
       fixed_height_(0),
       hover_(false) {
   set_notify_enter_exit_on_child(true);
@@ -117,9 +120,11 @@ void HoverHighlightView::AddIconAndLabel(const SkBitmap& image,
   image_view->SetImage(image);
   AddChildView(image_view);
 
-  views::Label* label = new views::Label(text);
-  label->SetFont(label->font().DeriveFont(0, style));
-  AddChildView(label);
+  text_label_ = new views::Label(text);
+  text_label_->SetFont(text_label_->font().DeriveFont(0, style));
+  if (text_default_color_)
+    text_label_->SetEnabledColor(text_default_color_);
+  AddChildView(text_label_);
 
   SetAccessibleName(text);
 }
@@ -127,13 +132,15 @@ void HoverHighlightView::AddIconAndLabel(const SkBitmap& image,
 void HoverHighlightView::AddLabel(const string16& text,
                                   gfx::Font::FontStyle style) {
   SetLayoutManager(new views::FillLayout());
-  views::Label* label = new views::Label(text);
-  label->set_border(views::Border::CreateEmptyBorder(
+  text_label_ = new views::Label(text);
+  text_label_->set_border(views::Border::CreateEmptyBorder(
       5, kTrayPopupDetailsIconWidth + kIconPaddingLeft, 5, 0));
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  label->SetFont(label->font().DeriveFont(0, style));
-  label->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
-  AddChildView(label);
+  text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  text_label_->SetFont(text_label_->font().DeriveFont(0, style));
+  text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
+  if (text_default_color_)
+    text_label_->SetEnabledColor(text_default_color_);
+  AddChildView(text_label_);
 
   SetAccessibleName(text);
 }
@@ -154,11 +161,15 @@ gfx::Size HoverHighlightView::GetPreferredSize() {
 
 void HoverHighlightView::OnMouseEntered(const views::MouseEvent& event) {
   hover_ = true;
+  if (text_highlight_color_ && text_label_)
+    text_label_->SetEnabledColor(text_highlight_color_);
   SchedulePaint();
 }
 
 void HoverHighlightView::OnMouseExited(const views::MouseEvent& event) {
   hover_ = false;
+  if (text_default_color_ && text_label_)
+    text_label_->SetEnabledColor(text_default_color_);
   SchedulePaint();
 }
 
@@ -305,16 +316,26 @@ void TrayPopupTextButtonContainer::AddTextButton(TrayPopupTextButton* button) {
 
 TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
                                              int enabled_resource_id,
-                                             int disabled_resource_id)
+                                             int disabled_resource_id,
+                                             int enabled_resource_id_hover,
+                                             int disabled_resource_id_hover)
     : views::ToggleImageButton(listener) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   SetImage(views::CustomButton::BS_NORMAL,
       bundle.GetImageNamed(enabled_resource_id).ToSkBitmap());
   SetToggledImage(views::CustomButton::BS_NORMAL,
       bundle.GetImageNamed(disabled_resource_id).ToSkBitmap());
+  SetImage(views::CustomButton::BS_HOT,
+      bundle.GetImageNamed(enabled_resource_id_hover).ToSkBitmap());
+  SetToggledImage(views::CustomButton::BS_HOT,
+      bundle.GetImageNamed(disabled_resource_id_hover).ToSkBitmap());
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   set_focusable(true);
+
+  // TODO(sad): Turn animation back on once there are proper assets.
+  // http://crbug.com/119832
+  set_animate_on_state_change(false);
 }
 
 TrayPopupHeaderButton::~TrayPopupHeaderButton() {}
@@ -364,19 +385,19 @@ void SpecialPopupRow::SetTextLabel(int string_id, ViewClickListener* listener) {
   container->set_fixed_height(kTrayPopupItemHeight);
   container->SetLayoutManager(new
       views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
-  views::ImageView* back =
-      new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
-  back->EnableCanvasFlippingForRTLUI(true);
-  back->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToSkBitmap());
-  container->AddChildView(back);
-  views::Label* header = new views::Label(rb.GetLocalizedString(string_id));
-  header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  header->SetFont(header->font().DeriveFont(0, gfx::Font::BOLD));
-  container->AddChildView(header);
-  container->SetAccessibleName(
-      rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
+
   container->set_highlight_color(SkColorSetARGB(0, 0, 0, 0));
   container->set_default_color(SkColorSetARGB(0, 0, 0, 0));
+  container->set_text_highlight_color(kHeaderTextColorHover);
+  container->set_text_default_color(kHeaderTextColorNormal);
+
+  container->AddIconAndLabel(
+      *rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToSkBitmap(),
+      rb.GetLocalizedString(string_id),
+      gfx::Font::BOLD);
+
+  container->SetAccessibleName(
+      rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
   SetContent(container);
 }
 

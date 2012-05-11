@@ -288,6 +288,7 @@
         <include name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="aura/status_power_small_all_dark.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE" file="aura/status_network_airplane.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="aura/status_network_info.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_MORE" file="aura/status_more.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_LESS" file="aura/status_less.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="aura/status_accessibility_mode.png" type="BINDATA" />
@@ -304,14 +305,23 @@
         <include name="IDR_AURA_UBER_TRAY_UPDATE" file="aura/status_update.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="aura/status_update_dark.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="aura/status_wifi_enabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="aura/status_wifi_disabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED" file="aura/status_cellular_enabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED" file="aura/status_cellular_disabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED" file="aura/status_bluetooth_enabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED" file="aura/status_bluetooth_disabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="aura/status_shutdown.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="aura/status_lockscreen.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_HELP" file="aura/status_help.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="oak.png" type="BINDATA" />
 
         <include name="IDR_AURA_SWITCH_MONITOR" file="aura/switch_monitor.png" type="BINDATA" />
         <include name="IDR_OAK" file="oak.png" type="BINDATA"/>

@@ -109,6 +109,8 @@ DateView::DateView() : actionable_(false) {
   date_label_ = CreateLabel();
   date_label_->SetFont(date_label_->font().DeriveFont(0, gfx::Font::BOLD));
   day_of_week_label_ = CreateLabel();
+  date_label_->SetEnabledColor(kHeaderTextColorNormal);
+  day_of_week_label_->SetEnabledColor(kHeaderTextColorNormal);
   UpdateTextInternal(base::Time::Now());
   AddChildView(date_label_);
   AddChildView(day_of_week_label_);
@@ -134,6 +136,22 @@ bool DateView::PerformAction(const views::Event& event) {
 
   ash::Shell::GetInstance()->tray_delegate()->ShowDateSettings();
   return true;
+}
+
+void DateView::OnMouseEntered(const views::MouseEvent& event) {
+  if (!actionable_)
+    return;
+  date_label_->SetEnabledColor(kHeaderTextColorHover);
+  day_of_week_label_->SetEnabledColor(kHeaderTextColorHover);
+  SchedulePaint();
+}
+
+void DateView::OnMouseExited(const views::MouseEvent& event) {
+  if (!actionable_)
+    return;
+  date_label_->SetEnabledColor(kHeaderTextColorNormal);
+  day_of_week_label_->SetEnabledColor(kHeaderTextColorNormal);
+  SchedulePaint();
 }
 
 TimeView::TimeView()

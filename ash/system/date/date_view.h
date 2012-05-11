@@ -66,6 +66,10 @@ class DateView : public BaseDateTimeView {
   // Overridden from ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE;
 
+  // Overridden from views::View.
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+
   views::Label* date_label_;
   views::Label* day_of_week_label_;
 

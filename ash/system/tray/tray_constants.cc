@@ -33,6 +33,9 @@ const SkColor kButtonStrokeColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 
+const SkColor kHeaderTextColorNormal = SkColorSetARGB(0x7f, 0, 0, 0);
+const SkColor kHeaderTextColorHover = SkColorSetARGB(0xd3, 0, 0, 0);
+
 const int kTrayPopupWidth = 300;
 
 }  // namespace ash

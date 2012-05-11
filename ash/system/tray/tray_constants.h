@@ -35,6 +35,9 @@ extern const SkColor kButtonStrokeColor;
 
 extern const SkColor kFocusBorderColor;
 
+extern const SkColor kHeaderTextColorNormal;
+extern const SkColor kHeaderTextColorHover;
+
 extern const int kTrayPopupWidth;
 
 }  // namespace ash

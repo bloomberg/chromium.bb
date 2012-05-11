@@ -104,7 +104,9 @@ class BluetoothDetailedView : public views::View,
         ash::Shell::GetInstance()->tray_delegate();
     toggle_bluetooth_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED,
-        IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED);
+        IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED,
+        IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER,
+        IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER);
     toggle_bluetooth_->SetToggled(!delegate->GetBluetoothEnabled());
     header_->AddButton(toggle_bluetooth_);
   }
