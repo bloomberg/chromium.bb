@@ -147,7 +147,7 @@ deps_os = {
         'src/chrome/tools/test/reference_build/chrome_mac':
             Var('git_url') + '/chromium/reference_builds/chrome_mac.git@dde16d147a5b8d0229f8adf8eee6d180fb9f4684',
         'src/rlz':
-            Var('git_url') + '/external/rlz.git@3fca43708a96462230c93f8352c62ea50350a35d',
+            Var('git_url') + '/external/rlz.git@c6536c5beb689d1ebb8997b97d76f8797ba067c7',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@9fcac4c557e0cb5d6ecbac6b59aaddeb15469acd',
         'src/third_party/lighttpd':
@@ -181,7 +181,7 @@ deps_os = {
         'src/chrome_frame/tools/test/reference_build/chrome_win':
             Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
         'src/rlz':
-            Var('git_url') + '/external/rlz.git@3fca43708a96462230c93f8352c62ea50350a35d',
+            Var('git_url') + '/external/rlz.git@c6536c5beb689d1ebb8997b97d76f8797ba067c7',
         'src/third_party/cygwin':
             Var('git_url') + '/chromium/deps/cygwin.git@3711a17ddd629317f40676bdcc564f32fd7a4fd2',
         'src/third_party/gnu_binutils':
