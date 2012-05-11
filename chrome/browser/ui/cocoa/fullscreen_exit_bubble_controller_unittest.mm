@@ -77,10 +77,13 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
 };
 
 TEST_F(FullscreenExitBubbleControllerTest, DenyExitsFullscreen) {
-  if (base::mac::IsOSLionOrLater())
-    FAIL() << "This test crashes on Lion; http://crbug.com/103906";
-
   CreateBrowserWindow();
+  NSWindow* window = browser()->window()->GetNativeHandle();
+  BrowserWindowController* bwc = [BrowserWindowController
+      browserWindowControllerForWindow:window];
+
+  [bwc showWindow:nil];
+
   AppendTabToStrip();
   WebContents* fullscreen_tab = browser()->GetSelectedWebContents();
   {
@@ -93,11 +96,8 @@ TEST_F(FullscreenExitBubbleControllerTest, DenyExitsFullscreen) {
     ASSERT_TRUE(browser()->window()->IsFullscreen());
   }
 
-  NSWindow* window = browser()->window()->GetNativeHandle();
-  BrowserWindowController* bwc = [BrowserWindowController
-      browserWindowControllerForWindow:window];
   FullscreenExitBubbleController* bubble = [bwc fullscreenExitBubbleController];
-  ASSERT_TRUE(bubble);
+  EXPECT_TRUE(bubble);
   {
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,

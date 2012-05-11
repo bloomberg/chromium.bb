@@ -370,7 +370,9 @@ void FullscreenController::TogglePresentationModeInternal(bool for_tab) {
     window_->EnterPresentationMode(url, GetFullscreenExitBubbleType());
   else
     window_->ExitPresentationMode();
-  WindowFullscreenStateChanged();
+
+  // WindowFullscreenStateChanged will be called by BrowserWindowController
+  // when the transition completes.
 }
 #endif
 
