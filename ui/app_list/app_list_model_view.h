@@ -30,10 +30,6 @@ class APP_LIST_EXPORT AppListModelView : public views::View,
                    PaginationModel* pagination_model);
   virtual ~AppListModelView();
 
-  // Sets fixed layout parameters. After setting this, CalculateLayout below
-  // is no longer called to dynamically choosing those layout params.
-  void SetLayout(int icon_size, int cols, int rows_per_page);
-
   // Calculate preferred icon size, rows and cols for given |content_size| and
   // |num_of_tiles|.
   static void CalculateLayout(const gfx::Size& content_size,
@@ -41,6 +37,10 @@ class APP_LIST_EXPORT AppListModelView : public views::View,
                               gfx::Size* icon_size,
                               int* rows,
                               int* cols);
+
+  // Sets fixed layout parameters. After setting this, CalculateLayout below
+  // is no longer called to dynamically choosing those layout params.
+  void SetLayout(int icon_size, int cols, int rows_per_page);
 
   // Sets |model| to use. Note this does not take ownership of |model|.
   void SetModel(AppListModel* model);

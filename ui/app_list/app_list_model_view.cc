@@ -31,14 +31,6 @@ AppListModelView::~AppListModelView() {
   pagination_model_->RemoveObserver(this);
 }
 
-void AppListModelView::SetLayout(int icon_size, int cols, int rows_per_page) {
-  fixed_layout_ = true;
-
-  icon_size_.SetSize(icon_size, icon_size);
-  cols_ = cols;
-  rows_per_page_ = rows_per_page;
-}
-
 void AppListModelView::CalculateLayout(const gfx::Size& content_size,
                                        int num_of_tiles,
                                        gfx::Size* icon_size,
@@ -88,6 +80,14 @@ void AppListModelView::CalculateLayout(const gfx::Size& content_size,
   // No icon size that could fit all tiles.
   *cols = std::max(content_size.width() / tile_size.width(), 1);
   *rows = (num_of_tiles - 1) / (*cols) + 1;
+}
+
+void AppListModelView::SetLayout(int icon_size, int cols, int rows_per_page) {
+  fixed_layout_ = true;
+
+  icon_size_.SetSize(icon_size, icon_size);
+  cols_ = cols;
+  rows_per_page_ = rows_per_page;
 }
 
 void AppListModelView::SetModel(AppListModel* model) {

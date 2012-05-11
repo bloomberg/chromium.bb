@@ -57,9 +57,8 @@ AppListView::AppListView(AppListViewDelegate* delegate)
 }
 
 AppListView::~AppListView() {
-  // Model is going away, so set to NULL before superclass deletes child views.
-  if (model_view_)
-    model_view_->SetModel(NULL);
+  // Deletes all child views while the models are still valid.
+  RemoveAllChildViews(true);
 }
 
 void AppListView::InitAsFullscreenWidget(gfx::NativeView parent,
