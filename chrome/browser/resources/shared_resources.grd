@@ -35,7 +35,8 @@ without changes to the corresponding grd file. -->
                file="shared/css/chrome_shared2_touch.css" type="BINDATA"
                flattenhtml="true" />
       <include name="IDR_SHARED_CSS_OVERLAY"
-               file="shared/css/overlay.css" type="BINDATA" />
+               file="shared/css/overlay.css" type="BINDATA"
+               flattenhtml="true" />
       <include name="IDR_SHARED_CSS_SPINNER"
                file="shared/css/spinner.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TABLE"

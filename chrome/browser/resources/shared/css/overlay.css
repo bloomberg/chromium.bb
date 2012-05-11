@@ -136,3 +136,23 @@ html[dir='rtl'] .overlay .page .action-area {
   -webkit-margin-start: 10px;
   display: block;
 }
+
+/* On OSX 10.7, hidden scrollbars may prevent the user from realizing that the
+ * overlay contains scrollable content. To resolve this, style the scrollbars on
+ * OSX so they are always visible. See http://crbug.com/123010. */
+<if expr="is_macosx">
+.overlay .page .content-area::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 11px;
+}
+
+.overlay .page .content-area::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
+  border-radius: 8px;
+}
+
+.overlay .page .content-area::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+</if>
