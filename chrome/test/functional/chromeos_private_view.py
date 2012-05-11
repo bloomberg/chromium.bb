@@ -25,7 +25,7 @@ class ChromeosPrivateViewTest(pyauto.PyUITest):
     """Basic installation test for Private View on ChromeOS."""
     crx_file_path = os.path.abspath(
         os.path.join(self.DataDir(), 'pyauto_private', 'apps',
-                     'privateview-chrome-1.0.800_RELEASE.crx'))
+                     'privateview-chrome-2.2.28_RELEASE.crx'))
     ext_id = self.InstallExtension(crx_file_path)
     self.assertTrue(ext_id, 'Failed to install extension.')
     extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
