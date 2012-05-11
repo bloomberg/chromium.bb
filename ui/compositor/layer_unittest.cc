@@ -1184,4 +1184,48 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_NoScaleCanvas) {
   EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());
 }
 
+// Verifies that when changing bounds on a layer that is invisible, and then
+// made visible, the right thing happens:
+// - if just a move, then no painting should happen.
+// - if a resize, the layer should be repainted.
+TEST_F(LayerWithDelegateTest, SetBoundsWhenInvisible) {
+  scoped_ptr<Layer> root(CreateNoTextureLayer(gfx::Rect(0, 0, 1000, 1000)));
+
+  scoped_ptr<Layer> child(CreateLayer(LAYER_TEXTURED));
+  child->SetBounds(gfx::Rect(0, 0, 500, 500));
+  DrawTreeLayerDelegate delegate;
+  child->set_delegate(&delegate);
+  root->Add(child.get());
+
+  // Paint once for initial damage.
+  child->SetVisible(true);
+  DrawTree(root.get());
+
+  // Reset into invisible state.
+  child->SetVisible(false);
+  DrawTree(root.get());
+  schedule_draw_invoked_ = false;
+  delegate.Reset();
+
+  // Move layer.
+  child->SetBounds(gfx::Rect(200, 200, 500, 500));
+  child->SetVisible(true);
+  EXPECT_TRUE(schedule_draw_invoked_);
+  DrawTree(root.get());
+  EXPECT_FALSE(delegate.painted());
+
+  // Reset into invisible state.
+  child->SetVisible(false);
+  DrawTree(root.get());
+  schedule_draw_invoked_ = false;
+  delegate.Reset();
+
+  // Resize layer.
+  child->SetBounds(gfx::Rect(200, 200, 400, 400));
+  child->SetVisible(true);
+  EXPECT_TRUE(schedule_draw_invoked_);
+  DrawTree(root.get());
+  EXPECT_TRUE(delegate.painted());
+}
+
 } // namespace ui
