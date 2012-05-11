@@ -230,7 +230,8 @@ ImageView.prototype.load = function(
     video.addEventListener('loadedmetadata', onVideoLoad);
     video.addEventListener('error', onVideoLoad);
 
-    video.src = metadata.contentURL || source;
+    // Do not try no stream when offline.
+    video.src = (navigator.onLine && metadata.streamingURL) || source;
     video.load();
 
     function onVideoLoad() {
@@ -280,7 +281,7 @@ ImageView.prototype.load = function(
     self.lastLoadTime_ = time;
 
     if (canvas.width) {
-      if (metadata.contentURL) {
+      if (metadata.remote) {
         // We do not know the main image size, but chances are that it is large
         // enough. Show the thumbnail at the maximum possible scale.
         var bounds = self.viewport_.getScreenBounds();

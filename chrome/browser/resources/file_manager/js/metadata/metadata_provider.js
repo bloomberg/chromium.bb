@@ -219,7 +219,9 @@ GDataMetadataFetcher.prototype.doFetch = function(url) {
     return {
       remote: true,
       thumbnailURL: result.thumbnailUrl,
-      contentURL: (result.contentUrl || '').replace(/\?.*$/gi, ''),
+      streamingURL: result.isPresent ?
+                        null :  // Do not stream if the file is cached.
+                        (result.contentUrl || '').replace(/\?.*$/gi, ''),
       fileSize: 0  // TODO(kaznacheev) Get the correct size from File API.
     }
   }
@@ -244,7 +246,7 @@ function MetadataProvider(rootUrl) {
   // TODO(kaznacheev): We use 'gdata' literal here because
   // DirectoryModel.GDATA_DIRECTORY definition might be not available.
   // Consider extracting this definition into some common js file.
-  this.gdata_ = new GDataMetadataFetcher(callback, rootUrl + 'gdata' + '/'),
+  this.gdata_ = new GDataMetadataFetcher(callback, rootUrl + 'drive' + '/'),
   this.local_ = new LocalMetadataFetcher(callback, rootUrl);
 
   this.fetchers_ = [this.gdata_, this.local_];

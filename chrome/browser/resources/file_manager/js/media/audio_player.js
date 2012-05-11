@@ -139,7 +139,8 @@ AudioPlayer.prototype.select_ = function(newTrack) {
   var url = this.urls_[this.currentTrack_];
   this.fetchMetadata_(url, function(metadata) {
     var media = this.audioControls_.getMedia();
-    media.src = metadata.contentURL || url;
+    // Do not try no stream when offline.
+    media.src = (navigator.onLine && metadata.streamingURL) || url;
     media.load();
     this.audioControls_.play();
   }.bind(this));
