@@ -309,11 +309,11 @@ void Layer::SetColor(SkColor color) {
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
   if (type_ == LAYER_SOLID_COLOR || !delegate_)
     return false;
-  gfx::Rect invalid_rect_in_pixel = ConvertRectToPixel(this, invalid_rect);
-  damaged_region_.op(invalid_rect_in_pixel.x(),
-                     invalid_rect_in_pixel.y(),
-                     invalid_rect_in_pixel.right(),
-                     invalid_rect_in_pixel.bottom(),
+
+  damaged_region_.op(invalid_rect.x(),
+                     invalid_rect.y(),
+                     invalid_rect.right(),
+                     invalid_rect.bottom(),
                      SkRegion::kUnion_Op);
   ScheduleDraw();
   return true;
@@ -329,12 +329,26 @@ void Layer::SendDamagedRects() {
   if (delegate_ && !damaged_region_.isEmpty()) {
     for (SkRegion::Iterator iter(damaged_region_);
          !iter.done(); iter.next()) {
-      const SkIRect& damaged = iter.rect();
+      const SkIRect& sk_damaged = iter.rect();
+      gfx::Rect damaged(
+          sk_damaged.x(),
+          sk_damaged.y(),
+          sk_damaged.width(),
+          sk_damaged.height());
+
+      // TODO(pkotwicz): Remove this once we are no longer linearly upscaling
+      // web contents when DIP is enabled (crbug.com/127455).
+      if (IsDIPEnabled() && web_layer_is_accelerated_) {
+        damaged.Inset(-1, -1);
+        damaged = damaged.Intersect(bounds_);
+      }
+
+      gfx::Rect damaged_in_pixel = ConvertRectToPixel(this, damaged);
       WebKit::WebFloatRect web_rect(
-          damaged.x(),
-          damaged.y(),
-          damaged.width(),
-          damaged.height());
+          damaged_in_pixel.x(),
+          damaged_in_pixel.y(),
+          damaged_in_pixel.width(),
+          damaged_in_pixel.height());
       if (!web_layer_is_accelerated_)
         web_layer_.to<WebKit::WebContentLayer>().invalidateRect(web_rect);
       else
