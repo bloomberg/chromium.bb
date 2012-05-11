@@ -127,6 +127,21 @@
                 # Don't emit warnings for gcc -f flags clang doesn't implement.
                 '-Qunused-arguments',
               ],
+              'conditions': [
+                ['ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS"', {
+                  'xcode_settings': {
+                    'WARNING_CFLAGS': [
+                      # Clang doesn't support __attribute__((flatten)),
+                      # http://llvm.org/PR7559
+                      # This is used in the h264 decoder.
+                      '-Wno-attributes',
+                    ],
+                  },
+                  'cflags': [
+                    '-Wno-attributes',
+                  ],
+                }],
+              ],
             }, {
               'cflags': [
                 # gcc doesn't have flags for specific warnings, so disable them
