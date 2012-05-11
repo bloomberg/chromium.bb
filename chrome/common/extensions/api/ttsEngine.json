@@ -19,7 +19,7 @@
           },
           {
             "name": "event",
-            "$ref": "TtsEvent",
+            "$ref": "tts.TtsEvent",
             "description": "The update event from the text-to-speech engine indicating the status of this utterance."
           }
         ]
@@ -87,7 +87,7 @@
             "parameters": [
               {
                 "name": "event",
-                "$ref": "TtsEvent",
+                "$ref": "tts.TtsEvent",
                 "description": "The event from the text-to-speech engine indicating the status of this utterance."
               }
             ]

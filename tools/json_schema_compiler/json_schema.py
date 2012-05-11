@@ -10,6 +10,7 @@ import sys
 _script_path = os.path.realpath(__file__)
 sys.path.insert(0, os.path.normpath(_script_path + "/../../"))
 import json_comment_eater
+import schema_util
 
 def DeleteNocompileNodes(item):
   def HasNocompile(thing):
@@ -32,9 +33,10 @@ def DeleteNocompileNodes(item):
 
 def Load(filename):
   with open(filename, 'r') as handle:
-    return DeleteNocompileNodes(
+    schemas = DeleteNocompileNodes(
         json.loads(json_comment_eater.Nom(handle.read())))
-
+  schema_util.PrefixSchemasWithNamespace(schemas)
+  return schemas
 
 # A dictionary mapping |filename| to the object resulting from loading the JSON
 # at |filename|.
