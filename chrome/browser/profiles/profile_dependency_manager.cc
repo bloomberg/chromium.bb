@@ -10,6 +10,7 @@
 
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
@@ -178,6 +179,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 
 #if defined(ENABLE_BACKGROUND)
   BackgroundContentsServiceFactory::GetInstance();
+#endif
+#if !defined(OS_ANDROID)
+  captive_portal::CaptivePortalServiceFactory::GetInstance();
 #endif
   ChromeURLDataManagerFactory::GetInstance();
 #if !defined(OS_ANDROID)

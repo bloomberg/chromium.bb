@@ -5635,6 +5635,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <message name="IDS_FLAGS_CAPTIVE_PORTAL_CHECK_ON_ERROR_NAME" desc="Name for the flag to enable automatic checking for captive portals.">
+        Enable captive portal detection.
+      </message>
+      <message name="IDS_FLAGS_CAPTIVE_PORTAL_CHECK_ON_ERROR_DESCRIPTION" desc="Description for the flag to enable automatic checking for captive portals.">
+        Check for captive portals and open a new tab at the login page if one is found.
+      </message>
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
         Crashes

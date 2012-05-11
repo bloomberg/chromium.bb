@@ -608,6 +608,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableChromeToMobile)
   },
+  {
+    "enable-captive-portal-detection",
+    IDS_FLAGS_CAPTIVE_PORTAL_CHECK_ON_ERROR_NAME,
+    IDS_FLAGS_CAPTIVE_PORTAL_CHECK_ON_ERROR_DESCRIPTION,
+    kOsMac | kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kCaptivePortalDetection)
+  },
 #if defined(GOOGLE_CHROME_BUILD)
   {
     "enable-asynchronous-spellchecking",

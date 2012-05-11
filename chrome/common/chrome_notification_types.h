@@ -967,6 +967,11 @@ enum NotificationType {
   // supports instant. The source is not used.
   NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
 
+  // Sent when the CaptivePortalService checks if we're behind a captive portal.
+  // The Source is the Profile the CaptivePortalService belongs to, and the
+  // Details are a Details<CaptivePortalService::CheckResults>.
+  NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
+
   // Password Store ----------------------------------------------------------
   // This notification is sent whenenever login entries stored in the password
   // store are changed. The detail of this notification is a list of changes

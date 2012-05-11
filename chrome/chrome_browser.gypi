@@ -348,6 +348,10 @@
         'browser/feedback/feedback_util.h',
         'browser/cancelable_request.cc',
         'browser/cancelable_request.h',
+        'browser/captive_portal/captive_portal_service.cc',
+        'browser/captive_portal/captive_portal_service.h',
+        'browser/captive_portal/captive_portal_service_factory.cc',
+        'browser/captive_portal/captive_portal_service_factory.h',
         'browser/certificate_manager_model.cc',
         'browser/certificate_manager_model.h',
         'browser/certificate_viewer.cc',
@@ -4538,6 +4542,7 @@
             'browser/upgrade_detector_impl.h',
           ],
           'sources/': [
+            ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/importer/'],
             ['exclude', '^browser/printing/'],

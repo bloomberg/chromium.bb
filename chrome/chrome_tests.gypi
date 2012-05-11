@@ -1094,6 +1094,7 @@
         'browser/browsing_data_quota_helper_unittest.cc',
         'browser/browsing_data_remover_unittest.cc',
         'browser/browsing_data_server_bound_cert_helper_unittest.cc',
+        'browser/captive_portal/captive_portal_service_unittest.cc',
         'browser/chrome_browser_application_mac_unittest.mm',
         'browser/chrome_browser_main_unittest.cc',
         'browser/chrome_page_zoom_unittest.cc',
@@ -2393,6 +2394,7 @@
             'test/base/test_browser_window.h',
           ],
           'sources/': [
+            ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/printing/'],
             ['exclude', '^browser/tabs/pinned_tab_'],
