@@ -389,6 +389,12 @@ class Strace(object):
         else:
           self.non_existent.add(filepath)
 
+  @staticmethod
+  def clean_trace(logname):
+    """Deletes the old log."""
+    if os.path.isfile(logname):
+      os.remove(logname)
+
   @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
     """Runs strace on an executable."""
@@ -698,6 +704,12 @@ class Dtrace(object):
     @staticmethod
     def _handle_ignored(_ppid, pid, function, args, result):
       logging.debug('%d %s(%s) = %s' % (pid, function, args, result))
+
+  @staticmethod
+  def clean_trace(logname):
+    """Deletes the old log."""
+    if os.path.isfile(logname):
+      os.remove(logname)
 
   @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
@@ -1012,6 +1024,14 @@ class LogmanTrace(object):
     # Add this one last since it has no short path name equivalent.
     self.IGNORED.add('\\systemroot')
     self.IGNORED = tuple(sorted(self.IGNORED))
+
+  @staticmethod
+  def clean_trace(logname):
+    """Deletes the old log."""
+    if os.path.isfile(logname):
+      os.remove(logname)
+    if os.path.isfile(logname + '.etl'):
+      os.remove(logname + '.etl')
 
   @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
@@ -1338,8 +1358,7 @@ def trace(logfile, cmd, cwd, api, output):
   """
   cmd = fix_python_path(cmd)
   assert os.path.isabs(cmd[0]), cmd[0]
-  if os.path.isfile(logfile):
-    os.remove(logfile)
+  api.clean_trace(logfile)
   return api.gen_trace(cmd, cwd, logfile, output)
 
 
