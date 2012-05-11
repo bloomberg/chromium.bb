@@ -31,9 +31,11 @@
           ['branding=="Chrome"', {
             'mac_bundle_id': 'com.google.Chrome',
             'mac_creator': 'rimZ',
+            'copyright_by': 'Google Inc.',
           }, {  # else: branding!="Chrome"
             'mac_bundle_id': 'org.chromium.Chromium',
             'mac_creator': 'Cr24',
+            'copyright_by': 'The Chromium Authors.',
           }],  # branding
         ],  # conditions
         'host_plugin_extension': 'plugin',
@@ -245,13 +247,11 @@
           'conditions': [
             ['branding == "Chrome"', {
               'variables': {
-                'copyright_by': 'Google Inc.',
                 'bundle_id': 'com.google.chromeremotedesktop.host_uninstaller',
                 'bundle_name': 'Chrome Remote Desktop Host Uninstaller',
               },
             }, { # else branding!="Chrome"
               'variables': {
-                'copyright_by': 'The Chromium Authors.',
                 'bundle_id': 'org.chromium.remoting.host_uninstaller',
                 'bundle_name': 'Chromoting Host Uninstaller',
               },
@@ -297,7 +297,6 @@
           'conditions': [
             ['branding == "Chrome"', {
               'variables': {
-                'copyright_by': 'Google Inc.',
                 'host_name': 'Chrome Remote Desktop Host',
                 'host_service_name': 'Chrome Remote Desktop Host Service',
                 'host_uninstaller_name': 'Chrome Remote Desktop Host Uninstaller',
@@ -305,7 +304,6 @@
               },
             }, { # else branding!="Chrome"
               'variables': {
-                'copyright_by': 'The Chromium Authors.',
                 'host_name': 'Chromoting Host',
                 'host_service_name': 'Chromoting Host Service',
                 'host_uninstaller_name': 'Chromoting Host Uninstaller',
@@ -416,13 +414,11 @@
             }],
             ['branding == "Chrome"', {
               'variables': {
-                'copyright_by': 'Google Inc.',
                 'bundle_id': 'com.google.chromeremotedesktop.preferences',
                 'bundle_name': 'Chrome Remote Desktop Host Preferences',
               },
             }, { # else branding!="Chrome"
               'variables': {
-                'copyright_by': 'The Chromium Authors.',
                 'bundle_id': 'org.chromium.remoting.preferences',
                 'bundle_name': 'Chromoting Host Preferences',
               },
@@ -1361,9 +1357,10 @@
           'xcode_settings': {
             'INFOPLIST_FILE': 'host/remoting_me2me_host-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)"',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)" COPYRIGHT_BY="<(copyright_by)"',
           },
           'mac_bundle_resources': [
+            'host/remoting_me2me_host.icns',
             'host/remoting_me2me_host-Info.plist',
           ],
           'mac_bundle_resources!': [
