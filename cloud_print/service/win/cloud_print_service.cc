@@ -4,8 +4,27 @@
 
 #include "cloud_print/service/win/cloud_print_service.h"
 
+#include <iomanip>
+#include <iostream>
+
+#include "base/at_exit.h"
+#include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/path_service.h"
 #include "base/win/scoped_handle.h"
 #include "cloud_print/service/win/resource.h"
+
+namespace {
+
+const char kInstallSwitch[] = "install";
+const char kUninstallSwitch[] = "uninstall";
+const char kStartSwitch[] = "start";
+const char kStopSwitch[] = "stop";
+
+const char kServiceSwitch[] = "service";
+
+const char kUserDataDirSwitch[] = "user-data-dir";
+const char kQuietSwitch[] = "quiet";
 
 // The traits class for Windows Service.
 class ServiceHandleTraits {
@@ -39,6 +58,48 @@ HRESULT HResultFromLastError() {
   return hr;
 }
 
+void InvalidUsage() {
+  FilePath service_path;
+  CHECK(PathService::Get(base::FILE_EXE, &service_path));
+
+  std::cout << "Usage: ";
+  std::cout << service_path.BaseName().value();
+  std::cout << " [";
+    std::cout << "[";
+      std::cout << "[";
+        std::cout << " -" << kInstallSwitch;
+        std::cout << " -" << kUserDataDirSwitch << "=DIRECTORY";
+        std::cout << " [ -" << kQuietSwitch << " ]";
+      std::cout << "]";
+    std::cout << "]";
+    std::cout << " | -" << kUninstallSwitch;
+    std::cout << " | -" << kStartSwitch;
+    std::cout << " | -" << kStopSwitch;
+  std::cout << " ]\n";
+  std::cout << "Manages cloud print windows service.\n\n";
+
+  static const struct {
+    const char* name;
+    const char* description;
+  } kSwitchHelp[] = {
+    { kInstallSwitch, "Installs cloud print as service." },
+    { kUserDataDirSwitch, "User data directory with \"Service State\" file." },
+    { kQuietSwitch, "Fails without questions if something wrong." },
+    { kUninstallSwitch, "Uninstalls service." },
+    { kStartSwitch, "Starts service. May be combined with installation." },
+    { kStopSwitch, "Stops service." },
+  };
+
+  for (size_t i = 0; i < arraysize(kSwitchHelp); ++i) {
+    std::cout << std::setiosflags(std::ios::left);
+    std::cout << "  -" << std::setw(15) << kSwitchHelp[i].name;
+    std::cout << kSwitchHelp[i].description << "\n";
+  }
+  std::cout << "\n";
+}
+
+}  // namespace
+
 class CloudPrintServiceModule
     : public ATL::CAtlServiceModuleT<CloudPrintServiceModule, IDS_SERVICENAME> {
  public:
@@ -54,48 +115,47 @@ class CloudPrintServiceModule
     return S_OK;
   }
 
-  // Override to set autostart and start service.
-  HRESULT RegisterAppId(bool bService = false) {
-    HRESULT hr = Base::RegisterAppId(bService);
+  HRESULT Install(const FilePath& user_data_dir) {
+    // TODO(vitalybuka): consider "lite" version if we don't want unregister
+    // printers here.
+    if (!Uninstall())
+      return E_FAIL;
+
+    FilePath service_path;
+    CHECK(PathService::Get(base::FILE_EXE, &service_path));
+    CommandLine command_line(service_path);
+    command_line.AppendSwitch(kServiceSwitch);
+    command_line.AppendSwitchPath(kUserDataDirSwitch, user_data_dir);
+
+    ServiceHandle scm;
+    HRESULT hr = OpenServiceManager(&scm);
     if (FAILED(hr))
       return hr;
 
-    ServiceHandle service;
-    hr = OpenService(SERVICE_CHANGE_CONFIG, &service);
-    if (FAILED(hr))
-      return hr;
+    ServiceHandle service(
+        ::CreateService(
+            scm, m_szServiceName, m_szServiceName, SERVICE_ALL_ACCESS,
+            SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
+            command_line.GetCommandLineString().c_str(), NULL, NULL, NULL,
+            L"NT AUTHORITY\\LocalService", NULL));
 
-    if (!::ChangeServiceConfig(service, SERVICE_WIN32_OWN_PROCESS,
-        SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, NULL, NULL, NULL, NULL,
-        L"NT AUTHORITY\\LocalService", NULL, NULL)) {
+    if (!service.IsValid())
       return HResultFromLastError();
-    }
 
     return S_OK;
   }
 
-  // Override to handle service uninstall case manually.
   bool ParseCommandLine(LPCTSTR lpCmdLine, HRESULT* pnRetCode) {
-    if (!Base::ParseCommandLine(lpCmdLine, pnRetCode))
-      return false;
-
-    const wchar_t tokens[] = L"-/";
-    *pnRetCode = S_OK;
-
-    for (const wchar_t* cur = lpCmdLine; cur = FindOneOf(cur, tokens);) {
-      if (WordCmpI(cur, L"UninstallService") == 0) {
-        if (!Uninstall())
-          *pnRetCode = E_FAIL;
-        return false;
-      } else if (WordCmpI(cur, L"Start") == 0) {
-        *pnRetCode = StartService();
-        return false;
-      } else if (WordCmpI(cur, L"Stop") == 0) {
-        *pnRetCode = StopService();
-        return false;
-      }
+    CHECK(pnRetCode);
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    command_line.ParseFromString(lpCmdLine);
+    bool is_service = false;
+    *pnRetCode = ParseCommandLine(command_line, &is_service);
+    if (FAILED(*pnRetCode)) {
+      LOG(ERROR) << "Operation failed. 0x" << std::setw(8) <<
+          std::setbase(16) << *pnRetCode;
     }
-    return true;
+    return is_service;
   }
 
   HRESULT PreMessageLoop(int nShowCmd) {
@@ -118,13 +178,63 @@ class CloudPrintServiceModule
   }
 
  private:
+  HRESULT ParseCommandLine(const CommandLine& command_line, bool* is_service) {
+    if (!is_service)
+      return E_INVALIDARG;
+    *is_service = false;
+
+    if (command_line.HasSwitch(kStopSwitch))
+      return StopService();
+
+    if (command_line.HasSwitch(kUninstallSwitch))
+      return Uninstall() ? S_OK : E_FAIL;
+
+    if (command_line.HasSwitch(kInstallSwitch)) {
+      if (!command_line.HasSwitch(kUserDataDirSwitch)) {
+        InvalidUsage();
+        return S_FALSE;
+      }
+
+      FilePath data_dir = command_line.GetSwitchValuePath(kUserDataDirSwitch);
+      HRESULT hr = Install(data_dir);
+      if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
+        return StartService();
+
+      return hr;
+    }
+
+    if (command_line.HasSwitch(kStartSwitch))
+      return StartService();
+
+    if (command_line.HasSwitch(kServiceSwitch)) {
+      user_data_dir_ = command_line.GetSwitchValuePath(kUserDataDirSwitch);
+      *is_service = true;
+      return S_OK;
+    }
+
+    InvalidUsage();
+    return S_FALSE;
+  }
+
+  HRESULT OpenServiceManager(ServiceHandle* service_manager) {
+    if (!service_manager)
+      return E_POINTER;
+
+    service_manager->Set(::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS));
+    if (!service_manager->IsValid())
+      return HResultFromLastError();
+
+    return S_OK;
+  }
+
   HRESULT OpenService(DWORD access, ServiceHandle* service) {
     if (!service)
       return E_POINTER;
 
-    ServiceHandle scm(::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS));
-    if (!scm.IsValid())
-      return HResultFromLastError();
+    ServiceHandle scm;
+    HRESULT hr = OpenServiceManager(&scm);
+    if (FAILED(hr))
+      return hr;
 
     service->Set(::OpenService(scm, m_szServiceName, access));
 
@@ -161,14 +271,13 @@ class CloudPrintServiceModule
 
   void StopConnector() {
   }
+
+  FilePath user_data_dir_;
 };
 
 CloudPrintServiceModule _AtlModule;
 
-int WINAPI WinMain(__in  HINSTANCE hInstance,
-                   __in  HINSTANCE hPrevInstance,
-                   __in  LPSTR lpCmdLine,
-                   __in  int nCmdShow) {
-  return _AtlModule.WinMain(nCmdShow);
+int main() {
+  base::AtExitManager at_exit;
+  return _AtlModule.WinMain(0);
 }
-

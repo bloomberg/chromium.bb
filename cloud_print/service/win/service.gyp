@@ -25,7 +25,7 @@
       ],
       'msvs_settings': {
         'VCLinkerTool': {
-          'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
+          'SubSystem': '1',         # Set /SUBSYSTEM:CONSOLE
           'UACExecutionLevel': '2', # /level='requireAdministrator'
         },
       },
