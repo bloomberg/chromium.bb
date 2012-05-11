@@ -213,6 +213,9 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     ash::SetWindowVisibilityAnimationType(
         popup_->GetNativeView(),
         ash::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+    // No animation for autocomplete popup appearance.  see crbug.com/124104
+    ash::SetWindowVisibilityAnimationTransition(
+        popup_->GetNativeView(), ash::ANIMATE_HIDE);
 #endif
     popup_->SetContentsView(this);
     popup_->StackAbove(omnibox_view_->GetRelativeWindowForPopup());
