@@ -18,6 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -59,24 +60,6 @@ const char kPasswordFileForTest[] = "password-file-for-test";
 const char kSyncUserForTest[] = "sync-user-for-test";
 const char kSyncPasswordForTest[] = "sync-password-for-test";
 const char kSyncServerCommandLine[] = "sync-server-command-line";
-}
-
-namespace {
-// The URLs for different calls in the Google Accounts programmatic login API.
-// TODO(rsimha): Use GaiaUrls here.
-const char kClientLoginUrl[] = "https://accounts.google.com/ClientLogin";
-const char kGetUserInfoUrl[] = "https://accounts.google.com/GetUserInfo";
-const char kIssueAuthTokenUrl[] =
-    "https://accounts.google.com/IssueAuthToken";
-const char kSearchDomainCheckUrl[] =
-    "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
-const char kOAuth2LoginTokenValidResponse[] =
-    "{"
-    "  \"refresh_token\": \"rt1\","
-    "  \"access_token\": \"at1\","
-    "  \"expires_in\": 3600,"
-    "  \"token_type\": \"Bearer\""
-    "}";
 }
 
 // Helper class that checks whether a sync test server is running or not.
@@ -420,17 +403,34 @@ void SyncTest::SetupMockGaiaResponses() {
   password_ = "password";
   factory_.reset(new URLFetcherImplFactory());
   fake_factory_.reset(new FakeURLFetcherFactory(factory_.get()));
-  fake_factory_->SetFakeResponse(kClientLoginUrl, "SID=sid\nLSID=lsid", true);
-  fake_factory_->SetFakeResponse(kGetUserInfoUrl, "email=user@gmail.com", true);
-  fake_factory_->SetFakeResponse(kIssueAuthTokenUrl, "auth", true);
-  fake_factory_->SetFakeResponse(kSearchDomainCheckUrl, ".google.com", true);
+  fake_factory_->SetFakeResponse(
+      GaiaUrls::GetInstance()->client_login_url(),
+      "SID=sid\nLSID=lsid",
+      true);
+  fake_factory_->SetFakeResponse(
+      GaiaUrls::GetInstance()->get_user_info_url(),
+      "email=user@gmail.com",
+      true);
+  fake_factory_->SetFakeResponse(
+      GaiaUrls::GetInstance()->issue_auth_token_url(),
+      "auth",
+      true);
+  fake_factory_->SetFakeResponse(
+      GoogleURLTracker::kSearchDomainCheckURL,
+      ".google.com",
+      true);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->client_login_to_oauth2_url(),
       "some_response",
       true);
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->oauth2_token_url(),
-      kOAuth2LoginTokenValidResponse,
+      "{"
+      "  \"refresh_token\": \"rt1\","
+      "  \"access_token\": \"at1\","
+      "  \"expires_in\": 3600,"
+      "  \"token_type\": \"Bearer\""
+      "}",
       true);
 }
 
