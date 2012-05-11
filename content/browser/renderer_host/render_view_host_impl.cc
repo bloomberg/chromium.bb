@@ -1584,7 +1584,8 @@ void RenderViewHostImpl::ExitFullscreen() {
   WasResized();
 }
 
-void RenderViewHostImpl::UpdateWebkitPreferences(const WebPreferences& prefs) {
+void RenderViewHostImpl::UpdateWebkitPreferences(
+    const webkit_glue::WebPreferences& prefs) {
   Send(new ViewMsg_UpdateWebPreferences(GetRoutingID(), prefs));
 }
 

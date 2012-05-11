@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,14 +8,16 @@
 #include "base/string16.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
+namespace webkit_glue {
 struct WebPreferences;
+}
 
 namespace ppapi {
 
 struct PPAPI_SHARED_EXPORT Preferences {
  public:
   Preferences();
-  explicit Preferences(const WebPreferences& prefs);
+  explicit Preferences(const webkit_glue::WebPreferences& prefs);
   ~Preferences();
 
   string16 standard_font_family;

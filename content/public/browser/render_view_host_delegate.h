@@ -32,7 +32,10 @@ struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct WebDropData;
 struct WebMenuItem;
+
+namespace webkit_glue {
 struct WebPreferences;
+}
 
 namespace base {
 class ListValue;
@@ -348,7 +351,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Returns a WebPreferences object that will be used by the renderer
   // associated with the owning render view host.
-  virtual WebPreferences GetWebkitPrefs();
+  virtual webkit_glue::WebPreferences GetWebkitPrefs();
 
   // Notification the user has made a gesture while focus was on the
   // page. This is used to avoid uninitiated user downloads (aka carpet

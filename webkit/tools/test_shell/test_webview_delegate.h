@@ -45,7 +45,6 @@
 #include <gdk/gdk.h>
 #endif
 
-struct WebPreferences;
 class GURL;
 class TestShell;
 class WebWidgetHost;

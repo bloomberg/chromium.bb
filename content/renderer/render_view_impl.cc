@@ -287,6 +287,7 @@ using webkit::forms::PasswordForm;
 using webkit::forms::PasswordFormDomManager;
 using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::ResourceFetcher;
+using webkit_glue::WebPreferences;
 using webkit_glue::WebURLResponseExtraDataImpl;
 
 //-----------------------------------------------------------------------------

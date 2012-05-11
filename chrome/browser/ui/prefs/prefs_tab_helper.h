@@ -14,7 +14,6 @@
 class OverlayUserPrefStore;
 class PrefService;
 class Profile;
-struct WebPreferences;
 
 namespace content {
 class WebContents;

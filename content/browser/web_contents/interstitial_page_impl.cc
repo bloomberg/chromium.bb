@@ -468,7 +468,7 @@ content::RendererPreferences InterstitialPageImpl::GetRendererPrefs(
   return renderer_preferences_;
 }
 
-WebPreferences InterstitialPageImpl::GetWebkitPrefs() {
+webkit_glue::WebPreferences InterstitialPageImpl::GetWebkitPrefs() {
   return WebContentsImpl::GetWebkitPrefs(render_view_host_, url_);
 }
 

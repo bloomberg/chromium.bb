@@ -63,6 +63,7 @@ using WebKit::WebScriptController;
 using WebKit::WebSize;
 using WebKit::WebURLRequest;
 using WebKit::WebView;
+using webkit_glue::WebPreferences;
 
 namespace {
 

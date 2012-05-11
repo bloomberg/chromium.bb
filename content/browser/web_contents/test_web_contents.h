@@ -41,7 +41,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                            const GURL& url,
                                            const Referrer& referrer,
                                            PageTransition transition) OVERRIDE;
-  virtual WebPreferences TestGetWebkitPrefs() OVERRIDE;
+  virtual webkit_glue::WebPreferences TestGetWebkitPrefs() OVERRIDE;
 
   TestRenderViewHost* pending_test_rvh() const;
 

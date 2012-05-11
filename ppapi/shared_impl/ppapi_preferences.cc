@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ Preferences::Preferences()
       is_3d_supported(true) {
 }
 
-Preferences::Preferences(const WebPreferences& prefs)
+Preferences::Preferences(const webkit_glue::WebPreferences& prefs)
     : standard_font_family(prefs.standard_font_family),
       fixed_font_family(prefs.fixed_font_family),
       serif_font_family(prefs.serif_font_family),

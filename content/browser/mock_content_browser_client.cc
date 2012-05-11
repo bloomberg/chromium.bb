@@ -284,9 +284,10 @@ bool MockContentBrowserClient::IsFastShutdownPossible() {
   return true;
 }
 
-void MockContentBrowserClient::OverrideWebkitPrefs(RenderViewHost* rvh,
-                                                   const GURL& url,
-                                                   WebPreferences* prefs) {
+void MockContentBrowserClient::OverrideWebkitPrefs(
+    RenderViewHost* rvh,
+    const GURL& url,
+    webkit_glue::WebPreferences* prefs) {
 }
 
 void MockContentBrowserClient::UpdateInspectorSetting(

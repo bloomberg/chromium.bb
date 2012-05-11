@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,13 +8,16 @@
 #include "chrome/common/chrome_view_type.h"
 
 class Extension;
+
+namespace webkit_glue {
 struct WebPreferences;
+}
 
 namespace extension_webkit_preferences {
 
 void SetPreferences(const Extension* extension,
                     content::ViewType render_view_type,
-                    WebPreferences* webkit_prefs);
+                    webkit_glue::WebPreferences* webkit_prefs);
 
 }  // namespace extension_webkit_preferences
 

@@ -26,6 +26,7 @@
 #include "webkit/glue/webpreferences.h"
 
 using content::WebContents;
+using webkit_glue::WebPreferences;
 
 namespace {
 

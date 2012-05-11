@@ -70,7 +70,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual ~WebContentsImpl();
 
   // Returns the content specific prefs for the given RVH.
-  static WebPreferences GetWebkitPrefs(
+  static webkit_glue::WebPreferences GetWebkitPrefs(
       content::RenderViewHost* rvh, const GURL& url);
 
   // Returns the SavePackage which manages the page saving job. May be NULL.
@@ -324,7 +324,7 @@ class CONTENT_EXPORT WebContentsImpl
                                       IPC::Message* reply_msg) OVERRIDE;
   virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
-  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
+  virtual webkit_glue::WebPreferences GetWebkitPrefs() OVERRIDE;
   virtual void OnUserGesture() OVERRIDE;
   virtual void OnIgnoredUIEvent() OVERRIDE;
   virtual void RendererUnresponsive(content::RenderViewHost* render_view_host,

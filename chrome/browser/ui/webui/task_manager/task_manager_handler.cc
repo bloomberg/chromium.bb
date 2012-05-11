@@ -347,7 +347,8 @@ void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
   content::RenderViewHost* rvh =
       web_ui()->GetWebContents()->GetRenderViewHost();
   if (rvh && rvh->GetDelegate()) {
-    WebPreferences webkit_prefs = rvh->GetDelegate()->GetWebkitPrefs();
+    webkit_glue::WebPreferences webkit_prefs =
+        rvh->GetDelegate()->GetWebkitPrefs();
     webkit_prefs.allow_scripts_to_close_windows = true;
     rvh->UpdateWebkitPreferences(webkit_prefs);
   } else {

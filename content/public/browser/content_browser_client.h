@@ -22,7 +22,10 @@ class GURL;
 class PluginProcessHost;
 class ResourceDispatcherHost;
 class SkBitmap;
+
+namespace webkit_glue {
 struct WebPreferences;
+}
 
 namespace content {
 class AccessTokenStore;
@@ -377,7 +380,7 @@ class ContentBrowserClient {
   // to the embedder to update it if it wants.
   virtual void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                                    const GURL& url,
-                                   WebPreferences* prefs) = 0;
+                                   webkit_glue::WebPreferences* prefs) = 0;
 
   // Inspector setting was changed and should be persisted.
   virtual void UpdateInspectorSetting(content::RenderViewHost* rvh,

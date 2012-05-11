@@ -308,7 +308,7 @@ bool ShellContentBrowserClient::IsFastShutdownPossible() {
 void ShellContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* rvh,
     const GURL& url,
-    WebPreferences* prefs) {
+    webkit_glue::WebPreferences* prefs) {
 }
 
 void ShellContentBrowserClient::UpdateInspectorSetting(

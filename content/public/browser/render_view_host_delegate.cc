@@ -30,8 +30,8 @@ WebContents* RenderViewHostDelegate::GetAsWebContents() {
   return NULL;
 }
 
-WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
-  return WebPreferences();
+webkit_glue::WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
+  return webkit_glue::WebPreferences();
 }
 
 bool RenderViewHostDelegate::PreHandleKeyboardEvent(

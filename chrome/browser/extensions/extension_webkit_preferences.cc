@@ -13,7 +13,7 @@ namespace extension_webkit_preferences {
 
 void SetPreferences(const Extension* extension,
                     content::ViewType render_view_type,
-                    WebPreferences* webkit_prefs) {
+                    webkit_glue::WebPreferences* webkit_prefs) {
   if (!extension)
     return;
 

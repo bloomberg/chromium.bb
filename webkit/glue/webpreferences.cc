@@ -25,6 +25,8 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebView;
 
+namespace webkit_glue {
+
 WebPreferences::WebPreferences()
     : standard_font_family(ASCIIToUTF16("Times New Roman")),
       fixed_font_family(ASCIIToUTF16("Courier New")),
@@ -352,3 +354,5 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }
+
+}  // namespace webkit_glue

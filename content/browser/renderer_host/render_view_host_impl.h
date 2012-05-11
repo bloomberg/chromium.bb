@@ -220,7 +220,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void Zoom(PageZoom zoom) OVERRIDE;
   virtual void SyncRendererPrefs() OVERRIDE;
   virtual void ToggleSpeechInput() OVERRIDE;
-  virtual void UpdateWebkitPreferences(const WebPreferences& prefs) OVERRIDE;
+  virtual void UpdateWebkitPreferences(
+      const webkit_glue::WebPreferences& prefs) OVERRIDE;
 
   void set_delegate(RenderViewHostDelegate* d) {
     CHECK(d);  // http://crbug.com/82827

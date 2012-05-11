@@ -1213,7 +1213,7 @@ bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
   // on the page).
-  WebPreferences prefs = render_view()->GetWebkitPreferences();
+  webkit_glue::WebPreferences prefs = render_view()->GetWebkitPreferences();
   prefs.javascript_enabled = false;
   prefs.java_enabled = false;
 

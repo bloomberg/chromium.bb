@@ -12,7 +12,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace webkit_glue {
 struct WebPreferences;
+}
 
 namespace WebKit {
 class WebFrame;
@@ -66,7 +68,7 @@ class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
   virtual gfx::NativeViewId GetHostWindow() const = 0;
 
   // Gets WebKit related preferences associated with this view.
-  virtual WebPreferences& GetWebkitPreferences() = 0;
+  virtual webkit_glue::WebPreferences& GetWebkitPreferences() = 0;
 
   // Returns the associated WebView. May return NULL when the view is closing.
   virtual WebKit::WebView* GetWebView() = 0;

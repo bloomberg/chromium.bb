@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,10 @@
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 #endif
 
+namespace webkit_glue {
 struct WebPreferences;
+}
+
 class TestWebViewDelegate;
 
 namespace WebKit {
@@ -31,7 +34,7 @@ class WebViewHost : public WebWidgetHost {
   static WebViewHost* Create(gfx::NativeView parent_view,
                              TestWebViewDelegate* delegate,
                              WebKit::WebDevToolsAgentClient* devtools_client,
-                             const WebPreferences& prefs);
+                             const webkit_glue::WebPreferences& prefs);
 
   WebKit::WebView* webview() const;
 

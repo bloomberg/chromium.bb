@@ -151,7 +151,7 @@ class MockContentBrowserClient : public ContentBrowserClient {
   virtual bool IsFastShutdownPossible() OVERRIDE;
   virtual void OverrideWebkitPrefs(RenderViewHost* rvh,
                                    const GURL& url,
-                                   WebPreferences* prefs) OVERRIDE;
+                                   webkit_glue::WebPreferences* prefs) OVERRIDE;
   virtual void UpdateInspectorSetting(RenderViewHost* rvh,
                                       const std::string& key,
                                       const std::string& value) OVERRIDE;

@@ -22,6 +22,8 @@ namespace WebKit {
 class WebView;
 }
 
+namespace webkit_glue {
+
 struct WEBKIT_GLUE_EXPORT WebPreferences {
   // Map of ISO 15924 four-letter script code to font family.  For example,
   // "Arab" to "My Arabic Font".
@@ -127,5 +129,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
 
   void Apply(WebKit::WebView* web_view) const;
 };
+
+}  // namespace webkit_glue
 
 #endif  // WEBKIT_GLUE_WEBPREFERENCES_H__

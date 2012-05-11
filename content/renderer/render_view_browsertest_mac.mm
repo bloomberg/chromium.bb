@@ -83,7 +83,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   );
   #undef HTML
 
-  WebPreferences prefs;
+  webkit_glue::WebPreferences prefs;
   prefs.enable_scroll_animator = false;
 
   RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);

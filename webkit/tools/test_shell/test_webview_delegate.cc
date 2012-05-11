@@ -128,6 +128,7 @@ using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
 using WebKit::WebVector;
 using WebKit::WebView;
+using webkit_glue::WebPreferences;
 
 namespace {
 

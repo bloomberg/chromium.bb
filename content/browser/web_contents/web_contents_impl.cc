@@ -155,6 +155,7 @@ using content::WebContentsObserver;
 using content::WebUI;
 using content::WebUIController;
 using content::WebUIControllerFactory;
+using webkit_glue::WebPreferences;
 
 namespace {
 

@@ -24,7 +24,7 @@ using WebKit::WebView;
 WebViewHost* WebViewHost::Create(NSView* parent_view,
                                  TestWebViewDelegate* delegate,
                                  WebDevToolsAgentClient* dev_tools_client,
-                                 const WebPreferences& prefs) {
+                                 const webkit_glue::WebPreferences& prefs) {
   WebViewHost* host = new WebViewHost();
 
   NSRect content_rect = [parent_view frame];

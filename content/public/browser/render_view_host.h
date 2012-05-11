@@ -16,7 +16,10 @@
 class FilePath;
 class GURL;
 struct WebDropData;
+
+namespace webkit_glue {
 struct WebPreferences;
+}
 
 namespace gfx {
 class Point;
@@ -246,7 +249,8 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void ToggleSpeechInput() = 0;
 
   // Passes a list of Webkit preferences to the renderer.
-  virtual void UpdateWebkitPreferences(const WebPreferences& prefs) = 0;
+  virtual void UpdateWebkitPreferences(
+      const webkit_glue::WebPreferences& prefs) = 0;
 };
 
 }  // namespace content

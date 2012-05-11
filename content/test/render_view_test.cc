@@ -158,7 +158,7 @@ void RenderViewTest::SetUp() {
       0,
       kOpenerId,
       content::RendererPreferences(),
-      WebPreferences(),
+      webkit_glue::WebPreferences(),
       new SharedRenderViewCounter(0),
       kRouteId,
       kSurfaceId,

@@ -9,7 +9,10 @@
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
+
+namespace webkit_glue {
 struct WebPreferences;
+}
 
 namespace content {
 
@@ -109,7 +112,7 @@ class WebContentsTester {
       content::PageTransition transition) = 0;
 
   // Promote GetWebkitPrefs to public.
-  virtual WebPreferences TestGetWebkitPrefs() = 0;
+  virtual webkit_glue::WebPreferences TestGetWebkitPrefs() = 0;
 };
 
 }  // namespace content

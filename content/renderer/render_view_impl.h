@@ -187,7 +187,7 @@ class RenderViewImpl : public RenderWidget,
       gfx::NativeViewId parent_hwnd,
       int32 opener_id,
       const content::RendererPreferences& renderer_prefs,
-      const WebPreferences& webkit_prefs,
+      const webkit_glue::WebPreferences& webkit_prefs,
       SharedRenderViewCounter* counter,
       int32 routing_id,
       int32 surface_id,
@@ -216,7 +216,7 @@ class RenderViewImpl : public RenderWidget,
 
   int history_list_offset() const { return history_list_offset_; }
 
-  const WebPreferences& webkit_preferences() const {
+  const webkit_glue::WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
   }
 
@@ -610,7 +610,7 @@ class RenderViewImpl : public RenderWidget,
   virtual int GetPageId() const OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual gfx::NativeViewId GetHostWindow() const OVERRIDE;
-  virtual WebPreferences& GetWebkitPreferences() OVERRIDE;
+  virtual webkit_glue::WebPreferences& GetWebkitPreferences() OVERRIDE;
   virtual WebKit::WebView* GetWebView() OVERRIDE;
   virtual WebKit::WebNode GetFocusedNode() const OVERRIDE;
   virtual WebKit::WebNode GetContextMenuNode() const OVERRIDE;
@@ -743,7 +743,7 @@ class RenderViewImpl : public RenderWidget,
   RenderViewImpl(gfx::NativeViewId parent_hwnd,
                  int32 opener_id,
                  const content::RendererPreferences& renderer_prefs,
-                 const WebPreferences& webkit_prefs,
+                 const webkit_glue::WebPreferences& webkit_prefs,
                  SharedRenderViewCounter* counter,
                  int32 routing_id,
                  int32 surface_id,
@@ -911,7 +911,8 @@ class RenderViewImpl : public RenderWidget,
   void OnThemeChanged();
   void OnUndo();
   void OnUpdateTargetURLAck();
-  CONTENT_EXPORT void OnUpdateWebPreferences(const WebPreferences& prefs);
+  CONTENT_EXPORT void OnUpdateWebPreferences(
+      const webkit_glue::WebPreferences& prefs);
 
 #if defined(OS_MACOSX)
   void OnWindowFrameChanged(const gfx::Rect& window_frame,
@@ -1032,7 +1033,7 @@ class RenderViewImpl : public RenderWidget,
 
   // Settings ------------------------------------------------------------------
 
-  WebPreferences webkit_preferences_;
+  webkit_glue::WebPreferences webkit_preferences_;
   content::RendererPreferences renderer_preferences_;
 
   HostZoomLevels host_zoom_levels_;

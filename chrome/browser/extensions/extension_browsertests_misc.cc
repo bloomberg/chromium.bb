@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
   ExtensionProcessManager* manager =
         browser()->profile()->GetExtensionProcessManager();
   ExtensionHost* host = FindHostWithPath(manager, "/backgroundpage.html", 1);
-  WebPreferences prefs =
+  webkit_glue::WebPreferences prefs =
       host->render_view_host()->GetDelegate()->GetWebkitPrefs();
   ASSERT_TRUE(prefs.experimental_webgl_enabled);
   ASSERT_TRUE(prefs.accelerated_compositing_enabled);

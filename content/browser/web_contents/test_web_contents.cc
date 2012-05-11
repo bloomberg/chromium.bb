@@ -82,7 +82,7 @@ void TestWebContents::TestDidNavigateWithReferrer(
   DidNavigate(render_view_host, params);
 }
 
-WebPreferences TestWebContents::TestGetWebkitPrefs() {
+webkit_glue::WebPreferences TestWebContents::TestGetWebkitPrefs() {
   return GetWebkitPrefs();
 }
 
