@@ -1545,7 +1545,8 @@ FileManager.prototype = {
 
   FileManager.prototype.renderCheckbox_ = function() {
     function stopEventPropagation(event) {
-      event.stopPropagation();
+      if (!event.shiftKey)
+        event.stopPropagation();
     }
     var input = this.document_.createElement('input');
     input.setAttribute('type', 'checkbox');
@@ -1554,6 +1555,12 @@ FileManager.prototype = {
     input.addEventListener('mousedown', stopEventPropagation);
     input.addEventListener('mouseup', stopEventPropagation);
     input.addEventListener('dblclick', stopEventPropagation);
+
+    input.addEventListener('click', function(event) {
+      // Revert default action if shift pressed.
+      if (event.shiftKey)
+        this.checked = !this.checked;
+    });
     return input;
   };
 
