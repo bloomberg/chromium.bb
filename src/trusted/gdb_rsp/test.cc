@@ -99,9 +99,8 @@ class ThreadMock : public IThread {
   uint32_t id_;
 };
 
-IThread* IThread::Acquire(uint32_t id, bool create) {
-  if (create) return new ThreadMock(id);
-  return NULL;
+IThread* IThread::Create(uint32_t id, struct NaClAppThread *) {
+  return new ThreadMock(id);
 }
 
 

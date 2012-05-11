@@ -35,7 +35,7 @@ int TestTarget() {
   }
 
   // Create a pseudo thread with registers set to their index
-  port::IThread *thread = port::IThread::Acquire(0x1234, true);
+  port::IThread *thread = port::IThread::Create(0x1234, NULL);
   for (uint32_t a = 0; a < abi->GetRegisterCount(); a++) {
     const Abi::RegDef* def = abi->GetRegisterDef(a);
     uint64_t val = static_cast<uint64_t>(a);

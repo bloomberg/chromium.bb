@@ -41,7 +41,8 @@ static IThread::ThreadMap_t *ThreadGetMap() {
 
 class Thread : public IThread {
  public:
-  explicit Thread(uint32_t id) : ref_(1), id_(id), state_(DEAD) {}
+  Thread(uint32_t id, struct NaClAppThread *natp)
+      : ref_(1), id_(id), natp_(natp), state_(DEAD) {}
   ~Thread() {}
 
   uint32_t GetId() {
@@ -124,37 +125,44 @@ class Thread : public IThread {
  private:
   uint32_t ref_;
   uint32_t id_;
+  struct NaClAppThread *natp_;
   State  state_;
   struct NaClSignalContext context_;
 
   friend class IThread;
 };
 
-// TODO(mseaborn): This is duplicated in the Windows version.
-IThread* IThread::Acquire(uint32_t id, bool create) {
+// TODO(eaeltsin): This is duplicated in the Windows version.
+IThread* IThread::Create(uint32_t id, struct NaClAppThread* natp) {
   MutexLock lock(ThreadGetLock());
   Thread* thread;
   ThreadMap_t &map = *ThreadGetMap();
 
-  // Check if we have that thread
   if (map.count(id)) {
-    thread = static_cast<Thread*>(map[id]);
-    thread->ref_++;
-    return thread;
+    NaClLog(LOG_FATAL, "IThread::Create: thread 0x%x already exists\n", id);
   }
 
-  // If not, can we create it?
-  if (create) {
-    // If not add it to the map
-    thread = new Thread(id);
-    map[id] = thread;
-    return thread;
-  }
-
-  return NULL;
+  thread = new Thread(id, natp);
+  map[id] = thread;
+  return thread;
 }
 
-// TODO(mseaborn): This is duplicated in the Windows version.
+// TODO(eaeltsin): This is duplicated in the Windows version.
+IThread* IThread::Acquire(uint32_t id) {
+  MutexLock lock(ThreadGetLock());
+  Thread* thread;
+  ThreadMap_t &map = *ThreadGetMap();
+
+  if (map.count(id) == 0) {
+    NaClLog(LOG_FATAL, "IThread::Acquire: thread 0x%x does not exist\n", id);
+  }
+
+  thread = static_cast<Thread*>(map[id]);
+  thread->ref_++;
+  return thread;
+}
+
+// TODO(eaeltsin): This is duplicated in the Windows version.
 void IThread::Release(IThread *ithread) {
   MutexLock lock(ThreadGetLock());
   Thread* thread = static_cast<Thread*>(ithread);

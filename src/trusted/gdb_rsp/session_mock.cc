@@ -143,7 +143,7 @@ void AddMockUpdate(SessionMock* ses, uint8_t sig) {
 
   // Setup Register Query
   std::string str = "";
-  port::IThread *thread = port::IThread::Acquire(0x1234, true);
+  port::IThread *thread = port::IThread::Create(0x1234, NULL);
   for (uint32_t a = 0; a < abi->GetRegisterCount(); a++) {
     char tmp[8];
     const Abi::RegDef* def = abi->GetRegisterDef(a);

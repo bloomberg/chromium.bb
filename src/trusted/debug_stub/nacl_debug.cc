@@ -180,14 +180,9 @@ void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
 
   if (NaClDebugIsEnabled()) {
     uint32_t id = IPlatform::GetCurrentThread();
-    IThread* thread = IThread::Acquire(id, true);
+    IThread* thread = IThread::Create(id, natp);
     g_nacl_debug_state->target_->SetMemoryBase(natp->nap->mem_start);
     g_nacl_debug_state->target_->TrackThread(thread);
-
-    /*
-     * TODO(noelallen) We need to associate the natp with this thread
-     * so we can get to the untrusted context preserved on a syscall.
-     */
   }
 }
 
@@ -196,15 +191,9 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
 
   if (NaClDebugIsEnabled()) {
     uint32_t id = IPlatform::GetCurrentThread();
-    IThread* thread = IThread::Acquire(id, false);
+    IThread* thread = IThread::Acquire(id);
     g_nacl_debug_state->target_->IgnoreThread(thread);
     IThread::Release(thread);
-
-    /*
-     * TODO(noelallen) We need to associate the natp with this thread
-     * so we can get to the thread once we support freeing a thread
-     * from a different thread than the executing one.
-     */
   }
 }
 

@@ -9,6 +9,7 @@
 #include <exception>
 #include <stdexcept>
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/port/mutex.h"
 #include "native_client/src/trusted/port/thread.h"
 
@@ -209,8 +210,8 @@ static int GetSizeofRegInCtx(int32_t num) {
 
 class Thread : public IThread {
  public:
-  explicit Thread(uint32_t id) : ref_(1), id_(id),
-                                 handle_(NULL), state_(RUNNING) {
+  Thread(uint32_t id, struct NaClAppThread *natp)
+      : ref_(1), id_(id), handle_(NULL), natp_(natp), state_(RUNNING) {
     handle_ = OpenThread(THREAD_ALL_ACCESS, false, id);
     memset(&context_, 0, sizeof(context_));
     context_.ContextFlags = CONTEXT_ALL;
@@ -361,6 +362,7 @@ class Thread : public IThread {
  private:
   uint32_t ref_;
   uint32_t id_;
+  struct NaClAppThread *natp_;
   State  state_;
   HANDLE handle_;
   CONTEXT context_;
@@ -368,32 +370,37 @@ class Thread : public IThread {
   friend class IThread;
 };
 
-IThread* IThread::Acquire(uint32_t id, bool create) {
+IThread* IThread::Create(uint32_t id, struct NaClAppThread* natp) {
   MutexLock lock(ThreadGetLock());
   Thread* thread;
   ThreadMap_t &map = *ThreadGetMap();
 
-  // Check if we have that thread
   if (map.count(id)) {
-    thread = static_cast<Thread*>(map[id]);
-    thread->ref_++;
-    return thread;
+    NaClLog(LOG_FATAL, "IThread::Create: thread 0x%x already exists\n", id);
   }
 
-  // If not, can we create it?
-  if (create) {
-    // If not add it to the map
-    thread = new Thread(id);
-    if (NULL == thread->handle_) {
-      delete thread;
-      return NULL;
-    }
-
-    map[id] = thread;
-    return thread;
+  thread = new Thread(id, natp);
+  if (NULL == thread->handle_) {
+    delete thread;
+    return NULL;
   }
 
-  return NULL;
+  map[id] = thread;
+  return thread;
+}
+
+IThread* IThread::Acquire(uint32_t id) {
+  MutexLock lock(ThreadGetLock());
+  Thread* thread;
+  ThreadMap_t &map = *ThreadGetMap();
+
+  if (map.count(id) == 0) {
+    NaClLog(LOG_FATAL, "IThread::Acquire: thread 0x%x does not exist\n", id);
+  }
+
+  thread = static_cast<Thread*>(map[id]);
+  thread->ref_++;
+  return thread;
 }
 
 void IThread::Release(IThread *ithread) {

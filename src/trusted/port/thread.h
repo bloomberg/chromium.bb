@@ -22,6 +22,8 @@
 
 #include "native_client/src/trusted/port/std_types.h"
 
+struct NaClAppThread;
+
 namespace port {
 
 class IThread {
@@ -50,7 +52,8 @@ class IThread {
 
   virtual void *GetContext() = 0;
 
-  static IThread *Acquire(uint32_t id, bool create = true);
+  static IThread *Create(uint32_t id, struct NaClAppThread *natp);
+  static IThread *Acquire(uint32_t id);
   static void Release(IThread *thread);
   static void SetExceptionCatch(CatchFunc_t func, void *cookie);
 
