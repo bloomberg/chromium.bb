@@ -13,28 +13,6 @@ Import('env')
 if not env.Bit('target_x86'):
   Return()
 
-# General adjustments to the environment for builds.
-
-# Create environment for building x86-64 validator.
-x86_64_validator_env = env.Clone();
-
-# TODO(khim): eliminate flag modification based on OS.
-# See http://code.google.com/p/nativeclient/issues/detail?id=2718 for details.
-if env.Bit('windows'):
-  x86_64_validator_env.FilterOut(CCFLAGS=['/O1'])
-# XCode 4.2 takes too long to compile with -Os, LLVM for MacOS times out.
-if x86_64_validator_env.Bit('mac'):
-  x86_64_validator_env.FilterOut(CCFLAGS=['-Os'])
-
-# ASAN takes too long with optimizations enabled and is killed on buildbot.
-# We don't really need to build with optimizations under ASAN (although it's
-# nice thing to do).
-# TODO(khim): Remove this when/if the following bug is fixed.
-#   http://code.google.com/p/address-sanitizer/issues/detail?id=61
-# NOTE: ASAN bot uses -O2 under Linux and -Os under mac.
-if x86_64_validator_env.Bit('asan'):
-  x86_64_validator_env.FilterOut(CCFLAGS=['-Os', '-O2'])
-
 # Defines the source directory where validator generated files should be added.
 rl_src_dir = '$OBJ_ROOT/src/trusted/validator_ragel'
 val_src_dir = '$MAIN_DIR/src/trusted/validator_ragel/gen'
@@ -120,10 +98,18 @@ if generate:
       )
       automatas.append(rl_file)
       c_file = '%s/%s-x86_%s.c' % (val_src_dir, automata, bits)
-      if automata == "decoder":
+      if automata == 'decoder':
         ragel_flags = '-T0'
       else:
         ragel_flags = '-G2'
+        if bits == '64':
+          c_file_table = '%s/validator-x86_64_table.c' % val_src_dir
+          env.Command(
+            target=c_file_table,
+            source=['unreviewed/%s-x86_%s.rl' % (automata, bits), rl_file],
+            action=['ragel -T0 -I%s ${SOURCES[0]} -o ${TARGET}' % (rl_src_dir)]
+          )
+          automatas.append(c_file_table)
       env.Command(
           target=c_file,
           source=['unreviewed/%s-x86_%s.rl' % (automata, bits), rl_file],
@@ -141,8 +127,8 @@ if generate:
 # architecture of the ELF file provided.
 env.ComponentLibrary('dfa_validate_x86_32',
                      ['gen/validator-x86_32.c'])
-x86_64_validator_env.ComponentLibrary('dfa_validate_x86_64',
-                                      ['gen/validator-x86_64.c'])
+env.ComponentLibrary('dfa_validate_x86_64',
+                     ['validator-x86_64-selector.c'])
 env.ComponentLibrary('dfa_decode_x86_32',
                      ['gen/decoder-x86_32.c'])
 env.ComponentLibrary('dfa_decode_x86_64',
