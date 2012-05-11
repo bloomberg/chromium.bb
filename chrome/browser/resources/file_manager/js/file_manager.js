@@ -2137,9 +2137,11 @@ FileManager.prototype = {
 
       if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT) {
         var box = this.document_.createElement('div');
+        box.className = 'thumbnail';
         function imageLoadCalback(index, box, img, transform) {
           if (index == 0)
-            self.initThumbnailZoom_(box, img, transform);
+            thumbnails.insertBefore(self.renderThumbnailZoom_(img, transform),
+                                    thumbnails.firstChild);
           onThumbnailLoaded();
         }
         var thumbnail = this.renderThumbnailBox_(entry, true,
@@ -2216,7 +2218,7 @@ FileManager.prototype = {
     * case when files might be not available is when the selection contains
     * uncached GData files and the browser is offline.
     * @return {boolean} True if all files in the current selection are
-   *                    available.
+    *                   available.
     */
   FileManager.prototype.isSelectionAvailable = function() {
     return !this.isOnGData() ||
@@ -2225,13 +2227,14 @@ FileManager.prototype = {
   };
 
   /**
-   * Initialize a thumbnail in the bottom pannel to pop up on mouse over.
+   * Creates enlarged image for a bottom pannel thumbnail.
    * Image's assumed to be just loaded and not inserted into the DOM.
    *
-   * @param {HTMLElement} box Element what's going to contain the image.
    * @param {HTMLElement} img Loaded image.
+   * @param {Object} transform Image transformation description.
+   * @return {Element} Created element.
    */
-  FileManager.prototype.initThumbnailZoom_ = function(box, img, transform) {
+  FileManager.prototype.renderThumbnailZoom_ = function(img, transform) {
     var width = img.width;
     var height = img.height;
     var THUMBNAIL_SIZE = 45;
@@ -2291,7 +2294,8 @@ FileManager.prototype = {
     this.applyImageTransformation_(largeImage, transform);
 
     largeImageBox.appendChild(largeImage);
-    box.insertBefore(largeImageBox, box.firstChild);
+    largeImageBox.style.zIndex = 1000;
+    return largeImageBox;
   };
 
   FileManager.prototype.updatePreviewPanelVisibility_ = function() {

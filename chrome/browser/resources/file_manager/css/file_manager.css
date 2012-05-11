@@ -680,45 +680,49 @@ input.rename {
   padding-left: 39px;
 }
 
-.preview-thumbnails > div {
+.preview-thumbnails > .thumbnail {
+  -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  background-color: #F2F2F2;
+  border: 1px solid #fff;
   height: 45px;
   margin: 0 0 0 -39px;  /* Show 7 pixels of the overlapped image */
   position: relative;
   width: 45px;
 }
 
-.preview-thumbnails > div > div.img-container {
+.preview-thumbnails > .thumbnail > .img-container {
   height: 45px;
   margin: 0;
   width: 45px;
 }
 
-.preview-thumbnails > div {
-  -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  background-color: #F2F2F2;
-  border: 1px solid #fff;
-}
-
-.preview-thumbnails > div > div.popup {
+.preview-thumbnails > .popup {
   -webkit-transform: translate(0, 3px) scale(0.95);
-  -webkit-transition: all 180ms ease-in;
-  -webkit-transition-delay: 300ms;
   background-color: #F2F2F2;
   border: 2px solid #fff;
   box-shadow: 0 0 0 1px #F0F0F0,
               0 0 0 2px #D0D0D0,
               2px 2px 6px rgba(0, 0, 0, 0.2);
-  margin: 0;
+  margin: 6px 0 0 -40px;
   opacity: 0;
   pointer-events: none;
   position: absolute;
   z-index: 1;
 }
 
-.preview-thumbnails > div:hover > div.popup {
+.preview-thumbnails > * {
+  -webkit-transition: all 180ms ease-in;
+  -webkit-transition-delay: 300ms;
+}
+
+.preview-thumbnails:hover > .popup {
   -webkit-transform: translate(0, 0) scale(1.0);
   opacity: 1;
   pointer-events: auto;
+}
+
+.preview-thumbnails:hover > .thumbnail {
+  opacity: 0;
 }
 
 /* cr.ui.Table has a black focus border by default, which we don't want. */
