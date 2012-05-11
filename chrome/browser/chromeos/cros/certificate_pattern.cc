@@ -16,16 +16,16 @@
 #include "base/values.h"
 #include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
-#include "net/base/x509_certificate.h"
 #include "net/base/x509_cert_types.h"
+#include "net/base/x509_certificate.h"
 
 // To shorten some of those long lines below.
-using std::vector;
-using std::string;
-using std::list;
-using std::find;
-using base::ListValue;
 using base::DictionaryValue;
+using base::ListValue;
+using std::find;
+using std::list;
+using std::string;
+using std::vector;
 
 namespace chromeos {
 
@@ -117,8 +117,7 @@ class IssuerCaRefFilter {
     if (issuer_cert && issuer_cert->nickname) {
       // Separate the nickname stored in the certificate at the colon, since
       // NSS likes to store it as token:nickname.
-      const char* delimiter =
-          ::strchr(cert.get()->os_cert_handle()->nickname, ':');
+      const char* delimiter = ::strchr(issuer_cert->nickname, ':');
       if (delimiter) {
         delimiter++;  // move past the colon.
         vector<string>::const_iterator pat_iter = issuer_ca_ref_list_.begin();
