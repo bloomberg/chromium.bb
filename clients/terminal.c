@@ -31,7 +31,6 @@
 #include <pty.h>
 #include <ctype.h>
 #include <cairo.h>
-#include <glib.h>
 #include <sys/epoll.h>
 
 #include <wayland-client.h>

@@ -34,7 +34,6 @@
 #include <assert.h>
 #include <time.h>
 #include <cairo.h>
-#include <glib.h>
 #include <sys/mman.h>
 #include <sys/epoll.h>
 

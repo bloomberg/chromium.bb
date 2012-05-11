@@ -34,7 +34,6 @@
 #include <stdlib.h>
 
 #include <cairo.h>
-#include <glib.h>
 
 #include "window.h"
 

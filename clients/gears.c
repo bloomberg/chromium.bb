@@ -26,11 +26,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <math.h>
 #include <time.h>
-#include <glib.h>
 
 #include <GL/gl.h>
 #include <EGL/egl.h>
