@@ -417,15 +417,23 @@ class TestRunCommandWithRetries(unittest.TestCase):
 
     os.chmod(path, 0755)
 
-    def _setup_counters(start, stop):
+    def _setup_counters(start, stop, sleep, sleep_cnt):
+      self.mox.ResetAll()
+      for i in xrange(sleep_cnt):
+        time.sleep(sleep * (i + 1))
+      self.mox.ReplayAll()
+
       with open(store_path, 'w') as f:
         f.write(str(start))
 
       with open(stop_path, 'w') as f:
         f.write(str(stop))
 
+    self.mox = mox.Mox()
+    self.mox.StubOutWithMock(time, 'sleep')
+    self.mox.ReplayAll()
 
-    _setup_counters(0, 0)
+    _setup_counters(0, 0, 0, 0)
     command = ['python', path]
     kwds = {'redirect_stdout': True, 'print_cmd': False}
 
@@ -433,18 +441,22 @@ class TestRunCommandWithRetries(unittest.TestCase):
 
     func = cros_build_lib.RunCommandWithRetries
 
-    _setup_counters(2, 2)
-    self.assertEqual(func(0, command, **kwds).output, '2\n')
+    _setup_counters(2, 2, 0, 0)
+    self.assertEqual(func(0, command, sleep=0, **kwds).output, '2\n')
+    self.mox.VerifyAll()
 
-    _setup_counters(0, 2)
-    self.assertEqual(func(2, command, **kwds).output, '2\n')
+    _setup_counters(0, 2, 1, 2)
+    self.assertEqual(func(2, command, sleep=1, **kwds).output, '2\n')
+    self.mox.VerifyAll()
 
-    _setup_counters(0, 1)
-    self.assertEqual(func(1, command, **kwds).output, '1\n')
+    _setup_counters(0, 1, 2, 1)
+    self.assertEqual(func(1, command, sleep=2, **kwds).output, '1\n')
+    self.mox.VerifyAll()
 
-    _setup_counters(0, 3)
+    _setup_counters(0, 3, 3, 2)
     self.assertRaises(cros_build_lib.RunCommandError,
-                      func, 2, command, **kwds)
+                      func, 2, command, sleep=3, **kwds)
+    self.mox.VerifyAll()
 
 
 class TestListFiles(unittest.TestCase):

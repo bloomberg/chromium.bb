@@ -963,6 +963,8 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
     max_retry: A positive integer representing how many times to retry
       the command before giving up.  Worst case, the command is invoked
       (max_retry + 1) times before failing.
+    sleep: Multiplier for how long to sleep between retries; will delay
+           (1*sleep) the first time, then (2*sleep), then ...
     args: Positional args passed to RunCommand; see RunCommand for specifics.
     kwds: Optional args passed to RunCommand; see RunCommand for specifics.
   Returns:
@@ -970,6 +972,7 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
   Raises:
     Exception:  Raises RunCommandError on error with optional error_message.
   """
+  sleep = kwds.pop('sleep', 0)
   try:
     return RunCommand(*args, **kwds)
   except TerminateRunCommandError:
@@ -977,6 +980,7 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
   except RunCommandError:
     # pylint: disable=W0612
     for attempt in xrange(max_retry):
+      time.sleep(sleep * (attempt + 1))
       try:
         return RunCommand(*args, **kwds)
       except TerminateRunCommandError:
