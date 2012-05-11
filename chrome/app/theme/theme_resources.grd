@@ -326,7 +326,7 @@
       <include name="IDR_THEME_NTP_BACKGROUND" file="ntp_background.png" type="BINDATA" />
       <!-- Ash has a special gray background. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="ash/theme_tab_background_incognito.png" type="BINDATA" />
+        <include name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="default_100/ash/theme_tab_background_incognito.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
         <include name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="theme_tab_background_incognito.png" type="BINDATA" />
@@ -546,10 +546,10 @@
 
       <!-- Images only used by Ash. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_TOOLBAR_SHADE_BOTTOM" file="ash/toolbar_shade_bottom.png" type="BINDATA" />
-        <include name="IDR_TOOLBAR_SHADE_LEFT" file="ash/toolbar_shade_left.png" type="BINDATA" />
-        <include name="IDR_TOOLBAR_SHADE_RIGHT" file="ash/toolbar_shade_right.png" type="BINDATA" />
-        <include name="IDR_TOOLBAR_SHADE_TOP" file="ash/toolbar_shade_top.png" type="BINDATA" />
+        <include name="IDR_TOOLBAR_SHADE_BOTTOM" file="default_100/ash/toolbar_shade_bottom.png" type="BINDATA" />
+        <include name="IDR_TOOLBAR_SHADE_LEFT" file="default_100/ash/toolbar_shade_left.png" type="BINDATA" />
+        <include name="IDR_TOOLBAR_SHADE_RIGHT" file="default_100/ash/toolbar_shade_right.png" type="BINDATA" />
+        <include name="IDR_TOOLBAR_SHADE_TOP" file="default_100/ash/toolbar_shade_top.png" type="BINDATA" />
       </if>
     </includes>
   </release>

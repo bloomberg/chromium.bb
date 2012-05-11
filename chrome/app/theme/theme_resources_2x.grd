@@ -18,10 +18,10 @@
       <!-- TODO(jamescook): Update all Chrome platforms to use the new art and metrics
            from Ash, crbug.com/118228 -->
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_BACK" file="ash/browser_back_normal.png" type="BINDATA" />
-        <include name="IDR_BACK_D" file="ash/browser_back_disabled.png" type="BINDATA" />
-        <include name="IDR_BACK_H" file="ash/browser_back_hot.png" type="BINDATA" />
-        <include name="IDR_BACK_P" file="ash/browser_back_pressed.png" type="BINDATA" />
+        <include name="IDR_BACK" file="default_100/ash/browser_back_normal.png" type="BINDATA" />
+        <include name="IDR_BACK_D" file="default_100/ash/browser_back_disabled.png" type="BINDATA" />
+        <include name="IDR_BACK_H" file="default_100/ash/browser_back_hover.png" type="BINDATA" />
+        <include name="IDR_BACK_P" file="default_100/ash/browser_back_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_BACK" file="back_2x.png" type="BINDATA" />
@@ -39,9 +39,9 @@
       <include name="IDR_BLOCKED_POPUPS" file="blocked_popups_2x.png" type="BINDATA" />
       <include name="IDR_BOOKMARKS_FAVICON" file="bookmarks_favicon_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_BROWSER_ACTION" file="ash/browser_action_normal.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTION_H" file="ash/browser_action_hot.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTION_P" file="ash/browser_action_pressed.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION" file="default_100/ash/browser_action_normal.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION_H" file="default_100/ash/browser_action_hover.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION_P" file="default_100/ash/browser_action_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_BROWSER_ACTION" file="browser_action_2x.png" type="BINDATA" />
@@ -49,9 +49,9 @@
         <include name="IDR_BROWSER_ACTION_P" file="browser_action_p_2x.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="ash/browser_actions_overflow_normal.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="ash/browser_actions_overflow_hot.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="ash/browser_actions_overflow_pressed.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="default_100/ash/browser_actions_overflow_normal.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="default_100/ash/browser_actions_overflow_hover.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="default_100/ash/browser_actions_overflow_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow_2x.png" type="BINDATA" />
@@ -63,7 +63,7 @@
       </if>
       <!-- Ash doesn't draw rounded content area, so needs a special top image. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_CONTENT_TOP_CENTER" file="ash/content_top_center.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_CENTER" file="default_100/ash/content_top_center.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
         <include name="IDR_CONTENT_TOP_CENTER" file="content_top_center_2x.png" type="BINDATA" />
@@ -78,10 +78,10 @@
       <include name="IDR_FEEDBACK_P" file="feedback_p_2x.png" type="BINDATA" />
       <include name="IDR_FLAGS" file="flags_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_FORWARD" file="ash/browser_forward_normal.png" type="BINDATA" />
-        <include name="IDR_FORWARD_D" file="ash/browser_forward_disabled.png" type="BINDATA" />
-        <include name="IDR_FORWARD_H" file="ash/browser_forward_hot.png" type="BINDATA" />
-        <include name="IDR_FORWARD_P" file="ash/browser_forward_pressed.png" type="BINDATA" />
+        <include name="IDR_FORWARD" file="default_100/ash/browser_forward_normal.png" type="BINDATA" />
+        <include name="IDR_FORWARD_D" file="default_100/ash/browser_forward_disabled.png" type="BINDATA" />
+        <include name="IDR_FORWARD_H" file="default_100/ash/browser_forward_hover.png" type="BINDATA" />
+        <include name="IDR_FORWARD_P" file="default_100/ash/browser_forward_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_FORWARD" file="forward_2x.png" type="BINDATA" />
@@ -92,9 +92,9 @@
       <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="infobar_geolocation_2x.png" type="BINDATA" />
       <include name="IDR_HISTORY_FAVICON" file="history_favicon_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_HOME" file="ash/browser_home_normal.png" type="BINDATA" />
-        <include name="IDR_HOME_H" file="ash/browser_home_hot.png" type="BINDATA" />
-        <include name="IDR_HOME_P" file="ash/browser_home_pressed.png" type="BINDATA" />
+        <include name="IDR_HOME" file="default_100/ash/browser_home_normal.png" type="BINDATA" />
+        <include name="IDR_HOME_H" file="default_100/ash/browser_home_hover.png" type="BINDATA" />
+        <include name="IDR_HOME_P" file="default_100/ash/browser_home_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_HOME" file="home_2x.png" type="BINDATA" />
@@ -121,10 +121,10 @@
       <include name="IDR_INFOBAR_TRANSLATE" file="infobar_translate_2x.png" type="BINDATA" />
       <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_LOCATIONBG_C" file="ash/browser_omnibox_middle.png" type="BINDATA" />
-        <include name="IDR_LOCATIONBG_L" file="ash/browser_omnibox_left.png" type="BINDATA" />
-        <include name="IDR_LOCATIONBG_R" file="ash/browser_omnibox_right.png" type="BINDATA" />
-        <include name="IDR_LOCATION_BAR_BORDER" file="ash/browser_omnibox_border.png" type="BINDATA" />
+        <include name="IDR_LOCATIONBG_C" file="default_100/ash/browser_omnibox_middle.png" type="BINDATA" />
+        <include name="IDR_LOCATIONBG_L" file="default_100/ash/browser_omnibox_left.png" type="BINDATA" />
+        <include name="IDR_LOCATIONBG_R" file="default_100/ash/browser_omnibox_right.png" type="BINDATA" />
+        <include name="IDR_LOCATION_BAR_BORDER" file="default_100/ash/browser_omnibox_border.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
@@ -138,10 +138,10 @@
       <include name="IDR_MOBILE" file="mobile_2x.png" type="BINDATA" />
       <include name="IDR_MOBILE_LIT" file="mobile_lit_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_NEWTAB_BUTTON" file="ash/newtab_normal.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_H" file="ash/newtab_hot.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P" file="ash/newtab_pressed.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_MASK" file="ash/newtab_button_mask.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON" file="default_100/ash/newtab_normal.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_H" file="default_100/ash/newtab_hover.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_P" file="default_100/ash/newtab_pressed.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_MASK" file="default_100/ash/newtab_button_mask.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_NEWTAB_BUTTON" file="newtab_2x.png" type="BINDATA" />
@@ -155,9 +155,9 @@
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="ev_bubble_r_2x.png" type="BINDATA" />
       <include name="IDR_PLUGIN" file="plugin_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_RELOAD" file="ash/browser_reload_normal.png" type="BINDATA" />
-        <include name="IDR_RELOAD_H" file="ash/browser_reload_hot.png" type="BINDATA" />
-        <include name="IDR_RELOAD_P" file="ash/browser_reload_pressed.png" type="BINDATA" />
+        <include name="IDR_RELOAD" file="default_100/ash/browser_reload_normal.png" type="BINDATA" />
+        <include name="IDR_RELOAD_H" file="default_100/ash/browser_reload_hover.png" type="BINDATA" />
+        <include name="IDR_RELOAD_P" file="default_100/ash/browser_reload_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_RELOAD" file="reload_2x.png" type="BINDATA" />
@@ -168,10 +168,10 @@
       <include name="IDR_STAR" file="star_2x.png" type="BINDATA" />
       <include name="IDR_STAR_LIT" file="star_lit_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_STOP" file="ash/browser_stop_normal.png" type="BINDATA" />
-        <include name="IDR_STOP_D" file="ash/browser_stop_disabled.png" type="BINDATA" />
-        <include name="IDR_STOP_H" file="ash/browser_stop_hot.png" type="BINDATA" />
-        <include name="IDR_STOP_P" file="ash/browser_stop_pressed.png" type="BINDATA" />
+        <include name="IDR_STOP" file="default_100/ash/browser_stop_normal.png" type="BINDATA" />
+        <include name="IDR_STOP_D" file="default_100/ash/browser_stop_disabled.png" type="BINDATA" />
+        <include name="IDR_STOP_H" file="default_100/ash/browser_stop_hover.png" type="BINDATA" />
+        <include name="IDR_STOP_P" file="default_100/ash/browser_stop_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_STOP" file="stop_2x.png" type="BINDATA" />
@@ -180,11 +180,11 @@
         <include name="IDR_STOP_P" file="stop_p_2x.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_ACTIVE_CENTER" file="ash/tab_active_center.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_LEFT" file="ash/tab_active_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_RIGHT" file="ash/tab_active_right.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_LEFT" file="ash/tab_alpha_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_RIGHT" file="ash/tab_alpha_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_CENTER" file="default_100/ash/tab_active_center.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_LEFT" file="default_100/ash/tab_active_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_RIGHT" file="default_100/ash/tab_active_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_LEFT" file="default_100/ash/tab_alpha_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_RIGHT" file="default_100/ash/tab_alpha_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center_2x.png" type="BINDATA" />
@@ -197,10 +197,10 @@
            fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
            then apply IDR_TAB_CLOSE_MASK.  See chrome/browser/ui/views/tabs/tab.cc -->
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_CLOSE" file="ash/tab_close_normal.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_H" file="ash/tab_close_hot.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_MASK" file="ash/tab_close_mask.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_P" file="ash/tab_close_pressed.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE" file="default_100/ash/tab_close_normal.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_H" file="default_100/ash/tab_close_hover.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_MASK" file="default_100/ash/tab_close_mask.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_P" file="default_100/ash/tab_close_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_TAB_CLOSE" file="tab_close_2x.png" type="BINDATA" />
@@ -211,9 +211,9 @@
       <include name="IDR_TAB_DROP_DOWN" file="tab_drop_down_2x.png" type="BINDATA" />
       <include name="IDR_TAB_DROP_UP" file="tab_drop_up_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_INACTIVE_CENTER" file="ash/tab_inactive_center.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_LEFT" file="ash/tab_inactive_left.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_RIGHT" file="ash/tab_inactive_right.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_CENTER" file="default_100/ash/tab_inactive_center.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_LEFT" file="default_100/ash/tab_inactive_left.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_RIGHT" file="default_100/ash/tab_inactive_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_TAB_INACTIVE_CENTER" file="tab_inactive_center_2x.png" type="BINDATA" />
@@ -222,10 +222,10 @@
       </if>
       <!-- Ash has a gray frame, Windows uses blue. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_FRAME" file="ash/theme_default_active.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_default_inactive.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO" file="ash/theme_incognito_active.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="ash/theme_incognito_inactive.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME" file="default_100/ash/theme_frame_default_active.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INACTIVE" file="default_100/ash/theme_frame_default_inactive.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO" file="default_100/ash/theme_frame_incognito_active.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="default_100/ash/theme_frame_incognito_inactive.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
         <include name="IDR_THEME_FRAME" file="theme_frame.png" type="BINDATA" />
@@ -235,14 +235,14 @@
       </if>
       <!-- Ash has gray tab backgrounds, Windows uses blue. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_TAB_BACKGROUND" file="ash/theme_tab_background.png" type="BINDATA" />
+        <include name="IDR_THEME_TAB_BACKGROUND" file="default_100/ash/theme_tab_background.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" type="BINDATA" />
       </if>
       <!-- Ash has a dark gray toolbar background, Windows has light gray. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_TOOLBAR" file="ash/theme_toolbar_default.png" type="BINDATA" />
+        <include name="IDR_THEME_TOOLBAR" file="default_100/ash/theme_toolbar_default.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash') and is_macosx">
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default2_2x.png" type="BINDATA" />
@@ -255,9 +255,9 @@
       </if>
       <include name="IDR_THROBBER_WAITING" file="throbber_waiting_2x.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TOOLS" file="ash/browser_tools_normal.png" type="BINDATA" />
-        <include name="IDR_TOOLS_H" file="ash/browser_tools_hot.png" type="BINDATA" />
-        <include name="IDR_TOOLS_P" file="ash/browser_tools_pressed.png" type="BINDATA" />
+        <include name="IDR_TOOLS" file="default_100/ash/browser_tools_normal.png" type="BINDATA" />
+        <include name="IDR_TOOLS_H" file="default_100/ash/browser_tools_hover.png" type="BINDATA" />
+        <include name="IDR_TOOLS_P" file="default_100/ash/browser_tools_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_TOOLS" file="tools_2x.png" type="BINDATA" />

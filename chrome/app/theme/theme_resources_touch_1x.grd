@@ -18,10 +18,10 @@
       <!-- TODO(jamescook): Update all Chrome platforms to use the new art and metrics
            from Ash, crbug.com/118228 -->
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_BACK" file="touch/browser_back_normal.png" type="BINDATA" />
-        <include name="IDR_BACK_D" file="touch/browser_back_disabled.png" type="BINDATA" />
-        <include name="IDR_BACK_H" file="touch/browser_back_hot.png" type="BINDATA" />
-        <include name="IDR_BACK_P" file="touch/browser_back_pressed.png" type="BINDATA" />
+        <include name="IDR_BACK" file="touch_100/browser_back_normal.png" type="BINDATA" />
+        <include name="IDR_BACK_D" file="touch_100/browser_back_disabled.png" type="BINDATA" />
+        <include name="IDR_BACK_H" file="touch_100/browser_back_hover.png" type="BINDATA" />
+        <include name="IDR_BACK_P" file="touch_100/browser_back_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_BACK" file="back.png" type="BINDATA" />
@@ -29,19 +29,19 @@
         <include name="IDR_BACK_H" file="back_h.png" type="BINDATA" />
         <include name="IDR_BACK_P" file="back_p.png" type="BINDATA" />
       </if>
-      <include name="IDR_BALLOON_WRENCH" file="touch/notification_wrench_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_H" file="touch/notification_wrench_h_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_P" file="touch/notification_wrench_p_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_COOKIES" file="touch/blocked_cookies_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_IMAGES" file="touch/blocked_images_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_JAVASCRIPT" file="touch/blocked_script_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_PLUGINS" file="touch/blocked_plugins_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_POPUPS" file="touch/blocked_popups_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_BOOKMARKS_FAVICON" file="touch/bookmarks_favicon_touch_1_0x.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH" file="touch_100/notification_wrench.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH_H" file="touch_100/notification_wrench_hover.png" type="BINDATA" />
+      <include name="IDR_BALLOON_WRENCH_P" file="touch_100/notification_wrench_pressed.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_COOKIES" file="touch_100/blocked_cookies.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_IMAGES" file="touch_100/blocked_images.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_JAVASCRIPT" file="touch_100/blocked_script.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_PLUGINS" file="touch_100/blocked_plugins.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_POPUPS" file="touch_100/blocked_popups.png" type="BINDATA" />
+      <include name="IDR_BOOKMARKS_FAVICON" file="touch_100/bookmarks_favicon.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_BROWSER_ACTION" file="touch/browser_action_normal.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTION_H" file="touch/browser_action_hot.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTION_P" file="touch/browser_action_pressed.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION" file="touch_100/browser_action_normal.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION_H" file="touch_100/browser_action_hover.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTION_P" file="touch_100/browser_action_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_BROWSER_ACTION" file="browser_action.png" type="BINDATA" />
@@ -49,9 +49,9 @@
         <include name="IDR_BROWSER_ACTION_P" file="browser_action_p.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="touch/browser_actions_overflow_normal.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="touch/browser_actions_overflow_hot.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="touch/browser_actions_overflow_pressed.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="touch_100/browser_actions_overflow_normal.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="touch_100/browser_actions_overflow_hover.png" type="BINDATA" />
+        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="touch_100/browser_actions_overflow_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow.png" type="BINDATA" />
@@ -59,29 +59,29 @@
         <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_p.png" type="BINDATA" />
       </if>
       <if expr="is_win">
-        <include name="IDR_CONFLICT_FAVICON" file="touch/about_conflicts_favicon_touch_1_0x.png" type="BINDATA" />
+        <include name="IDR_CONFLICT_FAVICON" file="touch_100/about_conflicts_favicon.png" type="BINDATA" />
       </if>
       <!-- Ash doesn't draw rounded content area, so needs a special top image. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_CONTENT_TOP_CENTER" file="touch/content_top_center_ash.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_CENTER" file="touch_100/content_top_center_ash.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
-        <include name="IDR_CONTENT_TOP_CENTER" file="touch/content_top_center_touch_1_0x.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_CENTER" file="touch_100/content_top_center.png" type="BINDATA" />
       </if>
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="touch/content_top_left_corner_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="touch/content_top_left_corner_mask_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="touch/content_top_right_corner_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="touch/content_top_right_corner_mask_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_DOWNLOADS_FAVICON" file="touch/downloads_favicon_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK" file="touch/feedback_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_H" file="touch/feedback_h_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_P" file="touch/feedback_p_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_FLAGS" file="touch/flags_touch_1_0x.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="touch_100/content_top_left_corner.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="touch_100/content_top_left_corner_mask.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="touch_100/content_top_right_corner.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="touch_100/content_top_right_corner_mask.png" type="BINDATA" />
+      <include name="IDR_DOWNLOADS_FAVICON" file="touch_100/downloads_favicon.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK" file="touch_100/feedback.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK_H" file="touch_100/feedback_hover.png" type="BINDATA" />
+      <include name="IDR_FEEDBACK_P" file="touch_100/feedback_pressed.png" type="BINDATA" />
+      <include name="IDR_FLAGS" file="touch_100/flags.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_FORWARD" file="touch/browser_forward_normal.png" type="BINDATA" />
-        <include name="IDR_FORWARD_D" file="touch/browser_forward_disabled.png" type="BINDATA" />
-        <include name="IDR_FORWARD_H" file="touch/browser_forward_hot.png" type="BINDATA" />
-        <include name="IDR_FORWARD_P" file="touch/browser_forward_pressed.png" type="BINDATA" />
+        <include name="IDR_FORWARD" file="touch_100/browser_forward_normal.png" type="BINDATA" />
+        <include name="IDR_FORWARD_D" file="touch_100/browser_forward_disabled.png" type="BINDATA" />
+        <include name="IDR_FORWARD_H" file="touch_100/browser_forward_hover.png" type="BINDATA" />
+        <include name="IDR_FORWARD_P" file="touch_100/browser_forward_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_FORWARD" file="forward.png" type="BINDATA" />
@@ -89,42 +89,42 @@
         <include name="IDR_FORWARD_H" file="forward_h.png" type="BINDATA" />
         <include name="IDR_FORWARD_P" file="forward_p.png" type="BINDATA" />
       </if>
-      <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="touch/infobar_geolocation_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_HISTORY_FAVICON" file="touch/history_favicon_touch_1_0x.png" type="BINDATA" />
+      <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="touch_100/infobar_geolocation.png" type="BINDATA" />
+      <include name="IDR_HISTORY_FAVICON" file="touch_100/history_favicon.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_HOME" file="touch/browser_home_normal.png" type="BINDATA" />
-        <include name="IDR_HOME_H" file="touch/browser_home_hot.png" type="BINDATA" />
-        <include name="IDR_HOME_P" file="touch/browser_home_pressed.png" type="BINDATA" />
+        <include name="IDR_HOME" file="touch_100/browser_home_normal.png" type="BINDATA" />
+        <include name="IDR_HOME_H" file="touch_100/browser_home_hover.png" type="BINDATA" />
+        <include name="IDR_HOME_P" file="touch_100/browser_home_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_HOME" file="home.png" type="BINDATA" />
         <include name="IDR_HOME_H" file="home_h.png" type="BINDATA" />
         <include name="IDR_HOME_P" file="home_p.png" type="BINDATA" />
       </if>
-      <include name="IDR_INFOBAR_ALT_NAV_URL" file="touch/infobar_didyoumean_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_AUTOFILL" file="touch/infobar_autofill_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_AUTOLOGIN" file="touch/infobar_autologin_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_COOKIE" file="touch/infobar_cookie_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="touch/infobar_desktop_notifications_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_INCOMPLETE" file="touch/infobar_incomplete_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="touch/infobar_camera_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="touch/infobar_microphone_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="touch/infobar_multiple_downloads_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="touch/infobar_plugin_crashed_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="touch/infobar_plugin_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_QUESTION_MARK" file="touch/infobar_questionmark_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_RESTORE_SESSION" file="touch/infobar_restore_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SAVE_PASSWORD" file="touch/infobar_savepassword_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SSL_WARNING" file="touch/infobar_insecure_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SYNC" file="touch/infobar_sync_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_THEME" file="touch/infobar_theme_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_TRANSLATE" file="touch/infobar_translate_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="touch/keyword_search_magnifier_touch_1_0x.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_ALT_NAV_URL" file="touch_100/infobar_didyoumean.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_AUTOFILL" file="touch_100/infobar_autofill.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_AUTOLOGIN" file="touch_100/infobar_autologin.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_COOKIE" file="touch_100/infobar_cookie.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="touch_100/infobar_desktop_notifications.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_INCOMPLETE" file="touch_100/infobar_incomplete.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="touch_100/infobar_camera.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="touch_100/infobar_microphone.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="touch_100/infobar_multiple_downloads.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="touch_100/infobar_plugin_crashed.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="touch_100/infobar_plugin.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_QUESTION_MARK" file="touch_100/infobar_questionmark.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_RESTORE_SESSION" file="touch_100/infobar_restore.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_SAVE_PASSWORD" file="touch_100/infobar_savepassword.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_SSL_WARNING" file="touch_100/infobar_insecure.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_SYNC" file="touch_100/infobar_sync.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_THEME" file="touch_100/infobar_theme.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_TRANSLATE" file="touch_100/infobar_translate.png" type="BINDATA" />
+      <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="touch_100/keyword_search_magnifier.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_LOCATIONBG_C" file="touch/browser_omnibox_middle.png" type="BINDATA" />
-        <include name="IDR_LOCATIONBG_L" file="touch/browser_omnibox_left.png" type="BINDATA" />
-        <include name="IDR_LOCATIONBG_R" file="touch/browser_omnibox_right.png" type="BINDATA" />
-        <include name="IDR_LOCATION_BAR_BORDER" file="touch/browser_omnibox_border.png" type="BINDATA" />
+        <include name="IDR_LOCATIONBG_C" file="touch_100/browser_omnibox_middle.png" type="BINDATA" />
+        <include name="IDR_LOCATIONBG_L" file="touch_100/browser_omnibox_left.png" type="BINDATA" />
+        <include name="IDR_LOCATIONBG_R" file="touch_100/browser_omnibox_right.png" type="BINDATA" />
+        <include name="IDR_LOCATION_BAR_BORDER" file="touch_100/browser_omnibox_border.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
@@ -132,16 +132,16 @@
         <include name="IDR_LOCATIONBG_R" file="omnibox_r.png" type="BINDATA" />
         <include name="IDR_LOCATION_BAR_BORDER" file="omnibox_border.png" type="BINDATA" />
       </if>
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="touch/keyword_search_bubble_c_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="touch/keyword_search_bubble_l_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="touch/keyword_search_bubble_r_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_MOBILE" file="touch/mobile_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_MOBILE_LIT" file="touch/mobile_lit_touch_1_0x.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="touch_100/keyword_search_bubble_c.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="touch_100/keyword_search_bubble_l.png" type="BINDATA" />
+      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="touch_100/keyword_search_bubble_r.png" type="BINDATA" />
+      <include name="IDR_MOBILE" file="touch_100/mobile.png" type="BINDATA" />
+      <include name="IDR_MOBILE_LIT" file="touch_100/mobile_lit.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_NEWTAB_BUTTON" file="touch/newtab_normal.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_H" file="touch/newtab_hot.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P" file="touch/newtab_pressed.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_MASK" file="touch/newtab_button_mask.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON" file="touch_100/newtab_normal.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_H" file="touch_100/newtab_hover.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_P" file="touch_100/newtab_pressed.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_MASK" file="touch_100/newtab_button_mask.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_NEWTAB_BUTTON" file="newtab.png" type="BINDATA" />
@@ -149,29 +149,29 @@
         <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" type="BINDATA" />
       </if>
-      <include name="IDR_SETTINGS_FAVICON" file="touch/settings_favicon_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="touch/ev_bubble_c_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="touch/ev_bubble_l_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="touch/ev_bubble_r_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_PLUGIN" file="touch/plugin_touch_1_0x.png" type="BINDATA" />
+      <include name="IDR_SETTINGS_FAVICON" file="touch_100/settings_favicon.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="touch_100/ev_bubble_c.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="touch_100/ev_bubble_l.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="touch_100/ev_bubble_r.png" type="BINDATA" />
+      <include name="IDR_PLUGIN" file="touch_100/plugin.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_RELOAD" file="touch/browser_reload_normal.png" type="BINDATA" />
-        <include name="IDR_RELOAD_H" file="touch/browser_reload_hot.png" type="BINDATA" />
-        <include name="IDR_RELOAD_P" file="touch/browser_reload_pressed.png" type="BINDATA" />
+        <include name="IDR_RELOAD" file="touch_100/browser_reload_normal.png" type="BINDATA" />
+        <include name="IDR_RELOAD_H" file="touch_100/browser_reload_hover.png" type="BINDATA" />
+        <include name="IDR_RELOAD_P" file="touch_100/browser_reload_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_RELOAD" file="reload.png" type="BINDATA" />
         <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
         <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
       </if>
-      <include name="IDR_SAD_FAVICON" file="touch/sadfavicon_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_STAR" file="touch/star_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_STAR_LIT" file="touch/star_lit_touch_1_0x.png" type="BINDATA" />
+      <include name="IDR_SAD_FAVICON" file="touch_100/sadfavicon.png" type="BINDATA" />
+      <include name="IDR_STAR" file="touch_100/star.png" type="BINDATA" />
+      <include name="IDR_STAR_LIT" file="touch_100/star_lit.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_STOP" file="touch/browser_stop_normal.png" type="BINDATA" />
-        <include name="IDR_STOP_D" file="touch/browser_stop_disabled.png" type="BINDATA" />
-        <include name="IDR_STOP_H" file="touch/browser_stop_hot.png" type="BINDATA" />
-        <include name="IDR_STOP_P" file="touch/browser_stop_pressed.png" type="BINDATA" />
+        <include name="IDR_STOP" file="touch_100/browser_stop_normal.png" type="BINDATA" />
+        <include name="IDR_STOP_D" file="touch_100/browser_stop_disabled.png" type="BINDATA" />
+        <include name="IDR_STOP_H" file="touch_100/browser_stop_hover.png" type="BINDATA" />
+        <include name="IDR_STOP_P" file="touch_100/browser_stop_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_STOP" file="stop.png" type="BINDATA" />
@@ -180,11 +180,11 @@
         <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_ACTIVE_CENTER" file="touch/tab_active_center.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_LEFT" file="touch/tab_active_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_RIGHT" file="touch/tab_active_right.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_LEFT" file="touch/tab_alpha_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_RIGHT" file="touch/tab_alpha_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_CENTER" file="touch_100/tab_active_center.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_LEFT" file="touch_100/tab_active_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_RIGHT" file="touch_100/tab_active_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_LEFT" file="touch_100/tab_alpha_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_RIGHT" file="touch_100/tab_alpha_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
@@ -197,10 +197,10 @@
            fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
            then apply IDR_TAB_CLOSE_MASK.  See chrome/browser/ui/views/tabs/tab.cc -->
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_CLOSE" file="touch/tab_close_touch_1_0x.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_H" file="touch/tab_close_h_touch_1_0x.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_MASK" file="touch/tab_close_mask_touch_1_0x.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_P" file="touch/tab_close_p_touch_1_0x.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE" file="touch_100/tab_close_normal.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_H" file="touch_100/tab_close_hover.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_MASK" file="touch_100/tab_close_mask.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_P" file="touch_100/tab_close_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_TAB_CLOSE" file="tab_close.png" type="BINDATA" />
@@ -208,12 +208,12 @@
         <include name="IDR_TAB_CLOSE_MASK" file="tab_close_mask.png" type="BINDATA" />
         <include name="IDR_TAB_CLOSE_P" file="tab_close_p.png" type="BINDATA" />
       </if>
-      <include name="IDR_TAB_DROP_DOWN" file="touch/tab_drop_down_touch_1_0x.png" type="BINDATA" />
-      <include name="IDR_TAB_DROP_UP" file="touch/tab_drop_up_touch_1_0x.png" type="BINDATA" />
+      <include name="IDR_TAB_DROP_DOWN" file="touch_100/tab_drop_down.png" type="BINDATA" />
+      <include name="IDR_TAB_DROP_UP" file="touch_100/tab_drop_up.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_INACTIVE_CENTER" file="touch/tab_inactive_center.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_LEFT" file="touch/tab_inactive_left.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_RIGHT" file="touch/tab_inactive_right.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_CENTER" file="touch_100/tab_inactive_center.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_LEFT" file="touch_100/tab_inactive_left.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_RIGHT" file="touch_100/tab_inactive_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_TAB_INACTIVE_CENTER" file="tab_inactive_center.png" type="BINDATA" />
@@ -222,10 +222,10 @@
       </if>
       <!-- Ash has a gray frame, Windows uses blue. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_FRAME" file="ash/theme_default_active.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_default_inactive.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO" file="ash/theme_incognito_active.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="ash/theme_incognito_inactive.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME" file="default_100/ash/theme_frame_default_active.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INACTIVE" file="default_100/ash/theme_frame_default_inactive.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO" file="default_100/ash/theme_frame_incognito_active.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="default_100/ash/theme_frame_incognito_inactive.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
         <include name="IDR_THEME_FRAME" file="theme_frame.png" type="BINDATA" />
@@ -235,31 +235,31 @@
       </if>
       <!-- Ash has gray tab backgrounds, Windows uses blue. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_TAB_BACKGROUND" file="ash/theme_tab_background.png" type="BINDATA" />
+        <include name="IDR_THEME_TAB_BACKGROUND" file="default_100/ash/theme_tab_background.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" type="BINDATA" />
       </if>
       <!-- Ash has a dark gray toolbar background, Windows has light gray. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_TOOLBAR" file="ash/theme_toolbar_default.png" type="BINDATA" />
+        <include name="IDR_THEME_TOOLBAR" file="default_100/ash/theme_toolbar_default.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash') and is_macosx">
         <!-- TODO(jamescook): Is this right? -->
-        <include name="IDR_THEME_TOOLBAR" file="touch/theme_toolbar_default2_touch_1_0x.png" type="BINDATA" />
+        <include name="IDR_THEME_TOOLBAR" file="touch_100/theme_toolbar_default2.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash') and not is_macosx">
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default.png" type="BINDATA" />
       </if>
       <if expr="is_macosx">
         <!-- TODO(jamescook): Is this right? -->
-        <include name="IDR_THEME_TOOLBAR_INACTIVE" file="touch/theme_toolbar_default_inactive2_touch_1_0x.png" type="BINDATA" />
+        <include name="IDR_THEME_TOOLBAR_INACTIVE" file="touch_100/theme_toolbar_default_inactive2.png" type="BINDATA" />
       </if>
-      <include name="IDR_THROBBER_WAITING" file="touch/throbber_waiting_touch_1_0x.png" type="BINDATA" />
+      <include name="IDR_THROBBER_WAITING" file="touch_100/throbber_waiting.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TOOLS" file="touch/browser_tools_normal.png" type="BINDATA" />
-        <include name="IDR_TOOLS_H" file="touch/browser_tools_hot.png" type="BINDATA" />
-        <include name="IDR_TOOLS_P" file="touch/browser_tools_pressed.png" type="BINDATA" />
+        <include name="IDR_TOOLS" file="touch_100/browser_tools_normal.png" type="BINDATA" />
+        <include name="IDR_TOOLS_H" file="touch_100/browser_tools_hover.png" type="BINDATA" />
+        <include name="IDR_TOOLS_P" file="touch_100/browser_tools_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_TOOLS" file="tools.png" type="BINDATA" />
