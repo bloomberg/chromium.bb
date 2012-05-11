@@ -469,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 // Tests that scripts are not duplicated after Scripts Panel switch.
 // Disabled - see http://crbug.com/124300
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestNoScriptDuplicatesOnPanelSwitch) {
+                       TestNoScriptDuplicatesOnPanelSwitch) {
   RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
 }
 
