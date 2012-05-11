@@ -503,6 +503,11 @@ NSDictionary *readConfigurationData(const char *configFile) {
   if (minidumpContents_) {
     [upload addFileContents:minidumpContents_ name:@"upload_file_minidump"];
 
+    // If there is a log file, upload it together with the minidump.
+    if (logFileData_) {
+      [upload addFileContents:logFileData_ name:@"log"];
+    }
+
     // Send it
     NSError *error = nil;
     NSData *data = [upload send:&error];
@@ -543,12 +548,12 @@ NSDictionary *readConfigurationData(const char *configFile) {
                      reportID );
     }
     [result release];
+  } else {
+    // Minidump is missing -- upload just the log file.
+    if (logFileData_) {
+      [self uploadData:logFileData_ name:@"log"];
+    }
   }
-
-  if (logFileData_) {
-    [self uploadData:logFileData_ name:@"log"];
-  }
-
   [upload release];
 }
 

@@ -67,7 +67,7 @@
   NSString *fmt = @"--%@\r\nContent-Disposition: form-data; name=\"%@\"; "
     "filename=\"minidump.dmp\"\r\nContent-Type: application/octet-stream\r\n\r\n";
   NSString *pre = [NSString stringWithFormat:fmt, boundary_, escaped];
-  NSString *post = [NSString stringWithFormat:@"\r\n--%@--\r\n", boundary_];
+  NSString *post = [NSString stringWithFormat:@"\r\n--%@\r\n", boundary_];
 
   [data appendData:[pre dataUsingEncoding:NSUTF8StringEncoding]];
   [data appendData:contents];
@@ -181,6 +181,9 @@
 
     [postBody appendData:fileData];
   }
+
+  NSString *epilogue = [NSString stringWithFormat:@"\r\n--%@--\r\n", boundary_];
+  [postBody appendData:[epilogue dataUsingEncoding:NSUTF8StringEncoding]];
 
   [req setHTTPBody:postBody];
   [req setHTTPMethod:@"POST"];
