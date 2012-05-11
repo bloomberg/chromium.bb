@@ -359,7 +359,7 @@ PlatformFileError IsolatedFileUtil::CopyOrMoveFile(
 
 PlatformFileError IsolatedFileUtil::CopyInForeignFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& src_path,
+      const FilePath& src_file_path,
       const FileSystemPath& dest_path) {
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }

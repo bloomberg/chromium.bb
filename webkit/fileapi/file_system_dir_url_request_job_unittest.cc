@@ -257,10 +257,10 @@ TEST_F(FileSystemDirURLRequestJobTest, DirectoryListing) {
 #endif
 
   EXPECT_TRUE(std::getline(in, line));
-  VerifyListingEntry(line, "baz", "baz", true, 0);
+  VerifyListingEntry(line, "hoge", "hoge", false, 10);
 
   EXPECT_TRUE(std::getline(in, line));
-  VerifyListingEntry(line, "hoge", "hoge", false, 10);
+  VerifyListingEntry(line, "baz", "baz", true, 0);
 }
 
 TEST_F(FileSystemDirURLRequestJobTest, InvalidURL) {

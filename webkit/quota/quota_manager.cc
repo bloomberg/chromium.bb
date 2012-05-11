@@ -62,6 +62,8 @@ void CountOriginType(const std::set<GURL>& origins,
 
 }  // anonymous namespace
 
+const int64 QuotaManager::kNoLimit = kint64max;
+
 const int QuotaManager::kPerHostTemporaryPortion = 5;  // 20%
 
 const char QuotaManager::kDatabaseName[] = "QuotaManager";
@@ -79,7 +81,7 @@ void CallGetUsageAndQuotaCallback(
     const QuotaAndUsage& quota_and_usage) {
   int64 usage =
       unlimited ? quota_and_usage.unlimited_usage : quota_and_usage.usage;
-  int64 quota = unlimited ? kint64max : quota_and_usage.quota;
+  int64 quota = unlimited ? QuotaManager::kNoLimit : quota_and_usage.quota;
   callback.Run(status, usage, quota);
 }
 
@@ -305,6 +307,7 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
         callback_(callback),
         weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
+
  protected:
   virtual void Run() OVERRIDE {
     remaining_trackers_ = 2;
@@ -671,7 +674,7 @@ class QuotaManager::DatabaseTaskBase : public QuotaThreadTask {
 
 class QuotaManager::InitializeTask : public QuotaManager::DatabaseTaskBase {
  public:
-  InitializeTask(QuotaManager* manager)
+  explicit InitializeTask(QuotaManager* manager)
       : DatabaseTaskBase(manager),
         temporary_quota_override_(-1),
         desired_available_space_(-1) {
@@ -1409,7 +1412,6 @@ void QuotaManager::DeleteHostData(const std::string& host,
                                   StorageType type,
                                   int quota_client_mask,
                                   const StatusCallback& callback) {
-
   LazyInitialize();
 
   if (host.empty() || clients_.empty()) {
@@ -1736,7 +1738,7 @@ void QuotaManager::DidGetDatabaseLRUOrigin(const GURL& origin) {
 }
 
 void QuotaManager::DeleteOnCorrectThread() const {
-  if (!io_thread_->BelongsToCurrentThread() && 
+  if (!io_thread_->BelongsToCurrentThread() &&
       io_thread_->DeleteSoon(FROM_HERE, this)) {
     return;
   }

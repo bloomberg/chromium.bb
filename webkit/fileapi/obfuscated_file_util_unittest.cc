@@ -140,6 +140,18 @@ class ObfuscatedFileUtilTest : public testing::Test {
     test_helper_.TearDown();
   }
 
+  scoped_ptr<FileSystemOperationContext> LimitedContext(
+      int64 allowed_bytes_growth) {
+    scoped_ptr<FileSystemOperationContext> context(
+        test_helper_.NewOperationContext());
+    context->set_allowed_bytes_growth(allowed_bytes_growth);
+    return context.Pass();
+  }
+
+  scoped_ptr<FileSystemOperationContext> UnlimitedContext() {
+    return LimitedContext(kint64max);
+  }
+
   FileSystemOperationContext* NewContext(FileSystemTestOriginHelper* helper) {
     FileSystemOperationContext* context;
     if (helper)
@@ -180,6 +192,11 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return type_;
   }
 
+  int64 ComputeTotalFileSize() {
+    return test_helper_.ComputeCurrentOriginUsage() -
+        test_helper_.ComputeCurrentDirectoryDatabaseUsage();
+  }
+
   void GetUsageFromQuotaManager() {
     quota_manager_->GetUsageAndQuota(
       origin(), test_helper_.storage_type(),
@@ -202,6 +219,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   FileSystemPath CreatePathFromUTF8(const std::string& path) {
     return test_helper_.CreatePathFromUTF8(path);
+  }
+
+  int64 PathCost(const FileSystemPath& path) {
+    return ObfuscatedFileUtil::ComputeFilePathCost(path.internal_path());
   }
 
   FileSystemPath CreatePath(const FilePath& path) {
@@ -293,6 +314,48 @@ class ObfuscatedFileUtilTest : public testing::Test {
       EXPECT_TRUE(ofu()->DirectoryExists(context.get(),
           root_path.Append(*iter)));
     }
+  }
+
+  class UsageVerifyHelper {
+   public:
+    UsageVerifyHelper(scoped_ptr<FileSystemOperationContext> context,
+                      FileSystemTestOriginHelper* test_helper,
+                      int64 expected_usage)
+        : context_(context.Pass()),
+          test_helper_(test_helper),
+          expected_usage_(expected_usage) {}
+
+    ~UsageVerifyHelper() {
+      Check();
+    }
+
+    FileSystemOperationContext* context() {
+      return context_.get();
+    }
+
+   private:
+    void Check() {
+      ASSERT_EQ(expected_usage_,
+                test_helper_->GetCachedOriginUsage());
+    }
+
+    scoped_ptr<FileSystemOperationContext> context_;
+    FileSystemTestOriginHelper* test_helper_;
+    int64 growth_;
+    int64 expected_usage_;
+  };
+
+  scoped_ptr<UsageVerifyHelper> AllowUsageIncrease(int64 requested_growth) {
+    int64 usage = test_helper_.GetCachedOriginUsage();
+    return scoped_ptr<UsageVerifyHelper>(new UsageVerifyHelper(
+        LimitedContext(requested_growth),
+        &test_helper_, usage + requested_growth));
+  }
+
+  scoped_ptr<UsageVerifyHelper> DisallowUsageIncrease(int64 requested_growth) {
+    int64 usage = test_helper_.GetCachedOriginUsage();
+    return scoped_ptr<UsageVerifyHelper>(new UsageVerifyHelper(
+        LimitedContext(requested_growth - 1), &test_helper_, usage));
   }
 
   void FillTestDirectory(
@@ -404,7 +467,6 @@ class ObfuscatedFileUtilTest : public testing::Test {
     FilePath root_file_path = source_dir.path();
     FilePath src_file_path = root_file_path.AppendASCII("file_name");
     FileSystemPath dest_path = CreatePathFromUTF8("new file");
-    FileSystemPath src_path = CreatePath(src_file_path);
     int64 src_file_length = 87;
 
     base::PlatformFileError error_code;
@@ -435,13 +497,15 @@ class ObfuscatedFileUtilTest : public testing::Test {
       context.reset(NewContext(NULL));
       context->set_allowed_bytes_growth(path_cost + src_file_length - 1);
       EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-          ofu()->CopyInForeignFile(context.get(), src_path, dest_path));
+                ofu()->CopyInForeignFile(context.get(),
+                                         src_file_path, dest_path));
     }
 
     context.reset(NewContext(NULL));
     context->set_allowed_bytes_growth(path_cost + src_file_length);
     EXPECT_EQ(base::PLATFORM_FILE_OK,
-        ofu()->CopyInForeignFile(context.get(), src_path, dest_path));
+              ofu()->CopyInForeignFile(context.get(),
+                                       src_file_path, dest_path));
 
     context.reset(NewContext(NULL));
     EXPECT_TRUE(ofu()->PathExists(context.get(), dest_path));
@@ -663,75 +727,68 @@ TEST_F(ObfuscatedFileUtilTest, TestTruncate) {
 TEST_F(ObfuscatedFileUtilTest, TestQuotaOnTruncation) {
   bool created = false;
   FileSystemPath path = CreatePathFromUTF8("file");
-  scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->EnsureFileExists(context.get(), path, &created));
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(path))->context(),
+                path, &created));
   ASSERT_TRUE(created);
+  ASSERT_EQ(0, ComputeTotalFileSize());
 
-  int64 path_cost = test_helper().GetCachedOriginUsage();
-
-  context.reset(NewContext(NULL));
-  context->set_allowed_bytes_growth(1020);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->Truncate(context.get(), path, 1020));
-  ASSERT_EQ(path_cost + 1020, test_helper().GetCachedOriginUsage());
-  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
-            test_helper().GetCachedOriginUsage());
+            ofu()->Truncate(
+                AllowUsageIncrease(1020)->context(),
+                path, 1020));
+  ASSERT_EQ(1020, ComputeTotalFileSize());
 
-  context.reset(NewContext(NULL));
-  context->set_allowed_bytes_growth(0);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->Truncate(context.get(), path, 0));
-  ASSERT_EQ(path_cost + 0, test_helper().GetCachedOriginUsage());
-  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
-            test_helper().GetCachedOriginUsage());
+            ofu()->Truncate(
+                AllowUsageIncrease(-1020)->context(),
+                path, 0));
+  ASSERT_EQ(0, ComputeTotalFileSize());
 
-  context.reset(NewContext(NULL));
-  context->set_allowed_bytes_growth(1020);
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
-            ofu()->Truncate(context.get(), path, 1021));
-  ASSERT_EQ(path_cost + 0, test_helper().GetCachedOriginUsage());
-  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
-            test_helper().GetCachedOriginUsage());
+            ofu()->Truncate(
+                DisallowUsageIncrease(1021)->context(),
+                path, 1021));
+  ASSERT_EQ(0, ComputeTotalFileSize());
 
-  context.reset(NewContext(NULL));
-  context->set_allowed_bytes_growth(1020);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->Truncate(context.get(), path, 1020));
-  ASSERT_EQ(path_cost + 1020, test_helper().GetCachedOriginUsage());
-  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
-            test_helper().GetCachedOriginUsage());
+            ofu()->Truncate(
+                AllowUsageIncrease(1020)->context(),
+                path, 1020));
+  ASSERT_EQ(1020, ComputeTotalFileSize());
 
-  context.reset(NewContext(NULL));
-  context->set_allowed_bytes_growth(0);
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->Truncate(context.get(), path, 1020));
-  ASSERT_EQ(path_cost + 1020, test_helper().GetCachedOriginUsage());
-  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
-            test_helper().GetCachedOriginUsage());
+            ofu()->Truncate(
+                AllowUsageIncrease(0)->context(),
+                path, 1020));
+  ASSERT_EQ(1020, ComputeTotalFileSize());
 
-  context.reset(NewContext(NULL));
-  context->set_allowed_bytes_growth(-2);  // quota exceeded
-  EXPECT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->Truncate(context.get(), path, 1019));
-  ASSERT_EQ(path_cost + 1019, test_helper().GetCachedOriginUsage());
-  ASSERT_EQ(path_cost + ComputeCurrentUsage(),
-            test_helper().GetCachedOriginUsage());
+  // quota exceeded
+  {
+    scoped_ptr<UsageVerifyHelper> helper = AllowUsageIncrease(-1);
+    helper->context()->set_allowed_bytes_growth(
+        helper->context()->allowed_bytes_growth() - 1);
+    EXPECT_EQ(base::PLATFORM_FILE_OK,
+              ofu()->Truncate(helper->context(), path, 1019));
+    ASSERT_EQ(1019, ComputeTotalFileSize());
+  }
 
   // Delete backing file to make following truncation fail.
-  context.reset(NewContext(NULL));
   FilePath local_path;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            ofu()->GetLocalFilePath(context.get(), path, &local_path));
+            ofu()->GetLocalFilePath(
+                UnlimitedContext().get(),
+                path, &local_path));
   ASSERT_FALSE(local_path.empty());
   ASSERT_TRUE(file_util::Delete(local_path, false));
 
-  context.reset(NewContext(NULL));
-  context->set_allowed_bytes_growth(1234);
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
-            ofu()->Truncate(context.get(), path, 1234));
-  ASSERT_EQ(path_cost + 1019, test_helper().GetCachedOriginUsage());
+            ofu()->Truncate(
+                LimitedContext(1234).get(),
+                path, 1234));
+  ASSERT_EQ(0, ComputeTotalFileSize());
 }
 
 TEST_F(ObfuscatedFileUtilTest, TestEnsureFileExists) {
@@ -1683,7 +1740,7 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
   context.reset(NewContext(NULL));
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             ofu()->CopyInForeignFile(context.get(),
-                                     CreatePath(src_local_path),
+                                     src_local_path,
                                      path));
   EXPECT_NE(base::Time(), GetModifiedTime(dir_path));
 }
@@ -1809,4 +1866,265 @@ TEST_F(ObfuscatedFileUtilTest, TestFileEnumeratorTimestamp) {
     ++count;
   }
   EXPECT_EQ(2, count);
+}
+
+TEST_F(ObfuscatedFileUtilTest, TestQuotaOnCopyFile) {
+  FileSystemPath from_file(CreatePathFromUTF8("fromfile"));
+  FileSystemPath obstacle_file(CreatePathFromUTF8("obstaclefile"));
+  FileSystemPath to_file1(CreatePathFromUTF8("tofile1"));
+  FileSystemPath to_file2(CreatePathFromUTF8("tofile2"));
+  bool created;
+
+  int64 expected_total_file_size = 0;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(from_file))->context(),
+                from_file, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(obstacle_file))->context(),
+                obstacle_file, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  int64 from_file_size = 1020;
+  expected_total_file_size += from_file_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(from_file_size)->context(),
+                from_file, from_file_size));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  int64 obstacle_file_size = 1;
+  expected_total_file_size += obstacle_file_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(obstacle_file_size)->context(),
+                obstacle_file, obstacle_file_size));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  int64 to_file1_size = from_file_size;
+  expected_total_file_size += to_file1_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CopyOrMoveFile(
+                AllowUsageIncrease(
+                    PathCost(to_file1) + to_file1_size)->context(),
+                from_file, to_file1, true /* copy */));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE,
+            ofu()->CopyOrMoveFile(
+                DisallowUsageIncrease(
+                    PathCost(to_file2) + from_file_size)->context(),
+                from_file, to_file2, true /* copy */));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  int64 old_obstacle_file_size = obstacle_file_size;
+  obstacle_file_size = from_file_size;
+  expected_total_file_size += obstacle_file_size - old_obstacle_file_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CopyOrMoveFile(
+                AllowUsageIncrease(
+                    obstacle_file_size - old_obstacle_file_size)->context(),
+                from_file, obstacle_file, true /* copy */));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  int64 old_from_file_size = from_file_size;
+  from_file_size = old_from_file_size - 1;
+  expected_total_file_size += from_file_size - old_from_file_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(
+                    from_file_size - old_from_file_size)->context(),
+                from_file, from_file_size));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  // quota exceeded
+  {
+    old_obstacle_file_size = obstacle_file_size;
+    obstacle_file_size = from_file_size;
+    expected_total_file_size += obstacle_file_size - old_obstacle_file_size;
+    scoped_ptr<UsageVerifyHelper> helper = AllowUsageIncrease(
+        obstacle_file_size - old_obstacle_file_size);
+    helper->context()->set_allowed_bytes_growth(
+        helper->context()->allowed_bytes_growth() - 1);
+    ASSERT_EQ(base::PLATFORM_FILE_OK,
+              ofu()->CopyOrMoveFile(
+                  helper->context(),
+                  from_file, obstacle_file, true /* copy */));
+    ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+  }
+}
+
+TEST_F(ObfuscatedFileUtilTest, TestQuotaOnMoveFile) {
+  FileSystemPath from_file(CreatePathFromUTF8("fromfile"));
+  FileSystemPath obstacle_file(CreatePathFromUTF8("obstaclefile"));
+  FileSystemPath to_file(CreatePathFromUTF8("tofile"));
+  bool created;
+
+  int64 expected_total_file_size = 0;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(from_file))->context(),
+                from_file, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  int64 from_file_size = 1020;
+  expected_total_file_size += from_file_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(from_file_size)->context(),
+                from_file, from_file_size));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  int64 to_file_size ALLOW_UNUSED = from_file_size;
+  from_file_size = 0;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CopyOrMoveFile(
+                AllowUsageIncrease(-PathCost(from_file) +
+                                   PathCost(to_file))->context(),
+                from_file, to_file, false /* move */));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(from_file))->context(),
+                from_file, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(obstacle_file))->context(),
+                obstacle_file, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  from_file_size = 1020;
+  expected_total_file_size += from_file_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(from_file_size)->context(),
+                from_file, from_file_size));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  int64 obstacle_file_size = 1;
+  expected_total_file_size += obstacle_file_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(1)->context(),
+                obstacle_file, obstacle_file_size));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  int64 old_obstacle_file_size = obstacle_file_size;
+  obstacle_file_size = from_file_size;
+  from_file_size = 0;
+  expected_total_file_size -= old_obstacle_file_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CopyOrMoveFile(
+                AllowUsageIncrease(
+                    -old_obstacle_file_size - PathCost(from_file))->context(),
+                from_file, obstacle_file,
+                false /* move */));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(from_file))->context(),
+                from_file, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  from_file_size = 10;
+  expected_total_file_size += from_file_size;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(from_file_size)->context(),
+                from_file, from_file_size));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+
+  // quota exceeded even after operation
+  old_obstacle_file_size = obstacle_file_size;
+  obstacle_file_size = from_file_size;
+  from_file_size = 0;
+  expected_total_file_size -= old_obstacle_file_size;
+  scoped_ptr<FileSystemOperationContext> context =
+      LimitedContext(-old_obstacle_file_size - PathCost(from_file) - 1);
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CopyOrMoveFile(
+                context.get(), from_file, obstacle_file, false /* move */));
+  ASSERT_EQ(expected_total_file_size, ComputeTotalFileSize());
+  context.reset();
+}
+
+TEST_F(ObfuscatedFileUtilTest, TestQuotaOnRemove) {
+  FileSystemPath dir(CreatePathFromUTF8("dir"));
+  FileSystemPath file(CreatePathFromUTF8("file"));
+  FileSystemPath dfile1(CreatePathFromUTF8("dir/dfile1"));
+  FileSystemPath dfile2(CreatePathFromUTF8("dir/dfile2"));
+  bool created;
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(file))->context(),
+                file, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(0, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateDirectory(
+                AllowUsageIncrease(PathCost(dir))->context(),
+                dir, false, false));
+  ASSERT_EQ(0, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(dfile1))->context(),
+                dfile1, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(0, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(dfile2))->context(),
+                dfile2, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(0, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(340)->context(),
+                file, 340));
+  ASSERT_EQ(340, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(1020)->context(),
+                dfile1, 1020));
+  ASSERT_EQ(1360, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(120)->context(),
+                dfile2, 120));
+  ASSERT_EQ(1480, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->DeleteFile(
+                AllowUsageIncrease(-PathCost(file) - 340)->context(),
+                file));
+  ASSERT_EQ(1140, ComputeTotalFileSize());
+
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            FileUtilHelper::Delete(
+                AllowUsageIncrease(-PathCost(dir) -
+                                   PathCost(dfile1) -
+                                   PathCost(dfile2) -
+                                   1020 - 120)->context(),
+                ofu(), dir, true));
+  ASSERT_EQ(0, ComputeTotalFileSize());
 }

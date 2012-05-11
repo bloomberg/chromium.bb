@@ -93,7 +93,7 @@ class LocalFileUtil : public FileSystemFileUtil {
       bool copy) OVERRIDE;
   virtual PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
-        const FileSystemPath& underlying_src_path,
+        const FilePath& src_file_path,
         const FileSystemPath& dest_path) OVERRIDE;
   virtual PlatformFileError DeleteFile(
       FileSystemOperationContext* context,

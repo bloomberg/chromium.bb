@@ -82,7 +82,7 @@ class NativeFileUtil : public FileSystemFileUtil {
       bool copy) OVERRIDE;
   virtual PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* unused,
-        const FileSystemPath& underlying_src_path,
+        const FilePath& src_file_path,
         const FileSystemPath& dest_path) OVERRIDE;
   virtual PlatformFileError DeleteFile(
       FileSystemOperationContext* unused,

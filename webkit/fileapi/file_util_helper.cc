@@ -227,7 +227,7 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
   // Call CopyInForeignFile() on the dest_util_ with the resolved source path
   // to perform limited cross-FileSystemFileUtil copy/move.
   error = dest_util_->CopyInForeignFile(
-      context_, src_path.WithInternalPath(platform_file_path), dest_path);
+      context_, platform_file_path, dest_path);
 
   if (operation_ == OPERATION_COPY || error != base::PLATFORM_FILE_OK)
     return error;

@@ -29,7 +29,6 @@
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_util.h"
-#include "webkit/fileapi/quota_file_util.h"
 #include "webkit/quota/quota_manager.h"
 
 using quota::QuotaManager;
@@ -37,6 +36,11 @@ using quota::QuotaManager;
 namespace fileapi {
 
 namespace {
+
+void AssertStatusEq(base::PlatformFileError expected,
+                    base::PlatformFileError actual) {
+  ASSERT_EQ(expected, actual);
+}
 
 class MockQuotaManager : public QuotaManager {
  public:
@@ -72,8 +76,7 @@ class FileSystemOperationWriteTest
       public base::SupportsWeakPtr<FileSystemOperationWriteTest> {
  public:
   FileSystemOperationWriteTest()
-      : local_file_util_(new LocalFileUtil(QuotaFileUtil::CreateDefault())),
-        loop_(MessageLoop::TYPE_IO),
+      : loop_(MessageLoop::TYPE_IO),
         status_(base::PLATFORM_FILE_OK),
         cancel_status_(base::PLATFORM_FILE_ERROR_FAILED),
         bytes_written_(0),
@@ -127,7 +130,10 @@ class FileSystemOperationWriteTest
     cancel_status_ = status;
   }
 
-  scoped_ptr<LocalFileUtil> local_file_util_;
+  FileSystemFileUtil* file_util() {
+    return test_helper_.file_util();
+  }
+
   scoped_refptr<MockQuotaManager> quota_manager_;
   FileSystemTestOriginHelper test_helper_;
 
@@ -185,11 +191,15 @@ void FileSystemOperationWriteTest::SetUp() {
   test_helper_.SetUp(base_dir,
                      false /* unlimited quota */,
                      quota_manager_->proxy(),
-                     local_file_util_.get());
+                     NULL);
   filesystem_dir_ = test_helper_.GetOriginRootPath();
 
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(filesystem_dir_, &file_));
   virtual_path_ = file_.BaseName();
+
+  operation()->CreateFile(
+      URLForPath(virtual_path_), true,
+      base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
 
   net::URLRequest::Deprecated::RegisterProtocolFactory(
       "blob", &BlobURLRequestJobFactory);
@@ -285,6 +295,11 @@ TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
                                                  &subdir));
   FilePath virtual_subdir_path = subdir.BaseName();
 
+  operation()->CreateDirectory(
+      URLForPath(virtual_subdir_path),
+      true /* exclusive */, false /* recursive */,
+      base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
+
   GURL blob_url("blob:writedir");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
   blob_data->AppendData("It\'ll not be written, too.");
@@ -300,7 +315,7 @@ TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
   url_request_context.blob_storage_controller()->RemoveBlob(blob_url);
 
   EXPECT_EQ(0, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_ACCESS_DENIED, status());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE, status());
   EXPECT_TRUE(complete());
 }
 

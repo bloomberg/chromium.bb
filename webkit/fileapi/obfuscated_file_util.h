@@ -131,7 +131,7 @@ class ObfuscatedFileUtil
 
   virtual PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
-        const FileSystemPath& underlying_src_path,
+        const FilePath& src_file_path,
         const FileSystemPath& dest_path) OVERRIDE;
 
   virtual base::PlatformFileError DeleteFile(
@@ -202,6 +202,7 @@ class ObfuscatedFileUtil
   typedef FileSystemDirectoryDatabase::FileId FileId;
   typedef FileSystemDirectoryDatabase::FileInfo FileInfo;
 
+  friend class ObfuscatedFileEnumerator;
   virtual ~ObfuscatedFileUtil();
 
   base::PlatformFileError GetFileInfoInternal(
@@ -227,28 +228,28 @@ class ObfuscatedFileUtil
   // DCHECK and handle will hold base::kInvalidPlatformFileValue.
   base::PlatformFileError CreateFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& source_path,
+      const FilePath& source_file_path,
       const GURL& dest_origin,
       FileSystemType dest_type,
       FileInfo* dest_file_info,
       int file_flags,
       base::PlatformFile* handle);
 
-  // Given a virtual path, produces a real, full local path to the
+  // Given a virtual path, produces a real, full underlying path to the
   // underlying data file.  This does a database lookup (by
-  // calling DataPathToLocalPath()), and verifies that the file exists.
-  FileSystemPath GetLocalPath(const FileSystemPath& virtual_path);
+  // calling DataPathToUnderlyingPath()), and verifies that the file exists.
+  FileSystemPath GetUnderlyingPath(const FileSystemPath& virtual_path);
 
   // This converts from a relative path [as is stored in the FileInfo.data_path
-  // field] to an absolute local path that can be given to the underlying
+  // field] to an absolute underlying path that can be given to the underlying
   // filesystem (as of now the returned path is assumed to be a platform path).
-  FileSystemPath DataPathToLocalPath(
+  FileSystemPath DataPathToUnderlyingPath(
       const GURL& origin,
       FileSystemType type,
       const FilePath& data_file_path);
 
-  // This does the reverse of DataPathToLocalPath.
-  FilePath LocalPathToDataPath(const FileSystemPath& local_path);
+  // This does the reverse of DataPathToUnderlyingPath.
+  FilePath UnderlyingPathToDataPath(const FileSystemPath& underlying_path);
 
   // This returns NULL if |create| flag is false and a filesystem does not
   // exist for the given |origin_url| and |type|.
@@ -262,9 +263,20 @@ class ObfuscatedFileUtil
                                  bool create,
                                  base::PlatformFileError* error_code);
 
+  void InvalidateUsageCache(FileSystemOperationContext* context,
+                            const GURL& origin,
+                            FileSystemType type);
+
   void MarkUsed();
   void DropDatabases();
   bool InitOriginDatabase(bool create);
+
+  base::PlatformFileError GenerateNewUnderlyingPath(
+      FileSystemDirectoryDatabase* db,
+      FileSystemOperationContext* context,
+      const GURL& origin,
+      FileSystemType type,
+      FileSystemPath* underlying_path);
 
   typedef std::map<std::string, FileSystemDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;

@@ -74,8 +74,6 @@
         'native_file_util.h',
         'obfuscated_file_util.cc',
         'obfuscated_file_util.h',
-        'quota_file_util.cc',
-        'quota_file_util.h',
         'sandbox_mount_point_provider.cc',
         'sandbox_mount_point_provider.h',
         'webfilewriter_base.cc',

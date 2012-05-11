@@ -262,12 +262,11 @@ PlatformFileError NativeFileUtil::CopyOrMoveFile(
 
 PlatformFileError NativeFileUtil::CopyInForeignFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& underlying_src_path,
+      const FilePath& src_file_path,
       const FileSystemPath& dest_path) {
-  return CopyOrMoveFile(context,
-                        underlying_src_path,
-                        dest_path,
-                        true);
+  if (file_util::CopyFile(src_file_path, dest_path.internal_path()))
+    return base::PLATFORM_FILE_OK;
+  return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
 PlatformFileError NativeFileUtil::DeleteFile(

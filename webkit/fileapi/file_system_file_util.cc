@@ -189,11 +189,11 @@ PlatformFileError FileSystemFileUtil::CopyOrMoveFile(
 
 PlatformFileError FileSystemFileUtil::CopyInForeignFile(
       FileSystemOperationContext* context,
-      const FileSystemPath& underlying_src_path,
+      const FilePath& src_file_path,
       const FileSystemPath& dest_path) {
   if (underlying_file_util_.get()) {
     return underlying_file_util_->CopyInForeignFile(
-        context, underlying_src_path, dest_path);
+        context, src_file_path, dest_path);
   }
   NOTREACHED() << "Subclasses must provide implementation if they have no"
                << "underlying_file_util";

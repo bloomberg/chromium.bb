@@ -427,7 +427,6 @@
         '../../fileapi/mock_file_system_options.cc',
         '../../fileapi/mock_file_system_options.h',
         '../../fileapi/obfuscated_file_util_unittest.cc',
-        '../../fileapi/quota_file_util_unittest.cc',
         '../../fileapi/sandbox_mount_point_provider_unittest.cc',
         '../../fileapi/test_file_set.cc',
         '../../fileapi/test_file_set.h',

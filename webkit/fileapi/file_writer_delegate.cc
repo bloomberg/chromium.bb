@@ -16,7 +16,6 @@
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_quota_util.h"
-#include "webkit/fileapi/quota_file_util.h"
 
 namespace fileapi {
 

@@ -222,17 +222,15 @@ PlatformFileError LocalFileUtil::CopyOrMoveFile(
 // TODO(dmikurube): Make it independent from CopyOrMoveFile.
 PlatformFileError LocalFileUtil::CopyInForeignFile(
     FileSystemOperationContext* context,
-    const FileSystemPath& underlying_src_path,
+    const FilePath& src_file_path,
     const FileSystemPath& dest_path) {
-  if (underlying_src_path.internal_path().empty())
+  if (src_file_path.empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
   FileSystemPath local_dest_path = GetLocalPath(context, dest_path);
   if (local_dest_path.internal_path().empty())
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  return underlying_file_util()->CopyOrMoveFile(
-      context,
-      underlying_src_path,
-      local_dest_path, true);
+  return underlying_file_util()->CopyInForeignFile(
+      context, src_file_path, local_dest_path);
 }
 
 PlatformFileError LocalFileUtil::DeleteFile(

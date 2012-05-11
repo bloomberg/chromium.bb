@@ -28,7 +28,7 @@
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_writer_delegate.h"
-#include "webkit/fileapi/quota_file_util.h"
+#include "webkit/quota/quota_manager.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 namespace fileapi {
@@ -88,8 +88,7 @@ class FileWriterDelegateTest : public PlatformTest {
   virtual void TearDown();
 
   virtual void SetUpTestHelper(const FilePath& base_dir) {
-    quota_file_util_.reset(QuotaFileUtil::CreateDefault());
-    test_helper_.SetUp(base_dir, quota_file_util_.get());
+    test_helper_.SetUp(base_dir, NULL);
   }
 
   int64 ComputeCurrentOriginUsage() {
@@ -126,7 +125,6 @@ class FileWriterDelegateTest : public PlatformTest {
   // This should be alive until the very end of this instance.
   MessageLoop loop_;
 
-  scoped_ptr<QuotaFileUtil> quota_file_util_;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<Result> result_;
@@ -228,7 +226,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
   const GURL kBlobURL("blob:nolimit");
   content_ = kData;
 
-  PrepareForWrite(kBlobURL, 0, QuotaFileUtil::kNoLimit);
+  PrepareForWrite(kBlobURL, 0, quota::QuotaManager::kNoLimit);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
   file_writer_delegate_->Start(file_, request_.Pass());
@@ -322,12 +320,12 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   const GURL kBlobURL2("blob:nolimitconcurrent2");
   content_ = kData;
 
-  PrepareForWrite(kBlobURL, 0, QuotaFileUtil::kNoLimit);
+  PrepareForWrite(kBlobURL, 0, quota::QuotaManager::kNoLimit);
 
   // Credate another FileWriterDelegate for concurrent write.
   result2.reset(new Result());
   file_writer_delegate2.reset(new FileWriterDelegate(
-      CreateNewOperation(result2.get(), QuotaFileUtil::kNoLimit),
+      CreateNewOperation(result2.get(), quota::QuotaManager::kNoLimit),
       test_helper_.CreatePath(file_path2), 0));
   request2.reset(new net::URLRequest(kBlobURL2, file_writer_delegate2.get()));
 
