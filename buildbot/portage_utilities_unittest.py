@@ -299,7 +299,8 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     tmp_dir = tempfile.mkdtemp('portage_utilities_unittest')
     cros_build_lib.RunCommand(
         ['git', 'clone', '--depth=1',
-         'http://git.chromium.org/chromiumos/chromite.git', tmp_dir])
+         'file://' + os.path.join(constants.SOURCE_ROOT, 'chromite'),
+         tmp_dir])
     # No changes yet as we just cloned the repo.
     self.assertFalse(portage_utilities.EBuild.GitRepoHasChanges(tmp_dir))
     # Update metadata but no real changes.
