@@ -44,7 +44,7 @@ GaiaOAuthFetcher::GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
       popup_(NULL),
       service_scope_(service_scope),
       fetch_pending_(false),
-      auto_fetch_limit_(ALL_OAUTH_STEPS) {}
+      auto_fetch_limit_(USER_INFO) {}
 
 GaiaOAuthFetcher::~GaiaOAuthFetcher() {}
 
@@ -306,6 +306,7 @@ void GaiaOAuthFetcher::StartGetOAuthToken() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
   DCHECK(!popup_);
 
+  request_type_ = OAUTH1_LOGIN;
   fetch_pending_ = true;
   registrar_.Add(this,
                  chrome::NOTIFICATION_COOKIE_CHANGED,
@@ -335,6 +336,7 @@ void GaiaOAuthFetcher::StartOAuthLogin(
     const std::string& oauth1_access_token_secret) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  request_type_ = OAUTH1_LOGIN;
   // Must outlive fetcher_.
   request_body_ = MakeOAuthLoginBody(source, service, oauth1_access_token,
                                      oauth1_access_token_secret);
@@ -349,6 +351,7 @@ void GaiaOAuthFetcher::StartOAuthLogin(
 void GaiaOAuthFetcher::StartGetOAuthTokenRequest() {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  request_type_ = OAUTH1_REQUEST_TOKEN;
   // Must outlive fetcher_.
   request_body_ = "";
   request_headers_ = "";
@@ -367,6 +370,7 @@ void GaiaOAuthFetcher::StartOAuthGetAccessToken(
     const std::string& oauth1_request_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  request_type_ = OAUTH1_ALL_ACCESS_TOKEN;
   // Must outlive fetcher_.
   request_body_ = MakeOAuthGetAccessTokenBody(oauth1_request_token);
   request_headers_ = "";
@@ -384,6 +388,7 @@ void GaiaOAuthFetcher::StartOAuthWrapBridge(
     const std::string& service_scope) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  request_type_ = OAUTH2_SERVICE_ACCESS_TOKEN;
   VLOG(1) << "Starting OAuthWrapBridge for: " << service_scope;
   std::string combined_scope = service_scope + " " +
       GaiaUrls::GetInstance()->oauth_wrap_bridge_user_info_scope();
@@ -407,6 +412,7 @@ void GaiaOAuthFetcher::StartOAuthWrapBridge(
 void GaiaOAuthFetcher::StartUserInfo(const std::string& oauth2_access_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  request_type_ = USER_INFO;
   // Must outlive fetcher_.
   request_body_ = "";
   request_headers_ = "Authorization: OAuth " + oauth2_access_token;
@@ -421,6 +427,7 @@ void GaiaOAuthFetcher::StartOAuthRevokeAccessToken(const std::string& token,
                                                    const std::string& secret) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
+  request_type_ = OAUTH2_REVOKE_TOKEN;
   // Must outlive fetcher_.
   request_body_ = "";
 
@@ -570,10 +577,9 @@ void GaiaOAuthFetcher::OnGetOAuthTokenUrlFetched(
         return;
       }
     }
-  } else {
-    consumer_->OnGetOAuthTokenFailure(
-        GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
   }
+  consumer_->OnGetOAuthTokenFailure(
+      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
 }
 
 void GaiaOAuthFetcher::OnOAuthLoginFetched(
@@ -585,14 +591,17 @@ void GaiaOAuthFetcher::OnOAuthLoginFetched(
     std::string lsid;
     std::string auth;
     ParseOAuthLoginResponse(data, &sid, &lsid, &auth);
-    consumer_->OnOAuthLoginSuccess(sid, lsid, auth);
-  } else {
-    // OAuthLogin returns error messages that are identical to ClientLogin,
-    // so we use GaiaAuthFetcher::GenerateAuthError to parse the response
-    // instead.
-    consumer_->OnOAuthLoginFailure(
-        GaiaAuthFetcher::GenerateOAuthLoginError(data, status));
+    // TODO(pastarmovj): Verify if all parameters are required.
+    if (!sid.empty() && !lsid.empty() && !auth.empty()) {
+      consumer_->OnOAuthLoginSuccess(sid, lsid, auth);
+      return;
+    }
   }
+  // OAuthLogin returns error messages that are identical to ClientLogin,
+  // so we use GaiaAuthFetcher::GenerateAuthError to parse the response
+  // instead.
+  consumer_->OnOAuthLoginFailure(
+      GaiaAuthFetcher::GenerateOAuthLoginError(data, status));
 }
 
 void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
@@ -604,14 +613,17 @@ void GaiaOAuthFetcher::OnOAuthGetAccessTokenFetched(
     std::string secret;
     std::string token;
     ParseOAuthGetAccessTokenResponse(data, &token, &secret);
-    consumer_->OnOAuthGetAccessTokenSuccess(token, secret);
-    if (ShouldAutoFetch(OAUTH2_SERVICE_ACCESS_TOKEN))
-      StartOAuthWrapBridge(
-          token, secret, GaiaConstants::kGaiaOAuthDuration, service_scope_);
-  } else {
-    consumer_->OnOAuthGetAccessTokenFailure(GenerateAuthError(data, status,
-                                                              response_code));
+    // TODO(pastarmovj): Verify if all parameters are required.
+    if (!token.empty() && !secret.empty()) {
+      consumer_->OnOAuthGetAccessTokenSuccess(token, secret);
+      if (ShouldAutoFetch(OAUTH2_SERVICE_ACCESS_TOKEN))
+        StartOAuthWrapBridge(
+            token, secret, GaiaConstants::kGaiaOAuthDuration, service_scope_);
+      return;
+    }
   }
+  consumer_->OnOAuthGetAccessTokenFailure(GenerateAuthError(data, status,
+                                                            response_code));
 }
 
 void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
@@ -623,14 +635,17 @@ void GaiaOAuthFetcher::OnOAuthWrapBridgeFetched(
     std::string token;
     std::string expires_in;
     ParseOAuthWrapBridgeResponse(data, &token, &expires_in);
-    consumer_->OnOAuthWrapBridgeSuccess(service_scope_, token, expires_in);
-    if (ShouldAutoFetch(USER_INFO))
-      StartUserInfo(token);
-  } else {
-    consumer_->OnOAuthWrapBridgeFailure(service_scope_,
-                                        GenerateAuthError(data, status,
-                                                          response_code));
+    // TODO(pastarmovj): Verify if all parameters are required.
+    if (!token.empty() && !expires_in.empty()) {
+      consumer_->OnOAuthWrapBridgeSuccess(service_scope_, token, expires_in);
+      if (ShouldAutoFetch(USER_INFO))
+        StartUserInfo(token);
+      return;
+    }
   }
+  consumer_->OnOAuthWrapBridgeFailure(service_scope_,
+                                      GenerateAuthError(data, status,
+                                                        response_code));
 }
 
 void GaiaOAuthFetcher::OnOAuthRevokeTokenFetched(
@@ -638,6 +653,7 @@ void GaiaOAuthFetcher::OnOAuthRevokeTokenFetched(
     const net::URLRequestStatus& status,
     int response_code) {
   if (status.is_success() && response_code == net::HTTP_OK) {
+    // TODO(pastarmovj): Verify if all parameters are required.
     consumer_->OnOAuthRevokeTokenSuccess();
   } else {
     LOG(ERROR) << "Token revocation failure " << response_code << ": " << data;
@@ -653,81 +669,48 @@ void GaiaOAuthFetcher::OnUserInfoFetched(
   if (status.is_success() && response_code == net::HTTP_OK) {
     std::string email;
     ParseUserInfoResponse(data, &email);
-    VLOG(1) << "GAIA user info fetched for " << email << ".";
-    consumer_->OnUserInfoSuccess(email);
-  } else {
-    consumer_->OnUserInfoFailure(GenerateAuthError(data, status,
-                                                   response_code));
+    // TODO(pastarmovj): Verify if all parameters are required.
+    if (!email.empty()) {
+      VLOG(1) << "GAIA user info fetched for " << email << ".";
+      consumer_->OnUserInfoSuccess(email);
+      return;
+    }
   }
+  consumer_->OnUserInfoFailure(GenerateAuthError(data, status,
+                                                 response_code));
 }
 
 void GaiaOAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   // Keep |fetcher_| around to avoid invalidating its |status| (accessed below).
   scoped_ptr<content::URLFetcher> current_fetcher(fetcher_.release());
   fetch_pending_ = false;
-  GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
-  GURL url = source->GetURL();
   std::string data;
   source->GetResponseAsString(&data);
   net::URLRequestStatus status = source->GetStatus();
   int response_code = source->GetResponseCode();
-  if (StartsWithASCII(url.spec(), gaia_urls->get_oauth_token_url(), true)) {
-    OnGetOAuthTokenUrlFetched(source->GetCookies(), status, response_code);
-  } else if (url.spec() == gaia_urls->oauth1_login_url()) {
-    OnOAuthLoginFetched(data, status, response_code);
-  } else if (url.spec() == gaia_urls->oauth_get_access_token_url()) {
-    OnOAuthGetAccessTokenFetched(data, status, response_code);
-  } else if (url.spec() == gaia_urls->oauth_wrap_bridge_url()) {
-    OnOAuthWrapBridgeFetched(data, status, response_code);
-  } else if (url.spec() == gaia_urls->oauth_user_info_url()) {
-    OnUserInfoFetched(data, status, response_code);
-  } else if (StartsWithASCII(url.spec(),
-                             gaia_urls->oauth_revoke_token_url(),
-                             true)) {
-    OnOAuthRevokeTokenFetched(data, status, response_code);
-  } else {
-    // Invalid cookies cause Gaia to redirect to ServiceLogin. Check if
-    // this is the case and report failure properly.
-    std::string url_no_query = url.GetOrigin().spec() + url.path().substr(1);
-    std::string continue_url;
-    if (url_no_query == gaia_urls->service_login_url() &&
-        chrome_common_net::GetValueForKeyInQuery(url, "continue",
-                                                 &continue_url)) {
-      LOG(ERROR) << "GaiaOAuthFetcher redirected to service login"
-                 << " , url=" << url.spec();
 
-      if (StartsWithASCII(continue_url,
-                          gaia_urls->get_oauth_token_url(),
-                          true)) {
-        consumer_->OnGetOAuthTokenFailure(GoogleServiceAuthError(
-                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-      } else if (continue_url == gaia_urls->oauth1_login_url()) {
-        consumer_->OnOAuthLoginFailure(GoogleServiceAuthError(
-                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-      } else if (continue_url == gaia_urls->oauth_get_access_token_url()) {
-        consumer_->OnOAuthGetAccessTokenFailure(GoogleServiceAuthError(
-                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-      } else if (continue_url == gaia_urls->oauth_wrap_bridge_url()) {
-        consumer_->OnOAuthWrapBridgeFailure(service_scope_,
-            GoogleServiceAuthError(
-                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-      } else if (continue_url == gaia_urls->oauth_user_info_url()) {
-        consumer_->OnUserInfoFailure(GoogleServiceAuthError(
-                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-      } else if (StartsWithASCII(continue_url,
-                                 gaia_urls->oauth_revoke_token_url(),
-                                 true)) {
-        consumer_->OnOAuthRevokeTokenFailure(GoogleServiceAuthError(
-                GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-      } else {
-        NOTREACHED();
-      }
-    } else {
-      NOTREACHED() << "GaiaOAuthFetcher unknown url=" << url.spec();
-    }
+  switch (request_type_) {
+    case OAUTH1_LOGIN:
+      OnOAuthLoginFetched(data, status, response_code);
+      break;
+    case OAUTH1_REQUEST_TOKEN:
+      OnGetOAuthTokenUrlFetched(source->GetCookies(), status, response_code);
+      break;
+    case OAUTH1_ALL_ACCESS_TOKEN:
+      OnOAuthGetAccessTokenFetched(data, status, response_code);
+      break;
+    case OAUTH2_SERVICE_ACCESS_TOKEN:
+      OnOAuthWrapBridgeFetched(data, status, response_code);
+      break;
+    case USER_INFO:
+      OnUserInfoFetched(data, status, response_code);
+      break;
+    case OAUTH2_REVOKE_TOKEN:
+      OnOAuthRevokeTokenFetched(data, status, response_code);
+      break;
   }
 }
 
-bool GaiaOAuthFetcher::ShouldAutoFetch(AutoFetchLimit fetch_step) {
+bool GaiaOAuthFetcher::ShouldAutoFetch(RequestType fetch_step) {
   return fetch_step <= auto_fetch_limit_;
 }

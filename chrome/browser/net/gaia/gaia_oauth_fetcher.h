@@ -50,12 +50,13 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
  public:
   // Defines steps of OAuth process performed by this class.
   typedef enum {
+    OAUTH1_LOGIN,
     OAUTH1_REQUEST_TOKEN,
     OAUTH1_ALL_ACCESS_TOKEN,
     OAUTH2_SERVICE_ACCESS_TOKEN,
     USER_INFO,
-    ALL_OAUTH_STEPS,
-  } AutoFetchLimit;
+    OAUTH2_REVOKE_TOKEN,
+  } RequestType;
 
   GaiaOAuthFetcher(GaiaOAuthConsumer* consumer,
                    net::URLRequestContextGetter* getter,
@@ -67,7 +68,7 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
   // Sets the mask of which OAuth fetch steps should be automatically kicked
   // of upon successful completition of the previous steps. By default,
   // this class will chain all steps in OAuth proccess.
-  void SetAutoFetchLimit(AutoFetchLimit limit) { auto_fetch_limit_ = limit; }
+  void SetAutoFetchLimit(RequestType limit) { auto_fetch_limit_ = limit; }
 
   // Obtains an OAuth 1 request token
   //
@@ -144,6 +145,10 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
 
   // Stop any URL fetches in progress.
   virtual void CancelRequest();
+
+ protected:
+  // Stores the type of the current request in flight.
+  RequestType request_type_;
 
  private:
   // Process the results of a GetOAuthToken fetch via UI.
@@ -240,7 +245,7 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
       bool send_cookies,
       content::URLFetcherDelegate* delegate);
 
-  bool ShouldAutoFetch(AutoFetchLimit fetch_step);
+  bool ShouldAutoFetch(RequestType fetch_step);
 
   // These fields are common to GaiaOAuthFetcher, same every request
   GaiaOAuthConsumer* const consumer_;
@@ -255,7 +260,7 @@ class GaiaOAuthFetcher : public content::URLFetcherDelegate,
   std::string request_headers_;
   std::string service_scope_;
   bool fetch_pending_;
-  AutoFetchLimit auto_fetch_limit_;
+  RequestType auto_fetch_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaOAuthFetcher);
 };

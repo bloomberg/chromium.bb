@@ -70,6 +70,10 @@ class MockGaiaOAuthFetcher : public GaiaOAuthFetcher {
 
   ~MockGaiaOAuthFetcher() {}
 
+  void set_request_type(RequestType type) {
+    request_type_ = type;
+  }
+
   MOCK_METHOD1(StartOAuthGetAccessToken,
                void(const std::string& oauth1_request_token));
 
@@ -150,6 +154,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
                                      profile.GetRequestContext(),
                                      &profile,
                                      "service_scope-JnG18MEE");
+  oauth_fetcher.set_request_type(GaiaOAuthFetcher::OAUTH1_ALL_ACCESS_TOKEN);
   EXPECT_CALL(oauth_fetcher,
               StartOAuthWrapBridge(oauth_token,
                                    oauth_token_secret,
@@ -189,6 +194,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
                                      profile.GetRequestContext(),
                                      &profile,
                                      "service_scope-0fL85iOi");
+  oauth_fetcher.set_request_type(GaiaOAuthFetcher::OAUTH2_SERVICE_ACCESS_TOKEN);
   EXPECT_CALL(oauth_fetcher, StartUserInfo(wrap_token)).Times(1);
 
   net::ResponseCookies cookies;
@@ -220,6 +226,7 @@ TEST_F(GaiaOAuthFetcherTest, UserInfo) {
                                      profile.GetRequestContext(),
                                      &profile,
                                      "service_scope-Nrj4LmgU");
+  oauth_fetcher.set_request_type(GaiaOAuthFetcher::USER_INFO);
 
   net::ResponseCookies cookies;
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
@@ -245,6 +252,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthRevokeToken) {
                                      profile.GetRequestContext(),
                                      &profile,
                                      "service_scope-Nrj4LmgU");
+  oauth_fetcher.set_request_type(GaiaOAuthFetcher::OAUTH2_REVOKE_TOKEN);
 
   net::ResponseCookies cookies;
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
