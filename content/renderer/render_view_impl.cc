@@ -2088,7 +2088,8 @@ void RenderViewImpl::runModal() {
   if (RenderThreadImpl::current())  // Will be NULL during unit tests.
     RenderThreadImpl::current()->DoNotSuspendWebKitSharedTimer();
 
-  SendAndRunNestedMessageLoop(new ViewHostMsg_RunModal(routing_id_));
+  SendAndRunNestedMessageLoop(new ViewHostMsg_RunModal(
+      routing_id_, opener_id_));
 }
 
 bool RenderViewImpl::enterFullScreen() {

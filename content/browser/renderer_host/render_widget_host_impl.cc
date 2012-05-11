@@ -905,7 +905,7 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
   // after this line.
   next_mouse_move_.reset();
 
-  in_flight_event_count_++;
+  increment_in_flight_event_count();
   StartHangMonitorTimeout(
       TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
 }
@@ -1371,7 +1371,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
   UMA_HISTOGRAM_TIMES("MPArch.RWH_InputEventDelta", delta);
 
   // Cancel pending hung renderer checks since the renderer is responsive.
-  if (--in_flight_event_count_ == 0)
+  if (decrement_in_flight_event_count() == 0)
     StopHangMonitorTimeout();
 
   int type = static_cast<int>(event_type);

@@ -146,6 +146,7 @@ RenderViewHostImpl::RenderViewHostImpl(SiteInstance* instance,
       suspended_nav_message_(NULL),
       is_swapped_out_(swapped_out),
       run_modal_reply_msg_(NULL),
+      run_modal_opener_id_(MSG_ROUTING_NONE),
       is_waiting_for_beforeunload_ack_(false),
       is_waiting_for_unload_ack_(false),
       unload_ack_is_for_cross_site_transition_(false),
@@ -926,6 +927,15 @@ void RenderViewHostImpl::Shutdown() {
   if (run_modal_reply_msg_) {
     Send(run_modal_reply_msg_);
     run_modal_reply_msg_ = NULL;
+    RenderViewHostImpl* opener =
+        RenderViewHostImpl::FromID(GetProcess()->GetID(), run_modal_opener_id_);
+    if (opener) {
+      opener->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(
+          hung_renderer_delay_ms_));
+      // Balance out the decrement when we got created.
+      opener->increment_in_flight_event_count();
+    }
+    run_modal_opener_id_ = MSG_ROUTING_NONE;
   }
 
   RenderWidgetHostImpl::Shutdown();
@@ -989,11 +999,19 @@ void RenderViewHostImpl::OnMsgShowFullscreenWidget(int route_id) {
   }
 }
 
-void RenderViewHostImpl::OnMsgRunModal(IPC::Message* reply_msg) {
+void RenderViewHostImpl::OnMsgRunModal(int opener_id, IPC::Message* reply_msg) {
   DCHECK(!run_modal_reply_msg_);
   run_modal_reply_msg_ = reply_msg;
+  run_modal_opener_id_ = opener_id;
 
   content::RecordAction(UserMetricsAction("ShowModalDialog"));
+
+  RenderViewHostImpl* opener =
+      RenderViewHostImpl::FromID(GetProcess()->GetID(), run_modal_opener_id_);
+  opener->StopHangMonitorTimeout();
+  // The ack for the mouse down won't come until the dialog closes, so fake it
+  // so that we don't get a timeout.
+  opener->decrement_in_flight_event_count();
 
   // TODO(darin): Bug 1107929: Need to inform our delegate to show this view in
   // an app-modal fashion.
