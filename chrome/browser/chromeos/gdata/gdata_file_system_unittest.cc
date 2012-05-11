@@ -292,9 +292,10 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   GDataEntry* FindEntry(const FilePath& file_path) {
-    ReadOnlyFindEntryDelegate search_delegate;
-    file_system_->root_->FindEntryByPath(file_path, &search_delegate);
-    return search_delegate.entry();
+    GDataEntry* entry = NULL;
+    file_system_->root_->FindEntryByPath(
+        file_path, base::Bind(&ReadOnlyFindEntryCallback, &entry));
+    return entry;
   }
 
   void FindAndTestFilePath(const FilePath& file_path) {
@@ -304,10 +305,10 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   GDataEntry* FindEntryByResourceId(const std::string& resource_id) {
-    ReadOnlyFindEntryDelegate search_delegate;
-    file_system_->FindEntryByResourceIdSync(resource_id,
-                                            &search_delegate);
-    return search_delegate.entry();
+    GDataEntry* entry = NULL;
+    file_system_->FindEntryByResourceIdSync(
+        resource_id, base::Bind(&ReadOnlyFindEntryCallback, &entry));
+    return entry;
   }
 
   // Gets the entry info for |file_path| and compares the contents against

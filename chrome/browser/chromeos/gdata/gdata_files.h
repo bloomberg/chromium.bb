@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/gdata/find_entry_callback.h"
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
@@ -25,7 +26,6 @@
 
 namespace gdata {
 
-class FindEntryDelegate;
 class GDataFile;
 class GDataDirectory;
 class GDataRootDirectory;
@@ -460,9 +460,9 @@ class GDataRootDirectory : public GDataDirectory {
   // Removes the entry from resource map.
   void RemoveEntryFromResourceMap(GDataEntry* entry);
 
-  // Searches for |file_path| triggering callback in |delegate|.
+  // Searches for |file_path| triggering callback.
   void FindEntryByPath(const FilePath& file_path,
-                       FindEntryDelegate* delegate);
+                       const FindEntryCallback& callback);
 
   // Returns the GDataEntry* with the corresponding |resource_id|.
   GDataEntry* GetEntryByResourceId(const std::string& resource_id);

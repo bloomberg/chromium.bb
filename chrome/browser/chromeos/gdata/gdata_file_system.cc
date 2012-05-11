@@ -1108,7 +1108,7 @@ void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
 
 void GDataFileSystem::FindEntryByResourceIdSync(
     const std::string& resource_id,
-    FindEntryDelegate* delegate) {
+    const FindEntryCallback& callback) {
   base::AutoLock lock(lock_);  // To access the cache map.
 
   GDataFile* file = NULL;
@@ -1116,12 +1116,10 @@ void GDataFileSystem::FindEntryByResourceIdSync(
   if (entry)
     file = entry->AsGDataFile();
 
-  if (file) {
-    delegate->OnDone(base::PLATFORM_FILE_OK, file->parent()->GetFilePath(),
-                     file);
-  } else {
-    delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
-  }
+  if (file)
+    callback.Run(base::PLATFORM_FILE_OK, file->parent()->GetFilePath(), file);
+  else
+    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
 }
 
 void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
@@ -1167,8 +1165,7 @@ void GDataFileSystem::FindEntryByPathSyncOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::AutoLock lock(lock_);  // To access root_.
-  FindEntryCallbackRelayDelegate delegate(callback);
-  root_->FindEntryByPath(search_file_path, &delegate);
+  root_->FindEntryByPath(search_file_path, callback);
 }
 
 void GDataFileSystem::ReloadFeedFromServerIfNeeded(
@@ -2566,9 +2563,10 @@ GDataEntry* GDataFileSystem::GetGDataEntryByPath(
     const FilePath& file_path) {
   lock_.AssertAcquired();
   // Find directory element within the cached file system snapshot.
-  ReadOnlyFindEntryDelegate find_delegate;
-  root_->FindEntryByPath(file_path, &find_delegate);
-  return find_delegate.entry();
+  GDataEntry* entry = NULL;
+  root_->FindEntryByPath(file_path, base::Bind(&ReadOnlyFindEntryCallback,
+                                               &entry));
+  return entry;
 }
 
 void GDataFileSystem::GetCacheState(const std::string& resource_id,

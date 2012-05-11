@@ -56,25 +56,6 @@ const int kReadOnlyFilePermissions = base::PLATFORM_FILE_OPEN |
                                      base::PLATFORM_FILE_EXCLUSIVE_READ |
                                      base::PLATFORM_FILE_ASYNC;
 
-class GetFileNameDelegate : public FindEntryDelegate {
- public:
-  GetFileNameDelegate() {}
-  virtual ~GetFileNameDelegate() {}
-
-  const std::string& file_name() const { return file_name_; }
- private:
-  // GDataFileSystem::FindEntryDelegate overrides.
-  virtual void OnDone(base::PlatformFileError error,
-                      const FilePath& directory_path,
-                      GDataEntry* entry) OVERRIDE {
-    if (error == base::PLATFORM_FILE_OK && entry && entry->AsGDataFile()) {
-      file_name_ = entry->AsGDataFile()->file_name();
-    }
-  }
-
-  std::string file_name_;
-};
-
 GDataFileSystem* GetGDataFileSystem(Profile* profile) {
   GDataSystemService* system_service =
       GDataSystemServiceFactory::GetForProfile(profile);
@@ -167,9 +148,15 @@ void ModifyGDataFileResourceUrl(Profile* profile,
           GDataRootDirectory::CACHE_TYPE_TMP).IsParent(gdata_cache_path)) {
     const std::string resource_id =
         gdata_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
-    GetFileNameDelegate delegate;
-    file_system->FindEntryByResourceIdSync(resource_id, &delegate);
-    *url = gdata::util::GetFileResourceUrl(resource_id, delegate.file_name());
+    GDataEntry* entry = NULL;
+    file_system->FindEntryByResourceIdSync(
+        resource_id, base::Bind(&ReadOnlyFindEntryCallback, &entry));
+
+    std::string file_name;
+    if (entry && entry->AsGDataFile())
+      file_name = entry->AsGDataFile()->file_name();
+
+    *url = gdata::util::GetFileResourceUrl(resource_id, file_name);
     DVLOG(1) << "ModifyGDataFileResourceUrl " << *url;
   }
 }

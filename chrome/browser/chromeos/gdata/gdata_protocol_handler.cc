@@ -99,36 +99,6 @@ void CancelGDataDownloadOnUIThread(const FilePath& gdata_file_path) {
     file_system->GetOperationRegistry()->CancelForFilePath(gdata_file_path);
 }
 
-// Class delegate to find file by resource id and extract relevant file info.
-class GetFileInfoDelegate : public gdata::FindEntryDelegate {
- public:
-  GetFileInfoDelegate() : initial_file_size_(0) {}
-  virtual ~GetFileInfoDelegate() {}
-
-  const std::string& mime_type() const { return mime_type_; }
-  const std::string& file_name() const { return file_name_; }
-  const FilePath& gdata_file_path() const { return gdata_file_path_; }
-  int64 initial_file_size() const { return initial_file_size_; }
-
- private:
-  // GDataFileSystem::FindEntryDelegate overrides.
-  virtual void OnDone(base::PlatformFileError error,
-                      const FilePath& directory_path,
-                      gdata::GDataEntry* entry) OVERRIDE {
-    if (error == base::PLATFORM_FILE_OK && entry && entry->AsGDataFile()) {
-      mime_type_ = entry->AsGDataFile()->content_mime_type();
-      file_name_ = entry->AsGDataFile()->file_name();
-      gdata_file_path_= entry->GetFilePath();
-      initial_file_size_ = entry->file_info().size;
-    }
-  }
-
-  std::string mime_type_;
-  std::string file_name_;
-  FilePath gdata_file_path_;
-  int64 initial_file_size_;
-};
-
 // GDataURLRequesetJob is the gateway between network-level drive://...
 // requests for gdata resources and GDataFileSytem.  It exposes content URLs
 // formatted as drive://<resource-id>.
@@ -355,9 +325,12 @@ bool GDataURLRequestJob::GetMimeType(std::string* mime_type) const {
     return false;
   }
 
-  GetFileInfoDelegate delegate;
-  file_system_->FindEntryByResourceIdSync(resource_id, &delegate);
-  mime_type->assign(delegate.mime_type());
+  GDataEntry* entry = NULL;
+  file_system_->FindEntryByResourceIdSync(
+      resource_id, base::Bind(&ReadOnlyFindEntryCallback, &entry));
+  if (!entry || !entry->AsGDataFile())
+    return false;
+  mime_type->assign(entry->AsGDataFile()->content_mime_type());
   return !mime_type->empty();
 }
 
@@ -507,12 +480,18 @@ void GDataURLRequestJob::StartAsync(GDataFileSystem** file_system) {
   }
 
   // First, check if file metadata is matching our expectations.
-  GetFileInfoDelegate delegate;
-  file_system_->FindEntryByResourceIdSync(resource_id, &delegate);
-
-  mime_type_ = delegate.mime_type();
-  gdata_file_path_ = delegate.gdata_file_path();
-  initial_file_size_ = delegate.initial_file_size();
+  GDataEntry* entry = NULL;
+  file_system_->FindEntryByResourceIdSync(
+      resource_id, base::Bind(&ReadOnlyFindEntryCallback, &entry));
+  if (entry && entry->AsGDataFile()) {
+    mime_type_ = entry->AsGDataFile()->content_mime_type();
+    gdata_file_path_ = entry->GetFilePath();
+    initial_file_size_ = entry->file_info().size;
+  } else {
+    mime_type_.clear();
+    gdata_file_path_.clear();
+    initial_file_size_ = 0;
+  }
   remaining_bytes_ = initial_file_size_;
 
   DVLOG(1) << "Getting file for resource id";
