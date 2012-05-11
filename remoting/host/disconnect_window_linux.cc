@@ -23,6 +23,7 @@ class DisconnectWindowLinux : public DisconnectWindow {
   virtual ~DisconnectWindowLinux();
 
   virtual void Show(ChromotingHost* host,
+                    const DisconnectCallback& disconnect_callback,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
@@ -36,7 +37,7 @@ class DisconnectWindowLinux : public DisconnectWindow {
 
   void CreateWindow(const UiStrings& ui_strings);
 
-  ChromotingHost* host_;
+  DisconnectCallback disconnect_callback_;
   GtkWidget* disconnect_window_;
   GtkWidget* message_;
   GtkWidget* button_;
@@ -50,8 +51,7 @@ class DisconnectWindowLinux : public DisconnectWindow {
 };
 
 DisconnectWindowLinux::DisconnectWindowLinux()
-    : host_(NULL),
-      disconnect_window_(NULL),
+    : disconnect_window_(NULL),
       current_width_(0),
       current_height_(0) {
 }
@@ -130,8 +130,9 @@ void DisconnectWindowLinux::CreateWindow(const UiStrings& ui_strings) {
 }
 
 void DisconnectWindowLinux::Show(ChromotingHost* host,
+                                 const DisconnectCallback& disconnect_callback,
                                  const std::string& username) {
-  host_ = host;
+  disconnect_callback_ = disconnect_callback;
   CreateWindow(host->ui_strings());
 
   string16 text = ReplaceStringPlaceholders(
@@ -148,16 +149,16 @@ void DisconnectWindowLinux::Hide() {
 }
 
 void DisconnectWindowLinux::OnClicked(GtkWidget* button) {
-  CHECK(host_);
+  CHECK(!disconnect_callback_.is_null());
 
-  host_->Shutdown(base::Closure());
+  disconnect_callback_.Run();
   Hide();
 }
 
 gboolean DisconnectWindowLinux::OnDelete(GtkWidget* window, GdkEvent* event) {
-  CHECK(host_);
+  CHECK(!disconnect_callback_.is_null());
 
-  host_->Shutdown(base::Closure());
+  disconnect_callback_.Run();
   Hide();
 
   return TRUE;

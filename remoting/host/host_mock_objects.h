@@ -53,7 +53,8 @@ class MockDisconnectWindow : public DisconnectWindow {
   MockDisconnectWindow();
   virtual ~MockDisconnectWindow();
 
-  MOCK_METHOD2(Show, void(remoting::ChromotingHost* host,
+  MOCK_METHOD3(Show, void(remoting::ChromotingHost* host,
+                          const DisconnectCallback& disconnect_callback,
                           const std::string& username));
   MOCK_METHOD0(Hide, void());
 };

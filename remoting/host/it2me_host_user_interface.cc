@@ -11,6 +11,17 @@
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/local_input_monitor.h"
 
+namespace {
+
+// Milliseconds before the continue window is shown.
+static const int kContinueWindowShowTimeoutMs = 10 * 60 * 1000;
+
+// Milliseconds before the continue window is automatically dismissed and
+// the connection is closed.
+static const int kContinueWindowHideTimeoutMs = 60 * 1000;
+
+}  // namespace
+
 namespace remoting {
 
 class It2MeHostUserInterface::TimerTask {
@@ -27,177 +38,121 @@ class It2MeHostUserInterface::TimerTask {
 };
 
 
-It2MeHostUserInterface::It2MeHostUserInterface(ChromotingHost* host,
-                                               ChromotingHostContext* context)
-    : host_(host),
-      context_(context),
-      is_monitoring_local_inputs_(false),
-      ui_thread_proxy_(context->ui_message_loop()) {
+It2MeHostUserInterface::It2MeHostUserInterface(ChromotingHostContext* context)
+    : HostUserInterface(context) {
 }
 
 It2MeHostUserInterface::~It2MeHostUserInterface() {
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+
+  ShowContinueWindow(false);
+  StartContinueWindowTimer(false);
 }
 
-void It2MeHostUserInterface::Init() {
-  InitFrom(DisconnectWindow::Create(),
-           ContinueWindow::Create(),
-           LocalInputMonitor::Create());
-}
+void It2MeHostUserInterface::Start(ChromotingHost* host,
+                                   const base::Closure& disconnect_callback) {
+  DCHECK(network_message_loop()->BelongsToCurrentThread());
 
-void It2MeHostUserInterface::InitFrom(
-    scoped_ptr<DisconnectWindow> disconnect_window,
-    scoped_ptr<ContinueWindow> continue_window,
-    scoped_ptr<LocalInputMonitor> monitor) {
-  disconnect_window_ = disconnect_window.Pass();
-  continue_window_ = continue_window.Pass();
-  local_input_monitor_ = monitor.Pass();
-  host_->AddStatusObserver(this);
+  HostUserInterface::Start(host, disconnect_callback);
+  continue_window_ = ContinueWindow::Create();
 }
 
 void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {
-  if (!authenticated_jid_.empty()) {
+  if (!get_authenticated_jid().empty()) {
     // If we already authenticated another client then one of the
     // connections may be an attacker, so both are suspect and we have
     // to reject the second connection and shutdown the host.
-    host_->RejectAuthenticatingClient();
-    context_->network_message_loop()->PostTask(FROM_HERE, base::Bind(
-        &ChromotingHost::Shutdown, host_, base::Closure()));
-    return;
+    get_host()->RejectAuthenticatingClient();
+    network_message_loop()->PostTask(FROM_HERE, base::Bind(
+        &ChromotingHost::Shutdown, get_host(), base::Closure()));
+  } else {
+    HostUserInterface::OnClientAuthenticated(jid);
   }
-
-  authenticated_jid_ = jid;
-
-  std::string username = jid.substr(0, jid.find('/'));
-  ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
-      &It2MeHostUserInterface::ProcessOnClientAuthenticated,
-      base::Unretained(this), username));
-}
-
-void It2MeHostUserInterface::OnClientDisconnected(const std::string& jid) {
-  if (jid == authenticated_jid_) {
-    ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
-        &It2MeHostUserInterface::ProcessOnClientDisconnected,
-        base::Unretained(this)));
-  }
-}
-
-void It2MeHostUserInterface::OnAccessDenied(const std::string& jid) {
-}
-
-void It2MeHostUserInterface::OnShutdown() {
-  // Host status observers must be removed on the network thread, so
-  // it must happen here instead of in the destructor.
-  host_->RemoveStatusObserver(this);
-}
-
-void It2MeHostUserInterface::Shutdown() {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
-
-  MonitorLocalInputs(false);
-  ShowDisconnectWindow(false, std::string());
-  ShowContinueWindow(false);
-  StartContinueWindowTimer(false);
-
-  ui_thread_proxy_.Detach();
 }
 
 void It2MeHostUserInterface::ProcessOnClientAuthenticated(
     const std::string& username) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
 
-  MonitorLocalInputs(true);
-  ShowDisconnectWindow(true, username);
+  HostUserInterface::ProcessOnClientAuthenticated(username);
   StartContinueWindowTimer(true);
 }
 
 void It2MeHostUserInterface::ProcessOnClientDisconnected() {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
 
-  MonitorLocalInputs(false);
-  ShowDisconnectWindow(false, std::string());
+  HostUserInterface::ProcessOnClientDisconnected();
   ShowContinueWindow(false);
   StartContinueWindowTimer(false);
 }
 
-void It2MeHostUserInterface::MonitorLocalInputs(bool enable) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
-
-  if (enable == is_monitoring_local_inputs_)
-    return;
-  if (enable) {
-    local_input_monitor_->Start(host_);
-  } else {
-    local_input_monitor_->Stop();
-  }
-  is_monitoring_local_inputs_ = enable;
-}
-
-void It2MeHostUserInterface::ShowDisconnectWindow(bool show,
-                                                  const std::string& username) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
-
-  if (show) {
-    disconnect_window_->Show(host_, username);
-  } else {
-    disconnect_window_->Hide();
-  }
-}
-
-void It2MeHostUserInterface::ShowContinueWindow(bool show) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
-
-  if (show) {
-    continue_window_->Show(host_, base::Bind(
-        &It2MeHostUserInterface::ContinueSession, base::Unretained(this)));
-  } else {
-    continue_window_->Hide();
-  }
+void It2MeHostUserInterface::StartForTest(
+    ChromotingHost* host,
+    const base::Closure& disconnect_callback,
+    scoped_ptr<DisconnectWindow> disconnect_window,
+    scoped_ptr<ContinueWindow> continue_window,
+    scoped_ptr<LocalInputMonitor> local_input_monitor) {
+  HostUserInterface::StartForTest(host, disconnect_callback,
+                                  disconnect_window.Pass(),
+                                  local_input_monitor.Pass());
+  continue_window_ = continue_window.Pass();
 }
 
 void It2MeHostUserInterface::ContinueSession(bool continue_session) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
 
   if (continue_session) {
-    host_->PauseSession(false);
+    get_host()->PauseSession(false);
     timer_task_.reset();
     StartContinueWindowTimer(true);
   } else {
-    host_->Shutdown(base::Closure());
-  }
-}
-
-void It2MeHostUserInterface::StartContinueWindowTimer(bool start) {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
-
-  if (start) {
-    timer_task_.reset(new TimerTask(
-        context_->ui_message_loop(),
-        base::Bind(&It2MeHostUserInterface::OnContinueWindowTimer,
-                   base::Unretained(this)),
-        kContinueWindowShowTimeoutMs));
-  } else {
-    timer_task_.reset();
+    DisconnectSession();
   }
 }
 
 void It2MeHostUserInterface::OnContinueWindowTimer() {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
 
-  host_->PauseSession(true);
+  get_host()->PauseSession(true);
   ShowContinueWindow(true);
 
   timer_task_.reset(new TimerTask(
-      context_->ui_message_loop(),
+      ui_message_loop(),
       base::Bind(&It2MeHostUserInterface::OnShutdownHostTimer,
                  base::Unretained(this)),
       kContinueWindowHideTimeoutMs));
 }
 
 void It2MeHostUserInterface::OnShutdownHostTimer() {
-  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
 
   ShowContinueWindow(false);
-  host_->Shutdown(base::Closure());
+  DisconnectSession();
+}
+
+void It2MeHostUserInterface::ShowContinueWindow(bool show) {
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+
+  if (show) {
+    continue_window_->Show(get_host(), base::Bind(
+        &It2MeHostUserInterface::ContinueSession, base::Unretained(this)));
+  } else {
+    continue_window_->Hide();
+  }
+}
+
+void It2MeHostUserInterface::StartContinueWindowTimer(bool start) {
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
+
+  if (start) {
+    timer_task_.reset(new TimerTask(
+        ui_message_loop(),
+        base::Bind(&It2MeHostUserInterface::OnContinueWindowTimer,
+                   base::Unretained(this)),
+        kContinueWindowShowTimeoutMs));
+  } else {
+    timer_task_.reset();
+  }
 }
 
 }  // namespace remoting

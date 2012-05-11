@@ -98,9 +98,7 @@ HostNPScriptObject::~HostNPScriptObject() {
 
   // Shutdown It2MeHostUserInterface first so that it doesn't try to post
   // tasks on the UI thread while we are stopping the host.
-  if (it2me_host_user_interface_.get()) {
-    it2me_host_user_interface_->Shutdown();
-  }
+  it2me_host_user_interface_.reset();
 
   HostLogHandler::UnregisterLoggingScriptObject(this);
 
@@ -561,9 +559,12 @@ void HostNPScriptObject::FinishConnectNetworkThread(
   host_->AddStatusObserver(this);
   log_to_server_.reset(
       new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get()));
+  base::Closure disconnect_callback = base::Bind(
+      &ChromotingHost::Shutdown, base::Unretained(host_.get()),
+      base::Closure());
   it2me_host_user_interface_.reset(
-      new It2MeHostUserInterface(host_.get(), host_context_.get()));
-  it2me_host_user_interface_->Init();
+      new It2MeHostUserInterface(host_context_.get()));
+  it2me_host_user_interface_->Start(host_.get(), disconnect_callback);
 
   {
     base::AutoLock auto_lock(ui_strings_lock_);

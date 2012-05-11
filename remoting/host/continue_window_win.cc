@@ -10,9 +10,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "remoting/host/chromoting_host.h"
-// TODO(wez): The DisconnectWindow isn't plugin-specific, so shouldn't have
-// a dependency on the plugin's resource header.
-#include "remoting/host/plugin/host_plugin_resource.h"
+#include "remoting/host/host_ui_resource.h"
 
 // TODO(garykac): Lots of duplicated code in this file and
 // disconnect_window_win.cc. These global floating windows are temporary so
@@ -127,7 +125,7 @@ void ContinueWindowWin::Hide() {
 
 void ContinueWindowWin::EndDialog() {
   if (hwnd_) {
-    ::EndDialog(hwnd_, 0);
+    ::DestroyWindow(hwnd_);
     hwnd_ = NULL;
   }
 }

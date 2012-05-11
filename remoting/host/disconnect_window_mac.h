@@ -1,8 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+
+#include "base/callback.h"
+#include "remoting/host/disconnect_window.h"
 
 namespace remoting {
 class ChromotingHost;
@@ -13,12 +16,14 @@ class ChromotingHost;
 @interface DisconnectWindowController : NSWindowController {
  @private
   remoting::ChromotingHost* host_;
+  base::Closure disconnect_callback_;
   NSString* username_;
   IBOutlet NSTextField* connectedToField_;
   IBOutlet NSButton* disconnectButton_;
 }
 
 - (id)initWithHost:(remoting::ChromotingHost*)host
+          callback:(const base::Closure&)disconnect_callback
           username:(NSString*)username;
 - (IBAction)stopSharing:(id)sender;
 @end

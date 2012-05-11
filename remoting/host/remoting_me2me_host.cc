@@ -4,10 +4,6 @@
 //
 // This file implements a standalone host process for Me2Me.
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include <string>
 
 #include "base/at_exit.h"
@@ -36,6 +32,7 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
+#include "remoting/host/host_user_interface.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/policy_hack/nat_policy.h"
@@ -45,6 +42,10 @@
 
 #if defined(OS_MACOSX)
 #include "remoting/host/sighup_listener_mac.h"
+#endif
+// N.B. OS_WIN is defined by including src/base headers.
+#if defined(OS_WIN)
+#include <commctrl.h>
 #endif
 #if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -198,6 +199,10 @@ class HostProcess
       return kInvalidHostConfigurationExitCode;
     }
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
+    host_user_interface_.reset(new HostUserInterface(context_.get()));
+#endif
+
     StartWatchingNatPolicy();
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -207,6 +212,10 @@ class HostProcess
                    base::Unretained(this)));
 #endif
     message_loop_.Run();
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+    host_user_interface_.reset();
+#endif
 
     base::WaitableEvent done_event(true, false);
     nat_policy_->StopWatching(&done_event);
@@ -381,6 +390,12 @@ class HostProcess
         new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get()));
     host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
+    host_user_interface_->Start(
+        host_,
+        base::Bind(&HostProcess::OnRestartHostRequest, base::Unretained(this)));
+#endif
+
     host_->Start();
 
     CreateAuthenticatorFactory();
@@ -388,6 +403,16 @@ class HostProcess
 
   void OnOAuthFailed() {
     Shutdown(kInvalidOauthCredentialsExitCode);
+  }
+
+  // Invoked from when the user uses the Disconnect windows to terminate
+  // the sessions.
+  void OnRestartHostRequest() {
+    DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+
+    context_->network_message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&HostProcess::RestartHost, base::Unretained(this)));
   }
 
   void RestartHost() {
@@ -473,6 +498,11 @@ class HostProcess
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<HostEventLogger> host_event_logger_;
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  scoped_ptr<HostUserInterface> host_user_interface_;
+#endif
+
   scoped_refptr<ChromotingHost> host_;
 
   int exit_code_;
@@ -517,11 +547,20 @@ int main(int argc, char** argv) {
 }
 
 #if defined(OS_WIN)
+HMODULE g_hModule = NULL;
 
 int CALLBACK WinMain(HINSTANCE instance,
                      HINSTANCE previous_instance,
                      LPSTR command_line,
                      int show_command) {
+  g_hModule = instance;
+
+  // Register and initialize common controls.
+  INITCOMMONCONTROLSEX info;
+  info.dwSize = sizeof(info);
+  info.dwICC = ICC_STANDARD_CLASSES;
+  InitCommonControlsEx(&info);
+
   // CommandLine::Init() ignores the passed |argc| and |argv| on Windows getting
   // the command line from GetCommandLineW(), so we can safely pass NULL here.
   return main(0, NULL);

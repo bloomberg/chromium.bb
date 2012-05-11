@@ -1,0 +1,102 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "host_ui_resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+#include "constants.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE
+BEGIN
+    "host_ui_resource.h\0"
+END
+
+2 TEXTINCLUDE
+BEGIN
+    "#include ""winres.h""\r\n"
+    "#include ""constants.h""\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DISCONNECT DIALOGEX 0, 0, 145, 24
+STYLE DS_SETFONT | WS_POPUP
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+FONT 9, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "kDisconnectButton",IDC_DISCONNECT,68,5,70,14
+    LTEXT           "kSharingWith",IDC_DISCONNECT_SHARINGWITH,18,7,43,8
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,6,6,1,12
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,8,6,1,12
+END
+
+IDD_CONTINUE DIALOGEX 0, 0, 221, 58
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+CAPTION "kTitle"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "kDefault",IDC_CONTINUE_DEFAULT,116,38,98,14
+    LTEXT           "kMessage",IDC_CONTINUE_MESSAGE,7,7,207,30
+    PUSHBUTTON      "kCancel",IDC_CONTINUE_CANCEL,7,38,98,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_DISCONNECT, DIALOG
+    BEGIN
+        VERTGUIDE, 20
+        BOTTOMMARGIN, 23
+    END
+
+    IDD_CONTINUE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 214
+        VERTGUIDE, 105
+        VERTGUIDE, 116
+        VERTGUIDE, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 52
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////

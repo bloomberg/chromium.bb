@@ -14,9 +14,7 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "remoting/host/chromoting_host.h"
-// TODO(wez): The DisconnectWindow isn't plugin-specific, so shouldn't have
-// a dependency on the plugin's resource header.
-#include "remoting/host/plugin/host_plugin_resource.h"
+#include "remoting/host/host_ui_resource.h"
 #include "remoting/host/ui_strings.h"
 
 // TODO(garykac): Lots of duplicated code in this file and
@@ -39,7 +37,8 @@ class DisconnectWindowWin : public DisconnectWindow {
   DisconnectWindowWin();
   virtual ~DisconnectWindowWin();
 
-  virtual void Show(remoting::ChromotingHost* host,
+  virtual void Show(ChromotingHost* host,
+                    const DisconnectCallback& disconnect_callback,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
@@ -50,10 +49,10 @@ private:
   BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
   void ShutdownHost();
-  void EndDialog(int result);
+  void EndDialog();
   void SetStrings(const UiStrings& strings, const std::string& username);
 
-  remoting::ChromotingHost* host_;
+  DisconnectCallback disconnect_callback_;
   HWND hwnd_;
   bool has_hotkey_;
   base::win::ScopedGDIObject<HPEN> border_pen_;
@@ -62,15 +61,14 @@ private:
 };
 
 DisconnectWindowWin::DisconnectWindowWin()
-    : host_(NULL),
-      hwnd_(NULL),
+    : hwnd_(NULL),
       has_hotkey_(false),
       border_pen_(CreatePen(PS_SOLID, 5,
                             RGB(0.13 * 255, 0.69 * 255, 0.11 * 255))) {
 }
 
 DisconnectWindowWin::~DisconnectWindowWin() {
-  EndDialog(0);
+  EndDialog();
 }
 
 BOOL CALLBACK DisconnectWindowWin::DialogProc(HWND hwnd, UINT msg,
@@ -100,8 +98,8 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
         case IDC_DISCONNECT:
+          EndDialog();
           ShutdownHost();
-          EndDialog(LOWORD(wParam));
           return TRUE;
       }
       return FALSE;
@@ -113,8 +111,8 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
 
     // Handle the disconnect hot-key.
     case WM_HOTKEY:
+      EndDialog();
       ShutdownHost();
-      EndDialog(0);
       return TRUE;
 
     // Let the window be draggable by its client area by responding
@@ -143,9 +141,10 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
 }
 
 void DisconnectWindowWin::Show(ChromotingHost* host,
+                               const DisconnectCallback& disconnect_callback,
                                const std::string& username) {
   CHECK(!hwnd_);
-  host_ = host;
+  disconnect_callback_ = disconnect_callback;
 
   // Load the dialog resource so that we can modify the RTL flags if necessary.
   // This is taken from chrome/default_plugin/install_dialog.cc
@@ -203,8 +202,8 @@ void DisconnectWindowWin::Show(ChromotingHost* host,
 }
 
 void DisconnectWindowWin::ShutdownHost() {
-  CHECK(host_);
-  host_->Shutdown(base::Closure());
+  CHECK(!disconnect_callback_.is_null());
+  disconnect_callback_.Run();
 }
 
 static int GetControlTextWidth(HWND control) {
@@ -275,17 +274,17 @@ void DisconnectWindowWin::SetStrings(const UiStrings& strings,
 }
 
 void DisconnectWindowWin::Hide() {
-  EndDialog(0);
+  EndDialog();
 }
 
-void DisconnectWindowWin::EndDialog(int result) {
+void DisconnectWindowWin::EndDialog() {
   if (has_hotkey_) {
     UnregisterHotKey(hwnd_, DISCONNECT_HOTKEY_ID);
     has_hotkey_ = false;
   }
 
   if (hwnd_) {
-    ::EndDialog(hwnd_, result);
+    ::DestroyWindow(hwnd_);
     hwnd_ = NULL;
   }
 }

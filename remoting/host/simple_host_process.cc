@@ -235,9 +235,10 @@ class SimpleHost : public HeartbeatSender::Listener {
     log_to_server_.reset(new LogToServer(host_, mode, signal_strategy_.get()));
 
     if (is_it2me_) {
-      it2me_host_user_interface_.reset(
-          new It2MeHostUserInterface(host_, &context_));
-      it2me_host_user_interface_->Init();
+      it2me_host_user_interface_.reset(new It2MeHostUserInterface(&context_));
+      it2me_host_user_interface_->Start(
+          host_,
+          base::Bind(&ChromotingHost::Shutdown, host_, base::Closure()));
     }
 
     if (protocol_config_.get()) {

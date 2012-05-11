@@ -857,6 +857,9 @@
       'sources': [
         'host/branding.cc',
         'host/branding.h',
+        'host/host_ui_resource.h',
+        'host/host_user_interface.cc',
+        'host/host_user_interface.h',
         'host/it2me_host_user_interface.cc',
         'host/it2me_host_user_interface.h',
         'host/plugin/daemon_controller.h',
@@ -868,7 +871,6 @@
         'host/plugin/host_log_handler.cc',
         'host/plugin/host_log_handler.h',
         'host/plugin/host_plugin.cc',
-        'host/plugin/host_plugin_resource.h',
         'host/plugin/host_plugin_utils.cc',
         'host/plugin/host_plugin_utils.h',
         'host/plugin/host_script_object.cc',
@@ -919,8 +921,8 @@
             '<(INTERMEDIATE_DIR)',
           ],
           'sources': [
+            'host/host_ui.rc',
             'host/plugin/host_plugin.def',
-            'host/plugin/host_plugin.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host_plugin_version.rc'
           ],
         }],
@@ -1302,6 +1304,8 @@
         'host/disconnect_window_mac.h',
         'host/disconnect_window_mac.mm',
         'host/disconnect_window_win.cc',
+        'host/host_user_interface.cc',
+        'host/host_user_interface.h',
         'host/it2me_host_user_interface.cc',
         'host/it2me_host_user_interface.h',
         'host/simple_host_process.cc',
@@ -1331,6 +1335,8 @@
         'host/branding.cc',
         'host/branding.h',
         'host/host_event_logger.h',
+        'host/host_user_interface.cc',
+        'host/host_user_interface.h',
         'host/sighup_listener_mac.cc',
         'host/sighup_listener_mac.h',
         'host/remoting_me2me_host.cc',
@@ -1360,6 +1366,7 @@
             'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)" COPYRIGHT_BY="<(copyright_by)"',
           },
           'mac_bundle_resources': [
+            'host/disconnect_window.xib',
             'host/remoting_me2me_host.icns',
             'host/remoting_me2me_host-Info.plist',
           ],
@@ -1374,6 +1381,7 @@
           ],
           'sources': [
             'host/host_event_logger_win.cc',
+            'host/host_ui.rc',
             'host/remoting_host_messages.mc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_me2me_host_version.rc'
           ],
@@ -1399,8 +1407,20 @@
               'message': 'Running message compiler on <(RULE_INPUT_PATH).',
             },
           ],
+          'link_settings': {
+            'libraries': [
+              '-lcomctl32.lib',
+            ],
+          },
           'msvs_settings': {
             'VCLinkerTool': {
+              'AdditionalOptions': [
+                "\"/manifestdependency:type='win32' "
+                    "name='Microsoft.Windows.Common-Controls' "
+                    "version='6.0.0.0' "
+                    "processorArchitecture='*' "
+                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
+              ],
               # 2 == /SUBSYSTEM:WINDOWS
               'SubSystem': '2',
             },
@@ -1666,6 +1686,8 @@
         'host/host_key_pair_unittest.cc',
         'host/host_mock_objects.cc',
         'host/host_mock_objects.h',
+        'host/host_user_interface.cc',
+        'host/host_user_interface.h',
         'host/it2me_host_user_interface.cc',
         'host/it2me_host_user_interface.h',
         'host/json_host_config_unittest.cc',
