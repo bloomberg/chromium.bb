@@ -64,18 +64,20 @@ FileTransferController.prototype = {
    */
   attachDropTarget: function(list, opt_onlyIntoDirectories) {
     list.addEventListener('dragover', this.onDragOver_.bind(this,
-                          !!opt_onlyIntoDirectories));
+                          !!opt_onlyIntoDirectories, list));
     list.addEventListener('dragenter', this.onDragEnterList_.bind(this, list));
-    list.addEventListener('dragleave', this.onDragLeave_.bind(this));
+    list.addEventListener('dragleave', this.onDragLeave_.bind(this, list));
     list.addEventListener('drop', this.onDrop_.bind(this,
                           !!opt_onlyIntoDirectories));
   },
 
   attachBreadcrumbsDropTarget: function(breadcrumbs) {
-    breadcrumbs.addEventListener('dragover', this.onDragOver_.bind(this, true));
+    breadcrumbs.addEventListener('dragover',
+        this.onDragOver_.bind(this, true, null));
     breadcrumbs.addEventListener('dragenter',
         this.onDragEnterBreadcrumbs_.bind(this, breadcrumbs));
-    breadcrumbs.addEventListener('dragleave', this.onDragLeave_.bind(this));
+    breadcrumbs.addEventListener('dragleave',
+        this.onDragLeave_.bind(this, null));
     breadcrumbs.addEventListener('drop', this.onDrop_.bind(this, true));
   },
 
@@ -221,10 +223,22 @@ FileTransferController.prototype = {
     var container = doc.querySelector('#drag-image-container');
     container.textContent = '';
     this.setDropTarget_(null);
+    this.setScrollSpeed_(null, 0);
     delete window[DRAG_AND_DROP_GLOBAL_DATA];
   },
 
-  onDragOver_: function(onlyIntoDirectories, event) {
+  onDragOver_: function(onlyIntoDirectories, list, event) {
+    if (list) {
+      // Scroll the list if mouse close to the top or the bottom.
+      var rect = list.getBoundingClientRect();
+      if (event.clientY - rect.top < rect.bottom - event.clientY) {
+        this.setScrollSpeed_(list,
+            -this.calculateScrollSpeed_(event.clientY - rect.top));
+      } else {
+        this.setScrollSpeed_(list,
+            this.calculateScrollSpeed_(rect.bottom - event.clientY));
+      }
+    }
     event.preventDefault();
     var path = this.destinationPath_ ||
         (!onlyIntoDirectories && this.directoryModel_.getCurrentDirPath());
@@ -265,9 +279,11 @@ FileTransferController.prototype = {
     this.setDropTarget_(event.target, true, event.dataTransfer, path);
   },
 
-  onDragLeave_: function(event) {
+  onDragLeave_: function(list, event) {
     if (this.dragEnterCount_-- == 0)
       this.setDropTarget_(null);
+    if (event.target == list)
+      this.setScrollSpeed_(list, 0);
   },
 
   onDrop_: function(onlyIntoDirectories, event) {
@@ -281,6 +297,7 @@ FileTransferController.prototype = {
     this.paste(event.dataTransfer, destinationPath,
                this.selectDropEffect_(event, destinationPath));
     this.setDropTarget_(null);
+    this.setScrollSpeed_(null, 0);
   },
 
   setDropTarget_: function(domElement, isDirectory, opt_dataTransfer,
@@ -527,6 +544,34 @@ FileTransferController.prototype = {
       return 'move';
     }
     return 'copy';
+  },
+
+  calculateScrollSpeed_: function(distance) {
+    var SCROLL_AREA = 25;  // Pixels.
+    var MIN_SCROLL_SPEED = 50; // Pixels/sec.
+    var MAX_SCROLL_SPEED = 300;  // Pixels/sec.
+    if (distance < 0 || distance > SCROLL_AREA)
+      return 0;
+    return MAX_SCROLL_SPEED - (MAX_SCROLL_SPEED - MIN_SCROLL_SPEED) *
+        (distance / SCROLL_AREA);
+  },
+
+  setScrollSpeed_: function(list, speed) {
+    var SCROLL_INTERVAL = 200;   // Milliseconds.
+    if (speed == 0 && this.scrollInterval_) {
+      clearInterval(this.scrollInterval_);
+      this.scrollInterval_ = null;
+    } else if (speed != 0 && !this.scrollInterval_) {
+      this.scrollInterval_ = setInterval(this.scroll_.bind(this),
+                                         SCROLL_INTERVAL);
+    }
+    this.scrollStep_ = speed * SCROLL_INTERVAL / 1000;
+    this.scrollList_ = list;
+  },
+
+  scroll_: function() {
+    if (this.scrollList_)
+      this.scrollList_.scrollTop += this.scrollStep_;
   }
 };
 
