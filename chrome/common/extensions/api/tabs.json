@@ -353,6 +353,7 @@
             "properties": {
                "windowId": {
                  "type": "integer",
+                 "optional": true,
                  "description": "The window that contains the tabs.",
                  "minimum": -2
                },

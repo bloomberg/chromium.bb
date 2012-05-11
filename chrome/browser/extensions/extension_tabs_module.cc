@@ -1126,10 +1126,11 @@ bool HighlightTabsFunction::RunImpl() {
   DictionaryValue* info = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &info));
 
-  // Get the window id from the params.
-  int window_id = extension_misc::kUnknownWindowId;
-  EXTENSION_FUNCTION_VALIDATE(
-      info->GetInteger(keys::kWindowIdKey, &window_id));
+  // Get the window id from the params; default to current window if omitted.
+  int window_id = extension_misc::kCurrentWindowId;
+  if (info->HasKey(keys::kWindowIdKey))
+    EXTENSION_FUNCTION_VALIDATE(
+        info->GetInteger(keys::kWindowIdKey, &window_id));
 
   Browser* browser = NULL;
   if (!GetBrowserFromWindowID(this, window_id, &browser))

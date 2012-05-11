@@ -34,9 +34,9 @@ chrome.test.runTests([
   },
 
   function highlightCurrentWindow() {
+    // Check that omitting the windowId highlights the current window
     chrome.windows.getCurrent(pass(function(win1) {
-      chrome.tabs.highlight({windowId: chrome.windows.WINDOW_ID_CURRENT,
-                             tabs: [0]}, pass(function(win2) {
+      chrome.tabs.highlight({tabs: [0]}, pass(function(win2) {
         assertEq(win1.id, win2.id);
       }));
     }));
