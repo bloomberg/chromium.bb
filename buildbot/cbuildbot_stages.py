@@ -1403,87 +1403,136 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
   option_name = 'prebuilts'
   config_name = 'prebuilts'
 
-  # TODO(sosa): Fix prebuilts for unified build.
+  def __init__(self, options, build_config, board, archive_stage, suffix=None):
+    super(UploadPrebuiltsStage, self).__init__(options, build_config,
+                                               board, suffix)
+    self._archive_stage = archive_stage
+
+  @classmethod
+  def _AddOptionsForSlave(cls, builder, board):
+    """Inner helper method to add prebuilt.py args for a slave builder.
+
+    Returns:
+      An array of options to add to prebuilt.py array that allow a master
+      to submit prebuilt conf modifications on behalf of a slave.
+    """
+    args = []
+    builder_config = cbuildbot_config.config[builder]
+    if builder_config['prebuilts']:
+      for slave_board in builder_config['boards']:
+        if builder_config['master'] and slave_board == board:
+          # Ignore self.
+          continue
+
+        args.extend(['--slave-board', slave_board])
+        slave_profile = builder_config['profile']
+        if slave_profile:
+          args.extend(['--slave-profile', slave_profile])
+
+    return args
+
   def _PerformStage(self):
-    manifest_manager = ManifestVersionedSyncStage.manifest_manager
-    overlay_config = self._build_config['overlays']
+    """Uploads prebuilts for master and slave builders."""
     prebuilt_type = self._prebuilt_type
     board = self._current_board
+    git_sync = self._build_config['git_sync']
+    binhosts = []
+
+    # Common args we generate for all types of builds.
+    generated_args = []
+    # Args we specifically add for public build types.
+    public_args = []
+    # Args we specifically add for private build types.
+    private_args = []
+
+    # TODO(sosa): Break out devinstaller options into separate stage.
+    # Devinstaller configuration options.
     binhost_bucket = self._build_config['binhost_bucket']
     binhost_key = self._build_config['binhost_key']
     binhost_base_url = self._build_config['binhost_base_url']
-    git_sync = self._build_config['git_sync']
-    private_bucket = overlay_config in (constants.PRIVATE_OVERLAYS,
-                                        constants.BOTH_OVERLAYS)
-
-    binhosts = []
-    extra_args = []
-
     # Check if we are uploading dev_installer prebuilts.
     use_binhost_package_file = False
     if self._build_config['dev_installer_prebuilts']:
       use_binhost_package_file = True
       private_bucket = False
-
-    if manifest_manager and manifest_manager.current_version:
-      version = manifest_manager.current_version
-      extra_args = ['--set-version', version]
-
-    if cbuildbot_config.IsPFQType(prebuilt_type):
-      overlays = self._build_config['overlays']
-      # The master builder updates all the binhost conf files, and needs to do
-      # so only once so as to ensure it doesn't try to update the same file
-      # more than once. We arbitrarily decided to update the binhost conf
-      # files when we run prebuilt.py for the last board. The other boards are
-      # marked as slave boards.
-      if self._build_config['master'] and board == self._boards[-1]:
-        extra_args.append('--sync-binhost-conf')
-        config = cbuildbot_config.config
-
-        # If we share a version number with our slaves, we know what URLs
-        # they are going to use, so we can update the binhost conf on their
-        # behalf.
-        builders = []
-        if manifest_manager and manifest_manager.current_version:
-          builders = self._GetSlavesForMaster()
-
-        for builder in builders:
-          builder_config = config[builder]
-          if builder_config['prebuilts']:
-            for slave_board in builder_config['boards']:
-              if builder_config['master'] and slave_board == board:
-                continue
-              extra_args.extend(['--slave-board', slave_board])
-              slave_profile = builder_config.get('profile')
-              if slave_profile:
-                extra_args.extend(['--slave-profile', slave_profile])
-
-      # Pre-flight queues should upload host preflight prebuilts.
-      if (cbuildbot_config.IsPFQType(prebuilt_type)
-          and overlays == constants.PUBLIC_OVERLAYS
-          and prebuilt_type != constants.CHROME_PFQ_TYPE):
-        extra_args.append('--sync-host')
-
-      # Deduplicate against previous binhosts.
-      binhosts = []
-      binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())
-      binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, None).split())
-      for binhost in binhosts:
-        if binhost:
-          extra_args.extend(['--previous-binhost-url', binhost])
+    else:
+      private_bucket = self._build_config['overlays'] in (
+          constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS)
 
     if self._options.debug:
-      extra_args.append('--debug')
+      generated_args.append('--debug')
 
     profile = self._options.profile or self._build_config['profile']
     if profile:
-      extra_args.extend(['--profile', profile])
+      generated_args.extend(['--profile', profile])
 
-    # Upload prebuilts.
-    commands.UploadPrebuilts(
-        self._build_root, board, private_bucket, prebuilt_type,
-        self._chrome_rev, binhost_bucket, binhost_key, binhost_base_url,
-        use_binhost_package_file, git_sync, extra_args)
+    # Distributed builders that use manifest-versions to sync with one another
+    # share prebuilt logic by passing around versions.
+    unified_master = False
+    if self._build_config['manifest_version']:
+      assert self._archive_stage, 'Manifest version config needs a version.'
+      version = self._archive_stage.GetVersion()
+      if version:
+        generated_args.extend(['--set-version', version])
+      else:
+        # Non-debug manifest-versioned builds must actually have versions.
+        assert self._options.debug, 'Non-debug builds must have versions'
+
+      if cbuildbot_config.IsPFQType(prebuilt_type):
+        # The master builder updates all the binhost conf files, and needs to do
+        # so only once so as to ensure it doesn't try to update the same file
+        # more than once. As multiple boards can be built on the same builder,
+        # we arbitrarily decided to update the binhost conf files when we run
+        # prebuilt.py for the last board. The other boards are treated as slave
+        # boards.
+        if self._build_config['master'] and board == self._boards[-1]:
+          unified_master = self._build_config['unified_manifest_version']
+          generated_args.append('--sync-binhost-conf')
+          # Difference here is that unified masters upload for both
+          # public/private builders which have slightly different rules.
+          if not unified_master:
+            for builder in self._GetSlavesForMaster():
+              generated_args.extend(self._AddOptionsForSlave(builder, board))
+          else:
+            public_builders, private_builders = \
+                self._GetSlavesForUnifiedMaster()
+            for builder in public_builders:
+              public_args.extend(self._AddOptionsForSlave(builder, board))
+
+            for builder in private_builders:
+              private_args.extend(self._AddOptionsForSlave(builder, board))
+
+        # Public pfqs should upload host preflight prebuilts.
+        if (cbuildbot_config.IsPFQType(prebuilt_type)
+            and prebuilt_type != constants.CHROME_PFQ_TYPE):
+          public_args.append('--sync-host')
+
+        # Deduplicate against previous binhosts.
+        binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())
+        binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, None).split())
+        for binhost in binhosts:
+          if binhost: generated_args.extend(['--previous-binhost-url', binhost])
+
+    if unified_master:
+      # Upload the public/private prebuilts sequentially for unified master.
+      # Override git-sync to be false for unified masters.
+      assert not git_sync, 'This should never be True for pfq-type builders.'
+      # We set board to None as the unified master is always internal.
+      commands.UploadPrebuilts(
+          self._build_root, None, False, prebuilt_type,
+          self._chrome_rev, binhost_bucket, binhost_key, binhost_base_url,
+          use_binhost_package_file, git_sync, generated_args + public_args)
+      commands.UploadPrebuilts(
+          self._build_root, board, True, prebuilt_type,
+          self._chrome_rev, binhost_bucket, binhost_key, binhost_base_url,
+          use_binhost_package_file, git_sync, generated_args + private_args)
+    else:
+      # Upload prebuilts for all other types of builders.
+      extra_args = private_args if private_bucket else public_args
+      commands.UploadPrebuilts(
+          self._build_root, board, private_bucket, prebuilt_type,
+          self._chrome_rev, binhost_bucket, binhost_key, binhost_base_url,
+          use_binhost_package_file, git_sync, generated_args + extra_args)
 
 
 class PublishUprevChangesStage(NonHaltingBuilderStage):

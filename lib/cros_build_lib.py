@@ -956,6 +956,7 @@ def GetHostDomain():
   domain = hostname.partition('.')[2]
   return domain if domain else None
 
+
 def RunCommandWithRetries(max_retry, *args, **kwds):
   """Wrapper for RunCommand that will retry a command
 
