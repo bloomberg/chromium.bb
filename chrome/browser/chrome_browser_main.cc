@@ -1134,7 +1134,7 @@ bool ChromeBrowserMainParts::IsMetricsReportingEnabled() {
   // non-official builds.
   bool enabled = false;
 #ifndef NDEBUG
-  // The debug build doesn't sent UMA logs when FieldTrials are forced.
+  // The debug build doesn't send UMA logs when FieldTrials are forced.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceFieldTrials))
     return false;
