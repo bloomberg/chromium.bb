@@ -153,13 +153,6 @@ Misc
    switching away from.  for minimized windows that we don't want live
    thumb nails for. etc.
 
-libxkbcommon
-
-  - pull in keysym defs as XKB_KEY_BackSpace
-
-  - figure out what other X headers we can get rid of, make it not
-    need X at all (except when we gen the keysyms).
-
 Clients and ports
 
  - port gtk+
