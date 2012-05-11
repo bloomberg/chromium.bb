@@ -649,6 +649,8 @@
         'browser/chromeos/login/language_switch_menu.h',
         'browser/chromeos/login/session_manager_observer.cc',
         'browser/chromeos/login/session_manager_observer.h',
+        'browser/chromeos/login/simple_web_view_dialog.cc',
+        'browser/chromeos/login/simple_web_view_dialog.h',
         'browser/chromeos/login/lock_window.cc',
         'browser/chromeos/login/lock_window.h',
         'browser/chromeos/login/lock_window_aura.cc',
