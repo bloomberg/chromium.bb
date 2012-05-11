@@ -2,31 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "content/browser/geolocation/arbitrator_dependency_factory.h"
-#include "content/browser/geolocation/fake_access_token_store.h"
-#include "content/browser/geolocation/geolocation_observer.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/geolocation/location_arbitrator.h"
+#include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
+#include "content/public/browser/access_token_store.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/test/test_browser_thread.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::Geoposition;
-using testing::_;
-using testing::DoAll;
-using testing::Invoke;
-using testing::InvokeWithoutArgs;
 using testing::MakeMatcher;
 using testing::Matcher;
 using testing::MatcherInterface;
@@ -42,33 +38,47 @@ class NonSingletonGeolocationProvider : public GeolocationProvider {
 
 class StartStopMockLocationProvider : public MockLocationProvider {
  public:
-  explicit StartStopMockLocationProvider() : MockLocationProvider(&instance_) {
+  StartStopMockLocationProvider(base::WaitableEvent* event) :
+      MockLocationProvider(&instance_),
+      event_(event) {
   }
 
   virtual ~StartStopMockLocationProvider() {
-    Die();
+    event_->Signal();
   }
 
-  MOCK_METHOD0(Die, void());
+ private:
+  base::WaitableEvent* event_;
+};
+
+// The AccessTokenStore will be accessed from the geolocation helper thread. The
+// existing FakeAccessTokenStore class cannot be used here because it is based
+// on gmock and gmock is not thread-safe on Windows.
+// See: http://code.google.com/p/googlemock/issues/detail?id=156
+class TestingAccessTokenStore : public content::AccessTokenStore {
+ public:
+  TestingAccessTokenStore(base::WaitableEvent* event) : event_(event) {}
+
+  virtual void LoadAccessTokens(const LoadAccessTokensCallbackType& callback)
+        OVERRIDE {
+    callback.Run(AccessTokenSet(), NULL);
+    event_->Signal();
+  }
+
+  virtual void SaveAccessToken(const GURL& server_url,
+                               const string16& access_token) OVERRIDE {}
+
+ private:
+  base::WaitableEvent* event_;
 };
 
 class TestingDependencyFactory
     : public DefaultGeolocationArbitratorDependencyFactory {
  public:
-  TestingDependencyFactory(base::WaitableEvent* event) : event_(event) {
-  }
+  TestingDependencyFactory(base::WaitableEvent* event) : event_(event) {}
 
   virtual content::AccessTokenStore* NewAccessTokenStore() OVERRIDE {
-    content::FakeAccessTokenStore* store = new content::FakeAccessTokenStore();
-    EXPECT_CALL(*store, LoadAccessTokens(_))
-        .WillRepeatedly(DoAll(
-            Invoke(store,
-                   &content::FakeAccessTokenStore::DefaultLoadAccessTokens),
-            InvokeWithoutArgs(store,
-                              &content::FakeAccessTokenStore::
-                                  NotifyDelegateTokensLoaded),
-            InvokeWithoutArgs(event_, &base::WaitableEvent::Signal)));
-    return store;
+    return new TestingAccessTokenStore(event_);
   }
 
   virtual LocationProviderBase* NewNetworkLocationProvider(
@@ -76,12 +86,7 @@ class TestingDependencyFactory
       net::URLRequestContextGetter* context,
       const GURL& url,
       const string16& access_token) OVERRIDE {
-    StartStopMockLocationProvider* provider =
-        new StartStopMockLocationProvider();
-    EXPECT_CALL(*provider, Die())
-        .Times(1)
-        .WillOnce(InvokeWithoutArgs(event_, &base::WaitableEvent::Signal));
-    return provider;
+    return new StartStopMockLocationProvider(event_);
   }
 
   virtual LocationProviderBase* NewSystemLocationProvider() OVERRIDE  {
@@ -201,14 +206,7 @@ TEST_F(GeolocationProviderTest, StartStop) {
   EXPECT_TRUE(provider_->IsRunning());
 }
 
-#if defined(OS_WIN)
-// This test is flaky on Vista and Win7. See http://crbug.com/127572
-#define MAYBE_OverrideLocationForTesting DISABLED_OverrideLocationForTesting
-#else
-#define MAYBE_OverrideLocationForTesting OverrideLocationForTesting
-#endif
-
-TEST_F(GeolocationProviderTest, MAYBE_OverrideLocationForTesting) {
+TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
   content::Geoposition position;
   position.error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
   provider_->OverrideLocationForTesting(position);
