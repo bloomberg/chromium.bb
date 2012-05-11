@@ -77,6 +77,10 @@ cr.define('options', function() {
         self.toggleSectionWithAnimation_(
             $('advanced-settings'),
             $('advanced-settings-container'));
+        var focusElement = $('advanced-settings-container').querySelector(
+            'button, input, list, select, a');
+        if (focusElement)
+          focusElement.focus();
       }
       $('advanced-settings').addEventListener('webkitTransitionEnd',
           this.updateAdvancedSettingsExpander_.bind(this));
