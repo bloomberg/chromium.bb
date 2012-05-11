@@ -1597,12 +1597,10 @@ DELEGATE_TO_GL_3(getQueryObjectuivEXT, GetQueryObjectuivEXT,
 DELEGATE_TO_GL_5(copyTextureCHROMIUM, CopyTextureCHROMIUM, WGC3Denum,
                  WebGLId, WebGLId, WGC3Dint, WGC3Denum)
 
-#if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
     onCreateGrGLInterface() {
   return webkit_glue::CreateCommandBufferSkiaGLBinding();
 }
-#endif
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
   // TODO(kbr): improve the precision here.

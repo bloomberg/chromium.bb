@@ -1676,11 +1676,9 @@ void WebGraphicsContext3DInProcessImpl::copyTextureCHROMIUM(
 {
 }
 
-#if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DInProcessImpl::onCreateGrGLInterface() {
   return gfx::CreateInProcessSkiaGLBinding();
 }
-#endif
 
 bool WebGraphicsContext3DInProcessImpl::AngleCreateCompilers() {
   if (!ShInitialize())

@@ -560,9 +560,7 @@ class WebGraphicsContext3DCommandBufferImpl
                                    WGC3Denum internal_format);
 
  protected:
-#if WEBKIT_USING_SKIA
   virtual GrGLInterface* onCreateGrGLInterface();
-#endif
 
  private:
   // These are the same error codes as used by EGL.

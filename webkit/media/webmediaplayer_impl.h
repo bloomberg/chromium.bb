@@ -130,16 +130,12 @@ class WebMediaPlayerImpl
   // Methods for painting.
   virtual void setSize(const WebKit::WebSize& size);
 
-#if WEBKIT_USING_SKIA
   // This variant (without alpha) is just present during staging of this API
   // change. Later we will again only have one virtual paint().
   virtual void paint(WebKit::WebCanvas* canvas, const WebKit::WebRect& rect);
   virtual void paint(WebKit::WebCanvas* canvas,
                      const WebKit::WebRect& rect,
                      uint8_t alpha);
-#else
-  virtual void paint(WebKit::WebCanvas* canvas, const WebKit::WebRect& rect);
-#endif
 
   // True if the loaded media has a playable video/audio track.
   virtual bool hasVideo() const;

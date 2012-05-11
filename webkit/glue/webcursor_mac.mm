@@ -11,14 +11,11 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "ui/gfx/mac/nsimage_cache.h"
-
-#if WEBKIT_USING_SKIA
-#include "skia/ext/skia_utils_mac.h"
-#endif
 
 using WebKit::WebCursorInfo;
 using WebKit::WebImage;
@@ -96,7 +93,6 @@ CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
 NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
                              const gfx::Size& custom_size,
                              const gfx::Point& hotspot) {
-#if WEBKIT_USING_SKIA
   // If the data is missing, leave the backing transparent.
   void* data = NULL;
   size_t data_size = 0;
@@ -122,16 +118,6 @@ NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
   else
     bitmap.eraseARGB(0, 0, 0, 0);
   NSImage* cursor_image = gfx::SkBitmapToNSImage(bitmap);
-#else
-  base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
-      CreateCGImageFromCustomData(custom_data, custom_size));
-
-  scoped_nsobject<NSBitmapImageRep> ns_bitmap(
-      [[NSBitmapImageRep alloc] initWithCGImage:cg_image.get()]);
-  scoped_nsobject<NSImage> cursor_image([[NSImage alloc] init]);
-  DCHECK(cursor_image);
-  [cursor_image addRepresentation:ns_bitmap];
-#endif  // WEBKIT_USING_SKIA
 
   NSCursor* cursor = [[NSCursor alloc] initWithImage:cursor_image
                                              hotSpot:NSMakePoint(hotspot.x(),
@@ -363,13 +349,9 @@ void WebCursor::InitFromCursor(const Cursor* cursor) {
   WebKit::WebCursorInfo cursor_info;
   cursor_info.type = WebCursorInfo::TypeCustom;
   cursor_info.hotSpot = WebKit::WebPoint(cursor->hotSpot.h, cursor->hotSpot.v);
-#if WEBKIT_USING_SKIA
   // TODO(avi): build the cursor image in Skia directly rather than going via
   // this roundabout path.
   cursor_info.customImage = gfx::CGImageToSkBitmap(cg_image.get());
-#else
-  cursor_info.customImage = cg_image.get();
-#endif
 
   InitFromCursorInfo(cursor_info);
 }
@@ -429,11 +411,7 @@ void WebCursor::InitFromNSCursor(NSCursor* cursor) {
       cursor_info.type = WebCursorInfo::TypeCustom;
       NSPoint hot_spot = [cursor hotSpot];
       cursor_info.hotSpot = WebKit::WebPoint(hot_spot.x, hot_spot.y);
-#if WEBKIT_USING_SKIA
       cursor_info.customImage = gfx::CGImageToSkBitmap(cg_image);
-#else
-      cursor_info.customImage = cg_image;
-#endif
     } else {
       cursor_info.type = WebCursorInfo::TypePointer;
     }
@@ -441,49 +419,6 @@ void WebCursor::InitFromNSCursor(NSCursor* cursor) {
 
   InitFromCursorInfo(cursor_info);
 }
-
-#if !WEBKIT_USING_SKIA
-void WebCursor::SetCustomData(const WebImage& image) {
-  if (image.isNull())
-    return;
-
-  base::mac::ScopedCFTypeRef<CGColorSpaceRef> cg_color(
-      CGColorSpaceCreateDeviceRGB());
-
-  const WebSize& image_dimensions = image.size();
-  int image_width = image_dimensions.width;
-  int image_height = image_dimensions.height;
-
-  size_t size = image_height * image_width * 4;
-  custom_data_.resize(size);
-  custom_size_.set_width(image_width);
-  custom_size_.set_height(image_height);
-
-  // These settings match up with the code in CreateCustomCursor() above; keep
-  // them in sync.
-  // TODO(avi): test to ensure that the flags here are correct for RGBA
-  base::mac::ScopedCFTypeRef<CGContextRef> context(
-      CGBitmapContextCreate(&custom_data_[0],
-                            image_width,
-                            image_height,
-                            8,
-                            image_width * 4,
-                            cg_color.get(),
-                            kCGImageAlphaPremultipliedLast |
-                            kCGBitmapByteOrder32Big));
-  CGRect rect = CGRectMake(0, 0, image_width, image_height);
-  CGContextDrawImage(context.get(), rect, image.getCGImageRef());
-}
-
-void WebCursor::ImageFromCustomData(WebImage* image) const {
-  if (custom_data_.empty())
-    return;
-
-  base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
-      CreateCGImageFromCustomData(custom_data_, custom_size_));
-  *image = cg_image.get();
-}
-#endif  // !WEBKIT_USING_SKIA
 
 void WebCursor::InitPlatformData() {
   return;

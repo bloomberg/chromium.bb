@@ -480,9 +480,7 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
                                    WGC3Denum internal_format);
 
  protected:
-#if WEBKIT_USING_SKIA
   virtual GrGLInterface* onCreateGrGLInterface();
-#endif
 
  private:
   // SwapBuffers callback.
