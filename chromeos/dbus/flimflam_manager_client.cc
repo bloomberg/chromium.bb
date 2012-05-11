@@ -129,7 +129,6 @@ class FlimflamManagerClientImpl : public FlimflamManagerClient {
 
   virtual void GetService(const base::DictionaryValue& properties,
                           const ObjectPathCallback& callback) OVERRIDE {
-    DCHECK(AreServicePropertiesValid(properties));
     dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
                                  flimflam::kGetServiceFunction);
     dbus::MessageWriter writer(&method_call);
