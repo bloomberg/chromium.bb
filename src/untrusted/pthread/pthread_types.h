@@ -47,8 +47,16 @@ typedef enum {
 struct nc_basic_thread_data;
 
 /* This struct defines the layout of the TDB */
+/*
+ * NOTE: Based on a conversation with mcgrathr, unused_dtv was added to enable
+ *       experiments with newlib as a shared library talking to glibc's ld.so.
+ *       ld.so does not mind if we trample over most of its tdb structure
+ *       ("tcbhead_t") as long as we keep the field "dtv" untouched and
+ *       use tls_base in a compatible way (which we already do).
+ */
 typedef struct {
   void *tls_base;  /* tls accesses are made relative to this base */
+  void *unused_dtv;  /* increase compatibility with glibc's tcbhead_t */
   int joinable;
   int join_waiting;
   nc_thread_memory_block_t *stack_node;
