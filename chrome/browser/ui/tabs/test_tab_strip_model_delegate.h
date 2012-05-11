@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TABS_TEST_TAB_STRIP_MODEL_DELEGATE_H_
-#define CHROME_BROWSER_TABS_TEST_TAB_STRIP_MODEL_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_TABS_TEST_TAB_STRIP_MODEL_DELEGATE_H_
+#define CHROME_BROWSER_UI_TABS_TEST_TAB_STRIP_MODEL_DELEGATE_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 
 // Mock TabStripModelDelegate.
 class TestTabStripModelDelegate : public TabStripModelDelegate {
@@ -50,4 +50,4 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestTabStripModelDelegate);
 };
 
-#endif  // CHROME_BROWSER_TABS_TEST_TAB_STRIP_MODEL_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_TABS_TEST_TAB_STRIP_MODEL_DELEGATE_H_

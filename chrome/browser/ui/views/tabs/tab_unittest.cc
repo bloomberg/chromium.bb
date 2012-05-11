@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/tab.h"
 
-#include "chrome/browser/tabs/tab_strip_selection_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/views_test_base.h"

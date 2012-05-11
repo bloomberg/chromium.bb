@@ -43,7 +43,7 @@
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/download_item.h"

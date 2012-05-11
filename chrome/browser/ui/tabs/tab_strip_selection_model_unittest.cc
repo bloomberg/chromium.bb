@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #include <string>
 
 #include "base/string_number_conversions.h"
-#include "chrome/browser/tabs/tab_strip_selection_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test TabStripSelectionModelTest;

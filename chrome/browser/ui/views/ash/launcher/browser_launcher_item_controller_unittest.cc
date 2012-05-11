@@ -9,9 +9,9 @@
 
 #include "ash/launcher/launcher_model.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"

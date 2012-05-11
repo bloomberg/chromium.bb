@@ -1,13 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/tabpose_window.h"
 
-#include "chrome/browser/tabs/tab_strip_model.h"
 #import "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/site_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

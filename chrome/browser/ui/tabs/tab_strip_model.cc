@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 #include <algorithm>
 #include <map>
@@ -19,9 +19,9 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/tabs/tab_strip_model_delegate.h"
-#include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"

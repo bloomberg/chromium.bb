@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tabs/pinned_tab_service_factory.h"
+#include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
 
-#include "chrome/browser/tabs/pinned_tab_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/ui/tabs/pinned_tab_service.h"
 
 // static
 PinnedTabService* PinnedTabServiceFactory::GetForProfile(

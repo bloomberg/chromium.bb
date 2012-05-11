@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TABS_TAB_FINDER_H_
-#define CHROME_BROWSER_TABS_TAB_FINDER_H_
+#ifndef CHROME_BROWSER_UI_TABS_TAB_FINDER_H_
+#define CHROME_BROWSER_UI_TABS_TAB_FINDER_H_
 #pragma once
 
 #include <map>
@@ -107,4 +107,4 @@ class TabFinder : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TabFinder);
 };
 
-#endif  // CHROME_BROWSER_TABS_TAB_FINDER_H_
+#endif  // CHROME_BROWSER_UI_TABS_TAB_FINDER_H_

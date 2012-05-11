@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TABS_PINNED_TAB_CODEC_H_
-#define CHROME_BROWSER_TABS_PINNED_TAB_CODEC_H_
+#ifndef CHROME_BROWSER_UI_TABS_PINNED_TAB_CODEC_H_
+#define CHROME_BROWSER_UI_TABS_PINNED_TAB_CODEC_H_
 #pragma once
 
 #include <vector>
@@ -47,4 +47,4 @@ class PinnedTabCodec {
   DISALLOW_COPY_AND_ASSIGN(PinnedTabCodec);
 };
 
-#endif  // CHROME_BROWSER_TABS_PINNED_TAB_CODEC_H_
+#endif  // CHROME_BROWSER_UI_TABS_PINNED_TAB_CODEC_H_

@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 
 using content::OpenURLParams;

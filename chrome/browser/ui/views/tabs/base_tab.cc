@@ -8,9 +8,9 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/common/chrome_switches.h"

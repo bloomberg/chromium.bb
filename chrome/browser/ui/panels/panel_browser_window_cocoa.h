@@ -8,8 +8,8 @@
 #import <Foundation/Foundation.h>
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/panels/native_panel.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"

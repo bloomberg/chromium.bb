@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TABS_TAB_STRIP_MODEL_H_
-#define CHROME_BROWSER_TABS_TAB_STRIP_MODEL_H_
+#ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_
+#define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_
 #pragma once
 
 #include <vector>
 
 #include "base/observer_list.h"
-#include "chrome/browser/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/tabs/tab_strip_selection_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/page_transition_types.h"
@@ -690,4 +690,4 @@ class TabStripModel : public content::NotificationObserver {
   DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
 
-#endif  // CHROME_BROWSER_TABS_TAB_STRIP_MODEL_H_
+#endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_

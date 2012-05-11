@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TABS_PINNED_TAB_SERVICE_FACTORY_H_
-#define CHROME_BROWSER_TABS_PINNED_TAB_SERVICE_FACTORY_H_
+#ifndef CHROME_BROWSER_UI_TABS_PINNED_TAB_SERVICE_FACTORY_H_
+#define CHROME_BROWSER_UI_TABS_PINNED_TAB_SERVICE_FACTORY_H_
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
@@ -35,4 +36,4 @@ class PinnedTabServiceFactory : public ProfileKeyedServiceFactory {
   virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_TABS_PINNED_TAB_SERVICE_FACTORY_H_
+#endif  // CHROME_BROWSER_UI_TABS_PINNED_TAB_SERVICE_FACTORY_H_

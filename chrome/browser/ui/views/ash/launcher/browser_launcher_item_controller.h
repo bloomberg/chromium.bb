@@ -8,13 +8,13 @@
 
 #include <string>
 
+#include "ash/launcher/launcher_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "chrome/browser/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
-#include "ash/launcher/launcher_types.h"
 
 class Browser;
 class ChromeLauncherController;

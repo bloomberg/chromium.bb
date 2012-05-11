@@ -9,9 +9,9 @@
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 

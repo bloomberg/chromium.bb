@@ -14,7 +14,6 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/ui/panels/panel_strip.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_utils_cocoa.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
