@@ -70,6 +70,33 @@ for example you'd have to issue the following commands:
   $ libtool --mode=execute gdb ./tools/lou_checktable
   (gdb) run tables/wiskunde.ctb
 
+** How to find memory leaks
+Valgrind is a tool that can be used to find memory errors. It is
+recommended that you compile liblouis without any optimizations and
+with all warnings enabled before running it through Valgrind:
+
+  $ ./configure CFLAGS='-g -O0 -Wall'
+  $ make
+
+Then use Valgrind to analyze liblouis. For example you can run
+lou_translate trough Valgrind:
+
+  $ libtool --mode=execute valgrind -v --tool=memcheck \
+    --leak-check=full --leak-resolution=high --log-file=valgrind.log \
+    ./tools/lou_translate en-us-g2.ctb
+
+Type a few words at the prompt, check translation and terminate
+lou_translate. Now open the file valgrind.log and see if there are any
+memory leaks reported.
+
+You can also just run lou_checktable for example:
+
+  $ libtool --mode=execute valgrind -v --tool=memcheck \
+    --leak-check=full --leak-resolution=high --log-file=valgrind.log \
+    ./tools/lou_checktable tables/nl-BE-g1.ctb
+
+Again open valgrind.log to see if any memory leaks were reported.
+
 ** How to build for win32
 Use the mingw win32 cross compiler as follows:
 
