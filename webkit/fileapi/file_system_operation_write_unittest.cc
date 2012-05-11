@@ -382,6 +382,6 @@ TEST_F(FileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
   EXPECT_TRUE(complete());
 }
 
-// TODO(ericu,dmikurube): Add more tests for Cancel.
+// TODO(ericu,dmikurube,kinuko): Add more tests for cancel cases.
 
 }  // namespace fileapi

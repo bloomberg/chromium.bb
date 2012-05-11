@@ -30,10 +30,15 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   virtual ~FileWriterDelegate();
 
   void Start(base::PlatformFile file,
-             net::URLRequest* request);
-  base::PlatformFile file() {
-    return file_;
-  }
+             scoped_ptr<net::URLRequest> request);
+
+  // Cancels the current write operation.  Returns true if it is ok to
+  // delete this instance immediately.  Otherwise this will call
+  // |write_operation|->DidWrite() with complete=true to let the operation
+  // perform the final cleanup.
+  bool Cancel();
+
+  base::PlatformFile file() const { return file_; }
 
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
@@ -51,7 +56,8 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
                                int bytes_read) OVERRIDE;
 
  private:
-  void OnGetFileInfoAndCallStartUpdate(
+  void OnGetFileInfoAndStartRequest(
+      scoped_ptr<net::URLRequest> request,
       base::PlatformFileError error,
       const base::PlatformFileInfo& file_info);
   void Read();
@@ -69,6 +75,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   FileSystemPath path_;
   int64 size_;
   int64 offset_;
+  bool has_pending_write_;
   base::Time last_progress_event_time_;
   int bytes_written_backlog_;
   int bytes_written_;
@@ -78,7 +85,7 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_refptr<net::DrainableIOBuffer> cursor_;
   scoped_ptr<net::FileStream> file_stream_;
-  net::URLRequest* request_;
+  scoped_ptr<net::URLRequest> request_;
   base::WeakPtrFactory<FileWriterDelegate> weak_factory_;
 };
 

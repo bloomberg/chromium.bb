@@ -290,13 +290,14 @@ void FileSystemOperation::Write(
   file_writer_delegate_.reset(new FileWriterDelegate(
           this, src_path_, offset));
   set_write_callback(callback);
-  blob_request_.reset(
+  scoped_ptr<net::URLRequest> blob_request(
       new net::URLRequest(blob_url, file_writer_delegate_.get()));
-  blob_request_->set_context(url_request_context);
+  blob_request->set_context(url_request_context);
 
   GetUsageAndQuotaThenRunTask(
       src_path_.origin(), src_path_.type(),
-      base::Bind(&FileSystemOperation::DoWrite, base::Unretained(this)),
+      base::Bind(&FileSystemOperation::DoWrite, weak_factory_.GetWeakPtr(),
+                 base::Passed(&blob_request)),
       base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED, 0, true));
 }
 
@@ -389,23 +390,23 @@ void FileSystemOperation::OpenFile(const GURL& path_url,
 void FileSystemOperation::Cancel(const StatusCallback& cancel_callback) {
   if (file_writer_delegate_.get()) {
     DCHECK_EQ(kOperationWrite, pending_operation_);
+
     // Writes are done without proxying through FileUtilProxy after the initial
     // opening of the PlatformFile.  All state changes are done on this thread,
-    // so we're guaranteed to be able to shut down atomically.  We do need to
-    // check that the file has been opened [which means the blob_request_ has
-    // been created], so we know how much we need to do.
-    if (blob_request_.get())
-      // This halts any calls to file_writer_delegate_ from blob_request_.
-      blob_request_->Cancel();
+    // so we're guaranteed to be able to shut down atomically.
+    const bool delete_now = file_writer_delegate_->Cancel();
 
     if (!write_callback_.is_null()) {
       // Notify the failure status to the ongoing operation's callback.
       write_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT, 0, false);
-      // Do not delete this FileSystemOperation object yet. As a result of
-      // abort, this->DidWrite is called later and there we delete this object.
     }
     cancel_callback.Run(base::PLATFORM_FILE_OK);
     write_callback_.Reset();
+
+    if (delete_now) {
+      delete this;
+      return;
+    }
   } else {
     DCHECK_EQ(kOperationTruncate, pending_operation_);
     // We're cancelling a truncate operation, but we can't actually stop it
@@ -450,7 +451,8 @@ FileSystemOperation::FileSystemOperation(
       src_util_(NULL),
       dest_util_(NULL),
       peer_handle_(base::kNullProcessHandle),
-      pending_operation_(kOperationNone) {
+      pending_operation_(kOperationNone),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 void FileSystemOperation::GetUsageAndQuotaThenRunTask(
@@ -540,15 +542,21 @@ void FileSystemOperation::DoMove(const StatusCallback& callback) {
                  base::Owned(this), callback));
 }
 
-void FileSystemOperation::DoWrite() {
+void FileSystemOperation::DoWrite(scoped_ptr<net::URLRequest> blob_request) {
   int file_flags = base::PLATFORM_FILE_OPEN |
                    base::PLATFORM_FILE_WRITE |
                    base::PLATFORM_FILE_ASYNC;
 
+  // We may get deleted on the way so allocate a new operation context
+  // to keep it alive.
+  FileSystemOperationContext* write_context = new FileSystemOperationContext(
+      operation_context_);
   FileSystemFileUtilProxy::CreateOrOpen(
-      &operation_context_, src_util_, src_path_, file_flags,
+      write_context, src_util_, src_path_, file_flags,
       base::Bind(&FileSystemOperation::OnFileOpenedForWrite,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&blob_request),
+                 base::Owned(write_context)));
 }
 
 void FileSystemOperation::DoTruncate(const StatusCallback& callback,
@@ -664,6 +672,8 @@ void FileSystemOperation::DidOpenFile(
 }
 
 void FileSystemOperation::OnFileOpenedForWrite(
+    scoped_ptr<net::URLRequest> blob_request,
+    FileSystemOperationContext* unused,
     base::PlatformFileError rv,
     base::PassPlatformFile file,
     bool created) {
@@ -673,7 +683,7 @@ void FileSystemOperation::OnFileOpenedForWrite(
     delete this;
     return;
   }
-  file_writer_delegate_->Start(file.ReleaseValue(), blob_request_.get());
+  file_writer_delegate_->Start(file.ReleaseValue(), blob_request.Pass());
 }
 
 base::PlatformFileError FileSystemOperation::SetUpFileSystemPath(

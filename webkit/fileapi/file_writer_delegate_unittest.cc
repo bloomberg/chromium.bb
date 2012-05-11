@@ -123,13 +123,15 @@ class FileWriterDelegateTest : public PlatformTest {
 
   static net::URLRequest::ProtocolFactory Factory;
 
+  // This should be alive until the very end of this instance.
+  MessageLoop loop_;
+
   scoped_ptr<QuotaFileUtil> quota_file_util_;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> request_;
   scoped_ptr<Result> result_;
   FileSystemTestOriginHelper test_helper_;
 
-  MessageLoop loop_;
   ScopedTempDir dir_;
   FilePath file_path_;
   PlatformFile file_;
@@ -229,7 +231,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
   PrepareForWrite(kBlobURL, 0, QuotaFileUtil::kNoLimit);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
   MessageLoop::current()->Run();
   ASSERT_EQ(kDataSize, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
@@ -248,7 +250,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
   PrepareForWrite(kBlobURL, 0, kAllowedGrowth);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
   MessageLoop::current()->Run();
   ASSERT_EQ(kAllowedGrowth, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
@@ -267,7 +269,7 @@ TEST_F(FileWriterDelegateTest, WriteFailureByQuota) {
   PrepareForWrite(kBlobURL, 0, kAllowedGrowth);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
   MessageLoop::current()->Run();
   ASSERT_EQ(kAllowedGrowth, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
@@ -286,7 +288,7 @@ TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
   PrepareForWrite(kBlobURL, 0, kAllowedGrowth);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
   MessageLoop::current()->Run();
   ASSERT_EQ(kAllowedGrowth, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
@@ -330,8 +332,8 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   request2.reset(new net::URLRequest(kBlobURL2, file_writer_delegate2.get()));
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.get());
-  file_writer_delegate2->Start(file2, request2.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate2->Start(file2, request2.Pass());
   MessageLoop::current()->Run();
   if (!result_->complete() || !result2->complete())
     MessageLoop::current()->Run();
@@ -363,7 +365,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
   MessageLoop::current()->Run();
   ASSERT_EQ(kDataSize, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
@@ -376,7 +378,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   allowed_growth = 20;
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
-  file_writer_delegate_->Start(file_, request_.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
   MessageLoop::current()->Run();
   EXPECT_EQ(kDataSize, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
@@ -390,7 +392,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   allowed_growth = 55;
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
-  file_writer_delegate_->Start(file_, request_.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
   MessageLoop::current()->Run();
   EXPECT_EQ(offset + kDataSize, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
@@ -404,7 +406,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
   int64 pre_write_usage = ComputeCurrentOriginUsage();
-  file_writer_delegate_->Start(file_, request_.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
   MessageLoop::current()->Run();
   EXPECT_EQ(pre_write_usage, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
@@ -419,7 +421,7 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   allowed_growth = 10;
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
-  file_writer_delegate_->Start(file_, request_.get());
+  file_writer_delegate_->Start(file_, request_.Pass());
   MessageLoop::current()->Run();
   EXPECT_EQ(pre_write_usage + allowed_growth,
             test_helper_.GetCachedOriginUsage());

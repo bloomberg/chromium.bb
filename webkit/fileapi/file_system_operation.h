@@ -173,7 +173,7 @@ class FileSystemOperation : public FileSystemOperationInterface {
                          bool recursive);
   void DoCopy(const StatusCallback& callback);
   void DoMove(const StatusCallback& callback);
-  void DoWrite();
+  void DoWrite(scoped_ptr<net::URLRequest> blob_request);
   void DoTruncate(const StatusCallback& callback, int64 length);
   void DoOpenFile(const OpenFileCallback& callback, int file_flags);
 
@@ -218,7 +218,9 @@ class FileSystemOperation : public FileSystemOperationInterface {
                    bool created);
 
   // Helper for Write().
-  void OnFileOpenedForWrite(base::PlatformFileError rv,
+  void OnFileOpenedForWrite(scoped_ptr<net::URLRequest> blob_request,
+                            FileSystemOperationContext* context_unused,
+                            base::PlatformFileError rv,
                             base::PassPlatformFile file,
                             bool created);
 
@@ -249,7 +251,6 @@ class FileSystemOperation : public FileSystemOperationInterface {
   // These are all used only by Write().
   friend class FileWriterDelegate;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
-  scoped_ptr<net::URLRequest> blob_request_;
 
   // write_callback is kept in this class for so that we can dispatch it when
   // the operation is cancelled. calcel_callback is kept for canceling a
@@ -267,6 +268,10 @@ class FileSystemOperation : public FileSystemOperationInterface {
 
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
+
+  // FileSystemOperation instance is usually deleted upon completion but
+  // could be deleted while it has inflight callbacks when Cancel is called.
+  base::WeakPtrFactory<FileSystemOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);
 };

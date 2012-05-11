@@ -32,14 +32,10 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
  public:
   InitializeTask(
       base::PlatformFile file,
-      const FileSystemPath& path,
-      FileSystemOperationContext* context,
       const InitializeTaskCallback& callback)
       : original_loop_(base::MessageLoopProxy::current()),
         error_code_(base::PLATFORM_FILE_OK),
         file_(file),
-        path_(path),
-        context_(*context),
         callback_(callback) {
     DCHECK_EQ(false, callback.is_null());
   }
@@ -60,13 +56,6 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
   }
 
   void ProcessOnTargetThread() {
-    DCHECK(context_.file_system_context());
-    FileSystemQuotaUtil* quota_util = context_.file_system_context()->
-        GetQuotaUtil(path_.type());
-    if (quota_util) {
-      DCHECK(quota_util->proxy());
-      quota_util->proxy()->StartUpdateOrigin(path_.origin(), path_.type());
-    }
     if (!base::GetPlatformFileInfo(file_, &file_info_))
       error_code_ = base::PLATFORM_FILE_ERROR_FAILED;
     original_loop_->PostTask(
@@ -78,8 +67,6 @@ class InitializeTask : public base::RefCountedThreadSafe<InitializeTask> {
   base::PlatformFileError error_code_;
 
   base::PlatformFile file_;
-  FileSystemPath path_;
-  FileSystemOperationContext context_;
   InitializeTaskCallback callback_;
 
   base::PlatformFileInfo file_info_;
@@ -95,6 +82,7 @@ FileWriterDelegate::FileWriterDelegate(
       file_(base::kInvalidPlatformFileValue),
       path_(path),
       offset_(offset),
+      has_pending_write_(false),
       bytes_written_backlog_(0),
       bytes_written_(0),
       bytes_read_(0),
@@ -107,10 +95,11 @@ FileWriterDelegate::FileWriterDelegate(
 FileWriterDelegate::~FileWriterDelegate() {
 }
 
-void FileWriterDelegate::OnGetFileInfoAndCallStartUpdate(
+void FileWriterDelegate::OnGetFileInfoAndStartRequest(
+    scoped_ptr<net::URLRequest> request,
     base::PlatformFileError error,
     const base::PlatformFileInfo& file_info) {
-  if (error) {
+  if (error != base::PLATFORM_FILE_OK) {
     OnError(error);
     return;
   }
@@ -128,20 +117,32 @@ void FileWriterDelegate::OnGetFileInfoAndCallStartUpdate(
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
       base::PLATFORM_FILE_ASYNC,
       NULL));
+  DCHECK(!request_.get());
+  request_ = request.Pass();
   request_->Start();
 }
 
 void FileWriterDelegate::Start(base::PlatformFile file,
-                               net::URLRequest* request) {
+                               scoped_ptr<net::URLRequest> request) {
   file_ = file;
-  request_ = request;
 
   scoped_refptr<InitializeTask> relay = new InitializeTask(
-      file_, path_,
-      file_system_operation_context(),
-      base::Bind(&FileWriterDelegate::OnGetFileInfoAndCallStartUpdate,
-                 weak_factory_.GetWeakPtr()));
+      file_,
+      base::Bind(&FileWriterDelegate::OnGetFileInfoAndStartRequest,
+                 weak_factory_.GetWeakPtr(), base::Passed(&request)));
   relay->Start(file_system_operation_context()->file_task_runner(), FROM_HERE);
+}
+
+bool FileWriterDelegate::Cancel() {
+  if (request_.get()) {
+    // This halts any callbacks on this delegate.
+    request_->set_delegate(NULL);
+    request_->Cancel();
+  }
+
+  // Return true to finish immediately if we're not writing.
+  // Otherwise we'll do the final cleanup in the write callback.
+  return !has_pending_write_;
 }
 
 void FileWriterDelegate::OnReceivedRedirect(net::URLRequest* request,
@@ -172,7 +173,7 @@ void FileWriterDelegate::OnSSLCertificateError(net::URLRequest* request,
 }
 
 void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
-  DCHECK_EQ(request_, request);
+  DCHECK_EQ(request_.get(), request);
   // file_stream_->Seek() blocks the IO thread.
   // See http://crbug.com/75548.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -190,7 +191,7 @@ void FileWriterDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void FileWriterDelegate::OnReadCompleted(net::URLRequest* request,
                                          int bytes_read) {
-  DCHECK_EQ(request_, request);
+  DCHECK_EQ(request_.get(), request);
   if (!request->status().is_success()) {
     OnError(base::PLATFORM_FILE_ERROR_FAILED);
     return;
@@ -241,6 +242,7 @@ void FileWriterDelegate::Write() {
   if (bytes_to_write > allowed_bytes_to_write_ - total_bytes_written_)
     bytes_to_write = allowed_bytes_to_write_ - total_bytes_written_;
 
+  has_pending_write_ = true;
   int write_response =
       file_stream_->Write(cursor_,
                           static_cast<int>(bytes_to_write),
@@ -256,7 +258,12 @@ void FileWriterDelegate::Write() {
 }
 
 void FileWriterDelegate::OnDataWritten(int write_response) {
+  has_pending_write_ = false;
   if (write_response > 0) {
+    if (request_->status().status() == net::URLRequestStatus::CANCELED) {
+      OnProgress(write_response, true);
+      return;
+    }
     OnProgress(write_response, false);
     cursor_->DidConsume(write_response);
     bytes_written_ += write_response;
@@ -271,11 +278,10 @@ void FileWriterDelegate::OnDataWritten(int write_response) {
 }
 
 void FileWriterDelegate::OnError(base::PlatformFileError error) {
-  request_->set_delegate(NULL);
-  request_->Cancel();
-
-  if (quota_util())
-    quota_util()->proxy()->EndUpdateOrigin(path_.origin(), path_.type());
+  if (request_.get()) {
+    request_->set_delegate(NULL);
+    request_->Cancel();
+  }
 
   file_system_operation_->DidWrite(error, 0, true);
 }
