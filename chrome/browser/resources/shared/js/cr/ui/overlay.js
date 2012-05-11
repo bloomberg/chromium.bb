@@ -25,6 +25,14 @@ cr.define('cr.ui.overlay', function() {
     // Listen to focus events and make sure focus doesn't move outside of a
     // visible overlay .page.
     document.addEventListener('focus', function(e) {
+      // Only run this event handler if there is no FocusManager.
+      // TODO(khorimoto): Remove this function once FocusManager can be used
+      // to manage focus on other pages besides the Settings page.
+      // (https://code.google.com/p/chromium/issues/detail?id=127681)
+      var focusManagerExists = options && options.FocusManager;
+      if (focusManagerExists)
+        return;
+
       var overlay = getTopOverlay();
       var page = overlay ? overlay.querySelector('.page:not([hidden])') : null;
       if (!page || page.contains(e.target))

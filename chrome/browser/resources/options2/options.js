@@ -13,6 +13,7 @@ var ContentSettings = options.ContentSettings;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var CookiesView = options.CookiesView;
+var FocusManager = options.FocusManager;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
@@ -188,6 +189,7 @@ function load() {
                                 CertificateManager.getInstance());
   }
 
+  FocusManager.getInstance().initialize();
   Preferences.getInstance().initialize();
   OptionsPage.initialize();
 
