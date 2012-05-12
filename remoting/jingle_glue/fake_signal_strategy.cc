@@ -52,6 +52,10 @@ SignalStrategy::State FakeSignalStrategy::GetState() const {
   return CONNECTED;
 }
 
+SignalStrategy::Error FakeSignalStrategy::GetError() const {
+  return OK;
+}
+
 std::string FakeSignalStrategy::GetLocalJid() const {
   DCHECK(CalledOnValidThread());
   return jid_;

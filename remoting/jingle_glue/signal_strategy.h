@@ -30,6 +30,12 @@ class SignalStrategy {
     DISCONNECTED,
   };
 
+  enum Error {
+    OK,
+    AUTHENTICATION_FAILED,
+    NETWORK_ERROR,
+  };
+
   // Callback interface for signaling event. Event handlers are not
   // allowed to destroy SignalStrategy, but may add or remove other
   // listeners.
@@ -37,7 +43,9 @@ class SignalStrategy {
    public:
     virtual ~Listener() {}
 
-    // Called after state of the connection has changed.
+    // Called after state of the connection has changed. If the state
+    // is DISCONNECTED, then GetError() can be used to get the reason
+    // for the disconnection.
     virtual void OnSignalStrategyStateChange(State state) {}
 
     // Must return true if the stanza was handled, false
@@ -62,6 +70,9 @@ class SignalStrategy {
 
   // Returns current state.
   virtual State GetState() const = 0;
+
+  // Returns the last error. Set when state changes to DISCONNECT.
+  virtual Error GetError() const = 0;
 
   // Returns local JID or an empty string when not connected.
   virtual std::string GetLocalJid() const = 0;

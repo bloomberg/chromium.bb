@@ -35,6 +35,7 @@
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/constants.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
@@ -94,7 +95,9 @@ class SimpleHost : public HeartbeatSender::Listener {
       : message_loop_(MessageLoop::TYPE_UI),
         context_(message_loop_.message_loop_proxy()),
         fake_(false),
-        is_it2me_(false) {
+        is_it2me_(false),
+        shutting_down_(false),
+        exit_code_(kSuccessExitCode) {
     context_.Start();
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
@@ -102,7 +105,7 @@ class SimpleHost : public HeartbeatSender::Listener {
   // Overridden from HeartbeatSender::Listener
   virtual void OnUnknownHostIdError() OVERRIDE {
     LOG(ERROR) << "Host ID not found.";
-    Shutdown();
+    Shutdown(kInvalidHostIdExitCode);
   }
 
   int Run() {
@@ -153,7 +156,7 @@ class SimpleHost : public HeartbeatSender::Listener {
 
     message_loop_.MessageLoop::Run();
 
-    return 0;
+    return exit_code_;
   }
 
   void set_config_path(const FilePath& config_path) {
@@ -214,7 +217,9 @@ class SimpleHost : public HeartbeatSender::Listener {
     signal_strategy_.reset(
         new XmppSignalStrategy(context_.jingle_thread(), xmpp_login_,
                                xmpp_auth_token_, xmpp_auth_service_));
-    signaling_connector_.reset(new SignalingConnector(signal_strategy_.get()));
+    signaling_connector_.reset(new SignalingConnector(
+        signal_strategy_.get(),
+        base::Bind(&SimpleHost::OnAuthFailed, base::Unretained(this))));
 
     if (fake_) {
       scoped_ptr<Capturer> capturer(new CapturerFake());
@@ -266,7 +271,32 @@ class SimpleHost : public HeartbeatSender::Listener {
     }
   }
 
-  void Shutdown() {
+  void OnAuthFailed() {
+    Shutdown(kInvalidOauthCredentialsExitCode);
+  }
+
+  void Shutdown(int exit_code) {
+    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+
+    if (shutting_down_)
+      return;
+
+    shutting_down_ = true;
+    exit_code_ = exit_code;
+    host_->Shutdown(base::Bind(
+        &SimpleHost::OnShutdownFinished, base::Unretained(this)));
+  }
+
+  void OnShutdownFinished() {
+    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+
+    // Destroy networking objects while we are on the network thread.
+    host_ = NULL;
+    log_to_server_.reset();
+    heartbeat_sender_.reset();
+    signaling_connector_.reset();
+    signal_strategy_.reset();
+
     message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
@@ -296,6 +326,9 @@ class SimpleHost : public HeartbeatSender::Listener {
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
 
   scoped_refptr<ChromotingHost> host_;
+
+  bool shutting_down_;
+  int exit_code_;
 };
 
 } // namespace remoting

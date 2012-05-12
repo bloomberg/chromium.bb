@@ -47,12 +47,21 @@ void JavascriptSignalStrategy::Disconnect() {
 }
 
 SignalStrategy::State JavascriptSignalStrategy::GetState() const {
+  DCHECK(CalledOnValidThread());
   // TODO(sergeyu): Extend XmppProxy to provide status of the
   // connection.
   return CONNECTED;
 }
 
+SignalStrategy::Error JavascriptSignalStrategy::GetError() const {
+  DCHECK(CalledOnValidThread());
+  // TODO(sergeyu): Extend XmppProxy to provide status of the
+  // connection.
+  return OK;
+}
+
 std::string JavascriptSignalStrategy::GetLocalJid() const {
+  DCHECK(CalledOnValidThread());
   return local_jid_;
 }
 

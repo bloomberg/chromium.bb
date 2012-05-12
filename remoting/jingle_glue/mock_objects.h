@@ -18,6 +18,7 @@ class MockSignalStrategy : public SignalStrategy {
   MOCK_METHOD0(Connect, void());
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(GetState, State());
+  MOCK_CONST_METHOD0(GetError, Error());
   MOCK_CONST_METHOD0(GetLocalJid, std::string());
   MOCK_METHOD1(AddListener, void(Listener* listener));
   MOCK_METHOD1(RemoveListener, void(Listener* listener));

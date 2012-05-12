@@ -31,10 +31,14 @@ SignalingConnector::OAuthCredentials::OAuthCredentials(
       client_info(client_info_value) {
 }
 
-SignalingConnector::SignalingConnector(XmppSignalStrategy* signal_strategy)
+SignalingConnector::SignalingConnector(
+    XmppSignalStrategy* signal_strategy,
+    const base::Closure& auth_failed_callback)
     : signal_strategy_(signal_strategy),
+      auth_failed_callback_(auth_failed_callback),
       reconnect_attempts_(0),
       refreshing_oauth_token_(false) {
+  DCHECK(!auth_failed_callback_.is_null());
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   signal_strategy_->AddListener(this);
@@ -49,10 +53,8 @@ SignalingConnector::~SignalingConnector() {
 
 void SignalingConnector::EnableOAuth(
     scoped_ptr<OAuthCredentials> oauth_credentials,
-    const base::Closure& oauth_failed_callback,
     net::URLRequestContextGetter* url_context) {
   oauth_credentials_ = oauth_credentials.Pass();
-  oauth_failed_callback_ = oauth_failed_callback;
   gaia_oauth_client_.reset(new GaiaOAuthClient(kGaiaOAuth2Url, url_context));
 }
 
@@ -66,7 +68,14 @@ void SignalingConnector::OnSignalStrategyStateChange(
   } else if (state == SignalStrategy::DISCONNECTED) {
     LOG(INFO) << "Signaling disconnected.";
     reconnect_attempts_++;
-    ScheduleTryReconnect();
+
+    // If authentication failed then we have an invalid OAuth token,
+    // inform the upper layer about it.
+    if (signal_strategy_->GetError() == SignalStrategy::AUTHENTICATION_FAILED) {
+      auth_failed_callback_.Run();
+    } else {
+      ScheduleTryReconnect();
+    }
   }
 }
 
@@ -106,7 +115,7 @@ void SignalingConnector::OnOAuthError() {
   LOG(ERROR) << "OAuth: invalid credentials.";
   refreshing_oauth_token_ = false;
   reconnect_attempts_++;
-  oauth_failed_callback_.Run();
+  auth_failed_callback_.Run();
 }
 
 void SignalingConnector::OnNetworkError(int response_code) {

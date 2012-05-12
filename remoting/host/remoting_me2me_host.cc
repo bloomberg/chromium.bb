@@ -335,8 +335,9 @@ class HostProcess
           new XmppSignalStrategy(context_->jingle_thread(), xmpp_login_,
                                  xmpp_auth_token_, xmpp_auth_service_));
 
-      signaling_connector_.reset(
-          new SignalingConnector(signal_strategy_.get()));
+      signaling_connector_.reset(new SignalingConnector(
+          signal_strategy_.get(),
+          base::Bind(&HostProcess::OnAuthFailed, base::Unretained(this))));
 
       if (!oauth_refresh_token_.empty()) {
         OAuthClientInfo client_info = {
@@ -360,7 +361,6 @@ class HostProcess
                 xmpp_login_, oauth_refresh_token_, client_info));
         signaling_connector_->EnableOAuth(
             oauth_credentials.Pass(),
-            base::Bind(&HostProcess::OnOAuthFailed, base::Unretained(this)),
             context_->url_request_context_getter());
       }
     }
@@ -401,7 +401,7 @@ class HostProcess
     CreateAuthenticatorFactory();
   }
 
-  void OnOAuthFailed() {
+  void OnAuthFailed() {
     Shutdown(kInvalidOauthCredentialsExitCode);
   }
 

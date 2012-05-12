@@ -40,6 +40,7 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   virtual void Connect() OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual State GetState() const OVERRIDE;
+  virtual Error GetError() const OVERRIDE;
   virtual std::string GetLocalJid() const OVERRIDE;
   virtual void AddListener(Listener* listener) OVERRIDE;
   virtual void RemoveListener(Listener* listener) OVERRIDE;
@@ -78,8 +79,9 @@ class XmppSignalStrategy : public base::NonThreadSafe,
   buzz::XmppClient* xmpp_client_;
 
   State state_;
+  Error error_;
 
-  ObserverList<Listener> listeners_;
+  ObserverList<Listener, true> listeners_;
 
   base::RepeatingTimer<XmppSignalStrategy> keep_alive_timer_;
 

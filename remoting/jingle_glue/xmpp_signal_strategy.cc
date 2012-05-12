@@ -4,7 +4,9 @@
 
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/xmpp_socket_adapter.h"
@@ -20,6 +22,10 @@ const char kDefaultResourceName[] = "chromoting";
 // connections that are idle for more than a minute.
 const int kKeepAliveIntervalSeconds = 50;
 
+void DisconnectXmppClient(buzz::XmppClient* client) {
+  client->Disconnect();
+}
+
 }  // namespace
 
 namespace remoting {
@@ -34,11 +40,11 @@ XmppSignalStrategy::XmppSignalStrategy(JingleThread* jingle_thread,
      auth_token_service_(auth_token_service),
      resource_name_(kDefaultResourceName),
      xmpp_client_(NULL),
-     state_(DISCONNECTED) {
+     state_(DISCONNECTED),
+     error_(OK) {
 }
 
 XmppSignalStrategy::~XmppSignalStrategy() {
-  DCHECK_EQ(listeners_.size(), 0U);
   Disconnect();
 }
 
@@ -87,6 +93,11 @@ void XmppSignalStrategy::Disconnect() {
 SignalStrategy::State XmppSignalStrategy::GetState() const {
   DCHECK(CalledOnValidThread());
   return state_;
+}
+
+SignalStrategy::Error XmppSignalStrategy::GetError() const {
+  DCHECK(CalledOnValidThread());
+  return error_;
 }
 
 std::string XmppSignalStrategy::GetLocalJid() const {
@@ -154,7 +165,26 @@ void XmppSignalStrategy::SetResourceName(const std::string &resource_name) {
 void XmppSignalStrategy::OnConnectionStateChanged(
     buzz::XmppEngine::State state) {
   DCHECK(CalledOnValidThread());
+
   if (state == buzz::XmppEngine::STATE_OPEN) {
+    // Verify that the JID that we've received matches the username
+    // that we have. If it doesn't, then the OAuth token was probably
+    // issued for a different account, so we treat is a an auth error.
+    //
+    // TODO(sergeyu): Some user accounts may not have associated
+    // e-mail address. The check below will fail for such
+    // accounts. Make sure we can handle this case proprely.
+    if (!StartsWithASCII(GetLocalJid(), username_, false)) {
+      LOG(ERROR) << "Received JID that is different from the expected value.";
+      error_ = AUTHENTICATION_FAILED;
+      xmpp_client_->SignalStateChange.disconnect(this);
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&DisconnectXmppClient, xmpp_client_));
+      xmpp_client_ = NULL;
+      SetState(DISCONNECTED);
+      return;
+    }
+
     keep_alive_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kKeepAliveIntervalSeconds),
         this, &XmppSignalStrategy::SendKeepAlive);
@@ -171,6 +201,18 @@ void XmppSignalStrategy::OnConnectionStateChanged(
     // Client is destroyed by the TaskRunner after the client is
     // closed. Reset the pointer so we don't try to use it later.
     xmpp_client_ = NULL;
+
+    switch (error) {
+      case buzz::XmppEngine::ERROR_UNAUTHORIZED:
+      case buzz::XmppEngine::ERROR_AUTH:
+      case buzz::XmppEngine::ERROR_MISSING_USERNAME:
+        error_ = AUTHENTICATION_FAILED;
+        break;
+
+      default:
+        error_ = NETWORK_ERROR;
+    }
+
     SetState(DISCONNECTED);
   }
 }

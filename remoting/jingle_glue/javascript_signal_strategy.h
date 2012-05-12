@@ -33,6 +33,7 @@ class JavascriptSignalStrategy : public SignalStrategy,
   virtual void Connect() OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual State GetState() const OVERRIDE;
+  virtual Error GetError() const OVERRIDE;
   virtual std::string GetLocalJid() const OVERRIDE;
   virtual void AddListener(Listener* listener) OVERRIDE;
   virtual void RemoveListener(Listener* listener) OVERRIDE;

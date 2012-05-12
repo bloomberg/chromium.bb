@@ -50,13 +50,14 @@ class SignalingConnector
     OAuthClientInfo client_info;
   };
 
-  // OAuth token is updated refreshed when |oauth_credentials| is
-  // not NULL.
-  SignalingConnector(XmppSignalStrategy* signal_strategy);
+  // The |auth_failed_callback| is called when authentication fails.
+  SignalingConnector(XmppSignalStrategy* signal_strategy,
+                     const base::Closure& auth_failed_callback);
   virtual ~SignalingConnector();
 
+  // May be called immediately after the constructor to enable OAuth
+  // access token updating.
   void EnableOAuth(scoped_ptr<OAuthCredentials> oauth_credentials,
-                   const base::Closure& oauth_failed_callback,
                    net::URLRequestContextGetter* url_context);
 
   // SignalStrategy::Listener interface.
@@ -83,9 +84,9 @@ class SignalingConnector
   void RefreshOAuthToken();
 
   XmppSignalStrategy* signal_strategy_;
+  base::Closure auth_failed_callback_;
 
   scoped_ptr<OAuthCredentials> oauth_credentials_;
-  base::Closure oauth_failed_callback_;
   scoped_ptr<GaiaOAuthClient> gaia_oauth_client_;
 
   // Number of times we tried to connect without success.
