@@ -4570,13 +4570,16 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_VISIT_WEBSTORE" desc="The link for visiting the extension's gallery page.">
         View in Web Store
       </message>
+      <message name="IDS_EXTENSIONS_RELOAD_TERMINATED" desc="The link for reloading extensions.">
+        Reload
+      </message>
       <if expr="is_macosx">
-        <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
+        <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
           Reload (⌘R)
         </message>
       </if>
       <if expr="not is_macosx">
-        <message name="IDS_EXTENSIONS_RELOAD" desc="The link for reloading extensions.">
+        <message name="IDS_EXTENSIONS_RELOAD_UNPACKED" desc="The link for reloading unpacked extensions.">
           Reload (Ctrl+R)
         </message>
       </if>

@@ -234,8 +234,10 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ALLOW_FILE_ACCESS));
   localized_strings->SetString("extensionSettingsIncognitoWarning",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING));
-  localized_strings->SetString("extensionSettingsReload",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD));
+  localized_strings->SetString("extensionSettingsReloadTerminated",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_TERMINATED));
+  localized_strings->SetString("extensionSettingsReloadUnpacked",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD_UNPACKED));
   localized_strings->SetString("extensionSettingsOptions",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS_LINK));
   localized_strings->SetString("extensionSettingsActivity",
