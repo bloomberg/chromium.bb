@@ -1581,3 +1581,4 @@ void ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) {
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
+

@@ -371,9 +371,9 @@ TEST_F(GLES2ImplementationTest, Disable) {
     Disable cmd;
   };
   Cmds expected;
-  expected.cmd.Init(GL_BLEND);
+  expected.cmd.Init(GL_DITHER);
 
-  gl_->Disable(GL_BLEND);
+  gl_->Disable(GL_DITHER);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -404,9 +404,9 @@ TEST_F(GLES2ImplementationTest, Enable) {
     Enable cmd;
   };
   Cmds expected;
-  expected.cmd.Init(GL_BLEND);
+  expected.cmd.Init(GL_DITHER);
 
-  gl_->Enable(GL_BLEND);
+  gl_->Enable(GL_DITHER);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

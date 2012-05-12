@@ -91,10 +91,10 @@ TEST_F(GLES2DecoderTest2, IsBufferInvalidArgsBadSharedMemoryId) {
 }
 
 TEST_F(GLES2DecoderTest2, IsEnabledValidArgs) {
-  EXPECT_CALL(*gl_, IsEnabled(GL_BLEND));
+  EXPECT_CALL(*gl_, IsEnabled(GL_DITHER));
   SpecializedSetup<IsEnabled, 0>(true);
   IsEnabled cmd;
-  cmd.Init(GL_BLEND, shared_memory_id_, shared_memory_offset_);
+  cmd.Init(GL_DITHER, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -118,12 +118,12 @@ TEST_F(GLES2DecoderTest2, IsEnabledInvalidArgs0_1) {
 }
 
 TEST_F(GLES2DecoderTest2, IsEnabledInvalidArgsBadSharedMemoryId) {
-  EXPECT_CALL(*gl_, IsEnabled(GL_BLEND)).Times(0);
+  EXPECT_CALL(*gl_, IsEnabled(GL_DITHER)).Times(0);
   SpecializedSetup<IsEnabled, 0>(false);
   IsEnabled cmd;
-  cmd.Init(GL_BLEND, kInvalidSharedMemoryId, shared_memory_offset_);
+  cmd.Init(GL_DITHER, kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(GL_BLEND, shared_memory_id_, kInvalidSharedMemoryOffset);
+  cmd.Init(GL_DITHER, shared_memory_id_, kInvalidSharedMemoryOffset);
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 

@@ -339,10 +339,10 @@ _ENUM_LISTS = {
   'Capability': {
     'type': 'GLenum',
     'valid': [
+      'GL_DITHER',  # 1st one is a non-cached value so autogen unit tests work.
       'GL_BLEND',
       'GL_CULL_FACE',
       'GL_DEPTH_TEST',
-      'GL_DITHER',
       'GL_POLYGON_OFFSET_FILL',
       'GL_SAMPLE_ALPHA_TO_COVERAGE',
       'GL_SAMPLE_COVERAGE',
@@ -1243,7 +1243,10 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoIsBuffer',
     'expectation': False,
   },
-  'IsEnabled': {'type': 'Is'},
+  'IsEnabled': {
+    'type': 'Is',
+    'decoder_func': 'DoIsEnabled',
+  },
   'IsFramebuffer': {
     'type': 'Is',
     'decoder_func': 'DoIsFramebuffer',

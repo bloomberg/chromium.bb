@@ -6984,6 +6984,32 @@ TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
   EXPECT_EQ(kServiceTextureId, info->service_id());
 }
 
+TEST_F(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
+  // NOTE: There are no expectations because no GL functions should be
+  // called for DEPTH_TEST or STENCIL_TEST
+  static const GLenum kStates[] = {
+    GL_DEPTH_TEST,
+    GL_STENCIL_TEST,
+  };
+  for (size_t ii = 0; ii < arraysize(kStates); ++ii) {
+    Enable enable_cmd;
+    GLenum state = kStates[ii];
+    enable_cmd.Init(state);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(enable_cmd));
+    IsEnabled::Result* result =
+        static_cast<IsEnabled::Result*>(shared_memory_address_);
+    IsEnabled is_enabled_cmd;
+    is_enabled_cmd.Init(state, shared_memory_id_, shared_memory_offset_);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(is_enabled_cmd));
+    EXPECT_NE(0u, *result);
+    Disable disable_cmd;
+    disable_cmd.Init(state);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(disable_cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(is_enabled_cmd));
+    EXPECT_EQ(0u, *result);
+  }
+}
+
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }

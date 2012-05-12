@@ -1087,6 +1087,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void DoGetVertexAttribiv(GLuint index, GLenum pname, GLint *params);
 
   // Wrappers for glIsXXX functions.
+  bool DoIsEnabled(GLenum cap);
   bool DoIsBuffer(GLuint client_id);
   bool DoIsFramebuffer(GLuint client_id);
   bool DoIsProgram(GLuint client_id);
@@ -4150,6 +4151,23 @@ void GLES2DecoderImpl::DoDisable(GLenum cap) {
 void GLES2DecoderImpl::DoEnable(GLenum cap) {
   if (SetCapabilityState(cap, true)) {
     glEnable(cap);
+  }
+}
+
+bool GLES2DecoderImpl::DoIsEnabled(GLenum cap) {
+  switch (cap) {
+    case GL_BLEND:
+      return enable_blend_;
+    case GL_CULL_FACE:
+      return enable_cull_face_;
+    case GL_SCISSOR_TEST:
+      return enable_scissor_test_;
+    case GL_DEPTH_TEST:
+      return enable_depth_test_;
+    case GL_STENCIL_TEST:
+      return enable_stencil_test_;
+    default:
+      return glIsEnabled(cap) != 0;
   }
 }
 

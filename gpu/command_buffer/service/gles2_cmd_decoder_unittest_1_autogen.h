@@ -669,10 +669,10 @@ TEST_F(GLES2DecoderTest1, DetachShaderValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest1, DisableValidArgs) {
-  EXPECT_CALL(*gl_, Disable(GL_BLEND));
+  EXPECT_CALL(*gl_, Disable(GL_DITHER));
   SpecializedSetup<Disable, 0>(true);
   Disable cmd;
-  cmd.Init(GL_BLEND);
+  cmd.Init(GL_DITHER);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -709,10 +709,10 @@ TEST_F(GLES2DecoderTest1, DisableVertexAttribArrayValidArgs) {
 
 
 TEST_F(GLES2DecoderTest1, EnableValidArgs) {
-  EXPECT_CALL(*gl_, Enable(GL_BLEND));
+  EXPECT_CALL(*gl_, Enable(GL_DITHER));
   SpecializedSetup<Enable, 0>(true);
   Enable cmd;
-  cmd.Init(GL_BLEND);
+  cmd.Init(GL_DITHER);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

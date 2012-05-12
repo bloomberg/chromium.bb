@@ -1358,7 +1358,7 @@ error::Error GLES2DecoderImpl::HandleIsEnabled(
     SetGLError(GL_INVALID_ENUM, "glIsEnabled: cap GL_INVALID_ENUM");
     return error::kNoError;
   }
-  *result_dst = glIsEnabled(cap);
+  *result_dst = DoIsEnabled(cap);
   return error::kNoError;
 }
 

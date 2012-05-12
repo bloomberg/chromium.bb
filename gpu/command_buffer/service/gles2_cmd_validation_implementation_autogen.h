@@ -37,10 +37,10 @@ static GLenum valid_buffer_usage_table[] = {
 };
 
 static GLenum valid_capability_table[] = {
+  GL_DITHER,
   GL_BLEND,
   GL_CULL_FACE,
   GL_DEPTH_TEST,
-  GL_DITHER,
   GL_POLYGON_OFFSET_FILL,
   GL_SAMPLE_ALPHA_TO_COVERAGE,
   GL_SAMPLE_COVERAGE,
