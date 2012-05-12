@@ -15,6 +15,17 @@
 
 namespace gfx {
 
+namespace {
+
+// Checks whether |range| contains |index|. This is not the same as calling
+// |range.Contains(ui::Range(index))| - as that would return true when
+// |index| == |range.end()|.
+bool IndexInRange(const ui::Range& range, size_t index) {
+  return index >= range.start() && index < range.end();
+}
+
+}  // namespace
+
 class RenderTextTest : public testing::Test {
 };
 
@@ -1024,6 +1035,81 @@ TEST_F(RenderTextTest, OriginForDrawing) {
   origin = render_text->GetOriginForDrawing();
   EXPECT_EQ(origin.x(), 0);
   EXPECT_EQ(origin.y(), 1);
+}
+
+TEST_F(RenderTextTest, SameFontForParentheses) {
+  struct {
+    const char16 left_char;
+    const char16 right_char;
+  } punctuation_pairs[] = {
+    { '(', ')' },
+    { '{', '}' },
+    { '<', '>' },
+  };
+  struct {
+    string16 text;
+  } cases[] = {
+    // English(English)
+    { WideToUTF16(L"Hello World(a)") },
+    // English(English)English
+    { WideToUTF16(L"Hello World(a)Hello World") },
+
+    // Japanese(English)
+    { WideToUTF16(L"\x6328\x62f6(a)") },
+    // Japanese(English)Japanese
+    { WideToUTF16(L"\x6328\x62f6(a)\x6328\x62f6") },
+    // English(Japanese)English
+    { WideToUTF16(L"Hello World(\x6328\x62f6)Hello World") },
+
+    // Hindi(English)
+    { WideToUTF16(L"\x0915\x093f(a)") },
+    // Hindi(English)Hindi
+    { WideToUTF16(L"\x0915\x093f(a)\x0915\x093f") },
+    // English(Hindi)English
+    { WideToUTF16(L"Hello World(\x0915\x093f)Hello World") },
+
+    // Hebrew(English)
+    { WideToUTF16(L"\x05e0\x05b8(a)") },
+    // Hebrew(English)Hebrew
+    { WideToUTF16(L"\x05e0\x05b8(a)\x05e0\x05b8") },
+    // English(Hebrew)English
+    { WideToUTF16(L"Hello World(\x05e0\x05b8)Hello World") },
+  };
+
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    string16 text = cases[i].text;
+    const size_t start_paren_char_index = text.find('(');
+    ASSERT_NE(string16::npos, start_paren_char_index);
+    const size_t end_paren_char_index = text.find(')');
+    ASSERT_NE(string16::npos, end_paren_char_index);
+
+    for (size_t j = 0; j < ARRAYSIZE_UNSAFE(punctuation_pairs); ++j) {
+      text[start_paren_char_index] = punctuation_pairs[j].left_char;
+      text[end_paren_char_index] = punctuation_pairs[j].right_char;
+      render_text->SetText(text);
+
+      const std::vector<RenderText::FontSpan> spans =
+          render_text->GetFontSpansForTesting();
+
+      int start_paren_span_index = -1;
+      int end_paren_span_index = -1;
+      for (size_t k = 0; k < spans.size(); ++k) {
+        if (IndexInRange(spans[k].second, start_paren_char_index))
+          start_paren_span_index = k;
+        if (IndexInRange(spans[k].second, end_paren_char_index))
+          end_paren_span_index = k;
+      }
+      ASSERT_NE(-1, start_paren_span_index);
+      ASSERT_NE(-1, end_paren_span_index);
+
+      const Font& start_font = spans[start_paren_span_index].first;
+      const Font& end_font = spans[end_paren_span_index].first;
+      EXPECT_EQ(start_font.GetFontName(), end_font.GetFontName());
+      EXPECT_EQ(start_font.GetFontSize(), end_font.GetFontSize());
+      EXPECT_EQ(start_font.GetStyle(), end_font.GetStyle());
+    }
+  }
 }
 
 TEST_F(RenderTextTest, DisplayRectShowsCursorLTR) {

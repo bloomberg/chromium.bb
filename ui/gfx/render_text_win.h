@@ -72,6 +72,7 @@ class RenderTextWin : public RenderText {
   virtual size_t IndexOfAdjacentGrapheme(
       size_t index,
       LogicalCursorDirection direction) OVERRIDE;
+  virtual std::vector<FontSpan> GetFontSpansForTesting() OVERRIDE;
 
  protected:
   // Overridden from RenderText:

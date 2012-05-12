@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstring>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -260,6 +261,13 @@ class UI_EXPORT RenderText {
 
   // Sets shadows to drawn with text.
   void SetTextShadows(const std::vector<ShadowValue>& shadows);
+
+  typedef std::pair<Font, ui::Range> FontSpan;
+  // For testing purposes, returns which fonts were chosen for which parts of
+  // the text by returning a vector of Font and Range pairs, where each range
+  // specifies the character range for which the corresponding font has been
+  // chosen.
+  virtual std::vector<FontSpan> GetFontSpansForTesting() = 0;
 
  protected:
   RenderText();

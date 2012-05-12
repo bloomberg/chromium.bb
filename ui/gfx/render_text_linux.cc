@@ -162,6 +162,25 @@ size_t RenderTextLinux::IndexOfAdjacentGrapheme(
   return ui::UTF16OffsetToIndex(text(), 0, char_offset);
 }
 
+std::vector<RenderText::FontSpan> RenderTextLinux::GetFontSpansForTesting() {
+  EnsureLayout();
+
+  std::vector<RenderText::FontSpan> spans;
+  for (GSList* it = current_line_->runs; it; it = it->next) {
+    PangoItem* item = reinterpret_cast<PangoLayoutRun*>(it->data)->item;
+    const int start = LayoutIndexToTextIndex(item->offset);
+    const int end = LayoutIndexToTextIndex(item->offset + item->length);
+    const ui::Range range(start, end);
+
+    PangoFontDescription* native_font =
+        pango_font_describe(item->analysis.font);
+    spans.push_back(RenderText::FontSpan(Font(native_font), range));
+    pango_font_description_free(native_font);
+  }
+
+  return spans;
+}
+
 SelectionModel RenderTextLinux::AdjacentCharSelectionModel(
     const SelectionModel& selection,
     VisualCursorDirection direction) {

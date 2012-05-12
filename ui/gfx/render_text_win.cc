@@ -302,6 +302,16 @@ size_t RenderTextWin::IndexOfAdjacentGrapheme(
   return start + ch;
 }
 
+std::vector<RenderText::FontSpan> RenderTextWin::GetFontSpansForTesting() {
+  EnsureLayout();
+
+  std::vector<RenderText::FontSpan> spans;
+  for (size_t i = 0; i < runs_.size(); ++i)
+    spans.push_back(RenderText::FontSpan(runs_[i]->font, runs_[i]->range));
+
+  return spans;
+}
+
 SelectionModel RenderTextWin::AdjacentCharSelectionModel(
     const SelectionModel& selection,
     VisualCursorDirection direction) {
