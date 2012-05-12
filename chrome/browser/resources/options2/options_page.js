@@ -19,6 +19,7 @@ cr.define('options', function() {
     this.pageDivName = pageDivName;
     this.pageDiv = $(this.pageDivName);
     this.tab = null;
+    this.lastFocusedElement = null;
   }
 
   /** @const */ var HORIZONTAL_OFFSET = 155;
@@ -234,6 +235,11 @@ cr.define('options', function() {
     if (!overlay || !overlay.canShowPage())
       return false;
 
+    // Save the currently focused element in the page for restoration later.
+    var currentPage = this.getTopmostVisiblePage();
+    if (currentPage)
+      currentPage.lastFocusedElement = document.activeElement;
+
     if ((!rootPage || !rootPage.sticky) && overlay.parentPage)
       this.showPageByName(overlay.parentPage.name, false);
 
@@ -244,8 +250,6 @@ cr.define('options', function() {
 
     // Update tab title.
     this.setTitle_(overlay.title);
-    // Try to focus the first element of the new overlay.
-    options.FocusManager.getInstance().focusFirstElement();
 
     return true;
   };
@@ -276,6 +280,15 @@ cr.define('options', function() {
   };
 
   /**
+   * Restores the last focused element on a given page.
+   */
+  OptionsPage.restoreLastFocusedElement_ = function() {
+    var currentPage = this.getTopmostVisiblePage();
+    if (currentPage.lastFocusedElement)
+      currentPage.lastFocusedElement.focus();
+  };
+
+  /**
    * Closes the visible overlay. Updates the history state after closing the
    * overlay.
    */
@@ -289,7 +302,7 @@ cr.define('options', function() {
     if (overlay.didClosePage) overlay.didClosePage();
     this.updateHistoryState_(false, {ignoreHash: true});
 
-    // TODO(khorimoto): Set correct focus on new topmost dialog.
+    this.restoreLastFocusedElement_();
   };
 
   /**
@@ -300,10 +313,12 @@ cr.define('options', function() {
     document.activeElement.blur();
     var overlay = this.getVisibleOverlay_();
     // Let the overlay handle the <Esc> if it wants to.
-    if (overlay.handleCancel)
+    if (overlay.handleCancel) {
       overlay.handleCancel();
-    else
+      this.restoreLastFocusedElement_();
+    } else {
       this.closeOverlay();
+    }
   }
 
   /**
