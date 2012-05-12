@@ -56,7 +56,13 @@ bool BuildMediaStreamCollection(const WebKit::WebURL& url,
 
   filter_collection->AddVideoDecoder(video_decoder);
 
-  filter_collection->SetDemuxer(new media::DummyDemuxer(true, false));
+  // TODO(vrk/wjia): Setting true for local_source is under the assumption
+  // that the MediaStream represents a local webcam. This will need to
+  // change in the future when GetVideoDecoder is no longer hardcoded to
+  // only return CaptureVideoDecoders.
+  //
+  // See http://crbug.com/120426 for details.
+  filter_collection->SetDemuxer(new media::DummyDemuxer(true, false, true));
 
   return true;
 }
@@ -80,12 +86,14 @@ bool BuildMediaSourceCollection(
 
 void BuildDefaultCollection(
     const scoped_refptr<media::DataSource>& data_source,
+    bool local_source,
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection,
     scoped_refptr<media::FFmpegVideoDecoder>* video_decoder) {
   filter_collection->SetDemuxer(new media::FFmpegDemuxer(
       message_loop_factory->GetMessageLoop("PipelineThread"),
-      data_source));
+      data_source,
+      local_source));
 
   AddDefaultDecodersToCollection(message_loop_factory, filter_collection,
                                  video_decoder);

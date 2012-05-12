@@ -109,8 +109,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_log_(media_log),
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
-      audio_source_provider_(audio_source_provider),
-      is_local_source_(false) {
+      audio_source_provider_(audio_source_provider) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -236,9 +235,12 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
       &WebMediaPlayerImpl::DataSourceInitialized,
       base::Unretained(this), gurl));
 
-  is_local_source_ = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
+  // TODO(scherkus): this is leftover from removing DemuxerFactory -- instead
+  // our DataSource should report this information. See http://crbug.com/120426
+  bool local_source = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
 
   BuildDefaultCollection(proxy_->data_source(),
+                         local_source,
                          message_loop_factory_.get(),
                          filter_collection_.get(),
                          &video_decoder);
@@ -464,8 +466,11 @@ const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
 float WebMediaPlayerImpl::maxTimeSeekable() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  // We don't support seeking in streaming media.
-  if (proxy_->data_source()->IsStreaming())
+  // If we are performing streaming, we report that we cannot seek at all.
+  // We are using this flag to indicate if the data source supports seeking
+  // or not. We should be able to seek even if we are performing streaming.
+  // TODO(hclam): We need to update this when we have better caching.
+  if (pipeline_->IsStreaming())
     return 0.0f;
   return static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
 }
@@ -513,8 +518,10 @@ bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
 WebMediaPlayer::MovieLoadType WebMediaPlayerImpl::movieLoadType() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  // Disable seeking while streaming.
-  if (proxy_->data_source()->IsStreaming())
+  // TODO(hclam): If the pipeline is performing streaming, we say that this is
+  // a live stream. But instead it should be a StoredStream if we have proper
+  // caching.
+  if (pipeline_->IsStreaming())
     return WebMediaPlayer::MovieLoadTypeLiveStream;
   return WebMediaPlayer::MovieLoadTypeUnknown;
 }
@@ -803,7 +810,7 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
   if (!hasVideo())
     GetClient()->disableAcceleratedCompositing();
 
-  if (is_local_source_)
+  if (pipeline_->IsLocalSource())
     SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
 
   SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);

@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
   MessageLoop loop;
   media::PipelineStatusCB quitter = base::Bind(&QuitMessageLoop, &loop);
   scoped_refptr<media::FFmpegDemuxer> demuxer(
-      new media::FFmpegDemuxer(&loop, file_data_source));
+      new media::FFmpegDemuxer(&loop, file_data_source, true));
   demuxer->Initialize(&host, quitter);
   loop.Run();
 

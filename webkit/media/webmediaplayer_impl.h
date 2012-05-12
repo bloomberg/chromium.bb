@@ -316,8 +316,6 @@ class WebMediaPlayerImpl
 
   WebKit::WebAudioSourceProvider* audio_source_provider_;
 
-  bool is_local_source_;
-
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 
