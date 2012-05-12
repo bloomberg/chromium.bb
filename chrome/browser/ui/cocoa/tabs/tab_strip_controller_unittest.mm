@@ -132,12 +132,6 @@ TEST_F(TabStripControllerTest, RearrangeTabs) {
   // TODO(pinkerton): Implement http://crbug.com/10899
 }
 
-// Test that changing the number of tabs broadcasts a
-// kTabStripNumberOfTabsChanged notifiction.
-TEST_F(TabStripControllerTest, Notifications) {
-  // TODO(pinkerton): Implement http://crbug.com/10899
-}
-
 TEST_F(TabStripControllerTest, CorrectToolTipText) {
   // Create tab 1.
   SiteInstance* instance = SiteInstance::Create(profile());

@@ -257,8 +257,4 @@ class TabStripModel;
 
 @end
 
-// Notification sent when the number of tabs changes. The object will be this
-// controller.
-extern NSString* const kTabStripNumberOfTabsChanged;
-
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_STRIP_CONTROLLER_H_

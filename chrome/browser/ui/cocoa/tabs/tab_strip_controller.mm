@@ -71,8 +71,6 @@ using content::Referrer;
 using content::UserMetricsAction;
 using content::WebContents;
 
-NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
-
 namespace {
 
 // A value to indicate tab layout should use the full available width of the
@@ -1199,11 +1197,6 @@ private:
   // into the right state up front as we won't be told to do it from anywhere
   // else.
   [self updateFaviconForContents:contents atIndex:modelIndex];
-
-  // Send a broadcast that the number of tabs have changed.
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabStripNumberOfTabsChanged
-                    object:self];
 }
 
 // Called when a notification is received from the model to select a particular
@@ -1397,11 +1390,6 @@ private:
   } else {
     [self removeTab:tab];
   }
-
-  // Send a broadcast that the number of tabs have changed.
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabStripNumberOfTabsChanged
-                    object:self];
 
   [delegate_ onTabDetachedWithContents:contents->web_contents()];
 }
