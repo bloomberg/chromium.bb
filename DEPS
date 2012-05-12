@@ -8,7 +8,7 @@ vars = {
   "webkit_revision": "116816",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "8557",
+  "nacl_revision": "8575",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "8228",  # native_client/DEPS: tools_rev
