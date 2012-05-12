@@ -350,23 +350,14 @@ void DetachShader(GLuint program, GLuint shader) {
   helper_->DetachShader(program, shader);
 }
 
-void Disable(GLenum cap) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glDisable(" << GLES2Util::GetStringCapability(cap) << ")");  // NOLINT
-  helper_->Disable(cap);
-}
+void Disable(GLenum cap);
 
 void DrawArrays(GLenum mode, GLint first, GLsizei count);
 
 void DrawElements(
     GLenum mode, GLsizei count, GLenum type, const void* indices);
 
-void Enable(GLenum cap) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glEnable(" << GLES2Util::GetStringCapability(
-      cap) << ")");
-  helper_->Enable(cap);
-}
+void Enable(GLenum cap);
 
 void Finish();
 
@@ -828,20 +819,7 @@ GLboolean IsBuffer(GLuint buffer) {
   return *result;
 }
 
-GLboolean IsEnabled(GLenum cap) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glIsEnabled(" << GLES2Util::GetStringCapability(cap) << ")");  // NOLINT
-  typedef IsEnabled::Result Result;
-  Result* result = GetResultAs<Result*>();
-  if (!result) {
-    return GL_FALSE;
-  }
-  *result = 0;
-  helper_->IsEnabled(cap, GetResultShmId(), GetResultShmOffset());
-  WaitForCmd();
-  GPU_CLIENT_LOG("returned " << *result);
-  return *result;
-}
+GLboolean IsEnabled(GLenum cap);
 
 GLboolean IsFramebuffer(GLuint framebuffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();

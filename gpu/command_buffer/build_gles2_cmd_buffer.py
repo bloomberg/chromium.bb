@@ -948,6 +948,7 @@ _FUNCTION_INFO = {
   'DetachShader': {'decoder_func': 'DoDetachShader'},
   'Disable': {
     'decoder_func': 'DoDisable',
+    'impl_func': False,
   },
   'DisableVertexAttribArray': {
     'decoder_func': 'DoDisableVertexAttribArray',
@@ -965,6 +966,7 @@ _FUNCTION_INFO = {
   },
   'Enable': {
     'decoder_func': 'DoEnable',
+    'impl_func': False,
   },
   'EnableVertexAttribArray': {
     'decoder_func': 'DoEnableVertexAttribArray',
@@ -1246,6 +1248,7 @@ _FUNCTION_INFO = {
   'IsEnabled': {
     'type': 'Is',
     'decoder_func': 'DoIsEnabled',
+    'impl_func': False,
   },
   'IsFramebuffer': {
     'type': 'Is',

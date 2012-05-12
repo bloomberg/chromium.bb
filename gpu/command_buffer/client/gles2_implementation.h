@@ -100,34 +100,62 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   };
 
   // Stores client side cached GL state.
-  struct GLState {
-    GLState()
-        : max_combined_texture_image_units(0),
-          max_cube_map_texture_size(0),
-          max_fragment_uniform_vectors(0),
-          max_renderbuffer_size(0),
-          max_texture_image_units(0),
-          max_texture_size(0),
-          max_varying_vectors(0),
-          max_vertex_attribs(0),
-          max_vertex_texture_image_units(0),
-          max_vertex_uniform_vectors(0),
-          num_compressed_texture_formats(0),
-          num_shader_binary_formats(0) {
-    }
+  struct GLCachedState {
+    struct IntState {
+      IntState()
+          : max_combined_texture_image_units(0),
+            max_cube_map_texture_size(0),
+            max_fragment_uniform_vectors(0),
+            max_renderbuffer_size(0),
+            max_texture_image_units(0),
+            max_texture_size(0),
+            max_varying_vectors(0),
+            max_vertex_attribs(0),
+            max_vertex_texture_image_units(0),
+            max_vertex_uniform_vectors(0),
+            num_compressed_texture_formats(0),
+            num_shader_binary_formats(0) {
+      }
 
-    GLint max_combined_texture_image_units;
-    GLint max_cube_map_texture_size;
-    GLint max_fragment_uniform_vectors;
-    GLint max_renderbuffer_size;
-    GLint max_texture_image_units;
-    GLint max_texture_size;
-    GLint max_varying_vectors;
-    GLint max_vertex_attribs;
-    GLint max_vertex_texture_image_units;
-    GLint max_vertex_uniform_vectors;
-    GLint num_compressed_texture_formats;
-    GLint num_shader_binary_formats;
+      GLint max_combined_texture_image_units;
+      GLint max_cube_map_texture_size;
+      GLint max_fragment_uniform_vectors;
+      GLint max_renderbuffer_size;
+      GLint max_texture_image_units;
+      GLint max_texture_size;
+      GLint max_varying_vectors;
+      GLint max_vertex_attribs;
+      GLint max_vertex_texture_image_units;
+      GLint max_vertex_uniform_vectors;
+      GLint num_compressed_texture_formats;
+      GLint num_shader_binary_formats;
+    };
+    struct EnableState {
+      EnableState()
+          : blend(false),
+            cull_face(false),
+            depth_test(false),
+            dither(false),
+            polygon_offset_fill(false),
+            sample_alpha_to_coverage(false),
+            sample_coverage(false),
+            scissor_test(false),
+            stencil_test(false) {
+      }
+
+      bool blend;
+      bool cull_face;
+      bool depth_test;
+      bool dither;
+      bool polygon_offset_fill;
+      bool sample_alpha_to_coverage;
+      bool sample_coverage;
+      bool scissor_test;
+      bool stencil_test;
+    };
+
+    IntState int_state;
+    EnableState enable_state;
   };
 
   // The maxiumum result size from simple GL get commands.
@@ -439,6 +467,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   bool IsExtensionAvailable(const char* ext);
 
+  // Caches certain capabilties state. Return true if cached.
+  bool SetCapabilityState(GLenum cap, bool enabled);
+
   IdHandlerInterface* GetIdHandler(int id_namespace) const;
 
   GLES2Util util_;
@@ -451,7 +482,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   ExtensionStatus angle_pack_reverse_row_order_status;
 
-  GLState gl_state_;
+  GLCachedState gl_state_;
 
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment_;
