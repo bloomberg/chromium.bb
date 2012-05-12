@@ -317,7 +317,7 @@ def UpdateBinhostConfFile(path, key, value):
   cwd = os.path.dirname(os.path.abspath(path))
   filename = os.path.basename(path)
   osutils.SafeMakedirs(cwd)
-  osutils.WriteFile(path, '')
+  osutils.WriteFile(path, '', mode='a')
   UpdateLocalFile(path, value, key)
   cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
   description = 'Update %s="%s" in %s' % (key, value, filename)
