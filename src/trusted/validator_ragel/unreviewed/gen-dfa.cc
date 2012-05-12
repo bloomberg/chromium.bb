@@ -1691,6 +1691,7 @@ namespace {
         print_opcode_recognition(false);
         print_immediate_arguments();
       }
+      print_inst_end_actions(false);
     }
 
     void print_one_size_definition_modrm_register(void) {
@@ -1749,6 +1750,7 @@ namespace {
       } else {
         print_immediate_arguments();
       }
+      print_inst_end_actions(false);
     }
 
     void print_one_size_definition_modrm_memory(void) {
@@ -1825,6 +1827,7 @@ namespace {
         } else {
           print_immediate_arguments();
         }
+        print_inst_end_actions(true);
       }
     }
 
@@ -1836,6 +1839,33 @@ namespace {
         fprintf(out_file, ") |\n    (");
       }
       first_delimiter = false;
+    }
+
+    void print_inst_end_actions(bool memory_access) {
+      if (enabled(Actions::kParseOperands)) {
+        if (!enabled(Actions::kParseOperandPositions)) {
+          int operands_count = 0;
+          for (auto operand_it = operands.begin();
+               operand_it != operands.end(); ++operand_it) {
+            auto &operand = *operand_it;
+            if (operand.enabled) {
+              ++operands_count;
+              if (memory_access) {
+                static const char cc[] = { 'E', 'M', 'N', 'Q', 'R', 'U', 'W' };
+                for (size_t c_it = 0; c_it < arraysize(cc); ++c_it) {
+                  auto c = cc[c_it];
+                  if (operand.source == c) {
+                    /* Memory operand is processed with action @check_access. */
+                    --operands_count;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+          fprintf(out_file, " @process_%d_operands", operands_count);
+        }
+      }
     }
 
     bool mod_reg_is_used() {

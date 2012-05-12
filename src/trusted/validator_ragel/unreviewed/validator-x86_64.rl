@@ -88,11 +88,9 @@ static void PrintError(const char* msg, uintptr_t ptr) {
     check_jump_dest;
   }
 
-  include decode_x86_64 "validator-x86_64-instruction.rl";
-
-  action process_normal_instruction {
+  action process_0_operands {
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
-       instruction, not with regular instruction.  */
+     * instruction, not with regular instruction.  */
     if (restricted_register == REG_RSP) {
       PrintError("Incorrectly modified register %%rsp\n", begin - data);
       result = 1;
@@ -102,7 +100,75 @@ static void PrintError(const char* msg, uintptr_t ptr) {
       result = 1;
       goto error_detected;
     }
-    /* If Sandboxed Rsi is destroyed then we must note that.  */
+    restricted_register = kNoRestrictedReg;
+  }
+
+  action process_1_operands {
+    /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
+     * instruction, not with regular instruction.  */
+    if (restricted_register == REG_RSP) {
+      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      result = 1;
+      goto error_detected;
+    } else if (restricted_register == REG_RBP) {
+      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      result = 1;
+      goto error_detected;
+    }
+    /* If Sandboxed Rsi is destroyed then we must detect that.  */
+    if (restricted_register == kSandboxedRsi) {
+      if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
+          CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted)) {
+        restricted_register = kNoRestrictedReg;
+      }
+    }
+    if (restricted_register == kSandboxedRsi) {
+      if (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted)) {
+        sandboxed_rsi_restricted_rdi = begin;
+        restricted_register = kSandboxedRsiRestrictedRdi;
+      }
+    }
+    if (restricted_register != kSandboxedRsiRestrictedRdi) {
+      restricted_register = kNoRestrictedReg;
+      if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
+          CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
+          CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        result = 1;
+        goto error_detected;
+      } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        result = 1;
+        goto error_detected;
+      } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        result = 1;
+        goto error_detected;
+      /* Take 2 bits of operand type from operand_states as restricted_register,
+       * make sure operand_states denotes a register (4th bit == 0). */
+      } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
+        restricted_register = operand_states & 0x0f;
+      }
+    }
+  }
+
+  action process_2_operands {
+    /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
+     * instruction, not with regular instruction.  */
+    if (restricted_register == REG_RSP) {
+      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      result = 1;
+      goto error_detected;
+    } else if (restricted_register == REG_RBP) {
+      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      result = 1;
+      goto error_detected;
+    }
+    /* If Sandboxed Rsi is destroyed then we must detect that.  */
     if (restricted_register == kSandboxedRsi) {
       if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
           CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted) ||
@@ -147,17 +213,23 @@ static void PrintError(const char* msg, uintptr_t ptr) {
         PrintError("Incorrectly modified register %%rsp\n", begin - data);
         result = 1;
         goto error_detected;
+      /* Take 2 bits of operand type from operand_states as restricted_register,
+       * make sure operand_states denotes a register (4th bit == 0).  */
       } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
         restricted_register = operand_states & 0x0f;
+      /* Take 2 bits of operand type from operand_states as restricted_register,
+       * make sure operand_states denotes a register (12th bit == 0).  */
       } else if ((operand_states & 0x7000) ==
-                                        (OperandSandboxRestricted << (5 + 8))) {
+          (OperandSandboxRestricted << (5 + 8))) {
         restricted_register = (operand_states & 0x0f00) >> 8;
       }
     }
   }
 
+  include decode_x86_64 "validator-x86_64-instruction.rl";
+
   # Remove special instructions which are only allowed in special cases.
-  normal_instruction = (one_instruction - (
+  normal_instruction = one_instruction - (
     (0x48 0x89 0xe5)             | # mov %rsp,%rbp
     (0x48 0x89 0xec)             | # mov %rbp,%rsp
     (0x48 0x81 0xe4 any{4})      | # and $XXX,%rsp
@@ -171,7 +243,7 @@ static void PrintError(const char* msg, uintptr_t ptr) {
     (0x4a 0x8d 0x24 0x3c)        | # lea (%rsp,%r15,1),%rsp
     (0x49 0x8d 0x34 0x37)        | # lea (%r15,%rsi,1),%rsi
     (0x49 0x8d 0x3c 0x3f)          # lea (%r15,%rdi,1),%rdi
-  )) @process_normal_instruction;
+  );
 
   data16condrep = (data16 | condrep data16 | data16 condrep);
   data16rep = (data16 | rep data16 | data16 rep);
@@ -379,13 +451,7 @@ enum operand_kind {
   OperandSandboxUnrestricted
 };
 
-/* Define SET_OPERAND_NAME as SET_OPERAND_NAME_0, SET_OPERAND_NAME_1 to detect
- * cases where more than two general purpose registers are affected.  This will
- * produce a compile-time error if an operand with unexpected number is
- * encountered. */
-#define SET_OPERAND_NAME(N, S) SET_OPERAND_NAME_ ## N(S)
-#define SET_OPERAND_NAME_0(S) operand_states |= (S)
-#define SET_OPERAND_NAME_1(S) operand_states |= ((S) << 8)
+#define SET_OPERAND_NAME(N, S) operand_states |= ((S) << ((N) << 3))
 #define SET_OPERAND_TYPE(N, T) SET_OPERAND_TYPE_ ## T(N)
 #define SET_OPERAND_TYPE_OperandSize8bit(N) \
   operand_states |= OperandSandbox8bit << (5 + ((N) << 3))
@@ -526,11 +592,9 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   enum register_name base = NO_REG;
   enum register_name index = NO_REG;
   int result = 0;
-  /*
-   * These are borders of the appropriate instructions.  Initialize them to make
+  /* These are borders of the appropriate instructions.  Initialize them to make
    * compiler happy: they are never used uninitialized even without explicit
-   * initialization but GCC is not sophysicated enough to prove that.
-   */
+   * initialization but GCC is not sophysicated enough to prove that.  */
   const uint8_t *sandboxed_rsi = 0;
   const uint8_t *sandboxed_rsi_restricted_rdi = 0;
   const uint8_t *sandboxed_rdi = 0;
@@ -551,7 +615,7 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
 
     %% write init;
   /* Ragel-generated code stores a difference between pointers into an "int"
-     variable. This produces C4244 warning on Windows x64.  */
+   * variable. This produces C4244 warning on Windows x64.  */
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4244) // possible loss of data
