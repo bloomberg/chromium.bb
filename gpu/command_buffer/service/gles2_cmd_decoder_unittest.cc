@@ -1799,6 +1799,39 @@ TEST_F(GLES2DecoderTest, GenerateMipmapWrongFormatsFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest, GenerateMipmapHandlesOutOfMemory) {
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  TextureManager* manager = group().texture_manager();
+  TextureManager::TextureInfo* info =
+      manager->GetTextureInfo(client_texture_id_);
+  ASSERT_TRUE(info != NULL);
+  GLint width = 0;
+  GLint height = 0;
+  EXPECT_FALSE(info->GetLevelSize(GL_TEXTURE_2D, 2, &width, &height));
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+      0, 0);
+  EXPECT_CALL(*gl_, TexParameteri(
+      GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GenerateMipmapEXT(GL_TEXTURE_2D))
+       .Times(1);
+  EXPECT_CALL(*gl_, TexParameteri(
+      GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_OUT_OF_MEMORY))
+      .RetiresOnSaturation();
+  GenerateMipmap cmd;
+  cmd.Init(GL_TEXTURE_2D);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+  EXPECT_FALSE(info->GetLevelSize(GL_TEXTURE_2D, 2, &width, &height));
+}
+
 TEST_F(GLES2DecoderWithShaderTest, Uniform1iValidArgs) {
   EXPECT_CALL(*gl_, Uniform1i(kUniform1RealLocation, 2));
   Uniform1i cmd;
