@@ -47,19 +47,40 @@ CNS_BASE_URL = 'http://127.0.0.1:%d/ServeConstrained?' % _CNS_PORT
 # Used for server sanity check.
 _TEST_VIDEO = 'roller.webm'
 
+# Directory root to serve files from.
+_ROOT_PATH = os.path.join(pyauto.PyUITest.DataDir(), 'pyauto_private', 'media')
+
 
 class CNSTestBase(pyauto.PyUITest):
   """CNS test base hadles startup and teardown of CNS server."""
 
+  def __init__(self, *args, **kwargs):
+    """Initialize CNSTestBase by setting the arguments for CNS server.
+
+    Args:
+        Check cns.py command line argument list for details.
+    """
+    self._port = kwargs.get('port', _CNS_PORT)
+    self._interface = kwargs.get('interface', 'lo')
+    self._www_root = kwargs.get('www_root', _ROOT_PATH)
+    self._verbose = kwargs.get('verbose', True)
+    self._expiry_time = kwargs.get('expiry_time', 0)
+    self._socket_timeout = kwargs.get('socket_timeout')
+    pyauto.PyUITest.__init__(self, *args, **kwargs)
+
   def setUp(self):
     """Starts the Constrained Network Server (CNS)."""
     cmd = [sys.executable, os.path.join(pyauto_paths.GetSourceDir(), _CNS_PATH),
-           '--port', str(_CNS_PORT),
-           '--interface', 'lo',
-           '--www-root', os.path.join(
-               self.DataDir(), 'pyauto_private', 'media'),
-           '-v',
-           '--expiry-time', '0']
+           '--port', str(self._port),
+           '--interface', self._interface,
+           '--www-root', self._www_root,
+           '--expiry-time', str(self._expiry_time)]
+
+    if self._socket_timeout:
+      cmd.extend(['--socket-timeout', str(self._socket_timeout)])
+    if self._verbose:
+      cmd.append('-v')
+    logging.debug('Starting CNS server: %s ', ' '.join(cmd))
 
     self._cns_process = subprocess.Popen(cmd, stderr=subprocess.PIPE)
     ProcessLogger(self._cns_process)

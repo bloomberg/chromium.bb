@@ -305,6 +305,10 @@ def ParseArgs():
   parser.add_option('--interface', default='eth0',
                     help=('Interface to setup constraints on. Use lo for a '
                           'local client. Default: %default'))
+  parser.add_option('--socket-timeout', type='int',
+                    default=cherrypy.server.socket_timeout,
+                    help=('Number of seconds before a socket connection times '
+                          'out. Default: %default'))
   parser.add_option('--threads', type='int',
                     default=cherrypy._cpserver.Server.thread_pool,
                     help=('Number of threads in the thread pool. Default: '
@@ -358,11 +362,13 @@ def Main():
     return
 
   cherrypy.config.update({'server.socket_host': '::',
-                          'server.socket_port': options.port,
-                          'server.socket_timeout': 1000})
+                          'server.socket_port': options.port})
 
   if options.threads:
     cherrypy.config.update({'server.thread_pool': options.threads})
+
+  if options.socket_timeout:
+    cherrypy.config.update({'server.socket_timeout': options.socket_timeout})
 
   # Setup port allocator here so we can call cleanup on failures/exit.
   pa = PortAllocator(options.port_range, expiry_time_secs=options.expiry_time)
