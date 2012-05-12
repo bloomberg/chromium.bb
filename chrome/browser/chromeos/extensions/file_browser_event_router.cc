@@ -393,6 +393,20 @@ void FileBrowserEventRouter::OnDocumentFeedFetched(
 
 }
 
+void FileBrowserEventRouter::OnAuthenticationFailed() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Raise a MountCompleted event to notify the File Manager.
+  const std::string& gdata_path = gdata::util::GetGDataMountPointPathAsString();
+  DiskMountManager::MountPointInfo mount_info(
+      gdata_path,
+      gdata_path,
+      chromeos::MOUNT_TYPE_GDATA,
+      chromeos::disks::MOUNT_CONDITION_NONE);
+  MountCompleted(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
+                 mount_info);
+}
+
 void FileBrowserEventRouter::HandleFileWatchNotification(
     const FilePath& local_path, bool got_error) {
   base::AutoLock lock(lock_);

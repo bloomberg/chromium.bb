@@ -2643,9 +2643,10 @@ FileManager.prototype = {
     var changeDirectoryTo = null;
 
     if (event && event.mountType == 'gdata') {
+      var mounted = (event.eventType == 'mount');
       metrics.recordInterval('Load.GData');
-      console.log('GData mounted');
-      if (event.status == 'success') {
+      console.log('GData ' + (mounted ? 'mounted' : 'unmounted'));
+      if (mounted && event.status == 'success') {
         this.gdataMounted_ = true;
         this.gdataMountInfo_ = {
           'mountPath': event.mountPath,
@@ -2668,7 +2669,8 @@ FileManager.prototype = {
         this.gdataMounted_ = false;
         this.gdataMountInfo_ = null;
         this.clearGDataLoadingTimer_();
-        this.onGDataUnreachable_('GData mount failed: ' + event.status);
+        this.onGDataUnreachable_('GData ' +
+            (mounted ? ('mount failed: ' + event.status) : 'unmounted'));
         if (this.setupCurrentDirectoryPostponed_) {
           this.setupCurrentDirectoryPostponed_(true /* cancel */);
           // Change to unmounted GData root.

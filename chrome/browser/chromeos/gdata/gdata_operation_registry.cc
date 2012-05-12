@@ -128,6 +128,11 @@ void GDataOperationRegistry::Operation::NotifyResume() {
   }
 }
 
+void GDataOperationRegistry::Operation::NotifyAuthFailed() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  registry_->OnOperationAuthFailed();
+}
+
 GDataOperationRegistry::GDataOperationRegistry() {
   in_flight_operations_.set_check_on_null_data(true);
 }
@@ -264,6 +269,13 @@ void GDataOperationRegistry::OnOperationSuspend(OperationID id) {
     FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnProgressUpdate(GetProgressStatusList()));
   }
+}
+
+void GDataOperationRegistry::OnOperationAuthFailed() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "GDataOperation authentication failed.";
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnAuthenticationFailed());
 }
 
 bool GDataOperationRegistry::IsFileTransferOperation(

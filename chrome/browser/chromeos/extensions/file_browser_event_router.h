@@ -78,6 +78,7 @@ class FileBrowserEventRouter
   virtual void OnProgressUpdate(
       const std::vector<gdata::GDataOperationRegistry::ProgressStatus>& list)
           OVERRIDE;
+  virtual void OnAuthenticationFailed() OVERRIDE;
 
   // gdata::GDataFileSystem::Observer overrides.
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;

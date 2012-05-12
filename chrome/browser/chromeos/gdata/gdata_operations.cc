@@ -349,6 +349,9 @@ void UrlFetchOperationBase::OnAuthFailed(GDataErrorCode code) {
     NotifyStart();
 
   NotifyFinish(GDataOperationRegistry::OPERATION_FAILED);
+
+  // Notify authentication failed.
+  NotifyAuthFailed();
 }
 
 std::string UrlFetchOperationBase::GetResponseHeadersAsString(
