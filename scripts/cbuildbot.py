@@ -362,7 +362,7 @@ class SimpleBuilder(Builder):
     stage_list = [[stages.VMTestStage, board, archive_stage],
                   [stages.ChromeTestStage, board, archive_stage],
                   [stages.UnitTestStage, board],
-                  [stages.UploadPrebuiltsStage, board, archive_stage]]
+                  [stages.UploadPrebuiltsStage, board]]
 
     # We can not run hw tests without archiving the payloads.
     if self.options.archive:
@@ -380,7 +380,7 @@ class SimpleBuilder(Builder):
     if self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
       self._RunStage(stages.SDKTestStage)
       self._RunStage(stages.UploadPrebuiltsStage,
-                     constants.CHROOT_BUILDER_BOARD, None)
+                     constants.CHROOT_BUILDER_BOARD)
     elif self.build_config['build_type'] == constants.REFRESH_PACKAGES_TYPE:
       self._RunStage(stages.RefreshPackageStatusStage)
     else:

@@ -1085,14 +1085,25 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
     self.options.prebuilts = True
     self.mox.StubOutWithMock(stages.UploadPrebuiltsStage, '_GetPortageEnvVar')
     self.mox.StubOutWithMock(commands, 'UploadPrebuilts')
-    self.archive_stage = self.mox.CreateMock(stages.ArchiveStage)
+
+  def RunStage(self):
+    """Creates and runs an instance of the stage to be tested.
+    Requires ConstructStage() to be implemented.
+
+    Raises:
+      NotImplementedError: ConstructStage() was not implemented.
+    """
+
+    # Stage construction is usually done as late as possible because the tests
+    # set up the build configuration and options used in constructing the stage.
+
+    stage = self.ConstructStage()
+    stage._PerformStage()
 
   def ConstructStage(self):
-    self.mox.CreateMock(stages.ArchiveStage)
     return stages.UploadPrebuiltsStage(self.options,
                                        self.build_config,
-                                       self._current_board,
-                                       self.archive_stage)
+                                       self._current_board)
 
   def ConstructBinhosts(self):
     for board in (self._current_board, None):
@@ -1103,8 +1114,6 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
   def testChromeUpload(self):
     """Test uploading of prebuilts for chrome build."""
     self.build_config['build_type'] = constants.CHROME_PFQ_TYPE
-    chrome_version = 'awesome_chrome_version'
-    self.archive_stage.GetVersion().AndReturn(chrome_version)
 
     self.ConstructBinhosts()
     commands.UploadPrebuilts(
@@ -1117,7 +1126,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
         self.build_config['binhost_base_url'],
         False,
         self.build_config['git_sync'],
-        mox.IgnoreArg())
+        mox.IgnoreArg()).MultipleTimes(mox.IgnoreArg())
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -1126,8 +1135,6 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
   def testPreflightUpload(self):
     """Test uploading of prebuilts for preflight build."""
     self.build_config['build_type'] = constants.PFQ_TYPE
-    pfq_version = 'awesome_pfq_version'
-    self.archive_stage.GetVersion().AndReturn(pfq_version)
 
     self.ConstructBinhosts()
     commands.UploadPrebuilts(
@@ -1140,7 +1147,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
         self.build_config['binhost_base_url'],
         False,
         self.build_config['git_sync'],
-        mox.IgnoreArg())
+        mox.IgnoreArg()).MultipleTimes(mox.IgnoreArg())
 
     self.mox.ReplayAll()
     self.RunStage()

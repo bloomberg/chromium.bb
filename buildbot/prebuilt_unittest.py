@@ -129,18 +129,13 @@ class TestPrebuilt(unittest.TestCase):
 
   def testFailonUploadFail(self):
     """Make sure we fail if one of the upload processes fail."""
-    return_obj = self.mox.CreateMock(cros_build_lib.CommandResult)
-    return_obj.returncode = 1
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandWithRetries')
-    cros_build_lib.RunCommandWithRetries(
-        prebuilt._RETRIES, mox.IgnoreArg(), print_cmd=False,
-        error_code_ok=True).AndReturn(return_obj)
+    self.mox.StubOutWithMock(prebuilt, '_RetryRun')
+    prebuilt._RetryRun(mox.IgnoreArg(), print_cmd=False).AndReturn(False)
     self.mox.ReplayAll()
     files = {'test': '/uasd'}
     result = prebuilt.RemoteUpload('public-read', files)
     self.assertEqual(result, set([('test', '/uasd')]))
-    cros_build_lib.RunCommandWithRetries(prebuilt._RETRIES, 'example',
-                                         print_cmd=False, error_code_ok=True)
+    prebuilt._RetryRun('example', print_cmd=False)
 
   def testDeterminePrebuiltConfHost(self):
     """Test that the host prebuilt path comes back properly."""
@@ -353,9 +348,7 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.VerifyAll()
 
   def doRsyncUpload(self, suffix):
-    mock_return = self.mox.CreateMock(cros_build_lib.CommandResult)
-    mock_return.returncode = 0
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandWithRetries')
+    self.mox.StubOutWithMock(prebuilt, '_RetryRun')
     remote_path = '/dir/%s' % suffix.rstrip('/')
     full_remote_path = 'chromeos-prebuilt:%s' % remote_path
     cmds = [['ssh', 'chromeos-prebuilt', 'mkdir', '-p', remote_path],
@@ -363,8 +356,7 @@ class TestUploadPrebuilt(unittest.TestCase):
              full_remote_path + '/Packages'],
             ['rsync', '-Rav', 'private.tbz2', full_remote_path + '/']]
     for cmd in cmds:
-      cros_build_lib.RunCommandWithRetries(
-          prebuilt._RETRIES, cmd, cwd='/packages').AndReturn(mock_return)
+      prebuilt._RetryRun(cmd, cwd='/packages').AndReturn(True)
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir',
@@ -433,7 +425,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
         self.build_path, [], False, 'foo', False, target, slave_targets)
-    uploader.SyncHostPrebuilts(self.version, self.key, True, True)
+    uploader._SyncHostPrebuilts(self.version, self.key, True, True)
 
   def testSyncBoardPrebuilts(self):
     board = 'x86-foo'
@@ -470,7 +462,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     uploader = prebuilt.PrebuiltUploader(
         self.upload_location, 'public-read', self.binhost, [],
         self.build_path, [], False, 'foo', False, target, slave_targets)
-    uploader.SyncBoardPrebuilts(self.version, self.key, True, True, True)
+    uploader._SyncBoardPrebuilts(self.version, self.key, True, True, True)
 
 
 class TestMain(unittest.TestCase):
@@ -489,7 +481,7 @@ class TestMain(unittest.TestCase):
     options.previous_binhost_url = [old_binhost]
     options.board = 'x86-foo'
     options.profile = None
-    target = prebuilt.BuildTarget(options.board, options.profile)
+    options.target = prebuilt.BuildTarget(options.board, options.profile)
     options.build_path = '/trunk'
     options.debug = False
     options.private = True
@@ -508,7 +500,7 @@ class TestMain(unittest.TestCase):
     options.sync_binhost_conf = True
     options.slave_targets = [prebuilt.BuildTarget('x86-bar', 'aura')]
     self.mox.StubOutWithMock(prebuilt, 'ParseOptions')
-    prebuilt.ParseOptions().AndReturn(tuple([options, target]))
+    prebuilt.ParseOptions().AndReturn(options)
     self.mox.StubOutWithMock(prebuilt, 'GrabRemotePackageIndex')
     prebuilt.GrabRemotePackageIndex(old_binhost).AndReturn(True)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')
@@ -522,12 +514,12 @@ class TestMain(unittest.TestCase):
                                        options.upload, mox.IgnoreArg(),
                                        options.build_path, options.packages,
                                        False, options.binhost_conf_dir, False,
-                                       target, options.slave_targets)
-    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncHostPrebuilts')
-    prebuilt.PrebuiltUploader.SyncHostPrebuilts(mox.IgnoreArg(), options.key,
+                                       options.target, options.slave_targets)
+    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncHostPrebuilts')
+    prebuilt.PrebuiltUploader._SyncHostPrebuilts(mox.IgnoreArg(), options.key,
         options.git_sync, options.sync_binhost_conf)
-    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, 'SyncBoardPrebuilts')
-    prebuilt.PrebuiltUploader.SyncBoardPrebuilts(
+    self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '_SyncBoardPrebuilts')
+    prebuilt.PrebuiltUploader._SyncBoardPrebuilts(
         mox.IgnoreArg(), options.key, options.git_sync,
         options.sync_binhost_conf, options.upload_board_tarball)
     self.mox.ReplayAll()

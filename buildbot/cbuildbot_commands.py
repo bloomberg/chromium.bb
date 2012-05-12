@@ -672,9 +672,7 @@ def UploadPrebuilts(buildroot, board, private_bucket, category,
   if private_bucket:
     cmd.extend(['--private', '--binhost-conf-dir', _PRIVATE_BINHOST_CONF_DIR])
 
-  if board:
-    cmd.extend(['--board', board])
-
+  cmd.extend(['--board', board])
   if category == 'chroot':
     cmd.extend(['--sync-host',
                 '--upload-board-tarball'])
@@ -707,7 +705,6 @@ def UploadPrebuilts(buildroot, board, private_bucket, category,
 
   if git_sync:
     cmd.extend(['--git-sync'])
-
   cmd.extend(extra_args)
   cros_lib.RunCommand(cmd, cwd=cwd)
 
