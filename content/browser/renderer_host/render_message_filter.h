@@ -43,6 +43,7 @@ struct WebScreenInfo;
 namespace content {
 class BrowserContext;
 class MediaObserver;
+struct Referrer;
 class ResourceContext;
 class ResourceDispatcherHostImpl;
 }
@@ -170,7 +171,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   void OnGenerateRoutingID(int* route_id);
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
-                     const GURL& referrer,
+                     const content::Referrer& referrer,
                      const string16& suggested_name);
   void OnCheckNotificationPermission(const GURL& source_origin,
                                      int* permission_level);

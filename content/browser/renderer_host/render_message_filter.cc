@@ -712,12 +712,14 @@ void RenderMessageFilter::OnGetHardwareInputChannelLayout(
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const GURL& url,
-                                        const GURL& referrer,
+                                        const content::Referrer& referrer,
                                         const string16& suggested_name) {
   content::DownloadSaveInfo save_info;
   save_info.suggested_name = suggested_name;
   scoped_ptr<net::URLRequest> request(new net::URLRequest(url, NULL));
-  request->set_referrer(referrer.spec());
+  request->set_referrer(referrer.url.spec());
+  webkit_glue::ConfigureURLRequestForReferrerPolicy(
+      request.get(), referrer.policy);
   download_stats::RecordDownloadSource(download_stats::INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),

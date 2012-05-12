@@ -2401,3 +2401,52 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   EXPECT_EQ(1u, observer->NumDangerousDownloadsSeen());
 }
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
+  // Do initial setup.
+  ASSERT_TRUE(test_server()->Start());
+  NullSelectFile(browser());
+  std::vector<DownloadItem*> download_items;
+  GetDownloads(browser(), &download_items);
+  ASSERT_TRUE(download_items.empty());
+
+  // Navigate to a page with a referrer policy and a link on it. The link points
+  // to testserver's /echoheader.
+  GURL url = test_server()->GetURL("files/downloads/referrer_policy.html");
+  ASSERT_TRUE(url.is_valid());
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  scoped_ptr<DownloadTestObserver> waiter(
+      new DownloadTestObserverTerminal(
+          DownloadManagerForBrowser(browser()), 1,
+          false, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+
+  // Click on the link with the alt key pressed. This will download the link
+  // target.
+  WebContents* tab = browser()->GetSelectedWebContents();
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.x = 15;
+  mouse_event.y = 15;
+  mouse_event.clickCount = 1;
+  mouse_event.modifiers = WebKit::WebInputEvent::AltKey;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+
+  waiter->WaitForFinished();
+  EXPECT_EQ(1u, waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  CheckDownloadStates(1, DownloadItem::COMPLETE);
+
+  // Validate that the correct file was downloaded.
+  GetDownloads(browser(), &download_items);
+  ASSERT_EQ(1u, download_items.size());
+  ASSERT_EQ(test_server()->GetURL("echoheader?Referer"),
+            download_items[0]->GetOriginalUrl());
+
+  // Check that the file contains the expected referrer.
+  FilePath file(download_items[0]->GetFullPath());
+  std::string expected_contents = test_server()->GetURL("").spec();
+  ASSERT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
+}
