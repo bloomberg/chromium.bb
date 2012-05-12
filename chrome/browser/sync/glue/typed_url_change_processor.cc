@@ -179,6 +179,14 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
     history::URLsDeletedDetails* details) {
   sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
+  // Ignore archivals (we don't want to sync them as deletions, to avoid
+  // extra traffic up to the server, and also to make sure that a client with
+  // a bad clock setting won't go on an archival rampage and delete all
+  // history from every client). The server will gracefully age out the sync DB
+  // entries when they've been idle for long enough.
+  if (details->archived)
+    return;
+
   if (details->all_history) {
     if (!model_associator_->DeleteAllNodes(&trans)) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,

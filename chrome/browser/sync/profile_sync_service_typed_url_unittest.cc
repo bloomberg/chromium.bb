@@ -821,6 +821,44 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
   EXPECT_TRUE(URLsEqual(original_entry2, new_sync_entries[0]));
 }
 
+TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveArchive) {
+  history::VisitVector original_visits1;
+  history::URLRow original_entry1(MakeTypedUrlEntry("http://mine.com", "entry",
+                                                    2, 15, false,
+                                                    &original_visits1));
+  history::VisitVector original_visits2;
+  history::URLRow original_entry2(MakeTypedUrlEntry("http://mine2.com",
+                                                    "entry2",
+                                                    3, 15, false,
+                                                    &original_visits2));
+  history::URLRows original_entries;
+  original_entries.push_back(original_entry1);
+  original_entries.push_back(original_entry2);
+
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(original_entries), Return(true)));
+  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
+      WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits1),
+                           Return(true)));
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
+
+  history::URLsDeletedDetails changes;
+  changes.all_history = false;
+  // Setting archived=true should cause the sync code to ignore this deletion.
+  changes.archived = true;
+  changes.rows.push_back(history::URLRow(GURL("http://mine.com")));
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
+  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                   content::Source<Profile>(&profile_),
+                   content::Details<history::URLsDeletedDetails>(&changes));
+
+  history::URLRows new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  // Both URLs should still be there.
+  ASSERT_EQ(2U, new_sync_entries.size());
+}
+
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   history::VisitVector original_visits1;
   history::URLRow original_entry1(MakeTypedUrlEntry("http://mine.com", "entry",
