@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -162,6 +163,9 @@ void WebUILoginView::Init(views::Widget* login_window) {
 
   WebContents* web_contents = webui_login_->GetWebContents();
   web_contents->SetDelegate(this);
+  renderer_preferences_util::UpdateFromSystemSettings(
+      web_contents->GetMutableRendererPrefs(),
+      ProfileManager::GetDefaultProfile());
 
   tab_watcher_.reset(new TabRenderWatcher(web_contents, this));
 }
