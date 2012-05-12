@@ -154,6 +154,11 @@ ExtensionHost::ExtensionHost(const Extension* extension,
 }
 
 ExtensionHost::~ExtensionHost() {
+  if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
+      extension_->has_lazy_background_page()) {
+    UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageActiveTime",
+                             since_created_.Elapsed());
+  }
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::Source<Profile>(profile_),
@@ -340,8 +345,13 @@ void ExtensionHost::DidStopLoading() {
   }
   if (notify) {
     if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      UMA_HISTOGRAM_TIMES("Extensions.BackgroundPageLoadTime",
-                          since_created_.Elapsed());
+      if (extension_->has_lazy_background_page()) {
+        UMA_HISTOGRAM_TIMES("Extensions.EventPageLoadTime",
+                            since_created_.Elapsed());
+      } else {
+        UMA_HISTOGRAM_TIMES("Extensions.BackgroundPageLoadTime",
+                            since_created_.Elapsed());
+      }
     } else if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_DIALOG) {
       UMA_HISTOGRAM_TIMES("Extensions.DialogLoadTime",
                           since_created_.Elapsed());

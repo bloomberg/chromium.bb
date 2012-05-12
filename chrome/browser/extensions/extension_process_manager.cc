@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -111,6 +112,9 @@ struct ExtensionProcessManager::BackgroundPageData {
   // generated during the unload event that would otherwise keep the
   // extension alive.
   bool is_closing;
+
+  // Keeps track of when this page was last unloaded. Used for perf metrics.
+  linked_ptr<PerfTimer> since_unloaded;
 
   BackgroundPageData()
       : lazy_keepalive_count(0), close_sequence_id(0), is_closing(false) {}
@@ -550,8 +554,11 @@ void ExtensionProcessManager::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-      if (background_hosts_.erase(host))
+      if (background_hosts_.erase(host)) {
         ClearBackgroundPageData(host->extension()->id());
+        background_page_data_[host->extension()->id()].since_unloaded.reset(
+            new PerfTimer());
+      }
       break;
     }
 
@@ -622,6 +629,15 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
   DCHECK_EQ(site_instance_->GetBrowserContext(), host->profile());
   if (is_background)
     background_hosts_.insert(host);
+  if (host->extension()->has_lazy_background_page()) {
+    linked_ptr<PerfTimer> since_unloaded(
+        background_page_data_[host->extension()->id()].
+            since_unloaded.release());
+    if (since_unloaded.get()) {
+      UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageIdleTime",
+                               since_unloaded->Elapsed());
+    }
+  }
 }
 
 void ExtensionProcessManager::CloseBackgroundHost(ExtensionHost* host) {
