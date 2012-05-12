@@ -108,6 +108,8 @@ cr.define('ntp', function() {
    */
   function onLoad() {
     sectionsToWaitFor = loadTimeData.getBoolean('showApps') ? 2 : 1;
+    if (loadTimeData.getBoolean('isSuggestionsPageEnabled'))
+      sectionsToWaitFor++;
     measureNavDots();
 
     // Load the current theme colors.
@@ -148,6 +150,7 @@ cr.define('ntp', function() {
                                    (newTabView.appsPages.length > 0) ?
                                        newTabView.appsPages[0] : null);
          chrome.send('getSuggestions');
+         cr.dispatchSimpleEvent(document, 'sectionready', true, true);
       };
       document.querySelector('head').appendChild(suggestions_script);
     }
