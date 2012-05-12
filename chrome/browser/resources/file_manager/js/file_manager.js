@@ -144,7 +144,6 @@ FileManager.prototype = {
     fileManager.decorateThumbnail_(li, entry);
   };
 
-
   /**
    * Return a translated string.
    *

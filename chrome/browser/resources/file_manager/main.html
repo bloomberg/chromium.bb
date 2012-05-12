@@ -135,12 +135,20 @@
           <input id="search-box" type="text" tabindex="4">
 
           <div class="right buttonbar">
-            <button class="left small" id="detail-view">
-              <img src="images/view_list_black_12x12.png">
-            </button>
-            <button class="right small" id="thumbnail-view">
-              <img src="images/view_thumbs_black_12x12.png">
-            </button>
+            <div>
+              <button class="left small" id="detail-view">
+                <img src="images/view_list_black_12x12.png">
+              </button>
+              <div class="tooltip" i18n-content=DETAIL_VIEW_TOOLTIP
+                   >[DETAIL VIEW]</div>
+            </div>
+              <div>
+               <button class="right small" id="thumbnail-view">
+                <img src="images/view_thumbs_black_12x12.png">
+              </button>
+              <div class="tooltip" i18n-content=THUMBNAIL_VIEW_TOOLTIP
+                   >[THUMBNAIL VIEW]</div>
+            </div>
             <button class="menubutton" id="gdata-settings"
                     menu="#docs-settings" visibleif="full-page">
               <img src="images/settings.svg" alt="Settings">

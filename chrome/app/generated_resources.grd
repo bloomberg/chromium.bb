@@ -11035,6 +11035,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         (default)
       </message>
 
+      <message name="IDS_FILE_BROWSER_DETAIL_VIEW_TOOLTIP" desc="Tooltip for the List View button.">
+        List view
+      </message>
+      <message name="IDS_FILE_BROWSER_THUMBNAIL_VIEW_TOOLTIP" desc="Tooltip for the Thumbnail View button.">
+        Thumbnail view
+      </message>
+
       <!-- Bookmark manager -->
       <message name="IDS_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
         Bookmark Manager

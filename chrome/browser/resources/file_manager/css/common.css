@@ -96,6 +96,7 @@ input.common[type='checkbox']::after {
 }
 
 .buttonbar {
+  display: -webkit-box;
   height: 29px;
   line-height: 29px;
 }
