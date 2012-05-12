@@ -152,6 +152,10 @@ std::string TestUDPSocketPrivate::TestConnect() {
   if (write_rv < 0 || strlen(kMessage) != static_cast<size_t>(write_rv))
     return ReportError("PPB_UDPSocket_Private::SendTo", write_rv);
 
+  PP_NetAddress_Private recv_from_address;
+  ASSERT_TRUE(server_socket.GetRecvFromAddress(&recv_from_address));
+  ASSERT_TRUE(pp::NetAddressPrivate::AreEqual(recv_from_address,
+                                              client_address));
   ASSERT_EQ(0, strncmp(kMessage, message_buffer, strlen(kMessage)));
 
   server_socket.Close();

@@ -148,7 +148,8 @@ PP_Bool GetRecvFromAddress(PP_Resource udp_socket,
   DebugPrintf("PPB_UDPSocket_Private::GetRecvFromAddress: "
               "udp_socket="NACL_PRId32"\n", udp_socket);
 
-  nacl_abi_size_t addr_bytes;
+  nacl_abi_size_t addr_bytes =
+      static_cast<nacl_abi_size_t>(sizeof(PP_NetAddress_Private));
   int32_t success;
   NaClSrpcError srpc_result =
       PpbUDPSocketPrivateRpcClient::PPB_UDPSocket_Private_GetRecvFromAddress(
