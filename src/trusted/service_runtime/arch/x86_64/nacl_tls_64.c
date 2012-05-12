@@ -180,18 +180,10 @@ void NaClTlsFini() {
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
                          void                 *base_addr) {
-  int i;
+  UNREFERENCED_PARAMETER(natp);
+  UNREFERENCED_PARAMETER(base_addr);
 
-  i = NaClThreadIdxAllocate();
-
-  if (NACL_TLS_INDEX_INVALID == i) {
-    NaClLog(LOG_ERROR, "NaClTlsAllocate: no more slots for a thread\n");
-    return NACL_TLS_INDEX_INVALID;
-  }
-
-  natp->user.tls_base = base_addr;
-
-  return i;
+  return NaClThreadIdxAllocate();
 }
 
 
@@ -254,7 +246,8 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 
 uint32_t NaClTlsChange(struct NaClAppThread *natp,
                        void                 *base_addr) {
-  natp->user.tls_base = base_addr;
+  UNREFERENCED_PARAMETER(base_addr);
+
   return NaClGetThreadIdx(natp);
 }
 
@@ -288,16 +281,10 @@ void NaClTlsFini() {
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
                          void                 *base_addr) {
-  int i;
+  UNREFERENCED_PARAMETER(natp);
+  UNREFERENCED_PARAMETER(base_addr);
 
-  i = NaClThreadIdxAllocate();
-  if (NACL_TLS_INDEX_INVALID == i) {
-    NaClLog(LOG_ERROR, "NaClTlsAllocate: no more slots for a thread\n");
-    return NACL_TLS_INDEX_INVALID;
-  }
-  natp->user.tls_base = base_addr;
-
-  return i;
+  return NaClThreadIdxAllocate();
 }
 
 
@@ -329,7 +316,8 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 
 uint32_t NaClTlsChange(struct NaClAppThread   *natp,
                        void                   *base_addr) {
-  natp->user.tls_base = base_addr;
+  UNREFERENCED_PARAMETER(base_addr);
+
   return NaClGetThreadIdx(natp);
 }
 

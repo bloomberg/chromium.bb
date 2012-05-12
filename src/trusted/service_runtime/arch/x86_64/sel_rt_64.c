@@ -56,7 +56,6 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->new_prog_ctr = 0;
   ntcp->sysret = -NACL_ABI_EINVAL;
 
-  ntcp->tls_base = NULL;
   ntcp->tls_idx = tls_idx;
 
   ntcp->fcw = NACL_X87_FCW_DEFAULT;

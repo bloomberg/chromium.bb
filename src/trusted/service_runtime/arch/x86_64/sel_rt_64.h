@@ -34,7 +34,7 @@ struct NaClThreadContext {
   /*          0x88 */
   nacl_reg_t  sysret;
   /*          0x90 */
-  void        *tls_base;
+  void        *unused_padding;
   /*          0x98 */
   uint32_t    tls_idx;
   /*          0xa0 */
