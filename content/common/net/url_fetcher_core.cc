@@ -724,6 +724,7 @@ void URLFetcherCore::StartURLRequest() {
   g_registry.Get().AddURLFetcherCore(this);
   current_response_bytes_ = 0;
   request_.reset(new net::URLRequest(original_url_, this));
+  request_->set_stack_trace(stack_trace_);
   int flags = request_->load_flags() | load_flags_;
   if (!g_interception_enabled)
     flags = flags | net::LOAD_DISABLE_INTERCEPT;
