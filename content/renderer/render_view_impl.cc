@@ -4428,14 +4428,15 @@ void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(
     const GURL& page_url) {
   // Prepare list to storage all savable resource links.
   std::vector<GURL> resources_list;
-  std::vector<GURL> referrers_list;
+  std::vector<GURL> referrer_urls_list;
+  std::vector<WebKit::WebReferrerPolicy> referrer_policies_list;
   std::vector<GURL> frames_list;
   webkit_glue::SavableResourcesResult result(&resources_list,
-                                             &referrers_list,
+                                             &referrer_urls_list,
+                                             &referrer_policies_list,
                                              &frames_list);
 
-  // FIXME(rdsmith): When GetAllSavableResourceLinksForCurrentPage starts to
-  // return referrers, it should also return the referrer policies.
+  // webkit/ doesn't know about content::Referrer.
   if (!webkit_glue::GetAllSavableResourceLinksForCurrentPage(
           webview(),
           page_url,
@@ -4443,9 +4444,17 @@ void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(
           content::GetSavableSchemes())) {
     // If something is wrong when collecting all savable resource links,
     // send empty list to embedder(browser) to tell it failed.
-    referrers_list.clear();
+    referrer_urls_list.clear();
+    referrer_policies_list.clear();
     resources_list.clear();
     frames_list.clear();
+  }
+
+  std::vector<content::Referrer> referrers_list;
+  CHECK_EQ(referrer_urls_list.size(), referrer_policies_list.size());
+  for (unsigned i = 0; i < referrer_urls_list.size(); ++i) {
+    referrers_list.push_back(
+        content::Referrer(referrer_urls_list[i], referrer_policies_list[i]));
   }
 
   // Send result of all savable resource links to embedder.

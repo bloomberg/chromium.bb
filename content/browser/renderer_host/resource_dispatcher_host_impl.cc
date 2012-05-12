@@ -1138,7 +1138,7 @@ void ResourceDispatcherHostImpl::OnDidLoadResourceFromMemoryCache(
 // This function is only used for saving feature.
 void ResourceDispatcherHostImpl::BeginSaveFile(
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     int child_id,
     int route_id,
     ResourceContext* context) {
@@ -1171,7 +1171,8 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
 
   net::URLRequest* request = new net::URLRequest(url, this);
   request->set_method("GET");
-  request->set_referrer(MaybeStripReferrer(referrer).spec());
+  request->set_referrer(MaybeStripReferrer(referrer.url).spec());
+  webkit_glue::ConfigureURLRequestForReferrerPolicy(request, referrer.policy);
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
   request->set_load_flags(net::LOAD_PREFERRING_CACHE);

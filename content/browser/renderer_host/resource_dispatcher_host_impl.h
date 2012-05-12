@@ -57,6 +57,7 @@ class ResourceDispatcherHostDelegate;
 class ResourceRequestInfoImpl;
 struct DownloadSaveInfo;
 struct GlobalRequestID;
+struct Referrer;
 
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
@@ -102,7 +103,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Initiates a save file from the browser process (as opposed to a resource
   // request from the renderer or another child process).
   void BeginSaveFile(const GURL& url,
-                     const GURL& referrer,
+                     const content::Referrer& referrer,
                      int child_id,
                      int route_id,
                      ResourceContext* context);

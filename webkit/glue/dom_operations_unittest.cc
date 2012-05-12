@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,10 +46,12 @@ void DomOperationsTests::GetSavableResourceLinksForPage(
   test_shell_->WaitTestFinished();
   // Get all savable resource links for the page.
   std::vector<GURL> resources_list;
-  std::vector<GURL> referrers_list;
+  std::vector<GURL> referrer_urls_list;
+  std::vector<WebKit::WebReferrerPolicy> referrer_policies_list;
   std::vector<GURL> frames_list;
   webkit_glue::SavableResourcesResult result(&resources_list,
-                                             &referrers_list,
+                                             &referrer_urls_list,
+                                             &referrer_policies_list,
                                              &frames_list);
 
   const char* savable_schemes[] = {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {
@@ -30,16 +31,21 @@ struct SavableResourcesResult {
   std::vector<GURL>* resources_list;
   // vector which contains corresponding all referral links of sub resource,
   // it matched with links one by one.
-  std::vector<GURL>* referrers_list;
+  std::vector<GURL>* referrer_urls_list;
+  // and the corresponding referrer policies.
+  std::vector<WebKit::WebReferrerPolicy>* referrer_policies_list;
   // vector which contains all savable links of main frame and sub frames.
   std::vector<GURL>* frames_list;
 
   // Constructor.
-  SavableResourcesResult(std::vector<GURL>* resources_list,
-                         std::vector<GURL>* referrers_list,
-                         std::vector<GURL>* frames_list)
+  SavableResourcesResult(
+      std::vector<GURL>* resources_list,
+      std::vector<GURL>* referrer_urls_list,
+      std::vector<WebKit::WebReferrerPolicy>* referrer_policies_list,
+      std::vector<GURL>* frames_list)
       : resources_list(resources_list),
-        referrers_list(referrers_list),
+        referrer_urls_list(referrer_urls_list),
+        referrer_policies_list(referrer_policies_list),
         frames_list(frames_list) { }
 
  private:

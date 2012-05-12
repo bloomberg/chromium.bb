@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,8 @@ void GetSavableResourceLinkForElement(
     return;
   result->resources_list->push_back(u);
   // Insert referrer for above new resource link.
-  result->referrers_list->push_back(GURL());
+  result->referrer_urls_list->push_back(GURL());
+  result->referrer_policies_list->push_back(WebKit::WebReferrerPolicyDefault);
 }
 
 // Get all savable resource links from current WebFrameImpl object pointer.

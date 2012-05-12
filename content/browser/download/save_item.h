@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "content/browser/download/save_types.h"
+#include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 
 class SavePackage;
@@ -25,7 +26,7 @@ class SaveItem {
   };
 
   SaveItem(const GURL& url,
-           const GURL& referrer,
+           const content::Referrer& referrer,
            SavePackage* package,
            SaveFileCreateInfo::SaveFileSource save_source);
 
@@ -58,7 +59,7 @@ class SaveItem {
   const FilePath& full_path() const { return full_path_; }
   const FilePath& file_name() const { return file_name_; }
   const GURL& url() const { return url_; }
-  const GURL& referrer() const { return referrer_; }
+  const content::Referrer& referrer() const { return referrer_; }
   int64 total_bytes() const { return total_bytes_; }
   int64 received_bytes() const { return received_bytes_; }
   int32 save_id() const { return save_id_; }
@@ -84,7 +85,7 @@ class SaveItem {
 
   // The URL for this save item.
   GURL url_;
-  GURL referrer_;
+  content::Referrer referrer_;
 
   // Total bytes expected.
   int64 total_bytes_;

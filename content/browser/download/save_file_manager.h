@@ -73,6 +73,7 @@ class SaveFile;
 class SavePackage;
 
 namespace content {
+struct Referrer;
 class ResourceContext;
 }
 
@@ -96,7 +97,7 @@ class SaveFileManager
   // Save the specified URL. Called on the UI thread and forwarded to the
   // ResourceDispatcherHostImpl on the IO thread.
   void SaveURL(const GURL& url,
-               const GURL& referrer,
+               const content::Referrer& referrer,
                int render_process_host_id,
                int render_view_id,
                SaveFileCreateInfo::SaveFileSource save_source,
@@ -206,7 +207,7 @@ class SaveFileManager
 
   // Initiates a request for URL to be saved.
   void OnSaveURL(const GURL& url,
-                 const GURL& referrer,
+                 const content::Referrer& referrer,
                  int render_process_host_id,
                  int render_view_id,
                  content::ResourceContext* context);

@@ -116,7 +116,7 @@ SavePackage* SaveFileManager::LookupPackage(int save_id) {
 // Call from SavePackage for starting a saving job
 void SaveFileManager::SaveURL(
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     int render_process_host_id,
     int render_view_id,
     SaveFileCreateInfo::SaveFileSource save_source,
@@ -355,7 +355,7 @@ void SaveFileManager::OnErrorFinished(const GURL& save_url, int contents_id) {
 
 void SaveFileManager::OnSaveURL(
     const GURL& url,
-    const GURL& referrer,
+    const content::Referrer& referrer,
     int render_process_host_id,
     int render_view_id,
     content::ResourceContext* context) {

@@ -22,6 +22,7 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/referrer.h"
 #include "googleurl/src/gurl.h"
 
 class GURL;
@@ -198,7 +199,7 @@ class CONTENT_EXPORT SavePackage
       const content::SavePackageDownloadCreatedCallback& cb);
   void OnReceivedSavableResourceLinksForCurrentPage(
       const std::vector<GURL>& resources_list,
-      const std::vector<GURL>& referrers_list,
+      const std::vector<content::Referrer>& referrers_list,
       const std::vector<GURL>& frames_list);
 
   void OnReceivedSerializedHtmlData(const GURL& frame_url,

@@ -1995,7 +1995,7 @@ IPC_MESSAGE_CONTROL2(ViewHostMsg_SavedPageAsMHTML,
 
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
                     std::vector<GURL> /* all savable resource links */,
-                    std::vector<GURL> /* all referrers of resource links */,
+                    std::vector<content::Referrer> /* all referrers */,
                     std::vector<GURL> /* all frame links */)
 
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,

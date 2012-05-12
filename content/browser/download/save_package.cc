@@ -311,7 +311,7 @@ bool SavePackage::Init(
         SaveFileCreateInfo::SAVE_FILE_FROM_FILE :
         SaveFileCreateInfo::SAVE_FILE_FROM_NET;
     SaveItem* save_item = new SaveItem(page_url_,
-                                       GURL(),
+                                       content::Referrer(),
                                        this,
                                        save_source);
     // Add this item to waiting list.
@@ -1084,7 +1084,7 @@ void SavePackage::GetAllSavableResourceLinksForCurrentPage() {
 // HTML data.
 void SavePackage::OnReceivedSavableResourceLinksForCurrentPage(
     const std::vector<GURL>& resources_list,
-    const std::vector<GURL>& referrers_list,
+    const std::vector<content::Referrer>& referrers_list,
     const std::vector<GURL>& frames_list) {
   if (wait_state_ != RESOURCES_LIST)
     return;
@@ -1113,7 +1113,7 @@ void SavePackage::OnReceivedSavableResourceLinksForCurrentPage(
     for (int i = 0; i < static_cast<int>(frames_list.size()); ++i) {
       const GURL& u = frames_list[i];
       DCHECK(u.is_valid());
-      SaveItem* save_item = new SaveItem(u, GURL(),
+      SaveItem* save_item = new SaveItem(u, content::Referrer(),
           this, SaveFileCreateInfo::SAVE_FILE_FROM_DOM);
       waiting_item_queue_.push(save_item);
     }
