@@ -69,6 +69,8 @@
         'dbus/ibus/ibus_client.cc',
         'dbus/ibus/ibus_client.h',
         'dbus/ibus/ibus_constants.h',
+        'dbus/ibus/ibus_object.cc',
+        'dbus/ibus/ibus_object.h',
         'dbus/image_burner_client.cc',
         'dbus/image_burner_client.h',
         'dbus/introspectable_client.cc',
@@ -172,6 +174,7 @@
         'dbus/flimflam_service_client_unittest.cc',
         'dbus/gsm_sms_client_unittest.cc',
         'dbus/ibus/ibus_client_unittest.cc',
+        'dbus/ibus/ibus_object_unittest.cc',
       ],
       'include_dirs': [
         '..',
