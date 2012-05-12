@@ -63,6 +63,9 @@ class ClickWiggleFilterInterpreter : public Interpreter {
   // last time a physical button up or down edge occurred
   stime_t button_edge_occurred_;
 
+  // If there was just one finger on the pad when the button changed
+  bool button_edge_with_one_finger_;
+
   map<short, float, kMaxFingers> prev_pressure_;
 
   int prev_buttons_;

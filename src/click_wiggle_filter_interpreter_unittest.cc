@@ -19,11 +19,13 @@ class ClickWiggleFilterInterpreterTest : public ::testing::Test {};
 class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
  public:
   ClickWiggleFilterInterpreterTestInterpreter()
-      : set_hwprops_called_(false), expect_warp_(true) {}
+      : set_hwprops_called_(false), expect_warp_(true),
+        expected_fingers_(-1) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+    if (expected_fingers_ >= 0)
+      EXPECT_EQ(expected_fingers_, hwstate->finger_cnt);
     if (hwstate->finger_cnt > 0 && expect_warp_) {
-      EXPECT_EQ(1, hwstate->finger_cnt);
       EXPECT_TRUE(hwstate->fingers[0].flags & GESTURES_FINGER_WARP_X);
       EXPECT_TRUE(hwstate->fingers[0].flags & GESTURES_FINGER_WARP_Y);
     }
@@ -41,6 +43,7 @@ class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
 
   bool set_hwprops_called_;
   bool expect_warp_;
+  short expected_fingers_;
 };
 
 TEST(ClickWiggleFilterInterpreterTest, WiggleSuppressTest) {
@@ -184,7 +187,7 @@ struct ThumbClickTestInput {
 // with his thumb and the cursor moved.
 TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
   ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
-    new ClickWiggleFilterInterpreterTestInterpreter;
+      new ClickWiggleFilterInterpreterTestInterpreter;
   ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
   HardwareProperties hwprops = {
     0,  // left edge
@@ -234,7 +237,7 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
 // backwards.
 TEST(ClickWiggleFilterInterpreter, TimeBackwardsTest) {
   ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
-    new ClickWiggleFilterInterpreterTestInterpreter;
+      new ClickWiggleFilterInterpreterTestInterpreter;
   ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
   HardwareProperties hwprops = {
     0,  // left edge
@@ -277,6 +280,104 @@ TEST(ClickWiggleFilterInterpreter, TimeBackwardsTest) {
     interpreter.SyncInterpret(&hs[i], NULL);
     if (i == arraysize(hs) - 1)
       EXPECT_EQ(0, fs.flags);
+  }
+}
+
+struct ThumbClickWiggleWithPalmTestInputs {
+  stime_t now;
+  unsigned buttons_down;
+  // finger data for two fingers:
+  float x0, y0, p0, flags0;
+  float x1, y1, p1, flags1;
+};
+
+// Based on a log from real use by Andrew de los Reyes, where a thumb was
+// clicking and wiggling a lot. We would have blocked the wiggle (since it
+// was the only finger), but part way through a palm appeared, and we didn't
+// realize it was a palm, so we started allowing motion again. This test
+// makes sure we don't regress on this log.
+TEST(ClickWiggleFilterInterpreter, ThumbClickWiggleWithPalmTest) {
+  ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
+      new ClickWiggleFilterInterpreterTestInterpreter;
+  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
+  HardwareProperties hwprops = {
+    0.000000,  // left edge
+    0.000000,  // top edge
+    106.666672,  // right edge
+    68.000000,  // bottom edge
+    1.000000,  // x pixels/TP width
+    1.000000,  // y pixels/TP height
+    25.400000,  // x screen DPI
+    25.400000,  // y screen DPI
+    15,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+
+  // Ideally flags will not get renumbered, but just in case.
+  const unsigned k8 = GESTURES_FINGER_POSSIBLE_PALM;
+  const unsigned k9 = GESTURES_FINGER_POSSIBLE_PALM | GESTURES_FINGER_WARP_X;
+  const unsigned k11 = GESTURES_FINGER_POSSIBLE_PALM |
+      GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
+  const unsigned k16 = GESTURES_FINGER_PALM;
+  const unsigned k17 = GESTURES_FINGER_PALM | GESTURES_FINGER_WARP_X;
+  const unsigned k19 = GESTURES_FINGER_PALM |
+      GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
+
+  ASSERT_EQ(8, k8);
+  ASSERT_EQ(9, k9);
+  ASSERT_EQ(11, k11);
+  ASSERT_EQ(16, k16);
+  ASSERT_EQ(17, k17);
+  ASSERT_EQ(19, k19);
+
+  ThumbClickWiggleWithPalmTestInputs inputs[] = {
+    { 4.5231, 0, 52.0, 59.8, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.5325, 0, 52.0, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.5418, 0, 51.6, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.5511, 0, 51.5, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.5603, 0, 51.5, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.5696, 0, 51.4, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.5788, 0, 51.2, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.5881, 0, 51.1, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.5974, 1, 51.1, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.6162, 1, 51.0, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.6347, 1, 51.0, 59.9, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.6533, 1, 51.0, 60.0, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.6623, 1, 51.0, 60.2, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.6716, 1, 51.0, 60.6, 118.20, k16,  0.0,  0.0,  0.00, 0 },
+    { 4.6824, 1, 51.0, 60.9, 118.20, k8,  99.9, 67.2,  3.71, k8 },
+    { 4.6934, 1, 51.9, 61.5, 118.20, k8,  99.9, 67.2,  7.60, k8 },
+    { 4.7042, 1, 53.0, 61.7, 118.20, k8,  99.9, 67.2,  9.54, k8 },
+    { 4.7152, 1, 56.0, 63.4, 118.20, k11, 99.9, 67.2,  9.54, k8 },
+    { 4.7262, 1, 56.4, 63.4, 118.20, k8, 100.4, 67.4, 15.36, k9 },
+    { 4.7372, 0, 57.1, 63.5, 110.43, k8, 100.2, 67.7, 15.36, k11 },
+    { 4.7481, 0, 57.8, 64.3,  83.27, k8, 100.2, 67.7, 15.36, k8 },
+    { 4.7591, 0, 60.1, 65.7,  34.76, k9, 100.2, 67.7, 15.36, k8 },
+    { 4.7681, 0,  0.0,  0.0,   0.00, 0,  100.2, 67.7, 15.36, k17 },
+    { 4.7772, 0,  0.0,  0.0,   0.00, 0,  100.1, 67.7, 13.42, k19 },
+    { 4.7862, 0,  0.0,  0.0,   0.00, 0,  100.6, 67.7,  9.54, k17 },
+    { 4.7953, 0,  0.0,  0.0,   0.00, 0,  102.2, 67.7,  3.71, k17 }
+  };
+
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    const ThumbClickWiggleWithPalmTestInputs& input = inputs[i];
+    FingerState fs[] = {
+      { 0, 0, 0, 0, input.p0, 0, input.x0, input.y0, 1, input.flags0 },
+      { 0, 0, 0, 0, input.p1, 0, input.x1, input.y1, 2, input.flags1 }
+    };
+    unsigned short finger_count = (input.p0 == 0.0 || input.p1 == 0.0) ? 1 : 2;
+    HardwareState hs = {
+      input.now, input.buttons_down, finger_count, finger_count,
+      input.p0 == 0.0 ? &fs[1] : &fs[0]
+    };
+    base_interpreter->expect_warp_ = !!input.buttons_down;
+    base_interpreter->expected_fingers_ = finger_count;
+    interpreter.SyncInterpret(&hs, NULL);
   }
 }
 

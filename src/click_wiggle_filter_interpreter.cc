@@ -52,8 +52,15 @@ void ClickWiggleFilterInterpreter::UpdateClickWiggle(
   const bool button_down_edge = button_down && !prev_button_down;
   const bool button_up_edge = !button_down && prev_button_down;
 
-  if (button_down_edge || button_up_edge)
+  if (button_down_edge || button_up_edge) {
     button_edge_occurred_ = hwstate.timestamp;
+    size_t non_palm_count = 0;
+    for (size_t i = 0; i < hwstate.finger_cnt; i++)
+      if (!(hwstate.fingers[i].flags & (GESTURES_FINGER_PALM |
+                                        GESTURES_FINGER_POSSIBLE_PALM)))
+        non_palm_count++;
+    button_edge_with_one_finger_ = (non_palm_count < 2);
+  }
 
   // Update wiggle_recs_ for each current finger
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
@@ -119,9 +126,10 @@ void ClickWiggleFilterInterpreter::SetWarpFlags(HardwareState* hwstate) const {
   if (button_edge_occurred_ != 0.0 &&
       button_edge_occurred_ < hwstate->timestamp &&
       button_edge_occurred_ + one_finger_click_wiggle_timeout_.val_ >
-      hwstate->timestamp && hwstate->finger_cnt == 1) {
-    hwstate->fingers[0].flags |=
-        (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
+      hwstate->timestamp && button_edge_with_one_finger_) {
+    for (size_t i = 0; i < hwstate->finger_cnt; i++)
+      hwstate->fingers[i].flags |=
+          (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
     // May as well return b/c already set warp on the only finger there is.
     return;
   }
