@@ -112,7 +112,7 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       enable_web_ui_(false) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
-  set_parent_owned(false);
+  set_owned_by_client();
 
   views::BubbleBorder* bubble_border =
       new views::BubbleBorder(views::BubbleBorder::FLOAT,

@@ -118,7 +118,7 @@ AutocompleteResultView::AutocompleteResultView(
         AutocompleteMatch::TypeToIcon(AutocompleteMatch::URL_WHAT_YOU_TYPED))->
         width();
   }
-  keyword_icon_->set_parent_owned(false);
+  keyword_icon_->set_owned_by_client();
   keyword_icon_->EnableCanvasFlippingForRTLUI(true);
   keyword_icon_->SetImage(GetKeywordIcon());
   keyword_icon_->SizeToPreferredSize();

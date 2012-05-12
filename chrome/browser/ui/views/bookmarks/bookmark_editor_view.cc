@@ -319,7 +319,7 @@ void BookmarkEditorView::Init() {
 
     new_folder_button_.reset(new views::NativeTextButton(this,
         l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON)));
-    new_folder_button_->set_parent_owned(false);
+    new_folder_button_->set_owned_by_client();
     new_folder_button_->SetEnabled(false);
   }
 

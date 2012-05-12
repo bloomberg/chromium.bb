@@ -58,16 +58,16 @@ ImportProgressDialogView::ImportProgressDialogView(
   importer_host_->SetObserver(this);
 
   // These are scoped pointers, so we don't need the parent to delete them.
-  state_bookmarks_->set_parent_owned(false);
-  state_searches_->set_parent_owned(false);
-  state_passwords_->set_parent_owned(false);
-  state_history_->set_parent_owned(false);
-  state_cookies_->set_parent_owned(false);
-  label_bookmarks_->set_parent_owned(false);
-  label_searches_->set_parent_owned(false);
-  label_passwords_->set_parent_owned(false);
-  label_history_->set_parent_owned(false);
-  label_cookies_->set_parent_owned(false);
+  state_bookmarks_->set_owned_by_client();
+  state_searches_->set_owned_by_client();
+  state_passwords_->set_owned_by_client();
+  state_history_->set_owned_by_client();
+  state_cookies_->set_owned_by_client();
+  label_bookmarks_->set_owned_by_client();
+  label_searches_->set_owned_by_client();
+  label_passwords_->set_owned_by_client();
+  label_history_->set_owned_by_client();
+  label_cookies_->set_owned_by_client();
 }
 
 ImportProgressDialogView::~ImportProgressDialogView() {

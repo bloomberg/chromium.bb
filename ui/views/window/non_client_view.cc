@@ -43,7 +43,7 @@ NonClientView::~NonClientView() {
 
 void NonClientView::SetFrameView(NonClientFrameView* frame_view) {
   // See comment in header about ownership.
-  frame_view->set_parent_owned(false);
+  frame_view->set_owned_by_client();
   if (frame_view_.get())
     RemoveChildView(frame_view_.get());
   frame_view_.reset(frame_view);

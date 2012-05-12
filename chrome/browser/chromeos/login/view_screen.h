@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -156,7 +156,7 @@ void ViewScreen<V>::Hide() {
 template <class V>
 void ViewScreen<V>::CreateView() {
   view_ = AllocateView();
-  view_->set_parent_owned(false);  // ViewScreen owns the view.
+  view_->set_owned_by_client();  // ViewScreen owns the view.
   delegate()->GetWizardView()->AddChildView(view_);
   view_->Init();
   view_->SetVisible(false);

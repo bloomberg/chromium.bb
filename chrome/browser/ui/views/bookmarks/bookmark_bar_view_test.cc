@@ -180,7 +180,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     model_->ClearStore();
 
     bb_view_.reset(new BookmarkBarView(browser_.get()));
-    bb_view_->set_parent_owned(false);
+    bb_view_->set_owned_by_client();
     bb_view_->SetPageNavigator(&navigator_);
 
     AddTestData(CreateBigMenu());

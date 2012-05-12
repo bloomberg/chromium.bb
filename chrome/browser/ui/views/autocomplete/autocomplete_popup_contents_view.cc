@@ -98,7 +98,7 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
   bubble_border_ = bubble_border;
   set_border(bubble_border);
   // The contents is owned by the LocationBarView.
-  set_parent_owned(false);
+  set_owned_by_client();
 
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
     AutocompleteResultView* result_view =

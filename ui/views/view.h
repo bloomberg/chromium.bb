@@ -106,8 +106,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual ~View();
 
   // By default a View is owned by its parent unless specified otherwise here.
-  bool parent_owned() const { return parent_owned_; }
-  void set_parent_owned(bool parent_owned) { parent_owned_ = parent_owned; }
+  void set_owned_by_client() { owned_by_client_ = true; }
 
   // Tree operations -----------------------------------------------------------
 
@@ -1321,9 +1320,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Creation and lifetime -----------------------------------------------------
 
-  // True if the hierarchy (i.e. the parent View) is responsible for deleting
-  // this View. Default is true.
-  bool parent_owned_;
+  // False if this View is owned by its parent - i.e. it will be deleted by its
+  // parent during its parents destruction. False is the default.
+  bool owned_by_client_;
 
   // Attributes ----------------------------------------------------------------
 

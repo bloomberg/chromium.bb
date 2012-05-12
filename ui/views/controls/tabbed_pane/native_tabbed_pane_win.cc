@@ -139,7 +139,7 @@ void NativeTabbedPaneWin::AddTabAtIndex(int index,
                                         View* contents,
                                         bool select_if_first_tab) {
   DCHECK(index <= static_cast<int>(tab_views_.size()));
-  contents->set_parent_owned(false);
+  contents->set_owned_by_client();
   contents->SetVisible(false);
   tab_views_.insert(tab_views_.begin() + index, contents);
   tab_titles_.insert(tab_titles_.begin() + index, title);

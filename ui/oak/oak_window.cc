@@ -120,7 +120,7 @@ void OakWindow::Init() {
   tree_model_.reset(
       GenerateModel(GetWidget()->GetNativeView()->GetRootWindow()));
   tree_.reset(new views::TreeView);
-  tree_->set_parent_owned(false);
+  tree_->set_owned_by_client();
   tree_->SetController(this);
   tree_->SetModel(tree_model_.get());
   tree_container_ = tree_->CreateParentIfNecessary();
@@ -135,7 +135,7 @@ void OakWindow::Init() {
                                       true,
                                       false,
                                       false));
-  details_->set_parent_owned(false);
+  details_->set_owned_by_client();
   details_container_ = details_->CreateParentIfNecessary();
   details_->SetModel(details_model_.get());
   AddChildView(details_container_);

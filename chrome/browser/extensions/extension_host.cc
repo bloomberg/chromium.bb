@@ -171,7 +171,7 @@ void ExtensionHost::CreateView(Browser* browser) {
   view_.reset(new ExtensionView(this, browser));
   // We own |view_|, so don't auto delete when it's removed from the view
   // hierarchy.
-  view_->set_parent_owned(false);
+  view_->set_owned_by_client();
 #elif defined(OS_MACOSX)
   view_.reset(new ExtensionViewMac(this, browser));
   view_->Init();

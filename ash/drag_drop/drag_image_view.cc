@@ -32,7 +32,7 @@ DragImageView::DragImageView() : views::ImageView() {
   widget_->SetAlwaysOnTop(true);
 
   // We are owned by the DragDropController.
-  set_parent_owned(false);
+  set_owned_by_client();
 }
 
 DragImageView::~DragImageView() {

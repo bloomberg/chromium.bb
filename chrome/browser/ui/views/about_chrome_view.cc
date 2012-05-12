@@ -143,23 +143,23 @@ void AboutChromeView::Init() {
   // Views we will add to the *parent* of this dialog, since it will display
   // next to the buttons which we don't draw ourselves.
   throbber_.reset(new views::Throbber(50, true));
-  throbber_->set_parent_owned(false);
+  throbber_->set_owned_by_client();
   throbber_->SetVisible(false);
 
   SkBitmap* success_image = rb.GetBitmapNamed(IDR_UPDATE_UPTODATE);
   success_indicator_.SetImage(*success_image);
-  success_indicator_.set_parent_owned(false);
+  success_indicator_.set_owned_by_client();
 
   SkBitmap* update_available_image = rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE);
   update_available_indicator_.SetImage(*update_available_image);
-  update_available_indicator_.set_parent_owned(false);
+  update_available_indicator_.set_owned_by_client();
 
   SkBitmap* timeout_image = rb.GetBitmapNamed(IDR_UPDATE_FAIL);
   timeout_indicator_.SetImage(*timeout_image);
-  timeout_indicator_.set_parent_owned(false);
+  timeout_indicator_.set_owned_by_client();
 
   update_label_.SetVisible(false);
-  update_label_.set_parent_owned(false);
+  update_label_.set_owned_by_client();
 
   // Regular view controls we draw by ourself. First, we add the background
   // image for the dialog. We have two different background bitmaps, one for

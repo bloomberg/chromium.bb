@@ -300,7 +300,7 @@ void NativeTabbedPaneViews::AddTabAtIndex(int index,
                                           View* contents,
                                           bool select_if_first_tab) {
   DCHECK(index <= static_cast<int>(tab_strip_->child_count()));
-  contents->set_parent_owned(false);
+  contents->set_owned_by_client();
   contents->SetVisible(false);
 
   tab_strip_->AddChildViewAt(new Tab(tab_strip_, title, contents), index);

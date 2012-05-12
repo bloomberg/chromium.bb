@@ -99,7 +99,7 @@ class TooltipController::Tooltip {
           views::Border::CreateSolidBorder(kTooltipBorderWidth,
                                            kTooltipBorder));
     }
-    label_.set_parent_owned(false);
+    label_.set_owned_by_client();
     widget_.reset(CreateTooltip());
     widget_->SetContentsView(&label_);
     widget_->Activate();

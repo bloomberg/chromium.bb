@@ -96,7 +96,7 @@ class TouchSelectionControllerImpl::SelectionHandleView : public View {
     widget_->SetAlwaysOnTop(true);
 
     // We are owned by the TouchSelectionController.
-    set_parent_owned(false);
+    set_owned_by_client();
   }
 
   virtual ~SelectionHandleView() {
@@ -207,7 +207,7 @@ class TouchSelectionControllerImpl::TouchContextMenuView
     widget_->SetAlwaysOnTop(true);
 
     // We are owned by the TouchSelectionController.
-    set_parent_owned(false);
+    set_owned_by_client();
     SetLayoutManager(new BoxLayout(BoxLayout::kHorizontal, kContextMenuPadding,
         kContextMenuPadding, kContextMenuPadding));
   }

@@ -340,7 +340,7 @@ class HidableArea : public views::View {
     // In other words, the HidableArea only contains one of the two views
     // hence cannot own the two views at the same time.
     place_holder_.reset(new views::View);
-    place_holder_->set_parent_owned(false);  // Won't own
+    place_holder_->set_owned_by_client();  // Won't own
 
     // Initially show nothing.
     SetLayoutManager(new views::FillLayout);
@@ -350,7 +350,7 @@ class HidableArea : public views::View {
   // Sets the content view.
   void SetContents(views::View* contents) {
     contents_.reset(contents);
-    contents_->set_parent_owned(false);  // Won't own
+    contents_->set_owned_by_client();  // Won't own
   }
 
   // Shows the content.

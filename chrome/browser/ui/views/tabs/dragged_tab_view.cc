@@ -37,7 +37,7 @@ DraggedTabView::DraggedTabView(const std::vector<views::View*>& renderers,
       mouse_tab_offset_(mouse_tab_offset),
       photobooth_(photobooth),
       contents_size_(contents_size) {
-  set_parent_owned(false);
+  set_owned_by_client();
 
   container_.reset(new views::Widget);
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);

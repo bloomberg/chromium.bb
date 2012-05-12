@@ -96,7 +96,7 @@ const char View::kViewClassName[] = "views/View";
 // Creation and lifetime -------------------------------------------------------
 
 View::View()
-    : parent_owned_(true),
+    : owned_by_client_(false),
       id_(0),
       group_(-1),
       parent_(NULL),
@@ -126,7 +126,7 @@ View::~View() {
 
   for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i) {
     (*i)->parent_ = NULL;
-    if ((*i)->parent_owned())
+    if (!(*i)->owned_by_client_)
       delete *i;
   }
 
@@ -1538,7 +1538,7 @@ void View::DoRemoveChildView(View* view,
     view->parent_ = NULL;
     view->UpdateLayerVisibility();
 
-    if (delete_removed_view && view->parent_owned())
+    if (delete_removed_view && !view->owned_by_client_)
       view_to_be_deleted.reset(view);
 
     children_.erase(i);
