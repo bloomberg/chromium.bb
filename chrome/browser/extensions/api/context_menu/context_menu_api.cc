@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_context_menu_api.h"
+#include "chrome/browser/extensions/api/context_menu/context_menu_api.h"
 
 #include <string>
 
@@ -34,6 +34,7 @@ const char kParentsMustBeNormalError[] =
 const char kTitleNeededError[] =
     "All menu items except for separators must have a title";
 
+namespace extensions {
 
 bool ExtensionContextMenuFunction::ParseContexts(
     const DictionaryValue& properties,
@@ -379,3 +380,5 @@ bool RemoveAllContextMenusFunction::RunImpl() {
   manager->RemoveAllContextItems(extension_id());
   return true;
 }
+
+}  // namespace extensions

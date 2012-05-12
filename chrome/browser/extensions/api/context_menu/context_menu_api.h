@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTEXT_MENU_API_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTEXT_MENU_API_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_CONTEXT_MENU_CONTEXT_MENU_API_H__
+#define CHROME_BROWSER_EXTENSIONS_API_CONTEXT_MENU_CONTEXT_MENU_API_H__
 #pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
@@ -15,6 +15,8 @@ class ExtensionMenuItem;
 namespace base {
 class DictionaryValue;
 }
+
+namespace extensions {
 
 class ExtensionContextMenuFunction : public SyncExtensionFunction {
  protected:
@@ -105,4 +107,6 @@ class RemoveAllContextMenusFunction : public ExtensionContextMenuFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTEXT_MENU_API_H__
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_CONTEXT_MENU_CONTEXT_MENU_API_H__

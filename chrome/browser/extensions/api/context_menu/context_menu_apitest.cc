@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/base/ui_test_utils.h"
+
+namespace extensions {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenus) {
   ASSERT_TRUE(RunExtensionTest("context_menus/basics")) << message_;
@@ -41,3 +43,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenusFromMultipleContexts) {
   }
 }
 
+}  // namespace extensions
