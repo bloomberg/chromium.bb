@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_service_factory.h"
 #include "chrome/browser/usb/usb_service.h"
-#include "chrome/common/extensions/api/experimental.usb.h"
+#include "chrome/common/extensions/api/experimental_usb.h"
 
 namespace BulkTransfer = extensions::api::experimental_usb::BulkTransfer;
 namespace CloseDevice = extensions::api::experimental_usb::CloseDevice;

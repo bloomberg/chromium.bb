@@ -23,17 +23,17 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.model.AddNamespace(self.tabs_json[0],
         'path/to/tabs.json')
     self.tabs = self.model.namespaces.get('tabs')
-    self.browser_action_json = CachedLoad('test/browserAction.json')
+    self.browser_action_json = CachedLoad('test/browser_action.json')
     self.model.AddNamespace(self.browser_action_json[0],
-        'path/to/browserAction.json')
+        'path/to/browser_action.json')
     self.browser_action = self.model.namespaces.get('browserAction')
-    self.font_settings_json = CachedLoad('test/fontSettings.json')
+    self.font_settings_json = CachedLoad('test/font_settings.json')
     self.model.AddNamespace(self.font_settings_json[0],
-        'path/to/fontSettings.json')
+        'path/to/font_settings.json')
     self.font_settings = self.model.namespaces.get('fontSettings')
-    self.dependency_tester_json = CachedLoad('test/dependencyTester.json')
+    self.dependency_tester_json = CachedLoad('test/dependency_tester.json')
     self.model.AddNamespace(self.dependency_tester_json[0],
-        'path/to/dependencyTester.json')
+        'path/to/dependency_tester.json')
     self.dependency_tester = self.model.namespaces.get('dependencyTester')
 
   def testGenerateIncludesAndForwardDeclarations(self):
@@ -82,9 +82,9 @@ class CppTypeGeneratorTest(unittest.TestCase):
   def testGenerateIncludesAndForwardDeclarationsDependencies(self):
     m = model.Model()
     browser_action_namespace = m.AddNamespace(self.browser_action_json[0],
-        'path/to/browserAction.json')
+        'path/to/browser_action.json')
     font_settings_namespace = m.AddNamespace(self.font_settings_json[0],
-        'path/to/fontSettings.json')
+        'path/to/font_settings.json')
     manager = CppTypeGenerator('', self.dependency_tester,
         self.dependency_tester.unix_name)
     manager.AddNamespace(browser_action_namespace,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/json_schema_compiler/test/functionsOnTypes.h"
+#include "tools/json_schema_compiler/test/functions_on_types.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

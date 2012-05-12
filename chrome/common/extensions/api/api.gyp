@@ -18,10 +18,10 @@
       'variables': {
         'chromium_code': 1,
         'json_schema_files': [
-          'browserAction.json',
+          'browser_action.json',
           'declarative.json',
-          'experimental.record.json',
-          'experimental.fontSettings.json',
+          'experimental_font_settings.json',
+          'experimental_record.json',
           'permissions.json',
           'storage.json',
           'tabs.json',
@@ -29,12 +29,12 @@
         ],
         'idl_schema_files': [
           'alarms.idl',
-          'experimental.bluetooth.idl',
-          'experimental.dns.idl',
-          'experimental.idltest.idl',
-          'experimental.serial.idl',
-          'experimental.socket.idl',
-          'experimental.usb.idl',
+          'experimental_bluetooth.idl',
+          'experimental_dns.idl',
+          'experimental_idltest.idl',
+          'experimental_serial.idl',
+          'experimental_socket.idl',
+          'experimental_usb.idl',
         ],
         'cc_dir': 'chrome/common/extensions/api',
         'root_namespace': 'extensions::api',
@@ -42,7 +42,7 @@
       'conditions': [
         ['OS=="android"', {
           'idl_schema_files!': [
-            'experimental.usb.idl',
+            'experimental_usb.idl',
           ],
         }],
       ],

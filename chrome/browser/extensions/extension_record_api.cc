@@ -16,7 +16,7 @@
 #include "base/utf_string_conversions.h"
 
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/experimental.record.h"
+#include "chrome/common/extensions/api/experimental_record.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 

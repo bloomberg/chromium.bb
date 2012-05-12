@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/experimental.record.h"
+#include "chrome/common/extensions/api/experimental_record.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"

@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 #include "chrome/browser/extensions/api/api_resource.h"
 #include "chrome/browser/usb/usb_device.h"
-#include "chrome/common/extensions/api/experimental.usb.h"
+#include "chrome/common/extensions/api/experimental_usb.h"
 
 using extensions::api::experimental_usb::ControlTransferInfo;
 using extensions::api::experimental_usb::GenericTransferInfo;

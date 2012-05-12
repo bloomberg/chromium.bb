@@ -9,7 +9,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/api/api_function.h"
-#include "chrome/common/extensions/api/experimental.usb.h"
+#include "chrome/common/extensions/api/experimental_usb.h"
 
 namespace extensions {
 

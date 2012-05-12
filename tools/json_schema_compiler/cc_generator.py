@@ -33,7 +33,7 @@ class CCGenerator(object):
       .Append()
       .Append(self._util_cc_helper.GetIncludePath())
       .Append('#include "%s/%s.h"' %
-          (self._namespace.source_file_dir, self._namespace.name))
+          (self._namespace.source_file_dir, self._namespace.unix_name))
     )
     includes = self._cpp_type_generator.GenerateIncludes()
     if not includes.IsEmpty():
