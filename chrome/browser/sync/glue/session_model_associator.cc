@@ -765,17 +765,21 @@ SyncError SessionModelAssociator::AssociateModels() {
     if (local_session_syncid_ == sync_api::kInvalidId) {
       // The sync db didn't have a header node for us, we need to create one.
       sync_api::WriteNode write_node(&trans);
-      if (!write_node.InitUniqueByCreation(SESSIONS, root,
+      if (!write_node.InitUniqueByCreation(SESSIONS,
+                                           root,
                                            current_machine_tag_)) {
+        // If we can't look it up, and we can't create it, chances are there's
+        // a pre-existing node that has encryption issues. But, since we can't
+        // load the item, we can't remove it, and error out at this point.
         return error_handler_->CreateAndUploadError(
             FROM_HERE,
             "Failed to create sessions header sync node.",
             model_type());
       }
-      write_node.SetTitle(UTF8ToWide(current_machine_tag_));
 
       // Write the initial values to the specifics so that in case of a crash or
       // error we don't persist a half-written node.
+      write_node.SetTitle(UTF8ToWide(current_machine_tag_));
       sync_pb::SessionSpecifics base_specifics;
       base_specifics.set_session_tag(current_machine_tag_);
       sync_pb::SessionHeader* header_s = base_specifics.mutable_header();
@@ -915,7 +919,11 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
     const sync_pb::SessionSpecifics& specifics =
         sync_node.GetSessionSpecifics();
     const base::Time& modification_time = sync_node.GetModificationTime();
-    if (specifics.session_tag() != GetCurrentMachineTag()) {
+    if (specifics.session_tag().empty()) {
+      // This is a corrupted node. Just delete it.
+      LOG(WARNING) << "Found node with no session tag, deleting.";
+      sync_node.Remove();
+    } else if (specifics.session_tag() != GetCurrentMachineTag()) {
       AssociateForeignSpecifics(specifics, modification_time);
     } else {
       // This is previously stored local session information.
@@ -929,7 +937,7 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
       } else {
         if (specifics.has_header()) {
           LOG(WARNING) << "Found more than one session header node with local "
-                     << " tag.";
+                       << " tag.";
         } else if (!specifics.has_tab()) {
           LOG(WARNING) << "Found local node with no header or tag field.";
         }

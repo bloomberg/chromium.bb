@@ -1169,4 +1169,32 @@ TEST_F(ProfileSyncServiceSessionTest, Favicons) {
   ASSERT_FALSE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
 }
 
+// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
+TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedLocalHeader) {
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+  AddTab(browser(), GURL("http://bar1"));
+  NavigateAndCommitActiveTab(GURL("http://bar2"));
+  CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  std::string local_tag = model_associator_->GetCurrentMachineTag();
+  SyncError error;
+
+  error = model_associator_->DisassociateModels();
+  ASSERT_FALSE(error.IsSet());
+  {
+    // Load the header node and clear it.
+    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    sync_api::WriteNode header(&trans);
+    ASSERT_EQ(sync_api::BaseNode::INIT_OK,
+              header.InitByClientTagLookup(syncable::SESSIONS, local_tag));
+    sync_pb::SessionSpecifics specifics;
+    header.SetSessionSpecifics(specifics);
+  }
+  // Ensure we associate properly despite the pre-existing node with our local
+  // tag.
+  error = model_associator_->AssociateModels();
+  ASSERT_FALSE(error.IsSet());
+}
+
 }  // namespace browser_sync
