@@ -167,6 +167,10 @@
     "chrome.experimental.input.ime.setMenuItems": "experimental.input.ime.html#method-setMenuItems",
     "chrome.experimental.input.ime.updateMenuItems": "experimental.input.ime.html#method-updateMenuItems",
     "chrome.experimental.keybinding.onCommand": "experimental.keybinding.html#event-onCommand",
+    "chrome.experimental.mediaGalleries.assembleMediaFile": "experimental.mediaGalleries.html#method-assembleMediaFile",
+    "chrome.experimental.mediaGalleries.extractEmbeddedThumbnails": "experimental.mediaGalleries.html#method-extractEmbeddedThumbnails",
+    "chrome.experimental.mediaGalleries.getMediaFileSystems": "experimental.mediaGalleries.html#method-getMediaFileSystems",
+    "chrome.experimental.mediaGalleries.openMediaGalleryManager": "experimental.mediaGalleries.html#method-openMediaGalleryManager",
     "chrome.experimental.offscreenTabs.create": "experimental.offscreenTabs.html#method-create",
     "chrome.experimental.offscreenTabs.get": "experimental.offscreenTabs.html#method-get",
     "chrome.experimental.offscreenTabs.getAll": "experimental.offscreenTabs.html#method-getAll",
@@ -2038,7 +2042,7 @@
         "page_cycler.html",
         "page_cycler.js"
       ],
-      "source_hash": "fd29d00ce92db08df69f70176d24cd9c5febbbef",
+      "source_hash": "1c84857b5a433f4907dfd44a3d1032da3fce33cb",
       "zip_path": "examples/api/record/page_cycler.zip"
     },
     {

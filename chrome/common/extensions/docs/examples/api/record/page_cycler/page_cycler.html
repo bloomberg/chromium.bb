@@ -6,82 +6,86 @@ found in the LICENSE file. -->
 
 <html>
 <head>
+<title>Page Cycler</title>
 <link rel="stylesheet" type="text/css" href="page_cycler.css"/>
 </head>
+<body>
 
-<div id="tab-menu">
-  <a id="capture-tab-label" class="tab-label">Set up Test</a>
-  <a id="replay-tab-label" class="tab-label">Run Configured Test</a>
-</div>
-
-<div id="tab-wrapper">
-  <div id="capture-tab" class="tab">
-    <h1>Set Up Page Cycling Test</h1>
-    <p>
-      Set up the list of URLs, and a cache directory.  "Prepare Test" will do
-      a preliminary visit of all the URLs, caching them in the indicated
-      directory.
-    </p>
-    <div id="capture-errors-display" class="error-list-hide">
-      <h2>Errors Occured during Capture:</h2>
-      <p id="capture-errors"></p>
-    </div>
-    <div>
-      <p class="control-label">List of URLs to cycle</p>
-      <textarea id="capture-urls" class="url-list">URL1
-URL2
-      </textarea>
-    </div>
-
-    <div class="entry-field">
-      <span class="control-label">Cache directory:</span>
-      <input id="capture-cache-dir" type="text" class="dir-choice"
-        value="PageCyclerCacheDir"/>
-    </div>
-
-    <div class="command-button">
-      <button id="capture-test">
-        Prepare Test
-      </button>
-    </div>
-
+<div id="page">
+  <div id="tab-navigator">
+    <div class="tab-label" id="capture-tab-label"><a>Prepare Test</a></div>
+    <div class="tab-label" id="replay-tab-label"><a>Run Test</a></div>
   </div>
+  
+  <div class="splitter"></div>
 
-  <div id="replay-tab" class="tab">
-    <h1>Replay Prepared Test</h1>
-    <div id="replay-errors-display" class="error-list-hide">
-       <h2>Errors Occured during Replay:</h2>
-       <p id="replay-errors"></p>
+  <div id="tab-wrapper">
+    <div id="capture-tab" class="tab">
+      <h1>Set Up Page Cycling Test</h1>
+      <p>
+        <b>Set up the list of URLs, and a cache directory.  "Prepare Test" will do
+        a preliminary visit of all the URLs, caching them in the indicated
+        directory.</b>
+      </p>
+      <div id="capture-errors-display" class="error-list-hide">
+        <h2>Errors Occured during Capture:</h2>
+        <p id="capture-errors"></p>
+      </div>
+      <div>
+        <p class="control-label">List of URLs to cycle</p>
+        <textarea id="capture-urls" class="url-list">&lt;Add URLS&gt;
+        </textarea>
+      </div>
+      <div class="entry-field">
+        <span class="control-label">Cache directory:</span><br/>
+        <input id="capture-cache-dir" type="text" class="dir-choice"/>
+      </div>
+  
+      <div class="command-button">
+        <button id="capture-test">
+          Prepare Test
+        </button>
+      </div>
+  
     </div>
-    <div>
-      <p class="control-label">List of URLs to replay</p>
-      <p id="replay-urls" class="url-list"></p>
-    </div>
-    <div class="entry-field">
-      <span class="control-label">Cache directory: </span>
-      <span id="replay-cache-dir"></span>
-    </div>
-    <div class="entry-field">
-      <span class="control-label">Extension directory: </span>
-      <input id="extension-dir" type="text" class="dir-choice"/>
-    </div>
-    <div class="entry-field">
-      <span class="control-label">Repeat count: </span>
-      <input id="repeat-count" type="text" value="1"/>
-    </div>
-    <div>
-       <p class="control-label">Result of Replay</p>
-       <textarea id="replay-result" class="url-list">
-       </textarea>
-    </div>
-    <div class="command-button">
-      <button id="replay-test" disabled=true
-        onclick="pageCyclerUI.replayTest()">
-        Replay Test
-      </button>
+  
+    <div id="replay-tab" class="tab">
+      <h1>Replay Prepared Test</h1>
+      <div id="replay-errors-display" class="error-list-hide">
+         <h2>Errors Occured during Replay:</h2>
+         <p id="replay-errors"></p>
+      </div>
+      <div>
+        <p class="control-label">List of URLs to replay</p>
+        <p id="replay-urls" class="url-list"></p>
+      </div>
+      <div class="entry-field">
+        <span class="control-label">Cache directory: </span>
+        <span id="replay-cache-dir"></span>
+      </div>
+      <div class="entry-field">
+        <span class="control-label">Extension directory: </span>
+        <input id="extension-dir" type="text" class="dir-choice"/>
+      </div>
+      <div class="entry-field">
+        <span class="control-label">Repeat count: </span>
+        <input id="repeat-count" type="text" value="1"/>
+      </div>
+      <div>
+         <p class="control-label">Result of Replay</p>
+         <textarea id="replay-result" class="url-list">
+         </textarea>
+      </div>
+      <div class="command-button">
+        <button id="replay-test" disabled=true
+          onclick="pageCyclerUI.replayTest()">
+          Replay Test
+        </button>
+      </div>
     </div>
   </div>
 </div>
+  
 <script type="text/javascript" src="page_cycler.js"></script>
 </body>
 </html>
