@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 #include "base/base64.h"
@@ -1409,12 +1410,10 @@ bool MoveTabsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(ReadOneOrMoreIntegers(tab_value, &tab_ids));
 
   DictionaryValue* update_props = NULL;
+  int new_index;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &update_props));
-
-  int new_index = -1;
-  EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
-      keys::kIndexKey, &new_index));
-  EXTENSION_FUNCTION_VALIDATE(new_index >= 0);
+  EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(keys::kIndexKey,
+      &new_index));
 
   ListValue tab_values;
   for (size_t i = 0; i < tab_ids.size(); ++i) {
@@ -1441,6 +1440,7 @@ bool MoveTabsFunction::RunImpl() {
       int window_id = extension_misc::kUnknownWindowId;
       EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
           keys::kWindowIdKey, &window_id));
+
       if (!GetBrowserFromWindowID(this, window_id, &target_browser))
         return false;
 
@@ -1472,7 +1472,8 @@ bool MoveTabsFunction::RunImpl() {
 
         // Clamp move location to the last position.
         // This is ">" because it can append to a new index position.
-        if (new_index > target_tab_strip->count())
+        // -1 means set the move location to the last position.
+        if (new_index > target_tab_strip->count() || new_index < 0)
           new_index = target_tab_strip->count();
 
         target_tab_strip->InsertTabContentsAt(
@@ -1489,7 +1490,8 @@ bool MoveTabsFunction::RunImpl() {
     // Perform a simple within-window move.
     // Clamp move location to the last position.
     // This is ">=" because the move must be to an existing location.
-    if (new_index >= source_tab_strip->count())
+    // -1 means set the move location to the last position.
+    if (new_index >= source_tab_strip->count() || new_index < 0)
       new_index = source_tab_strip->count() - 1;
 
     if (new_index != tab_index)

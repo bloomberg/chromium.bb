@@ -469,8 +469,8 @@
               },
               "index": {
                 "type": "integer",
-                "minimum": 0,
-                "description": "The position to move the window to. The provided value will be clamped to between zero and the number of tabs in the window."
+                "minimum": -1,
+                "description": "The position to move the window to. -1 will place the tab at the end of the window."
               }
             }
           },
