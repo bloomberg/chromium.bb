@@ -37,6 +37,7 @@ DevToolsFrontendHost::DevToolsFrontendHost(
 }
 
 DevToolsFrontendHost::~DevToolsFrontendHost() {
+  DevToolsManager::GetInstance()->ClientHostClosing(this);
 }
 
 void DevToolsFrontendHost::DispatchOnInspectorFrontend(
