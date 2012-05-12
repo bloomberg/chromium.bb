@@ -129,6 +129,7 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
       file_lines.append(keyval_str % {'key': file_var, 'value': file_val})
 
   if not found:
+    value = '"%s"' % value
     file_lines.append(keyval_str % {'key': key, 'value': value})
 
   file_fh.close()
