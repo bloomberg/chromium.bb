@@ -22,7 +22,6 @@ from chromite.lib import rewrite_git_alternates
 # File that marks a buildroot as being used by a trybot
 _TRYBOT_MARKER = '.trybot'
 
-_DEFAULT_SYNC_JOBS = 12
 
 class SrcCheckOutException(Exception):
   """Exception gets thrown for failure to sync sources"""
@@ -249,12 +248,14 @@ class RepoRepository(object):
       os.unlink(manifest_path)
       shutil.copyfile(local_manifest, manifest_path)
 
-  def Sync(self, local_manifest=None, jobs=_DEFAULT_SYNC_JOBS, cleanup=True):
+  def Sync(self, local_manifest=None, jobs=None, cleanup=True):
     """Sync/update the source.  Changes manifest if specified.
 
-    local_manifest:  If set, checks out source to manifest.  DEFAULT_MANIFEST
-    may be used to set it back to the default manifest.
-    jobs: An integer representing how many repo jobs to run.
+    Args:
+      local_manifest:  If set, checks out source to manifest.  DEFAULT_MANIFEST
+        may be used to set it back to the default manifest.
+      jobs: may be set to override the default sync parallelism defined by
+        the manifest.
     """
     try:
       force_repo_update = self._initialized
@@ -275,9 +276,10 @@ class RepoRepository(object):
       if cleanup:
         configure_repo.FixBrokenExistingRepos(self.directory)
 
-      cros_lib.RunCommandWithRetries(2, ['repo', '--time', 'sync',
-                                         '--jobs', str(jobs)],
-                                     cwd=self.directory)
+      cmd = ['repo', '--time', 'sync']
+      if jobs:
+        cmd += ['--jobs', str(jobs)]
+      cros_lib.RunCommandWithRetries(2, cmd, cwd=self.directory)
 
       # Setup gerrit remote for any new repositories.
       configure_repo.SetupGerritRemote(self.directory)
