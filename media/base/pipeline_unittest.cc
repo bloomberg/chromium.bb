@@ -36,8 +36,6 @@ namespace media {
 static const int kTotalBytes = 1024;
 static const int kBufferedBytes = 1024;
 static const int kBitrate = 1234;
-static const bool kLocalSource = false;
-static const bool kSeekable = true;
 
 ACTION_P(InitializeDemuxerWithError, error) {
   arg1.Run(error);
@@ -117,10 +115,6 @@ class PipelineTest : public ::testing::Test {
     // Demuxer properties.
     EXPECT_CALL(*mocks_->demuxer(), GetBitrate())
         .WillRepeatedly(Return(kBitrate));
-    EXPECT_CALL(*mocks_->demuxer(), IsLocalSource())
-        .WillRepeatedly(Return(kLocalSource));
-    EXPECT_CALL(*mocks_->demuxer(), IsSeekable())
-        .WillRepeatedly(Return(kSeekable));
 
     // Configure the demuxer to return the streams.
     for (size_t i = 0; i < streams->size(); ++i) {
@@ -798,24 +792,6 @@ TEST_F(PipelineTest, StartTimeIsNonZero) {
   EXPECT_TRUE(pipeline_->HasVideo());
 
   EXPECT_EQ(kStartTime, pipeline_->GetCurrentTime());
-}
-
-TEST_F(PipelineTest, DemuxerProperties) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
-
-  InitializeDemuxer(&streams);
-  InitializeAudioDecoder(audio_stream());
-  InitializeAudioRenderer();
-  InitializeVideoDecoder(video_stream());
-  InitializeVideoRenderer();
-  InitializePipeline(PIPELINE_OK);
-
-  EXPECT_EQ(kLocalSource, pipeline_->IsLocalSource());
-  EXPECT_NE(kSeekable, pipeline_->IsStreaming());
 }
 
 class FlexibleCallbackRunner : public base::DelegateSimpleThread::Delegate {

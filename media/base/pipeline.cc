@@ -223,16 +223,6 @@ void Pipeline::GetNaturalVideoSize(gfx::Size* out_size) const {
   *out_size = natural_size_;
 }
 
-bool Pipeline::IsStreaming() const {
-  base::AutoLock auto_lock(lock_);
-  return demuxer_ && !demuxer_->IsSeekable();
-}
-
-bool Pipeline::IsLocalSource() const {
-  base::AutoLock auto_lock(lock_);
-  return demuxer_ && demuxer_->IsLocalSource();
-}
-
 PipelineStatistics Pipeline::GetStatistics() const {
   base::AutoLock auto_lock(lock_);
   return statistics_;

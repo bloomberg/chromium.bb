@@ -72,8 +72,7 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
 
   // Create filter collection.
   scoped_ptr<FilterCollection> collection(new FilterCollection());
-  collection->SetDemuxer(new FFmpegDemuxer(
-      pipeline_loop, data_source, true));
+  collection->SetDemuxer(new FFmpegDemuxer(pipeline_loop, data_source));
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
       base::Bind(&MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory_.get()),
