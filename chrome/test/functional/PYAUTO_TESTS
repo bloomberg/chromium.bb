@@ -530,9 +530,9 @@
       # Consistently failing on Mac QA bots only: crbug.com/97810
       '-process_count',
 
-      # ==================================================
+      # =================================================
       # Disabled tests that need to be investigated/fixed.
-      # ==================================================
+      # =================================================
       # crbug.com/127880
       '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
     ],
