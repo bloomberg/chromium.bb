@@ -22,6 +22,7 @@
         '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
         '../gpu/gpu.gyp:command_buffer_client',
         '../gpu/gpu.gyp:gles2_implementation',
         '../net/net.gyp:net',
