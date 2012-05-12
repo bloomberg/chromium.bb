@@ -93,7 +93,6 @@ static const FilePath::CharType kChromeFirstRender[] =
     FPL("chrome-first-render");
 
 // Names of login UMA values.
-static const char kUmaAuthenticate[] = "BootTime.Authenticate";
 static const char kUmaLogin[] = "BootTime.Login";
 static const char kUmaLoginPrefix[] = "BootTime.";
 static const char kUmaLogout[] = "ShutdownTime.Logout";
@@ -352,7 +351,7 @@ void BootTimesLoader::WriteTimes(
 
 void BootTimesLoader::LoginDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AddLoginTimeMarker("LoginDone", true);
+  AddLoginTimeMarker("LoginDone", false);
   RecordCurrentStats(kChromeFirstRender);
   registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
                     content::NotificationService::AllSources());
