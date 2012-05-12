@@ -3159,6 +3159,25 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
+  def AppendTab(self, url, windex=0):
+    """Create a new tab.
+
+    Create a new tab at the end of given or first browser window
+    and activate it. Blocks until the url is loaded.
+
+    Args:
+      url: The url to load, can be string or a GURL object.
+      windex: Index of the window to open a tab in. Default 0 - first window.
+
+    Returns:
+      True on success.
+    """
+    if type(url) is GURL:
+      gurl = url
+    else:
+      gurl = GURL(url)
+    return pyautolib.PyUITestBase.AppendTab(self, gurl, windex)
+
   def WaitUntilNavigationCompletes(self, tab_index=0, windex=0):
     """Wait until the specified tab is done navigating.
 
