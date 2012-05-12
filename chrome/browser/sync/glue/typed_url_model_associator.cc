@@ -77,11 +77,11 @@ TypedUrlModelAssociator::~TypedUrlModelAssociator() {}
 
 
 bool TypedUrlModelAssociator::FixupURLAndGetVisits(
-    history::HistoryBackend* backend,
     history::URLRow* url,
     history::VisitVector* visits) {
   ++num_db_accesses_;
-  if (!backend->GetMostRecentVisitsForURL(
+  CHECK(history_backend_);
+  if (!history_backend_->GetMostRecentVisitsForURL(
           url->id(), kMaxVisitsToFetch, visits)) {
     ++num_db_errors_;
     return false;
@@ -179,8 +179,7 @@ SyncError TypedUrlModelAssociator::DoAssociateModels() {
     if (IsAbortPending())
       return SyncError();
     DCHECK_EQ(0U, visit_vectors.count(ix->id()));
-    if (!FixupURLAndGetVisits(
-            history_backend_, &(*ix), &(visit_vectors[ix->id()])) ||
+    if (!FixupURLAndGetVisits(&(*ix), &(visit_vectors[ix->id()])) ||
         ShouldIgnoreUrl(*ix, visit_vectors[ix->id()])) {
       // Ignore this URL if we couldn't load the visits or if there's some
       // other problem with it (it was empty, or imported and never visited).
@@ -390,8 +389,7 @@ void TypedUrlModelAssociator::UpdateFromSyncDB(
   if (existing_url) {
     // This URL already exists locally - fetch the visits so we can
     // merge them below.
-    if (!FixupURLAndGetVisits(
-            history_backend_, &new_url, &existing_visits)) {
+    if (!FixupURLAndGetVisits(&new_url, &existing_visits)) {
       // Couldn't load the visits for this URL due to some kind of DB error.
       // Don't bother writing this URL to the history DB (if we ignore the
       // error and continue, we might end up duplicating existing visits).

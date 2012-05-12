@@ -104,8 +104,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   DCHECK_GT(url.typed_count(), 0);
   // Get the visits for this node.
   history::VisitVector visit_vector;
-  if (!model_associator_->FixupURLAndGetVisits(
-          history_backend_, &url, &visit_vector)) {
+  if (!model_associator_->FixupURLAndGetVisits(&url, &visit_vector)) {
     DLOG(ERROR) << "Could not load visits for url: " << url.url();
     return false;
   }

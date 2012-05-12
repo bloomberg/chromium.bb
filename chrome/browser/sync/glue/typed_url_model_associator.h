@@ -152,8 +152,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   // etc) by modifying the passed |url| object and |visits| vector.
   // Returns false if we could not fetch the visits for the passed URL, and
   // tracks DB error statistics internally for reporting via UMA.
-  bool FixupURLAndGetVisits(history::HistoryBackend* backend,
-                            history::URLRow* url,
+  bool FixupURLAndGetVisits(history::URLRow* url,
                             history::VisitVector* visits);
 
   // Updates the passed |url_row| based on the values in |specifics|. Fields
