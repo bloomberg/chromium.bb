@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/command_buffer_proxy.h"
 #include "ppapi/c/pp_graphics_3d.h"
-#include "ui/gfx/gl/gpu_preference.h"
+#include "ui/gl/gpu_preference.h"
 
 #ifdef ENABLE_GPU
 

@@ -12,7 +12,7 @@
 #include "ui/compositor/compositor_setup.h"
 #include "ui/compositor/test/compositor_test_support.h"
 #include "ui/gfx/gfx_paths.h"
-#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace aura {
 namespace test {

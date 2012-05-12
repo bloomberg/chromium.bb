@@ -26,7 +26,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/mock_host_resolver.h"
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_switches.h"
 
 using content::GpuFeatureType;
 

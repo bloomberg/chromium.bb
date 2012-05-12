@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "content/common/child_thread.h"
 #include "content/common/gpu/gpu_channel.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_memory_manager.h"
-#include "ui/gfx/gl/gl_share_group.h"
+#include "content/common/gpu/gpu_messages.h"
+#include "ui/gl/gl_share_group.h"
 
 GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
                                      GpuWatchdog* watchdog,

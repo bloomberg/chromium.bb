@@ -12,9 +12,9 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/surface/io_surface_support_mac.h"
 
 #ifdef NDEBUG

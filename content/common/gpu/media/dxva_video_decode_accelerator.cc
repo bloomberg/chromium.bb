@@ -27,8 +27,8 @@
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
-#include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_surface.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_surface.h"
 
 // We only request 5 picture buffers from the client which are used to hold the
 // decoded samples. These buffers are then reused when the client tells us that

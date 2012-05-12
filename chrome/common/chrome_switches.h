@@ -17,7 +17,7 @@ namespace switches {
 
 // -----------------------------------------------------------------------------
 // Can't find the switch you are looking for? Try looking in
-// ui/gfx/gl/gl_switches.cc or base/base_switches.cc or
+// ui/gl/gl_switches.cc or base/base_switches.cc or
 // content/public/common/content_switches.cc or media/base/media_switches.cc
 // instead.
 // -----------------------------------------------------------------------------

@@ -28,8 +28,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_switches.h"
 
 namespace {
 

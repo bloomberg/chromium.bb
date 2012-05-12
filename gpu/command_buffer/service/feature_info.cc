@@ -8,8 +8,8 @@
 
 #include "base/string_number_conversions.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
 #if defined(OS_MACOSX)
 #include "ui/surface/io_surface_support_mac.h"
 #endif

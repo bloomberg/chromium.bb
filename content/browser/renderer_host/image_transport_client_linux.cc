@@ -14,12 +14,12 @@
 #include "content/browser/renderer_host/image_transport_factory.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
-#include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface_egl.h"
-#include "ui/gfx/gl/gl_surface_glx.h"
-#include "ui/gfx/gl/scoped_make_current.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_glx.h"
+#include "ui/gl/scoped_make_current.h"
 
 namespace {
 

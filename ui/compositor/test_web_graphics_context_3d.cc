@@ -4,8 +4,8 @@
 
 #include "ui/compositor/test_web_graphics_context_3d.h"
 
-#include "ui/gfx/gl/gl_context_stub.h"
-#include "ui/gfx/gl/gl_surface_stub.h"
+#include "ui/gl/gl_context_stub.h"
+#include "ui/gl/gl_surface_stub.h"
 
 namespace ui {
 

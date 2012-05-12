@@ -4,5 +4,5 @@ include_rules = [
   "+third_party/openmax",
   "+third_party/skia",
   "+ui/gfx",
-  "+ui/gfx/gl",
+  "+ui/gl",
 ]

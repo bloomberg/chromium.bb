@@ -8,7 +8,7 @@
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 using ::gfx::MockGLInterface;
 using ::testing::Return;

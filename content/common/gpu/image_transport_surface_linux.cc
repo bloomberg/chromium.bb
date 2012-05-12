@@ -7,10 +7,10 @@
 // This conflicts with the defines in Xlib.h and must come first.
 #include "content/common/gpu/gpu_messages.h"
 
-#include <map>
-#include <vector>
 #include <X11/Xlib.h>
 #include <X11/extensions/Xcomposite.h>
+#include <map>
+#include <vector>
 
 // Note: these must be included before anything that includes gl_bindings.h
 // They're effectively standard library headers.
@@ -19,20 +19,20 @@
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
 
 #include "base/bind.h"
-#include "base/memory/weak_ptr.h"
 #include "base/debug/trace_event.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/texture_image_transport_surface.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface_egl.h"
-#include "ui/gfx/gl/gl_surface_glx.h"
-#include "ui/gfx/gl/gl_surface_osmesa.h"
 #include "ui/gfx/rect.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_glx.h"
+#include "ui/gl/gl_surface_osmesa.h"
 
 namespace {
 

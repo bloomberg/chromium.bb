@@ -16,7 +16,7 @@
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
-        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
+        '<(DEPTH)/ui/gl/gl.gyp:gl',
       ],
       'include_dirs': [
         '<(DEPTH)/skia/config',

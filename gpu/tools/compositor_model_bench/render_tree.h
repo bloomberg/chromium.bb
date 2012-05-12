@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "gpu/tools/compositor_model_bench/shaders.h"
-#include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_implementation.h"
 
 // These are fairly arbitrary values based on how big my actual browser
 // window was.

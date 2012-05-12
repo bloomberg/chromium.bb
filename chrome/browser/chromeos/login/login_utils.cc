@@ -85,7 +85,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
 using content::BrowserThread;

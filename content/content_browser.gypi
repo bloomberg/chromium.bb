@@ -917,7 +917,7 @@
     }],
     ['ui_compositor_image_transport==1', {
       'dependencies': [
-        '../ui/gfx/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl',
       ],
       'link_settings': {
         'libraries': [

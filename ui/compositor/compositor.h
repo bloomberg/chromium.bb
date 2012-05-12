@@ -13,10 +13,10 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 #include "ui/compositor/compositor_export.h"
-#include "ui/gfx/gl/gl_share_group.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
+#include "ui/gl/gl_share_group.h"
 
 class SkBitmap;
 

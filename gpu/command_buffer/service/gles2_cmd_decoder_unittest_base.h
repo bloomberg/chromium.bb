@@ -20,8 +20,8 @@
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/gl/gl_context_stub.h"
-#include "ui/gfx/gl/gl_surface_stub.h"
+#include "ui/gl/gl_context_stub.h"
+#include "ui/gl/gl_surface_stub.h"
 
 namespace gpu {
 namespace gles2 {

@@ -35,8 +35,8 @@
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_switches.h"
 
 using content::BrowserThread;
 using content::ChildProcessData;

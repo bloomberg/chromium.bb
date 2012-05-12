@@ -17,7 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/gfx/gl/gpu_preference.h"
+#include "ui/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_SKIA)

@@ -9,5 +9,6 @@ include_rules = [
   "+../service",
   "+crypto",
   "+ui/gfx",
+  "+ui/gl",
   "+ui/surface",
 ]

@@ -10,7 +10,7 @@
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "ui/gfx/gl/gl_surface.h"
+#include "ui/gl/gl_surface.h"
 
 class GpuChannelManager;
 

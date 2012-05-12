@@ -23,7 +23,7 @@
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
 #endif
-#include "ui/gfx/gl/gpu_preference.h"
+#include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/plugins/npapi/webplugin.h"
 

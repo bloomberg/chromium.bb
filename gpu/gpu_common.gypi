@@ -10,7 +10,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../ui/gfx/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
       ],
@@ -37,7 +37,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../ui/gfx/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'gles2_cmd_helper',
       ],
@@ -124,7 +124,7 @@
         '../testing/gmock.gyp:gmock_main',
         '../testing/gtest.gyp:gtest',
         '../third_party/angle/src/build_angle.gyp:translator_glsl',
-        '../ui/gfx/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'command_buffer_client',
@@ -238,7 +238,7 @@
       'dependencies': [
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../ui/gfx/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl',
       ],
       'include_dirs': [
         '..',

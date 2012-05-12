@@ -44,7 +44,7 @@
         '../gpu.gyp:gles2_implementation',
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../../ui/gfx/gl/gl.gyp:gl',
+        '../../ui/gl/gl.gyp:gl',
         '../../ui/ui.gyp:ui',
       ],
       'sources': [

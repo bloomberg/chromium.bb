@@ -10,9 +10,9 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_fence.h"
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_fence.h"
+#include "ui/gl/gl_switches.h"
 
 using ::base::SharedMemory;
 

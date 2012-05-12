@@ -17,10 +17,10 @@
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
-#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/surface/transport_dib.h"
 
 class GpuChannelManager;

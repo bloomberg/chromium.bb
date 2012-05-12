@@ -6,7 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../skia/skia.gyp:skia',
-    '../ui/gfx/gl/gl.gyp:gl',
+    '../ui/gl/gl.gyp:gl',
   ],
   'sources': [
     'gpu/gpu_dx_diagnostics_win.cc',

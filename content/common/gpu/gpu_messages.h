@@ -20,9 +20,9 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/video/video_decode_accelerator.h"
-#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
 
 #define IPC_MESSAGE_START GpuMsgStart

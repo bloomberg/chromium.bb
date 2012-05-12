@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/gl/gpu_preference.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 // TODO(port): this typedef is obviously incorrect on non-Windows

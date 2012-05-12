@@ -1,13 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <EGL/egl.h>
 
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface.h"
 #include "base/command_line.h"
 #include "gpu/gles2_conform_support/egl/display.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
 
 namespace {
 void SetCurrentError(EGLint error_code) {

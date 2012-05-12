@@ -16,7 +16,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../crypto/crypto.gyp:crypto',
-    '../ui/gfx/gl/gl.gyp:gl',
+    '../ui/gl/gl.gyp:gl',
     '../ui/surface/surface.gyp:surface',
     '../ui/ui.gyp:ui',
     '../third_party/angle/src/build_angle.gyp:translator_glsl',

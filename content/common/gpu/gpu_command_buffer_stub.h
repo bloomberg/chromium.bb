@@ -24,11 +24,11 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface.h"
-#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
+#include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
 
 #if defined(OS_MACOSX)

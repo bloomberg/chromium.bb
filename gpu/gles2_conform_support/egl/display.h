@@ -10,11 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface.h"
+#include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
 
 namespace gpu {
 class CommandBufferService;

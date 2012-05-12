@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <deque>
-#include <ostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <deque>
+#include <ostream>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -18,11 +18,11 @@
 #include "media/tools/shader_bench/gpu_color_painter.h"
 #include "media/tools/shader_bench/painter.h"
 #include "media/tools/shader_bench/window.h"
-#include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>

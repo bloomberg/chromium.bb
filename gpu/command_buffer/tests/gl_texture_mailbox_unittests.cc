@@ -9,7 +9,7 @@
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/gl/gl_share_group.h"
+#include "ui/gl/gl_share_group.h"
 
 namespace gpu {
 

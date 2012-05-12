@@ -187,7 +187,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libvpx/libvpx.gyp:libvpx',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-        '../ui/gfx/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:database',
@@ -487,7 +487,7 @@
                 '../third_party/angle/src/build_angle.gyp:libEGL',
                 '../third_party/angle/src/build_angle.gyp:libGLESv2',
                 '../media/media.gyp:media',
-                '../ui/gfx/gl/gl.gyp:gl',
+                '../ui/gl/gl.gyp:gl',
                 '../ui/ui.gyp:ui',
               ],
               'conditions': [

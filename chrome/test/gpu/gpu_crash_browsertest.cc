@@ -13,7 +13,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace {
 

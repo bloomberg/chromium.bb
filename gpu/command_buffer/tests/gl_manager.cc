@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/tests/gl_manager.h"
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/tests/gl_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_share_group.h"
-#include "ui/gfx/gl/gl_surface.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_share_group.h"
+#include "ui/gl/gl_surface.h"
 
 namespace gpu {
 

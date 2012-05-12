@@ -10,7 +10,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "ui/gfx/gl/scoped_make_current.h"
+#include "ui/gl/scoped_make_current.h"
 
 using gpu::gles2::ContextGroup;
 using gpu::gles2::TextureManager;

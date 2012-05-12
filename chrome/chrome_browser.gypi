@@ -4362,7 +4362,7 @@
         }],
         ['ui_compositor_image_transport==1', {
           'dependencies': [
-            '../ui/gfx/gl/gl.gyp:gl',
+            '../ui/gl/gl.gyp:gl',
           ],
         }],
         ['use_virtual_keyboard==0', {

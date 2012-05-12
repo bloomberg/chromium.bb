@@ -20,8 +20,8 @@
 #include "content/common/gpu/image_transport_surface.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_switches.h"
 
 #if defined(OS_WIN)
 #include "content/public/common/sandbox_init.h"

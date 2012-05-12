@@ -13,12 +13,12 @@
 #include "build/build_config.h"
 #include "content/common/child_process.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/public/common/content_switches.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_watchdog_thread.h"
+#include "content/public/common/content_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 const int kGpuTimeout = 10000;
 

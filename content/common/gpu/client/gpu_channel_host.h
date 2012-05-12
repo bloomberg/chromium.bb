@@ -17,16 +17,16 @@
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/message_router.h"
 #include "content/public/common/gpu_info.h"
-#include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_channel.h"
-#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gpu_preference.h"
 
 class CommandBufferProxy;
 class CommandBufferProxyImpl;

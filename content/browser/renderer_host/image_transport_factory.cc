@@ -23,9 +23,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_setup.h"
-#include "ui/gfx/gl/scoped_make_current.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/scoped_make_current.h"
 
 using content::BrowserGpuChannelHostFactory;
 using content::GLHelper;

@@ -19,8 +19,8 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
 using content::BrowserThread;

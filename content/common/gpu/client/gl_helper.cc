@@ -17,8 +17,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_bindings.h"
 
 using WebKit::WebGLId;
 using WebKit::WebGraphicsContext3D;

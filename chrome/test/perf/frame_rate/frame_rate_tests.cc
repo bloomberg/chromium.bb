@@ -19,8 +19,8 @@
 #include "chrome/test/ui/javascript_test_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "net/base/net_util.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_switches.h"
 
 namespace {
 

@@ -19,8 +19,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"

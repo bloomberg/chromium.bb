@@ -25,7 +25,7 @@
 #include "base/tracked_objects.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/base/win/hwnd_util.h"
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_switches.h"
 
 namespace {
 

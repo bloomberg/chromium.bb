@@ -10,7 +10,7 @@
 #pragma once
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/gfx/gl/gl_interface.h"
+#include "ui/gl/gl_interface.h"
 
 namespace gfx {
 

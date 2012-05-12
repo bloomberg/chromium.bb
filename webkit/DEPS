@@ -24,6 +24,7 @@ include_rules = [
 
   # For gpu/
   "+ui/gfx",
+  "+ui/gl",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
   "+gpu/command_buffer/service",

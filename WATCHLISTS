@@ -286,7 +286,7 @@
       'filepath': 'ui/compositor/.*'
     },
     'browser_gl': {
-      'filepath': 'ui/gfx/gl/.*'
+      'filepath': 'ui/gl/.*'
     },
     'textinput': {
       'filepath': 'content/browser/renderer_host/gtk_im.*'\

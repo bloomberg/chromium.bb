@@ -17,9 +17,9 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test_web_graphics_context_3d.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 

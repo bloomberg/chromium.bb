@@ -225,7 +225,7 @@
         '../../testing/gtest.gyp:gtest',
         '../compositor/compositor.gyp:compositor_test_support',
         '../compositor/compositor.gyp:compositor',
-        '../gfx/gl/gl.gyp:gl',
+        '../gl/gl.gyp:gl',
         '../ui.gyp:gfx_resources',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',

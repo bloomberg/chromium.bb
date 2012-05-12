@@ -15,7 +15,7 @@
     '../third_party/icu/icu.gyp:icuuc',
     '../third_party/npapi/npapi.gyp:npapi',
     '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-    '../ui/gfx/gl/gl.gyp:gl',
+    '../ui/gl/gl.gyp:gl',
     '../ui/ui.gyp:ui',
     '../webkit/support/webkit_support.gyp:appcache',
     '../webkit/support/webkit_support.gyp:blob',
@@ -392,7 +392,7 @@
     ['OS=="win"', {
       'dependencies': [
         '../media/media.gyp:media',
-        '../ui/gfx/gl/gl.gyp:gl',        
+        '../ui/gl/gl.gyp:gl',
       ],
       'link_settings': {
         'libraries': [

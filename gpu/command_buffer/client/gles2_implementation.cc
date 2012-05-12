@@ -22,7 +22,7 @@
 #endif
 
 #if defined(GPU_CLIENT_DEBUG)
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_switches.h"
 #include "base/command_line.h"
 #endif
 

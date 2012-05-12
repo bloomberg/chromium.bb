@@ -130,7 +130,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
-        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
+        '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',

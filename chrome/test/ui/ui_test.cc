@@ -50,7 +50,7 @@
 #include "content/common/debug_flags.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

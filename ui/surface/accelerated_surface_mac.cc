@@ -6,12 +6,12 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface.h"
-#include "ui/gfx/gl/scoped_make_current.h"
 #include "ui/gfx/rect.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface.h"
+#include "ui/gl/scoped_make_current.h"
 #include "ui/surface/io_surface_support_mac.h"
 
 AcceleratedSurface::AcceleratedSurface()

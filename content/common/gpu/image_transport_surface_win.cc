@@ -15,11 +15,11 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/angle/include/EGL/egl.h"
-#include "ui/gfx/gl/gl_bindings.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface_egl.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_egl.h"
 
 namespace {
 

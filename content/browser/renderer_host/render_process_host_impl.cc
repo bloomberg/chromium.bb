@@ -105,7 +105,7 @@
 #include "media/base/media_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_switches.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/plugins/plugin_switches.h"

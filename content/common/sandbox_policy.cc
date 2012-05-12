@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
@@ -28,7 +28,7 @@
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_nt_util.h"
 #include "sandbox/src/win_utils.h"
-#include "ui/gfx/gl/gl_switches.h"
+#include "ui/gl/gl_switches.h"
 
 static sandbox::BrokerServices* g_broker_services = NULL;
 static sandbox::TargetServices* g_target_services = NULL;

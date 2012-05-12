@@ -9,7 +9,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 
 #include "build/build_config.h"
-#include "ui/gfx/gl/gl_bindings.h"
+#include "ui/gl/gl_bindings.h"
 
 // GLES2 defines not part of Desktop GL
 // Shader Precision-Specified Types

@@ -10,7 +10,7 @@
 #endif
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
-#include "ui/gfx/gl/gl_surface.h"
+#include "ui/gl/gl_surface.h"
 
 #if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"

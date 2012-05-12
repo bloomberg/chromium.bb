@@ -11,9 +11,9 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/browser_thread.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_switches.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_switches.h"
 
 using content::BrowserThread;
 

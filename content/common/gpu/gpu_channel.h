@@ -19,10 +19,10 @@
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_sync_channel.h"
-#include "ui/gfx/gl/gl_share_group.h"
-#include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_share_group.h"
+#include "ui/gl/gpu_preference.h"
 
 class GpuChannelManager;
 struct GPUCreateCommandBufferConfig;

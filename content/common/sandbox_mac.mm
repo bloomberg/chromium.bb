@@ -17,10 +17,10 @@ extern "C" {
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/mac/mac_util.h"
-#include "base/rand_util_c.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/rand_util_c.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -31,8 +31,8 @@ extern "C" {
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "grit/content_resources.h"
+#include "ui/gl/gl_surface.h"
 #include "unicode/uchar.h"
-#include "ui/gfx/gl/gl_surface.h"
 
 namespace {
 

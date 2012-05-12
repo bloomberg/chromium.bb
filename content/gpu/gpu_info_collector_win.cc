@@ -17,8 +17,8 @@
 #include "base/string_util.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface_egl.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface_egl.h"
 
 // ANGLE seems to require that main.h be included before any other ANGLE header.
 #include "libEGL/Display.h"

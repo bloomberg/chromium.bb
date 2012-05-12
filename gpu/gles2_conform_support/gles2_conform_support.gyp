@@ -34,7 +34,7 @@
         '<(DEPTH)/gpu/gpu.gyp:gpu',
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation_client_side_arrays_no_check',
         '<(DEPTH)/gpu/gpu.gyp:command_buffer_service',
-        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
+        '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'include_dirs': ['<(DEPTH)/third_party/khronos'],

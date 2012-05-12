@@ -10,7 +10,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/compositor_test_support.h"
 #include "ui/gfx/gfx_paths.h"
-#include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gl/gl_implementation.h"
 
 CompositorTestSuite::CompositorTestSuite(int argc, char** argv)
     : TestSuite(argc, argv) {}

@@ -996,7 +996,7 @@
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libxml/libxml.gyp:libxml',
         '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
-        '../ui/gfx/gl/gl.gyp:gl',
+        '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_standard',
         '../ui/ui.gyp:ui_test_support',

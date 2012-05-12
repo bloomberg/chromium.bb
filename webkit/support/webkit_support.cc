@@ -45,9 +45,9 @@
 #if defined(TOOLKIT_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
-#include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_surface.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/user_agent.h"
@@ -55,8 +55,8 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
