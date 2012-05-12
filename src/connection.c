@@ -853,7 +853,7 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 			break;
 		case 'f':
 			si = (int32_t) value->uint32;
-			fprintf(stderr, "%f", (double) si / 256.0);
+			fprintf(stderr, "%f", wl_fixed_to_double(si));
 			break;
 		case 's':
 			fprintf(stderr, "\"%s\"", value->string);

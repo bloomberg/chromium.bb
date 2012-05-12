@@ -167,18 +167,32 @@ void *wl_array_add(struct wl_array *array, size_t size);
 void wl_array_copy(struct wl_array *array, struct wl_array *source);
 
 typedef int32_t wl_fixed_t;
-#define WL_FIXED_INVALID_VALUE ~0L
 
-static inline double wl_fixed_to_double(wl_fixed_t f)
+static inline double
+wl_fixed_to_double (wl_fixed_t f)
 {
-	return (double) f / 256.0;
-};
-static inline wl_fixed_t wl_fixed_from_double(double d)
+	union {
+		double d;
+		int64_t i;
+	} u;
+
+	u.i = ((1023LL + 44LL) << 52) + (1LL << 51) + f;
+
+	return u.d - (3LL << 43);
+}
+
+static inline wl_fixed_t
+wl_fixed_from_double(double d)
 {
-	if (d >= (1 << 23))
-		return WL_FIXED_INVALID_VALUE;
-	return (wl_fixed_t) round (d * 256.0);
-};
+	union {
+		double d;
+		int64_t i;
+	} u;
+
+	u.d = d + (3LL << (51 - 8));
+
+	return u.i;
+}
 
 static inline int wl_fixed_to_int(wl_fixed_t f)
 {
@@ -186,7 +200,7 @@ static inline int wl_fixed_to_int(wl_fixed_t f)
 }
 static inline wl_fixed_t wl_fixed_from_int(int i)
 {
-	return wl_fixed_from_double(i);
+	return i * 256;
 }
 
 #ifdef  __cplusplus
