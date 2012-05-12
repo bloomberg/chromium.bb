@@ -94,6 +94,30 @@ create_shm_buffer(struct display *display,
 	return buffer;
 }
 
+static void
+handle_ping(void *data, struct wl_shell_surface *shell_surface,
+							uint32_t serial)
+{
+	wl_shell_surface_pong(shell_surface, serial);
+}
+
+static void
+handle_configure(void *data, struct wl_shell_surface *shell_surface,
+		 uint32_t edges, int32_t width, int32_t height)
+{
+}
+
+static void
+handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
+{
+}
+
+static const struct wl_shell_surface_listener shell_surface_listener = {
+	handle_ping,
+	handle_configure,
+	handle_popup_done
+};
+
 static struct window *
 create_window(struct display *display, int width, int height)
 {
@@ -118,6 +142,10 @@ create_window(struct display *display, int width, int height)
 	window->surface = wl_compositor_create_surface(display->compositor);
 	window->shell_surface = wl_shell_get_shell_surface(display->shell,
 							   window->surface);
+
+	if (window->shell_surface)
+		wl_shell_surface_add_listener(window->shell_surface,
+					      &shell_surface_listener, window);
 
 	wl_shell_surface_set_toplevel(window->shell_surface);
 
