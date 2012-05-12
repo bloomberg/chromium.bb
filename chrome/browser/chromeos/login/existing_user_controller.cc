@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_network_session.h"
@@ -283,7 +284,7 @@ ExistingUserController::~ExistingUserController() {
 //
 
 void ExistingUserController::CreateAccount() {
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Login.CreateAccount", 1, 1, 2, 3);
+  content::RecordAction(content::UserMetricsAction("Login.CreateAccount"));
   guest_mode_url_ =
       google_util::AppendGoogleLocaleParam(GURL(kCreateAccountURL));
   LoginAsGuest();

@@ -822,6 +822,7 @@
 0x384a6609143bbcae	LoadURL
 0xe009e92f3909009c	LoadURLFromKeyword
 0x795fc04747be6afa	LockScreen
+0x733f4fb7447b7323	Login.CreateAccount
 0xb9cc6258dfd41f37	Login_DemoUserLoginSuccess
 0xfb40450c5de92998	Login_Failure
 0x31374d163aec5a5e	Login_GuestLoginSuccess
