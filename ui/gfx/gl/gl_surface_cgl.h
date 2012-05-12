@@ -29,7 +29,7 @@ class GLSurfaceCGL : public GLSurface {
 // associated drawable (pbuffer or fullscreen context) in order to be
 // made current. Everywhere this surface type is used, we allocate an
 // FBO at the user level as the drawable of the associated context.
-class UI_EXPORT NoOpGLSurfaceCGL : public GLSurfaceCGL {
+class GL_EXPORT NoOpGLSurfaceCGL : public GLSurfaceCGL {
  public:
   explicit NoOpGLSurfaceCGL(const gfx::Size& size);
 
