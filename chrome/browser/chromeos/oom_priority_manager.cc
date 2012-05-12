@@ -224,7 +224,7 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
   for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
        browser_iterator != BrowserList::end(); ++browser_iterator) {
     Browser* browser = *browser_iterator;
-    TabStripModel* model = browser->tabstrip_model();
+    TabStripModel* model = browser->tab_strip_model();
     for (int idx = 0; idx < model->count(); idx++) {
       // Can't discard tabs that are already discarded.
       if (model->IsTabDiscarded(idx))
@@ -294,7 +294,7 @@ int OomPriorityManager::GetTabCount() const {
   for (BrowserList::const_iterator browser_it = BrowserList::begin();
       browser_it != BrowserList::end(); ++browser_it) {
     Browser* browser = *browser_it;
-    tab_count += browser->tabstrip_model()->count();
+    tab_count += browser->tab_strip_model()->count();
   }
   return tab_count;
 }
@@ -429,7 +429,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
   for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
        browser_iterator != BrowserList::end(); ++browser_iterator) {
     Browser* browser = *browser_iterator;
-    const TabStripModel* model = browser->tabstrip_model();
+    const TabStripModel* model = browser->tab_strip_model();
     for (int i = 0; i < model->count(); i++) {
       WebContents* contents = model->GetTabContentsAt(i)->web_contents();
       if (!contents->IsCrashed()) {

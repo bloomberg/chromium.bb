@@ -155,7 +155,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   ui::AcceleratorProvider* provider_;  // weak
 
   Browser* browser_;  // weak
-  TabStripModel* tabstrip_model_; // weak
+  TabStripModel* tab_strip_model_; // weak
 
   content::NotificationRegistrar registrar_;
 

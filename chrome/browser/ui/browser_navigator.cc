@@ -50,7 +50,7 @@ namespace {
 // those types of Browser.
 bool WindowCanOpenTabs(Browser* browser) {
   return browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP) ||
-      browser->tabstrip_model()->empty();
+      browser->tab_strip_model()->empty();
 }
 
 // Finds an existing Browser compatible with |profile|, making a new one if no
@@ -198,7 +198,7 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
 // conditions.
 void NormalizeDisposition(browser::NavigateParams* params) {
   // Calculate the WindowOpenDisposition if necessary.
-  if (params->browser->tabstrip_model()->empty() &&
+  if (params->browser->tab_strip_model()->empty() &&
       (params->disposition == NEW_BACKGROUND_TAB ||
        params->disposition == CURRENT_TAB ||
        params->disposition == SINGLETON_TAB)) {
@@ -469,7 +469,7 @@ void Navigate(NavigateParams* params) {
   // If a new window has been created, it needs to be displayed.
   if (params->window_action == browser::NavigateParams::NO_ACTION &&
       source_browser != params->browser &&
-      params->browser->tabstrip_model()->empty()) {
+      params->browser->tab_strip_model()->empty()) {
     params->window_action = browser::NavigateParams::SHOW_WINDOW;
   }
 
@@ -590,7 +590,7 @@ void Navigate(NavigateParams* params) {
       params->tabstrip_add_types |= TabStripModel::ADD_FORCE_INDEX;
 
     // The navigation should insert a new tab into the target Browser.
-    params->browser->tabstrip_model()->AddTabContents(
+    params->browser->tab_strip_model()->AddTabContents(
         params->target_contents,
         params->tabstrip_index,
         params->transition,

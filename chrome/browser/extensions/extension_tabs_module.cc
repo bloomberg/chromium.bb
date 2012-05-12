@@ -624,7 +624,7 @@ bool CreateWindowFunction::RunImpl() {
       tab->extension_tab_helper()->SetExtensionAppIconById(extension_id);
   }
   if (contents) {
-    TabStripModel* target_tab_strip = new_window->tabstrip_model();
+    TabStripModel* target_tab_strip = new_window->tab_strip_model();
     target_tab_strip->InsertTabContentsAt(urls.size(), contents,
                                           TabStripModel::ADD_NONE);
   } else if (urls.empty()) {
@@ -819,7 +819,7 @@ bool GetSelectedTabFunction::RunImpl() {
   if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
-  TabStripModel* tab_strip = browser->tabstrip_model();
+  TabStripModel* tab_strip = browser->tab_strip_model();
   TabContentsWrapper* contents = tab_strip->GetActiveTabContents();
   if (!contents) {
     error_ = keys::kNoSelectedTabError;
@@ -925,7 +925,7 @@ bool QueryTabsFunction::RunImpl() {
         (*browser)->extension_window_controller()->GetWindowTypeText())
       continue;
 
-    TabStripModel* tab_strip = (*browser)->tabstrip_model();
+    TabStripModel* tab_strip = (*browser)->tab_strip_model();
     for (int i = 0; i < tab_strip->count(); ++i) {
       const WebContents* web_contents =
           tab_strip->GetTabContentsAt(i)->web_contents();
@@ -1061,7 +1061,7 @@ bool CreateTabFunction::RunImpl() {
   if (args->HasKey(keys::kIndexKey))
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kIndexKey, &index));
 
-  TabStripModel* tab_strip = browser->tabstrip_model();
+  TabStripModel* tab_strip = browser->tab_strip_model();
 
   index = std::min(std::max(index, -1), tab_strip->count());
 
@@ -1078,7 +1078,7 @@ bool CreateTabFunction::RunImpl() {
 
   // The tab may have been created in a different window, so make sure we look
   // at the right tab strip.
-  tab_strip = params.browser->tabstrip_model();
+  tab_strip = params.browser->tab_strip_model();
   int new_index = tab_strip->GetIndexOfTabContents(params.target_contents);
   if (opener)
     tab_strip->SetOpenerOfTabContentsAt(new_index, opener);
@@ -1137,7 +1137,7 @@ bool HighlightTabsFunction::RunImpl() {
   if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
-  TabStripModel* tabstrip = browser->tabstrip_model();
+  TabStripModel* tabstrip = browser->tab_strip_model();
   TabStripSelectionModel selection;
   int active_index = -1;
 
@@ -1172,7 +1172,7 @@ bool HighlightTabsFunction::RunImpl() {
   }
 
   selection.set_active(active_index);
-  browser->tabstrip_model()->SetSelectionFromModel(selection);
+  browser->tab_strip_model()->SetSelectionFromModel(selection);
   result_.reset(
       browser->extension_window_controller()->CreateWindowValueWithTabs());
   return true;
@@ -1198,7 +1198,7 @@ bool UpdateTabFunction::RunImpl() {
       error_ = keys::kNoCurrentWindowError;
       return false;
     }
-    contents = browser->tabstrip_model()->GetActiveTabContents();
+    contents = browser->tab_strip_model()->GetActiveTabContents();
     if (!contents) {
       error_ = keys::kNoSelectedTabError;
       return false;
@@ -1462,7 +1462,7 @@ bool MoveTabsFunction::RunImpl() {
       // If windowId is different from the current window, move between windows.
       if (ExtensionTabUtil::GetWindowId(target_browser) !=
           ExtensionTabUtil::GetWindowId(source_browser)) {
-        TabStripModel* target_tab_strip = target_browser->tabstrip_model();
+        TabStripModel* target_tab_strip = target_browser->tab_strip_model();
         contents = source_tab_strip->DetachTabContentsAt(tab_index);
         if (!contents) {
           error_ = ExtensionErrorUtils::FormatErrorMessage(
@@ -1799,7 +1799,7 @@ bool DetectTabLanguageFunction::RunImpl() {
     browser = GetCurrentBrowser();
     if (!browser)
       return false;
-    contents = browser->tabstrip_model()->GetActiveTabContents();
+    contents = browser->tab_strip_model()->GetActiveTabContents();
     if (!contents)
       return false;
   }

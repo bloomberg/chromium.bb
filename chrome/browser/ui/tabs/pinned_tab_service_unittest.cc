@@ -48,7 +48,7 @@ class PinnedTabServiceTest : public BrowserWithTestWindowTest {
 TEST_F(PinnedTabServiceTest, Popup) {
   GURL url("http://www.google.com");
   AddTab(browser(), url);
-  browser()->tabstrip_model()->SetTabPinned(0, true);
+  browser()->tab_strip_model()->SetTabPinned(0, true);
 
   // Create a popup.
   scoped_ptr<Browser> popup(new Browser(Browser::TYPE_POPUP, profile()));

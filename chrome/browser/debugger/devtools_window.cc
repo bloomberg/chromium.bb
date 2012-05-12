@@ -288,8 +288,8 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
       inspected_window->UpdateDevTools();
       tab_contents_->web_contents()->GetView()->SetInitialFocus();
       inspected_window->Show();
-      TabStripModel* tabstrip_model = inspected_browser->tabstrip_model();
-      tabstrip_model->ActivateTabAt(inspected_tab_index, true);
+      TabStripModel* tab_strip_model = inspected_browser->tab_strip_model();
+      tab_strip_model->ActivateTabAt(inspected_tab_index, true);
       ScheduleAction(action);
       return;
     } else {
@@ -334,9 +334,9 @@ void DevToolsWindow::RequestSetDocked(bool docked) {
   if (docked) {
     // Detach window from the external devtools browser. It will lead to
     // the browser object's close and delete. Remove observer first.
-    TabStripModel* tabstrip_model = browser_->tabstrip_model();
-    tabstrip_model->DetachTabContentsAt(
-        tabstrip_model->GetIndexOfTabContents(tab_contents_));
+    TabStripModel* tab_strip_model = browser_->tab_strip_model();
+    tab_strip_model->DetachTabContentsAt(
+        tab_strip_model->GetIndexOfTabContents(tab_contents_));
     browser_ = NULL;
   } else {
     // Update inspected window to hide split and reset it.
@@ -379,7 +379,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
 
   browser_ = Browser::CreateWithParams(
       Browser::CreateParams::CreateForDevTools(profile_));
-  browser_->tabstrip_model()->AddTabContents(
+  browser_->tab_strip_model()->AddTabContents(
       tab_contents_, -1, content::PAGE_TRANSITION_START_PAGE,
       TabStripModel::ADD_ACTIVE);
 }

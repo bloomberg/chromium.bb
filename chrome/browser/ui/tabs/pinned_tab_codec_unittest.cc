@@ -39,7 +39,7 @@ TEST_F(PinnedTabCodecTest, PinnedAndNonPinned) {
   // AddTab inserts at index 0, so order after this is url1, url2.
   AddTab(browser(), url1);
 
-  browser()->tabstrip_model()->SetTabPinned(0, true);
+  browser()->tab_strip_model()->SetTabPinned(0, true);
 
   PinnedTabCodec::WritePinnedTabs(profile());
 
@@ -48,7 +48,7 @@ TEST_F(PinnedTabCodecTest, PinnedAndNonPinned) {
   EXPECT_EQ("http://www.google.com/::pinned:", result);
 
   // Update pinned tabs and restore back the old value directly.
-  browser()->tabstrip_model()->SetTabPinned(1, true);
+  browser()->tab_strip_model()->SetTabPinned(1, true);
 
   PinnedTabCodec::WritePinnedTabs(profile());
   result = PinnedTabTestUtils::TabsToString(

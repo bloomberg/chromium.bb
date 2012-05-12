@@ -398,7 +398,7 @@ void WebIntentPickerController::OnSendReturnMessage(
     Browser* browser = Browser::GetBrowserForController(
         &service_tab_->GetController(), &index);
     if (browser) {
-      browser->tabstrip_model()->CloseTabContentsAt(
+      browser->tab_strip_model()->CloseTabContentsAt(
           index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 
       // Activate source tab.
@@ -406,7 +406,7 @@ void WebIntentPickerController::OnSendReturnMessage(
           BrowserList::FindBrowserWithWebContents(wrapper_->web_contents());
       if (source_browser) {
         int source_index =
-            source_browser->tabstrip_model()->GetIndexOfTabContents(wrapper_);
+            source_browser->tab_strip_model()->GetIndexOfTabContents(wrapper_);
         source_browser->ActivateTabAt(source_index, false);
       }
     }

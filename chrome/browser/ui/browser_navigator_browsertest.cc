@@ -683,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
 
   // Navigate() should have inserted a new tab at slot 0 in the tabstrip.
   EXPECT_EQ(browser(), p.browser);
-  EXPECT_EQ(0, browser()->tabstrip_model()->GetIndexOfTabContents(
+  EXPECT_EQ(0, browser()->tab_strip_model()->GetIndexOfTabContents(
       static_cast<const TabContentsWrapper*>(p.target_contents)));
 
   // We should have one window - the browser() provided by the framework.

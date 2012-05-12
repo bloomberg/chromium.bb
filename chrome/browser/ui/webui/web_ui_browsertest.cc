@@ -209,7 +209,7 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
   ui_test_utils::NavigateToURL(browser(), browse_to);
 
   TestTabStripModelObserver tabstrip_observer(
-      browser()->tabstrip_model(), this);
+      browser()->tab_strip_model(), this);
   browser()->Print();
   tabstrip_observer.WaitForObservation(
       base::Bind(&ui_test_utils::RunMessageLoop),

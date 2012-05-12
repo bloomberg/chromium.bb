@@ -496,7 +496,7 @@ enum {
 // from this method.
 - (void)windowWillClose:(NSNotification*)notification {
   DCHECK_EQ([notification object], [self window]);
-  DCHECK(browser_->tabstrip_model()->empty());
+  DCHECK(browser_->tab_strip_model()->empty());
   [savedRegularWindow_ close];
   // We delete statusBubble here because we need to kill off the dependency
   // that its window has on our window before our window goes away.
@@ -552,7 +552,7 @@ enum {
   // have to save the window position before we call orderOut:.
   [self saveWindowPositionIfNeeded];
 
-  if (!browser_->tabstrip_model()->empty()) {
+  if (!browser_->tab_strip_model()->empty()) {
     // Tab strip isn't empty.  Hide the frame (so it appears to have closed
     // immediately) and close all the tabs, allowing the renderers to shut
     // down. When the tab strip is empty we'll be called back again.
@@ -1277,7 +1277,7 @@ enum {
 // put into a different tab strip, such as during a drop on another window.
 - (void)detachTabView:(NSView*)view {
   int index = [tabStripController_ modelIndexForTabView:view];
-  browser_->tabstrip_model()->DetachTabContentsAt(index);
+  browser_->tab_strip_model()->DetachTabContentsAt(index);
 }
 
 - (NSView*)activeTabView {
@@ -1338,17 +1338,17 @@ enum {
   // deleting the tab contents. This needs to come before creating the new
   // Browser because it clears the WebContents' delegate, which gets hooked
   // up during creation of the new window.
-  browser_->tabstrip_model()->DetachTabContentsAt(index);
+  browser_->tab_strip_model()->DetachTabContentsAt(index);
 
   // Create the new window with a single tab in its model, the one being
   // dragged.
   DockInfo dockInfo;
-  Browser* newBrowser = browser_->tabstrip_model()->delegate()->
+  Browser* newBrowser = browser_->tab_strip_model()->delegate()->
       CreateNewStripWithContents(contents, browserRect, dockInfo, false);
 
   // Propagate the tab pinned state of the new tab (which is the only tab in
   // this new window).
-  newBrowser->tabstrip_model()->SetTabPinned(0, isPinned);
+  newBrowser->tab_strip_model()->SetTabPinned(0, isPinned);
 
   // Get the new controller by asking the new window for its delegate.
   BrowserWindowController* controller =
@@ -1488,7 +1488,7 @@ enum {
 }
 
 - (BOOL)hasLiveTabs {
-  return !browser_->tabstrip_model()->empty();
+  return !browser_->tab_strip_model()->empty();
 }
 
 - (NSString*)activeTabTitle {
@@ -2174,7 +2174,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       [TabposeWindow openTabposeFor:[self window]
                                rect:activeArea
                               slomo:slomo
-                      tabStripModel:browser_->tabstrip_model()];
+                      tabStripModel:browser_->tab_strip_model()];
 
   // When the Tabpose window closes, the infobar container needs to be made
   // visible again.

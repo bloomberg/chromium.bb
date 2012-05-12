@@ -54,7 +54,7 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
     attention_request_id_(0),
     activation_requested_by_browser_(false) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithBrowserWindow:this];
-  browser_->tabstrip_model()->AddObserver(this);
+  browser_->tab_strip_model()->AddObserver(this);
   registrar_.Add(
       this,
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
@@ -62,7 +62,7 @@ PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
 }
 
 PanelBrowserWindowCocoa::~PanelBrowserWindowCocoa() {
-  browser_->tabstrip_model()->RemoveObserver(this);
+  browser_->tab_strip_model()->RemoveObserver(this);
 }
 
 bool PanelBrowserWindowCocoa::isClosed() {

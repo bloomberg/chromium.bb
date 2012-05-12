@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
 
   // The inline install should fail, and a store-provided URL should be opened
   // in a new tab.
-  if (browser()->tabstrip_model()->count() == 1) {
+  if (browser()->tab_strip_model()->count() == 1) {
     ui_test_utils::WaitForNewTab(browser());
   }
   WebContents* web_contents = browser()->GetSelectedWebContents();

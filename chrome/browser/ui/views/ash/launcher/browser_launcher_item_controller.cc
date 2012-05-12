@@ -88,7 +88,7 @@ BrowserLauncherItemController* BrowserLauncherItemController::Create(
   }
   BrowserLauncherItemController* icon_updater =
       new BrowserLauncherItemController(
-          browser->window()->GetNativeHandle(), browser->tabstrip_model(),
+          browser->window()->GetNativeHandle(), browser->tab_strip_model(),
           ChromeLauncherController::instance(), type, app_id);
   icon_updater->Init();
   return icon_updater;

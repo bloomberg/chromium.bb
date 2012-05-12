@@ -1407,8 +1407,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
 
   // Swap tab contents over to the panel from the tabbed browser.
   TabContentsWrapper* contents =
-      browser()->tabstrip_model()->DetachTabContentsAt(0);
-  panel_browser->tabstrip_model()->InsertTabContentsAt(
+      browser()->tab_strip_model()->DetachTabContentsAt(0);
+  panel_browser->tab_strip_model()->InsertTabContentsAt(
       0, contents, TabStripModel::ADD_NONE);
   panel_browser->SelectNumberedTab(0);
   EXPECT_EQ(contents, panel_browser->GetSelectedTabContentsWrapper());

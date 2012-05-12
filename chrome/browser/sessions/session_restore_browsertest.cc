@@ -724,7 +724,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ShareProcessesOnRestore) {
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
   // Create a pinned tab.
   ui_test_utils::NavigateToURL(browser(), url1_);
-  browser()->tabstrip_model()->SetTabPinned(0, true);
+  browser()->tab_strip_model()->SetTabPinned(0, true);
   ASSERT_EQ(0, browser()->active_index());
   // Create a nonpinned tab.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -732,7 +732,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_EQ(1, browser()->active_index());
   // Select the pinned tab.
-  browser()->tabstrip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
   ASSERT_EQ(0, browser()->active_index());
   Profile* profile = browser()->profile();
 

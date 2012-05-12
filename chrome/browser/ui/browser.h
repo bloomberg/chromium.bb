@@ -413,8 +413,7 @@ class Browser : public TabStripModelDelegate,
 
   // TabStripModel pass-thrus /////////////////////////////////////////////////
 
-  // TODO(tfarina): Rename this to tab_strip_model().
-  TabStripModel* tabstrip_model() const { return tab_strip_model_.get(); }
+  TabStripModel* tab_strip_model() const { return tab_strip_model_.get(); }
 
   int tab_count() const;
   int active_index() const;

@@ -410,7 +410,7 @@ bool FileManageTabExists(const FilePath& path, TAB_REUSE_MODE mode) {
   for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
        browser_iterator != BrowserList::end(); ++browser_iterator) {
     Browser* browser = *browser_iterator;
-    TabStripModel* tab_strip = browser->tabstrip_model();
+    TabStripModel* tab_strip = browser->tab_strip_model();
     for (int idx = 0; idx < tab_strip->count(); idx++) {
       content::WebContents* web_contents =
           tab_strip->GetTabContentsAt(idx)->web_contents();

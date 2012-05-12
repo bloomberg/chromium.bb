@@ -854,7 +854,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
   ASSERT_TRUE(test_server()->Start());
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(test_server()->GetURL("empty.html"));
-  TabStripModel* model = browser()->tabstrip_model();
+  TabStripModel* model = browser()->tab_strip_model();
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
 
@@ -1226,7 +1226,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   // Add an pinned app tab.
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(test_server()->GetURL("empty.html"));
-  TabStripModel* model = browser()->tabstrip_model();
+  TabStripModel* model = browser()->tab_strip_model();
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
   const Extension* extension_app = GetExtension();
   ui_test_utils::NavigateToURL(browser(), url);
@@ -1276,7 +1276,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   ASSERT_EQ(3, new_browser->tab_count());
 
   // Make sure the state matches.
-  TabStripModel* new_model = new_browser->tabstrip_model();
+  TabStripModel* new_model = new_browser->tab_strip_model();
   EXPECT_TRUE(new_model->IsAppTab(0));
   EXPECT_FALSE(new_model->IsAppTab(1));
   EXPECT_FALSE(new_model->IsAppTab(2));

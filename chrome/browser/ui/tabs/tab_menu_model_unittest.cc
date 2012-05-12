@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ class TabMenuModelTest : public MenuModelTest,
 
 TEST_F(TabMenuModelTest, Basics) {
   browser()->NewTab();
-  TabMenuModel model(&delegate_, browser()->tabstrip_model(), 0);
+  TabMenuModel model(&delegate_, browser()->tab_strip_model(), 0);
 
   // Verify it has items. The number varies by platform, so we don't check
   // the exact number.

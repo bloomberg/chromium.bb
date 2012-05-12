@@ -320,7 +320,7 @@ BrowserView::BrowserView(Browser* browser)
 #endif
       force_location_bar_focus_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)) {
-  browser_->tabstrip_model()->AddObserver(this);
+  browser_->tab_strip_model()->AddObserver(this);
 }
 
 BrowserView::~BrowserView() {
@@ -330,7 +330,7 @@ BrowserView::~BrowserView() {
   launcher_item_controller_.reset();
 #endif
 
-  browser_->tabstrip_model()->RemoveObserver(this);
+  browser_->tab_strip_model()->RemoveObserver(this);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Stop hung plugin monitoring.
@@ -1336,7 +1336,7 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
                                 TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index) {
-  if (index != browser_->tabstrip_model()->active_index())
+  if (index != browser_->tab_strip_model()->active_index())
     return;
 
   if (contents_->preview_web_contents() == new_contents->web_contents()) {
@@ -1612,7 +1612,7 @@ bool BrowserView::CanClose() {
   if (!browser_->ShouldCloseWindow())
     return false;
 
-  if (!browser_->tabstrip_model()->empty()) {
+  if (!browser_->tab_strip_model()->empty()) {
     // Tab strip isn't empty.  Hide the frame (so it appears to have closed
     // immediately) and close all the tabs, allowing the renderers to shut
     // down. When the tab strip is empty we'll be called back again.
@@ -1788,7 +1788,8 @@ void BrowserView::Init() {
 
   // TabStrip takes ownership of the controller.
   BrowserTabStripController* tabstrip_controller =
-      new BrowserTabStripController(browser_.get(), browser_->tabstrip_model());
+      new BrowserTabStripController(browser_.get(),
+                                    browser_->tab_strip_model());
   tabstrip_ = new TabStrip(tabstrip_controller);
   AddChildView(tabstrip_);
   tabstrip_controller->InitFromModel(tabstrip_);
@@ -2325,7 +2326,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   //             etc not result in sad tab.
   new_contents->web_contents()->DidBecomeSelected();
   if (BrowserList::GetLastActive() == browser_ &&
-      !browser_->tabstrip_model()->closing_all() && GetWidget()->IsVisible()) {
+      !browser_->tab_strip_model()->closing_all() && GetWidget()->IsVisible()) {
     // We only restore focus if our window is visible, to avoid invoking blur
     // handlers when we are eventually shown.
     new_contents->web_contents()->GetView()->RestoreFocus();

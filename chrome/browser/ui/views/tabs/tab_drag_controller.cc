@@ -1667,7 +1667,7 @@ void TabDragController::CompleteDrag() {
         GetModel(source_tabstrip_)->delegate()->CreateNewStripWithContents(
             drag_data_[0].contents, window_bounds, dock_info_,
             widget->IsMaximized());
-    TabStripModel* new_model = new_browser->tabstrip_model();
+    TabStripModel* new_model = new_browser->tab_strip_model();
     new_model->SetTabPinned(
         new_model->GetIndexOfTabContents(drag_data_[0].contents),
         drag_data_[0].pinned);
@@ -1678,7 +1678,7 @@ void TabDragController::CompleteDrag() {
           drag_data_[i].pinned ? TabStripModel::ADD_PINNED :
                                  TabStripModel::ADD_NONE);
     }
-    ResetSelection(new_browser->tabstrip_model());
+    ResetSelection(new_browser->tab_strip_model());
     new_browser->window()->Show();
   }
 

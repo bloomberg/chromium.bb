@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_BrowsersRememberFocus) {
   // Open a new browser window.
   Browser* browser2 = Browser::Create(browser()->profile());
   ASSERT_TRUE(browser2);
-  browser2->tabstrip_model()->delegate()->AddBlankTab(true);
+  browser2->tab_strip_model()->delegate()->AddBlankTab(true);
   browser2->window()->Show();
   ui_test_utils::NavigateToURL(browser2, url);
 
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   // Open a new browser window.
   Browser* browser2 = Browser::Create(browser()->profile());
   ASSERT_TRUE(browser2);
-  browser2->tabstrip_model()->delegate()->AddBlankTab(true);
+  browser2->tab_strip_model()->delegate()->AddBlankTab(true);
   browser2->window()->Show();
 
   Browser* focused_browser = NULL;

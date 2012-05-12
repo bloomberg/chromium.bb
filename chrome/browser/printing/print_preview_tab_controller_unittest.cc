@@ -109,7 +109,7 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
   // The preview tabs are constrained in their respective initiator tabs.
   EXPECT_EQ(2, browser()->tab_count());
 
-  TabStripModel* model = browser()->tabstrip_model();
+  TabStripModel* model = browser()->tab_strip_model();
   ASSERT_TRUE(model);
 
   int tab_1_index = model->GetIndexOfTabContents(tab_contents_1);

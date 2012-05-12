@@ -900,7 +900,7 @@ WebContents* Browser::OpenApplicationTab(Profile* profile,
 
   if (disposition == CURRENT_TAB) {
     WebContents* existing_tab = browser->GetSelectedWebContents();
-    TabStripModel* model = browser->tabstrip_model();
+    TabStripModel* model = browser->tab_strip_model();
     int tab_index = model->GetWrapperIndex(existing_tab);
 
     existing_tab->OpenURL(OpenURLParams(
@@ -1768,7 +1768,7 @@ void Browser::ConvertPopupToTabbedBrowser() {
   TabContentsWrapper* contents = tab_strip_model_->DetachTabContentsAt(
       active_index());
   Browser* browser = Browser::Create(profile_);
-  browser->tabstrip_model()->AppendTabContents(contents, true);
+  browser->tab_strip_model()->AppendTabContents(contents, true);
   browser->window()->Show();
 }
 
@@ -3013,7 +3013,7 @@ Browser* Browser::CreateNewStripWithContents(
   browser->set_show_state(
       maximize ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL);
   browser->InitBrowserWindow();
-  browser->tabstrip_model()->AppendTabContents(detached_contents, true);
+  browser->tab_strip_model()->AppendTabContents(detached_contents, true);
   // Make sure the loading state is updated correctly, otherwise the throbber
   // won't start if the page is loading.
   browser->LoadingStateChanged(detached_contents->web_contents());
@@ -3673,7 +3673,7 @@ void Browser::ConvertContentsToApplication(WebContents* contents) {
       TabContentsWrapper::GetCurrentWrapperForContents(contents);
   if (!wrapper)
     wrapper = new TabContentsWrapper(contents);
-  app_browser->tabstrip_model()->AppendTabContents(wrapper, true);
+  app_browser->tab_strip_model()->AppendTabContents(wrapper, true);
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   contents->GetRenderViewHost()->SyncRendererPrefs();
@@ -5167,7 +5167,7 @@ WebContents* Browser::GetOrCloneTabForDisposition(
     case NEW_WINDOW: {
       current_tab = current_tab->Clone();
       Browser* browser = Browser::Create(profile_);
-      browser->tabstrip_model()->AddTabContents(
+      browser->tab_strip_model()->AddTabContents(
           current_tab, -1, content::PAGE_TRANSITION_LINK,
           TabStripModel::ADD_ACTIVE);
       browser->window()->Show();

@@ -26,7 +26,7 @@ class TabposeWindowTest : public CocoaProfileTest {
     TabContentsWrapper* tab_contents = Browser::TabContentsFactory(
         profile(), site_instance_, MSG_ROUTING_NONE,
         NULL, NULL);
-    browser()->tabstrip_model()->AppendTabContents(
+    browser()->tab_strip_model()->AppendTabContents(
         tab_contents, /*foreground=*/true);
   }
 
@@ -50,7 +50,7 @@ TEST_F(TabposeWindowTest, TestShow) {
       [TabposeWindow openTabposeFor:parent
                                rect:NSMakeRect(10, 20, 250, 160)
                               slomo:NO
-                      tabStripModel:browser()->tabstrip_model()];
+                      tabStripModel:browser()->tab_strip_model()];
 
   // Should release the window.
   [window mouseDown:nil];
@@ -70,10 +70,10 @@ TEST_F(TabposeWindowTest, TestModelObserver) {
       [TabposeWindow openTabposeFor:parent
                                rect:NSMakeRect(10, 20, 250, 160)
                               slomo:NO
-                      tabStripModel:browser()->tabstrip_model()];
+                      tabStripModel:browser()->tab_strip_model()];
 
   // Exercise all the model change events.
-  TabStripModel* model = browser()->tabstrip_model();
+  TabStripModel* model = browser()->tab_strip_model();
   DCHECK_EQ([window thumbnailLayerCount], 3u);
   DCHECK_EQ([window selectedIndex], 2);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class MockWrenchMenuModel : public WrenchMenuModel {
     // seems that the vector of observers is getting hosed somewhere between
     // |-[ToolbarController dealloc]| and ~MockWrenchMenuModel(). This line
     // short-circuits the parent destructor to avoid this crash.
-    tabstrip_model_ = NULL;
+    tab_strip_model_ = NULL;
   }
   MOCK_METHOD1(ExecuteCommand, void(int command_id));
 };

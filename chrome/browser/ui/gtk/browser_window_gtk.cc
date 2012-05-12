@@ -349,7 +349,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
 BrowserWindowGtk::~BrowserWindowGtk() {
   ui::ActiveWindowWatcherX::RemoveObserver(this);
 
-  browser_->tabstrip_model()->RemoveObserver(this);
+  browser_->tab_strip_model()->RemoveObserver(this);
 }
 
 void BrowserWindowGtk::Init() {
@@ -1340,7 +1340,7 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
   new_contents->web_contents()->DidBecomeSelected();
   // TODO(estade): after we manage browser activation, add a check to make sure
   // we are the active browser before calling RestoreFocus().
-  if (!browser_->tabstrip_model()->closing_all()) {
+  if (!browser_->tab_strip_model()->closing_all()) {
     new_contents->web_contents()->GetView()->RestoreFocus();
     if (new_contents->find_tab_helper()->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
@@ -1658,7 +1658,7 @@ bool BrowserWindowGtk::CanClose() const {
   if (!browser_->ShouldCloseWindow())
     return false;
 
-  if (!browser_->tabstrip_model()->empty()) {
+  if (!browser_->tab_strip_model()->empty()) {
     // Tab strip isn't empty.  Hide the window (so it appears to have closed
     // immediately) and close all the tabs, allowing the renderers to shut
     // down. When the tab strip is empty we'll be called back again.
@@ -1818,7 +1818,7 @@ void BrowserWindowGtk::InitWidgets() {
                    G_CALLBACK(OnCustomFrameExposeThunk), this);
   gtk_container_add(GTK_CONTAINER(window_container_), window_vbox_);
 
-  tabstrip_.reset(new TabStripGtk(browser_->tabstrip_model(), this));
+  tabstrip_.reset(new TabStripGtk(browser_->tab_strip_model(), this));
   tabstrip_->Init();
 
   // Build the titlebar (tabstrip + header space + min/max/close buttons).
@@ -1935,7 +1935,7 @@ void BrowserWindowGtk::InitWidgets() {
 
   gtk_container_add(GTK_CONTAINER(window_), window_container_);
   gtk_widget_show(window_container_);
-  browser_->tabstrip_model()->AddObserver(this);
+  browser_->tab_strip_model()->AddObserver(this);
 }
 
 void BrowserWindowGtk::SetBackgroundColor() {

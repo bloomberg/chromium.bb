@@ -164,7 +164,7 @@ void SyncPromoHandler::Observe(int type,
     case chrome::NOTIFICATION_BROWSER_CLOSING: {
       // Make sure we're in the tab strip of the closing window.
       Browser* browser = content::Source<Browser>(source).ptr();
-      if (browser->tabstrip_model()->GetWrapperIndex(
+      if (browser->tab_strip_model()->GetWrapperIndex(
               web_ui()->GetWebContents()) != TabStripModel::kNoTab) {
         RecordUserFlowAction(SYNC_PROMO_CLOSED_WINDOW);
         window_already_closed_ = true;

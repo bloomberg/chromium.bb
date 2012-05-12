@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragInSameWindow) {
   AddTabAndResetBrowser(browser());
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
-  TabStripModel* model = browser()->tabstrip_model();
+  TabStripModel* model = browser()->tab_strip_model();
 
   gfx::Point tab_1_center(GetCenterInScreenCoordinates(tab_strip->tab_at(1)));
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_1_center));
@@ -92,8 +92,8 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragToSeparateWindow) {
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
-  EXPECT_EQ("100 0", IDString(browser2->tabstrip_model()));
-  EXPECT_EQ("1", IDString(browser()->tabstrip_model()));
+  EXPECT_EQ("100 0", IDString(browser2->tab_strip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
 }
 
 // Drags from browser to separate window and releases mouse.
@@ -124,8 +124,8 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DetachToOwnWindow) {
   TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
 
-  EXPECT_EQ("0", IDString(new_browser->tabstrip_model()));
-  EXPECT_EQ("1", IDString(browser()->tabstrip_model()));
+  EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
 }
 
 // Deletes a tab being dragged before the user moved enough to start a drag.
@@ -145,13 +145,13 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteBeforeStartedDragging) {
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  delete browser()->tabstrip_model()->GetTabContentsAt(0);
+  delete browser()->tab_strip_model()->GetTabContentsAt(0);
 
   // Should have canceled dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
 
-  EXPECT_EQ("1", IDString(browser()->tabstrip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
 }
 
 // Deletes a tab being dragged while still attached.
@@ -174,13 +174,13 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteTabWhileAttached) {
   ASSERT_TRUE(TabDragController::IsActive());
 
   // Delete the tab being dragged.
-  delete browser()->tabstrip_model()->GetTabContentsAt(0);
+  delete browser()->tab_strip_model()->GetTabContentsAt(0);
 
   // Should have canceled dragging.
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
 
-  EXPECT_EQ("1", IDString(browser()->tabstrip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
 }
 
 // Deletes a tab being dragged after dragging a tab so that a new window is
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteTabWhileDetached) {
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   TabContentsWrapper* to_delete =
-      browser()->tabstrip_model()->GetTabContentsAt(0);
+      browser()->tab_strip_model()->GetTabContentsAt(0);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteTabWhileDetached) {
   ASSERT_FALSE(tab_strip->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
 
-  EXPECT_EQ("1", IDString(browser()->tabstrip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
 }
 
 namespace {
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteSourceDetached) {
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   TabContentsWrapper* to_delete =
-      browser()->tabstrip_model()->GetTabContentsAt(1);
+      browser()->tab_strip_model()->GetTabContentsAt(1);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteSourceDetached) {
   ASSERT_FALSE(GetTabStripForBrowser(new_browser)->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
 
-  EXPECT_EQ("0", IDString(new_browser->tabstrip_model()));
+  EXPECT_EQ("0", IDString(new_browser->tab_strip_model()));
 }
 
 // Creates two browsers, selects all tabs in first and drags into second.
@@ -267,8 +267,8 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragAllToSeparateWindow) {
   Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
 
-  browser()->tabstrip_model()->AddTabAtToSelection(0);
-  browser()->tabstrip_model()->AddTabAtToSelection(1);
+  browser()->tab_strip_model()->AddTabAtToSelection(0);
+  browser()->tab_strip_model()->AddTabAtToSelection(1);
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragAllToSeparateWindow) {
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::UP));
   ASSERT_FALSE(TabDragController::IsActive());
-  EXPECT_EQ("100 0 1", IDString(browser2->tabstrip_model()));
+  EXPECT_EQ("100 0 1", IDString(browser2->tab_strip_model()));
 }
 
 // Creates two browsers, selects all tabs in first, drags into second, then hits
@@ -313,8 +313,8 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
   Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
 
-  browser()->tabstrip_model()->AddTabAtToSelection(0);
-  browser()->tabstrip_model()->AddTabAtToSelection(1);
+  browser()->tab_strip_model()->AddTabAtToSelection(0);
+  browser()->tab_strip_model()->AddTabAtToSelection(1);
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
@@ -349,6 +349,6 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
   ASSERT_EQ(2u, BrowserList::size());
-  EXPECT_EQ("0 1", IDString(browser()->tabstrip_model()));
-  EXPECT_EQ("100", IDString(browser2->tabstrip_model()));
+  EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
+  EXPECT_EQ("100", IDString(browser2->tab_strip_model()));
 }

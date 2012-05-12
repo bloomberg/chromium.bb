@@ -763,7 +763,7 @@ bool DraggedTabControllerGtk::CompleteDrag() {
             window_bounds,
             dock_info_,
             window->IsMaximized());
-    TabStripModel* new_model = new_browser->tabstrip_model();
+    TabStripModel* new_model = new_browser->tab_strip_model();
     new_model->SetTabPinned(
         new_model->GetIndexOfTabContents(drag_data_->get(0)->contents_),
         drag_data_->get(0)->pinned_);

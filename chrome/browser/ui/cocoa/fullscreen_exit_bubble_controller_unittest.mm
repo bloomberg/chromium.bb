@@ -68,7 +68,7 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
     TabContentsWrapper* tab_contents = Browser::TabContentsFactory(
         profile(), site_instance_, MSG_ROUTING_NONE,
         NULL, NULL);
-    browser()->tabstrip_model()->AppendTabContents(
+    browser()->tab_strip_model()->AppendTabContents(
         tab_contents, /*foreground=*/true);
   }
 

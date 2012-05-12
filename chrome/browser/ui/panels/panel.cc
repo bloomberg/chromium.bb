@@ -59,7 +59,7 @@ void Panel::Initialize(const gfx::Rect& bounds) {
 
 void Panel::OnNativePanelClosed() {
   if (auto_resizable_)
-    native_panel_->GetPanelBrowser()->tabstrip_model()->RemoveObserver(this);
+    native_panel_->GetPanelBrowser()->tab_strip_model()->RemoveObserver(this);
   manager()->OnPanelClosed(this);
   DCHECK(!panel_strip_);
 }
@@ -129,11 +129,11 @@ void Panel::SetAutoResizable(bool resizable) {
   auto_resizable_ = resizable;
   WebContents* web_contents = browser()->GetSelectedWebContents();
   if (auto_resizable_) {
-    browser()->tabstrip_model()->AddObserver(this);
+    browser()->tab_strip_model()->AddObserver(this);
     if (web_contents)
       EnableWebContentsAutoResize(web_contents);
   } else {
-    browser()->tabstrip_model()->RemoveObserver(this);
+    browser()->tab_strip_model()->RemoveObserver(this);
     registrar_.RemoveAll();
 
     if (web_contents) {

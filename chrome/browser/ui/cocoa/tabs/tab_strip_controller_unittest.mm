@@ -88,7 +88,7 @@ class TabStripControllerTest : public CocoaProfileTest {
     [tab_strip_ setNewTabButton:new_tab_button.get()];
 
     delegate_.reset(new TestTabStripModelDelegate());
-    model_ = browser()->tabstrip_model();
+    model_ = browser()->tab_strip_model();
     controller_delegate_.reset([TestTabStripControllerDelegate alloc]);
     controller_.reset([[TabStripController alloc]
                       initWithView:static_cast<TabStripView*>(tab_strip_.get())

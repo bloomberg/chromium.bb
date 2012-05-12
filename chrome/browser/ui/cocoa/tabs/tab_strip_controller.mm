@@ -350,7 +350,7 @@ private:
     tabStripView_.reset([view retain]);
     switchView_ = switchView;
     browser_ = browser;
-    tabStripModel_ = browser_->tabstrip_model();
+    tabStripModel_ = browser_->tab_strip_model();
     hoverTabSelector_.reset(new HoverTabSelector(tabStripModel_));
     delegate_ = delegate;
     bridge_.reset(new TabStripModelObserverBridge(tabStripModel_, self));

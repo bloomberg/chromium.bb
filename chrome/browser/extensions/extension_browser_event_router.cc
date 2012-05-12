@@ -96,8 +96,8 @@ void ExtensionBrowserEventRouter::Init(ExtensionToolbarModel* model) {
 
     // Also catch up our internal bookkeeping of tab entries.
     Browser* browser = *iter;
-    if (browser->tabstrip_model()) {
-      for (int i = 0; i < browser->tabstrip_model()->count(); ++i) {
+    if (browser->tab_strip_model()) {
+      for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
         WebContents* contents =
             browser->GetTabContentsWrapperAt(i)->web_contents();
         int tab_id = ExtensionTabUtil::GetTabId(contents);
@@ -135,7 +135,7 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
   if (!profile_->IsSameProfile(browser->profile()))
     return;
   // Start listening to TabStripModel events for this browser.
-  browser->tabstrip_model()->AddObserver(this);
+  browser->tab_strip_model()->AddObserver(this);
 
   // If this is a new window, it isn't ready at this point, so we register to be
   // notified when it is. If this is an existing window, this is a no-op that we
@@ -143,7 +143,7 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::Source<const Browser>(browser));
 
-  for (int i = 0; i < browser->tabstrip_model()->count(); ++i) {
+  for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     RegisterForTabNotifications(
         browser->GetTabContentsWrapperAt(i)->web_contents());
   }
@@ -190,7 +190,7 @@ void ExtensionBrowserEventRouter::OnBrowserRemoved(const Browser* browser) {
     return;
 
   // Stop listening to TabStripModel events for this browser.
-  browser->tabstrip_model()->RemoveObserver(this);
+  browser->tab_strip_model()->RemoveObserver(this);
 
   registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::Source<const Browser>(browser));

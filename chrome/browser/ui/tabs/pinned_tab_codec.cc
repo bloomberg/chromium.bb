@@ -28,7 +28,7 @@ static const char kURL[] = "url";
 
 // Returns true if |browser| has any pinned tabs.
 static bool HasPinnedTabs(Browser* browser) {
-  TabStripModel* tab_model = browser->tabstrip_model();
+  TabStripModel* tab_model = browser->tab_strip_model();
   for (int i = 0; i < tab_model->count(); ++i) {
     if (tab_model->IsTabPinned(i))
       return true;
@@ -77,7 +77,7 @@ static void EncodePinnedTab(TabStripModel* model,
 
 // Invokes EncodePinnedTab for each pinned tab in browser.
 static void EncodePinnedTabs(Browser* browser, ListValue* values) {
-  TabStripModel* tab_model = browser->tabstrip_model();
+  TabStripModel* tab_model = browser->tab_strip_model();
   for (int i = 0; i < tab_model->count() && tab_model->IsTabPinned(i); ++i)
     EncodePinnedTab(tab_model, i, values);
 }

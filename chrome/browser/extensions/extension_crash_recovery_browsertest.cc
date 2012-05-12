@@ -458,7 +458,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, MAYBE_CrashAndUnloadAll) {
 // Regression test for issue 71629.
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        ReloadTabsWithBackgroundPage) {
-  TabStripModel* tab_strip = browser()->tabstrip_model();
+  TabStripModel* tab_strip = browser()->tab_strip_model();
   const size_t size_before = GetExtensionService()->extensions()->size();
   const size_t crash_size_before =
       GetExtensionService()->terminated_extensions()->size();

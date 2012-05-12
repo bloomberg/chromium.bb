@@ -719,7 +719,7 @@ enum {
   if (!browser->ShouldCloseWindow())
     return NO;
 
-  if (!browser->tabstrip_model()->empty()) {
+  if (!browser->tab_strip_model()->empty()) {
     // Terminate any playing animations.
     [self terminateBoundsAnimation];
     animateOnBoundsChange_ = NO;
@@ -738,7 +738,7 @@ enum {
 // When windowShouldClose returns YES (or if controller receives direct 'close'
 // signal), window will be unconditionally closed. Clean up.
 - (void)windowWillClose:(NSNotification*)notification {
-  DCHECK(windowShim_->browser()->tabstrip_model()->empty());
+  DCHECK(windowShim_->browser()->tab_strip_model()->empty());
   // Avoid callbacks from a nonblocking animation in progress, if any.
   [self terminateBoundsAnimation];
   windowShim_->DidCloseNativeWindow();

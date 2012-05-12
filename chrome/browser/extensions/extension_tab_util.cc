@@ -35,7 +35,7 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
     const TabStripModel* tab_strip_model) {
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
-    if ((*it)->tabstrip_model() == tab_strip_model)
+    if ((*it)->tab_strip_model() == tab_strip_model)
       return GetWindowId(*it);
   }
   return -1;
@@ -72,7 +72,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents) {
 
 ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser) {
   ListValue* tab_list = new ListValue();
-  TabStripModel* tab_strip = browser->tabstrip_model();
+  TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
     tab_list->Append(ExtensionTabUtil::CreateTabValue(
         tab_strip->GetTabContentsAt(i)->web_contents(), tab_strip, i));
@@ -141,7 +141,7 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
 
   for (BrowserList::const_iterator it = BrowserList::begin();
       it != BrowserList::end(); ++it) {
-    TabStripModel* tab_strip = (*it)->tabstrip_model();
+    TabStripModel* tab_strip = (*it)->tab_strip_model();
     int index = tab_strip->GetWrapperIndex(web_contents);
     if (index != -1) {
       *tab_strip_model = tab_strip;
@@ -184,7 +184,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
     Browser* target_browser = *iter;
     if (target_browser->profile() == profile ||
         target_browser->profile() == incognito_profile) {
-      TabStripModel* target_tab_strip = target_browser->tabstrip_model();
+      TabStripModel* target_tab_strip = target_browser->tab_strip_model();
       for (int i = 0; i < target_tab_strip->count(); ++i) {
         TabContentsWrapper* target_contents =
             target_tab_strip->GetTabContentsAt(i);
