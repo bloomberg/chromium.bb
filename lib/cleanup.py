@@ -35,7 +35,7 @@ class EnforcedCleanupSection(object):
   >>>
   """
   def __init__(self):
-    self._lock = locking.ProcessLock()
+    self._lock = locking.ProcessLock(verbose=False)
     self._forked = False
     self._is_child = False
 
