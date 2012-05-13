@@ -1872,3 +1872,41 @@
    fun:gfx::JPEGCodec::Decode
    fun:history::HistoryBackendTest_DeleteAll_Test::TestBody
 }
+{
+   bug_127954a
+   Heapcheck:Leak
+   fun:::NaClIPCAdapterTest::SetUp
+}
+{
+   bug_127954b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::_Vector_base::_M_allocate
+   fun:std::vector::_M_insert_aux
+   fun:std::vector::push_back
+   fun:IPC::TestSink::OnMessageReceived
+   fun:IPC::TestSink::Send
+   fun:NaClIPCAdapter::SendMessageOnIOThread
+}
+{
+   bug_127954c
+   Heapcheck:Leak
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:base::SupportsWeakPtr::AsWeakPtr
+   fun:ObserverListBase::Iterator::Iterator
+   fun:IPC::TestSink::OnMessageReceived
+   fun:IPC::TestSink::Send
+   fun:NaClIPCAdapter::SendMessageOnIOThread
+}
+{
+   bug_127954d
+   Heapcheck:Leak
+   fun:Pickle::Resize
+   fun:Pickle::Pickle
+   fun:IPC::Message::Message
+   fun:__gnu_cxx::new_allocator::construct
+   fun:std::vector::push_back
+   fun:IPC::TestSink::OnMessageReceived
+   fun:IPC::TestSink::Send
+   fun:NaClIPCAdapter::SendMessageOnIOThread
+}

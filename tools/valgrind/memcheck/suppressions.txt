@@ -5789,6 +5789,20 @@
    fun:_ZN3gfx9JPEGCodec6DecodeEPKhm
    fun:_ZN7history33HistoryBackendTest_DeleteAll_Test8TestBodyEv
 }
+{
+   bug_127953
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9prerender19PrerenderDispatcherC1Ev
+   fun:_ZN6chrome27ChromeContentRendererClient19RenderThreadStartedEv
+   fun:_ZN16RenderThreadImpl4InitEv
+}
+{
+   bug_127954
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12_GLOBAL__N_118NaClIPCAdapterTest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
