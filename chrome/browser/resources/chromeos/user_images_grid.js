@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const Grid = cr.ui.Grid;
-  const GridItem = cr.ui.GridItem;
-  const GridSelectionController = cr.ui.GridSelectionController;
-  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var Grid = cr.ui.Grid;
+  /** @const */ var GridItem = cr.ui.GridItem;
+  /** @const */ var GridSelectionController = cr.ui.GridSelectionController;
+  /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
    * Creates a new user images grid item.

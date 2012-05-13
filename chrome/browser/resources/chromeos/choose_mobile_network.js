@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ cr.define('mobile', function() {
     connect_: function() {
       for (var i in this.networks_) {
         if ($('network' + i).checked) {
-          chrome.send('connect', [ this.networks_[i].networkId ]);
+          chrome.send('connect', [this.networks_[i].networkId]);
           ChooseNetwork.close();
           return;
         }
@@ -79,7 +79,7 @@ cr.define('mobile', function() {
     $('connect').addEventListener('click', function(event) {
       ChooseNetwork.connect();
     });
-    chrome.send('pageReady', []);
+    chrome.send('pageReady');
   };
 
   ChooseNetwork.showNetworks = function(networks) {
@@ -94,7 +94,7 @@ cr.define('mobile', function() {
 
 var ChooseNetwork = mobile.ChooseNetwork;
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
   // TODO(dpolukhin): refactor spinner code&css to be reusable.
   // Setup css canvas 'spinner-circle'
   (function() {
