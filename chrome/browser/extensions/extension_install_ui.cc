@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -422,7 +422,6 @@ void ExtensionInstallUI::OnImageLoaded(const gfx::Image& image,
 // static
 void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
                                             const std::string& app_id) {
-
   if (NewTabUI::ShouldShowApps()) {
     browser::NavigateParams params = browser->GetSingletonTabNavigateParams(
         GURL(chrome::kChromeUINewTabURL));

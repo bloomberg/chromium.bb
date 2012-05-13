@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/wrapped_window_proc.h"
-#include "chrome/browser/simple_message_box.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/wmi.h"
 #include "content/public/common/result_codes.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/pepper_gtalk_message_filter.h"
 
-#include "chrome/browser/simple_message_box.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -14,6 +13,7 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -41,7 +41,6 @@ PepperGtalkMessageFilter::~PepperGtalkMessageFilter() {}
 
 void PepperGtalkMessageFilter::OnTalkGetPermission(uint32 plugin_dispatcher_id,
                                                    PP_Resource resource) {
-
   bool user_response = false;
 #if defined(USE_ASH)
   const string16 title = l10n_util::GetStringUTF16(

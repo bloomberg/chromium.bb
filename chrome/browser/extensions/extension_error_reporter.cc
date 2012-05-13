@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/simple_message_box.h"
+#include "chrome/browser/ui/simple_message_box.h"
 
 ExtensionErrorReporter* ExtensionErrorReporter::instance_ = NULL;
 

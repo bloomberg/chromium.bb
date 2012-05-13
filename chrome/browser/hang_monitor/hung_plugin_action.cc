@@ -8,7 +8,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/version.h"
-#include "chrome/browser/simple_message_box.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/logging_chrome.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
