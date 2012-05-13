@@ -21,9 +21,9 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 
-const int kDefaultMessageWidth = 320;
-
 namespace {
+
+const int kDefaultMessageWidth = 320;
 
 // Paragraph separators are defined in
 // http://www.unicode.org/Public/6.0.0/ucd/extracted/DerivedBidiClass.txt
@@ -96,25 +96,21 @@ namespace views {
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, public:
 
-MessageBoxView::MessageBoxView(int options,
-                               const string16& message,
-                               const string16& default_prompt,
-                               int message_width)
-    : prompt_field_(NULL),
-      icon_(NULL),
-      checkbox_(NULL),
-      message_width_(message_width) {
-  Init(options, message, default_prompt);
+MessageBoxView::InitParams::InitParams(const string16& message)
+    : options(NO_OPTIONS),
+      message(message),
+      message_width(kDefaultMessageWidth) {
 }
 
-MessageBoxView::MessageBoxView(int options,
-                               const string16& message,
-                               const string16& default_prompt)
+MessageBoxView::InitParams::~InitParams() {
+}
+
+MessageBoxView::MessageBoxView(const InitParams& params)
     : prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
-      message_width_(kDefaultMessageWidth) {
-  Init(options, message, default_prompt);
+      message_width_(params.message_width) {
+  Init(params);
 }
 
 MessageBoxView::~MessageBoxView() {}
@@ -194,16 +190,14 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 ///////////////////////////////////////////////////////////////////////////////
 // MessageBoxView, private:
 
-void MessageBoxView::Init(int options,
-                          const string16& message,
-                          const string16& prompt) {
-  if (options & DETECT_DIRECTIONALITY) {
+void MessageBoxView::Init(const InitParams& params) {
+  if (params.options & DETECT_DIRECTIONALITY) {
     std::vector<string16> texts;
-    SplitStringIntoParagraphs(message, &texts);
+    SplitStringIntoParagraphs(params.message, &texts);
     // If the text originates from a web page, its alignment is based on its
     // first character with strong directionality.
     base::i18n::TextDirection message_direction =
-        base::i18n::GetFirstStrongCharacterDirection(message);
+        base::i18n::GetFirstStrongCharacterDirection(params.message);
     Label::Alignment alignment =
         (message_direction == base::i18n::RIGHT_TO_LEFT) ?
         Label::ALIGN_RIGHT : Label::ALIGN_LEFT;
@@ -216,16 +210,16 @@ void MessageBoxView::Init(int options,
       message_labels_.push_back(message_label);
     }
   } else {
-    Label* message_label = new Label(message);
+    Label* message_label = new Label(params.message);
     message_label->SetMultiLine(true);
     message_label->SetAllowCharacterBreak(true);
     message_label->SetHorizontalAlignment(Label::ALIGN_LEFT);
     message_labels_.push_back(message_label);
   }
 
-  if (options & HAS_PROMPT_FIELD) {
+  if (params.options & HAS_PROMPT_FIELD) {
     prompt_field_ = new Textfield;
-    prompt_field_->SetText(prompt);
+    prompt_field_->SetText(params.default_prompt);
   }
 
   ResetLayoutManager();

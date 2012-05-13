@@ -22,9 +22,10 @@ JSModalDialogViews::JSModalDialogViews(JavaScriptAppModalDialog* parent)
   if (parent->javascript_message_type() == ui::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
     options |= views::MessageBoxView::HAS_PROMPT_FIELD;
 
-  message_box_view_ = new views::MessageBoxView(options,
-                                                parent->message_text(),
-                                                parent->default_prompt_text());
+  views::MessageBoxView::InitParams params(parent->message_text());
+  params.options = options;
+  params.default_prompt = parent->default_prompt_text();
+  message_box_view_ = new views::MessageBoxView(params);
   DCHECK(message_box_view_);
 
   message_box_view_->AddAccelerator(

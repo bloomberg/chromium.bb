@@ -37,12 +37,11 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
   const int kProductNameID = IDS_PRODUCT_NAME;
 #endif
   const string16 product_name = l10n_util::GetStringUTF16(kProductNameID);
+  views::MessageBoxView::InitParams params(
+      l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED, product_name));
+  params.message_width = kDialogWidth;
   // Also deleted when the window closes.
-  message_box_view_ = new views::MessageBoxView(
-      views::MessageBoxView::NO_OPTIONS,
-      l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED, product_name),
-      string16(),
-      kDialogWidth);
+  message_box_view_ = new views::MessageBoxView(params);
 }
 
 UpdateRecommendedMessageBox::~UpdateRecommendedMessageBox() {

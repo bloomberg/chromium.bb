@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     TabContentsWrapper* wrapper)
     : delegate_(delegate),
       message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::NO_OPTIONS,
-          delegate->GetMessage(),
-          string16())) {
+          views::MessageBoxView::InitParams(delegate->GetMessage()))) {
   delegate_->set_window(new ConstrainedWindowViews(wrapper, this));
 }
 

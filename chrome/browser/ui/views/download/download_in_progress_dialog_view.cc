@@ -76,7 +76,7 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
       IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
 
   message_box_view_ = new views::MessageBoxView(
-      views::MessageBoxView::NO_OPTIONS, explanation_text, string16());
+      views::MessageBoxView::InitParams(explanation_text));
 }
 
 DownloadInProgressDialogView::~DownloadInProgressDialogView() {}

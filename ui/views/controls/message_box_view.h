@@ -6,7 +6,6 @@
 #define UI_VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/string16.h"
@@ -37,14 +36,17 @@ class VIEWS_EXPORT MessageBoxView : public View {
     HAS_PROMPT_FIELD = 1 << 1,
   };
 
-  MessageBoxView(int options,
-                 const string16& message,
-                 const string16& default_prompt,
-                 int message_width);
+  struct InitParams {
+    explicit InitParams(const string16& message);
+    ~InitParams();
 
-  MessageBoxView(int options,
-                 const string16& message,
-                 const string16& default_prompt);
+    uint16 options;
+    string16 message;
+    string16 default_prompt;
+    int message_width;
+  };
+
+  explicit MessageBoxView(const InitParams& params);
 
   virtual ~MessageBoxView();
 
@@ -84,7 +86,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
  private:
   // Sets up the layout manager and initializes the message labels and prompt
   // field. This should only be called once, from the constructor.
-  void Init(int options, const string16& message, const string16& prompt);
+  void Init(const InitParams& params);
 
   // Sets up the layout manager based on currently initialized views. Should be
   // called when a view is initialized or changed.

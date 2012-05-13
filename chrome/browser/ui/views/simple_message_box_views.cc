@@ -136,7 +136,7 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
       dialog_type_(dialog_type),
       disposition_(DISPOSITION_UNKNOWN),
       message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::NO_OPTIONS, message, string16())) {
+          views::MessageBoxView::InitParams(message))) {
   views::Widget::CreateWindowWithParent(this, parent_window)->Show();
 
   // Add reference to be released in DeleteDelegate().

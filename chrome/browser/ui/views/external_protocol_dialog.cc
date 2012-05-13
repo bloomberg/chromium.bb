@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,11 +147,9 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
 
   message_text += l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_WARNING);
 
-  message_box_view_ = new views::MessageBoxView(
-      views::MessageBoxView::NO_OPTIONS,
-      message_text,
-      string16(),
-      kMessageWidth);
+  views::MessageBoxView::InitParams params(message_text);
+  params.message_width = kMessageWidth;
+  message_box_view_ = new views::MessageBoxView(params);
   message_box_view_->SetCheckBoxLabel(
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
 

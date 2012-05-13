@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,7 @@ MessageBoxExample::~MessageBoxExample() {
 
 void MessageBoxExample::CreateExampleView(View* container) {
   message_box_view_ = new MessageBoxView(
-      views::MessageBoxView::NO_OPTIONS,
-      ASCIIToUTF16("Message Box Message"),
-      ASCIIToUTF16("Default Prompt"));
+      MessageBoxView::InitParams(ASCIIToUTF16("Hello, world!")));
   status_ = new TextButton(this, ASCIIToUTF16("Show Status"));
   toggle_ = new TextButton(this, ASCIIToUTF16("Toggle Checkbox"));
 

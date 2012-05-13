@@ -15,24 +15,21 @@
 FilePath UserDataDirDialog::RunUserDataDirDialog(
     const FilePath& user_data_dir) {
   // When the window closes, it will delete itself.
-  UserDataDirDialog* dlg = new UserDataDirDialog(user_data_dir);
-  MessageLoopForUI::current()->RunWithDispatcher(dlg);
-  return dlg->user_data_dir();
+  UserDataDirDialog* dialog = new UserDataDirDialog(user_data_dir);
+  MessageLoopForUI::current()->RunWithDispatcher(dialog);
+  return dialog->user_data_dir();
 }
 
 UserDataDirDialog::UserDataDirDialog(const FilePath& user_data_dir)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           select_file_dialog_(SelectFileDialog::Create(this))),
       is_blocking_(true) {
-  string16 message_text = l10n_util::GetStringFUTF16(
-      IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY,
-      user_data_dir.LossyDisplayName());
   const int kDialogWidth = 400;
-  message_box_view_ = new views::MessageBoxView(
-      views::MessageBoxView::NO_OPTIONS,
-      message_text,
-      string16(),
-      kDialogWidth);
+  views::MessageBoxView::InitParams params(
+      l10n_util::GetStringFUTF16(IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY,
+                                 user_data_dir.LossyDisplayName()));
+  params.message_width = kDialogWidth;
+  message_box_view_ = new views::MessageBoxView(params);
 
   views::Widget::CreateWindow(this)->Show();
 }
