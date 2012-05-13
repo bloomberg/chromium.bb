@@ -1893,7 +1893,7 @@
    Heapcheck:Leak
    fun:base::internal::WeakReferenceOwner::GetRef
    fun:base::SupportsWeakPtr::AsWeakPtr
-   fun:ObserverListBase::Iterator::Iterator
+   fun:*Iterator
    fun:IPC::TestSink::OnMessageReceived
    fun:IPC::TestSink::Send
    fun:NaClIPCAdapter::SendMessageOnIOThread
@@ -1903,7 +1903,7 @@
    Heapcheck:Leak
    fun:Pickle::Resize
    fun:Pickle::Pickle
-   fun:IPC::Message::Message
+   fun:*Message
    fun:__gnu_cxx::new_allocator::construct
    fun:std::vector::push_back
    fun:IPC::TestSink::OnMessageReceived
