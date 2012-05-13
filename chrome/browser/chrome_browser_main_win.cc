@@ -88,7 +88,8 @@ void WarnAboutMinimumSystemRequirements() {
     const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
     const string16 message =
         l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP);
-    browser::ShowWarningMessageBox(NULL, title, message);
+    browser::ShowMessageBox(NULL, title, message,
+                            browser::MESSAGE_BOX_TYPE_WARNING);
   }
 }
 
@@ -114,7 +115,8 @@ int AskForUninstallConfirmation() {
 void ShowCloseBrowserFirstMessageBox() {
   const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   const string16 message = l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP);
-  browser::ShowWarningMessageBox(NULL, title, message);
+  browser::ShowMessageBox(NULL, title, message,
+                          browser::MESSAGE_BOX_TYPE_WARNING);
 }
 
 int DoUninstallTasks(bool chrome_still_running) {

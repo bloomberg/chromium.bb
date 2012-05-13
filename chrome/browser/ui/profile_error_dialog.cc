@@ -19,9 +19,10 @@ void ShowProfileErrorDialog(int message_id) {
   // Parent the dialog to the current browser. During startup there may be no
   // browser.
   Browser* browser = BrowserList::GetLastActive();
-  browser::ShowWarningMessageBox(
+  browser::ShowMessageBox(
       browser ? browser->window()->GetNativeHandle() : NULL,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      l10n_util::GetStringUTF16(message_id));
+      l10n_util::GetStringUTF16(message_id),
+      browser::MESSAGE_BOX_TYPE_WARNING);
 #endif
 }

@@ -12,14 +12,18 @@
 
 namespace browser {
 
-void ShowWarningMessageBox(gfx::NativeWindow parent,
-                           const string16& title,
-                           const string16& message) {
+void ShowMessageBox(gfx::NativeWindow parent,
+                    const string16& title,
+                    const string16& message,
+                    MessageBoxType type) {
   // Ignore the title; it's the window title on other platforms and ignorable.
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
   [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
   [alert setMessageText:base::SysUTF16ToNSString(message)];
-  [alert setAlertStyle:NSWarningAlertStyle];
+  if (type == MESSAGE_BOX_TYPE_INFORMATION)
+    [alert setAlertStyle:NSInformationalAlertStyle];
+  else
+    [alert setAlertStyle:NSWarningAlertStyle];
   [alert runModal];
 }
 

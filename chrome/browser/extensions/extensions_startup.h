@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,8 +33,6 @@ class ExtensionsStartupUtil : public PackExtensionJob::Client {
   bool UninstallExtension(const CommandLine& cmd_line, Profile* profile);
 
  private:
-  void ShowPackExtensionMessage(const std::wstring& caption,
-                                const std::wstring& message);
   scoped_refptr<PackExtensionJob> pack_job_;
   bool pack_job_succeeded_;
 

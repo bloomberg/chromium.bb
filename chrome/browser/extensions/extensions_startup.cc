@@ -9,11 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_switches.h"
-
-#if defined(OS_WIN)
-#include "ui/base/win/message_box_win.h"
-#endif
 
 ExtensionsStartupUtil::ExtensionsStartupUtil() : pack_job_succeeded_(false) {}
 
@@ -21,31 +18,16 @@ void ExtensionsStartupUtil::OnPackSuccess(
     const FilePath& crx_path,
     const FilePath& output_private_key_path) {
   pack_job_succeeded_ = true;
-  ShowPackExtensionMessage(
-      L"Extension Packaging Success",
-      UTF16ToWideHack(PackExtensionJob::StandardSuccessMessage(
-          crx_path, output_private_key_path)));
+  browser::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Success"),
+      PackExtensionJob::StandardSuccessMessage(crx_path,
+                                               output_private_key_path),
+      browser::MESSAGE_BOX_TYPE_INFORMATION);
 }
 
 void ExtensionsStartupUtil::OnPackFailure(const std::string& error_message,
                                           ExtensionCreator::ErrorType type) {
-  ShowPackExtensionMessage(L"Extension Packaging Error",
-                           UTF8ToWide(error_message));
-}
-
-void ExtensionsStartupUtil::ShowPackExtensionMessage(
-    const std::wstring& caption,
-    const std::wstring& message) {
-#if defined(OS_WIN)
-  ui::MessageBox(NULL, message, caption, MB_OK | MB_SETFOREGROUND);
-#else
-  // Just send caption & text to stdout on mac & linux.
-  std::string out_text = WideToASCII(caption);
-  out_text.append("\n\n");
-  out_text.append(WideToASCII(message));
-  out_text.append("\n");
-  printf("%s", out_text.c_str());
-#endif
+  browser::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Error"),
+      UTF8ToUTF16(error_message), browser::MESSAGE_BOX_TYPE_WARNING);
 }
 
 bool ExtensionsStartupUtil::PackExtension(const CommandLine& cmd_line) {

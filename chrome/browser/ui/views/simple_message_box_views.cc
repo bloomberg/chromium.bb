@@ -28,9 +28,10 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
                               public MessageLoop::Dispatcher,
                               public base::RefCounted<SimpleMessageBoxViews> {
  public:
-  static void ShowWarningMessageBox(gfx::NativeWindow parent_window,
-                                    const string16& title,
-                                    const string16& message);
+  static void ShowMessageBox(gfx::NativeWindow parent_window,
+                             const string16& title,
+                             const string16& message,
+                             browser::MessageBoxType type);
   static bool ShowQuestionMessageBox(gfx::NativeWindow parent_window,
                                      const string16& title,
                                      const string16& message);
@@ -42,6 +43,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   friend class base::RefCounted<SimpleMessageBoxViews>;
 
   enum DialogType {
+    DIALOG_TYPE_INFORMATION,
     DIALOG_TYPE_WARNING,
     DIALOG_TYPE_QUESTION,
   };
@@ -88,13 +90,18 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
 // SimpleMessageBoxViews, public:
 
 // static
-void SimpleMessageBoxViews::ShowWarningMessageBox(
+void SimpleMessageBoxViews::ShowMessageBox(
     gfx::NativeWindow parent_window,
     const string16& title,
-    const string16& message) {
+    const string16& message,
+    browser::MessageBoxType type) {
+  DialogType message_type = DIALOG_TYPE_INFORMATION;
+  if (type == browser::MESSAGE_BOX_TYPE_WARNING)
+    message_type = DIALOG_TYPE_WARNING;
+
   // This is a reference counted object so it is given an initial increment
   // in the constructor with a corresponding decrement in DeleteDelegate().
-  new SimpleMessageBoxViews(parent_window, title, message, DIALOG_TYPE_WARNING);
+  new SimpleMessageBoxViews(parent_window, title, message, message_type);
 }
 
 bool SimpleMessageBoxViews::ShowQuestionMessageBox(
@@ -147,7 +154,8 @@ SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
-  if (dialog_type_ == DIALOG_TYPE_WARNING)
+  if (dialog_type_ == DIALOG_TYPE_INFORMATION ||
+      dialog_type_ == DIALOG_TYPE_WARNING)
     return ui::DIALOG_BUTTON_OK;
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
@@ -206,10 +214,11 @@ bool SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
 
 namespace browser {
 
-void ShowWarningMessageBox(gfx::NativeWindow parent,
-                           const string16& title,
-                           const string16& message) {
-  SimpleMessageBoxViews::ShowWarningMessageBox(parent, title, message);
+void ShowMessageBox(gfx::NativeWindow parent,
+                    const string16& title,
+                    const string16& message,
+                    MessageBoxType type) {
+  SimpleMessageBoxViews::ShowMessageBox(parent, title, message, type);
 }
 
 bool ShowQuestionMessageBox(gfx::NativeWindow parent,

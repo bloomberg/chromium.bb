@@ -11,12 +11,18 @@
 
 namespace browser {
 
-// Shows a warning message box with an OK button. If |parent| is non-null,
+enum MessageBoxType {
+  MESSAGE_BOX_TYPE_INFORMATION,
+  MESSAGE_BOX_TYPE_WARNING,
+};
+
+// Shows a message box with an OK button. If |parent| is non-null,
 // the box will be modal on it. (On Mac, it is always app-modal.) Generally
 // speaking, this function should not be used for much. Infobars are preferred.
-void ShowWarningMessageBox(gfx::NativeWindow parent,
-                           const string16& title,
-                           const string16& message);
+void ShowMessageBox(gfx::NativeWindow parent,
+                    const string16& title,
+                    const string16& message,
+                    MessageBoxType type);
 
 // Shows a question message box with two buttons (Yes/No), with the default
 // button of Yes. If |parent| is non-null, the box will be modal on it. (On Mac,

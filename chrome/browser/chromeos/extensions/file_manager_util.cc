@@ -229,12 +229,13 @@ void OpenNewTab(const GURL& url, Profile* profile) {
 // Shows a warning message box saying that the file could not be opened.
 void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
   Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
-  browser::ShowWarningMessageBox(
+  browser::ShowMessageBox(
       browser->window()->GetNativeHandle(),
       l10n_util::GetStringFUTF16(
           IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
           UTF8ToUTF16(path.BaseName().value())),
-      l10n_util::GetStringUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE));
+      l10n_util::GetStringUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE),
+      browser::MESSAGE_BOX_TYPE_WARNING);
 }
 
 // Called when a file on GData was found. Opens the file found at |file_path|

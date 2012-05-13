@@ -43,12 +43,17 @@ void HandleOnResponseDialog(GtkWidget* widget, int response, void* user_data) {
 
 namespace browser {
 
-void ShowWarningMessageBox(gfx::NativeWindow parent,
-                           const string16& title,
-                           const string16& message) {
+void ShowMessageBox(gfx::NativeWindow parent,
+                    const string16& title,
+                    const string16& message,
+                    MessageBoxType type) {
+  GtkMessageType gtk_message_type = GTK_MESSAGE_INFO;
+  if (type == MESSAGE_BOX_TYPE_WARNING)
+    gtk_message_type = GTK_MESSAGE_WARNING;
+
   GtkWidget* dialog = gtk_message_dialog_new(parent,
                                              GTK_DIALOG_MODAL,
-                                             GTK_MESSAGE_WARNING,
+                                             gtk_message_type,
                                              GTK_BUTTONS_OK,
                                              "%s",
                                              UTF16ToUTF8(message).c_str());
