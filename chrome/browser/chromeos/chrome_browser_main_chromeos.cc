@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/session_manager_observer.h"
@@ -60,7 +61,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -171,7 +171,7 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
       }
     }
 
-    browser::ShowLoginWizard(first_screen, size);
+    chromeos::ShowLoginWizard(first_screen, size);
 
     if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
       chromeos::InitializeKioskModeScreensaver();

@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/common/automation_messages.h"
@@ -64,8 +63,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/view_prop.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/layout/grid_layout.h"
 
 using content::BrowserThread;
 using content::LoadNotificationDetails;

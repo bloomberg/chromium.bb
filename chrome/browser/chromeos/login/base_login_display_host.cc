@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -438,14 +439,7 @@ void BaseLoginDisplayHost::ForceAutoEnrollment() {
     sign_in_controller_->DoAutoEnrollment();
 }
 
-}  // namespace chromeos
-
-////////////////////////////////////////////////////////////////////////////////
-// browser::ShowLoginWizard implementation:
-
-namespace browser {
-
-// Declared in browser_dialogs.h so that others don't need to depend on our .h.
+// Declared in login_wizard.h so that others don't need to depend on our .h.
 // TODO(nkostylev): Split this into a smaller functions.
 void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
@@ -569,4 +563,4 @@ void ShowLoginWizard(const std::string& first_screen_name,
   }
 }
 
-}  // namespace browser
+}  // namespace chromeos

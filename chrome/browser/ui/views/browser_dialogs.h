@@ -74,11 +74,6 @@ void ShowTaskManager();
 // Shows the Task Manager, highlighting the background pages.
 void ShowBackgroundPages();
 
-#if defined(OS_CHROMEOS)
-// Shows the Login Wizard.
-void ShowLoginWizard(const std::string& start_screen, const gfx::Size& size);
-#endif
-
 // Shows a dialog box that allows a search engine to be edited. |template_url|
 // is the search engine being edited. If it is NULL, then the dialog will add a
 // new search engine with the data the user supplies. |delegate| is an object

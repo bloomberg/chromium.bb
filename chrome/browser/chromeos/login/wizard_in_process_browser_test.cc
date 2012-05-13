@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -32,7 +32,7 @@ void WizardInProcessBrowserTest::SetUpOnMainThread() {
   WizardController::SetZeroDelays();
 
   if (!screen_name_.empty()) {
-    browser::ShowLoginWizard(screen_name_.c_str(), gfx::Size(1024, 600));
+    ShowLoginWizard(screen_name_, gfx::Size(1024, 600));
     host_ = BaseLoginDisplayHost::default_host();
   }
 }
