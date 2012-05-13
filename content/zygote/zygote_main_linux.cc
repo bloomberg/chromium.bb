@@ -14,11 +14,8 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/debug/trace_event.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/global_descriptors_posix.h"
 #include "base/hash_tables.h"
 #include "base/linux_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,23 +26,18 @@
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
-#include "content/common/chrome_descriptors.h"
 #include "content/common/font_config_ipc_linux.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/seccomp_sandbox.h"
-#include "content/common/set_process_title.h"
 #include "content/common/unix_domain_socket_posix.h"
-#include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_linux.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
+#include "content/zygote/zygote_linux.h"
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 #include "unicode/timezone.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_switches.h"
 
 #if defined(OS_LINUX)
 #include <sys/epoll.h>
@@ -62,18 +54,14 @@
 
 namespace content {
 
-// http://code.google.com/p/chromium/wiki/LinuxZygote
-
-static const int kBrowserDescriptor = 3;
-static const int kMagicSandboxIPCDescriptor = 5;
-static const int kZygoteIdDescriptor = 7;
-static bool g_suid_sandbox_active = false;
+// See http://code.google.com/p/chromium/wiki/LinuxZygote
 
 static const char kUrandomDevPath[] = "/dev/urandom";
 
-#if defined(SECCOMP_SANDBOX)
-static int g_proc_fd = -1;
-#endif
+// The SUID sandbox sets this environment variable to a file descriptor
+// over which we can signal that we have completed our startup and can be
+// chrooted.
+static const char kSUIDSandboxVar[] = "SBX_D";
 
 #if defined(CHROMIUM_SELINUX)
 static void SELinuxTransitionToTypeOrDie(const char* type) {
@@ -95,473 +83,6 @@ static void SELinuxTransitionToTypeOrDie(const char* type) {
 }
 #endif  // CHROMIUM_SELINUX
 
-// This is the object which implements the zygote. The ZygoteMain function,
-// which is called from ChromeMain, simply constructs one of these objects and
-// runs it.
-class Zygote {
- public:
-  Zygote(int sandbox_flags, ZygoteForkDelegate* helper)
-      : sandbox_flags_(sandbox_flags),
-        helper_(helper),
-        initial_uma_sample_(0),
-        initial_uma_boundary_value_(0) {
-    if (helper_)
-      helper_->InitialUMA(&initial_uma_name_,
-                          &initial_uma_sample_,
-                          &initial_uma_boundary_value_);
-  }
-
-  bool ProcessRequests() {
-    // A SOCK_SEQPACKET socket is installed in fd 3. We get commands from the
-    // browser on it.
-    // A SOCK_DGRAM is installed in fd 5. This is the sandbox IPC channel.
-    // See http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
-
-    // We need to accept SIGCHLD, even though our handler is a no-op because
-    // otherwise we cannot wait on children. (According to POSIX 2001.)
-    struct sigaction action;
-    memset(&action, 0, sizeof(action));
-    action.sa_handler = SIGCHLDHandler;
-    CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
-
-    if (g_suid_sandbox_active) {
-      // Let the ZygoteHost know we are ready to go.
-      // The receiving code is in content/browser/zygote_host_linux.cc.
-      std::vector<int> empty;
-      bool r = UnixDomainSocket::SendMsg(kBrowserDescriptor,
-                                         kZygoteHelloMessage,
-                                         sizeof(kZygoteHelloMessage), empty);
-#if defined(OS_CHROMEOS)
-      LOG_IF(WARNING, !r) << "Sending zygote magic failed";
-      // Exit normally on chromeos because session manager may send SIGTERM
-      // right after the process starts and it may fail to send zygote magic
-      // number to browser process.
-      if (!r)
-        _exit(RESULT_CODE_NORMAL_EXIT);
-#else
-      CHECK(r) << "Sending zygote magic failed";
-#endif
-    }
-
-    for (;;) {
-      // This function call can return multiple times, once per fork().
-      if (HandleRequestFromBrowser(kBrowserDescriptor))
-        return true;
-    }
-  }
-
- private:
-  // See comment below, where sigaction is called.
-  static void SIGCHLDHandler(int signal) { }
-
-  // ---------------------------------------------------------------------------
-  // Requests from the browser...
-
-  // Read and process a request from the browser. Returns true if we are in a
-  // new process and thus need to unwind back into ChromeMain.
-  bool HandleRequestFromBrowser(int fd) {
-    std::vector<int> fds;
-    static const unsigned kMaxMessageLength = 2048;
-    char buf[kMaxMessageLength];
-    const ssize_t len = UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
-
-    if (len == 0 || (len == -1 && errno == ECONNRESET)) {
-      // EOF from the browser. We should die.
-      _exit(0);
-      return false;
-    }
-
-    if (len == -1) {
-      PLOG(ERROR) << "Error reading message from browser";
-      return false;
-    }
-
-    Pickle pickle(buf, len);
-    PickleIterator iter(pickle);
-
-    int kind;
-    if (pickle.ReadInt(&iter, &kind)) {
-      switch (kind) {
-        case kZygoteCommandFork:
-          // This function call can return multiple times, once per fork().
-          return HandleForkRequest(fd, pickle, iter, fds);
-
-        case kZygoteCommandReap:
-          if (!fds.empty())
-            break;
-          HandleReapRequest(fd, pickle, iter);
-          return false;
-        case kZygoteCommandGetTerminationStatus:
-          if (!fds.empty())
-            break;
-          HandleGetTerminationStatus(fd, pickle, iter);
-          return false;
-        case kZygoteCommandGetSandboxStatus:
-          HandleGetSandboxStatus(fd, pickle, iter);
-          return false;
-        default:
-          NOTREACHED();
-          break;
-      }
-    }
-
-    LOG(WARNING) << "Error parsing message from browser";
-    for (std::vector<int>::const_iterator
-         i = fds.begin(); i != fds.end(); ++i)
-      close(*i);
-    return false;
-  }
-
-  void HandleReapRequest(int fd, const Pickle& pickle, PickleIterator iter) {
-    base::ProcessId child;
-    base::ProcessId actual_child;
-
-    if (!pickle.ReadInt(&iter, &child)) {
-      LOG(WARNING) << "Error parsing reap request from browser";
-      return;
-    }
-
-    if (g_suid_sandbox_active) {
-      actual_child = real_pids_to_sandbox_pids[child];
-      if (!actual_child)
-        return;
-      real_pids_to_sandbox_pids.erase(child);
-    } else {
-      actual_child = child;
-    }
-
-    base::EnsureProcessTerminated(actual_child);
-  }
-
-  void HandleGetTerminationStatus(int fd,
-                                  const Pickle& pickle,
-                                  PickleIterator iter) {
-    base::ProcessHandle child;
-
-    if (!pickle.ReadInt(&iter, &child)) {
-      LOG(WARNING) << "Error parsing GetTerminationStatus request "
-                   << "from browser";
-      return;
-    }
-
-    base::TerminationStatus status;
-    int exit_code;
-    if (g_suid_sandbox_active)
-      child = real_pids_to_sandbox_pids[child];
-    if (child) {
-      status = base::GetTerminationStatus(child, &exit_code);
-    } else {
-      // Assume that if we can't find the child in the sandbox, then
-      // it terminated normally.
-      status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
-      exit_code = RESULT_CODE_NORMAL_EXIT;
-    }
-
-    Pickle write_pickle;
-    write_pickle.WriteInt(static_cast<int>(status));
-    write_pickle.WriteInt(exit_code);
-    ssize_t written =
-        HANDLE_EINTR(write(fd, write_pickle.data(), write_pickle.size()));
-    if (written != static_cast<ssize_t>(write_pickle.size()))
-      PLOG(ERROR) << "write";
-  }
-
-  // This is equivalent to fork(), except that, when using the SUID
-  // sandbox, it returns the real PID of the child process as it
-  // appears outside the sandbox, rather than returning the PID inside
-  // the sandbox. Optionally, it fills in uma_name et al with a report
-  // the helper wants to make via UMA_HISTOGRAM_ENUMERATION.
-  int ForkWithRealPid(const std::string& process_type, std::vector<int>& fds,
-                      const std::string& channel_switch,
-                      std::string* uma_name,
-                      int* uma_sample, int* uma_boundary_value) {
-    const bool use_helper = (helper_ && helper_->CanHelp(process_type,
-                                                         uma_name,
-                                                         uma_sample,
-                                                         uma_boundary_value));
-    if (!(use_helper || g_suid_sandbox_active)) {
-      return fork();
-    }
-
-    int dummy_fd;
-    ino_t dummy_inode;
-    int pipe_fds[2] = { -1, -1 };
-    base::ProcessId pid = 0;
-
-    dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
-    if (dummy_fd < 0) {
-      LOG(ERROR) << "Failed to create dummy FD";
-      goto error;
-    }
-    if (!base::FileDescriptorGetInode(&dummy_inode, dummy_fd)) {
-      LOG(ERROR) << "Failed to get inode for dummy FD";
-      goto error;
-    }
-    if (pipe(pipe_fds) != 0) {
-      LOG(ERROR) << "Failed to create pipe";
-      goto error;
-    }
-
-    if (use_helper) {
-      fds.push_back(dummy_fd);
-      fds.push_back(pipe_fds[0]);
-      pid = helper_->Fork(fds);
-    } else {
-      pid = fork();
-    }
-    if (pid < 0) {
-      goto error;
-    } else if (pid == 0) {
-      // In the child process.
-      close(pipe_fds[1]);
-      base::ProcessId real_pid;
-      // Wait until the parent process has discovered our PID.  We
-      // should not fork any child processes (which the seccomp
-      // sandbox does) until then, because that can interfere with the
-      // parent's discovery of our PID.
-      if (!file_util::ReadFromFD(pipe_fds[0],
-                                 reinterpret_cast<char*>(&real_pid),
-                                 sizeof(real_pid))) {
-        LOG(FATAL) << "Failed to synchronise with parent zygote process";
-      }
-      if (real_pid <= 0) {
-        LOG(FATAL) << "Invalid pid from parent zygote";
-      }
-#if defined(OS_LINUX)
-      // Sandboxed processes need to send the global, non-namespaced PID when
-      // setting up an IPC channel to their parent.
-      IPC::Channel::SetGlobalPid(real_pid);
-      // Force the real PID so chrome event data have a PID that corresponds
-      // to system trace event data.
-      base::debug::TraceLog::GetInstance()->SetProcessID(
-          static_cast<int>(real_pid));
-#endif
-      close(pipe_fds[0]);
-      close(dummy_fd);
-      return 0;
-    } else {
-      // In the parent process.
-      close(dummy_fd);
-      dummy_fd = -1;
-      close(pipe_fds[0]);
-      pipe_fds[0] = -1;
-      base::ProcessId real_pid;
-      if (g_suid_sandbox_active) {
-        uint8_t reply_buf[512];
-        Pickle request;
-        request.WriteInt(LinuxSandbox::METHOD_GET_CHILD_WITH_INODE);
-        request.WriteUInt64(dummy_inode);
-
-        const ssize_t r = UnixDomainSocket::SendRecvMsg(
-            kMagicSandboxIPCDescriptor, reply_buf, sizeof(reply_buf), NULL,
-            request);
-        if (r == -1) {
-          LOG(ERROR) << "Failed to get child process's real PID";
-          goto error;
-        }
-
-        Pickle reply(reinterpret_cast<char*>(reply_buf), r);
-        PickleIterator iter(reply);
-        if (!reply.ReadInt(&iter, &real_pid))
-          goto error;
-        if (real_pid <= 0) {
-          // METHOD_GET_CHILD_WITH_INODE failed. Did the child die already?
-          LOG(ERROR) << "METHOD_GET_CHILD_WITH_INODE failed";
-          goto error;
-        }
-        real_pids_to_sandbox_pids[real_pid] = pid;
-      }
-      if (use_helper) {
-        real_pid = pid;
-        if (!helper_->AckChild(pipe_fds[1], channel_switch)) {
-          LOG(ERROR) << "Failed to synchronise with zygote fork helper";
-          goto error;
-        }
-      } else {
-        int written =
-            HANDLE_EINTR(write(pipe_fds[1], &real_pid, sizeof(real_pid)));
-        if (written != sizeof(real_pid)) {
-          LOG(ERROR) << "Failed to synchronise with child process";
-          goto error;
-        }
-      }
-      close(pipe_fds[1]);
-      return real_pid;
-    }
-
-   error:
-    if (pid > 0) {
-      if (waitpid(pid, NULL, WNOHANG) == -1)
-        LOG(ERROR) << "Failed to wait for process";
-    }
-    if (dummy_fd >= 0)
-      close(dummy_fd);
-    if (pipe_fds[0] >= 0)
-      close(pipe_fds[0]);
-    if (pipe_fds[1] >= 0)
-      close(pipe_fds[1]);
-    return -1;
-  }
-
-  // Unpacks process type and arguments from |pickle| and forks a new process.
-  // Returns -1 on error, otherwise returns twice, returning 0 to the child
-  // process and the child process ID to the parent process, like fork().
-  base::ProcessId ReadArgsAndFork(const Pickle& pickle,
-                                  PickleIterator iter,
-                                  std::vector<int>& fds,
-                                  std::string* uma_name,
-                                  int* uma_sample,
-                                  int* uma_boundary_value) {
-    std::vector<std::string> args;
-    int argc = 0;
-    int numfds = 0;
-    base::GlobalDescriptors::Mapping mapping;
-    std::string process_type;
-    std::string channel_id;
-    const std::string channel_id_prefix = std::string("--")
-        + switches::kProcessChannelID + std::string("=");
-
-    if (!pickle.ReadString(&iter, &process_type))
-      return -1;
-    if (!pickle.ReadInt(&iter, &argc))
-      return -1;
-
-    for (int i = 0; i < argc; ++i) {
-      std::string arg;
-      if (!pickle.ReadString(&iter, &arg))
-        return -1;
-      args.push_back(arg);
-      if (arg.compare(0, channel_id_prefix.length(), channel_id_prefix) == 0)
-        channel_id = arg;
-    }
-
-    if (!pickle.ReadInt(&iter, &numfds))
-      return -1;
-    if (numfds != static_cast<int>(fds.size()))
-      return -1;
-
-    for (int i = 0; i < numfds; ++i) {
-      base::GlobalDescriptors::Key key;
-      if (!pickle.ReadUInt32(&iter, &key))
-        return -1;
-      mapping.push_back(std::make_pair(key, fds[i]));
-    }
-
-    mapping.push_back(std::make_pair(
-        static_cast<uint32_t>(kSandboxIPCChannel), kMagicSandboxIPCDescriptor));
-
-    // Returns twice, once per process.
-    base::ProcessId child_pid = ForkWithRealPid(process_type, fds, channel_id,
-                                                uma_name, uma_sample,
-                                                uma_boundary_value);
-    if (!child_pid) {
-      // This is the child process.
-#if defined(SECCOMP_SANDBOX)
-      if (SeccompSandboxEnabled() && g_proc_fd >= 0) {
-        // Try to open /proc/self/maps as the seccomp sandbox needs access to it
-        int proc_self_maps = openat(g_proc_fd, "self/maps", O_RDONLY);
-        if (proc_self_maps >= 0) {
-          SeccompSandboxSetProcSelfMaps(proc_self_maps);
-        } else {
-          PLOG(ERROR) << "openat(/proc/self/maps)";
-        }
-        close(g_proc_fd);
-        g_proc_fd = -1;
-      }
-#endif
-
-      close(kBrowserDescriptor);  // our socket from the browser
-      if (g_suid_sandbox_active)
-        close(kZygoteIdDescriptor);  // another socket from the browser
-      base::GlobalDescriptors::GetInstance()->Reset(mapping);
-
-#if defined(CHROMIUM_SELINUX)
-      SELinuxTransitionToTypeOrDie("chromium_renderer_t");
-#endif
-
-      // Reset the process-wide command line to our new command line.
-      CommandLine::Reset();
-      CommandLine::Init(0, NULL);
-      CommandLine::ForCurrentProcess()->InitFromArgv(args);
-
-      // Update the process title. The argv was already cached by the call to
-      // SetProcessTitleFromCommandLine in ChromeMain, so we can pass NULL here
-      // (we don't have the original argv at this point).
-      SetProcessTitleFromCommandLine(NULL);
-    } else if (child_pid < 0) {
-      LOG(ERROR) << "Zygote could not fork: process_type " << process_type
-          << " numfds " << numfds << " child_pid " << child_pid;
-    }
-    return child_pid;
-  }
-
-  // Handle a 'fork' request from the browser: this means that the browser
-  // wishes to start a new renderer.  Returns true if we are in a new process,
-  // otherwise writes the child_pid back to the browser via |fd|.  Writes a
-  // child_pid of -1 on error.
-  bool HandleForkRequest(int fd, const Pickle& pickle,
-                         PickleIterator iter, std::vector<int>& fds) {
-    std::string uma_name;
-    int uma_sample;
-    int uma_boundary_value;
-    base::ProcessId child_pid = ReadArgsAndFork(pickle, iter, fds,
-                                                &uma_name, &uma_sample,
-                                                &uma_boundary_value);
-    if (child_pid == 0)
-      return true;
-    for (std::vector<int>::const_iterator
-         i = fds.begin(); i != fds.end(); ++i)
-      close(*i);
-    if (uma_name.empty()) {
-      // There is no UMA report from this particular fork.
-      // Use the initial UMA report if any, and clear that record for next time.
-      // Note the swap method here is the efficient way to do this, since
-      // we know uma_name is empty.
-      uma_name.swap(initial_uma_name_);
-      uma_sample = initial_uma_sample_;
-      uma_boundary_value = initial_uma_boundary_value_;
-    }
-    // Must always send reply, as ZygoteHost blocks while waiting for it.
-    Pickle reply_pickle;
-    reply_pickle.WriteInt(child_pid);
-    reply_pickle.WriteString(uma_name);
-    if (!uma_name.empty()) {
-      reply_pickle.WriteInt(uma_sample);
-      reply_pickle.WriteInt(uma_boundary_value);
-    }
-    if (HANDLE_EINTR(write(fd, reply_pickle.data(), reply_pickle.size())) !=
-        static_cast<ssize_t> (reply_pickle.size()))
-      PLOG(ERROR) << "write";
-    return false;
-  }
-
-  bool HandleGetSandboxStatus(int fd,
-                              const Pickle& pickle,
-                              PickleIterator iter) {
-    if (HANDLE_EINTR(write(fd, &sandbox_flags_, sizeof(sandbox_flags_))) !=
-                     sizeof(sandbox_flags_)) {
-      PLOG(ERROR) << "write";
-    }
-
-    return false;
-  }
-
-  // In the SUID sandbox, we try to use a new PID namespace. Thus the PIDs
-  // fork() returns are not the real PIDs, so we need to map the Real PIDS
-  // into the sandbox PID namespace.
-  typedef base::hash_map<base::ProcessHandle, base::ProcessHandle> ProcessMap;
-  ProcessMap real_pids_to_sandbox_pids;
-
-  const int sandbox_flags_;
-  ZygoteForkDelegate* helper_;
-
-  // These might be set by helper_->InitialUMA.  They supply a UMA
-  // enumeration sample we should report on the first fork.
-  std::string initial_uma_name_;
-  int initial_uma_sample_;
-  int initial_uma_boundary_value_;
-};
-
 // With SELinux we can carve out a precise sandbox, so we don't have to play
 // with intercepting libc calls.
 #if !defined(CHROMIUM_SELINUX)
@@ -576,7 +97,8 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
 
   uint8_t reply_buf[512];
   const ssize_t r = UnixDomainSocket::SendRecvMsg(
-      kMagicSandboxIPCDescriptor, reply_buf, sizeof(reply_buf), NULL, request);
+      Zygote::kMagicSandboxIPCDescriptor, reply_buf, sizeof(reply_buf), NULL,
+      request);
   if (r == -1) {
     memset(output, 0, sizeof(struct tm));
     return;
@@ -861,20 +383,20 @@ static void PreSandboxInit() {
 }
 
 #if !defined(CHROMIUM_SELINUX)
-static bool EnterSandbox() {
+// This will set the *using_suid_sandbox variable to true if the SUID sandbox
+// is enabled. This does not necessarily exclude other types of sandboxing.
+static bool EnterSandbox(bool* using_suid_sandbox) {
+  *using_suid_sandbox = false;
+
   PreSandboxInit();
   SkiaFontConfigSetImplementation(
-      new FontConfigIPC(kMagicSandboxIPCDescriptor));
+      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor));
 
-  // The SUID sandbox sets this environment variable to a file descriptor
-  // over which we can signal that we have completed our startup and can be
-  // chrooted.
-  const char* const sandbox_fd_string = getenv("SBX_D");
-
+  const char* const sandbox_fd_string = getenv(kSUIDSandboxVar);
   if (sandbox_fd_string) {
     // Use the SUID sandbox.  This still allows the seccomp sandbox to
     // be enabled by the process later.
-    g_suid_sandbox_active = true;
+    *using_suid_sandbox = true;
 
     char* endptr;
     const long fd_long = strtol(sandbox_fd_string, &endptr, 10);
@@ -937,10 +459,12 @@ static bool EnterSandbox() {
 }
 #else  // CHROMIUM_SELINUX
 
-static bool EnterSandbox() {
+static bool EnterSandbox(bool* using_suid_sandbox) {
+  *using_suid_sandbox = false;
+
   PreSandboxInit();
   SkiaFontConfigSetImplementation(
-      new FontConfigIPC(kMagicSandboxIPCDescriptor));
+      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor));
   return true;
 }
 
@@ -952,13 +476,14 @@ bool ZygoteMain(const MainFunctionParams& params,
   g_am_zygote_or_renderer = true;
 #endif
 
+  int proc_fd_for_seccomp = -1;
 #if defined(SECCOMP_SANDBOX)
   if (SeccompSandboxEnabled()) {
     // The seccomp sandbox needs access to files in /proc, which might be denied
     // after one of the other sandboxes have been started. So, obtain a suitable
     // file handle in advance.
-    g_proc_fd = open("/proc", O_DIRECTORY | O_RDONLY);
-    if (g_proc_fd < 0) {
+    proc_fd_for_seccomp = open("/proc", O_DIRECTORY | O_RDONLY);
+    if (proc_fd_for_seccomp < 0) {
       LOG(ERROR) << "WARNING! Cannot access \"/proc\". Disabling seccomp "
           "sandboxing.";
     }
@@ -967,22 +492,23 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   if (forkdelegate != NULL) {
     VLOG(1) << "ZygoteMain: initializing fork delegate";
-    forkdelegate->Init(getenv("SBX_D") != NULL, // g_suid_sandbox_active,
-                       kBrowserDescriptor,
-                       kMagicSandboxIPCDescriptor);
+    forkdelegate->Init(getenv(kSUIDSandboxVar) != NULL,
+                       Zygote::kBrowserDescriptor,
+                       Zygote::kMagicSandboxIPCDescriptor);
   } else {
     VLOG(1) << "ZygoteMain: fork delegate is NULL";
   }
 
-  // Turn on the SELinux or SUID sandbox
-  if (!EnterSandbox()) {
+  // Turn on the SELinux or SUID sandbox.
+  bool using_suid_sandbox = false;
+  if (!EnterSandbox(&using_suid_sandbox)) {
     LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
                << errno << ")";
     return false;
   }
 
   int sandbox_flags = 0;
-  if (getenv("SBX_D"))
+  if (using_suid_sandbox)
     sandbox_flags |= kSandboxLinuxSUID;
   if (getenv("SBX_PID_NS"))
     sandbox_flags |= kSandboxLinuxPIDNS;
@@ -993,8 +519,8 @@ bool ZygoteMain(const MainFunctionParams& params,
   // The seccomp sandbox will be turned on when the renderers start. But we can
   // already check if sufficient support is available so that we only need to
   // print one error message for the entire browser session.
-  if (g_proc_fd >= 0 && SeccompSandboxEnabled()) {
-    if (!SupportsSeccompSandbox(g_proc_fd)) {
+  if (proc_fd_for_seccomp >= 0 && SeccompSandboxEnabled()) {
+    if (!SupportsSeccompSandbox(proc_fd_for_seccomp)) {
       // There are a good number of users who cannot use the seccomp sandbox
       // (e.g. because their distribution does not enable seccomp mode by
       // default). While we would prefer to deny execution in this case, it
@@ -1009,7 +535,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   }
 #endif  // SECCOMP_SANDBOX
 
-  Zygote zygote(sandbox_flags, forkdelegate);
+  Zygote zygote(sandbox_flags, forkdelegate, proc_fd_for_seccomp);
   // This function call can return multiple times, once per fork().
   return zygote.ProcessRequests();
 }
