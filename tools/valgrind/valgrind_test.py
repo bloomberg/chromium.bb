@@ -201,9 +201,9 @@ class BaseTool(object):
 
     return 0
 
-  def Main(self, args, check_sanity):
+  def Main(self, args, check_sanity, min_runtime_in_seconds):
     """Call this to run through the whole process: Setup, Execute, Analyze"""
-    start = datetime.datetime.now()
+    start_time = datetime.datetime.now()
     retcode = -1
     if self.Setup(args):
       retcode = self.RunTestsAndAnalyze(check_sanity)
@@ -211,16 +211,22 @@ class BaseTool(object):
       self.Cleanup()
     else:
       logging.error("Setup failed")
-    end = datetime.datetime.now()
-    seconds = (end - start).seconds
-    hours = seconds / 3600
-    seconds = seconds % 3600
+    end_time = datetime.datetime.now()
+    runtime_in_seconds = (end_time - start_time).seconds
+    hours = runtime_in_seconds / 3600
+    seconds = runtime_in_seconds % 3600
     minutes = seconds / 60
     seconds = seconds % 60
     logging.info("elapsed time: %02d:%02d:%02d" % (hours, minutes, seconds))
+    if (min_runtime_in_seconds > 0 and
+        runtime_in_seconds < min_runtime_in_seconds):
+      logging.error("Layout tests finished too quickly. "
+                    "It should have taken at least %d seconds. "
+                    "Something went wrong?" % min_runtime_in_seconds)
+      retcode = -1
     return retcode
 
-  def Run(self, args, module):
+  def Run(self, args, module, min_runtime_in_seconds=0):
     MODULES_TO_SANITY_CHECK = ["base"]
 
     # TODO(timurrrr): this is a temporary workaround for http://crbug.com/47844
@@ -228,7 +234,7 @@ class BaseTool(object):
       MODULES_TO_SANITY_CHECK = []
 
     check_sanity = module in MODULES_TO_SANITY_CHECK
-    return self.Main(args, check_sanity)
+    return self.Main(args, check_sanity, min_runtime_in_seconds)
 
 
 class ValgrindTool(BaseTool):
@@ -1092,26 +1098,26 @@ class RaceVerifier(object):
   def ToolName(self):
     return "tsan"
 
-  def Main(self, args, check_sanity):
+  def Main(self, args, check_sanity, min_runtime_in_seconds):
     logging.info("Running a TSan + RaceVerifier test. For more information, " +
                  "see " + self.MORE_INFO_URL)
     cmd1 = self.RV1Factory()
-    ret = cmd1.Main(args, check_sanity)
+    ret = cmd1.Main(args, check_sanity, min_runtime_in_seconds)
     # Verify race reports, if there are any.
     if ret == -1:
       logging.info("Starting pass 2 of 2. Running the same binary in " +
                    "RaceVerifier mode to confirm possible race reports.")
       logging.info("For more information, see " + self.MORE_INFO_URL)
       cmd2 = self.RV2Factory()
-      ret = cmd2.Main(args, check_sanity)
+      ret = cmd2.Main(args, check_sanity, min_runtime_in_seconds)
     else:
       logging.info("No reports, skipping RaceVerifier second pass")
     logging.info("Please see " + self.MORE_INFO_URL + " for more information " +
                  "on RaceVerifier")
     return ret
 
-  def Run(self, args, module):
-   return self.Main(args, False)
+  def Run(self, args, module, min_runtime_in_seconds=0):
+   return self.Main(args, False, min_runtime_in_seconds)
 
 
 class EmbeddedTool(BaseTool):

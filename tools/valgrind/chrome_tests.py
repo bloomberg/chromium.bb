@@ -28,6 +28,7 @@ class BuildDirAmbiguous(Exception): pass
 
 class ChromeTests:
   SLOW_TOOLS = ["memcheck", "tsan", "tsan_rv", "drmemory"]
+  LAYOUT_TESTS_DEFAULT_CHUNK_SIZE = 1500
 
   def __init__(self, options, args, test):
     if ':' in test:
@@ -405,7 +406,16 @@ class ChromeTests:
     # Now run script_cmd with the wrapper in cmd
     cmd.extend(["--"])
     cmd.extend(script_cmd)
-    return tool.Run(cmd, "layout")
+
+    # Layout tests often times fail quickly, but the buildbot remains green.
+    # Detect this situation when running with the default chunk size.
+    if chunk_size == self.LAYOUT_TESTS_DEFAULT_CHUNK_SIZE:
+      min_runtime_in_seconds=120
+    else:
+      min_runtime_in_seconds=0
+    ret = tool.Run(cmd, "layout", min_runtime_in_seconds=min_runtime_in_seconds)
+    return ret
+
 
   def TestLayout(self):
     # A "chunk file" is maintained in the local directory so that each test
@@ -520,7 +530,8 @@ def _main():
                          "instead of /tmp.\nThis can be useful for tool "
                          "developers/maintainers.\nPlease note that the <tool>"
                          ".logs directory will be clobbered on tool startup.")
-  parser.add_option("-n", "--num_tests", default=1500, type="int",
+  parser.add_option("-n", "--num_tests", type="int",
+                    default=ChromeTests.LAYOUT_TESTS_DEFAULT_CHUNK_SIZE,
                     help="for layout tests: # of subtests per run.  0 for all.")
 
   options, args = parser.parse_args()
