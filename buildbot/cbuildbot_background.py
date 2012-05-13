@@ -82,15 +82,29 @@ class BackgroundSteps(multiprocessing.Process):
     """Return True if there are any steps left to run."""
     return len(self._steps) == 0
 
+  def start(self):
+    """Invoke multiprocessing.Process.start after flushing output/err."""
+    sys.stdout.flush()
+    sys.stderr.flush()
+    return multiprocessing.Process.start(self)
+
   def run(self):
     """Run the list of steps."""
 
+    sys.stdout.flush()
+    sys.stderr.flush()
+    orig_stdout, orig_stderr = sys.stdout, sys.stderr
     stdout_fileno = sys.stdout.fileno()
     stderr_fileno = sys.stderr.fileno()
+    orig_stdout_fd, orig_stderr_fd = map(os.dup,
+                                         [stdout_fileno, stderr_fileno])
     for step, output in self._steps:
       # Send all output to a named temporary file.
       os.dup2(output.fileno(), stdout_fileno)
       os.dup2(output.fileno(), stderr_fileno)
+      # Replace std[out|err] with unbuffered file objects
+      sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+      sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
       error = None
       try:
         results_lib.Results.Clear()
@@ -104,6 +118,10 @@ class BackgroundSteps(multiprocessing.Process):
       sys.stdout.flush()
       sys.stderr.flush()
       output.close()
+      sys.stdout, sys.stderr = orig_stdout, orig_stderr
+      os.dup2(orig_stdout_fd, stdout_fileno)
+      os.dup2(orig_stderr_fd, stderr_fileno)
+      map(os.close, [orig_stdout_fd, orig_stderr_fd])
       results = results_lib.Results.Get()
       self._queue.put((error, results))
 

@@ -97,6 +97,7 @@ class BuilderStage(object):
       print '%s %s' % (edge, msg_line)
 
     print border_line
+    sys.stdout.flush()
 
   def _GetPortageEnvVar(self, envvar, board):
     """Get a portage environment variable for the configuration's board.
@@ -242,6 +243,8 @@ class BuilderStage(object):
     result = results_lib.Results.SUCCESS
     description = None
 
+    sys.stdout.flush()
+    sys.stderr.flush()
     self._Begin()
     try:
       self._PerformStage()
@@ -260,3 +263,5 @@ class BuilderStage(object):
       results_lib.Results.Record(self.name, result, description,
                                  time=elapsed_time)
       self._Finish()
+      sys.stdout.flush()
+      sys.stderr.flush()
