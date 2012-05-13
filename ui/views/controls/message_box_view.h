@@ -36,7 +36,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
     HAS_PROMPT_FIELD = 1 << 1,
   };
 
-  struct InitParams {
+  struct VIEWS_EXPORT InitParams {
     explicit InitParams(const string16& message);
     ~InitParams();
 
