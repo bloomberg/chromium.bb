@@ -518,7 +518,7 @@ void LauncherView::PrepareForDrag(const views::MouseEvent& event) {
   // If the item is no longer draggable, bail out.
   if (start_drag_index_ == -1 ||
       !delegate_->IsDraggable(model_->items()[start_drag_index_])) {
-    CancelDrag(NULL);
+    CancelDrag(-1);
     return;
   }
 
@@ -537,7 +537,7 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
   // If the item is no longer draggable, bail out.
   if (current_index == -1 ||
       !delegate_->IsDraggable(model_->items()[current_index])) {
-    CancelDrag(NULL);
+    CancelDrag(-1);
     return;
   }
 
