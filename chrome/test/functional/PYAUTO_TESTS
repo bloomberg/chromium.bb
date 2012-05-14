@@ -96,6 +96,8 @@
       '-autofill.AutofillTest.testMergeAggregatedProfilesWithSameAddress',
       # crbug.com/99475
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
+      # crbug.com/127886
+      '-chromoting_basic.ChromotingBasic.testChromoting',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
       # crbug.com/100593
