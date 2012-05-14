@@ -320,7 +320,13 @@ static void asm_CPUID(uint32_t op, volatile uint32_t reg[4]) {
  *
  * Thus we have two functions: asm_CPUID (for "CPUID functions" without leaves)
  * and asm_CPUIDx (for "CPUID functions" with leaves). If code is compiled using
- * MSVC 2005 then features detected using function 07h will not be available.
+ * MSVC 2005 or MSVC 2008 then features detected using function 07h will not be
+ * available.
+ *
+ * Note: MSVC 2008 is particularly problematic: MSVC 2008 does not support
+ * __cpuidex while MSVC 2008 SP1 does. Unfortunatelly there are no easy way
+ * to distinguish MSVC 2008 SP1 from MSVC 2008 using ifdef's thus we disable
+ * __cpuidex for MSVC 2008 unconditionally.
  */
 static void asm_CPUIDx(uint32_t op, volatile uint32_t reg[4], uint32_t ecx) {
 #if defined(__GNUC__)
@@ -342,7 +348,7 @@ static void asm_CPUIDx(uint32_t op, volatile uint32_t reg[4], uint32_t ecx) {
                    : "cc");
 #elif NACL_WINDOWS
 #ifdef _MSC_VER
-#if _MSC_VER < 1500
+#if _MSC_VER < 1600
   reg[0] = 0;
   reg[1] = 0;
   reg[2] = 0;
