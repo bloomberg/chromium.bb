@@ -352,7 +352,7 @@
     'browser_resources': ['arv@chromium.org'],
     'bubble': ['alicet@chromium.org', 'msw+watch@chromium.org'],
     'content': ['jam@chromium.org', 'joi+watch-content@chromium.org',
-                'darin-cc@chromium.org'],
+                'darin-cc@chromium.org', 'jochen+watch-content@chromium.org'],
     'download': ['rdsmith+dwatch@chromium.org'],
     'history': ['brettw-cc@chromium.org'],
     'history_ui': ['dubroy@chromium.org'],
