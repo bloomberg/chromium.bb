@@ -46,7 +46,7 @@ struct AutocompleteResultView::ClassificationData {
   string16 text;
   const gfx::Font* font;
   SkColor color;
-  int pixel_width;
+  gfx::Size pixel_size;
 };
 
 // Precalculated data used to draw a complete visual run within the match.
@@ -355,7 +355,6 @@ int AutocompleteResultView::DrawString(
     const size_t run_end = current_run->run_start + run_length_int;
     current_run->visual_order = run;
     current_run->is_rtl = !is_url && (run_direction == UBIDI_RTL);
-    current_run->pixel_width = 0;
 
     // Compute classifications for this run.
     for (size_t i = 0; i < classifications.size(); ++i) {
@@ -385,9 +384,12 @@ int AutocompleteResultView::DrawString(
         current_data->color = GetColor(state, DIMMED_TEXT);
       else
         current_data->color = GetColor(state, force_dim ? DIMMED_TEXT : TEXT);
-      current_data->pixel_width =
-          current_data->font->GetStringWidth(current_data->text);
-      current_run->pixel_width += current_data->pixel_width;
+      int width = 0;
+      int height = 0;
+      gfx::Canvas::SizeStringInt(current_data->text, *current_data->font,
+                                 &width, &height, gfx::Canvas::NO_ELLIPSIS);
+      current_data->pixel_size = gfx::Size(width, height);
+      current_run->pixel_width += width;
     }
     DCHECK(!current_run->classifications.empty());
   }
@@ -410,7 +412,7 @@ int AutocompleteResultView::DrawString(
       // This run or one before it needs to be elided.
       for (Classifications::iterator j(i->classifications.begin());
            j != i->classifications.end(); ++j) {
-        if (j->pixel_width > remaining_width) {
+        if (j->pixel_size.width() > remaining_width) {
           // This classification or one before it needs to be elided.  Erase all
           // further classifications and runs so Elide() can simply reverse-
           // iterate over everything to find the specific classification to
@@ -420,7 +422,7 @@ int AutocompleteResultView::DrawString(
           Elide(&runs, remaining_width);
           break;
         }
-        remaining_width -= j->pixel_width;
+        remaining_width -= j->pixel_size.width();
       }
       break;
     }
@@ -441,10 +443,30 @@ int AutocompleteResultView::DrawString(
     }
     for (Classifications::const_iterator j(i->classifications.begin());
          j != i->classifications.end(); ++j) {
-      int left = mirroring_context_->mirrored_left_coord(x, x + j->pixel_width);
-      canvas->DrawStringInt(j->text, *j->font, j->color, left,
-                            y, j->pixel_width, j->font->GetHeight(), flags);
-      x += j->pixel_width;
+      const int left =
+          mirroring_context_->mirrored_left_coord(x, x + j->pixel_size.width());
+      // By passing the same y-coordinate for each run, we vertically align the
+      // tops of successive runs.  This isn't actually what we want; we want to
+      // align the baselines, but Canvas doesn't currently expose text
+      // measurement APIs sufficient to make that happen.  The problem here is
+      // font substitution: if no fonts are substituted, then all runs have the
+      // same font (in bold or normal styles), and thus the same height and same
+      // baseline.  If fonts are substituted within a run, the characters are
+      // baseline-aligned within the run, but using the same top coordinate as
+      // for other runs is only correct if the overall ascent for this run is
+      // the same as for other runs -- that is, if the tallest ascent of all
+      // fonts in the run is equal to the ascent of the normal font.  If this
+      // condition doesn't hold, the baseline for this run will be drawn too
+      // high or too low, depending on whether the run's tallest ascent is
+      // shorter or higher than the normal font's ascent, respectively.
+      //
+      // TODO(asvitkine): Fix this by replacing the SizeStringInt() calls
+      // elsewhere in this file with calls that can calculate actual baselines
+      // even in the face of font fallback. Tracked as: http://crbug.com/128027
+      canvas->DrawStringInt(j->text, *j->font, j->color, left, y,
+                            j->pixel_size.width(), j->pixel_size.height(),
+                            flags);
+      x += j->pixel_size.width();
     }
   }
 
@@ -476,7 +498,7 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
         // We also add this classification's width (sans ellipsis) back to the
         // available width since we want to consider the available space we'll
         // have when we draw this classification.
-        remaining_width += j->pixel_width;
+        remaining_width += j->pixel_size.width();
       }
       first_classification = false;
 
@@ -511,7 +533,11 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
              (prior_classification->font == &normal_font_)))
           j->font = &normal_font_;
 
-        j->pixel_width = j->font->GetStringWidth(elided_text);
+        int width = 0;
+        int height = 0;
+        gfx::Canvas::SizeStringInt(elided_text, *j->font, &width, &height,
+                                   gfx::Canvas::NO_ELLIPSIS);
+        j->pixel_size = gfx::Size(width, height);
 
         // Erase any other classifications that come after the elided one.
         i->classifications.erase(j.base(), i->classifications.end());
