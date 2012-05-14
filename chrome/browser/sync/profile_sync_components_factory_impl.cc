@@ -47,6 +47,7 @@
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -87,7 +88,12 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     : profile_(profile),
       command_line_(command_line),
       extension_system_(
-          ExtensionSystem::Get(profile)) {
+          ExtensionSystemFactory::GetForProfile(profile)),
+      web_data_service_(WebDataServiceFactory::GetForProfile(
+          profile_, Profile::IMPLICIT_ACCESS)) {
+}
+
+ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
@@ -227,14 +233,14 @@ base::WeakPtr<SyncableService> ProfileSyncComponentsFactoryImpl::
       return profile_->GetPrefs()->GetSyncableService()->AsWeakPtr();
     case syncable::AUTOFILL:
     case syncable::AUTOFILL_PROFILE: {
-      WebDataService* wds =
-          profile_->GetWebDataService(Profile::IMPLICIT_ACCESS);
-      if (!wds)
+      if (!web_data_service_.get())
         return base::WeakPtr<SyncableService>();
-      if (type == syncable::AUTOFILL)
-        return wds->GetAutocompleteSyncableService()->AsWeakPtr();
-      else
-        return wds->GetAutofillProfileSyncableService()->AsWeakPtr();
+      if (type == syncable::AUTOFILL) {
+        return web_data_service_->GetAutocompleteSyncableService()->AsWeakPtr();
+      } else {
+        return web_data_service_->
+                   GetAutofillProfileSyncableService()->AsWeakPtr();
+      }
     }
     case syncable::APPS:
     case syncable::EXTENSIONS:

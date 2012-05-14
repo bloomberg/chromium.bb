@@ -47,6 +47,7 @@ class ProfileSyncServiceTest : public testing::Test {
  protected:
   ProfileSyncServiceTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
+        db_thread_(BrowserThread::DB),
         file_thread_(BrowserThread::FILE),
         io_thread_(BrowserThread::IO) {}
 
@@ -144,6 +145,7 @@ class ProfileSyncServiceTest : public testing::Test {
   MessageLoop ui_loop_;
   // Needed by |service_|.
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
   // Needed by DisableAndEnableSyncTemporarily test case.
   content::TestBrowserThread file_thread_;
   // Needed by |service| and |profile_|'s request context.

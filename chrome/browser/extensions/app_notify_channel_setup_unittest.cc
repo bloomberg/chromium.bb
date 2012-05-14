@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -172,6 +173,7 @@ class TestUI : public AppNotifyChannelUI {
 class AppNotifyChannelSetupTest : public testing::Test {
  public:
   AppNotifyChannelSetupTest() : ui_thread_(BrowserThread::UI, &message_loop_),
+                                db_thread_(BrowserThread::DB),
                                 ui_(new TestUI()) {
   }
 
@@ -233,9 +235,24 @@ class AppNotifyChannelSetupTest : public testing::Test {
     delegate_.ExpectWasCalled(expected_code, expected_error);
   }
 
+  virtual void SetUp() OVERRIDE {
+    db_thread_.Start();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Schedule another task on the DB thread to notify us that it's safe to
+    // carry on with the test.
+    base::WaitableEvent done(false, false);
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
+    done.Wait();
+    db_thread_.Stop();
+  }
+
  protected:
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
   TestProfile profile_;
   TestDelegate delegate_;
   scoped_ptr<TestUI> ui_;

@@ -6,13 +6,12 @@
 
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 
 TokenServiceFactory::TokenServiceFactory()
     : ProfileKeyedServiceFactory("TokenService",
                                  ProfileDependencyManager::GetInstance()) {
-  // TODO(rlp): TokenService depends on WebDataService - when this is
-  // converted to the ProfileKeyedService framework, uncomment this dependency.
-  // DependsOn(WebDataServiceFactory::GetInstance());
+  DependsOn(WebDataServiceFactory::GetInstance());
 }
 
 TokenServiceFactory::~TokenServiceFactory() {}

@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_service.h"
@@ -54,6 +55,8 @@ class FakeWebDataService : public WebDataService {
     return is_database_loaded_;
   }
 
+  virtual void ShutdownOnUIThread() OVERRIDE {}
+
  private:
   virtual ~FakeWebDataService() {}
 
@@ -67,6 +70,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
   SyncAutofillDataTypeControllerTest()
       : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB),
         last_start_result_(DataTypeController::OK) {}
 
   virtual ~SyncAutofillDataTypeControllerTest() {}
@@ -81,10 +85,8 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
                 CreateSharedChangeProcessor()).
         WillRepeatedly(Return(change_processor_.get()));
 
-    web_data_service_ = new FakeWebDataService();
-
-    EXPECT_CALL(profile_, GetWebDataService(_)).
-        WillRepeatedly(Return(web_data_service_.get()));
+    WebDataServiceFactory::GetInstance()->SetTestingFactory(
+        &profile_, BuildWebDataService);
 
     autofill_dtc_ =
         new AutofillDataTypeController(&profile_sync_factory_,
@@ -101,20 +103,24 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 
   virtual void TearDown() {
     autofill_dtc_ = NULL;
-    web_data_service_ = NULL;
     change_processor_ = NULL;
+  }
+
+  static scoped_refptr<RefcountedProfileKeyedService>
+      BuildWebDataService(Profile* profile) {
+    return new FakeWebDataService();
   }
 
  protected:
   base::WeakPtrFactory<SyncAutofillDataTypeControllerTest> weak_ptr_factory_;
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread db_thread_;
 
   scoped_refptr<NiceMock<SharedChangeProcessorMock> > change_processor_;
   ProfileSyncComponentsFactoryMock profile_sync_factory_;
   ProfileSyncServiceMock service_;
   ProfileMock profile_;
-  scoped_refptr<FakeWebDataService> web_data_service_;
   scoped_refptr<AutofillDataTypeController> autofill_dtc_;
 
   // Stores arguments of most recent call of OnStartFinished().
@@ -126,7 +132,10 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 // immediately try to start association and fail (due to missing DB
 // thread).
 TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
-  web_data_service_->LoadDatabase();
+  FakeWebDataService* web_db =
+      static_cast<FakeWebDataService*>(WebDataServiceFactory::GetForProfile(
+          &profile_, Profile::EXPLICIT_ACCESS).get());
+  web_db->LoadDatabase();
   autofill_dtc_->Start(
       base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -149,7 +158,10 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
   EXPECT_FALSE(last_start_error_.IsSet());
   EXPECT_EQ(DataTypeController::MODEL_STARTING, autofill_dtc_->state());
 
-  web_data_service_->LoadDatabase();
+  FakeWebDataService* web_db =
+      static_cast<FakeWebDataService*>(WebDataServiceFactory::GetForProfile(
+          &profile_, Profile::EXPLICIT_ACCESS).get());
+  web_db->LoadDatabase();
 
   EXPECT_EQ(DataTypeController::ASSOCIATION_FAILED, last_start_result_);
   EXPECT_TRUE(last_start_error_.IsSet());

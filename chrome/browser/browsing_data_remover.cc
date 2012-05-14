@@ -40,6 +40,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -343,10 +344,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_FORM_DATA) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
-    WebDataService* web_data_service =
-        profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+    scoped_refptr<WebDataService> web_data_service =
+        WebDataServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS);
 
-    if (web_data_service) {
+    if (web_data_service.get()) {
       web_data_service->RemoveFormElementsAddedBetween(delete_begin_,
           delete_end_);
       web_data_service->RemoveAutofillProfilesAndCreditCardsModifiedBetween(

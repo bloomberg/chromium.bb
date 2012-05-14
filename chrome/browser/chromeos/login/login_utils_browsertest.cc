@@ -110,6 +110,7 @@ class LoginUtilsTest : public testing::Test,
         ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
         io_thread_(content::BrowserThread::IO),
+        db_thread_(content::BrowserThread::DB),
         mock_async_method_caller_(NULL),
         connector_(NULL),
         cryptohome_(NULL),
@@ -370,6 +371,7 @@ class LoginUtilsTest : public testing::Test,
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
+  content::TestBrowserThread db_thread_;
   scoped_ptr<IOThread> io_thread_state_;
 
   MockDBusThreadManager mock_dbus_thread_manager_;

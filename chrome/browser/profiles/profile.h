@@ -262,17 +262,6 @@ class Profile : public content::BrowserContext {
   // this profile need to be sure they refcount the returned value.
   virtual history::ShortcutsBackend* GetShortcutsBackend() = 0;
 
-  // Returns the WebDataService for this profile. This is owned by
-  // the Profile. Callers that outlive the life of this profile need to be
-  // sure they refcount the returned value.
-  //
-  // |access| defines what the caller plans to do with the service. See
-  // the ServiceAccessType definition above.
-  virtual WebDataService* GetWebDataService(ServiceAccessType access) = 0;
-
-  // Similar to GetWebDataService(), but won't create the web data service if it
-  // doesn't already exist.
-  virtual WebDataService* GetWebDataServiceWithoutCreating() = 0;
 
   // Retrieves a pointer to the PrefService that manages the preferences
   // for this user profile.  The PrefService is lazily created the first

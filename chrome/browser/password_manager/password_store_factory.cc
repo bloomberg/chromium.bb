@@ -11,6 +11,8 @@
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -63,10 +65,7 @@ PasswordStoreFactory::PasswordStoreFactory()
     : RefcountedProfileKeyedServiceFactory(
         "PasswordStore",
         ProfileDependencyManager::GetInstance()) {
-  // TODO(erg): We must always depend on WebDB; we don't want the dependency
-  // graph to be different based on platform.
-  //
-  // DependsOn(WebDataServiceFactory::GetInstance());
+  DependsOn(WebDataServiceFactory::GetInstance());
 }
 
 PasswordStoreFactory::~PasswordStoreFactory() {}
@@ -108,7 +107,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
 #if defined(OS_WIN)
   ps = new PasswordStoreWin(
       login_db, profile,
-      profile->GetWebDataService(Profile::IMPLICIT_ACCESS));
+      WebDataServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain)) {
     ps = new PasswordStoreMac(new crypto::MockKeychain(), login_db);
