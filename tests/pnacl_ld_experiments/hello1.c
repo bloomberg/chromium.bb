@@ -9,20 +9,24 @@
  * Currently, only x86-32 is tested.
  */
 
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-
-#include <bits/nacl_syscalls.h>
-
-
 /* ====================================================================== */
 #define USE_TLS 1
 #define USE_LIBC 1
 #define CALL_LDSO 1
 #define CALL_SIMPLESO 1
 #define USE_PTHREAD 1
+#define NUM_THREADS 5
+/* ====================================================================== */
+
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
+#include <bits/nacl_syscalls.h>
+#if USE_PTHREAD == 1
+#include <pthread.h>
+#endif
 /* ====================================================================== */
 #define NACL_INSTR_BLOCK_SHIFT         5
 #define NACL_PAGESHIFT                12
@@ -102,6 +106,14 @@ void myprinthex(int n) {
   myhextochar(n, buffer);
   myprint(buffer);
 }
+
+#if USE_LIBC == 0
+void exit(int r) {
+  NACL_SYSCALL(exit)(r);
+  while (1) *(volatile int *) 0;
+}
+#endif
+
 /* ====================================================================== */
 /* stub functions */
 /* ====================================================================== */
@@ -147,6 +159,39 @@ int __pthread_initialize_minimal(size_t tdb_size) {
    return 0;
 }
 
+/* This is usually provided by
+ * src/untrusted/nacl/tls.c
+ */
+size_t __nacl_tls_combined_size(size_t tdb_size) {
+  myprint("STUB:  __nacl_tls_combined_size\n");
+  /* generous size for now to kick the tires */
+  /* switch to using the results from _dl_get_tls_static_info */
+  return 10 * 1024;
+}
+
+static size_t aligned_size(size_t size, size_t alignment) {
+   return (size + alignment - 1) & -alignment;
+ }
+
+/* This is usually provided by
+ * src/untrusted/nacl/tls.c
+ */
+void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
+                                                   size_t tdb_size) {
+  myprint("STUB:  __nacl_tls_data_bss_initialize_from_template\n");
+  /* just point to somewhere in the middle with a generous alignment */
+  int tdb = aligned_size((int) combined_area + 5 * 1024, 1024);
+  myprint("tdb is: ");
+  myprinthex((int) tdb);
+  myprint("\n");
+  void *tp = _dl_allocate_tls((void *) tdb);
+  myprint("tp is: ");
+  myprinthex((int) tp);
+  myprint("\n");
+  return tp;
+}
+
+
 /* ====================================================================== */
 /*
  * __local_lock_acquire, etc.  only work when pthread has been initialized.
@@ -181,7 +226,28 @@ void __local_lock_release_recursive() {
 #endif
 
 /* ====================================================================== */
-#if USE_LIBC == 1
+#if USE_PTHREAD == 1
+pthread_mutex_t my_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void *my_thread(void *arg) {
+
+  pthread_mutex_lock(&my_mutex);
+  myprint("entering thread: ");
+  myprinthex((int)arg);
+  myprint("\n");
+
+  myprint("exiting thread: ");
+  myprinthex((int)arg);
+  myprint("\n");
+  pthread_mutex_unlock(&my_mutex);
+  /* probably overkill */
+  pthread_exit(arg);
+  return arg;
+}
+#endif
+
+/* ====================================================================== */
+#if USE_TLS == 1
 __thread int tdata1 = 0x73537353;
 __thread int tdata2 = 0xfaceface;
 #endif
@@ -192,6 +258,8 @@ int main(int argc, char** argv, char** envp) {
   /* ======================================== */
   /* tls initialization test
    * NOTE: tls access works even without pthread init
+   *
+   * TODO(robertm): add some tls testing to .so's
    */
 #if USE_TLS == 1
   myprinthex(tdata1);
@@ -257,6 +325,39 @@ int main(int argc, char** argv, char** envp) {
   myprint("tls align: ");
   myprinthex(static_tls_align);
   myprint("\n");
+#endif
+
+#if USE_PTHREAD == 1
+  pthread_mutex_lock(&my_mutex);
+  int i;
+  pthread_t tid[NUM_THREADS];
+  for (i = 0; i < NUM_THREADS; ++i) {
+    myprint("starting thread\n");
+    int res = pthread_create(&tid[i], NULL, my_thread, (void*) i);
+    myprint("started thread: ");
+    myprinthex(i);
+    myprint("   res: ");
+    myprinthex(res);
+    myprint("\n");
+  }
+
+  myprint("\n\n");
+  pthread_mutex_unlock(&my_mutex);
+
+
+  for (i = 0; i < NUM_THREADS; ++i) {
+    void *status;
+    int res = pthread_join(tid[i], &status);
+    pthread_mutex_lock(&my_mutex);
+    myprint("joining thread: ");
+    myprinthex(i);
+    myprint("   res: ");
+    myprinthex(res);
+    myprint("   status: ");
+    myprinthex((int) status);
+    myprint("\n");
+    pthread_mutex_unlock(&my_mutex);
+  }
 #endif
 
   myprint("exit\n");

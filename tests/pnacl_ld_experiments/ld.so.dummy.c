@@ -8,10 +8,15 @@
  * These dummy functions document the ld.so interface we are currently using.
  * We do not make any attempt to get the typing right as  this is not modeled
  * by elf anyway.
+ * We compile this into a pso to link against the pexe.
  */
 
 void _dl_debug_state() {
 }
 
 void _dl_get_tls_static_info() {
+}
+
+void *_dl_allocate_tls (void *mem) {
+  return 0;
 }

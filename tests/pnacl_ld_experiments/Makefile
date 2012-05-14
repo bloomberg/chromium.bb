@@ -178,6 +178,8 @@ mylibnacl.a: $(LIBPATH_BITCODE_SDK)/libnacl.a
 	cd /tmp/libnacl; ar xv $^
 	rm /tmp/libnacl/pthread_initialize_minimal.bc
 	rm /tmp/libnacl/pthread_stubs.bc
+	rm /tmp/libnacl/start.bc
+	rm /tmp/libnacl/tls.bc
 	$(PNACL_AR) cr $@ /tmp/libnacl/*
 ######################################################################
 # bookends for dynamic images
