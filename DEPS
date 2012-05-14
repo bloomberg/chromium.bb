@@ -99,7 +99,7 @@ deps = {
     "/trunk/deps/third_party/icu46@135385",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell@129758",
+   "/trunk/deps/third_party/hunspell@132738",
 
   "src/third_party/hunspell_dictionaries":
     "/trunk/deps/third_party/hunspell_dictionaries@79099",
