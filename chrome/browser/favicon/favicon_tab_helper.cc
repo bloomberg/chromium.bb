@@ -186,7 +186,7 @@ void FaviconTabHelper::OnDidDownloadFavicon(int id,
                                             const GURL& image_url,
                                             bool errored,
                                             const SkBitmap& image) {
-  gfx::Image favicon(new SkBitmap(image));
+  gfx::Image favicon(image);
   favicon_handler_->OnDidDownloadFavicon(id, image_url, errored, favicon);
   if (touch_icon_handler_.get())
     touch_icon_handler_->OnDidDownloadFavicon(id, image_url, errored, favicon);
