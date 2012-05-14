@@ -1850,7 +1850,7 @@ input_handle_key(void *data, struct wl_input_device *input_device,
 		if (num_syms == 1)
 			sym = syms[0];
 		else
-			sym = NoSymbol;
+			sym = XKB_KEY_NoSymbol;
 
 		(*window->key_handler)(window, input, time, key,
 				       sym, state, window->user_data);
