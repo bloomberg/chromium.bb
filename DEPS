@@ -56,7 +56,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
-  "v8_revision": "11520",
+  "v8_revision": "11551",
   "webrtc_revision": "2180",
   "jsoncpp_revision": "248",
   "nss_revision": "136057",
