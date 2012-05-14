@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,7 +177,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
   EXPECT_EQ(1, actual_params->GetParamsCount());
   EXPECT_EQ(tag2, actual_params->GetTag());
-  size_t param_size = 1;
+  uint32 param_size = 1;
   ArgType type = INVALID_TYPE;
   void* param_addr = actual_params->GetRawParameter(0, &param_size, &type);
   EXPECT_TRUE(NULL != param_addr);
@@ -248,7 +248,7 @@ TEST(IPCTest, CrossCallIntPacking) {
   EXPECT_EQ(1, actual_params->GetParamsCount());
   EXPECT_EQ(tag2, actual_params->GetTag());
   ArgType type = INVALID_TYPE;
-  size_t param_size = 1;
+  uint32 param_size = 1;
   void* param_addr = actual_params->GetRawParameter(0, &param_size, &type);
   ASSERT_EQ(sizeof(dw), param_size);
   EXPECT_EQ(ULONG_TYPE, type);
@@ -300,11 +300,12 @@ TEST(IPCTest, CrossCallValidation) {
   // First a sanity test with a well formed parameter object.
   unsigned long value = 124816;
   const uint32 kTag = 33;
-  ActualCallParams<1, 256> params_1(kTag);
+  const uint32 kBufferSize = 256;
+  ActualCallParams<1, kBufferSize> params_1(kTag);
   params_1.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);
   void* buffer = const_cast<void*>(params_1.GetBuffer());
 
-  size_t out_size = 0;
+  uint32 out_size = 0;
   CrossCallParamsEx* ccp = 0;
   ccp = CrossCallParamsEx::CreateFromBuffer(buffer, params_1.GetSize(),
                                             &out_size);
@@ -321,35 +322,52 @@ TEST(IPCTest, CrossCallValidation) {
   const int32 kPtrDiffSz = sizeof(ptrdiff_t);
   for (int32 ix = -1; ix != 3; ++ix) {
     uint32 fake_num_params = (kuint32max / kPtrDiffSz) + ix;
-    ActualCallParams<1, 256> params_2(kTag, fake_num_params);
+    ActualCallParams<1, kBufferSize> params_2(kTag, fake_num_params);
     params_2.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);
     buffer = const_cast<void*>(params_2.GetBuffer());
 
     EXPECT_TRUE(NULL != buffer);
-    ccp = CrossCallParamsEx::CreateFromBuffer(buffer, params_2.GetSize(),
+    ccp = CrossCallParamsEx::CreateFromBuffer(buffer, params_1.GetSize(),
                                               &out_size);
     // If the buffer is malformed the return is NULL.
     EXPECT_TRUE(NULL == ccp);
   }
 #endif  // defined(NDEBUG)
 
-  ActualCallParams<1, 256> params_3(kTag, 1);
+  ActualCallParams<1, kBufferSize> params_3(kTag, 1);
   params_3.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);
   buffer = const_cast<void*>(params_3.GetBuffer());
   EXPECT_TRUE(NULL != buffer);
 
-  size_t correct_size = params_3.OverrideSize(1);
-  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, 256, &out_size);
+  uint32 correct_size = params_3.OverrideSize(1);
+  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
   EXPECT_TRUE(NULL == ccp);
 
   // The correct_size is 8 bytes aligned.
   params_3.OverrideSize(correct_size - 7);
-  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, 256, &out_size);
+  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
   EXPECT_TRUE(NULL == ccp);
 
   params_3.OverrideSize(correct_size);
-  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, 256, &out_size);
+  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
   EXPECT_TRUE(NULL != ccp);
+
+  // Make sure that two parameters work as expected.
+  ActualCallParams<2, kBufferSize> params_4(kTag, 2);
+  params_4.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);
+  params_4.CopyParamIn(1, buffer, sizeof(buffer), false, VOIDPTR_TYPE);
+  buffer = const_cast<void*>(params_4.GetBuffer());
+  EXPECT_TRUE(NULL != buffer);
+
+  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
+  EXPECT_TRUE(NULL != ccp);
+
+#if defined(_WIN64)
+  correct_size = params_4.OverrideSize(1);
+  params_4.OverrideSize(correct_size - 1);
+  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, kBufferSize, &out_size);
+  EXPECT_TRUE(NULL == ccp);
+#endif
 }
 
 // This structure is passed to the mock server threads to simulate
@@ -373,7 +391,7 @@ DWORD WINAPI QuickResponseServer(PVOID param) {
 
 class CrossCallParamsMock : public CrossCallParams {
  public:
-  CrossCallParamsMock(uint32 tag, size_t params_count)
+  CrossCallParamsMock(uint32 tag, uint32 params_count)
       :  CrossCallParams(tag, params_count) {
   }
  private:

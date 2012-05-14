@@ -47,7 +47,7 @@ class TargetProcess {
   // Creates the IPC objects such as the BrokerDispatcher and the
   // IPC server. The IPC server uses the services of the thread_pool.
   DWORD Init(Dispatcher* ipc_dispatcher, void* policy,
-             size_t shared_IPC_size, size_t shared_policy_size);
+             uint32 shared_IPC_size, uint32 shared_policy_size);
 
   // Returns the handle to the target process.
   HANDLE Process() const {

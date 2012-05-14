@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ class SharedMemIPCServer {
 
   // Initializes the server structures, shared memory structures and
   // creates the kernels events used to signal the IPC.
-  bool Init(void* shared_mem, size_t shared_size, size_t channel_size);
+  bool Init(void* shared_mem, uint32 shared_size, uint32 channel_size);
 
  private:
   // Allow tests to be marked DISABLED_. Note that FLAKY_ and FAILS_ prefixes
@@ -77,7 +77,7 @@ class SharedMemIPCServer {
     // This channel server pong event.
     HANDLE pong_event;
     // The size of this channel.
-    size_t channel_size;
+    uint32 channel_size;
     // The pointer to the actual channel data.
     char* channel_buffer;
     // The pointer to the base of the shared memory.

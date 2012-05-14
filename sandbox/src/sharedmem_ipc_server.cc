@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,8 +43,8 @@ SharedMemIPCServer::~SharedMemIPCServer() {
   }
 }
 
-bool SharedMemIPCServer::Init(void* shared_mem, size_t shared_size,
-                              size_t channel_size) {
+bool SharedMemIPCServer::Init(void* shared_mem, uint32 shared_size,
+                              uint32 channel_size) {
   // The shared memory needs to be at least as big as a channel.
   if (shared_size < channel_size) {
     return false;
@@ -151,8 +151,8 @@ bool GetArgs(CrossCallParamsEx* params, IPCParams* ipc_params,
   if (kMaxIpcParams < params->GetParamsCount())
     return false;
 
-  for (size_t i = 0; i < params->GetParamsCount(); i++) {
-    size_t size;
+  for (uint32 i = 0; i < params->GetParamsCount(); i++) {
+    uint32 size;
     ArgType type;
     args[i] = params->GetRawParameter(i, &size, &type);
     if (args[i]) {
@@ -208,7 +208,7 @@ bool SharedMemIPCServer::InvokeCallback(const ServerControl* service_context,
                                         CrossCallReturn* call_result) {
   // Set the default error code;
   SetCallError(SBOX_ERROR_INVALID_IPC, call_result);
-  size_t output_size = 0;
+  uint32 output_size = 0;
   // Parse, verify and copy the message. The handler operates on a copy
   // of the message so the client cannot play dirty tricks by changing the
   // data in the channel while the IPC is being processed.

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,15 +15,17 @@
 // the ipc code.
 
 namespace {
-  // The buffer for a message must match the max channel size.
-  const size_t kMaxBufferSize = sandbox::kIPCChannelSize;
+
+// The buffer for a message must match the max channel size.
+const size_t kMaxBufferSize = sandbox::kIPCChannelSize;
+
 }
 
 namespace sandbox {
 
 // Returns the actual size for the parameters in an IPC buffer. Returns
 // zero if the |param_count| is zero or too big.
-size_t GetActualBufferSize(size_t param_count, void* buffer_base) {
+uint32 GetActualBufferSize(uint32 param_count, void* buffer_base) {
   // The template types are used to calculate the maximum expected size.
   typedef ActualCallParams<1, kMaxBufferSize> ActualCP1;
   typedef ActualCallParams<2, kMaxBufferSize> ActualCP2;
@@ -83,8 +85,8 @@ void CrossCallParamsEx::operator delete(void* raw_memory) throw() {
 // have destructors or else you get Compiler Error C2712. So no DCHECKs
 // inside this function.
 CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
-                                                       size_t buffer_size,
-                                                       size_t* output_size) {
+                                                       uint32 buffer_size,
+                                                       uint32* output_size) {
   // IMPORTANT: Everything inside buffer_base and derived from it such
   // as param_count and declared_size is untrusted.
   if (NULL == buffer_base) {
@@ -98,9 +100,9 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
   }
 
   char* backing_mem = NULL;
-  size_t param_count = 0;
-  size_t declared_size;
-  size_t min_declared_size;
+  uint32 param_count = 0;
+  uint32 declared_size;
+  uint32 min_declared_size;
   CrossCallParamsEx* copied_params = NULL;
 
   // Touching the untrusted buffer is done under a SEH try block. This
@@ -108,12 +110,12 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
   __try {
     CrossCallParams* call_params =
         reinterpret_cast<CrossCallParams*>(buffer_base);
+
     // Check against the minimum size given the number of stated params
     // if too small we bail out.
     param_count = call_params->GetParamsCount();
-
-    min_declared_size =
-        sizeof(CrossCallParamsEx) + (param_count * sizeof(ParamInfo));
+    min_declared_size = sizeof(CrossCallParams) +
+                        ((param_count + 1) * sizeof(ParamInfo));
 
     if ((buffer_size < min_declared_size) ||
         (sizeof(CrossCallParamsEx) > min_declared_size)) {
@@ -156,8 +158,8 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
 
   // Verify here that all and each parameters make sense. This is done in the
   // local copy.
-  for (size_t ix =0; ix != param_count; ++ix) {
-    size_t size = 0;
+  for (uint32 ix =0; ix != param_count; ++ix) {
+    uint32 size = 0;
     ArgType type;
     char* address = reinterpret_cast<char*>(
                         copied_params->GetRawParameter(ix, &size, &type));
@@ -178,7 +180,7 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
 }
 
 // Accessors to the parameters in the raw buffer.
-void* CrossCallParamsEx::GetRawParameter(size_t index, size_t* size,
+void* CrossCallParamsEx::GetRawParameter(uint32 index, uint32* size,
                                          ArgType* type) {
   if (index >= GetParamsCount()) {
     return NULL;
@@ -192,8 +194,8 @@ void* CrossCallParamsEx::GetRawParameter(size_t index, size_t* size,
 }
 
 // Covers common case for 32 bit integers.
-bool CrossCallParamsEx::GetParameter32(size_t index, uint32* param) {
-  size_t size = 0;
+bool CrossCallParamsEx::GetParameter32(uint32 index, uint32* param) {
+  uint32 size = 0;
   ArgType type;
   void* start = GetRawParameter(index, &size, &type);
   if ((NULL == start) || (4 != size) || (ULONG_TYPE != type)) {
@@ -204,8 +206,8 @@ bool CrossCallParamsEx::GetParameter32(size_t index, uint32* param) {
   return true;
 }
 
-bool CrossCallParamsEx::GetParameterVoidPtr(size_t index, void** param) {
-  size_t size = 0;
+bool CrossCallParamsEx::GetParameterVoidPtr(uint32 index, void** param) {
+  uint32 size = 0;
   ArgType type;
   void* start = GetRawParameter(index, &size, &type);
   if ((NULL == start) || (sizeof(void*) != size) || (VOIDPTR_TYPE != type)) {
@@ -217,8 +219,8 @@ bool CrossCallParamsEx::GetParameterVoidPtr(size_t index, void** param) {
 
 // Covers the common case of reading a string. Note that the string is not
 // scanned for invalid characters.
-bool CrossCallParamsEx::GetParameterStr(size_t index, std::wstring* string) {
-  size_t size = 0;
+bool CrossCallParamsEx::GetParameterStr(uint32 index, std::wstring* string) {
+  uint32 size = 0;
   ArgType type;
   void* start = GetRawParameter(index, &size, &type);
   if (WCHAR_TYPE != type) {
@@ -238,9 +240,9 @@ bool CrossCallParamsEx::GetParameterStr(size_t index, std::wstring* string) {
   return true;
 }
 
-bool CrossCallParamsEx::GetParameterPtr(size_t index, size_t expected_size,
+bool CrossCallParamsEx::GetParameterPtr(uint32 index, uint32 expected_size,
                                         void** pointer) {
-  size_t size = 0;
+  uint32 size = 0;
   ArgType type;
   void* start = GetRawParameter(index, &size, &type);
 

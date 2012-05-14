@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,31 +93,31 @@ class CrossCallParamsEx : public CrossCallParams {
   // 1) validate the IPC buffer. returns NULL is the IPCbuffer is malformed.
   // 2) make a copy of the IPCbuffer (parameter capture)
   static CrossCallParamsEx* CreateFromBuffer(void* buffer_base,
-                                             size_t buffer_size,
-                                             size_t* output_size);
+                                             uint32 buffer_size,
+                                             uint32* output_size);
 
   // Provides IPCinput parameter raw access:
   // index : the parameter to read; 0 is the first parameter
   // returns NULL if the parameter is non-existent. If it exists it also
   // returns the size in *size
-  void* GetRawParameter(size_t index, size_t* size, ArgType* type);
+  void* GetRawParameter(uint32 index, uint32* size, ArgType* type);
 
   // Gets a parameter that is four bytes in size.
   // Returns false if the parameter does not exist or is not 32 bits wide.
-  bool GetParameter32(size_t index, uint32* param);
+  bool GetParameter32(uint32 index, uint32* param);
 
   // Gets a parameter that is void pointer in size.
   // Returns false if the parameter does not exist or is not void pointer sized.
-  bool GetParameterVoidPtr(size_t index, void** param);
+  bool GetParameterVoidPtr(uint32 index, void** param);
 
   // Gets a parameter that is a string. Returns false if the parameter does not
   // exist.
-  bool GetParameterStr(size_t index, std::wstring* string);
+  bool GetParameterStr(uint32 index, std::wstring* string);
 
   // Gets a parameter that is an in/out buffer. Returns false is the parameter
   // does not exist or if the size of the actual parameter is not equal to the
   // expected size.
-  bool GetParameterPtr(size_t index, size_t expected_size, void** pointer);
+  bool GetParameterPtr(uint32 index, uint32 expected_size, void** pointer);
 
   // Frees the memory associated with the IPC parameters.
   static void operator delete(void* raw_memory) throw();

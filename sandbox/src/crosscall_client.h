@@ -40,7 +40,7 @@ namespace sandbox {
 
 // this is the assumed channel size. This can be overridden in a given
 // IPC implementation.
-const size_t kIPCChannelSize = 1024;
+const uint32 kIPCChannelSize = 1024;
 
 // The copy helper uses templates to deduce the appropriate copy function to
 // copy the input parameters in the buffer that is going to be send across the
@@ -67,7 +67,7 @@ class CopyHelper {
   }
 
   // Returns the size of the input in bytes.
-  size_t GetSize() const {
+  uint32 GetSize() const {
     return sizeof(T);
   }
 
@@ -106,7 +106,7 @@ class CopyHelper<void*> {
   }
 
   // Returns the size of the input in bytes.
-  size_t GetSize() const {
+  uint32 GetSize() const {
     return sizeof(t_);
   }
 
@@ -147,9 +147,9 @@ class CopyHelper<const wchar_t*> {
 
   // Returns the size of the string in bytes. We define a NULL string to
   // be of zero length.
-  size_t GetSize() const {
+  uint32 GetSize() const {
     __try {
-      return (NULL == t_) ? 0 : StringLength(t_) * sizeof(t_[0]);
+      return (!t_) ? 0 : static_cast<uint32>(StringLength(t_) * sizeof(t_[0]));
     }
     __except(EXCEPTION_EXECUTE_HANDLER) {
       return kuint32max;
@@ -194,7 +194,7 @@ class CopyHelper<wchar_t*> : public CopyHelper<const wchar_t*> {
     return Base::Update(buffer);
   }
 
-  size_t GetSize() const {
+  uint32 GetSize() const {
     return Base::GetSize();
   }
 
@@ -224,7 +224,7 @@ class CopyHelper<const wchar_t[n]> : public CopyHelper<const wchar_t*> {
     return Base::Update(buffer);
   }
 
-  size_t GetSize() const {
+  uint32 GetSize() const {
     return Base::GetSize();
   }
 
@@ -242,7 +242,7 @@ class CopyHelper<const wchar_t[n]> : public CopyHelper<const wchar_t*> {
 // parameters.
 class InOutCountedBuffer : public CountedBuffer {
  public:
-  InOutCountedBuffer(void* buffer, size_t size) : CountedBuffer(buffer, size) {}
+  InOutCountedBuffer(void* buffer, uint32 size) : CountedBuffer(buffer, size) {}
 };
 
 // This copy helper template specialization catches the cases where the
@@ -272,7 +272,7 @@ class CopyHelper<InOutCountedBuffer> {
 
   // Returns the size of the string in bytes. We define a NULL string to
   // be of zero length.
-  size_t GetSize() const {
+  uint32 GetSize() const {
     return t_.Size();
   }
 

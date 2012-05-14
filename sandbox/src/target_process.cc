@@ -248,7 +248,7 @@ ResultCode TargetProcess::TransferVariable(const char* name, void* address,
 // Construct the IPC server and the IPC dispatcher. When the target does
 // an IPC it will eventually call the dispatcher.
 DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
-                          size_t shared_IPC_size, size_t shared_policy_size) {
+                          uint32 shared_IPC_size, uint32 shared_policy_size) {
   // We need to map the shared memory on the target. This is necessary for
   // any IPC that needs to take place, even if the target has not yet hit
   // the main( ) function or even has initialized the CRT. So here we set

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,9 +27,9 @@ enum ArgType {
 // Encapsulates a pointer to a buffer and the size of the buffer.
 class CountedBuffer {
  public:
-  CountedBuffer(void* buffer, size_t size) : size_(size), buffer_(buffer) {}
+  CountedBuffer(void* buffer, uint32 size) : size_(size), buffer_(buffer) {}
 
-  size_t Size() const {
+  uint32 Size() const {
     return size_;
   }
 
@@ -38,7 +38,7 @@ class CountedBuffer {
   }
 
  private:
-  size_t size_;
+  uint32 size_;
   void* buffer_;
 };
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,12 +16,10 @@
 
 namespace {
 
-// Increases |value| until there is no need for padding given the 2*pointer
-// alignment on the platform. Returns the increased value.
-// NOTE: This might not be good enough for some buffer. The OS might want the
-// structure inside the buffer to be aligned also.
-size_t Align(size_t value) {
-  size_t alignment = sizeof(ULONG_PTR) * 2;
+// Increases |value| until there is no need for padding given an int64
+// alignment. Returns the increased value.
+uint32 Align(uint32 value) {
+  uint32 alignment = sizeof(int64);
   return ((value + alignment - 1) / alignment) * alignment;
 }
 
@@ -68,8 +66,8 @@ const int kMaxIpcParams = 9;
 // Contains the information about a parameter in the ipc buffer.
 struct ParamInfo {
   ArgType type_;
-  ptrdiff_t offset_;
-  size_t size_;
+  uint32 offset_;
+  uint32 size_;
 };
 
 // Models the return value and the return parameters of an IPC call
@@ -87,10 +85,10 @@ struct CrossCallReturn {
     NTSTATUS nt_status;
     DWORD    win32_result;
   };
-  // for calls that should return a windows handle. It is found here.
-  HANDLE handle;
   // Number of extended return values.
   uint32 extended_count;
+  // for calls that should return a windows handle. It is found here.
+  HANDLE handle;
   // The array of extended values.
   MultiType extended[kExtendedReturnCount];
 };
@@ -120,7 +118,7 @@ class CrossCallParams {
   }
 
   // Returns how many parameter this IPC call should have.
-  const size_t GetParamsCount() const {
+  const uint32 GetParamsCount() const {
     return params_count_;
   }
 
@@ -144,7 +142,7 @@ class CrossCallParams {
 
  protected:
   // constructs the IPC call params. Called only from the derived classes
-  CrossCallParams(uint32 tag, size_t params_count)
+  CrossCallParams(uint32 tag, uint32 params_count)
       : tag_(tag),
         params_count_(params_count),
         is_in_out_(0) {
@@ -154,7 +152,7 @@ class CrossCallParams {
   uint32 tag_;
   uint32 is_in_out_;
   CrossCallReturn call_return;
-  const size_t params_count_;
+  const uint32 params_count_;
   DISALLOW_COPY_AND_ASSIGN(CrossCallParams);
 };
 
@@ -214,15 +212,15 @@ class ActualCallParams : public CrossCallParams {
 
   // Testing-only method. Allows setting the apparent size to a wrong value.
   // returns the previous size.
-  size_t OverrideSize(size_t new_size) {
-    size_t previous_size = param_info_[NUMBER_PARAMS].offset_;
+  uint32 OverrideSize(uint32 new_size) {
+    uint32 previous_size = param_info_[NUMBER_PARAMS].offset_;
     param_info_[NUMBER_PARAMS].offset_ = new_size;
     return previous_size;
   }
 
   // Copies each paramter into the internal buffer. For each you must supply:
   // index: 0 for the first param, 1 for the next an so on
-  bool CopyParamIn(size_t index, const void* parameter_address, size_t size,
+  bool CopyParamIn(uint32 index, const void* parameter_address, uint32 size,
                    bool is_in_out, ArgType type) {
     if (index >= NUMBER_PARAMS) {
       return false;
@@ -238,7 +236,7 @@ class ActualCallParams : public CrossCallParams {
     }
 
     if (param_info_[index].offset_ > sizeof(*this)) {
-      // it does not fit, abort copy
+      // It does not fit, abort copy.
       return false;
     }
 
@@ -270,9 +268,9 @@ class ActualCallParams : public CrossCallParams {
     return reinterpret_cast<char*>(this) + param_info_[index].offset_;
   }
 
-  // returns the total size of the buffer. Only valid once all the paramters
-  // have been copied in with CopyParamIn
-  size_t GetSize() const {
+  // Returns the total size of the buffer. Only valid once all the paramters
+  // have been copied in with CopyParamIn.
+  uint32 GetSize() const {
     return param_info_[NUMBER_PARAMS].offset_;
   }
 
