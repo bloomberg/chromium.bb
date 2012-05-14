@@ -52,6 +52,11 @@ class UI_EXPORT Transform {
   void SetTranslateY(float y);
   void SetTranslate(float x, float y);
 
+  // Creates a perspective matrix.
+  // Based on the 'perspective' operation from
+  // http://www.w3.org/TR/css3-3d-transforms/#transform-functions
+  void SetPerspectiveDepth(float depth);
+
   // Applies a rotation on the current transformation.
   void ConcatRotate(float degree);
 

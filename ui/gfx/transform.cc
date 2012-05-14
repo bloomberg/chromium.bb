@@ -73,6 +73,12 @@ void Transform::SetTranslate(float x, float y) {
                        matrix_.get(2, 3));
 }
 
+void Transform::SetPerspectiveDepth(float depth) {
+  SkMatrix44 m;
+  m.set(3, 2, -1 / depth);
+  matrix_ = m;
+}
+
 void Transform::ConcatRotate(float degree) {
   SkMatrix44 rot;
   rot.setRotateDegreesAbout(0, 0, 1, SkFloatToScalar(degree));
