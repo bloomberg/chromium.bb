@@ -27,7 +27,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
 #include "chrome/browser/ui/simple_message_box.h"
-#include "chrome/browser/ui/views/uninstall_view.h"
+#include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -45,8 +45,6 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
-#include "ui/views/focus/accelerator_handler.h"
-#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -104,14 +102,6 @@ void RecordBrowserStartupTime() {
       base::Time::Now() - base::Time::FromFileTime(creation_time));
 }
 
-int AskForUninstallConfirmation() {
-  int ret = content::RESULT_CODE_NORMAL_EXIT;
-  views::Widget::CreateWindow(new UninstallView(&ret))->Show();
-  views::AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
-  return ret;
-}
-
 void ShowCloseBrowserFirstMessageBox() {
   const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   const string16 message = l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP);
@@ -128,13 +118,13 @@ int DoUninstallTasks(bool chrome_still_running) {
     ShowCloseBrowserFirstMessageBox();
     return chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE;
   }
-  int ret = AskForUninstallConfirmation();
+  int result = browser::ShowUninstallBrowserPrompt();
   if (browser_util::IsBrowserAlreadyRunning()) {
     ShowCloseBrowserFirstMessageBox();
     return chrome::RESULT_CODE_UNINSTALL_CHROME_ALIVE;
   }
 
-  if (ret != chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) {
+  if (result != chrome::RESULT_CODE_UNINSTALL_USER_CANCEL) {
     // The following actions are just best effort.
     VLOG(1) << "Executing uninstall actions";
     if (!first_run::RemoveSentinel())
@@ -156,7 +146,7 @@ int DoUninstallTasks(bool chrome_still_running) {
       VLOG(1) << "Failed to delete quick launch shortcut.";
     }
   }
-  return ret;
+  return result;
 }
 
 // ChromeBrowserMainPartsWin ---------------------------------------------------

@@ -9,6 +9,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
@@ -17,8 +18,10 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 
 UninstallView::UninstallView(int* user_selection)
     : confirm_label_(NULL),
@@ -152,3 +155,15 @@ string16 UninstallView::GetItemAt(int index) {
   std::advance(it, index);
   return WideToUTF16Hack((*it).first);
 }
+
+namespace browser {
+
+int ShowUninstallBrowserPrompt() {
+  int result = content::RESULT_CODE_NORMAL_EXIT;
+  views::Widget::CreateWindow(new UninstallView(&result))->Show();
+  views::AcceleratorHandler accelerator_handler;
+  MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
+  return result;
+}
+
+}  // namespace browser
