@@ -103,6 +103,10 @@
                   "fontName": {
                     "type": "string",
                     "description": "The font name. Rather than the literal font name preference value, this may be the name of the font that the system resolves the preference value to. The empty string signifies fallback to the global script font setting."
+                  },
+                  "levelOfControl": {
+                    "$ref": "LevelOfControl",
+                    "description": "The level of control this extension has over the setting."
                   }
                 }
               }
@@ -200,6 +204,10 @@
                   "pixelSize": {
                     "type": "integer",
                     "description": "The font size in pixels."
+                  },
+                  "levelOfControl": {
+                    "$ref": "LevelOfControl",
+                    "description": "The level of control this extension has over the setting."
                   }
                 }
               }
@@ -271,6 +279,10 @@
                   "pixelSize": {
                     "type": "integer",
                     "description": "The font size in pixels."
+                  },
+                  "levelOfControl": {
+                    "$ref": "LevelOfControl",
+                    "description": "The level of control this extension has over the setting."
                   }
                 }
               }
@@ -342,6 +354,10 @@
                   "pixelSize": {
                     "type": "integer",
                     "description": "The font size in pixels."
+                  },
+                  "levelOfControl": {
+                    "$ref": "LevelOfControl",
+                    "description": "The level of control this extension has over the setting."
                   }
                 }
               }
@@ -412,7 +428,11 @@
                 "properties": {
                   "charset": {
                     "type": "string",
-                    "description": "The default character set, such as \"ISO-8859-1\"."
+                    "description": "The character set, such as \"ISO-8859-1\"."
+                  },
+                  "levelOfControl": {
+                    "$ref": "LevelOfControl",
+                    "description": "The level of control this extension has over the setting."
                   }
                 }
               }
@@ -430,7 +450,7 @@
             "properties": {
               "charset": {
                 "type": "string",
-                "description": "The character set."
+                "description": "The character set, such as \"ISO-8859-1\"."
               }
             }
           },

@@ -6,6 +6,7 @@
 // Run with browser_tests --gtest_filter=ExtensionApiTest.FontSettings
 
 var fs = chrome.experimental.fontSettings;
+var CONTROLLED_BY_THIS_EXTENSION = 'controlled_by_this_extension';
 var CONTROLLABLE_BY_THIS_EXTENSION = 'controllable_by_this_extension';
 
 function expect(expected, message) {
@@ -27,7 +28,7 @@ chrome.test.runTests([
         script: script,
         genericFamily: genericFamily,
         fontName: fontName,
-        levelOfControl: 'controlled_by_this_extension'
+        levelOfControl: CONTROLLED_BY_THIS_EXTENSION
       }, details);
     });
 
@@ -38,55 +39,24 @@ chrome.test.runTests([
     }, chrome.test.callbackPass());
   },
 
-  function getPerScriptFontName() {
-    var expected = 'Verdana';
-    var message = 'Setting for Hangul standard font should be ' + expected;
-
-    fs.getFont({
-      script: 'Hang',
-      genericFamily: 'standard'
-    }, expect({fontName: expected}, message));
-  },
-
   // This test may fail on Windows if the font is not installed on
   // the system. See crbug.com/122303
   function setGlobalFontName() {
-    var fontName = 'Tahoma';
     var genericFamily = 'sansserif';
+    var fontName = 'Tahoma';
 
     chrome.test.listenOnce(fs.onFontChanged, function(details) {
       chrome.test.assertEq({
         genericFamily: genericFamily,
         fontName: fontName,
-        levelOfControl: 'controlled_by_this_extension'
+        levelOfControl: CONTROLLED_BY_THIS_EXTENSION
       }, details);
     });
 
     fs.setFont({
-      genericFamily: 'sansserif',
-      fontName: 'Tahoma'
+      genericFamily: genericFamily,
+      fontName: fontName
     }, chrome.test.callbackPass());
-  },
-
-  function getGlobalFontName() {
-    var expected = 'Tahoma';
-    var message =
-        'Setting for global sansserif font should be ' + expected;
-
-    fs.getFont({
-      genericFamily: 'sansserif'
-    }, expect({fontName: expected}, message));
-  },
-
-  function getFontList() {
-    var message = 'getFontList should return an array of objects with ' +
-        'fontName and localizedName properties.';
-    fs.getFontList(chrome.test.callbackPass(function(value) {
-      chrome.test.assertTrue(value.length > 0,
-                             "Font list is not expected to be empty.");
-      chrome.test.assertEq('string', typeof(value[0].fontName), message);
-      chrome.test.assertEq('string', typeof(value[0].localizedName), message);
-    }));
   },
 
   function setDefaultFontSize() {
@@ -94,7 +64,7 @@ chrome.test.runTests([
     chrome.test.listenOnce(fs.onDefaultFontSizeChanged, function(details) {
       chrome.test.assertEq({
         pixelSize: pixelSize,
-        levelOfControl: 'controlled_by_this_extension'
+        levelOfControl: CONTROLLED_BY_THIS_EXTENSION
       }, details);
     });
 
@@ -108,7 +78,7 @@ chrome.test.runTests([
     chrome.test.listenOnce(fs.onDefaultFixedFontSizeChanged, function(details) {
       chrome.test.assertEq({
         pixelSize: pixelSize,
-        levelOfControl: 'controlled_by_this_extension'
+        levelOfControl: CONTROLLED_BY_THIS_EXTENSION
       }, details);
     });
 
@@ -122,7 +92,7 @@ chrome.test.runTests([
     chrome.test.listenOnce(fs.onMinimumFontSizeChanged, function(details) {
       chrome.test.assertEq({
         pixelSize: pixelSize,
-        levelOfControl: 'controlled_by_this_extension'
+        levelOfControl: CONTROLLED_BY_THIS_EXTENSION
       }, details);
     });
 
@@ -136,7 +106,7 @@ chrome.test.runTests([
     chrome.test.listenOnce(fs.onDefaultCharacterSetChanged, function(details) {
       chrome.test.assertEq({
         charset: charset,
-        levelOfControl: 'controlled_by_this_extension'
+        levelOfControl: CONTROLLED_BY_THIS_EXTENSION
       }, details);
     });
 
@@ -145,34 +115,69 @@ chrome.test.runTests([
     }, chrome.test.callbackPass());
   },
 
+  function getFontList() {
+    var message = 'getFontList should return an array of objects with ' +
+        'fontName and localizedName properties.';
+    fs.getFontList(chrome.test.callbackPass(function(value) {
+      chrome.test.assertTrue(value.length > 0,
+                             "Font list is not expected to be empty.");
+      chrome.test.assertEq('string', typeof(value[0].fontName), message);
+      chrome.test.assertEq('string', typeof(value[0].localizedName), message);
+    }));
+  },
+
+  function getPerScriptFontName() {
+    fs.getFont({
+      script: 'Hang',
+      genericFamily: 'standard'
+    }, expect({
+      fontName: 'Verdana',
+      levelOfControl: CONTROLLED_BY_THIS_EXTENSION
+    }));
+  },
+
+  function getGlobalFontName() {
+    fs.getFont({
+      genericFamily: 'sansserif'
+    }, expect({
+      fontName: 'Tahoma',
+      levelOfControl: CONTROLLED_BY_THIS_EXTENSION
+    }));
+  },
+
   function getDefaultFontSize() {
-    var expected = 22;
-    var message = 'Setting for default font size should be ' + expected;
-    fs.getDefaultFontSize({}, expect({pixelSize: expected}, message));
+    fs.getDefaultFontSize({}, expect({
+      pixelSize: 22,
+      levelOfControl: CONTROLLED_BY_THIS_EXTENSION
+    }));
   },
 
   function getDefaultFontSizeOmitDetails() {
-    var expected = 22;
-    var message = 'Setting for default font size should be ' + expected;
-    fs.getDefaultFontSize(expect({pixelSize: expected}, message));
+    fs.getDefaultFontSize(expect({
+      pixelSize: 22,
+      levelOfControl: CONTROLLED_BY_THIS_EXTENSION
+    }));
   },
 
   function getDefaultFixedFontSize() {
-    var expected = 42;
-    var message = 'Setting for default fixed font size should be ' + expected;
-    fs.getDefaultFixedFontSize({}, expect({pixelSize: expected}, message));
+    fs.getDefaultFixedFontSize({}, expect({
+      pixelSize: 42,
+      levelOfControl: CONTROLLED_BY_THIS_EXTENSION
+    }));
   },
 
   function getMinimumFontSize() {
-    var expected = 7;
-    var message = 'Setting for minimum font size should be ' + expected;
-    fs.getMinimumFontSize({}, expect({pixelSize: expected}, message));
+    fs.getMinimumFontSize({}, expect({
+      pixelSize: 7,
+      levelOfControl: CONTROLLED_BY_THIS_EXTENSION
+    }));
   },
 
   function getDefaultCharacterSet() {
-    var expected = 'GBK';
-    var message = 'Setting for default character set should be ' + expected;
-    fs.getDefaultCharacterSet(expect({charset: expected}, message));
+    fs.getDefaultCharacterSet({}, expect({
+      charset: 'GBK',
+      levelOfControl: CONTROLLED_BY_THIS_EXTENSION
+    }));
   },
 
   // This test may fail on Windows if the font is not installed on the

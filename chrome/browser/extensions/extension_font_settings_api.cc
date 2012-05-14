@@ -32,9 +32,13 @@ namespace {
 const char kCharsetKey[] = "charset";
 const char kFontNameKey[] = "fontName";
 const char kGenericFamilyKey[] = "genericFamily";
+const char kLevelOfControlKey[] = "levelOfControl";
 const char kLocalizedNameKey[] = "localizedName";
 const char kPixelSizeKey[] = "pixelSize";
 const char kScriptKey[] = "script";
+
+const char kSetFromIncognitoError[] =
+    "Can't modify regular settings from an incognito context.";
 
 const char kOnDefaultCharacterSetChanged[] =
     "experimental.fontSettings.onDefaultCharacterSetChanged";
@@ -277,6 +281,11 @@ void ExtensionFontSettingsEventRouter::OnFontPrefChanged(
 }
 
 bool ClearFontFunction::RunImpl() {
+  if (profile_->IsOffTheRecord()) {
+    error_ = kSetFromIncognitoError;
+    return false;
+  }
+
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
@@ -304,19 +313,34 @@ bool GetFontFunction::RunImpl() {
   PrefService* prefs = profile_->GetPrefs();
   const PrefService::Preference* pref =
       prefs->FindPreference(pref_path.c_str());
+
   std::string font_name;
   EXTENSION_FUNCTION_VALIDATE(
       pref && pref->GetValue()->GetAsString(&font_name));
-
   font_name = MaybeGetLocalizedFontName(font_name);
+
+  // We don't support incognito-specific font prefs, so don't consider them when
+  // getting level of control.
+  const bool kIncognito = false;
+  std::string level_of_control =
+      extension_preference_helpers::GetLevelOfControl(profile_,
+                                                      extension_id(),
+                                                      pref_path,
+                                                      kIncognito);
 
   DictionaryValue* result = new DictionaryValue();
   result->SetString(kFontNameKey, font_name);
+  result->SetString(kLevelOfControlKey, level_of_control);
   result_.reset(result);
   return true;
 }
 
 bool SetFontFunction::RunImpl() {
+  if (profile_->IsOffTheRecord()) {
+    error_ = kSetFromIncognitoError;
+    return false;
+  }
+
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
@@ -380,6 +404,11 @@ bool GetFontListFunction::CopyFontsToResult(ListValue* fonts) {
 }
 
 bool ClearFontPrefExtensionFunction::RunImpl() {
+  if (profile_->IsOffTheRecord()) {
+    error_ = kSetFromIncognitoError;
+    return false;
+  }
+
   ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
   prefs->RemoveExtensionControlledPref(extension_id(),
                                        GetPrefName(),
@@ -392,13 +421,29 @@ bool GetFontPrefExtensionFunction::RunImpl() {
   const PrefService::Preference* pref = prefs->FindPreference(GetPrefName());
   EXTENSION_FUNCTION_VALIDATE(pref);
 
+  // We don't support incognito-specific font prefs, so don't consider them when
+  // getting level of control.
+  const bool kIncognito = false;
+
+  std::string level_of_control =
+      extension_preference_helpers::GetLevelOfControl(profile_,
+                                                      extension_id(),
+                                                      GetPrefName(),
+                                                      kIncognito);
+
   DictionaryValue* result = new DictionaryValue();
   result->Set(GetKey(), pref->GetValue()->DeepCopy());
+  result->SetString(kLevelOfControlKey, level_of_control);
   result_.reset(result);
   return true;
 }
 
 bool SetFontPrefExtensionFunction::RunImpl() {
+  if (profile_->IsOffTheRecord()) {
+    error_ = kSetFromIncognitoError;
+    return false;
+  }
+
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
