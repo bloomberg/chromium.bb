@@ -389,6 +389,12 @@
         ],
       },
     }],
+    ['chromeos == 1', {
+      'sources': [
+        'common/gpu/media/h264_parser.cc',
+        'common/gpu/media/h264_parser.h',
+      ],
+    }],
     ['OS=="win"', {
       'dependencies': [
         '../media/media.gyp:media',
