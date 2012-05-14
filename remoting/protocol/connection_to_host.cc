@@ -29,8 +29,10 @@ namespace protocol {
 
 ConnectionToHost::ConnectionToHost(
     base::MessageLoopProxy* message_loop,
+    pp::Instance* pp_instance,
     bool allow_nat_traversal)
     : message_loop_(message_loop),
+      pp_instance_(pp_instance),
       allow_nat_traversal_(allow_nat_traversal),
       event_callback_(NULL),
       client_stub_(NULL),
@@ -60,7 +62,6 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
                                const std::string& local_jid,
                                const std::string& host_jid,
                                const std::string& host_public_key,
-                               scoped_ptr<TransportFactory> transport_factory,
                                scoped_ptr<Authenticator> authenticator,
                                HostEventCallback* event_callback,
                                ClientStub* client_stub,
@@ -83,8 +84,10 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
   signal_strategy_->AddListener(this);
   signal_strategy_->Connect();
 
+  scoped_ptr<TransportFactory> transport_factory(
+      new PepperTransportFactory(pp_instance_));
   session_manager_.reset(new JingleSessionManager(
-      transport_factory.Pass(), allow_nat_traversal_));
+      transport_factory.Pass(), true));
   session_manager_->Init(signal_strategy_.get(), this);
 }
 

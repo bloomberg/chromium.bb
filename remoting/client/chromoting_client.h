@@ -26,10 +26,6 @@ class MessageLoop;
 
 namespace remoting {
 
-namespace protocol {
-class TransportFactory;
-}  // namespace protocol
-
 class ClientContext;
 class RectangleUpdateDecoder;
 
@@ -48,8 +44,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                    const base::Closure& client_done);
   virtual ~ChromotingClient();
 
-  void Start(scoped_refptr<XmppProxy> xmpp_proxy,
-             scoped_ptr<protocol::TransportFactory> transport_factory);
+  void Start(scoped_refptr<XmppProxy> xmpp_proxy);
   void Stop(const base::Closure& shutdown_task);
   void ClientDone();
 

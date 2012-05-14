@@ -42,7 +42,6 @@ class ClipboardStub;
 class HostStub;
 class InputStub;
 class SessionConfig;
-class TransportFactory;
 class VideoReader;
 class VideoStub;
 
@@ -65,6 +64,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
   };
 
   ConnectionToHost(base::MessageLoopProxy* message_loop,
+                   pp::Instance* pp_instance,
                    bool allow_nat_traversal);
   virtual ~ConnectionToHost();
 
@@ -72,7 +72,6 @@ class ConnectionToHost : public SignalStrategy::Listener,
                        const std::string& local_jid,
                        const std::string& host_jid,
                        const std::string& host_public_key,
-                       scoped_ptr<TransportFactory> transport_factory,
                        scoped_ptr<Authenticator> authenticator,
                        HostEventCallback* event_callback,
                        ClientStub* client_stub,
@@ -123,6 +122,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
   void SetState(State state, ErrorCode error);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  pp::Instance* pp_instance_;
   bool allow_nat_traversal_;
 
   std::string host_jid_;

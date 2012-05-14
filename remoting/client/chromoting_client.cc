@@ -13,7 +13,6 @@
 #include "remoting/protocol/negotiating_authenticator.h"
 #include "remoting/protocol/v1_authenticator.h"
 #include "remoting/protocol/session_config.h"
-#include "remoting/protocol/transport.h"
 
 namespace remoting {
 
@@ -47,9 +46,7 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
 ChromotingClient::~ChromotingClient() {
 }
 
-void ChromotingClient::Start(
-    scoped_refptr<XmppProxy> xmpp_proxy,
-    scoped_ptr<protocol::TransportFactory> transport_factory) {
+void ChromotingClient::Start(scoped_refptr<XmppProxy> xmpp_proxy) {
   DCHECK(message_loop()->BelongsToCurrentThread());
 
   scoped_ptr<protocol::Authenticator> authenticator;
@@ -63,8 +60,8 @@ void ChromotingClient::Start(
   }
 
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
-                       config_.host_public_key, transport_factory.Pass(),
-                       authenticator.Pass(), this, this, this, this);
+                       config_.host_public_key, authenticator.Pass(),
+                       this, this, this, this);
 
   if (!view_->Initialize()) {
     ClientDone();

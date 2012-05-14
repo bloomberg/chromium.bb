@@ -66,7 +66,6 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
     : HttpPortAllocatorSessionBase(
         allocator, channel_name, component, stun_hosts, relay_hosts, relay, ""),
       instance_(instance) {
-  set_flags(cricket::PORTALLOCATOR_DISABLE_TCP);
 }
 
 PepperPortAllocatorSession::~PepperPortAllocatorSession() {
