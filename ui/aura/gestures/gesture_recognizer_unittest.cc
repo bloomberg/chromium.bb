@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_vector.h"
-#include "base/string_number_conversions.h"
 #include "base/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/event.h"
@@ -23,11 +22,6 @@ namespace aura {
 namespace test {
 
 namespace {
-
-std::string WindowIDAsString(ui::GestureConsumer* consumer) {
-  return consumer && !consumer->ignores_events() ?
-      base::IntToString(static_cast<Window*>(consumer)->id()) : "?";
-}
 
 // A delegate that keeps track of gesture events.
 class GestureEventConsumeDelegate : public TestWindowDelegate {
@@ -929,17 +923,17 @@ TEST_F(GestureRecognizerTest, GestureTapSyntheticMouse) {
   EXPECT_TRUE(delegate->mouse_enter());
   EXPECT_TRUE(delegate->mouse_press());
   EXPECT_TRUE(delegate->mouse_release());
-  EXPECT_FALSE(delegate->mouse_exit());
+  EXPECT_TRUE(delegate->mouse_exit());
   EXPECT_FALSE(delegate->double_click());
 
   delegate->Reset();
   GestureEvent tap2(ui::ET_GESTURE_DOUBLE_TAP, 20, 20, 0,
       base::Time::Now(), 0, 0, 1 << kTouchId);
   root_window()->DispatchGestureEvent(&tap2);
-  EXPECT_FALSE(delegate->mouse_enter());
+  EXPECT_TRUE(delegate->mouse_enter());
   EXPECT_TRUE(delegate->mouse_press());
   EXPECT_TRUE(delegate->mouse_release());
-  EXPECT_FALSE(delegate->mouse_exit());
+  EXPECT_TRUE(delegate->mouse_exit());
   EXPECT_TRUE(delegate->double_click());
 }
 
@@ -1403,7 +1397,6 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
     delegates[i] = new GestureEventConsumeDelegate();
     windows[i] = CreateTestWindowWithDelegate(
         delegates[i], i, *window_bounds[i], NULL);
-    windows[i]->set_id(i);
     TouchEvent press(ui::ET_TOUCH_PRESSED, window_bounds[i]->origin(),
                      i, GetTime());
     root_window()->DispatchTouchEvent(&press);
@@ -1412,13 +1405,13 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   // Touches should now be associated with the closest touch within
   // ui::GestureConfiguration::max_separation_for_gesture_touches_in_pixels
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 11));
-  EXPECT_EQ("0", WindowIDAsString(target));
+  EXPECT_EQ(windows[0], target);
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 11));
-  EXPECT_EQ("1", WindowIDAsString(target));
+  EXPECT_EQ(windows[1], target);
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 511));
-  EXPECT_EQ("2", WindowIDAsString(target));
+  EXPECT_EQ(windows[2], target);
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 511));
-  EXPECT_EQ("3", WindowIDAsString(target));
+  EXPECT_EQ(windows[3], target);
 
   // Add a touch in the middle associated with windows[2]
   TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 500),
@@ -1429,16 +1422,16 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   root_window()->DispatchTouchEvent(&move);
 
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(250, 250));
-  EXPECT_EQ("2", WindowIDAsString(target));
+  EXPECT_EQ(windows[2], target);
 
   // Make sure that ties are broken by distance to a current touch
   // Closer to the point in the bottom right.
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(380, 380));
-  EXPECT_EQ("3", WindowIDAsString(target));
+  EXPECT_EQ(windows[3], target);
 
   // This touch is closer to the point in the middle
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(300, 300));
-  EXPECT_EQ("2", WindowIDAsString(target));
+  EXPECT_EQ(windows[2], target);
 
   // A touch too far from other touches won't be locked to anything
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000));
@@ -1450,7 +1443,7 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   root_window()->DispatchTouchEvent(&move2);
 
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000));
-  EXPECT_EQ("2", WindowIDAsString(target));
+  EXPECT_EQ(windows[2], target);
 }
 
 // Check that touch events outside the root window are still handled

@@ -51,9 +51,6 @@ class UI_EXPORT GestureConsumer {
   }
 
   virtual ~GestureConsumer() {}
-
-  // TODO: this is a hack! GestureRecognizer should never expose the internal
-  // marker object that implements this.
   bool ignores_events() { return ignores_events_; }
 
  private:

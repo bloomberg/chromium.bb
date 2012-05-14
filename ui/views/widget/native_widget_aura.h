@@ -65,9 +65,9 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void SendNativeAccessibilityEvent(
       View* view,
       ui::AccessibilityTypes::Event event_type) OVERRIDE;
-  virtual void SetCapture() OVERRIDE;
+  virtual void SetCapture(unsigned int flags) OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
-  virtual bool HasCapture() const OVERRIDE;
+  virtual bool HasCapture(unsigned int flags) const OVERRIDE;
   virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void GetWindowPlacement(

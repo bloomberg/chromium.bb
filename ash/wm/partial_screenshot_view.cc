@@ -59,7 +59,7 @@ void PartialScreenshotView::StartPartialScreenshot(
   widget->Show();
   // Captures mouse events in case that context menu already captures the
   // events.  This will close the context menu.
-  widget->GetNativeView()->SetCapture();
+  widget->GetNativeView()->SetCapture(ui::CW_LOCK_MOUSE | ui::CW_LOCK_TOUCH);
 
   view->set_window(widget->GetNativeWindow());
   Shell::GetInstance()->partial_screenshot_filter()->Activate(view);

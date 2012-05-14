@@ -296,15 +296,18 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   virtual internal::FocusManager* GetFocusManager();
   virtual const internal::FocusManager* GetFocusManager() const;
 
-  // Does a capture on the window. This does nothing if the window isn't showing
-  // (VISIBILITY_SHOWN) or isn't contained in a valid window hierarchy.
-  void SetCapture();
+  // Sets the capture window to |window|, for events specified in
+  // |flags|. |flags| is ui::CaptureEventFlags. This does nothing if
+  // the window isn't showing (VISIBILITY_SHOWN), or isn't contained
+  // in a valid window hierarchy.
+  void SetCapture(unsigned int flags);
 
-  // Releases a capture.
+  // Stop capturing all events (mouse and touch).
   void ReleaseCapture();
 
-  // Returns true if this window has capture.
-  bool HasCapture();
+  // Returns true if there is a window capturing all event types
+  // specified by |flags|. |flags| is ui::CaptureEventFlags.
+  bool HasCapture(unsigned int flags);
 
   // Suppresses painting window content by disgarding damaged rect and ignoring
   // new paint requests.

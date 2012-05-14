@@ -682,7 +682,7 @@ bool RenderWidgetHostViewAura::LockMouse() {
 
   mouse_locked_ = true;
 
-  root_window->SetCapture(window_);
+  root_window->SetCapture(window_, ui::CW_LOCK_MOUSE);
   if (root_window->ConfineCursorToWindow()) {
     root_window->ShowCursor(false);
     synthetic_move_sent_ = true;
@@ -1014,7 +1014,7 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
-      window_->SetCapture();
+      window_->SetCapture(ui::CW_LOCK_MOUSE);
       // Confirm existing composition text on mouse click events, to make sure
       // the input caret won't be moved with an ongoing composition text.
       FinishImeCompositionSession();

@@ -318,7 +318,7 @@ LRESULT RootWindowHostWin::OnCaptureChanged(UINT message,
                                             LPARAM l_param) {
   if (has_capture_) {
     has_capture_ = false;
-    root_window_->SetCapture(NULL);
+    root_window_->SetCapture(NULL, 0);
   }
   return 0;
 }
