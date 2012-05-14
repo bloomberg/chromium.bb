@@ -18,7 +18,6 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "ui/app_list/app_list_item_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
