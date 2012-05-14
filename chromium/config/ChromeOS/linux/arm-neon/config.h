@@ -156,7 +156,7 @@
 #define HAVE_THREADS 1
 #define HAVE_TRUNC 1
 #define HAVE_TRUNCF 1
-#define HAVE_VFP_ARGS 0
+/* #define HAVE_VFP_ARGS 1 -- Disabled to allow softfp/hardfp selection at gyp time */
 #define HAVE_VIRTUALALLOC 0
 #define HAVE_WINSOCK2_H 0
 #define HAVE_XFORM_ASM 0

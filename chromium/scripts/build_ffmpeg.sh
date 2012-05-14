@@ -36,7 +36,7 @@ if [ "$3" = "" -o "$4" != "" ]; then
   echo "  build.TARGET_ARCH.TARGET_OS/Chrome/out/"
   echo "  build.TARGET_ARCH.TARGET_OS/ChromiumOS/out/"
   echo "  build.TARGET_ARCH.TARGET_OS/ChromeOS/out/"
-  exit
+  exit 1
 fi
 
 TARGET_OS=$1
@@ -229,7 +229,7 @@ function build {
         cp $lib out
       else
         echo "Build failed!"
-        exit
+        exit 1
       fi
     done
   else
@@ -241,6 +241,11 @@ function build {
     echo "host   ARCH= $HOST_ARCH"
     echo "target ARCH= $TARGET_ARCH"
   fi
+
+  if [ "$TARGET_ARCH" = "arm" -o "$TARGET_ARCH" = "arm-neon" ]; then
+    sed -i 's/^\(#define HAVE_VFP_ARGS [01]\)$/\/* \1 -- Disabled to allow softfp\/hardfp selection at gyp time *\//' config.h
+  fi
+
   popd
 }
 
@@ -291,7 +296,8 @@ if [ "$TARGET_OS" = "linux" ]; then
     add_flag_common --arch=arm
 
     # TODO(ihf): ARM compile flags are tricky. The final options
-    # overriding everything live in chroot /build/*/etc/make.conf.
+    # overriding everything live in chroot /build/*/etc/make.conf
+    # (some of them coming from src/overlays/overlay-<BOARD>/make.conf).
     # We try to follow these here closely. In particular we need to
     # set ffmpeg internal #defines to conform to make.conf.
     # TODO(ihf): For now it is not clear if thumb or arm settings would be
@@ -307,9 +313,8 @@ if [ "$TARGET_OS" = "linux" ]; then
     add_flag_common --extra-cflags=-march=armv7-a
     add_flag_common --extra-cflags=-mtune=cortex-a8
     add_flag_common --extra-cflags=-mfpu=vfpv3-d16
+    # NOTE: softfp/hardfp selected at gyp time.
     add_flag_common --extra-cflags=-mfloat-abi=softfp
-    # TODO(ihf): We are probably going to switch the whole tegra2 board soon to
-    # add_flag_common --extra-cflags=-mfloat-abi=hard
   elif [ "$TARGET_ARCH" = "arm-neon" ]; then
     # This if-statement is for chroot arm-generic.
     add_flag_common --enable-cross-compile
@@ -324,10 +329,11 @@ if [ "$TARGET_OS" = "linux" ]; then
     add_flag_common --extra-cflags=-march=armv7-a
     add_flag_common --extra-cflags=-mtune=cortex-a8
     add_flag_common --extra-cflags=-mfpu=neon
+    # NOTE: softfp/hardfp selected at gyp time.
     add_flag_common --extra-cflags=-mfloat-abi=softfp
   else
     echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
-    exit
+    exit 1
   fi
 fi
 
@@ -346,12 +352,12 @@ if [ "$TARGET_OS" = "win" ]; then
       add_flag_common --extra-ldflags=-Wl,--no-seh
     else
       echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
-      exit
+      exit 1
     fi
   else
     echo "Script should be run on Windows host. If this is not possible try a "
     echo "merge of config files with new linux ia32 config.h by hand."
-    exit
+    exit 1
   fi
 else
   add_flag_common --enable-pic
@@ -369,12 +375,12 @@ if [ "$TARGET_OS" = "mac" ]; then
       add_flag_common --cxx=clang++
     else
       echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
-      exit
+      exit 1
     fi
   else
     echo "Script should be run on a Mac host. If this is not possible try a "
     echo "merge of config files with new linux ia32 config.h by hand."
-    exit
+    exit 1
   fi
   # Configure seems to enable VDA despite --disable-everything if you have
   # XCode installed, so force disable it.

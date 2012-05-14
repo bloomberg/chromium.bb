@@ -177,17 +177,24 @@
                 '-mthumb',
                 '-march=armv7-a',
                 '-mtune=cortex-a8',
-                '-mfloat-abi=softfp',
               ],
               'conditions': [
                 ['arm_neon == 0', {
                   'cflags': [
                     '-mfpu=vfpv3-d16',
                   ],
-                }],
-                ['arm_neon == 1', {
+                }, {
                   'cflags': [
                     '-mfpu=neon',
+                  ],
+                }],
+                ['arm_float_abi == "hard"', {
+                  'cflags': [
+                    '-DHAVE_VFP_ARGS=1'
+                  ],
+                }, {
+                  'cflags': [
+                    '-DHAVE_VFP_ARGS=0'
                   ],
                 }],
               ],
