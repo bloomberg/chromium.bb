@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ class JavaBridgeDispatcher : public content::RenderViewObserver {
   // cleared. We hold a ref to these.
   typedef std::map<string16, NPVariant> ObjectMap;
   ObjectMap objects_;
-  scoped_ptr<JavaBridgeChannel> channel_;
+  scoped_refptr<JavaBridgeChannel> channel_;
 };
 
 #endif  // CONTENT_RENDERER_JAVA_JAVA_BRIDGE_DISPATCHER_H_

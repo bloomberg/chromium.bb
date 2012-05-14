@@ -20,6 +20,12 @@ JavaBridgeChannel* JavaBridgeChannel::GetJavaBridgeChannel(
       ChildProcess::current()->GetShutDownEvent()));
 }
 
+JavaBridgeChannel::JavaBridgeChannel() {
+}
+
+JavaBridgeChannel::~JavaBridgeChannel() {
+}
+
 int JavaBridgeChannel::GenerateRouteID() {
   // Use a control message as this going to the JavaBridgeChannelHost, not an
   // injected object.
