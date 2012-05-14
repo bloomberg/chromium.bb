@@ -63,6 +63,15 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().chromium_webglsl);
   EXPECT_FALSE(info_->feature_flags().oes_egl_image_external);
   EXPECT_FALSE(info_->feature_flags().chromium_stream_texture);
+  EXPECT_FALSE(info_->feature_flags().angle_translated_shader_source);
+  EXPECT_FALSE(info_->feature_flags().angle_pack_reverse_row_order);
+  EXPECT_FALSE(info_->feature_flags().arb_texture_rectangle);
+  EXPECT_FALSE(info_->feature_flags().angle_instanced_arrays);
+  EXPECT_FALSE(info_->feature_flags().occlusion_query_boolean);
+  EXPECT_FALSE(info_->feature_flags(
+      ).use_arb_occlusion_query2_for_occlusion_query_boolean);
+  EXPECT_FALSE(info_->feature_flags(
+      ).use_arb_occlusion_query_for_occlusion_query_boolean);
 }
 
 TEST_F(FeatureInfoTest, InitializeNoExtensions) {
@@ -444,6 +453,42 @@ TEST_F(FeatureInfoTest, InitializeCHROMIUM_stream_texture) {
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_CHROMIUM_stream_texture"));
   EXPECT_TRUE(info_->feature_flags().chromium_stream_texture);
+}
+
+TEST_F(FeatureInfoTest, InitializeEXT_occlusion_query_boolean) {
+  SetupInitExpectations("GL_EXT_occlusion_query_boolean");
+  info_->Initialize(NULL);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_EXT_occlusion_query_boolean"));
+  EXPECT_TRUE(info_->feature_flags().occlusion_query_boolean);
+  EXPECT_FALSE(info_->feature_flags(
+      ).use_arb_occlusion_query2_for_occlusion_query_boolean);
+  EXPECT_FALSE(info_->feature_flags(
+      ).use_arb_occlusion_query_for_occlusion_query_boolean);
+}
+
+TEST_F(FeatureInfoTest, InitializeARB_occlusion_query) {
+  SetupInitExpectations("GL_ARB_occlusion_query");
+  info_->Initialize(NULL);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_EXT_occlusion_query_boolean"));
+  EXPECT_TRUE(info_->feature_flags().occlusion_query_boolean);
+  EXPECT_FALSE(info_->feature_flags(
+      ).use_arb_occlusion_query2_for_occlusion_query_boolean);
+  EXPECT_TRUE(info_->feature_flags(
+      ).use_arb_occlusion_query_for_occlusion_query_boolean);
+}
+
+TEST_F(FeatureInfoTest, InitializeARB_occlusion_query2) {
+  SetupInitExpectations("GL_ARB_occlusion_query2 GL_ARB_occlusion_query2");
+  info_->Initialize(NULL);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_EXT_occlusion_query_boolean"));
+  EXPECT_TRUE(info_->feature_flags().occlusion_query_boolean);
+  EXPECT_TRUE(info_->feature_flags(
+      ).use_arb_occlusion_query2_for_occlusion_query_boolean);
+  EXPECT_FALSE(info_->feature_flags(
+      ).use_arb_occlusion_query_for_occlusion_query_boolean);
 }
 
 }  // namespace gles2

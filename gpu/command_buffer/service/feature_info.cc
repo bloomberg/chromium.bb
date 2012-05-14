@@ -445,12 +445,18 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   bool have_ext_occlusion_query_boolean =
       ext.Have("GL_EXT_occlusion_query_boolean");
   bool have_arb_occlusion_query2 = ext.Have("GL_ARB_occlusion_query2");
+  bool have_arb_occlusion_query = ext.Have("GL_ARB_occlusion_query");
   if (ext.Desire("GL_EXT_occlusion_query_boolean") &&
-      (have_ext_occlusion_query_boolean || have_arb_occlusion_query2)) {
+      (have_ext_occlusion_query_boolean ||
+       have_arb_occlusion_query2 ||
+       have_arb_occlusion_query)) {
     AddExtensionString("GL_EXT_occlusion_query_boolean");
     feature_flags_.occlusion_query_boolean = true;
     feature_flags_.use_arb_occlusion_query2_for_occlusion_query_boolean =
-        !have_ext_occlusion_query_boolean;
+        !have_ext_occlusion_query_boolean && have_arb_occlusion_query2;
+    feature_flags_.use_arb_occlusion_query_for_occlusion_query_boolean =
+        !have_ext_occlusion_query_boolean && have_arb_occlusion_query &&
+        !have_arb_occlusion_query2;
   }
 
   if (ext.Desire("GL_ANGLE_instanced_arrays") &&

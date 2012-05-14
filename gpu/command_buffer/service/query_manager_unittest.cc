@@ -7,6 +7,8 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/common_decoder.h"
+#include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -48,7 +50,12 @@ class QueryManagerTest : public testing::Test {
     engine_.reset(new MockCommandBufferEngine());
     decoder_.reset(new MockDecoder());
     decoder_->set_engine(engine_.get());
-    manager_.reset(new QueryManager(decoder_.get(), false));
+    TestHelper::SetupFeatureInfoInitExpectations(
+        gl_.get(),
+        "GL_EXT_occlusion_query_boolean");
+    FeatureInfo::Ref feature_info(new FeatureInfo());
+    feature_info->Initialize("*");
+    manager_.reset(new QueryManager(decoder_.get(), feature_info.get()));
   }
 
   virtual void TearDown() {
@@ -215,7 +222,7 @@ TEST_F(QueryManagerTest, ProcessPendingQuery) {
   const GLuint kService1Id = 11;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
   const uint32 kSubmitCount = 123;
-  const GLuint kResult = 456;
+  const GLuint kResult = 1;
 
   // Check nothing happens if there are no pending queries.
   EXPECT_TRUE(manager_->ProcessPendingQueries());
@@ -280,9 +287,9 @@ TEST_F(QueryManagerTest, ProcessPendingQueries) {
   const uint32 kSubmitCount1 = 123;
   const uint32 kSubmitCount2 = 123;
   const uint32 kSubmitCount3 = 123;
-  const GLuint kResult1 = 456;
-  const GLuint kResult2 = 457;
-  const GLuint kResult3 = 458;
+  const GLuint kResult1 = 1;
+  const GLuint kResult2 = 1;
+  const GLuint kResult3 = 1;
 
   // Setup shared memory like client would.
   QuerySync* sync1 = decoder_->GetSharedMemoryAs<QuerySync*>(
@@ -393,7 +400,7 @@ TEST_F(QueryManagerTest, ProcessPendingBadSharedMemoryId) {
   const GLuint kService1Id = 11;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
   const uint32 kSubmitCount = 123;
-  const GLuint kResult = 456;
+  const GLuint kResult = 1;
 
   // Create Query.
   QueryManager::Query::Ref query(
@@ -422,7 +429,7 @@ TEST_F(QueryManagerTest, ProcessPendingBadSharedMemoryOffset) {
   const GLuint kService1Id = 11;
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
   const uint32 kSubmitCount = 123;
-  const GLuint kResult = 456;
+  const GLuint kResult = 1;
 
   // Create Query.
   QueryManager::Query::Ref query(
@@ -468,7 +475,13 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery2) {
   const GLenum kTarget = GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT;
   const uint32 kSubmitCount = 123;
 
-  scoped_ptr<QueryManager> manager(new QueryManager(decoder_.get(), true));
+  TestHelper::SetupFeatureInfoInitExpectations(
+      gl_.get(),
+      "GL_ARB_occlusion_query2");
+  FeatureInfo::Ref feature_info(new FeatureInfo());
+  feature_info->Initialize("*");
+  scoped_ptr<QueryManager> manager(
+      new QueryManager(decoder_.get(), feature_info.get()));
 
   EXPECT_CALL(*gl_, GenQueriesARB(1, _))
      .WillOnce(SetArgumentPointee<1>(kService1Id))
@@ -481,6 +494,38 @@ TEST_F(QueryManagerTest, ARBOcclusionQuery2) {
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, EndQueryARB(GL_ANY_SAMPLES_PASSED_EXT))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_TRUE(manager->BeginQuery(query));
+  EXPECT_TRUE(manager->EndQuery(query, kSubmitCount));
+  manager->Destroy(false);
+}
+
+TEST_F(QueryManagerTest, ARBOcclusionQuery) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const GLenum kTarget = GL_ANY_SAMPLES_PASSED_EXT;
+  const uint32 kSubmitCount = 123;
+
+  TestHelper::SetupFeatureInfoInitExpectations(
+      gl_.get(),
+      "GL_ARB_occlusion_query");
+  FeatureInfo::Ref feature_info(new FeatureInfo());
+  feature_info->Initialize("*");
+  scoped_ptr<QueryManager> manager(
+      new QueryManager(decoder_.get(), feature_info.get()));
+
+  EXPECT_CALL(*gl_, GenQueriesARB(1, _))
+     .WillOnce(SetArgumentPointee<1>(kService1Id))
+     .RetiresOnSaturation();
+  QueryManager::Query* query = manager->CreateQuery(
+      kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
+  ASSERT_TRUE(query != NULL);
+
+  EXPECT_CALL(*gl_, BeginQueryARB(GL_SAMPLES_PASSED_ARB, kService1Id))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, EndQueryARB(GL_SAMPLES_PASSED_ARB))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_TRUE(manager->BeginQuery(query));

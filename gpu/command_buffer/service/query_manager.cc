@@ -8,6 +8,7 @@
 #include "base/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/common_decoder.h"
+#include "gpu/command_buffer/service/feature_info.h"
 
 namespace gpu {
 namespace gles2 {
@@ -66,7 +67,7 @@ bool AllSamplesPassedQuery::Process() {
   glGetQueryObjectuivARB(
       service_id_, GL_QUERY_RESULT_EXT, &result);
 
-  return MarkAsCompleted(result);
+  return MarkAsCompleted(result != 0);
 }
 
 class CommandsIssuedQuery : public QueryManager::Query {
@@ -117,11 +118,17 @@ void CommandsIssuedQuery::Destroy(bool /* have_context */) {
 
 QueryManager::QueryManager(
     CommonDecoder* decoder,
-    bool use_arb_occlusion_query2_for_occlusion_query_boolean)
+    FeatureInfo* feature_info)
     : decoder_(decoder),
       use_arb_occlusion_query2_for_occlusion_query_boolean_(
-          use_arb_occlusion_query2_for_occlusion_query_boolean),
+          feature_info->feature_flags(
+            ).use_arb_occlusion_query2_for_occlusion_query_boolean),
+      use_arb_occlusion_query_for_occlusion_query_boolean_(
+          feature_info->feature_flags(
+            ).use_arb_occlusion_query_for_occlusion_query_boolean),
       query_count_(0) {
+  DCHECK(!(use_arb_occlusion_query_for_occlusion_query_boolean_ &&
+           use_arb_occlusion_query2_for_occlusion_query_boolean_));
 }
 
 QueryManager::~QueryManager() {
@@ -187,21 +194,35 @@ void QueryManager::StopTracking(QueryManager::Query* /* query */) {
   --query_count_;
 }
 
-void QueryManager::BeginQueryHelper(GLenum target, GLuint id) {
-  // ARB_occlusion_query2 does not have a GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT
-  // target.
-  if (use_arb_occlusion_query2_for_occlusion_query_boolean_) {
-    target = GL_ANY_SAMPLES_PASSED_EXT;
+GLenum QueryManager::AdjustTargetForEmulation(GLenum target) {
+  switch (target) {
+    case GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT:
+    case GL_ANY_SAMPLES_PASSED_EXT:
+      if (use_arb_occlusion_query2_for_occlusion_query_boolean_) {
+        // ARB_occlusion_query2 does not have a
+        // GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT
+        // target.
+        target = GL_ANY_SAMPLES_PASSED_EXT;
+      } else if (use_arb_occlusion_query_for_occlusion_query_boolean_) {
+        // ARB_occlusion_query does not have a
+        // GL_ANY_SAMPLES_PASSED_EXT
+        // target.
+        target = GL_SAMPLES_PASSED_ARB;
+      }
+      break;
+    default:
+      break;
   }
+  return target;
+}
+
+void QueryManager::BeginQueryHelper(GLenum target, GLuint id) {
+  target = AdjustTargetForEmulation(target);
   glBeginQueryARB(target, id);
 }
 
 void QueryManager::EndQueryHelper(GLenum target) {
-  // ARB_occlusion_query2 does not have a GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT
-  // target.
-  if (use_arb_occlusion_query2_for_occlusion_query_boolean_) {
-    target = GL_ANY_SAMPLES_PASSED_EXT;
-  }
+  target = AdjustTargetForEmulation(target);
   glEndQueryARB(target);
 }
 

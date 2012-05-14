@@ -2031,8 +2031,7 @@ bool GLES2DecoderImpl::Initialize(
   vertex_attrib_manager_.reset(new VertexAttribManager());
   vertex_attrib_manager_->Initialize(group_->max_vertex_attribs());
 
-  query_manager_.reset(new QueryManager(this, feature_info_->feature_flags(
-      ).use_arb_occlusion_query2_for_occlusion_query_boolean));
+  query_manager_.reset(new QueryManager(this, feature_info_));
 
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
