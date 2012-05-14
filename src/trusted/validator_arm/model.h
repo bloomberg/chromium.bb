@@ -80,14 +80,17 @@ class Register {
  */
 const Register kRegisterNone(31);
 
-// The APSR (flags register) is modeled as r16.
-const Register kRegisterFlags(16);
+// The conditions (i.e. APSR N, Z, C, and V) are collectively modeled as r16.
+// These bits of the APSR register are separately tracked, so we can
+// test when any of the 4 bits (and hence conditional execution) is
+// affected. If you need to track other bits in the APSR, add them as
+// a separate register.
+const Register kConditions(16);
 
 // Registers with special meaning in our model:
 const Register kRegisterPc(15);
 const Register kRegisterLink(14);
 const Register kRegisterStack(13);
-
 
 /*
  * A collection of Registers.  Used to describe the side effects of operations.

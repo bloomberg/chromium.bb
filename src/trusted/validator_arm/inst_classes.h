@@ -223,21 +223,22 @@ class Imm4Bits16To19Interface {
 };
 
 // Interface class to pull out S (update) bit from bit 20, which
-// defines if the flags register is updated by the instruction.
-class UpdatesFlagsRegisterBit20Interface {
+// defines if the condition bits in APSR are updated by the instruction.
+class UpdatesConditionsBit20Interface {
  public:
-  inline UpdatesFlagsRegisterBit20Interface() {}
-  // Returns true if bit is set that states that the flags register is updated.
+  inline UpdatesConditionsBit20Interface() {}
+  // Returns true if bit is set that states that the condition bits
+  // APSR is updated.
   static inline bool is_updated(const Instruction i) {
     return i.bit(20);
   }
-  // Returns the flags register if it is used.
-  static inline Register reg_if_updated(const Instruction i) {
-    return is_updated(i) ? kRegisterFlags : kRegisterNone;
+  // Returns the conditions register if it is used.
+  static inline Register conds_if_updated(const Instruction i) {
+    return is_updated(i) ? kConditions : kRegisterNone;
   }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesFlagsRegisterBit20Interface);
+  NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesConditionsBit20Interface);
 };
 
 // A class decoder is designed to decode a set of instructions that
@@ -278,10 +279,15 @@ class ClassDecoder {
   // Gets the set of registers affected when an instruction executes.  This set
   // is complete, and includes
   //  - explicit destination register(s),
-  //  - changes to flags,
+  //  - changes to condition flags,
   //  - indexed-addressing writeback,
   //  - changes to r15 by branches,
   //  - implicit register results, like branch-with-link.
+  //
+  // Note: If you are unsure if an instruction changes condition flags, be
+  // conservative and add it to the set of registers returned by this
+  // function. Failure to do so may cause a potential break in pattern
+  // atomicity, which checks that two instructions run under the same condition.
   //
   // The default implementation returns a ridiculous bitmask that suggests that
   // all possible side effects will occur -- override if this is not

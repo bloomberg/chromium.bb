@@ -51,7 +51,7 @@ class Unary1RegisterImmediateOp : public ClassDecoder {
   static const Imm12Bits0To11Interface imm12;
   static const RegDBits12To15Interface d;
   static const Imm4Bits16To19Interface imm4;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -88,7 +88,7 @@ class Binary2RegisterImmediateOp : public ClassDecoder {
   static const Imm12Bits0To11Interface imm;
   static const RegDBits12To15Interface d;
   static const RegNBits16To19Interface n;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -138,7 +138,7 @@ class BinaryRegisterImmediateTest : public ClassDecoder {
   // Interfaces for components in the instruction.
   static const Imm12Bits0To11Interface imm;
   static const RegNBits16To19Interface n;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -186,7 +186,7 @@ class Unary2RegisterOp : public ClassDecoder {
   // Interfaces for components in the instruction.
   static const RegMBits0To3Interface m;
   static const RegDBits12To15Interface d;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -226,7 +226,7 @@ class Binary3RegisterOp : public ClassDecoder {
   static const RegNBits0To3Interface n;
   static const RegMBits8To11Interface m;
   static const RegDBits12To15Interface d;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -266,7 +266,7 @@ class Unary2RegisterImmedShiftedOp : public ClassDecoder {
   static const ShiftTypeBits5To6Interface shift_type;
   static const Imm5Bits7To11Interface imm;
   static const RegDBits12To15Interface d;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -310,7 +310,7 @@ class Unary3RegisterShiftedOp : public ClassDecoder {
   static const ShiftTypeBits5To6Interface shift_type;
   static const RegSBits8To11Interface s;
   static const RegDBits12To15Interface d;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -357,7 +357,7 @@ class Binary3RegisterImmedShiftedOp : public ClassDecoder {
   static const Imm5Bits7To11Interface imm;
   static const RegDBits12To15Interface d;
   static const RegNBits16To19Interface n;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -409,7 +409,7 @@ class Binary4RegisterShiftedOp : public ClassDecoder {
   static const RegSBits8To11Interface s;
   static const RegDBits12To15Interface d;
   static const RegNBits16To19Interface n;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -446,7 +446,7 @@ class Binary2RegisterImmedShiftedTest : public ClassDecoder {
   static const ShiftTypeBits5To6Interface shift_type;
   static const Imm5Bits7To11Interface imm;
   static const RegNBits16To19Interface n;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
@@ -491,7 +491,7 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
   static const ShiftTypeBits5To6Interface shift_type;
   static const RegSBits8To11Interface s;
   static const RegNBits16To19Interface n;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.

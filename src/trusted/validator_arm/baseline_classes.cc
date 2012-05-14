@@ -24,7 +24,7 @@ SafetyLevel Unary1RegisterImmediateOp::safety(const Instruction i) const {
 }
 
 RegisterList Unary1RegisterImmediateOp::defs(const Instruction i) const {
-  return d.reg(i) + flags.reg_if_updated(i);
+  return d.reg(i) + conditions.conds_if_updated(i);
 }
 
 // Binary2RegisterImmediateOp
@@ -35,7 +35,7 @@ SafetyLevel Binary2RegisterImmediateOp::safety(Instruction i) const {
 }
 
 RegisterList Binary2RegisterImmediateOp::defs(Instruction i) const {
-  return d.reg(i) + flags.reg_if_updated(i);
+  return d.reg(i) + conditions.conds_if_updated(i);
 }
 
 // TODO(karl): find out why we added this so that we allowed an
@@ -58,7 +58,7 @@ SafetyLevel BinaryRegisterImmediateTest::safety(Instruction i) const {
 }
 
 RegisterList BinaryRegisterImmediateTest::defs(Instruction i) const {
-  return flags.reg_if_updated(i);
+  return conditions.conds_if_updated(i);
 }
 
 // MaskedBinaryRegisterImmediateTest
@@ -66,7 +66,7 @@ bool MaskedBinaryRegisterImmediateTest::sets_Z_if_bits_clear(
     Instruction i, Register r, uint32_t mask) const {
   return n.reg(i) == r &&
       (imm.get_modified_immediate(i) & mask) == mask &&
-      defs(i)[kRegisterFlags];
+      defs(i)[kConditions];
 }
 
 // Unary2RegisterOp
@@ -77,7 +77,7 @@ SafetyLevel Unary2RegisterOp::safety(const Instruction i) const {
 }
 
 RegisterList Unary2RegisterOp::defs(const Instruction i) const {
-  return d.reg(i) + flags.reg_if_updated(i);
+  return d.reg(i) + conditions.conds_if_updated(i);
 }
 
 // Binary3RegisterOp
@@ -92,7 +92,7 @@ SafetyLevel Binary3RegisterOp::safety(const Instruction i) const {
 }
 
 RegisterList Binary3RegisterOp::defs(const Instruction i) const {
-  return d.reg(i) + flags.reg_if_updated(i);
+  return d.reg(i) + conditions.conds_if_updated(i);
 }
 
 // Unary2RegisterImmedShiftedOp
@@ -103,7 +103,7 @@ SafetyLevel Unary2RegisterImmedShiftedOp::safety(const Instruction i) const {
 }
 
 RegisterList Unary2RegisterImmedShiftedOp::defs(const Instruction i) const {
-  return d.reg(i) + flags.reg_if_updated(i);
+  return d.reg(i) + conditions.conds_if_updated(i);
 }
 
 // Unary3RegisterShiftedOp
@@ -117,7 +117,7 @@ SafetyLevel Unary3RegisterShiftedOp::safety(Instruction i) const {
 }
 
 RegisterList Unary3RegisterShiftedOp::defs(const Instruction i) const {
-  return d.reg(i) + flags.reg_if_updated(i);
+  return d.reg(i) + conditions.conds_if_updated(i);
 }
 
 // Binary3RegisterImmedShiftedOp
@@ -128,7 +128,7 @@ SafetyLevel Binary3RegisterImmedShiftedOp::safety(const Instruction i) const {
 }
 
 RegisterList Binary3RegisterImmedShiftedOp::defs(const Instruction i) const {
-  return d.reg(i) + flags.reg_if_updated(i);
+  return d.reg(i) + conditions.conds_if_updated(i);
 }
 
 // Binary4RegisterShiftedOp
@@ -143,7 +143,7 @@ SafetyLevel Binary4RegisterShiftedOp::safety(Instruction i) const {
 }
 
 RegisterList Binary4RegisterShiftedOp::defs(const Instruction i) const {
-  return d.reg(i) + flags.reg_if_updated(i);
+  return d.reg(i) + conditions.conds_if_updated(i);
 }
 
 // Binary2RegisterImmedShiftedTest
@@ -153,7 +153,7 @@ SafetyLevel Binary2RegisterImmedShiftedTest::safety(const Instruction i) const {
 }
 
 RegisterList Binary2RegisterImmedShiftedTest::defs(const Instruction i) const {
-  return flags.reg_if_updated(i);
+  return conditions.conds_if_updated(i);
 }
 
 // Binary3RegisterShiftedTest
@@ -164,7 +164,7 @@ SafetyLevel Binary3RegisterShiftedTest::safety(Instruction i) const {
 }
 
 RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
-  return flags.reg_if_updated(i);
+  return conditions.conds_if_updated(i);
 }
 
 }  // namespace

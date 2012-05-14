@@ -224,7 +224,7 @@ class DecodedInstruction {
    */
   bool always_precedes(const DecodedInstruction &other) const {
     return inst_.condition() == other.inst_.condition() &&
-        !defines(nacl_arm_dec::kRegisterFlags);
+        !defines(nacl_arm_dec::kConditions);
   }
 
   /*
@@ -250,7 +250,7 @@ class DecodedInstruction {
   bool is_conditional_on(const DecodedInstruction &other) const {
     return inst_.condition() == nacl_arm_dec::Instruction::EQ
         && other.inst_.condition() == nacl_arm_dec::Instruction::AL
-        && other.defines(nacl_arm_dec::kRegisterFlags);
+        && other.defines(nacl_arm_dec::kConditions);
   }
 
   // The methods below mirror those on ClassDecoder, but are cached and cheap.

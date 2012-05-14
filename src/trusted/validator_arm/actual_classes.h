@@ -33,6 +33,7 @@ namespace nacl_arm_dec {
 //      N E W    C L A S S    D E C O D E R S
 // **************************************************************
 
+// Data processing and arithmetic
 class Defs12To15 : public ClassDecoder {
  public:
   inline Defs12To15() : ClassDecoder() {}
@@ -40,7 +41,7 @@ class Defs12To15 : public ClassDecoder {
 
   // We use Rd to capture the register being set.
   static const RegDBits12To15Interface d;
-  static const UpdatesFlagsRegisterBit20Interface flags;
+  static const UpdatesConditionsBit20Interface conditions;
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
@@ -50,6 +51,9 @@ class Defs12To15 : public ClassDecoder {
 };
 
 // Defs12To15 where registers Rn, Rd, Rs, and Rm are not Pc.
+// Note: Some instructions may use other names for the registers,
+// but they have the same placement within the instruction, and
+// hence do not need a separate class decoder.
 class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
  public:
   static const RegMBits0To3Interface m;
@@ -60,6 +64,9 @@ class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
   virtual ~Defs12To15RdRnRsRmNotPc() {}
 
   virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15RdRnRsRmNotPc);
 };
 
 // **************************************************************
@@ -74,8 +81,8 @@ class OldClassDecoder : public ClassDecoder {
   // Many instructions define control bits in bits 20-24. The useful bits
   // are defined here.
 
-  // True if U (updates flags register) flag is defined.
-  inline bool UpdatesFlagsRegister(const Instruction& i) const {
+  // True if S (updates condition flags in APSR register) flag is defined.
+  inline bool UpdatesConditions(const Instruction& i) const {
     return i.bit(20);
   }
 
@@ -820,7 +827,7 @@ class MoveFromCoprocessor : public CoprocessorOp {
     Register rt = i.reg(15, 12);
     if (rt == kRegisterPc) {
       // Per ARM ISA spec: r15 here is a synonym for the flags register!
-      return kRegisterFlags;
+      return kConditions;
     }
     return rt;
   }

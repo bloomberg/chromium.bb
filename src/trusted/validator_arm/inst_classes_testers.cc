@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include "native_client/src/trusted/validator_arm/decoder_tester.h"
 
-using nacl_arm_dec::kRegisterFlags;
+using nacl_arm_dec::kConditions;
 using nacl_arm_dec::kRegisterNone;
 using nacl_arm_dec::kRegisterPc;
 using nacl_arm_dec::kRegisterStack;
@@ -43,11 +43,12 @@ ApplySanityChecks(Instruction inst,
 
   // Check Registers and flags used in DataProc.
   EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Check that immediate value is computed correctly.
@@ -97,7 +98,7 @@ ApplySanityChecks(Instruction inst,
 
   // Check that we don't parse when Rd=15 and S=1.
   if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
-      expected_decoder.flags.is_updated(inst)) {
+      expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
 
@@ -128,11 +129,12 @@ ApplySanityChecks(Instruction inst,
   // Check Registers and flags used in DataProc.
   EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
   EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Check that immediate value is computed correctly.
@@ -160,7 +162,7 @@ ApplySanityChecks(Instruction inst,
 
   // Check that we don't parse when Rd=15 and S=1.
   if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
-      expected_decoder.flags.is_updated(inst)) {
+      expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
 
@@ -198,11 +200,12 @@ ApplySanityChecks(Instruction inst,
 
   // Check Registers and flags used in DataProc.
   EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Check that immediate value is computed correctly.
@@ -235,11 +238,12 @@ ApplySanityChecks(Instruction inst,
   // Check Registers and flags used in DataProc.
   EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
   EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Other NaCl constraints about this instruction.
@@ -262,7 +266,7 @@ ApplySanityChecks(Instruction inst,
 
   // Check that we don't parse when Rd=15 and S=1.
   if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
-      expected_decoder.flags.is_updated(inst)) {
+      expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
 
@@ -294,11 +298,12 @@ ApplySanityChecks(Instruction inst,
   EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
   EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(11, 8));
   EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Other NaCl constraints about this instruction.
@@ -355,11 +360,12 @@ ApplySanityChecks(Instruction inst,
   // Check Registers and flags used in DataProc.
   EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
   EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Check that immediate value is computed correctly.
@@ -405,7 +411,7 @@ ApplySanityChecks(Instruction inst,
 
   // Check that we don't parse when Rd=15 and S=1.
   if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
-      expected_decoder.flags.is_updated(inst)) {
+      expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
 
@@ -437,11 +443,12 @@ ApplySanityChecks(Instruction inst,
   EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
   EXPECT_EQ(expected_decoder.s.number(inst), inst.bits(11, 8));
   EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Check the shift type.
@@ -502,11 +509,12 @@ ApplySanityChecks(Instruction inst,
   EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
   EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
   EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Check that immediate value is computed correctly.
@@ -533,7 +541,7 @@ ApplySanityChecks(Instruction inst,
 
   // Check that we don't parse when Rd=15 and S=1.
   if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
-      expected_decoder.flags.is_updated(inst)) {
+      expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
 
@@ -566,11 +574,12 @@ ApplySanityChecks(Instruction inst,
   EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
   EXPECT_EQ(expected_decoder.s.number(inst), inst.bits(11, 8));
   EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Other NaCl constraints about this instruction.
@@ -630,11 +639,12 @@ ApplySanityChecks(Instruction inst,
   // Check Registers and flags used in DataProc.
   EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
   EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
 
   // Check that immediate value is computed correctly.
@@ -669,11 +679,12 @@ ApplySanityChecks(Instruction inst,
   EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
   EXPECT_EQ(expected_decoder.s.number(inst), inst.bits(11, 8));
   EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.flags.is_updated(inst), inst.bit(20));
-  if (expected_decoder.flags.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterFlags);
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
   } else {
-    EXPECT_EQ(expected_decoder.flags.reg_if_updated(inst), kRegisterNone);
+    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
+              kRegisterNone);
   }
   EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.bits(6, 5));
 

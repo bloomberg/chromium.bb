@@ -14,7 +14,7 @@ namespace nacl_arm_dec {
 
 // Defs12To15
 const RegDBits12To15Interface Defs12To15::d;
-const UpdatesFlagsRegisterBit20Interface Defs12To15::flags;
+const UpdatesConditionsBit20Interface Defs12To15::conditions;
 
 // Defs12To15RdRnRsRmNotPc
 const RegMBits0To3Interface Defs12To15RdRnRsRmNotPc::m;

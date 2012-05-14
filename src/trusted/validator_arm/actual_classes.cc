@@ -18,7 +18,7 @@ namespace nacl_arm_dec {
 //      N E W    C L A S S    D E C O D E R S
 // **************************************************************
 
-// Data processing and arithmetic
+// Defs12To15
 SafetyLevel Defs12To15::safety(const Instruction i) const {
   if (defs(i)[kRegisterPc]) {
     return FORBIDDEN_OPERANDS;
@@ -27,7 +27,7 @@ SafetyLevel Defs12To15::safety(const Instruction i) const {
 }
 
 RegisterList Defs12To15::defs(const Instruction i) const {
-  return d.reg(i) + flags.reg_if_updated(i);
+  return d.reg(i) + conditions.conds_if_updated(i);
 }
 
 SafetyLevel Defs12To15RdRnRsRmNotPc::safety(const Instruction i) const {
@@ -60,11 +60,11 @@ SafetyLevel DataProc::safety(const Instruction i) const {
 }
 
 RegisterList DataProc::defs(const Instruction i) const {
-  return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
+  return Rd(i) + (UpdatesConditions(i) ? kConditions : kRegisterNone);
 }
 
 RegisterList Test::defs(const Instruction i) const {
-  return (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
+  return (UpdatesConditions(i) ? kConditions : kRegisterNone);
 }
 
 
@@ -74,7 +74,7 @@ bool TestImmediate::sets_Z_if_bits_clear(Instruction i,
   // Rn = 19:16 for TST(immediate) - section A8.6.230
   return Rn(i) == r
       && (imm12.get_modified_immediate(i) & mask) == mask
-      && defs(i)[kRegisterFlags];
+      && defs(i)[kConditions];
 }
 
 
@@ -91,7 +91,7 @@ SafetyLevel PackSatRev::safety(const Instruction i) const {
 }
 
 RegisterList PackSatRev::defs(const Instruction i) const {
-  return Rd(i) + kRegisterFlags;
+  return Rd(i) + kConditions;
 }
 
 
@@ -103,7 +103,7 @@ SafetyLevel Multiply::safety(const Instruction i) const {
 }
 
 RegisterList Multiply::defs(const Instruction i) const {
-  return kRegisterFlags + Rd(i);
+  return kConditions + Rd(i);
 }
 
 
@@ -113,7 +113,7 @@ RegisterList LongMultiply::defs(const Instruction i) const {
 
 
 RegisterList SatAddSub::defs(const Instruction i) const {
-  return DataProc::defs(i) + kRegisterFlags;
+  return DataProc::defs(i) + kConditions;
 }
 
 
@@ -121,7 +121,7 @@ RegisterList SatAddSub::defs(const Instruction i) const {
 
 RegisterList MoveToStatusRegister::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
-  return kRegisterFlags;
+  return kConditions;
 }
 
 
