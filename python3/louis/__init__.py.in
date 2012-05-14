@@ -97,7 +97,7 @@ def translate(tableList, inbuf, typeform=None,cursorPos=0, mode=0):
     @param tableList: A list of translation tables.
     @type tableList: list of str
     @param inbuf: The string to translate.
-    @type inbuf: unicode
+    @type inbuf: str
     @param typeform: A list of typeform constants indicating the typeform for each position in inbuf,
         C{None} for no typeform information.
     @type typeform: list of int
@@ -109,7 +109,7 @@ def translate(tableList, inbuf, typeform=None,cursorPos=0, mode=0):
         a list of input positions for each position in the output,
         a list of output positions for each position in the input, and
         the position of the cursor in the output.
-    @rtype: (unicode, list of int, list of int, int)
+    @rtype: (str, list of int, list of int, int)
     @raise RuntimeError: If a complete translation could not be done.
     @see: lou_translate in the liblouis documentation
     """
@@ -137,14 +137,14 @@ def translateString(tableList, inbuf, typeform = None, mode = 0):
     @param tableList: A list of translation tables.
     @type tableList: list of str
     @param inbuf: The string to translate.
-    @type inbuf: unicode
+    @type inbuf: str
     @param typeform: A list of typeform constants indicating the typeform for each position in inbuf,
         C{None} for no typeform information.
     @type typeform: list of int
     @param mode: The translation mode; add multiple values for a combined mode.
     @type mode: int
     @return: The translated string.
-    @rtype: unicode
+    @rtype: str
     @raise RuntimeError: If a complete translation could not be done.
     @see: lou_translateString in the liblouis documentation
     """
@@ -169,7 +169,7 @@ def backTranslate(tableList, inbuf, typeform=None, cursorPos=0, mode=0):
     @param tableList: A list of translation tables.
     @type tableList: list of str
     @param inbuf: Braille to back translate.
-    @type inbuf: unicode
+    @type inbuf: str
     @param typeform: List where typeform constants will be placed.
     @type typeform: list
     @param cursorPos: Position of cursor.
@@ -180,7 +180,7 @@ def backTranslate(tableList, inbuf, typeform=None, cursorPos=0, mode=0):
         a list of input positions for each position in the output,
         a list of the output positions for each position in the input and
         the position of the cursor in the output.
-    @rtype: (unicode, list of int, list of int, int)
+    @rtype: (str, list of int, list of int, int)
     @raises RuntimeError: If back translation could not be completed.
     @see: lou_backTranslate in the liblouis documentation.
     """
@@ -208,14 +208,14 @@ def backTranslateString(tableList, inbuf, typeform=None, mode=0):
     @param tableList: A list of translation tables.
     @type tableList: list of str
     @param inbuf: The Braille to back translate.
-    @type inbuf: unicode
+    @type inbuf: str
     @param typeform: List for typeform constants to be put in.
         If you don't want typeform data then give None
     @type typeform: list
     @param mode: The translation mode
     @type mode: int
     @return: The back translation of inbuf.
-    @rtype: unicode
+    @rtype: str
     @raises RuntimeError: If a full back translation could not be done.
     @see: lou_backTranslateString in the liblouis documentation.
     """
@@ -242,7 +242,7 @@ def hyphenate(tableList, inbuf, mode=0):
     @param inbuf: The text to get hyphenation information about.
         This should be a single word and leading/trailing whitespace
         and punctuation is ignored.
-    @type inbuf: unicode
+    @type inbuf: str
     @param mode: Lets liblouis know if inbuf is plain text or Braille.
         Set to 0 for text and anyother value for Braille.
     @type mode: int
@@ -258,7 +258,7 @@ def hyphenate(tableList, inbuf, mode=0):
     hyphen_string = create_string_buffer(inlen.value)
     if not liblouis.lou_hyphenate(tablesString, inbuf, inlen, hyphen_string, mode):
         raise RuntimeError("Can't hyphenate tables %s, inbuf %s, mode %d" %(tablesString, inbuf, mode))
-    return hyphen_string.value
+    return hyphen_string.value.decode("ASCII")
 
 def compileString(tableList, inString):
     """Compile a table entry on the fly at run-time.
