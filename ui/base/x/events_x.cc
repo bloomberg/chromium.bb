@@ -290,7 +290,7 @@ class UI_EXPORT CMTEventData {
 
   };
 
-  CMTEventData() : natural_scroll_enabled_(true) {
+  CMTEventData() : natural_scroll_enabled_(false) {
     UpdateDeviceList(ui::GetXDisplay());
   }
 
