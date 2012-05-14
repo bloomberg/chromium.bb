@@ -56,6 +56,7 @@ class SyncedTabDelegate;
 }
 
 namespace extensions {
+class ScriptExecutor;
 class WebNavigationTabObserver;
 }
 
@@ -131,6 +132,10 @@ class TabContentsWrapper : public content::WebContentsObserver {
   }
 
   CoreTabHelper* core_tab_helper() { return core_tab_helper_.get(); }
+
+  extensions::ScriptExecutor* extension_script_executor() {
+    return extension_script_executor_.get();
+  }
 
   ExtensionTabHelper* extension_tab_helper() {
     return extension_tab_helper_.get();
@@ -228,6 +233,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
   scoped_ptr<BookmarkTabHelper> bookmark_tab_helper_;
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
   scoped_ptr<CoreTabHelper> core_tab_helper_;
+  scoped_ptr<extensions::ScriptExecutor> extension_script_executor_;
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<FindTabHelper> find_tab_helper_;

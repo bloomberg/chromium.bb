@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
 class BackingStore;
@@ -113,8 +112,7 @@ class HighlightTabsFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.highlight")
 };
-class UpdateTabFunction : public AsyncExtensionFunction,
-                          public content::WebContentsObserver {
+class UpdateTabFunction : public AsyncExtensionFunction {
  public:
   UpdateTabFunction();
 
@@ -124,15 +122,11 @@ class UpdateTabFunction : public AsyncExtensionFunction,
                                   bool* is_async);
   virtual void PopulateResult();
 
-  content::WebContents* web_contents_;
+  TabContentsWrapper* tab_contents_;
 
  private:
   virtual bool RunImpl() OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  void OnExecuteCodeFinished(int request_id,
-                             bool success,
-                             const std::string& error);
+  void OnExecuteCodeFinished(bool success, const std::string& error);
 
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.update")
 };

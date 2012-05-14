@@ -11,11 +11,9 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
-#include "content/public/browser/web_contents_observer.h"
 
 // Implement API call tabs.executeScript and tabs.insertCSS.
-class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
-                                 public content::WebContentsObserver {
+class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
  public:
   ExecuteCodeInTabFunction();
 
@@ -26,12 +24,8 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // content::WebContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
   // Message handler.
-  void OnExecuteCodeFinished(int request_id, bool success,
-                             const std::string& error);
+  void OnExecuteCodeFinished(bool success, const std::string& error);
 
   // Called when contents from the file whose path is specified in JSON
   // arguments has been loaded.

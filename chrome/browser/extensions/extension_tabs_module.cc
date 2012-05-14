@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/extensions/extension_window_list.h"
+#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -88,6 +89,7 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::RenderViewHost;
 using content::WebContents;
+using extensions::ScriptExecutor;
 
 const int CaptureVisibleTabFunction::kDefaultQuality = 90;
 
@@ -1178,7 +1180,7 @@ bool HighlightTabsFunction::RunImpl() {
   return true;
 }
 
-UpdateTabFunction::UpdateTabFunction() : web_contents_(NULL) {
+UpdateTabFunction::UpdateTabFunction() : tab_contents_(NULL) {
 }
 
 bool UpdateTabFunction::RunImpl() {
@@ -1215,7 +1217,7 @@ bool UpdateTabFunction::RunImpl() {
     return false;
   }
 
-  web_contents_ = contents->web_contents();
+  tab_contents_ = contents;
 
   // TODO(rafaelw): handle setting remaining tab properties:
   // -title
@@ -1243,7 +1245,7 @@ bool UpdateTabFunction::RunImpl() {
       tab_strip->ActivateTabAt(tab_index, false);
       DCHECK_EQ(contents, tab_strip->GetActiveTabContents());
     }
-    web_contents_->Focus();
+    tab_contents_->web_contents()->Focus();
   }
 
   if (update_props->HasKey(keys::kHighlightedKey)) {
@@ -1313,37 +1315,30 @@ bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
   // we need to check host permissions before allowing them.
   if (url.SchemeIs(chrome::kJavaScriptScheme)) {
     if (!GetExtension()->CanExecuteScriptOnPage(
-            web_contents_->GetURL(), NULL, &error_)) {
+            tab_contents_->web_contents()->GetURL(), NULL, &error_)) {
       return false;
     }
 
-    ExtensionMsg_ExecuteCode_Params params;
-    params.request_id = request_id();
-    params.extension_id = extension_id();
-    params.is_javascript = true;
-    params.code = url.path();
-    params.run_at = UserScript::DOCUMENT_IDLE;
-    params.all_frames = false;
-    params.in_main_world = true;
-
-    RenderViewHost* render_view_host = web_contents_->GetRenderViewHost();
-    render_view_host->Send(
-        new ExtensionMsg_ExecuteCode(render_view_host->GetRoutingID(), params));
-
-    Observe(web_contents_);
-    AddRef();  // Balanced in OnExecuteCodeFinished().
+    tab_contents_->extension_script_executor()->ExecuteScript(
+        extension_id(),
+        ScriptExecutor::JAVASCRIPT,
+        url.path(),
+        ScriptExecutor::TOP_FRAME,
+        UserScript::DOCUMENT_IDLE,
+        ScriptExecutor::MAIN_WORLD,
+        base::Bind(&UpdateTabFunction::OnExecuteCodeFinished, this));
 
     *is_async = true;
     return true;
   }
 
-  web_contents_->GetController().LoadURL(
+  tab_contents_->web_contents()->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
 
   // The URL of a tab contents never actually changes to a JavaScript URL, so
   // this check only makes sense in other cases.
   if (!url.SchemeIs(chrome::kJavaScriptScheme))
-    DCHECK_EQ(url.spec(), web_contents_->GetURL().spec());
+    DCHECK_EQ(url.spec(), tab_contents_->web_contents()->GetURL().spec());
 
   return true;
 }
@@ -1352,42 +1347,15 @@ void UpdateTabFunction::PopulateResult() {
   if (!has_callback())
     return;
 
-  if (GetExtension()->HasAPIPermission(ExtensionAPIPermission::kTab) &&
-      web_contents_ != NULL) {
-    result_.reset(ExtensionTabUtil::CreateTabValue(web_contents_));
+  if (GetExtension()->HasAPIPermission(ExtensionAPIPermission::kTab)) {
+    result_.reset(
+        ExtensionTabUtil::CreateTabValue(tab_contents_->web_contents()));
   } else {
     result_.reset(Value::CreateNullValue());
   }
 }
 
-void UpdateTabFunction::WebContentsDestroyed(WebContents* tab) {
-  CHECK_EQ(tab, web_contents_);
-  web_contents_ = NULL;
-}
-
-bool UpdateTabFunction::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() != ExtensionHostMsg_ExecuteCodeFinished::ID)
-    return false;
-
-  int message_request_id = -1;
-  PickleIterator iter(message);
-  if (!message.ReadInt(&iter, &message_request_id)) {
-    NOTREACHED() << "malformed extension message";
-    return true;
-  }
-
-  if (message_request_id != request_id())
-    return false;
-
-  IPC_BEGIN_MESSAGE_MAP(UpdateTabFunction, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExecuteCodeFinished,
-                        OnExecuteCodeFinished)
-  IPC_END_MESSAGE_MAP()
-  return true;
-}
-
-void UpdateTabFunction::OnExecuteCodeFinished(int request_id,
-                                              bool success,
+void UpdateTabFunction::OnExecuteCodeFinished(bool success,
                                               const std::string& error) {
   if (!error.empty()) {
     CHECK(!success);
@@ -1397,9 +1365,6 @@ void UpdateTabFunction::OnExecuteCodeFinished(int request_id,
   if (success)
     PopulateResult();
   SendResponse(success);
-
-  Observe(NULL);
-  Release();  // Balanced in UpdateURLIfPresent().
 }
 
 bool MoveTabsFunction::RunImpl() {

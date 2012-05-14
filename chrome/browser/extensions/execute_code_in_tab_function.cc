@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/file_reader.h"
+#include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
+using extensions::ScriptExecutor;
 
 namespace keys = extension_tabs_module_constants;
 
@@ -141,29 +143,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   return true;
 }
 
-bool ExecuteCodeInTabFunction::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() != ExtensionHostMsg_ExecuteCodeFinished::ID)
-    return false;
-
-  int message_request_id;
-  PickleIterator iter(message);
-  if (!message.ReadInt(&iter, &message_request_id)) {
-    NOTREACHED() << "malformed extension message";
-    return true;
-  }
-
-  if (message_request_id != request_id())
-    return false;
-
-  IPC_BEGIN_MESSAGE_MAP(ExecuteCodeInTabFunction, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExecuteCodeFinished,
-                        OnExecuteCodeFinished)
-  IPC_END_MESSAGE_MAP()
-  return true;
-}
-
-void ExecuteCodeInTabFunction::OnExecuteCodeFinished(int request_id,
-                                                     bool success,
+void ExecuteCodeInTabFunction::OnExecuteCodeFinished(bool success,
                                                      const std::string& error) {
   if (!error.empty()) {
     CHECK(!success);
@@ -171,9 +151,6 @@ void ExecuteCodeInTabFunction::OnExecuteCodeFinished(int request_id,
   }
 
   SendResponse(success);
-
-  Observe(NULL);
-  Release();  // balanced in Execute()
 }
 
 void ExecuteCodeInTabFunction::DidLoadFile(bool success,
@@ -259,28 +236,21 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
     return false;
   }
 
-  bool is_js_code = true;
+  ScriptExecutor::ScriptType script_type = ScriptExecutor::JAVASCRIPT;
   std::string function_name = name();
   if (function_name == TabsInsertCSSFunction::function_name()) {
-    is_js_code = false;
+    script_type = ScriptExecutor::CSS;
   } else if (function_name != TabsExecuteScriptFunction::function_name()) {
-    DCHECK(false);
+    NOTREACHED();
   }
 
-  ExtensionMsg_ExecuteCode_Params params;
-  params.request_id = request_id();
-  params.extension_id = extension->id();
-  params.is_javascript = is_js_code;
-  params.code = code_string;
-  params.all_frames = all_frames_;
-  params.run_at = run_at_;
-  params.in_main_world = false;
-  contents->web_contents()->GetRenderViewHost()->Send(
-      new ExtensionMsg_ExecuteCode(
-          contents->web_contents()->GetRenderViewHost()->GetRoutingID(),
-          params));
-
-  Observe(contents->web_contents());
-  AddRef();  // balanced in OnExecuteCodeFinished()
+  contents->extension_script_executor()->ExecuteScript(
+      extension->id(),
+      script_type,
+      code_string,
+      all_frames_ ? ScriptExecutor::ALL_FRAMES : ScriptExecutor::TOP_FRAME,
+      run_at_,
+      ScriptExecutor::ISOLATED_WORLD,
+      base::Bind(&ExecuteCodeInTabFunction::OnExecuteCodeFinished, this));
   return true;
 }
