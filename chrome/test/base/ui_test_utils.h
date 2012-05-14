@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ui_controls/ui_controls.h"
@@ -221,6 +222,11 @@ int FindInPage(TabContentsWrapper* tab,
 // Simulates clicking at the center of the given tab asynchronously. Unlike
 // ClickOnView, this works even if the browser isn't in the foreground.
 void SimulateMouseClick(content::WebContents* tab);
+
+// Simulates asynchronously a mouse enter/move/leave event.
+void SimulateMouseEvent(content::WebContents* tab,
+                        WebKit::WebInputEvent::Type type,
+                        const gfx::Point& point);
 
 // Sends a key press asynchronously. Unlike the SendKeyPress functions, this
 // works even if the browser isn't in the foreground.

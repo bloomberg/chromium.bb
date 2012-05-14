@@ -642,6 +642,16 @@ void SimulateMouseClick(content::WebContents* tab) {
   tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
 }
 
+void SimulateMouseEvent(content::WebContents* tab,
+                        WebKit::WebInputEvent::Type type,
+                        const gfx::Point& point) {
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = type;
+  mouse_event.x = point.x();
+  mouse_event.y = point.y();
+  tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
+}
+
 void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
                             ui::KeyboardCode key,
                             bool control,

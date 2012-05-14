@@ -5,6 +5,7 @@ include_rules = [
   "+jni", # For generated JNI includes
   "+media/audio",  # For audio input for speech input feature.
   "+media/base/android",  # For Android JNI registration.
+  "+ui/ui_controls",  # this should probably move into a DEPS file under test.
 
   # Other libraries.
   "+third_party/iaccessible2",
