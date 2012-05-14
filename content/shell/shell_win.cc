@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/resource_util.h"
 #include "base/win/wrapped_window_proc.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/resource.h"
@@ -186,6 +187,30 @@ void Shell::PlatformResizeSubViews() {
 
 void Shell::Close() {
   DestroyWindow(window_);
+}
+
+bool Shell::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                   bool* is_keyboard_shortcut) {
+  if (event.type != WebKit::WebInputEvent::RawKeyDown)
+    return false;
+
+  bool control = (event.modifiers & NativeWebKeyboardEvent::ControlKey) ==
+      NativeWebKeyboardEvent::ControlKey;
+  bool shift = (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
+      NativeWebKeyboardEvent::ShiftKey;
+  bool alt = (event.modifiers & NativeWebKeyboardEvent::AltKey) ==
+      NativeWebKeyboardEvent::AltKey;
+
+  // Control-N creates a new window
+  if (control && !shift && !alt &&
+      event.text[0] == 'N') {
+    CreateNewWindow(web_contents()->GetBrowserContext(), GURL(), NULL,
+                    MSG_ROUTING_NONE, NULL);
+    return true;
+  }
+
+  *is_keyboard_shortcut = true;
+  return false;
 }
 
 ATOM Shell::RegisterWindowClass() {
