@@ -1245,7 +1245,7 @@ class RenderViewImpl : public RenderWidget,
   RendererAccessibility* renderer_accessibility_;
 
   // Java Bridge dispatcher attached to this view; lazily initialized.
-  scoped_ptr<JavaBridgeDispatcher> java_bridge_dispatcher_;
+  JavaBridgeDispatcher* java_bridge_dispatcher_;
 
   // Mouse Lock dispatcher attached to this view.
   MouseLockDispatcher* mouse_lock_dispatcher_;

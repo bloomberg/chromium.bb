@@ -476,6 +476,7 @@ RenderViewImpl::RenderViewImpl(
       p2p_socket_dispatcher_(NULL),
       devtools_agent_(NULL),
       renderer_accessibility_(NULL),
+      java_bridge_dispatcher_(NULL),
       mouse_lock_dispatcher_(NULL),
       session_storage_namespace_id_(session_storage_namespace_id),
       handling_select_range_(false),
@@ -5322,8 +5323,8 @@ bool RenderViewImpl::WebWidgetHandlesCompositorScheduling() const {
 }
 
 void RenderViewImpl::OnJavaBridgeInit() {
-  DCHECK(!java_bridge_dispatcher_.get());
+  DCHECK(!java_bridge_dispatcher_);
 #if defined(ENABLE_JAVA_BRIDGE)
-  java_bridge_dispatcher_.reset(new JavaBridgeDispatcher(this));
+  java_bridge_dispatcher_ = new JavaBridgeDispatcher(this);
 #endif
 }
