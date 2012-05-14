@@ -24,6 +24,7 @@ desired threshold value.
 
 import BaseHTTPServer
 import commands
+import errno
 import logging
 import math
 import os
@@ -31,6 +32,7 @@ import posixpath
 import re
 import SimpleHTTPServer
 import SocketServer
+import signal
 import subprocess
 import sys
 import tempfile
@@ -91,6 +93,49 @@ class BasePerfTest(pyauto.PyUITest):
     if self.IsLinux():  # IsLinux() also implies IsChromeOS().
       os.system('sync')
       self._WaitForIdleCPU(60.0, 0.05)
+
+  def _IsPIDRunning(self, pid):
+    """Checks if a given process id is running.
+
+    Args:
+      pid: The process id of the process to check.
+
+    Returns:
+      True if the process is running. False if not.
+    """
+    try:
+      # Note that this sends the signal 0, which should not interfere with the
+      # process.
+      os.kill(pid, 0)
+    except OSError, err:
+      if err.errno == errno.ESRCH:
+        return False
+    return True
+
+  def _WaitForChromeExit(self, browser_info, timeout):
+    child_processes = browser_info['child_processes']
+    initial_time = time.time()
+    while time.time() - initial_time < timeout:
+      if any([self._IsPIDRunning(c['pid']) for c in child_processes]):
+        time.sleep(1)
+      else:
+        logging.info('_WaitForChromeExit() took: %s seconds',
+                     time.time() - initial_time)
+        return
+    self.fail('_WaitForChromeExit() did not finish within %s seconds',
+              timeout)
+
+  def tearDown(self):
+    if self._IsPGOMode():
+      browser_info = self.GetBrowserInfo()
+      pid = browser_info['browser_pid']
+      os.kill(pid, signal.SIGINT)
+      self._WaitForChromeExit(browser_info, 30)
+
+    pyauto.PyUITest.tearDown(self)
+
+  def _IsPGOMode(self):
+    return 'USE_PGO' in os.environ
 
   def _WaitForIdleCPU(self, timeout, utilization):
     """Waits for the CPU to become idle (< utilization).
@@ -581,7 +626,7 @@ class BasePerfTest(pyauto.PyUITest):
       A list of extra flags to pass to Chrome when it is launched.
     """
     flags = super(BasePerfTest, self).ExtraChromeFlags()
-    if 'USE_PGO' in os.environ:
+    if self._IsPGOMode():
       flags = flags + ['--renderer-clean-exit', '--no-sandbox']
     return flags
 
