@@ -1569,14 +1569,6 @@ WebWidget* RenderViewImpl::createPopupMenu(WebKit::WebPopupType popup_type) {
   return widget->webwidget();
 }
 
-WebWidget* RenderViewImpl::createPopupMenu(const WebPopupMenuInfo& info) {
-  // TODO(jcivelli): Remove this deprecated method when its been removed from
-  //                 the WebViewClient interface. It's been replaced by
-  //                 createExternalPopupMenu.
-  NOTREACHED();
-  return NULL;
-}
-
 WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
     const WebPopupMenuInfo& popup_menu_info,
     WebExternalPopupMenuClient* popup_menu_client) {
