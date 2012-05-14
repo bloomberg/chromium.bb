@@ -20,6 +20,11 @@
       <imageobject>
 	<imagedata fileref="images/x-architecture.png" format="PNG" />
       </imageobject>
+      <textobject>
+        <phrase>
+          X architecture diagram
+        </phrase>
+      </textobject>
     </mediaobject>
     <para>
       <orderedlist>
@@ -124,6 +129,11 @@
       <imageobject>
 	<imagedata fileref="images/wayland-architecture.png" format="PNG" />
       </imageobject>
+      <textobject>
+        <phrase>
+          Wayland architecture diagram
+        </phrase>
+      </textobject>
     </mediaobject>
     <para>
       <orderedlist>

@@ -27,6 +27,11 @@
       <imageobject>
 	<imagedata fileref="images/wayland.png" format="PNG" />
       </imageobject>
+      <textobject>
+        <phrase>
+          Wayland logo
+        </phrase>
+      </textobject>
     </inlinemediaobject>
   </corpauthor>
   <xi:include href="Common_Content/Legal_Notice.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />

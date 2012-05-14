@@ -45,6 +45,11 @@
       <imageobject>
 	<imagedata fileref="images/x-architecture.png" format="PNG" />
       </imageobject>
+      <textobject>
+        <phrase>
+          X architecture diagram
+        </phrase>
+      </textobject>
     </mediaobject>
     <para>
       The diagram above illustrates the central role of the X server and
@@ -103,6 +108,11 @@
       <imageobject>
 	<imagedata fileref="images/wayland-architecture.png" format="PNG" />
       </imageobject>
+      <textobject>
+        <phrase>
+          Wayland architecture diagram
+        </phrase>
+      </textobject>
     </mediaobject>
     <para>
       The figure above illustrates how Wayland clients interact with a
