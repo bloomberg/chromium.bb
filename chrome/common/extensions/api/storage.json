@@ -176,23 +176,23 @@
         "properties": {
           "QUOTA_BYTES": {
             "value": 102400,
-            "description": "The maximum total amount (in bytes) of data that can be stored in sync storage."
+            "description": "The maximum total amount (in bytes) of data that can be stored in sync storage. Updates that would cause this limit to be exceeded fail immediately and set chrome.extension.lastError."
           },
           "QUOTA_BYTES_PER_ITEM": {
             "value": 2048,
-            "description": "The maximum size (in bytes) of each individual item in sync storage."
+            "description": "The maximum size (in bytes) of each individual item in sync storage. Updates containing items larger than this limit will fail."
           },
           "MAX_ITEMS": {
             "value": 512,
-            "description": "The maximum number of items that can be stored in sync storage."
+            "description": "The maximum number of items that can be stored in sync storage. Updates that would cause this limit to be exceeded will fail"
           },
           "MAX_WRITE_OPERATIONS_PER_HOUR": {
             "value": 1000,
-            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour."
+            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail."
           },
           "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE": {
             "value": 10,
-            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes."
+            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes. Updates that would cause this limit to be exceeded fail."
           }
         }
       },
@@ -203,7 +203,7 @@
         "properties": {
           "QUOTA_BYTES": {
             "value": 5242880,
-            "description": "The maximum amount (in bytes) of data that can be stored in local storage. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission."
+            "description": "The maximum amount (in bytes) of data that can be stored in local storage. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission. Updates that would cause this limit to be exceeded fail."
           }
         }
       }

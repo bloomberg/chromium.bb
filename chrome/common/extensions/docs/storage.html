@@ -307,12 +307,12 @@ you can use either
 <code>storage.sync</code> or
 <code>storage.local</code>.
 When using <code>storage.sync</code>,
-the stored data will automatically be persisted
-across any Chrome browser that the user is logged into
-provided the user's has sync enabled.
+the stored data will automatically be synced
+to any Chrome browser that the user is logged into,
+provided the user has sync enabled.
 </p>
 <p>
-When Chrome's offline,
+When Chrome is offline,
 Chrome stores the data locally.
 The next time the browser is online,
 Chrome syncs the data.
@@ -326,39 +326,37 @@ Confidential user information should not be stored!
 The storage area isn't encrypted.
 </p>
 <h2 id="limits">Storage and throttling limits</h2>
+<p><code>chrome.storage</code> is not a big truck.
+It's a series of tubes.
+And if you don't understand,
+those tubes can be filled,
+and if they are filled
+when you put your message in,
+it gets in line,
+and it's going to be delayed
+by anyone that puts into that tube
+enormous amounts of material.
+</p><p>For details on the current limits
+of the storage API, and what happens
+when those limits are exceeded, please
+see the <a href="#apiReference">API reference.</a>
+</p><h2 id="examples">Examples</h2>
 <p>
-Storage space is limited to:
-</p>
-<ul>
-  <li>100kB per extension</li>
-  <li>2kB per item—each item size is the sum
-of its JSON serialization plus its key</li>
-  <li>512 items per extension</li>
-</ul>
-<p>
-The throttling limit for modification calls
-to the Storage API is 1000 operations per hour.
-</p>
-<h2 id="examples">Examples</h2>
-<p>
-Storing user data is
-as simple as calling
-<code>set()</code>.
 The following example checks for
 CSS code saved by a user on a form,
 and if found,
 stores it.
 </p>
 <pre>function saveChanges() {
-  // Get the current CSS snippet from the form.
-  var cssCode = textarea.value;
+  // Get a value saved in a form.
+  var theValue = textarea.value;
   // Check that there's some code there.
-  if (!cssCode) {
-    message('Error: No CSS specified');
+  if (!theValue) {
+    message('Error: No value specified');
     return;
   }
   // Save it using the Chrome extension storage API.
-  chrome.experimental.storage.sync.set({'css': cssCode}, function() {
+  chrome.experimental.storage.sync.set({'value': theValue}, function() {
     // Notify that we saved.
     message('Settings saved');
   });
@@ -372,10 +370,19 @@ to its <code>onChanged</code> event.
 Whenever anything changes in storage,
 that event fires.
 Here's sample code
-to listen for saved css changes:
+to listen for saved changes:
 </p>
-<pre>chrome.storage.onChanged.addListener(saveChanges);
-saveChanges();
+<pre>chrome.storage.onChanged.addListener(function(changes, namespace) {
+  for (key in changes) {
+    var storageChange = changes[key];
+    console.log('Storage key "%s" in namespace "%s" changed. ' +
+                'Old value was "%s", new value is "%s".',
+                key,
+                namespace,
+                storageChange.oldValue,
+                storageChange.newValue);
+  }
+});
 </pre>
 <p>
 You can find examples that use this API on the
@@ -433,7 +440,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum total amount (in bytes) of data that can be stored in sync storage.</dd>
+          <dd>The maximum total amount (in bytes) of data that can be stored in sync storage. Updates that would cause this limit to be exceeded fail immediately and set chrome.extension.lastError.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -454,7 +461,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum size (in bytes) of each individual item in sync storage.</dd>
+          <dd>The maximum size (in bytes) of each individual item in sync storage. Updates containing items larger than this limit will fail.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -475,7 +482,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum number of items that can be stored in sync storage.</dd>
+          <dd>The maximum number of items that can be stored in sync storage. Updates that would cause this limit to be exceeded will fail</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -496,7 +503,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour.</dd>
+          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -517,7 +524,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes.</dd>
+          <dd>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute, sustained over 10 minutes. Updates that would cause this limit to be exceeded fail.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -572,7 +579,7 @@ You can find examples that use this API on the
                 </div>
               </em>
           </dt>
-          <dd>The maximum amount (in bytes) of data that can be stored in local storage. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission.</dd>
+          <dd>The maximum amount (in bytes) of data that can be stored in local storage. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission. Updates that would cause this limit to be exceeded fail.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
