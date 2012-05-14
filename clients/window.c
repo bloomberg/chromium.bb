@@ -1175,13 +1175,6 @@ frame_resize_handler(struct widget *widget,
 		allocation.width = width - decoration_width;
 		allocation.height = height - decoration_height;
 
-		widget->window->input_region =
-			wl_compositor_create_region(display->compositor);
-		wl_region_add(widget->window->input_region,
-			      frame->margin, frame->margin,
-			      width - 2 * frame->margin,
-			      height - 2 * frame->margin);
-
 		opaque_margin = frame->margin + display->frame_radius;
 
 		wl_list_for_each(button, &frame->buttons_list, link)
@@ -1209,9 +1202,17 @@ frame_resize_handler(struct widget *widget,
 				      allocation.height,
 				      child->user_data);
 
-	widget_set_allocation(widget, 0, 0,
-			      child->allocation.width + decoration_width,
-			      child->allocation.height + decoration_height);
+	width = child->allocation.width + decoration_width;
+	height = child->allocation.height + decoration_height;
+
+	widget->window->input_region =
+		      wl_compositor_create_region(display->compositor);
+	wl_region_add(widget->window->input_region,
+		      frame->margin, frame->margin,
+		      width - 2 * frame->margin,
+		      height - 2 * frame->margin);
+
+	widget_set_allocation(widget, 0, 0, width, height);
 
 	if (child->opaque) {
 		widget->window->opaque_region =
