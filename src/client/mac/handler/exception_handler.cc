@@ -485,7 +485,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         self->SuspendThreads();
 
 #if USE_PROTECTED_ALLOCATIONS
-        if(gBreakpadAllocator)
+        if (gBreakpadAllocator)
           gBreakpadAllocator->Unprotect();
 #endif
 
@@ -513,7 +513,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
                                            false, false);
 
 #if USE_PROTECTED_ALLOCATIONS
-        if(gBreakpadAllocator)
+        if (gBreakpadAllocator)
           gBreakpadAllocator->Protect();
 #endif
 
@@ -534,7 +534,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
           self->SuspendThreads();
 
 #if USE_PROTECTED_ALLOCATIONS
-        if(gBreakpadAllocator)
+        if (gBreakpadAllocator)
           gBreakpadAllocator->Unprotect();
 #endif
 
@@ -551,14 +551,14 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         // This may have become protected again within
         // WriteMinidumpWithException, but it needs to be unprotected for
         // UninstallHandler.
-        if(gBreakpadAllocator)
+        if (gBreakpadAllocator)
           gBreakpadAllocator->Unprotect();
 #endif
 
         self->UninstallHandler(true);
 
 #if USE_PROTECTED_ALLOCATIONS
-        if(gBreakpadAllocator)
+        if (gBreakpadAllocator)
           gBreakpadAllocator->Protect();
 #endif
         }
@@ -582,6 +582,10 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 
 //static
 void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
+#if USE_PROTECTED_ALLOCATIONS
+  if (gBreakpadAllocator)
+    gBreakpadAllocator->Unprotect();
+#endif
   gProtectedData.handler->WriteMinidumpWithException(
       EXC_SOFTWARE,
       MD_EXCEPTION_CODE_MAC_ABORT,
@@ -589,6 +593,10 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
       mach_thread_self(),
       true,
       true);
+#if USE_PROTECTED_ALLOCATIONS
+  if (gBreakpadAllocator)
+    gBreakpadAllocator->Protect();
+#endif
 }
 
 bool ExceptionHandler::InstallHandler() {
