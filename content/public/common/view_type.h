@@ -8,13 +8,15 @@
 
 namespace content {
 
-// Indicates different types of views.
+// Icky RTTI used by a few systems to distinguish the host type of a given
+// RenderViewHost or WebContents.
+//
+// TODO(aa): Remove this and teach those systems to keep track of their own
+// data.
 enum ViewTypeValues {
   VIEW_TYPE_INVALID,
-  VIEW_TYPE_WEB_CONTENTS,
   VIEW_TYPE_INTERSTITIAL_PAGE,
   VIEW_TYPE_DEV_TOOLS_UI,
-
   VIEW_TYPE_CONTENT_END
 };
 

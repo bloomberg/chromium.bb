@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_view_type.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -67,6 +68,8 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
       web_contents_(contents) {
   DCHECK(contents);
   DCHECK(!GetCurrentWrapperForContents(contents));
+
+  web_contents_->SetViewType(chrome::VIEW_TYPE_TAB_CONTENTS);
 
   // Stash this in the property bag so it can be retrieved without having to
   // go to a Browser.

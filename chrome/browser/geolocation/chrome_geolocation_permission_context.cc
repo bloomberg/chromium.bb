@@ -22,6 +22,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -624,7 +625,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
   if (!web_contents || web_contents->GetViewType() !=
-          content::VIEW_TYPE_WEB_CONTENTS) {
+          chrome::VIEW_TYPE_TAB_CONTENTS) {
     // The tab may have gone away, or the request may not be from a tab at all.
     // TODO(mpcomplete): the request could be from a background page or
     // extension popup (tab_contents will have a different ViewType). But why do

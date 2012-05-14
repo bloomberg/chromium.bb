@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
@@ -235,7 +236,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   const content::RenderViewHost* render_view_host =
       content::RenderViewHost::FromID(render_process_id, render_view_id);
 
-  // For host delegates other than VIEW_TYPE_WEB_CONTENTS we can't reliably show
+  // For host delegates other than VIEW_TYPE_TAB_CONTENTS we can't reliably show
   // a popup, including the speech input bubble. In these cases for privacy
   // reasons we don't want to start recording if the user can't be properly
   // notified. An example of this is trying to show the speech input bubble
@@ -245,7 +246,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   const bool allowed = (render_view_host != NULL &&
                         render_view_host->GetDelegate() != NULL &&
                         render_view_host->GetDelegate()->GetRenderViewType() ==
-                            content::VIEW_TYPE_WEB_CONTENTS);
+                            chrome::VIEW_TYPE_TAB_CONTENTS);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, session_id, allowed));
 }

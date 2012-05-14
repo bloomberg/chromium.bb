@@ -1323,11 +1323,9 @@ bool TaskManagerExtensionProcessResourceProvider::
   // Don't add WebContents (those are handled by
   // TaskManagerTabContentsResourceProvider) or background contents (handled
   // by TaskManagerBackgroundResourceProvider).
-  // TODO(benwells): create specific chrome::VIEW_TYPE_TAB_CONTENTS for
-  // tab contents, as VIEW_TYPE_WEB_CONTENTS is the default.
   content::ViewType view_type =
       render_view_host->GetDelegate()->GetRenderViewType();
-  return (view_type != content::VIEW_TYPE_WEB_CONTENTS &&
+  return (view_type != chrome::VIEW_TYPE_TAB_CONTENTS &&
           view_type != chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
 }
 

@@ -58,7 +58,7 @@ v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
   } else if (view_type_string == chrome::kViewTypeNotification) {
     view_type = chrome::VIEW_TYPE_NOTIFICATION;
   } else if (view_type_string == chrome::kViewTypeTabContents) {
-    view_type = content::VIEW_TYPE_WEB_CONTENTS;
+    view_type = chrome::VIEW_TYPE_TAB_CONTENTS;
   } else if (view_type_string == chrome::kViewTypePopup) {
     view_type = chrome::VIEW_TYPE_EXTENSION_POPUP;
   } else if (view_type_string == chrome::kViewTypeExtensionDialog) {

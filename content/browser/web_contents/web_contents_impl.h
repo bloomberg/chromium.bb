@@ -708,7 +708,7 @@ class CONTENT_EXPORT WebContentsImpl
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
 
-  // Our view type. Default is VIEW_TYPE_WEB_CONTENTS.
+  // Type of view this WebContents is displaying.
   content::ViewType view_type_;
 
   // Color chooser that was opened by this tab.

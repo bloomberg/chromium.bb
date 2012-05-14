@@ -48,7 +48,7 @@ class ChromeSpeechRecognitionManagerDelegate
  private:
   class OptionalRequestInfo;
 
-  // Checks for VIEW_TYPE_WEB_CONTENTS host in the UI thread and notifies back
+  // Checks for VIEW_TYPE_TAB_CONTENTS host in the UI thread and notifies back
   // the result in the IO thread through |callback|.
   static void CheckRenderViewType(
       int session_id,
