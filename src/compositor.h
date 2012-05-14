@@ -186,8 +186,6 @@ enum {
 	WESTON_COMPOSITOR_SLEEPING	/* no rendering, no frame events */
 };
 
-struct screenshooter;
-
 struct weston_layer {
 	struct wl_list surface_list;
 	struct wl_list link;
@@ -262,7 +260,6 @@ struct weston_compositor {
 
 	void (*ping_handler)(struct weston_surface *surface, uint32_t serial);
 
-	struct screenshooter *screenshooter;
 	int launcher_sock;
 
 	uint32_t output_id_pool;
