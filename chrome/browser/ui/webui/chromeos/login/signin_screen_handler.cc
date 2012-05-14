@@ -284,8 +284,7 @@ SigninScreenHandler::SigninScreenHandler()
       dns_clear_task_running_(false),
       cookies_cleared_(false),
       cookie_remover_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      key_event_listener_(NULL) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowGuest, this);
 }
@@ -294,8 +293,10 @@ SigninScreenHandler::~SigninScreenHandler() {
   weak_factory_.InvalidateWeakPtrs();
   if (cookie_remover_)
     cookie_remover_->RemoveObserver(this);
-  if (key_event_listener_)
-    key_event_listener_->RemoveCapsLockObserver(this);
+  SystemKeyEventListener* key_event_listener =
+      SystemKeyEventListener::GetInstance();
+  if (key_event_listener)
+    key_event_listener->RemoveCapsLockObserver(this);
   if (delegate_)
     delegate_->SetWebUIHandler(NULL);
   CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowNewUser, this);
@@ -405,9 +406,10 @@ void SigninScreenHandler::Initialize() {
     return;
 
   // Register for Caps Lock state change notifications;
-  key_event_listener_ = SystemKeyEventListener::GetInstance();
-  if (key_event_listener_)
-    key_event_listener_->AddCapsLockObserver(this);
+  SystemKeyEventListener* key_event_listener =
+      SystemKeyEventListener::GetInstance();
+  if (key_event_listener)
+    key_event_listener->AddCapsLockObserver(this);
 
   if (show_on_init_) {
     show_on_init_ = false;

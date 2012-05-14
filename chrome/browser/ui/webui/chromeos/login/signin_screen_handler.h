@@ -276,9 +276,6 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_;
 
-  // CapsLock state change notifier instance;
-  SystemKeyEventListener* key_event_listener_;
-
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };
 
