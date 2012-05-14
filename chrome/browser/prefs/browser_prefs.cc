@@ -4,7 +4,6 @@
 
 #include "chrome/browser/prefs/browser_prefs.h"
 
-#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/background/background_mode_manager.h"
@@ -234,8 +233,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 
 #if defined(OS_CHROMEOS)
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
-  if (base::chromeos::IsRunningOnChromeOS())
-    chromeos::Preferences::SetDefaultOSSettings();
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(user_prefs);
 #endif
 

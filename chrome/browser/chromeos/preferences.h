@@ -35,10 +35,6 @@ class Preferences : public content::NotificationObserver {
   // This method will register the prefs associated with Chrome OS settings.
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // This method will set default OS settings like tap-to-click or
-  // natural scroll.
-  static void SetDefaultOSSettings();
-
   // This method is called when kLanguagePreferredVirtualKeyboard is updated to
   // change the virtual keyboard settings to reflect the new value.
   static void UpdateVirturalKeyboardPreference(PrefService* prefs);
