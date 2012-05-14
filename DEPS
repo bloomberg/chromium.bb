@@ -52,7 +52,7 @@ vars = {
   "ffmpeg_hash": "5938434ce9f24585e3f1ee4016f85ac3e837ee57",
 
   "sfntly_revision": "128",
-  "skia_revision": "3919",
+  "skia_revision": "3902",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
@@ -148,6 +148,9 @@ deps = {
 
   "src/third_party/skia/include":
     (Var("googlecode_url") % "skia") + "/trunk/include@" + Var("skia_revision"),
+
+  "src/third_party/skia/third_party/glu":
+    (Var("googlecode_url") % "skia") + "/trunk/third_party/glu@" + Var("skia_revision"),
 
   "src/third_party/WebKit/LayoutTests":
     Var("webkit_trunk") + "/LayoutTests@" + Var("webkit_revision"),
