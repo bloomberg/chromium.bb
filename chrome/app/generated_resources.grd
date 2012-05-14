@@ -5113,11 +5113,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CRXLESS_WEB_APPS_DESCRIPTION" desc="Description of the CRX-less web apps lab">
         Enables support for installing Chrome apps that are deployed using a manifest file on a webpage, rather than by packaging the manifest and icons into a crx file.
       </message>
-      <message name="IDS_TOUCH_OPTIMIZED_UI_NAME" desc="Title of the touch-optimized UI flag." >
+      <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME" desc="Title of the touch-optimized UI flag." >
         Touch Optimized UI
       </message>
-      <message name="IDS_TOUCH_OPTIMIZED_UI_DESCRIPTION" desc="Description of the touch-optimized UI flag.">
+      <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_DESCRIPTION" desc="Description of the touch-optimized UI flag.">
         Enables experimental layout refinements to improve user experience with touch screens.
+      </message>
+      <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_AUTOMATIC" desc="Option name for automatic selection of touch optimized UI mode.">
+        Automatic
+      </message>
+      <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_ENABLED" desc="Option name for always enabling touch optimized UI mode.">
+        Enabled
+      </message>
+      <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_DISABLED" desc="Option name for always disabling touch optimized UI mode.">
+        Disabled
       </message>
       <message name="IDS_ENABLE_TOUCH_EVENTS_NAME" desc="Title of the enable touch-events flag." >
         Enable touch events

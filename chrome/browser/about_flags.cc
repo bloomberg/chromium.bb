@@ -90,6 +90,17 @@ const Experiment::Choice kThreadedCompositingModeChoices[] = {
     switches::kEnableThreadedCompositing, ""}
 };
 
+const Experiment::Choice kTouchOptimizedUIChoices[] = {
+  { IDS_FLAGS_TOUCH_OPTIMIZED_UI_AUTOMATIC, "", "" },
+  { IDS_FLAGS_TOUCH_OPTIMIZED_UI_ENABLED,
+    switches::kTouchOptimizedUI,
+    switches::kTouchOptimizedUIEnabled },
+  { IDS_FLAGS_TOUCH_OPTIMIZED_UI_DISABLED,
+    switches::kTouchOptimizedUI,
+    switches::kTouchOptimizedUIDisabled }
+};
+
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -626,10 +637,10 @@ const Experiment kExperiments[] = {
 #endif
   {
     "touch-optimized-ui",
-    IDS_TOUCH_OPTIMIZED_UI_NAME,
-    IDS_TOUCH_OPTIMIZED_UI_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kTouchOptimizedUI)
+    IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME,
+    IDS_FLAGS_TOUCH_OPTIMIZED_UI_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    MULTI_VALUE_TYPE(kTouchOptimizedUIChoices)
   },
   {
     "enable-touch-events",

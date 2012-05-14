@@ -35,7 +35,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/touch/touch_mode_support.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
@@ -1230,7 +1229,7 @@ void TabStrip::Init() {
     drop_indicator_width = drop_image->width();
     drop_indicator_height = drop_image->height();
   }
-  if (TouchModeSupport::IsTouchOptimized() ||
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableStackedTabStrip)) {
     touch_layout_.reset(new TouchTabStripLayout(

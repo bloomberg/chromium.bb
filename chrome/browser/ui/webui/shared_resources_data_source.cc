@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
@@ -19,8 +18,8 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/mime_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_switches.h"
 
 namespace {
 
@@ -49,9 +48,11 @@ int PathToIDR(const std::string& path) {
       }
     }
 
+    // In touch layout use some alternate CSS rules.
+    // Ideally we'd expose a touch-screen media query operator to the web
+    // at large, and then just use that for WebUI instead.  crbug.com/123062
     if (idr == IDR_SHARED_CSS_CHROME2 &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kTouchOptimizedUI)) {
+        ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
       idr = IDR_SHARED_CSS_CHROME2_TOUCH;
     }
   }

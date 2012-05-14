@@ -4,9 +4,8 @@
 
 #include "ui/views/controls/menu/menu_config.h"
 
-#include "base/command_line.h"
 #include "build/build_config.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/layout.h"
 
 namespace views {
 
@@ -43,8 +42,7 @@ MenuConfig::MenuConfig()
       always_use_icon_to_label_padding(false),
       align_arrow_and_shortcut(false) {
   // Use 40px tall menu items when running in touch optimized mode.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kTouchOptimizedUI)) {
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     item_top_margin = item_no_icon_top_margin = 12;
     item_bottom_margin = item_no_icon_bottom_margin = 13;
   }

@@ -79,11 +79,6 @@ XIValuatorClassInfo* FindTPValuator(Display* display,
 
 namespace ui {
 
-// static
-TouchFactory* TouchFactory::GetInstance() {
-  return Singleton<TouchFactory>::get();
-}
-
 TouchFactory::TouchFactory()
     : is_cursor_visible_(true),
       touch_events_allowed_(false),
@@ -146,6 +141,11 @@ TouchFactory::~TouchFactory() {
     XFreeCursor(display, invisible_cursor_);
     XFreeCursor(display, arrow_cursor_);
   }
+}
+
+// static
+TouchFactory* TouchFactory::GetInstance() {
+  return Singleton<TouchFactory>::get();
 }
 
 void TouchFactory::UpdateDeviceList(Display* display) {
@@ -427,50 +427,6 @@ void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
     XDefineCursor(display, window, invisible_cursor_);
 }
 
-void TouchFactory::SetupValuator() {
-  memset(valuator_lookup_, -1, sizeof(valuator_lookup_));
-  memset(touch_param_min_, 0, sizeof(touch_param_min_));
-  memset(touch_param_max_, 0, sizeof(touch_param_max_));
-
-  Display* display = ui::GetXDisplay();
-  int ndevice;
-  XIDeviceInfo* info_list = XIQueryDevice(display, XIAllDevices, &ndevice);
-
-  for (int i = 0; i < ndevice; i++) {
-    XIDeviceInfo* info = info_list + i;
-
-    if (!IsTouchDevice(info->deviceid))
-      continue;
-
-    for (int j = 0; j < TP_LAST_ENTRY; j++) {
-      TouchParam tp = static_cast<TouchParam>(j);
-      XIValuatorClassInfo* valuator = FindTPValuator(display, info, tp);
-      if (valuator) {
-        valuator_lookup_[info->deviceid][j] = valuator->number;
-        touch_param_min_[info->deviceid][j] = valuator->min;
-        touch_param_max_[info->deviceid][j] = valuator->max;
-      }
-    }
-
-#if !defined(USE_XI2_MT)
-    // In order to support multi-touch with XI2.0, we need both a slot_id and
-    // tracking_id valuator.  Without these we'll treat the device as a
-    // single-touch device (like a mouse).
-    // TODO(rbyers): Multi-touch is disabled: http://crbug.com/112329
-    //if (valuator_lookup_[info->deviceid][TP_SLOT_ID] == -1 ||
-    //    valuator_lookup_[info->deviceid][TP_TRACKING_ID] == -1) {
-      DVLOG(1) << "Touch device " << info->deviceid <<
-        " does not provide enough information for multi-touch, treating as "
-        "a single-touch device.";
-      touch_device_list_[info->deviceid] = false;
-    //}
-#endif
-  }
-
-  if (info_list)
-    XIFreeDeviceInfo(info_list);
-}
-
 bool TouchFactory::ExtractTouchParam(const XEvent& xev,
                                      TouchParam tp,
                                      float* value) {
@@ -517,6 +473,54 @@ bool TouchFactory::GetTouchParamRange(unsigned int deviceid,
     return true;
   }
   return false;
+}
+
+bool TouchFactory::IsTouchDevicePresent() {
+  return (touch_device_available_ && touch_events_allowed_);
+}
+
+void TouchFactory::SetupValuator() {
+  memset(valuator_lookup_, -1, sizeof(valuator_lookup_));
+  memset(touch_param_min_, 0, sizeof(touch_param_min_));
+  memset(touch_param_max_, 0, sizeof(touch_param_max_));
+
+  Display* display = ui::GetXDisplay();
+  int ndevice;
+  XIDeviceInfo* info_list = XIQueryDevice(display, XIAllDevices, &ndevice);
+
+  for (int i = 0; i < ndevice; i++) {
+    XIDeviceInfo* info = info_list + i;
+
+    if (!IsTouchDevice(info->deviceid))
+      continue;
+
+    for (int j = 0; j < TP_LAST_ENTRY; j++) {
+      TouchParam tp = static_cast<TouchParam>(j);
+      XIValuatorClassInfo* valuator = FindTPValuator(display, info, tp);
+      if (valuator) {
+        valuator_lookup_[info->deviceid][j] = valuator->number;
+        touch_param_min_[info->deviceid][j] = valuator->min;
+        touch_param_max_[info->deviceid][j] = valuator->max;
+      }
+    }
+
+#if !defined(USE_XI2_MT)
+    // In order to support multi-touch with XI2.0, we need both a slot_id and
+    // tracking_id valuator.  Without these we'll treat the device as a
+    // single-touch device (like a mouse).
+    // TODO(rbyers): Multi-touch is disabled: http://crbug.com/112329
+    //if (valuator_lookup_[info->deviceid][TP_SLOT_ID] == -1 ||
+    //    valuator_lookup_[info->deviceid][TP_TRACKING_ID] == -1) {
+      DVLOG(1) << "Touch device " << info->deviceid <<
+        " does not provide enough information for multi-touch, treating as "
+        "a single-touch device.";
+      touch_device_list_[info->deviceid] = false;
+    //}
+#endif
+  }
+
+  if (info_list)
+    XIFreeDeviceInfo(info_list);
 }
 
 }  // namespace ui

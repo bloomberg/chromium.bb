@@ -24,6 +24,10 @@ namespace ui {
 
 // Functions related to determining touch devices.
 class UI_EXPORT TouchFactory {
+ private:
+  TouchFactory();
+  ~TouchFactory();
+
  public:
   // Define the touch params following the Multi-touch Protocol.
   enum TouchParam {
@@ -134,11 +138,10 @@ class UI_EXPORT TouchFactory {
                           float* min,
                           float* max);
 
+  // Whether any touch device is currently present and enabled.
+  bool IsTouchDevicePresent();
+
  private:
-  TouchFactory();
-
-  ~TouchFactory();
-
   void HideCursorForInactivity() {
     SetCursorVisible(false, false);
   }

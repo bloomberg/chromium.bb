@@ -21,6 +21,9 @@ UI_EXPORT extern const char kLang[];
 UI_EXPORT extern const char kLocalePak[];
 UI_EXPORT extern const char kNoMessageBox[];
 UI_EXPORT extern const char kTouchOptimizedUI[];
+UI_EXPORT extern const char kTouchOptimizedUIAuto[];
+UI_EXPORT extern const char kTouchOptimizedUIDisabled[];
+UI_EXPORT extern const char kTouchOptimizedUIEnabled[];
 
 #if defined(OS_MACOSX)
 // TODO(kbr): remove this and the associated old code path:

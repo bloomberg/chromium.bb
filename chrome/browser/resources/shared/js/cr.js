@@ -16,7 +16,8 @@ this.cr = (function() {
   /**
    * Tags the html element with an attribute that allows touch-specific css
    * rules.
-   * TODO(rbyers): make Chrome always touch-optimized. http://crbug.com/105380
+   * TODO(rbyers): Switch to a touch-screen media query once we have one.
+   * http://crbug.com/123062
    */
   function enableTouchOptimizedCss() {
     if (cr.isTouchOptimized)
