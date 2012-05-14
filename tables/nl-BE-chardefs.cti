@@ -64,7 +64,7 @@ uplow       \x00D9\x00F9  23456,23456         Ùù                  LATIN CAPITA
 uplow       \x00DA\x00FA  23456,23456         Úú                  LATIN CAPITAL LETTER U WITH ACUTE - LATIN SMALL LETTER U WITH ACUTE
 uplow       \x00DB\x00FB  156,156             Ûû                  LATIN CAPITAL LETTER U WITH CIRCUMFLEX - LATIN SMALL LETTER U WITH CIRCUMFLEX
 uplow       \x00DC\x00FC  1256,1256           Üü                  LATIN CAPITAL LETTER U WITH DIAERESIS - LATIN SMALL LETTER U WITH DIAERESIS
-lowercase   \x00DF        2346                ß                   LATIN SMALL LETTER SHARP S
+uplow       \x1E9E\x00DF  2346,2346           ẞß                  LATIN CAPITAL LETTER SHARP S - LATIN SMALL LETTER SHARP S
 
 
 space       \x0009        9                                       <control> HORIZONTAL TABULATION
