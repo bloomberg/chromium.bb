@@ -714,7 +714,7 @@ void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
       web_ui()->GetController());
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  if (data->size() > 0U && data->front()) {
+  if (data.get() && data->size() > 0U && data->front()) {
     string16 print_job_title_utf16 =
         preview_tab_wrapper()->print_view_manager()->RenderSourceName();
     std::string print_job_title = UTF16ToUTF8(print_job_title_utf16);
@@ -840,12 +840,14 @@ void PrintPreviewHandler::FileSelected(const FilePath& path,
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
   print_to_pdf_path_.reset(new FilePath(path));
-  if (data.get())
-    PostPrintToPdfTask(data);
+  PostPrintToPdfTask(data);
 }
 
-void PrintPreviewHandler::PostPrintToPdfTask(
-    scoped_refptr<base::RefCountedBytes> data) {
+void PrintPreviewHandler::PostPrintToPdfTask(base::RefCountedBytes* data) {
+  if (!data) {
+    NOTREACHED();
+    return;
+  }
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
   // PrintToPdfCallback takes ownership of |metafile|.
