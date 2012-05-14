@@ -685,34 +685,6 @@
         }],  # OS != "win"
       ],  # conditions
     },
-    # TODO(jam): delete ui_tests target once no tests use this.
-    {
-      'target_name': 'ui_tests',
-      'type': 'executable',
-      'dependencies': [
-        '../testing/gtest.gyp:gtest',
-        '../base/base.gyp:test_support_base',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        '../jingle/run_all_unittests.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'configurations': {
-            'Debug_Base': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-        }],
-      ],
-    },
     {
       # Third-party support sources for chromedriver_lib.
       'target_name': 'chromedriver_support',
@@ -2988,7 +2960,7 @@
         'test/data/webui/print_preview.cc',
         'test/data/webui/print_preview.h',
         'test/data/webui/print_preview.js',
-        'test/data/webui/suidsandbox_browsertest.js',
+	'test/data/webui/suidsandbox_browsertest.js',
         'test/gpu/gpu_feature_browsertest.cc',
         'test/security_tests/sandbox_browsertest.cc',
         'test/ui/ppapi_uitest.cc',
@@ -4181,44 +4153,6 @@
       ],
       'sources': [
         'test/gpu/gpu_pixel_browsertest.cc',
-      ],
-    },
-    {
-      'target_name': 'plugin_tests',
-      'type': 'executable',
-      'dependencies': [
-        'chrome',
-        'chrome_resources.gyp:chrome_resources',
-        'chrome_resources.gyp:chrome_strings',
-        'test_support_common',
-        'test_support_ui',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/libxslt/libxslt.gyp:libxslt',
-        '../third_party/npapi/npapi.gyp:npapi',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'browser/plugin_test.cc',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            'security_tests',  # run time dependency
-          ],
-          'conditions': [
-            ['win_use_allocator_shim==1', {
-              'dependencies': [
-                '<(allocator_target)',
-              ],
-            }],
-          ],
-          'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
-          ],
-        },],
       ],
     },
   ],
