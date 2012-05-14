@@ -10,12 +10,12 @@ namespace switches {
 // the contents in the absence of a viewport meta tag.
 const char kDefaultDeviceScaleFactor[] = "default-device-scale-factor";
 
-// Enable touch screen calibration.
-const char kDisableTouchCalibration[] = "disable-touch-calibration";
-
 // Let text glyphs have X-positions that aren't snapped to the pixel grid.
 const char kEnableTextSubpixelPositioning[] =
     "enable-text-subpixel-positioning";
+
+// Enable touch screen calibration.
+const char kEnableTouchCalibration[] = "enable-touch-calibration";
 
 // Enable support for touch events.
 const char kEnableTouchEvents[] = "enable-touch-events";

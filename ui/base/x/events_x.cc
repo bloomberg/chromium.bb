@@ -505,8 +505,8 @@ gfx::Point CalibrateTouchCoordinates(
     const XIDeviceEvent* xievent) {
   int x = static_cast<int>(xievent->event_x);
   int y = static_cast<int>(xievent->event_y);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableTouchCalibration))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableTouchCalibration))
     return gfx::Point(x, y);
   // TODO(skuhne): Find a new home for these hardware dependent touch
   // constants.
