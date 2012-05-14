@@ -38,7 +38,7 @@ void GLES2DecoderTestBase::SpecializedSetup<GenerateMipmap, 0>(
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-      0, 0);
+      kSharedMemoryId, kSharedMemoryOffset);
   if (valid) {
     EXPECT_CALL(*gl_, TexParameteri(
         GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST))

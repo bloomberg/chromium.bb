@@ -3481,6 +3481,11 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
     return;
   }
 
+  if (!texture_manager()->ClearTextureLevel(this, info, target, 0)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glGenerateMipmaps: dimensions too big");
+    return;
+  }
+
   CopyRealGLErrorsToWrapper();
   // Workaround for Mac driver bug. In the large scheme of things setting
   // glTexParamter twice for glGenerateMipmap is probably not a lage performance
