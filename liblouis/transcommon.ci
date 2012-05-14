@@ -49,6 +49,7 @@ static const widechar *currentInput;
 static widechar *passbuf1 = NULL;
 static widechar *passbuf2 = NULL;
 static widechar *currentOutput;
+static int *prevSrcMapping = NULL;
 static int *srcMapping = NULL;
 static unsigned short *typebuf = NULL;
 static unsigned char *srcSpacing = NULL;
@@ -240,7 +241,7 @@ makeCorrections (void)
 	case CTO_Always:
 	  if (dest >= destmax)
 	    goto failure;
-	  srcMapping[dest] = srcMapping[src];
+	  srcMapping[dest] = prevSrcMapping[src];
 	  currentOutput[dest++] = currentInput[src++];
 	  break;
 	case CTO_Correct:
@@ -370,7 +371,7 @@ swapReplace (int start, int end)
 	{
 	  if ((dest + 1) >= srcmax)
 	    return 0;
-	  srcMapping[dest] = srcMapping[curSrc];
+	  srcMapping[dest] = prevSrcMapping[curSrc];
 	  currentOutput[dest++] = replacements[curPos];
 	}
       else
@@ -379,7 +380,7 @@ swapReplace (int start, int end)
 	  if ((dest + replacements[curPos] - 1) >= destmax)
 	    return 0;
 	  for (k = dest + replacements[curPos] - 1; k >= dest; --k)
-	    srcMapping[k] = srcMapping[curSrc];
+	    srcMapping[k] = prevSrcMapping[curSrc];
 	  memcpy (&currentOutput[dest], &replacements[curPos + 1],
 		  (replacements[curPos]) * CHARSIZE);
 	  dest += replacements[curPos] - 1;
@@ -854,7 +855,7 @@ passDoAction (void)
   if ((dest + startReplace - startMatch) > destmax)
     return 0;
   if (transOpcode != CTO_Context)
-    memmove (&srcMapping[dest], &srcMapping[startMatch],
+    memmove (&srcMapping[dest], &prevSrcMapping[startMatch],
 	     (startReplace - startMatch) * sizeof (int));
   for (k = startMatch; k < startReplace; k++)
     if (transOpcode == CTO_Context)
@@ -872,7 +873,7 @@ passDoAction (void)
 	if ((dest + passInstructions[passIC + 1]) > destmax)
 	  return 0;
 	for (k = 0; k < passInstructions[passIC + 1]; ++k)
-	  srcMapping[dest + k] = startMatch;
+	  srcMapping[dest + k] = prevSrcMapping[startMatch];
 	memcpy (&currentOutput[dest], &passInstructions[passIC + 2],
 		passInstructions[passIC + 1] * CHARSIZE);
 	dest += passInstructions[passIC + 1];
@@ -897,7 +898,7 @@ passDoAction (void)
 	ruleOffset = (passInstructions[passIC + 1] << 16) |
 	  passInstructions[passIC + 2];
 	rule = (TranslationTableRule *) & table->ruleArea[ruleOffset];
-	srcMapping[dest] = startMatch;
+	srcMapping[dest] = prevSrcMapping[startMatch];
 	currentOutput[dest++] = rule->charsdots[2 * passCharDots];
 	passIC += 3;
 	break;
@@ -905,7 +906,7 @@ passDoAction (void)
 	ruleOffset = (passInstructions[passIC + 1] << 16) |
 	  passInstructions[passIC + 2];
 	rule = (TranslationTableRule *) & table->ruleArea[ruleOffset];
-	srcMapping[dest] = startMatch;
+	srcMapping[dest] = prevSrcMapping[startMatch];
 	currentOutput[dest++] = rule->charsdots[2 * passCharDots + 1];
 	passIC += 3;
 	break;
@@ -929,7 +930,7 @@ passDoAction (void)
 	k = endReplace - startReplace;
 	if ((dest + k) > destmax)
 	  return 0;
-	memmove (&srcMapping[dest], &srcMapping[startReplace],
+	memmove (&srcMapping[dest], &prevSrcMapping[startReplace],
 		 k * sizeof (int));
 	memcpy (&currentOutput[dest], &currentInput[startReplace],
 		k * CHARSIZE);
@@ -1054,14 +1055,14 @@ translatePass (void)
 	case CTO_Always:
 	  if ((dest + 1) > destmax)
 	    goto failure;
-	  srcMapping[dest] = srcMapping[src];
+	  srcMapping[dest] = prevSrcMapping[src];
 	  currentOutput[dest++] = currentInput[src++];
 	  break;
 	default:
 	  goto failure;
 	}
     }
-  srcMapping[dest] = srcMapping[src];
+  srcMapping[dest] = prevSrcMapping[src];
 failure:if (src < srcmax)
     {
       while (checkAttr (currentInput[src], CTC_Space, 1))

@@ -474,7 +474,8 @@ extern "C"
     alloc_destSpacing,
     alloc_passbuf1,
     alloc_passbuf2,
-    alloc_srcMapping
+    alloc_srcMapping,
+    alloc_prevSrcMapping
   } AllocBuf;
 /* The following function definitions are hooks into 
 * compileTranslationTable.c. Some are used by other library modules. 

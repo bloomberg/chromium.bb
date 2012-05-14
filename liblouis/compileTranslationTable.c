@@ -5041,7 +5041,9 @@ static int sizePassbuf1 = 0;
 static widechar *passbuf2 = NULL;
 static int sizePassbuf2 = 0;
 static int *srcMapping = NULL;
+static int *prevSrcMapping = NULL;
 static int sizeSrcMapping = 0;
+static int sizePrevSrcMapping = 0;
 void *
 liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 {
@@ -5103,6 +5105,22 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 	  }
       }
       return srcMapping;
+    case alloc_prevSrcMapping:
+	  {
+	int mapSize;
+	if (srcmax >= destmax)
+	  mapSize = srcmax;
+	else
+	  mapSize = destmax;
+	if (mapSize > sizePrevSrcMapping)
+	  {
+		if (prevSrcMapping != NULL)
+		  free (prevSrcMapping);
+		prevSrcMapping = malloc ((mapSize + 4) * sizeof (int));
+		sizePrevSrcMapping = mapSize;
+	  }
+	  }
+	  return prevSrcMapping;
     default:
       return NULL;
     }
@@ -5146,7 +5164,11 @@ lou_free (void)
   if (srcMapping != NULL)
     free (srcMapping);
   srcMapping = NULL;
+  if (prevSrcMapping != NULL)
+    free (prevSrcMapping);
+  prevSrcMapping = NULL;
   sizeSrcMapping = 0;
+  sizePrevSrcMapping = 0;
   opcodeLengths[0] = 0;
 }
 

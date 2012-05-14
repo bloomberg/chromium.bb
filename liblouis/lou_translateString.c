@@ -124,6 +124,8 @@ lou_translate (const char *tableList, const widechar
     return 0;
   if (!(srcMapping = liblouis_allocMem (alloc_srcMapping, srcmax, destmax)))
     return 0;
+  if (!(prevSrcMapping = liblouis_allocMem (alloc_prevSrcMapping, srcmax, destmax)))
+      return 0;
   for (k = 0; k <= srcmax; k++)
     srcMapping[k] = k;
   srcMapping[srcmax] = srcmax;
@@ -149,6 +151,7 @@ lou_translate (const char *tableList, const widechar
     }
   while (currentPass <= table->numPasses && goodTrans)
     {
+	  memcpy(prevSrcMapping, srcMapping, destmax * sizeof(int));
       switch (currentPass)
 	{
 	case 0:
@@ -210,6 +213,8 @@ lou_translate (const char *tableList, const widechar
 	}
       *inlen = srcMapping[realInlen];
       *outlen = dest;
+      if (inputPositions != NULL)
+          memcpy(inputPositions, srcMapping, destmax * sizeof(int));
       if (outputPos != NULL)
 	{
 	  int lastpos = 0;
@@ -344,7 +349,7 @@ for_updatePositions (const widechar * outChars, int inLength, int outLength)
 	  for (k = 0; k < outLength; k++)
 	    {
 	      if (inputPositions != NULL)
-		inputPositions[dest + k] = srcMapping[src];
+		srcMapping[dest + k] = prevSrcMapping[src];
 	      if (outputPositions != NULL)
 		outputPositions[srcMapping[src + k]] = dest;
 	    }
@@ -357,13 +362,13 @@ for_updatePositions (const widechar * outChars, int inLength, int outLength)
 	  for (k = 0; k < inLength; k++)
 	    {
 	      if (inputPositions != NULL)
-		inputPositions[dest + k] = srcMapping[src];
+		srcMapping[dest + k] = prevSrcMapping[src];
 	      if (outputPositions != NULL)
 		outputPositions[srcMapping[src + k]] = dest;
 	    }
 	  for (k = inLength; k < outLength; k++)
 	    if (inputPositions != NULL)
-	      inputPositions[dest + k] = srcMapping[src];
+	      srcMapping[dest + k] = prevSrcMapping[src];
 	}
     }
   dest += outLength;
@@ -1450,7 +1455,7 @@ undefinedCharacter (widechar c)
   for (k = 0; k < strlen (display); k++)
     {
       if (inputPositions != NULL)
-	inputPositions[dest] = srcMapping[src];
+	srcMapping[dest] = prevSrcMapping[src];
       currentOutput[dest++] = getDotsForChar (display[k]);
     }
   return 1;
