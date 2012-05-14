@@ -16017,19 +16017,22 @@ Battery full
     <message name="IDS_MEDIA_STREAM_STATUS_TRAY_MENU_ITEM" desc="Title of the web page to display in the capture tray icon menu when it is using the capture devices">
       <ph name="TITLE">$1<ex>html5rocks.com</ex></ph>
     </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TOOLTIP" desc="Tool tip for the capture status tray icon">
-      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your camera and/or microphone.
+    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO" desc="Tool tip for the capture status tray icon when microphone and camera are being used">
+      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your camera and microphone.
     </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_TITLE" desc="Title of the balloon shown by the tray notification icon every time MediaStream starts capturing using a camera and/or a microphone">
-      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your camera and/or microphone.
+    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_ONLY" desc="Tool tip for the capture status tray icon when microphone is being used">
+      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your microphone.
     </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_AND_VIDEO" desc="Contents of the balloon shown by the tray notification icon every time MediaStream starts capturing">
+    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_VIDEO_ONLY" desc="Tool tip for the capture status tray icon when camera is being used">
+      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your camera.
+    </message>
+    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_AND_VIDEO" desc="Contents of the balloon shown by the tray notification icon every time camera and microphone are used">
       <ph name="TITLE">$1<ex>html5rocks.com</ex></ph> is using your camera and microphone.
     </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_ONLY" desc="Contents of the balloon shown by the tray notification icon every time MediaStream starts capturing">
+    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_ONLY" desc="Contents of the balloon shown by the tray notification icon every time microphone is used">
       <ph name="TITLE">$1<ex>html5rocks.com</ex></ph> is using your microphone.
     </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY" desc="Contents of the balloon shown by the tray notification icon every time MediaStream starts capturing">
+    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY" desc="Contents of the balloon shown by the tray notification icon every time camera is used">
       <ph name="TITLE">$1<ex>html5rocks.com</ex></ph> is using your camera.
     </message>
 

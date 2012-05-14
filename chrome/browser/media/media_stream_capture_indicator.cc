@@ -13,40 +13,29 @@
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
 using content::WebContents;
 
-MediaStreamCaptureIndicator::TabEquals::TabEquals(
-    int render_process_id,
-    int render_view_id,
-    content::MediaStreamDeviceType type)
-        : render_process_id_(render_process_id),
-          render_view_id_(render_view_id),
-          type_(type) {}
-
 MediaStreamCaptureIndicator::TabEquals::TabEquals(int render_process_id,
                                                   int render_view_id)
     : render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
-      type_(content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE) {}
+      render_view_id_(render_view_id) {}
 
 bool MediaStreamCaptureIndicator::TabEquals::operator() (
     const MediaStreamCaptureIndicator::CaptureDeviceTab& tab) {
-  if (type_ == content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE) {
     return (render_process_id_ == tab.render_process_id &&
             render_view_id_ == tab.render_view_id);
-  } else {
-    return (render_process_id_ == tab.render_process_id &&
-            render_view_id_ == tab.render_view_id &&
-            type_ == tab.type);
-  }
 }
 
 MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
@@ -76,14 +65,20 @@ bool MediaStreamCaptureIndicator::GetAcceleratorForCommandId(
 }
 
 void MediaStreamCaptureIndicator::ExecuteCommand(int command_id) {
-  // TODO(xians) : Implement all the following execute command function.
-  switch (command_id) {
-    case IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST:
-      break;
-    default:
-      NOTREACHED();
-      break;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(command_id >= IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST &&
+         command_id <= IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_LAST);
+  int index = command_id - IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST;
+  WebContents* tab_content = tab_util::GetWebContentsByID(
+      tabs_[index].render_process_id, tabs_[index].render_view_id);
+  DCHECK(tab_content);
+  if (!tab_content || !tab_content->GetRenderViewHost() ||
+      !tab_content->GetRenderViewHost()->GetDelegate()) {
+    NOTREACHED();
+    return;
   }
+
+  tab_content->GetRenderViewHost()->GetDelegate()->Activate();
 }
 
 void MediaStreamCaptureIndicator::CaptureDevicesOpened(
@@ -126,8 +121,6 @@ void MediaStreamCaptureIndicator::DoDevicesOpenedOnUIThread(
     return;
 
   AddCaptureDeviceTab(render_process_id, render_view_id, devices);
-
-  ShowBalloon(render_process_id, render_view_id, devices);
 }
 
 void MediaStreamCaptureIndicator::DoDevicesClosedOnUIThread(
@@ -140,9 +133,6 @@ void MediaStreamCaptureIndicator::DoDevicesClosedOnUIThread(
 
   DCHECK(!tabs_.empty());
   RemoveCaptureDeviceTab(render_process_id, render_view_id, devices);
-
-  if (tabs_.empty())
-    Hide();
 }
 
 void MediaStreamCaptureIndicator::CreateStatusTray() {
@@ -160,45 +150,44 @@ void MediaStreamCaptureIndicator::CreateStatusTray() {
 
   status_icon_ = status_tray->CreateStatusIcon();
 
-  status_icon_->SetToolTip(l10n_util::GetStringFUTF16(
-      IDS_MEDIA_STREAM_STATUS_TRAY_TOOLTIP,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-
   EnsureStatusTrayIcon();
-  DCHECK(!icon_image_.empty());
+  DCHECK(!tray_image_.empty());
+  DCHECK(!balloon_image_.empty());
 
-  status_icon_->SetImage(icon_image_);
+  status_icon_->SetImage(tray_image_);
 }
 
 void MediaStreamCaptureIndicator::EnsureStatusTrayIcon() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (icon_image_.empty()) {
-    icon_image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  if (tray_image_.empty()) {
+    tray_image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_MEDIA_STREAM_CAPTURE_LED);
+  }
+  if (balloon_image_.empty()) {
+    balloon_image_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_PRODUCT_LOGO_32);
   }
 }
 
 void MediaStreamCaptureIndicator::ShowBalloon(
     int render_process_id,
     int render_view_id,
-    const content::MediaStreamDevices& devices) const {
+    bool audio,
+    bool video) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  string16 title = l10n_util::GetStringFUTF16(
-      IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_TITLE,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  DCHECK(audio || video);
+  string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 
   int message_id = IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_AND_VIDEO;
-  if (devices.size() == 1) {
-    if (devices.front().type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
-      message_id = IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_ONLY;
-    else
-      message_id = IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY;
-  }
+  if (audio && !video)
+    message_id = IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_ONLY;
+  else if (!audio && video)
+    message_id = IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY;
 
-  string16 message = l10n_util::GetStringFUTF16(
-      message_id, GetTitle(render_process_id, render_view_id));
+  string16 body = l10n_util::GetStringFUTF16(
+      message_id, GetSecurityOrigin(render_process_id, render_view_id));
 
-  status_icon_->DisplayBalloon(icon_image_, title, message);
+  status_icon_->DisplayBalloon(balloon_image_, title, body);
 }
 
 void MediaStreamCaptureIndicator::Hide() {
@@ -221,30 +210,53 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconContextMenu() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ui::SimpleMenuModel> menu(new ui::SimpleMenuModel(this));
 
-  for (CaptureDeviceTabList::iterator iter = tabs_.begin();
+  bool audio = false;
+  bool video = false;
+  int command_id = IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST;
+  for (CaptureDeviceTabs::iterator iter = tabs_.begin();
        iter != tabs_.end();  ++iter) {
-    // Search backward to see if the tab has been added.
-    CaptureDeviceTabList::iterator iter_backward = std::find_if(
-        tabs_.begin(), iter, TabEquals(iter->render_process_id,
-                                       iter->render_view_id));
-    // Do nothing if the tab has been added to the menu.
-    if (iter_backward != iter)
-      continue;
-
     string16 tab_title = GetTitle(iter->render_process_id,
                                   iter->render_view_id);
     // The tab has gone away.
     if (tab_title.empty())
       continue;
 
+    // Check if any audio and video devices have been used.
+    audio = audio || iter->audio_ref_count > 0;
+    video = video || iter->video_ref_count > 0;
+
     string16 message = l10n_util::GetStringFUTF16(
         IDS_MEDIA_STREAM_STATUS_TRAY_MENU_ITEM, tab_title);
-    menu->AddItem(IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST, message);
-    menu->AddSeparator();
+    menu->AddItem(command_id, message);
+
+    // If reaching the maximum number, no more item will be added to the menu.
+    if (command_id == IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_LAST)
+      break;
+
+    ++command_id;
   }
+
+  // All the tabs have gone away.
+  if (!audio && !video)
+    return;
 
   // The icon will take the ownership of the passed context menu.
   status_icon_->SetContextMenu(menu.release());
+  UpdateStatusTrayIconTooltip(audio, video);
+}
+
+void MediaStreamCaptureIndicator::UpdateStatusTrayIconTooltip(
+    bool audio, bool video) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(audio || video);
+  int message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO;
+  if (audio && !video)
+    message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_ONLY;
+  else if (!audio && video)
+    message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_VIDEO_ONLY;
+
+  status_icon_->SetToolTip(l10n_util::GetStringFUTF16(
+      message_id, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
 void MediaStreamCaptureIndicator::AddCaptureDeviceTab(
@@ -252,16 +264,31 @@ void MediaStreamCaptureIndicator::AddCaptureDeviceTab(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CaptureDeviceTabs::iterator iter = std::find_if(
+      tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
+  if (iter == tabs_.end()) {
+    tabs_.push_back(CaptureDeviceTab(render_process_id, render_view_id));
+    iter = tabs_.end() - 1;
+  }
+
+  bool audio = false;
+  bool video = false;
   content::MediaStreamDevices::const_iterator dev = devices.begin();
   for (; dev != devices.end(); ++dev) {
     DCHECK(dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE ||
            dev->type == content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
-    tabs_.push_back(CaptureDeviceTab(render_process_id,
-                                     render_view_id,
-                                     dev->type));
+    if (dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE) {
+      ++iter->audio_ref_count;
+      audio = true;
+    } else {
+      ++iter->video_ref_count;
+      video = true;
+    }
   }
 
   UpdateStatusTrayIconContextMenu();
+
+  ShowBalloon(render_process_id, render_view_id, audio, video);
 }
 
 void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
@@ -269,44 +296,75 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  CaptureDeviceTabs::iterator iter = std::find_if(
+      tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
+  DCHECK(iter != tabs_.end());
+
   content::MediaStreamDevices::const_iterator dev = devices.begin();
   for (; dev != devices.end(); ++dev) {
-    CaptureDeviceTabList::iterator iter = std::find_if(
-        tabs_.begin(), tabs_.end(), TabEquals(render_process_id,
-                                              render_view_id,
-                                              dev->type));
-    if (iter != tabs_.end()) {
-      tabs_.erase(iter);
-    } else {
-      DLOG(ERROR) << "Failed to find MediaStream host "
-                  << GetTitle(render_process_id, render_view_id)
-                  << " for device " << dev->name
-                  << " for type " << dev->type;
-    }
+    DCHECK(dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE ||
+           dev->type == content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE);
+    if (dev->type == content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)
+      --iter->audio_ref_count;
+    else
+      --iter->video_ref_count;
+
+    DCHECK_GE(iter->audio_ref_count, 0);
+    DCHECK_GE(iter->video_ref_count, 0);
   }
 
-  if (!tabs_.empty())
+  // Remove the tab if all the devices have been closed.
+  if (iter->audio_ref_count == 0 && iter->video_ref_count == 0)
+    tabs_.erase(iter);
+
+  if (tabs_.empty())
+    Hide();
+  else
     UpdateStatusTrayIconContextMenu();
 }
 
 string16 MediaStreamCaptureIndicator::GetTitle(int render_process_id,
                                                int render_view_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   WebContents* tab_content = tab_util::GetWebContentsByID(
       render_process_id, render_view_id);
   if (!tab_content)
     return string16();
 
   string16 tab_title = tab_content->GetTitle();
+
   if (tab_title.empty()) {
-    GURL url = tab_content->GetURL();
-    tab_title = UTF8ToUTF16(url.spec());
-    // Force URL to be LTR.
-    tab_title = base::i18n::GetDisplayStringInLTRDirectionality(tab_title);
+    // If the page's title is empty use its security originator.
+    tab_title = GetSecurityOrigin(render_process_id, render_view_id);
   } else {
-    // Sets the title explicitly as LTR format. Please look at the comments in
-    // TaskManagerTabContentsResource::GetTitle() for the reasons of doing this.
-    base::i18n::AdjustStringForLocaleDirection(&tab_title);
+    // If the page's title matches its URL, use its security originator.
+    std::string languages =
+        content::GetContentClient()->browser()->GetAcceptLangs(
+            tab_content->GetBrowserContext());
+    if (tab_title == net::FormatUrl(tab_content->GetURL(), languages))
+      tab_title = GetSecurityOrigin(render_process_id, render_view_id);
   }
 
   return tab_title;
+}
+
+string16 MediaStreamCaptureIndicator::GetSecurityOrigin(
+    int render_process_id, int render_view_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebContents* tab_content = tab_util::GetWebContentsByID(
+      render_process_id, render_view_id);
+  if (!tab_content)
+    return string16();
+
+  std::string security_origin = tab_content->GetURL().GetOrigin().spec();
+
+  // Remove the last character if it is a '/'.
+  if (!security_origin.empty()) {
+    std::string::iterator it = security_origin.end() - 1;
+    if (*it == '/')
+      security_origin.erase(it);
+  }
+
+  return UTF8ToUTF16(security_origin);
 }

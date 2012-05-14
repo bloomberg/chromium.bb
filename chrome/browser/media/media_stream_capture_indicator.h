@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_
 #pragma once
 
-#include <list>
+#include <vector>
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -47,32 +47,30 @@ class MediaStreamCaptureIndicator
   // Struct to store the usage information of the capture devices for each tab.
   struct CaptureDeviceTab {
     CaptureDeviceTab(int render_process_id,
-                     int render_view_id,
-                     content::MediaStreamDeviceType type)
+                     int render_view_id)
         : render_process_id(render_process_id),
           render_view_id(render_view_id),
-          type(type) {}
+          audio_ref_count(0),
+          video_ref_count(0) {}
 
     int render_process_id;
     int render_view_id;
-    content::MediaStreamDeviceType type;
+    int audio_ref_count;
+    int video_ref_count;
   };
 
   // A private predicate used in std::find_if to find a |CaptureDeviceTab|
   // which matches the information specified at construction.
   class TabEquals {
    public:
-    TabEquals(int render_process_id, int render_view_id,
-              content::MediaStreamDeviceType type);
     TabEquals(int render_process_id, int render_view_id);
 
     bool operator() (
         const MediaStreamCaptureIndicator::CaptureDeviceTab& tab);
 
    private:
-     int render_process_id_;
-     int render_view_id_;
-     content::MediaStreamDeviceType type_;
+    int render_process_id_;
+    int render_view_id_;
   };
 
   friend class base::RefCountedThreadSafe<MediaStreamCaptureIndicator>;
@@ -93,13 +91,6 @@ class MediaStreamCaptureIndicator
   // Makes sure we have done one-time initialization of the |icon_image_|.
   void EnsureStatusTrayIcon();
 
-  // Triggers a balloon in the corner telling capture devices are being used.
-  void ShowBalloon(int render_process_id, int render_view_id,
-                   const content::MediaStreamDevices& devices) const;
-
-  // Hides the status tray from the desktop.
-  void Hide();
-
   // Adds the new tab to the device usage list.
   void AddCaptureDeviceTab(int render_process_id,
                            int render_view_id,
@@ -110,23 +101,42 @@ class MediaStreamCaptureIndicator
                               int render_view_id,
                               const content::MediaStreamDevices& devices);
 
+  // Triggers a balloon in the corner telling capture devices are being used.
+  // This function is called by AddCaptureDeviceTab().
+  void ShowBalloon(int render_process_id, int render_view_id,
+                   bool audio, bool video) const;
+
+  // Hides the status tray from the desktop. This function is called by
+  // RemoveCaptureDeviceTab() when the device usage list becomes empty.
+  void Hide();
+
   // Gets the title of the tab.
   string16 GetTitle(int render_process_id, int render_view_id) const;
+
+  // Gets the security originator of the tab. It returns a string with no '/'
+  // at the end to display in the UI.
+  string16 GetSecurityOrigin(int render_process_id, int render_view_id) const;
 
   // Updates the status tray menu with the new device list. This call will be
   // triggered by both AddCaptureDeviceTab() and RemoveCaptureDeviceTab().
   void UpdateStatusTrayIconContextMenu();
+
+  // Updates the status tray tooltip with the new device list. This function is
+  // called by UpdateStatusTrayIconContextMenu().
+  void UpdateStatusTrayIconTooltip(bool audio, bool video);
 
   // Reference to our status icon - owned by the StatusTray. If null,
   // the platform doesn't support status icons.
   StatusIcon* status_icon_;
 
   // Icon to be displayed on the status tray.
-  SkBitmap icon_image_;
+  SkBitmap tray_image_;
+
+  SkBitmap balloon_image_;
 
   // A list that contains the usage information of the opened capture devices.
-  typedef std::list<CaptureDeviceTab> CaptureDeviceTabList;
-  CaptureDeviceTabList tabs_;
+  typedef std::vector<CaptureDeviceTab> CaptureDeviceTabs;
+  CaptureDeviceTabs tabs_;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_
