@@ -1047,10 +1047,11 @@ Ribbon.prototype.redraw = function() {
   this.bar_.textContent = '';
   var startIndex = Math.min(firstIndex, this.firstVisibleIndex_);
   var toRemove = [];
+  // All the items except the first one treated equally.
   for (var index = startIndex + 1;
        index <= Math.max(lastIndex, this.lastVisibleIndex_);
        ++index) {
-    var box = this.items_[index].getBox(0);
+    var box = this.items_[index].getBox();
     box.style.marginLeft = '0';
     this.bar_.appendChild(box);
     if (index < firstIndex || index > lastIndex) {
@@ -1059,8 +1060,9 @@ Ribbon.prototype.redraw = function() {
   }
 
   var margin = itemWidth * Math.abs(firstIndex - this.firstVisibleIndex_);
-  var startBox = this.items_[startIndex].getBox(0);
+  var startBox = this.items_[startIndex].getBox();
   if (startIndex == firstIndex) {
+    // Sliding to the right.
     startBox.style.marginLeft = -margin + 'px';
     if (this.bar_.firstChild)
       this.bar_.insertBefore(startBox, this.bar_.firstChild);
@@ -1070,7 +1072,9 @@ Ribbon.prototype.redraw = function() {
       startBox.style.marginLeft = '0';
     }, 0);
   } else {
-    toRemove.push(startBox);
+    // Sliding to the left. Start item will become invisible and should be
+    // removed afterwards.
+    toRemove.push(startIndex);
     startBox.style.marginLeft = '0';
     if (this.bar_.firstChild)
       this.bar_.insertBefore(startBox, this.bar_.firstChild);
@@ -1096,17 +1100,16 @@ Ribbon.prototype.redraw = function() {
   this.firstVisibleIndex_ = firstIndex;
   this.lastVisibleIndex_ = lastIndex;
 
-  var self = this;
   setTimeout(function() {
     for (var i = 0; i < toRemove.length; i++) {
       var index = toRemove[i];
-      if (i < this.firstVisibleIndex_ || i > this.lastVisibleIndex_) {
-        var box = this.items_[index].getBox(0);
+      if (index < this.firstVisibleIndex_ || index > this.lastVisibleIndex_) {
+        var box = this.items_[index].getBox();
         if (box.parentNode == this.bar_)
           this.bar_.removeChild(box);
       }
     }
-  }, 200);
+  }.bind(this), 200);
 };
 
 Ribbon.prototype.getNextSelectedIndex_ = function(direction) {
