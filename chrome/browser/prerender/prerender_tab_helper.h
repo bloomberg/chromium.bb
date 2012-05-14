@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 
 #include "base/time.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
@@ -34,7 +33,7 @@ class PrerenderTabHelper : public content::WebContentsObserver {
       const GURL& validated_url,
       bool is_error_page,
       content::RenderViewHost* render_view_host) OVERRIDE;
- virtual void DidCommitProvisionalLoadForFrame(
+  virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,
       const GURL& validated_url,

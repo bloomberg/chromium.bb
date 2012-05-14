@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "ui/base/models/simple_menu_model.h"
 

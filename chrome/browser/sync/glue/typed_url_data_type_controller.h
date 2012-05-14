@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"

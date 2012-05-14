@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/settings/setting_change.h"
 #include "chrome/browser/sync/api/sync_error.h"
 

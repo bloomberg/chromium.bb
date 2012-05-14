@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_resource.h"
 #include "net/base/io_buffer.h"
 

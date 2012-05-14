@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSIONS_STARTUP_H_
 #pragma once
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 
 class CommandLine;
