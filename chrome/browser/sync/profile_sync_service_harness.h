@@ -359,6 +359,11 @@ class ProfileSyncServiceHarness
   // related bookkeeping information for verification.
   browser_sync::RetryVerifier retry_verifier_;
 
+  // Flag set to true when we're waiting for a status change to happen. Used to
+  // avoid triggering internal state machine logic on unexpected sync observer
+  // callbacks.
+  bool waiting_for_status_change_;
+
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceHarness);
 };
 

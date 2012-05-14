@@ -720,16 +720,31 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
     }
   }
 
+  bool user_was_prompted_for_passphrase =
+      service->IsPassphraseRequiredForDecryption();
   service->OnUserChoseDatatypes(configuration.sync_everything,
                                 configuration.data_types);
 
   // Need to call IsPassphraseRequiredForDecryption() *after* calling
   // OnUserChoseDatatypes() because the user may have just disabled the
-  // encrypted datatypes.
+  // encrypted datatypes (in which case we just want to exit, not prompt the
+  // user for a passphrase).
   if (passphrase_failed || service->IsPassphraseRequiredForDecryption()) {
     // We need a passphrase, or the user's attempt to set a passphrase failed -
-    // prompt them again.
-    DisplayConfigureSync(true, passphrase_failed);
+    // prompt them again. This covers a few subtle cases:
+    // 1) The user enters an incorrect passphrase *and* disabled the encrypted
+    //    data types. In that case we want to notify the user that the
+    //    passphrase was incorrect even though there are no longer any encrypted
+    //    types enabled (IsPassphraseRequiredForDecryption() == false).
+    // 2) The user doesn't enter any passphrase. In this case, we won't call
+    //    SetDecryptionPassphrase() (passphrase_failed == false), but we still
+    //    want to display an error message to let the user know that their
+    //    blank passphrase entry is not acceptable.
+    // 3) The user just enabled an encrypted data type - in this case we don't
+    //    want to display an "invalid passphrase" error, since it's the first
+    //    time the user is seeing the prompt.
+    DisplayConfigureSync(
+        true, passphrase_failed || user_was_prompted_for_passphrase);
   } else {
     // No passphrase is required from the user so mark the configuration as
     // complete and close the sync setup overlay.

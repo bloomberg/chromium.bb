@@ -464,6 +464,10 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
         this,
         chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
         content::Source<DataTypeManager>(data_type_manager_.get()));
+    registrar_.Remove(
+        this,
+        chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
+        content::Source<DataTypeManager>(data_type_manager_.get()));
     data_type_manager_.reset();
   }
 
@@ -1131,6 +1135,7 @@ void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
   failed_datatypes_handler_.OnUserChoseDatatypes();
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();
+  NotifyObservers();
 }
 
 void ProfileSyncService::ChangePreferredDataTypes(
@@ -1196,6 +1201,9 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     registrar_.Add(this,
                    chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
                    content::Source<DataTypeManager>(data_type_manager_.get()));
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
+                   content::Source<DataTypeManager>(data_type_manager_.get()));
 
     // We create the migrator at the same time.
     migrator_.reset(
@@ -1212,6 +1220,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     // until we receive an OnPassphraseAccepted (which triggers a configure).
     DVLOG(1) << "ProfileSyncService::ConfigureDataTypeManager bailing out "
              << "because a passphrase required";
+    NotifyObservers();
     return;
   }
   sync_api::ConfigureReason reason = sync_api::CONFIGURE_REASON_UNKNOWN;
@@ -1393,11 +1402,11 @@ void ProfileSyncService::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_SYNC_CONFIGURE_START: {
+    case chrome::NOTIFICATION_SYNC_CONFIGURE_START:
+    case chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED:
       NotifyObservers();
       // TODO(sync): Maybe toast?
       break;
-    }
     case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE: {
       // We should have cleared our cached passphrase before we get here (in
       // OnBackendInitialized()).

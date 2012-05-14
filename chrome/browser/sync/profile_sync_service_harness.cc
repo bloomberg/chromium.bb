@@ -108,7 +108,8 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       timestamp_match_partner_(NULL),
       username_(username),
       password_(password),
-      profile_debug_name_(profile->GetDebugName()) {
+      profile_debug_name_(profile->GetDebugName()),
+      waiting_for_status_change_(false) {
   if (IsSyncAlreadySetup()) {
     service_ = ProfileSyncServiceFactory::GetInstance()->GetForProfile(
         profile_);
@@ -262,7 +263,8 @@ void ProfileSyncServiceHarness::SignalStateCompleteWithNextState(
 }
 
 void ProfileSyncServiceHarness::SignalStateComplete() {
-  MessageLoop::current()->Quit();
+  if (waiting_for_status_change_)
+    MessageLoop::current()->Quit();
 }
 
 bool ProfileSyncServiceHarness::RunStateChangeMachine() {
@@ -730,6 +732,9 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
   scoped_refptr<StateChangeTimeoutEvent> timeout_signal(
       new StateChangeTimeoutEvent(this, reason));
   {
+    // Set the flag to tell SignalStateComplete() that it's OK to quit out of
+    // the MessageLoop if we hit a state transition.
+    waiting_for_status_change_ = true;
     MessageLoop* loop = MessageLoop::current();
     MessageLoop::ScopedNestableTaskAllower allow(loop);
     loop->PostDelayedTask(
@@ -738,6 +743,7 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
                    timeout_signal.get()),
         base::TimeDelta::FromMilliseconds(timeout_milliseconds));
     loop->Run();
+    waiting_for_status_change_ = false;
   }
 
   if (timeout_signal->Abort()) {
@@ -991,7 +997,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
     os << "has_more_to_sync: "
        << snap.has_more_to_sync()
        << ", has_unsynced_items: "
-       << service()->HasUnsyncedItems()
+       << (service()->sync_initialized() ? service()->HasUnsyncedItems() : 0)
        << ", unsynced_count: "
        << snap.unsynced_count()
        << ", encryption conflicts: "
