@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -79,12 +78,9 @@ TEST_F(ImageMacTest, MultiResolutionImageSkiaToNSImage) {
   const int width2x = 20;
   const int height2x = 24;
 
-  scoped_ptr<SkBitmap> bitmap1x(gt::CreateBitmap(width1x, height1x));
-  scoped_ptr<SkBitmap> bitmap2x(gt::CreateBitmap(width2x, height2x));
-
   gfx::ImageSkia image_skia;
-  image_skia.AddBitmapForScale(*bitmap1x, 1.0f);
-  image_skia.AddBitmapForScale(*bitmap2x, 2.0f);
+  image_skia.AddBitmapForScale(gt::CreateBitmap(width1x, height1x), 1.0f);
+  image_skia.AddBitmapForScale(gt::CreateBitmap(width2x, height2x), 2.0f);
 
   gfx::Image image(image_skia);
 

@@ -164,15 +164,15 @@ int IconMapper::Lookup(const std::string& extension,
 // Returns a copy of |source| that is |pixel_size| in width and height. If
 // |pixel_size| is |kDoNotResize|, returns an unmodified copy of |source|.
 // |source| must be a square image (width == height).
-SkBitmap* GenerateBitmapWithSize(SkBitmap* source, int pixel_size) {
-  DCHECK(source);
-  DCHECK(source->width() == source->height());
+SkBitmap GenerateBitmapWithSize(const SkBitmap& source, int pixel_size) {
+  DCHECK(!source.isNull());
+  DCHECK(source.width() == source.height());
 
-  if (pixel_size == kDoNotResize || source->width() == pixel_size)
-    return new SkBitmap(*source);
+  if (pixel_size == kDoNotResize || source.width() == pixel_size)
+    return source;
 
-  return new SkBitmap(skia::ImageOperations::Resize(
-      *source, skia::ImageOperations::RESIZE_BEST, pixel_size, pixel_size));
+  return skia::ImageOperations::Resize(
+      source, skia::ImageOperations::RESIZE_BEST, pixel_size, pixel_size);
 }
 
 int IconSizeToPixelSize(IconLoader::IconSize size) {
@@ -203,7 +203,7 @@ void IconLoader::ReadIcon() {
   if (!gfx::PNGCodec::Decode(bytes->front(), bytes->size(), &bitmap))
     NOTREACHED();
   image_.reset(new gfx::Image(
-      GenerateBitmapWithSize(&bitmap, IconSizeToPixelSize(icon_size_))));
+      GenerateBitmapWithSize(bitmap, IconSizeToPixelSize(icon_size_))));
   target_message_loop_->PostTask(
       FROM_HERE, base::Bind(&IconLoader::NotifyDelegate, this));
 }

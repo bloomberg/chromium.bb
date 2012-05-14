@@ -65,10 +65,6 @@ class UI_EXPORT Image {
   // Creates a new image with the default representation.
   explicit Image(const ImageSkia& image);
 
-  // Creates a new image with the default representation. The object will take
-  // ownership of the image.
-  explicit Image(const SkBitmap* bitmap);
-
   // Creates a new image by copying the bitmap for use as the default
   // representation.
   explicit Image(const SkBitmap& bitmap);

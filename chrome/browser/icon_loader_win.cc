@@ -34,8 +34,9 @@ void IconLoader::ReadIcon() {
                      SHGFI_ICON | size | SHGFI_USEFILEATTRIBUTES))
     return;
 
-  image_.reset(new gfx::Image(
-      IconUtil::CreateSkBitmapFromHICON(file_info.hIcon)));
+  scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(
+      file_info.hIcon));
+  image_.reset(new gfx::Image(*bitmap));
   DestroyIcon(file_info.hIcon);
   target_message_loop_->PostTask(FROM_HERE,
       base::Bind(&IconLoader::NotifyDelegate, this));

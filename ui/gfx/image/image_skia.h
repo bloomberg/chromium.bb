@@ -42,14 +42,6 @@ class UI_EXPORT ImageSkia {
   // DIP width and height are set based on |dip_scale_factor|.
   ImageSkia(const SkBitmap& bitmap, float dip_scale_factor);
 
-  // Takes ownership of passed in bitmap.
-  // Caller should not assume that |bitmap| will be valid after constructor
-  // is called.
-  // DIP width and height are set based on scale factor of 1x.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  explicit ImageSkia(const SkBitmap* bitmap);
-
   // Copies a reference to |other|'s storage.
   ImageSkia(const ImageSkia& other);
 

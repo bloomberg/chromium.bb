@@ -196,21 +196,21 @@ class GtkThemeService : public ThemeService {
   void FreeIconSets();
 
   // Lazily generates each bitmap used in the gtk theme.
-  SkBitmap* GenerateGtkThemeBitmap(int id) const;
+  SkBitmap GenerateGtkThemeBitmap(int id) const;
 
   // Creates a GTK+ version of IDR_THEME_FRAME. Instead of tinting, this
   // creates a theme configurable gradient ending with |color_id| at the
   // bottom, and |gradient_name| at the top if that color is specified in the
   // theme.
-  SkBitmap* GenerateFrameImage(int color_id,
-                               const char* gradient_name) const;
+  SkBitmap GenerateFrameImage(int color_id,
+                              const char* gradient_name) const;
 
   // Takes the base frame image |base_id| and tints it with |tint_id|.
-  SkBitmap* GenerateTabImage(int base_id) const;
+  SkBitmap GenerateTabImage(int base_id) const;
 
   // Tints an icon based on tint.
-  SkBitmap* GenerateTintedIcon(int base_id,
-                               const color_utils::HSL& tint) const;
+  SkBitmap GenerateTintedIcon(int base_id,
+                              const color_utils::HSL& tint) const;
 
   // Returns the tint for buttons that contrasts with the normal window
   // background color.
