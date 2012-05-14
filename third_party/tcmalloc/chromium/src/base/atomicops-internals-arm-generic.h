@@ -38,7 +38,7 @@
 #define BASE_ATOMICOPS_INTERNALS_ARM_GENERIC_H_
 
 #include <stdio.h>
-#include <stdlib.h>
+#include "base/abort.h"
 #include "base/basictypes.h"
 
 typedef int32_t Atomic32;
@@ -160,7 +160,7 @@ inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
 inline void NotImplementedFatalError(const char *function_name) {
   fprintf(stderr, "64-bit %s() not implemented on this platform\n",
           function_name);
-  abort();
+  tcmalloc::Abort();
 }
 
 inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,

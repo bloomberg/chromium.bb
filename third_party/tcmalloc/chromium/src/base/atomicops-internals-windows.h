@@ -40,6 +40,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "base/abort.h"
 #include "base/basictypes.h"  // For COMPILE_ASSERT
 
 typedef int32 Atomic32;
@@ -350,7 +351,7 @@ inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
 inline void NotImplementedFatalError(const char *function_name) {
   fprintf(stderr, "64-bit %s() not implemented on this platform\n",
           function_name);
-  abort();
+  tcmalloc::Abort();
 }
 
 inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,

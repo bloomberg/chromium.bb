@@ -45,6 +45,7 @@
 #include <string.h>    // for strlen(), strcmp()
 #include <assert.h>
 #include <errno.h>     // for errno
+#include "base/abort.h"
 #include "base/commandlineflags.h"
 
 // On some systems (like freebsd), we can't call write() at all in a
@@ -85,7 +86,7 @@ DECLARE_int32(verbose);
     if (!(condition)) {                                                 \
       WRITE_TO_STDERR("Check failed: " #condition "\n",                 \
                       sizeof("Check failed: " #condition "\n")-1);      \
-      abort();                                                          \
+      tcmalloc::Abort();                                                \
     }                                                                   \
   } while (0)
 
@@ -95,7 +96,7 @@ DECLARE_int32(verbose);
     if (!(condition)) {                                                        \
       WRITE_TO_STDERR("Check failed: " #condition ": " message "\n",           \
                       sizeof("Check failed: " #condition ": " message "\n")-1);\
-      abort();                                                                 \
+      tcmalloc::Abort();                                                       \
     }                                                                          \
   } while (0)
 
@@ -118,7 +119,7 @@ enum { DEBUG_MODE = 1 };
                       sizeof("Check failed: " #condition ": ")-1);      \
       WRITE_TO_STDERR(strerror(err_no), strlen(strerror(err_no)));      \
       WRITE_TO_STDERR("\n", sizeof("\n")-1);                            \
-      abort();                                                          \
+      tcmalloc::Abort();                                                \
     }                                                                   \
   } while (0)
 
@@ -135,7 +136,7 @@ enum { DEBUG_MODE = 1 };
   do {                                                                  \
     if (!((val1) op (val2))) {                                          \
       fprintf(stderr, "Check failed: %s %s %s\n", #val1, #op, #val2);   \
-      abort();                                                          \
+      tcmalloc::Abort();                                                \
     }                                                                   \
   } while (0)
 
@@ -204,8 +205,10 @@ inline void LogPrintf(int severity, const char* pat, va_list ap) {
     strcat(buf, "\n");
   }
   WRITE_TO_STDERR(buf, strlen(buf));
-  if ((severity) == FATAL)
-    abort(); // LOG(FATAL) indicates a big problem, so don't run atexit() calls
+  if ((severity) == FATAL) {
+    // LOG(FATAL) indicates a big problem, so don't run atexit() calls
+    tcmalloc::Abort();
+  }
 }
 
 // Note that since the order of global constructors is unspecified,

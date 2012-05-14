@@ -41,6 +41,7 @@
 #endif
 
 #include <gperftools/malloc_extension.h>
+#include "base/abort.h"
 #include "base/logging.h"   // for perftools_vsnprintf
 #include "base/spinlock.h"              // for SpinLockHolder, SpinLock
 
@@ -116,7 +117,7 @@ void Log(LogMode mode, const char* filename, int line,
     (*log_message_writer)(stats_buffer, strlen(stats_buffer));
   }
 
-  abort();
+  Abort();
 }
 
 bool Logger::Add(const LogItem& item) {

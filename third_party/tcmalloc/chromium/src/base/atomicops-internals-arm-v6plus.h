@@ -40,6 +40,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "base/abort.h"
 #include "base/basictypes.h"  // For COMPILE_ASSERT
 
 // The LDREXD and STREXD instructions in ARM all v7 variants or above.  In v6,
@@ -287,7 +288,7 @@ inline Atomic64 NoBarrier_Load(volatile const Atomic64* ptr) {
 inline void NotImplementedFatalError(const char *function_name) {
   fprintf(stderr, "64-bit %s() not implemented on this platform\n",
           function_name);
-  abort();
+  tcmalloc::Abort();
 }
 
 inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,

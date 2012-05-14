@@ -76,7 +76,7 @@ DEFINE_int64(memfs_malloc_limit_mb,
              "specified number of MiB.  0 == no limit.");
 DEFINE_bool(memfs_malloc_abort_on_fail,
             EnvToBool("TCMALLOC_MEMFS_ABORT_ON_FAIL", false),
-            "abort() whenever memfs_malloc fails to satisfy an allocation "
+            "abort whenever memfs_malloc fails to satisfy an allocation "
             "for any reason.");
 DEFINE_bool(memfs_malloc_ignore_mmap_fail,
             EnvToBool("TCMALLOC_MEMFS_IGNORE_MMAP_FAIL", false),

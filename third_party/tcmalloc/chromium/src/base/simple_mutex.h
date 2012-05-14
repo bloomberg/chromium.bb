@@ -138,7 +138,7 @@
 #endif
 
 #include <assert.h>
-#include <stdlib.h>      // for abort()
+#include "base/abort.h"
 
 #define MUTEX_NAMESPACE perftools_mutex_namespace
 
@@ -234,16 +234,16 @@ void Mutex::ReaderUnlock() { Unlock(); }
 #elif defined(HAVE_PTHREAD) && defined(HAVE_RWLOCK)
 
 #define SAFE_PTHREAD(fncall)  do {   /* run fncall if is_safe_ is true */  \
-  if (is_safe_ && fncall(&mutex_) != 0) abort();                           \
+  if (is_safe_ && fncall(&mutex_) != 0) tcmalloc::Abort();                 \
 } while (0)
 
 Mutex::Mutex() : destroy_(true) {
   SetIsSafe();
-  if (is_safe_ && pthread_rwlock_init(&mutex_, NULL) != 0) abort();
+  if (is_safe_ && pthread_rwlock_init(&mutex_, NULL) != 0) tcmalloc::Abort();
 }
 Mutex::Mutex(Mutex::LinkerInitialized) : destroy_(false) {
   SetIsSafe();
-  if (is_safe_ && pthread_rwlock_init(&mutex_, NULL) != 0) abort();
+  if (is_safe_ && pthread_rwlock_init(&mutex_, NULL) != 0) tcmalloc::Abort();
 }
 Mutex::~Mutex()       { if (destroy_) SAFE_PTHREAD(pthread_rwlock_destroy); }
 void Mutex::Lock()         { SAFE_PTHREAD(pthread_rwlock_wrlock); }
@@ -257,16 +257,16 @@ void Mutex::ReaderUnlock() { SAFE_PTHREAD(pthread_rwlock_unlock); }
 #elif defined(HAVE_PTHREAD)
 
 #define SAFE_PTHREAD(fncall)  do {   /* run fncall if is_safe_ is true */  \
-  if (is_safe_ && fncall(&mutex_) != 0) abort();                           \
+  if (is_safe_ && fncall(&mutex_) != 0) tcmalloc::Abort();                 \
 } while (0)
 
 Mutex::Mutex() : destroy_(true) {
   SetIsSafe();
-  if (is_safe_ && pthread_mutex_init(&mutex_, NULL) != 0) abort();
+  if (is_safe_ && pthread_mutex_init(&mutex_, NULL) != 0) tcmalloc::Abort();
 }
 Mutex::Mutex(Mutex::LinkerInitialized) : destroy_(false) {
   SetIsSafe();
-  if (is_safe_ && pthread_mutex_init(&mutex_, NULL) != 0) abort();
+  if (is_safe_ && pthread_mutex_init(&mutex_, NULL) != 0) tcmalloc::Abort();
 }
 Mutex::~Mutex()       { if (destroy_) SAFE_PTHREAD(pthread_mutex_destroy); }
 void Mutex::Lock()         { SAFE_PTHREAD(pthread_mutex_lock); }

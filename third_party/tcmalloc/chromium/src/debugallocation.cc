@@ -68,6 +68,7 @@
 #include <gperftools/malloc_hook.h>
 #include <gperftools/stacktrace.h>
 #include "addressmap-inl.h"
+#include "base/abort.h"
 #include "base/commandlineflags.h"
 #include "base/googleinit.h"
 #include "base/logging.h"
@@ -889,7 +890,7 @@ static void TracePrintf(int fd, const char *fmt, ...) {
         write(STDERR_FILENO, "Unimplemented TracePrintf format\n", 33);
         write(STDERR_FILENO, p, 2);
         write(STDERR_FILENO, "\n", 1);
-        abort();
+        tcmalloc::Abort();
       }
       p++;
       if (base != 0) {
