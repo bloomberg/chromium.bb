@@ -7,7 +7,7 @@ import "ocidl.idl";
 
 [
   object,
-  uuid(e6c5f02a-2486-4bf0-b13f-f39be260b917),
+  uuid(e051a481-6345-4ba1-bdb1-cf7929955268),
   dual,
   nonextensible,
   helpstring("IDaemonControl Interface"),
@@ -20,35 +20,29 @@ interface IDaemonControl: IDispatch {
                       "information.") ]
   HRESULT GetConfig([out, retval] BSTR* config_out);
 
-  [ id(2), helpstring("Replaces the existing daemon's configuration with "
+  [ id(2), helpstring("Returns a string representing the version of "
+                      "the daemon.") ]
+  HRESULT GetVersion([out, retval] BSTR* version_out);
+
+  [ id(3), helpstring("Replaces the existing daemon's configuration with "
                       "the specified settings.") ]
   HRESULT SetConfig([in] BSTR config);
 
-  [ id(3), helpstring("Starts the daemon.") ]
+  [ id(4), helpstring("Sets the owner window for any windows shown by "
+                      "the daemon controller.") ]
+  HRESULT SetOwnerWindow([in] LONG_PTR owner_window);
+
+  [ id(5), helpstring("Starts the daemon.") ]
   HRESULT StartDaemon();
 
-  [ id(4), helpstring("Stops the daemon.") ]
+  [ id(6), helpstring("Stops the daemon.") ]
   HRESULT StopDaemon();
 
-  [ id(5), helpstring("Modifies the existing daemon's configuration by "
+  [ id(7), helpstring("Modifies the existing daemon's configuration by "
                       "merging it with the specified settings. The 'host_id' "
                       "and 'xmpp_login' values cannot be modified, and must "
                       "not be passed to this method.") ]
   HRESULT UpdateConfig([in] BSTR config);
-};
-
-[
-  object,
-  uuid(d8cc6ebc-df7a-447b-b582-21b7174afb3a),
-  dual,
-  nonextensible,
-  helpstring("IDaemonControlUi Interface"),
-  pointer_default(unique)
-]
-interface IDaemonControlUi: IDaemonControl {
-  [ id(6), helpstring("Sets the owner window for any windows shown by "
-                      "the daemon controller.") ]
-  HRESULT SetOwnerWindow([in] LONG_PTR owner_window);
 };
 
 [
@@ -64,6 +58,6 @@ library ChromotingElevatedControllerLib {
     helpstring("ElevatedController Class")
   ]
   coclass ElevatedController {
-    [default] interface IDaemonControlUi;
+    [default] interface IDaemonControl;
   };
 };

@@ -326,6 +326,10 @@ STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config_out) {
   return S_OK;
 }
 
+STDMETHODIMP ElevatedControllerWin::GetVersion(BSTR* version_out) {
+  return E_NOTIMPL;
+}
+
 STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {
   // Determine the config directory path and create it if necessary.
   FilePath config_dir = remoting::GetConfigDir();
@@ -337,6 +341,11 @@ STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {
     string16(static_cast<char16*>(config), ::SysStringLen(config)));
 
   return WriteConfig(file_content.c_str(), file_content.size(), owner_window_);
+}
+
+STDMETHODIMP ElevatedControllerWin::SetOwnerWindow(LONG_PTR window_handle) {
+  owner_window_ = reinterpret_cast<HWND>(window_handle);
+  return S_OK;
 }
 
 STDMETHODIMP ElevatedControllerWin::StartDaemon() {
@@ -451,11 +460,6 @@ STDMETHODIMP ElevatedControllerWin::UpdateConfig(BSTR config) {
   base::JSONWriter::Write(config_old.get(), &config_updated_str);
   return WriteConfig(config_updated_str.c_str(), config_updated_str.size(),
                      owner_window_);
-}
-
-STDMETHODIMP ElevatedControllerWin::SetOwnerWindow(LONG_PTR window_handle) {
-  owner_window_ = reinterpret_cast<HWND>(window_handle);
-  return S_OK;
 }
 
 HRESULT ElevatedControllerWin::OpenService(ScopedScHandle* service_out) {
