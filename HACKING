@@ -97,6 +97,13 @@ You can also just run lou_checktable for example:
 
 Again open valgrind.log to see if any memory leaks were reported.
 
+For the full experience run lou_allround under Valgrind:
+
+  $ libtool --mode=execute valgrind -v --tool=memcheck \
+    --leak-check=full --show-reachable=yes \
+    --leak-resolution=high --track-origins=yes \
+    --log-file=valgrind.log ./tools/lou_allround
+
 ** How to build for win32
 Use the mingw win32 cross compiler as follows:
 
