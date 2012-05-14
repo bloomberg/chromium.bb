@@ -2,28 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_NATIVE_THEME_ANDROID_H_
-#define UI_GFX_NATIVE_THEME_ANDROID_H_
+#ifndef UI_BASE_NATIVE_THEME_NATIVE_THEME_ANDROID_H_
+#define UI_BASE_NATIVE_THEME_NATIVE_THEME_ANDROID_H_
+#pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/gfx/native_theme.h"
+#include "ui/base/native_theme/native_theme.h"
 
 namespace gfx {
 class Rect;
 class Size;
+}
 
-// Android theming API.
+namespace ui {
+
 class NativeThemeAndroid : public NativeTheme {
  public:
   // Gets our singleton instance.
   static const NativeThemeAndroid* instance();
 
   // Return the size of the part.
-  virtual Size GetPartSize(Part part,
-                           State state,
-                           const ExtraParams& extra) const OVERRIDE;
+  virtual gfx::Size GetPartSize(Part part,
+                                State state,
+                                const ExtraParams& extra) const OVERRIDE;
 
   // Paint the part to the canvas.
   virtual void Paint(SkCanvas* canvas,
@@ -167,6 +170,6 @@ class NativeThemeAndroid : public NativeTheme {
   DISALLOW_COPY_AND_ASSIGN(NativeThemeAndroid);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_NATIVE_THEME_ANDROID_H_
+#endif  // UI_BASE_NATIVE_THEME_NATIVE_THEME_ANDROID_H_

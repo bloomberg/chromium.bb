@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,11 +36,10 @@ void Checkbox::SetChecked(bool checked) {
 
 gfx::Size Checkbox::GetPreferredSize() {
   gfx::Size prefsize(TextButtonBase::GetPreferredSize());
-  gfx::NativeTheme::ExtraParams extra;
-  gfx::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size = gfx::NativeTheme::instance()->GetPartSize(GetThemePart(),
-                                                             state,
-                                                             extra);
+  ui::NativeTheme::ExtraParams extra;
+  ui::NativeTheme::State state = GetThemeState(&extra);
+  gfx::Size size = ui::NativeTheme::instance()->GetPartSize(GetThemePart(),
+                                                            state, extra);
   prefsize.Enlarge(size.width(), 0);
   prefsize.set_height(std::max(prefsize.height(), size.height()));
 
@@ -76,16 +75,15 @@ void Checkbox::NotifyClick(const views::Event& event) {
   TextButtonBase::NotifyClick(event);
 }
 
-gfx::NativeTheme::Part Checkbox::GetThemePart() const {
-  return gfx::NativeTheme::kCheckbox;
+ui::NativeTheme::Part Checkbox::GetThemePart() const {
+  return ui::NativeTheme::kCheckbox;
 }
 
 gfx::Rect Checkbox::GetThemePaintRect() const {
-  gfx::NativeTheme::ExtraParams extra;
-  gfx::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size(gfx::NativeTheme::instance()->GetPartSize(GetThemePart(),
-                                                           state,
-                                                           extra));
+  ui::NativeTheme::ExtraParams extra;
+  ui::NativeTheme::State state = GetThemeState(&extra);
+  gfx::Size size(ui::NativeTheme::instance()->GetPartSize(GetThemePart(), state,
+                                                          extra));
   gfx::Insets insets = GetInsets();
   int y_offset = (height() - size.height()) / 2;
   gfx::Rect rect(insets.left(), y_offset, size.width(), size.height());
@@ -93,18 +91,17 @@ gfx::Rect Checkbox::GetThemePaintRect() const {
   return rect;
 }
 
-void Checkbox::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
+void Checkbox::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   TextButtonBase::GetExtraParams(params);
   params->button.checked = checked_;
 }
 
 gfx::Rect Checkbox::GetTextBounds() const {
   gfx::Rect bounds(TextButtonBase::GetTextBounds());
-  gfx::NativeTheme::ExtraParams extra;
-  gfx::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size(gfx::NativeTheme::instance()->GetPartSize(GetThemePart(),
-                                                           state,
-                                                           extra));
+  ui::NativeTheme::ExtraParams extra;
+  ui::NativeTheme::State state = GetThemeState(&extra);
+  gfx::Size size(ui::NativeTheme::instance()->GetPartSize(GetThemePart(), state,
+                                                          extra));
   bounds.Offset(size.width() + kCheckboxLabelSpacing, 0);
   return bounds;
 }

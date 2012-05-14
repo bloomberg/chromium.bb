@@ -225,15 +225,15 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
 
   // Overridden from NativeThemeDelegate:
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
-  virtual gfx::NativeTheme::State GetThemeState(
-      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
+  virtual ui::NativeTheme::State GetThemeState(
+      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
   virtual const ui::Animation* GetThemeAnimation() const OVERRIDE;
-  virtual gfx::NativeTheme::State GetBackgroundThemeState(
-      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
-  virtual gfx::NativeTheme::State GetForegroundThemeState(
-      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
+  virtual ui::NativeTheme::State GetBackgroundThemeState(
+      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
+  virtual ui::NativeTheme::State GetForegroundThemeState(
+      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
 
-  virtual void GetExtraParams(gfx::NativeTheme::ExtraParams* params) const;
+  virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
   virtual gfx::Rect GetTextBounds() const;
 
@@ -353,11 +353,11 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   virtual const SkBitmap& GetImageToPaint() const;
 
   // Overridden from NativeThemeDelegate:
-  virtual gfx::NativeTheme::Part GetThemePart() const OVERRIDE;
+  virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
 
   // Overridden from TextButtonBase:
   virtual void GetExtraParams(
-      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
+      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
   virtual gfx::Rect GetTextBounds() const OVERRIDE;
 
  private:
@@ -413,7 +413,7 @@ class VIEWS_EXPORT NativeTextButton : public TextButton {
 
   // Overridden from TextButton:
   virtual void GetExtraParams(
-      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
+      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextButton);
 };

@@ -19,7 +19,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 
-#include "ui/gfx/native_theme.h"
+#include "ui/base/native_theme/native_theme.h"
 #endif
 
 namespace gfx {
@@ -362,7 +362,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Paints the check/radio button indicator.
   void PaintCheck(gfx::Canvas* canvas,
-                  gfx::NativeTheme::State state,
+                  ui::NativeTheme::State state,
                   SelectionState selection_state,
                   const MenuConfig& config);
 #endif

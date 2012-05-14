@@ -5,8 +5,8 @@
 #include "ui/views/controls/menu/menu_separator.h"
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/native_theme.h"
 #include "ui/views/controls/menu/menu_config.h"
 
 namespace {
@@ -19,8 +19,8 @@ namespace views {
 
 void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(gfx::Rect(0, height() / 2, width(), kSeparatorHeight),
-      gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_MenuSeparatorColor));
+      ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuSeparatorColor));
 }
 
 gfx::Size MenuSeparator::GetPreferredSize() {

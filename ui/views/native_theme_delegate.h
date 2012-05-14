@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define UI_VIEWS_NATIVE_THEME_DELEGATE_H_
 #pragma once
 
-#include "ui/gfx/native_theme.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/views_export.h"
 
@@ -24,28 +24,28 @@ class VIEWS_EXPORT NativeThemeDelegate {
   virtual ~NativeThemeDelegate() {}
 
   // Get the native theme part that should be drawn.
-  virtual gfx::NativeTheme::Part GetThemePart() const = 0;
+  virtual ui::NativeTheme::Part GetThemePart() const = 0;
 
   // Get the rectangle that should be painted.
   virtual gfx::Rect GetThemePaintRect() const = 0;
 
   // Get the state of the part, along with any extra data needed for drawing.
-  virtual gfx::NativeTheme::State GetThemeState(
-      gfx::NativeTheme::ExtraParams* params) const = 0;
+  virtual ui::NativeTheme::State GetThemeState(
+      ui::NativeTheme::ExtraParams* params) const = 0;
 
   // If the native theme drawign should be animated, return the Animation object
   // that controlls it.  If no animation is ongoing, NULL may be returned.
   virtual const ui::Animation* GetThemeAnimation() const = 0;
 
   // If animation is onging, this returns the background native theme state.
-  virtual gfx::NativeTheme::State GetBackgroundThemeState(
-      gfx::NativeTheme::ExtraParams* params) const = 0;
+  virtual ui::NativeTheme::State GetBackgroundThemeState(
+      ui::NativeTheme::ExtraParams* params) const = 0;
 
   // If animation is onging, this returns the foreground native theme state.
   // This state will be composited over the background using an alpha value
   // based on the current value of the animation.
-  virtual gfx::NativeTheme::State GetForegroundThemeState(
-      gfx::NativeTheme::ExtraParams* params) const = 0;
+  virtual ui::NativeTheme::State GetForegroundThemeState(
+      ui::NativeTheme::ExtraParams* params) const = 0;
 };
 
 }  // namespace views

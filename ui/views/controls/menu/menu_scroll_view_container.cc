@@ -11,16 +11,16 @@
 #endif
 
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
 
-using gfx::NativeTheme;
+using ui::NativeTheme;
 
 // Height of the scroll arrow.
 // This goes up to 4 with large fonts, but this is close enough for now.

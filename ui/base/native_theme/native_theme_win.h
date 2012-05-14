@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
+#ifndef UI_BASE_NATIVE_THEME_NATIVE_THEME_WIN_H_
+#define UI_BASE_NATIVE_THEME_NATIVE_THEME_WIN_H_
+#pragma once
+
 // A wrapper class for working with custom XP/Vista themes provided in
 // uxtheme.dll.  This is a singleton class that can be grabbed using
 // NativeThemeWin::instance().
 // For more information on visual style parts and states, see:
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/commctls/userex/topics/partsandstates.asp
-
-#ifndef UI_GFX_NATIVE_THEME_WIN_H_
-#define UI_GFX_NATIVE_THEME_WIN_H_
-#pragma once
 
 #include <windows.h>
 #include <uxtheme.h>
@@ -18,12 +18,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/native_theme.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/size.h"
 
 class SkCanvas;
 
-namespace gfx {
+namespace ui {
 
 // Windows implementation of native theme class.
 //
@@ -69,7 +69,7 @@ class UI_EXPORT NativeThemeWin : public NativeTheme {
   // Get the thickness of the border associated with the specified theme,
   // defaulting to GetSystemMetrics edge size if themes are disabled.
   // In Classic Windows, borders are typically 2px; on XP+, they are 1px.
-  Size GetThemeBorderSize(ThemeName theme) const;
+  gfx::Size GetThemeBorderSize(ThemeName theme) const;
 
   // Disables all theming for top-level windows in the entire process, from
   // when this method is called until the process exits.  All the other
@@ -326,6 +326,6 @@ class UI_EXPORT NativeThemeWin : public NativeTheme {
   DISALLOW_COPY_AND_ASSIGN(NativeThemeWin);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_NATIVE_THEME_WIN_H_
+#endif  // UI_BASE_NATIVE_THEME_NATIVE_THEME_WIN_H_
