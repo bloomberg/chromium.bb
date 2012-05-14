@@ -122,6 +122,8 @@ AC_CONFIG_FILES([
         tests/harness/Makefile
 	python/Makefile
 	python/louis/Makefile
+	python3/Makefile
+	python3/louis/Makefile
         tools/Makefile
 	gnulib/Makefile
 	m4/Makefile])
