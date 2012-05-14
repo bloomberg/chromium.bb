@@ -19,6 +19,7 @@ namespace ash {
 // Delegate for the Launcher.
 class ASH_EXPORT LauncherDelegate {
  public:
+  // Launcher owns the delegate.
   virtual ~LauncherDelegate() {}
 
   // Invoked when the user clicks on button in the launcher to create a new
@@ -51,10 +52,10 @@ class ASH_EXPORT LauncherDelegate {
 
   // Returns the id of the item associated with the specified window, or 0 if
   // there isn't one.
-  virtual ash::LauncherID GetIDByWindow(aura::Window* window) = 0;
+  virtual LauncherID GetIDByWindow(aura::Window* window) = 0;
 
   // Whether the given launcher item is draggable.
-  virtual bool IsDraggable(const ash::LauncherItem& item) = 0;
+  virtual bool IsDraggable(const LauncherItem& item) = 0;
 };
 
 }  // namespace ash
