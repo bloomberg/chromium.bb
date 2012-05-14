@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import functools
+import logging
 import os
 import signal
 import sys
@@ -59,6 +60,15 @@ if __name__ == '__main__':
     print >>sys.stderr, ("Internal error detected in wrapper.py: no main "
                          "functor found in module %r." % (target,))
     sys.exit(100)
+
+  # Set up basic logging information for all modules that use logging.
+  # Note a script target may setup default logging in it's module namespace
+  # which will take precedence over this.
+  logging.basicConfig(
+      level=logging.DEBUG,
+      format='%(levelname)s: %(asctime)s: %(message)s',
+      datefmt='%H:%M:%S')
+
 
   signal.signal(signal.SIGTERM, _DefaultHandler)
 

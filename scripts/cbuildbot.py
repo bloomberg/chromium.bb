@@ -872,6 +872,11 @@ def _FinishParsing(options, args):
   Args:
     options, args: The options/args object returned by optparse
   """
+  # Setup logging levels first so any parsing triggered log messages
+  # are appropriately filtered.
+  logging.getLogger().setLevel(
+    logging.DEBUG if options.debug else logging.INFO)
+
   if options.chrome_root:
     if options.chrome_rev != constants.CHROME_REV_LOCAL:
       cros_lib.Die('Chrome rev must be %s if chrome_root is set.' %

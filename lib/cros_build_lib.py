@@ -32,13 +32,6 @@ NO = 'no'
 GERRIT_SSH_REMOTE = 'gerrit'
 
 
-# Set up basic logging information for all modules that use logging.
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(levelname)s: %(asctime)s: %(message)s',
-    datefmt='%H:%M:%S')
-
-
 logger = logging.getLogger('chromite')
 
 
