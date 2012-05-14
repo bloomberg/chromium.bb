@@ -31,6 +31,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        '../third_party/libusb/libusb.gyp:libusb',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
