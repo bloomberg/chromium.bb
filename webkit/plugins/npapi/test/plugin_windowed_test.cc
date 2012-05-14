@@ -38,8 +38,7 @@ NPError WindowedPluginTest::SetWindow(NPWindow* pNPWindow) {
   }
 
   if ((test_name() == "create_instance_in_paint" && test_id() == "1") ||
-      test_name() == "alert_in_window_message" ||
-      test_name() == "invoke_js_function_on_create") {
+      test_name() == "alert_in_window_message") {
     static ATOM window_class = 0;
     if (!window_class) {
       WNDCLASSEX wcex;
@@ -134,11 +133,6 @@ LRESULT CALLBACK WindowedPluginTest::WindowProc(
       // and verify that we don't hang the browser.
       CallJSFunction(this_ptr, "CallAlert");
       CallJSFunction(this_ptr, "CallAlert");
-    } else if (this_ptr->test_name() ==
-                  "invoke_js_function_on_create" &&
-               message == WM_PAINT) {
-      this_ptr->done_ = true;
-      CallJSFunction(this_ptr, "PluginCreated");
     }
 
     if (this_ptr->done_) {

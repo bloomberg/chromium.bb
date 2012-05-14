@@ -1584,9 +1584,6 @@ class TestingAutomationProvider : public AutomationProvider,
                          ContentSetting setting,
                          bool* success);
 
-  // Load all plug-ins on the page.
-  void LoadBlockedPlugins(int tab_handle, bool* success);
-
   // Resets to the default theme.
   void ResetToDefaultTheme();
 

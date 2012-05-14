@@ -20,6 +20,8 @@ class WindowlessPluginTest : public PluginTest {
   virtual bool IsWindowless() const OVERRIDE;
 
   // NPAPI HandleEvent handler
+  virtual NPError New(uint16 mode, int16 argc, const char* argn[],
+                      const char* argv[], NPSavedData* saved) OVERRIDE;
   virtual int16 HandleEvent(void* event) OVERRIDE;
 
  protected:

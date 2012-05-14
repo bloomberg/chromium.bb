@@ -5,6 +5,7 @@
 #include "webkit/plugins/npapi/test/plugin_client.h"
 
 #include "base/string_util.h"
+#include "webkit/plugins/npapi/test/plugin_execute_stream_javascript.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 #include "webkit/plugins/npapi/test/plugin_test_factory.h"
 
@@ -77,29 +78,35 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
   if (instance == NULL)
     return NPERR_INVALID_INSTANCE_ERROR;
 
-  // We look at the test name requested via the plugin arguments.  We match
-  // that against a given test and try to instantiate it.
+  NPAPIClient::PluginTest* new_test = NULL;
+  if (mode == NP_FULL) {
+    new_test = new::NPAPIClient::ExecuteStreamJavaScript(
+        instance, NPAPIClient::PluginClient::HostFunctions());
+  } else {
+    // We look at the test name requested via the plugin arguments.  We match
+    // that against a given test and try to instantiate it.
 
-  // lookup the name parameter
-  std::string test_name;
-  for (int name_index = 0; name_index < argc; name_index++) {
-    if (base::strcasecmp(argn[name_index], "name") == 0) {
-      test_name = argv[name_index];
-      break;
+    // lookup the name parameter
+    std::string test_name;
+    for (int name_index = 0; name_index < argc; name_index++) {
+      if (base::strcasecmp(argn[name_index], "name") == 0) {
+        test_name = argv[name_index];
+        break;
+      }
     }
-  }
-  if (test_name.empty())
-    return NPERR_GENERIC_ERROR;  // no name found
+    if (test_name.empty())
+      return NPERR_GENERIC_ERROR;  // no name found
 
-  NPAPIClient::PluginTest* new_test = NPAPIClient::CreatePluginTest(test_name,
-      instance, NPAPIClient::PluginClient::HostFunctions());
-  if (new_test == NULL) {
-    // If we don't have a test case for this, create a
-    // generic one which basically never fails.
-    LOG(WARNING) << "Unknown test name '" << test_name
-                 << "'; using default test.";
-    new_test = new NPAPIClient::PluginTest(instance,
-        NPAPIClient::PluginClient::HostFunctions());
+    new_test = NPAPIClient::CreatePluginTest(test_name,
+        instance, NPAPIClient::PluginClient::HostFunctions());
+    if (new_test == NULL) {
+      // If we don't have a test case for this, create a
+      // generic one which basically never fails.
+      LOG(WARNING) << "Unknown test name '" << test_name
+                   << "'; using default test.";
+      new_test = new NPAPIClient::PluginTest(instance,
+          NPAPIClient::PluginClient::HostFunctions());
+    }
   }
 
   NPError ret = new_test->New(mode, argc, (const char**)argn,

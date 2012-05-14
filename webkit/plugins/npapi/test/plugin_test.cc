@@ -24,7 +24,9 @@ bool PluginTest::IsWindowless() const { return false; }
 NPError PluginTest::New(uint16 mode, int16 argc, const char* argn[],
                         const char* argv[], NPSavedData* saved) {
   test_name_ = this->GetArgValue("name", argc, argn, argv);
-  test_id_ = this->GetArgValue("id", argc, argn, argv);
+  const char* id = this->GetArgValue("id", argc, argn, argv);
+  if (id)  // NULL for NP_FULL
+    test_id_ = id;
   return NPERR_NO_ERROR;
 }
 

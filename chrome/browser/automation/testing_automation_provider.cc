@@ -506,7 +506,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
                         ShutdownSessionService)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetContentSetting, SetContentSetting)
-    IPC_MESSAGE_HANDLER(AutomationMsg_LoadBlockedPlugins, LoadBlockedPlugins)
     IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_WaitForProcessLauncherThreadToGoIdle,
@@ -7116,23 +7115,6 @@ void TestingAutomationProvider::SetContentSetting(
                              std::string(),
                              setting);
     }
-    *success = true;
-  }
-}
-
-void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
-                                                   bool* success) {
-  *success = false;
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* nav = tab_tracker_->GetResource(tab_handle);
-    if (!nav)
-      return;
-    WebContents* contents = nav->GetWebContents();
-    if (!contents)
-      return;
-    RenderViewHost* host = contents->GetRenderViewHost();
-    host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID(),
-                                                    std::string()));
     *success = true;
   }
 }
