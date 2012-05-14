@@ -98,10 +98,6 @@ def Main(args):
          '--',
          nacl_integration_script,
          '--disable_tests=%s' % ','.join(tests_to_disable)]
-  if not is_integration_bot:
-    if sys.platform in ('win32', 'cygwin'):
-      # http://code.google.com/p/nativeclient/issues/detail?id=2648
-      cmd.append('--disable_glibc')
   cmd += args
   sys.stdout.write('Running %s\n' % ' '.join(cmd))
   sys.stdout.flush()
