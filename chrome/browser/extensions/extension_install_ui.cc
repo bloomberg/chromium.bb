@@ -519,7 +519,7 @@ void ExtensionInstallUI::ShowConfirmation() {
     case INLINE_INSTALL_PROMPT:
     case INSTALL_PROMPT: {
       prompt_.set_extension(extension_);
-      prompt_.set_icon(gfx::Image(icon_));
+      prompt_.set_icon(gfx::Image(new SkBitmap(icon_)));
       ShowExtensionInstallDialog(profile_, delegate_, prompt_);
       break;
     }

@@ -48,7 +48,7 @@ public:
     SkBitmap bitmap = decoder.Decode(
         reinterpret_cast<const unsigned char*>(file_contents.c_str()),
         file_contents.length());
-    icon_ = gfx::Image(bitmap);
+    icon_ = gfx::Image(new SkBitmap(bitmap));
   }
 
   void LoadExtension() {

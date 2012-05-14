@@ -471,7 +471,7 @@ void ThumbnailGenerator::UpdateThumbnail(
        clip_result == ThumbnailGenerator::kNotClipped);
   score.load_completed = (!load_interrupted_ && !web_contents->IsLoading());
 
-  gfx::Image image(thumbnail);
+  gfx::Image image(new SkBitmap(thumbnail));
   const GURL& url = web_contents->GetURL();
   top_sites->SetPageThumbnail(url, &image, score);
   VLOG(1) << "Thumbnail taken for " << url << ": " << score.ToString();
