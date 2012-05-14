@@ -18,8 +18,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
+#include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "chrome/common/metrics/metrics_service_base.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/url_fetcher_delegate.h"
@@ -30,7 +32,6 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class MetricsLog;
 class MetricsReportingScheduler;
 class PrefService;
 class Profile;
@@ -167,9 +168,19 @@ class MetricsService
   void OnInitTaskGotHardwareClass(const std::string& hardware_class);
 
   // Callback from PluginService::GetPlugins() that continues the init task by
-  // loading profiler data.
+  // launching a task to gather Google Update statistics.
   void OnInitTaskGotPluginInfo(
       const std::vector<webkit::WebPluginInfo>& plugins);
+
+  // Task launched by OnInitTaskGotPluginInfo() that continues the init task by
+  // loading Google Update statistics.  Called on a blocking pool thread.
+  static void InitTaskGetGoogleUpdateData(base::WeakPtr<MetricsService> self,
+                                          base::MessageLoopProxy* target_loop);
+
+  // Callback from InitTaskGetGoogleUpdateData() that continues the init task by
+  // loading profiler data.
+  void OnInitTaskGotGoogleUpdateData(
+      const GoogleUpdateMetrics& google_update_metrics);
 
   // TrackingSynchronizerObserver:
   virtual void ReceivedProfilerData(
@@ -358,6 +369,9 @@ class MetricsService
 
   // The list of plugins which was retrieved on the file thread.
   std::vector<webkit::WebPluginInfo> plugins_;
+
+  // Google Update statistics, which were retrieved on a blocking pool thread.
+  GoogleUpdateMetrics google_update_metrics_;
 
   // The initial log, used to record startup metrics.
   scoped_ptr<MetricsLog> initial_log_;

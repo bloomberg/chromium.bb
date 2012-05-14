@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 11
+// Next tag: 12
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -125,6 +125,55 @@ message SystemProfileProto {
     optional Graphics gpu = 8;
   }
   optional Hardware hardware = 6;
+
+  // Information on the Google Update install that is managing this client.
+  message GoogleUpdate {
+    // Whether the Google Update install is system-level or user-level.
+    optional bool is_system_install = 1;
+
+    // The date at which Google Update last started performing an automatic
+    // update check, in seconds since the Unix epoch.
+    optional int64 last_automatic_start_timestamp = 2;
+
+    // The date at which Google Update last successfully sent an update check
+    // and recieved an intact response from the server, in seconds since the
+    // Unix epoch. (The updates don't need to be successfully installed.)
+    optional int64 last_update_check_timestamp = 3;
+
+    // Describes a product being managed by Google Update. (This can also
+    // describe Google Update itself.)
+    message ProductInfo {
+      // The current version of the product that is installed.
+      optional string version = 1;
+
+      // The date at which Google Update successfully updated this product,
+      // stored in seconds since the Unix epoch.  This is updated when an update
+      // is successfully applied, or if the server reports that no update
+      // is available.
+      optional int64 last_update_success_timestamp = 2;
+
+      // The result reported by the product updater on its last run.
+      enum InstallResult {
+        INSTALL_RESULT_SUCCESS = 0;
+        INSTALL_RESULT_FAILED_CUSTOM_ERROR = 1;
+        INSTALL_RESULT_FAILED_MSI_ERROR = 2;
+        INSTALL_RESULT_FAILED_SYSTEM_ERROR = 3;
+        INSTALL_RESULT_EXIT_CODE = 4;
+      }
+      optional InstallResult last_result = 3;
+
+      // The error code reported by the product updater on its last run.  This
+      // will typically be a error code specific to the product installer.
+      optional int32 last_error = 4;
+
+      // The extra error code reported by the product updater on its last run.
+      // This will typically be a Win32 error code.
+      optional int32 last_extra_error = 5;
+    }
+    optional ProductInfo google_update_status = 4;
+    optional ProductInfo client_status = 5;
+  }
+  optional GoogleUpdate google_update = 11;
 
   // Information on all installed plugins.
   message Plugin {

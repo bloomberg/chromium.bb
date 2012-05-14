@@ -12,6 +12,8 @@ namespace google_update {
 
 // The GUID Google Update uses to keep track of Chrome upgrades.
 extern const wchar_t kChromeUpgradeCode[];
+// The GUID Google Update uses to keep track of Google Update self-upgrades.
+extern const wchar_t kGoogleUpdateUpgradeCode[];
 
 extern const wchar_t kRegPathClients[];
 
@@ -41,7 +43,12 @@ extern const wchar_t kRegCriticalVersionField[];
 extern const wchar_t kRegDidRunField[];
 extern const wchar_t kRegEULAAceptedField[];
 extern const wchar_t kRegLangField[];
+extern const wchar_t kRegLastStartedAUField[];
 extern const wchar_t kRegLastCheckedField[];
+extern const wchar_t kRegLastCheckSuccessField[];
+extern const wchar_t kRegLastInstallerResultField[];
+extern const wchar_t kRegLastInstallerErrorField[];
+extern const wchar_t kRegLastInstallerExtraField[];
 extern const wchar_t kRegMetricsId[];
 extern const wchar_t kRegMSIField[];
 extern const wchar_t kRegNameField[];

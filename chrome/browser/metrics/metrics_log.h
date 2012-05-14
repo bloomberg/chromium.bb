@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/metrics/metrics_log_base.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "content/public/common/process_type.h"
 #include "ui/gfx/size.h"
 
@@ -35,6 +36,25 @@ struct SelectedGroupId;
 namespace webkit {
 struct WebPluginInfo;
 }
+
+// This is a small helper struct to pass Google Update metrics in a single
+// reference argument to MetricsLog::RecordEnvironment().
+struct GoogleUpdateMetrics {
+    GoogleUpdateMetrics();
+    ~GoogleUpdateMetrics();
+
+    // Defines whether this is a user-level or system-level install.
+    bool is_system_install;
+    // The time at which Google Update last started an automatic update check.
+    base::Time last_started_au;
+    // The time at which Google Update last successfully recieved update
+    // information from Google servers.
+    base::Time last_checked;
+    // Details about Google Update's attempts to update itself.
+    GoogleUpdateSettings::ProductData google_update_data;
+    // Details about Google Update's attempts to update this product.
+    GoogleUpdateSettings::ProductData product_data;
+};
 
 class MetricsLog : public MetricsLogBase {
  public:
@@ -59,22 +79,25 @@ class MetricsLog : public MetricsLogBase {
   static const std::string& version_extension();
 
   // Records the current operating environment.  Takes the list of installed
-  // plugins as a parameter because that can't be obtained synchronously
-  // from the UI thread.
+  // plugins and Google Update statistics as parameters because those can't be
+  // obtained synchronously from the UI thread.
   // profile_metrics, if non-null, gives a dictionary of all profile metrics
   // that are to be recorded. Each value in profile_metrics should be a
   // dictionary giving the metrics for the profile.
   void RecordEnvironment(
       const std::vector<webkit::WebPluginInfo>& plugin_list,
+      const GoogleUpdateMetrics& google_update_metrics,
       const base::DictionaryValue* profile_metrics);
 
   // Records the current operating environment.  Takes the list of installed
-  // plugins as a parameter because that can't be obtained synchronously from
-  // the UI thread.  This is exposed as a separate method from the
-  // |RecordEnvironment()| method above because we record the environment with
-  // *each* protobuf upload, but only with the initial XML upload.
+  // plugins and Google Update statistics as parameters because those can't be
+  // obtained synchronously from the UI thread.  This is exposed as a separate
+  // method from the |RecordEnvironment()| method above because we record the
+  // environment with *each* protobuf upload, but only with the initial XML
+  // upload.
   void RecordEnvironmentProto(
-      const std::vector<webkit::WebPluginInfo>& plugin_list);
+      const std::vector<webkit::WebPluginInfo>& plugin_list,
+      const GoogleUpdateMetrics& google_update_metrics);
 
   // Records the input text, available choices, and selected entry when the
   // user uses the Omnibox to open a URL.
@@ -153,6 +176,10 @@ class MetricsLog : public MetricsLogBase {
   // key/value pairs in profile_metrics.
   void WriteProfileMetrics(const std::string& key,
                            const base::DictionaryValue& profile_metrics);
+
+  // Writes info about the Google Update install that is managing this client.
+  // This is a no-op if called on a non-Windows platform.
+  void WriteGoogleUpdateProto(const GoogleUpdateMetrics& google_update_metrics);
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };

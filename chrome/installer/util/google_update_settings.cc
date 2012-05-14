@@ -548,3 +548,102 @@ string16 GoogleUpdateSettings::GetUninstallCommandLine(bool system_install) {
 
   return cmd_line;
 }
+
+base::Time GoogleUpdateSettings::GetGoogleUpdateLastStartedAU(
+    bool system_install) {
+  const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  RegKey update_key;
+
+  if (update_key.Open(root_key, google_update::kRegPathGoogleUpdate,
+                      KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    DWORD last_start;
+    if (update_key.ReadValueDW(google_update::kRegLastStartedAUField,
+                               &last_start) == ERROR_SUCCESS) {
+      return base::Time::FromTimeT(last_start);
+    }
+  }
+
+  return base::Time();
+}
+
+base::Time GoogleUpdateSettings::GetGoogleUpdateLastChecked(
+    bool system_install) {
+  const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  RegKey update_key;
+
+  if (update_key.Open(root_key, google_update::kRegPathGoogleUpdate,
+                      KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    DWORD last_check;
+    if (update_key.ReadValueDW(google_update::kRegLastCheckedField,
+                               &last_check) == ERROR_SUCCESS) {
+      return base::Time::FromTimeT(last_check);
+    }
+  }
+
+  return base::Time();
+}
+
+bool GoogleUpdateSettings::GetUpdateDetailForApp(bool system_install,
+                                                 const wchar_t* app_guid,
+                                                 ProductData* data) {
+  DCHECK(app_guid);
+  DCHECK(data);
+
+  bool product_found = false;
+
+  const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  string16 clientstate_reg_path(google_update::kRegPathClientState);
+  clientstate_reg_path.append(L"\\");
+  clientstate_reg_path.append(app_guid);
+
+  RegKey clientstate;
+  if (clientstate.Open(root_key, clientstate_reg_path.c_str(),
+                       KEY_QUERY_VALUE) == ERROR_SUCCESS) {
+    string16 version;
+    DWORD dword_value;
+    if ((clientstate.ReadValueDW(google_update::kRegLastCheckSuccessField,
+                                 &dword_value) == ERROR_SUCCESS) &&
+        (clientstate.ReadValue(google_update::kRegVersionField,
+                               &version) == ERROR_SUCCESS)) {
+      product_found = true;
+      data->version = WideToASCII(version);
+      data->last_success = base::Time::FromTimeT(dword_value);
+      data->last_result = 0;
+      data->last_error_code = 0;
+      data->last_extra_code = 0;
+
+      if (clientstate.ReadValueDW(google_update::kRegLastInstallerResultField,
+                                  &dword_value) == ERROR_SUCCESS) {
+        // Google Update convention is that if an installer writes an result
+        // code that is invalid, it is clamped to an exit code result.
+        const DWORD kMaxValidInstallResult = 4;  // INSTALLER_RESULT_EXIT_CODE
+        data->last_result = std::min(dword_value, kMaxValidInstallResult);
+      }
+      if (clientstate.ReadValueDW(google_update::kRegLastInstallerErrorField,
+                                  &dword_value) == ERROR_SUCCESS) {
+        data->last_error_code = dword_value;
+      }
+      if (clientstate.ReadValueDW(google_update::kRegLastInstallerExtraField,
+                                  &dword_value) == ERROR_SUCCESS) {
+        data->last_extra_code = dword_value;
+      }
+    }
+  }
+
+  return product_found;
+}
+
+bool GoogleUpdateSettings::GetUpdateDetailForGoogleUpdate(bool system_install,
+                                                          ProductData* data) {
+  return GetUpdateDetailForApp(system_install,
+                               google_update::kGoogleUpdateUpgradeCode,
+                               data);
+}
+
+bool GoogleUpdateSettings::GetUpdateDetail(bool system_install,
+                                           ProductData* data) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  return GetUpdateDetailForApp(system_install,
+                               dist->GetAppGuid().c_str(),
+                               data);
+}

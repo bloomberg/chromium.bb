@@ -783,6 +783,48 @@ void MetricsService::OnInitTaskGotPluginInfo(
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   plugins_ = plugins;
 
+  // Schedules a task on a blocking pool thread to gather Google Update
+  // statistics (requires Registry reads).
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&MetricsService::InitTaskGetGoogleUpdateData,
+                 self_ptr_factory_.GetWeakPtr(),
+                 MessageLoop::current()->message_loop_proxy()));
+}
+
+// static
+void MetricsService::InitTaskGetGoogleUpdateData(
+    base::WeakPtr<MetricsService> self,
+    base::MessageLoopProxy* target_loop) {
+  GoogleUpdateMetrics google_update_metrics;
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  const bool system_install = GoogleUpdateSettings::IsSystemInstall();
+
+  google_update_metrics.is_system_install = system_install;
+  google_update_metrics.last_started_au =
+      GoogleUpdateSettings::GetGoogleUpdateLastStartedAU(system_install);
+  google_update_metrics.last_checked =
+      GoogleUpdateSettings::GetGoogleUpdateLastChecked(system_install);
+  GoogleUpdateSettings::GetUpdateDetailForGoogleUpdate(
+      system_install,
+      &google_update_metrics.google_update_data);
+  GoogleUpdateSettings::GetUpdateDetail(
+      system_install,
+      &google_update_metrics.product_data);
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+
+  target_loop->PostTask(FROM_HERE,
+      base::Bind(&MetricsService::OnInitTaskGotGoogleUpdateData,
+          self, google_update_metrics));
+}
+
+void MetricsService::OnInitTaskGotGoogleUpdateData(
+    const GoogleUpdateMetrics& google_update_metrics) {
+  DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
+
+  google_update_metrics_ = google_update_metrics;
+
   // Start the next part of the init task: fetching performance data.  This will
   // call into |FinishedReceivingProfilerData()| when the task completes.
   chrome_browser_metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
@@ -887,7 +929,7 @@ void MetricsService::StopRecording() {
   MetricsLog* current_log =
       static_cast<MetricsLog*>(log_manager_.current_log());
   DCHECK(current_log);
-  current_log->RecordEnvironmentProto(plugins_);
+  current_log->RecordEnvironmentProto(plugins_, google_update_metrics_);
   current_log->RecordIncrementalStabilityElements(plugins_);
   RecordCurrentHistograms();
 
@@ -1064,7 +1106,8 @@ void MetricsService::PrepareInitialLog() {
 
   DCHECK(initial_log_.get());
   initial_log_->set_hardware_class(hardware_class_);
-  initial_log_->RecordEnvironment(plugins_, profile_dictionary_.get());
+  initial_log_->RecordEnvironment(plugins_, google_update_metrics_,
+                                  profile_dictionary_.get());
 
   // Histograms only get written to the current log, so make the new log current
   // before writing them.

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "chrome/installer/util/util_constants.h"
 
 class BrowserDistribution;
@@ -29,6 +30,25 @@ class GoogleUpdateSettings {
     UPDATES_DISABLED    = 0,
     AUTOMATIC_UPDATES   = 1,
     MANUAL_UPDATES_ONLY = 2,
+  };
+
+  // Defines product data that is tracked/used by Google Update.
+  struct ProductData {
+    // The currently installed version.
+    std::string version;
+    // The time that Google Update last updated this product.  (This means
+    // either running an updater successfully, or doing an update check that
+    // results in no update available.)
+    base::Time last_success;
+    // The result reported by the most recent run of an installer/updater.
+    int last_result;
+    // The error code, if any, reported by the most recent run of an
+    // installer or updater.  This is typically platform independent.
+    int last_error_code;
+    // The extra error code, if any, reported by the most recent run of
+    // an installer or updater.  This is typically an error code specific
+    // to the platform -- i.e. on Windows, it will be a Win32 HRESULT.
+    int last_extra_code;
   };
 
   // Returns true if this install is system-wide, false if it is per-user.
@@ -199,6 +219,31 @@ class GoogleUpdateSettings {
   // Returns Google Update's uninstall command line, or an empty string if none
   // is found.
   static string16 GetUninstallCommandLine(bool system_install);
+
+  // Returns the time at which Google Update last started an automatic update
+  // check, or the null time if this information isn't available.
+  static base::Time GetGoogleUpdateLastStartedAU(bool system_install);
+
+  // Returns the time at which Google Update last successfully contacted Google
+  // servers and got a valid check response, or the null time if this
+  // information isn't available.
+  static base::Time GetGoogleUpdateLastChecked(bool system_install);
+
+  // Returns detailed update data for a product being managed by Google Update.
+  // Returns true if the |version| and |last_updated| fields in |data|
+  // are modified.  The other items are considered optional.
+  static bool GetUpdateDetailForApp(bool system_install,
+                                    const wchar_t* app_guid,
+                                    ProductData* data);
+
+  // Returns product data for Google Update.  (Equivalent to calling
+  // GetUpdateDetailForAppGuid with the app guid for Google Update itself.)
+  static bool GetUpdateDetailForGoogleUpdate(bool system_install,
+                                             ProductData* data);
+
+  // Returns product data for the current product. (Equivalent to calling
+  // GetUpdateDetailForApp with the app guid stored in BrowserDistribution.)
+  static bool GetUpdateDetail(bool system_install, ProductData* data);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);

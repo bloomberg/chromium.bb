@@ -33,6 +33,7 @@
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
@@ -54,6 +55,7 @@ using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
 using tracked_objects::ProcessDataSnapshot;
 typedef experiments_helper::SelectedGroupId SelectedGroupId;
+typedef SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
 
 namespace {
 
@@ -260,7 +262,24 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
   }
 }
 
+void ProductDataToProto(const GoogleUpdateSettings::ProductData& product_data,
+                        ProductInfo* product_info) {
+  product_info->set_version(product_data.version);
+  product_info->set_last_update_success_timestamp(
+      product_data.last_success.ToTimeT());
+  product_info->set_last_error(product_data.last_error_code);
+  product_info->set_last_extra_error(product_data.last_extra_code);
+  if (ProductInfo::InstallResult_IsValid(product_data.last_result)) {
+    product_info->set_last_result(
+        static_cast<ProductInfo::InstallResult>(product_data.last_result));
+  }
+}
+
 }  // namespace
+
+GoogleUpdateMetrics::GoogleUpdateMetrics() : is_system_install(false) {}
+
+GoogleUpdateMetrics::~GoogleUpdateMetrics() {}
 
 static base::LazyInstance<std::string>::Leaky
   g_version_extension = LAZY_INSTANCE_INITIALIZER;
@@ -631,6 +650,7 @@ void MetricsLog::WriteInstallElement() {
 
 void MetricsLog::RecordEnvironment(
          const std::vector<webkit::WebPluginInfo>& plugin_list,
+         const GoogleUpdateMetrics& google_update_metrics,
          const DictionaryValue* profile_metrics) {
   DCHECK(!locked());
 
@@ -730,11 +750,12 @@ void MetricsLog::RecordEnvironment(
   if (profile_metrics)
     WriteAllProfilesMetrics(*profile_metrics);
 
-  RecordEnvironmentProto(plugin_list);
+  RecordEnvironmentProto(plugin_list, google_update_metrics);
 }
 
 void MetricsLog::RecordEnvironmentProto(
-    const std::vector<webkit::WebPluginInfo>& plugin_list) {
+    const std::vector<webkit::WebPluginInfo>& plugin_list,
+    const GoogleUpdateMetrics& google_update_metrics) {
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
   int install_date;
   bool success = base::StringToInt(GetInstallDate(GetPrefService()),
@@ -773,6 +794,8 @@ void MetricsLog::RecordEnvironmentProto(
   hardware->set_primary_screen_width(display_size.width());
   hardware->set_primary_screen_height(display_size.height());
   hardware->set_screen_count(GetScreenCount());
+
+  WriteGoogleUpdateProto(google_update_metrics);
 
   bool write_as_xml = false;
   WritePluginList(plugin_list, write_as_xml);
@@ -951,4 +974,34 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
   }
 
   ++num_events_;
+}
+
+void MetricsLog::WriteGoogleUpdateProto(
+    const GoogleUpdateMetrics& google_update_metrics) {
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+  SystemProfileProto::GoogleUpdate* google_update =
+      uma_proto()->mutable_system_profile()->mutable_google_update();
+
+  google_update->set_is_system_install(google_update_metrics.is_system_install);
+
+  if (!google_update_metrics.last_started_au.is_null()) {
+    google_update->set_last_automatic_start_timestamp(
+        google_update_metrics.last_started_au.ToTimeT());
+  }
+
+  if (!google_update_metrics.last_checked.is_null()) {
+    google_update->set_last_update_check_timestamp(
+      google_update_metrics.last_checked.ToTimeT());
+  }
+
+  if (!google_update_metrics.google_update_data.version.empty()) {
+    ProductDataToProto(google_update_metrics.google_update_data,
+                       google_update->mutable_google_update_status());
+  }
+
+  if (!google_update_metrics.product_data.version.empty()) {
+    ProductDataToProto(google_update_metrics.product_data,
+                       google_update->mutable_client_status());
+  }
+#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
 }

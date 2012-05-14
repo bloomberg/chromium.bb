@@ -17,6 +17,7 @@
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,10 +105,11 @@ class MetricsLogTest : public testing::Test {
     TestMetricsLog log(kClientId, kSessionId);
 
     std::vector<webkit::WebPluginInfo> plugins;
+    GoogleUpdateMetrics google_update_metrics;
     if (proto_only)
-      log.RecordEnvironmentProto(plugins);
+      log.RecordEnvironmentProto(plugins, google_update_metrics);
     else
-      log.RecordEnvironment(plugins, NULL);
+      log.RecordEnvironment(plugins, google_update_metrics, NULL);
 
     const metrics::SystemProfileProto& system_profile = log.system_profile();
     ASSERT_EQ(arraysize(kFieldTrialIds),
