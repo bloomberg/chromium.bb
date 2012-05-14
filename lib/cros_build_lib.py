@@ -286,6 +286,18 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # a self-explanatory exception will be thrown.
   kill_timeout = float(kill_timeout)
 
+  def _get_tempfile():
+    try:
+      return tempfile.TemporaryFile(bufsize=0)
+    except EnvironmentError, e:
+      if e.errno != errno.ENOENT:
+        raise
+      # This can occur if we were pointed at a specific location for our
+      # TMP, but that location has since been deleted.  Suppress that issue
+      # in this particular case since our usage gurantees deletion,
+      # and since this is primarily triggered during hard cgroups shutdown.
+      return tempfile.TemporaryFile(bufsize=0, dir='/tmp')
+
   # Modify defaults based on parameters.
   # Note that tempfiles must be unbuffered else attempts to read
   # what a separate process did to that file can result in a bad
@@ -293,12 +305,12 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   if log_stdout_to_file:
     stdout = open(log_stdout_to_file, 'w+')
   elif redirect_stdout or mute_output:
-    stdout = tempfile.TemporaryFile(bufsize=0)
+    stdout = _get_tempfile()
 
   if combine_stdout_stderr:
     stderr = subprocess.STDOUT
   elif redirect_stderr or mute_output:
-    stderr = tempfile.TemporaryFile(bufsize=0)
+    stderr = _get_tempfile()
 
   # Work around broken buffering usage in cbuildbot and consumers via
   # forcing the current buffer to be flushed.  Without this, any leading

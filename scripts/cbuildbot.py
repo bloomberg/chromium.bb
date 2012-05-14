@@ -1118,19 +1118,25 @@ def main(argv):
 
   with cleanup.EnforcedCleanupSection() as critical_section:
     with sudo.SudoKeepAlive():
-      with cros_lib.AllowDisabling(options.cgroups,
-                                   cgroups.SimpleContainChildren, 'cbuildbot'):
-        # Mark everything between EnforcedCleanupSection and here as having to
-        # be rolled back via the contextmanager cleanup handlers.  This ensures
-        # that sudo bits cannot outlive cbuildbot, that anything cgroups
-        # would kill gets killed, etc.
-        critical_section.ForkWatchdog()
+      # If we're in resume mode, use our parents tempdir rather than
+      # nesting another layer.
+      with cros_lib.AllowDisabling(
+          not options.resume, osutils.TempDirContextManager, 'cbuildbot-tmp'):
+        logging.debug("Cbuildbot tempdir is %r.", os.environ.get('TMP'))
+        with cros_lib.AllowDisabling(options.cgroups,
+                                     cgroups.SimpleContainChildren,
+                                     'cbuildbot'):
+          # Mark everything between EnforcedCleanupSection and here as having to
+          # be rolled back via the contextmanager cleanup handlers.  This
+          # ensures that sudo bits cannot outlive cbuildbot, that anything
+          # cgroups would kill gets killed, etc.
+          critical_section.ForkWatchdog()
 
-        with cros_lib.AllowDisabling(options.timeout > 0,
-                                     cros_lib.Timeout, options.timeout):
-          if not options.buildbot:
-            build_config = cbuildbot_config.OverrideConfigForTrybot(
-                build_config,
-                options.remote_trybot)
+          with cros_lib.AllowDisabling(options.timeout > 0,
+                                       cros_lib.Timeout, options.timeout):
+            if not options.buildbot:
+              build_config = cbuildbot_config.OverrideConfigForTrybot(
+                  build_config,
+                  options.remote_trybot)
 
-          _RunBuildStagesWrapper(options, build_config)
+            _RunBuildStagesWrapper(options, build_config)

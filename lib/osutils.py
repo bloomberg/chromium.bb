@@ -4,13 +4,17 @@
 
 """Common file and os related utilities, including tempdir manipulation."""
 
+import contextlib
 import errno
 import os
 import shutil
 import tempfile
-
-
 from chromite.lib import cros_build_lib
+
+# Env vars that tempdir can be gotten from; minimally, this
+# needs to match python's tempfile module and match normal
+# unix standards.
+_TEMPDIR_ENV_VARS = ('TMPDIR', 'TEMP', 'TMP')
 
 
 def WriteFile(path, content, mode='w', atomic=False):
@@ -98,27 +102,85 @@ def SafeMakedirs(path, mode=0775, sudo=False):
 
 
 # pylint: disable=W0212,R0904,W0702
-def _TempDirSetup(self):
-  self.tempdir = tempfile.mkdtemp()
+def _TempDirSetup(self, prefix='tmp', update_env=True):
+  """Generate a tempdir, modifying the object, and env to use it.
+
+  Specifically, if update_env is True, then from this invocation forward,
+  python and all subprocesses will use this location for their tempdir.
+
+  The matching _TempDirTearDown restores the env to what it was.
+  """
+  # Stash the old tempdir that was used so we can
+  # switch it back on the way out.
+  self.tempdir = tempfile.mkdtemp(prefix=prefix)
   os.chmod(self.tempdir, 0700)
+
+  if update_env:
+    with tempfile._once_lock:
+      self._tempdir_value = tempfile._get_default_tempdir()
+      self._tempdir_env = tuple((x, os.environ.get(x))
+                                for x in _TEMPDIR_ENV_VARS)
+      # Now update TMPDIR/TEMP/TMP, and poke the python
+      # internal to ensure all subprocess/raw tempfile
+      # access goes into this location.
+      os.environ.update((x, self.tempdir) for x in _TEMPDIR_ENV_VARS)
+      # Finally, adjust python's cached value (we now it's cached by here
+      # since we invoked _get_default_tempdir from above).  Note this
+      # is necessary since we want *all* output from that point
+      # forward to got to this location.
+      tempfile.tempdir = self.tempdir
 
 
 # pylint: disable=W0212,R0904,W0702
 def _TempDirTearDown(self):
+  # Note that _TempDirSetup may have failed, resulting in these attributes
+  # not being set; this is why we use getattr here (and must).
   tempdir = getattr(self, 'tempdir', None)
-  if tempdir is not None and os.path.exists(tempdir):
-    shutil.rmtree(tempdir)
+  try:
+    if tempdir is not None:
+      shutil.rmtree(tempdir)
+  except EnvironmentError, e:
+    # Suppress ENOENT since we may be invoked
+    # in a context where parallel wipes of the tempdir
+    # may be occuring; primarily during hard shutdowns.
+    if e.errno != errno.ENOENT:
+      raise
 
+  # Restore environment modification if necessary.
+  tempdir_value = getattr(self, '_tempdir_value', None)
+  if tempdir_value is not None:
+    with tempfile._once_lock:
+      tempfile.tempdir = self._tempdir_value
+      for key, value in self._tempdir_env:
+        if value is None:
+          os.environ.pop(key, None)
+        else:
+          os.environ[key] = value
+
+
+@contextlib.contextmanager
+def TempDirContextManager(prefix=None, storage=None):
+  """ContextManager constraining all tempfile/TMPDIR activity to a tempdir"""
+  if storage is None:
+    # Fake up a mutable object.
+    # TOOD(build): rebase this to EasyAttr from cros_test_lib once it moves
+    # to an importable location.
+    class foon(object):
+      pass
+    storage = foon()
+
+  _TempDirSetup(storage, prefix=prefix)
+  try:
+    yield
+  finally:
+    _TempDirTearDown(storage)
 
 # pylint: disable=W0212,R0904,W0702
 def TempDirDecorator(func):
   """Populates self.tempdir with path to a temporary writeable directory."""
   def f(self, *args, **kwargs):
-    try:
-      _TempDirSetup(self)
+    with TempDirContextManager(storage=self):
       return func(self, *args, **kwargs)
-    finally:
-      _TempDirTearDown(self)
 
   f.__name__ = func.__name__
   f.__doc__ = func.__doc__
