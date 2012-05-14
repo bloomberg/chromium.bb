@@ -274,11 +274,11 @@ FileManager.prototype = {
   FileManager.prototype.initFileSystem_ = function() {
     util.installFileErrorToString();
     // Replace the default unit in util to translated unit.
-    util.units_ = [str('SIZE_KB'),
-                   str('SIZE_MB'),
-                   str('SIZE_GB'),
-                   str('SIZE_TB'),
-                   str('SIZE_PB')];
+    util.UNITS = [str('SIZE_KB'),
+                  str('SIZE_MB'),
+                  str('SIZE_GB'),
+                  str('SIZE_TB'),
+                  str('SIZE_PB')];
 
     metrics.startInterval('Load.FileSystem');
 
