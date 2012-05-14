@@ -326,13 +326,13 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
     : views::ToggleImageButton(listener) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   SetImage(views::CustomButton::BS_NORMAL,
-      bundle.GetImageNamed(enabled_resource_id).ToSkBitmap());
+      bundle.GetImageNamed(enabled_resource_id).ToImageSkia());
   SetToggledImage(views::CustomButton::BS_NORMAL,
-      bundle.GetImageNamed(disabled_resource_id).ToSkBitmap());
+      bundle.GetImageNamed(disabled_resource_id).ToImageSkia());
   SetImage(views::CustomButton::BS_HOT,
-      bundle.GetImageNamed(enabled_resource_id_hover).ToSkBitmap());
+      bundle.GetImageNamed(enabled_resource_id_hover).ToImageSkia());
   SetToggledImage(views::CustomButton::BS_HOT,
-      bundle.GetImageNamed(disabled_resource_id_hover).ToSkBitmap());
+      bundle.GetImageNamed(disabled_resource_id_hover).ToImageSkia());
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   set_focusable(true);
@@ -468,7 +468,7 @@ void TrayNotificationView::InitView(views::View* contents) {
 
   views::ImageButton* close_button = new views::ImageButton(this);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
-                         ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                         ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                              IDR_AURA_WINDOW_CLOSE));
   AddChildView(close_button);
 

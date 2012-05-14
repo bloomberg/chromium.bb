@@ -69,9 +69,9 @@ class VolumeButton : public views::ToggleImageButton {
     if (image_index != image_index_) {
       SkIRect region = SkIRect::MakeXYWH(0, image_index * kVolumeImageHeight,
           kVolumeImageWidth, kVolumeImageHeight);
-      SkBitmap bitmap;
-      image_.ToSkBitmap()->extractSubset(&bitmap, region);
-      SetImage(views::CustomButton::BS_NORMAL, &bitmap);
+      gfx::ImageSkia image_skia;
+      image_.ToImageSkia()->extractSubset(&image_skia, region);
+      SetImage(views::CustomButton::BS_NORMAL, &image_skia);
       image_index_ = image_index;
     }
     SchedulePaint();

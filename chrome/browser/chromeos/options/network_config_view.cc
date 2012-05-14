@@ -240,9 +240,9 @@ void ControlledSettingIndicatorView::OnMouseExited(
 
 void ControlledSettingIndicatorView::Init() {
   color_image_ = ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_CONTROLLED_SETTING_MANDATORY).ToSkBitmap();
+      IDR_CONTROLLED_SETTING_MANDATORY).ToImageSkia();
   gray_image_ = ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_CONTROLLED_SETTING_MANDATORY_GRAY).ToSkBitmap();
+      IDR_CONTROLLED_SETTING_MANDATORY_GRAY).ToImageSkia();
   image_view_ = new views::ImageView();
   // Disable |image_view_| so mouse events propagate to the parent.
   image_view_->SetEnabled(false);

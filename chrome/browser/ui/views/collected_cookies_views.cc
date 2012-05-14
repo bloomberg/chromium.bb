@@ -85,7 +85,7 @@ class InfobarView : public views::View {
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     info_image_ = new views::ImageView();
-    info_image_->SetImage(rb.GetBitmapNamed(IDR_INFO));
+    info_image_->SetImage(rb.GetImageSkiaNamed(IDR_INFO));
     label_ = new views::Label();
   }
   virtual ~InfobarView() {}

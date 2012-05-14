@@ -26,7 +26,8 @@ IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
       is_extension_icon_(false) {
   image_ = new views::ImageView();
   image_->SetImage(
-      ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(contained_image));
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          contained_image));
   AddChildView(image_);
 
   label_ = new views::Label();

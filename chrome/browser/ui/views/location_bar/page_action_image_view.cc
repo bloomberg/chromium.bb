@@ -256,7 +256,7 @@ void PageActionImageView::UpdateVisibility(WebContents* contents,
     }
   }
   if (!icon.isNull())
-    SetImage(&icon);
+    SetImage(icon);
 
   SetVisible(true);
 }

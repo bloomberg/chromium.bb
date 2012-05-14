@@ -114,7 +114,7 @@ StarsView::StarsView(double rating)
 
   for (int i = 0; i < 5; ++i) {
     views::ImageView* image = new views::ImageView();
-    image->SetImage(rb.GetBitmapNamed(
+    image->SetImage(rb.GetImageSkiaNamed(
         WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i)));
     AddChildView(image);
   }
@@ -504,7 +504,7 @@ SuggestedExtensionsRowView::SuggestedExtensionsRowView(
   SetLayoutManager(new SuggestedExtensionsLayout);
 
   icon_ = new views::ImageView();
-  icon_->SetImage(extension_->icon.ToSkBitmap());
+  icon_->SetImage(extension_->icon.ToImageSkia());
   AddChildView(icon_);
 
   string16 elided_title = ui::ElideText(
@@ -924,7 +924,7 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
   // Header row.
   grid_layout->StartRow(0, 0);
   views::ImageView* icon = new views::ImageView();
-  icon->SetImage(service->favicon.ToSkBitmap());
+  icon->SetImage(service->favicon.ToImageSkia());
   grid_layout->AddView(icon);
 
   string16 elided_title = ui::ElideText(
@@ -1158,11 +1158,11 @@ views::ImageButton* WebIntentPickerViews::CreateCloseButton() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageButton* close_button = new views::ImageButton(this);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
+                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
   close_button->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
   close_button->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
   return close_button;
 }
 #endif

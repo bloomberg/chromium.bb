@@ -32,7 +32,7 @@ class BluetoothDefaultView : public TrayItemMore {
   explicit BluetoothDefaultView(SystemTrayItem* owner)
       : TrayItemMore(owner) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToSkBitmap());
+    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToImageSkia());
     UpdateLabel();
   }
 

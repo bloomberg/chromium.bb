@@ -69,7 +69,7 @@ class DriveDefaultView : public TrayItemMore {
       : TrayItemMore(owner) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DRIVE).ToSkBitmap());
+    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DRIVE).ToImageSkia());
     Update(list);
   }
 
@@ -101,11 +101,11 @@ class DriveDetailedView : public views::View,
         views::BoxLayout::kVertical, 0, 0, 0));
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
-    in_progress_img_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    in_progress_img_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_DRIVE);
-    done_img_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    done_img_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_DRIVE_DONE);
-    failed_img_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    failed_img_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_DRIVE_FAILED);
 
     Update(list);
@@ -178,10 +178,10 @@ class DriveDetailedView : public views::View,
 
       cancel_button_ = new views::ImageButton(this);
       cancel_button_->SetImage(views::ImageButton::BS_NORMAL,
-          ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_AURA_UBER_TRAY_DRIVE_CANCEL));
       cancel_button_->SetImage(views::ImageButton::BS_HOT,
-          ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER));
 
       UpdateStatus(state, progress);
@@ -273,7 +273,8 @@ class DriveDetailedView : public views::View,
     AddChildView(header_);
   }
 
-  SkBitmap* GetImageForState(ash::DriveOperationStatus::OperationState state) {
+  gfx::ImageSkia* GetImageForState(
+      ash::DriveOperationStatus::OperationState state) {
     switch (state) {
       case ash::DriveOperationStatus::OPERATION_NOT_STARTED:
       case ash::DriveOperationStatus::OPERATION_STARTED:
@@ -375,9 +376,9 @@ class DriveDetailedView : public views::View,
   SpecialPopupRow* header_;
   views::View* operations_;
   views::View* settings_;
-  SkBitmap* in_progress_img_;
-  SkBitmap* done_img_;
-  SkBitmap* failed_img_;
+  gfx::ImageSkia* in_progress_img_;
+  gfx::ImageSkia* done_img_;
+  gfx::ImageSkia* failed_img_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveDetailedView);
 };

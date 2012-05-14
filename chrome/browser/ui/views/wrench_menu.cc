@@ -426,7 +426,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     fullscreen_button_ = new FullscreenButton(this);
     fullscreen_button_->SetImage(
         ImageButton::BS_NORMAL,
-        ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_FULLSCREEN_MENU_BUTTON));
     fullscreen_button_->set_focusable(true);
     fullscreen_button_->set_request_focus_on_press(false);

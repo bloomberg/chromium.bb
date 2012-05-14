@@ -52,7 +52,7 @@ class BrightnessView : public views::View,
     views::ImageView* icon = new FixedSizedImageView(0, kTrayPopupItemHeight);
     gfx::Image image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
         IDR_AURA_UBER_TRAY_BRIGHTNESS);
-    icon->SetImage(image.ToSkBitmap());
+    icon->SetImage(image.ToImageSkia());
     AddChildView(icon);
 
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);

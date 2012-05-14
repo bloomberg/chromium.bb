@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,10 +51,10 @@ class VIEWS_EXPORT BitmapScrollBar : public BaseScrollBar,
     PART_COUNT
   };
 
-  // Sets the bitmap to be rendered for the specified part and state.
+  // Sets the image to be rendered for the specified part and state.
   void SetImage(ScrollBarPart part,
                 CustomButton::ButtonState state,
-                SkBitmap* bitmap);
+                gfx::ImageSkia* image_skia);
 
 
   gfx::Rect GetTrackBounds() const;
@@ -79,7 +79,7 @@ class VIEWS_EXPORT BitmapScrollBar : public BaseScrollBar,
 
   // The thumb needs to be able to access the part images.
   friend BitmapScrollBarThumb;
-  SkBitmap* images_[PART_COUNT][CustomButton::BS_COUNT];
+  gfx::ImageSkia* images_[PART_COUNT][CustomButton::BS_COUNT];
 
   // True if the scroll buttons at each end of the scroll bar should be shown.
   bool show_scroll_buttons_;

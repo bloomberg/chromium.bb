@@ -110,16 +110,16 @@ const SkColor kBorderColor = 0xc0000000;
 const SkColor kDividerColor = 0xffb5b5b5;
 
 struct ButtonResources {
-  SkBitmap* normal_image;
-  SkBitmap* hover_image;
+  gfx::ImageSkia* normal_image;
+  gfx::ImageSkia* hover_image;
   string16 tooltip_text;
 
   ButtonResources(int normal_image_id, int hover_image_id, int tooltip_id)
       : normal_image(NULL),
         hover_image(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    normal_image = rb.GetBitmapNamed(normal_image_id);
-    hover_image = rb.GetBitmapNamed(hover_image_id);
+    normal_image = rb.GetImageSkiaNamed(normal_image_id);
+    hover_image = rb.GetImageSkiaNamed(hover_image_id);
     tooltip_text = l10n_util::GetStringUTF16(tooltip_id);
   }
 };

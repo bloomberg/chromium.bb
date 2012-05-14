@@ -490,11 +490,11 @@ void CustomFrameView::LayoutWindowControls() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   close_button_->SetImage(CustomButton::BS_NORMAL,
-                          rb.GetImageNamed(normal_part).ToSkBitmap());
+                          rb.GetImageNamed(normal_part).ToImageSkia());
   close_button_->SetImage(CustomButton::BS_HOT,
-                          rb.GetImageNamed(hot_part).ToSkBitmap());
+                          rb.GetImageNamed(hot_part).ToImageSkia());
   close_button_->SetImage(CustomButton::BS_PUSHED,
-                          rb.GetImageNamed(pushed_part).ToSkBitmap());
+                          rb.GetImageNamed(pushed_part).ToImageSkia());
 }
 
 void CustomFrameView::LayoutTitleBar() {
@@ -538,11 +538,11 @@ ImageButton* CustomFrameView::InitWindowCaptionButton(
   ImageButton* button = new ImageButton(this);
   button->SetAccessibleName(l10n_util::GetStringUTF16(accessibility_string_id));
   button->SetImage(CustomButton::BS_NORMAL,
-                   rb.GetImageNamed(normal_image_id).ToSkBitmap());
+                   rb.GetImageNamed(normal_image_id).ToImageSkia());
   button->SetImage(CustomButton::BS_HOT,
-                   rb.GetImageNamed(hot_image_id).ToSkBitmap());
+                   rb.GetImageNamed(hot_image_id).ToImageSkia());
   button->SetImage(CustomButton::BS_PUSHED,
-                   rb.GetImageNamed(pushed_image_id).ToSkBitmap());
+                   rb.GetImageNamed(pushed_image_id).ToImageSkia());
   AddChildView(button);
   return button;
 }

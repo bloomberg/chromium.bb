@@ -16,11 +16,15 @@
 #include "ui/views/controls/button/button.h"  // views::ButtonListener
 #include "ui/views/window/dialog_delegate.h"
 
+namespace gfx {
+class ImageSkia;
+}  // namespace gfx
+
 namespace views {
 class ImageView;
 class NativeTextButton;
 class View;
-}
+}  // namespace views
 
 namespace chromeos {
 
@@ -169,8 +173,8 @@ class ControlledSettingIndicatorView : public views::View {
 
   bool managed_;
   views::ImageView* image_view_;
-  const SkBitmap* gray_image_;
-  const SkBitmap* color_image_;
+  const gfx::ImageSkia* gray_image_;
+  const gfx::ImageSkia* color_image_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlledSettingIndicatorView);
 };

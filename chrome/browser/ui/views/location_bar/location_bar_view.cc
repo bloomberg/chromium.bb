@@ -602,7 +602,7 @@ void LocationBarView::Layout() {
       } else {
         ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
         selected_keyword_view_->SetImage(
-            *rb.GetBitmapNamed(IDR_OMNIBOX_SEARCH));
+            *rb.GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
         selected_keyword_view_->set_is_extension_icon(false);
       }
     }
@@ -873,7 +873,7 @@ void LocationBarView::OnAutocompleteAccept(
 
 void LocationBarView::OnChanged() {
   location_icon_view_->SetImage(
-      ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           location_entry_->GetIcon()));
   location_icon_view_->ShowTooltip(!GetLocationEntry()->IsEditingOrEmpty());
 

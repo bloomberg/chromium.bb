@@ -35,7 +35,7 @@ class CapsLockDefaultView : public ActionableView {
     FixedSizedImageView* image =
         new FixedSizedImageView(0, kTrayPopupItemHeight);
     image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).
-        ToSkBitmap());
+        ToImageSkia());
     AddChildView(image);
 
     text_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -131,7 +131,7 @@ views::View* TrayCapsLock::CreateDetailedView(user::LoginStatus status) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* image = new views::ImageView;
   image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).
-      ToSkBitmap());
+      ToImageSkia());
 
   detailed_->AddChildView(image);
 

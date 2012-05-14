@@ -72,7 +72,8 @@ void CheckboxNativeThemeBorder::GetInsets(gfx::Insets* insets) const {
 void SetImageViewToId(views::View* image_view, int id) {
   views::ImageView* image = static_cast<views::ImageView*>(image_view);
   if (image)
-    image->SetImage(ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(id));
+    image->SetImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id));
 }
 
 }  // namespace

@@ -82,9 +82,9 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
     : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       popup_(NULL),
       web_contents_(web_contents) {
-  static SkBitmap* kDownloadImage = NULL;
+  static gfx::ImageSkia* kDownloadImage = NULL;
   if (!kDownloadImage) {
-    kDownloadImage = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    kDownloadImage = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_DOWNLOAD_ANIMATION_BEGIN);
   }
 

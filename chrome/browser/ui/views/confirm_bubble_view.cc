@@ -80,7 +80,7 @@ void ConfirmBubbleView::Init() {
   gfx::Image* icon_image = model_->GetIcon();
   DCHECK(icon_image);
   views::ImageView* icon_view = new views::ImageView;
-  icon_view->SetImage(icon_image->ToSkBitmap());
+  icon_view->SetImage(icon_image->ToImageSkia());
   layout->AddView(icon_view);
 
   const string16 title_text = model_->GetTitle();
@@ -90,8 +90,8 @@ void ConfirmBubbleView::Init() {
   layout->AddView(title_label);
 
   views::ImageButton* close_button = new views::ImageButton(this);
-  const SkBitmap* close_image =
-      bundle.GetImageNamed(IDR_INFO_BUBBLE_CLOSE).ToSkBitmap();
+  const gfx::ImageSkia* close_image =
+      bundle.GetImageNamed(IDR_INFO_BUBBLE_CLOSE).ToImageSkia();
   close_button->SetImage(views::CustomButton::BS_NORMAL, close_image);
   close_button->set_tag(ConfirmBubbleModel::BUTTON_NONE);
   layout->AddView(close_button);

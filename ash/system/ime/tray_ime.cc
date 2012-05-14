@@ -36,7 +36,7 @@ class IMEDefaultView : public TrayItemMore {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
     SetImage(bundle.GetImageNamed(
-        IDR_AURA_UBER_TRAY_IME).ToSkBitmap());
+        IDR_AURA_UBER_TRAY_IME).ToImageSkia());
 
     IMEInfo info;
     Shell::GetInstance()->tray_delegate()->GetCurrentIME(&info);

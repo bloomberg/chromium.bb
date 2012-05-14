@@ -69,7 +69,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int resource_id = error_->GetBubbleViewIconResourceID();
   scoped_ptr<views::ImageView> image_view(new views::ImageView());
-  image_view->SetImage(rb.GetImageNamed(resource_id).ToSkBitmap());
+  image_view->SetImage(rb.GetImageNamed(resource_id).ToImageSkia());
 
   string16 title_string(error_->GetBubbleViewTitle());
   scoped_ptr<views::Label> title_label(new views::Label(title_string));
