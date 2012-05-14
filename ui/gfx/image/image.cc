@@ -243,7 +243,7 @@ Image::Image(const SkBitmap* bitmap)
 Image::Image(const SkBitmap& bitmap)
     : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
   internal::ImageRepSkia* rep =
-      new internal::ImageRepSkia(new ImageSkia(bitmap));
+      new internal::ImageRepSkia(new ImageSkia(new SkBitmap(bitmap)));
   AddRepresentation(rep);
 }
 
