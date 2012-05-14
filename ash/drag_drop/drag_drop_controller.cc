@@ -131,10 +131,13 @@ void DragDropController::Drop(aura::Window* target,
   Shell::GetRootWindow()->SetCursor(ui::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
 
-  // |drag_window_| can be NULL if we have just started the drag and have not
-  // received any DragUpdates, or, if the |drag_window_| gets destroyed during
-  // a drag/drop. Otherwise, target should be equal to the |drag_window_|.
-  DCHECK(target == drag_window_ || !drag_window_);
+  // We must guarantee that a target gets a OnDragEntered before Drop. WebKit
+  // depends on not getting a Drop without DragEnter. This behavior is
+  // consistent with drag/drop on other platforms.
+  if (target != drag_window_)
+    DragUpdate(target, event);
+  DCHECK(target == drag_window_);
+
   if ((delegate = aura::client::GetDragDropDelegate(target))) {
     aura::DropTargetEvent e(
         *drag_data_, event.location(), event.root_location(), drag_operation_);

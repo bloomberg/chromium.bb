@@ -274,17 +274,19 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
     generator.MoveMouseBy(0, 1);
   }
 
+  UpdateDragData(&data);
+
   generator.ReleaseLeftButton();
 
   EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
-  EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
+  EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold() + 1,
       drag_drop_controller_->num_drag_updates_);
   EXPECT_TRUE(drag_drop_controller_->drop_received_);
 
-  EXPECT_EQ(0, drag_view->num_drag_enters_);
-  EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold(),
+  EXPECT_EQ(1, drag_view->num_drag_enters_);
+  EXPECT_EQ(num_drags - 1 - drag_view->VerticalDragThreshold() + 1,
       drag_view->num_drag_updates_);
-  EXPECT_EQ(0, drag_view->num_drops_);
+  EXPECT_EQ(1, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
 }

@@ -138,6 +138,12 @@ class CONTENT_EXPORT WebContentsViewAura
 
   content::WebDragDestDelegate* drag_dest_delegate_;
 
+  // We keep track of the render view host we're dragging over.  If it changes
+  // during a drag, we need to re-send the DragEnter message.  WARNING:
+  // this pointer should never be dereferenced.  We only use it for comparing
+  // pointers.
+  void* current_rvh_for_drag_;
+
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };
 

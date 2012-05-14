@@ -179,7 +179,8 @@ WebContentsViewAura::WebContentsViewAura(
       delegate_(delegate),
       current_drag_op_(WebKit::WebDragOperationNone),
       close_tab_after_drag_ends_(false),
-      drag_dest_delegate_(NULL) {
+      drag_dest_delegate_(NULL),
+      current_rvh_for_drag_(NULL) {
 }
 
 WebContentsViewAura::~WebContentsViewAura() {
@@ -583,6 +584,7 @@ void WebContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
 
   gfx::Point screen_pt =
       GetNativeView()->GetRootWindow()->last_mouse_location();
+  current_rvh_for_drag_ = web_contents_->GetRenderViewHost();
   web_contents_->GetRenderViewHost()->DragTargetDragEnter(
       drop_data, event.location(), screen_pt, op);
 
@@ -593,6 +595,10 @@ void WebContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
 }
 
 int WebContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
+  DCHECK(current_rvh_for_drag_);
+  if (current_rvh_for_drag_ != web_contents_->GetRenderViewHost())
+    OnDragEntered(event);
+
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
   gfx::Point screen_pt =
       GetNativeView()->GetRootWindow()->last_mouse_location();
@@ -606,12 +612,20 @@ int WebContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
 }
 
 void WebContentsViewAura::OnDragExited() {
+  DCHECK(current_rvh_for_drag_);
+  if (current_rvh_for_drag_ != web_contents_->GetRenderViewHost())
+    return;
+
   web_contents_->GetRenderViewHost()->DragTargetDragLeave();
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDragLeave();
 }
 
 int WebContentsViewAura::OnPerformDrop(const aura::DropTargetEvent& event) {
+  DCHECK(current_rvh_for_drag_);
+  if (current_rvh_for_drag_ != web_contents_->GetRenderViewHost())
+    OnDragEntered(event);
+
   web_contents_->GetRenderViewHost()->DragTargetDrop(
       event.location(),
       GetNativeView()->GetRootWindow()->last_mouse_location());
