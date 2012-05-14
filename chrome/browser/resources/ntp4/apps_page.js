@@ -660,29 +660,12 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Creates an app DOM element and places it at the last position on the
-     * page.
-     * @param {Object} appData The data object that describes the app.
-     * @param {boolean=} animate If true, the app tile plays an animation.
-     */
-    appendApp: function(appData, animate) {
-      if (animate) {
-        // Select the page and scroll all the way down so the animation is
-        // visible.
-        ntp.getCardSlider().selectCardByValue(this);
-        this.content_.scrollTop = this.content_.scrollHeight;
-      }
-
-      this.appendTile(new App(appData), animate);
-    },
-
-    /**
      * Similar to appendApp, but it respects the app_launch_ordinal field of
      * |appData|.
      * @param {Object} appData The data that describes the app.
      */
     insertApp: function(appData) {
-      var index = 0;
+      var index = this.tileElements_.length;
       for (var i = 0; i < this.tileElements_.length; i++) {
         if (appData.app_launch_ordinal <
             this.tileElements_[i].firstChild.appData.app_launch_ordinal) {

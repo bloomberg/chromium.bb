@@ -390,7 +390,7 @@ cr.define('ntp', function() {
         if (app.id == this.highlightAppId)
           highlightApp = app;
         else
-          this.appsPages[pageIndex].appendApp(app, false);
+          this.appsPages[pageIndex].insertApp(app, false);
       }
 
       ntp.AppsPage.setPromo(data.showPromo ? data : null);
@@ -442,7 +442,7 @@ cr.define('ntp', function() {
       if (app)
         app.replaceAppData(appData);
       else
-        page.appendApp(appData, opt_highlight);
+        page.insertApp(appData, opt_highlight);
     },
 
     /**
