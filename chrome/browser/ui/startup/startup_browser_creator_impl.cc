@@ -520,8 +520,15 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
 
 bool StartupBrowserCreatorImpl::ProcessStartupURLs(
     const std::vector<GURL>& urls_to_open) {
+  VLOG(1) << "StartupBrowserCreatorImpl::ProcessStartupURLs";
   SessionStartupPref pref =
       StartupBrowserCreator::GetSessionStartupPref(command_line_, profile_);
+  if (pref.type == SessionStartupPref::LAST)
+    VLOG(1) << "Pref: last";
+  else if (pref.type == SessionStartupPref::URLS)
+    VLOG(1) << "Pref: urls";
+  else if (pref.type == SessionStartupPref::DEFAULT)
+    VLOG(1) << "Pref: default";
 
   if (pref.type == SessionStartupPref::LAST) {
     if (!profile_->DidLastSessionExitCleanly() &&
@@ -530,6 +537,7 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
       // page will trigger another crash, locking the user out of chrome.
       // To avoid this, don't restore on startup but instead show the crashed
       // infobar.
+      VLOG(1) << "Unclean exit; not processing";
       return false;
     }
 

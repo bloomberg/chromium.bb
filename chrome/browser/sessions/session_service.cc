@@ -865,6 +865,7 @@ void SessionService::RestoreSessionFromCommands(
   std::map<int, SessionTab*> tabs;
   std::map<int, SessionWindow*> windows;
 
+  VLOG(1) << "RestoreSessionFromCommands " << commands.size();
   if (CreateTabsAndWindows(commands, &tabs, &windows)) {
     AddTabsToWindows(&tabs, &windows);
     SortTabsBasedOnVisualOrderAndPrune(&windows, valid_windows);
@@ -980,6 +981,8 @@ void SessionService::SortTabsBasedOnVisualOrderAndPrune(
 
 void SessionService::AddTabsToWindows(std::map<int, SessionTab*>* tabs,
                                       std::map<int, SessionWindow*>* windows) {
+  VLOG(1) << "AddTabsToWindws";
+  VLOG(1) << "Tabs " << tabs->size() << ", windows " << windows->size();
   std::map<int, SessionTab*>::iterator i = tabs->begin();
   while (i != tabs->end()) {
     SessionTab* tab = i->second;
@@ -1013,17 +1016,21 @@ bool SessionService::CreateTabsAndWindows(
     std::map<int, SessionWindow*>* windows) {
   // If the file is corrupt (command with wrong size, or unknown command), we
   // still return true and attempt to restore what we we can.
+  VLOG(1) << "CreateTabsAndWindows";
 
   for (std::vector<SessionCommand*>::const_iterator i = data.begin();
        i != data.end(); ++i) {
     const SessionCommand::id_type kCommandSetWindowBounds2 = 10;
     const SessionCommand* command = *i;
 
+    VLOG(1) << "Read command " << (int) command->id();
     switch (command->id()) {
       case kCommandSetTabWindow: {
         SessionID::id_type payload[2];
-        if (!command->GetPayload(payload, sizeof(payload)))
+        if (!command->GetPayload(payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
+        }
         GetTab(payload[1], tabs)->window_id.set_id(payload[0]);
         break;
       }
@@ -1032,8 +1039,10 @@ bool SessionService::CreateTabsAndWindows(
       // |kCommandSetWindowBounds3|.
       case kCommandSetWindowBounds2: {
         WindowBoundsPayload2 payload;
-        if (!command->GetPayload(&payload, sizeof(payload)))
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
+        }
         GetWindow(payload.window_id, windows)->bounds.SetRect(payload.x,
                                                               payload.y,
                                                               payload.w,
@@ -1046,8 +1055,10 @@ bool SessionService::CreateTabsAndWindows(
 
       case kCommandSetWindowBounds3: {
         WindowBoundsPayload3 payload;
-        if (!command->GetPayload(&payload, sizeof(payload)))
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
+        }
         GetWindow(payload.window_id, windows)->bounds.SetRect(payload.x,
                                                               payload.y,
                                                               payload.w,
@@ -1067,8 +1078,10 @@ bool SessionService::CreateTabsAndWindows(
 
       case kCommandSetTabIndexInWindow: {
         TabIndexInWindowPayload payload;
-        if (!command->GetPayload(&payload, sizeof(payload)))
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
+        }
         GetTab(payload.id, tabs)->tab_visual_index = payload.index;
         break;
       }
@@ -1080,6 +1093,7 @@ bool SessionService::CreateTabsAndWindows(
         ClosedPayload payload;
         if (!command->GetPayload(&payload, sizeof(payload)) &&
             !MigrateClosedPayload(*command, &payload)) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         if (command->id() == kCommandTabClosed ||
@@ -1095,8 +1109,10 @@ bool SessionService::CreateTabsAndWindows(
 
       case kCommandTabNavigationPathPrunedFromBack: {
         TabNavigationPathPrunedFromBackPayload payload;
-        if (!command->GetPayload(&payload, sizeof(payload)))
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
+        }
         SessionTab* tab = GetTab(payload.id, tabs);
         tab->navigations.erase(
             FindClosestNavigationWithIndex(&(tab->navigations), payload.index),
@@ -1108,6 +1124,7 @@ bool SessionService::CreateTabsAndWindows(
         TabNavigationPathPrunedFromFrontPayload payload;
         if (!command->GetPayload(&payload, sizeof(payload)) ||
             payload.index <= 0) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         SessionTab* tab = GetTab(payload.id, tabs);
@@ -1131,9 +1148,11 @@ bool SessionService::CreateTabsAndWindows(
       case kCommandUpdateTabNavigation: {
         TabNavigation navigation;
         SessionID::id_type tab_id;
-        if (!RestoreUpdateTabNavigationCommand(*command, &navigation, &tab_id))
+        if (!RestoreUpdateTabNavigationCommand(
+                *command, &navigation, &tab_id)) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
-
+        }
         SessionTab* tab = GetTab(tab_id, tabs);
         std::vector<TabNavigation>::iterator i =
             FindClosestNavigationWithIndex(&(tab->navigations),
@@ -1147,24 +1166,30 @@ bool SessionService::CreateTabsAndWindows(
 
       case kCommandSetSelectedNavigationIndex: {
         SelectedNavigationIndexPayload payload;
-        if (!command->GetPayload(&payload, sizeof(payload)))
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
+        }
         GetTab(payload.id, tabs)->current_navigation_index = payload.index;
         break;
       }
 
       case kCommandSetSelectedTabInIndex: {
         SelectedTabInIndexPayload payload;
-        if (!command->GetPayload(&payload, sizeof(payload)))
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
+        }
         GetWindow(payload.id, windows)->selected_tab_index = payload.index;
         break;
       }
 
       case kCommandSetWindowType: {
         WindowTypePayload payload;
-        if (!command->GetPayload(&payload, sizeof(payload)))
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
+        }
         GetWindow(payload.id, windows)->is_constrained = false;
         GetWindow(payload.id, windows)->type =
             BrowserTypeForWindowType(
@@ -1174,8 +1199,10 @@ bool SessionService::CreateTabsAndWindows(
 
       case kCommandSetPinnedState: {
         PinnedStatePayload payload;
-        if (!command->GetPayload(&payload, sizeof(payload)))
+        if (!command->GetPayload(&payload, sizeof(payload))) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
+        }
         GetTab(payload.tab_id, tabs)->pinned = payload.pinned_state;
         break;
       }
@@ -1195,6 +1222,7 @@ bool SessionService::CreateTabsAndWindows(
         std::string extension_app_id;
         if (!RestoreSetTabExtensionAppIDCommand(
                 *command, &tab_id, &extension_app_id)) {
+          VLOG(1) << "Failed reading command " << command->id();
           return true;
         }
 
@@ -1215,6 +1243,7 @@ bool SessionService::CreateTabsAndWindows(
       }
 
       default:
+        VLOG(1) << "Failed reading an unknown command " << command->id();
         return true;
     }
   }

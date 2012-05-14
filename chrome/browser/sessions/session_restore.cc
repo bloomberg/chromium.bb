@@ -715,6 +715,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   }
 
   Browser* ProcessSessionWindows(std::vector<SessionWindow*>* windows) {
+    VLOG(1) << "ProcessSessionWindows " << windows->size();
     base::TimeDelta time_to_process_sessions =
         base::TimeTicks::Now() - restore_started_;
     UMA_HISTOGRAM_CUSTOM_TIMES(
@@ -840,6 +841,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   int RestoreTabsToBrowser(const SessionWindow& window,
                            Browser* browser,
                            int selected_tab_index) {
+    VLOG(1) << "RestoreTabsToBrowser " << window.tabs.size();
     DCHECK(!window.tabs.empty());
     WebContents* selected_web_contents = NULL;
     for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {

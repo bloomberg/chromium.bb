@@ -123,6 +123,7 @@ SessionCommand* SessionFileReader::ReadCommand() {
     if (!FillBuffer())
       return NULL;
     if (available_count_ < sizeof(size_type)) {
+      VLOG(1) << "SessionFileReader::ReadCommand, file incomplete";
       // Still couldn't read a valid size for the command, assume write was
       // incomplete and return NULL.
       return NULL;
@@ -135,6 +136,7 @@ SessionCommand* SessionFileReader::ReadCommand() {
   available_count_ -= sizeof(command_size);
 
   if (command_size == 0) {
+    VLOG(1) << "SessionFileReader::ReadCommand, empty command";
     // Empty command. Shouldn't happen if write was successful, fail.
     return NULL;
   }
@@ -145,6 +147,7 @@ SessionCommand* SessionFileReader::ReadCommand() {
       buffer_.resize((command_size / 1024 + 1) * 1024, 0);
     if (!FillBuffer() || command_size > available_count_) {
       // Again, assume the file was ok, and just the last chunk was lost.
+      VLOG(1) << "SessionFileReader::ReadCommand, last chunk lost";
       return NULL;
     }
   }
