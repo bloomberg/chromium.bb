@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -246,8 +246,6 @@ bool CrashService::Initialize(const std::wstring& command_line) {
                                       &CrashService::OnClientConnected, this,
                                       &CrashService::OnClientDumpRequest, this,
                                       &CrashService::OnClientExited, this,
-                                      /*upload_request_callback*/ NULL,
-                                      /* upload_context */ NULL,
                                       true, &dumps_path.value());
 
   if (!dumper_) {
