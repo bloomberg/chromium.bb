@@ -22,6 +22,7 @@
 #endif
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/string_number_conversions.h"
 #include "build/build_config.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -460,7 +461,7 @@ bool GLES2Decoder::IsAngle() {
 class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                          public GLES2Decoder {
  public:
-  static const int kMaxLogErrors = 256;
+  static const int kMaxLogMessages = 256;
 
   explicit GLES2DecoderImpl(ContextGroup* group);
   ~GLES2DecoderImpl();
@@ -1322,6 +1323,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void ReleaseIOSurfaceForTexture(GLuint texture_id);
 #endif
 
+  void LogMessage(const std::string& msg);
+  void RenderWarning(const std::string& msg);
+  void PerformanceWarning(const std::string& msg);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define GLES2_CMD_OP(name) \
@@ -1479,7 +1484,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // The last error message set.
   std::string last_error_;
 
-  int error_count_;
+  int log_message_count_;
 
   // The current decoder error.
   error::Error current_decoder_error_;
@@ -1915,7 +1920,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       back_buffer_has_stencil_(false),
       teximage2d_faster_than_texsubimage2d_(true),
       bufferdata_faster_than_buffersubdata_(true),
-      error_count_(0),
+      log_message_count_(0),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
       validators_(group_->feature_info()->validators()),
@@ -4887,28 +4892,41 @@ GLenum GLES2DecoderImpl::PeekGLError() {
 void GLES2DecoderImpl::SetGLError(GLenum error, const char* msg) {
   if (msg) {
     last_error_ = msg;
-    if (error_count_ < kMaxLogErrors ||
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableGLErrorLimit)) {
-      ++error_count_;
-      // LOG this unless logging is turned off as any chromium code that
-      // generates these errors probably has a bug.
-      if (log_synthesized_gl_errors()) {
-        LOG(ERROR) << last_error_;
-      }
-      if (!msg_callback_.is_null()) {
-        msg_callback_.Run(0, GLES2Util::GetStringEnum(error) + " : " + msg);
-      }
-    } else {
-      if (error_count_ == kMaxLogErrors) {
-        ++error_count_;
-        LOG(ERROR)
-            << "Too many GL errors, not reporting any more for this context."
-            << " use --disable-gl-error-limit to see all errors.";
-      }
-    }
+    LogMessage(std::string("GL ERROR :") +
+               GLES2Util::GetStringEnum(error) + " : " + msg);
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
+}
+
+void GLES2DecoderImpl::LogMessage(const std::string& msg) {
+  if (log_message_count_ < kMaxLogMessages ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGLErrorLimit)) {
+    ++log_message_count_;
+    // LOG this unless logging is turned off as any chromium code that
+    // generates these errors probably has a bug.
+    if (log_synthesized_gl_errors()) {
+      LOG(ERROR) << last_error_;
+    }
+    if (!msg_callback_.is_null()) {
+      msg_callback_.Run(0, msg);
+    }
+  } else {
+    if (log_message_count_ == kMaxLogMessages) {
+      ++log_message_count_;
+      LOG(ERROR)
+          << "Too many GL errors, not reporting any more for this context."
+          << " use --disable-gl-error-limit to see all errors.";
+    }
+  }
+}
+
+void GLES2DecoderImpl::RenderWarning(const std::string& msg) {
+  LogMessage(std::string("RENDER WARNING: ") + msg);
+}
+
+void GLES2DecoderImpl::PerformanceWarning(const std::string& msg) {
+  LogMessage(std::string("PERFORMANCE WARNING: ") + msg);
 }
 
 void GLES2DecoderImpl::CopyRealGLErrorsToWrapper() {
@@ -4953,6 +4971,12 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
           glBindTexture(
               GetBindTargetForSamplerType(uniform_info->type),
               texture_manager()->black_texture_id(uniform_info->type));
+          RenderWarning(
+              std::string("texture bound to texture unit ") +
+              base::IntToString(texture_unit_index) +
+              " is not renderable. It maybe non-power-of-2 and have "
+              " incompatible texture filtering or is not "
+              "'texture complete'");
         }
       }
       // else: should this be an error?
@@ -5034,6 +5058,7 @@ bool GLES2DecoderImpl::IsDrawValid(
   if (!current_program_) {
     // The program does not exist.
     // But GL says no ERROR.
+    RenderWarning("Drawing with no current shader program.");
     return false;
   }
 
@@ -5055,8 +5080,11 @@ bool GLES2DecoderImpl::IsDrawValid(
       GLuint count = info->MaxVertexAccessed(primcount, max_vertex_accessed);
       // This attrib is used in the current program.
       if (!info->CanAccess(count)) {
-        SetGLError(GL_INVALID_OPERATION,
-                   "glDrawXXX: attempt to access out of range vertices");
+        SetGLError(
+            GL_INVALID_OPERATION,
+            (std::string(
+                 "glDrawXXX: attempt to access out of range vertices in "
+                 "attribute ") + base::IntToString(info->index())).c_str());
         return false;
       }
     } else {
@@ -5064,8 +5092,10 @@ bool GLES2DecoderImpl::IsDrawValid(
       if (!info->buffer()) {
         SetGLError(
             GL_INVALID_OPERATION,
-            "glDrawXXX: attempt to render with no buffer attached to enabled "
-            "attrib");
+            (std::string(
+                 "glDrawXXX: attempt to render with no buffer attached to "
+                 "enabled attribute ") +
+                 base::IntToString(info->index())).c_str());
         return false;
       }
     }
@@ -5113,6 +5143,9 @@ bool GLES2DecoderImpl::SimulateAttrib0(
     SetGLError(GL_OUT_OF_MEMORY, "glDrawXXX: Simulating attrib 0");
     return false;
   }
+
+  PerformanceWarning(
+      "Attribute 0 is disabled. This has signficant performance penalty");
 
   CopyRealGLErrorsToWrapper();
   glBindBuffer(GL_ARRAY_BUFFER, attrib_0_buffer_id_);
@@ -5180,6 +5213,9 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
   if (!vertex_attrib_manager_->HaveFixedAttribs()) {
     return true;
   }
+
+  PerformanceWarning(
+      "GL_FIXED attributes have a signficant performance penalty");
 
   // NOTE: we could be smart and try to check if a buffer is used
   // twice in 2 different attribs, find the overlapping parts and therefore
@@ -5308,6 +5344,7 @@ error::Error GLES2DecoderImpl::DoDrawArrays(bool instanced,
   }
 
   if (count == 0 || (instanced && primcount == 0)) {
+    RenderWarning("Render count or primcount is 0.");
     return error::kNoError;
   }
 
