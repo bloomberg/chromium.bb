@@ -85,10 +85,10 @@ void CWSIntentsRegistry::OnURLFetchComplete(const net::URLFetcher* source) {
   if (parsed_response.get() == NULL)
     return;
 
-  DictionaryValue* response_dict;
-  parsed_response->GetAsDictionary(&response_dict);
-  if (!response_dict)
+  DictionaryValue* response_dict = NULL;
+  if (!parsed_response->GetAsDictionary(&response_dict) || !response_dict)
     return;
+
   ListValue* items;
   if (!response_dict->GetList("items", &items))
     return;
