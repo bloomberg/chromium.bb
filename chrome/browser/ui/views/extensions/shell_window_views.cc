@@ -102,11 +102,12 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
                                    const Extension* extension,
                                    const GURL& url)
     : ShellWindow(profile, extension, url),
-      initialized_(false) {
+      initialized_(false),
+      use_native_frame_(true) {
   window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
-  params.remove_standard_frame = true;
+  params.remove_standard_frame = !use_native_frame_;
   gfx::Rect bounds(10, 10, kDefaultWidth, kDefaultHeight);
   params.bounds = bounds;
   window_->Init(params);
@@ -234,6 +235,8 @@ views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
   frame->Init(widget);
   return frame;
 #else
+  if (use_native_frame_)
+    return NULL;
   return new ShellWindowFrameView();
 #endif
 }
@@ -254,6 +257,8 @@ void ShellWindowViews::OnViewWasResized() {
   // TODO(jeremya): this doesn't seem like a terribly elegant way to keep the
   // window shape in sync.
 #if defined(OS_WIN) && !defined(USE_AURA)
+  if (use_native_frame_)
+    return;
   gfx::Size sz = size();
   int height = sz.height(), width = sz.width();
   int radius = 1;

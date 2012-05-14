@@ -75,6 +75,8 @@ class ShellWindowViews : public ShellWindow,
 
   gfx::ScopedSkRegion caption_region_;
 
+  bool use_native_frame_;
+
   DISALLOW_COPY_AND_ASSIGN(ShellWindowViews);
 };
 
