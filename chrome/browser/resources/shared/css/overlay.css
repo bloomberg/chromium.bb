@@ -116,7 +116,7 @@ html[dir='rtl'] .overlay .page > .close-button {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
   display: -webkit-box;
-  padding: 14px;
+  padding: 14px 17px;
 }
 
 html[dir='rtl'] .overlay .page .action-area {

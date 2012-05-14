@@ -7,11 +7,10 @@
   width: 500px;
 }
 
-#instant-confirm-text {
-  white-space: pre-wrap;
+#instant-action-spacer {
+  -webkit-box-flex: 1;
 }
 
-#instantConfirmLearnMore {
-  bottom: 18px;
-  position: absolute;
+#instant-confirm-text {
+  white-space: pre-line;
 }

@@ -5695,10 +5695,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_MESSAGE" desc="Message shown in the instant confirm dialog">
-With Instant enabled and if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.
+        With Instant enabled and if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.
 
-Because search results are requested even while you're typing your query, your default search engine may be logging these as search queries.
-'''
+        Because search results are requested even while you're typing your query, your default search engine may be logging these as search queries.
       </message>
 
       <!-- Session restore & conflicting content settings -->
