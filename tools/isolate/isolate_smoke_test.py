@@ -65,6 +65,14 @@ class CalledProcessError(subprocess.CalledProcessError):
         'cwd=%s\n%s') % (self.cwd, self.output)
 
 
+def list_files_tree(directory):
+  """Returns the list of all the files in a tree."""
+  actual = []
+  for root, _dirs, files in os.walk(directory):
+    actual.extend(os.path.join(root, f)[len(directory)+1:] for f in files)
+  return sorted(actual)
+
+
 class IsolateBase(unittest.TestCase):
   # To be defined by the subclass, it defines the amount of meta data saved by
   # isolate.py for each file. Should be one of (NO_INFO, STATS_ONLY, WITH_HASH).
@@ -74,9 +82,8 @@ class IsolateBase(unittest.TestCase):
     # The tests assume the current directory is the file's directory.
     os.chdir(ROOT_DIR)
     self.tempdir = tempfile.mkdtemp()
-    self.result = os.path.join(self.tempdir, 'isolate_smoke_test.result')
+    self.result = os.path.join(self.tempdir, 'isolate_smoke_test.results')
     self.outdir = os.path.join(self.tempdir, 'isolated')
-    self.maxDiff = None
 
   def tearDown(self):
     shutil.rmtree(self.tempdir)
@@ -85,10 +92,7 @@ class IsolateBase(unittest.TestCase):
     self.assertFalse(os.path.exists(self.outdir))
 
   def _result_tree(self):
-    actual = []
-    for root, _dirs, files in os.walk(self.outdir):
-      actual.extend(os.path.join(root, f)[len(self.outdir)+1:] for f in files)
-    return sorted(actual)
+    return list_files_tree(self.outdir)
 
   def _expected_tree(self):
     """Verifies the files written in the temporary directory."""
@@ -466,11 +470,12 @@ class Isolate_trace(IsolateBase):
       out = e.output
     self._expect_no_tree()
     self._expect_results(['fail.py'], None, None)
-    # In theory, there should be 2 \n at the end of expected but for an
-    # unknown reason there's 3 \n on Windows so just rstrip() and compare the
-    # text, that's sufficient for this test.
     expected = 'Failing'
-    self.assertEquals(expected, out.rstrip())
+    if sys.platform == 'win32':
+      # Includes spew from tracerpt.exe.
+      self.assertTrue(out.startswith(expected))
+    else:
+      self.assertEquals(expected, out.rstrip())
 
   def test_missing_trailing_slash(self):
     try:
@@ -553,6 +558,141 @@ class Isolate_trace(IsolateBase):
     }
     self.assertEquals(self._to_string(expected), out)
 
+
+class IsolateNoOutdir(IsolateBase):
+  # Test without the --outdir flag.
+  # So all the files are first copied in the tempdir and the test is run from
+  # there.
+  def setUp(self):
+    super(IsolateNoOutdir, self).setUp()
+    self.root = os.path.join(self.tempdir, 'root')
+    os.makedirs(os.path.join(self.root, 'data', 'isolate'))
+    for i in ('touch_root.isolate', 'touch_root.py'):
+      shutil.copy(
+          os.path.join(ROOT_DIR, 'data', 'isolate', i),
+          os.path.join(self.root, 'data', 'isolate', i))
+      shutil.copy(
+          os.path.join(ROOT_DIR, 'isolate.py'),
+          os.path.join(self.root, 'isolate.py'))
+
+  def _execute(self, mode, case, args, need_output):
+    """Executes isolate.py."""
+    self.assertEquals(
+        mode, self.mode(), 'Rename the test fixture to Isolate_%s' % mode)
+    self.assertEquals(
+        case,
+        self.case() + '.isolate',
+        'Rename the test case to test_%s()' % case)
+    cmd = [
+      sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
+      '--result', self.result,
+      self.filename(),
+      '--mode', self.mode(),
+    ]
+    cmd.extend(args)
+
+    env = os.environ.copy()
+    if 'ISOLATE_DEBUG' in env:
+      del env['ISOLATE_DEBUG']
+
+    if need_output or not VERBOSE:
+      stdout = subprocess.PIPE
+      stderr = subprocess.STDOUT
+    else:
+      cmd.extend(['-v'] * 3)
+      stdout = None
+      stderr = None
+
+    cwd = self.tempdir
+    p = subprocess.Popen(
+        cmd,
+        stdout=stdout,
+        stderr=stderr,
+        cwd=cwd,
+        env=env,
+        universal_newlines=True)
+    out = p.communicate()[0]
+    if p.returncode:
+      raise CalledProcessError(p.returncode, cmd, out, cwd)
+    return out
+
+  def mode(self):
+    """Returns the execution mode corresponding to this test case."""
+    test_id = self.id().split('.')
+    self.assertEquals(3, len(test_id))
+    self.assertEquals('__main__', test_id[0])
+    return re.match('^test_([a-z]+)$', test_id[2]).group(1)
+
+  def case(self):
+    """Returns the filename corresponding to this test case."""
+    return 'touch_root'
+
+  def filename(self):
+    """Returns the filename corresponding to this test case."""
+    filename = os.path.join(
+        self.root, 'data', 'isolate', self.case() + '.isolate')
+    self.assertTrue(os.path.isfile(filename), filename)
+    return filename
+
+  def test_check(self):
+    self._execute('check', 'touch_root.isolate', [], False)
+    files = [
+      'isolate_smoke_test.results',
+      'isolate_smoke_test.state',
+      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'isolate.py'),
+    ]
+    self.assertEquals(files, list_files_tree(self.tempdir))
+
+  def test_hashtable(self):
+    self._execute('hashtable', 'touch_root.isolate', [], False)
+    files = [
+      os.path.join('hashtable', '99a015fd7df97416caf25576df502a70a3f32078'),
+      os.path.join('hashtable', 'ddcd30d62a6df9964a43541b14536ddaeafc8598'),
+      'isolate_smoke_test.results',
+      'isolate_smoke_test.state',
+      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'isolate.py'),
+    ]
+    self.assertEquals(files, list_files_tree(self.tempdir))
+
+  def test_remap(self):
+    self._execute('remap', 'touch_root.isolate', [], False)
+    files = [
+      'isolate_smoke_test.results',
+      'isolate_smoke_test.state',
+      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'isolate.py'),
+    ]
+    self.assertEquals(files, list_files_tree(self.tempdir))
+
+  def test_run(self):
+    self._execute('run', 'touch_root.isolate', [], False)
+    files = [
+      'isolate_smoke_test.results',
+      'isolate_smoke_test.state',
+      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'isolate.py'),
+    ]
+    self.assertEquals(files, list_files_tree(self.tempdir))
+
+  def test_trace(self):
+    self._execute('trace', 'touch_root.isolate', [], False)
+    files = [
+      'isolate_smoke_test.results',
+      'isolate_smoke_test.state',
+      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'isolate.py'),
+    ]
+    # Clean the directory from the logs, which are OS-specific.
+    isolate.trace_inputs.get_api().clean_trace(
+        os.path.join(self.tempdir, 'isolate_smoke_test.results.log'))
+    self.assertEquals(files, list_files_tree(self.tempdir))
 
 
 if __name__ == '__main__':

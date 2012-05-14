@@ -285,7 +285,9 @@ class Flattenable(object):
       if member in data:
         value = data.pop(member)
         setattr(out, member, value)
-    assert not data, data
+    # Temporary
+    logging.warning('Dropping data: %s' % data)
+    #assert not data, data
     return out
 
   @classmethod
@@ -392,7 +394,6 @@ class CompleteState(object):
   def load_files(cls, result_file, out_dir):
     """Loads state from disk."""
     assert os.path.isabs(result_file), result_file
-    assert result_file.rsplit('.', 1)[1] == 'result', result_file
     return cls(
         result_file,
         Result.load_file(result_file),
@@ -499,7 +500,7 @@ def MODEcheck(_outdir, _state):
 
 def MODEhashtable(outdir, state):
   outdir = (
-      outdir or os.path.join(os.path.dirname(state.resultdir), 'hashtable'))
+      outdir or os.path.join(state.resultdir, 'hashtable'))
   if not os.path.isdir(outdir):
     os.makedirs(outdir)
   for relfile, properties in state.result.files.iteritems():
@@ -510,11 +511,12 @@ def MODEhashtable(outdir, state):
       # again the input file, grab the value from the dict.
       out_size = os.stat(outfile).st_size
       in_size = (
-          state.result.files[infile].get('size') or
+          state.result.files[relfile].get('size') or
           os.stat(infile).st_size)
       if in_size == out_size:
         continue
       # Otherwise, an exception will be raised.
+    print 'Mapping %s -> %s' % (outfile, infile)
     run_test_from_archive.link_file(
         outfile, infile, run_test_from_archive.HARDLINK)
   return 0
