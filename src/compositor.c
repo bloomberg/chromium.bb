@@ -438,8 +438,6 @@ WL_EXPORT void
 weston_surface_to_global_float(struct weston_surface *surface,
 			       GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y)
 {
-	weston_surface_update_transform(surface);
-
 	surface_to_global_float(surface, sx, sy, x, y);
 }
 
@@ -502,8 +500,6 @@ weston_surface_from_global_fixed(struct weston_surface *surface,
 {
 	GLfloat sxf, syf;
 
-	weston_surface_update_transform(surface);
-
 	surface_from_global_float(surface,
 	                          wl_fixed_to_double(x),
 				  wl_fixed_to_double(y),
@@ -518,8 +514,6 @@ weston_surface_from_global(struct weston_surface *surface,
 {
 	GLfloat sxf, syf;
 
-	weston_surface_update_transform(surface);
-
 	surface_from_global_float(surface, x, y, &sxf, &syf);
 	*sx = floorf(sxf);
 	*sy = floorf(syf);
@@ -530,8 +524,6 @@ weston_surface_damage_rectangle(struct weston_surface *surface,
 				int32_t sx, int32_t sy,
 				int32_t width, int32_t height)
 {
-	weston_surface_update_transform(surface);
-
 	if (surface->transform.enabled) {
 		pixman_region32_t box;
 		surface_compute_bbox(surface, sx, sy, width, height, &box);
@@ -551,8 +543,6 @@ weston_surface_damage_rectangle(struct weston_surface *surface,
 WL_EXPORT void
 weston_surface_damage(struct weston_surface *surface)
 {
-	weston_surface_update_transform(surface);
-
 	pixman_region32_union(&surface->damage, &surface->damage,
 			      &surface->transform.boundingbox);
 
@@ -1212,8 +1202,6 @@ weston_surface_assign_output(struct weston_surface *es)
 	pixman_region32_t region;
 	uint32_t max, area, mask;
 	pixman_box32_t *e;
-
-	weston_surface_update_transform(es);
 
 	new_output = NULL;
 	max = 0;
