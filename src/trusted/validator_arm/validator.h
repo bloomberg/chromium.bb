@@ -216,11 +216,15 @@ class DecodedInstruction {
    * executes, 'this' is guaranteed to have executed.  This is important if
    * 'this' produces a sandboxed value that 'other' must consume.
    *
+   * Note: This function is conservative in that if it isn't sure whether
+   * this instruction changes the condition, it assumes that it does.
+   *
    * Note that this function can't see the bundle size, so this result does not
    * take it into account.  The SfiValidator reasons on this separately.
    */
   bool always_precedes(const DecodedInstruction &other) const {
-    return inst_.condition() == other.inst_.condition();
+    return inst_.condition() == other.inst_.condition() &&
+        !defines(nacl_arm_dec::kRegisterFlags);
   }
 
   /*
@@ -228,12 +232,14 @@ class DecodedInstruction {
    * executes, 'this' is guaranteed to follow.  This is important if 'other'
    * produces an unsafe value that 'this' fixes before it can leak out.
    *
+   * Note: This function is conservative in that if it isn't sure whether the
+   * other instruction changes the codntion, it assumes that it does.
+   *
    * Note that this function can't see the bundle size, so this result does not
    * take it into account.  The SfiValidator reasons on this separately.
    */
   bool always_follows(const DecodedInstruction &other) const {
-    return inst_.condition() == other.inst_.condition()
-        && !other.defines(nacl_arm_dec::kRegisterFlags);
+    return other.always_precedes(*this);
   }
 
   /*
