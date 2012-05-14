@@ -23,8 +23,8 @@ class PaginationModel;
 
 // AppListModelView displays the UI for an AppListModel.
 class APP_LIST_EXPORT AppListModelView : public views::View,
-                                    public ui::ListModelObserver,
-                                    public PaginationModelObserver {
+                                         public ui::ListModelObserver,
+                                         public PaginationModelObserver {
  public:
   AppListModelView(views::ButtonListener* listener,
                    PaginationModel* pagination_model);

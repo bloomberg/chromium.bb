@@ -13,13 +13,11 @@
 
 namespace app_list {
 
-class AppListItemModel;
-
-// Model for AppListModelView that owns a list of AppListItemModels.
+// Model for AppListModelView that owns a list of AppListItemModel.
 class APP_LIST_EXPORT AppListModel {
  public:
   AppListModel();
-  virtual ~AppListModel();
+  ~AppListModel();
 
   // Adds an item to the model. The model takes ownership of |item|.
   void AddItem(AppListItemModel* item);
@@ -27,14 +25,12 @@ class APP_LIST_EXPORT AppListModel {
 
   void DeleteItemAt(int index);
 
-  AppListItemModel* GetItem(int index);
+  AppListItemModel* GetItemAt(int index);
 
   void AddObserver(ui::ListModelObserver* observer);
   void RemoveObserver(ui::ListModelObserver* observer);
 
-  int item_count() const {
-    return items_.item_count();
-  }
+  int item_count() const { return items_.item_count(); }
 
  private:
   typedef ui::ListModel<AppListItemModel> Items;

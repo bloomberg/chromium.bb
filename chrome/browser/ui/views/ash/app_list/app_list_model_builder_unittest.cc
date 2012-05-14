@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/file_util.h"
-#include "base/stl_util.h"
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,7 @@ std::string GetModelContent(app_list::AppListModel* model) {
   for (int i = 0; i < model->item_count(); ++i) {
     if (i > 0)
       content += ',';
-    content += model->GetItem(i)->title();
+    content += model->GetItemAt(i)->title();
   }
   return content;
 }

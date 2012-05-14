@@ -119,7 +119,7 @@ void AppListModelView::Update() {
     return;
 
   for (int i = 0; i < model_->item_count(); ++i)
-    AddChildView(new AppListItemView(this, model_->GetItem(i), listener_));
+    AddChildView(new AppListItemView(this, model_->GetItemAt(i), listener_));
 
   Layout();
   SchedulePaint();
@@ -280,7 +280,7 @@ void AppListModelView::OnPaintFocusBorder(gfx::Canvas* canvas) {
 
 void AppListModelView::ListItemsAdded(int start, int count) {
   for (int i = start; i < start + count; ++i) {
-    AddChildViewAt(new AppListItemView(this, model_->GetItem(i), listener_),
+    AddChildViewAt(new AppListItemView(this, model_->GetItemAt(i), listener_),
                    i);
   }
   Layout();

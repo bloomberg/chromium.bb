@@ -152,7 +152,7 @@ void AppListModelBuilder::InsertItemByTitle(app_list::AppListItemModel* item) {
   l10n_util::StringComparator<string16> c(collator.get());
   ModelItemSortData data(item);
   for (int i = special_items_count_; i < model_->item_count(); ++i) {
-    ModelItemSortData current(model_->GetItem(i));
+    ModelItemSortData current(model_->GetItemAt(i));
     if (!c(current.key, data.key)) {
       model_->AddItemAt(i, item);
       return;
@@ -206,7 +206,7 @@ int AppListModelBuilder::FindApp(const std::string& app_id) {
   DCHECK(model_);
   for (int i = special_items_count_; i < model_->item_count(); ++i) {
     ChromeAppListItem* item =
-        static_cast<ChromeAppListItem*>(model_->GetItem(i));
+        static_cast<ChromeAppListItem*>(model_->GetItemAt(i));
     if (item->type() != ChromeAppListItem::TYPE_APP)
       continue;
 
@@ -227,7 +227,7 @@ void AppListModelBuilder::HighlightApp() {
   if (index == -1)
     return;
 
-  model_->GetItem(index)->SetHighlighted(true);
+  model_->GetItemAt(index)->SetHighlighted(true);
   highlight_app_id_.clear();
 }
 

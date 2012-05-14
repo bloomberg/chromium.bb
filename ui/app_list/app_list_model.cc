@@ -24,7 +24,7 @@ void AppListModel::DeleteItemAt(int index) {
   items_.DeleteAt(index);
 }
 
-AppListItemModel* AppListModel::GetItem(int index) {
+AppListItemModel* AppListModel::GetItemAt(int index) {
   return items_.item_at(index);
 }
 
