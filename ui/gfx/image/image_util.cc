@@ -13,9 +13,9 @@
 namespace gfx {
 
 Image* ImageFromPNGEncodedData(const unsigned char* input, size_t input_size) {
-  SkBitmap favicon_bitmap;
-  if (gfx::PNGCodec::Decode(input, input_size, &favicon_bitmap))
-    return new Image(favicon_bitmap);
+  scoped_ptr<SkBitmap> favicon_bitmap(new SkBitmap());
+  if (gfx::PNGCodec::Decode(input, input_size, favicon_bitmap.get()))
+    return new Image(favicon_bitmap.release());
 
   return NULL;
 }

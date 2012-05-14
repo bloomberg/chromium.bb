@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "ui/gfx/size.h"
+#include "base/message_loop.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace gfx {
 
@@ -55,6 +57,19 @@ ImageSkia::ImageSkia(const SkBitmap& bitmap) {
 
 ImageSkia::ImageSkia(const SkBitmap& bitmap, float dip_scale_factor) {
   Init(bitmap, dip_scale_factor);
+}
+
+ImageSkia::ImageSkia(const SkBitmap* bitmap) {
+  Init(*bitmap);
+
+  if (MessageLoop::current()) {
+    // Use DeleteSoon such that |bitmap| is still valid if caller uses |bitmap|
+    // immediately after having called constructor.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, bitmap);
+  } else {
+    // Hit in unittests.
+    delete bitmap;
+  }
 }
 
 ImageSkia::ImageSkia(const ImageSkia& other) : storage_(other.storage_) {

@@ -233,6 +233,13 @@ Image::Image(const ImageSkia& image)
   AddRepresentation(rep);
 }
 
+Image::Image(const SkBitmap* bitmap)
+    : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
+  internal::ImageRepSkia* rep = new internal::ImageRepSkia(
+      new ImageSkia(bitmap));
+  AddRepresentation(rep);
+}
+
 Image::Image(const SkBitmap& bitmap)
     : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
   internal::ImageRepSkia* rep =
@@ -376,9 +383,8 @@ internal::ImageRep* Image::GetRepresentation(
 #if defined(TOOLKIT_GTK)
     if (storage_->default_representation_type() == Image::kImageRepGdk) {
       internal::ImageRepGdk* pixbuf_rep = default_rep->AsImageRepGdk();
-      scoped_ptr<const SkBitmap> bitmap(internal::GdkPixbufToSkBitmap(
-          pixbuf_rep->pixbuf()));
-      rep = new internal::ImageRepSkia(new ImageSkia(*bitmap));
+      rep = new internal::ImageRepSkia(new ImageSkia(
+          internal::GdkPixbufToSkBitmap(pixbuf_rep->pixbuf())));
     }
     // We don't do conversions from CairoCachedSurfaces to Skia because the
     // data lives on the display server and we'll always have a GdkPixbuf if we

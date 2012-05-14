@@ -529,7 +529,7 @@ void WebIntentPickerController::OnFaviconDataAvailable(
     if (gfx::PNGCodec::Decode(favicon_data.image_data->front(),
                               favicon_data.image_data->size(),
                               &icon_bitmap)) {
-      gfx::Image icon_image(icon_bitmap);
+      gfx::Image icon_image(new SkBitmap(icon_bitmap));
       picker_model_->UpdateFaviconAt(index, icon_image);
       return;
     }
@@ -633,7 +633,7 @@ void WebIntentPickerController::DecodeExtensionIconAndResize(
         icon_bitmap,
         skia::ImageOperations::RESIZE_BEST,
         gfx::kFaviconSize, gfx::kFaviconSize);
-    gfx::Image icon_image(resized_icon);
+    gfx::Image icon_image(new SkBitmap(resized_icon));
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,

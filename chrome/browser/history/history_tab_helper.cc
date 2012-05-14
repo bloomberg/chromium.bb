@@ -158,7 +158,7 @@ void HistoryTabHelper::OnThumbnail(const GURL& url,
   // Tell History about this thumbnail.
   history::TopSites* ts = profile->GetTopSites();
   if (ts) {
-    gfx::Image thumbnail(bitmap);
+    gfx::Image thumbnail(new SkBitmap(bitmap));
     ts->SetPageThumbnail(url, &thumbnail, score);
   }
 }
