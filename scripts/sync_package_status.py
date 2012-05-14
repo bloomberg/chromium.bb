@@ -154,8 +154,9 @@ class Syncer(object):
 
   def Sync(self):
     """Do synchronization between Spreadsheet and Tracker."""
-
-    self.tracker_col_ix = self.scomm.GetColumnIndex('Tracker')
+    self.tracker_col_ix = self.scomm.GetColumnIndex(COL_TRACKER)
+    if None is self.tracker_col_ix:
+      raise SyncError('Unable to find "Tracker" column in spreadsheet')
 
     errors = []
 

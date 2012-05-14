@@ -204,6 +204,21 @@ class SyncerTest(test_lib.MoxTestCase):
       self.assertEquals(test['result'], result, msg)
     self.mox.VerifyAll()
 
+  def testSyncMissingTrackerColumn(self):
+    mocked_syncer = self.mox.CreateMock(sps.Syncer)
+    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
+    mocked_syncer.scomm = mocked_scomm
+    mocked_syncer.tcomm = mocked_tcomm
+
+    # Replay script
+    mocked_scomm.GetColumnIndex(sps.COL_TRACKER).AndReturn(None)
+    self.mox.ReplayAll()
+
+    # Verify
+    self.assertRaises(sps.SyncError, sps.Syncer.Sync, mocked_syncer)
+    self.mox.VerifyAll()
+
   def testSyncNewIssues(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
     mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
@@ -217,7 +232,7 @@ class SyncerTest(test_lib.MoxTestCase):
       ]
 
     # Replay script
-    mocked_scomm.GetColumnIndex('Tracker')
+    mocked_scomm.GetColumnIndex(sps.COL_TRACKER).AndReturn(1) # Any index ok.
     mocked_scomm.GetRows().AndReturn(rows)
 
     for ix in xrange(len(rows)):
@@ -244,7 +259,7 @@ class SyncerTest(test_lib.MoxTestCase):
       ]
 
     # Replay script
-    mocked_scomm.GetColumnIndex('Tracker')
+    mocked_scomm.GetColumnIndex(sps.COL_TRACKER).AndReturn(1) # Any index ok.
     mocked_scomm.GetRows().AndReturn(rows)
 
     for ix in xrange(len(rows)):
@@ -271,7 +286,7 @@ class SyncerTest(test_lib.MoxTestCase):
       ]
 
     # Replay script
-    mocked_scomm.GetColumnIndex('Tracker')
+    mocked_scomm.GetColumnIndex(sps.COL_TRACKER).AndReturn(1) # Any index ok.
     mocked_scomm.GetRows().AndReturn(rows)
 
     for ix in xrange(len(rows)):
