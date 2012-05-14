@@ -194,18 +194,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Capture -------------------------------------------------------------------
 
-  // Sets the capture window to |window|, for events specified in
-  // |flags|. |flags| is ui::CaptureEventFlags. This does nothing if
-  // the window isn't showing (VISIBILITY_SHOWN), or isn't contained
-  // in a valid window hierarchy.
-  void SetCapture(Window* window, unsigned int flags);
+  // Sets capture to the specified window.
+  void SetCapture(Window* window);
 
-  // Stop capturing all events (mouse and touch).
+  // If |window| has capture, the current capture window is set to NULL.
   void ReleaseCapture(Window* window);
-
-  // Returns true if there is a window capturing all event types
-  // specified by |flags|. |flags| is ui::CaptureEventFlags.
-  bool HasCapture(Window* window, unsigned int flags);
 
   // Gesture Recognition -------------------------------------------------------
 
@@ -327,7 +320,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // HoldMouseMoves() is called. The following methods are used to dispatch held
   // and newly incoming mouse events, typically when an event other than a mouse
   // drag needs dispatching or a matching ReleaseMouseMoves() is called.
+  // NOTE: because these methods dispatch events from RootWindowHost the
+  // coordinates are in terms of the root.
   bool DispatchMouseEventImpl(MouseEvent* event);
+  bool DispatchMouseEventToTarget(MouseEvent* event, Window* target);
   void DispatchHeldMouseMove();
 
   // Parses the switch describing the initial size for the host window and
@@ -384,8 +380,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // The gesture_recognizer_ for this.
   scoped_ptr<ui::GestureRecognizer> gesture_recognizer_;
-
-  unsigned int capture_window_flags_;
 
   bool synthesize_mouse_move_;
   bool waiting_on_compositing_end_;

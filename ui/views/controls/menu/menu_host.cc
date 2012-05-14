@@ -49,7 +49,7 @@ void MenuHost::ShowMenuHost(bool do_capture) {
   ignore_capture_lost_ = true;
   Show();
   if (do_capture)
-    native_widget_private()->SetCapture(ui::CW_LOCK_MOUSE | ui::CW_LOCK_TOUCH);
+    native_widget_private()->SetCapture();
   ignore_capture_lost_ = false;
 }
 
@@ -72,8 +72,7 @@ void MenuHost::SetMenuHostBounds(const gfx::Rect& bounds) {
 }
 
 void MenuHost::ReleaseMenuHostCapture() {
-  if (native_widget_private()->HasCapture(ui::CW_LOCK_MOUSE) ||
-      native_widget_private()->HasCapture(ui::CW_LOCK_TOUCH))
+  if (native_widget_private()->HasCapture())
     native_widget_private()->ReleaseCapture();
 }
 

@@ -121,18 +121,12 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
       View* view,
       ui::AccessibilityTypes::Event event_type) = 0;
 
-  // Sets event capturing for the native widget for events specified in
-  // |flags|. |flags| is ui::CaptureEventFlags. This does nothing if
-  // the window isn't showing (VISIBILITY_SHOWN), or isn't contained
-  // in a valid window hierarchy.
-  virtual void SetCapture(unsigned int flags) = 0;
-
-  // Stop capturing events.
+  // Sets or releases event capturing for this native widget.
+  virtual void SetCapture() = 0;
   virtual void ReleaseCapture() = 0;
 
-  // Returns true if this native widget is capturing all event types
-  // specified by |flags|.  flags is ui::CaptureEventFlags.
-  virtual bool HasCapture(unsigned int flags) const = 0;
+  // Returns true if this native widget is capturing events.
+  virtual bool HasCapture() const = 0;
 
   // Returns the InputMethod for this native widget.
   // Note that all widgets in a widget hierarchy share the same input method.

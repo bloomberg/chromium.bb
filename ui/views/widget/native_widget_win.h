@@ -194,10 +194,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void SendNativeAccessibilityEvent(
       View* view,
       ui::AccessibilityTypes::Event event_type) OVERRIDE;
-  // NativeWidgetWin ignores touch captures.
-  virtual void SetCapture(unsigned int flags) OVERRIDE;
+  virtual void SetCapture() OVERRIDE;
   virtual void ReleaseCapture() OVERRIDE;
-  virtual bool HasCapture(unsigned int flags) const OVERRIDE;
+  virtual bool HasCapture() const OVERRIDE;
   virtual InputMethod* CreateInputMethod() OVERRIDE;
   virtual void CenterWindow(const gfx::Size& size) OVERRIDE;
   virtual void GetWindowPlacement(

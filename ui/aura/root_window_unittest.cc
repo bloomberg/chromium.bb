@@ -451,14 +451,8 @@ TEST_F(RootWindowTest, GestureToMouseEventTest) {
   root_window()->SetEventFilter(filter);  // passes ownership
 
   test::TestWindowDelegate delegate;
-  const int kWindowWidth = 123;
-  const int kWindowHeight = 45;
-  gfx::Rect bounds1(100, 200, kWindowWidth, kWindowHeight);
-  gfx::Rect bounds2(300, 400, kWindowWidth, kWindowHeight);
   scoped_ptr<aura::Window> window1(CreateTestWindowWithDelegate(
       &delegate, 1, gfx::Rect(0, 0, 250, 250), NULL));
-
-  gfx::Point location(100, 101);
 
   // ET_TOUCH_PRESSED/RELEASED should generate mouse pressed/released.
   {
@@ -473,7 +467,7 @@ TEST_F(RootWindowTest, GestureToMouseEventTest) {
     root_window()->DispatchTouchEvent(&touch_pressed_event);
     root_window()->DispatchTouchEvent(&touch_released_event);
     EXPECT_EQ("TOUCH_PRESSED GESTURE_TAP_DOWN TOUCH_RELEASED GESTURE_TAP "
-              "MOUSE_ENTERED MOUSE_PRESSED MOUSE_RELEASED MOUSE_EXITED",
+              "MOUSE_ENTERED MOUSE_MOVED MOUSE_PRESSED MOUSE_RELEASED",
               EventTypesToString(filter->events()));
     filter->events().clear();
   }
@@ -494,8 +488,8 @@ TEST_F(RootWindowTest, GestureToMouseEventTest) {
     TouchEvent touch_event(ui::ET_TOUCH_MOVED, gfx::Point(200, 201), 1,
                            base::TimeDelta());
     root_window()->DispatchTouchEvent(&touch_event);
-    EXPECT_EQ("TOUCH_MOVED GESTURE_SCROLL_BEGIN MOUSE_ENTERED "
-              "MOUSE_PRESSED MOUSE_DRAGGED GESTURE_SCROLL_UPDATE MOUSE_DRAGGED",
+    EXPECT_EQ("TOUCH_MOVED GESTURE_SCROLL_BEGIN MOUSE_PRESSED MOUSE_DRAGGED "
+              "GESTURE_SCROLL_UPDATE MOUSE_DRAGGED",
               EventTypesToString(filter->events()));
     filter->events().clear();
   }
@@ -518,8 +512,47 @@ TEST_F(RootWindowTest, GestureToMouseEventTest) {
     TouchEvent touch_event(ui::ET_TOUCH_RELEASED, gfx::Point(300, 201), 1,
                            base::TimeDelta());
     root_window()->DispatchTouchEvent(&touch_event);
-    EXPECT_EQ("TOUCH_RELEASED GESTURE_SCROLL_END MOUSE_DRAGGED MOUSE_RELEASED "
-              "MOUSE_EXITED",
+    EXPECT_EQ("TOUCH_RELEASED GESTURE_SCROLL_END MOUSE_DRAGGED MOUSE_RELEASED",
+              EventTypesToString(filter->events()));
+    filter->events().clear();
+  }
+}
+
+TEST_F(RootWindowTest, MouseMoveThenTouch) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window1(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(0, 0, 100, 100), NULL));
+  scoped_ptr<aura::Window> window2(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(150, 150, 50, 50), NULL));
+
+  // Move the mouse over window1.
+  {
+    MouseEvent move_mouse_event(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
+                                gfx::Point(50, 50), 0);
+    root_window()->DispatchMouseEvent(&move_mouse_event);
+    EXPECT_EQ("MOUSE_ENTERED MOUSE_MOVED",
+              EventTypesToString(filter->events()));
+    filter->events().clear();
+  }
+
+  // Touch window2.
+  {
+    TouchEvent touch_pressed_event(ui::ET_TOUCH_PRESSED, gfx::Point(151, 151),
+                                   1, base::TimeDelta());
+    int time_ms =
+        static_cast<int>(ui::GestureConfiguration::
+                         min_touch_down_duration_in_seconds_for_click() * 1000);
+    TouchEvent touch_released_event(
+        ui::ET_TOUCH_RELEASED, gfx::Point(151, 151), 1,
+        base::TimeDelta::FromMilliseconds(time_ms));
+    root_window()->DispatchTouchEvent(&touch_pressed_event);
+    root_window()->DispatchTouchEvent(&touch_released_event);
+    EXPECT_EQ("TOUCH_PRESSED GESTURE_TAP_DOWN TOUCH_RELEASED GESTURE_TAP "
+              "MOUSE_EXITED MOUSE_ENTERED MOUSE_MOVED MOUSE_PRESSED "
+              "MOUSE_RELEASED",
               EventTypesToString(filter->events()));
     filter->events().clear();
   }
