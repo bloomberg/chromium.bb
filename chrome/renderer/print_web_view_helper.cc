@@ -416,7 +416,6 @@ void PrintHeaderFooterByRenderText(
   render_text->SetFontSize(font_size);
   gfx::Size text_size = render_text->GetStringSize();
   int text_height = text_size.height();
-  int y_offset = text_height - font_size;
   SkScalar margin_left = page_layout.margin_left / webkit_scale_factor;
   SkScalar margin_top = page_layout.margin_top / webkit_scale_factor;
   SkScalar content_height = page_layout.content_height / webkit_scale_factor;
@@ -427,26 +426,23 @@ void PrintHeaderFooterByRenderText(
                                           vertical_position, offset_to_baseline,
                                           SkScalarToDouble(text_width));
   point.set(point.x() + margin_left, point.y() + margin_top);
-  // Workaround clipping issue of RenderText by adjusting the y_offset to make
-  // sure that display rect overlaps with content area.
+
+  gfx::Rect rect(point.x(), point.y(), text_width, text_height);
+  // Workaround clipping issue of RenderText to make sure that display rect
+  // overlaps with content area.
   if (vertical_position == printing::TOP) {
     // Bottom of display rect must overlap with content.
-    int display_rect_y = point.y() - y_offset + text_height;
-    int content_y = margin_top + 1;
-    if (display_rect_y < content_y) {
-      y_offset = point.y() + text_height - content_y;
-    }
+    const int content_top = margin_top + 1;
+    if (rect.bottom() < content_top)
+      rect.set_y(content_top - rect.height());
   } else {  // BOTTOM
     // Top of display rect must overlap with content.
-    int display_rect_y = point.y() - y_offset;
-    int content_y = margin_top + content_height - 1;
-    if (display_rect_y > content_y) {
-      y_offset = point.y() - content_y;
-    }
+    const int content_bottom = margin_top + content_height - 1;
+    if (rect.y() > content_bottom)
+      rect.set_y(content_bottom);
   }
-
-  gfx::Rect rect(point.x(), point.y() - y_offset, text_width, text_height);
   render_text->SetDisplayRect(rect);
+
   int save_count = canvas->save();
   canvas->translate(-margin_left, -margin_top);
   {
