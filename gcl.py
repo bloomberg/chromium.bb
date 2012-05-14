@@ -825,6 +825,10 @@ def CMDupload(change_info, args):
   if FilterFlag(args, "--send-mail"):
     args.append("--send_mail")
 
+  # Replace -m or --message with -t.
+  args = map(lambda a: '-t' if (a == '-m' or a == '--message') else a, args)
+  
+
   upload_arg = ["upload.py", "-y"]
   upload_arg.append("--server=%s" % change_info.rietveld)
 
@@ -842,7 +846,7 @@ def CMDupload(change_info, args):
       # Uploading a new patchset.
       upload_arg.append("--issue=%d" % change_info.issue)
 
-      if not any(i.startswith('--message') or i.startswith('-m') for i in args):
+      if not any(i.startswith('--title') or i.startswith('-t') for i in args):
         upload_arg.append('--title= ')
     else:
       # First time we upload.
