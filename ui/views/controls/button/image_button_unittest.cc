@@ -35,7 +35,7 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ("5x15", button.GetPreferredSize().ToString());
 
   // Set a normal image.
-  gfx::ImageSkia normal_bitmap = CreateTestBitmap(10, 20);
+  SkBitmap normal_bitmap = CreateTestBitmap(10, 20);
   button.SetImage(CustomButton::BS_NORMAL, &normal_bitmap);
 
   // Image uses normal image for painting.
@@ -47,7 +47,7 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ("10x20", button.GetPreferredSize().ToString());
 
   // Set a pushed image.
-  gfx::ImageSkia pushed_bitmap = CreateTestBitmap(11, 21);
+  SkBitmap pushed_bitmap = CreateTestBitmap(11, 21);
   button.SetImage(CustomButton::BS_PUSHED, &pushed_bitmap);
 
   // By convention, preferred size doesn't change, even though pushed image

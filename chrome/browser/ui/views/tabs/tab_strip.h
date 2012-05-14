@@ -392,7 +392,7 @@ class TabStrip : public views::View,
 
   // Returns the image to use for indicating a drop on a tab. If is_down is
   // true, this returns an arrow pointing down.
-  static gfx::ImageSkia* GetDropArrowImage(bool is_down);
+  static SkBitmap* GetDropArrowImage(bool is_down);
 
   // -- Animations ------------------------------------------------------------
 

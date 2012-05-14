@@ -155,7 +155,7 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
   columns->AddPaddingColumn(1, kPadding);
 
   views::ImageView* image = new views::ImageView();
-  image->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  image->SetImage(ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
       (kind_ == CRASHED) ? IDR_SAD_TAB : IDR_KILLED_TAB));
   layout->StartRowWithPadding(0, column_set_id, 1, kPadding);
   layout->AddView(image);

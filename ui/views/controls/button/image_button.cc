@@ -31,14 +31,14 @@ ImageButton::ImageButton(ButtonListener* listener)
 ImageButton::~ImageButton() {
 }
 
-void ImageButton::SetImage(ButtonState state, const gfx::ImageSkia* image) {
-  images_[state] = image ? *image : gfx::ImageSkia();
+void ImageButton::SetImage(ButtonState state, const SkBitmap* image) {
+  images_[state] = image ? *image : SkBitmap();
   PreferredSizeChanged();
 }
 
 void ImageButton::SetBackground(SkColor color,
-                                const gfx::ImageSkia* image,
-                                const gfx::ImageSkia* mask) {
+                                const SkBitmap* image,
+                                const SkBitmap* mask) {
   if (!image || !mask) {
     background_image_.reset();
     return;
@@ -143,13 +143,13 @@ void ToggleImageButton::SetToggled(bool toggled) {
 }
 
 void ToggleImageButton::SetToggledImage(ButtonState state,
-                                        const gfx::ImageSkia* image) {
+                                        const SkBitmap* image) {
   if (toggled_) {
-    images_[state] = image ? *image : gfx::ImageSkia();
+    images_[state] = image ? *image : SkBitmap();
     if (state_ == state)
       SchedulePaint();
   } else {
-    alternate_images_[state] = image ? *image : gfx::ImageSkia();
+    alternate_images_[state] = image ? *image : SkBitmap();
   }
 }
 
@@ -160,12 +160,11 @@ void ToggleImageButton::SetToggledTooltipText(const string16& tooltip) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToggleImageButton, ImageButton overrides:
 
-void ToggleImageButton::SetImage(ButtonState state,
-                                 const gfx::ImageSkia* image) {
+void ToggleImageButton::SetImage(ButtonState state, const SkBitmap* image) {
   if (toggled_) {
-    alternate_images_[state] = image ? *image : gfx::ImageSkia();
+    alternate_images_[state] = image ? *image : SkBitmap();
   } else {
-    images_[state] = image ? *image : gfx::ImageSkia();
+    images_[state] = image ? *image : SkBitmap();
     if (state_ == state)
       SchedulePaint();
   }

@@ -161,7 +161,7 @@ void AppInfoView::UpdateText(const string16& title,
 
 void AppInfoView::UpdateIcon(const gfx::Image& image) {
   if (!image.IsEmpty())
-    icon_->SetImage(image.ToImageSkia());
+    icon_->SetImage(image.ToSkBitmap());
 }
 
 void AppInfoView::OnPaint(gfx::Canvas* canvas) {

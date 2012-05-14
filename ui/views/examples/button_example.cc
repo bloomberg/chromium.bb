@@ -45,11 +45,11 @@ void ButtonExample::CreateExampleView(View* container) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
   image_button_->SetImage(ImageButton::BS_NORMAL,
-                          rb.GetImageNamed(IDR_CLOSE).ToImageSkia());
+                          rb.GetImageNamed(IDR_CLOSE).ToSkBitmap());
   image_button_->SetImage(ImageButton::BS_HOT,
-                          rb.GetImageNamed(IDR_CLOSE_H).ToImageSkia());
+                          rb.GetImageNamed(IDR_CLOSE_H).ToSkBitmap());
   image_button_->SetImage(ImageButton::BS_PUSHED,
-                          rb.GetImageNamed(IDR_CLOSE_P).ToImageSkia());
+                          rb.GetImageNamed(IDR_CLOSE_P).ToSkBitmap());
   image_button_->SetOverlayImage(rb.GetImageNamed(IDR_MENU_CHECK).ToSkBitmap());
   container->AddChildView(image_button_);
 }

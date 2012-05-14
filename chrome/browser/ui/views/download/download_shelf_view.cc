@@ -307,7 +307,7 @@ void DownloadShelfView::ViewHierarchyChanged(bool is_add,
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     arrow_image_ = new views::ImageView();
-    arrow_image_->SetImage(rb.GetImageSkiaNamed(IDR_DOWNLOADS_FAVICON));
+    arrow_image_->SetImage(rb.GetBitmapNamed(IDR_DOWNLOADS_FAVICON));
     AddChildView(arrow_image_);
 
     show_all_view_ = new views::Link(
@@ -320,11 +320,11 @@ void DownloadShelfView::ViewHierarchyChanged(bool is_add,
 
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                            rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
+                            rb.GetBitmapNamed(IDR_CLOSE_BAR));
     close_button_->SetImage(views::CustomButton::BS_HOT,
-                            rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
+                            rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
     close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                            rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
+                            rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     UpdateButtonColors();
@@ -364,8 +364,8 @@ void DownloadShelfView::UpdateButtonColors() {
   if (GetThemeProvider()) {
     close_button_->SetBackground(
         GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),
-        rb.GetImageSkiaNamed(IDR_CLOSE_BAR),
-        rb.GetImageSkiaNamed(IDR_CLOSE_BAR_MASK));
+        rb.GetBitmapNamed(IDR_CLOSE_BAR),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   }
 }
 

@@ -32,7 +32,7 @@ class DefaultAccessibilityView : public ActionableView {
     FixedSizedImageView* image =
         new FixedSizedImageView(0, kTrayPopupItemHeight);
     image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY).
-                    ToImageSkia());
+                    ToSkBitmap());
 
     AddChildView(image);
     string16 label = bundle.GetLocalizedString(
@@ -92,7 +92,7 @@ views::View* TrayAccessibility::CreateDetailedView(user::LoginStatus status) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* image = new views::ImageView;
   image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY).
-      ToImageSkia());
+      ToSkBitmap());
 
   detailed_->AddChildView(image);
   detailed_->AddChildView(new views::Label(

@@ -94,7 +94,7 @@ class AutocompleteResultView : public views::View,
 
   ResultViewState GetState() const;
   const SkBitmap* GetIcon() const;
-  const gfx::ImageSkia* GetKeywordIcon() const;
+  const SkBitmap* GetKeywordIcon() const;
 
   // Elides |runs| to fit in |remaining_width|.  The runs in |runs| should be in
   // logical order.

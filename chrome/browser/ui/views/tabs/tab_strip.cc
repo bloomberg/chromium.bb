@@ -1225,7 +1225,7 @@ void TabStrip::Init() {
   AddChildView(newtab_button_);
   if (drop_indicator_width == 0) {
     // Direction doesn't matter, both images are the same size.
-    gfx::ImageSkia* drop_image = GetDropArrowImage(true);
+    SkBitmap* drop_image = GetDropArrowImage(true);
     drop_indicator_width = drop_image->width();
     drop_indicator_height = drop_image->height();
   }
@@ -1803,8 +1803,8 @@ int TabStrip::GetDropEffect(const views::DropTargetEvent& event) {
 }
 
 // static
-gfx::ImageSkia* TabStrip::GetDropArrowImage(bool is_down) {
-  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+SkBitmap* TabStrip::GetDropArrowImage(bool is_down) {
+  return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
       is_down ? IDR_TAB_DROP_DOWN : IDR_TAB_DROP_UP);
 }
 

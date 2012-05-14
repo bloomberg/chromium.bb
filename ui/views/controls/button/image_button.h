@@ -8,7 +8,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
 
 namespace views {
@@ -37,12 +36,12 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   virtual ~ImageButton();
 
   // Set the image the button should use for the provided state.
-  virtual void SetImage(ButtonState state, const gfx::ImageSkia* image);
+  virtual void SetImage(ButtonState state, const SkBitmap* image);
 
   // Set the background details.
   void SetBackground(SkColor color,
-                     const gfx::ImageSkia* image,
-                     const gfx::ImageSkia* mask);
+                     const SkBitmap* image,
+                     const SkBitmap* mask);
 
   // Set an |image| to draw on top of the normal / hot / pushed image.
   // Pass NULL for no image.
@@ -105,14 +104,13 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   // Like ImageButton::SetImage(), but to set the graphics used for the
   // "has been toggled" state.  Must be called for each button state
   // before the button is toggled.
-  void SetToggledImage(ButtonState state, const gfx::ImageSkia* image);
+  void SetToggledImage(ButtonState state, const SkBitmap* image);
 
   // Set the tooltip text displayed when the button is toggled.
   void SetToggledTooltipText(const string16& tooltip);
 
   // Overridden from ImageButton:
-  virtual void SetImage(ButtonState state,
-                        const gfx::ImageSkia* image) OVERRIDE;
+  virtual void SetImage(ButtonState state, const SkBitmap* image) OVERRIDE;
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,

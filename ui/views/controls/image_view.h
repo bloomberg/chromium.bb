@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -40,10 +39,10 @@ class VIEWS_EXPORT ImageView : public View {
   // Set the bitmap that should be displayed.
   void SetImage(const SkBitmap& bm);
 
-  // Set the image that should be displayed from a pointer. Reset the image
+  // Set the bitmap that should be displayed from a pointer. Reset the image
   // if the pointer is NULL. The pointer contents is copied in the receiver's
   // bitmap.
-  void SetImage(const gfx::ImageSkia* image_skia);
+  void SetImage(const SkBitmap* bm);
 
   // Returns the bitmap currently displayed or NULL of none is currently set.
   // The returned bitmap is still owned by the ImageView.

@@ -300,13 +300,13 @@ class HungRendererDialogView : public views::DialogDelegateView,
   bool initialized_;
 
   // An amusing icon image.
-  static gfx::ImageSkia* frozen_icon_;
+  static SkBitmap* frozen_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogView);
 };
 
 // static
-gfx::ImageSkia* HungRendererDialogView::frozen_icon_ = NULL;
+SkBitmap* HungRendererDialogView::frozen_icon_ = NULL;
 
 // The distance in pixels from the top of the relevant contents to place the
 // warning window.
@@ -556,7 +556,7 @@ void HungRendererDialogView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    frozen_icon_ = rb.GetImageSkiaNamed(IDR_FROZEN_TAB_ICON);
+    frozen_icon_ = rb.GetBitmapNamed(IDR_FROZEN_TAB_ICON);
     initialized = true;
   }
 }

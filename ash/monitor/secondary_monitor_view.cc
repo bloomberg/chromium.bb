@@ -54,7 +54,7 @@ class SecondaryMonitorView : public views::WidgetDelegateView {
     AddChildView(shortcut_text_);
 
     shortcut_image_ = new views::ImageView();
-    shortcut_image_->SetImage(rb.GetImageSkiaNamed(IDR_AURA_SWITCH_MONITOR));
+    shortcut_image_->SetImage(rb.GetBitmapNamed(IDR_AURA_SWITCH_MONITOR));
     AddChildView(shortcut_image_);
   }
 

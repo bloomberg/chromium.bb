@@ -73,11 +73,11 @@ AppPanelBrowserFrameView::AppPanelBrowserFrameView(BrowserFrame* frame,
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
   close_button_->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);

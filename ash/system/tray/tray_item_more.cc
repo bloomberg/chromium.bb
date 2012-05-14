@@ -32,7 +32,7 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner)
   more_ = new views::ImageView;
   more_->EnableCanvasFlippingForRTLUI(true);
   more_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_AURA_UBER_TRAY_MORE).ToImageSkia());
+      IDR_AURA_UBER_TRAY_MORE).ToSkBitmap());
   AddChildView(more_);
 }
 
@@ -45,8 +45,8 @@ void TrayItemMore::SetLabel(const string16& label) {
   SchedulePaint();
 }
 
-void TrayItemMore::SetImage(const gfx::ImageSkia* image_skia) {
-  icon_->SetImage(image_skia);
+void TrayItemMore::SetImage(const SkBitmap* bitmap) {
+  icon_->SetImage(bitmap);
   SchedulePaint();
 }
 

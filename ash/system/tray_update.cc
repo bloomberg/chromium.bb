@@ -45,7 +45,7 @@ class UpdateView : public ash::internal::ActionableView {
     views::ImageView* image =
         new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
     image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_UPDATE_DARK).
-        ToImageSkia());
+        ToSkBitmap());
 
     AddChildView(image);
     AddChildView(new views::Label(

@@ -558,11 +558,11 @@ void FramePainter::SetButtonImages(views::ImageButton* button,
                                    int pushed_bitmap_id) {
   ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
   button->SetImage(views::CustomButton::BS_NORMAL,
-                   theme_provider->GetImageSkiaNamed(normal_bitmap_id));
+                   theme_provider->GetBitmapNamed(normal_bitmap_id));
   button->SetImage(views::CustomButton::BS_HOT,
-                   theme_provider->GetImageSkiaNamed(hot_bitmap_id));
+                   theme_provider->GetBitmapNamed(hot_bitmap_id));
   button->SetImage(views::CustomButton::BS_PUSHED,
-                   theme_provider->GetImageSkiaNamed(pushed_bitmap_id));
+                   theme_provider->GetBitmapNamed(pushed_bitmap_id));
 }
 
 int FramePainter::GetTitleOffsetX() const {

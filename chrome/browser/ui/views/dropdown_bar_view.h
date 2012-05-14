@@ -12,7 +12,6 @@
 
 namespace gfx {
 class Canvas;
-class ImageSkia;
 }  // namespace gfx
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,8 +40,8 @@ class DropdownBarView : public views::AccessiblePaneView,
   // Returns the DropdownBarHost that manages this view.
   DropdownBarHost* host() const { return host_; }
 
-  void SetBackground(const gfx::ImageSkia* left_alpha_mask,
-                     const gfx::ImageSkia* right_alpha_mask);
+  void SetBackground(const SkBitmap* left_alpha_mask,
+                     const SkBitmap* right_alpha_mask);
   void SetBorder(int left_border_bitmap_id, int middle_border_bitmap_id,
                  int right_border_bitmap_id);
 

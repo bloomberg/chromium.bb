@@ -109,7 +109,7 @@ void LauncherButton::SetShadowedImage(const SkBitmap& bitmap) {
 void LauncherButton::SetImage(const SkBitmap& image) {
   if (image.empty()) {
     // TODO: need an empty image.
-    icon_view_->SetImage(image);
+    icon_view_->SetImage(&image);
     return;
   }
 
@@ -264,7 +264,7 @@ void LauncherButton::UpdateState() {
     else
       bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
 
-    bar_->SetImage(rb.GetImageNamed(bar_id).ToImageSkia());
+    bar_->SetImage(rb.GetImageNamed(bar_id).ToSkBitmap());
   }
 
   Layout();

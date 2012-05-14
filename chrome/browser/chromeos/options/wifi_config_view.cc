@@ -1047,15 +1047,15 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
     passphrase_visible_button_->SetImage(
         views::ImageButton::BS_NORMAL,
         ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD_OFF));
+        GetBitmapNamed(IDR_NETWORK_SHOW_PASSWORD_OFF));
     passphrase_visible_button_->SetImage(
         views::ImageButton::BS_HOT,
         ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD_HOVER));
+        GetBitmapNamed(IDR_NETWORK_SHOW_PASSWORD_HOVER));
     passphrase_visible_button_->SetToggledImage(
         views::ImageButton::BS_NORMAL,
         ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_NETWORK_SHOW_PASSWORD_ON));
+        GetBitmapNamed(IDR_NETWORK_SHOW_PASSWORD_ON));
     passphrase_visible_button_->SetImageAlignment(
         views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
     layout->AddView(passphrase_visible_button_);

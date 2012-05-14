@@ -326,8 +326,8 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
     close_button_color_ = title_color;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button()->SetBackground(close_button_color_,
-        rb.GetImageSkiaNamed(IDR_TAB_CLOSE),
-        rb.GetImageSkiaNamed(IDR_TAB_CLOSE_MASK));
+        rb.GetBitmapNamed(IDR_TAB_CLOSE),
+        rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
   }
 }
 

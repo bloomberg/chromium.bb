@@ -748,45 +748,41 @@ int ToolbarView::PopupTopSpacing() const {
 void ToolbarView::LoadImages() {
   ui::ThemeProvider* tp = GetThemeProvider();
 
-  back_->SetImage(views::CustomButton::BS_NORMAL,
-      tp->GetImageSkiaNamed(IDR_BACK));
-  back_->SetImage(views::CustomButton::BS_HOT,
-      tp->GetImageSkiaNamed(IDR_BACK_H));
+  back_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_BACK));
+  back_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_BACK_H));
   back_->SetImage(views::CustomButton::BS_PUSHED,
-      tp->GetImageSkiaNamed(IDR_BACK_P));
+      tp->GetBitmapNamed(IDR_BACK_P));
   back_->SetImage(views::CustomButton::BS_DISABLED,
-      tp->GetImageSkiaNamed(IDR_BACK_D));
+      tp->GetBitmapNamed(IDR_BACK_D));
 
   forward_->SetImage(views::CustomButton::BS_NORMAL,
-      tp->GetImageSkiaNamed(IDR_FORWARD));
+      tp->GetBitmapNamed(IDR_FORWARD));
   forward_->SetImage(views::CustomButton::BS_HOT,
-      tp->GetImageSkiaNamed(IDR_FORWARD_H));
+      tp->GetBitmapNamed(IDR_FORWARD_H));
   forward_->SetImage(views::CustomButton::BS_PUSHED,
-      tp->GetImageSkiaNamed(IDR_FORWARD_P));
+      tp->GetBitmapNamed(IDR_FORWARD_P));
   forward_->SetImage(views::CustomButton::BS_DISABLED,
-      tp->GetImageSkiaNamed(IDR_FORWARD_D));
+      tp->GetBitmapNamed(IDR_FORWARD_D));
 
   reload_->SetImage(views::CustomButton::BS_NORMAL,
-      tp->GetImageSkiaNamed(IDR_RELOAD));
+      tp->GetBitmapNamed(IDR_RELOAD));
   reload_->SetImage(views::CustomButton::BS_HOT,
-      tp->GetImageSkiaNamed(IDR_RELOAD_H));
+      tp->GetBitmapNamed(IDR_RELOAD_H));
   reload_->SetImage(views::CustomButton::BS_PUSHED,
-      tp->GetImageSkiaNamed(IDR_RELOAD_P));
+      tp->GetBitmapNamed(IDR_RELOAD_P));
   reload_->SetToggledImage(views::CustomButton::BS_NORMAL,
-      tp->GetImageSkiaNamed(IDR_STOP));
+      tp->GetBitmapNamed(IDR_STOP));
   reload_->SetToggledImage(views::CustomButton::BS_HOT,
-      tp->GetImageSkiaNamed(IDR_STOP_H));
+      tp->GetBitmapNamed(IDR_STOP_H));
   reload_->SetToggledImage(views::CustomButton::BS_PUSHED,
-      tp->GetImageSkiaNamed(IDR_STOP_P));
+      tp->GetBitmapNamed(IDR_STOP_P));
   reload_->SetToggledImage(views::CustomButton::BS_DISABLED,
-      tp->GetImageSkiaNamed(IDR_STOP_D));
+      tp->GetBitmapNamed(IDR_STOP_D));
 
-  home_->SetImage(views::CustomButton::BS_NORMAL,
-      tp->GetImageSkiaNamed(IDR_HOME));
-  home_->SetImage(views::CustomButton::BS_HOT,
-      tp->GetImageSkiaNamed(IDR_HOME_H));
+  home_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_HOME));
+  home_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_HOME_H));
   home_->SetImage(views::CustomButton::BS_PUSHED,
-      tp->GetImageSkiaNamed(IDR_HOME_P));
+      tp->GetBitmapNamed(IDR_HOME_P));
 
   app_menu_->SetIcon(GetAppMenuIcon(views::CustomButton::BS_NORMAL));
   app_menu_->SetHoverIcon(GetAppMenuIcon(views::CustomButton::BS_HOT));

@@ -225,11 +225,11 @@ class InstalledBubbleContent : public views::View,
 
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(views::CustomButton::BS_NORMAL,
-        rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
+        rb.GetBitmapNamed(IDR_CLOSE_BAR));
     close_button_->SetImage(views::CustomButton::BS_HOT,
-        rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
     close_button_->SetImage(views::CustomButton::BS_PUSHED,
-        rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
     AddChildView(close_button_);
   }
 

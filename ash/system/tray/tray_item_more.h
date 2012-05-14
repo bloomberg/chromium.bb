@@ -29,7 +29,7 @@ class TrayItemMore : public ActionableView {
   virtual ~TrayItemMore();
 
   void SetLabel(const string16& label);
-  void SetImage(const gfx::ImageSkia* image_skia);
+  void SetImage(const SkBitmap* bitmap);
   void SetAccessibleName(const string16& name);
 
  protected:

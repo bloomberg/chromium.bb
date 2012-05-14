@@ -30,9 +30,9 @@ void ImageView::SetImage(const SkBitmap& bm) {
   SchedulePaint();
 }
 
-void ImageView::SetImage(const gfx::ImageSkia* image_skia) {
-  if (image_skia) {
-    SetImage(*image_skia);
+void ImageView::SetImage(const SkBitmap* bm) {
+  if (bm) {
+    SetImage(*bm);
   } else {
     SkBitmap t;
     SetImage(t);

@@ -16,7 +16,8 @@
 #include "base/i18n/time_formatting.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/image/image_skia.h"
+
+class SkBitmap;
 
 namespace ash {
 
@@ -26,7 +27,7 @@ struct ASH_EXPORT NetworkIconInfo {
 
   bool highlight;
   bool tray_icon_visible;
-  gfx::ImageSkia image;
+  SkBitmap image;
   string16 name;
   string16 description;
   std::string service_path;

@@ -29,7 +29,7 @@ views::View* TrayImageItem::CreateTrayView(user::LoginStatus status) {
   tray_view_ = new TrayItemView;
   tray_view_->CreateImageView();
   tray_view_->image_view()->SetImage(ui::ResourceBundle::GetSharedInstance().
-      GetImageNamed(resource_id_).ToImageSkia());
+      GetImageNamed(resource_id_).ToSkBitmap());
   tray_view_->SetVisible(GetInitialVisibility());
   return tray_view_;
 }

@@ -34,7 +34,7 @@ class SettingsView : public ash::internal::ActionableView {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     views::ImageView* icon =
         new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
-    icon->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
+    icon->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToSkBitmap());
     AddChildView(icon);
 
     string16 text = rb.GetLocalizedString(

@@ -100,11 +100,11 @@ FindBarView::FindBarView(FindBarHost* host)
   find_previous_button_->set_tag(FIND_PREVIOUS_TAG);
   find_previous_button_->set_focusable(true);
   find_previous_button_->SetImage(views::CustomButton::BS_NORMAL,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV));
+      rb.GetBitmapNamed(IDR_FINDINPAGE_PREV));
   find_previous_button_->SetImage(views::CustomButton::BS_HOT,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_H));
+      rb.GetBitmapNamed(IDR_FINDINPAGE_PREV_H));
   find_previous_button_->SetImage(views::CustomButton::BS_DISABLED,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_PREV_P));
+      rb.GetBitmapNamed(IDR_FINDINPAGE_PREV_P));
   find_previous_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP));
   find_previous_button_->SetAccessibleName(
@@ -115,11 +115,11 @@ FindBarView::FindBarView(FindBarHost* host)
   find_next_button_->set_tag(FIND_NEXT_TAG);
   find_next_button_->set_focusable(true);
   find_next_button_->SetImage(views::CustomButton::BS_NORMAL,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT));
+      rb.GetBitmapNamed(IDR_FINDINPAGE_NEXT));
   find_next_button_->SetImage(views::CustomButton::BS_HOT,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_H));
+      rb.GetBitmapNamed(IDR_FINDINPAGE_NEXT_H));
   find_next_button_->SetImage(views::CustomButton::BS_DISABLED,
-      rb.GetImageSkiaNamed(IDR_FINDINPAGE_NEXT_P));
+      rb.GetBitmapNamed(IDR_FINDINPAGE_NEXT_P));
   find_next_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_NEXT_TOOLTIP));
   find_next_button_->SetAccessibleName(
@@ -130,19 +130,19 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_->set_tag(CLOSE_TAG);
   close_button_->set_focusable(true);
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR));
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
   close_button_->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_H));
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_BAR_P));
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
   close_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
-  SetBackground(rb.GetImageSkiaNamed(IDR_FIND_DLG_LEFT_BACKGROUND),
-                rb.GetImageSkiaNamed(IDR_FIND_DLG_RIGHT_BACKGROUND));
+  SetBackground(rb.GetBitmapNamed(IDR_FIND_DLG_LEFT_BACKGROUND),
+                rb.GetBitmapNamed(IDR_FIND_DLG_RIGHT_BACKGROUND));
 
   SetBorder(IDR_FIND_DIALOG_LEFT, IDR_FIND_DIALOG_MIDDLE,
             IDR_FIND_DIALOG_RIGHT);
@@ -489,7 +489,7 @@ void FindBarView::OnThemeChanged() {
   if (GetThemeProvider()) {
     close_button_->SetBackground(
         GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT),
-        rb.GetImageSkiaNamed(IDR_CLOSE_BAR),
-        rb.GetImageSkiaNamed(IDR_CLOSE_BAR_MASK));
+        rb.GetBitmapNamed(IDR_CLOSE_BAR),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   }
 }

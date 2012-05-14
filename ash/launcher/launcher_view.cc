@@ -276,13 +276,13 @@ void LauncherView::Init() {
   overflow_button_->set_accessibility_focusable(true);
   overflow_button_->SetImage(
       views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW).ToImageSkia());
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW).ToSkBitmap());
   overflow_button_->SetImage(
       views::CustomButton::BS_HOT,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_HOT).ToImageSkia());
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_HOT).ToSkBitmap());
   overflow_button_->SetImage(
       views::CustomButton::BS_PUSHED,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_PUSHED).ToImageSkia());
+      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_PUSHED).ToSkBitmap());
   overflow_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AURA_LAUNCHER_OVERFLOW_NAME));
   overflow_button_->set_context_menu_controller(this);
@@ -466,15 +466,13 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
       views::ImageButton* button = new views::ImageButton(this);
       button->SetImage(
           views::CustomButton::BS_NORMAL,
-          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToImageSkia());
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToSkBitmap());
       button->SetImage(
           views::CustomButton::BS_HOT,
-          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_HOT).
-              ToImageSkia());
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_HOT).ToSkBitmap());
       button->SetImage(
           views::CustomButton::BS_PUSHED,
-          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).
-              ToImageSkia());
+          rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).ToSkBitmap());
       button->SetAccessibleName(
           l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
       button->SetTooltipText(
@@ -489,7 +487,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
       int image_id = delegate_ ?
           delegate_->GetBrowserShortcutResourceId() :
           IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
-      button->SetImage(*rb.GetImageNamed(image_id).ToImageSkia());
+      button->SetImage(*rb.GetImageNamed(image_id).ToSkBitmap());
       view = button;
       break;
     }
