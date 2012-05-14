@@ -35,8 +35,8 @@ class MockUserManager : public UserManager {
                                          User::OAuthTokenStatus));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
-  MOCK_METHOD2(GetLoggedInUserWallpaperProperties, void(User::WallpaperType&,
-                                                        int&));
+  MOCK_METHOD2(GetLoggedInUserWallpaperProperties, void(User::WallpaperType*,
+                                                        int*));
   MOCK_METHOD2(SaveLoggedInUserWallpaperProperties, void(User::WallpaperType,
                                                          int));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));

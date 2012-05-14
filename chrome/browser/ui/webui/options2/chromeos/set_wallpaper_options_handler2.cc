@@ -93,7 +93,7 @@ void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
   DCHECK(args && args->empty());
   User::WallpaperType type;
   int index;
-  UserManager::Get()->GetLoggedInUserWallpaperProperties(type, index);
+  UserManager::Get()->GetLoggedInUserWallpaperProperties(&type, &index);
   base::StringValue image_url(GetDefaultWallpaperThumbnailURL(index));
   base::FundamentalValue is_random(type == User::RANDOM);
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.setSelectedImage",

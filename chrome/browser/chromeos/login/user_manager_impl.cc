@@ -292,6 +292,9 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_owner_(false),
       is_current_user_new_(false),
       is_current_user_ephemeral_(false),
+      current_user_wallpaper_type_(User::DEFAULT),
+      ALLOW_THIS_IN_INITIALIZER_LIST(current_user_wallpaper_index_(
+          ash::GetDefaultWallpaperIndex())),
       key_store_loaded_(false),
       ephemeral_users_enabled_(false),
       observed_sync_service_(NULL),
@@ -453,9 +456,9 @@ void UserManagerImpl::StubUserLoggedIn() {
 
 void UserManagerImpl::UserSelected(const std::string& email) {
   if (IsKnownUser(email)) {
-    int index;
     User::WallpaperType type;
-    GetUserWallpaperProperties(email, type, index);
+    int index;
+    GetUserWallpaperProperties(email, &type, &index);
     if (type == User::RANDOM) {
       // Generate a new random wallpaper index if the selected user chose
       // RANDOM wallpaper.
@@ -1008,56 +1011,30 @@ void UserManagerImpl::MigrateWallpaperData() {
 }
 
 int UserManagerImpl::GetLoggedInUserWallpaperIndex() {
-  int index;
   User::WallpaperType type;
-  GetLoggedInUserWallpaperProperties(type, index);
+  int index;
+  GetLoggedInUserWallpaperProperties(&type, &index);
   return index;
 }
 
 void UserManagerImpl::GetLoggedInUserWallpaperProperties(
-    User::WallpaperType& type, int& index) {
+    User::WallpaperType* type,
+    int* index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!IsUserLoggedIn() || IsLoggedInAsStub()) {
-    index = ash::GetInvalidWallpaperIndex();
-    type = User::DEFAULT;
-    current_user_wallpaper_index_ = index;
-    current_user_wallpaper_type_ = User::DEFAULT;
+    *type = current_user_wallpaper_type_ = User::DEFAULT;
+    *index = current_user_wallpaper_index_ = ash::GetInvalidWallpaperIndex();
     return;
   }
 
-  // If logged in as other ephemeral users (Demo/Stub/Normal user with
-  // ephemeral policy enabled/Guest), use the index in memory.
-  if (IsCurrentUserEphemeral()) {
-    type = current_user_wallpaper_type_;
-    index = current_user_wallpaper_index_;
-    return;
-  }
-
-  const chromeos::User& user = GetLoggedInUser();
-  std::string username = user.email();
-  DCHECK(!username.empty());
-
-  GetUserWallpaperProperties(username, type, index);
+  GetUserWallpaperProperties(GetLoggedInUser().email(), type, index);
 }
 
 void UserManagerImpl::SaveLoggedInUserWallpaperProperties(
-    User::WallpaperType type, int index) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  current_user_wallpaper_type_ = type;
-  current_user_wallpaper_index_ = index;
-  // Ephemeral users can not save data to local state. We just cache the index
-  // in memory for them.
-  if (IsCurrentUserEphemeral() || !IsUserLoggedIn()) {
-    return;
-  }
-
-  const chromeos::User& user = GetLoggedInUser();
-  std::string username = user.email();
-  DCHECK(!username.empty());
-
-  SaveUserWallpaperProperties(username, type, index);
+    User::WallpaperType type,
+    int index) {
+  SaveUserWallpaperProperties(GetLoggedInUser().email(), type, index);
 }
 
 void UserManagerImpl::SetUserImage(const std::string& username,
@@ -1091,26 +1068,29 @@ void UserManagerImpl::SetUserImage(const std::string& username,
 }
 
 void UserManagerImpl::GetUserWallpaperProperties(const std::string& username,
-                                                 User::WallpaperType& type,
-                                                 int& index) {
+                                                 User::WallpaperType* type,
+                                                 int* index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  PrefService* local_state = g_browser_process->local_state();
+  // Default to the values cached in memory.
+  *type = current_user_wallpaper_type_;
+  *index = current_user_wallpaper_index_;
 
-  const DictionaryValue* user_wallpapers =
-      local_state->GetDictionary(UserManager::kUserWallpapersProperties);
-
-  type = User::DEFAULT;
-  index = ash::GetDefaultWallpaperIndex();
-
-  if (user_wallpapers) {
-    base::DictionaryValue* wallpaper_properties = NULL;
-    if (user_wallpapers->GetDictionaryWithoutPathExpansion(
-            username, &wallpaper_properties)) {
-      int saved_type = User::UNKNOWN;
-      wallpaper_properties->GetInteger(kWallpaperTypeNodeName, &saved_type);
-      type = static_cast<User::WallpaperType>(saved_type);
-      wallpaper_properties->GetInteger(kWallpaperIndexNodeName, &index);
+  // Override with values found in local store, if any.
+  if (!username.empty()) {
+    const DictionaryValue* user_wallpapers = g_browser_process->local_state()->
+        GetDictionary(UserManager::kUserWallpapersProperties);
+    if (user_wallpapers) {
+      base::DictionaryValue* wallpaper_properties;
+      if (user_wallpapers->GetDictionaryWithoutPathExpansion(
+          username,
+          &wallpaper_properties)) {
+        *type = User::UNKNOWN;
+        *index = ash::GetDefaultWallpaperIndex();
+        wallpaper_properties->GetInteger(kWallpaperTypeNodeName,
+                                         reinterpret_cast<int*>(type));
+        wallpaper_properties->GetInteger(kWallpaperIndexNodeName, index);
+      }
     }
   }
 }

@@ -158,8 +158,8 @@ class UserManager {
 
   // Set |type| and |index| to the value saved in local state for logged in
   // user.
-  virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType& type,
-                                                  int& index) = 0;
+  virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType* type,
+                                                  int* index) = 0;
 
   // Save |type| and |index| chose by logged in user to Local State.
   virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,

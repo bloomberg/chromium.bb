@@ -66,8 +66,8 @@ class UserManagerImpl : public UserManager,
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const OVERRIDE;
   virtual int GetLoggedInUserWallpaperIndex() OVERRIDE;
-  virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType& type,
-                                                  int& index) OVERRIDE;
+  virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType* type,
+                                                  int* index) OVERRIDE;
   virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
                                                    int index) OVERRIDE;
   virtual void SaveUserDefaultImageIndex(const std::string& username,
@@ -166,8 +166,8 @@ class UserManagerImpl : public UserManager,
                     const SkBitmap& image);
 
   void GetUserWallpaperProperties(const std::string& username,
-                                 User::WallpaperType& type,
-                                 int& index);
+                                 User::WallpaperType* type,
+                                 int* index);
   void SaveUserWallpaperProperties(const std::string& username,
                                    User::WallpaperType type,
                                    int index);
