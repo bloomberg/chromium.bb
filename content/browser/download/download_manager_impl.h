@@ -196,10 +196,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // processed. The key is the ID assigned by the DownloadFileManager,
   // which is unique for the current session.
   //
-  // |in_progress_| is a map of all downloads that are in progress and that have
-  // not yet received a valid history handle. The key is the ID assigned by the
-  // DownloadFileManager, which is unique for the current session.
-  //
   // |save_page_downloads_| (if defined) is a collection of all the
   // downloads the "save page as" system has given to us to hold onto
   // until we are destroyed. They key is DownloadFileManager, so it is unique
@@ -207,18 +203,14 @@ class CONTENT_EXPORT DownloadManagerImpl
   //
   // When a download is created through a user action, the corresponding
   // DownloadItem* is placed in |active_downloads_| and remains there until the
-  // download is in a terminal state (COMPLETE or CANCELLED).  It is also
-  // placed in |in_progress_| and remains there until it has received a
-  // valid handle from the history system. Once it has a valid handle, the
-  // DownloadItem* is placed in the |history_downloads_| map.  When the
-  // download reaches a terminal state, it is removed from |in_progress_|.
-  // Downloads from past sessions read from a persisted state from the
-  // history system are placed directly into |history_downloads_| since
-  // they have valid handles in the history system.
+  // download is in a terminal state (COMPLETE or CANCELLED).  Once it has a
+  // valid handle, the DownloadItem* is placed in the |history_downloads_| map.
+  // Downloads from past sessions read from a persisted state from the history
+  // system are placed directly into |history_downloads_| since they have valid
+  // handles in the history system.
 
   DownloadSet downloads_;
   DownloadMap history_downloads_;
-  DownloadMap in_progress_;
   DownloadMap active_downloads_;
   DownloadMap save_page_downloads_;
 

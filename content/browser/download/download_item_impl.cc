@@ -722,6 +722,7 @@ void DownloadItemImpl::OnDownloadCompleting(DownloadFileManager* file_manager) {
   VLOG(20) << __FUNCTION__ << "()"
            << " needs rename = " << NeedsRename()
            << " " << DebugString(true);
+  DCHECK(!GetTargetName().empty());
   DCHECK_NE(DANGEROUS, GetSafetyState());
   DCHECK(file_manager);
 

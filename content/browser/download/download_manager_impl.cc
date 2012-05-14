@@ -235,7 +235,6 @@ void DownloadManagerImpl::Shutdown() {
   DownloadSet downloads_to_delete;
   downloads_to_delete.swap(downloads_);
 
-  in_progress_.clear();
   active_downloads_.clear();
   history_downloads_.clear();
   STLDeleteElements(&downloads_to_delete);
@@ -418,7 +417,6 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
       this, *info, new DownloadRequestHandle(request_handle),
       browser_context_->IsOffTheRecord(), bound_net_log);
   int32 download_id = info->download_id.local();
-  DCHECK(!ContainsKey(in_progress_, download_id));
 
   DCHECK(!ContainsKey(active_downloads_, download_id));
   downloads_.insert(download);
@@ -468,9 +466,6 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
 
   int32 download_id = download->GetId();
 
-  // NOTE(ahendrickson) Eventually |active_downloads_| will replace
-  // |in_progress_|, but we don't want to change the semantics yet.
-  DCHECK(!ContainsKey(in_progress_, download_id));
   DCHECK(ContainsKey(downloads_, download));
   DCHECK(ContainsKey(active_downloads_, download_id));
 
@@ -480,8 +475,6 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
 
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
-
-  in_progress_[download_id] = download;
 
   // Rename to intermediate name.
   FilePath download_path;
@@ -556,7 +549,6 @@ void DownloadManagerImpl::AssertStateConsistent(DownloadItem* download) const {
   if (download->GetState() == DownloadItem::REMOVING) {
     DCHECK(!ContainsKey(downloads_, download));
     DCHECK(!ContainsKey(active_downloads_, download->GetId()));
-    DCHECK(!ContainsKey(in_progress_, download->GetId()));
     DCHECK(!ContainsKey(history_downloads_, download->GetDbHandle()));
     return;
   }
@@ -634,9 +626,9 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
   // transition on the DownloadItem.
 
   // Confirm we're in the proper set of states to be here;
-  // in in_progress_, have all data, have a history handle, (validated or safe).
+  // have all data, have a history handle, (validated or safe).
+  DCHECK(download->IsInProgress());
   DCHECK_NE(DownloadItem::DANGEROUS, download->GetSafetyState());
-  DCHECK_EQ(1u, in_progress_.count(download->GetId()));
   DCHECK(download->AllDataSaved());
   DCHECK(download->IsPersisted());
   DCHECK_EQ(1u, history_downloads_.count(download->GetDbHandle()));
@@ -647,9 +639,6 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
 
   VLOG(20) << __FUNCTION__ << "()" << " executing: download = "
            << download->DebugString(false);
-
-  // Remove the id from in_progress
-  in_progress_.erase(download->GetId());
 
   delegate_->UpdateItemInPersistentStore(download);
 
@@ -765,7 +754,6 @@ void DownloadManagerImpl::RemoveFromActiveList(DownloadItem* download) {
   // Clean up will happen when the history system create callback runs if we
   // don't have a valid db_handle yet.
   if (download->IsPersisted()) {
-    in_progress_.erase(download->GetId());
     active_downloads_.erase(download->GetId());
     delegate_->UpdateItemInPersistentStore(download);
   }
@@ -1001,7 +989,6 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
     MaybeCompleteDownload(download);
   } else {
     DCHECK(download->IsCancelled());
-    in_progress_.erase(download_id);
     active_downloads_.erase(download_id);
     delegate_->UpdateItemInPersistentStore(download);
     download->UpdateObservers();
@@ -1023,12 +1010,12 @@ void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItem* download) {
 }
 
 int DownloadManagerImpl::InProgressCount() const {
-  // Don't use in_progress_.count() because Cancel() leaves items in
-  // in_progress_ if they haven't made it into the persistent store yet.
+  // Don't use active_downloads_.count() because Cancel() leaves items in
+  // active_downloads_ if they haven't made it into the persistent store yet.
   // Need to actually look at each item's state.
   int count = 0;
-  for (DownloadMap::const_iterator it = in_progress_.begin();
-       it != in_progress_.end(); ++it) {
+  for (DownloadMap::const_iterator it = active_downloads_.begin();
+       it != active_downloads_.end(); ++it) {
     DownloadItem* item = it->second;
     if (item->IsInProgress())
       ++count;
