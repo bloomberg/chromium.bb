@@ -1001,7 +1001,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     # Set version is dependent on setting external to class.  Do not use
     # directly.  Use GetVersion() instead.
     self._set_version = ArchiveStage._VERSION_NOT_SET
-    if self._options.buildbot:
+    if self._options.buildbot and not self._options.debug:
       self._archive_root = BUILDBOT_ARCHIVE_PATH
     else:
       self._archive_root = self.GetTrybotArchiveRoot(self._build_root)
