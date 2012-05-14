@@ -694,25 +694,23 @@ chrome.test.getConfig(function(testConfig) {
           chrome.test.callbackFail(downloads.ERROR_GENERIC));
     },
 
-    // TODO(benjhayden): Find why these aren't caught by
-    // net::HttpUtil::IsSafeHeader().
-    // function downloadHeadersInvalid23() {
-    //   // Test that we disallow certain headers.
-    //   downloads.download(
-    //       {'url': SAFE_FAST_URL,
-    //        'headers': [{'name': 'Access-Control-Request-Headers',
-    //                     'value': 'evil'}]},
-    //       chrome.test.callbackFail(downloads.ERROR_GENERIC));
-    // },
+    function downloadHeadersInvalid23() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'Access-Control-Request-Headers',
+                        'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
 
-    // function downloadHeadersInvalid24() {
-    //   // Test that we disallow certain headers.
-    //   downloads.download(
-    //       {'url': SAFE_FAST_URL,
-    //        'headers': [{'name': 'Access-Control-Request-Method',
-    //                     'value': 'evil'}]},
-    //       chrome.test.callbackFail(downloads.ERROR_GENERIC));
-    // },
+    function downloadHeadersInvalid24() {
+      // Test that we disallow certain headers.
+      downloads.download(
+          {'url': SAFE_FAST_URL,
+           'headers': [{'name': 'Access-Control-Request-Method',
+                        'value': 'evil'}]},
+          chrome.test.callbackFail(downloads.ERROR_GENERIC));
+    },
 
     function downloadInterrupted() {
       // Test that cancel()ing an in-progress download causes its state to
