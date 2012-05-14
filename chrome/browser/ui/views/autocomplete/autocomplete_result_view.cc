@@ -20,11 +20,11 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/native_theme.h"
 
 namespace {
 
@@ -139,11 +139,11 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
     colors[NORMAL][TEXT] = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
     colors[SELECTED][TEXT] = color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
 #elif defined(USE_AURA)
-    const ui::NativeTheme* theme = ui::NativeTheme::instance();
+    const gfx::NativeTheme* theme = gfx::NativeTheme::instance();
     colors[SELECTED][BACKGROUND] = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
+        gfx::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
     colors[NORMAL][BACKGROUND] = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_TextfieldDefaultBackground);
+        gfx::NativeTheme::kColorId_TextfieldDefaultBackground);
     colors[NORMAL][URL] = SkColorSetARGB(0xff, 0x00, 0x99, 0x33);
     colors[SELECTED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
     colors[HOVERED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);

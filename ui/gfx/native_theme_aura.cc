@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/native_theme/native_theme_aura.h"
+#include "ui/gfx/native_theme_aura.h"
 
 #include "base/logging.h"
 #include "grit/gfx_resources.h"
@@ -49,7 +49,7 @@ const SkColor kTextfieldSelectionColor =
 
 }  // namespace
 
-namespace ui {
+namespace gfx {
 
 // static
 const NativeTheme* NativeTheme::instance() {
@@ -292,4 +292,4 @@ void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
   }
 }
 
-}  // namespace ui
+}  // namespace gfx

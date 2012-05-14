@@ -686,8 +686,8 @@ void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
   else
     flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
   canvas->DrawStringInt(
-      accel_text, font, ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_TextButtonDisabledColor),
+      accel_text, font, gfx::NativeTheme::instance()->GetSystemColor(
+          gfx::NativeTheme::kColorId_TextButtonDisabledColor),
       accel_bounds.x(), accel_bounds.y(), accel_bounds.width(),
       accel_bounds.height(), flags);
 }

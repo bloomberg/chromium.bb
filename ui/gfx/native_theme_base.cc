@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/native_theme/native_theme_android.h"
+#include "ui/gfx/native_theme_base.h"
 
 #include <limits>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "grit/gfx_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -17,11 +16,6 @@
 
 namespace {
 
-const unsigned int kButtonLength = 14;
-const unsigned int kScrollbarWidth = 15;
-const unsigned int kThumbInactiveColor = 0xeaeaea;
-const unsigned int kTrackColor= 0xd3d3d3;
-
 // These are the default dimensions of radio buttons and checkboxes.
 const int kCheckboxAndRadioWidth = 13;
 const int kCheckboxAndRadioHeight = 13;
@@ -30,15 +24,21 @@ const int kCheckboxAndRadioHeight = 13;
 const int kSliderThumbWidth = 11;
 const int kSliderThumbHeight = 21;
 
-const SkColor kSliderTrackBackgroundColor = SkColorSetRGB(0xe3, 0xdd, 0xd8);
+const SkColor kSliderTrackBackgroundColor =
+    SkColorSetRGB(0xe3, 0xdd, 0xd8);
 const SkColor kSliderThumbLightGrey = SkColorSetRGB(0xf4, 0xf2, 0xef);
 const SkColor kSliderThumbDarkGrey = SkColorSetRGB(0xea, 0xe5, 0xe0);
-const SkColor kSliderThumbBorderDarkGrey = SkColorSetRGB(0x9d, 0x96, 0x8e);
+const SkColor kSliderThumbBorderDarkGrey =
+    SkColorSetRGB(0x9d, 0x96, 0x8e);
+
+const SkColor kMenuPopupBackgroundColor = SkColorSetRGB(210, 225, 246);
+
+const unsigned int kDefaultScrollbarWidth = 15;
+const unsigned int kDefaultScrollbarButtonLength = 14;
 
 // Get lightness adjusted color.
-SkColor BrightenColor(const color_utils::HSL& hsl,
-                      SkAlpha alpha,
-                      double lightness_amount) {
+SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
+    double lightness_amount) {
   color_utils::HSL adjusted = hsl;
   adjusted.l += lightness_amount;
   if (adjusted.l > 1.0)
@@ -51,75 +51,135 @@ SkColor BrightenColor(const color_utils::HSL& hsl,
 
 }  // namespace
 
-namespace ui {
+namespace gfx {
 
-// static
-const NativeTheme* NativeTheme::instance() {
-  return NativeThemeAndroid::instance();
-}
-
-// static
-const NativeThemeAndroid* NativeThemeAndroid::instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeAndroid, s_native_theme, ());
-  return &s_native_theme;
-}
-
-gfx::Size NativeThemeAndroid::GetPartSize(Part part,
-                                          State state,
-                                          const ExtraParams& extra) const {
+gfx::Size NativeThemeBase::GetPartSize(Part part,
+                                       State state,
+                                       const ExtraParams& extra) const {
   switch (part) {
-    case kScrollbarDownArrow:
-    case kScrollbarUpArrow:
-      return gfx::Size(kScrollbarWidth, kButtonLength);
-    case kScrollbarLeftArrow:
-    case kScrollbarRightArrow:
-      return gfx::Size(kButtonLength, kScrollbarWidth);
+    // Please keep these in the order of NativeTheme::Part.
     case kCheckbox:
+      return gfx::Size(kCheckboxAndRadioWidth, kCheckboxAndRadioHeight);
+    case kInnerSpinButton:
+      return gfx::Size(scrollbar_width_, 0);
+    case kMenuList:
+      return gfx::Size();  // No default size.
+    case kMenuCheck:
+    case kMenuCheckBackground:
+    case kMenuPopupArrow:
+      NOTIMPLEMENTED();
+      break;
+    case kMenuPopupBackground:
+      return gfx::Size();  // No default size.
+    case kMenuPopupGutter:
+    case kMenuPopupSeparator:
+      NOTIMPLEMENTED();
+      break;
+    case kMenuItemBackground:
+    case kProgressBar:
+    case kPushButton:
+      return gfx::Size();  // No default size.
     case kRadio:
       return gfx::Size(kCheckboxAndRadioWidth, kCheckboxAndRadioHeight);
+    case kScrollbarDownArrow:
+    case kScrollbarUpArrow:
+      return gfx::Size(scrollbar_width_, scrollbar_button_length_);
+    case kScrollbarLeftArrow:
+    case kScrollbarRightArrow:
+      return gfx::Size(scrollbar_button_length_, scrollbar_width_);
+    case kScrollbarHorizontalThumb:
+      // This matches Firefox on Linux.
+      return gfx::Size(2 * scrollbar_width_, scrollbar_width_);
+    case kScrollbarVerticalThumb:
+      // This matches Firefox on Linux.
+      return gfx::Size(scrollbar_width_, 2 * scrollbar_width_);
+    case kScrollbarHorizontalTrack:
+      return gfx::Size(0, scrollbar_width_);
+    case kScrollbarVerticalTrack:
+      return gfx::Size(scrollbar_width_, 0);
+    case kScrollbarHorizontalGripper:
+    case kScrollbarVerticalGripper:
+      NOTIMPLEMENTED();
+      break;
+    case kSliderTrack:
+      return gfx::Size();  // No default size.
     case kSliderThumb:
       // These sizes match the sizes in Chromium Win.
       return gfx::Size(kSliderThumbWidth, kSliderThumbHeight);
-    case kInnerSpinButton:
-      return gfx::Size(kScrollbarWidth, 0);
-    case kPushButton:
+    case kTabPanelBackground:
+      NOTIMPLEMENTED();
+      break;
     case kTextField:
-    case kMenuList:
-    case kSliderTrack:
-    case kProgressBar:
       return gfx::Size();  // No default size.
+    case kTrackbarThumb:
+    case kTrackbarTrack:
+    case kWindowResizeGripper:
+      NOTIMPLEMENTED();
+      break;
     default:
-      NOTREACHED();
+      NOTREACHED() << "Unknown theme part: " << part;
+      break;
   }
   return gfx::Size();
 }
 
-void NativeThemeAndroid::Paint(SkCanvas* canvas,
-                               Part part,
-                               State state,
-                               const gfx::Rect& rect,
-                               const ExtraParams& extra) const {
+void NativeThemeBase::Paint(SkCanvas* canvas,
+                            Part part,
+                            State state,
+                            const gfx::Rect& rect,
+                            const ExtraParams& extra) const {
   switch (part) {
+    // Please keep these in the order of NativeTheme::Part.
+    case kCheckbox:
+      PaintCheckbox(canvas, state, rect, extra.button);
+      break;
+    case kInnerSpinButton:
+      PaintInnerSpinButton(canvas, state, rect, extra.inner_spin);
+      break;
+    case kMenuList:
+      PaintMenuList(canvas, state, rect, extra.menu_list);
+      break;
+    case kMenuCheck:
+    case kMenuCheckBackground:
+    case kMenuPopupArrow:
+      NOTIMPLEMENTED();
+      break;
+    case kMenuPopupBackground:
+      PaintMenuPopupBackground(canvas, rect.size());
+      break;
+    case kMenuPopupGutter:
+    case kMenuPopupSeparator:
+      NOTIMPLEMENTED();
+      break;
+    case kMenuItemBackground:
+      PaintMenuItemBackground(canvas, state, rect, extra.menu_list);
+      break;
+    case kProgressBar:
+      PaintProgressBar(canvas, state, rect, extra.progress_bar);
+      break;
+    case kPushButton:
+      PaintButton(canvas, state, rect, extra.button);
+      break;
+    case kRadio:
+      PaintRadio(canvas, state, rect, extra.button);
+      break;
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
     case kScrollbarLeftArrow:
     case kScrollbarRightArrow:
       PaintArrowButton(canvas, rect, part, state);
       break;
-    case kCheckbox:
-      PaintCheckbox(canvas, state, rect, extra.button);
+    case kScrollbarHorizontalThumb:
+    case kScrollbarVerticalThumb:
+      PaintScrollbarThumb(canvas, part, state, rect);
       break;
-    case kRadio:
-      PaintRadio(canvas, state, rect, extra.button);
+    case kScrollbarHorizontalTrack:
+    case kScrollbarVerticalTrack:
+      PaintScrollbarTrack(canvas, part, state, extra.scrollbar_track, rect);
       break;
-    case kPushButton:
-      PaintButton(canvas, state, rect, extra.button);
-      break;
-    case kTextField:
-      PaintTextField(canvas, state, rect, extra.text_field);
-      break;
-    case kMenuList:
-      PaintMenuList(canvas, state, rect, extra.menu_list);
+    case kScrollbarHorizontalGripper:
+    case kScrollbarVerticalGripper:
+      NOTIMPLEMENTED();
       break;
     case kSliderTrack:
       PaintSliderTrack(canvas, state, rect, extra.slider);
@@ -127,34 +187,35 @@ void NativeThemeAndroid::Paint(SkCanvas* canvas,
     case kSliderThumb:
       PaintSliderThumb(canvas, state, rect, extra.slider);
       break;
-    case kInnerSpinButton:
-      PaintInnerSpinButton(canvas, state, rect, extra.inner_spin);
+    case kTabPanelBackground:
+      NOTIMPLEMENTED();
       break;
-    case kProgressBar:
-      PaintProgressBar(canvas, state, rect, extra.progress_bar);
+    case kTextField:
+      PaintTextField(canvas, state, rect, extra.text_field);
+      break;
+    case kTrackbarThumb:
+    case kTrackbarTrack:
+    case kWindowResizeGripper:
+      NOTIMPLEMENTED();
       break;
     default:
-      NOTREACHED();
+      NOTREACHED() << "Unknown theme part: " << part;
+      break;
   }
 }
 
-SkColor NativeThemeAndroid::GetSystemColor(ColorId color_id) const {
-  NOTIMPLEMENTED();
-  return SK_ColorBLACK;
+NativeThemeBase::NativeThemeBase()
+    : scrollbar_width_(kDefaultScrollbarWidth),
+      scrollbar_button_length_(kDefaultScrollbarButtonLength) {
 }
 
-NativeThemeAndroid::NativeThemeAndroid() {
+NativeThemeBase::~NativeThemeBase() {
 }
 
-NativeThemeAndroid::~NativeThemeAndroid() {
-}
-
-void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
-                                          const gfx::Rect& rect,
-                                          Part direction,
-                                          State state) const {
-  int widthMiddle;
-  int lengthMiddle;
+void NativeThemeBase::PaintArrowButton(
+    SkCanvas* canvas,
+    const gfx::Rect& rect, Part direction, State state) const {
+  int widthMiddle, lengthMiddle;
   SkPaint paint;
   if (direction == kScrollbarUpArrow || direction == kScrollbarDownArrow) {
     widthMiddle = rect.width() / 2 + 1;
@@ -166,17 +227,17 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
 
   // Calculate button color.
   SkScalar trackHSV[3];
-  SkColorToHSV(kTrackColor, trackHSV);
-  SkColor buttonColor = SaturateAndBrighten(trackHSV, 0, 0.2);
+  SkColorToHSV(track_color_, trackHSV);
+  SkColor buttonColor = SaturateAndBrighten(trackHSV, 0, 0.2f);
   SkColor backgroundColor = buttonColor;
   if (state == kPressed) {
     SkScalar buttonHSV[3];
     SkColorToHSV(buttonColor, buttonHSV);
-    buttonColor = SaturateAndBrighten(buttonHSV, 0, -0.1);
+    buttonColor = SaturateAndBrighten(buttonHSV, 0, -0.1f);
   } else if (state == kHovered) {
     SkScalar buttonHSV[3];
     SkColorToHSV(buttonColor, buttonHSV);
-    buttonColor = SaturateAndBrighten(buttonHSV, 0, 0.05);
+    buttonColor = SaturateAndBrighten(buttonHSV, 0, 0.05f);
   }
 
   SkIRect skrect;
@@ -233,7 +294,7 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kStroke_Style);
   SkScalar thumbHSV[3];
-  SkColorToHSV(kThumbInactiveColor, thumbHSV);
+  SkColorToHSV(thumb_inactive_color_, thumbHSV);
   paint.setColor(OutlineColor(trackHSV, thumbHSV));
   canvas->drawPath(outline, paint);
 
@@ -277,10 +338,110 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
   canvas->drawPath(path, paint);
 }
 
-void NativeThemeAndroid::PaintCheckbox(SkCanvas* canvas,
-                                       State state,
-                                       const gfx::Rect& rect,
-                                       const ButtonExtraParams& button) const {
+void NativeThemeBase::PaintScrollbarTrack(SkCanvas* canvas,
+    Part part,
+    State state,
+    const ScrollbarTrackExtraParams& extra_params,
+    const gfx::Rect& rect) const {
+  SkPaint paint;
+  SkIRect skrect;
+
+  skrect.set(rect.x(), rect.y(), rect.right(), rect.bottom());
+  SkScalar track_hsv[3];
+  SkColorToHSV(track_color_, track_hsv);
+  paint.setColor(SaturateAndBrighten(track_hsv, 0, 0));
+  canvas->drawIRect(skrect, paint);
+
+  SkScalar thumb_hsv[3];
+  SkColorToHSV(thumb_inactive_color_, thumb_hsv);
+
+  paint.setColor(OutlineColor(track_hsv, thumb_hsv));
+  DrawBox(canvas, rect, paint);
+}
+
+void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
+                                           Part part,
+                                           State state,
+                                           const gfx::Rect& rect) const {
+  const bool hovered = state == kHovered;
+  const int midx = rect.x() + rect.width() / 2;
+  const int midy = rect.y() + rect.height() / 2;
+  const bool vertical = part == kScrollbarVerticalThumb;
+
+  SkScalar thumb[3];
+  SkColorToHSV(hovered ? thumb_active_color_ : thumb_inactive_color_, thumb);
+
+  SkPaint paint;
+  paint.setColor(SaturateAndBrighten(thumb, 0, 0.02f));
+
+  SkIRect skrect;
+  if (vertical)
+    skrect.set(rect.x(), rect.y(), midx + 1, rect.y() + rect.height());
+  else
+    skrect.set(rect.x(), rect.y(), rect.x() + rect.width(), midy + 1);
+
+  canvas->drawIRect(skrect, paint);
+
+  paint.setColor(SaturateAndBrighten(thumb, 0, -0.02f));
+
+  if (vertical) {
+    skrect.set(
+        midx + 1, rect.y(), rect.x() + rect.width(), rect.y() + rect.height());
+  } else {
+    skrect.set(
+        rect.x(), midy + 1, rect.x() + rect.width(), rect.y() + rect.height());
+  }
+
+  canvas->drawIRect(skrect, paint);
+
+  SkScalar track[3];
+  SkColorToHSV(track_color_, track);
+  paint.setColor(OutlineColor(track, thumb));
+  DrawBox(canvas, rect, paint);
+
+  if (rect.height() > 10 && rect.width() > 10) {
+    const int grippy_half_width = 2;
+    const int inter_grippy_offset = 3;
+    if (vertical) {
+      DrawHorizLine(canvas,
+                    midx - grippy_half_width,
+                    midx + grippy_half_width,
+                    midy - inter_grippy_offset,
+                    paint);
+      DrawHorizLine(canvas,
+                    midx - grippy_half_width,
+                    midx + grippy_half_width,
+                    midy,
+                    paint);
+      DrawHorizLine(canvas,
+                    midx - grippy_half_width,
+                    midx + grippy_half_width,
+                    midy + inter_grippy_offset,
+                    paint);
+    } else {
+      DrawVertLine(canvas,
+                   midx - inter_grippy_offset,
+                   midy - grippy_half_width,
+                   midy + grippy_half_width,
+                   paint);
+      DrawVertLine(canvas,
+                   midx,
+                   midy - grippy_half_width,
+                   midy + grippy_half_width,
+                   paint);
+      DrawVertLine(canvas,
+                   midx + inter_grippy_offset,
+                   midy - grippy_half_width,
+                   midy + grippy_half_width,
+                   paint);
+    }
+  }
+}
+
+void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
+                                    State state,
+                                    const gfx::Rect& rect,
+                                    const ButtonExtraParams& button) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap* image = NULL;
   if (button.indeterminate) {
@@ -302,10 +463,10 @@ void NativeThemeAndroid::PaintCheckbox(SkCanvas* canvas,
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
-void NativeThemeAndroid::PaintRadio(SkCanvas* canvas,
-                                    State state,
-                                    const gfx::Rect& rect,
-                                    const ButtonExtraParams& button) const {
+void NativeThemeBase::PaintRadio(SkCanvas* canvas,
+                                  State state,
+                                  const gfx::Rect& rect,
+                                  const ButtonExtraParams& button) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap* image = NULL;
   if (state == kDisabled) {
@@ -323,14 +484,14 @@ void NativeThemeAndroid::PaintRadio(SkCanvas* canvas,
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
-void NativeThemeAndroid::PaintButton(SkCanvas* canvas,
-                                     State state,
-                                     const gfx::Rect& rect,
-                                     const ButtonExtraParams& button) const {
+void NativeThemeBase::PaintButton(SkCanvas* canvas,
+                                   State state,
+                                   const gfx::Rect& rect,
+                                   const ButtonExtraParams& button) const {
   SkPaint paint;
-  SkRect skrect;
-  int kRight = rect.right();
-  int kBottom = rect.bottom();
+  const int kRight = rect.right();
+  const int kBottom = rect.bottom();
+  SkRect skrect = SkRect::MakeLTRB(rect.x(), rect.y(), kRight, kBottom);
   SkColor base_color = button.background_color;
 
   color_utils::HSL base_hsl;
@@ -343,23 +504,13 @@ void NativeThemeAndroid::PaintButton(SkCanvas* canvas,
   // If the button is too small, fallback to drawing a single, solid color
   if (rect.width() < 5 || rect.height() < 5) {
     paint.setColor(base_color);
-    skrect.set(rect.x(), rect.y(), kRight, kBottom);
     canvas->drawRect(skrect, paint);
     return;
   }
 
-  if (button.has_border) {
-    int kBorderAlpha = state == kHovered ? 0x80 : 0x55;
-    paint.setARGB(kBorderAlpha, 0, 0, 0);
-    canvas->drawLine(rect.x() + 1, rect.y(), kRight - 1, rect.y(), paint);
-    canvas->drawLine(kRight - 1, rect.y() + 1, kRight - 1, kBottom - 1, paint);
-    canvas->drawLine(rect.x() + 1, kBottom - 1, kRight - 1, kBottom - 1, paint);
-    canvas->drawLine(rect.x(), rect.y() + 1, rect.x(), kBottom - 1, paint);
-  }
-
   paint.setColor(SK_ColorBLACK);
-  int kLightEnd = state == kPressed ? 1 : 0;
-  int kDarkEnd = !kLightEnd;
+  const int kLightEnd = state == kPressed ? 1 : 0;
+  const int kDarkEnd = !kLightEnd;
   SkPoint gradient_bounds[2];
   gradient_bounds[kLightEnd].iset(rect.x(), rect.y());
   gradient_bounds[kDarkEnd].iset(rect.x(), kBottom - 1);
@@ -370,31 +521,27 @@ void NativeThemeAndroid::PaintButton(SkCanvas* canvas,
   SkShader* shader = SkGradientShader::CreateLinear(
       gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode, NULL);
   paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
   paint.setShader(shader);
   shader->unref();
 
-  if (button.has_border) {
-    skrect.set(rect.x() + 1, rect.y() + 1, kRight - 1, kBottom - 1);
-  } else {
-    skrect.set(rect.x(), rect.y(), kRight, kBottom);
-  }
-  canvas->drawRect(skrect, paint);
+  canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), paint);
   paint.setShader(NULL);
 
   if (button.has_border) {
-    paint.setColor(BrightenColor(base_hsl, SkColorGetA(base_color), -0.0588));
-    canvas->drawPoint(rect.x() + 1, rect.y() + 1, paint);
-    canvas->drawPoint(kRight - 2, rect.y() + 1, paint);
-    canvas->drawPoint(rect.x() + 1, kBottom - 2, paint);
-    canvas->drawPoint(kRight - 2, kBottom - 2, paint);
+    const int kBorderAlpha = state == kHovered ? 0x80 : 0x55;
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(SkIntToScalar(1));
+    paint.setARGB(kBorderAlpha, 0, 0, 0);
+    skrect.inset(SkFloatToScalar(.5f), SkFloatToScalar(.5f));
+    canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), paint);
   }
 }
 
-void NativeThemeAndroid::PaintTextField(
-    SkCanvas* canvas,
-    State state,
-    const gfx::Rect& rect,
-    const TextFieldExtraParams& text) const {
+void NativeThemeBase::PaintTextField(SkCanvas* canvas,
+                                     State state,
+                                     const gfx::Rect& rect,
+                                     const TextFieldExtraParams& text) const {
   // The following drawing code simulates the user-agent css border for
   // text area and text input so that we do not break layout tests. Once we
   // have decided the desired looks, we should update the code here and
@@ -417,11 +564,11 @@ void NativeThemeAndroid::PaintTextField(
     // Draw text input and listbox inset border
     //   Text Input: 2px inset #eee
     //   Listbox: 1px inset #808080
-    SkColor kLightColor = text.is_listbox ?
+    const SkColor kLightColor = text.is_listbox ?
         SkColorSetRGB(0x80, 0x80, 0x80) : SkColorSetRGB(0xee, 0xee, 0xee);
-    SkColor kDarkColor = text.is_listbox ?
+    const SkColor kDarkColor = text.is_listbox ?
         SkColorSetRGB(0x2c, 0x2c, 0x2c) : SkColorSetRGB(0x9a, 0x9a, 0x9a);
-    int kBorderWidth = text.is_listbox ? 1 : 2;
+    const int kBorderWidth = text.is_listbox ? 1 : 2;
 
     SkPaint dark_paint;
     dark_paint.setAntiAlias(true);
@@ -481,7 +628,7 @@ void NativeThemeAndroid::PaintTextField(
   }
 }
 
-void NativeThemeAndroid::PaintMenuList(
+void NativeThemeBase::PaintMenuList(
     SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
@@ -508,13 +655,25 @@ void NativeThemeAndroid::PaintMenuList(
   canvas->drawPath(path, paint);
 }
 
-void NativeThemeAndroid::PaintSliderTrack(
+void NativeThemeBase::PaintMenuPopupBackground(SkCanvas* canvas,
+                                               const gfx::Size& size) const {
+  canvas->drawColor(kMenuPopupBackgroundColor, SkXfermode::kSrc_Mode);
+}
+
+void NativeThemeBase::PaintMenuItemBackground(
     SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const SliderExtraParams& slider) const {
-  int kMidX = rect.x() + rect.width() / 2;
-  int kMidY = rect.y() + rect.height() / 2;
+    const MenuListExtraParams& menu_list) const {
+  // By default don't draw anything over the normal background.
+}
+
+void NativeThemeBase::PaintSliderTrack(SkCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const SliderExtraParams& slider) const {
+  const int kMidX = rect.x() + rect.width() / 2;
+  const int kMidY = rect.y() + rect.height() / 2;
 
   SkPaint paint;
   paint.setColor(kSliderTrackBackgroundColor);
@@ -534,14 +693,13 @@ void NativeThemeAndroid::PaintSliderTrack(
   canvas->drawRect(skrect, paint);
 }
 
-void NativeThemeAndroid::PaintSliderThumb(
-    SkCanvas* canvas,
-    State state,
-    const gfx::Rect& rect,
-    const SliderExtraParams& slider) const {
-  bool hovered = (state == kHovered) || slider.in_drag;
-  int kMidX = rect.x() + rect.width() / 2;
-  int kMidY = rect.y() + rect.height() / 2;
+void NativeThemeBase::PaintSliderThumb(SkCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const SliderExtraParams& slider) const {
+  const bool hovered = (state == kHovered) || slider.in_drag;
+  const int kMidX = rect.x() + rect.width() / 2;
+  const int kMidY = rect.y() + rect.height() / 2;
 
   SkPaint paint;
   paint.setColor(hovered ? SK_ColorWHITE : kSliderThumbLightGrey);
@@ -573,8 +731,7 @@ void NativeThemeAndroid::PaintSliderThumb(
   }
 }
 
-void NativeThemeAndroid::PaintInnerSpinButton(
-    SkCanvas* canvas,
+void NativeThemeBase::PaintInnerSpinButton(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const InnerSpinButtonExtraParams& spin_button) const {
@@ -596,8 +753,7 @@ void NativeThemeAndroid::PaintInnerSpinButton(
   PaintArrowButton(canvas, half, kScrollbarDownArrow, south_state);
 }
 
-void NativeThemeAndroid::PaintProgressBar(
-    SkCanvas* canvas,
+void NativeThemeBase::PaintProgressBar(SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
     const ProgressBarExtraParams& progress_bar) const {
@@ -640,31 +796,22 @@ void NativeThemeAndroid::PaintProgressBar(
   int dest_right_border_width = static_cast<int>(right_border_image->width() *
       tile_scale);
   dest_rect.iset(rect.right() - dest_right_border_width, rect.y(), rect.right(),
-                rect.bottom());
+                 rect.bottom());
   canvas->drawBitmapRect(*right_border_image, NULL, dest_rect);
 }
 
-bool NativeThemeAndroid::IntersectsClipRectInt(SkCanvas* canvas,
-                                               int x,
-                                               int y,
-                                               int w,
-                                               int h) const {
+bool NativeThemeBase::IntersectsClipRectInt(SkCanvas* canvas,
+                                            int x, int y, int w, int h) const {
   SkRect clip;
   return canvas->getClipBounds(&clip) &&
       clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
                      SkIntToScalar(y + h));
 }
 
-void NativeThemeAndroid::DrawBitmapInt(SkCanvas* canvas,
-                                       const SkBitmap& bitmap,
-                                       int src_x,
-                                       int src_y,
-                                       int src_w,
-                                       int src_h,
-                                       int dest_x,
-                                       int dest_y,
-                                       int dest_w,
-                                       int dest_h) const {
+void NativeThemeBase::DrawBitmapInt(
+    SkCanvas* canvas, const SkBitmap& bitmap,
+    int src_x, int src_y, int src_w, int src_h,
+    int dest_x, int dest_y, int dest_w, int dest_h) const {
   DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
               src_y + src_h < std::numeric_limits<int16_t>::max());
   if (src_w <= 0 || src_h <= 0 || dest_w <= 0 || dest_h <= 0) {
@@ -710,16 +857,10 @@ void NativeThemeAndroid::DrawBitmapInt(SkCanvas* canvas,
   canvas->drawRect(dest_rect, p);
 }
 
-void NativeThemeAndroid::DrawTiledImage(SkCanvas* canvas,
-                                        const SkBitmap& bitmap,
-                                        int src_x,
-                                        int src_y,
-                                        double tile_scale_x,
-                                        double tile_scale_y,
-                                        int dest_x,
-                                        int dest_y,
-                                        int w,
-                                        int h) const {
+void NativeThemeBase::DrawTiledImage(SkCanvas* canvas,
+   const SkBitmap& bitmap,
+   int src_x, int src_y, double tile_scale_x, double tile_scale_y,
+   int dest_x, int dest_y, int w, int h) const {
   SkShader* shader = SkShader::CreateBitmapShader(bitmap,
                                                   SkShader::kRepeat_TileMode,
                                                   SkShader::kRepeat_TileMode);
@@ -745,10 +886,9 @@ void NativeThemeAndroid::DrawTiledImage(SkCanvas* canvas,
   canvas->restore();
 }
 
-SkColor NativeThemeAndroid::SaturateAndBrighten(
-    SkScalar* hsv,
-    SkScalar saturate_amount,
-    SkScalar brighten_amount) const {
+SkColor NativeThemeBase::SaturateAndBrighten(SkScalar* hsv,
+                                             SkScalar saturate_amount,
+                                             SkScalar brighten_amount) const {
   SkScalar color[3];
   color[0] = hsv[0];
   color[1] = Clamp(hsv[1] + saturate_amount, 0.0, 1.0);
@@ -756,51 +896,78 @@ SkColor NativeThemeAndroid::SaturateAndBrighten(
   return SkHSVToColor(color);
 }
 
-SkScalar NativeThemeAndroid::Clamp(SkScalar value,
-                                   SkScalar min,
-                                   SkScalar max) const {
-  return std::min(std::max(value, min), max);
-}
-
-void NativeThemeAndroid::DrawVertLine(SkCanvas* canvas,
-                                      int x,
-                                      int y1,
-                                      int y2,
-                                      const SkPaint& paint) const {
+void NativeThemeBase::DrawVertLine(SkCanvas* canvas,
+                                   int x,
+                                   int y1,
+                                   int y2,
+                                   const SkPaint& paint) const {
   SkIRect skrect;
   skrect.set(x, y1, x + 1, y2 + 1);
   canvas->drawIRect(skrect, paint);
 }
 
-void NativeThemeAndroid::DrawHorizLine(SkCanvas* canvas,
-                                       int x1,
-                                       int x2,
-                                       int y,
-                                       const SkPaint& paint) const {
+void NativeThemeBase::DrawHorizLine(SkCanvas* canvas,
+                                    int x1,
+                                    int x2,
+                                    int y,
+                                    const SkPaint& paint) const {
   SkIRect skrect;
   skrect.set(x1, y, x2 + 1, y + 1);
   canvas->drawIRect(skrect, paint);
 }
 
-void NativeThemeAndroid::DrawBox(SkCanvas* canvas,
-                                 const gfx::Rect& rect,
-                                 const SkPaint& paint) const {
-  int right = rect.x() + rect.width() - 1;
-  int bottom = rect.y() + rect.height() - 1;
+void NativeThemeBase::DrawBox(SkCanvas* canvas,
+                              const gfx::Rect& rect,
+                              const SkPaint& paint) const {
+  const int right = rect.x() + rect.width() - 1;
+  const int bottom = rect.y() + rect.height() - 1;
   DrawHorizLine(canvas, rect.x(), right, rect.y(), paint);
   DrawVertLine(canvas, right, rect.y(), bottom, paint);
   DrawHorizLine(canvas, rect.x(), right, bottom, paint);
   DrawVertLine(canvas, rect.x(), rect.y(), bottom, paint);
 }
 
-SkColor NativeThemeAndroid::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
-  SkScalar min_diff = Clamp((hsv1[1] + hsv2[1]) * 1.2, 0.28, 0.5);
-  SkScalar diff = Clamp(fabs(hsv1[2] - hsv2[2]) / 2, min_diff, 0.5);
+SkScalar NativeThemeBase::Clamp(SkScalar value,
+                                SkScalar min,
+                                SkScalar max) const {
+  return std::min(std::max(value, min), max);
+}
+
+SkColor NativeThemeBase::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
+  // GTK Theme engines have way too much control over the layout of
+  // the scrollbar. We might be able to more closely approximate its
+  // look-and-feel, if we sent whole images instead of just colors
+  // from the browser to the renderer. But even then, some themes
+  // would just break.
+  //
+  // So, instead, we don't even try to 100% replicate the look of
+  // the native scrollbar. We render our own version, but we make
+  // sure to pick colors that blend in nicely with the system GTK
+  // theme. In most cases, we can just sample a couple of pixels
+  // from the system scrollbar and use those colors to draw our
+  // scrollbar.
+  //
+  // This works fine for the track color and the overall thumb
+  // color. But it fails spectacularly for the outline color used
+  // around the thumb piece.  Not all themes have a clearly defined
+  // outline. For some of them it is partially transparent, and for
+  // others the thickness is very unpredictable.
+  //
+  // So, instead of trying to approximate the system theme, we
+  // instead try to compute a reasonable looking choice based on the
+  // known color of the track and the thumb piece. This is difficult
+  // when trying to deal both with high- and low-contrast themes,
+  // and both with positive and inverted themes.
+  //
+  // The following code has been tested to look OK with all of the
+  // default GTK themes.
+  SkScalar min_diff = Clamp((hsv1[1] + hsv2[1]) * 1.2f, 0.28f, 0.5f);
+  SkScalar diff = Clamp(fabs(hsv1[2] - hsv2[2]) / 2, min_diff, 0.5f);
 
   if (hsv1[2] + hsv2[2] > 1.0)
     diff = -diff;
 
-  return SaturateAndBrighten(hsv2, -0.2, diff);
+  return SaturateAndBrighten(hsv2, -0.2f, diff);
 }
 
-}  // namespace ui
+}  // namespace gfx

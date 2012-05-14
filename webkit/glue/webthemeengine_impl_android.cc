@@ -8,7 +8,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/gfx/native_theme.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebColor;
@@ -17,69 +17,69 @@ using WebKit::WebThemeEngine;
 
 namespace webkit_glue {
 
-static ui::NativeTheme::Part NativeThemePart(
+static gfx::NativeTheme::Part NativeThemePart(
     WebThemeEngine::Part part) {
   switch (part) {
     case WebThemeEngine::PartScrollbarDownArrow:
-      return ui::NativeTheme::kScrollbarDownArrow;
+      return gfx::NativeTheme::kScrollbarDownArrow;
     case WebThemeEngine::PartScrollbarLeftArrow:
-      return ui::NativeTheme::kScrollbarLeftArrow;
+      return gfx::NativeTheme::kScrollbarLeftArrow;
     case WebThemeEngine::PartScrollbarRightArrow:
-      return ui::NativeTheme::kScrollbarRightArrow;
+      return gfx::NativeTheme::kScrollbarRightArrow;
     case WebThemeEngine::PartScrollbarUpArrow:
-      return ui::NativeTheme::kScrollbarUpArrow;
+      return gfx::NativeTheme::kScrollbarUpArrow;
     case WebThemeEngine::PartScrollbarHorizontalThumb:
       // Android doesn't draw scrollbars.
       NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
+      return static_cast<gfx::NativeTheme::Part>(0);
     case WebThemeEngine::PartScrollbarVerticalThumb:
       // Android doesn't draw scrollbars.
       NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
+      return static_cast<gfx::NativeTheme::Part>(0);
     case WebThemeEngine::PartScrollbarHorizontalTrack:
       // Android doesn't draw scrollbars.
       NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
+      return static_cast<gfx::NativeTheme::Part>(0);
     case WebThemeEngine::PartScrollbarVerticalTrack:
       // Android doesn't draw scrollbars.
       NOTREACHED();
-      return static_cast<ui::NativeTheme::Part>(0);
+      return static_cast<gfx::NativeTheme::Part>(0);
     case WebThemeEngine::PartCheckbox:
-      return ui::NativeTheme::kCheckbox;
+      return gfx::NativeTheme::kCheckbox;
     case WebThemeEngine::PartRadio:
-      return ui::NativeTheme::kRadio;
+      return gfx::NativeTheme::kRadio;
     case WebThemeEngine::PartButton:
-      return ui::NativeTheme::kPushButton;
+      return gfx::NativeTheme::kPushButton;
     case WebThemeEngine::PartTextField:
-      return ui::NativeTheme::kTextField;
+      return gfx::NativeTheme::kTextField;
     case WebThemeEngine::PartMenuList:
-      return ui::NativeTheme::kMenuList;
+      return gfx::NativeTheme::kMenuList;
     case WebThemeEngine::PartSliderTrack:
-      return ui::NativeTheme::kSliderTrack;
+      return gfx::NativeTheme::kSliderTrack;
     case WebThemeEngine::PartSliderThumb:
-      return ui::NativeTheme::kSliderThumb;
+      return gfx::NativeTheme::kSliderThumb;
     case WebThemeEngine::PartInnerSpinButton:
-      return ui::NativeTheme::kInnerSpinButton;
+      return gfx::NativeTheme::kInnerSpinButton;
     case WebThemeEngine::PartProgressBar:
-      return ui::NativeTheme::kProgressBar;
+      return gfx::NativeTheme::kProgressBar;
     default:
-      return ui::NativeTheme::kScrollbarDownArrow;
+      return gfx::NativeTheme::kScrollbarDownArrow;
   }
 }
 
-static ui::NativeTheme::State NativeThemeState(
+static gfx::NativeTheme::State NativeThemeState(
     WebThemeEngine::State state) {
   switch (state) {
     case WebThemeEngine::StateDisabled:
-      return ui::NativeTheme::kDisabled;
+      return gfx::NativeTheme::kDisabled;
     case WebThemeEngine::StateHover:
-      return ui::NativeTheme::kHovered;
+      return gfx::NativeTheme::kHovered;
     case WebThemeEngine::StateNormal:
-      return ui::NativeTheme::kNormal;
+      return gfx::NativeTheme::kNormal;
     case WebThemeEngine::StatePressed:
-      return ui::NativeTheme::kPressed;
+      return gfx::NativeTheme::kPressed;
     default:
-      return ui::NativeTheme::kDisabled;
+      return gfx::NativeTheme::kDisabled;
   }
 }
 
@@ -87,7 +87,7 @@ static void GetNativeThemeExtraParams(
     WebThemeEngine::Part part,
     WebThemeEngine::State state,
     const WebThemeEngine::ExtraParams* extra_params,
-    ui::NativeTheme::ExtraParams* native_theme_extra_params) {
+    gfx::NativeTheme::ExtraParams* native_theme_extra_params) {
   switch (part) {
     case WebThemeEngine::PartScrollbarHorizontalTrack:
     case WebThemeEngine::PartScrollbarVerticalTrack:
@@ -160,9 +160,9 @@ static void GetNativeThemeExtraParams(
 }
 
 WebKit::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
-  ui::NativeTheme::ExtraParams extra;
-  return ui::NativeTheme::instance()->GetPartSize(
-      NativeThemePart(part), ui::NativeTheme::kNormal, extra);
+  gfx::NativeTheme::ExtraParams extra;
+  return gfx::NativeTheme::instance()->GetPartSize(
+      NativeThemePart(part), gfx::NativeTheme::kNormal, extra);
 }
 
 void WebThemeEngineImpl::paint(
@@ -171,10 +171,10 @@ void WebThemeEngineImpl::paint(
     WebThemeEngine::State state,
     const WebKit::WebRect& rect,
     const WebThemeEngine::ExtraParams* extra_params) {
-  ui::NativeTheme::ExtraParams native_theme_extra_params;
+  gfx::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(
       part, state, extra_params, &native_theme_extra_params);
-  ui::NativeTheme::instance()->Paint(
+  gfx::NativeTheme::instance()->Paint(
       canvas,
       NativeThemePart(part),
       NativeThemeState(state),

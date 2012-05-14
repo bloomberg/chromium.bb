@@ -9,11 +9,11 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/native_theme_win.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/layout/fill_layout.h"
@@ -30,8 +30,8 @@ class TabBackground : public Background {
     // TMT_FILLCOLORHINT returns a color value that supposedly
     // approximates the texture drawn by PaintTabPanelBackground.
     SkColor tab_page_color =
-        ui::NativeThemeWin::instance()->GetThemeColorWithDefault(
-            ui::NativeThemeWin::TAB, TABP_BODY, 0, TMT_FILLCOLORHINT,
+        gfx::NativeThemeWin::instance()->GetThemeColorWithDefault(
+            gfx::NativeThemeWin::TAB, TABP_BODY, 0, TMT_FILLCOLORHINT,
             COLOR_3DFACE);
     SetNativeControlColor(tab_page_color);
   }
@@ -39,10 +39,10 @@ class TabBackground : public Background {
 
   virtual void Paint(gfx::Canvas* canvas, View* view) const {
     gfx::Rect r(0, 0, view->width(), view->height());
-    ui::NativeTheme::ExtraParams extra;
-    ui::NativeTheme::instance()->Paint(
-        canvas->sk_canvas(), ui::NativeTheme::kTabPanelBackground,
-        ui::NativeTheme::kNormal, r, extra);
+    gfx::NativeTheme::ExtraParams extra;
+    gfx::NativeTheme::instance()->Paint(
+        canvas->sk_canvas(), gfx::NativeTheme::kTabPanelBackground,
+        gfx::NativeTheme::kNormal, r, extra);
   }
 
  private:

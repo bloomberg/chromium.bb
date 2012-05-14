@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_NATIVE_THEME_NATIVE_THEME_BASE_H_
-#define UI_BASE_NATIVE_THEME_NATIVE_THEME_BASE_H_
-#pragma once
+#ifndef UI_GFX_NATIVE_THEME_BASE_H_
+#define UI_GFX_NATIVE_THEME_BASE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "skia/ext/platform_canvas.h"
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/gfx/native_theme.h"
 
 namespace gfx {
 class Rect;
 class Size;
-}
-
-namespace ui {
 
 // Theme support for non-Windows toolkits.
 class NativeThemeBase : public NativeTheme {
@@ -166,6 +162,6 @@ class NativeThemeBase : public NativeTheme {
   DISALLOW_COPY_AND_ASSIGN(NativeThemeBase);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_BASE_NATIVE_THEME_NATIVE_THEME_BASE_H_
+#endif  // UI_GFX_NATIVE_THEME_BASE_H_

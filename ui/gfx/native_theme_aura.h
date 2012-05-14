@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_NATIVE_THEME_NATIVE_THEME_AURA_H_
-#define UI_BASE_NATIVE_THEME_NATIVE_THEME_AURA_H_
+#ifndef UI_GFX_NATIVE_THEME_AURA_H_
+#define UI_GFX_NATIVE_THEME_AURA_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/base/native_theme/native_theme_base.h"
+#include "ui/gfx/native_theme_base.h"
 
-namespace gfx{
-class Rect;
-class Size;
-}
+namespace gfx {
 
-namespace ui {
-
+// Aura implementation of native theme support.
 class NativeThemeAura : public NativeThemeBase {
  public:
   static const NativeThemeAura* instance();
@@ -47,6 +43,6 @@ class NativeThemeAura : public NativeThemeBase {
   DISALLOW_COPY_AND_ASSIGN(NativeThemeAura);
 };
 
-}  // namespace ui
+}  // namespace gfx
 
-#endif  // UI_BASE_NATIVE_THEME_NATIVE_THEME_AURA_H_
+#endif  // UI_GFX_NATIVE_THEME_AURA_H_

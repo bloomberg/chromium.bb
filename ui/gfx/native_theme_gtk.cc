@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/native_theme/native_theme_gtk.h"
+#include "ui/gfx/native_theme_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -29,7 +29,7 @@ const SkColor kTextButtonHoverColor = kTextButtonEnabledColor;
 
 }  // namespace
 
-namespace ui {
+namespace gfx {
 
 // static
 const NativeTheme* NativeTheme::instance() {
@@ -84,4 +84,4 @@ NativeThemeGtk::NativeThemeGtk() {
 NativeThemeGtk::~NativeThemeGtk() {
 }
 
-}  // namespace ui
+}  // namespace gfx

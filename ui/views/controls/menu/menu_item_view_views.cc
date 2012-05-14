@@ -7,11 +7,11 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/native_theme.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_image_util.h"
 #include "ui/views/controls/menu/submenu_view.h"
@@ -37,8 +37,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // only need the background when we want it to look different, as when we're
   // selected.
   if (render_selection) {
-    SkColor bg_color = ui::NativeTheme::instance()->GetSystemColor(
-        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+    SkColor bg_color = gfx::NativeTheme::instance()->GetSystemColor(
+        gfx::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
     canvas->DrawColor(bg_color, SkXfermode::kSrc_Mode);
   }
 
@@ -64,9 +64,9 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 
   // Render the foreground.
-  SkColor fg_color = ui::NativeTheme::instance()->GetSystemColor(
-      enabled() ? ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor
-          : ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
+  SkColor fg_color = gfx::NativeTheme::instance()->GetSystemColor(
+      enabled() ? gfx::NativeTheme::kColorId_EnabledMenuItemForegroundColor
+          : gfx::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
 
   const gfx::Font& font = GetFont();
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();

@@ -6,17 +6,17 @@
 
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/native_theme/native_theme_aura.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/native_theme_aura.h"
 
 namespace views {
 
 // static
 MenuConfig* MenuConfig::Create() {
   MenuConfig* config = new MenuConfig();
-  config->text_color = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
+  config->text_color = gfx::NativeTheme::instance()->GetSystemColor(
+      gfx::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
   config->submenu_horizontal_margin_size = 0;
   config->submenu_vertical_margin_size = 2;
   config->submenu_horizontal_inset = 1;

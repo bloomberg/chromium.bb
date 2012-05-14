@@ -15,13 +15,13 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/native_theme.h"
 #include "ui/views/background.h"
 
 namespace views {
@@ -359,12 +359,12 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   contains_mouse_ = false;
   font_ = font;
   text_size_valid_ = false;
-  requested_enabled_color_ = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor);
-  requested_disabled_color_ = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor);
-  background_color_ = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelBackgroundColor);
+  requested_enabled_color_ = gfx::NativeTheme::instance()->GetSystemColor(
+      gfx::NativeTheme::kColorId_LabelEnabledColor);
+  requested_disabled_color_ = gfx::NativeTheme::instance()->GetSystemColor(
+      gfx::NativeTheme::kColorId_LabelDisabledColor);
+  background_color_ = gfx::NativeTheme::instance()->GetSystemColor(
+      gfx::NativeTheme::kColorId_LabelBackgroundColor);
   auto_color_readability_ = true;
   RecalculateColors();
   horiz_alignment_ = ALIGN_CENTER;

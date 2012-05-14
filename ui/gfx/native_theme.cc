@@ -1,10 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/gfx/native_theme.h"
 
-namespace ui {
+#include "ui/gfx/size.h"
+
+namespace gfx {
 
 unsigned int NativeTheme::thumb_inactive_color_ = 0xeaeaea;
 unsigned int NativeTheme::thumb_active_color_ = 0xf4f4f4;
@@ -21,4 +23,4 @@ void NativeTheme::SetScrollbarColors(unsigned inactive_color,
 // NativeTheme::instance() is implemented in the platform specific source files,
 // such as native_theme_win.cc or native_theme_linux.cc
 
-}  // namespace ui
+}  // namespace gfx

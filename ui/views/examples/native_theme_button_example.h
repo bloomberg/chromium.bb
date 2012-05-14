@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/gfx/native_theme.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/examples/example_base.h"
@@ -45,17 +45,17 @@ class ExampleNativeThemeButton : public CustomButton,
   virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE;
 
   // Overridden from NativeThemeDelegate:
-  virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
+  virtual gfx::NativeTheme::Part GetThemePart() const OVERRIDE;
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
-  virtual ui::NativeTheme::State GetThemeState(
-      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
+  virtual gfx::NativeTheme::State GetThemeState(
+      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
   virtual const ui::Animation* GetThemeAnimation() const OVERRIDE;
-  virtual ui::NativeTheme::State GetBackgroundThemeState(
-      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
-  virtual ui::NativeTheme::State GetForegroundThemeState(
-      ui::NativeTheme::ExtraParams* params) const OVERRIDE;
+  virtual gfx::NativeTheme::State GetBackgroundThemeState(
+      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
+  virtual gfx::NativeTheme::State GetForegroundThemeState(
+      gfx::NativeTheme::ExtraParams* params) const OVERRIDE;
 
-  void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
+  void GetExtraParams(gfx::NativeTheme::ExtraParams* params) const;
 
   scoped_ptr<NativeThemePainter> painter_;
   Combobox* cb_part_;

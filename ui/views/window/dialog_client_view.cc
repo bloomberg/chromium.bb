@@ -19,10 +19,10 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/native_theme.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/root_view.h"
@@ -305,8 +305,8 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 // DialogClientView, View overrides:
 
 void DialogClientView::OnPaint(gfx::Canvas* canvas) {
-  SkColor bg_color = ui::NativeTheme::instance()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground);
+  SkColor bg_color = gfx::NativeTheme::instance()->GetSystemColor(
+      gfx::NativeTheme::kColorId_DialogBackground);
   canvas->FillRect(GetLocalBounds(), bg_color);
 }
 
@@ -420,9 +420,9 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
   if (GetWidget()->widget_delegate()->CanResize() ||
       GetWidget()->widget_delegate()->CanMaximize()) {
 #if defined(OS_WIN)
-    ui::NativeTheme::ExtraParams extra;
-    gfx::Size gripper_size = ui::NativeTheme::instance()->GetPartSize(
-        ui::NativeTheme::kWindowResizeGripper, ui::NativeTheme::kNormal,
+    gfx::NativeTheme::ExtraParams extra;
+    gfx::Size gripper_size = gfx::NativeTheme::instance()->GetPartSize(
+        gfx::NativeTheme::kWindowResizeGripper, gfx::NativeTheme::kNormal,
         extra);
 
     // TODO(beng): (http://b/1085509) In "classic" rendering mode, there isn't
@@ -433,11 +433,11 @@ void DialogClientView::PaintSizeBox(gfx::Canvas* canvas) {
     size_box_bounds_.set_x(size_box_bounds_.right() - gripper_size.width());
     size_box_bounds_.set_y(size_box_bounds_.bottom() - gripper_size.height());
 
-    ui::NativeTheme::instance()->Paint(canvas->sk_canvas(),
-                                       ui::NativeTheme::kWindowResizeGripper,
-                                       ui::NativeTheme::kNormal,
-                                       size_box_bounds_,
-                                       extra);
+    gfx::NativeTheme::instance()->Paint(canvas->sk_canvas(),
+                                        gfx::NativeTheme::kWindowResizeGripper,
+                                        gfx::NativeTheme::kNormal,
+                                        size_box_bounds_,
+                                        extra);
 #else
     NOTIMPLEMENTED();
     // TODO(port): paint size box

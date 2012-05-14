@@ -63,14 +63,14 @@ ExampleNativeThemeButton::~ExampleNativeThemeButton() {
 std::string ExampleNativeThemeButton::MessWithState() {
   const char* message = NULL;
   switch (GetThemePart()) {
-    case ui::NativeTheme::kPushButton:
+    case gfx::NativeTheme::kPushButton:
       message = "Pressed! count:%d";
       break;
-    case ui::NativeTheme::kRadio:
+    case gfx::NativeTheme::kRadio:
       is_checked_ = !is_checked_;
       message = is_checked_ ? "Checked! count:%d" : "Unchecked! count:%d";
       break;
-    case ui::NativeTheme::kCheckbox:
+    case gfx::NativeTheme::kCheckbox:
       if (is_indeterminate_) {
         is_checked_ = false;
         is_indeterminate_ = false;
@@ -98,45 +98,46 @@ void ExampleNativeThemeButton::OnSelectedIndexChanged(Combobox* combobox) {
   SchedulePaint();
 }
 
-ui::NativeTheme::Part ExampleNativeThemeButton::GetThemePart() const {
+gfx::NativeTheme::Part ExampleNativeThemeButton::GetThemePart() const {
   switch (cb_part_->selected_index()) {
     case 0:
-      return ui::NativeTheme::kPushButton;
+      return gfx::NativeTheme::kPushButton;
     case 1:
-      return ui::NativeTheme::kRadio;
+      return gfx::NativeTheme::kRadio;
     case 2:
-      return ui::NativeTheme::kCheckbox;
+      return gfx::NativeTheme::kCheckbox;
     default:
       NOTREACHED();
   }
-  return ui::NativeTheme::kPushButton;
+  return gfx::NativeTheme::kPushButton;
 }
 
 gfx::Rect ExampleNativeThemeButton::GetThemePaintRect() const {
-  ui::NativeTheme::ExtraParams extra;
-  ui::NativeTheme::State state = GetThemeState(&extra);
-  gfx::Size size(ui::NativeTheme::instance()->GetPartSize(GetThemePart(), state,
-                                                          extra));
+  gfx::NativeTheme::ExtraParams extra;
+  gfx::NativeTheme::State state = GetThemeState(&extra);
+  gfx::Size size(gfx::NativeTheme::instance()->GetPartSize(GetThemePart(),
+                                                           state,
+                                                           extra));
   gfx::Rect rect(size);
   rect.set_x(GetMirroredXForRect(rect));
   return rect;
 }
 
-ui::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
-    ui::NativeTheme::ExtraParams* params) const {
+gfx::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
+    gfx::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
 
   int selected = cb_state_->selected_index();
   if (selected > 3) {
     switch (state()) {
       case BS_DISABLED:
-        return ui::NativeTheme::kDisabled;
+        return gfx::NativeTheme::kDisabled;
       case BS_NORMAL:
-        return ui::NativeTheme::kNormal;
+        return gfx::NativeTheme::kNormal;
       case BS_HOT:
-        return ui::NativeTheme::kHovered;
+        return gfx::NativeTheme::kHovered;
       case BS_PUSHED:
-        return ui::NativeTheme::kPressed;
+        return gfx::NativeTheme::kPressed;
       default:
         NOTREACHED();
     }
@@ -144,21 +145,21 @@ ui::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
 
   switch (selected) {
     case 0:
-      return ui::NativeTheme::kDisabled;
+      return gfx::NativeTheme::kDisabled;
     case 1:
-      return ui::NativeTheme::kNormal;
+      return gfx::NativeTheme::kNormal;
     case 2:
-      return ui::NativeTheme::kHovered;
+      return gfx::NativeTheme::kHovered;
     case 3:
-      return ui::NativeTheme::kPressed;
+      return gfx::NativeTheme::kPressed;
     default:
       NOTREACHED();
   }
-  return ui::NativeTheme::kNormal;
+  return gfx::NativeTheme::kNormal;
 }
 
 void ExampleNativeThemeButton::GetExtraParams(
-    ui::NativeTheme::ExtraParams* params) const {
+    gfx::NativeTheme::ExtraParams* params) const {
 
   params->button.checked = is_checked_;
   params->button.indeterminate = is_indeterminate_;
@@ -172,16 +173,16 @@ const ui::Animation* ExampleNativeThemeButton::GetThemeAnimation() const {
   return cb_state_->selected_index() <= 3 ? NULL : hover_animation_.get();
 }
 
-ui::NativeTheme::State ExampleNativeThemeButton::GetBackgroundThemeState(
-    ui::NativeTheme::ExtraParams* params) const {
+gfx::NativeTheme::State ExampleNativeThemeButton::GetBackgroundThemeState(
+    gfx::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
-  return ui::NativeTheme::kNormal;
+  return gfx::NativeTheme::kNormal;
 }
 
-ui::NativeTheme::State ExampleNativeThemeButton::GetForegroundThemeState(
-    ui::NativeTheme::ExtraParams* params) const {
+gfx::NativeTheme::State ExampleNativeThemeButton::GetForegroundThemeState(
+    gfx::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
-  return ui::NativeTheme::kHovered;
+  return gfx::NativeTheme::kHovered;
 }
 
 gfx::Size ExampleNativeThemeButton::GetPreferredSize() {

@@ -54,8 +54,6 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/renderer/browser_plugin/browser_plugin_constants.h"
-#include "content/renderer/browser_plugin/browser_plugin_placeholder.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
@@ -79,6 +77,8 @@
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
+#include "content/renderer/browser_plugin/browser_plugin_constants.h"
+#include "content/renderer/browser_plugin/browser_plugin_placeholder.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -183,10 +183,10 @@
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
-#include "ui/base/native_theme/native_theme_win.h"
+#include "ui/gfx/native_theme_win.h"
 #elif defined(USE_X11)
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebRenderTheme.h"
-#include "ui/base/native_theme/native_theme.h"
+#include "ui/gfx/native_theme.h"
 #elif defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
 #endif
@@ -4373,7 +4373,7 @@ void RenderViewImpl::OnSetRendererPrefs(
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
   WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
-  ui::NativeTheme::instance()->SetScrollbarColors(
+  gfx::NativeTheme::instance()->SetScrollbarColors(
       renderer_prefs.thumb_inactive_color,
       renderer_prefs.thumb_active_color,
       renderer_prefs.track_color);
@@ -4544,7 +4544,7 @@ void RenderViewImpl::OnThemeChanged() {
 #if defined(USE_AURA)
   // Aura doesn't care if we switch themes.
 #elif defined(OS_WIN)
-  ui::NativeThemeWin::instance()->CloseHandles();
+  gfx::NativeThemeWin::instance()->CloseHandles();
   if (webview())
     webview()->themeChanged();
 #else  // defined(OS_WIN)

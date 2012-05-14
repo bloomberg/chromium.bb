@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,8 +97,8 @@ void RadioButton::NotifyClick(const views::Event& event) {
   TextButtonBase::NotifyClick(event);
 }
 
-ui::NativeTheme::Part RadioButton::GetThemePart() const {
-  return ui::NativeTheme::kRadio;
+gfx::NativeTheme::Part RadioButton::GetThemePart() const {
+  return gfx::NativeTheme::kRadio;
 }
 
 }  // namespace views

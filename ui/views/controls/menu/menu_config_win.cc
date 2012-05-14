@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,10 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/native_theme/native_theme_win.h"
+#include "ui/gfx/native_theme_win.h"
 
-using ui::NativeTheme;
-using ui::NativeThemeWin;
+using gfx::NativeTheme;
+using gfx::NativeThemeWin;
 
 namespace views {
 
