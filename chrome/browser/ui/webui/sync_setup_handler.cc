@@ -96,6 +96,7 @@ bool GetAuthData(const std::string& json,
                  std::string* username,
                  std::string* password,
                  std::string* captcha,
+                 std::string* otp,
                  std::string* access_code) {
   scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
@@ -105,6 +106,7 @@ bool GetAuthData(const std::string& json,
   if (!result->GetString("user", username) ||
       !result->GetString("pass", password) ||
       !result->GetString("captcha", captcha) ||
+      !result->GetString("otp", otp) ||
       !result->GetString("accessCode", access_code)) {
       return false;
   }
@@ -179,6 +181,11 @@ string16 NormalizeUserName(const string16& user) {
 
 bool AreUserNamesEqual(const string16& user1, const string16& user2) {
   return NormalizeUserName(user1) == NormalizeUserName(user2);
+}
+
+bool IsClientOAuthEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClientOAuthSignin);
 }
 
 }  // namespace
@@ -295,6 +302,10 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "enterAccessCode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL },
     { "getAccessCodeHelp", IDS_SYNC_ACCESS_CODE_HELP_LABEL },
     { "getAccessCodeURL", IDS_SYNC_GET_ACCESS_CODE_URL },
+    { "invalidOtp", IDS_SYNC_INVALID_OTP_LABEL },
+    { "enterOtp", IDS_SYNC_ENTER_OTP_LABEL },
+    { "getOtpHelp", IDS_SYNC_OTP_HELP_LABEL },
+    { "getOtpURL", IDS_SYNC_GET_OTP_URL },
     { "syncAllDataTypes", IDS_SYNC_EVERYTHING },
     { "chooseDataTypes", IDS_SYNC_CHOOSE_DATATYPES },
     { "bookmarks", IDS_SYNC_DATATYPE_BOOKMARKS },
@@ -497,6 +508,16 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
   DictionaryValue args;
   args.SetString("user", user);
   args.SetInteger("error", error);
+
+  // If the error is two-factor, then ask for an OTP if the ClientOAuth flow
+  // is enasbled.  Otherwise ask for an ASP.  If the error is catptcha required,
+  // then we don't want to show username and password fields if ClientOAuth is
+  // being used, since those fields are ignored by the endpoint on challenges.
+  if (error == GoogleServiceAuthError::TWO_FACTOR)
+    args.SetBoolean("askForOtp", IsClientOAuthEnabled());
+  else if (error == GoogleServiceAuthError::CAPTCHA_REQUIRED)
+    args.SetBoolean("hideEmailAndPassword", IsClientOAuthEnabled());
+
   args.SetBoolean("editableUser", editable_user);
   if (!error_message.empty())
     args.SetString("errorMessage", error_message);
@@ -553,8 +574,8 @@ void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
   if (json.empty())
     return;
 
-  std::string username, password, captcha, access_code;
-  if (!GetAuthData(json, &username, &password, &captcha, &access_code)) {
+  std::string username, password, captcha, otp, access_code;
+  if (!GetAuthData(json, &username, &password, &captcha, &otp, &access_code)) {
     // The page sent us something that we didn't understand.
     // This probably indicates a programming error.
     NOTREACHED();
@@ -567,7 +588,23 @@ void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
     return;
   }
 
-  TryLogin(username, password, captcha, access_code);
+  // If one of password, captcha and otp is non-empty, then the other two must
+  // be empty.  At least one should be non-empty.
+  DCHECK(password.empty() || (captcha.empty() && otp.empty()));
+  DCHECK(captcha.empty() || (password.empty() && otp.empty()));
+  DCHECK(otp.empty() || (captcha.empty() && password.empty()));
+  DCHECK(!otp.empty() || !captcha.empty() || !password.empty());
+
+  // Last error is two-factor implies otp should not be empty.
+  DCHECK((last_signin_error_.state() != GoogleServiceAuthError::TWO_FACTOR) ||
+      !otp.empty());
+  // Last error is captcha-required implies captcha should not be empty.
+  DCHECK((last_signin_error_.state() !=
+      GoogleServiceAuthError::CAPTCHA_REQUIRED) || !captcha.empty());
+  const std::string& solution = captcha.empty() ?
+      (otp.empty() ? EmptyString() : otp) : captcha;
+
+  TryLogin(username, password, solution, access_code);
 }
 
 void SyncSetupHandler::TryLogin(const std::string& username,
@@ -586,8 +623,7 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   last_signin_error_ = GoogleServiceAuthError::None();
 
   SigninManager* signin = GetSignin();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableClientOAuthSignin)) {
+  if (IsClientOAuthEnabled()) {
     if (!solution.empty()) {
       signin->ProvideOAuthChallengeResponse(current_error.state(),
                                             current_error.token(), solution);
@@ -608,8 +644,7 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   GetSyncService()->UnsuppressAndStart();
 
   // Kick off a sign-in through the signin manager.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableClientOAuthSignin)) {
+  if (IsClientOAuthEnabled()) {
     signin->StartSignInWithOAuth(username, password);
   } else {
     signin->StartSignIn(username, password, current_error.captcha().token,

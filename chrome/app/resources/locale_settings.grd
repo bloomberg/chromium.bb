@@ -362,6 +362,10 @@
         https://accounts.google.com/IssuedAuthSubTokens?hl=[GRITLANGCODE]
       </message>
 
+      <message name="IDS_SYNC_GET_OTP_URL" translateable="false">
+        https://support.google.com/accounts/bin/answer.py?answer=1070457
+      </message>
+
       <message name="IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL" translateable="false">
         https://www.google.com/support/chrome/bin/answer.py?answer=1181420
       </message>

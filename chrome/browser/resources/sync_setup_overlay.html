@@ -60,6 +60,16 @@
                       class="reset-enabled reset-value">
                 </label>
               </div>
+              <div id="otp-input-row" class="otp-row reset-hidden" hidden>
+                <label>
+                  <strong i18n-content="enterOtp"></strong>
+                  <a i18n-values="href:getOtpURL"
+                      i18n-content="getOtpHelp" target="_blank"
+                      class="account-link"></a>
+                  <input id="otp" type="text" name="otp"
+                      class="reset-enabled reset-value">
+                </label>
+              </div>
               <div id="errormsg-1-password" class="errormsg reset-hidden"
                   hidden>
                 <span i18n-content="invalidCredentials"></span>
@@ -73,6 +83,9 @@
               </div>
               <div id="errormsg-0-access-code" class="errormsg reset-hidden"
                   i18n-content="invalidAccessCode" hidden>
+              </div>
+              <div id="errormsg-0-otp" class="errormsg reset-hidden"
+                  i18n-content="invalidOtp" hidden>
               </div>
               <div id="asp-warning-div" class="errormsg reset-hidden" hidden>
                 <span i18n-values=".innerHTML:aspWarningText"></span>

@@ -952,7 +952,7 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthTwoFactorChallenge) {
                       "    \"url\" : \"https://www.terminating.com\""
                       "  },"
                       "  \"challenge\" : {"
-                      "    \"name\" : \"TwoFactor\","
+                      "    \"name\" : \"TwoStep\","
                       "    \"prompt_text\" : \"prompt_text\","
                       "    \"alternate_text\" : \"alternate_text\","
                       "    \"challenge_token\" : \"challengetokenblob\","
@@ -986,7 +986,7 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthChallengeSuccess) {
   scoped_ptr<base::Value> expected1(base::JSONReader::Read(
       "{"
       "  \"challenge_reply\" : {"
-      "    \"name\" : \"TwoFactor\","
+      "    \"name\" : \"TwoStep\","
       "    \"challenge_token\" : \"token\","
       "    \"otp\" : \"mysolution\""
       "  }"

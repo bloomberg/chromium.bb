@@ -161,7 +161,7 @@ const char GaiaAuthFetcher::kNeedsAdditional[] = "NeedsAdditional";
 // static
 const char GaiaAuthFetcher::kCaptcha[] = "Captcha";
 // static
-const char GaiaAuthFetcher::kTwoFactor[] = "TwoFactor";
+const char GaiaAuthFetcher::kTwoFactor[] = "TwoStep";
 
 // static
 const char GaiaAuthFetcher::kCookiePersistence[] = "true";
@@ -570,15 +570,15 @@ GaiaAuthFetcher::GenerateClientOAuthError(const std::string& data,
     std::string prompt_text;
     std::string alternate_text;
     int field_length;
-    if (!challenge->GetStringWithoutPathExpansion("challenge_token", &token) ||
-        !challenge->GetStringWithoutPathExpansion("prompt_text",
-                                                  &prompt_text) ||
-        !challenge->GetStringWithoutPathExpansion("alternate_text",
-                                                  &alternate_text) ||
-        !challenge->GetIntegerWithoutPathExpansion("field_length",
-                                                   &field_length)) {
+
+    // The protocol doc says these are required, but in practice they are not
+    // returned.  So only a missing challenge token will cause an error here.
+    challenge->GetStringWithoutPathExpansion("prompt_text", &prompt_text);
+    challenge->GetStringWithoutPathExpansion("alternate_text", &alternate_text);
+    challenge->GetIntegerWithoutPathExpansion("field_length", &field_length);
+    if (!challenge->GetStringWithoutPathExpansion("challenge_token", &token))
       return GenerateAuthError(data, status);
-    }
+
     return GoogleServiceAuthError::FromSecondFactorChallenge(token, prompt_text,
                                                              alternate_text,
                                                              field_length);

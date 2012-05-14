@@ -117,7 +117,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
                             "    \"url\" : \"https://www.terminating.com\""
                             "  },"
                             "  \"challenge\" : {"
-                            "    \"name\" : \"TwoFactor\","
+                            "    \"name\" : \"TwoStep\","
                             "    \"prompt_text\" : \"prompt_text\","
                             "    \"alternate_text\" : \"alternate_text\","
                             "    \"challenge_token\" : \"challengetokenblob\","

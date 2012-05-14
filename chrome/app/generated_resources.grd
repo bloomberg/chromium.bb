@@ -11673,6 +11673,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_INVALID_ACCESS_CODE_LABEL" desc="A message telling the user the application-specific password (aka access code) they entered is invalid.">
         Invalid application-specific password.
       </message>
+      <message name="IDS_SYNC_ENTER_OTP_LABEL" desc="A message asking the user to enter a one-time-password (aka OTP).">
+        Enter your OTP:
+      </message>
+      <message name="IDS_SYNC_OTP_HELP_LABEL" desc="A help link message for users who don't know what a one-time-password (aka OTP) is">
+        What's this?
+      </message>
+      <message name="IDS_SYNC_INVALID_OTP_LABEL" desc="A message telling the user the one-time-password (aka OTP) they entered is invalid.">
+        Invalid OTP.
+      </message>
       <message name="IDS_SYNC_SERVICE_UNAVAILABLE" desc="Error message to display when the user domain entered by the user has sync disabled.">
         Sync service is not available for your domain.
       </message>

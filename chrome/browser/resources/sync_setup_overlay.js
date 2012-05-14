@@ -13,6 +13,11 @@ cr.define('options', function() {
   // account' link.
   var captchaChallengeActive_ = false;
 
+  // When true, the password value may be empty when submitting auth info.
+  // This is true when requesting an access code or when requesting an OTP or
+  // captcha with the oauth sign in flow.
+  var allowEmptyPassword_ = false;
+
   // True if the synced account uses a custom passphrase.
   var usePassphrase_ = false;
 
@@ -595,25 +600,47 @@ cr.define('options', function() {
     },
 
     showAccessCodeRequired_: function() {
+      this.allowEmptyPassword_ = true;
+
       $('password-row').hidden = true;
       $('email-row').hidden = true;
+      $('otp-input-row').hidden = true;
 
       $('access-code-input-row').hidden = false;
       $('access-code').disabled = false;
       $('access-code').focus();
     },
 
+    showOtpRequired_: function() {
+      this.allowEmptyPassword_ = true;
+
+      $('password-row').hidden = true;
+      $('email-row').hidden = true;
+      $('access-code-input-row').hidden = true;
+
+      $('otp-input-row').hidden = false;
+      $('otp').disabled = false;
+      $('otp').focus();
+    },
+
     showCaptcha_: function(args) {
+      this.allowEmptyPassword_ = args.hideEmailAndPassword;
       this.captchaChallengeActive_ = true;
 
-      // The captcha takes up lots of space, so make room.
-      $('top-blurb-error').hidden = true;
-      $('create-account-div').hidden = true;
+      if (args.hideEmailAndPassword) {
+        $('password-row').hidden = true;
+        $('email-row').hidden = true;
+        $('create-account-div').hidden = true;
+      } else {
+        // The captcha takes up lots of space, so make room.
+        $('top-blurb-error').hidden = true;
+        $('create-account-div').hidden = true;
+        $('gaia-email').disabled = true;
+        $('gaia-passwd').disabled = false;
+      }
 
       // It's showtime for the captcha now.
       $('captcha-div').hidden = false;
-      $('gaia-email').disabled = true;
-      $('gaia-passwd').disabled = false;
       $('captcha-value').disabled = false;
       $('captcha-wrapper').style.backgroundImage = url(args.captchaUrl);
     },
@@ -652,6 +679,7 @@ cr.define('options', function() {
     showGaiaLogin_: function(args) {
       this.resetPage_('sync-setup-login');
       $('sync-setup-login').hidden = false;
+      this.allowEmptyPassword_ = false;
 
       var f = $('gaia-login-form');
       var email = $('gaia-email');
@@ -691,7 +719,11 @@ cr.define('options', function() {
       } else if (7 == args.error) {
         this.setBlurbError_(localStrings.getString('serviceUnavailableError'));
       } else if (8 == args.error) {
-        this.showAccessCodeRequired_();
+        if (args.askForOtp) {
+          this.showOtpRequired_();
+        } else {
+          this.showAccessCodeRequired_();
+        }
       } else if (args.errorMessage) {
         this.setBlurbError_(args.errorMessage);
       }
@@ -713,6 +745,7 @@ cr.define('options', function() {
       $('errormsg-1-password').hidden = true;
       $('errormsg-0-connection').hidden = true;
       $('errormsg-0-access-code').hidden = true;
+      $('errormsg-0-otp').hidden = true;
     },
 
     setBlurbError_: function(errorMessage) {
@@ -753,7 +786,7 @@ cr.define('options', function() {
       }
       // Don't enforce password being non-blank when checking access code (it
       // will have been cleared when the page was displayed).
-      if (f.accessCode.disabled && !passwd.value) {
+      if (!this.allowEmptyPassword_ && !passwd.value) {
         $('errormsg-0-password').hidden = false;
         this.setBlurbError_();
         return false;
@@ -782,16 +815,19 @@ cr.define('options', function() {
       $('gaia-passwd').disabled = true;
       $('captcha-value').disabled = true;
       $('access-code').disabled = true;
+      $('otp').disabled = true;
 
       this.setThrobbersVisible_(true);
 
       var f = $('gaia-login-form');
       var email = $('gaia-email');
       var passwd = $('gaia-passwd');
-      var result = JSON.stringify({'user' : email.value,
-                                   'pass' : passwd.value,
-                                   'captcha' : f.captchaValue.value,
-                                   'accessCode' : f.accessCode.value});
+      var result = JSON.stringify({'user': email.value,
+        'pass': passwd.value,
+        'captcha': f.captchaValue.value,
+        'otp': f.otp.value,
+        'accessCode': f.accessCode.value
+      });
       $('sign-in').disabled = true;
       chrome.send('SyncSetupSubmitAuth', [result]);
     },
@@ -808,9 +844,9 @@ cr.define('options', function() {
     },
 
     /**
-      * Displays the stop syncing dialog.
-      * @private
-      */
+     * Displays the stop syncing dialog.
+     * @private
+     */
     showStopSyncingUI_: function() {
       // Hide any visible children of the overlay.
       var overlay = $('sync-setup-overlay');

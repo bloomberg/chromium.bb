@@ -162,9 +162,8 @@
 #captcha-div {
   background: white;
   border: 1px solid #e5e5e5;
-  margin: 0 0 1.5em;
   overflow: hidden;
-  padding: 1em 1em 0;
+  padding: 1em 1em;
 }
 
 #captcha-wrapper {
@@ -208,11 +207,16 @@
 }
 
 #password-row {
+  margin-bottom: 0;
   margin-top: 2px;
 }
 
 #action-area {
-  margin-top: 2px;
+  margin: 1em 0;
+}
+
+#sign-in {
+  margin: 0;
 }
 
 #sync-setup-configure {
