@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 
 import contextlib
 import errno
+import itertools
 import mox
 import shutil
 import signal
@@ -691,6 +692,40 @@ class InputTest(cros_test_lib.MoxTestCase):
       else:
         self.assertTrue(False, 'Should have thrown an exception')
 
+
+class TestContextManagerStack(unittest.TestCase):
+
+  def test(self):
+    invoked = []
+    counter = iter(itertools.count()).next
+    def _mk_kls(has_exception=None, exception_kls=None, suppress=False):
+      class foon(object):
+        marker = counter()
+        def __enter__(self):
+          return self
+
+        def __exit__(obj_self, exc_type, exc, traceback):
+          invoked.append(obj_self.marker)
+          if has_exception is not None:
+            self.assertTrue(all(x is not None
+                              for x in (exc_type, exc, traceback)))
+            self.assertTrue(exc_type == has_exception)
+          if exception_kls:
+            raise exception_kls()
+          if suppress:
+            return True
+      return foon
+
+    with cros_build_lib.ContextManagerStack() as stack:
+      # Note... these tests are in reverse, since the exception
+      # winds its way up the stack.
+      stack.Add(_mk_kls())
+      stack.Add(_mk_kls(ValueError, suppress=True))
+      stack.Add(_mk_kls(IndexError, exception_kls=ValueError))
+      stack.Add(_mk_kls(IndexError))
+      stack.Add(_mk_kls(exception_kls=IndexError))
+      stack.Add(_mk_kls())
+    self.assertEqual(invoked, list(reversed(range(6))))
 
 if __name__ == '__main__':
   unittest.main()

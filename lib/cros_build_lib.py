@@ -1235,6 +1235,76 @@ def TimeoutDecorator(max_time):
   return decorator
 
 
+class ContextManagerStack(object):
+  """Context manager that is designed to safely allow nesting and stacking.
+
+  Python2.7 directly supports a with syntax removing the need for this,
+  although this form avoids indentation hell if there is a lot of context
+  managers.
+
+  For Python2.6, see http://docs.python.org/library/contextlib.html; the short
+  version is that there is a race in the available stdlib/language rules under
+  2.6 when dealing w/ multiple context managers, thus this safe version was
+  added.
+
+  For each context manager added to this instance, it will unwind them,
+  invoking them as if it had been constructed as a set of manually nested
+  with statements."""
+
+  def __init__(self):
+    self._stack = []
+
+  def Add(self, functor, *args, **kwds):
+    """Add a context manager onto the stack.
+
+    Usage of this is essentially the following:
+    >>> stack.add(Timeout, 60)
+
+    It must be done in this fashion, else there is a mild race that exists
+    between context manager instantiation and initial __enter__.
+
+    Invoking it in the form specified eliminates that race.
+
+    Args:
+      functor: A callable to instantiate a context manager.
+      args and kwargs: positional and optional args to functor.
+
+    Returns:
+      The newly created (and __enter__'d) context manager.
+    """
+    obj = None
+    try:
+      obj = functor(*args, **kwds)
+      return obj
+    finally:
+      if obj is not None:
+        obj.__enter__()
+      self._stack.append(obj)
+
+  def __enter__(self):
+    # Nothing to do in this case, since we've already done
+    # our entrances.
+    return self
+
+  def __exit__(self, exc_type, exc, traceback):
+    # Run it in reverse order, tracking the results
+    # so we know whether or not to suppress the exception raised
+    # (or to switch that exception to a new one triggered by a handlers
+    # __exit__).
+    for handler in reversed(self._stack):
+      try:
+        if handler.__exit__(exc_type, exc, traceback):
+          exc_type = exc = traceback = None
+      except:
+        exc_type, exc, traceback = sys.exc_info()
+    if all(x is None for x in (exc_type, exc, traceback)):
+      return True
+
+    self._stack = []
+
+    raise exc_type, exc, traceback
+
+
 # Support having this module test itself if run as __main__, by leveraging
 # the corresponding unittest module.
 # Also, the unittests serve as extra documentation.
