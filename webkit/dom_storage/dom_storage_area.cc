@@ -60,7 +60,8 @@ DomStorageArea::DomStorageArea(
       task_runner_(task_runner),
       map_(new DomStorageMap(kPerAreaQuota)),
       is_initial_import_done_(true),
-      is_shutdown_(false) {
+      is_shutdown_(false),
+      commit_batches_in_flight_(0) {
   if (namespace_id == kLocalStorageNamespaceId && !directory.empty()) {
     FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
     backing_.reset(new DomStorageDatabase(path));
@@ -161,7 +162,7 @@ DomStorageArea* DomStorageArea::ShallowCopy(int64 destination_namespace_id) {
 
 bool DomStorageArea::HasUncommittedChanges() const {
   DCHECK(!is_shutdown_);
-  return commit_batch_.get() || in_flight_commit_batch_.get();
+  return commit_batch_.get() || commit_batches_in_flight_;
 }
 
 void DomStorageArea::DeleteOrigin() {
@@ -233,10 +234,10 @@ DomStorageArea::CommitBatch* DomStorageArea::CreateCommitBatchIfNeeded() {
   if (!commit_batch_.get()) {
     commit_batch_.reset(new CommitBatch());
 
-    // Start a timer to commit any changes that accrue in the batch,
-    // but only if a commit is not currently in flight. In that case
-    // the timer will be started after the current commit has happened.
-    if (!in_flight_commit_batch_.get()) {
+    // Start a timer to commit any changes that accrue in the batch, but only if
+    // no commits are currently in flight. In that case the timer will be
+    // started after the commits have happened.
+    if (!commit_batches_in_flight_) {
       task_runner_->PostDelayedTask(
           FROM_HERE,
           base::Bind(&DomStorageArea::OnCommitTimer, this),
@@ -253,26 +254,25 @@ void DomStorageArea::OnCommitTimer() {
 
   DCHECK(backing_.get());
   DCHECK(commit_batch_.get());
-  DCHECK(!in_flight_commit_batch_.get());
+  DCHECK(!commit_batches_in_flight_);
 
   // This method executes on the primary sequence, we schedule
   // a task for immediate execution on the commit sequence.
   DCHECK(task_runner_->IsRunningOnPrimarySequence());
-  in_flight_commit_batch_ = commit_batch_.Pass();
   bool success = task_runner_->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::COMMIT_SEQUENCE,
-      base::Bind(&DomStorageArea::CommitChanges, this));
+      base::Bind(&DomStorageArea::CommitChanges, this,
+                 base::Owned(commit_batch_.release())));
+  ++commit_batches_in_flight_;
   DCHECK(success);
 }
 
-void DomStorageArea::CommitChanges() {
+void DomStorageArea::CommitChanges(const CommitBatch* commit_batch) {
   // This method executes on the commit sequence.
   DCHECK(task_runner_->IsRunningOnCommitSequence());
-  DCHECK(in_flight_commit_batch_.get());
-  bool success = backing_->CommitChanges(
-      in_flight_commit_batch_->clear_all_first,
-      in_flight_commit_batch_->changed_values);
+  bool success = backing_->CommitChanges(commit_batch->clear_all_first,
+                                         commit_batch->changed_values);
   DCHECK(success);  // TODO(michaeln): what if it fails?
   task_runner_->PostTask(
       FROM_HERE,
@@ -284,8 +284,8 @@ void DomStorageArea::OnCommitComplete() {
   DCHECK(task_runner_->IsRunningOnPrimarySequence());
   if (is_shutdown_)
     return;
-  in_flight_commit_batch_.reset();
-  if (commit_batch_.get()) {
+  --commit_batches_in_flight_;
+  if (commit_batch_.get() && !commit_batches_in_flight_) {
     // More changes have accrued, restart the timer.
     task_runner_->PostDelayedTask(
         FROM_HERE,
@@ -306,7 +306,6 @@ void DomStorageArea::ShutdownInCommitSequence() {
     DCHECK(success);
   }
   commit_batch_.reset();
-  in_flight_commit_batch_.reset();
   backing_.reset();
 }
 

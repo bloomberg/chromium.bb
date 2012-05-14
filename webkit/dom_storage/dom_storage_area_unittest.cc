@@ -38,7 +38,7 @@ class DomStorageAreaTest : public testing::Test {
   void InjectedCommitSequencingTask(DomStorageArea* area) {
     // At this point the OnCommitTimer has run.
     // Verify that it put a commit in flight.
-    EXPECT_TRUE(area->in_flight_commit_batch_.get());
+    EXPECT_EQ(1, area->commit_batches_in_flight_);
     EXPECT_FALSE(area->commit_batch_.get());
     EXPECT_TRUE(area->HasUncommittedChanges());
     // Make additional change and verify that a new commit batch
@@ -46,7 +46,7 @@ class DomStorageAreaTest : public testing::Test {
     NullableString16 old_value;
     EXPECT_TRUE(area->SetItem(kKey2, kValue2, &old_value));
     EXPECT_TRUE(area->commit_batch_.get());
-    EXPECT_TRUE(area->in_flight_commit_batch_.get());
+    EXPECT_EQ(1, area->commit_batches_in_flight_);
     EXPECT_TRUE(area->HasUncommittedChanges());
   }
 
@@ -174,12 +174,12 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
     ASSERT_TRUE(old_value.is_null());
     EXPECT_TRUE(area->is_initial_import_done_);
     EXPECT_TRUE(area->commit_batch_.get());
-    EXPECT_FALSE(area->in_flight_commit_batch_.get());
+    EXPECT_EQ(0, area->commit_batches_in_flight_);
 
     MessageLoop::current()->RunAllPending();
 
     EXPECT_FALSE(area->commit_batch_.get());
-    EXPECT_FALSE(area->in_flight_commit_batch_.get());
+    EXPECT_EQ(0, area->commit_batches_in_flight_);
     EXPECT_TRUE(area->backing_->IsOpen());
     EXPECT_EQ(1u, area->Length());
     EXPECT_EQ(kValue, area->GetItem(kKey).string());
@@ -226,7 +226,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   MessageLoop::current()->RunAllPending();
   EXPECT_FALSE(area->HasUncommittedChanges());
   EXPECT_FALSE(area->commit_batch_.get());
-  EXPECT_FALSE(area->in_flight_commit_batch_.get());
+  EXPECT_EQ(0, area->commit_batches_in_flight_);
   // Verify the changes made it to the database.
   values.clear();
   area->backing_->ReadAllValues(&values);
@@ -241,7 +241,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   EXPECT_TRUE(area->commit_batch_->changed_values.empty());
   MessageLoop::current()->RunAllPending();
   EXPECT_FALSE(area->commit_batch_.get());
-  EXPECT_FALSE(area->in_flight_commit_batch_.get());
+  EXPECT_EQ(0, area->commit_batches_in_flight_);
   // Verify the changes made it to the database.
   values.clear();
   area->backing_->ReadAllValues(&values);

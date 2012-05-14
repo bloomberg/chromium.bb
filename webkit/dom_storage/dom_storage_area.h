@@ -98,7 +98,7 @@ class DomStorageArea
   // task sequence when complete.
   CommitBatch* CreateCommitBatchIfNeeded();
   void OnCommitTimer();
-  void CommitChanges();
+  void CommitChanges(const CommitBatch* commit_batch);
   void OnCommitComplete();
 
   void ShutdownInCommitSequence();
@@ -112,7 +112,7 @@ class DomStorageArea
   bool is_initial_import_done_;
   bool is_shutdown_;
   scoped_ptr<CommitBatch> commit_batch_;
-  scoped_ptr<CommitBatch> in_flight_commit_batch_;
+  int commit_batches_in_flight_;
 };
 
 }  // namespace dom_storage
