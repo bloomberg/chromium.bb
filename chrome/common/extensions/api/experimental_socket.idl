@@ -5,6 +5,11 @@
 // File-level comment to appease parser. Eventually this will not be necessary.
 
 [nodoc] namespace experimental.socket {
+  enum SocketType {
+    tcp,
+    udp
+  };
+
   // The socket options.
   dictionary CreateOptions {
     // The schema generator does not support dictionaries without any fields.
@@ -59,7 +64,7 @@
     // <code>udp</code>.
     // |options| : The socket options.
     // |callback| : Called when the socket has been created.
-    static void create(DOMString type,
+    static void create(SocketType type,
                        optional CreateOptions options,
                        CreateCallback callback);
 
