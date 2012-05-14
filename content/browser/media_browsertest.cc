@@ -152,7 +152,8 @@ class MediaLayoutTest : public InProcessBrowserLayoutTest {
 };
 
 // Timing out, see http://crbug.com/127526.
-#if defined(ADDRESS_SANITIZER)
+// Flakily crashing on Mac, see http://crbug.com/128021.
+#if defined(ADDRESS_SANITIZER) || defined(OS_MAC)
 #define MAYBE_Tests DISABLED_Tests
 #else
 #define MAYBE_Tests Tests
