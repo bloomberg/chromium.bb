@@ -57,11 +57,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   NativeTextButton* ok_button() const { return ok_button_; }
   NativeTextButton* cancel_button() const { return cancel_button_; }
 
-  // Sets the view that is positioned along the bottom of the buttons. The
-  // bottom view is positioned beneath the buttons at the full width of the
-  // dialog. If there is an existing bottom view it is removed and deleted.
-  void SetBottomView(View* bottom_view);
-
   // Overridden from View:
   virtual void NativeViewHierarchyChanged(
       bool attached,
@@ -102,7 +97,14 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // Returns the width of the specified dialog button using the correct font.
   int GetButtonWidth(int button) const;
+
+  // Returns the greater of ok and cancel button's preferred height.
   int GetButtonsHeight() const;
+
+  // Returns the height of the dialog buttons area, including the spacing
+  // between bottom of contents view and top of buttons, the buttons height,
+  // and the spacing between bottom of buttons to end of the dialog.
+  int GetDialogButtonsAreaHeight() const;
 
   // Position and size various sub-views.
   void LayoutDialogButtons();
@@ -153,9 +155,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // When ancestor gets changed focus manager gets changed as well.
   FocusManager* saved_focus_manager_;
-
-  // View positioned along the bottom, beneath the buttons.
-  View* bottom_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientView);
 };

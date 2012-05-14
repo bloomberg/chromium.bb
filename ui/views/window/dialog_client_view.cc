@@ -108,8 +108,7 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
       size_extra_view_height_to_buttons_(false),
       notified_delegate_(false),
       listening_to_focus_(false),
-      saved_focus_manager_(NULL),
-      bottom_view_(NULL) {
+      saved_focus_manager_(NULL) {
 }
 
 DialogClientView::~DialogClientView() {
@@ -239,16 +238,6 @@ void DialogClientView::CancelWindow() {
   Close();
 }
 
-void DialogClientView::SetBottomView(View* bottom_view) {
-  if (bottom_view_) {
-    RemoveChildView(bottom_view_);
-    delete bottom_view_;
-  }
-  bottom_view_ = bottom_view;
-  if (bottom_view_)
-    AddChildView(bottom_view_);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // DialogClientView, View overrides:
 
@@ -319,13 +308,6 @@ void DialogClientView::PaintChildren(gfx::Canvas* canvas) {
 void DialogClientView::Layout() {
   if (has_dialog_buttons())
     LayoutDialogButtons();
-  if (bottom_view_) {
-    gfx::Rect bounds = GetContentsBounds();
-    gfx::Size pref = bottom_view_->GetPreferredSize();
-    bottom_view_->SetBounds(bounds.x(),
-        bounds.bottom() - pref.height() - kButtonVEdgeMargin,
-        bounds.width(), pref.height());
-  }
   LayoutContentsView();
 }
 
@@ -350,15 +332,8 @@ void DialogClientView::ViewHierarchyChanged(bool is_add, View* parent,
 
 gfx::Size DialogClientView::GetPreferredSize() {
   gfx::Size prefsize = contents_view()->GetPreferredSize();
-  int button_height = 0;
+  int button_height = GetDialogButtonsAreaHeight();
   if (has_dialog_buttons()) {
-    if (cancel_button_)
-      button_height = cancel_button_->height();
-    else
-      button_height = ok_button_->height();
-    // Account for padding above and below the button.
-    button_height += kDialogButtonContentSpacing + kButtonVEdgeMargin;
-
     // Make sure the view is sized to the buttons's width if they are wider than
     // the contents.
     int width = 0;
@@ -378,10 +353,6 @@ gfx::Size DialogClientView::GetPreferredSize() {
       width += 2 * kButtonHEdgeMargin;
       prefsize.set_width(std::max(prefsize.width(), width));
     }
-  }
-  if (bottom_view_) {
-    gfx::Size bottom_pref = bottom_view_->GetPreferredSize();
-    prefsize.Enlarge(0, bottom_pref.height() + kButtonVEdgeMargin);
   }
   prefsize.Enlarge(0, button_height);
   return prefsize;
@@ -455,23 +426,26 @@ int DialogClientView::GetButtonWidth(int button) const {
 }
 
 int DialogClientView::GetButtonsHeight() const {
-  if (has_dialog_buttons()) {
-    if (cancel_button_)
-      return cancel_button_->height() + kDialogButtonContentSpacing;
-    return ok_button_->height() + kDialogButtonContentSpacing;
-  }
-  return 0;
+  int button_height = 0;
+  if (cancel_button_)
+    button_height = std::max(button_height,
+                             cancel_button_->GetPreferredSize().height());
+  if (ok_button_)
+    button_height = std::max(button_height,
+                             ok_button_->GetPreferredSize().height());
+  return button_height;
+}
+
+int DialogClientView::GetDialogButtonsAreaHeight() const {
+  return !has_dialog_buttons() ? 0 :
+      GetButtonsHeight() + kDialogButtonContentSpacing + kButtonVEdgeMargin;
 }
 
 void DialogClientView::LayoutDialogButtons() {
   gfx::Rect lb = GetContentsBounds();
   gfx::Rect extra_bounds;
   int bottom_y = lb.bottom() - kButtonVEdgeMargin;
-  int button_height = 0;
-  if (bottom_view_) {
-    gfx::Size bottom_pref = bottom_view_->GetPreferredSize();
-    bottom_y -= bottom_pref.height() + kButtonVEdgeMargin + kButtonVEdgeMargin;
-  }
+  int button_height = GetButtonsHeight();
   if (cancel_button_) {
     gfx::Size ps = cancel_button_->GetPreferredSize();
     int button_width = std::max(
@@ -482,7 +456,6 @@ void DialogClientView::LayoutDialogButtons() {
     // The extra view bounds are dependent on this button.
     extra_bounds.set_width(std::max(0, cancel_button_->x()));
     extra_bounds.set_y(cancel_button_->y());
-    button_height = std::max(button_height, ps.height());
   }
   if (ok_button_) {
     gfx::Size ps = ok_button_->GetPreferredSize();
@@ -498,7 +471,6 @@ void DialogClientView::LayoutDialogButtons() {
     // The extra view bounds are dependent on this button.
     extra_bounds.set_width(std::max(0, ok_button_->x()));
     extra_bounds.set_y(ok_button_->y());
-    button_height = std::max(button_height, ps.height());
   }
   if (extra_view_) {
     gfx::Size ps = extra_view_->GetPreferredSize();
@@ -512,7 +484,7 @@ void DialogClientView::LayoutDialogButtons() {
 
 void DialogClientView::LayoutContentsView() {
   gfx::Rect lb = GetContentsBounds();
-  lb.set_height(std::max(0, lb.height() - GetButtonsHeight()));
+  lb.set_height(std::max(0, lb.height() - GetDialogButtonsAreaHeight()));
   contents_view()->SetBoundsRect(lb);
   contents_view()->Layout();
 }
