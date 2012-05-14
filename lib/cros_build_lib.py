@@ -982,7 +982,8 @@ def GetProjectUserEmail(git_repo):
 
 
 def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
-                                  allow_broken_merge_settings=False):
+                                  allow_broken_merge_settings=False,
+                                  recurse=10):
   """Pull the remote and upstream branch of a local branch
 
   Args:
@@ -994,6 +995,13 @@ def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
       branch.mybranch.merge settings; if these are encountered, they're
       normally treated as an error and this function returns None.  If
       this option is set to True, it suppresses this check.
+    recurse: If given and the target is local, then recurse through any
+      remote=. (aka locals).  This is enabled by default, and is what allows
+      developers to have multiple local branches of development dependent
+      on one another; disabling this makes that work flow impossible,
+      thus disable it only with good reason.  The value given controls how
+      deeply to recurse.  Defaults to tracing through 10 levels of local
+      remotes. Disabling it is a matter of passing 0.
 
   Returns:
     A tuple of the remote and the ref name of the tracking branch, or
@@ -1023,6 +1031,15 @@ def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
       # to a sha1 remotely (makes no sense).
       if not allow_broken_merge_settings:
         return None
+    elif remote == '.':
+      if recurse == 0:
+        raise Exception(
+            "While tracing out tracking branches, we recursed too deeply: "
+            "bailing at %s" % branch)
+      return GetTrackingBranchViaGitConfig(
+          git_repo, StripLeadingRefsHeads(rev), for_checkout=for_checkout,
+          allow_broken_merge_settings=allow_broken_merge_settings,
+          recurse=recurse - 1)
     elif for_checkout:
       rev = 'refs/remotes/%s/%s' % (remote, StripLeadingRefsHeads(rev))
     return remote, rev
