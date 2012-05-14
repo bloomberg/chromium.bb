@@ -612,6 +612,27 @@ cr.define('tracing', function() {
             }
             kthread.openSlice = undefined;
             break;
+          case 'drm_vblank_event':
+            var event = /crtc=(\d+), seq=(\d+)/.exec(eventBase[5]);
+            if (!event) {
+              this.malformedEvent(eventName);
+              continue;
+            }
+
+            var crtc = parseInt(event[1]);
+            var seq = parseInt(event[2]);
+            var kthread = this.getOrCreateKernelThread('drm_vblank', 0, 3);
+            kthread.openSlice = 'vblank:' + crtc;
+            var slice = new tracing.TimelineSlice(kthread.openSlice,
+                tracing.getStringColorId(kthread.openSlice),
+                ts,
+                {
+                  crtc: crtc,
+                  seq: seq
+                }, 0);
+
+            kthread.thread.subRows[0].push(slice);
+            break;
           case '0':  // NB: old-style trace markers; deprecated
           case 'tracing_mark_write':
             var event = traceEventClockSyncRE.exec(eventBase[5]);

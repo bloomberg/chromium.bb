@@ -330,7 +330,12 @@ function testi915Import() {
     '               X-964   [000]  2784.774864: i915_flip_request: ' +
                'plane=0, obj=ffff88013f0b9a00',
     '          <idle>-0     [000]  2784.788644: i915_flip_complete: ' +
-               'plane=0, obj=ffff88013f0b9a00'
+               'plane=0, obj=ffff88013f0b9a00',
+    // NB: spliced from a different trace; mismatched timestamps don't matter
+    '          chrome-2465  [000]    71.653157: drm_vblank_event: ' +
+               'crtc=0, seq=4233',
+    '          <idle>-0     [000]    71.669851: drm_vblank_event: ' +
+               'crtc=0, seq=4234'
   ];
   var m = new tracing.TimelineModel(lines.join('\n'), false);
   assertEquals(0, m.importErrors.length);
@@ -340,6 +345,9 @@ function testi915Import() {
 
   assertEquals('i915_flip', m.processes['0'].threads['2'].name);
   assertEquals(1, m.processes['0'].threads['1'].subRows.length);
+
+  assertEquals('drm_vblank', m.processes['0'].threads['3'].name);
+  assertEquals(1, m.processes['0'].threads['3'].subRows.length);
 
   assertAlmostEquals(2784.774864 * 1000.0,
       m.processes['0'].threads['2'].subRows[0][0].start);
