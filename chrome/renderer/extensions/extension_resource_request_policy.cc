@@ -47,30 +47,35 @@ bool ExtensionResourceRequestPolicy::CanRequestResource(
 
   // Disallow loading of extension resources which are not explicitely listed
   // as web accessible if the manifest version is 2 or greater.
+  if (!extension->IsResourceWebAccessible(resource_url.path()) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableExtensionsResourceWhitelist)) {
+    GURL frame_url = frame->document().url();
+    GURL page_url = frame->top()->document().url();
 
-  GURL frame_url = frame->document().url();
-  GURL page_url = frame->top()->document().url();
-  // Exceptions are:
-  // - empty origin (needed for some edge cases when we have empty origins)
-  // - chrome-extension:// (for legacy reasons -- some extensions interop)
-  // - devtools (chrome-extension:// URLs are loaded into frames of devtools
-  //     to support the devtools extension APIs)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableExtensionsResourceWhitelist) &&
-      !frame_url.is_empty() &&
-      !frame_url.SchemeIs(chrome::kExtensionScheme) &&
-      !(page_url.SchemeIs(chrome::kChromeDevToolsScheme) &&
-          !extension->devtools_url().is_empty()) &&
-      !extension->IsResourceWebAccessible(resource_url.path())) {
-    std::string message = base::StringPrintf(
-        "Denying load of %s. Resources must be listed in the "
-        "web_accessible_resources manifest key in order to be loaded by web "
-        "pages.",
-        resource_url.spec().c_str());
-    frame->addMessageToConsole(
-        WebKit::WebConsoleMessage(WebKit::WebConsoleMessage::LevelError,
-                                  WebKit::WebString::fromUTF8(message)));
-    return false;
+    // Exceptions are:
+    // - empty origin (needed for some edge cases when we have empty origins)
+    bool is_empty_origin = frame_url.is_empty();
+    // - extensions requesting their own resources (frame_url check is for
+    //     images, page_url check is for iframes)
+    bool is_own_resource = frame_url.GetOrigin() == extension->url() ||
+        page_url.GetOrigin() == extension->url();
+    // - devtools (chrome-extension:// URLs are loaded into frames of devtools
+    //     to support the devtools extension APIs)
+    bool is_dev_tools = page_url.SchemeIs(chrome::kChromeDevToolsScheme) &&
+        !extension->devtools_url().is_empty();
+
+    if (!is_empty_origin && !is_own_resource && !is_dev_tools) {
+      std::string message = base::StringPrintf(
+          "Denying load of %s. Resources must be listed in the "
+          "web_accessible_resources manifest key in order to be loaded by "
+          "pages outside the extension.",
+          resource_url.spec().c_str());
+      frame->addMessageToConsole(
+          WebKit::WebConsoleMessage(WebKit::WebConsoleMessage::LevelError,
+                                    WebKit::WebString::fromUTF8(message)));
+      return false;
+    }
   }
 
   return true;

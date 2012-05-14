@@ -78,8 +78,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
       &result));
   EXPECT_EQ(result, "Loaded");
 
-  // A different extension. Extensions should always be able to load each
-  // other's resources.
+  // A different extension. Legacy (manifest_version 1) extensions should always
+  // be able to load each other's resources.
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("extension_resource_request_policy")
       .AppendASCII("extension2")));
@@ -195,3 +195,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   EXPECT_EQ("Image failed to load", result);
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Iframe) {
+  // Load another extension, which the test one shouldn't be able to get
+  // resources from.
+  ASSERT_TRUE(LoadExtension(test_data_dir_
+      .AppendASCII("extension_resource_request_policy")
+      .AppendASCII("inaccessible")));
+  EXPECT_TRUE(RunExtensionSubtest(
+      "extension_resource_request_policy/web_accessible",
+      "iframe.html"));
+}
