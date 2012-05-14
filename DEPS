@@ -17,29 +17,29 @@ vars = {
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
   "nacl_toolchain_linux_x86_hash":
-      "24e5e1c9770f2ffd3d088e7a8f3fac01e38ef6f2",
+      "11f909f7bd52881cb7c9698bebf26a5e7424e7e9",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "bb6e42517771ff7c72ee6d39c1f1d1028b980349",
+      "d8a04fb97b2b9fe8b8a74138939e3b404d31c0d3",
   "nacl_toolchain_mac_x86_hash":
-      "cb34496936e699277ea3dfead9832f57f91baa20",
+      "c6ead3e77daaa6baa3528a4431618aec90c3fa38",
   "nacl_toolchain_mac_x86_newlib_hash":
-      "addf275326832eab37d6c16086a165ec249b78ce",
+      "9bce03223284b7c26fa0cee068838ee7d0d9d795",
   "nacl_toolchain_pnacl_linux_x86_32_hash":
-      "45cfba19cdaed3d69ab8f8aa87143b41503b5f3d",
+      "95aebc120b13c41a20bb2021e704ef98472be592",
   "nacl_toolchain_pnacl_linux_x86_64_hash":
-      "20127d2132b486d13c53bd315631588fc0b764b3",
+      "185f18a8c3f2e8d72a5f9db0dd15ee904219321e",
   "nacl_toolchain_pnacl_mac_x86_32_hash":
-      "34281a4236ce44166a4a615e1feeb77a0279b417",
+      "f80962c4f5d7951deb85fddcef7ba73b8512a018",
   "nacl_toolchain_pnacl_translator_hash":
-      "b84b0555f40275e4acbfd03c363d775456067c51",
+      "d005452f94056547d2c291013ced6a22d1b219a7",
   "nacl_toolchain_pnacl_win_x86_32_hash":
-      "437345b37b2b96260378183ec957c74e4486582c",
+      "654639c23156fe59faeaa3064e277abdb49b3e62",
   "nacl_toolchain_win_x86_hash":
-      "62129ef40364f8522ca96c4f5652b663a21553a6",
+      "8b0d2f9ac63078c080a8555a189b060dc2ca4e64",
   "nacl_toolchain_win_x86_newlib_hash":
-      "9b1e32b75b6c855cee81027a4d92a6678d41c4bb",
-  "nacl_toolchain_revision": "8428",
-  "pnacl_toolchain_revision": "8428",
+      "279085efc6d1a22e4db0f6538f859e0e5c195264",
+  "nacl_toolchain_revision": "8575",
+  "pnacl_toolchain_revision": "8575",
 
   "libjingle_revision": "136",
   "libphonenumber_revision": "425",
