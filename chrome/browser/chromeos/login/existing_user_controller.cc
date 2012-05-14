@@ -151,6 +151,9 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
                  chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
                  content::NotificationService::AllSources());
   registrar_.Add(this,
+                 chrome::NOTIFICATION_POLICY_USER_LIST_CHANGED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
                  chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
   registrar_.Add(this,
@@ -223,8 +226,9 @@ void ExistingUserController::Observe(
     registrar_.RemoveAll();
     return;
   }
-  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED) {
-    // Signed settings changed notify views and update them.
+  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED ||
+      type == chrome::NOTIFICATION_POLICY_USER_LIST_CHANGED) {
+    // Signed settings or user list changed. Notify views and update them.
     const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
     UpdateLoginDisplay(users);
     return;

@@ -882,6 +882,9 @@ enum NotificationType {
   // Sent when a network error message is displayed on the WebUI login screen.
   NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
 
+  // Sent when the user list has changed due to a policy change.
+  NOTIFICATION_POLICY_USER_LIST_CHANGED,
+
   // Sent when a panel state changed.
   NOTIFICATION_PANEL_STATE_CHANGED,
 

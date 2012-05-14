@@ -203,7 +203,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // URL to append to start Guest mode with.
   GURL guest_mode_url_;
 
-  // Used for user image changed notifications.
+  // Used for notifications during the login process.
   content::NotificationRegistrar registrar_;
 
   // Factory of callbacks.

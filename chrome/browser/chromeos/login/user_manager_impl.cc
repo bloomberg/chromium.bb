@@ -856,8 +856,9 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
                             &ephemeral_users_enabled_);
   cros_settings->GetString(kDeviceOwner, &owner_email_);
 
-  // If ephemeral users are enabled, remove all users except the owner.
-  if (ephemeral_users_enabled_) {
+  // If ephemeral users are enabled and we are on the login screen, take this
+  // opportunity to clean up by removing all users except the owner.
+  if (ephemeral_users_enabled_  && !IsUserLoggedIn()) {
     scoped_ptr<base::ListValue> users(
         g_browser_process->local_state()->GetList(kLoggedInUsers)->DeepCopy());
 
@@ -873,9 +874,8 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
     }
 
     if (changed) {
-      // Trigger a redraw of the login window.
       content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED,
+          chrome::NOTIFICATION_POLICY_USER_LIST_CHANGED,
           content::Source<UserManagerImpl>(this),
           content::NotificationService::NoDetails());
     }
