@@ -47,6 +47,10 @@ class CONTENT_EXPORT GamepadProvider :
   // Method for starting the polling, runs on polling_thread_.
   void DoInitializePollingThread();
 
+  // Method for sending pause hints to the low-level data fetcher. Runs on
+  // polling_thread_.
+  void SendPauseHint(bool paused);
+
   // Method for polling a GamepadDataFetcher. Runs on the polling_thread_.
   void DoPoll();
   void ScheduleDoPoll();
