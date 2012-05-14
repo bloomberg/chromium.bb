@@ -125,11 +125,7 @@ class Shell : public WebContentsDelegate,
   virtual void DidNavigateMainFramePostCommit(
       WebContents* web_contents) OVERRIDE;
   virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator() OVERRIDE;
-
-#if defined(OS_WIN)
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) OVERRIDE;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 #endif
