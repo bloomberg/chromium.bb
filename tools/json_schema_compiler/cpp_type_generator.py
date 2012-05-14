@@ -145,7 +145,10 @@ class CppTypeGenerator(object):
     elif prop.type_ == PropertyType.OBJECT:
       cpp_type = cpp_util.Classname(prop.name)
     elif prop.type_ == PropertyType.ARRAY:
-      if prop.item_type.type_ in (
+      item_type = prop.item_type
+      if item_type.type_ == PropertyType.REF:
+        item_type = self.GetReferencedProperty(item_type)
+      if item_type.type_ in (
           PropertyType.REF, PropertyType.ANY, PropertyType.OBJECT):
         cpp_type = 'std::vector<linked_ptr<%s> > '
       else:

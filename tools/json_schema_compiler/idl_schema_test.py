@@ -16,6 +16,11 @@ def getParams(schema, name):
   function = getFunction(schema, name)
   return function['parameters']
 
+def getType(schema, id):
+  for item in schema['types']:
+    if item['id'] == id:
+      return item
+
 class IdlSchemaTest(unittest.TestCase):
   def setUp(self):
     loaded = idl_schema.Load('test/idl_basics.idl')
@@ -50,6 +55,21 @@ class IdlSchemaTest(unittest.TestCase):
                  'items':{'type':'function', 'name':'MyCallback',
                           'parameters':[{'type':'integer', 'name':'x'}]}}]
     self.assertEquals(expected, getParams(schema, 'whatever'))
+
+  def testEnum(self):
+    schema = self.idl_basics
+    expected = {'enum': ['name1', 'name2'],
+                'type': 'string', 'id': 'idl_basics.EnumType'}
+    self.assertEquals(expected, getType(schema, 'idl_basics.EnumType'))
+
+    expected = [{'name':'type', '$ref':'idl_basics.EnumType'},
+                {'type':'function', 'name':'Callback5',
+                  'parameters':[{'name':'type', '$ref':'idl_basics.EnumType'}]}]
+    self.assertEquals(expected, getParams(schema, 'function13'))
+
+    expected = [{'items': {'$ref': 'idl_basics.EnumType'}, 'name': 'types',
+                 'type': 'array'}]
+    self.assertEquals(expected, getParams(schema, 'function14'))
 
 if __name__ == '__main__':
   unittest.main()

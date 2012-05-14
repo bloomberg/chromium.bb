@@ -5,6 +5,11 @@
 // Tests a variety of basic API definition features.
 
 namespace idl_basics {
+  enum EnumType {
+    name1,
+    name2
+  };
+
   dictionary MyType1 {
     long x; // This comment tests "double-quotes".
     DOMString y;
@@ -18,6 +23,7 @@ namespace idl_basics {
   callback Callback2 = void(long x);
   callback Callback3 = void(MyType1 arg);
   callback Callback4 = void(MyType2[] arg);
+  callback Callback5 = void(EnumType type);
 
   interface Functions {
     static void function1();
@@ -36,11 +42,15 @@ namespace idl_basics {
     static void function11(MyType1[] arg);
 
     static void function12(Callback4 cb);
+
+    static void function13(EnumType type, Callback5 cb);
+    static void function14(EnumType[] types);
   };
 
   interface Events {
     static void onFoo1();
     static void onFoo2(long x);
     static void onFoo2(MyType1 arg);
+    static void onFoo3(EnumType type);
   };
 };

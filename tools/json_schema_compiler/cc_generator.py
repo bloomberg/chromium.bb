@@ -358,6 +358,7 @@ class CCGenerator(object):
     elif self._IsFundamentalOrFundamentalRef(prop):
       if prop.optional:
         var = '*' + var
+      prop = self._cpp_type_generator.GetReferencedProperty(prop);
       return {
           PropertyType.STRING: 'Value::CreateStringValue(%s)',
           PropertyType.BOOLEAN: 'Value::CreateBooleanValue(%s)',

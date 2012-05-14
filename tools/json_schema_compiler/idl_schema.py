@@ -97,6 +97,28 @@ class Dictionary(object):
              'properties': properties,
              'type': 'object' }
 
+class Enum(object):
+  '''
+  Given an IDL Enum node, converts into a Python dictionary that the JSON
+  schema compiler expects to see.
+  '''
+  def __init__(self, enum_node):
+    self.node = enum_node
+
+  def process(self, callbacks):
+    enum = []
+    for node in self.node.children:
+      if node.cls == 'EnumItem':
+        name = node.GetName()
+        enum.append(name)
+      else:
+        sys.exit("Did not process %s %s" % (node.cls, node))
+    return { "id" : self.node.GetName(),
+             'enum': enum,
+             'type': 'string' }
+
+
+
 class Member(object):
   '''
   Given an IDL dictionary or interface member, converts into a name/value pair
@@ -215,6 +237,8 @@ class Namespace(object):
         self.functions = self.process_interface(node)
       elif cls == "Interface" and node.GetName() == "Events":
         self.events = self.process_interface(node)
+      elif cls == "Enum":
+        self.types.append(Enum(node).process(self.callbacks))
       else:
         sys.exit("Did not process %s %s" % (node.cls, node))
 
