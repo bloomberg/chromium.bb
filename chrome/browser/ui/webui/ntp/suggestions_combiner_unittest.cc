@@ -274,14 +274,14 @@ class SuggestionsCombinerTest : public testing::Test {
 
 TEST_F(SuggestionsCombinerTest, NoSource) {
   combiner_->FetchItems(NULL);
-  EXPECT_EQ(0UL, combiner_->GetPagesValue()->GetSize());
+  EXPECT_EQ(0UL, combiner_->GetPageValues()->GetSize());
 }
 
 TEST_F(SuggestionsCombinerTest, SourcesAreNotDoneFetching) {
   combiner_->AddSource(new SuggestionsSourceStub(1, "sourceA", 10));
   combiner_->AddSource(new SuggestionsSourceStub(1, "sourceB", 10));
   combiner_->FetchItems(NULL);
-  EXPECT_EQ(0UL, combiner_->GetPagesValue()->GetSize());
+  EXPECT_EQ(0UL, combiner_->GetPageValues()->GetSize());
 }
 
 TEST_F(SuggestionsCombinerTest, TestSuite) {
@@ -317,7 +317,7 @@ TEST_F(SuggestionsCombinerTest, TestSuite) {
     }
 
     // Verify expectations.
-    base::ListValue* results = combiner_->GetPagesValue();
+    base::ListValue* results = combiner_->GetPageValues();
     size_t result_count = results->GetSize();
     EXPECT_LE(result_count, 8UL);
     for (size_t j = 0; j < 8; ++j) {

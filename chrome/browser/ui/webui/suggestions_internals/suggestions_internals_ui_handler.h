@@ -8,20 +8,30 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;
 
 // UI Handler for chrome://suggestions-internals/
-class SuggestionsInternalsUIHandler : public content::WebUIMessageHandler {
+class SuggestionsInternalsUIHandler : public content::WebUIMessageHandler,
+                                      public SuggestionsCombiner::Delegate {
  public:
   explicit SuggestionsInternalsUIHandler(Profile* profile);
   virtual ~SuggestionsInternalsUIHandler();
+
+  // SuggestionsCombiner::Delegate implementation.
+  virtual void OnSuggestionsReady() OVERRIDE;
 
  protected:
   // WebUIMessageHandler implementation.
   // Register our handler to get callbacks from javascript.
   virtual void RegisterMessages() OVERRIDE;
+
+  void HandleGetSuggestions(const base::ListValue* one_element_input_string);
+
+  // Used to combine suggestions from various sources.
+  scoped_ptr<SuggestionsCombiner> suggestions_combiner_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsInternalsUIHandler);
 };

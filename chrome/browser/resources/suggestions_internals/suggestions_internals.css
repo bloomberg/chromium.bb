@@ -2,4 +2,23 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* TODO(macourteau): implement this, which is a placeholder. */
+.suggestions-debug-table {
+  border: 1px solid grey;
+  margin-bottom: 1.5em;
+}
+
+.suggestions-debug-table th {
+  border: 1px solid grey;
+}
+
+.suggestions-debug-table td {
+  border: 1px solid grey;
+}
+
+p {
+  margin: 0;
+}
+
+.input-section {
+  margin-bottom: 1em;
+}

@@ -43,18 +43,20 @@ class SuggestionsCombiner {
   // Fetch a new set of items from the various suggestion sources.
   void FetchItems(Profile* profile);
 
-  base::ListValue* GetPagesValue();
+  base::ListValue* GetPageValues();
 
   // Called by a source when its items are ready. Make sure suggestion sources
   // call this method exactly once for each call to
   // SuggestionsSource::FetchItems.
   void OnItemsReady();
 
+  void SetSuggestionsCount(size_t suggestions_count);
+
  private:
-  // Fill the pages value from the suggestion sources so they can be sent to
-  // the javascript side. This should only be called when all the suggestion
+  // Fill the page values from the suggestion sources so they can be sent to
+  // the JavaScript side. This should only be called when all the suggestion
   // sources have items ready.
-  void FillPagesValue();
+  void FillPageValues();
 
   typedef ScopedVector<SuggestionsSource> SuggestionsSources;
 
@@ -74,7 +76,7 @@ class SuggestionsCombiner {
   size_t suggestions_count_;
 
   // Informations to send to the javascript side.
-  scoped_ptr<base::ListValue> pages_value_;
+  scoped_ptr<base::ListValue> page_values_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsCombiner);
 };

@@ -63,7 +63,7 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // SuggestionsCombiner::Delegate implementation
+  // SuggestionsCombiner::Delegate implementation.
   virtual void OnSuggestionsReady() OVERRIDE;
 
   static void RegisterUserPrefs(PrefService* prefs);

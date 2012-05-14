@@ -22,14 +22,14 @@ SuggestionsCombiner::SuggestionsCombiner(
     : sources_fetching_count_(0),
       delegate_(delegate),
       suggestions_count_(kSuggestionsCount),
-      pages_value_(new base::ListValue()) {
+      page_values_(new base::ListValue()) {
 }
 
 SuggestionsCombiner::~SuggestionsCombiner() {
 }
 
-base::ListValue* SuggestionsCombiner::GetPagesValue() {
-  return pages_value_.get();
+base::ListValue* SuggestionsCombiner::GetPageValues() {
+  return page_values_.get();
 }
 
 void SuggestionsCombiner::FetchItems(Profile* profile) {
@@ -44,13 +44,13 @@ void SuggestionsCombiner::AddSource(SuggestionsSource* source) {
   sources_.push_back(source);
 }
 
-void SuggestionsCombiner::FillPagesValue() {
+void SuggestionsCombiner::FillPageValues() {
   int total_weight = 0;
   for (size_t i = 0; i < sources_.size(); ++i)
     total_weight += sources_[i]->GetWeight();
   DCHECK_GT(total_weight, 0);
 
-  pages_value_.reset(new base::ListValue());
+  page_values_.reset(new base::ListValue());
 
   // Evaluate how many items to obtain from each sources. We use error diffusion
   // to ensure that we get the total desired number of items.
@@ -66,8 +66,8 @@ void SuggestionsCombiner::FillPagesValue() {
         sources_[i]->GetItemCount());
 
     for (int j = 0; j < item_count; ++j)
-      pages_value_->Append(sources_[i]->PopItem());
-    next_item_index_for_source.push_back(pages_value_->GetSize());
+      page_values_->Append(sources_[i]->PopItem());
+    next_item_index_for_source.push_back(page_values_->GetSize());
   }
 
   // Fill in extra items, prioritizing the first source.
@@ -76,12 +76,12 @@ void SuggestionsCombiner::FillPagesValue() {
   // number of extra items that were added and offset indices by that much.
   size_t extra_items_added = 0;
   for (size_t i = 0; i < sources_.size() &&
-      pages_value_->GetSize() < suggestions_count_; ++i) {
+      page_values_->GetSize() < suggestions_count_; ++i) {
 
     size_t index = next_item_index_for_source[i] + extra_items_added;
-    while (pages_value_->GetSize() < suggestions_count_ &&
+    while (page_values_->GetSize() < suggestions_count_ &&
         (item = sources_[i]->PopItem())) {
-      pages_value_->Insert(index++, item);
+      page_values_->Insert(index++, item);
       extra_items_added++;
     }
   }
@@ -91,7 +91,11 @@ void SuggestionsCombiner::OnItemsReady() {
   DCHECK_GT(sources_fetching_count_, 0);
   sources_fetching_count_--;
   if (sources_fetching_count_ == 0) {
-    FillPagesValue();
+    FillPageValues();
     delegate_->OnSuggestionsReady();
   }
+}
+
+void SuggestionsCombiner::SetSuggestionsCount(size_t suggestions_count) {
+  suggestions_count_ = suggestions_count;
 }

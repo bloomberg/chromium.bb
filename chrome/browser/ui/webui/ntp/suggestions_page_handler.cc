@@ -131,12 +131,12 @@ void SuggestionsHandler::OnSuggestionsReady() {
 }
 
 void SuggestionsHandler::SendPagesValue() {
-  if (suggestions_combiner_->GetPagesValue()) {
+  if (suggestions_combiner_->GetPageValues()) {
     // TODO(georgey) add actual blacklist.
     bool has_blacklisted_urls = false;
     base::FundamentalValue has_blacklisted_urls_value(has_blacklisted_urls);
     web_ui()->CallJavascriptFunction("ntp.setSuggestionsPages",
-                                     *suggestions_combiner_->GetPagesValue(),
+                                     *suggestions_combiner_->GetPageValues(),
                                      has_blacklisted_urls_value);
   }
 }
