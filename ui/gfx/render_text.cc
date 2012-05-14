@@ -738,7 +738,12 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   // Apply a selection style override to a copy of the style ranges.
   if (!selection().is_empty()) {
     StyleRange selection_style(default_style_);
+<<<<<<< HEAD
     selection_style.foreground = selection_color_;
+=======
+    selection_style.foreground = ui::NativeTheme::instance()->GetSystemColor(
+        ui::NativeTheme::kColorId_TextfieldSelectionColor);
+>>>>>>> ui: Move NativeTheme files into ui/base/native_theme/ directory.
     selection_style.range = ui::Range(selection().GetMin(),
                                       selection().GetMax());
     ApplyStyleRangeImpl(style_ranges, selection_style);
@@ -753,7 +758,13 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   // http://crbug.com/110109
   if (!insert_mode_ && cursor_visible() && focused()) {
     StyleRange replacement_mode_style(default_style_);
+<<<<<<< HEAD
     replacement_mode_style.foreground = selection_color_;
+=======
+    replacement_mode_style.foreground =
+        ui::NativeTheme::instance()->GetSystemColor(
+            ui::NativeTheme::kColorId_TextfieldSelectionColor);
+>>>>>>> ui: Move NativeTheme files into ui/base/native_theme/ directory.
     size_t cursor = cursor_position();
     replacement_mode_style.range.set_start(cursor);
     replacement_mode_style.range.set_end(
@@ -951,9 +962,17 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {
+<<<<<<< HEAD
   const SkColor color = focused() ? selection_background_focused_color_ :
                                     selection_background_unfocused_color_;
   const std::vector<Rect> sel = GetSubstringBounds(selection());
+=======
+  std::vector<Rect> sel = GetSubstringBounds(selection());
+  ui::NativeTheme::ColorId color_id = focused() ?
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused :
+      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused;
+  SkColor color = ui::NativeTheme::instance()->GetSystemColor(color_id);
+>>>>>>> ui: Move NativeTheme files into ui/base/native_theme/ directory.
   for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
     canvas->FillRect(*i, color);
 }
