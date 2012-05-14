@@ -40,8 +40,14 @@ void OptionsBrowserTest::VerifyTitle() {
   EXPECT_NE(title.find(expected_title), string16::npos);
 }
 
-// If this flakes, use http://crbug.com/119671
-IN_PROC_BROWSER_TEST_F(OptionsBrowserTest, LoadOptionsByURL) {
+// Observed flaky on Win and Mac, see http://crbug.com/119671.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_LoadOptionsByURL FLAKY_LoadOptionsByURL
+#else
+#define MAYBE_LoadOptionsByURL LoadOptionsByURL
+#endif
+
+IN_PROC_BROWSER_TEST_F(OptionsBrowserTest, MAYBE_LoadOptionsByURL) {
   NavigateToSettings();
   VerifyTitle();
   VerifyNavbar();
