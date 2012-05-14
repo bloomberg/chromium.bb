@@ -522,14 +522,14 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURL* FindDuplicateOfSyncTemplateURL(const TemplateURL& sync_turl);
 
   // Given a TemplateURL from the cloud and a local matching duplicate found by
-  // FindDuplcateOfSyncTemplateURL, merges the two. If |sync_url| is newer, this
-  // replaces |local_url| with |sync_url| using the service's Remove and Add.
-  // If |local_url| is newer, this copies the GUID from |sync_url| over to
-  // |local_url| and adds an update to change_list to notify the server of the
-  // change. This method takes ownership of |sync_url|, and adds it to the model
-  // if it is newer, so the caller must release it if need be.
-  void MergeSyncAndLocalURLDuplicates(TemplateURL* sync_url,
-                                      TemplateURL* local_url,
+  // FindDuplicateOfSyncTemplateURL, merges the two. If |sync_turl| is newer,
+  // this replaces |local_turl| with |sync_turl| using the service's Remove and
+  // Add. If |local_turl| is newer, this replaces |sync_turl| with |local_turl|
+  // through through adding appropriate SyncChanges to |change_list|. This
+  // method takes ownership of |sync_turl|, and adds it to the model if it is
+  // newer, so the caller must release it if need be.
+  void MergeSyncAndLocalURLDuplicates(TemplateURL* sync_turl,
+                                      TemplateURL* local_turl,
                                       SyncChangeList* change_list);
 
   // Checks a newly added TemplateURL from Sync by its sync_guid and sets it as

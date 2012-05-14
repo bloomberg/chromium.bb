@@ -91,37 +91,56 @@ TemplateURL* FirstPotentialDefaultEngine(
   return NULL;
 }
 
-// If |change_list| contains ACTION_UPDATEs followed by more ACTION_UPDATEs or
-// ACTION_ADDs for the same GUID, remove all but the last one.
-//
-// Removing UPDATE before ADD is important.  This can happen if
-// ResolveSyncKeywordConflict() changes a local TemplateURL that hasn't actually
-// been seen by the server yet.  In this case sending the UPDATE first might
-// confuse the sync server.
-//
-// Removing UPDATE before UPDATE, OTOH, is not really necessary as the server
-// will coalesce these before other clients see them; however it's easy to do in
-// conjunction with the filtering for UPDATE-before-ADD and saves bandwidth.
-void PreventDuplicateGUIDUpdates(SyncChangeList* change_list) {
-  for (size_t i = change_list->size(); i > 1; ) {
-    --i;  // Prevent underflow that could occur if we did this in the loop body.
-    const SyncChange& change_i = (*change_list)[i];
-    if ((change_i.change_type() != SyncChange::ACTION_ADD) &&
-        (change_i.change_type() != SyncChange::ACTION_UPDATE))
-      continue;
-    std::string guid(
-        change_i.sync_data().GetSpecifics().search_engine().sync_guid());
-    for (size_t j = 0; j < i; ) {
+// Returns true iff the change in |change_list| at index |i| should not be sent
+// up to the server based on its GUIDs presence in |sync_data| or when compared
+// to changes after it in |change_list|.
+// The criteria is:
+//  1) It is an ACTION_UPDATE or ACTION_DELETE and the sync_guid associated
+//     with it is NOT found in |sync_data|. We can only update and remove
+//     entries that were originally from the Sync server.
+//  2) It is an ACTION_ADD and the sync_guid associated with it is found in
+//     |sync_data|. We cannot re-add entries that Sync already knew about.
+//  3) There is an update after an update for the same GUID. We prune earlier
+//     ones just to save bandwidth (Sync would normally coalesce them).
+bool ShouldRemoveSyncChange(size_t index,
+                            SyncChangeList* change_list,
+                            const SyncDataMap* sync_data) {
+  DCHECK(index < change_list->size());
+  const SyncChange& change_i = (*change_list)[index];
+  const std::string guid = change_i.sync_data().GetSpecifics()
+      .search_engine().sync_guid();
+  SyncChange::SyncChangeType type = change_i.change_type();
+  if ((type == SyncChange::ACTION_UPDATE ||
+       type == SyncChange::ACTION_DELETE) &&
+       sync_data->find(guid) == sync_data->end())
+    return true;
+  if (type == SyncChange::ACTION_ADD &&
+      sync_data->find(guid) != sync_data->end())
+    return true;
+  if (type == SyncChange::ACTION_UPDATE) {
+    for (size_t j = index + 1; j < change_list->size(); j++) {
       const SyncChange& change_j = (*change_list)[j];
-      if ((change_j.change_type() == SyncChange::ACTION_UPDATE) &&
+      if ((SyncChange::ACTION_UPDATE == change_j.change_type()) &&
           (change_j.sync_data().GetSpecifics().search_engine().sync_guid() ==
-              guid)) {
-        change_list->erase(change_list->begin() + j);
-        --i;
-      } else {
-        ++j;
-      }
+              guid))
+        return true;
     }
+  }
+  return false;
+}
+
+// Remove SyncChanges that should not be sent to the server from |change_list|.
+// This is done to eliminate incorrect SyncChanges added by the merge and
+// conflict resolution logic when it is unsure of whether or not an entry is new
+// from Sync or originally from the local model. This also removes changes that
+// would be otherwise be coalesced by Sync in order to save bandwidth.
+void PruneSyncChanges(const SyncDataMap* sync_data,
+                      SyncChangeList* change_list) {
+  for (size_t i = 0; i < change_list->size(); ) {
+    if (ShouldRemoveSyncChange(i, change_list, sync_data))
+      change_list->erase(change_list->begin() + i);
+    else
+      ++i;
   }
 }
 
@@ -904,7 +923,6 @@ SyncError TemplateURLService::ProcessSyncChanges(
               SyncChange::ChangeTypeToString(iter->change_type()));
     }
   }
-  PreventDuplicateGUIDUpdates(&new_changes);
 
   // If something went wrong, we want to prematurely exit to avoid pushing
   // inconsistent data to Sync. We return the last error we received.
@@ -1022,7 +1040,9 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
     new_changes.push_back(SyncChange(SyncChange::ACTION_ADD, iter->second));
   }
 
-  PreventDuplicateGUIDUpdates(&new_changes);
+  // Do some post-processing on the change list to ensure that we are sending
+  // valid changes to sync_processor_.
+  PruneSyncChanges(&sync_data_map, &new_changes);
 
   SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   if (error.IsSet())
@@ -2115,8 +2135,8 @@ void TemplateURLService::ResolveSyncKeywordConflict(
       // down from the sync server, we need to go ahead and generate an update
       // for it.  If it was pre-existing, then this is unnecessary (and in fact
       // wrong) because MergeDataAndStartSyncing() will later add an ACTION_ADD
-      // for this URL; but in this case, PreventDuplicateGUIDUpdates() will
-      // prune out the ACTION_UPDATE we create here.
+      // for this URL; but in this case, PruneSyncChanges() will prune out the
+      // ACTION_UPDATE we create here.
       SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
       change_list->push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
     }
@@ -2148,6 +2168,18 @@ void TemplateURLService::MergeSyncAndLocalURLDuplicates(
     DCHECK(!delete_default || !is_default_search_managed_);
     if (delete_default)
       default_search_provider_ = NULL;
+
+    if (!models_associated_) {
+      // We're doing our initial sync, so UpdateNoNotify() won't generate an
+      // ACTION_DELETE for the following Remove.  If this local URL is one that
+      // was just newly brought down from the sync server, we need to go ahead
+      // and generate a delete for it.  If it was pre-existing, then this is
+      // unnecessary (and in fact wrong) because the server doesn't know about
+      // it; but in this case, PruneSyncChanges() will prune out the
+      // ACTION_DELETE we create here.
+      SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
+      change_list->push_back(SyncChange(SyncChange::ACTION_DELETE, sync_data));
+    }
 
     Remove(local_turl);
 

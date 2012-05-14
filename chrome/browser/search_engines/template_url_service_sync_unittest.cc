@@ -560,25 +560,39 @@ TEST_F(TemplateURLServiceSyncTest, MergeSyncAndLocalURLDuplicates) {
   model()->Add(original_turl);
   TemplateURL* sync_turl = CreateTestTemplateURL(ASCIIToUTF16("key1"),
       "http://key1.com", std::string(), 9001);
+  std::string original_guid = original_turl->sync_guid();
   SyncChangeList changes;
 
-  // The sync TemplateURL is newer. It should replace the original TemplateURL.
+  // The sync TemplateURL is newer. It should replace the original TemplateURL
+  // and a SyncChange should be added to the list.
   // Note that MergeSyncAndLocalURLDuplicates takes ownership of sync_turl.
   model()->MergeSyncAndLocalURLDuplicates(sync_turl, original_turl, &changes);
   TemplateURL* result = model()->GetTemplateURLForKeyword(ASCIIToUTF16("key1"));
   ASSERT_TRUE(result);
   EXPECT_EQ(9001, result->last_modified().ToTimeT());
-  EXPECT_EQ(0U, changes.size());
+  EXPECT_EQ(1U, changes.size());
+  // We expect a change to delete the local entry.
+  SyncChange change = changes.at(0);
+  EXPECT_EQ(SyncChange::ACTION_DELETE, change.change_type());
+  EXPECT_EQ(original_guid,
+            change.sync_data().GetSpecifics().search_engine().sync_guid());
+  changes.clear();
 
   // The sync TemplateURL is older. The existing TemplateURL should win and a
   // SyncChange should be added to the list.
   TemplateURL* sync_turl2 = CreateTestTemplateURL(ASCIIToUTF16("key1"),
       "http://key1.com", std::string(), 8999);
+  std::string sync_guid = sync_turl2->sync_guid();
   model()->MergeSyncAndLocalURLDuplicates(sync_turl2, sync_turl, &changes);
   result = model()->GetTemplateURLForKeyword(ASCIIToUTF16("key1"));
   ASSERT_TRUE(result);
   EXPECT_EQ(9001, result->last_modified().ToTimeT());
   EXPECT_EQ(1U, changes.size());
+  // We expect a change to update the sync entry.
+  change = changes.at(0);
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+  EXPECT_EQ(sync_guid,
+            change.sync_data().GetSpecifics().search_engine().sync_guid());
 }
 
 TEST_F(TemplateURLServiceSyncTest, StartSyncEmpty) {
