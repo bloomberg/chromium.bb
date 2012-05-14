@@ -1758,20 +1758,17 @@ FileManager.prototype = {
     return path;
   };
 
-  /**
-   * Handler for root item being clicked.
-   * @private
-   * @param {Entry} entry Entry to navigate to.
-   * @param {Event} event The event.
-   */
-  FileManager.prototype.onRootClick_ = function(entry, event) {
-    this.directoryModel_.changeDirectoryOrRoot(entry.fullPath);
-  };
-
   FileManager.prototype.renderRoot_ = function(entry) {
     var li = this.document_.createElement('li');
     li.className = 'root-item';
-    li.addEventListener('click', this.onRootClick_.bind(this, entry));
+    var dm = this.directoryModel_;
+    var handleClick = function() {
+      if (li.selected) {
+        dm.changeDirectory(entry.fullPath);
+      }
+    };
+    li.addEventListener('mousedown', handleClick);
+    li.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_START, handleClick);
 
     var rootType = DirectoryModel.getRootType(entry.fullPath);
 

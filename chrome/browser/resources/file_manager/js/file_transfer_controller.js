@@ -13,7 +13,13 @@ var MAX_DRAG_THUMBAIL_COUNT = 4;
 var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
 
 /**
- * TODO(olege): Fix style warnings.
+ * @constructor
+ * @param {cr.ui.ArrayDataModel} fileList Files in the current directory.
+ * @param {cr.ui.ListSelectionModel} fileListSelection Selection in the
+ *     fileList.
+ * @param {function} dragNodeConstructor Constructor for draggable node.
+ * @param {FileCopyManager} copyManager Copy manager instance.
+ * @param {DirectoryModel} directoryModel Directory model instance.
  */
 function FileTransferController(fileList,
                                 fileListSelection,
@@ -32,12 +38,14 @@ function FileTransferController(fileList,
   /**
    * DOM elements to represent selected files in drag operation.
    * @type {Array.<Element>}
+   * @private
    */
   this.dragNodes_ = [];
 
   /**
    * File objects for seletced files.
    * @type {Array.<File>}
+   * @private
    */
   this.files_ = [];
 
@@ -159,6 +167,7 @@ FileTransferController.prototype = {
    * @param {string=} opt_effect Desired drop/paste effect. Could be
    *     'move'|'copy' (default is copy). Ignored if conflicts with
    *     |dataTransfer.effectAllowed|.
+   * @return {string} Either "copy" or "move".
    */
   paste: function(dataTransfer, opt_destinationPath, opt_effect) {
     var destinationPath = opt_destinationPath ||
@@ -331,7 +340,7 @@ FileTransferController.prototype = {
     }
     if (domElement && isDirectory && opt_destinationPath) {
       this.navigateTimer_ = setTimeout(function() {
-        this.directoryModel_.changeDirectoryOrRoot(opt_destinationPath);
+        this.directoryModel_.changeRoot(opt_destinationPath);
       }.bind(this), 2000);
     }
   },

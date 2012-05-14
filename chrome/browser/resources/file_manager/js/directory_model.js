@@ -40,6 +40,8 @@ function DirectoryModel(root, singleSelection, showGData, metadataCache) {
 
   this.rootsList_ = new cr.ui.ArrayDataModel([]);
   this.rootsListSelection_ = new cr.ui.ListSingleSelectionModel();
+  this.rootsListSelection_.addEventListener(
+      'change', this.onRootChange_.bind(this));
 
   /**
    * A map root.fullPath -> currentDirectory.fullPath.
@@ -477,7 +479,6 @@ DirectoryModel.prototype.scan_ = function(callback) {
     this.runningScan_.cancel();
     this.runningScan_ = null;
   }
-  this.pendingScan_ = null;
 
   var onDone = function() {
     cr.dispatchSimpleEvent(this, 'scan-completed');
@@ -712,15 +713,27 @@ DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
 };
 
 /**
+ * Handler for root item being clicked.
+ * @private
+ * @param {Entry} entry Entry to navigate to.
+ * @param {Event} event The event.
+ */
+DirectoryModel.prototype.onRootChange_ = function(entry, event) {
+  var newRootDir = this.getCurrentRootDirEntry();
+  if (newRootDir)
+    this.changeRoot(newRootDir.fullPath);
+};
+
+/**
  * Changes directory. If path points to a root (except current one)
  * then directory changed to the last used one for the root.
  *
  * @param {string} path New current directory path or new root.
  */
-DirectoryModel.prototype.changeDirectoryOrRoot = function(path) {
-  if (DirectoryModel.getRootPath(path) == this.getCurrentRootPath()) {
-    this.changeDirectory(path);
-  } else if (this.currentDirByRoot_[path]) {
+DirectoryModel.prototype.changeRoot = function(path) {
+  if (this.getCurrentRootPath() == path)
+    return;
+  if (this.currentDirByRoot_[path]) {
     this.resolveDirectory(
         this.currentDirByRoot_[path],
         this.changeDirectoryEntry_.bind(this, false),
@@ -1040,20 +1053,6 @@ DirectoryModel.prototype.updateRoots = function(opt_callback,
     if (opt_callback)
       opt_callback();
   }, opt_resolveGData);
-};
-
-/**
- * Change root. In case user already opened the root, the last selected
- * directory will be selected.
- * @param {string} rootPath The path of the root.
- */
-DirectoryModel.prototype.changeRoot = function(rootPath) {
-  if (this.currentDirByRoot_[rootPath]) {
-    var onFail = this.changeDirectory.bind(this, rootPath);
-    this.changeDirectory(this.currentDirByRoot_[rootPath], onFail);
-  } else {
-    this.changeDirectory(rootPath);
-  }
 };
 
 /**
