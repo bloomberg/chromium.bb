@@ -60,11 +60,24 @@ bool ExtensionActionFunction::RunImpl() {
         CHECK(first_arg->GetAsInteger(&tab_id_));
         break;
 
-      case Value::TYPE_DICTIONARY:
+      case Value::TYPE_DICTIONARY: {
         details_ = static_cast<base::DictionaryValue*>(first_arg);
-        if (details_->HasKey("tabId"))
-          EXTENSION_FUNCTION_VALIDATE(details_->GetInteger("tabId", &tab_id_));
+        base::Value* tab_id_value = NULL;
+        if (details_->Get("tabId", &tab_id_value)) {
+          switch (tab_id_value->GetType()) {
+            case Value::TYPE_NULL:
+              // Fine, equivalent to it being not-there, and tabId is optional.
+              break;
+            case Value::TYPE_INTEGER:
+              CHECK(tab_id_value->GetAsInteger(&tab_id_));
+              break;
+            default:
+              // Boom.
+              EXTENSION_FUNCTION_VALIDATE(false);
+          }
+        }
         break;
+      }
 
       default:
         EXTENSION_FUNCTION_VALIDATE(false);
