@@ -142,6 +142,23 @@ class UI_EXPORT RenderText {
   SkColor cursor_color() const { return cursor_color_; }
   void set_cursor_color(SkColor color) { cursor_color_ = color; }
 
+  SkColor selection_color() const { return selection_color_; }
+  void set_selection_color(SkColor color) { selection_color_ = color; }
+
+  SkColor selection_background_focused_color() const {
+    return selection_background_focused_color_;
+  }
+  void set_selection_background_focused_color(SkColor color) {
+    selection_background_focused_color_ = color;
+  }
+
+  SkColor selection_background_unfocused_color() const {
+    return selection_background_unfocused_color_;
+  }
+  void set_selection_background_unfocused_color(SkColor color) {
+    selection_background_unfocused_color_ = color;
+  }
+
   bool focused() const { return focused_; }
   void set_focused(bool focused) { focused_ = focused; }
 
@@ -423,6 +440,15 @@ class UI_EXPORT RenderText {
 
   // The color used for the cursor.
   SkColor cursor_color_;
+
+  // The color used for drawing selected text.
+  SkColor selection_color_;
+
+  // The background color used for drawing the selection when focused.
+  SkColor selection_background_focused_color_;
+
+  // The background color used for drawing the selection when not focused.
+  SkColor selection_background_unfocused_color_;
 
   // The focus state of the text.
   bool focused_;

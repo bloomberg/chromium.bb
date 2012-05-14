@@ -18,7 +18,6 @@
 #include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
-#include "ui/gfx/native_theme.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/shadow_value.h"
 
@@ -31,6 +30,12 @@ const char16 kPasswordReplacementChar = '*';
 
 // Default color used for the cursor.
 const SkColor kDefaultCursorColor = SK_ColorBLACK;
+
+// Default color used for drawing selection text.
+const SkColor kDefaultSelectionColor = SK_ColorBLACK;
+
+// Default color used for drawing selection background.
+const SkColor kDefaultSelectionBackgroundColor = SK_ColorGRAY;
 
 #ifndef NDEBUG
 // Check StyleRanges invariant conditions: sorted and non-overlapping ranges.
@@ -666,6 +671,9 @@ RenderText::RenderText()
       cursor_visible_(false),
       insert_mode_(true),
       cursor_color_(kDefaultCursorColor),
+      selection_color_(kDefaultSelectionColor),
+      selection_background_focused_color_(kDefaultSelectionBackgroundColor),
+      selection_background_unfocused_color_(kDefaultSelectionBackgroundColor),
       focused_(false),
       composition_range_(ui::Range::InvalidRange()),
       obscured_(false),
@@ -729,8 +737,7 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   // Apply a selection style override to a copy of the style ranges.
   if (!selection().is_empty()) {
     StyleRange selection_style(default_style_);
-    selection_style.foreground = NativeTheme::instance()->GetSystemColor(
-        NativeTheme::kColorId_TextfieldSelectionColor);
+    selection_style.foreground = selection_color_;
     selection_style.range = ui::Range(selection().GetMin(),
                                       selection().GetMax());
     ApplyStyleRangeImpl(style_ranges, selection_style);
@@ -745,8 +752,7 @@ void RenderText::ApplyCompositionAndSelectionStyles(
   // http://crbug.com/110109
   if (!insert_mode_ && cursor_visible() && focused()) {
     StyleRange replacement_mode_style(default_style_);
-    replacement_mode_style.foreground = NativeTheme::instance()->GetSystemColor(
-        NativeTheme::kColorId_TextfieldSelectionColor);
+    replacement_mode_style.foreground = selection_color_;
     size_t cursor = cursor_position();
     replacement_mode_style.range.set_start(cursor);
     replacement_mode_style.range.set_end(
@@ -944,11 +950,9 @@ void RenderText::UpdateCachedBoundsAndOffset() {
 }
 
 void RenderText::DrawSelection(Canvas* canvas) {
-  std::vector<Rect> sel = GetSubstringBounds(selection());
-  NativeTheme::ColorId color_id = focused() ?
-      NativeTheme::kColorId_TextfieldSelectionBackgroundFocused :
-      NativeTheme::kColorId_TextfieldSelectionBackgroundUnfocused;
-  SkColor color = NativeTheme::instance()->GetSystemColor(color_id);
+  const SkColor color = focused() ? selection_background_focused_color_ :
+                                    selection_background_unfocused_color_;
+  const std::vector<Rect> sel = GetSubstringBounds(selection());
   for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
     canvas->FillRect(*i, color);
 }
