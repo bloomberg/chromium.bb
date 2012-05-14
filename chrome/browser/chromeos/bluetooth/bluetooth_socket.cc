@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <string.h>
 
 #include "chrome/browser/chromeos/bluetooth/bluetooth_service_record.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_utils.h"
@@ -36,20 +37,23 @@ scoped_refptr<BluetoothSocket> BluetoothSocket::CreateBluetoothSocket(
     struct sockaddr_rc socket_address = { 0 };
     socket_address.rc_family = AF_BLUETOOTH;
     socket_address.rc_channel = service_record.rfcomm_channel();
-    bdaddr_t bluetooth_address;
-    bluetooth_utils::str2ba(service_record.address(), &bluetooth_address);
+    bluetooth_utils::str2ba(service_record.address(),
+        &socket_address.rc_bdaddr);
 
     int status = connect(socket_fd, (struct sockaddr *)&socket_address,
         sizeof(socket_address));
-    if (status == 0 || errno == EINPROGRESS)
+    int errsv = errno;
+    if (status == 0 || errno == EINPROGRESS) {
       bluetooth_socket = new BluetoothSocket(service_record.address(),
           socket_fd);
-    else
+    } else {
+      LOG(ERROR) << "Failed to connect bluetooth socket "
+          << "(" << service_record.address() << "): "
+          << "(" << errsv << ") " << strerror(errsv);
       close(socket_fd);
-  } else {
-    // TODO(bryeung): add support for L2CAP sockets as well.
-    return NULL;
+    }
   }
+  // TODO(bryeung): add support for L2CAP sockets as well.
 
   return scoped_refptr<BluetoothSocket>(bluetooth_socket);
 }
