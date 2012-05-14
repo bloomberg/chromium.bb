@@ -38,6 +38,9 @@ const char kEchoServerURL[] = "websocket/tests/hybi/echo-with-no-extension";
 
 const char kCloseServerURL[] = "websocket/tests/hybi/close";
 
+const char kCloseWithCodeAndReasonServerURL[] =
+    "websocket/tests/hybi/close-code-and-reason";
+
 const char kProtocolTestServerURL[] =
     "websocket/tests/hybi/protocol-test?protocol=";
 
@@ -632,6 +635,21 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_ERROR_ABORTED, result);
   result = another_callback.WaitForResult();
   ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Server initiated closing handshake.
+  ws = Connect(GetFullURL(kCloseWithCodeAndReasonServerURL), &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  // Text messsage "1000 bye" requests the server to initiate closing handshake
+  // with code being 1000 and reason being "bye".
+  PP_Var close_request_var = CreateVarString("1000 bye");
+  result = websocket_interface_->SendMessage(ws, close_request_var);
+  ReleaseVar(close_request_var);
+  callback.WaitForResult(websocket_interface_->ReceiveMessage(
+      ws, &receive_message_var,
+      callback.GetCallback().pp_completion_callback()));
+  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
   core_interface_->ReleaseResource(ws);
 
   ReleaseVar(reason);

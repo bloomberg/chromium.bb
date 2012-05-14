@@ -512,10 +512,10 @@ void PPB_WebSocket_Impl::didClose(unsigned long unhandled_buffered_amount,
   if (wait_for_receive_) {
     wait_for_receive_ = false;
     receive_callback_var_ = NULL;
-    TrackedCallback::ClearAndAbort(&receive_callback_);
+    TrackedCallback::ClearAndRun(&receive_callback_, PP_ERROR_FAILED);
   }
 
-  if (state == PP_WEBSOCKETREADYSTATE_CLOSING)
+  if ((state == PP_WEBSOCKETREADYSTATE_CLOSING) && close_callback_.get())
     TrackedCallback::ClearAndRun(&close_callback_, PP_OK);
 
   // Disconnect.
