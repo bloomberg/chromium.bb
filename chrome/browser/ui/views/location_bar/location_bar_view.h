@@ -311,16 +311,18 @@ class LocationBarView : public LocationBar,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Space between items in the location bar.
+  static int GetItemPadding();
+
+  // Space between the edges and the items next to them.
+  static int GetEdgeItemPadding();
+
   // Thickness of the left and right edges of the omnibox, in normal mode.
   static const int kNormalHorizontalEdgeThickness;
   // Thickness of the top and bottom edges of the omnibox.
   static const int kVerticalEdgeThickness;
-  // Space between items in the location bar.
-  static const int kItemPadding;
   // Amount of padding built into the standard omnibox icons.
   static const int kIconInternalPadding;
-  // Space between the edges and the items next to them.
-  static const int kEdgeItemPadding;
   // Space between the edge and a bubble.
   static const int kBubbleHorizontalPadding;
 

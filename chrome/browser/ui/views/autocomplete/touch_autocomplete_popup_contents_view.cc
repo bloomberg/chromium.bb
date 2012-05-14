@@ -13,7 +13,6 @@
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 
-
 // TouchAutocompleteResultView ------------------------------------------------
 
 TouchAutocompleteResultView::TouchAutocompleteResultView(
@@ -22,6 +21,9 @@ TouchAutocompleteResultView::TouchAutocompleteResultView(
     const gfx::Font& font,
     const gfx::Font& bold_font)
     : AutocompleteResultView(model, model_index, font, bold_font) {
+  set_edge_item_padding(8);
+  set_item_padding(8);
+  set_minimum_text_vertical_padding(10);
 }
 
 TouchAutocompleteResultView::~TouchAutocompleteResultView() {
@@ -30,24 +32,25 @@ TouchAutocompleteResultView::~TouchAutocompleteResultView() {
 void TouchAutocompleteResultView::PaintMatch(gfx::Canvas* canvas,
                                              const AutocompleteMatch& match,
                                              int x) {
-  DrawString(canvas, match.contents, match.contents_class, false, x,
-             text_bounds().y());
+  int y = text_bounds().y();
 
   if (!match.description.empty()) {
     // We use our base class's GetTextHeight below because we need the height
     // of a single line of text.
-    DrawString(canvas, match.description, match.description_class, true, x,
-        text_bounds().y() + AutocompleteResultView::GetTextHeight());
+    DrawString(canvas, match.description, match.description_class, true, x, y);
+    y += AutocompleteResultView::GetTextHeight();
+  } else {
+    // When we have only one line of content (no description), we center the
+    // single line vertically on our two-lines-tall results box.
+    y += AutocompleteResultView::GetTextHeight() / 2;
   }
+
+  DrawString(canvas, match.contents, match.contents_class, false, x, y);
 }
 
 int TouchAutocompleteResultView::GetTextHeight() const {
-  // In the touch version of the autocomplete popup, the text is displayed in
-  // two lines: First line is the title of the suggestion and second is the
-  // description. Hence, the total text height is twice the height of one line.
   return AutocompleteResultView::GetTextHeight() * 2;
 }
-
 
 // TouchAutocompletePopupContentsView -----------------------------------------
 
@@ -68,19 +71,6 @@ void TouchAutocompletePopupContentsView::UpdatePopupAppearance() {
   Layout();
 }
 
-void TouchAutocompletePopupContentsView::LayoutChildren() {
-  std::vector<View*> visible_children(GetVisibleChildren());
-  gfx::Rect bounds(GetContentsBounds());
-  double child_width =
-      static_cast<double>(bounds.width()) / visible_children.size();
-  int x = bounds.x();
-  for (size_t i = 0; i < visible_children.size(); ++i) {
-    int next_x = bounds.x() + static_cast<int>(((i + 1) * child_width) + 0.5);
-    visible_children[i]->SetBounds(x, bounds.y(), next_x - x, bounds.height());
-    x = next_x;
-  }
-}
-
 void TouchAutocompletePopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
   AutocompletePopupContentsView::PaintResultViews(canvas);
 
@@ -88,24 +78,25 @@ void TouchAutocompletePopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
   std::vector<View*> visible_children(GetVisibleChildren());
   if (visible_children.size() < 2)
     return;
-  SkColor color = AutocompleteResultView::GetColor(
-      AutocompleteResultView::NORMAL, AutocompleteResultView::DIMMED_TEXT);
   gfx::Rect bounds(GetContentsBounds());
-  for (std::vector<View*>::const_iterator i(visible_children.begin() + 1);
-       i != visible_children.end(); ++i) {
-    canvas->DrawLine(gfx::Point((*i)->x(), bounds.y()),
-                     gfx::Point((*i)->x(), bounds.bottom()), color);
-  }
-}
 
-int TouchAutocompletePopupContentsView::CalculatePopupHeight() {
-  DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
-  int popup_height = 0;
-  for (size_t i = 0; i < model_->result().size(); ++i) {
-    popup_height = std::max(popup_height,
-                            child_at(i)->GetPreferredSize().height());
+  // Draw a line at the bottom of each child except the last.  The
+  // color of the line is determined to blend appropriately with the
+  // most dominant of the two surrounding cells, in precedence order,
+  // i.e. selected > hovered > normal.
+  for (std::vector<View*>::const_iterator i(visible_children.begin());
+       i + 1 != visible_children.end(); ++i) {
+    TouchAutocompleteResultView* child =
+        static_cast<TouchAutocompleteResultView*>(*i);
+    TouchAutocompleteResultView* next_child =
+        static_cast<TouchAutocompleteResultView*>(*(i + 1));
+    SkColor divider_color = AutocompleteResultView::GetColor(
+        std::max(child->GetState(), next_child->GetState()),
+        AutocompleteResultView::DIVIDER);
+    int line_y = child->y() + child->height() - 1;
+    canvas->DrawLine(gfx::Point(bounds.x(), line_y),
+                     gfx::Point(bounds.right(), line_y), divider_color);
   }
-  return popup_height;
 }
 
 AutocompleteResultView* TouchAutocompletePopupContentsView::CreateResultView(

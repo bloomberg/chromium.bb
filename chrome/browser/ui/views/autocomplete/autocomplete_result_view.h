@@ -24,10 +24,12 @@ class Canvas;
 class AutocompleteResultView : public views::View,
                                private ui::AnimationDelegate {
  public:
+  // Keep these ordered from least dominant (normal) to most dominant
+  // (selected).
   enum ResultViewState {
     NORMAL = 0,
-    SELECTED,
     HOVERED,
+    SELECTED,
     NUM_STATES
   };
 
@@ -36,6 +38,7 @@ class AutocompleteResultView : public views::View,
     TEXT,
     DIMMED_TEXT,
     URL,
+    DIVIDER,
     NUM_KINDS
   };
 
@@ -59,6 +62,8 @@ class AutocompleteResultView : public views::View,
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
+  ResultViewState GetState() const;
+
  protected:
   virtual void PaintMatch(gfx::Canvas* canvas,
                           const AutocompleteMatch& match,
@@ -81,6 +86,12 @@ class AutocompleteResultView : public views::View,
 
   const gfx::Rect& text_bounds() const { return text_bounds_; }
 
+  void set_edge_item_padding(int value) { edge_item_padding_ = value; }
+  void set_item_padding(int value) { item_padding_ = value; }
+  void set_minimum_text_vertical_padding(int value) {
+    minimum_text_vertical_padding_ = value;
+  }
+
  private:
   struct ClassificationData;
   typedef std::vector<ClassificationData> Classifications;
@@ -92,7 +103,6 @@ class AutocompleteResultView : public views::View,
   static bool SortRunsLogically(const RunData& lhs, const RunData& rhs);
   static bool SortRunsVisually(const RunData& lhs, const RunData& rhs);
 
-  ResultViewState GetState() const;
   const SkBitmap* GetIcon() const;
   const SkBitmap* GetKeywordIcon() const;
 
@@ -121,6 +131,11 @@ class AutocompleteResultView : public views::View,
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   static int default_icon_size_;
+
+  // Default values cached here, may be overridden using the setters above.
+  int edge_item_padding_;
+  int item_padding_;
+  int minimum_text_vertical_padding_;
 
   // This row's model and model index.
   AutocompleteResultViewModel* model_;

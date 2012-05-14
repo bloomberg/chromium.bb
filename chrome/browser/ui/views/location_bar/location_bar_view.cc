@@ -50,6 +50,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -89,14 +90,18 @@ const int kBorderRoundCornerWidth = 4;
 // Radius of the round corners inside the location bar.
 const int kBorderCornerRadius = 2;
 
+const int kDesktopItemPadding = 3;
+const int kDesktopEdgeItemPadding = kDesktopItemPadding;
+
+const int kTouchItemPadding = 8;
+const int kTouchEdgeItemPadding = kTouchItemPadding;
+
 }  // namespace
 
 // static
 const int LocationBarView::kNormalHorizontalEdgeThickness = 2;
 const int LocationBarView::kVerticalEdgeThickness = 3;
-const int LocationBarView::kItemPadding = 3;
 const int LocationBarView::kIconInternalPadding = 2;
-const int LocationBarView::kEdgeItemPadding = kItemPadding;
 const int LocationBarView::kBubbleHorizontalPadding = 1;
 const char LocationBarView::kViewClassName[] =
     "browser/ui/views/location_bar/LocationBarView";
@@ -301,6 +306,18 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
       NOTREACHED();
       return GetColor(security_level, TEXT);
   }
+}
+
+// static
+int LocationBarView::GetItemPadding() {
+  return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
+      kTouchItemPadding : kDesktopItemPadding;
+}
+
+// static
+int LocationBarView::GetEdgeItemPadding() {
+  return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
+      kTouchEdgeItemPadding : kDesktopEdgeItemPadding;
 }
 
 // DropdownBarHostDelegate
@@ -513,15 +530,13 @@ void LocationBarView::Layout() {
   const int kEditInternalSpace = 1;
   // The space between an item and the edit is the normal item space, minus the
   // edit's built-in space (so the apparent space will be the same).
-  const int kItemEditPadding =
-      LocationBarView::kItemPadding - kEditInternalSpace;
-  const int kEdgeEditPadding =
-      LocationBarView::kEdgeItemPadding - kEditInternalSpace;
+  const int kItemEditPadding = GetItemPadding() - kEditInternalSpace;
+  const int kEdgeEditPadding = GetEdgeItemPadding() - kEditInternalSpace;
   const int kBubbleVerticalPadding = (mode_ == POPUP) ?
       -1 : kBubbleHorizontalPadding;
 
   // Start by reserving the padding at the right edge.
-  int entry_width = width() - kEdgeThickness - kEdgeItemPadding;
+  int entry_width = width() - kEdgeThickness - GetEdgeItemPadding();
 
   // |location_icon_view_| is visible except when |ev_bubble_view_| or
   // |selected_keyword_view_| are visible.
@@ -543,24 +558,24 @@ void LocationBarView::Layout() {
   } else {
     location_icon_view_->SetVisible(true);
     location_icon_width = location_icon_view_->GetPreferredSize().width();
-    entry_width -= (kEdgeThickness + kEdgeItemPadding + location_icon_width +
-        kItemEditPadding);
+    entry_width -= (kEdgeThickness + GetEdgeItemPadding() +
+                    location_icon_width + kItemEditPadding);
   }
 
   if (star_view_ && star_view_->visible())
-    entry_width -= star_view_->GetPreferredSize().width() + kItemPadding;
+    entry_width -= star_view_->GetPreferredSize().width() + GetItemPadding();
   if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible())
     entry_width -= chrome_to_mobile_view_->GetPreferredSize().width() +
-                   kItemPadding;
+        GetItemPadding();
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->visible())
-      entry_width -= ((*i)->GetPreferredSize().width() + kItemPadding);
+      entry_width -= ((*i)->GetPreferredSize().width() + GetItemPadding());
   }
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
     if ((*i)->visible())
-      entry_width -= ((*i)->GetPreferredSize().width() + kItemPadding);
+      entry_width -= ((*i)->GetPreferredSize().width() + GetItemPadding());
   }
   // The gap between the edit and whatever is to its right is shortened.
   entry_width += kEditInternalSpace;
@@ -612,12 +627,12 @@ void LocationBarView::Layout() {
   }
 
   // Lay out items to the right of the edit field.
-  int offset = width() - kEdgeThickness - kEdgeItemPadding;
+  int offset = width() - kEdgeThickness - GetEdgeItemPadding();
   if (star_view_ && star_view_->visible()) {
     int star_width = star_view_->GetPreferredSize().width();
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
-    offset -= kItemPadding;
+    offset -= GetItemPadding();
   }
 
   if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible()) {
@@ -625,7 +640,7 @@ void LocationBarView::Layout() {
     offset -= icon_width;
     chrome_to_mobile_view_->SetBounds(offset, location_y,
                                       icon_width, location_height);
-    offset -= kItemPadding;
+    offset -= GetItemPadding();
   }
 
   for (PageActionViews::const_iterator i(page_action_views_.begin());
@@ -634,7 +649,7 @@ void LocationBarView::Layout() {
       int page_action_width = (*i)->GetPreferredSize().width();
       offset -= page_action_width;
       (*i)->SetBounds(offset, location_y, page_action_width, location_height);
-      offset -= kItemPadding;
+      offset -= GetItemPadding();
     }
   }
   // We use a reverse_iterator here because we're laying out the views from
@@ -647,13 +662,13 @@ void LocationBarView::Layout() {
       offset -= content_blocked_width;
       (*i)->SetBounds(offset, location_y, content_blocked_width,
                       location_height);
-      offset -= kItemPadding;
+      offset -= GetItemPadding();
     }
   }
 
   // Now lay out items to the left of the edit field.
   if (location_icon_view_->visible()) {
-    location_icon_view_->SetBounds(kEdgeThickness + kEdgeItemPadding,
+    location_icon_view_->SetBounds(kEdgeThickness + GetEdgeItemPadding(),
         location_y, location_icon_width, location_height);
     offset = location_icon_view_->bounds().right() + kItemEditPadding;
   } else if (ev_bubble_view_->visible()) {

@@ -215,7 +215,7 @@ void OmniboxViewViews::Init() {
 
   // Create popup view using the same font as |textfield_|'s.
   popup_view_.reset(
-      new AutocompletePopupContentsView(
+      AutocompletePopupContentsView::CreateForEnvironment(
           textfield_->font(), this, model_.get(), location_bar_view_));
 
   const int vertical_margin = !popup_window_mode_ ?

@@ -18,11 +18,13 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -77,6 +79,25 @@ class AutocompletePopupContentsView::AutocompletePopupWidget
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, public:
 
+AutocompletePopupContentsView*
+    AutocompletePopupContentsView::CreateForEnvironment(
+        const gfx::Font& font,
+        OmniboxView* omnibox_view,
+        AutocompleteEditModel* edit_model,
+        views::View* location_bar) {
+  AutocompletePopupContentsView* view = NULL;
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
+    view = new TouchAutocompletePopupContentsView(
+        font, omnibox_view, edit_model, location_bar);
+  } else {
+    view = new AutocompletePopupContentsView(
+        font, omnibox_view, edit_model, location_bar);
+  }
+
+  view->Init();
+  return view;
+}
+
 AutocompletePopupContentsView::AutocompletePopupContentsView(
     const gfx::Font& font,
     OmniboxView* omnibox_view,
@@ -99,7 +120,12 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
   set_border(bubble_border);
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
+}
 
+void AutocompletePopupContentsView::Init() {
+  // This can't be done in the constructor as at that point we aren't
+  // necessarily our final class yet, and we may have subclasses
+  // overriding CreateResultView.
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
     AutocompleteResultView* result_view =
         CreateResultView(this, i, result_font_, result_bold_font_);

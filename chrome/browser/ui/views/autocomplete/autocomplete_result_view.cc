@@ -103,7 +103,10 @@ AutocompleteResultView::AutocompleteResultView(
     int model_index,
     const gfx::Font& font,
     const gfx::Font& bold_font)
-    : model_(model),
+    : edge_item_padding_(LocationBarView::GetItemPadding()),
+      item_padding_(LocationBarView::GetItemPadding()),
+      minimum_text_vertical_padding_(kMinimumTextVerticalPadding),
+      model_(model),
       model_index_(model_index),
       normal_font_(font),
       bold_font_(bold_font),
@@ -170,6 +173,12 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
       colors[i][URL] = color_utils::GetReadableColor(SkColorSetRGB(0, 128, 0),
                                                      colors[i][BACKGROUND]);
 #endif
+
+      // TODO(joi): Programmatically draw the dropdown border using
+      // this color as well. (Right now it's drawn as black with 25%
+      // alpha.)
+      colors[i][DIVIDER] =
+          color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 0x34);
     }
     initialized = true;
   }
@@ -208,11 +217,18 @@ void AutocompleteResultView::Invalidate() {
 gfx::Size AutocompleteResultView::GetPreferredSize() {
   return gfx::Size(0, std::max(
       default_icon_size_ + (kMinimumIconVerticalPadding * 2),
-      GetTextHeight() + (kMinimumTextVerticalPadding * 2)));
+      GetTextHeight() + (minimum_text_vertical_padding_ * 2)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompleteResultView, protected:
+
+AutocompleteResultView::ResultViewState
+    AutocompleteResultView::GetState() const {
+  if (model_->IsSelectedIndex(model_index_))
+    return SELECTED;
+  return model_->IsHoveredIndex(model_index_) ? HOVERED : NORMAL;
+}
 
 void AutocompleteResultView::PaintMatch(gfx::Canvas* canvas,
                                         const AutocompleteMatch& match,
@@ -258,13 +274,6 @@ bool AutocompleteResultView::SortRunsVisually(const RunData& lhs,
 
 // static
 int AutocompleteResultView::default_icon_size_ = 0;
-
-AutocompleteResultView::ResultViewState
-    AutocompleteResultView::GetState() const {
-  if (model_->IsSelectedIndex(model_index_))
-    return SELECTED;
-  return model_->IsHoveredIndex(model_index_) ? HOVERED : NORMAL;
-}
 
 const SkBitmap* AutocompleteResultView::GetIcon() const {
   const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(model_index_);
@@ -564,33 +573,30 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
 void AutocompleteResultView::Layout() {
   const SkBitmap* icon = GetIcon();
 
-  icon_bounds_.SetRect(LocationBarView::kEdgeItemPadding +
+  icon_bounds_.SetRect(edge_item_padding_ +
       ((icon->width() == default_icon_size_) ?
           0 : LocationBarView::kIconInternalPadding),
       (height() - icon->height()) / 2, icon->width(), icon->height());
 
-  int text_x = LocationBarView::kEdgeItemPadding + default_icon_size_ +
-      LocationBarView::kItemPadding;
+  int text_x = edge_item_padding_ + default_icon_size_ + item_padding_;
   int text_height = GetTextHeight();
   int text_width;
 
   if (match_.associated_keyword.get()) {
-    const int kw_collapsed_size = keyword_icon_->width() +
-        LocationBarView::kEdgeItemPadding;
+    const int kw_collapsed_size =
+        keyword_icon_->width() + edge_item_padding_;
     const int max_kw_x = width() - kw_collapsed_size;
-    const int kw_x = animation_->CurrentValueBetween(max_kw_x,
-        LocationBarView::kEdgeItemPadding);
-    const int kw_text_x = kw_x + keyword_icon_->width() +
-        LocationBarView::kItemPadding;
+    const int kw_x =
+        animation_->CurrentValueBetween(max_kw_x, edge_item_padding_);
+    const int kw_text_x = kw_x + keyword_icon_->width() + item_padding_;
 
-    text_width = kw_x - text_x - LocationBarView::kItemPadding;
-    keyword_text_bounds_.SetRect(kw_text_x, 0, std::max(
-        width() - kw_text_x - LocationBarView::kEdgeItemPadding, 0),
-        text_height);
+    text_width = kw_x - text_x - item_padding_;
+    keyword_text_bounds_.SetRect(kw_text_x, 0,
+        std::max(width() - kw_text_x - edge_item_padding_, 0), text_height);
     keyword_icon_->SetPosition(gfx::Point(kw_x,
         (height() - keyword_icon_->height()) / 2));
   } else {
-    text_width = width() - text_x - LocationBarView::kEdgeItemPadding;
+    text_width = width() - text_x - edge_item_padding_;
   }
 
   text_bounds_.SetRect(text_x, std::max(0, (height() - text_height) / 2),
@@ -611,7 +617,7 @@ void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
       keyword_icon_->x() > icon_bounds_.right()) {
     // Paint the icon.
     canvas->DrawBitmapInt(*GetIcon(), GetMirroredXForRect(icon_bounds_),
-        icon_bounds_.y());
+                          icon_bounds_.y());
 
     // Paint the text.
     int x = GetMirroredXForRect(text_bounds_);
