@@ -825,9 +825,23 @@ def CMDupload(change_info, args):
   if FilterFlag(args, "--send-mail"):
     args.append("--send_mail")
 
-  # Replace -m or --message with -t.
-  args = map(lambda a: '-t' if (a == '-m' or a == '--message') else a, args)
-  
+  # Replace -m with -t and --message with --title, but make sure to
+  # preserve anything after the -m/--message.
+  found_deprecated_arg = [False]
+  def replace_message(a):
+    if a.startswith('-m'):
+      found_deprecated_arg[0] = True
+      return '-t' + a[2:]
+    elif a.startswith('--message'):
+      found_deprecated_arg[0] = True
+      return '--title' + a[9:]
+    return a
+  args = map(replace_message, args)
+  if found_deprecated_arg[0]:
+    print >> sys.stderr, (
+        '\nWARNING: Use -t or --title to set the title of the patchset.\n'
+        'In the near future, -m or --message will send a message instead.\n'
+        'See http://goo.gl/JGg0Z for details.\n')
 
   upload_arg = ["upload.py", "-y"]
   upload_arg.append("--server=%s" % change_info.rietveld)

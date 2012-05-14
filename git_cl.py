@@ -966,12 +966,19 @@ def RietveldUpload(options, args, cl):
   change_desc = None
 
   if cl.GetIssue():
-    if options.message:
-      upload_args.extend(['--message', options.message])
+    if options.title:
+      upload_args.extend(['--title', options.title])
+    elif options.message:
+      # TODO(rogerta): for now, the -m option will also set the --title option
+      # for upload.py.  Soon this will be changed to set the --message option.
+      # Will wait until people are used to typing -t instead of -m.
+      upload_args.extend(['--title', options.message])
     upload_args.extend(['--issue', cl.GetIssue()])
     print ("This branch is associated with issue %s. "
            "Adding patch to that issue." % cl.GetIssue())
   else:
+    if options.title:
+      upload_args.extend(['--title', options.title])
     message = options.message or CreateDescriptionFromLog(args)
     change_desc = ChangeDescription(message, options.reviewers)
     if not options.force:
@@ -1043,7 +1050,8 @@ def CMDupload(parser, args):
                     help='bypass upload presubmit hook')
   parser.add_option('-f', action='store_true', dest='force',
                     help="force yes to questions (don't prompt)")
-  parser.add_option('-m', dest='message', help='message for patch')
+  parser.add_option('-m', dest='message', help='message for patchset')
+  parser.add_option('-t', dest='title', help='title for patchset')
   parser.add_option('-r', '--reviewers',
                     help='reviewer email addresses')
   parser.add_option('--cc',
@@ -1064,6 +1072,14 @@ def CMDupload(parser, args):
                       help='target branch to upload')
   (options, args) = parser.parse_args(args)
 
+  # Print warning if the user used the -m/--message argument.  This will soon
+  # change to -t/--title.
+  if options.message:
+    print >> sys.stderr, (
+        '\nWARNING: Use -t or --title to set the title of the patchset.\n'
+        'In the near future, -m or --message will send a message instead.\n'
+        'See http://goo.gl/JGg0Z for details.\n')
+    
   # Make sure index is up-to-date before running diff-index.
   RunGit(['update-index', '--refresh', '-q'], error_ok=True)
   if RunGit(['diff-index', 'HEAD']):
