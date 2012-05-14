@@ -274,8 +274,8 @@ class Builder(object):
     # Re-write paths to use absolute paths.
     # Suppress any timeout options given from the commandline in the
     # invoked cbuildbot; our timeout will enforce it instead.
-    args_to_append = ['--resume', '--timeout', '0', '--notee', '--buildroot',
-                      os.path.abspath(self.options.buildroot)]
+    args_to_append = ['--resume', '--timeout', '0', '--notee', '--nocgroups',
+                      '--buildroot', os.path.abspath(self.options.buildroot)]
 
     if self.options.chrome_root:
       args_to_append += ['--chrome_root',
@@ -1066,7 +1066,7 @@ def main(argv):
                    'repo checkout; no .repo exists in the root.'
                    % (options.reference_repo,))
 
-  if options.buildbot or options.remote_trybot:
+  if (options.buildbot or options.remote_trybot) and not options.resume:
     if not options.cgroups:
       parser.error('Options --buildbot/--remote-trybot and --nocgroups cannot '
                    'be used together.  Cgroup support is required for '
