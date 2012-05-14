@@ -208,11 +208,15 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   void RevokeUsageCache() {
     quota_manager_->ResetUsageTracker(test_helper_.storage_type());
-    ASSERT_TRUE(test_helper_.RevokeUsageCache());
+    file_util::Delete(test_helper_.GetUsageCachePath(), false);
+  }
+
+  int64 SizeByQuotaUtil() {
+    return test_helper_.GetCachedOriginUsage();
   }
 
   int64 SizeInUsageFile() {
-    return test_helper_.GetCachedOriginUsage();
+    return FileSystemUsageCache::GetUsage(test_helper_.GetUsageCachePath());
   }
 
   int64 usage() const { return usage_; }
@@ -1487,11 +1491,20 @@ TEST_F(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
       expected_quota += test_case.data_file_size;
     }
   }
+
+  // Usually raw size in usage cache and the usage returned by QuotaUtil
+  // should be same.
   EXPECT_EQ(expected_quota, SizeInUsageFile());
+  EXPECT_EQ(expected_quota, SizeByQuotaUtil());
+
   RevokeUsageCache();
   EXPECT_EQ(-1, SizeInUsageFile());
+  EXPECT_EQ(expected_quota, SizeByQuotaUtil());
+
+  // This should reconstruct the cache.
   GetUsageFromQuotaManager();
   EXPECT_EQ(expected_quota, SizeInUsageFile());
+  EXPECT_EQ(expected_quota, SizeByQuotaUtil());
   EXPECT_EQ(expected_quota, usage());
 }
 

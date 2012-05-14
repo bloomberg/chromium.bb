@@ -57,13 +57,6 @@ class TestFileSystemQuotaUtil : public FileSystemQuotaUtil {
       FileSystemType type,
       int64 delta) OVERRIDE {
     usage_ += delta;
-    if (proxy) {
-      proxy->NotifyStorageModified(
-          quota::QuotaClient::kFileSystem,
-          origin_url,
-          FileSystemTypeToQuotaStorageType(type),
-          delta);
-    }
   }
   virtual void StartUpdateOriginOnFileThread(
       const GURL& origin_url,

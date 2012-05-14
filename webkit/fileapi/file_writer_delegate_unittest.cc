@@ -81,6 +81,7 @@ class FileWriterDelegateTest : public PlatformTest {
  public:
   FileWriterDelegateTest()
       : loop_(MessageLoop::TYPE_IO),
+        test_helper_(GURL("http://example.com"), kFileSystemTypeTest),
         file_(base::kInvalidPlatformFileValue) {}
 
  protected:

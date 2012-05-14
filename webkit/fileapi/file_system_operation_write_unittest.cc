@@ -76,7 +76,8 @@ class FileSystemOperationWriteTest
       public base::SupportsWeakPtr<FileSystemOperationWriteTest> {
  public:
   FileSystemOperationWriteTest()
-      : loop_(MessageLoop::TYPE_IO),
+      : test_helper_(GURL("http://example.com"), kFileSystemTypeTest),
+        loop_(MessageLoop::TYPE_IO),
         status_(base::PLATFORM_FILE_OK),
         cancel_status_(base::PLATFORM_FILE_ERROR_FAILED),
         bytes_written_(0),
@@ -140,8 +141,6 @@ class FileSystemOperationWriteTest
   MessageLoop loop_;
 
   ScopedTempDir dir_;
-  FilePath filesystem_dir_;
-  FilePath file_;
   FilePath virtual_path_;
 
   // For post-operation status.
@@ -192,13 +191,10 @@ void FileSystemOperationWriteTest::SetUp() {
                      false /* unlimited quota */,
                      quota_manager_->proxy(),
                      NULL);
-  filesystem_dir_ = test_helper_.GetOriginRootPath();
-
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(filesystem_dir_, &file_));
-  virtual_path_ = file_.BaseName();
+  virtual_path_ = FilePath(FILE_PATH_LITERAL("temporary file"));
 
   operation()->CreateFile(
-      URLForPath(virtual_path_), true,
+      URLForPath(virtual_path_), true /* exclusive */,
       base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
 
   net::URLRequest::Deprecated::RegisterProtocolFactory(
@@ -289,14 +285,9 @@ TEST_F(FileSystemOperationWriteTest, TestWriteInvalidFile) {
 }
 
 TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
-  FilePath subdir;
-  ASSERT_TRUE(file_util::CreateTemporaryDirInDir(filesystem_dir_,
-                                                 FILE_PATH_LITERAL("d"),
-                                                 &subdir));
-  FilePath virtual_subdir_path = subdir.BaseName();
-
+  FilePath virtual_dir_path(FILE_PATH_LITERAL("d"));
   operation()->CreateDirectory(
-      URLForPath(virtual_subdir_path),
+      URLForPath(virtual_dir_path),
       true /* exclusive */, false /* recursive */,
       base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
 
@@ -308,14 +299,18 @@ TEST_F(FileSystemOperationWriteTest, TestWriteDir) {
   url_request_context.blob_storage_controller()->AddFinishedBlob(
       blob_url, blob_data);
 
-  operation()->Write(&url_request_context, URLForPath(virtual_subdir_path),
+  operation()->Write(&url_request_context, URLForPath(virtual_dir_path),
                      blob_url, 0, RecordWriteCallback());
   MessageLoop::current()->Run();
 
   url_request_context.blob_storage_controller()->RemoveBlob(blob_url);
 
   EXPECT_EQ(0, bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE, status());
+  // TODO(kinuko): This error code is platform- or fileutil- dependent
+  // right now.  Make it return PLATFORM_FILE_ERROR_NOT_A_FILE in every case.
+  EXPECT_TRUE(status() == base::PLATFORM_FILE_ERROR_NOT_A_FILE ||
+              status() == base::PLATFORM_FILE_ERROR_ACCESS_DENIED ||
+              status() == base::PLATFORM_FILE_ERROR_FAILED);
   EXPECT_TRUE(complete());
 }
 

@@ -86,7 +86,7 @@ class FileSystemQuotaTest
         test_helper_.ComputeCurrentDirectoryDatabaseUsage();
   }
 
-  int64 SizeInUsageFile() {
+  int64 SizeByQuotaUtil() {
     return test_helper_.GetCachedOriginUsage();
   }
 
@@ -212,26 +212,26 @@ void FileSystemQuotaTest::OnGetUsageAndQuota(
 }
 
 void FileSystemQuotaTest::PrepareFileSet(const FilePath& virtual_path) {
-  int64 usage = SizeInUsageFile();
+  int64 usage = SizeByQuotaUtil();
   child_dir_path_ = CreateUniqueDirInDir(virtual_path);
   child_file1_path_ = CreateUniqueFileInDir(virtual_path);
   child_file2_path_ = CreateUniqueFileInDir(virtual_path);
-  child_path_cost_ = SizeInUsageFile() - usage;
+  child_path_cost_ = SizeByQuotaUtil() - usage;
   usage += child_path_cost_;
 
   grandchild_file1_path_ = CreateUniqueFileInDir(child_dir_path_);
   grandchild_file2_path_ = CreateUniqueFileInDir(child_dir_path_);
-  grandchild_path_cost_ = SizeInUsageFile() - usage;
+  grandchild_path_cost_ = SizeByQuotaUtil() - usage;
 }
 
 TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   FilePath src_dir_path(CreateUniqueDir());
-  int src_path_cost = SizeInUsageFile();
+  int src_path_cost = SizeByQuotaUtil();
   PrepareFileSet(src_dir_path);
   FilePath dest_dir_path(CreateUniqueDir());
 
   EXPECT_EQ(0, ActualFileSize());
-  int total_path_cost = SizeInUsageFile();
+  int total_path_cost = SizeByQuotaUtil();
 
   operation()->Truncate(URLForPath(child_file1_path_), 5000,
                         base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
@@ -246,7 +246,7 @@ TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
   const int64 all_file_size = 5000 + 400 + 30 + 2;
 
   EXPECT_EQ(all_file_size, ActualFileSize());
-  EXPECT_EQ(all_file_size + total_path_cost, SizeInUsageFile());
+  EXPECT_EQ(all_file_size + total_path_cost, SizeByQuotaUtil());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
   EXPECT_EQ(all_file_size + total_path_cost, usage());
@@ -265,7 +265,7 @@ TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
 
   EXPECT_EQ(all_file_size, ActualFileSize());
   EXPECT_EQ(all_file_size + total_path_cost - src_path_cost,
-            SizeInUsageFile());
+            SizeByQuotaUtil());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
   EXPECT_EQ(all_file_size + total_path_cost - src_path_cost, usage());
@@ -279,7 +279,7 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   FilePath dest_dir2_path(CreateUniqueDir());
 
   EXPECT_EQ(0, ActualFileSize());
-  int total_path_cost = SizeInUsageFile();
+  int total_path_cost = SizeByQuotaUtil();
 
   operation()->Truncate(URLForPath(child_file1_path_), 8000,
                         base::Bind(&AssertFileErrorEq, base::PLATFORM_FILE_OK));
@@ -297,7 +297,7 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   int64 expected_usage = all_file_size + total_path_cost;
 
   EXPECT_EQ(all_file_size, ActualFileSize());
-  EXPECT_EQ(expected_usage, SizeInUsageFile());
+  EXPECT_EQ(expected_usage, SizeByQuotaUtil());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
   EXPECT_EQ(expected_usage, usage());
@@ -323,7 +323,7 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
       VirtualPath::BaseName(grandchild_file1_path_))));
 
   EXPECT_EQ(2 * all_file_size, ActualFileSize());
-  EXPECT_EQ(expected_usage, SizeInUsageFile());
+  EXPECT_EQ(expected_usage, SizeByQuotaUtil());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
   EXPECT_EQ(expected_usage, usage());
@@ -337,7 +337,7 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
   expected_usage += grandchild_file_size + grandchild_path_cost_;
 
   EXPECT_EQ(2 * child_file_size + 3 * grandchild_file_size, ActualFileSize());
-  EXPECT_EQ(expected_usage, SizeInUsageFile());
+  EXPECT_EQ(expected_usage, SizeByQuotaUtil());
   GetUsageAndQuotaFromQuotaManager();
   EXPECT_EQ(quota::kQuotaStatusOk, quota_status());
   EXPECT_EQ(expected_usage, usage());
