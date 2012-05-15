@@ -506,23 +506,23 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
   switch (result.status) {
     case DataTypeManager::OK:
       DVLOG(1) << "NotifyDone called with result: OK";
-      UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.OK",
-                          configure_time_delta_);
+      UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.OK",
+                               configure_time_delta_);
       break;
     case DataTypeManager::ABORTED:
       DVLOG(1) << "NotifyDone called with result: ABORTED";
-      UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.ABORTED",
-                          configure_time_delta_);
+      UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.ABORTED",
+                               configure_time_delta_);
       break;
     case DataTypeManager::UNRECOVERABLE_ERROR:
       DVLOG(1) << "NotifyDone called with result: UNRECOVERABLE_ERROR";
-      UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.UNRECOVERABLE_ERROR",
-                          configure_time_delta_);
+      UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.UNRECOVERABLE_ERROR",
+                               configure_time_delta_);
       break;
     case DataTypeManager::PARTIAL_SUCCESS:
       DVLOG(1) << "NotifyDone called with result: PARTIAL_SUCCESS";
-      UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.PARTIAL_SUCCESS",
-                          configure_time_delta_);
+      UMA_HISTOGRAM_LONG_TIMES("Sync.ConfigureTime_Long.PARTIAL_SUCCESS",
+                               configure_time_delta_);
       break;
     default:
       NOTREACHED();
