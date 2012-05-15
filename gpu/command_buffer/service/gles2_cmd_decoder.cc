@@ -8537,6 +8537,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     texture_manager()->SetLevelInfo(
         dest_info, GL_TEXTURE_2D, level, internal_format, source_width,
         source_height, 1, 0, internal_format, dest_type, true);
+  } else {
+    texture_manager()->SetLevelCleared(dest_info, GL_TEXTURE_2D, level);
   }
 
   state_dirty_ = true;
