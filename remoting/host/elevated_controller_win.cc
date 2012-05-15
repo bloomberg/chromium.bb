@@ -7,11 +7,13 @@
 #include <sddl.h>
 
 #include "base/file_util.h"
+#include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/stringize_macros.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -327,7 +329,24 @@ STDMETHODIMP ElevatedControllerWin::GetConfig(BSTR* config_out) {
 }
 
 STDMETHODIMP ElevatedControllerWin::GetVersion(BSTR* version_out) {
-  return E_NOTIMPL;
+  // Report the product version number of the daemon controller binary as
+  // the host version.
+  HMODULE binary = base::GetModuleFromAddress(
+      reinterpret_cast<void*>(&ReadConfig));
+  scoped_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfoForModule(binary));
+
+  string16 version;
+  if (version_info.get()) {
+    version = version_info->product_version();
+  }
+
+  *version_out = ::SysAllocString(version.c_str());
+  if (version_out == NULL) {
+    return E_OUTOFMEMORY;
+  }
+
+  return S_OK;
 }
 
 STDMETHODIMP ElevatedControllerWin::SetConfig(BSTR config) {

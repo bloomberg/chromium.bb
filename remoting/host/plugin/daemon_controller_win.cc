@@ -123,6 +123,7 @@ class DaemonControllerWin : public remoting::DaemonController {
                       const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
   void DoSetWindow(void* window_handle);
+  void DoGetVersion(const GetVersionCallback& callback);
 
   // |control_| holds a reference to an instance of the daemon controller
   // to prevent a UAC prompt on every operation.
@@ -246,9 +247,11 @@ void DaemonControllerWin::SetWindow(void* window_handle) {
           window_handle));
 }
 
-void DaemonControllerWin::GetVersion(const GetVersionCallback& done_callback) {
-  NOTIMPLEMENTED();
-  done_callback.Run("");
+void DaemonControllerWin::GetVersion(const GetVersionCallback& callback) {
+  worker_thread_.message_loop_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&DaemonControllerWin::DoGetVersion,
+                 base::Unretained(this), callback));
 }
 
 HRESULT DaemonControllerWin::ActivateController() {
@@ -559,6 +562,30 @@ void DaemonControllerWin::DoStop(const CompletionCallback& done_callback) {
 
 void DaemonControllerWin::DoSetWindow(void* window_handle) {
   window_handle_ = reinterpret_cast<HWND>(window_handle);
+}
+
+void DaemonControllerWin::DoGetVersion(const GetVersionCallback& callback) {
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  std::string version_null;
+
+  // Configure and start the Daemon Controller if it is installed already.
+  HRESULT hr = ActivateController();
+  if (FAILED(hr)) {
+    callback.Run(version_null);
+    return;
+  }
+
+  // Get the version string.
+  ScopedBstr version;
+  hr = control_->GetVersion(version.Receive());
+  if (FAILED(hr)) {
+    callback.Run(version_null);
+    return;
+  }
+
+  callback.Run(UTF16ToUTF8(
+      string16(static_cast<BSTR>(version), version.Length())));
 }
 
 }  // namespace
