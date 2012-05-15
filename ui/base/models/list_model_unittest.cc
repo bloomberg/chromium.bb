@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,9 +82,9 @@ TEST_F(ListModelTest, Add) {
   EXPECT_EQ(3, model.item_count());
 
   // First one should be FooItem(2), followed by FooItem(0) and FooItem(1)
-  EXPECT_EQ(2, model.item_at(0)->id());
-  EXPECT_EQ(0, model.item_at(1)->id());
-  EXPECT_EQ(1, model.item_at(2)->id());
+  EXPECT_EQ(2, model.GetItemAt(0)->id());
+  EXPECT_EQ(0, model.GetItemAt(1)->id());
+  EXPECT_EQ(1, model.GetItemAt(2)->id());
 }
 
 TEST_F(ListModelTest, Remove) {
@@ -102,8 +102,8 @@ TEST_F(ListModelTest, Remove) {
   ExpectCountsEqual(0, 1, 0);
 
   EXPECT_EQ(2, model.item_count());
-  EXPECT_EQ(0, model.item_at(0)->id());
-  EXPECT_EQ(2, model.item_at(1)->id());
+  EXPECT_EQ(0, model.GetItemAt(0)->id());
+  EXPECT_EQ(2, model.GetItemAt(1)->id());
 
   // Remove all items from model and delete them.
   model.DeleteAll();

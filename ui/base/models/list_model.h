@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/observer_list.h"
 #include "base/memory/scoped_vector.h"
+#include "base/observer_list.h"
 #include "ui/base/models/list_model_observer.h"
 
 namespace ui {
@@ -20,8 +20,6 @@ namespace ui {
 template <class ItemType>
 class ListModel {
  public:
-  typedef std::vector<ItemType*> Items;
-
   ListModel() {}
   virtual ~ListModel() {}
 
@@ -93,15 +91,14 @@ class ListModel {
   }
 
   int item_count() const { return static_cast<int>(items_.size()); }
-  const Items& items() const { return items_.get(); }
 
-  const ItemType* item_at(int index) const {
+  const ItemType* GetItemAt(int index) const {
     DCHECK(index >= 0 && index < item_count());
     return items_[index];
   }
-  ItemType* item_at(int index) {
+  ItemType* GetItemAt(int index) {
     return const_cast<ItemType*>(
-        const_cast<const ListModel<ItemType>*>(this)->item_at(index));
+        const_cast<const ListModel<ItemType>*>(this)->GetItemAt(index));
   }
 
  private:

@@ -25,7 +25,7 @@ void AppListModel::DeleteItemAt(int index) {
 }
 
 AppListItemModel* AppListModel::GetItemAt(int index) {
-  return items_.item_at(index);
+  return items_.GetItemAt(index);
 }
 
 void AppListModel::AddObserver(ui::ListModelObserver* observer) {
