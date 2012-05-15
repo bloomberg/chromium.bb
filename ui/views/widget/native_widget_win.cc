@@ -38,7 +38,6 @@
 #include "ui/views/drag_utils.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/view_storage.h"
-#include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/ime/input_method_win.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/aero_tooltip_manager.h"
@@ -1333,7 +1332,6 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 
   // Get access to a modifiable copy of the system menu.
   GetSystemMenu(hwnd(), false);
-
   return 0;
 }
 
@@ -2257,18 +2255,6 @@ void NativeWidgetWin::PostProcessActivateMessage(NativeWidgetWin* widget,
       widget->restore_focus_when_enabled_ = true;
       return;
     }
-
-    // Mysteriously, this only appears to be needed support restoration of focus
-    // to a child hwnd when restoring its top level window from the minimized
-    // state. If we don't do this, then ::SetFocus() to that child HWND returns
-    // ERROR_INVALID_PARAMETER, despite both HWNDs being of the same thread.
-    // See http://crbug.com/125976
-    {
-      // Since this is a synthetic reset, we don't need to tell anyone about it.
-      AutoNativeNotificationDisabler disabler;
-      focus_manager->ClearFocus();
-    }
-
     focus_manager->RestoreFocusedView();
   }
 }

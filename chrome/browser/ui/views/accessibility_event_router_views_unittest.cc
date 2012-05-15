@@ -25,16 +25,12 @@
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/single_monitor_manager.h"
-#include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
-#include "ui/base/ime/input_method.h"
-#include "ui/base/test/dummy_input_method.h"
 #include "ui/gfx/screen.h"
 #endif
 
@@ -143,23 +139,15 @@ class AccessibilityEventRouterViewsTest
     : public testing::Test,
       public content::NotificationObserver {
  public:
-  AccessibilityEventRouterViewsTest() {
-#if defined(USE_AURA)
-    test_input_method_.reset(new ui::test::DummyInputMethod);
-#endif
-  }
-
   virtual void SetUp() {
     views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
 #if defined(USE_AURA)
     aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
     root_window_.reset(
         aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
+#if defined(USE_AURA)
     gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
-    root_window_->SetProperty(aura::client::kRootWindowInputMethodKey,
-                              test_input_method_.get());
-    test_activation_client_.reset(
-        new aura::test::TestActivationClient(root_window_.get()));
+#endif  // USE_ASH
     test_stacking_client_.reset(
         new aura::test::TestStackingClient(root_window_.get()));
 #endif  // USE_AURA
@@ -168,7 +156,6 @@ class AccessibilityEventRouterViewsTest
   virtual void TearDown() {
 #if defined(USE_AURA)
     test_stacking_client_.reset();
-    test_activation_client_.reset();
     root_window_.reset();
 #endif
     delete views::ViewsDelegate::views_delegate;
@@ -206,9 +193,7 @@ class AccessibilityEventRouterViewsTest
   std::string last_control_context_;
 #if defined(USE_AURA)
   scoped_ptr<aura::RootWindow> root_window_;
-  scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
   scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
-  scoped_ptr<ui::InputMethod> test_input_method_;
 #endif
 };
 
@@ -232,8 +217,6 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
 
   // Put the view in a window.
   views::Widget* window = CreateWindowWithContents(contents);
-  window->Show();
-  window->Activate();
 
   // Set focus to the first button initially.
   button1->RequestFocus();

@@ -15,7 +15,6 @@
         'base/test/cocoa_test_event_utils.mm',
         'base/test/ui_cocoa_test_helper.h',
         'base/test/ui_cocoa_test_helper.mm',
-        'base/test/dummy_input_method.h',
       ],
       'include_dirs': [
         '../',
