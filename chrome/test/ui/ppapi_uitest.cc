@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
@@ -24,6 +25,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "media/audio/audio_manager.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #include "webkit/plugins/plugin_switches.h"
@@ -47,6 +49,11 @@ const char library_name[] = "libppapi_tests.so";
 // http://crbug.com/108264
 static int kTimeoutMs = 90000;
 //static int kTimeoutMs = TestTimeouts::large_test_timeout_ms());
+
+bool IsAudioOutputAvailable() {
+  scoped_ptr<media::AudioManager> audio_manager(media::AudioManager::Create());
+  return audio_manager->HasAudioOutputDevices();
+}
 
 class TestFinishObserver : public content::NotificationObserver {
  public:
@@ -187,6 +194,26 @@ void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   ASSERT_TRUE(GetHTTPDocumentRoot(&http_document_root));
   RunHTTPTestServer(http_document_root, test_case,
                     StringPrintf("websocket_port=%d", port));
+}
+
+void PPAPITestBase::RunTestIfAudioOutputAvailable(
+    const std::string& test_case) {
+  if (IsAudioOutputAvailable()) {
+    RunTest(test_case);
+  } else {
+    LOG(WARNING) << "PPAPITest: " << test_case <<
+        " was not executed because there are no audio devices available.";
+  }
+}
+
+void PPAPITestBase::RunTestViaHTTPIfAudioOutputAvailable(
+    const std::string& test_case) {
+  if (IsAudioOutputAvailable()) {
+    RunTestViaHTTP(test_case);
+  } else {
+    LOG(WARNING) << "PPAPITest: " << test_case <<
+        " was not executed because there are no audio devices available.";
+  }
 }
 
 std::string PPAPITestBase::StripPrefixes(const std::string& test_name) {
@@ -384,7 +411,7 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
-// Similar macros that test with WebSocket server
+// Similar macros that test with WebSocket server.
 #define TEST_PPAPI_IN_PROCESS_WITH_WS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPITest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
@@ -394,6 +421,15 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 
+// Similar macros for tests that require an audio device.
+#define TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(test_name) \
+    IN_PROC_BROWSER_TEST_F(PPAPITest, test_name) { \
+      RunTestIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
+    }
+#define TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(test_name) \
+    IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, test_name) { \
+      RunTestIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
+    }
 
 #if defined(DISABLE_NACL)
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name)
@@ -424,6 +460,12 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
 #define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name) \
     IN_PROC_BROWSER_TEST_F(PPAPINaClTest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
+    }
+
+// NaCl based PPAPI tests requiring an Audio device.
+#define TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(test_name) \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTest, test_name) { \
+      RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
     }
 #endif
 
@@ -930,23 +972,24 @@ TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_ValidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_InvalidConfigs)
 
-// PPAPITest.Audio_Creation fails on Linux & Mac try servers.
-// http://crbug.com/114712
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_Audio_Creation DISABLED_Audio_Creation
-#else
-#define MAYBE_Audio_Creation Audio_Creation
-#endif
-
-TEST_PPAPI_IN_PROCESS(MAYBE_Audio_Creation)
-TEST_PPAPI_IN_PROCESS(Audio_DestroyNoStop)
-TEST_PPAPI_IN_PROCESS(Audio_Failures)
-TEST_PPAPI_OUT_OF_PROCESS(MAYBE_Audio_Creation)
-TEST_PPAPI_OUT_OF_PROCESS(Audio_DestroyNoStop)
-TEST_PPAPI_OUT_OF_PROCESS(Audio_Failures)
-TEST_PPAPI_NACL_VIA_HTTP(MAYBE_Audio_Creation)
-TEST_PPAPI_NACL_VIA_HTTP(Audio_DestroyNoStop)
-TEST_PPAPI_NACL_VIA_HTTP(Audio_Failures)
+// Only run audio output tests if we have an audio device available.
+// TODO(raymes): We should probably test scenarios where there is no audio
+// device available.
+TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_Creation)
+TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_DestroyNoStop)
+TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_Failures)
+TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_AudioCallback1)
+TEST_PPAPI_IN_PROCESS_WITH_AUDIO_OUTPUT(Audio_AudioCallback2)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_Creation)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_DestroyNoStop)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_Failures)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_AudioCallback1)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_AUDIO_OUTPUT(Audio_AudioCallback2)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_Creation)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_DestroyNoStop)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_Failures)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_AudioCallback1)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(Audio_AudioCallback2)
 
 TEST_PPAPI_IN_PROCESS(View_CreateVisible);
 TEST_PPAPI_OUT_OF_PROCESS(View_CreateVisible);

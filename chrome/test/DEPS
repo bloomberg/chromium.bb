@@ -25,6 +25,7 @@ include_rules = [
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
   "+grit",  # For generated headers
+  "+media/audio",
   "+sandbox/src",
   "+sandbox/tests",
   "+webkit/glue",
