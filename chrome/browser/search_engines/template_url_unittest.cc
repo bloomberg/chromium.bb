@@ -521,8 +521,7 @@ TEST_F(TemplateURLTest, ParseParameterUnknown) {
   parsed_url = "{fhqwhgads}abc";
   data.prepopulate_id = 1;
   TemplateURL url2(NULL, data);
-  EXPECT_FALSE(url2.url_ref().ParseParameter(0, 10, &parsed_url,
-                                             &replacements));
+  EXPECT_TRUE(url2.url_ref().ParseParameter(0, 10, &parsed_url, &replacements));
   EXPECT_EQ("abc", parsed_url);
   EXPECT_TRUE(replacements.empty());
 }
