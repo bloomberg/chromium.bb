@@ -99,7 +99,7 @@ harness_modules = None
 if sys.version_info[0] == 2:
     harness_modules = iglob(os.path.join(harness_dir, '*_harness.py'))
 else:
-    harness_modules = iglob(os.path.join(harness_dir, 'py3', '*_harness.py'))
+    harness_modules = iglob(os.path.join(harness_dir, '*_harness_py3.py'))
 
 for harness in harness_modules:
     try:
