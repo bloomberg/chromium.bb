@@ -45,7 +45,7 @@ class HostZoomMap {
   // from the saved preferences; otherwise the new value is written out.
   //
   // This should only be called on the UI thread.
-  virtual void SetZoomLevel(std::string host, double level) = 0;
+  virtual void SetZoomLevel(const std::string& host, double level) = 0;
 
   // Get/Set the default zoom level for pages that don't override it.
   virtual double GetDefaultZoomLevel() const = 0;

@@ -71,7 +71,7 @@ double HostZoomMapImpl::GetZoomLevel(const std::string& host) const {
   return (i == host_zoom_levels_.end()) ? default_zoom_level_ : i->second;
 }
 
-void HostZoomMapImpl::SetZoomLevel(std::string host, double level) {
+void HostZoomMapImpl::SetZoomLevel(const std::string& host, double level) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   {

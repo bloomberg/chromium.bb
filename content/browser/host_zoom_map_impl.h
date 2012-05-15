@@ -31,7 +31,7 @@ class CONTENT_EXPORT HostZoomMapImpl
   // HostZoomMap implementation:
   virtual void CopyFrom(HostZoomMap* copy) OVERRIDE;
   virtual double GetZoomLevel(const std::string& host) const OVERRIDE;
-  virtual void SetZoomLevel(std::string host, double level) OVERRIDE;
+  virtual void SetZoomLevel(const std::string& host, double level) OVERRIDE;
   virtual double GetDefaultZoomLevel() const OVERRIDE;
   virtual void SetDefaultZoomLevel(double level) OVERRIDE;
 
