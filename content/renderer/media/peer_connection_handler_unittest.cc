@@ -7,8 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
-#include "content/renderer/media/mock_media_stream_impl.h"
 #include "content/renderer/media/mock_web_peer_connection_handler_client.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/peer_connection_handler.h"
@@ -19,19 +19,116 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 
-namespace webrtc {
-
-class MockVideoRendererWrapper : public VideoRendererWrapperInterface {
+class PeerConnectionHandlerUnderTest : public PeerConnectionHandler {
  public:
-  virtual cricket::VideoRenderer* renderer() OVERRIDE { return NULL; }
+  PeerConnectionHandlerUnderTest(
+      WebKit::MockWebPeerConnectionHandlerClient* client,
+      MediaStreamDependencyFactory* dependency_factory)
+      : PeerConnectionHandler(client, dependency_factory) {
+  }
 
- protected:
-  virtual ~MockVideoRendererWrapper() {}
+  webrtc::MockPeerConnectionImpl* native_peer_connection() {
+    return static_cast<webrtc::MockPeerConnectionImpl*>(
+        native_peer_connection_.get());
+  }
 };
 
-}  // namespace webrtc
+class PeerConnectionHandlerTest : public ::testing::Test {
+ public:
+  PeerConnectionHandlerTest() : mock_peer_connection_(NULL) {
+  }
 
-TEST(PeerConnectionHandlerTest, WebMediaStreamDescriptorMemoryTest) {
+  void SetUp() {
+    mock_client_.reset(new WebKit::MockWebPeerConnectionHandlerClient());
+    mock_dependency_factory_.reset(
+        new MockMediaStreamDependencyFactory(NULL));
+    mock_dependency_factory_->CreatePeerConnectionFactory(NULL,
+                                                          NULL,
+                                                          NULL,
+                                                          NULL,
+                                                          NULL);
+    pc_handler_.reset(
+        new PeerConnectionHandlerUnderTest(mock_client_.get(),
+                                           mock_dependency_factory_.get()));
+
+    WebKit::WebString server_config(
+        WebKit::WebString::fromUTF8("STUN stun.l.google.com:19302"));
+    WebKit::WebString username;
+    pc_handler_->initialize(server_config, username);
+
+    mock_peer_connection_ = pc_handler_->native_peer_connection();
+    ASSERT_TRUE(mock_peer_connection_);
+  }
+
+  // Creates a WebKit local MediaStream.
+  WebKit::WebMediaStreamDescriptor CreateLocalMediaStream(
+      const std::string& stream_label) {
+    std::string video_track_label("video-label");
+    std::string audio_track_label("audio-label");
+
+    talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream(
+        mock_dependency_factory_->CreateLocalMediaStream(stream_label));
+    talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+        mock_dependency_factory_->CreateLocalAudioTrack(audio_track_label,
+                                                        NULL));
+    native_stream->AddTrack(audio_track);
+    talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
+        mock_dependency_factory_->CreateLocalVideoTrack(video_track_label, 0));
+    native_stream->AddTrack(video_track);
+
+    WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
+        static_cast<size_t>(1));
+    audio_sources[0].initialize(WebKit::WebString::fromUTF8(video_track_label),
+                                WebKit::WebMediaStreamSource::TypeAudio,
+                                WebKit::WebString::fromUTF8("audio_track"));
+    WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
+        static_cast<size_t>(1));
+    video_sources[0].initialize(WebKit::WebString::fromUTF8(video_track_label),
+                                WebKit::WebMediaStreamSource::TypeVideo,
+                                WebKit::WebString::fromUTF8("video_track"));
+    WebKit::WebMediaStreamDescriptor local_stream;
+    local_stream.initialize(UTF8ToUTF16(stream_label), audio_sources,
+                            video_sources);
+    local_stream.setExtraData(new MediaStreamExtraData(native_stream));
+    return local_stream;
+  }
+
+  // Creates a remote MediaStream and adds it to the mocked native
+  // peer connection.
+  talk_base::scoped_refptr<webrtc::MediaStreamInterface>
+  AddRemoteMockMediaStream(const std::string& stream_label,
+                           const std::string& video_track_label,
+                           const std::string& audio_track_label) {
+    // We use a local stream as a remote since for testing purposes we really
+    // only need the MediaStreamInterface.
+    talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface> stream(
+        mock_dependency_factory_->CreateLocalMediaStream(stream_label));
+    if (!video_track_label.empty()) {
+      talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
+          mock_dependency_factory_->CreateLocalVideoTrack(video_track_label,
+                                                          0));
+      stream->AddTrack(video_track);
+    }
+    if (!audio_track_label.empty()) {
+      talk_base::scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+          mock_dependency_factory_->CreateLocalAudioTrack(audio_track_label,
+                                                          NULL));
+      stream->AddTrack(audio_track);
+    }
+    mock_peer_connection_->AddRemoteStream(stream);
+    return stream;
+  }
+
+  MessageLoop loop_;
+  scoped_ptr<WebKit::MockWebPeerConnectionHandlerClient> mock_client_;
+  scoped_ptr<MockMediaStreamDependencyFactory> mock_dependency_factory_;
+  scoped_ptr<PeerConnectionHandlerUnderTest> pc_handler_;
+
+  // Weak reference to the mocked native peer connection implementation.
+  webrtc::MockPeerConnectionImpl* mock_peer_connection_;
+};
+
+TEST_F(PeerConnectionHandlerTest, WebMediaStreamDescriptorMemoryTest) {
   std::string stream_label("stream-label");
   std::string video_track_id("video-label");
   const size_t kSizeOne = 1;
@@ -53,106 +150,52 @@ TEST(PeerConnectionHandlerTest, WebMediaStreamDescriptorMemoryTest) {
   }
 }
 
-TEST(PeerConnectionHandlerTest, Basic) {
-  MessageLoop loop;
-
-  scoped_ptr<WebKit::MockWebPeerConnectionHandlerClient> mock_client(
-      new WebKit::MockWebPeerConnectionHandlerClient());
-  scoped_ptr<MockMediaStreamImpl> mock_ms_impl(new MockMediaStreamImpl());
-  scoped_ptr<MockMediaStreamDependencyFactory> mock_dependency_factory(
-      new MockMediaStreamDependencyFactory(NULL));
-  mock_dependency_factory->CreatePeerConnectionFactory(NULL,
-                                                       NULL,
-                                                       NULL,
-                                                       NULL,
-                                                       NULL);
-  scoped_ptr<PeerConnectionHandler> pc_handler(
-      new PeerConnectionHandler(mock_client.get(),
-                                mock_ms_impl.get(),
-                                mock_dependency_factory.get()));
-
-  WebKit::WebString server_config(
-      WebKit::WebString::fromUTF8("STUN stun.l.google.com:19302"));
-  WebKit::WebString username;
-  pc_handler->initialize(server_config, username);
-  EXPECT_TRUE(pc_handler->native_peer_connection_.get());
-  webrtc::MockPeerConnectionImpl* mock_peer_connection =
-      static_cast<webrtc::MockPeerConnectionImpl*>(
-          pc_handler->native_peer_connection_.get());
-
-  // TODO(grunell): Add an audio track as well.
+TEST_F(PeerConnectionHandlerTest, Basic) {
   std::string stream_label("stream-label");
-  std::string video_track_label("video-label");
-  talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface> local_stream(
-      mock_dependency_factory->CreateLocalMediaStream(stream_label));
-  talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> local_video_track(
-      mock_dependency_factory->CreateLocalVideoTrack(video_track_label, 0));
-  local_stream->AddTrack(local_video_track);
-  mock_ms_impl->AddLocalStream(local_stream);
-  WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector(
-      static_cast<size_t>(1));
-  source_vector[0].initialize(WebKit::WebString::fromUTF8(video_track_label),
-                              WebKit::WebMediaStreamSource::TypeVideo,
-                              WebKit::WebString::fromUTF8("RemoteVideo"));
   WebKit::WebVector<WebKit::WebMediaStreamDescriptor> local_streams(
       static_cast<size_t>(1));
-  local_streams[0].initialize(UTF8ToUTF16(stream_label), source_vector);
-  pc_handler->produceInitialOffer(local_streams);
-  EXPECT_EQ(stream_label, mock_peer_connection->stream_label());
-  EXPECT_TRUE(mock_peer_connection->stream_changes_committed());
+  local_streams[0] = CreateLocalMediaStream(stream_label);
+  pc_handler_->produceInitialOffer(local_streams);
+  EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
+  EXPECT_TRUE(mock_peer_connection_->stream_changes_committed());
 
   std::string message("message1");
-  pc_handler->handleInitialOffer(WebKit::WebString::fromUTF8(message));
-  EXPECT_EQ(message, mock_peer_connection->signaling_message());
+  pc_handler_->handleInitialOffer(WebKit::WebString::fromUTF8(message));
+  EXPECT_EQ(message, mock_peer_connection_->signaling_message());
 
   message = "message2";
-  pc_handler->processSDP(WebKit::WebString::fromUTF8(message));
-  EXPECT_EQ(message, mock_peer_connection->signaling_message());
+  pc_handler_->processSDP(WebKit::WebString::fromUTF8(message));
+  EXPECT_EQ(message, mock_peer_connection_->signaling_message());
 
   message = "message3";
-  pc_handler->OnSignalingMessage(message);
-  EXPECT_EQ(message, mock_client->sdp());
+  pc_handler_->OnSignalingMessage(message);
+  EXPECT_EQ(message, mock_client_->sdp());
 
-  std::string remote_stream_label(stream_label);
-  remote_stream_label += "-remote";
-  std::string remote_video_track_label(video_track_label);
-  remote_video_track_label += "-remote";
-  // We use a local stream as a remote since for testing purposes we really
-  // only need the MediaStreamInterface.
-  talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface> remote_stream(
-      mock_dependency_factory->CreateLocalMediaStream(remote_stream_label));
-  talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> remote_video_track(
-      mock_dependency_factory->CreateLocalVideoTrack(remote_video_track_label,
-                                                     0));
-  remote_video_track->set_enabled(true);
-  remote_stream->AddTrack(remote_video_track);
-  mock_peer_connection->AddRemoteStream(remote_stream);
-  pc_handler->OnAddStream(remote_stream);
-  EXPECT_EQ(remote_stream_label, mock_client->stream_label());
-
-  talk_base::scoped_refptr<webrtc::MockVideoRendererWrapper> renderer(
-      new talk_base::RefCountedObject<webrtc::MockVideoRendererWrapper>());
-  pc_handler->SetRemoteVideoRenderer(remote_video_track_label, renderer);
-  EXPECT_EQ(renderer, remote_video_track->GetRenderer());
+  std::string remote_stream_label("remote_stream");
+  talk_base::scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+      AddRemoteMockMediaStream(remote_stream_label, "video_track",
+                               "audio_track"));
+  pc_handler_->OnAddStream(remote_stream);
+  EXPECT_EQ(remote_stream_label, mock_client_->stream_label());
 
   WebKit::WebVector<WebKit::WebMediaStreamDescriptor> empty_streams(
       static_cast<size_t>(0));
-  pc_handler->processPendingStreams(empty_streams, local_streams);
-  EXPECT_EQ("", mock_peer_connection->stream_label());
-  mock_peer_connection->ClearStreamChangesCommitted();
-  EXPECT_TRUE(!mock_peer_connection->stream_changes_committed());
+  pc_handler_->processPendingStreams(empty_streams, local_streams);
+  EXPECT_EQ("", mock_peer_connection_->stream_label());
+  mock_peer_connection_->ClearStreamChangesCommitted();
+  EXPECT_TRUE(!mock_peer_connection_->stream_changes_committed());
 
-  pc_handler->OnRemoveStream(remote_stream);
-  EXPECT_TRUE(mock_client->stream_label().empty());
+  pc_handler_->OnRemoveStream(remote_stream);
+  EXPECT_TRUE(mock_client_->stream_label().empty());
 
-  pc_handler->processPendingStreams(local_streams, empty_streams);
-  EXPECT_EQ(stream_label, mock_peer_connection->stream_label());
-  EXPECT_TRUE(mock_peer_connection->stream_changes_committed());
+  pc_handler_->processPendingStreams(local_streams, empty_streams);
+  EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
+  EXPECT_TRUE(mock_peer_connection_->stream_changes_committed());
 
-  pc_handler->stop();
-  EXPECT_FALSE(pc_handler->native_peer_connection_.get());
+  pc_handler_->stop();
+  EXPECT_FALSE(pc_handler_->native_peer_connection());
   // PC handler is expected to be deleted when stop calls
   // MediaStreamImpl::ClosePeerConnection. We own and delete it here instead of
   // in the mock.
-  pc_handler.reset();
+  pc_handler_.reset();
 }

@@ -35,8 +35,8 @@ class CONTENT_EXPORT MediaStreamCenter
   virtual void didStopLocalMediaStream(
       const WebKit::WebMediaStreamDescriptor& stream) OVERRIDE;
 
-  virtual void didConstructMediaStream(
-      const WebKit::WebMediaStreamDescriptor& stream) OVERRIDE;
+  virtual void didCreateMediaStream(
+      WebKit::WebMediaStreamDescriptor& stream) OVERRIDE;
 
   virtual WebKit::WebString constructSDP(
       const WebKit::WebICECandidateDescriptor& candidate) OVERRIDE;

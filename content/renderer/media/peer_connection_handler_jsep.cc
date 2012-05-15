@@ -24,9 +24,8 @@
 
 PeerConnectionHandlerJsep::PeerConnectionHandlerJsep(
     WebKit::WebPeerConnection00HandlerClient* client,
-    MediaStreamImpl* msi,
     MediaStreamDependencyFactory* dependency_factory)
-    : PeerConnectionHandlerBase(msi, dependency_factory),
+    : PeerConnectionHandlerBase(dependency_factory),
       client_(client) {
 }
 
@@ -183,11 +182,8 @@ void PeerConnectionHandlerJsep::removeStream(
 }
 
 void PeerConnectionHandlerJsep::stop() {
-  // TODO(ronghuawu): There's an issue with signaling messages being sent during
-  // close. We need to investigate further. Not calling Close() on native
-  // PeerConnection is OK for now.
+  DVLOG(1) << "PeerConnectionHandlerJsep::stop";
   native_peer_connection_ = NULL;
-  media_stream_impl_->ClosePeerConnection(this);
 }
 
 void PeerConnectionHandlerJsep::OnError() {

@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/rtc_video_decoder.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
@@ -87,11 +88,14 @@ class CONTENT_EXPORT MediaStreamImpl
       WebKit::WebPeerConnectionHandlerClient* client);
   virtual WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
       WebKit::WebPeerConnection00HandlerClient* client);
-  virtual void ClosePeerConnection(PeerConnectionHandlerBase* pc_handler);
-
-  virtual webrtc::LocalMediaStreamInterface* GetLocalMediaStream(
+  // Stops a local MediaStream by notifying the MediaStreamDispatcher that the
+  // stream no longer may be used.
+  virtual void StopLocalMediaStream(
       const WebKit::WebMediaStreamDescriptor& stream);
-  bool StopLocalMediaStream(const WebKit::WebMediaStreamDescriptor& stream);
+  // A new MediaStream have been created based on existing tracks.
+  virtual void CreateMediaStream(
+      WebKit::WebFrame* frame,
+      WebKit::WebMediaStreamDescriptor* stream);
 
   // WebKit::WebUserMediaClient implementation
   virtual void requestUserMedia(
@@ -133,11 +137,18 @@ class CONTENT_EXPORT MediaStreamImpl
   // content::RenderViewObserver OVERRIDE
   virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, MultiplePeerConnections);
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, LocalMediaStream);
+ protected:
+  // This function is virtual for test purposes. A test can override this to
+  // test requesting local media streams. The function notifies WebKit that the
+  // |request| have completed and generated the MediaStream |stream|.
+  virtual void CompleteGetUserMediaRequest(
+      const WebKit::WebMediaStreamDescriptor& stream,
+      WebKit::WebUserMediaRequest* request);
+  // This function is virtual for test purposes.
+  // Returns the WebKit representation of a MediaStream given an URL.
+  virtual WebKit::WebMediaStreamDescriptor GetMediaStream(const GURL& url);
 
+ private:
   class VideoRendererWrapper : public webrtc::VideoRendererWrapperInterface {
    public:
     explicit VideoRendererWrapper(RTCVideoDecoder* decoder);
@@ -164,23 +175,11 @@ class CONTENT_EXPORT MediaStreamImpl
   };
   typedef std::map<int, UserMediaRequestInfo> MediaRequestMap;
 
-  // We keep a list of the generated local media streams,
-  // so that we can enable and disable individual tracks and add renderers
-  // when needed.
+  // We keep a list of the label and WebFrame of generated local media streams,
+  // so that we can stop them when needed.
+  typedef std::map<std::string, WebKit::WebFrame*> LocalNativeStreamMap;
   typedef talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
-      LocalMediaStreamPtr;
-  struct LocalMediaStreamInfo {
-    LocalMediaStreamInfo() : frame_(NULL), stream_() {}
-    LocalMediaStreamInfo(WebKit::WebFrame* frame,
-                         webrtc::LocalMediaStreamInterface* stream)
-        : frame_(frame), stream_(stream) {}
-    ~LocalMediaStreamInfo();
-    // WebFrame that requested the Stream.
-    WebKit::WebFrame* frame_;
-    // Native representation of a local MediaStream.
-    LocalMediaStreamPtr stream_;
-  };
-  typedef std::map<std::string, LocalMediaStreamInfo> LocalNativeStreamMap;
+      LocalNativeStreamPtr;
 
   void InitializeWorkerThread(talk_base::Thread** thread,
                               base::WaitableEvent* event);
@@ -193,14 +192,13 @@ class CONTENT_EXPORT MediaStreamImpl
   PeerConnectionHandlerBase* FindPeerConnectionByStream(
       const WebKit::WebMediaStreamDescriptor& stream);
   scoped_refptr<media::VideoDecoder> CreateLocalVideoDecoder(
-      webrtc::LocalMediaStreamInterface* stream,
+      webrtc::MediaStreamInterface* stream,
       media::MessageLoopFactory* message_loop_factory);
   scoped_refptr<media::VideoDecoder> CreateRemoteVideoDecoder(
-      const WebKit::WebMediaStreamDescriptor& stream,
-      PeerConnectionHandlerBase* pc_handler,
+      webrtc::MediaStreamInterface* stream,
       const GURL& url,
       media::MessageLoopFactory* message_loop_factory);
-  void CreateNativeLocalMediaStream(
+  LocalNativeStreamPtr CreateNativeLocalMediaStream(
       const std::string& label,
       WebKit::WebFrame* frame,
       const WebKit::WebVector<WebKit::WebMediaStreamSource>& audio_sources,
@@ -221,11 +219,6 @@ class CONTENT_EXPORT MediaStreamImpl
   content::IpcNetworkManager* network_manager_;
   scoped_ptr<content::IpcPacketSocketFactory> socket_factory_;
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
-
-  // peer_connection_handlers_ contains raw references, owned by WebKit. A
-  // pointer is valid until stop is called on the object (which will call
-  // ClosePeerConnection on us and we remove the pointer).
-  std::list<PeerConnectionHandlerBase*> peer_connection_handlers_;
 
   MediaRequestMap user_media_requests_;
   LocalNativeStreamMap local_media_streams_;

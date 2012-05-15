@@ -125,8 +125,6 @@
             'renderer/media/mock_media_stream_dependency_factory.h',
             'renderer/media/mock_media_stream_dispatcher.cc',
             'renderer/media/mock_media_stream_dispatcher.h',
-            'renderer/media/mock_media_stream_impl.cc',
-            'renderer/media/mock_media_stream_impl.h',
             'renderer/media/mock_peer_connection_impl.cc',
             'renderer/media/mock_peer_connection_impl.h',
             'renderer/media/mock_web_peer_connection_00_handler_client.cc',

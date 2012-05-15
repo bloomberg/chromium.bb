@@ -4,15 +4,11 @@
 
 #include "content/renderer/media/peer_connection_handler.h"
 
-#include <utility>
-#include <vector>
-
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
-#include "content/renderer/media/media_stream_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandlerClient.h"
@@ -20,9 +16,8 @@
 
 PeerConnectionHandler::PeerConnectionHandler(
     WebKit::WebPeerConnectionHandlerClient* client,
-    MediaStreamImpl* msi,
     MediaStreamDependencyFactory* dependency_factory)
-    : PeerConnectionHandlerBase(msi, dependency_factory),
+    : PeerConnectionHandlerBase(dependency_factory),
       client_(client) {
 }
 
@@ -74,11 +69,11 @@ void PeerConnectionHandler::sendDataStreamMessage(
 }
 
 void PeerConnectionHandler::stop() {
+  DVLOG(1) << "PeerConnectionHandler::stop";
   // TODO(ronghuawu): There's an issue with signaling messages being sent during
   // close. We need to investigate further. Not calling Close() on native
   // PeerConnection is OK for now.
   native_peer_connection_ = NULL;
-  media_stream_impl_->ClosePeerConnection(this);
 }
 
 void PeerConnectionHandler::OnError() {

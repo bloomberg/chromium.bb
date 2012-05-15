@@ -16,7 +16,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 
 class MediaStreamDependencyFactory;
-class MediaStreamImpl;
 
 // PeerConnectionHandlerBase is the base class of a delegate for the
 // PeerConnection (JSEP or ROAP) API messages going between WebKit and native
@@ -25,14 +24,7 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
     : NON_EXPORTED_BASE(public webrtc::PeerConnectionObserver) {
  public:
   PeerConnectionHandlerBase(
-      MediaStreamImpl* msi,
       MediaStreamDependencyFactory* dependency_factory);
-
-  webrtc::MediaStreamInterface* GetRemoteMediaStream(
-      const WebKit::WebMediaStreamDescriptor& stream);
-
-  void SetRemoteVideoRenderer(const std::string& source_id,
-                              webrtc::VideoRendererWrapperInterface* renderer);
 
  protected:
   virtual ~PeerConnectionHandlerBase();
@@ -41,13 +33,6 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
   void RemoveStream(const WebKit::WebMediaStreamDescriptor& stream);
   WebKit::WebMediaStreamDescriptor CreateWebKitStreamDescriptor(
       webrtc::MediaStreamInterface* stream);
-  // Returns a VideoTrack given the |source_id|
-  webrtc::VideoTrackInterface* FindRemoteVideoTrack(
-      const std::string& source_id);
-
-  // media_stream_impl_ is a raw pointer, and is valid for the lifetime of this
-  // class. Calls to it must be done on the render thread.
-  MediaStreamImpl* media_stream_impl_;
 
   // dependency_factory_ is a raw pointer, and is valid for the lifetime of
   // MediaStreamImpl.
@@ -61,15 +46,6 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
   typedef std::map<webrtc::MediaStreamInterface*,
                    WebKit::WebMediaStreamDescriptor> RemoteStreamMap;
   RemoteStreamMap remote_streams_;
-
-  // Native PeerConnection only supports 1:1 mapping between MediaStream and
-  // video tag/renderer, so we restrict to this too. The key in
-  // VideoRendererMap is the track label.
-  typedef talk_base::scoped_refptr<webrtc::VideoRendererWrapperInterface>
-      VideoRendererPtr;
-
-  typedef std::map<std::string, VideoRendererPtr> VideoRendererMap;
-  VideoRendererMap video_renderers_;
 
   // The message loop we are created on and on which to make calls to WebKit.
   // This should be the render thread message loop.

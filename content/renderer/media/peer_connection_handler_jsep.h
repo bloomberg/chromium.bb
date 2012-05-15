@@ -23,7 +23,6 @@ class CONTENT_EXPORT PeerConnectionHandlerJsep
  public:
   PeerConnectionHandlerJsep(
       WebKit::WebPeerConnection00HandlerClient* client,
-      MediaStreamImpl* msi,
       MediaStreamDependencyFactory* dependency_factory);
   virtual ~PeerConnectionHandlerJsep();
 

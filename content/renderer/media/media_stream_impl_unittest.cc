@@ -21,43 +21,33 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
-// TODO(perkj): Currently a media stream is identified by its sources.
-// This is currently being changed in WebKit.
-// Remove the creation of WebKitSourceVectors when that has landed.
-static std::string CreateTrackLabel(
-    const std::string& manager_label,
-    int session_id,
-    bool is_video) {
-  std::string track_label = manager_label;
-  if (is_video) {
-    track_label += "#video-";
-  } else {
-    track_label += "#audio-";
+class MediaStreamImplUnderTest : public MediaStreamImpl {
+ public:
+  MediaStreamImplUnderTest(MediaStreamDispatcher* media_stream_dispatcher,
+                           content::P2PSocketDispatcher* p2p_socket_dispatcher,
+                           VideoCaptureImplManager* vc_manager,
+                           MediaStreamDependencyFactory* dependency_factory)
+      : MediaStreamImpl(NULL, media_stream_dispatcher, p2p_socket_dispatcher,
+                        vc_manager, dependency_factory) {
   }
-  track_label += session_id;
-  return track_label;
-}
 
-// TODO(perkj): Currently a media stream is identified by its sources.
-// This is currently being changed in WebKit.
-// Remove the creation of WebKitSourceVectors when that has landed.
-static void CreateWebKitSourceVector(
-    const std::string& label,
-    const media_stream::StreamDeviceInfoArray& devices,
-    WebKit::WebMediaStreamSource::Type type,
-    WebKit::WebVector<WebKit::WebMediaStreamSource>& webkit_sources) {
-  ASSERT(devices.size() == webkit_sources.size());
-
-  for (size_t i = 0; i < devices.size(); ++i) {
-    std::string track_label = CreateTrackLabel(
-        label, devices[i].session_id,
-        type == WebKit::WebMediaStreamSource::TypeVideo);
-    webkit_sources[i].initialize(
-          UTF8ToUTF16(track_label),
-          type,
-          UTF8ToUTF16(devices[i].name));
+  virtual void CompleteGetUserMediaRequest(
+       const WebKit::WebMediaStreamDescriptor& stream,
+       WebKit::WebUserMediaRequest* request) {
+    last_generated_stream_ = stream;
   }
-}
+
+  virtual WebKit::WebMediaStreamDescriptor GetMediaStream(const GURL& url) {
+    return last_generated_stream_;
+  }
+
+  const WebKit::WebMediaStreamDescriptor& last_generated_stream() {
+    return last_generated_stream_;
+  }
+
+ private:
+  WebKit::WebMediaStreamDescriptor last_generated_stream_;
+};
 
 class MediaStreamImplTest : public ::testing::Test {
  public:
@@ -69,11 +59,10 @@ class MediaStreamImplTest : public ::testing::Test {
         new VideoCaptureImplManager());
     MockMediaStreamDependencyFactory* dependency_factory =
         new MockMediaStreamDependencyFactory(vc_manager);
-    ms_impl_.reset(new MediaStreamImpl(NULL,
-                                       ms_dispatcher_.get(),
-                                       p2p_socket_dispatcher_.get(),
-                                       vc_manager.get(),
-                                       dependency_factory));
+    ms_impl_.reset(new MediaStreamImplUnderTest(ms_dispatcher_.get(),
+                                                p2p_socket_dispatcher_.get(),
+                                                vc_manager.get(),
+                                                dependency_factory));
   }
 
   void TearDown() {
@@ -98,24 +87,18 @@ class MediaStreamImplTest : public ::testing::Test {
                                 ms_dispatcher_->audio_array(),
                                 ms_dispatcher_->video_array());
 
-    // TODO(perkj): Currently a media stream is identified by its sources.
-    // This is currently beeing changed in WebKit.
-    // Remove the creation of WebKitSourceVectors when that has landed.
-    if (audio) {
-      CreateWebKitSourceVector(ms_dispatcher_->stream_label(),
-                               ms_dispatcher_->audio_array(),
-                               WebKit::WebMediaStreamSource::TypeAudio,
-                               audio_sources);
+    WebKit::WebMediaStreamDescriptor desc = ms_impl_->last_generated_stream();
+    MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
+        desc.extraData());
+    if (!extra_data || !extra_data->local_stream()) {
+      ADD_FAILURE();
+      return desc;
     }
-    if (video) {
-      CreateWebKitSourceVector(ms_dispatcher_->stream_label(),
-                               ms_dispatcher_->video_array(),
-                               WebKit::WebMediaStreamSource::TypeVideo,
-                               video_sources);
-    }
-    WebKit::WebMediaStreamDescriptor desc;
-    desc.initialize(UTF8ToUTF16(ms_dispatcher_->stream_label()),
-                    audio_sources, video_sources);
+
+    if (audio)
+      EXPECT_EQ(1u, extra_data->local_stream()->audio_tracks()->count());
+    if (video)
+      EXPECT_EQ(1u, extra_data->local_stream()->video_tracks()->count());
     return desc;
   }
 
@@ -123,112 +106,56 @@ class MediaStreamImplTest : public ::testing::Test {
   MessageLoop loop_;
   scoped_ptr<MockMediaStreamDispatcher> ms_dispatcher_;
   scoped_ptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;
-  scoped_ptr<MediaStreamImpl> ms_impl_;
+  scoped_ptr<MediaStreamImplUnderTest> ms_impl_;
 };
 
-TEST_F(MediaStreamImplTest, Basic) {
+TEST_F(MediaStreamImplTest, CreatePeerConnection) {
+  // Create ROAP PeerConnection.j
   WebKit::MockWebPeerConnectionHandlerClient client;
-  WebKit::WebPeerConnectionHandler* pc_handler =
-      ms_impl_->CreatePeerConnectionHandler(&client);
-  EXPECT_EQ(1u, ms_impl_->peer_connection_handlers_.size());
+  scoped_ptr<WebKit::WebPeerConnectionHandler> pc_handler(
+      ms_impl_->CreatePeerConnectionHandler(&client));
+  pc_handler.reset();
 
-  // Delete PC handler explicitly after closing to mimic WebKit behavior.
-  ms_impl_->ClosePeerConnection(
-      static_cast<PeerConnectionHandler*>(pc_handler));
-  EXPECT_TRUE(ms_impl_->peer_connection_handlers_.empty());
-  delete pc_handler;
-
+  // Create JSEP PeerConnection.
   WebKit::MockWebPeerConnection00HandlerClient client_jsep;
-  WebKit::WebPeerConnection00Handler* pc_handler_jsep =
-      ms_impl_->CreatePeerConnectionHandlerJsep(&client_jsep);
-  EXPECT_EQ(1u, ms_impl_->peer_connection_handlers_.size());
-
-  // Delete PC handler explicitly after closing to mimic WebKit behavior.
-  ms_impl_->ClosePeerConnection(
-      static_cast<PeerConnectionHandlerJsep*>(pc_handler_jsep));
-  EXPECT_TRUE(ms_impl_->peer_connection_handlers_.empty());
-  delete pc_handler_jsep;
-}
-
-TEST_F(MediaStreamImplTest, MultiplePeerConnections) {
-  WebKit::MockWebPeerConnectionHandlerClient client;
-  WebKit::WebPeerConnectionHandler* pc_handler =
-      ms_impl_->CreatePeerConnectionHandler(&client);
-  EXPECT_EQ(1u, ms_impl_->peer_connection_handlers_.size());
-
-  WebKit::MockWebPeerConnection00HandlerClient client_jsep;
-  WebKit::WebPeerConnection00Handler* pc_handler_jsep =
-      ms_impl_->CreatePeerConnectionHandlerJsep(&client_jsep);
-  EXPECT_EQ(2u, ms_impl_->peer_connection_handlers_.size());
-
-  // Delete PC handler explicitly after closing to mimic WebKit behavior.
-  ms_impl_->ClosePeerConnection(
-      static_cast<PeerConnectionHandler*>(pc_handler));
-  EXPECT_EQ(1u, ms_impl_->peer_connection_handlers_.size());
-  delete pc_handler;
-
-  // Delete PC handler explicitly after closing to mimic WebKit behavior.
-  ms_impl_->ClosePeerConnection(
-      static_cast<PeerConnectionHandlerJsep*>(pc_handler_jsep));
-  EXPECT_TRUE(ms_impl_->peer_connection_handlers_.empty());
-  delete pc_handler_jsep;
+  scoped_ptr<WebKit::WebPeerConnection00Handler> pc_handler_jsep(
+      ms_impl_->CreatePeerConnectionHandlerJsep(&client_jsep));
+  pc_handler_jsep.reset();
 }
 
 TEST_F(MediaStreamImplTest, LocalMediaStream) {
   // Test a stream with both audio and video.
   WebKit::WebMediaStreamDescriptor mixed_desc = RequestLocalMediaStream(true,
                                                                         true);
-  webrtc::LocalMediaStreamInterface* mixed_stream =
-      ms_impl_->GetLocalMediaStream(mixed_desc);
-  ASSERT_TRUE(mixed_stream != NULL);
-  EXPECT_EQ(1u, mixed_stream->audio_tracks()->count());
-  EXPECT_EQ(1u, mixed_stream->video_tracks()->count());
-
-  // Create a renderer for the stream
+  // Create a renderer for the stream.
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
       new media::MessageLoopFactory());
   scoped_refptr<media::VideoDecoder> mixed_decoder(
-      ms_impl_->CreateLocalVideoDecoder(mixed_stream,
-                                        message_loop_factory.get()));
+      ms_impl_->GetVideoDecoder(GURL(), message_loop_factory.get()));
   EXPECT_TRUE(mixed_decoder.get() != NULL);
 
   // Test a stream with audio only.
   WebKit::WebMediaStreamDescriptor audio_desc = RequestLocalMediaStream(true,
                                                                         false);
-  webrtc::LocalMediaStreamInterface* audio_stream =
-      ms_impl_->GetLocalMediaStream(audio_desc);
-  ASSERT_TRUE(audio_stream != NULL);
-  EXPECT_EQ(1u, audio_stream->audio_tracks()->count());
-  EXPECT_EQ(0u, audio_stream->video_tracks()->count());
-
   scoped_refptr<media::VideoDecoder> audio_decoder(
-      ms_impl_->CreateLocalVideoDecoder(audio_stream,
-                                        message_loop_factory.get()));
+      ms_impl_->GetVideoDecoder(GURL(), message_loop_factory.get()));
   EXPECT_TRUE(audio_decoder.get() == NULL);
 
   // Test a stream with video only.
   WebKit::WebMediaStreamDescriptor video_desc = RequestLocalMediaStream(false,
                                                                         true);
-  webrtc::LocalMediaStreamInterface* video_stream_ =
-      ms_impl_->GetLocalMediaStream(video_desc);
-  ASSERT_TRUE(video_stream_ != NULL);
-  EXPECT_EQ(0u, video_stream_->audio_tracks()->count());
-  EXPECT_EQ(1u, video_stream_->video_tracks()->count());
-
   scoped_refptr<media::VideoDecoder> video_decoder(
-      ms_impl_->CreateLocalVideoDecoder(video_stream_,
-                                        message_loop_factory.get()));
+      ms_impl_->GetVideoDecoder(GURL(), message_loop_factory.get()));
   EXPECT_TRUE(video_decoder.get() != NULL);
 
   // Stop generated local streams.
-  EXPECT_TRUE(ms_impl_->StopLocalMediaStream(mixed_desc));
-  EXPECT_TRUE(ms_impl_->GetLocalMediaStream(mixed_desc) == NULL);
-
-  EXPECT_TRUE(ms_impl_->StopLocalMediaStream(audio_desc));
-  EXPECT_TRUE(ms_impl_->GetLocalMediaStream(audio_desc) == NULL);
+  ms_impl_->StopLocalMediaStream(mixed_desc);
+  EXPECT_EQ(1, ms_dispatcher_->stop_stream_counter());
+  ms_impl_->StopLocalMediaStream(audio_desc);
+  EXPECT_EQ(2, ms_dispatcher_->stop_stream_counter());
 
   // Test that the MediaStreams are deleted if the owning WebFrame is deleted.
   // In the unit test the owning frame is NULL.
   ms_impl_->FrameWillClose(NULL);
-  EXPECT_TRUE(ms_impl_->GetLocalMediaStream(video_desc) == NULL);
+  EXPECT_EQ(3, ms_dispatcher_->stop_stream_counter());
 }

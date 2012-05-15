@@ -23,7 +23,6 @@ class CONTENT_EXPORT PeerConnectionHandler
  public:
   PeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client,
-      MediaStreamImpl* msi,
       MediaStreamDependencyFactory* dependency_factory);
   virtual ~PeerConnectionHandler();
 
@@ -57,8 +56,6 @@ class CONTENT_EXPORT PeerConnectionHandler
   virtual void OnIceComplete() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PeerConnectionHandlerTest, Basic);
-
   void OnAddStreamCallback(webrtc::MediaStreamInterface* stream);
   void OnRemoveStreamCallback(webrtc::MediaStreamInterface* stream);
 
