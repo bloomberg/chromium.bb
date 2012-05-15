@@ -50,7 +50,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Widget::Observer overrides:
   virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
-  virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
   virtual void OnWidgetMoved(Widget* widget) OVERRIDE;
 
   bool close_on_esc() const { return close_on_esc_; }

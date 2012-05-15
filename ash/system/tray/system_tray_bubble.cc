@@ -11,7 +11,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
-#include "base/message_loop.h"
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -334,10 +333,6 @@ SystemTrayBubble::SystemTrayBubble(
 }
 
 SystemTrayBubble::~SystemTrayBubble() {
-  // The bubble may be closing without having been hidden first. So it may still
-  // be in the message-loop's observer list.
-  MessageLoopForUI::current()->RemoveObserver(this);
-
   DestroyItemViews();
   // Reset the host pointer in bubble_view_ in case its destruction is deferred.
   if (bubble_view_)
@@ -470,36 +465,10 @@ void SystemTrayBubble::Close() {
     bubble_widget_->Close();
 }
 
-base::EventStatus SystemTrayBubble::WillProcessEvent(
-    const base::NativeEvent& event) {
-  // Check if the user clicked outside of the bubble and close it if they did.
-  if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION &&
-      ui::EventTypeFromNative(event) == ui::ET_MOUSE_PRESSED) {
-    gfx::Point cursor_in_view = ui::EventLocationFromNative(event);
-    views::View::ConvertPointFromScreen(bubble_view_, &cursor_in_view);
-    if (!bubble_view_->HitTest(cursor_in_view)) {
-      bubble_widget_->Close();
-    }
-  }
-  return base::EVENT_CONTINUE;
-}
-
-void SystemTrayBubble::DidProcessEvent(const base::NativeEvent& event) {
-}
-
 void SystemTrayBubble::OnWidgetClosing(views::Widget* widget) {
   CHECK_EQ(bubble_widget_, widget);
-  MessageLoopForUI::current()->RemoveObserver(this);
   bubble_widget_ = NULL;
   tray_->RemoveBubble(this);
-}
-
-void SystemTrayBubble::OnWidgetVisibilityChanged(views::Widget* widget,
-                                                 bool visible) {
-  if (!visible)
-    MessageLoopForUI::current()->RemoveObserver(this);
-  else
-    MessageLoopForUI::current()->AddObserver(this);
 }
 
 }  // namespace internal

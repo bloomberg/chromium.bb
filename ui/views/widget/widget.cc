@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/widget.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -107,6 +108,7 @@ Widget::InitParams::InitParams()
                   ViewsDelegate::views_delegate->UseTransparentWindows()),
       accept_events(true),
       can_activate(true),
+      close_on_deactivate(false),
       keep_on_top(false),
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
@@ -131,6 +133,7 @@ Widget::InitParams::InitParams(Type type)
                   ViewsDelegate::views_delegate->UseTransparentWindows()),
       accept_events(true),
       can_activate(type != TYPE_POPUP && type != TYPE_MENU),
+      close_on_deactivate(false),
       keep_on_top(type == TYPE_MENU),
       ownership(NATIVE_WIDGET_OWNS_WIDGET),
       mirror_origin_in_rtl(false),
@@ -153,7 +156,8 @@ gfx::NativeView Widget::InitParams::GetParent() const {
 // Widget, public:
 
 Widget::Widget()
-    : native_widget_(NULL),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(set_capture_factory_(this)),
+      native_widget_(NULL),
       widget_delegate_(NULL),
       non_client_view_(NULL),
       dragged_view_(NULL),
@@ -165,6 +169,7 @@ Widget::Widget()
       widget_closed_(false),
       saved_show_state_(ui::SHOW_STATE_DEFAULT),
       focus_on_creation_(true),
+      close_on_deactivate_(false),
       is_top_level_(false),
       native_widget_initialized_(false),
       native_widget_destroyed_(false),
@@ -316,6 +321,7 @@ void Widget::Init(const InitParams& params) {
     SetContentsView(params.delegate->GetContentsView());
     SetInitialBoundsForFramelessWindow(params.bounds);
   }
+  close_on_deactivate_ = params.close_on_deactivate;
   native_widget_initialized_ = true;
 }
 
@@ -510,6 +516,14 @@ void Widget::Show() {
     saved_show_state_ = ui::SHOW_STATE_NORMAL;
   } else {
     native_widget_->Show();
+  }
+
+  if (close_on_deactivate_) {
+    // Set mouse capture on timeout in case this is called from a
+    // mouse pressed handler.
+    MessageLoopForUI::current()->PostTask(FROM_HERE, base::Bind(
+           &Widget::SetMouseCapture, set_capture_factory_.GetWeakPtr(),
+           static_cast<View*>(NULL)));
   }
 }
 
@@ -1050,6 +1064,8 @@ bool Widget::OnMouseEvent(const MouseEvent& event) {
           native_widget_->SetCapture();
         return true;
       }
+      if (close_on_deactivate_ && !GetRootView()->HitTest(event.location()))
+        Close();
       return false;
     case ui::ET_MOUSE_RELEASED:
       last_mouse_event_was_move_ = false;
@@ -1090,6 +1106,11 @@ void Widget::OnMouseCaptureLost() {
   if (is_mouse_button_pressed_)
     GetRootView()->OnMouseCaptureLost();
   is_mouse_button_pressed_ = false;
+
+  // Without mouse capture, the widget doesn't process all events so can miss
+  // the user clicking outside the root view's bounds.
+  if (close_on_deactivate_)
+    Close();
 }
 
 ui::TouchStatus Widget::OnTouchEvent(const TouchEvent& event) {
@@ -1157,7 +1178,7 @@ void Widget::DestroyRootView() {
 // Widget, private:
 
 bool Widget::ShouldReleaseCaptureOnMouseReleased() const {
-  return true;
+  return !close_on_deactivate_;
 }
 
 void Widget::SetInactiveRenderingDisabled(bool value) {

@@ -25,6 +25,7 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
   bubble_params.transparent = true;
+  bubble_params.close_on_deactivate = bubble->close_on_deactivate();
   if (bubble->parent_window())
     bubble_params.parent = bubble->parent_window();
   else
@@ -210,12 +211,6 @@ void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
     if (anchor_widget())
       anchor_widget()->RemoveObserver(this);
   }
-}
-
-void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
-                                                   bool active) {
-  if (close_on_deactivate() && widget == GetWidget() && !active)
-    GetWidget()->Close();
 }
 
 void BubbleDelegateView::OnWidgetMoved(Widget* widget) {
