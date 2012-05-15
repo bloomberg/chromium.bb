@@ -22,28 +22,22 @@
 
 namespace {
 
-struct VideoCardInfo {
-  UInt32 vendor_id;
-  UInt32 device_id;
+const UInt32 kVendorIDIntel = 0x8086;
+const UInt32 kVendorIDNVidia = 0x10de;
+const UInt32 kVendorIDAMD = 0x1002;
 
-  VideoCardInfo(UInt32 vendor, UInt32 device) {
-    vendor_id = vendor;
-    device_id = device;
-  }
-};
-
-CFTypeRef SearchPortForProperty(io_registry_entry_t dspPort,
-                                CFStringRef propertyName) {
-  return IORegistryEntrySearchCFProperty(dspPort,
-                                         kIOServicePlane,
-                                         propertyName,
-                                         kCFAllocatorDefault,
-                                         kIORegistryIterateRecursively |
-                                         kIORegistryIterateParents);
-}
-
-UInt32 IntValueOfCFData(CFDataRef data_ref) {
-  DCHECK(data_ref);
+// Return 0 if we couldn't find the property.
+// The property values we use should not be 0, so it's OK to use 0 as failure.
+UInt32 GetEntryProperty(io_registry_entry_t entry, CFStringRef property_name) {
+  base::mac::ScopedCFTypeRef<CFDataRef> data_ref(static_cast<CFDataRef>(
+      IORegistryEntrySearchCFProperty(entry,
+                                      kIOServicePlane,
+                                      property_name,
+                                      kCFAllocatorDefault,
+                                      kIORegistryIterateRecursively |
+                                      kIORegistryIterateParents)));
+  if (!data_ref)
+    return 0;
 
   UInt32 value = 0;
   const UInt32* value_pointer =
@@ -53,69 +47,107 @@ UInt32 IntValueOfCFData(CFDataRef data_ref) {
   return value;
 }
 
+// Find the info of the current GPU.
+content::GPUInfo::GPUDevice GetActiveGPU() {
+  content::GPUInfo::GPUDevice gpu;
+  io_registry_entry_t dsp_port = CGDisplayIOServicePort(kCGDirectMainDisplay);
+  gpu.vendor_id = GetEntryProperty(dsp_port, CFSTR("vendor-id"));
+  gpu.device_id = GetEntryProperty(dsp_port, CFSTR("device-id"));
+  return gpu;
+}
+
 // Scan IO registry for PCI video cards.
-// If two cards are located, assume the non-Intel card is the high-end
-// one that's going to be used by Chromium GPU process.
-// If more than two cards are located, return false.  In such rare situation,
-// video card information should be collected through identifying the currently
-// in-use card as in CollectVideoCardInfo().
 bool CollectPCIVideoCardInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
+  // Collect all GPUs' info.
   // match_dictionary will be consumed by IOServiceGetMatchingServices, no need
   // to release it.
   CFMutableDictionaryRef match_dictionary = IOServiceMatching("IOPCIDevice");
   io_iterator_t entry_iterator;
+  std::vector<content::GPUInfo::GPUDevice> gpu_list;
   if (IOServiceGetMatchingServices(kIOMasterPortDefault,
                                    match_dictionary,
-                                   &entry_iterator) != kIOReturnSuccess)
-    return false;
-
-  std::vector<VideoCardInfo> video_card_list;
-  io_registry_entry_t entry;
-  while ((entry = IOIteratorNext(entry_iterator))) {
-    base::mac::ScopedCFTypeRef<CFDataRef> class_code_ref(static_cast<CFDataRef>(
-        SearchPortForProperty(entry, CFSTR("class-code"))));
-    if (!class_code_ref)
-      continue;
-    UInt32 class_code = IntValueOfCFData(class_code_ref);
-    if (class_code != 0x30000)  // DISPLAY_VGA
-      continue;
-    base::mac::ScopedCFTypeRef<CFDataRef> vendor_id_ref(static_cast<CFDataRef>(
-        SearchPortForProperty(entry, CFSTR("vendor-id"))));
-    if (!vendor_id_ref)
-      continue;
-    UInt32 vendor_id = IntValueOfCFData(vendor_id_ref);
-    base::mac::ScopedCFTypeRef<CFDataRef> device_id_ref(static_cast<CFDataRef>(
-        SearchPortForProperty(entry, CFSTR("device-id"))));
-    if (!device_id_ref)
-      continue;
-    UInt32 device_id = IntValueOfCFData(device_id_ref);
-    video_card_list.push_back(VideoCardInfo(vendor_id, device_id));
+                                   &entry_iterator) == kIOReturnSuccess) {
+    io_registry_entry_t entry;
+    while ((entry = IOIteratorNext(entry_iterator))) {
+      content::GPUInfo::GPUDevice gpu;
+      if (GetEntryProperty(entry, CFSTR("class-code")) != 0x30000) {
+        // 0x30000 : DISPLAY_VGA
+        continue;
+      }
+      gpu.vendor_id = GetEntryProperty(entry, CFSTR("vendor-id"));
+      gpu.device_id = GetEntryProperty(entry, CFSTR("device-id"));
+      if (gpu.vendor_id && gpu.device_id)
+        gpu_list.push_back(gpu);
+    }
+    IOObjectRelease(entry_iterator);
   }
-  IOObjectRelease(entry_iterator);
 
-  const UInt32 kIntelVendorId = 0x8086;
-  size_t found = video_card_list.size();
-  switch (video_card_list.size()) {
+  switch (gpu_list.size()) {
+    case 0:
+      return false;
     case 1:
-      found = 0;
+      gpu_info->gpu = gpu_list[0];
       break;
     case 2:
-      if (video_card_list[0].vendor_id == kIntelVendorId &&
-          video_card_list[1].vendor_id != kIntelVendorId)
-        found = 1;
-      else if (video_card_list[0].vendor_id != kIntelVendorId &&
-               video_card_list[1].vendor_id == kIntelVendorId)
-        found = 0;
+      {
+        int integrated = -1;
+        int discrete = -1;
+        if (gpu_list[0].vendor_id == kVendorIDIntel)
+          integrated = 0;
+        else if (gpu_list[1].vendor_id == kVendorIDIntel)
+          integrated = 1;
+        if (integrated >= 0) {
+          switch (gpu_list[1 - integrated].vendor_id) {
+            case kVendorIDAMD:
+              gpu_info->amd_switchable = true;
+              discrete = 1 - integrated;
+              break;
+            case kVendorIDNVidia:
+              gpu_info->optimus = true;
+              discrete = 1 - integrated;
+              break;
+            default:
+              break;
+          }
+        }
+        if (integrated >= 0 && discrete >= 0) {
+          // We always put discrete GPU as primary for blacklisting purpose.
+          gpu_info->gpu = gpu_list[discrete];
+          gpu_info->secondary_gpus.push_back(gpu_list[integrated]);
+          break;
+        }
+        // If it's not optimus or amd_switchable, we put the current GPU as
+        // primary.  Fall through to default.
+      }
+    default:
+      {
+        content::GPUInfo::GPUDevice active_gpu = GetActiveGPU();
+        size_t current = gpu_list.size();
+        if (active_gpu.vendor_id && active_gpu.device_id) {
+          for (size_t i = 0; i < gpu_list.size(); ++i) {
+            if (gpu_list[i].vendor_id == active_gpu.vendor_id &&
+                gpu_list[i].device_id == active_gpu.device_id) {
+              current = i;
+              break;
+            }
+          }
+        }
+        if (current == gpu_list.size()) {
+          // If we fail to identify the current GPU, select any one as primary.
+          current = 0;
+        }
+        for (size_t i = 0; i < gpu_list.size(); ++i) {
+          if (i == current)
+            gpu_info->gpu = gpu_list[i];
+          else
+            gpu_info->secondary_gpus.push_back(gpu_list[i]);
+        }
+      }
       break;
   }
-  if (found < video_card_list.size()) {
-    gpu_info->gpu.vendor_id = video_card_list[found].vendor_id;
-    gpu_info->gpu.device_id = video_card_list[found].device_id;
-    return true;
-  }
-  return false;
+  return (gpu_info->gpu.vendor_id && gpu_info->gpu.device_id);
 }
 
 }  // namespace anonymous
@@ -134,32 +166,11 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
 bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
-  bool rt = true;
-  if (!CollectPCIVideoCardInfo(gpu_info) && !CollectVideoCardInfo(gpu_info))
-    rt = false;
-
-  return rt;
+  return CollectPCIVideoCardInfo(gpu_info);
 }
 
 bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-
-  UInt32 vendor_id = 0, device_id = 0;
-  io_registry_entry_t dsp_port = CGDisplayIOServicePort(kCGDirectMainDisplay);
-  CFTypeRef vendor_id_ref = SearchPortForProperty(dsp_port, CFSTR("vendor-id"));
-  if (vendor_id_ref) {
-    vendor_id = IntValueOfCFData((CFDataRef)vendor_id_ref);
-    CFRelease(vendor_id_ref);
-  }
-  CFTypeRef device_id_ref = SearchPortForProperty(dsp_port, CFSTR("device-id"));
-  if (device_id_ref) {
-    device_id = IntValueOfCFData((CFDataRef)device_id_ref);
-    CFRelease(device_id_ref);
-  }
-
-  gpu_info->gpu.vendor_id = vendor_id;
-  gpu_info->gpu.device_id = device_id;
-  return true;
+  return CollectPreliminaryGraphicsInfo(gpu_info);
 }
 
 bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
