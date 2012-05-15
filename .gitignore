@@ -89,6 +89,7 @@ tests/updatedraw
 tests/modeprint/modeprint
 tests/modetest/modetest
 tests/name_from_fd
+tests/proptest/proptest
 tests/kmstest/kmstest
 tests/vbltest/vbltest
 tests/radeon/radeon_ttm

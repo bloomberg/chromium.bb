@@ -407,6 +407,7 @@ AC_CONFIG_FILES([
 	tests/modeprint/Makefile
 	tests/modetest/Makefile
 	tests/kmstest/Makefile
+	tests/proptest/Makefile
 	tests/radeon/Makefile
 	tests/vbltest/Makefile
 	tests/exynos/Makefile

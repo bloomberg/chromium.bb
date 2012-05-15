@@ -10,7 +10,7 @@ check_PROGRAMS = \
 	dristat \
 	drmstat
 
-SUBDIRS = modeprint
+SUBDIRS = modeprint proptest
 
 if HAVE_LIBKMS
 SUBDIRS += kmstest modetest
