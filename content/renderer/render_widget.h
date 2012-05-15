@@ -411,6 +411,10 @@ class CONTENT_EXPORT RenderWidget
   // UpdateRect message has been sent).
   bool update_reply_pending_;
 
+  // True if we need to send an UpdateRect message to notify the browser about
+  // an already-completed auto-resize.
+  bool need_update_rect_for_auto_resize_;
+
   // True if the underlying graphics context supports asynchronous swap.
   // Cached on the RenderWidget because determining support is costly.
   bool using_asynchronous_swapbuffers_;

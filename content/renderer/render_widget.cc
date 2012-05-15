@@ -84,6 +84,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       next_paint_flags_(0),
       filtered_time_per_frame_(0.0f),
       update_reply_pending_(false),
+      need_update_rect_for_auto_resize_(false),
       using_asynchronous_swapbuffers_(false),
       num_swapbuffers_complete_pending_(0),
       did_show_(false),
@@ -917,6 +918,7 @@ void RenderWidget::DoDeferredUpdate() {
   pending_update_params_->scroll_offset = GetScrollOffset();
   pending_update_params_->needs_ack = true;
   next_paint_flags_ = 0;
+  need_update_rect_for_auto_resize_ = false;
 
   if (update.scroll_rect.IsEmpty() &&
       !is_accelerated_compositing_active_ &&
@@ -1077,7 +1079,10 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
 }
 
 void RenderWidget::didAutoResize(const WebSize& new_size) {
-  size_ = new_size;
+  if (size_.width() != new_size.width || size_.height() != new_size.height) {
+    size_ = new_size;
+    need_update_rect_for_auto_resize_ = true;
+  }
 }
 
 void RenderWidget::didActivateCompositor(int input_handler_identifier) {
@@ -1149,8 +1154,11 @@ void RenderWidget::didCompleteSwapBuffers() {
   if (update_reply_pending_)
     return;
 
-  if (!next_paint_flags_ && !plugin_window_moves_.size())
+  if (!next_paint_flags_ &&
+      !need_update_rect_for_auto_resize_ &&
+      !plugin_window_moves_.size()) {
     return;
+  }
 
   ViewHostMsg_UpdateRect_Params params;
   params.view_size = size_;
@@ -1161,6 +1169,7 @@ void RenderWidget::didCompleteSwapBuffers() {
 
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));
   next_paint_flags_ = 0;
+  need_update_rect_for_auto_resize_ = false;
 }
 
 void RenderWidget::scheduleComposite() {
