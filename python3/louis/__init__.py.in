@@ -34,11 +34,18 @@ function for information about how liblouis searches for these tables.
 from ctypes import *
 import struct
 import atexit
+import sys
 
 # Some general utility functions
 def _createTablesString(tablesList):
     """Creates a tables string for liblouis calls"""
     return b",".join([x.encode("ASCII") if isinstance(x, str) else bytes(x) for x in tablesList])
+
+createStr = None
+if sys.version_info[0] == 2:
+    createStr = lambda x: unicode(x)
+else:
+    createStr = lambda x: str(x)
 
 #{ Module Configuration
 #: Specifies the number by which the input length should be multiplied
@@ -114,7 +121,7 @@ def translate(tableList, inbuf, typeform=None,cursorPos=0, mode=0):
     @see: lou_translate in the liblouis documentation
     """
     tablesString = _createTablesString(tableList)
-    inbuf = str(inbuf)
+    inbuf = createStr(inbuf)
     inlen = c_int(len(inbuf))
     outlen = c_int(inlen.value*outlenMultiplier)
     outbuf = create_unicode_buffer(outlen.value)
@@ -149,7 +156,7 @@ def translateString(tableList, inbuf, typeform = None, mode = 0):
     @see: lou_translateString in the liblouis documentation
     """
     tablesString = _createTablesString(tableList)
-    inbuf = str(inbuf)
+    inbuf = createStr(inbuf)
     inlen = c_int(len(inbuf))
     outlen = c_int(inlen.value*outlenMultiplier)
     outbuf = create_unicode_buffer(outlen.value)
@@ -185,7 +192,7 @@ def backTranslate(tableList, inbuf, typeform=None, cursorPos=0, mode=0):
     @see: lou_backTranslate in the liblouis documentation.
     """
     tablestring = _createTablesString(tableList)
-    inbuf = str(inbuf)
+    inbuf = createStr(inbuf)
     inlen = c_int(len(inbuf))
     outlen = c_int(inlen.value * outlenMultiplier)
     outbuf = create_unicode_buffer(outlen.value)
@@ -220,7 +227,7 @@ def backTranslateString(tableList, inbuf, typeform=None, mode=0):
     @see: lou_backTranslateString in the liblouis documentation.
     """
     tablestring = _createTablesString(tableList)
-    inbuf = str(inbuf)
+    inbuf = createStr(inbuf)
     inlen = c_int(len(inbuf))
     outlen = c_int(inlen.value * outlenMultiplier)
     outbuf = create_unicode_buffer(outlen.value)
@@ -253,7 +260,7 @@ def hyphenate(tableList, inbuf, mode=0):
     @see: lou_hyphenate in the liblouis documentation.
     """
     tablesString = _createTablesString(tableList)
-    inbuf = str(inbuf)
+    inbuf = createStr(inbuf)
     inlen = c_int(len(inbuf))
     hyphen_string = create_string_buffer(inlen.value)
     if not liblouis.lou_hyphenate(tablesString, inbuf, inlen, hyphen_string, mode):
@@ -296,4 +303,5 @@ if __name__ == '__main__':
     # Just some common tests.
     print(version())
     print(translate([b'../tables/en-us-g2.ctb'], 'Hello world!', cursorPos=5))
+
 
