@@ -1820,13 +1820,6 @@
    fun:*_*_Test::TestBody
 }
 {
-   bug_127237
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:base::Thread::ThreadMain
-   fun:base::::ThreadFunc
-}
-{
    bug_127716
    Heapcheck:Leak
    fun:*Image
