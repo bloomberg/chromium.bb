@@ -22,6 +22,11 @@ bool IsOffStoreInstallEnabled() {
 #endif
 }
 
+bool IsActionBoxEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableActionBox);
+}
+
 }  // switch_utils
 
 }  // extensions

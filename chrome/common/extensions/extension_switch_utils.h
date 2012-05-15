@@ -12,6 +12,8 @@ namespace switch_utils {
 
 bool IsOffStoreInstallEnabled();
 
+bool IsActionBoxEnabled();
+
 }  // switch_utils
 
 }  // extensions

@@ -186,7 +186,8 @@ int CurrentTabId() {
     }
     case kExtensionContextHide: {
       ExtensionService* extension_service = profile_->GetExtensionService();
-      extension_service->SetBrowserActionVisibility(extension_, false);
+      extension_service->extension_prefs()->
+          SetBrowserActionVisibility(extension_, false);
       break;
     }
     case kExtensionContextManage: {

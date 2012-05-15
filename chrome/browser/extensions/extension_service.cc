@@ -1694,15 +1694,6 @@ void ExtensionService::SetAllowFileAccess(const Extension* extension,
     ReloadExtension(extension->id());
 }
 
-bool ExtensionService::GetBrowserActionVisibility(const Extension* extension) {
-  return extension_prefs_->GetBrowserActionVisibility(extension);
-}
-
-void ExtensionService::SetBrowserActionVisibility(const Extension* extension,
-                                                  bool visible) {
-  extension_prefs_->SetBrowserActionVisibility(extension, visible);
-}
-
 // Some extensions will autoupdate themselves externally from Chrome.  These
 // are typically part of some larger client application package.  To support
 // these, the extension will register its location in the the preferences file

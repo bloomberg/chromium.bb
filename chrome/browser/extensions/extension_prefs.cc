@@ -15,6 +15,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
@@ -112,6 +113,10 @@ const char kUpdateUrlData[] = "update_url_data";
 
 // Whether the browser action is visible in the toolbar.
 const char kBrowserActionVisible[] = "browser_action_visible";
+
+// Whether the browser action is pinned in the toolbar. This will eventually
+// replace kBrowserActionVisible.
+const char kBrowserActionPinned[] = "browser_action_pinned";
 
 // Preferences that hold which permissions the user has granted the extension.
 // We explicitly keep track of these so that extensions can contain unknown
@@ -1269,14 +1274,21 @@ void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
 }
 
 bool ExtensionPrefs::GetBrowserActionVisibility(const Extension* extension) {
+  bool action_box_enabled = extensions::switch_utils::IsActionBoxEnabled();
+  bool default_value = !action_box_enabled;
+
   const DictionaryValue* extension_prefs = GetExtensionPref(extension->id());
   if (!extension_prefs)
-    return true;
-  bool visible = false;
-  if (!extension_prefs->GetBoolean(kBrowserActionVisible, &visible) || visible)
-    return true;
+    return default_value;
 
-  return false;
+  bool visible = false;
+  const char* browser_action_pref = action_box_enabled ? kBrowserActionPinned :
+                                                         kBrowserActionVisible;
+  bool pref_exists = extension_prefs->GetBoolean(browser_action_pref, &visible);
+  if (!pref_exists)
+    return default_value;
+
+  return visible;
 }
 
 void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
@@ -1284,7 +1296,10 @@ void ExtensionPrefs::SetBrowserActionVisibility(const Extension* extension,
   if (GetBrowserActionVisibility(extension) == visible)
     return;
 
-  UpdateExtensionPref(extension->id(), kBrowserActionVisible,
+  bool action_box_enabled = extensions::switch_utils::IsActionBoxEnabled();
+  const char* browser_action_pref = action_box_enabled ? kBrowserActionPinned :
+                                                         kBrowserActionVisible;
+  UpdateExtensionPref(extension->id(), browser_action_pref,
                       Value::CreateBooleanValue(visible));
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,

@@ -113,14 +113,14 @@ void ExtensionToolbarModel::Observe(
       if (toolitems_[i].get() == extension)
         return;  // Already exists.
     }
-    if (service_->GetBrowserActionVisibility(extension))
+    if (service_->extension_prefs()->GetBrowserActionVisibility(extension))
       AddExtension(extension);
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     RemoveExtension(extension);
   } else if (
         type ==
         chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
-    if (service_->GetBrowserActionVisibility(extension))
+    if (service_->extension_prefs()->GetBrowserActionVisibility(extension))
       AddExtension(extension);
     else
       RemoveExtension(extension);
@@ -192,7 +192,7 @@ void ExtensionToolbarModel::InitializeExtensionList() {
     const Extension* extension = *it;
     if (!extension->browser_action())
       continue;
-    if (!service_->GetBrowserActionVisibility(extension))
+    if (!service_->extension_prefs()->GetBrowserActionVisibility(extension))
       continue;
 
     std::vector<std::string>::iterator pos =

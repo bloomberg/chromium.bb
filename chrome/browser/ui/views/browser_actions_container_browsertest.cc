@@ -233,8 +233,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
 
   // Force hide this browser action.
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  service->SetBrowserActionVisibility(service->GetExtensionById(idA, false),
-                                      false);
+  service->extension_prefs()->SetBrowserActionVisibility(
+      service->GetExtensionById(idA, false), false);
   EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
 
   ReloadExtension(idA);

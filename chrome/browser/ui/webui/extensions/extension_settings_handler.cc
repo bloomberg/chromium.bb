@@ -132,7 +132,8 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     extension_data->SetInteger("order", 2);
 
   if (extension_service_ &&
-      !extension_service_->GetBrowserActionVisibility(extension)) {
+      !extension_service_->extension_prefs()->
+          GetBrowserActionVisibility(extension)) {
     extension_data->SetBoolean("enable_show_button", true);
   }
 
@@ -666,7 +667,8 @@ void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
   if (!extension)
     return;
-  extension_service_->SetBrowserActionVisibility(extension, true);
+  extension_service_->extension_prefs()->
+      SetBrowserActionVisibility(extension, true);
 }
 
 void ExtensionSettingsHandler::HandleAutoUpdateMessage(const ListValue* args) {

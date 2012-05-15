@@ -255,10 +255,6 @@ class ExtensionService
   // only.
   void SetAllowFileAccess(const Extension* extension, bool allow);
 
-  // Getter and setter for the Browser Action visibility in the toolbar.
-  bool GetBrowserActionVisibility(const Extension* extension);
-  void SetBrowserActionVisibility(const Extension* extension, bool visible);
-
   // Whether the persistent background page, if any, is ready. We don't load
   // other components until then. If there is no background page, or if it is
   // non-persistent (lazy), we consider it to be ready.
