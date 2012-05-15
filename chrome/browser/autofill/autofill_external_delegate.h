@@ -11,12 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/password_autofill_manager.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/form_field.h"
 #include "webkit/forms/password_form_dom_manager.h"
 
 class AutofillManager;
-class TabContentsWrapper;
 
 namespace gfx {
 class Rect;
@@ -124,6 +124,9 @@ class AutofillExternalDelegate {
 
   // Set the bounds of the Autofill element being worked with.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
+
+  // Return the profile that this autofill delegate is currently working with.
+  Profile* profile() { return tab_contents_wrapper_->profile(); }
 
  private:
   // Fills the form with the Autofill data corresponding to |unique_id|.

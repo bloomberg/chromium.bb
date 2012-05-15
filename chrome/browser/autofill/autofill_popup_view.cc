@@ -5,12 +5,14 @@
 #include "chrome/browser/autofill/autofill_popup_view.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "grit/webkit_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 
 using WebKit::WebAutofillClient;
@@ -19,6 +21,22 @@ namespace {
 
 // Used to indicate that no line is currently selected by the user.
 const int kNoSelection = -1;
+
+struct DataResource {
+  const char* name;
+  int id;
+};
+
+const DataResource kDataResources[] = {
+  { "americanExpressCC", IDR_AUTOFILL_CC_AMEX },
+  { "dinersCC", IDR_AUTOFILL_CC_DINERS },
+  { "discoverCC", IDR_AUTOFILL_CC_DISCOVER },
+  { "genericCC", IDR_AUTOFILL_CC_GENERIC },
+  { "jcbCC", IDR_AUTOFILL_CC_JCB },
+  { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
+  { "soloCC", IDR_AUTOFILL_CC_SOLO },
+  { "visaCC", IDR_AUTOFILL_CC_VISA },
+};
 
 }  // end namespace
 
@@ -149,6 +167,15 @@ bool AutofillPopupView::IsSeparatorIndex(int index) {
   // http://crbug.com/125001
   return (index > 0 && autofill_unique_ids_[index - 1] >= 0 &&
           autofill_unique_ids_[index] < 0);
+}
+
+int AutofillPopupView::GetIconResourceID(const string16& resource_name) {
+  for (size_t i = 0; i < arraysize(kDataResources); ++i) {
+    if (resource_name == ASCIIToUTF16(kDataResources[i].name))
+      return kDataResources[i].id;
+  }
+
+  return -1;
 }
 
 bool AutofillPopupView::CanDelete(int id) {

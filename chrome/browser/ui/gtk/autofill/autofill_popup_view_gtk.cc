@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_compat.h"
@@ -23,11 +24,23 @@ const GdkColor kBorderColor = GDK_COLOR_RGB(0xc7, 0xca, 0xce);
 const GdkColor kHoveredBackgroundColor = GDK_COLOR_RGB(0x0CD, 0xCD, 0xCD);
 const GdkColor kTextColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 
+// The vertical height of each row in pixels.
+const int kRowHeight = 24;
+
 // The amount of minimum padding between the Autofill value and label in pixels.
 const int kMiddlePadding = 10;
 
+// The amount of padding between the label and icon or edge and icon in pixels.
+const int kIconPadding = 5;
+
 // We have a 1 pixel border around the entire results popup.
 const int kBorderThickness = 1;
+
+// Width of the icons in pixels.
+const int kIconWidth = 25;
+
+// Height of the icons in pixels.
+const int kIconHeight = 16;
 
 gfx::Rect GetWindowRect(GdkWindow* window) {
   return gfx::Rect(gdk_window_get_width(window),
@@ -35,19 +48,21 @@ gfx::Rect GetWindowRect(GdkWindow* window) {
 }
 
 // Returns the rectangle containing the item at position |index| in the popup.
-gfx::Rect GetRectForRow(size_t index, int width, int height) {
-  return gfx::Rect(0, (index * height), width, height);
+gfx::Rect GetRectForRow(size_t index, int width) {
+  return gfx::Rect(0, (index * kRowHeight), width, kRowHeight);
 }
 
 }  // namespace
 
 AutofillPopupViewGtk::AutofillPopupViewGtk(
     content::WebContents* web_contents,
+    GtkThemeService* theme_service,
     AutofillExternalDelegate* external_delegate,
     GtkWidget* parent)
     : AutofillPopupView(web_contents, external_delegate),
       parent_(parent),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
+      theme_service_(theme_service),
       render_view_host_(web_contents->GetRenderViewHost()) {
   CHECK(parent != NULL);
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
@@ -69,8 +84,6 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(
 
   // Cache the layout so we don't have to create it for every expose.
   layout_ = gtk_widget_create_pango_layout(window_, NULL);
-
-  row_height_ = font_.GetHeight();
 }
 
 AutofillPopupViewGtk::~AutofillPopupViewGtk() {
@@ -100,8 +113,7 @@ void AutofillPopupViewGtk::HideInternal() {
 }
 
 void AutofillPopupViewGtk::InvalidateRow(size_t row) {
-  GdkRectangle row_rect = GetRectForRow(
-      row, bounds_.width(), row_height_).ToGdkRectangle();
+  GdkRectangle row_rect = GetRectForRow(row, bounds_.width()).ToGdkRectangle();
   GdkWindow* gdk_window = gtk_widget_get_window(window_);
   gdk_window_invalidate_rect(gdk_window, &row_rect, FALSE);
 }
@@ -110,7 +122,7 @@ void AutofillPopupViewGtk::ResizePopup() {
   gtk_widget_set_size_request(
       window_,
       GetPopupRequiredWidth(),
-      row_height_ * autofill_values().size());
+      kRowHeight * autofill_values().size());
 }
 
 gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
@@ -152,13 +164,13 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
   actual_content_height /= PANGO_SCALE;
 
   for (size_t i = 0; i < autofill_values().size(); ++i) {
-    gfx::Rect line_rect = GetRectForRow(i, window_rect.width(), row_height_);
+    gfx::Rect line_rect = GetRectForRow(i, window_rect.width());
     // Only repaint and layout damaged lines.
     if (!line_rect.Intersects(damage_rect))
       continue;
 
     if (IsSeparatorIndex(i)) {
-      int line_y = i * row_height_;
+      int line_y = i * kRowHeight;
 
       cairo_save(cr);
       cairo_move_to(cr, 0, line_y);
@@ -177,7 +189,7 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
     // Center the text within the line.
     int content_y = std::max(
         line_rect.y(),
-        line_rect.y() + ((row_height_ - actual_content_height) / 2));
+        line_rect.y() + ((kRowHeight - actual_content_height) / 2));
 
     // Draw the value.
     gtk_util::SetLayoutText(layout_, autofill_values()[i]);
@@ -190,12 +202,32 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
     // Draw the label.
     int x_align_left = window_rect.width() -
         font_.GetStringWidth(autofill_labels()[i]);
+
+    if (!autofill_icons()[i].empty())
+      x_align_left -= 2 * kIconPadding + kIconWidth;
+
     gtk_util::SetLayoutText(layout_, autofill_labels()[i]);
 
     cairo_save(cr);
-    cairo_move_to(cr, x_align_left, line_rect.y());
+    cairo_move_to(cr, x_align_left, content_y);
     pango_cairo_show_layout(cr, layout_);
     cairo_restore(cr);
+
+    // Draw the icon, if one exists
+    if (!autofill_icons()[i].empty()) {
+      int icon = GetIconResourceID(autofill_icons()[i]);
+      DCHECK_NE(-1, icon);
+      int icon_y = line_rect.y() + ((kRowHeight - kIconHeight) / 2);
+
+      cairo_save(cr);
+      gtk_util::DrawFullImage(cr,
+                              window_,
+                              theme_service_->GetImageNamed(icon),
+                              window_rect.width() -
+                                (kIconPadding + kIconWidth),
+                              icon_y);
+      cairo_restore(cr);
+    }
   }
 
   cairo_destroy(cr);
@@ -247,7 +279,7 @@ void AutofillPopupViewGtk::SetupLayout(const gfx::Rect& window_rect,
                                        const GdkColor& text_color) {
   int allocated_content_width = window_rect.width();
   pango_layout_set_width(layout_, allocated_content_width * PANGO_SCALE);
-  pango_layout_set_height(layout_, row_height_ * PANGO_SCALE);
+  pango_layout_set_height(layout_, kRowHeight * PANGO_SCALE);
 
   PangoAttrList* attrs = pango_attr_list_new();
 
@@ -270,7 +302,7 @@ void AutofillPopupViewGtk::SetBounds() {
 
   int bottom_of_field = origin_y + element_bounds().y() +
       element_bounds().height();
-  int popup_size =  row_height_ * autofill_values().size();
+  int popup_size =  kRowHeight * autofill_values().size();
 
   // Find the correct top position of the popup so that is doesn't go off
   // the screen.
@@ -291,20 +323,23 @@ void AutofillPopupViewGtk::SetBounds() {
 }
 
 int AutofillPopupViewGtk::GetPopupRequiredWidth() {
-  // TODO(csharp): Once the icon is also displayed it will affect the required
-  // size so it will need to be included in the calculation.
   int popup_width = element_bounds().width();
   DCHECK_EQ(autofill_values().size(), autofill_labels().size());
   for (size_t i = 0; i < autofill_values().size(); ++i) {
-    popup_width = std::max(popup_width,
-                           font_.GetStringWidth(autofill_values()[i]) +
-                           kMiddlePadding +
-                           font_.GetStringWidth(autofill_labels()[i]));
+    int row_size = font_.GetStringWidth(autofill_values()[i]) +
+        kMiddlePadding +
+        font_.GetStringWidth(autofill_labels()[i]);
+
+    // Add the icon size if required.
+    if (!autofill_icons()[i].empty())
+      row_size += kIconWidth + 2 * kIconPadding;
+
+    popup_width = std::max(popup_width, row_size);
   }
 
   return popup_width;
 }
 
 int AutofillPopupViewGtk::LineFromY(int y) {
-  return y / row_height_;
+  return y / kRowHeight;
 }

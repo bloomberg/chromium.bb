@@ -14,6 +14,9 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/font.h"
 
+class GtkThemeService;
+class Profile;
+
 namespace content {
 class RenderViewHost;
 }
@@ -33,6 +36,7 @@ class AutofillPopupViewGtk : public AutofillPopupView,
                              public KeyboardListener {
  public:
   AutofillPopupViewGtk(content::WebContents* web_contents,
+                       GtkThemeService* theme_service,
                        AutofillExternalDelegate* external_delegate,
                        GtkWidget* parent);
   virtual ~AutofillPopupViewGtk();
@@ -71,9 +75,7 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   GtkWidget* window_;  // Strong reference.
   PangoLayout* layout_;  // Strong reference
   gfx::Font font_;
-
-  // The height of each individual Autofill popup row.
-  int row_height_;
+  GtkThemeService* theme_service_;
 
   // The size of the popup.
   gfx::Rect bounds_;

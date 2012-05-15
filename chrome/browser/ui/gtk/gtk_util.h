@@ -29,6 +29,10 @@ namespace content {
 struct RendererPreferences;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace event_utils {
 
 // Translates GdkEvent state into what kind of disposition they represent.
@@ -222,6 +226,13 @@ void DrawThemedToolbarBackground(GtkWidget* widget,
                                  GdkEventExpose* event,
                                  const gfx::Point& tabstrip_origin,
                                  GtkThemeService* provider);
+
+// Draw an entire pixbuf without dithering.
+void DrawFullImage(cairo_t* cr,
+                   GtkWidget* widget,
+                   const gfx::Image* image,
+                   gint dest_x,
+                   gint dest_y);
 
 // Returns the two colors averaged together.
 GdkColor AverageColors(GdkColor color_one, GdkColor color_two);

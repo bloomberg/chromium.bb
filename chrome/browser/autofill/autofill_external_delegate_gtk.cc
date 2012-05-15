@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/autofill_external_delegate_gtk.h"
 
 #include "chrome/browser/ui/gtk/autofill/autofill_popup_view_gtk.h"
+#include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -69,6 +70,7 @@ void AutofillExternalDelegateGtk::CreateViewIfNeeded() {
     return;
 
   view_.reset(new AutofillPopupViewGtk(web_contents_,
+                                       GtkThemeService::GetFrom(profile()),
                                        this,
                                        tab_native_view_));
 
