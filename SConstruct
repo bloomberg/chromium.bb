@@ -1554,7 +1554,7 @@ def PPAPIBrowserTester(env,
                        map_files=(),
                        extensions=(),
                        mime_types=(),
-                       timeout=20,
+                       timeout=30,
                        log_verbosity=2,
                        args=[],
                        # list of key/value pairs that are passed to the test
