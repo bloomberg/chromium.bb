@@ -62,23 +62,12 @@ void TrayItemView::SetVisible(bool set_visible) {
   }
 }
 
-void TrayItemView::ApplyChange() {
-  // Forcing the widget to the new size is sufficient. The positioning is
-  // taken care of by the layout manager (ShelfLayoutManager).
-  GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
-}
-
 gfx::Size TrayItemView::DesiredSize() {
   return views::View::GetPreferredSize();
 }
 
 int TrayItemView::GetAnimationDurationMS() {
   return kTrayItemAnimationDurationMS;
-}
-
-void TrayItemView::PreferredSizeChanged() {
-  views::View::PreferredSizeChanged();
-  ApplyChange();
 }
 
 gfx::Size TrayItemView::GetPreferredSize() {
@@ -91,6 +80,10 @@ gfx::Size TrayItemView::GetPreferredSize() {
   return size;
 }
 
+void TrayItemView::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
+}
+
 void TrayItemView::AnimationProgressed(const ui::Animation* animation) {
   ui::Transform transform;
   transform.SetScale(animation->GetCurrentValue(),
@@ -98,7 +91,7 @@ void TrayItemView::AnimationProgressed(const ui::Animation* animation) {
   transform.ConcatTranslate(0, animation->CurrentValueBetween(
       static_cast<double>(height()) / 2, 0.));
   layer()->SetTransform(transform);
-  ApplyChange();
+  PreferredSizeChanged();
 }
 
 void TrayItemView::AnimationEnded(const ui::Animation* animation) {

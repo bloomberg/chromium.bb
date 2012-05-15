@@ -74,12 +74,6 @@ class RoundedImageView : public views::View {
                      image_size_.height() + GetInsets().height());
   }
 
-  virtual void VisibilityChanged(views::View* starting_from,
-                                 bool is_visible) OVERRIDE {
-    if (starting_from == this && GetWidget())
-      GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
-  }
-
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     View::OnPaint(canvas);
     gfx::Rect image_bounds(GetPreferredSize());

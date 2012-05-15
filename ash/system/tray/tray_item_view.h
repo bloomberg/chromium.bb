@@ -54,12 +54,10 @@ class TrayItemView : public views::View,
   // The default animation duration is 200ms. But each view can customize this.
   virtual int GetAnimationDurationMS();
 
-  // Overridden from views::View.
-  virtual void PreferredSizeChanged() OVERRIDE;
-
  private:
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;

@@ -8,6 +8,9 @@
 
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
+#include "base/utf_string_conversions.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -30,16 +33,23 @@ class TestItem : public SystemTrayItem {
 
   virtual views::View* CreateTrayView(user::LoginStatus status) {
     tray_view_ = new views::View;
+    // Add a label so it has non-zero width.
+    tray_view_->SetLayoutManager(new views::FillLayout);
+    tray_view_->AddChildView(new views::Label(UTF8ToUTF16("Tray")));
     return tray_view_;
   }
 
   virtual views::View* CreateDefaultView(user::LoginStatus status) {
     default_view_ = new views::View;
+    default_view_->SetLayoutManager(new views::FillLayout);
+    default_view_->AddChildView(new views::Label(UTF8ToUTF16("Default")));
     return default_view_;
   }
 
   virtual views::View* CreateDetailedView(user::LoginStatus status) {
     detailed_view_ = new views::View;
+    detailed_view_->SetLayoutManager(new views::FillLayout);
+    detailed_view_->AddChildView(new views::Label(UTF8ToUTF16("Detailed")));
     return detailed_view_;
   }
 
@@ -124,6 +134,31 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(test_item->default_view() != NULL);
   ASSERT_TRUE(detailed_item->detailed_view() == NULL);
+}
+
+TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
+  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  ASSERT_TRUE(tray->widget());
+
+  gfx::Size widget_size = tray->widget()->GetWindowScreenBounds().size();
+
+  TestItem* test_item = new TestItem;
+  tray->AddTrayItem(test_item);
+
+  gfx::Size new_size = tray->widget()->GetWindowScreenBounds().size();
+
+  // Adding the new item should change the size of the tray.
+  EXPECT_NE(widget_size.ToString(), new_size.ToString());
+
+  // Hiding the tray view of the new item should also change the size of the
+  // tray.
+  test_item->tray_view()->SetVisible(false);
+  EXPECT_EQ(widget_size.ToString(),
+            tray->widget()->GetWindowScreenBounds().size().ToString());
+
+  test_item->tray_view()->SetVisible(true);
+  EXPECT_EQ(new_size.ToString(),
+            tray->widget()->GetWindowScreenBounds().size().ToString());
 }
 
 // Disabled due to a use-after-free, see http://crbug.com/127539.

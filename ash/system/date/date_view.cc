@@ -93,9 +93,7 @@ void BaseDateTimeView::SetTimer(const base::Time& now) {
 }
 
 void BaseDateTimeView::ChildPreferredSizeChanged(views::View* child) {
-  views::View::PreferredSizeChanged();
-  if (GetWidget())
-    GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
+  PreferredSizeChanged();
 }
 
 void BaseDateTimeView::OnLocaleChanged() {

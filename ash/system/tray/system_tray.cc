@@ -85,6 +85,40 @@ class SystemTrayBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBackground);
 };
 
+// Container for all the items in the tray. The container auto-resizes the
+// widget when necessary.
+class SystemTrayContainer : public views::View {
+ public:
+  SystemTrayContainer() {}
+  virtual ~SystemTrayContainer() {}
+
+ private:
+  void UpdateWidgetSize() {
+    if (GetWidget())
+      GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
+  }
+
+  // Overridden from views::View.
+  virtual void ChildPreferredSizeChanged(views::View* child) {
+    views::View::ChildPreferredSizeChanged(child);
+    UpdateWidgetSize();
+  }
+
+  virtual void ChildVisibilityChanged(View* child) OVERRIDE {
+    views::View::ChildVisibilityChanged(child);
+    UpdateWidgetSize();
+  }
+
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE {
+    if (parent == this)
+      UpdateWidgetSize();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SystemTrayContainer);
+};
+
 // Observe the tray layer animation and update the anchor when it changes.
 // TODO(stevenjb): Observe or mirror the actual animation, not just the start
 // and end points.
@@ -138,7 +172,7 @@ SystemTray::SystemTray()
           0, kTrayBackgroundAlpha)),
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(this,
           0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)) {
-  tray_container_ = new views::View;
+  tray_container_ = new internal::SystemTrayContainer;
   tray_container_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, 0));
   tray_container_->set_background(background_);
