@@ -636,6 +636,16 @@ const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
 }
 
 // static
+const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
+  return GetPlainTextFormatType();
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
+  return GetPlainTextWFormatType();
+}
+
+// static
 const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
   CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeHTML));
   return type;

@@ -462,7 +462,8 @@ bool Clipboard::IsFormatAvailable(const FormatType& format,
   DCHECK(CalledOnValidThread());
   DCHECK(IsValidBuffer(buffer));
   AuraClipboard* clipboard = GetClipboard();
-  if (GetPlainTextFormatType().Equals(format))
+  if (GetPlainTextFormatType().Equals(format) ||
+      GetUrlFormatType().Equals(format))
     return clipboard->IsFormatAvailable(TEXT);
   else if (GetHtmlFormatType().Equals(format))
     return clipboard->IsFormatAvailable(HTML);
@@ -604,6 +605,17 @@ void Clipboard::WriteData(const FormatType& format,
 Clipboard::FormatType Clipboard::GetFormatType(
     const std::string& format_string) {
   return FormatType::Deserialize(format_string);
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeURIList));
+  return type;
+}
+
+// static
+const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
+  return GetUrlFormatType();
 }
 
 // static

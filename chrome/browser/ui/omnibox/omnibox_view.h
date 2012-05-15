@@ -217,6 +217,11 @@ class OmniboxView {
   // input text.
   static string16 StripJavascriptSchemas(const string16& text);
 
+  // Returns the current clipboard contents as a string that can be pasted in.
+  // In addition to just getting CF_UNICODETEXT out, this can also extract URLs
+  // from bookmarks on the clipboard.
+  static string16 GetClipboardText();
+
   virtual ~OmniboxView() {}
 };
 

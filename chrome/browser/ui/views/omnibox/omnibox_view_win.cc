@@ -2449,42 +2449,6 @@ void OmniboxViewWin::TextChanged() {
   model_->OnChanged();
 }
 
-string16 OmniboxViewWin::GetClipboardText() const {
-  // Try text format.
-  ui::Clipboard* clipboard = g_browser_process->clipboard();
-  if (clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
-                                   ui::Clipboard::BUFFER_STANDARD)) {
-    string16 text;
-    clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
-    // Note: Unlike in the find popup and textfield view, here we completely
-    // remove whitespace strings containing newlines.  We assume users are
-    // most likely pasting in URLs that may have been split into multiple
-    // lines in terminals, email programs, etc., and so linebreaks indicate
-    // completely bogus whitespace that would just cause the input to be
-    // invalid.
-    return StripJavascriptSchemas(CollapseWhitespace(text, true));
-  }
-
-  // Try bookmark format.
-  //
-  // It is tempting to try bookmark format first, but the URL we get out of a
-  // bookmark has been cannonicalized via GURL.  This means if a user copies
-  // and pastes from the URL bar to itself, the text will get fixed up and
-  // cannonicalized, which is not what the user expects.  By pasting in this
-  // order, we are sure to paste what the user copied.
-  if (clipboard->IsFormatAvailable(ui::Clipboard::GetUrlWFormatType(),
-                                   ui::Clipboard::BUFFER_STANDARD)) {
-    std::string url_str;
-    clipboard->ReadBookmark(NULL, &url_str);
-    // pass resulting url string through GURL to normalize
-    GURL url(url_str);
-    if (url.is_valid())
-      return StripJavascriptSchemas(UTF8ToUTF16(url.spec()));
-  }
-
-  return string16();
-}
-
 bool OmniboxViewWin::CanPasteAndGo(const string16& text) const {
   return !popup_window_mode_ && model_->CanPasteAndGo(text);
 }

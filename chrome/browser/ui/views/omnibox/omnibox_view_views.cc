@@ -21,6 +21,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_strings.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -758,13 +759,26 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   // on IDC_ for now.
   menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
       IDS_EDIT_SEARCH_ENGINES);
+
+  int paste_position = menu_contents->GetIndexOfCommandId(IDS_APP_PASTE);
+  if (paste_position >= 0)
+    menu_contents->InsertItemWithStringIdAt(
+        paste_position + 1, IDS_PASTE_AND_GO, IDS_PASTE_AND_GO);
 }
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
+  if (command_id == IDS_PASTE_AND_GO)
+    return !popup_window_mode_ && model_->CanPasteAndGo(GetClipboardText());
+
   return command_updater_->IsCommandEnabled(command_id);
 }
 
 void OmniboxViewViews::ExecuteCommand(int command_id) {
+  if (command_id == IDS_PASTE_AND_GO) {
+    model_->PasteAndGo();
+    return;
+  }
+
   command_updater_->ExecuteCommand(command_id);
 }
 

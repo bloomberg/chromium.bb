@@ -374,11 +374,6 @@ class OmniboxViewWin
   // Internally invoked whenever the text changes in some way.
   void TextChanged();
 
-  // Returns the current clipboard contents as a string that can be pasted in.
-  // In addition to just getting CF_UNICODETEXT out, this can also extract URLs
-  // from bookmarks on the clipboard.
-  string16 GetClipboardText() const;
-
   // Determines whether the user can "paste and go", given the specified text.
   bool CanPasteAndGo(const string16& text) const;
 
