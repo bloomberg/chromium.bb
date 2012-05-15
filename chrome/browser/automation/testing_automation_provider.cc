@@ -358,8 +358,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookies, GetCookies)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetCookie, SetCookie)
     IPC_MESSAGE_HANDLER(AutomationMsg_DeleteCookie, DeleteCookie)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ShowCollectedCookiesDialog,
-                        ShowCollectedCookiesDialog)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_NavigateToURLBlockUntilNavigationsComplete,
         NavigateToURLBlockUntilNavigationsComplete)
@@ -679,19 +677,6 @@ void TestingAutomationProvider::DeleteCookie(const GURL& url,
   WebContents* contents = tab_tracker_->ContainsHandle(handle) ?
       tab_tracker_->GetResource(handle)->GetWebContents() : NULL;
   automation_util::DeleteCookie(url, cookie_name, contents, success);
-}
-
-void TestingAutomationProvider::ShowCollectedCookiesDialog(
-    int handle, bool* success) {
-  *success = false;
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* controller = tab_tracker_->GetResource(handle);
-    WebContents* tab_contents = controller->GetWebContents();
-    Browser* browser = Browser::GetBrowserForController(controller, NULL);
-    browser->ShowCollectedCookiesDialog(
-        TabContentsWrapper::GetCurrentWrapperForContents(tab_contents));
-    *success = true;
-  }
 }
 
 void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(

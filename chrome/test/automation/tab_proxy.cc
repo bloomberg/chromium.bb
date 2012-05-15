@@ -378,12 +378,6 @@ bool TabProxy::DeleteCookie(const GURL& url, const std::string& name) {
   return succeeded;
 }
 
-bool TabProxy::ShowCollectedCookiesDialog() {
-  bool succeeded = false;
-  return sender_->Send(new AutomationMsg_ShowCollectedCookiesDialog(
-                       handle_, &succeeded)) && succeeded;
-}
-
 int TabProxy::InspectElement(int x, int y) {
   if (!is_valid())
     return -1;

@@ -1375,7 +1375,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DeleteCookie,
                             bool /* result */)
 
 // This message triggers the collected cookies dialog for a specific tab.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_ShowCollectedCookiesDialog,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_ShowCollectedCookiesDialog,
                             int /* tab handle */,
                             bool /* result */)
 

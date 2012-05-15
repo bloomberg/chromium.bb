@@ -185,10 +185,6 @@ class TabProxy : public AutomationResourceProxy,
   bool DeleteCookie(const GURL& url,
                     const std::string& name) WARN_UNUSED_RESULT;
 
-  // Opens the collected cookies dialog for the current tab. This function can
-  // be invoked on any valid tab.
-  bool ShowCollectedCookiesDialog() WARN_UNUSED_RESULT;
-
   // Sends a InspectElement message for the current tab. |x| and |y| are the
   // coordinates that we want to simulate that the user is trying to inspect.
   int InspectElement(int x, int y);

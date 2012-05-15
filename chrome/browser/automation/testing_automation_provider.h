@@ -107,7 +107,6 @@ class TestingAutomationProvider : public AutomationProvider,
                  int* response_value);
   void DeleteCookie(const GURL& url, const std::string& cookie_name,
                     int handle, bool* success);
-  void ShowCollectedCookiesDialog(int handle, bool* success);
   void NavigateToURLBlockUntilNavigationsComplete(int handle, const GURL& url,
                                                   int number_of_navigations,
                                                   IPC::Message* reply_message);
