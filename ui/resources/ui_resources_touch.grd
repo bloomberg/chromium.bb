@@ -44,39 +44,39 @@
 
       <!-- Remaining images only used by Aura. -->
       <if expr="pp_ifdef('use_aura')">
-        <include name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="aura/window_button_separator_touch.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_CLOSE" file="aura/window_close_touch_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_CLOSE_H" file="aura/window_close_touch_hot.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_CLOSE_P" file="aura/window_close_touch_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="aura/window_close_touch_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H" file="aura/window_close_touch_hot.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P" file="aura/window_close_touch_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="aura/window_restore_touch_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H" file="aura/window_restore_touch_hot.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P" file="aura/window_restore_touch_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR" file="aura/window_button_separator_touch.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZE" file="aura/window_maximize_touch_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZE_H" file="aura/window_maximize_touch_hot.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZE_P" file="aura/window_maximize_touch_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="aura/window_close_touch_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="aura/window_close_touch_hot.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="aura/window_close_touch_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE" file="aura/window_maximized_minimize_touch_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_H" file="aura/window_maximized_minimize_touch_hot.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_P" file="aura/window_maximized_minimize_touch_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P" file="aura/window_snap_left_touch_p.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P" file="aura/window_snap_minimize_touch_p.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_P" file="aura/window_snap_touch_p.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P" file="aura/window_snap_right_touch_p.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="aura/window_restore_touch_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="aura/window_restore_touch_hot.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="aura/window_restore_touch_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_SNAP_LEFT_P" file="aura/window_snap_left_touch_p.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_SNAP_MINIMIZE_P" file="aura/window_snap_minimize_touch_p.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_SNAP_P" file="aura/window_snap_touch_p.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_SNAP_RIGHT_P" file="aura/window_snap_right_touch_p.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NO_DROP" file="aura/left_ptr_nodrop.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_COPY" file="aura/left_ptr_copy.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="touch_100/window_button_separator.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_CLOSE" file="touch_100/window_close_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_CLOSE_H" file="touch_100/window_close_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_CLOSE_P" file="touch_100/window_close_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="touch_100/window_close_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H" file="touch_100/window_close_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P" file="touch_100/window_close_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="touch_100/window_restore_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H" file="touch_100/window_restore_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P" file="touch_100/window_restore_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR" file="touch_100/window_button_separator.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZE" file="touch_100/window_maximize_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZE_H" file="touch_100/window_maximize_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZE_P" file="touch_100/window_maximize_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="touch_100/window_close_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="touch_100/window_close_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="touch_100/window_close_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE" file="touch_100/window_maximized_minimize_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_H" file="touch_100/window_maximized_minimize_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_P" file="touch_100/window_maximized_minimize_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P" file="touch_100/window_snap_left_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P" file="touch_100/window_snap_minimize_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_P" file="touch_100/window_snap_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P" file="touch_100/window_snap_right_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="touch_100/window_restore_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="touch_100/window_restore_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="touch_100/window_restore_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_SNAP_LEFT_P" file="touch_100/window_snap_left_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_SNAP_MINIMIZE_P" file="touch_100/window_snap_minimize_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_SNAP_P" file="touch_100/window_snap_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_SNAP_RIGHT_P" file="touch_100/window_snap_right_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NO_DROP" file="default_100/aura/left_ptr_nodrop.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_COPY" file="default_100/aura/left_ptr_copy.png" type="BINDATA" />
       </if>
     </includes>
   </release>

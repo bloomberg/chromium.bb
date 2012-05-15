@@ -78,8 +78,8 @@
         <include name="IDR_AURA_WINDOW_SNAP_MINIMIZE_P" file="aura/window_snap_minimize_p.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_SNAP_P" file="aura/window_snap_p.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_SNAP_RIGHT_P" file="aura/window_snap_right_p.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NO_DROP" file="aura/left_ptr_nodrop_2x.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_COPY" file="aura/left_ptr_copy_2x.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NO_DROP" file="default_100/aura/left_ptr_nodrop.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_COPY" file="default_100/aura/left_ptr_copy.png" type="BINDATA" />
       </if>
     </includes>
   </release>
