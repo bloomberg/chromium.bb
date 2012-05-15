@@ -1024,15 +1024,6 @@
 {
    bug_80654
    Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::_Vector_base::_M_allocate
-   fun:std::vector::_M_insert_aux
-   fun:std::vector::push_back
-   fun:ObserverListBase::AddObserver
-   fun:net::SSLConfigService::AddObserver
-   fun:*SSLClientSocketPool
-   ...
-   fun:*HttpNetworkSession
    ...
    fun:notifier::XmppClientSocketFactory::CreateTransportClientSocket
    fun:notifier::ChromeAsyncSocket::Connect
