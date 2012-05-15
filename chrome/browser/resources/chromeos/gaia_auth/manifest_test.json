@@ -3,6 +3,8 @@
   "key": "MIGdMA0GCSqGSIb3DQEBAQUAA4GLADCBhwKBgQC4L17nAfeTd6Xhtx96WhQ6DSr8KdHeQmfzgCkieKLCgUkWdwB9G1DCuh0EPMDn1MdtSwUAT7xE36APEzi0X/UpKjOVyX8tCC3aQcLoRAE0aJAvCcGwK7qIaQaczHmHKvPC2lrRdzSoMMTC5esvHX+ZqIBMi123FOL0dGW6OPKzIwIBIw==",
   "name": "GaiaTestAuthExtension",
   "version": "0.0.1",
+  "manifest_version": 2,
+  "content_security_policy": "default-src 'self'; script-src 'self'; frame-src 'self' https://insecure.com https://www.google.com/accounts/ https://accounts.google.com https://gaiastaging.corp.google.com",
   "description": "GAIA Test Component Extension",
   "content_scripts": [
     {
@@ -15,6 +17,18 @@
       "js": ["test/content.js"],
       "all_frames": true
     }
+  ],
+  "web_accessible_resources": [
+    "main.css",
+    "main.html",
+    "main.js",
+    "offline.css",
+    "offline.html",
+    "offline.js",
+    "success.html",
+    "success.js",
+    "util.js",
+    "test/content.js"
   ],
   "permissions": [
       "https://insecure.com/*",
