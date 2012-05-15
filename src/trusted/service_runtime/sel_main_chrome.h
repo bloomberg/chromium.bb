@@ -15,6 +15,15 @@ EXTERN_C_BEGIN
 struct NaClValidationCache;
 
 
+/*
+ * Descriptor number for initial_ipc_desc.  This is chosen so as not
+ * to conflict with NACL_SERVICE_PORT_DESCRIPTOR,
+ * NACL_SERVICE_ADDRESS_DESCRIPTOR and export_addr_to inside
+ * NaClChromeMainStart().
+ */
+#define NACL_CHROME_INITIAL_IPC_DESC 6
+
+
 struct NaClChromeMainArgs {
   /*
    * Handle for bootstrapping a NaCl IMC connection to the trusted
@@ -28,6 +37,13 @@ struct NaClChromeMainArgs {
    * descriptors are emulated by the C runtime library).  Required.
    */
   int irt_fd;
+
+  /*
+   * Descriptor to provide to untrusted code as descriptor number
+   * NACL_CHROME_INITIAL_IPC_DESC.  For use by the Chrome-IPC-based
+   * PPAPI proxy.  Optional; may be NULL.
+   */
+  struct NaClDesc *initial_ipc_desc;
 
   /* Whether to enable untrusted hardware exception handling.  Boolean. */
   int enable_exception_handling;

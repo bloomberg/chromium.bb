@@ -41,6 +41,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
     return NULL;
   args->imc_bootstrap_handle = NACL_INVALID_HANDLE;
   args->irt_fd = -1;
+  args->initial_ipc_desc = NULL;
   args->enable_exception_handling = 0;
   args->enable_debug_stub = 0;
   args->create_memory_object_func = NULL;
@@ -144,6 +145,10 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 
   /* import IMC handle - used to be "-i" */
   NaClAddImcHandle(nap, args->imc_bootstrap_handle, export_addr_to);
+
+  if (args->initial_ipc_desc != NULL) {
+    NaClSetDesc(nap, NACL_CHROME_INITIAL_IPC_DESC, args->initial_ipc_desc);
+  }
 
   /*
    * in order to report load error to the browser plugin through the
