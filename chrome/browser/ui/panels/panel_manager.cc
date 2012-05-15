@@ -62,7 +62,8 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
       wm_type != ui::WM_ICE_WM &&
       wm_type != ui::WM_KWIN &&
       wm_type != ui::WM_METACITY &&
-      wm_type != ui::WM_MUTTER) {
+      wm_type != ui::WM_MUTTER &&
+      wm_type != ui::WM_XFWM4) {
     return false;
   }
 #endif  // TOOLKIT_GTK
@@ -316,4 +317,3 @@ void PanelManager::OnPanelAnimationEnded(Panel* panel) {
       content::Source<Panel>(panel),
       content::NotificationService::NoDetails());
 }
-
