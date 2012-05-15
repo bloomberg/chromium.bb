@@ -2010,8 +2010,8 @@ input_device_attach(struct wl_client *client,
 	device->hotspot_x = x;
 	device->hotspot_y = y;
 	weston_surface_configure(device->sprite,
-				 device->input_device.x - device->hotspot_x,
-				 device->input_device.y - device->hotspot_y,
+				 wl_fixed_to_int(device->input_device.x) - x,
+				 wl_fixed_to_int(device->input_device.y) - y,
 				 buffer->width, buffer->height);
 
 	surface_damage(NULL, &device->sprite->surface.resource,
