@@ -16,7 +16,7 @@ typedef int CollectionId;
 struct CollectionRow {
  public:
   CollectionRow();
-  CollectionRow(FilePath path,
+  CollectionRow(const FilePath& path,
                 base::Time last_modified_time,
                 int entry_count,
                 bool all_parsed);
