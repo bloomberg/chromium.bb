@@ -322,6 +322,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accFocus(VARIANT* focus_child) {
     focus_child->lVal = CHILDID_SELF;
   } else if (focus && view_->Contains(focus)) {
     // Return the child object that has the keyboard focus.
+    focus_child->vt = VT_DISPATCH;
     focus_child->pdispVal = focus->GetNativeViewAccessible();
     focus_child->pdispVal->AddRef();
     return S_OK;
