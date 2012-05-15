@@ -36,17 +36,12 @@ const char kAdvancedPrintShortcut[] = "(Shift+Ctrl+P)";
 
 };  // namespace
 
-PrintPreviewDataSource::PrintPreviewDataSource(bool is_dummy)
+PrintPreviewDataSource::PrintPreviewDataSource()
     : ChromeWebUIDataSource(chrome::kChromeUIPrintHost) {
-  Init(is_dummy);
+  Init();
 }
 
-void PrintPreviewDataSource::Init(bool is_dummy) {
-  if (is_dummy) {
-    AddLocalizedString("intentionallyBlankText",
-                       IDS_PRINT_PREVIEW_INTENTIONALLY_BLANK);
-  }
-
+void PrintPreviewDataSource::Init() {
   AddLocalizedString("title", IDS_PRINT_PREVIEW_TITLE);
   AddLocalizedString("loading", IDS_PRINT_PREVIEW_LOADING);
   AddLocalizedString("noPlugin", IDS_PRINT_PREVIEW_NO_PLUGIN);
@@ -138,12 +133,8 @@ void PrintPreviewDataSource::Init(bool is_dummy) {
   AddLocalizedString("right", IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL);
 
   set_json_path("strings.js");
-  if (is_dummy) {
-    set_default_resource(IDR_PRINT_PREVIEW_DUMMY_HTML);
-  } else {
-    add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);
-    set_default_resource(IDR_PRINT_PREVIEW_HTML);
-  }
+  add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);
+  set_default_resource(IDR_PRINT_PREVIEW_HTML);
 }
 
 PrintPreviewDataSource::~PrintPreviewDataSource() {

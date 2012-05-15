@@ -82,16 +82,9 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       handler_(NULL),
       source_is_modifiable_(true),
       tab_closed_(false) {
-  printing::PrintPreviewTabController* controller =
-      printing::PrintPreviewTabController::GetInstance();
-  is_dummy_ = (!controller || !controller->is_creating_print_preview_tab());
-
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile,
-      new PrintPreviewDataSource(is_dummy_));
-  if (is_dummy_)
-    return;
+  ChromeURLDataManager::AddDataSource(profile, new PrintPreviewDataSource());
 
   // WebUI owns |handler_|.
   handler_ = new PrintPreviewHandler();
@@ -102,9 +95,6 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
 }
 
 PrintPreviewUI::~PrintPreviewUI() {
-  if (is_dummy_)
-    return;
-
   print_preview_data_service()->RemoveEntry(preview_ui_addr_str_);
   g_print_preview_request_id_map.Get().Erase(preview_ui_addr_str_);
 }

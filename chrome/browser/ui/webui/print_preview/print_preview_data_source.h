@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@
 // to return the markup or other resources for the print preview page itself.
 class PrintPreviewDataSource : public ChromeWebUIDataSource {
  public:
-  explicit PrintPreviewDataSource(bool is_dummy);
+  PrintPreviewDataSource();
 
   // ChromeURLDataManager::DataSource implementation.
   virtual void StartDataRequest(const std::string& path,
@@ -38,7 +38,7 @@ class PrintPreviewDataSource : public ChromeWebUIDataSource {
                                 int request_id) OVERRIDE;
  private:
   virtual ~PrintPreviewDataSource();
-  void Init(bool is_dummy);
+  void Init();
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDataSource);
 };

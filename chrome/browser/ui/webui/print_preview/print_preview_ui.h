@@ -178,9 +178,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Keeps track of whether OnClosePrintPreviewTab() has been called or not.
   bool tab_closed_;
 
-  // True if the user visited the page directly, false if it's a live UI.
-  bool is_dummy_;
-
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };
 

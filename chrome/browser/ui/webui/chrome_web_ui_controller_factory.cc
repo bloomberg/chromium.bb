@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -239,7 +240,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIPrintHost &&
       !g_browser_process->local_state()->GetBoolean(
           prefs::kPrintPreviewDisabled)) {
-    return &NewWebUI<PrintPreviewUI>;
+    printing::PrintPreviewTabController* controller =
+        printing::PrintPreviewTabController::GetInstance();
+    bool valid = controller && controller->is_creating_print_preview_tab();
+
+    if (valid)
+      return &NewWebUI<PrintPreviewUI>;
   }
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)

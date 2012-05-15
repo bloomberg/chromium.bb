@@ -7144,9 +7144,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL" desc="ARIA label used by screen reader to explain the purpose of the right margin textbox.">
         Right margin
       </message>
-      <message name="IDS_PRINT_PREVIEW_INTENTIONALLY_BLANK" desc="silly message seen in many technical manuals on blank pages.">
-        This page is intentionally left blank.
-      </message>
       <message name="IDS_PRINT_PREVIEW_NATIVE_DIALOG" desc="Option offering the user to open the native print dialog, displayed when the PDF viewer is missing or when print preview fails.">
         Print using system dialog…
       </message>
