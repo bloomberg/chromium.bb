@@ -254,3 +254,4 @@ sign \x00fc 12568
 sign \x00fd 24568
 sign \x00fe 12348
 sign \x00ff 134568
+sign \x2022 35
