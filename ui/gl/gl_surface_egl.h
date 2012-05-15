@@ -37,7 +37,6 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
   // Implement GLSurface.
   virtual EGLDisplay GetDisplay() OVERRIDE;
-  virtual EGLConfig GetConfig() OVERRIDE;
 
   static bool InitializeOneOff();
   static EGLDisplay GetHardwareDisplay();
@@ -58,6 +57,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual ~NativeViewGLSurfaceEGL();
 
   // Implement GLSurface.
+  virtual EGLConfig GetConfig() OVERRIDE;
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
@@ -74,6 +74,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   gfx::AcceleratedWidget window_;
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
+  EGLConfig config_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
 };
@@ -85,6 +86,7 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   virtual ~PbufferGLSurfaceEGL();
 
   // Implement GLSurface.
+  virtual EGLConfig GetConfig() OVERRIDE;
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;

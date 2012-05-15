@@ -68,6 +68,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
   }
 
   // Choose an EGL configuration.
+  // On X this is only used for PBuffer surfaces.
   static const EGLint kConfigAttribs[] = {
     EGL_BUFFER_SIZE, 32,
     EGL_ALPHA_SIZE, 8,
@@ -85,7 +86,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
                        NULL,
                        0,
                        &num_configs)) {
-    LOG(ERROR) << "eglChooseConfig failed failed with error "
+    LOG(ERROR) << "eglChooseConfig failed with error "
                << GetLastEGLErrorString();
     return false;
   }
@@ -151,10 +152,6 @@ EGLDisplay GLSurfaceEGL::GetDisplay() {
   return software_ ? g_software_display : g_display;
 }
 
-EGLConfig GLSurfaceEGL::GetConfig() {
-  return software_ ? g_software_config : g_config;
-}
-
 EGLDisplay GLSurfaceEGL::GetHardwareDisplay() {
   return g_display;
 }
@@ -171,8 +168,8 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
                                                gfx::AcceleratedWidget window)
     : window_(window),
       surface_(NULL),
-      supports_post_sub_buffer_(false)
-{
+      supports_post_sub_buffer_(false),
+      config_(NULL) {
   software_ = software;
 }
 
@@ -231,6 +228,83 @@ void NativeViewGLSurfaceEGL::Destroy() {
     }
     surface_ = NULL;
   }
+}
+
+EGLConfig NativeViewGLSurfaceEGL::GetConfig() {
+#if !defined(USE_X11)
+  return software_ ? g_software_config : g_config;
+#else
+  if (!config_) {
+    // Get a config compatible with the window
+    DCHECK(window_);
+    XWindowAttributes win_attribs;
+    if (!XGetWindowAttributes(GetNativeDisplay(), window_, &win_attribs)) {
+      return NULL;
+    }
+
+    // Try matching the window depth with an alpha channel,
+    // because we're worried the destination alpha width could
+    // constrain blending precision.
+    const int kBufferSizeOffset = 1;
+    const int kAlphaSizeOffset = 3;
+    EGLint config_attribs[] = {
+      EGL_BUFFER_SIZE, ~0,
+      EGL_ALPHA_SIZE, 8,
+      EGL_BLUE_SIZE, 8,
+      EGL_GREEN_SIZE, 8,
+      EGL_RED_SIZE, 8,
+      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+      EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+      EGL_NONE
+    };
+    config_attribs[kBufferSizeOffset] = win_attribs.depth;
+
+    EGLint num_configs;
+    if (!eglChooseConfig(g_display,
+                         config_attribs,
+                         &config_,
+                         1,
+                         &num_configs)) {
+      LOG(ERROR) << "eglChooseConfig failed with error "
+                 << GetLastEGLErrorString();
+      return NULL;
+    }
+
+    if (num_configs) {
+      EGLint config_depth;
+      if (!eglGetConfigAttrib(g_display,
+                              config_,
+                              EGL_BUFFER_SIZE,
+                              &config_depth)) {
+        LOG(ERROR) << "eglGetConfigAttrib failed with error "
+                   << GetLastEGLErrorString();
+        return NULL;
+      }
+
+      if (config_depth == win_attribs.depth) {
+        return config_;
+      }
+    }
+
+    // Try without an alpha channel.
+    config_attribs[kAlphaSizeOffset] = 0;
+    if (!eglChooseConfig(g_display,
+                         config_attribs,
+                         &config_,
+                         1,
+                         &num_configs)) {
+      LOG(ERROR) << "eglChooseConfig failed with error "
+                 << GetLastEGLErrorString();
+      return NULL;
+    }
+
+    if (num_configs == 0) {
+      LOG(ERROR) << "No suitable EGL configs found.";
+      return NULL;
+    }
+  }
+  return config_;
+#endif
 }
 
 bool NativeViewGLSurfaceEGL::IsOffscreen() {
@@ -333,6 +407,10 @@ void PbufferGLSurfaceEGL::Destroy() {
     }
     surface_ = NULL;
   }
+}
+
+EGLConfig PbufferGLSurfaceEGL::GetConfig() {
+  return software_ ? g_software_config : g_config;
 }
 
 bool PbufferGLSurfaceEGL::IsOffscreen() {
