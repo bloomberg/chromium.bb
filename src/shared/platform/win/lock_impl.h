@@ -1,16 +1,18 @@
 /*
- * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
+
+// NOTE(gregoryd): changed the Windows implementation to use mutex instead
+// of CRITICAL_SECTION
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_LOCK_IMPL_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_LOCK_IMPL_H_
 
 #include <Windows.h>
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/shared/platform/nacl_sync.h"
 
 namespace NaCl {
 
@@ -34,7 +36,11 @@ class LockImpl {
   void Unlock();
 
  private:
-  struct NaClFastMutex mu_;
+  HANDLE mutex_;
+
+  // On Windows a mutex is abandoned if the thread holding the lock exits,
+  // in which case we should fail or block to simulate POSIX deadlock.
+  bool abandoned_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(LockImpl);
 };

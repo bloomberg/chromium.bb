@@ -144,8 +144,6 @@ void NaClFastMutexDtor(struct NaClFastMutex *flp);
 
 void NaClFastMutexLock(struct NaClFastMutex *flp);
 
-int NaClFastMutexTryLock(struct NaClFastMutex *flp) NACL_WUR;
-
 void NaClFastMutexUnlock(struct NaClFastMutex *flp);
 
 EXTERN_C_END

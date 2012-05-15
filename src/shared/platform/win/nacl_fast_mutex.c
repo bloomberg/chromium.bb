@@ -6,7 +6,6 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/win/nacl_fast_mutex.h"
-#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
 /*
  * Windows CRITICAL_SECTION objects are recursive locks.
@@ -45,31 +44,8 @@ void NaClFastMutexDtor(struct NaClFastMutex *flp) {
 
 void NaClFastMutexLock(struct NaClFastMutex *flp) {
   EnterCriticalSection(&flp->mu);
-  /*
-   * CRITICAL_SECTION locks are recursive lock, but we only want
-   * binary locks.  TODO(bsy): consider returning other error code,
-   * e.g., EDEADLK, here instead.
-   */
   CHECK(0 == flp->is_held);
   flp->is_held = 1;
-}
-
-int NaClFastMutexTryLock(struct NaClFastMutex *flp) {
-  if (TryEnterCriticalSection(&flp->mu)) {
-    /*
-     * Abandoned critical sections state is undefined.  TODO(bsy):
-     * consider returning other error code, e.g., EDEADLK here.
-     */
-    CHECK(0 == flp->is_held);
-    flp->is_held = 1;
-    return 0;
-  }
-  /*
-   * Abandoned critical sections state is undefined; cannot check that
-   * is_held is true without holding the lock, so this might actually
-   * be a deadlock.
-   */
-  return NACL_ABI_EBUSY;
 }
 
 void NaClFastMutexUnlock(struct NaClFastMutex *flp) {

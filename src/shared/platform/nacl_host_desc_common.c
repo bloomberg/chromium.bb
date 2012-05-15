@@ -31,7 +31,6 @@ int NaClXlateErrno(int errnum) {
      * TODO(bsy): All host-OS conditional errnos should map into a
      * generic errno.
      */
-    case 0: return 0;
 #define MAP(E) case E: do { return NACL_ABI_ ## E; } while (0)
     MAP(EPERM);
     MAP(ENOENT);
