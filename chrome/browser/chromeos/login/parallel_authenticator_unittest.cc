@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/mock_cert_library.h"
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros_settings.h"
@@ -84,12 +85,14 @@ class ParallelAuthenticatorTest : public testing::Test {
 
     test_api->SetLibraryLoader(loader_, true);
 
-    mock_library_ = new MockCryptohomeLibrary();
-    test_api->SetCryptohomeLibrary(mock_library_, true);
-    io_thread_.Start();
+    mock_cryptohome_library_ = new MockCryptohomeLibrary();
+    test_api->SetCryptohomeLibrary(mock_cryptohome_library_, true);
 
-    EXPECT_CALL(*mock_user_manager_.user_manager(), LoadKeyStore())
-        .Times(AnyNumber());
+    mock_cert_library_ = new MockCertLibrary();
+    EXPECT_CALL(*mock_cert_library_, LoadKeyStore()).Times(AnyNumber());
+    test_api->SetCertLibrary(mock_cert_library_, true);
+
+    io_thread_.Start();
 
     auth_ = new ParallelAuthenticator(&consumer_);
     auth_->set_using_oauth(false);
@@ -219,7 +222,8 @@ class ParallelAuthenticatorTest : public testing::Test {
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
 
   // Mocks, destroyed by CrosLibrary class.
-  MockCryptohomeLibrary* mock_library_;
+  MockCertLibrary* mock_cert_library_;
+  MockCryptohomeLibrary* mock_cryptohome_library_;
   MockLibraryLoader* loader_;
   ScopedMockUserManagerEnabler mock_user_manager_;
 
@@ -497,7 +501,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
   EXPECT_CALL(*mock_caller_, AsyncMount(username_, hash_ascii_, false, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
@@ -518,7 +522,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
   EXPECT_CALL(*mock_caller_, AsyncMigrateKey(username_, _, hash_ascii_, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
@@ -635,7 +639,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
                                               _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
@@ -673,7 +677,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
   ExpectLoginSuccess(username_, password_, true);
   FailOnLoginFailure();
-  EXPECT_CALL(*mock_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
@@ -755,7 +759,7 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
   EXPECT_CALL(*mock_caller_, AsyncCheckKey(username_, _, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_library_, HashPassword(_))
+  EXPECT_CALL(*mock_cryptohome_library_, HashPassword(_))
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 

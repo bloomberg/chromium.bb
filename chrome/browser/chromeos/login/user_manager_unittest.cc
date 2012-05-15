@@ -9,6 +9,8 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/mock_cert_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
@@ -22,6 +24,8 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::AnyNumber;
+
 namespace chromeos {
 
 class UserManagerTest : public testing::Test {
@@ -33,6 +37,11 @@ class UserManagerTest : public testing::Test {
   }
 
   virtual void SetUp() {
+    MockCertLibrary* mock_cert_library = new MockCertLibrary();
+    EXPECT_CALL(*mock_cert_library, LoadKeyStore()).Times(AnyNumber());
+    chromeos::CrosLibrary::Get()->GetTestApi()->SetCertLibrary(
+        mock_cert_library, true);
+
     cros_settings_ = CrosSettings::Get();
 
     // Replace the real DeviceSettingsProvider with a stub.
@@ -124,6 +133,9 @@ class UserManagerTest : public testing::Test {
   CrosSettingsProvider* device_settings_provider_;
   StubCrosSettingsProvider stub_settings_provider_;
   scoped_ptr<TestingPrefService> local_state_;
+
+  // Initializes / shuts down a stub CrosLibrary.
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
 
   scoped_ptr<UserManagerImpl> user_manager_impl;
   UserManager* old_user_manager_;

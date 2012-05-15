@@ -194,9 +194,6 @@ class UserManager {
   // download times).
   virtual void DownloadProfileImage(const std::string& reason) = 0;
 
-  // Loads the key/certificates database for the current logged in user.
-  virtual void LoadKeyStore() = 0;
-
   // Returns true if current user is an owner.
   virtual bool IsCurrentUserOwner() const = 0;
 

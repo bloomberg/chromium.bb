@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
@@ -404,7 +405,7 @@ bool ParallelAuthenticator::VerifyOwner() {
     return true;
   }
   // First we have to make sure the current user's cert store is available.
-  UserManager::Get()->LoadKeyStore();
+  CrosLibrary::Get()->GetCertLibrary()->LoadKeyStore();
   // Now we can continue reading the private key.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

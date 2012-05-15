@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/string_number_conversions.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -31,7 +33,7 @@
 
 using content::BrowserThread;
 
-//////////////////////////////////////////////////////////////////////////////
+namespace chromeos {
 
 namespace {
 
@@ -93,11 +95,108 @@ string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
   }
 }
 
+class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
+ public:
+  RealTPMTokenInfoDelegate();
+  virtual ~RealTPMTokenInfoDelegate();
+
+  // TPMTokenInfoDeleagte overrides:
+  virtual bool IsTokenAvailable() const OVERRIDE;
+  virtual void RequestIsTokenReady(
+      base::Callback<void(bool result)> callback) const OVERRIDE;
+  virtual void GetTokenInfo(std::string* token_name,
+                            std::string* user_pin) const OVERRIDE;
+
+ private:
+  // This method is used to implement RequestIsTokenReady.
+  void OnPkcs11IsTpmTokenReady(base::Callback<void(bool result)> callback,
+                               DBusMethodCallStatus call_status,
+                               bool is_tpm_token_ready) const;
+
+  // This method is used to implement RequestIsTokenReady.
+  void OnPkcs11GetTpmTokenInfo(base::Callback<void(bool result)> callback,
+                               DBusMethodCallStatus call_status,
+                               const std::string& token_name,
+                               const std::string& user_pin) const;
+
+  // These are mutable since we need to cache them in IsTokenReady().
+  mutable bool token_ready_;
+  mutable std::string token_name_;
+  mutable std::string user_pin_;
+  mutable base::WeakPtrFactory<RealTPMTokenInfoDelegate> weak_ptr_factory_;
+};
+
+RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() : token_ready_(false),
+                                                       weak_ptr_factory_(this) {
+}
+
+RealTPMTokenInfoDelegate::~RealTPMTokenInfoDelegate() {}
+
+bool RealTPMTokenInfoDelegate::IsTokenAvailable() const {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  bool result = false;
+  // TODO(hashimoto): Use non-blocking method instead. crbug.com/126674
+  DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsEnabledAndBlock(
+      &result);
+  return result;
+}
+
+void RealTPMTokenInfoDelegate::RequestIsTokenReady(
+    base::Callback<void(bool result)> callback) const {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (token_ready_) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, true));
+    return;
+  }
+  DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11IsTpmTokenReady(
+      base::Bind(&RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
+                                            std::string* user_pin) const {
+  // May be called from a non UI thread, but must only be called after
+  // IsTokenReady() returns true.
+  CHECK(token_ready_);
+  if (token_name)
+    *token_name = token_name_;
+  if (user_pin)
+    *user_pin = user_pin_;
+}
+
+void RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady(
+    base::Callback<void(bool result)> callback,
+    DBusMethodCallStatus call_status,
+    bool is_tpm_token_ready) const {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS || !is_tpm_token_ready) {
+    callback.Run(false);
+    return;
+  }
+
+  // Retrieve token_name_ and user_pin_ here since they will never change
+  // and CryptohomeClient calls are not thread safe.
+  DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
+      base::Bind(&RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo(
+    base::Callback<void(bool result)> callback,
+    DBusMethodCallStatus call_status,
+    const std::string& token_name,
+    const std::string& user_pin) const {
+  if (call_status == DBUS_METHOD_CALL_SUCCESS) {
+    token_name_ = token_name;
+    user_pin_ = user_pin;
+    token_ready_ = true;
+  }
+  callback.Run(token_ready_);
+}
+
 }  // namespace
-
-//////////////////////////////////////////////////////////////////////////////
-
-namespace chromeos {
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -115,6 +214,7 @@ class CertLibraryImpl
       user_logged_in_(false),
       certificates_requested_(false),
       certificates_loaded_(false),
+      key_store_loaded_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(certs_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(user_certs_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(server_certs_(this)),
@@ -131,39 +231,36 @@ class CertLibraryImpl
   }
 
   // CertLibrary implementation.
-  virtual void RequestCertificates() OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
-
-    certificates_requested_ = true;
-
-    if (!UserManager::Get()->IsUserLoggedIn()) {
-      // If we are not logged in, we cannot load any certificates.
-      // Set 'loaded' to true for the UI, since we are not waiting on loading.
-      LOG(WARNING) << "Requesting certificates before login.";
-      certificates_loaded_ = true;
-      supplemental_user_key_.reset(NULL);
-      return;
-    }
-
-    if (!user_logged_in_) {
-      user_logged_in_ = true;
-      certificates_loaded_ = false;
-      supplemental_user_key_.reset(NULL);
-    }
-
-    VLOG(1) << "Requesting Certificates.";
-    DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(
-        base::Bind(&CertLibraryImpl::RequestCertificatesInternal,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
   virtual void AddObserver(CertLibrary::Observer* observer) OVERRIDE {
     observer_list_->AddObserver(observer);
   }
 
   virtual void RemoveObserver(CertLibrary::Observer* observer) OVERRIDE {
     observer_list_->RemoveObserver(observer);
+  }
+
+  virtual void LoadKeyStore() OVERRIDE {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (key_store_loaded_)
+      return;
+
+    // Ensure we've opened the real user's key/certificate database.
+    crypto::OpenPersistentNSSDB();
+
+    // Only load the Opencryptoki library into NSS if we have this switch.
+    // TODO(gspencer): Remove this switch once cryptohomed work is finished:
+    // http://crosbug.com/12295 and 12304
+    // Note: ChromeOS login with or without loginmanager will crash when
+    // the CertLibrary is not there (http://crosbug.com/121456). Before removing
+    // make sure that that case still works.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kLoadOpencryptoki) ||
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kStubCros)) {
+      crypto::EnableTPMTokenForNSS(new RealTPMTokenInfoDelegate());
+      // Note: this calls crypto::EnsureTPMTokenReady()
+      RequestCertificates();
+    }
+    key_store_loaded_ = true;
   }
 
   virtual bool CertificatesLoading() const OVERRIDE {
@@ -394,6 +491,35 @@ class CertLibraryImpl
     return supplemental_user_key_.get() != NULL;
   }
 
+  // Call this to start the certificate list initialization process.
+  // Must be called from the UI thread.
+  void RequestCertificates() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
+        << __FUNCTION__ << " should be called on UI thread.";
+
+    certificates_requested_ = true;
+
+    if (!UserManager::Get()->IsUserLoggedIn()) {
+      // If we are not logged in, we cannot load any certificates.
+      // Set 'loaded' to true for the UI, since we are not waiting on loading.
+      LOG(WARNING) << "Requesting certificates before login.";
+      certificates_loaded_ = true;
+      supplemental_user_key_.reset(NULL);
+      return;
+    }
+
+    if (!user_logged_in_) {
+      user_logged_in_ = true;
+      certificates_loaded_ = false;
+      supplemental_user_key_.reset(NULL);
+    }
+
+    VLOG(1) << "Requesting Certificates.";
+    DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(
+        base::Bind(&CertLibraryImpl::RequestCertificatesInternal,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
   // This method is used to implement RequestCertificates.
   void RequestCertificatesInternal(DBusMethodCallStatus call_status,
                                    bool tpm_is_enabled) {
@@ -460,6 +586,10 @@ class CertLibraryImpl
   bool user_logged_in_;
   bool certificates_requested_;
   bool certificates_loaded_;
+  // The key store for the current user has been loaded. This flag is needed to
+  // ensure that the key store will not be loaded twice in the policy recovery
+  // "safe-mode".
+  bool key_store_loaded_;
 
   // Certificates.
   CertList certs_;

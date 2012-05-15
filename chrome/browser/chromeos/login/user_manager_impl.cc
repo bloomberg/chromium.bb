@@ -15,7 +15,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -48,12 +47,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
-#include "crypto/nss_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -185,104 +181,6 @@ void RemoveUserInternal(const std::string& user_email,
     delegate->OnUserRemoved(user_email);
 }
 
-class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
- public:
-  RealTPMTokenInfoDelegate();
-  virtual ~RealTPMTokenInfoDelegate();
-  // TPMTokenInfoDeleagte overrides:
-  virtual bool IsTokenAvailable() const OVERRIDE;
-  virtual void RequestIsTokenReady(
-      base::Callback<void(bool result)> callback) const OVERRIDE;
-  virtual void GetTokenInfo(std::string* token_name,
-                            std::string* user_pin) const OVERRIDE;
- private:
-  // This method is used to implement RequestIsTokenReady.
-  void OnPkcs11IsTpmTokenReady(base::Callback<void(bool result)> callback,
-                               DBusMethodCallStatus call_status,
-                               bool is_tpm_token_ready) const;
-
-  // This method is used to implement RequestIsTokenReady.
-  void OnPkcs11GetTpmTokenInfo(base::Callback<void(bool result)> callback,
-                               DBusMethodCallStatus call_status,
-                               const std::string& token_name,
-                               const std::string& user_pin) const;
-
-  // These are mutable since we need to cache them in IsTokenReady().
-  mutable bool token_ready_;
-  mutable std::string token_name_;
-  mutable std::string user_pin_;
-  mutable base::WeakPtrFactory<RealTPMTokenInfoDelegate> weak_ptr_factory_;
-};
-
-RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() : token_ready_(false),
-                                                       weak_ptr_factory_(this) {
-}
-
-RealTPMTokenInfoDelegate::~RealTPMTokenInfoDelegate() {}
-
-bool RealTPMTokenInfoDelegate::IsTokenAvailable() const {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool result = false;
-  DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsEnabledAndBlock(
-      &result);
-  return result;
-}
-
-void RealTPMTokenInfoDelegate::RequestIsTokenReady(
-    base::Callback<void(bool result)> callback) const {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (token_ready_) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, true));
-    return;
-  }
-  DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11IsTpmTokenReady(
-      base::Bind(&RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
-                                            std::string* user_pin) const {
-  // May be called from a non UI thread, but must only be called after
-  // IsTokenReady() returns true.
-  CHECK(token_ready_);
-  if (token_name)
-    *token_name = token_name_;
-  if (user_pin)
-    *user_pin = user_pin_;
-}
-
-void RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady(
-    base::Callback<void(bool result)> callback,
-    DBusMethodCallStatus call_status,
-    bool is_tpm_token_ready) const {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS || !is_tpm_token_ready) {
-    callback.Run(false);
-    return;
-  }
-
-  // Retrieve token_name_ and user_pin_ here since they will never change
-  // and CryptohomeClient calls are not thread safe.
-  DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
-      base::Bind(&RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo(
-    base::Callback<void(bool result)> callback,
-    DBusMethodCallStatus call_status,
-    const std::string& token_name,
-    const std::string& user_pin) const {
-  if (call_status == DBUS_METHOD_CALL_SUCCESS) {
-    token_name_ = token_name;
-    user_pin_ = user_pin;
-    token_ready_ = true;
-  }
-  callback.Run(token_ready_);
-}
-
 }  // namespace
 
 UserManagerImpl::UserManagerImpl()
@@ -295,7 +193,6 @@ UserManagerImpl::UserManagerImpl()
       current_user_wallpaper_type_(User::DEFAULT),
       ALLOW_THIS_IN_INITIALIZER_LIST(current_user_wallpaper_index_(
           ash::GetDefaultWallpaperIndex())),
-      key_store_loaded_(false),
       ephemeral_users_enabled_(false),
       observed_sync_service_(NULL),
       last_image_set_async_(false),
@@ -923,39 +820,12 @@ void UserManagerImpl::NotifyOnLogin() {
       content::Source<UserManagerImpl>(this),
       content::Details<const User>(logged_in_user_));
 
-  LoadKeyStore();
+  CrosLibrary::Get()->GetCertLibrary()->LoadKeyStore();
 
   // Schedules current user ownership check on file thread.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&UserManagerImpl::CheckOwnership,
                                      base::Unretained(this)));
-}
-
-void UserManagerImpl::LoadKeyStore() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (key_store_loaded_)
-    return;
-
-  // Ensure we've opened the real user's key/certificate database.
-  crypto::OpenPersistentNSSDB();
-
-  // Only load the Opencryptoki library into NSS if we have this switch.
-  // TODO(gspencer): Remove this switch once cryptohomed work is finished:
-  // http://crosbug.com/12295 and 12304
-  // Note: ChromeOS login with or without loginmanager will crash when
-  // the CertLibrary is not there (http://crosbug.com/121456). Before removing
-  // make sure that that case still works.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLoadOpencryptoki) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStubCros)) {
-    crypto::EnableTPMTokenForNSS(new RealTPMTokenInfoDelegate());
-    CertLibrary* cert_library;
-    cert_library = chromeos::CrosLibrary::Get()->GetCertLibrary();
-    // Note: this calls crypto::EnsureTPMTokenReady()
-    cert_library->RequestCertificates();
-  }
-  key_store_loaded_ = true;
 }
 
 void UserManagerImpl::SetInitialUserImage(const std::string& username) {

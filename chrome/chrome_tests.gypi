@@ -87,6 +87,8 @@
         'browser/autofill/test_autofill_external_delegate.h',
         'browser/automation/mock_tab_event_observer.cc',
         'browser/automation/mock_tab_event_observer.h',
+        'browser/chromeos/cros/mock_cert_library.cc',
+        'browser/chromeos/cros/mock_cert_library.h',
         'browser/chromeos/cros/mock_cryptohome_library.cc',
         'browser/chromeos/cros/mock_cryptohome_library.h',
         'browser/chromeos/cros/mock_library_loader.cc',

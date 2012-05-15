@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,9 +76,8 @@ class CertLibrary {
   // on the same thread on which AddObserver() was called.
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Call this to start the certificate list initialization process.
-  // Must be called from the UI thread.
-  virtual void RequestCertificates() = 0;
+  // Loads the key/certificates database for the current logged in user.
+  virtual void LoadKeyStore() = 0;
 
   // Returns true when the certificate list has been requested but not loaded.
   virtual bool CertificatesLoading() const = 0;

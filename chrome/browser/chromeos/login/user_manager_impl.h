@@ -79,7 +79,6 @@ class UserManagerImpl : public UserManager,
   virtual void SaveUserImageFromProfileImage(
       const std::string& username) OVERRIDE;
   virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
-  virtual void LoadKeyStore() OVERRIDE;
   virtual bool IsCurrentUserOwner() const OVERRIDE;
   virtual bool IsCurrentUserNew() const OVERRIDE;
   virtual bool IsCurrentUserEphemeral() const OVERRIDE;
@@ -260,10 +259,6 @@ class UserManagerImpl : public UserManager,
 
   int current_user_wallpaper_index_;
 
-  // The key store for the current user has been loaded. This flag is needed to
-  // ensure that the key store will not be loaded twice in the policy recovery
-  // "safe-mode".
-  bool key_store_loaded_;
   // Cached flag indicating whether ephemeral users are enabled. Defaults to
   // |false| if the value has not been read from trusted device policy yet.
   bool ephemeral_users_enabled_;

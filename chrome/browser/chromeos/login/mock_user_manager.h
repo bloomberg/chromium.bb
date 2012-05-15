@@ -46,7 +46,6 @@ class MockUserManager : public UserManager {
                                            const FilePath&));
   MOCK_METHOD1(SaveUserImageFromProfileImage, void(const std::string&));
   MOCK_METHOD1(DownloadProfileImage, void(const std::string&));
-  MOCK_METHOD0(LoadKeyStore, void(void));
   MOCK_CONST_METHOD0(IsCurrentUserOwner, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserNew, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserEphemeral, bool(void));
