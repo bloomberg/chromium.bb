@@ -7,8 +7,6 @@ function TaskManager() { }
 
 cr.addSingletonGetter(TaskManager);
 
-var localStrings = new LocalStrings();
-
 TaskManager.prototype = {
   /**
    * Handle window close.
@@ -99,12 +97,7 @@ TaskManager.prototype = {
     this.localized_column_ = [];
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
       var column_label_id = DEFAULT_COLUMNS[i][1];
-      var localized_label = localStrings.getString(column_label_id);
-      // Falls back to raw column_label_id if localized string is not defined.
-      if (localized_label == '')
-        localized_label = column_label_id;
-
-      this.localized_column_[i] = localized_label;
+      this.localized_column_[i] = loadTimeData.getString(column_label_id);
     }
 
     this.initElements_();
@@ -151,7 +144,7 @@ TaskManager.prototype = {
     commands.enableTaskManager();
 
     // Populate the static localized strings.
-    i18nTemplate.process(this.document_, templateData);
+    i18nTemplate.process(this.document_, loadTimeData);
 
     measureTime.recordInterval('Load.DOM');
     measureTime.recordInterval('Load.Total');
@@ -280,7 +273,7 @@ TaskManager.prototype = {
     this.table_menu_commands_ = [];
     this.tableContextMenu_ = this.document_.createElement('menu');
 
-    var addMenuItem = function(tm, command_id, string_id, default_label) {
+    var addMenuItem = function(tm, command_id, string_id) {
       // Creates command element to receive event.
       var command = tm.document_.createElement('command');
       command.id = COMMAND_CONTEXTMENU_TABLE_PREFIX + '-' + command_id;
@@ -292,13 +285,12 @@ TaskManager.prototype = {
       var item = tm.document_.createElement('menuitem');
       item.command = command;
       command.menuitem = item;
-      var localized_label = localStrings.getString(string_id);
-      item.textContent = localized_label || default_label;
+      item.textContent = loadTimeData.getString(string_id);
       tm.tableContextMenu_.appendChild(item);
     };
 
-    addMenuItem(this, 'inspect', 'inspect', 'Inspect');
-    addMenuItem(this, 'activate', 'activate', 'Activate');
+    addMenuItem(this, 'inspect', 'inspect');
+    addMenuItem(this, 'activate', 'activate');
 
     this.document_.body.appendChild(this.tableContextMenu_);
     cr.ui.Menu.decorate(this.tableContextMenu_);

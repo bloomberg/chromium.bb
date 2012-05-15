@@ -31,10 +31,11 @@ Value* CreateColumnValue(const TaskManagerModel* tm,
                          const int i) {
   if (column_name == "uniqueId")
     return Value::CreateIntegerValue(tm->GetResourceUniqueId(i));
-  if (column_name == "type")
+  if (column_name == "type") {
     return Value::CreateStringValue(
         TaskManager::Resource::GetResourceTypeAsString(
         tm->GetResourceType(i)));
+  }
   if (column_name == "processId")
     return Value::CreateStringValue(tm->GetResourceProcessId(i));
   if (column_name == "processIdValue")
@@ -64,9 +65,10 @@ Value* CreateColumnValue(const TaskManagerModel* tm,
     tm->GetPhysicalMemory(i, &physical_memory);
     return Value::CreateDoubleValue(physical_memory);
   }
-  if (column_name == "icon")
+  if (column_name == "icon") {
     return Value::CreateStringValue(
                web_ui_util::GetImageDataUrl(tm->GetResourceIcon(i)));
+  }
   if (column_name == "title")
     return Value::CreateStringValue(tm->GetResourceTitle(i));
   if (column_name == "profileName")

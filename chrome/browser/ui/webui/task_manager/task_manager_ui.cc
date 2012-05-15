@@ -27,6 +27,7 @@ namespace {
 ChromeWebUIDataSource* CreateTaskManagerUIHTMLSource() {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUITaskManagerHost);
+  source->set_use_json_js_format_v2();
 
   source->AddLocalizedString("closeWindow", IDS_CLOSE);
   source->AddLocalizedString("title",IDS_TASK_MANAGER_TITLE);
