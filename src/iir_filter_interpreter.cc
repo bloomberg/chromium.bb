@@ -44,6 +44,9 @@ IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
 
 Gesture* IirFilterInterpreter::SyncInterpret(HardwareState* hwstate,
                                              stime_t* timeout) {
+  if (is_semi_mt_device_)
+    return next_->SyncInterpret(hwstate, timeout);
+
   // Delete old entries from map
   short dead_ids[histories_.size()];
   size_t dead_ids_len = 0;
@@ -85,12 +88,6 @@ Gesture* IirFilterInterpreter::SyncInterpret(HardwareState* hwstate,
                                      &FingerState::pressure };
     for (size_t f_idx = 0; f_idx < arraysize(fields); f_idx++) {
       float FingerState::*field = fields[f_idx];
-      // Keep the current pressure reading, so we could make sure the pressure
-      // values will be same if there is two fingers on a SemiMT device.
-      if (is_semi_mt_device_ && (field == &FingerState::pressure)) {
-        hist->NextOut()->pressure = fs->pressure;
-        continue;
-      }
       if (using_iir_) {
         hist->NextOut()->*field =
             b3_.val_ * hist->PrevIn(2)->*field +
