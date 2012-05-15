@@ -15,6 +15,7 @@ class CannedBrowsingDataFileSystemHelper;
 class CannedBrowsingDataIndexedDBHelper;
 class CannedBrowsingDataLocalStorageHelper;
 class CannedBrowsingDataServerBoundCertHelper;
+class GURL;
 class Profile;
 
 class LocalSharedObjectsContainer {
@@ -25,9 +26,11 @@ class LocalSharedObjectsContainer {
   // Empties the container.
   void Reset();
 
-  // Returns true if the container is empty and contains no local shared
-  // objects.
-  bool IsEmpty() const;
+  // Returns the number of objects stored in the container.
+  size_t GetObjectCount() const;
+
+  // Returns the number of objects for the given |origin|.
+  size_t GetObjectCountForDomain(const GURL& url) const;
 
   CannedBrowsingDataAppCacheHelper* appcaches() const {
     return appcaches_;

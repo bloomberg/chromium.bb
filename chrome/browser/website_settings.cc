@@ -31,6 +31,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
+#include "net/base/registry_controlled_domain.h"
 #include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/ssl_connection_status_flags.h"
 #include "net/base/x509_certificate.h"
@@ -51,19 +52,6 @@ ContentSettingsType kPermissionType[] = {
   CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
   CONTENT_SETTINGS_TYPE_GEOLOCATION,
 };
-
-size_t GetLocalStoredObjectCount(
-    const LocalSharedObjectsContainer& local_shared_objects) {
-  size_t count = 0;
-  count += local_shared_objects.cookies()->GetCookieCount();
-  count += local_shared_objects.databases()->GetDatabaseCount();
-  count += local_shared_objects.file_systems()->GetFileSystemCount();
-  count += local_shared_objects.indexed_dbs()->GetIndexedDBCount();
-  count += local_shared_objects.local_storages()->GetLocalStorageCount();
-  count += local_shared_objects.server_bound_certs()->GetCertCount();
-  count += local_shared_objects.session_storages()->GetLocalStorageCount();
-  return count;
-}
 
 }  // namespace
 
@@ -416,12 +404,27 @@ void WebsiteSettings::PresentSitePermissions() {
 
 void WebsiteSettings::PresentSiteData() {
   CookieInfoList cookie_info_list;
+  const LocalSharedObjectsContainer& allowed_objects =
+      tab_specific_content_settings()->allowed_local_shared_objects();
+  const LocalSharedObjectsContainer& blocked_objects =
+      tab_specific_content_settings()->blocked_local_shared_objects();
+
+  // Add first party cookie and site data counts.
   WebsiteSettingsUI::CookieInfo cookie_info;
-  cookie_info.cookie_source = site_url_.host();
-  cookie_info.allowed = GetLocalStoredObjectCount(
-      tab_specific_content_settings()->allowed_local_shared_objects());
-  cookie_info.blocked = GetLocalStoredObjectCount(
-      tab_specific_content_settings()->blocked_local_shared_objects());
+  std::string cookie_source =
+      net::RegistryControlledDomainService::GetDomainAndRegistry(site_url_);
+  if (cookie_source.empty())
+    cookie_source = site_url_.host();
+  cookie_info.cookie_source = cookie_source;
+  cookie_info.allowed = allowed_objects.GetObjectCountForDomain(site_url_);
+  cookie_info.blocked = blocked_objects.GetObjectCountForDomain(site_url_);
+  cookie_info_list.push_back(cookie_info);
+
+  // Add third party cookie counts.
+  cookie_info.cookie_source = l10n_util::GetStringUTF8(
+     IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA);
+  cookie_info.allowed = allowed_objects.GetObjectCount() - cookie_info.allowed;
+  cookie_info.blocked = blocked_objects.GetObjectCount() - cookie_info.blocked;
   cookie_info_list.push_back(cookie_info);
 
   ui_->SetCookieInfo(cookie_info_list);

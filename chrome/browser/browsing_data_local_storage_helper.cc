@@ -23,11 +23,6 @@ using content::BrowserThread;
 using content::DOMStorageContext;
 using WebKit::WebSecurityOrigin;
 
-BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo()
-    : port(0),
-      size(0) {
-}
-
 BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo(
     const std::string& protocol,
     const std::string& host,
@@ -145,7 +140,6 @@ CannedBrowsingDataLocalStorageHelper::Clone() {
       new CannedBrowsingDataLocalStorageHelper(profile_);
 
   clone->pending_local_storage_info_ = pending_local_storage_info_;
-  clone->local_storage_info_ = local_storage_info_;
   return clone;
 }
 
@@ -156,16 +150,20 @@ void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
 }
 
 void CannedBrowsingDataLocalStorageHelper::Reset() {
-  local_storage_info_.clear();
   pending_local_storage_info_.clear();
 }
 
 bool CannedBrowsingDataLocalStorageHelper::empty() const {
-  return local_storage_info_.empty() && pending_local_storage_info_.empty();
+  return pending_local_storage_info_.empty();
 }
 
 size_t CannedBrowsingDataLocalStorageHelper::GetLocalStorageCount() const {
   return pending_local_storage_info_.size();
+}
+
+const std::set<GURL>&
+CannedBrowsingDataLocalStorageHelper::GetLocalStorageInfo() const {
+  return pending_local_storage_info_;
 }
 
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
@@ -187,24 +185,14 @@ void CannedBrowsingDataLocalStorageHelper::StartFetching(
 CannedBrowsingDataLocalStorageHelper::~CannedBrowsingDataLocalStorageHelper() {}
 
 void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfo() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  local_storage_info_.clear();
   for (std::set<GURL>::iterator info = pending_local_storage_info_.begin();
        info != pending_local_storage_info_.end(); ++info) {
     WebSecurityOrigin web_security_origin =
         WebSecurityOrigin::createFromString(
             UTF8ToUTF16(info->spec()));
     std::string security_origin(web_security_origin.toString().utf8());
-
-    bool duplicate = false;
-    for (std::list<LocalStorageInfo>::iterator
-         local_storage = local_storage_info_.begin();
-         local_storage != local_storage_info_.end(); ++local_storage) {
-      if (local_storage->origin == security_origin) {
-        duplicate = true;
-        break;
-      }
-    }
-    if (duplicate)
-      continue;
 
     local_storage_info_.push_back(LocalStorageInfo(
         web_security_origin.protocol().utf8(),
@@ -217,7 +205,6 @@ void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfo() {
         0,
         base::Time()));
   }
-  pending_local_storage_info_.clear();
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

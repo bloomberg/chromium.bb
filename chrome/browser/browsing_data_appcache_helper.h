@@ -23,6 +23,8 @@ class ResourceContext;
 class BrowsingDataAppCacheHelper
     : public base::RefCountedThreadSafe<BrowsingDataAppCacheHelper> {
  public:
+  typedef std::map<GURL, appcache::AppCacheInfoVector> OriginAppCacheInfoMap;
+
   explicit BrowsingDataAppCacheHelper(Profile* profile);
 
   virtual void StartFetching(const base::Closure& completion_callback);
@@ -71,6 +73,12 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
 
   // True if no appcaches are currently stored.
   bool empty() const;
+
+  // Returns the number of app cache resources.
+  size_t GetAppCacheCount() const;
+
+  // Returns a current map with the |AppCacheInfoVector|s per origin.
+  const OriginAppCacheInfoMap& GetOriginAppCacheInfoMap() const;
 
   // BrowsingDataAppCacheHelper methods.
   virtual void StartFetching(const base::Closure& completion_callback) OVERRIDE;

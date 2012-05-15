@@ -5,12 +5,25 @@
 #include "chrome/browser/browsing_data_database_helper.h"
 
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using content::BrowserThread;
 
 namespace {
 
-typedef testing::Test CannedBrowsingDataDatabaseHelperTest;
+class CannedBrowsingDataDatabaseHelperTest : public testing::Test {
+ public:
+  CannedBrowsingDataDatabaseHelperTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_) {
+  }
+
+ protected:
+  MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
+};
 
 TEST_F(CannedBrowsingDataDatabaseHelperTest, Empty) {
   TestingProfile profile;

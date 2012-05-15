@@ -47,7 +47,12 @@ class BrowsingDataIndexedDBHelperImpl : public BrowsingDataIndexedDBHelper {
 
   scoped_refptr<IndexedDBContext> indexed_db_context_;
 
-  // This only mutates in the WEBKIT thread.
+  // Access to |indexed_db_info_| is triggered indirectly via the UI thread and
+  // guarded by |is_fetching_|. This means |indexed_db_info_| is only accessed
+  // while |is_fetching_| is true. The flag |is_fetching_| is only accessed on
+  // the UI thread.
+  // In the context of this class |indexed_db_info_| is only accessed on the
+  // WEBKIT thread.
   std::list<IndexedDBInfo> indexed_db_info_;
 
   // This only mutates on the UI thread.
@@ -151,23 +156,28 @@ BrowsingDataIndexedDBHelper* BrowsingDataIndexedDBHelper::Create(
 }
 
 CannedBrowsingDataIndexedDBHelper::
-PendingIndexedDBInfo::PendingIndexedDBInfo() {
-}
-
-CannedBrowsingDataIndexedDBHelper::
 PendingIndexedDBInfo::PendingIndexedDBInfo(const GURL& origin,
-                                           const string16& description)
+                                           const string16& name)
     : origin(origin),
-      description(description) {
+      name(name) {
 }
 
 CannedBrowsingDataIndexedDBHelper::
 PendingIndexedDBInfo::~PendingIndexedDBInfo() {
 }
 
+bool CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo::operator<(
+    const PendingIndexedDBInfo& other) const {
+  if (origin == other.origin)
+    return name < other.name;
+  return origin < other.origin;
+}
+
 CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper()
     : is_fetching_(false) {
 }
+
+CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
 
 CannedBrowsingDataIndexedDBHelper* CannedBrowsingDataIndexedDBHelper::Clone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -181,12 +191,12 @@ CannedBrowsingDataIndexedDBHelper* CannedBrowsingDataIndexedDBHelper::Clone() {
 }
 
 void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
-    const GURL& origin, const string16& description) {
+    const GURL& origin, const string16& name) {
   if (!BrowsingDataHelper::HasValidScheme(origin))
     return;  // Non-websafe state is not considered browsing data.
 
   base::AutoLock auto_lock(lock_);
-  pending_indexed_db_info_.push_back(PendingIndexedDBInfo(origin, description));
+  pending_indexed_db_info_.insert(PendingIndexedDBInfo(origin, name));
 }
 
 void CannedBrowsingDataIndexedDBHelper::Reset() {
@@ -201,7 +211,14 @@ bool CannedBrowsingDataIndexedDBHelper::empty() const {
 }
 
 size_t CannedBrowsingDataIndexedDBHelper::GetIndexedDBCount() const {
+  base::AutoLock auto_lock(lock_);
   return pending_indexed_db_info_.size();
+}
+
+const std::set<CannedBrowsingDataIndexedDBHelper::PendingIndexedDBInfo>&
+CannedBrowsingDataIndexedDBHelper::GetIndexedDBInfo() const  {
+  base::AutoLock auto_lock(lock_);
+  return pending_indexed_db_info_;
 }
 
 void CannedBrowsingDataIndexedDBHelper::StartFetching(
@@ -219,35 +236,21 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(
           this));
 }
 
-CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
-
 void CannedBrowsingDataIndexedDBHelper::ConvertPendingInfoInWebKitThread() {
   base::AutoLock auto_lock(lock_);
-  for (std::list<PendingIndexedDBInfo>::const_iterator
+  indexed_db_info_.clear();
+  for (std::set<PendingIndexedDBInfo>::const_iterator
        info = pending_indexed_db_info_.begin();
        info != pending_indexed_db_info_.end(); ++info) {
-    bool duplicate = false;
-    for (std::list<IndexedDBInfo>::iterator
-         indexed_db = indexed_db_info_.begin();
-         indexed_db != indexed_db_info_.end(); ++indexed_db) {
-      if (indexed_db->origin == info->origin) {
-        duplicate = true;
-        break;
-      }
-    }
-    if (duplicate)
-      continue;
-
     indexed_db_info_.push_back(IndexedDBInfo(
         info->origin,
         0,
         base::Time()));
   }
-  pending_indexed_db_info_.clear();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&CannedBrowsingDataIndexedDBHelper::NotifyInUIThread, this));
+ BrowserThread::PostTask(
+     BrowserThread::UI, FROM_HERE,
+     base::Bind(&CannedBrowsingDataIndexedDBHelper::NotifyInUIThread, this));
 }
 
 void CannedBrowsingDataIndexedDBHelper::NotifyInUIThread() {

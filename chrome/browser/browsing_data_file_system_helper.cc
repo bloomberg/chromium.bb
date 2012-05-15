@@ -55,7 +55,11 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   Profile* profile_;
 
   // Holds the current list of file systems returned to the client after
-  // StartFetching is called. This only mutates in the FILE thread.
+  // StartFetching is called. Access to |file_system_info_| is triggered
+  // indirectly via the UI thread and guarded by |is_fetching_|. This means
+  // |file_system_info_| is only accessed while |is_fetching_| is true. The
+  // flag |is_fetching_| is only accessed on the UI thread. In the context of
+  // this class |file_system_info_| only mutates on the FILE thread.
   std::list<FileSystemInfo> file_system_info_;
 
   // Holds the callback passed in at the beginning of the StartFetching workflow
@@ -185,7 +189,7 @@ BrowsingDataFileSystemHelper* BrowsingDataFileSystemHelper::Create(
 }
 
 CannedBrowsingDataFileSystemHelper::CannedBrowsingDataFileSystemHelper(
-    Profile* /* profile */)
+    Profile* profile)
     : is_fetching_(false) {
 }
 
@@ -208,7 +212,7 @@ CannedBrowsingDataFileSystemHelper*
 
 void CannedBrowsingDataFileSystemHelper::AddFileSystem(
     const GURL& origin, const fileapi::FileSystemType type, const int64 size) {
-
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // This canned implementation of AddFileSystem uses an O(n^2) algorithm; which
   // is fine, as it isn't meant for use in a high-volume context. If it turns
   // out that we want to start using this in a context with many, many origins,
@@ -253,6 +257,7 @@ bool CannedBrowsingDataFileSystemHelper::empty() const {
 }
 
 size_t CannedBrowsingDataFileSystemHelper::GetFileSystemCount() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return file_system_info_.size();
 }
 

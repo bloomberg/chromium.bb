@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BROWSING_DATA_COOKIE_HELPER_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -80,6 +81,8 @@ class BrowsingDataCookieHelper
 // as a parameter during construction.
 class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
  public:
+  typedef std::map<GURL, net::CookieList*> OriginCookieListMap;
+
   explicit CannedBrowsingDataCookieHelper(Profile* profile);
 
   // Return a copy of the cookie helper. Only one consumer can use the
@@ -89,12 +92,14 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
 
   // Adds cookies and delete the current cookies with the same Name, Domain,
   // and Path as the newly created ones.
-  void AddReadCookies(const GURL& url,
+  void AddReadCookies(const GURL& frame_url,
+                      const GURL& request_url,
                       const net::CookieList& cookie_list);
 
   // Adds cookies that will be stored by the CookieMonster. Designed to mirror
   // the logic of SetCookieWithOptions.
-  void AddChangedCookie(const GURL& url,
+  void AddChangedCookie(const GURL& frame_url,
+                        const GURL& request_url,
                         const std::string& cookie_line,
                         const net::CookieOptions& options);
 
@@ -108,19 +113,34 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   virtual void StartFetching(
       const net::CookieMonster::GetCookieListCallback& callback) OVERRIDE;
 
-  // Returns the currently stored number of cookies.
+  // Returns the number of stored cookies.
   size_t GetCookieCount() const;
+
+  // Returns the map that contains the cookie lists for all frame urls.
+  const OriginCookieListMap& origin_cookie_list_map() {
+    return origin_cookie_list_map_;
+  }
 
  private:
   // Check if the cookie list contains a cookie with the same name,
   // domain, and path as the newly created cookie. Delete the old cookie
   // if does.
-  bool DeleteMetchingCookie(
-      const net::CookieMonster::CanonicalCookie& add_cookie);
+  bool DeleteMatchingCookie(
+      const net::CookieMonster::CanonicalCookie& add_cookie,
+      net::CookieList* cookie_list);
 
   virtual ~CannedBrowsingDataCookieHelper();
 
-  net::CookieList cookie_list_;
+  // Returns the |CookieList| for the given |origin|.
+  net::CookieList* GetCookiesFor(const GURL& origin);
+
+  // Adds the |cookie| to the cookie list for the given |frame_url|.
+  void AddCookie(
+      const GURL& frame_url,
+      const net::CookieMonster::CanonicalCookie& cookie);
+
+  // Map that contains the cookie lists for all frame origins.
+  OriginCookieListMap origin_cookie_list_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataCookieHelper);
 };

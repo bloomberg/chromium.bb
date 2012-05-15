@@ -108,8 +108,7 @@ void CannedBrowsingDataAppCacheHelper::AddAppCache(const GURL& manifest_url) {
   if (!BrowsingDataHelper::HasValidScheme(manifest_url))
     return;  // Ignore non-websafe schemes.
 
-  typedef std::map<GURL, appcache::AppCacheInfoVector> InfoByOrigin;
-  InfoByOrigin& origin_map = info_collection_->infos_by_origin;
+  OriginAppCacheInfoMap& origin_map = info_collection_->infos_by_origin;
   appcache::AppCacheInfoVector& appcache_infos_ =
       origin_map[manifest_url.GetOrigin()];
 
@@ -131,6 +130,22 @@ void CannedBrowsingDataAppCacheHelper::Reset() {
 
 bool CannedBrowsingDataAppCacheHelper::empty() const {
   return info_collection_->infos_by_origin.empty();
+}
+
+size_t CannedBrowsingDataAppCacheHelper::GetAppCacheCount() const {
+  size_t count = 0;
+  const OriginAppCacheInfoMap& map = info_collection_->infos_by_origin;
+  for (OriginAppCacheInfoMap::const_iterator it = map.begin();
+       it != map.end();
+       ++it) {
+    count += it->second.size();
+  }
+  return count;
+}
+
+const BrowsingDataAppCacheHelper::OriginAppCacheInfoMap&
+CannedBrowsingDataAppCacheHelper::GetOriginAppCacheInfoMap() const {
+  return info_collection_->infos_by_origin;
 }
 
 void CannedBrowsingDataAppCacheHelper::StartFetching(

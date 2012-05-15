@@ -35,7 +35,6 @@ class BrowsingDataLocalStorageHelper
  public:
   // Contains detailed information about local storage.
   struct LocalStorageInfo {
-    LocalStorageInfo();
     LocalStorageInfo(
         const std::string& protocol,
         const std::string& host,
@@ -86,11 +85,14 @@ class BrowsingDataLocalStorageHelper
   // This only mutates on the UI thread.
   bool is_fetching_;
 
-  // This only mutates in the WEBKIT thread.
+  // Access to |local_storage_info_| is triggered indirectly via the UI thread
+  // and guarded by |is_fetching_|. This means |local_storage_info_| is only
+  // accessed while |is_fetching_| is true. The flag |is_fetching_| is only
+  // accessed on the UI thread.
   std::list<LocalStorageInfo> local_storage_info_;
 
  private:
-  // Called back with the all the local storage files.
+  // Called back with all the local storage files.
   void GetAllStorageFilesCallback(const std::vector<FilePath>& files);
   // Get the file info on the file thread.
   void FetchLocalStorageInfo(const std::vector<FilePath>& files);
@@ -123,6 +125,9 @@ class CannedBrowsingDataLocalStorageHelper
 
   // Returns the number of local storages currently stored.
   size_t GetLocalStorageCount() const;
+
+  // Returns the set of origins that use local storage.
+  const std::set<GURL>& GetLocalStorageInfo() const;
 
   // BrowsingDataLocalStorageHelper implementation.
   virtual void StartFetching(

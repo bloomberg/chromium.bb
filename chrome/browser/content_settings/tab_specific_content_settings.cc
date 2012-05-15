@@ -98,12 +98,13 @@ TabSpecificContentSettings* TabSpecificContentSettings::Get(
 void TabSpecificContentSettings::CookiesRead(int render_process_id,
                                              int render_view_id,
                                              const GURL& url,
-                                             const GURL& first_party_url,
+                                             const GURL& frame_url,
                                              const net::CookieList& cookie_list,
                                              bool blocked_by_policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
   if (settings) {
-    settings->OnCookiesRead(url, first_party_url, cookie_list,
+    settings->OnCookiesRead(url, frame_url, cookie_list,
                             blocked_by_policy);
   }
 }
@@ -113,13 +114,14 @@ void TabSpecificContentSettings::CookieChanged(
     int render_process_id,
     int render_view_id,
     const GURL& url,
-    const GURL& first_party_url,
+    const GURL& frame_url,
     const std::string& cookie_line,
     const net::CookieOptions& options,
     bool blocked_by_policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
   if (settings)
-    settings->OnCookieChanged(url, first_party_url, cookie_line, options,
+    settings->OnCookieChanged(url, frame_url, cookie_line, options,
                               blocked_by_policy);
 }
 
@@ -131,6 +133,7 @@ void TabSpecificContentSettings::WebDatabaseAccessed(
     const string16& name,
     const string16& display_name,
     bool blocked_by_policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
   if (settings)
     settings->OnWebDatabaseAccessed(url, name, display_name, blocked_by_policy);
@@ -142,6 +145,7 @@ void TabSpecificContentSettings::DOMStorageAccessed(int render_process_id,
                                                     const GURL& url,
                                                     bool local,
                                                     bool blocked_by_policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
   if (settings)
     settings->OnLocalStorageAccessed(url, local, blocked_by_policy);
@@ -153,6 +157,7 @@ void TabSpecificContentSettings::IndexedDBAccessed(int render_process_id,
                                                    const GURL& url,
                                                    const string16& description,
                                                    bool blocked_by_policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
   if (settings)
     settings->OnIndexedDBAccessed(url, description, blocked_by_policy);
@@ -163,6 +168,7 @@ void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
                                                     int render_view_id,
                                                     const GURL& url,
                                                     bool blocked_by_policy) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
   if (settings)
     settings->OnFileSystemAccessed(url, blocked_by_policy);
@@ -265,18 +271,18 @@ void TabSpecificContentSettings::OnContentAccessed(ContentSettingsType type) {
 
 void TabSpecificContentSettings::OnCookiesRead(
     const GURL& url,
-    const GURL& first_party_url,
+    const GURL& frame_url,
     const net::CookieList& cookie_list,
     bool blocked_by_policy) {
   if (cookie_list.empty())
     return;
   if (blocked_by_policy) {
     blocked_local_shared_objects_.cookies()->AddReadCookies(
-        url, cookie_list);
+        frame_url, url, cookie_list);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   } else {
     allowed_local_shared_objects_.cookies()->AddReadCookies(
-        url, cookie_list);
+        frame_url, url, cookie_list);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 
@@ -285,17 +291,17 @@ void TabSpecificContentSettings::OnCookiesRead(
 
 void TabSpecificContentSettings::OnCookieChanged(
     const GURL& url,
-    const GURL& first_party_url,
+    const GURL& frame_url,
     const std::string& cookie_line,
     const net::CookieOptions& options,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
     blocked_local_shared_objects_.cookies()->AddChangedCookie(
-        url, cookie_line, options);
+        frame_url, url, cookie_line, options);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   } else {
     allowed_local_shared_objects_.cookies()->AddChangedCookie(
-        url, cookie_line, options);
+        frame_url, url, cookie_line, options);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 

@@ -257,6 +257,9 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_IDENTITY_NOT_VERIFIED" desc="Text that is displayed in the header of the Website Settings popup if the identity of a website is not verified.">
         Identity not verified
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA" desc="The label of the counts for allowed and blocked third party cookies and site data.">
+        Others
+      </message>
 
       <message name="IDS_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">
         Show Full History

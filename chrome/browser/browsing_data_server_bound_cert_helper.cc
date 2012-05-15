@@ -37,6 +37,10 @@ class BrowsingDataServerBoundCertHelperImpl
   // Delete a single cert. This must be called in IO thread.
   void DeleteOnIOThread(const std::string& server_id);
 
+  // Access to |server_bound_cert_list_| is triggered indirectly via the UI
+  // thread and guarded by |is_fetching_|. This means |server_bound_cert_list_|
+  // is only accessed while |is_fetching_| is true. The flag |is_fetching_| is
+  // only accessed on the UI thread.
   net::ServerBoundCertStore::ServerBoundCertList server_bound_cert_list_;
 
   // Indicates whether or not we're currently fetching information:
@@ -146,6 +150,7 @@ CannedBrowsingDataServerBoundCertHelper::Clone() {
 
 void CannedBrowsingDataServerBoundCertHelper::AddServerBoundCert(
     const net::ServerBoundCertStore::ServerBoundCert& server_bound_cert) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   server_bound_cert_map_[server_bound_cert.server_identifier()] =
       server_bound_cert;
 }
@@ -159,6 +164,7 @@ bool CannedBrowsingDataServerBoundCertHelper::empty() const {
 }
 
 size_t CannedBrowsingDataServerBoundCertHelper::GetCertCount() const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return server_bound_cert_map_.size();
 }
 

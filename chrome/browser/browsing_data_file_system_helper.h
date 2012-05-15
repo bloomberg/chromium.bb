@@ -133,6 +133,11 @@ class CannedBrowsingDataFileSystemHelper
   // Returns the number of currently stored filesystems.
   size_t GetFileSystemCount() const;
 
+  // Returns the current list of filesystems.
+  const std::list<FileSystemInfo>& GetFileSystemInfo() {
+    return file_system_info_;
+  }
+
   // BrowsingDataFileSystemHelper implementation.
   virtual void StartFetching(const base::Callback<
       void(const std::list<FileSystemInfo>&)>& callback) OVERRIDE;
@@ -152,8 +157,11 @@ class CannedBrowsingDataFileSystemHelper
   // must be called on the UI thread.
   void NotifyOnUIThread();
 
-  // Holds the current list of file systems returned to the client after
-  // StartFetching is called.
+  // Holds the current list of filesystems returned to the client. Access to
+  // |file_system_info_| is triggered indirectly via the UI thread and guarded
+  // by |is_fetching_|. This means |file_system_info_| is only accessed while
+  // |is_fetching_| is true. The flag |is_fetching_| is only accessed on the UI
+  // thread.
   std::list<FileSystemInfo> file_system_info_;
 
   // The callback passed in at the beginning of the StartFetching workflow so
