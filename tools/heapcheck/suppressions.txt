@@ -1910,3 +1910,12 @@
    fun:IPC::TestSink::Send
    fun:NaClIPCAdapter::SendMessageOnIOThread
 }
+{
+   bug_128145
+   Heapcheck:Leak
+   ...
+   fun:BuildWebDataService
+   fun:RefcountedProfileKeyedServiceFactory::GetServiceForProfile
+   fun:RefcountedProfileKeyedServiceFactory::SetTestingFactoryAndUse
+   fun:TestingProfile::CreateWebDataService
+}
