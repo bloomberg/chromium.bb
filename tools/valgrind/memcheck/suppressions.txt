@@ -5748,32 +5748,6 @@
    fun:_ZN30TransportSecurityPersisterTest5SetUpEv
 }
 {
-   bug_125833
-   Memcheck:Unaddressable
-   fun:_ZNK10scoped_ptrIN5gdata15GDataFileSystemEE3getEv
-   fun:_ZN5gdata18GDataSystemService11file_systemEv
-   fun:_ZN8chromeos12_GLOBAL__N_118SystemTrayDelegate10SetProfileEP7Profile
-   fun:_ZN8chromeos12_GLOBAL__N_118SystemTrayDelegate7ObserveEiRKN7content18NotificationSourceERKNS2_19NotificationDetailsE
-   fun:_ZN23NotificationServiceImpl6NotifyEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
-   fun:_ZN11ProfileImpl11DoFinalInitEb
-   fun:_ZN11ProfileImpl13OnPrefsLoadedEb
-   fun:_ZN11ProfileImplC1ERK8FilePathPN7Profile8DelegateENS3_10CreateModeE
-   fun:_ZN7Profile13CreateProfileERK8FilePathPNS_8DelegateENS_10CreateModeE
-   fun:_ZN14ProfileManager19CreateProfileHelperERK8FilePath
-   fun:_ZN14ProfileManager10GetProfileERK8FilePath
-   fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
-   fun:_ZN14ProfileManager17GetDefaultProfileEv
-   fun:_ZN8chromeos12_GLOBAL__N_118SystemTrayDelegate27GetDriveOperationStatusListEPSt6vectorIN3ash20DriveOperationStatusESaIS4_EE
-   fun:_ZN3ash8internal12_GLOBAL__N_123GetCurrentOperationListEv
-   fun:_ZN3ash8internal9TrayDrive20GetInitialVisibilityEv
-   fun:_ZN3ash8internal13TrayImageItem14CreateTrayViewENS_4user11LoginStatusE
-   fun:_ZN3ash10SystemTray11AddTrayItemEPNS_14SystemTrayItemE
-   fun:_ZN3ash10SystemTray11CreateItemsEv
-   fun:_ZN3ash5Shell4InitEv
-   fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
-   fun:_ZN30ChromeBrowserMainExtraPartsAsh14PreProfileInitEv
-}
-{
    bug_127716
    Memcheck:Leak
    fun:_Znw*
