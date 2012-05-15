@@ -26,6 +26,10 @@ class TransportSecurityPersisterTest : public testing::Test {
         test_io_thread_(content::BrowserThread::IO, &message_loop_) {
   }
 
+  ~TransportSecurityPersisterTest() {
+    message_loop_.RunAllPending();
+  }
+
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     persister_.reset(

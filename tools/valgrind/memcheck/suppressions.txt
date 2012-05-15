@@ -5738,16 +5738,6 @@
    fun:_ZN*_*_Test8TestBodyEv
 }
 {
-   bug_125807a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
-   fun:_ZN26TransportSecurityPersisterC1EPN3net22TransportSecurityStateERK8FilePathb
-   fun:_ZN30TransportSecurityPersisterTest5SetUpEv
-}
-{
    bug_127716
    Memcheck:Leak
    fun:_Znw*

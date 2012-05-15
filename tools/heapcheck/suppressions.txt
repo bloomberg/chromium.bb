@@ -1820,21 +1820,6 @@
    fun:*_*_Test::TestBody
 }
 {
-   bug_125807a
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:TransportSecurityPersisterTest::TransportSecurityPersisterTest
-   fun:TransportSecurityPersisterTest*
-   fun:testing::internal::TestFactoryImpl::CreateTest
-}
-{
-   bug_125807b
-   Heapcheck:Leak
-   ...
-   fun:TransportSecurityPersister::TransportSecurityPersister
-   fun:TransportSecurityPersisterTest::SetUp
-}
-{
    bug_127237
    Heapcheck:Leak
    fun:MessageLoop::MessageLoop
