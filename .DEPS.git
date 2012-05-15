@@ -102,7 +102,7 @@ deps = {
     'src/third_party/skia/include':
         Var('git_url') + '/external/skia/include.git@60c69c0e950abcf8cd707c098b9953469a24ee4c',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@0fe76ba222e76bf6610aa99f7f605d25da059cd3',
+        Var('git_url') + '/external/skia/src.git@f85db4ea5248f8a3d9e259b24b18be3556e8057e',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@b35e562e2d80bc47a51b53ec92a305eb9a3383b4',
     'src/third_party/snappy/src':
