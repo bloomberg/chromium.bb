@@ -250,14 +250,14 @@ if ${PNACL_IN_CROS_CHROOT}; then
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-67d1949cdcb1}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-e504e6e22487}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=5ccab9d0bb73
 readonly GOLD_REV=2a4cafa72ca0
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
-readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-154816}
+readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-156513}
 readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
 readonly CLANG_REV=${LLVM_PROJECT_REV}
 
@@ -1309,6 +1309,14 @@ llvm-configure() {
   cppflags+=" -I${TC_BUILD_LIBELF}/install/include"
   cppflags+=" -L${TC_BUILD_LIBELF}/install/lib"
 
+  # Some components like ARMDisassembler may time out when built with -O3.
+  # If we ever start using MSVC, we may also need to tone down the opt level
+  # (see the settings in the CMake file for those components).
+  local llvm_extra_opts=${LLVM_EXTRA_OPTIONS}
+  if ${BUILD_PLATFORM_MAC}; then
+    llvm_extra_opts="${LLVM_EXTRA_OPTIONS} --with-optimize-option=-O2"
+  fi
+
   llvm-link-clang
   # The --with-binutils-include is to allow llvm to build the gold plugin
   local binutils_include="${TC_SRC_BINUTILS}/binutils-2.20/include"
@@ -1323,7 +1331,7 @@ llvm-configure() {
              --enable-targets=x86,x86_64,arm \
              --target=${CROSS_TARGET_ARM} \
              --prefix="${LLVM_INSTALL_DIR}" \
-             ${LLVM_EXTRA_OPTIONS}
+             ${llvm_extra_opts}
 
 
   spopd
@@ -1555,7 +1563,7 @@ install-unwind-header() {
   # across compilers or C libraries.
   INSTALL="/usr/bin/install -c -m 644"
   ${INSTALL} ${TC_SRC_GCC}/gcc/unwind-generic.h \
-             ${LLVM_INSTALL_DIR}/lib/clang/3.1/include/unwind.h
+             ${LLVM_INSTALL_DIR}/lib/clang/3.2/include/unwind.h
 }
 
 #########################################################################
