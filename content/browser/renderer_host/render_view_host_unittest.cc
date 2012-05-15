@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
@@ -164,12 +165,25 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
   WebDropData dropped_data;
   gfx::Point client_point;
   gfx::Point screen_point;
-  GURL file_url = GURL("file:///etc/passwd");
-  dropped_data.url = file_url;
+  FilePath highlighted_file_path(FILE_PATH_LITERAL("/etc/passwd"));
+  FilePath selected_file_path(FILE_PATH_LITERAL("/tmp/image.jpg"));
+  GURL highlighted_file_url = net::FilePathToFileURL(highlighted_file_path);
+  GURL selected_file_url = net::FilePathToFileURL(selected_file_path);
+  dropped_data.url = highlighted_file_url;
+  dropped_data.filenames.push_back(WebDropData::FileInfo(
+      UTF8ToUTF16(selected_file_path.AsUTF8Unsafe()), string16()));
+
   rvh()->DragTargetDragEnter(dropped_data, client_point, screen_point,
                              WebKit::WebDragOperationNone);
-  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-      process()->GetID(), file_url));
+
+  int id = process()->GetID();
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  EXPECT_FALSE(policy->CanRequestURL(id, highlighted_file_url));
+  EXPECT_FALSE(policy->CanReadFile(id, highlighted_file_path));
+  EXPECT_FALSE(policy->CanRequestURL(id, selected_file_url));
+  EXPECT_TRUE(policy->CanReadFile(id, selected_file_path));
 }
 
 // The test that follow trigger DCHECKS in debug build.
