@@ -663,8 +663,9 @@ cr.define('ntp', function() {
      * Similar to appendApp, but it respects the app_launch_ordinal field of
      * |appData|.
      * @param {Object} appData The data that describes the app.
+     * @param {boolean} animate Whether to animate the insertion.
      */
-    insertApp: function(appData) {
+    insertApp: function(appData, animate) {
       var index = this.tileElements_.length;
       for (var i = 0; i < this.tileElements_.length; i++) {
         if (appData.app_launch_ordinal <
@@ -674,7 +675,7 @@ cr.define('ntp', function() {
         }
       }
 
-      this.addTileAt(new App(appData), index, false);
+      this.addTileAt(new App(appData), index, animate);
     },
 
     /**
@@ -750,12 +751,13 @@ cr.define('ntp', function() {
 
     /** @inheritDoc */
     doDragOver: function(e) {
+      // Only animatedly re-arrange if the user is currently dragging an app.
       var tile = ntp.getCurrentlyDraggingTile();
-      if (tile && !tile.querySelector('.app')) {
+      if (tile && tile.querySelector('.app')) {
+        TilePage.prototype.doDragOver.call(this, e);
+      } else {
         e.preventDefault();
         this.setDropEffect(e.dataTransfer);
-      } else {
-        TilePage.prototype.doDragOver.call(this, e);
       }
     },
 

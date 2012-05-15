@@ -268,7 +268,7 @@ cr.define('ntp', function() {
       assert(app, 'trying to move an app that doesn\'t exist');
       app.remove(false);
 
-      this.appsPages[appData.page_index].insertApp(appData);
+      this.appsPages[appData.page_index].insertApp(appData, false);
     },
 
     /**
@@ -442,7 +442,7 @@ cr.define('ntp', function() {
       if (app)
         app.replaceAppData(appData);
       else
-        page.insertApp(appData, opt_highlight);
+        page.insertApp(appData, !!opt_highlight);
     },
 
     /**

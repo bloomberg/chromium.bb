@@ -558,7 +558,7 @@ cr.define('ntp', function() {
     /**
      * Appends a tile to the end of the tile grid.
      * @param {HTMLElement} tileElement The contents of the tile.
-     * @param {?boolean} animate If true, the append will be animated.
+     * @param {boolean} animate If true, the append will be animated.
      * @protected
      */
     appendTile: function(tileElement, animate) {
@@ -569,13 +569,13 @@ cr.define('ntp', function() {
      * Adds the given element to the tile grid.
      * @param {Node} tileElement The tile object/node to insert.
      * @param {number} index The location in the tile grid to insert it at.
-     * @param {boolean=} opt_animate If true, the tile in question will be
+     * @param {boolean} animate If true, the tile in question will be
      *     animated (other tiles, if they must reposition, do not animate).
      * @protected
      */
-    addTileAt: function(tileElement, index, opt_animate) {
+    addTileAt: function(tileElement, index, animate) {
       this.classList.remove('animating-tile-page');
-      if (opt_animate)
+      if (animate)
         tileElement.classList.add('new-tile-contents');
 
       // Make sure the index is positive and either in the the bounds of
@@ -590,7 +590,7 @@ cr.define('ntp', function() {
       this.heightChanged_();
 
       this.repositionTiles_();
-      this.fireAddedEvent(wrapperDiv, index, !!opt_animate);
+      this.fireAddedEvent(wrapperDiv, index, animate);
     },
 
     /**
@@ -1170,7 +1170,6 @@ cr.define('ntp', function() {
      * @param {Event} e A mouseover event for the drag enter.
      */
     doDragEnter: function(e) {
-
       // Applies the mask so doppleganger tiles disappear into the fog.
       this.updateMask_();
 
