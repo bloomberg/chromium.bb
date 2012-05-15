@@ -41,6 +41,12 @@ class SystemTrayBubble;
 class SystemTrayLayerAnimationObserver;
 }
 
+// There are different methods for creating bubble views.
+enum BubbleCreationType {
+  BUBBLE_CREATE_NEW,    // Closes any existing bubble and creates a new one.
+  BUBBLE_USE_EXISTING,  // Uses any existing bubble, or creates a new one.
+};
+
 class ASH_EXPORT SystemTray : public internal::ActionableView,
                               public internal::BackgroundAnimatorDelegate {
  public:
@@ -60,13 +66,14 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   void RemoveTrayItem(SystemTrayItem* item);
 
   // Shows the default view of all items.
-  void ShowDefaultView();
+  void ShowDefaultView(BubbleCreationType creation_type);
 
   // Shows details of a particular item. If |close_delay_in_seconds| is
   // non-zero, then the view is automatically closed after the specified time.
   void ShowDetailedView(SystemTrayItem* item,
                         int close_delay_in_seconds,
-                        bool activate);
+                        bool activate,
+                        BubbleCreationType creation_type);
 
   // Continue showing the existing detailed view, if any, for |close_delay|
   // seconds.
@@ -150,7 +157,8 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   // Constructs or re-constructs |bubble_| and populates it with |items|.
   void ShowItems(const std::vector<SystemTrayItem*>& items,
                  bool details,
-                 bool activate);
+                 bool activate,
+                 BubbleCreationType creation_type);
 
   // Constructs or re-constructs |notification_bubble_| and populates it with
   // |notification_items_|, or destroys it if there are no notification items.

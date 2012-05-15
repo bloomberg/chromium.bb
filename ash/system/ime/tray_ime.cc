@@ -10,6 +10,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_views.h"
@@ -54,15 +55,11 @@ class IMEDefaultView : public TrayItemMore {
   DISALLOW_COPY_AND_ASSIGN(IMEDefaultView);
 };
 
-class IMEDetailedView : public views::View,
+class IMEDetailedView : public TrayDetailsView,
                         public ViewClickListener {
  public:
   IMEDetailedView(SystemTrayItem* owner, user::LoginStatus login)
-      : login_(login),
-        header_(NULL) {
-    SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, 0));
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+      : login_(login) {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
     IMEInfoList list;
     delegate->GetAvailableIMEList(&list);
@@ -75,9 +72,7 @@ class IMEDetailedView : public views::View,
 
   void Update(const IMEInfoList& list,
               const IMEPropertyInfoList& property_list) {
-    RemoveAllChildViews(true);
-
-    header_ = NULL;
+    Reset();
 
     AppendIMEList(list);
     if (!property_list.empty())
@@ -92,27 +87,20 @@ class IMEDetailedView : public views::View,
 
  private:
   void AppendHeaderEntry() {
-    header_ = new SpecialPopupRow();
-    header_->SetTextLabel(IDS_ASH_STATUS_TRAY_IME, this);
-    AddChildView(header_);
+    CreateSpecialRow(IDS_ASH_STATUS_TRAY_IME, this);
   }
 
   void AppendIMEList(const IMEInfoList& list) {
     ime_map_.clear();
-    views::View* imes = new views::View;
-    imes->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, 1));
+    CreateScrollableList();
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
       container->set_fixed_height(kTrayPopupItemHeight);
       container->AddLabel(list[i].name,
           list[i].selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
-      imes->AddChildView(container);
+      scroll_content()->AddChildView(container);
       ime_map_[container] = list[i].id;
     }
-    imes->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
-        kBorderLightColor));
-    AddChildView(imes);
   }
 
   void AppendIMEProperties(const IMEPropertyInfoList& property_list) {
@@ -147,8 +135,8 @@ class IMEDetailedView : public views::View,
   // Overridden from ViewClickListener.
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
-    if (sender == header_->content()) {
-      Shell::GetInstance()->tray()->ShowDefaultView();
+    if (sender == footer()->content()) {
+      Shell::GetInstance()->tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     } else if (sender == settings_) {
       delegate->ShowIMESettings();
     } else {
@@ -174,7 +162,6 @@ class IMEDetailedView : public views::View,
 
   std::map<views::View*, std::string> ime_map_;
   std::map<views::View*, std::string> property_map_;
-  SpecialPopupRow* header_;
   views::View* settings_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEDetailedView);

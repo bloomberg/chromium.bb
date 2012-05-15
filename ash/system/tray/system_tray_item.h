@@ -58,6 +58,14 @@ class ASH_EXPORT SystemTrayItem {
   // default/detailed popup is closed when login status changes.
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) = 0;
 
+  // Shows the detailed view for this item. If the main popup for the tray is
+  // currently visible, then making this call would use the existing window to
+  // display the detailed item. The detailed item will inherit the bounds of the
+  // existing window.
+  // If there is no existing view, then this is equivalent to calling
+  // PopupDetailedView(0, true).
+  void TransitionDetailedView();
+
   // Pops up the detailed view for this item. An item can request to show its
   // detailed view using this function (e.g. from an observer callback when
   // something, e.g. volume, network availability etc. changes). If

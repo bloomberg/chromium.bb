@@ -8,6 +8,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_views.h"
 #include "grit/ash_strings.h"
@@ -56,19 +57,14 @@ class BluetoothDefaultView : public TrayItemMore {
   DISALLOW_COPY_AND_ASSIGN(BluetoothDefaultView);
 };
 
-class BluetoothDetailedView : public views::View,
+class BluetoothDetailedView : public TrayDetailsView,
                               public ViewClickListener,
                               public views::ButtonListener {
  public:
   explicit BluetoothDetailedView(user::LoginStatus login)
       : login_(login),
-        header_(NULL),
         add_device_(NULL),
         toggle_bluetooth_(NULL) {
-    SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, 0));
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
-
     BluetoothDeviceList list;
     Shell::GetInstance()->tray_delegate()->GetAvailableBluetoothDevices(&list);
     Update(list);
@@ -77,9 +73,8 @@ class BluetoothDetailedView : public views::View,
   virtual ~BluetoothDetailedView() {}
 
   void Update(const BluetoothDeviceList& list) {
-    RemoveAllChildViews(true);
+    Reset();
 
-    header_ = NULL;
     add_device_ = NULL;
     toggle_bluetooth_ = NULL;
 
@@ -92,9 +87,7 @@ class BluetoothDetailedView : public views::View,
 
  private:
   void AppendHeaderEntry() {
-    header_ = new SpecialPopupRow();
-    header_->SetTextLabel(IDS_ASH_STATUS_TRAY_BLUETOOTH, this);
-    AddChildView(header_);
+    CreateSpecialRow(IDS_ASH_STATUS_TRAY_BLUETOOTH, this);
 
     if (login_ == user::LOGGED_IN_LOCKED)
       return;
@@ -108,33 +101,21 @@ class BluetoothDetailedView : public views::View,
         IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER,
         IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER);
     toggle_bluetooth_->SetToggled(!delegate->GetBluetoothEnabled());
-    header_->AddButton(toggle_bluetooth_);
+    footer()->AddButton(toggle_bluetooth_);
   }
 
   void AppendDeviceList(const BluetoothDeviceList& list) {
-    views::View* devices = new views::View;
-    devices->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, 1));
     device_map_.clear();
+    CreateScrollableList();
 
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
       container->set_fixed_height(kTrayPopupItemHeight);
       container->AddLabel(list[i].display_name,
           list[i].connected ? gfx::Font::BOLD : gfx::Font::NORMAL);
-      devices->AddChildView(container);
+      scroll_content()->AddChildView(container);
       device_map_[container] = list[i].address;
     }
-
-    FixedSizedScrollView* scroller = new FixedSizedScrollView;
-    scroller->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
-        SkColorSetARGB(25, 0, 0, 0)));
-    scroller->set_fixed_size(
-        gfx::Size(devices->GetPreferredSize().width() +
-                  scroller->GetScrollBarWidth(),
-                  kDeviceListHeight));
-    scroller->SetContentsView(devices);
-    AddChildView(scroller);
   }
 
   // Add settings entries.
@@ -161,8 +142,8 @@ class BluetoothDetailedView : public views::View,
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    if (sender == header_->content()) {
-      Shell::GetInstance()->tray()->ShowDefaultView();
+    if (sender == footer()->content()) {
+      Shell::GetInstance()->tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     } else if (sender == add_device_) {
       delegate->AddBluetoothDevice();
     } else {
@@ -189,7 +170,6 @@ class BluetoothDetailedView : public views::View,
   user::LoginStatus login_;
 
   std::map<views::View*, std::string> device_map_;
-  SpecialPopupRow* header_;
   views::View* add_device_;
   TrayPopupHeaderButton* toggle_bluetooth_;
   views::View* settings_;

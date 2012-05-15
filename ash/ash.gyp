@@ -154,6 +154,8 @@
         'system/tray/system_tray_widget_delegate.h',
         'system/tray/tray_constants.cc',
         'system/tray/tray_constants.h',
+        'system/tray/tray_details_view.cc',
+        'system/tray/tray_details_view.h',
         'system/tray/tray_empty.cc',
         'system/tray/tray_empty.h',
         'system/tray/tray_image_item.cc',

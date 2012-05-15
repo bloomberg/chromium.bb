@@ -9,6 +9,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace test {
@@ -86,7 +87,7 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   scoped_ptr<SystemTray> tray(CreateSystemTray());
   ASSERT_TRUE(tray->widget());
 
-  tray->ShowDefaultView();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
 
   // Ensure that closing the bubble destroys it.
   ASSERT_TRUE(tray->CloseBubbleForTest());
@@ -108,18 +109,18 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
   ASSERT_TRUE(detailed_item->tray_view() != NULL);
 
   // Ensure a default views are created.
-  tray->ShowDefaultView();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   ASSERT_TRUE(test_item->default_view() != NULL);
   ASSERT_TRUE(detailed_item->default_view() != NULL);
 
   // Show the detailed view, ensure it's created and the default view destroyed.
-  tray->ShowDetailedView(detailed_item, 0, false);
+  tray->ShowDetailedView(detailed_item, 0, false, BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(test_item->default_view() == NULL);
   ASSERT_TRUE(detailed_item->detailed_view() != NULL);
 
   // Show the default view, ensure it's created and the detailed view destroyed.
-  tray->ShowDefaultView();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(test_item->default_view() != NULL);
   ASSERT_TRUE(detailed_item->detailed_view() == NULL);
@@ -144,12 +145,12 @@ TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
   ASSERT_TRUE(test_item->notification_view() != NULL);
 
   // Show the default view, ensure the notification view is destroyed.
-  tray->ShowDefaultView();
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(test_item->notification_view() == NULL);
 
   // Show the detailed view, ensure the notificaiton view is created again.
-  tray->ShowDetailedView(detailed_item, 0, false);
+  tray->ShowDetailedView(detailed_item, 0, false, BUBBLE_CREATE_NEW);
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(detailed_item->detailed_view() != NULL);
   ASSERT_TRUE(test_item->notification_view() != NULL);
@@ -159,6 +160,40 @@ TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
   RunAllPendingInMessageLoop();
   ASSERT_TRUE(detailed_item->detailed_view() == NULL);
   ASSERT_TRUE(test_item->notification_view() != NULL);
+}
+
+TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
+  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  ASSERT_TRUE(tray->widget());
+
+  TestItem* test_item = new TestItem;
+  tray->AddTrayItem(test_item);
+
+  // Ensure the tray views are created.
+  ASSERT_TRUE(test_item->tray_view() != NULL);
+
+  // Show the default view, ensure the notification view is destroyed.
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+
+  views::Widget* widget = test_item->default_view()->GetWidget();
+  gfx::Rect bubble_bounds = widget->GetWindowScreenBounds();
+
+  tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
+  RunAllPendingInMessageLoop();
+
+  EXPECT_FALSE(test_item->default_view());
+
+  EXPECT_EQ(bubble_bounds.ToString(), test_item->detailed_view()->GetWidget()->
+      GetWindowScreenBounds().ToString());
+  EXPECT_EQ(widget, test_item->detailed_view()->GetWidget());
+
+  tray->ShowDefaultView(BUBBLE_USE_EXISTING);
+  RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(bubble_bounds.ToString(), test_item->default_view()->GetWidget()->
+      GetWindowScreenBounds().ToString());
+  EXPECT_EQ(widget, test_item->default_view()->GetWidget());
 }
 
 }  // namespace test

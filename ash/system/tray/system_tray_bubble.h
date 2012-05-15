@@ -73,6 +73,10 @@ class SystemTrayBubble : public views::Widget::Observer {
                    BubbleType bubble_type);
   virtual ~SystemTrayBubble();
 
+  // Change the items displayed in the bubble.
+  void UpdateView(const std::vector<ash::SystemTrayItem*>& items,
+                  BubbleType bubble_type);
+
   // Creates |bubble_view_| and a child views for each member of |items_|.
   // Also creates |bubble_widget_| and sets up animations.
   void InitView(views::View* anchor,
@@ -92,6 +96,8 @@ class SystemTrayBubble : public views::Widget::Observer {
   void Close();
 
  private:
+  void CreateItemViews(user::LoginStatus login_status);
+
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 

@@ -44,8 +44,14 @@ void SystemTrayItem::DestroyDetailedView() {
 void SystemTrayItem::DestroyNotificationView() {
 }
 
+void SystemTrayItem::TransitionDetailedView() {
+  Shell::GetInstance()->tray()->ShowDetailedView(this, 0, true,
+      BUBBLE_USE_EXISTING);
+}
+
 void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
-  Shell::GetInstance()->tray()->ShowDetailedView(this, for_seconds, activate);
+  Shell::GetInstance()->tray()->ShowDetailedView(this, for_seconds, activate,
+      BUBBLE_CREATE_NEW);
 }
 
 void SystemTrayItem::SetDetailedViewCloseDelay(int for_seconds) {

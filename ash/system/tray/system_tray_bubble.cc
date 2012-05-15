@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/shelf_layout_manager.h"
@@ -268,7 +269,10 @@ void SystemTrayBubbleView::UpdateAnchor() {
 }
 
 void SystemTrayBubbleView::Init() {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 1, 1, 1));
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 1, 1, 1);
+  layout->set_spread_blank_space(true);
+  SetLayoutManager(layout);
   set_background(new SystemTrayBubbleBackground(this));
 }
 
@@ -344,6 +348,18 @@ SystemTrayBubble::~SystemTrayBubble() {
   }
 }
 
+void SystemTrayBubble::UpdateView(
+    const std::vector<ash::SystemTrayItem*>& items,
+    BubbleType bubble_type) {
+  DestroyItemViews();
+  bubble_view_->RemoveAllChildViews(true);
+
+  items_ = items;
+  bubble_type_ = bubble_type;
+  CreateItemViews(Shell::GetInstance()->tray_delegate()->GetUserLoginStatus());
+  bubble_widget_->GetContentsView()->Layout();
+}
+
 void SystemTrayBubble::InitView(views::View* anchor,
                                 AnchorType anchor_type,
                                 bool can_activate,
@@ -352,24 +368,7 @@ void SystemTrayBubble::InitView(views::View* anchor,
   anchor_type_ = anchor_type;
   bubble_view_ = new SystemTrayBubbleView(anchor, this, can_activate);
 
-  for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
-       it != items_.end();
-       ++it) {
-    views::View* view = NULL;
-    switch (bubble_type_) {
-      case BUBBLE_TYPE_DEFAULT:
-        view = (*it)->CreateDefaultView(login_status);
-        break;
-      case BUBBLE_TYPE_DETAILED:
-        view = (*it)->CreateDetailedView(login_status);
-        break;
-      case BUBBLE_TYPE_NOTIFICATION:
-        view = (*it)->CreateNotificationView(login_status);
-        break;
-    }
-    if (view)
-      bubble_view_->AddChildView(new TrayPopupItemContainer(view));
-  }
+  CreateItemViews(login_status);
 
   DCHECK(bubble_widget_ == NULL);
   bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
@@ -463,6 +462,27 @@ void SystemTrayBubble::RestartAutoCloseTimer() {
 void SystemTrayBubble::Close() {
   if (bubble_widget_)
     bubble_widget_->Close();
+}
+
+void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
+  for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
+       it != items_.end();
+       ++it) {
+    views::View* view = NULL;
+    switch (bubble_type_) {
+      case BUBBLE_TYPE_DEFAULT:
+        view = (*it)->CreateDefaultView(login_status);
+        break;
+      case BUBBLE_TYPE_DETAILED:
+        view = (*it)->CreateDetailedView(login_status);
+        break;
+      case BUBBLE_TYPE_NOTIFICATION:
+        view = (*it)->CreateNotificationView(login_status);
+        break;
+    }
+    if (view)
+      bubble_view_->AddChildView(new TrayPopupItemContainer(view));
+  }
 }
 
 void SystemTrayBubble::OnWidgetClosing(views::Widget* widget) {

@@ -61,7 +61,7 @@ void TrayItemMore::ReplaceIcon(views::View* view) {
 }
 
 bool TrayItemMore::PerformAction(const views::Event& event) {
-  owner_->PopupDetailedView(0, true);
+  owner_->TransitionDetailedView();
   return true;
 }
 

@@ -250,16 +250,17 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
   NOTIMPLEMENTED();
 }
 
-void SystemTray::ShowDefaultView() {
-  ShowItems(items_.get(), false, true);
+void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
+  ShowItems(items_.get(), false, true, creation_type);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   int close_delay,
-                                  bool activate) {
+                                  bool activate,
+                                  BubbleCreationType creation_type) {
   std::vector<SystemTrayItem*> items;
   items.push_back(item);
-  ShowItems(items, true, activate);
+  ShowItems(items, true, activate, creation_type);
   bubble_->StartAutoCloseTimer(close_delay);
 }
 
@@ -336,17 +337,21 @@ void SystemTray::SetPaintsBackground(
 
 void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool detailed,
-                           bool can_activate) {
+                           bool can_activate,
+                           BubbleCreationType creation_type) {
   // Destroy any existing bubble and create a new one.
   SystemTrayBubble::BubbleType bubble_type = detailed ?
       SystemTrayBubble::BUBBLE_TYPE_DETAILED :
       SystemTrayBubble::BUBBLE_TYPE_DEFAULT;
-  bubble_.reset(new SystemTrayBubble(this, items, bubble_type));
-  ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->tray_delegate();
-  views::View* anchor = tray_container_;
-  bubble_->InitView(anchor, SystemTrayBubble::ANCHOR_TYPE_TRAY,
-                    can_activate, delegate->GetUserLoginStatus());
+  if (bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
+    bubble_->UpdateView(items, bubble_type);
+  } else {
+    bubble_.reset(new SystemTrayBubble(this, items, bubble_type));
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    bubble_->InitView(tray_container_, SystemTrayBubble::ANCHOR_TYPE_TRAY,
+                      can_activate, delegate->GetUserLoginStatus());
+  }
   // If we have focus the shelf should be visible and we need to continue
   // showing the shelf when the popup is shown.
   if (GetWidget()->IsActive())
@@ -396,7 +401,7 @@ bool SystemTray::PerformAction(const views::Event& event) {
       bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DEFAULT) {
     bubble_->Close();
   } else {
-    ShowDefaultView();
+    ShowDefaultView(BUBBLE_CREATE_NEW);
   }
   return true;
 }

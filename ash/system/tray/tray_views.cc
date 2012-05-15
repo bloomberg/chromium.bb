@@ -207,7 +207,8 @@ void FixedSizedScrollView::SetContentsView(View* view) {
 }
 
 gfx::Size FixedSizedScrollView::GetPreferredSize() {
-  return fixed_size_;
+  return fixed_size_.IsEmpty() ? GetContents()->GetPreferredSize() :
+                                 fixed_size_;
 }
 
 void FixedSizedScrollView::Layout() {
@@ -217,6 +218,11 @@ void FixedSizedScrollView::Layout() {
   contents->SetBoundsRect(bounds);
 
   views::ScrollView::Layout();
+  if (!vertical_scroll_bar()->visible()) {
+    gfx::Rect bounds = contents->bounds();
+    bounds.set_width(bounds.width() + GetScrollBarWidth());
+    contents->SetBoundsRect(bounds);
+  }
 }
 
 void FixedSizedScrollView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
