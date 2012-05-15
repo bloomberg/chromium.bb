@@ -87,6 +87,8 @@
         'dbus/speech_synthesizer_client.h',
         'dbus/update_engine_client.cc',
         'dbus/update_engine_client.h',
+        'network/network_sms_handler.cc',
+        'network/network_sms_handler.h',
       ],
     },
     {
@@ -178,6 +180,7 @@
         'dbus/ibus/ibus_client_unittest.cc',
         'dbus/ibus/ibus_object_unittest.cc',
         'dbus/ibus/ibus_text_unittest.cc',
+        'network/network_sms_handler_unittest.cc',
       ],
       'include_dirs': [
         '..',

@@ -208,9 +208,24 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
 };
 
 // A stub implementation of FlimflamDeviceClient.
+// Implemented: Stub cellular device for SMS testing.
 class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
  public:
-  FlimflamDeviceClientStubImpl() : weak_ptr_factory_(this) {}
+  FlimflamDeviceClientStubImpl() : weak_ptr_factory_(this) {
+    // Add a cellular device for SMS. Note: name matches Manager entry.
+    const char kStubCellular1[] = "stub_cellular1";
+    base::DictionaryValue* cellular_properties = new base::DictionaryValue;
+    cellular_properties->SetWithoutPathExpansion(
+        flimflam::kTypeProperty,
+        base::Value::CreateStringValue(flimflam::kTypeCellular));
+    cellular_properties->SetWithoutPathExpansion(
+        flimflam::kDBusConnectionProperty,
+        base::Value::CreateStringValue("/stub"));
+    cellular_properties->SetWithoutPathExpansion(
+        flimflam::kDBusObjectProperty,
+        base::Value::CreateStringValue("/device/cellular1"));
+    stub_devices_.Set(kStubCellular1, cellular_properties);
+  }
 
   virtual ~FlimflamDeviceClientStubImpl() {}
 
@@ -228,9 +243,9 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
                              const DictionaryValueCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&FlimflamDeviceClientStubImpl::PassEmptyDictionaryValue,
+        base::Bind(&FlimflamDeviceClientStubImpl::PassStubDevicePrperties,
                    weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+                   device_path, callback));
   }
 
   // FlimflamDeviceClient override.
@@ -242,7 +257,7 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
   // FlimflamProfileClient override.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
                            const VoidCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+    PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);
   }
 
   // FlimflamDeviceClient override.
@@ -250,14 +265,26 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
                            const std::string& name,
                            const base::Value& value,
                            const VoidCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+    base::DictionaryValue* device_properties = NULL;
+    if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
+      PostVoidCallback(callback, DBUS_METHOD_CALL_FAILURE);
+      return;
+    }
+    device_properties->Set(name, value.DeepCopy());
+    PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);
   }
 
   // FlimflamDeviceClient override.
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
                              const std::string& name,
                              const VoidCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+    base::DictionaryValue* device_properties = NULL;
+    if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
+      PostVoidCallback(callback, DBUS_METHOD_CALL_FAILURE);
+      return;
+    }
+    device_properties->Remove(name, NULL);
+    PostVoidCallback(callback, DBUS_METHOD_CALL_SUCCESS);
   }
 
   // FlimflamDeviceClient override.
@@ -321,19 +348,26 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
   }
 
  private:
-  void PassEmptyDictionaryValue(const DictionaryValueCallback& callback) const {
-    base::DictionaryValue dictionary;
-    callback.Run(DBUS_METHOD_CALL_SUCCESS, dictionary);
+  void PassStubDevicePrperties(const dbus::ObjectPath& device_path,
+                               const DictionaryValueCallback& callback) const {
+    base::DictionaryValue* device_properties = NULL;
+    if (!stub_devices_.GetDictionary(device_path.value(), &device_properties)) {
+      callback.Run(DBUS_METHOD_CALL_FAILURE, base::DictionaryValue());
+      return;
+    }
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, *device_properties);
   }
 
-  // Posts a task to run a void callback with success status code.
-  void PostSuccessVoidCallback(const VoidCallback& callback) {
+  // Posts a task to run a void callback with status code |status|.
+  void PostVoidCallback(const VoidCallback& callback,
+                        DBusMethodCallStatus status) {
     MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(callback,
-                                                DBUS_METHOD_CALL_SUCCESS));
+                                     base::Bind(callback, status));
   }
 
   base::WeakPtrFactory<FlimflamDeviceClientStubImpl> weak_ptr_factory_;
+  // Dictionary of <device_name, Dictionary>.
+  base::DictionaryValue stub_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(FlimflamDeviceClientStubImpl);
 };

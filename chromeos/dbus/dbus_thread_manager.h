@@ -72,8 +72,11 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Similar to Initialize(), but can inject an alternative
   // DBusThreadManager such as MockDBusThreadManager for testing.
   // The injected object will be owned by the internal pointer and deleted
-  // by Shutdown(). If NULL, a stub implementation will be constructed.
+  // by Shutdown().
   static void InitializeForTesting(DBusThreadManager* dbus_thread_manager);
+
+  // Initialize with stub implementations for tests based on stubs.
+  static void InitializeWithStub();
 
   // Destroys the global instance.
   static void Shutdown();

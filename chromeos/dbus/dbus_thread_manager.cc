@@ -48,7 +48,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
             chromeos::switches::kDbusStub))
       client_type_maybe_stub = STUB_DBUS_CLIENT_IMPLEMENTATION;
 
-  // Create the D-Bus thread.
+    // Create the D-Bus thread.
     base::Thread::Options thread_options;
     thread_options.message_loop_type = MessageLoop::TYPE_IO;
     dbus_thread_.reset(new base::Thread("D-Bus thread"));
@@ -300,14 +300,16 @@ void DBusThreadManager::InitializeForTesting(
     LOG(WARNING) << "DBusThreadManager was already initialized";
     return;
   }
-  if (dbus_thread_manager) {
-    g_dbus_thread_manager = dbus_thread_manager;
-    VLOG(1) << "DBusThreadManager initialized with test implementation";
-  } else {
-    g_dbus_thread_manager =
+  CHECK(dbus_thread_manager);
+  g_dbus_thread_manager = dbus_thread_manager;
+  VLOG(1) << "DBusThreadManager initialized with test implementation";
+}
+
+// static
+void DBusThreadManager::InitializeWithStub() {
+  g_dbus_thread_manager =
         new DBusThreadManagerImpl(STUB_DBUS_CLIENT_IMPLEMENTATION);
     VLOG(1) << "DBusThreadManager initialized with stub implementation";
-  }
 }
 
 // static
