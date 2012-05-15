@@ -41,7 +41,7 @@
 #import "client/mac/sender/uploader.h"
 #import "common/mac/GTMLogger.h"
 
-const int kMinidumpFileLengthLimit = 800000;
+const int kMinidumpFileLengthLimit = 2 * 1024 * 1024;  // 2MB
 
 #define kApplePrefsSyncExcludeAllKey \
   @"com.apple.PreferenceSync.ExcludeAllSyncKeys"
