@@ -346,16 +346,19 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   // Add thumbnails for each page. The |Images| take ownership of SkBitmap
   // created from decoding the images.
   ThumbnailScore score(0.25, true, true);
-  gfx::Image google_bitmap(
+  scoped_ptr<SkBitmap> google_bitmap(
       gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
+
+  gfx::Image google_image(*google_bitmap);
 
   Time time;
   GURL gurl;
-  backend_->thumbnail_db_->SetPageThumbnail(gurl, row1_id, &google_bitmap,
+  backend_->thumbnail_db_->SetPageThumbnail(gurl, row1_id, &google_image,
                                             score, time);
-  gfx::Image weewar_bitmap(
+  scoped_ptr<SkBitmap> weewar_bitmap(
      gfx::JPEGCodec::Decode(kWeewarThumbnail, sizeof(kWeewarThumbnail)));
-  backend_->thumbnail_db_->SetPageThumbnail(gurl, row2_id, &weewar_bitmap,
+  gfx::Image weewar_image(*weewar_bitmap);
+  backend_->thumbnail_db_->SetPageThumbnail(gurl, row2_id, &weewar_image,
                                             score, time);
 
   // Star row1.

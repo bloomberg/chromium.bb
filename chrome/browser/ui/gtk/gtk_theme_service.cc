@@ -939,16 +939,16 @@ void GtkThemeService::FreeIconSets() {
   }
 }
 
-SkBitmap* GtkThemeService::GenerateGtkThemeBitmap(int id) const {
+SkBitmap GtkThemeService::GenerateGtkThemeBitmap(int id) const {
   switch (id) {
     case IDR_THEME_TOOLBAR: {
       GtkStyle* style = gtk_rc_get_style(fake_window_);
       GdkColor* color = &style->bg[GTK_STATE_NORMAL];
-      SkBitmap* bitmap = new SkBitmap;
-      bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                        kToolbarImageWidth, kToolbarImageHeight);
-      bitmap->allocPixels();
-      bitmap->eraseRGB(color->red >> 8, color->green >> 8, color->blue >> 8);
+      SkBitmap bitmap;
+      bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                       kToolbarImageWidth, kToolbarImageHeight);
+      bitmap.allocPixels();
+      bitmap.eraseRGB(color->red >> 8, color->green >> 8, color->blue >> 8);
       return bitmap;
     }
     case IDR_THEME_TAB_BACKGROUND:
@@ -1001,7 +1001,7 @@ SkBitmap* GtkThemeService::GenerateGtkThemeBitmap(int id) const {
   }
 }
 
-SkBitmap* GtkThemeService::GenerateFrameImage(
+SkBitmap GtkThemeService::GenerateFrameImage(
     int color_id,
     const char* gradient_name) const {
   // We use two colors: the main color (passed in) and a lightened version of
@@ -1038,23 +1038,23 @@ SkBitmap* GtkThemeService::GenerateFrameImage(
 
   canvas.FillRect(gfx::Rect(0, gradient_size, kToolbarImageWidth,
                             kToolbarImageHeight - gradient_size), base);
-  return new SkBitmap(canvas.ExtractBitmap());
+  return canvas.ExtractBitmap();
 }
 
-SkBitmap* GtkThemeService::GenerateTabImage(int base_id) const {
+SkBitmap GtkThemeService::GenerateTabImage(int base_id) const {
   SkBitmap* base_image = GetBitmapNamed(base_id);
   SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
       *base_image, GetTint(ThemeService::TINT_BACKGROUND_TAB));
-  return new SkBitmap(SkBitmapOperations::CreateTiledBitmap(
-      bg_tint, 0, 0, bg_tint.width(), bg_tint.height()));
+  return SkBitmapOperations::CreateTiledBitmap(
+      bg_tint, 0, 0, bg_tint.width(), bg_tint.height());
 }
 
-SkBitmap* GtkThemeService::GenerateTintedIcon(
+SkBitmap GtkThemeService::GenerateTintedIcon(
     int base_id,
     const color_utils::HSL& tint) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return new SkBitmap(SkBitmapOperations::CreateHSLShiftedBitmap(
-      *rb.GetBitmapNamed(base_id), tint));
+  return SkBitmapOperations::CreateHSLShiftedBitmap(
+      *rb.GetBitmapNamed(base_id), tint);
 }
 
 void GtkThemeService::GetNormalButtonTintHSL(
