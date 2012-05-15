@@ -276,6 +276,19 @@ LRESULT BrowserFrameWin::OnWndProc(UINT message,
     HandleMetroNavSearchRequest(w_param, l_param);
   } else if (message == metro_get_current_tab_info_message) {
     GetMetroCurrentTabInfo(w_param);
+  } else if (message == WM_PRINT && base::win::GetMetroModule()) {
+    // This message is sent by the AnimateWindow API which is used in metro
+    // mode to flip between active chrome windows.
+    RECT client_rect = {0};
+    ::GetClientRect(GetNativeView(), &client_rect);
+    HDC dest_dc = reinterpret_cast<HDC>(w_param);
+    DCHECK(dest_dc);
+    HDC src_dc = ::GetDC(GetNativeView());
+    ::BitBlt(dest_dc, 0, 0, client_rect.right - client_rect.left,
+             client_rect.bottom - client_rect.top, src_dc, 0, 0,
+             SRCCOPY);
+    ::ReleaseDC(GetNativeView(), src_dc);
+    return 0;
   }
   return views::NativeWidgetWin::OnWndProc(message, w_param, l_param);
 }
