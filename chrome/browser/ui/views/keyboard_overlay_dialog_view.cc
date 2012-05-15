@@ -6,9 +6,9 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/generated_resources.h"
@@ -35,9 +35,9 @@ struct Accelerator {
 KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     Profile* profile,
     WebDialogDelegate* delegate,
-    BrowserView* parent_view)
-    : WebDialogView(profile, parent_view->browser(), delegate),
-      parent_view_(parent_view) {
+    AcceleratorTarget* target)
+    : WebDialogView(profile, NULL, delegate),
+      target_(target) {
   RegisterDialogAccelerators();
 }
 
@@ -73,29 +73,26 @@ void KeyboardOverlayDialogView::RegisterDialogAccelerators() {
 
 bool KeyboardOverlayDialogView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  if (!IsCloseAccelerator(accelerator)) {
-    parent_view_->AcceleratorPressed(accelerator);
-  }
+  if (!IsCloseAccelerator(accelerator))
+    target_->AcceleratorPressed(accelerator);
   OnDialogClosed(std::string());
   return true;
 }
 
-void KeyboardOverlayDialogView::ShowDialog(gfx::NativeWindow owning_window,
-                                           BrowserView* parent_view) {
+void KeyboardOverlayDialogView::ShowDialog(ui::AcceleratorTarget* target) {
   // Temporarily disable Shift+Alt. crosbug.com/17208.
   chromeos::input_method::InputMethodManager::GetInstance()->DisableHotkeys();
 
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
   KeyboardOverlayDialogView* view = new KeyboardOverlayDialogView(
-      parent_view->browser()->profile(), delegate, parent_view);
+      ProfileManager::GetDefaultProfileOrOffTheRecord(), delegate, target);
   delegate->set_view(view);
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = view;
-  params.parent = owning_window;
   widget->Init(params);
 
   // Show the widget at the bottom of the work area.

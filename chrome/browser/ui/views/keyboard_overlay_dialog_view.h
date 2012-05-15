@@ -15,23 +15,22 @@
 
 namespace ui {
 class Accelerator;
+class AcceleratorTarget;
 }
-
-class BrowserView;
 
 // A customized dialog view for the keyboard overlay.
 class KeyboardOverlayDialogView : public WebDialogView {
  public:
   KeyboardOverlayDialogView(Profile* profile,
                             WebDialogDelegate* delegate,
-                            BrowserView* parent_view);
+                            AcceleratorTarget* target);
   virtual ~KeyboardOverlayDialogView();
 
   // Overridden from views::View:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Shows the keyboard overlay.
-  static void ShowDialog(gfx::NativeWindow owning_window, BrowserView* parent);
+  static void ShowDialog(ui::AcceleratorTarget* target);
 
  private:
   void RegisterDialogAccelerators();
@@ -40,7 +39,7 @@ class KeyboardOverlayDialogView : public WebDialogView {
   bool IsCloseAccelerator(const ui::Accelerator& accelerator);
 
   // Points to the view from which this dialog is created.
-  BrowserView* parent_view_;
+  AcceleratorTarget* target_;
 
   // Contains accelerators for closing this dialog.
   std::set<ui::Accelerator> close_accelerators_;

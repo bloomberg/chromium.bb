@@ -862,11 +862,10 @@ void View::AddAccelerator(const ui::Accelerator& accelerator) {
   if (!accelerators_.get())
     accelerators_.reset(new std::vector<ui::Accelerator>());
 
-  DCHECK(std::find(accelerators_->begin(), accelerators_->end(), accelerator) ==
-      accelerators_->end())
-      << "Registering the same accelerator multiple times";
-
-  accelerators_->push_back(accelerator);
+  if (std::find(accelerators_->begin(), accelerators_->end(), accelerator) ==
+      accelerators_->end()) {
+    accelerators_->push_back(accelerator);
+  }
   RegisterPendingAccelerators();
 }
 

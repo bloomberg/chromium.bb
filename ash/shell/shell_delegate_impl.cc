@@ -75,6 +75,9 @@ void ShellDelegateImpl::OpenCrosh() {
 void ShellDelegateImpl::OpenMobileSetup() {
 }
 
+void ShellDelegateImpl::ShowKeyboardOverlay(ui::AcceleratorTarget* target) {
+}
+
 content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {
   return Shell::GetInstance()->browser_context();
 }

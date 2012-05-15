@@ -38,6 +38,7 @@ enum AcceleratorAction {
   SELECT_WIN_5,
   SELECT_WIN_6,
   SELECT_WIN_7,
+  SHOW_KEYBOARD_OVERLAY,
   SHOW_OAK,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_PARTIAL_SCREENSHOT,

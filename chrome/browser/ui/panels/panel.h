@@ -193,9 +193,6 @@ class Panel : public BrowserWindow,
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
   virtual FindBar* CreateFindBar() OVERRIDE;
-#if defined(OS_CHROMEOS)
-  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE;
-#endif
   virtual void ResizeDueToAutoResize(content::WebContents* web_contents,
                                      const gfx::Size& new_size) OVERRIDE;
   virtual void ShowAvatarBubble(content::WebContents* web_contents,

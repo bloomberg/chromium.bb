@@ -356,6 +356,9 @@ bool AcceleratorController::AcceleratorPressed(
       if (shell->tray())
         return shell->focus_cycler()->FocusWidget(shell->tray()->GetWidget());
       break;
+    case SHOW_KEYBOARD_OVERLAY:
+      ash::Shell::GetInstance()->delegate()->ShowKeyboardOverlay(this);
+      break;
     case SHOW_OAK:
       if (CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAshEnableOak)) {

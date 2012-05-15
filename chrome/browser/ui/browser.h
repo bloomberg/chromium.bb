@@ -571,9 +571,6 @@ class Browser : public TabStripModelDelegate,
   void TogglePresentationMode();
 #endif
   void Exit();
-#if defined(OS_CHROMEOS)
-  void ShowKeyboardOverlay();
-#endif
 
   // Page-related commands
   void BookmarkCurrentPage();

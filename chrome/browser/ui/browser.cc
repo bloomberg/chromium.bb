@@ -1791,12 +1791,6 @@ void Browser::Exit() {
   BrowserList::AttemptUserExit();
 }
 
-#if defined(OS_CHROMEOS)
-void Browser::ShowKeyboardOverlay() {
-  window_->ShowKeyboardOverlay(window_->GetNativeHandle());
-}
-#endif
-
 void Browser::BookmarkCurrentPage() {
   content::RecordAction(UserMetricsAction("Star"));
 
@@ -2822,9 +2816,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_PRESENTATION_MODE:     TogglePresentationMode();    break;
 #endif
     case IDC_EXIT:                  Exit();                           break;
-#if defined(OS_CHROMEOS)
-    case IDC_SHOW_KEYBOARD_OVERLAY: ShowKeyboardOverlay();            break;
-#endif
 
     // Page-related commands
     case IDC_SAVE_PAGE:             SavePage();                       break;
@@ -4428,9 +4419,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU, true);
 
-#if defined(OS_CHROMEOS)
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_KEYBOARD_OVERLAY, true);
-#endif
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_SYNC_SETUP, profile_->GetOriginalProfile()->IsSyncAccessible());
 

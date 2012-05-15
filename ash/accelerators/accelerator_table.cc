@@ -60,6 +60,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_VOLUME_UP, false, false, false, VOLUME_UP },
   { true, ui::VKEY_L, true, false, true, FOCUS_LAUNCHER },
   { true, ui::VKEY_S, true, false, true, FOCUS_TRAY },
+  { true, ui::VKEY_OEM_2, false, true, true, SHOW_KEYBOARD_OVERLAY },
+  { true, ui::VKEY_OEM_2, true, true, true, SHOW_KEYBOARD_OVERLAY },
   { true, ui::VKEY_F1, true, true, false, SHOW_OAK },
   { true, ui::VKEY_1, false, false, true, SELECT_WIN_0 },
   { true, ui::VKEY_2, false, false, true, SELECT_WIN_1 },

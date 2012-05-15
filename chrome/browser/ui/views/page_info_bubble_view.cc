@@ -147,13 +147,7 @@ gfx::Size PageInfoBubbleView::GetSeparatorSize() {
 }
 
 double PageInfoBubbleView::GetResizeAnimationCurrentValue() {
-#if defined(OS_CHROMEOS)
-  // We don't run the animation on Chrome OS; see explanation in
-  // OnPageInfoModelChanged().
-  return 1.0;
-#else
   return resize_animation_.GetCurrentValue();
-#endif
 }
 
 double PageInfoBubbleView::HeightAnimationValue() {
@@ -276,26 +270,8 @@ void PageInfoBubbleView::OnPageInfoModelChanged() {
   // into existence.
   animation_start_height_ = bounds().height() + GetSeparatorSize().height();
   LayoutSections();
-#if defined(OS_CHROMEOS)
-  // Animating a window's size doesn't work well in X.  Each resize request gets
-  // rerouted to the window manager, which forwards it on to the X server.
-  // That's okay, but to avoid jank (the window's pixmap will have garbage in it
-  // after being resized), compositing window managers also send
-  // _NET_WM_SYNC_REQUEST messages to clients before resizing to ask for notice
-  // after the window has been repainted at the new size.  Chrome appears to
-  // fall behind in handling the repaints, and the sync request responses
-  // typically don't get sent back to the window manager until the animation is
-  // done, which results in the window being invisible until then:
-  // http://crosbug.com/14993.  Trying to e.g. just animate the first-visit
-  // section's opacity has the same negative effect, so we avoid doing any
-  // animation.
-  // TODO(derat): Remove this once we're not using a toplevel X window for the
-  // bubble.
-  SizeToContents();
-#else
   resize_animation_.SetSlideDuration(kPageInfoSlideDuration);
   resize_animation_.Show();
-#endif
 }
 
 gfx::Rect PageInfoBubbleView::GetAnchorRect() {

@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
+#include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -188,6 +189,12 @@ void ChromeShellDelegate::OpenMobileSetup() {
                                false));
     browser->window()->Activate();
   }
+#endif
+}
+
+void ChromeShellDelegate::ShowKeyboardOverlay(ui::AcceleratorTarget* target) {
+#if defined(OS_CHROMEOS)
+  KeyboardOverlayDialogView::ShowDialog(target);
 #endif
 }
 

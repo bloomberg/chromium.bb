@@ -328,11 +328,6 @@ class BrowserWindow : public BaseWindow {
   // Construct a FindBar implementation for the |browser|.
   virtual FindBar* CreateFindBar() = 0;
 
-#if defined(OS_CHROMEOS)
-  // Shows the keyboard overlay dialog box.
-  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) = 0;
-#endif
-
   // Invoked when the preferred size of the contents in current tab has been
   // changed. We might choose to update the window size to accomodate this
   // change.

@@ -665,12 +665,6 @@ FindBar* Panel::CreateFindBar() {
   return native_panel_->CreatePanelFindBar();
 }
 
-#if defined(OS_CHROMEOS)
-void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
-  NOTIMPLEMENTED();
-}
-#endif
-
 void Panel::ResizeDueToAutoResize(WebContents* web_contents,
                                   const gfx::Size& pref_size) {
   DCHECK(auto_resizable_);

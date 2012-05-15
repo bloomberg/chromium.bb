@@ -1275,12 +1275,6 @@ FindBar* BrowserView::CreateFindBar() {
   return browser::CreateFindBar(this);
 }
 
-#if defined(OS_CHROMEOS)
-void BrowserView::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
-  KeyboardOverlayDialogView::ShowDialog(owning_window, this);
-}
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
 
