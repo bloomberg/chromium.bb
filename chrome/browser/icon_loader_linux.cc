@@ -40,14 +40,14 @@ void IconLoader::ReadIcon() {
     file_util::ReadFileToString(filename, &icon_data);
 
     webkit_glue::ImageDecoder decoder;
-    SkBitmap bitmap;
-    bitmap = decoder.Decode(
+    scoped_ptr<SkBitmap> bitmap(new SkBitmap());
+    *bitmap = decoder.Decode(
         reinterpret_cast<const unsigned char*>(icon_data.data()),
         icon_data.length());
-    if (!bitmap.empty()) {
-      DCHECK_EQ(size_pixels, bitmap.width());
-      DCHECK_EQ(size_pixels, bitmap.height());
-      image_.reset(new gfx::Image(bitmap));
+    if (!bitmap->empty()) {
+      DCHECK_EQ(size_pixels, bitmap->width());
+      DCHECK_EQ(size_pixels, bitmap->height());
+      image_.reset(new gfx::Image(bitmap.release()));
     } else {
       LOG(WARNING) << "Unsupported file type or load error: "
                    << filename.value();

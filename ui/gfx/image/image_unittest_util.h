@@ -18,10 +18,10 @@ typedef NSImage* PlatformImage;
 #elif defined(TOOLKIT_GTK)
 typedef GdkPixbuf* PlatformImage;
 #else
-typedef const SkBitmap PlatformImage;
+typedef const SkBitmap* PlatformImage;
 #endif
 
-const SkBitmap CreateBitmap(int width, int height);
+SkBitmap* CreateBitmap(int width, int height);
 
 gfx::Image CreateImage();
 
@@ -34,10 +34,6 @@ PlatformImage CreatePlatformImage();
 gfx::Image::RepresentationType GetPlatformRepresentationType();
 
 PlatformImage ToPlatformType(const gfx::Image& image);
-
-bool IsPlatformImageValid(PlatformImage image);
-
-bool PlatformImagesEqual(PlatformImage image1, PlatformImage image2);
 
 }  // namespace test
 }  // namespace gfx

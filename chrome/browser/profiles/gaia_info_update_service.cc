@@ -129,7 +129,7 @@ void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
   if (picture_status == ProfileDownloader::PICTURE_SUCCESS) {
     profile_->GetPrefs()->SetString(prefs::kProfileGAIAInfoPictureURL,
                                     picture_url);
-    gfx::Image gfx_image(bitmap);
+    gfx::Image gfx_image(new SkBitmap(bitmap));
     cache.SetGAIAPictureOfProfileAtIndex(profile_index, &gfx_image);
   } else if (picture_status == ProfileDownloader::PICTURE_DEFAULT) {
     cache.SetGAIAPictureOfProfileAtIndex(profile_index, NULL);
