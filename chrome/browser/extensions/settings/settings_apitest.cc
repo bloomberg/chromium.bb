@@ -7,18 +7,18 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
-#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/api/sync_change.h"
-#include "chrome/browser/sync/api/sync_change_processor.h"
-#include "chrome/browser/sync/api/sync_error_factory.h"
-#include "chrome/browser/sync/api/sync_error_factory_mock.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "sync/api/sync_change.h"
+#include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_error_factory.h"
+#include "sync/api/sync_error_factory_mock.h"
 
 namespace extensions {
 

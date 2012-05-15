@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/sync/api/sync_change.h"
+#include "sync/api/sync_change.h"
 
 class SyncData;
 namespace sync_pb {

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/api/sync_error_factory_mock.h"
+#include "sync/api/sync_error_factory.h"
 
-SyncErrorFactoryMock::SyncErrorFactoryMock() {
+SyncErrorFactory::SyncErrorFactory() {
 }
 
-SyncErrorFactoryMock::~SyncErrorFactoryMock() {
+SyncErrorFactory::~SyncErrorFactory() {
 }
-

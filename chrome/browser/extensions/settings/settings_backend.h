@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/settings/settings_observer.h"
 #include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
-#include "chrome/browser/sync/api/syncable_service.h"
+#include "sync/api/syncable_service.h"
 
 class SyncErrorFactory;
 

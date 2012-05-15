@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SYNC_GLUE_NEW_NON_FRONTEND_DATA_TYPE_CONTROLLER_MOCK_H_
 #pragma once
 
-#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/new_non_frontend_data_type_controller.h"
+#include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {

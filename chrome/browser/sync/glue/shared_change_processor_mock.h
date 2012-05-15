@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SYNC_GLUE_SHARED_CHANGE_PROCESSOR_MOCK_H_
 #pragma once
 
-#include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/glue/shared_change_processor.h"
+#include "sync/api/sync_change.h"
 #include "sync/util/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -10,7 +10,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/settings/setting_change.h"
-#include "chrome/browser/sync/api/sync_error.h"
+#include "sync/api/sync_error.h"
 
 class SyncChangeProcessor;
 

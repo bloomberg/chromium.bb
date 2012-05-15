@@ -18,11 +18,11 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/browser/sync/api/sync_change.h"
-#include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "sync/api/sync_change.h"
+#include "sync/api/syncable_service.h"
 
 class Extension;
 class GURL;

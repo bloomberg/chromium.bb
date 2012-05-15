@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/sync/api/sync_data.h"
 #include "chrome/common/extensions/extension.h"
+#include "sync/api/sync_data.h"
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 

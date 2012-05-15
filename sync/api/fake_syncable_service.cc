@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/api/fake_syncable_service.h"
-#include "chrome/browser/sync/api/sync_error_factory.h"
+#include "sync/api/fake_syncable_service.h"
 
 #include "base/location.h"
+#include "sync/api/sync_error_factory.h"
 
 FakeSyncableService::FakeSyncableService()
     : syncing_(false),

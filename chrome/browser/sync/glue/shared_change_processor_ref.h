@@ -8,9 +8,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/sync/api/sync_change_processor.h"
-#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/browser/sync/glue/shared_change_processor.h"
+#include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_error_factory.h"
 
 namespace browser_sync {
 

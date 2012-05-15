@@ -356,27 +356,6 @@
       ],
     },
     {
-      'target_name': 'test_support_syncapi_service',
-      'type': 'static_library',
-      'dependencies': [
-        '../testing/gmock.gyp:gmock',
-        'syncapi_service',
-      ],
-      'export_dependent_settings': [
-        '../testing/gmock.gyp:gmock',
-        'syncapi_service',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'browser/sync/api/fake_syncable_service.cc',
-        'browser/sync/api/fake_syncable_service.h',
-        'browser/sync/api/sync_error_factory_mock.cc',
-        'browser/sync/api/sync_error_factory_mock.h',
-      ],
-    },
-    {
       'target_name': 'test_support_unit',
       'type': 'static_library',
       'dependencies': [
@@ -956,7 +935,7 @@
         '../sync/sync.gyp:test_support_sync',
         '../sync/sync.gyp:test_support_sync_notifier',
         '../sync/sync.gyp:test_support_syncapi_core',
-        'test_support_syncapi_service',
+        '../sync/sync.gyp:test_support_syncapi_service',
         'test_support_unit',
         # 3) anything tests directly depend on
         '../skia/skia.gyp:skia',
@@ -1506,8 +1485,6 @@
         'browser/status_icons/status_tray_unittest.cc',
         'browser/sync/abstract_profile_sync_service_test.cc',
         'browser/sync/abstract_profile_sync_service_test.h',
-        'browser/sync/api/sync_change_unittest.cc',
-        'browser/sync/api/sync_error_unittest.cc',
         'browser/sync/backend_migrator_unittest.cc',
         'browser/sync/glue/app_notification_data_type_controller_unittest.cc',
         'browser/sync/glue/autofill_data_type_controller_unittest.cc',
@@ -2567,13 +2544,13 @@
         'common/extensions/api/api.gyp:api',
         'renderer',
         'test_support_common',
-        'test_support_syncapi_service',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:test_support_syncapi_service',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/cld/cld.gyp:cld',

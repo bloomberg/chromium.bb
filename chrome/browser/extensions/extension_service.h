@@ -38,14 +38,14 @@
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/sync/api/sync_change.h"
-#include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "sync/api/sync_change.h"
+#include "sync/api/syncable_service.h"
 
 class AppNotificationManager;
 class BookmarkExtensionEventRouter;

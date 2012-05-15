@@ -7,10 +7,10 @@
 #include "base/location.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
-#include "chrome/browser/sync/api/sync_change_processor.h"
-#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_error_factory.h"
 
 namespace extensions {
 

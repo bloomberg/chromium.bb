@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_API_SYNC_CHANGE_H_
-#define CHROME_BROWSER_SYNC_API_SYNC_CHANGE_H_
+#ifndef SYNC_API_SYNC_CHANGE_H_
+#define SYNC_API_SYNC_CHANGE_H_
 #pragma once
 
 #include <iosfwd>
 #include <string>
 #include <vector>
 
-#include "chrome/browser/sync/api/sync_data.h"
+#include "sync/api/sync_data.h"
 
 // A SyncChange object reflects a change to a piece of synced data. The change
 // can be either a delete, add, or an update. All data relevant to the change
@@ -64,4 +64,4 @@ class SyncChange {
 // gmock printer helper.
 void PrintTo(const SyncChange& sync_change, std::ostream* os);
 
-#endif  // CHROME_BROWSER_SYNC_API_SYNC_CHANGE_H_
+#endif  // SYNC_API_SYNC_CHANGE_H_

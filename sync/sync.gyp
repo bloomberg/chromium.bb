@@ -299,6 +299,39 @@
       ],
     },
 
+    # The sync external API library.
+    {
+      'target_name': 'syncapi_service',
+      'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        'protocol/sync_proto.gyp:sync_proto',
+        'sync',
+      ],
+      # Even though this target depends on sync_proto, it doesn't
+      # need to export a hard dependency since we explicitly avoid
+      # including the generated proto header files from this target's
+      # header files.
+      'sources': [
+        'api/syncable_service.cc',
+        'api/syncable_service.h',
+        'api/sync_data.h',
+        'api/sync_data.cc',
+        'api/sync_change.h',
+        'api/sync_change.cc',
+        'api/sync_change_processor.h',
+        'api/sync_change_processor.cc',
+        'api/sync_error.h',
+        'api/sync_error.cc',
+        'api/sync_error_factory.h',
+        'api/sync_error_factory.cc',
+      ],
+    },
+
     # Test support files for the 'sync' target.
     {
       'target_name': 'test_support_sync',
@@ -402,6 +435,29 @@
       'sources': [
         'internal_api/test_user_share.cc',
         'internal_api/test_user_share.h',
+      ],
+    },
+
+    # Test support files for the 'syncapi_service' target.
+    {
+      'target_name': 'test_support_syncapi_service',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../testing/gmock.gyp:gmock',
+        'syncapi_service',
+      ],
+      'export_dependent_settings': [
+        '../testing/gmock.gyp:gmock',
+        'syncapi_service',
+      ],
+      'sources': [
+        'api/fake_syncable_service.cc',
+        'api/fake_syncable_service.h',
+        'api/sync_error_factory_mock.cc',
+        'api/sync_error_factory_mock.h',
       ],
     },
 
@@ -593,6 +649,45 @@
       },
     },
 
+    # Unit tests for the 'syncapi_service' target.  This cannot be a static
+    # library because the unit test files have to be compiled directly
+    # into the executable, so we push the target files to the
+    # depending executable target via direct_dependent_settings.
+    {
+      'target_name': 'syncapi_service_tests',
+      'type': 'none',
+      # We only want unit test executables to include this target.
+      'suppress_wildcard': 1,
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+        'protocol/sync_proto.gyp:sync_proto',
+        'sync',
+        'syncapi_service',
+        'test_support_syncapi_service',
+      ],
+      # Propagate all dependencies since the actual compilation
+      # happens in the dependents.
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+        'protocol/sync_proto.gyp:sync_proto',
+        'sync',
+        'syncapi_service',
+        'test_support_syncapi_service',
+      ],
+      'direct_dependent_settings': {
+        'variables': { 'enable_wexit_time_destructors': 1, },
+        'include_dirs': [
+          '..',
+        ],
+        'sources': [
+          'api/sync_change_unittest.cc',
+          'api/sync_error_unittest.cc',
+        ],
+      },
+    },
+
     # The unit test executable for sync tests.
     {
       'target_name': 'sync_unit_tests',
@@ -602,6 +697,7 @@
         'sync_tests',
         'sync_notifier_tests',
         'syncapi_core_tests',
+        'syncapi_service_tests',
       ],
       # TODO(akalin): This is needed because histogram.cc uses
       # leak_annotations.h, which pulls this in.  Make 'base'

@@ -6,12 +6,12 @@
 
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/api/sync_error.h"
-#include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/shared_change_processor_ref.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/api/sync_error.h"
+#include "sync/api/syncable_service.h"
 #include "sync/syncable/model_type.h"
 #include "sync/util/data_type_histogram.h"
 

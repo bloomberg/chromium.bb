@@ -13,10 +13,10 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
+#include "sync/api/sync_error_factory.h"
 #include "sync/protocol/app_notification_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 

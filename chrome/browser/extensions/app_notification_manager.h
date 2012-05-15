@@ -16,12 +16,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/app_notification.h"
 #include "chrome/browser/extensions/app_notification_storage.h"
-#include "chrome/browser/sync/api/sync_change.h"
-#include "chrome/browser/sync/api/syncable_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "sync/api/sync_change.h"
+#include "sync/api/syncable_service.h"
 
 class PerfTimer;
 class Profile;

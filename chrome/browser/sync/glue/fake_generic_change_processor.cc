@@ -6,7 +6,7 @@
 
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/api/syncable_service.h"
+#include "sync/api/syncable_service.h"
 
 namespace browser_sync {
 

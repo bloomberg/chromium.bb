@@ -7,8 +7,8 @@
 #pragma once
 
 
-#include "chrome/browser/sync/api/sync_data.h"
-#include "chrome/browser/sync/api/sync_change.h"
+#include "sync/api/sync_change.h"
+#include "sync/api/sync_data.h"
 
 namespace base {
 class Value;

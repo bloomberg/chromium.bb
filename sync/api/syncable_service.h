@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_API_SYNCABLE_SERVICE_H_
-#define CHROME_BROWSER_SYNC_API_SYNCABLE_SERVICE_H_
+#ifndef SYNC_API_SYNCABLE_SERVICE_H_
+#define SYNC_API_SYNCABLE_SERVICE_H_
 #pragma once
 
 #include <vector>
@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/api/sync_change_processor.h"
-#include "chrome/browser/sync/api/sync_data.h"
-#include "chrome/browser/sync/api/sync_error.h"
+#include "sync/api/sync_change_processor.h"
+#include "sync/api/sync_data.h"
+#include "sync/api/sync_error.h"
 #include "sync/syncable/model_type.h"
 
 class SyncErrorFactory;
@@ -62,4 +62,4 @@ class SyncableService : public SyncChangeProcessor,
   virtual ~SyncableService();
 };
 
-#endif  // CHROME_BROWSER_SYNC_API_SYNCABLE_SERVICE_H_
+#endif  // SYNC_API_SYNCABLE_SERVICE_H_

@@ -14,8 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/sync/api/syncable_service.h"
-#include "chrome/browser/sync/api/sync_data.h"
+#include "sync/api/sync_data.h"
+#include "sync/api/syncable_service.h"
 
 namespace sync_pb {
 class PreferenceSpecifics;

@@ -264,43 +264,6 @@
       ],
     },
     {
-      # Provides the API that Chrome services use to talk to sync.
-      'target_name': 'syncapi_service',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'sources': [
-        'browser/sync/api/syncable_service.cc',
-        'browser/sync/api/syncable_service.h',
-        'browser/sync/api/sync_data.h',
-        'browser/sync/api/sync_data.cc',
-        'browser/sync/api/sync_change.h',
-        'browser/sync/api/sync_change.cc',
-        'browser/sync/api/sync_change_processor.h',
-        'browser/sync/api/sync_change_processor.cc',
-        'browser/sync/api/sync_error.h',
-        'browser/sync/api/sync_error.cc',
-        'browser/sync/api/sync_error_factory.h',
-        'browser/sync/api/sync_error_factory.cc',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../sync/protocol/sync_proto.gyp:sync_proto',
-        '../sync/sync.gyp:sync',
-      ],
-      'export_dependent_settings': [
-        '../base/base.gyp:base',
-        '../sync/protocol/sync_proto.gyp:sync_proto',
-        '../sync/sync.gyp:sync',
-      ],
-      # Even though this target depends on sync_proto, it doesn't
-      # need to export a hard dependency since we explicitly avoid
-      # including the generated proto header files from this target's
-      # header files.
-    },
-    {
       'target_name': 'service',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },

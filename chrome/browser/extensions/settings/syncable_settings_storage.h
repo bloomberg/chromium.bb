@@ -10,11 +10,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/settings/setting_sync_data.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
 #include "chrome/browser/extensions/settings/settings_storage.h"
-#include "chrome/browser/extensions/settings/setting_sync_data.h"
-#include "chrome/browser/sync/api/syncable_service.h"
-#include "chrome/browser/sync/api/sync_change.h"
+#include "sync/api/sync_change.h"
+#include "sync/api/syncable_service.h"
 
 namespace extensions {
 

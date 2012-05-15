@@ -10,8 +10,8 @@
 #include <set>
 #include <string>
 
-#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "sync/api/sync_error.h"
 #include "sync/internal_api/configure_reason.h"
 #include "sync/syncable/model_type.h"
 

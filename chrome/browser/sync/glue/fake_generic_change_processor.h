@@ -8,7 +8,7 @@
 
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 
-#include "chrome/browser/sync/api/sync_error.h"
+#include "sync/api/sync_error.h"
 
 namespace browser_sync {
 

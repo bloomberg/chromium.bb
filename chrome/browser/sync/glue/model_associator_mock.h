@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/location.h"
-#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/model_associator.h"
+#include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {

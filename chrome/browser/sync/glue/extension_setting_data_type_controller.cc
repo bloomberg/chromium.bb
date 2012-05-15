@@ -9,10 +9,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/api/syncable_service.h"
 
 using content::BrowserThread;
 

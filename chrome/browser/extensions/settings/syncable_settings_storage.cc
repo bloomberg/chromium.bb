@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_sync_processor.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
-#include "chrome/browser/sync/api/sync_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/api/sync_data.h"
 #include "sync/protocol/extension_setting_specifics.pb.h"
 
 namespace extensions {

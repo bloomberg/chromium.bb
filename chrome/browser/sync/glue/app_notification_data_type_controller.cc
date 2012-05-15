@@ -5,15 +5,15 @@
 #include "chrome/browser/sync/glue/app_notification_data_type_controller.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/sync/api/syncable_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
+#include "sync/api/syncable_service.h"
 
 using content::BrowserThread;
 

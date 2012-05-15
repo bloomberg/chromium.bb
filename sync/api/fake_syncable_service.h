@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_API_FAKE_SYNCABLE_SERVICE_H_
-#define CHROME_BROWSER_SYNC_API_FAKE_SYNCABLE_SERVICE_H_
+#ifndef SYNC_API_FAKE_SYNCABLE_SERVICE_H_
+#define SYNC_API_FAKE_SYNCABLE_SERVICE_H_
 #pragma once
 
-#include "chrome/browser/sync/api/syncable_service.h"
+#include "sync/api/syncable_service.h"
 
 class SyncErrorFactory;
 
@@ -45,4 +45,4 @@ class FakeSyncableService : public SyncableService {
   syncable::ModelType type_;
 };
 
-#endif  // CHROME_BROWSER_SYNC_API_FAKE_SYNCABLE_SERVICE_H_
+#endif  // SYNC_API_FAKE_SYNCABLE_SERVICE_H_

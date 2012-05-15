@@ -28,7 +28,6 @@
         'installer_util',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
-        'syncapi_service',
         'feedback_proto',
         'gdata_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -39,7 +38,9 @@
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',  # For PpapiMsg_LoadPlugin
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
+        # TODO(akalin): Depend only on syncapi_service from sync.
         '../sync/sync.gyp:syncapi_core',
+        '../sync/sync.gyp:syncapi_service',
         '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cld/cld.gyp:cld',

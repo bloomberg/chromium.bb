@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_API_SYNC_DATA_H_
-#define CHROME_BROWSER_SYNC_API_SYNC_DATA_H_
+#ifndef SYNC_API_SYNC_DATA_H_
+#define SYNC_API_SYNC_DATA_H_
 #pragma once
 
 #include <iosfwd>
@@ -118,4 +118,4 @@ class SyncData {
 // gmock printer helper.
 void PrintTo(const SyncData& sync_data, std::ostream* os);
 
-#endif  // CHROME_BROWSER_SYNC_API_SYNC_DATA_H_
+#endif  // SYNC_API_SYNC_DATA_H_

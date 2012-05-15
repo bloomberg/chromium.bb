@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_MOCK_H__
 #pragma once
 
-#include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 ACTION_P2(InvokeCallback, datatype, callback_result) {
