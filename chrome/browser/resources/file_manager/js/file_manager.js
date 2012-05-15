@@ -1264,7 +1264,7 @@ FileManager.prototype = {
           break;
       }
     } else if (event.reason == 'CANCELLED') {
-      this.showButter(str('PASTE_CANCELLED'));
+      this.showButter(str('PASTE_CANCELLED'), {timeout: 1000});
     } else {
       console.log('Unknown event reason: ' + event.reason);
     }
