@@ -26,6 +26,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/commands/extension_command_service.h"
 #include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/action_box_controller.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -82,6 +83,7 @@
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::WebContents;
+using extensions::ActionBoxController;
 
 namespace {
 
@@ -683,16 +685,12 @@ void LocationBarViewGtk::UpdateContentSettingsIcons() {
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
-  std::vector<ExtensionAction*> page_actions;
-  ExtensionService* service = browser_->profile()->GetExtensionService();
-  if (!service)
-    return;
+  ActionBoxController::DataList page_actions;
 
-  // Find all the page actions.
-  for (ExtensionSet::const_iterator it = service->extensions()->begin();
-       it != service->extensions()->end(); ++it) {
-    if ((*it)->page_action())
-      page_actions.push_back((*it)->page_action());
+  TabContentsWrapper* tab_contents = GetTabContentsWrapper();
+  if (tab_contents) {
+    page_actions.swap(
+        *tab_contents->extension_action_box_controller()->GetAllBadgeData());
   }
 
   // Initialize on the first call, or re-inialize if more extensions have been
@@ -702,7 +700,7 @@ void LocationBarViewGtk::UpdatePageActions() {
 
     for (size_t i = 0; i < page_actions.size(); ++i) {
       page_action_views_.push_back(
-          new PageActionViewGtk(this, page_actions[i]));
+          new PageActionViewGtk(this, page_actions[i].action));
       gtk_box_pack_end(GTK_BOX(page_action_hbox_.get()),
                        page_action_views_[i]->widget(), FALSE, FALSE, 0);
     }
@@ -1681,17 +1679,6 @@ void LocationBarViewGtk::EnabledStateChangedForCommand(int id, bool enabled) {
     UpdateChromeToMobileIcon();
 }
 
-bool LocationBarViewGtk::PageActionViewGtk::ShowPopup() {
-  if (!page_action_->HasPopup(current_tab_id_))
-    return false;
-
-  ExtensionPopupGtk::Show(
-      page_action_->GetPopupUrl(current_tab_id_),
-      owner_->browser_,
-      event_box_.get());
-  return true;
-}
-
 void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
   const ExtensionSet* extensions = owner_->browser()->profile()->
       GetExtensionService()->extensions();
@@ -1746,25 +1733,41 @@ void LocationBarViewGtk::PageActionViewGtk::DisconnectPageActionAccelerator() {
 gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GtkWidget* sender,
     GdkEventButton* event) {
-  Profile* profile = owner_->browser()->profile();
-  if (event->button != 3) {
-    if (!ShowPopup()) {
-      ExtensionService* service = profile->GetExtensionService();
-      service->browser_event_router()->PageActionExecuted(profile,
-          page_action_->extension_id(), page_action_->id(), current_tab_id_,
-          current_url_.spec(), event->button);
-    }
-  } else {
-    const Extension* extension = profile->GetExtensionService()->
-        GetExtensionById(page_action()->extension_id(), false);
+  TabContentsWrapper* tab_contents = owner_->GetTabContentsWrapper();
+  if (!tab_contents)
+    return TRUE;
 
-    if (extension->ShowConfigureContextMenus()) {
+  ExtensionService* extension_service =
+      owner_->browser()->profile()->GetExtensionService();
+  if (!extension_service)
+    return TRUE;
+
+  const Extension* extension =
+      extension_service->extensions()->GetByID(page_action()->extension_id());
+  if (!extension)
+    return TRUE;
+
+  ActionBoxController* controller =
+      tab_contents->extension_action_box_controller();
+
+  switch (controller->OnClicked(extension->id(), event->button)) {
+    case ActionBoxController::ACTION_NONE:
+      break;
+
+    case ActionBoxController::ACTION_SHOW_POPUP:
+      ExtensionPopupGtk::Show(
+          page_action_->GetPopupUrl(current_tab_id_),
+          owner_->browser_,
+          event_box_.get());
+      break;
+
+    case ActionBoxController::ACTION_SHOW_CONTEXT_MENU:
       context_menu_model_ =
           new ExtensionContextMenuModel(extension, owner_->browser_);
       context_menu_.reset(
           new MenuGtk(NULL, context_menu_model_.get()));
       context_menu_->PopupForWidget(sender, event->button, event->time);
-    }
+      break;
   }
 
   return TRUE;

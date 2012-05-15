@@ -253,9 +253,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
                          const content::NotificationDetails& details) OVERRIDE;
 
    private:
-    // Show the popup for this page action. Returns true if a popup was shown.
-    bool ShowPopup();
-
     // Connect the accelerator for the page action popup.
     void ConnectPageActionAccelerator();
 
