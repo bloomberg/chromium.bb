@@ -171,7 +171,9 @@ void MessageBoxView::Init(const InitParams& params) {
         Label::ALIGN_RIGHT : Label::ALIGN_LEFT;
     for (size_t i = 0; i < texts.size(); ++i) {
       Label* message_label = new Label(texts[i]);
-      message_label->SetMultiLine(true);
+      // Don't set multi-line to true if the text is empty, else the label will
+      // have a height of 0.
+      message_label->SetMultiLine(!texts[i].empty());
       message_label->SetAllowCharacterBreak(true);
       message_label->set_directionality_mode(Label::AUTO_DETECT_DIRECTIONALITY);
       message_label->SetHorizontalAlignment(alignment);
