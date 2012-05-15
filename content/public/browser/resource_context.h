@@ -27,6 +27,7 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   static appcache::AppCacheService* GetAppCacheService(
       ResourceContext* resource_context);
 
+  ResourceContext();
   virtual ~ResourceContext();
   virtual net::HostResolver* GetHostResolver() = 0;
   virtual net::URLRequestContext* GetRequestContext() = 0;

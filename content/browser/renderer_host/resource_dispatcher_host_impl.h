@@ -90,6 +90,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // new requests).  Cancels all pending requests.
   void Shutdown();
 
+  // Notify the ResourceDispatcherHostImpl of a new resource context.
+  void AddResourceContext(ResourceContext* context);
+
+  // Notify the ResourceDispatcherHostImpl of a resource context destruction.
+  void RemoveResourceContext(ResourceContext* context);
+
   // Force cancels any pending requests for the given |context|. This is
   // necessary to ensure that before |context| goes away, all requests
   // for it are dead.
@@ -508,7 +514,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // http://crbug.com/90971 - Assists in tracking down use-after-frees on
   // shutdown.
-  std::set<const ResourceContext*> canceled_resource_contexts_;
+  std::set<const ResourceContext*> active_resource_contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

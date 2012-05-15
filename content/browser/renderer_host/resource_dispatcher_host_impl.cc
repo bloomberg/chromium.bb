@@ -370,12 +370,22 @@ void ResourceDispatcherHostImpl::SetAllowCrossOriginAuthPrompt(bool value) {
   allow_cross_origin_auth_prompt_ = value;
 }
 
+void ResourceDispatcherHostImpl::AddResourceContext(ResourceContext* context) {
+  active_resource_contexts_.insert(context);
+}
+
+void ResourceDispatcherHostImpl::RemoveResourceContext(
+    ResourceContext* context) {
+  CHECK(ContainsKey(active_resource_contexts_, context));
+  active_resource_contexts_.erase(context);
+}
+
 void ResourceDispatcherHostImpl::CancelRequestsForContext(
     ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(context);
 
-  canceled_resource_contexts_.insert(context);
+  CHECK(ContainsKey(active_resource_contexts_, context));
 
   // Note that request cancellation has side effects. Therefore, we gather all
   // the requests to cancel first, and then we start cancelling. We assert at
@@ -481,7 +491,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   char url_buf[128];
   base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
   base::debug::Alias(url_buf);
-  CHECK(!ContainsKey(canceled_resource_contexts_, context));
+  CHECK(ContainsKey(active_resource_contexts_, context));
 
   const net::URLRequestContext* request_context = context->GetRequestContext();
   request->set_referrer(MaybeStripReferrer(GURL(request->referrer())).spec());
@@ -756,7 +766,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   ResourceContext* resource_context = filter_->resource_context();
   // http://crbug.com/90971
-  CHECK(!ContainsKey(canceled_resource_contexts_, resource_context));
+  CHECK(ContainsKey(active_resource_contexts_, resource_context));
 
   // Might need to resolve the blob references in the upload data.
   if (request_data.upload_data) {
@@ -1152,7 +1162,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   char url_buf[128];
   base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
   base::debug::Alias(url_buf);
-  CHECK(!ContainsKey(canceled_resource_contexts_, context));
+  CHECK(ContainsKey(active_resource_contexts_, context));
 
   scoped_refptr<ResourceHandler> handler(
       new SaveFileResourceHandler(child_id,
