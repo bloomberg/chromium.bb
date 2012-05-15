@@ -181,9 +181,9 @@ void InsertURLBatch(Profile* profile,
     if (types & FULL_TEXT)
       history_service->SetPageContents(url, ConstructRandomPage());
     if (types & TOP_SITES && top_sites) {
-      SkBitmap* bitmap = (RandomInt(0, 2) == 0) ? google_bitmap.get() :
-                                                  weewar_bitmap.get();
-      gfx::Image image(new SkBitmap(*bitmap));
+      const SkBitmap& bitmap = (RandomInt(0, 2) == 0) ? *google_bitmap :
+                                                        *weewar_bitmap;
+      gfx::Image image(bitmap);
       top_sites->SetPageThumbnail(url, &image, score);
     }
 
