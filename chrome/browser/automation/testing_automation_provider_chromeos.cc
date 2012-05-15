@@ -4,6 +4,8 @@
 
 #include "chrome/browser/automation/testing_automation_provider.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/stringprintf.h"
@@ -296,6 +298,16 @@ void TestingAutomationProvider::AddLoginEventObserver(
   DictionaryValue return_value;
   return_value.SetInteger("observer_id", observer_id);
   reply.SendSuccess(&return_value);
+}
+
+void TestingAutomationProvider::SignOut(DictionaryValue* args,
+                                        IPC::Message* reply_message) {
+  ash::Shell::GetInstance()->tray_delegate()->SignOut();
+  // Sign out has the side effect of restarting the session_manager
+  // and chrome, thereby severing the automation channel, so it's
+  // not really necessary to send a reply back. The next line is
+  // for consistency with other methods.
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::LockScreen(DictionaryValue* args,

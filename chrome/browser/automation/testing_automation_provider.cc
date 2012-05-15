@@ -2297,6 +2297,7 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
   handler_map["AddLoginEventObserver"] =
       &TestingAutomationProvider::AddLoginEventObserver;
+  handler_map["SignOut"] = &TestingAutomationProvider::SignOut;
 
   handler_map["LockScreen"] = &TestingAutomationProvider::LockScreen;
   handler_map["UnlockScreen"] = &TestingAutomationProvider::UnlockScreen;

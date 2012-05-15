@@ -156,6 +156,18 @@ class ChromeosLogin(pyauto.PyUITest):
     self.Logout()
     self.testLoginToCreateNewAccount()
 
+  def testLogoutWithNoWindows(self):
+    """Verify logout when no browser windows are present."""
+    self.testGoodLogin()
+    for i in range(5):
+      self.OpenNewBrowserWindow(True)
+    for _ in range(self.GetBrowserWindowCount()):
+      self.CloseBrowserWindow(0)
+    self.assertEqual(0, self.GetBrowserWindowCount(),
+                     msg='Could not close all browser windows')
+    self.Logout()
+    self.testGoodLogin()
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

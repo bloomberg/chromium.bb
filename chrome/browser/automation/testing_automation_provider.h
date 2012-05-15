@@ -1440,7 +1440,7 @@ class TestingAutomationProvider : public AutomationProvider,
                        IPC::Message* reply_message);
 
 #if defined(OS_CHROMEOS)
-  // Login.
+  // Login / Logout.
   void GetLoginInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
   void ShowCreateAccountUI(base::DictionaryValue* args,
@@ -1462,6 +1462,8 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "result": "My Window Name" }
   void ExecuteJavascriptInOOBEWebUI(
       base::DictionaryValue* args, IPC::Message* reply_message);
+
+  void SignOut(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Screen locker.
   void LockScreen(base::DictionaryValue* args, IPC::Message* reply_message);

@@ -4136,14 +4136,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def Logout(self):
     """Log out from ChromeOS and wait for session_manager to come up.
 
-    May return before logout is complete and
-    gives no indication of success or failure.
-    Should be logged in to work.
+    This is equivalent to pressing the 'Sign out' button from the
+    aura shell tray when logged in.
+
+    Should be logged in to work. Re-initializes the automation channel
+    after logout.
     """
     assert self.GetLoginInfo()['is_logged_in'], \
         'Trying to log out when already logged out.'
-    assert self.WaitForSessionManagerRestart(
-        lambda: self.ApplyAccelerator(IDC_EXIT)), \
+    def _SignOut():
+      cmd_dict = { 'command': 'SignOut' }
+      self._GetResultFromJSONRequest(cmd_dict, windex=None)
+    assert self.WaitForSessionManagerRestart(_SignOut), \
         'Session manager did not restart after logout.'
     self.__SetUp()
 
