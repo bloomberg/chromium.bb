@@ -6,8 +6,10 @@
 
 namespace browser {
 
+#if !defined(TOOLKIT_GTK) && !defined(OS_MACOSX)
 void ShowObsoleteOSPrompt(Browser* browser) {
-  // Only shown on Gtk.
+  // Only shown on Gtk and OS X.
 }
+#endif
 
 }  // namespace browser

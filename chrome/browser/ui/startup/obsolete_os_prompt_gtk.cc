@@ -4,72 +4,15 @@
 
 #include "chrome/browser/ui/startup/obsolete_os_prompt.h"
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using content::OpenURLParams;
-using content::Referrer;
-
-namespace {
-
-class LearnMoreInfoBar : public LinkInfoBarDelegate {
- public:
-  LearnMoreInfoBar(InfoBarTabHelper* infobar_helper,
-                   const string16& message,
-                   const GURL& url);
-  virtual ~LearnMoreInfoBar();
-
-  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
- private:
-  string16 message_;
-  GURL learn_more_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(LearnMoreInfoBar);
-};
-
-LearnMoreInfoBar::LearnMoreInfoBar(InfoBarTabHelper* infobar_helper,
-                                   const string16& message,
-                                   const GURL& url)
-    : LinkInfoBarDelegate(infobar_helper),
-      message_(message),
-      learn_more_url_(url) {
-}
-
-LearnMoreInfoBar::~LearnMoreInfoBar() {
-}
-
-string16 LearnMoreInfoBar::GetMessageTextWithOffset(size_t* link_offset) const {
-  string16 text = message_;
-  text.push_back(' ');  // Add a space before the following link.
-  *link_offset = text.size();
-  return text;
-}
-
-string16 LearnMoreInfoBar::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-bool LearnMoreInfoBar::LinkClicked(WindowOpenDisposition disposition) {
-  OpenURLParams params(
-      learn_more_url_, Referrer(), disposition, content::PAGE_TRANSITION_LINK,
-      false);
-  owner()->web_contents()->OpenURL(params);
-  return false;
-}
-
-}  // namespace
 
 namespace browser {
 
@@ -91,9 +34,9 @@ void ShowObsoleteOSPrompt(Browser* browser) {
     if (!tab)
       return;
     tab->infobar_tab_helper()->AddInfoBar(
-        new LearnMoreInfoBar(tab->infobar_tab_helper(),
-                             message,
-                             GURL(kLearnMoreURL)));
+        new ObsoleteOSInfoBar(tab->infobar_tab_helper(),
+                              message,
+                              GURL(kLearnMoreURL)));
   }
 }
 
