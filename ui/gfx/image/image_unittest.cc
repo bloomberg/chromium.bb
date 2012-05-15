@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -67,8 +68,8 @@ TEST_F(ImageTest, SkiaToSkia) {
 }
 
 TEST_F(ImageTest, SkiaRefToSkia) {
-  SkBitmap originalBitmap(gt::CreateBitmap(25, 25));
-  gfx::Image image(originalBitmap);
+  scoped_ptr<SkBitmap> originalBitmap(gt::CreateBitmap(25, 25));
+  gfx::Image image(*originalBitmap.get());
   const SkBitmap* bitmap = image.ToSkBitmap();
   EXPECT_TRUE(bitmap);
   EXPECT_FALSE(bitmap->isNull());
@@ -103,7 +104,7 @@ TEST_F(ImageTest, SkiaToPlatform) {
   if (!kUsesSkiaNatively)
     EXPECT_FALSE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
 
-  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(image)));
+  EXPECT_TRUE(gt::ToPlatformType(image));
   EXPECT_EQ(kRepCount, image.RepresentationCount());
 
   const SkBitmap* bitmap = image.ToSkBitmap();
@@ -127,7 +128,7 @@ TEST_F(ImageTest, PlatformToSkia) {
   EXPECT_FALSE(bitmap->isNull());
   EXPECT_EQ(kRepCount, image.RepresentationCount());
 
-  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(image)));
+  EXPECT_TRUE(gt::ToPlatformType(image));
   EXPECT_EQ(kRepCount, image.RepresentationCount());
 
   EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepSkia));
@@ -135,11 +136,11 @@ TEST_F(ImageTest, PlatformToSkia) {
 
 TEST_F(ImageTest, PlatformToPlatform) {
   gfx::Image image(gt::CreatePlatformImage());
-  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(image)));
+  EXPECT_TRUE(gt::ToPlatformType(image));
   EXPECT_EQ(1U, image.RepresentationCount());
 
   // Make sure double conversion doesn't happen.
-  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(image)));
+  EXPECT_TRUE(gt::ToPlatformType(image));
   EXPECT_EQ(1U, image.RepresentationCount());
 
   EXPECT_TRUE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
@@ -220,8 +221,7 @@ TEST_F(ImageTest, SwapRepresentations) {
   image1.SwapRepresentations(&image2);
 
   EXPECT_EQ(bitmap2, image1.ToSkBitmap());
-  EXPECT_TRUE(gt::PlatformImagesEqual(platform_image,
-                                      gt::ToPlatformType(image1)));
+  EXPECT_EQ(platform_image, gt::ToPlatformType(image1));
   EXPECT_EQ(bitmap1, image2.ToSkBitmap());
   EXPECT_EQ(kRepCount, image1.RepresentationCount());
   EXPECT_EQ(1U, image2.RepresentationCount());
@@ -237,7 +237,7 @@ TEST_F(ImageTest, Copy) {
   EXPECT_EQ(1U, image2.RepresentationCount());
   EXPECT_EQ(image1.ToSkBitmap(), image2.ToSkBitmap());
 
-  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(image2)));
+  EXPECT_TRUE(gt::ToPlatformType(image2));
   EXPECT_EQ(kRepCount, image2.RepresentationCount());
   EXPECT_EQ(kRepCount, image1.RepresentationCount());
 }
