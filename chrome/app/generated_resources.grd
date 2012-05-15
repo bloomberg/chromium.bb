@@ -12810,6 +12810,18 @@ Press any key to continue exploring.
       <message name="IDS_INSTALLING_UPDATE_DESC" desc="Additional info shown on the updates installation screen during OOBE">
         Your computer will restart when the update is complete.
       </message>
+      <message name="IDS_DOWNLOADING_TIME_LEFT_LONG" desc="The status text for downloading estimated time left, when estimated time is more than one hour">
+	More than 1 hour left
+      </message>
+      <message name="IDS_DOWNLOADING_TIME_LEFT_STATUS_ONE_HOUR" desc="The status text for downloading estimated time when about one hour remaining.">
+	About 1 hour left
+      </message>
+      <message name="IDS_DOWNLOADING_TIME_LEFT_STATUS_MINUTES" desc="The status text for downloading estimated time left in minutes. In the localized version instead of |minutes| some abbreviation like |mins| should be used.">
+	About <ph name="TIME">$1<ex>2</ex></ph> minutes left
+      </message>
+      <message name="IDS_DOWNLOADING_TIME_LEFT_SMALL" desc="The status text for downloading estimated time left, when estimated time is less than one minute">
+	Less than 1 minute left
+      </message>
       <message name="IDS_UPDATE_CANCEL" desc="Message telling to press Escape to cancel update on a non-official build">
         Press ESCAPE to skip (Non-official builds only).
       </message>

@@ -41,7 +41,7 @@ cr.define('cr.ui', function() {
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));
 
-    chrome.send('screenStateInitialize', []);
+    chrome.send('screenStateInitialize');
   };
 
   /**
@@ -69,6 +69,8 @@ cr.define('cr.ui', function() {
   Oobe.setUsageStats = function(checked) {};
   Oobe.setOemEulaUrl = function(oemEulaUrl) {};
   Oobe.setUpdateProgress = function(progress) {};
+  Oobe.showUpdateEstimatedTimeLeft = function(enable) {};
+  Oobe.setUpdateEstimatedTimeLeft = function(seconds) {};
   Oobe.setUpdateMessage = function(message) {};
   Oobe.showUpdateCurtain = function(enable) {};
   Oobe.setTpmPassword = function(password) {};

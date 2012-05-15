@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/update_screen_actor.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
@@ -69,6 +70,10 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestBasic);
   FRIEND_TEST_ALL_PREFIXES(UpdateScreenTest, TestUpdateAvailable);
 
+  // Updates downloading stats (remaining time and downloading
+  // progress) on the AU screen.
+  void UpdateDownloadingStats(const UpdateEngineClient::Status& status);
+
   // Returns true if there is critical system update that requires installation
   // and immediate reboot.
   bool HasCriticalUpdate();
@@ -106,6 +111,17 @@ class UpdateScreen: public UpdateEngineClient::Observer,
 
   // Keeps actor which is delegated with all showing operations.
   UpdateScreenActor* actor_;
+
+  // Time of the first notification from the downloading stage.
+  base::Time download_start_time_;
+  double download_start_progress_;
+
+  // Time of the last notification from the downloading stage.
+  base::Time download_last_time_;
+  double download_last_progress_;
+
+  bool is_download_average_speed_computed_;
+  double download_average_speed_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreen);
 };

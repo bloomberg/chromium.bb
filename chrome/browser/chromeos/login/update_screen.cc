@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/update_screen.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -38,6 +40,23 @@ const int kUpdateScreenWidth = 580;
 const int kUpdateScreenHeight = 305;
 
 const char kUpdateDeadlineFile[] = "/tmp/update-check-response-deadline";
+
+// Minimum timestep between two consecutive measurements for the
+// download rate.
+const base::TimeDelta kMinTimeStep = base::TimeDelta::FromSeconds(1);
+
+// Minimum allowed progress between two consecutive ETAs.
+const double kMinProgressStep = 1e-3;
+
+// Smooth factor that is used for the average downloading speed
+// estimation.
+const double kDownloadSpeedSmoothFactor = 0.005;
+
+// Minumum allowed value for the average downloading speed.
+const double kDownloadAverageSpeedDropBound = 1e-8;
+
+// An upper bound for possible downloading time left estimations.
+const double kMaxTimeLeft = 24 * 60 * 60;
 
 // Invoked from call to RequestUpdateCheck upon completion of the DBus call.
 void StartUpdateCallback(UpdateScreen* screen,
@@ -107,6 +126,7 @@ void UpdateScreen::UpdateStatusChanged(
     case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
       MakeSureScreenIsShown();
       actor_->SetProgress(kBeforeDownloadProgress);
+      actor_->ShowEstimatedTimeLeft(false);
       if (!HasCriticalUpdate()) {
         LOG(INFO) << "Noncritical update available: "
                   << status.new_version;
@@ -125,6 +145,11 @@ void UpdateScreen::UpdateStatusChanged(
           // Because update engine doesn't send UPDATE_STATUS_UPDATE_AVAILABLE
           // we need to is update critical on first downloading notification.
           is_downloading_update_ = true;
+          download_start_time_ = download_last_time_ = base::Time::Now();
+          download_start_progress_ = status.download_progress;
+          download_last_progress_ = status.download_progress;
+          is_download_average_speed_computed_ = false;
+          download_average_speed_ = 0.0;
           if (!HasCriticalUpdate()) {
             LOG(INFO) << "Non-critical update available: "
                       << status.new_version;
@@ -136,24 +161,25 @@ void UpdateScreen::UpdateStatusChanged(
             actor_->ShowCurtain(false);
           }
         }
-        int download_progress = static_cast<int>(
-            status.download_progress * kDownloadProgressIncrement);
-        actor_->SetProgress(kBeforeDownloadProgress + download_progress);
+        UpdateDownloadingStats(status);
       }
       break;
     case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
       MakeSureScreenIsShown();
       actor_->SetProgress(kBeforeVerifyingProgress);
+      actor_->ShowEstimatedTimeLeft(false);
       break;
     case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
       MakeSureScreenIsShown();
       actor_->SetProgress(kBeforeFinalizingProgress);
+      actor_->ShowEstimatedTimeLeft(false);
       break;
     case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
       // Make sure that first OOBE stage won't be shown after reboot.
       WizardController::MarkOobeCompleted();
       actor_->SetProgress(kProgressComplete);
+      actor_->ShowEstimatedTimeLeft(false);
       if (HasCriticalUpdate()) {
         actor_->ShowCurtain(false);
         VLOG(1) << "Initiate reboot after update";
@@ -274,6 +300,55 @@ void UpdateScreen::SetRebootCheckDelay(int seconds) {
 
 void UpdateScreen::SetIgnoreIdleStatus(bool ignore_idle_status) {
   ignore_idle_status_ = ignore_idle_status;
+}
+
+void UpdateScreen::UpdateDownloadingStats(
+    const UpdateEngineClient::Status& status) {
+  base::Time download_current_time = base::Time::Now();
+  if (download_current_time >= download_last_time_ + kMinTimeStep &&
+      status.download_progress >=
+      download_last_progress_ + kMinProgressStep) {
+    // Estimate downloading rate.
+    double progress_delta =
+        std::max(status.download_progress - download_last_progress_, 0.0);
+    double time_delta =
+        (download_current_time - download_last_time_).InSecondsF();
+    double download_rate = status.new_size * progress_delta / time_delta;
+
+    download_last_time_ = download_current_time;
+    download_last_progress_ = status.download_progress;
+
+    // Estimate time left.
+    double progress_left = std::max(1.0 - status.download_progress, 0.0);
+    if (!is_download_average_speed_computed_) {
+      download_average_speed_ = download_rate;
+      is_download_average_speed_computed_ = true;
+    }
+    download_average_speed_ =
+        kDownloadSpeedSmoothFactor * download_rate +
+        (1.0 - kDownloadSpeedSmoothFactor) * download_average_speed_;
+    if (download_average_speed_ < kDownloadAverageSpeedDropBound) {
+      time_delta =
+          (download_current_time - download_start_time_).InSecondsF();
+      download_average_speed_ =
+          status.new_size *
+          (status.download_progress - download_start_progress_) /
+          time_delta;
+    }
+    double work_left = progress_left * status.new_size;
+    double time_left = work_left / download_average_speed_;
+    // |time_left| may be large enough or even +infinity. So we must
+    // |bound possible estimations.
+    time_left = std::min(time_left, kMaxTimeLeft);
+
+    actor_->ShowEstimatedTimeLeft(true);
+    actor_->SetEstimatedTimeLeft(
+        base::TimeDelta::FromSeconds(static_cast<int64>(time_left)));
+  }
+
+  int download_progress = static_cast<int>(
+      status.download_progress * kDownloadProgressIncrement);
+  actor_->SetProgress(kBeforeDownloadProgress + download_progress);
 }
 
 bool UpdateScreen::HasCriticalUpdate() {

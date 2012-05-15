@@ -20,6 +20,19 @@ body {
   padding: 0;
 }
 
+progress {
+  border: solid 1px #bbb;
+  padding: 1px;
+}
+
+progress::-webkit-progress-bar {
+  background: white;
+}
+
+progress::-webkit-progress-value {
+  background: #bbb;
+}
+
 button {
   font-family: inherit;
   outline: none;
@@ -441,9 +454,31 @@ html[dir=rtl] #user-image-preview {
   position: absolute;
 }
 
+#update #update-upper-label {
+  -webkit-margin-after: 4px;
+}
+
+#update #update-bottom-label {
+  -webkit-margin-after: 4px;
+  -webkit-margin-before: 4px;
+}
+
 #update progress {
-  margin: 13px 0;
-  width: 380px;
+  -webkit-margin-after: 4px;
+  -webkit-margin-before: 34px;
+  -webkit-margin-start: 74px;
+  height: 15px;
+  width: 300px;
+}
+
+#update #update-estimated-time-left {
+  -webkit-margin-before: 4px;
+}
+
+#update #update-estimated-time-left {
+  color: #666;
+  font-size: 13px;
+  text-align: center;
 }
 
 button {

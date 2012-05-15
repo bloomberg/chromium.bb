@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,8 @@ class MockUpdateScreenActor : public UpdateScreenActor {
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(ShowManualRebootInfo, void());
   MOCK_METHOD1(SetProgress, void(int progress));
+  MOCK_METHOD1(ShowEstimatedTimeLeft, void(bool enable));
+  MOCK_METHOD1(SetEstimatedTimeLeft, void(const base::TimeDelta& time));
   MOCK_METHOD1(ShowCurtain, void(bool enable));
   MOCK_METHOD1(ShowPreparingUpdatesInfo, void(bool enable));
 

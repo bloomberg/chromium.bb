@@ -78,7 +78,7 @@ cr.define('cr.ui', function() {
     login.HeaderBar.decorate($('login-header-bar'));
 
     $('security-link').addEventListener('click', function(event) {
-      chrome.send('eulaOnTpmPopupOpened', []);
+      chrome.send('eulaOnTpmPopupOpened');
       $('popup-overlay').hidden = false;
       $('security-ok-button').focus();
     });
@@ -92,7 +92,7 @@ cr.define('cr.ui', function() {
       event.preventDefault();
     });
 
-    chrome.send('screenStateInitialize', []);
+    chrome.send('screenStateInitialize');
   };
 
   /**
@@ -148,6 +148,37 @@ cr.define('cr.ui', function() {
    */
   Oobe.setUpdateProgress = function(progress) {
     $('update-progress-bar').value = progress;
+  };
+
+  /**
+   * Shows estimated time left status.
+   * @param {boolean} enable Are time left status show?
+   */
+  Oobe.showUpdateEstimatedTimeLeft = function(enable) {
+    $('update-estimated-time-left').hidden = !enable;
+  };
+
+  /**
+   * Sets estimated time left until download will complete.
+   * @param {number} seconds Time left in seconds.
+   */
+  Oobe.setUpdateEstimatedTimeLeft = function(seconds) {
+    var minutes = Math.ceil(seconds / 60);
+    var message = '';
+    if (minutes > 60) {
+      message = localStrings.getString('downloadingTimeLeftLong');
+    } else if (minutes > 55) {
+      message = localStrings.getString('downloadingTimeLeftStatusOneHour');
+    } else if (minutes > 20) {
+      message = localStrings.getStringF('downloadingTimeLeftStatusMinutes',
+                                        Math.ceil(minutes / 5) * 5);
+    } else if (minutes > 1) {
+      message = localStrings.getStringF('downloadingTimeLeftStatusMinutes',
+                                        minutes);
+    } else {
+      message = localStrings.getString('downloadingTimeLeftSmall');
+    }
+    $('update-estimated-time-left').innerText = message;
   };
 
   /**

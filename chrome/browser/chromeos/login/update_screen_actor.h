@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UPDATE_SCREEN_ACTOR_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UPDATE_SCREEN_ACTOR_H_
 #pragma once
+
+#include "base/time.h"
 
 namespace chromeos {
 
@@ -36,6 +38,12 @@ class UpdateScreenActor {
 
   // Sets current progress in percents.
   virtual void SetProgress(int progress) = 0;
+
+  // Shows estimated time left message.
+  virtual void ShowEstimatedTimeLeft(bool enable) = 0;
+
+  // Sets current estimation for time left in the downloading stage.
+  virtual void SetEstimatedTimeLeft(const base::TimeDelta& time) = 0;
 
   // Shows screen curtains.
   virtual void ShowCurtain(bool enable) = 0;
