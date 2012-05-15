@@ -9,10 +9,10 @@
 
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
-#include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
+#include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"

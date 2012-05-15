@@ -5,7 +5,6 @@
 #include "ash/wm/window_resizer.h"
 
 #include "ash/shell.h"
-#include "ash/wm/root_window_event_filter.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"

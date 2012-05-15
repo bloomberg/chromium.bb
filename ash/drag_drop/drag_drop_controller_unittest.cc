@@ -6,11 +6,11 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/root_window_event_filter.h"
 #include "base/location.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"

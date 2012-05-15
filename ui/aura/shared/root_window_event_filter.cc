@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/root_window_event_filter.h"
+#include "ui/aura/shared/root_window_event_filter.h"
 
-#include "ash/wm/window_util.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 
-namespace ash {
-namespace internal {
+namespace aura {
+namespace shared {
 
 namespace {
 
@@ -122,7 +122,7 @@ bool RootWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
   if (FilterMouseEvent(target, event))
     return true;
 
-  if (event->type() == ui::ET_MOUSE_PRESSED && wm::GetActiveWindow() != target)
+  if (event->type() == ui::ET_MOUSE_PRESSED && GetActiveWindow() != target)
     target->GetFocusManager()->SetFocusedWindow(
         FindFocusableWindowFor(target), event);
 
@@ -226,5 +226,10 @@ ui::TouchStatus RootWindowEventFilter::FilterTouchEvent(
   return status;
 }
 
-}  // namespace internal
-}  // namespace ash
+Window* RootWindowEventFilter::GetActiveWindow() {
+  return aura::client::GetActivationClient(root_window_)->
+      GetActiveWindow();
+}
+
+}  // namespace shared
+}  // namespace aura

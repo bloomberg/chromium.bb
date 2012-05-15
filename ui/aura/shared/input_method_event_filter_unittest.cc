@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/input_method_event_filter.h"
+#include "ui/aura/shared/input_method_event_filter.h"
 
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
-#include "ash/test/ash_test_base.h"
-#include "ash/wm/root_window_event_filter.h"
-#include "ash/wm/window_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/root_window_event_filter.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_windows.h"
 
@@ -24,57 +23,76 @@
 DISABLED_TestInputMethodKeyEventPropagation
 #endif
 
-namespace ash {
+namespace aura {
+namespace test {
 
-typedef test::AshTestBase InputMethodEventFilterTest;
+typedef AuraTestBase InputMethodEventFilterTest;
 
-// Tests if InputMethodEventFilter adds a window property on its construction.
 TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::shared::RootWindowEventFilter* root_filter =
+      new aura::shared::RootWindowEventFilter(root_window());
+  root_window()->SetEventFilter(root_filter);
+
+  // Add the InputMethodEventFilter before the TestEventFilter.
+  aura::shared::InputMethodEventFilter input_method_event_filter(
+      root_window());
+  root_filter->AddFilter(&input_method_event_filter);
+
+  // Tests if InputMethodEventFilter adds a window property on its
+  // construction.
   EXPECT_TRUE(
-      root_window->GetProperty(aura::client::kRootWindowInputMethodKey));
+      root_window()->GetProperty(aura::client::kRootWindowInputMethodKey));
+
+  root_filter->RemoveFilter(&input_method_event_filter);
 }
 
 // Tests if InputMethodEventFilter dispatches a ui::ET_TRANSLATED_KEY_* event to
 // the root window.
 TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
-  aura::RootWindow* root_window = Shell::GetRootWindow();
+  aura::client::SetActivationClient(root_window(),
+                                    new TestActivationClient(root_window()));
+
+  aura::shared::RootWindowEventFilter* root_filter =
+      new shared::RootWindowEventFilter(root_window());
+  root_window()->SetEventFilter(root_filter);
+
+  // Add the InputMethodEventFilter before the TestEventFilter.
+  aura::shared::InputMethodEventFilter input_method_event_filter(
+      root_window());
+  root_filter->AddFilter(&input_method_event_filter);
 
   // Add TestEventFilter to the RootWindow.
   aura::test::TestEventFilter test_filter;
-  internal::RootWindowEventFilter* root_filter =
-      static_cast<internal::RootWindowEventFilter*>(
-          root_window->event_filter());
-  ASSERT_TRUE(root_filter);
   root_filter->AddFilter(&test_filter);
 
   // We need an active window. Otherwise, the root window will not forward a key
   // event to event filters.
-  aura::Window* default_container = Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_DefaultContainer);
   aura::test::TestWindowDelegate test_delegate;
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
       &test_delegate,
       -1,
       gfx::Rect(),
-      default_container));
-  wm::ActivateWindow(window.get());
+      root_window()));
+  aura::client::GetActivationClient(root_window())->ActivateWindow(
+      window.get());
 
   // Send a fake key event to the root window. InputMethodEventFilter, which is
   // automatically set up by AshTestBase, consumes it and sends a new
   // ui::ET_TRANSLATED_KEY_* event to the root window, which will be consumed by
   // the test event filter.
-  aura::test::EventGenerator generator(Shell::GetRootWindow());
+  aura::test::EventGenerator generator(root_window());
   EXPECT_EQ(0, test_filter.key_event_count());
   generator.PressKey(ui::VKEY_SPACE, 0);
   EXPECT_EQ(1, test_filter.key_event_count());
   generator.ReleaseKey(ui::VKEY_SPACE, 0);
   EXPECT_EQ(2, test_filter.key_event_count());
 
+  root_filter->RemoveFilter(&input_method_event_filter);
   root_filter->RemoveFilter(&test_filter);
 
   // Reset window before |test_delegate| gets deleted.
   window.reset();
 }
 
-}  // namespace ash
+}  // namespace test
+}  // namespace aura

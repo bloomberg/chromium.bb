@@ -6,13 +6,13 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -98,7 +98,8 @@ class MultiWindowResizeController::ResizeView : public views::View {
   virtual gfx::NativeCursor GetCursor(
       const views::MouseEvent& event) OVERRIDE {
     int component = (direction_ == LEFT_RIGHT) ? HTRIGHT : HTBOTTOM;
-    return RootWindowEventFilter::CursorForWindowComponent(component);
+    return aura::shared::RootWindowEventFilter::CursorForWindowComponent(
+        component);
   }
 
  private:

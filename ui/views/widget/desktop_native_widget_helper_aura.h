@@ -14,6 +14,10 @@
 
 namespace aura {
 class RootWindow;
+namespace shared {
+class InputMethodEventFilter;
+class RootWindowEventFilter;
+}
 }
 
 namespace ui {
@@ -55,6 +59,12 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
 
   // Optionally, a RootWindow that we attach ourselves to.
   scoped_ptr<aura::RootWindow> root_window_;
+
+  // Toplevel event filter which dispatches to other event filters.
+  aura::shared::RootWindowEventFilter* root_window_event_filter_;
+
+  // An event filter that pre-handles all key events to send them to an IME.
+  scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
 
   // We want some windows (omnibox, status bar) to have their own
   // NativeWidgetAura, but still act as if they're screen bounded toplevel

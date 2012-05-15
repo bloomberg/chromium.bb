@@ -2,30 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/input_method_event_filter.h"
+#include "ui/aura/shared/input_method_event_filter.h"
 
-#include "ash/shell.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 
-namespace ash {
-namespace internal {
+namespace aura {
+namespace shared {
 
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodEventFilter, public:
 
-InputMethodEventFilter::InputMethodEventFilter()
+InputMethodEventFilter::InputMethodEventFilter(RootWindow* root_window)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          input_method_(ui::CreateInputMethod(this))) {
+          input_method_(ui::CreateInputMethod(this))),
+      root_window_(root_window) {
   // TODO(yusukes): Check if the root window is currently focused and pass the
   // result to Init().
   input_method_->Init(true);
-  Shell::GetRootWindow()->SetProperty(
-      aura::client::kRootWindowInputMethodKey,
-      input_method_.get());
+  root_window_->SetProperty(aura::client::kRootWindowInputMethodKey,
+                            input_method_.get());
 }
 
 InputMethodEventFilter::~InputMethodEventFilter() {
@@ -75,7 +74,7 @@ void InputMethodEventFilter::DispatchKeyEventPostIME(
   DCHECK(event.message != WM_CHAR);
 #endif
   aura::TranslatedKeyEvent aura_event(event, false /* is_char */);
-  Shell::GetRootWindow()->DispatchKeyEvent(&aura_event);
+  root_window_->DispatchKeyEvent(&aura_event);
 }
 
 void InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
@@ -84,8 +83,8 @@ void InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
     int flags) {
   aura::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
                                       flags);
-  Shell::GetRootWindow()->DispatchKeyEvent(&aura_event);
+  root_window_->DispatchKeyEvent(&aura_event);
 }
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace shared
+}  // namespace aura

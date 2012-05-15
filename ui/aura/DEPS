@@ -2,6 +2,7 @@ include_rules = [
   "+grit/ui_resources.h",
   "+grit/ui_strings.h",
   "+skia/ext",
+  "-ui/aura/shared",  # Main aura code can't include shared code.
   "+ui/base",
   "+ui/gfx",
   "+ui/ui_controls",  # this should probably move into a DEPS file under test.

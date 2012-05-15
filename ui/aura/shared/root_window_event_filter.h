@@ -2,32 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_ROOT_WINDOW_EVENT_FILTER_H_
-#define ASH_WM_ROOT_WINDOW_EVENT_FILTER_H_
+#ifndef UI_AURA_SHARED_ROOT_WINDOW_EVENT_FILTER_H_
+#define UI_AURA_SHARED_ROOT_WINDOW_EVENT_FILTER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "ui/aura/aura_export.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
-#include "ash/ash_export.h"
 
 namespace aura {
 class RootWindow;
-}
 
-namespace ash {
-namespace internal {
+namespace shared {
 
 // RootWindowEventFilter gets all root window events first and can provide
 // actions to those events. It implements root window features such as click to
 // activate a window and cursor change when moving mouse.
-// Additional event filters can be added to RootWIndowEventFilter. Events will
+// Additional event filters can be added to RootWindowEventFilter. Events will
 // pass through those additional filters in their addition order and could be
 // consumed by any of those filters. If an event is consumed by a filter, the
 // rest of the filter(s) and RootWindowEventFilter will not see the consumed
 // event.
-class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
+class AURA_EXPORT RootWindowEventFilter : public aura::EventFilter {
  public:
   RootWindowEventFilter(aura::RootWindow* root_window);
   virtual ~RootWindowEventFilter();
@@ -79,6 +77,9 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
   ui::TouchStatus FilterTouchEvent(aura::Window* target,
                                    aura::TouchEvent* event);
 
+  // Gets the active window from the activation client.
+  aura::Window* GetActiveWindow();
+
   aura::RootWindow* root_window_;
 
   // Additional event filters that pre-handles events.
@@ -102,7 +103,7 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
   DISALLOW_COPY_AND_ASSIGN(RootWindowEventFilter);
 };
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace shared
+}  // namespace aura
 
-#endif  // ASH_WM_ROOT_WINDOW_EVENT_FILTER_H_
+#endif  // UI_AURA_ROOT_WINDOW_EVENT_FILTER_H_

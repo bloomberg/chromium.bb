@@ -7,8 +7,9 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
-#include "ui/aura/desktop/desktop_root_window_event_filter.h"
 #include "ui/aura/client/dispatcher_client.h"
+#include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 #if defined(OS_WIN)
@@ -21,10 +22,14 @@ namespace views {
 DesktopNativeWidgetHelperAura::DesktopNativeWidgetHelperAura(
     NativeWidgetAura* widget)
     : widget_(widget),
+      root_window_event_filter_(NULL),
       is_embedded_window_(false) {
 }
 
-DesktopNativeWidgetHelperAura::~DesktopNativeWidgetHelperAura() {}
+DesktopNativeWidgetHelperAura::~DesktopNativeWidgetHelperAura() {
+  if (root_window_event_filter_)
+    root_window_event_filter_->RemoveFilter(input_method_filter_.get());
+}
 
 void DesktopNativeWidgetHelperAura::PreInitialize(
     const Widget::InitParams& params) {
@@ -49,8 +54,15 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   }
   root_window_.reset(new aura::RootWindow(bounds));
   root_window_->Init();
-  root_window_->SetEventFilter(
-      new aura::DesktopRootWindowEventFilter(root_window_.get()));
+
+  root_window_event_filter_ =
+      new aura::shared::RootWindowEventFilter(root_window_.get());
+  root_window_->SetEventFilter(root_window_event_filter_);
+
+  input_method_filter_.reset(
+      new aura::shared::InputMethodEventFilter(root_window_.get()));
+  root_window_event_filter_->AddFilter(input_method_filter_.get());
+
   root_window_->AddRootWindowObserver(this);
 
   aura::client::SetActivationClient(

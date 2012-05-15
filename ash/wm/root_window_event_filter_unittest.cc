@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/root_window_event_filter.h"
-
-#include "ash/ime/input_method_event_filter.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -15,6 +12,8 @@
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_event_filter.h"
@@ -23,6 +22,9 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
+
+// TODO(erg,beng): This file is misnamed; it really acts as an integration test
+// between most of the ash::Shell() objects, not just RootWindowEventFitler.
 
 namespace {
 
@@ -501,8 +503,8 @@ TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
   scoped_ptr<aura::test::TestEventFilter> f2(new aura::test::TestEventFilter);
 
   // Adds them to root window event filter.
-  internal::RootWindowEventFilter* root_window_filter =
-      static_cast<internal::RootWindowEventFilter*>(
+  aura::shared::RootWindowEventFilter* root_window_filter =
+      static_cast<aura::shared::RootWindowEventFilter*>(
           root_window->event_filter());
   root_window_filter->AddFilter(f1.get());
   root_window_filter->AddFilter(f2.get());
@@ -566,8 +568,8 @@ TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindow(
       SK_ColorWHITE, -1, gfx::Rect(0, 0, 500, 500), NULL));
 
-  internal::RootWindowEventFilter* root_window_filter =
-      static_cast<internal::RootWindowEventFilter*>(
+  aura::shared::RootWindowEventFilter* root_window_filter =
+      static_cast<aura::shared::RootWindowEventFilter*>(
           root_window->event_filter());
 
   aura::MouseEvent mouse_moved(

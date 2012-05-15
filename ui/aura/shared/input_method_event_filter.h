@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_IME_INPUT_METHOD_EVENT_FILTER_H_
-#define ASH_IME_INPUT_METHOD_EVENT_FILTER_H_
+#ifndef UI_AURA_SHARED_INPUT_METHOD_EVENT_FILTER_H_
+#define UI_AURA_SHARED_INPUT_METHOD_EVENT_FILTER_H_
 #pragma once
 
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/aura_export.h"
 #include "ui/aura/event_filter.h"
 #include "ui/base/ime/input_method_delegate.h"
 
@@ -17,16 +17,18 @@ namespace ui {
 class InputMethod;
 }
 
-namespace ash {
-namespace internal {
+namespace aura {
+class RootWindow;
+
+namespace shared {
 
 // An event filter that forwards a KeyEvent to a system IME, and dispatches a
 // TranslatedKeyEvent to the root window as needed.
-class ASH_EXPORT InputMethodEventFilter
+class AURA_EXPORT InputMethodEventFilter
     : public aura::EventFilter,
       public ui::internal::InputMethodDelegate {
  public:
-  InputMethodEventFilter();
+  explicit InputMethodEventFilter(RootWindow* root_window);
   virtual ~InputMethodEventFilter();
 
  private:
@@ -50,10 +52,12 @@ class ASH_EXPORT InputMethodEventFilter
 
   scoped_ptr<ui::InputMethod> input_method_;
 
+  RootWindow* root_window_;
+
   DISALLOW_COPY_AND_ASSIGN(InputMethodEventFilter);
 };
 
-}  // namespace internal
-}  // namespace ash
+}  // namespace shared
+}  // namespace aura
 
-#endif  // ASH_IME_INPUT_METHOD_EVENT_FILTER_H_
+#endif  // UI_AURA_IME_INPUT_METHOD_EVENT_FILTER_H_

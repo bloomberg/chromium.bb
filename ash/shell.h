@@ -28,6 +28,10 @@ class EventFilter;
 class Monitor;
 class RootWindow;
 class Window;
+namespace shared {
+class InputMethodEventFilter;
+class RootWindowEventFilter;
+}
 }
 namespace content {
 class BrowserContext;
@@ -68,14 +72,12 @@ class AppListController;
 class DragDropController;
 class EventClientImpl;
 class FocusCycler;
-class InputMethodEventFilter;
 class KeyRewriterEventFilter;
 class MagnificationController;
 class MonitorController;
 class PanelLayoutManager;
 class PartialScreenshotEventFilter;
 class ResizeShadowController;
-class RootWindowEventFilter;
 class RootWindowLayoutManager;
 class ScreenDimmer;
 class ShadowController;
@@ -107,7 +109,7 @@ class ASH_EXPORT Shell {
     explicit TestApi(Shell* shell);
 
     internal::RootWindowLayoutManager* root_window_layout();
-    internal::InputMethodEventFilter* input_method_event_filter();
+    aura::shared::InputMethodEventFilter* input_method_event_filter();
     internal::SystemGestureEventFilter* system_gesture_event_filter();
     internal::WorkspaceController* workspace_controller();
 
@@ -200,7 +202,7 @@ class ASH_EXPORT Shell {
   }
 #endif  // !defined(OS_MACOSX)
 
-  internal::RootWindowEventFilter* root_filter() {
+  aura::shared::RootWindowEventFilter* root_filter() {
     return root_filter_;
   }
   internal::TooltipController* tooltip_controller() {
@@ -310,7 +312,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<aura::RootWindow> root_window_;
   ScreenAsh* screen_;
 
-  internal::RootWindowEventFilter* root_filter_;  // not owned
+  aura::shared::RootWindowEventFilter* root_filter_;  // not owned
 
   std::vector<WindowAndBoundsPair> to_restore_;
 
@@ -364,7 +366,7 @@ class ASH_EXPORT Shell {
 #endif
 
   // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
 
   // The shelf for managing the launcher and the status widget in non-compact
   // mode. Shell does not own the shelf. Instead, it is owned by container of

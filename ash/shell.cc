@@ -13,7 +13,6 @@
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
-#include "ash/ime/input_method_event_filter.h"
 #include "ash/launcher/launcher.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/monitor/monitor_controller.h"
@@ -40,7 +39,6 @@
 #include "ash/wm/partial_screenshot_event_filter.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
-#include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
 #include "ash/wm/shadow_controller.h"
@@ -68,6 +66,8 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -515,7 +515,8 @@ internal::RootWindowLayoutManager* Shell::TestApi::root_window_layout() {
   return shell_->root_window_layout_;
 }
 
-internal::InputMethodEventFilter* Shell::TestApi::input_method_event_filter() {
+aura::shared::InputMethodEventFilter*
+    Shell::TestApi::input_method_event_filter() {
   return shell_->input_method_filter_.get();
 }
 
@@ -640,7 +641,7 @@ aura::RootWindow* Shell::GetRootWindow() {
 
 void Shell::Init() {
   aura::RootWindow* root_window = GetRootWindow();
-  root_filter_ = new internal::RootWindowEventFilter(root_window);
+  root_filter_ = new aura::shared::RootWindowEventFilter(root_window);
 #if !defined(OS_MACOSX)
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
   accelerator_controller_.reset(new AcceleratorController);
@@ -664,7 +665,8 @@ void Shell::Init() {
   // InputMethodEventFilter must be the third one. It has to be added before
   // AcceleratorFilter.
   DCHECK_EQ(2U, GetRootWindowEventFilterCount());
-  input_method_filter_.reset(new internal::InputMethodEventFilter);
+  input_method_filter_.reset(
+      new aura::shared::InputMethodEventFilter(root_window));
   AddRootWindowEventFilter(input_method_filter_.get());
 #if !defined(OS_MACOSX)
   accelerator_filter_.reset(new internal::AcceleratorFilter);
@@ -754,17 +756,17 @@ const aura::Window* Shell::GetContainer(int container_id) const {
 }
 
 void Shell::AddRootWindowEventFilter(aura::EventFilter* filter) {
-  static_cast<internal::RootWindowEventFilter*>(
+  static_cast<aura::shared::RootWindowEventFilter*>(
       GetRootWindow()->event_filter())->AddFilter(filter);
 }
 
 void Shell::RemoveRootWindowEventFilter(aura::EventFilter* filter) {
-  static_cast<internal::RootWindowEventFilter*>(
+  static_cast<aura::shared::RootWindowEventFilter*>(
       GetRootWindow()->event_filter())->RemoveFilter(filter);
 }
 
 size_t Shell::GetRootWindowEventFilterCount() const {
-  return static_cast<internal::RootWindowEventFilter*>(
+  return static_cast<aura::shared::RootWindowEventFilter*>(
       GetRootWindow()->event_filter())->GetFilterCount();
 }
 
