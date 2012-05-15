@@ -124,10 +124,16 @@ enum {
 	TYPE_MENU,
 	TYPE_CUSTOM
 };
-       
+
+struct window_output {
+	struct output *output;
+	struct wl_list link;
+};
+
 struct window {
 	struct display *display;
 	struct window *parent;
+	struct wl_list window_output_list;
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
 	struct wl_region *input_region;
@@ -948,6 +954,8 @@ window_destroy(struct window *window)
 {
 	struct display *display = window->display;
 	struct input *input;
+	struct window_output *window_output;
+	struct window_output *window_output_tmp;
 
 	if (window->redraw_scheduled)
 		wl_list_remove(&window->redraw_task.link);
@@ -960,6 +968,11 @@ window_destroy(struct window *window)
 		if (input->focus_widget &&
 		    input->focus_widget->window == window)
 			input->focus_widget = NULL;
+	}
+
+	wl_list_for_each_safe(window_output, window_output_tmp,
+			      &window->window_output_list, link) {
+		free (window_output);
 	}
 
 	if (window->input_region)
@@ -2621,14 +2634,48 @@ window_damage(struct window *window, int32_t x, int32_t y,
 
 static void
 surface_enter(void *data,
-	      struct wl_surface *wl_surface, struct wl_output *output)
+	      struct wl_surface *wl_surface, struct wl_output *wl_output)
 {
+	struct window *window = data;
+	struct output *output;
+	struct output *output_found = NULL;
+	struct window_output *window_output;
+
+	wl_list_for_each(output, &window->display->output_list, link) {
+		if (output->output == wl_output) {
+			output_found = output;
+			break;
+		}
+	}
+
+	if (!output_found)
+		return;
+
+	window_output = malloc (sizeof *window_output);
+	window_output->output = output_found;
+
+	wl_list_insert (&window->window_output_list, &window_output->link);
 }
 
 static void
 surface_leave(void *data,
 	      struct wl_surface *wl_surface, struct wl_output *output)
 {
+	struct window *window = data;
+	struct window_output *window_output;
+	struct window_output *window_output_found = NULL;
+
+	wl_list_for_each(window_output, &window->window_output_list, link) {
+		if (window_output->output->output == output) {
+			window_output_found = window_output;
+			break;
+		}
+	}
+
+	if (window_output_found) {
+		wl_list_remove(&window_output_found->link);
+		free(window_output_found);
+	}
 }
 
 static const struct wl_surface_listener surface_listener = {
@@ -2686,6 +2733,8 @@ window_create_internal(struct display *display, struct window *parent)
 		wl_shell_surface_add_listener(window->shell_surface,
 					      &shell_surface_listener, window);
 	}
+
+	wl_list_init (&window->window_output_list);
 
 	return window;
 }
