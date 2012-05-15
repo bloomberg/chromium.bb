@@ -72,7 +72,7 @@ struct weston_wm {
 	struct hash_table *window_hash;
 	struct weston_xserver *server;
 	xcb_window_t wm_window;
-	int border_width;
+	int border_width, title_height;
 
 	xcb_window_t selection_window;
 	int incr;
@@ -631,13 +631,14 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 			  wm->screen->root,
 			  0, 0,
 			  window->width + wm->border_width * 2,
-			  window->height + wm->border_width * 2,
+			  window->height + wm->border_width * 2 + wm->title_height,
 			  0,
 			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			  wm->screen->root_visual,
 			  XCB_CW_EVENT_MASK, values);
 	xcb_reparent_window(wm->conn, window->id, window->frame_id,
-			    wm->border_width, wm->border_width);
+			    wm->border_width,
+			    wm->border_width + wm->title_height);
 
 	fprintf(stderr, "XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
 		window->id, window, window->frame_id);
@@ -705,15 +706,21 @@ weston_wm_handle_expose(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	cairo_surface_t *surface;
 	cairo_t *cr;
+	cairo_text_extents_t text_extents;
+	cairo_font_extents_t font_extents;
 	xcb_render_pictforminfo_t *render_format;
 	struct weston_wm_window *window;
 	xcb_expose_event_t *expose = (xcb_expose_event_t *) event;
-	int width, height;
+	int x, y, width, height;
+	const char *title;
 
 	window = hash_table_lookup(wm->window_hash, expose->window);
 
-	width = window->width + wm->border_width * 20;
-	height = window->height + wm->border_width * 20;
+	fprintf(stderr, "XCB_EXPOSE (window %d, title %s)\n",
+		window->id, window->name);
+
+	width = window->width + wm->border_width * 2;
+	height = window->height + wm->border_width * 2 + wm->title_height;
 
 	render_format = find_depth(wm->conn, 24);
 	surface = cairo_xcb_surface_create_with_xrender_format(wm->conn,
@@ -726,6 +733,28 @@ weston_wm_handle_expose(struct weston_wm *wm, xcb_generic_event_t *event)
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 1, 0, 0, 0.8);
 	cairo_paint(cr);
+
+	if (window->name)
+		title = window->name;
+	else
+		title = "untitled";
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_select_font_face(cr, "sans",
+			       CAIRO_FONT_SLANT_NORMAL,
+			       CAIRO_FONT_WEIGHT_BOLD);
+	cairo_set_font_size(cr, 14);
+	cairo_font_extents (cr, &font_extents);
+	cairo_text_extents(cr, title, &text_extents);
+	x = (width - text_extents.width) / 2;
+	y = (wm->border_width + wm->title_height -
+	     font_extents.ascent - font_extents.descent) / 2 +
+		font_extents.ascent;
+
+	cairo_move_to(cr, x, y);
+	cairo_set_source_rgb(cr, 1, 1, 1);
+	cairo_show_text(cr, title);
+
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 }
@@ -1394,7 +1423,8 @@ weston_wm_create(struct weston_xserver *wxs)
 		XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, wm->screen->root,
 				     XCB_CW_EVENT_MASK, values);
-	wm->border_width = 10;
+	wm->border_width = 2;
+	wm->title_height = 24;
 
 	weston_wm_create_wm_window(wm);
 
