@@ -295,7 +295,9 @@ void dump_connectors(void)
 void dump_crtcs(void)
 {
 	drmModeCrtc *crtc;
+	drmModeObjectPropertiesPtr props;
 	int i;
+	uint32_t j;
 
 	printf("CRTCs:\n");
 	printf("id\tfb\tpos\tsize\n");
@@ -313,6 +315,19 @@ void dump_crtcs(void)
 		       crtc->x, crtc->y,
 		       crtc->width, crtc->height);
 		dump_mode(&crtc->mode);
+
+		printf("  props:\n");
+		props = drmModeObjectGetProperties(fd, crtc->crtc_id,
+						   DRM_MODE_OBJECT_CRTC);
+		if (props) {
+			for (j = 0; j < props->count_props; j++)
+				dump_prop(props->props[j],
+					  props->prop_values[j]);
+			drmModeFreeObjectProperties(props);
+		} else {
+			printf("\tcould not get crtc properties: %s\n",
+			       strerror(errno));
+		}
 
 		drmModeFreeCrtc(crtc);
 	}
