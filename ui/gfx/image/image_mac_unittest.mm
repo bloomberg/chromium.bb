@@ -79,8 +79,8 @@ TEST_F(ImageMacTest, MultiResolutionSkBitmapToNSImage) {
   const int height2 = 24;
 
   std::vector<const SkBitmap*> bitmaps;
-  bitmaps.push_back(gt::CreateBitmap(width1, height1));
-  bitmaps.push_back(gt::CreateBitmap(width2, height2));
+  bitmaps.push_back(new SkBitmap(gt::CreateBitmap(width1, height1)));
+  bitmaps.push_back(new SkBitmap(gt::CreateBitmap(width2, height2)));
   gfx::Image image(bitmaps);
 
   EXPECT_EQ(1u, image.RepresentationCount());
