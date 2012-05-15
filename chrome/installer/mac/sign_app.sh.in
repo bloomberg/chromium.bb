@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -45,8 +45,15 @@ helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 helper_eh_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper EH.app"
 helper_np_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper NP.app"
 
+requirement_string="\
+(identifier \"com.google.Chrome\" or identifier \"com.google.Chrome.canary\") \
+and (certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\" or \
+certificate leaf = H\"9481882581d8178db8b1649c0eaa4f9eb11288f0\")\
+"
+
 codesign -s "${codesign_id}" --keychain "${codesign_keychain}" \
-    "${browser_app}" --resource-rules "${browser_app_rules}"
+    "${browser_app}" --resource-rules "${browser_app_rules}" \
+    -r="${requirement_string}"
 
 # Verify everything. Check the framework and helper apps to make sure that the
 # signatures are present and weren't altered by the signing process.
