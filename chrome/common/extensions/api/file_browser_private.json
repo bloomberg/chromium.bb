@@ -868,6 +868,7 @@
                 "name": "result",
                 "type": "object",
                 "properties": {
+                  "driveEnabled": {"type":"boolean"},
                   "cellularDisabled": {"type":"boolean"},
                   "hostedFilesDisabled": {"type":"boolean"}
                 }

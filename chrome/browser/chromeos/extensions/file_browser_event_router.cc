@@ -158,6 +158,7 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
   pref_change_registrar_->Init(profile_->GetPrefs());
   pref_change_registrar_->Add(prefs::kDisableGDataOverCellular, this);
   pref_change_registrar_->Add(prefs::kDisableGDataHostedFiles, this);
+  pref_change_registrar_->Add(prefs::kDisableGData, this);
 }
 
 // File watch setup routines.
@@ -509,6 +510,10 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
       mount_info_value->SetString("mountPath",
                                   "/" + relative_mount_path.value());
       relative_mount_path_set = true;
+    } else {
+      LOG(ERROR) << "Mount path is not accessible: " << mount_info.mount_path;
+      mount_info_value->SetString("status",
+          MountErrorToString(chromeos::MOUNT_ERROR_PATH_UNMOUNTED));
     }
   }
 

@@ -371,7 +371,14 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.onFileChanged.addListener(
         this.onFileChanged_.bind(this));
 
-    this.networkConnectionState_ = null;
+    var queryGDataPreferences = function() {
+      chrome.fileBrowserPrivate.getGDataPreferences(
+          this.onGDataPreferencesChanged_.bind(this));
+    }.bind(this);
+    queryGDataPreferences();
+    chrome.fileBrowserPrivate.onGDataPreferencesChanged.
+        addListener(queryGDataPreferences);
+
     var queryNetworkConnectionState = function() {
       chrome.fileBrowserPrivate.getNetworkConnectionState(
           this.onNetworkConnectionChanged_.bind(this));
@@ -402,6 +409,9 @@ FileManager.prototype = {
       this.setupCurrentDirectory_(
           invokeHandler, true /* blankWhileOpeningAFile */);
     }
+
+    if (this.isGDataEnabled())
+      this.setupGDataWelcome_();
 
     this.summarizeSelection_();
 
@@ -579,15 +589,6 @@ FileManager.prototype = {
     this.hostedButton.addEventListener('click', this.onGDataPrefClick_.bind(
         this, 'hostedFilesDisabled', true /* inverted */));
 
-    this.gdataPreferences_ = null;
-    var queryGDataPreferences = function() {
-      chrome.fileBrowserPrivate.getGDataPreferences(
-          this.onGDataPreferencesChanged_.bind(this));
-    }.bind(this);
-    queryGDataPreferences();
-    chrome.fileBrowserPrivate.onGDataPreferencesChanged.
-        addListener(queryGDataPreferences);
-
     cr.ui.ComboButton.decorate(this.taskItems_);
     this.taskItems_.addEventListener('select',
         this.onTaskItemClicked_.bind(this));
@@ -617,19 +618,15 @@ FileManager.prototype = {
     this.emptyDataModel_ = new cr.ui.ArrayDataModel([]);
     this.emptySelectionModel_ = new cr.ui.ListSelectionModel();
 
-    var sigleSelection =
+    var singleSelection =
         this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
         this.dialogType_ == FileManager.DialogType.SELECT_FOLDER ||
         this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE;
 
     this.directoryModel_ = new DirectoryModel(
         this.filesystem_.root,
-        sigleSelection,
-        FileManager.isGDataEnabled(),
+        singleSelection,
         this.metadataCache_);
-
-    if (FileManager.isGDataEnabled())
-      this.initGDataWelcomeBanners_();
 
     var dataModel = this.directoryModel_.getFileList();
     var collator = this.collator_;
@@ -683,7 +680,7 @@ FileManager.prototype = {
     this.rootsList_.dataModel = this.directoryModel_.getRootsList();
     this.directoryModel_.updateRoots(function() {
         self.rootsList_.endBatchUpdates();
-    }, false);
+    }, this.getGDataAccessMode_());
   };
 
   /**
@@ -740,6 +737,9 @@ FileManager.prototype = {
 
   FileManager.prototype.onGDataUnreachable_ = function(message) {
     console.warn(message);
+    this.gdataMounted_ = false;
+    this.gdataMountInfo_ = null;
+    this.clearGDataLoadingTimer_();
     if (this.isOnGData()) {
       this.unmountedPanel_.removeAttribute('loading');
       this.unmountedPanel_.setAttribute('error', true);
@@ -2339,8 +2339,31 @@ FileManager.prototype = {
     }
   };
 
-  FileManager.isGDataEnabled = function() {
-    return str('ENABLE_GDATA') == '1';
+  FileManager.prototype.isGDataEnabled = function() {
+    return this.getGDataPreferences_().driveEnabled;
+  };
+
+  FileManager.prototype.updateGDataAccess_ = function() {
+    if (this.isGDataEnabled())
+      this.setupGDataWelcome_();
+    else
+      this.cleanupGDataWelcome_();
+
+    var changeDirectory = !this.isGDataEnabled() && this.isOnGData();
+
+    this.directoryModel_.updateRoots(function() {
+      if (changeDirectory)
+        this.directoryModel_.changeDirectory(
+            this.directoryModel_.getDefaultDirectory());
+    }.bind(this), this.getGDataAccessMode_());
+  };
+
+  FileManager.prototype.getGDataAccessMode_ = function() {
+     if (!this.isGDataEnabled())
+       return DirectoryModel.GDATA_ACCESS_DISABLED;
+     if (!this.gdataMounted_)
+       return DirectoryModel.GDATA_ACCESS_LAZY;
+     return DirectoryModel.GDATA_ACCESS_FULL;
   };
 
   FileManager.prototype.isOnGData = function() {
@@ -2352,7 +2375,7 @@ FileManager.prototype = {
   FileManager.prototype.isStartingOnGData_ = function() {
     var path = this.getPathFromUrlOrParams_();
     return path &&
-        FileManager.isGDataEnabled() &&
+        this.isGDataEnabled() &&
         DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA;
   };
 
@@ -2585,15 +2608,28 @@ FileManager.prototype = {
     }
   };
 
+  FileManager.prototype.getGDataPreferences_ = function() {
+    return this.gdataPreferences_ ||
+      { driveEnabled: str('ENABLE_GDATA') == '1' };
+  };
+
+  FileManager.prototype.getNetworkConnectionState_ = function() {
+    return this.networkConnectionState_ || {};
+  };
+
   FileManager.prototype.onNetworkConnectionChanged_ = function(state) {
-    console.log(state.online, state.type);
+    console.log(state.online ? 'online' : 'offline', state.type);
     this.networkConnectionState_ = state;
     this.directoryModel_.setOffline(!state.online);
     this.updateConnectionState_();
   };
 
   FileManager.prototype.onGDataPreferencesChanged_ = function(preferences) {
+    var gdataWasEnabled = this.isGDataEnabled();
     this.gdataPreferences_ = preferences;
+    if (gdataWasEnabled != this.isGDataEnabled())
+      this.updateGDataAccess_();
+
     if (preferences.cellularDisabled)
       this.syncButton.setAttribute('checked', 'checked');
     else
@@ -2617,15 +2653,13 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isOnMeteredConnection = function() {
-    return this.gdataPreferences_ &&
-        this.gdataPreferences_.cellularDisabled &&
-        this.networkConnectionState_ &&
-        this.networkConnectionState_.online &&
-        this.networkConnectionState_.type == 'cellular';
+    return this.getGDataPreferences_().cellularDisabled &&
+        this.getNetworkConnectionState_().online &&
+        this.getNetworkConnectionState_().type == 'cellular';
   };
 
   FileManager.prototype.isOffline = function() {
-    return this.networkConnectionState_ && !this.networkConnectionState_.online;
+    return !this.getNetworkConnectionState_().online;
   };
 
   FileManager.prototype.isOnReadonlyDirectory = function() {
@@ -2662,9 +2696,6 @@ FileManager.prototype = {
           changeDirectoryTo = this.directoryModel_.getCurrentRootPath();
         }
       } else {
-        this.gdataMounted_ = false;
-        this.gdataMountInfo_ = null;
-        this.clearGDataLoadingTimer_();
         this.onGDataUnreachable_('GData ' +
             (mounted ? ('mount failed: ' + event.status) : 'unmounted'));
         if (this.setupCurrentDirectoryPostponed_) {
@@ -2729,7 +2760,7 @@ FileManager.prototype = {
         if (changeDirectoryTo) {
           this.directoryModel_.changeDirectory(changeDirectoryTo);
         }
-      }.bind(this), this.gdataMounted_);
+      }.bind(this), this.getGDataAccessMode_());
     }.bind(this));
   };
 
@@ -3522,7 +3553,10 @@ FileManager.prototype = {
     if (this.isOnGData()) {
       this.dialogContainer_.setAttribute('gdata', true);
       if (event.newDirEntry.unmounted) {
-        this.initGData_(true /* directory changed */);
+        if (event.newDirEntry.error)
+          this.onGDataUnreachable_('File error ' + event.newDirEntry.error);
+        else
+          this.initGData_(true /* directory changed */);
       }
     } else {
       this.dialogContainer_.removeAttribute('gdata');
@@ -4378,7 +4412,36 @@ FileManager.prototype = {
     customSplitter.decorate(splitterElement);
   };
 
-  FileManager.prototype.initGDataWelcomeBanners_ = function() {
+  FileManager.prototype.setupGDataWelcome_ = function() {
+    this.gdataWelcomeHandler_ = this.createGDataWelcomeHandler_();
+    if (this.gdataWelcomeHandler_) {
+      this.directoryModel_.addEventListener('scan-completed',
+          this.gdataWelcomeHandler_);
+      this.directoryModel_.addEventListener('rescan-completed',
+          this.gdataWelcomeHandler_);
+    }
+  };
+
+  FileManager.prototype.cleanupGDataWelcome_ = function() {
+    this.showGDataWelcome_('none');
+
+    if (this.gdataWelcomeHandler_) {
+      this.directoryModel_.removeEventListener('scan-completed',
+          this.gdataWelcomeHandler_);
+      this.directoryModel_.removeEventListener('rescan-completed',
+          this.gdataWelcomeHandler_);
+      this.gdataWelcomeHandler_ = null;
+    }
+  };
+
+  FileManager.prototype.showGDataWelcome_ = function(type) {
+    if (this.dialogContainer_.getAttribute('gdrive-welcome') != type) {
+      this.dialogContainer_.setAttribute('gdrive-welcome', type);
+      this.requestResize_(200);  // Resize only after the animation is done.
+    }
+  };
+
+  FileManager.prototype.createGDataWelcomeHandler_ = function() {
     var WELCOME_HEADER_COUNTER_KEY = 'gdataWelcomeHeaderCounter';
     var WELCOME_HEADER_COUNTER_LIMIT = 5;
 
@@ -4387,7 +4450,7 @@ FileManager.prototype = {
     }
 
     if (getHeaderCounter() >= WELCOME_HEADER_COUNTER_LIMIT)
-      return;
+      return null;
 
     function createDiv(className, parent) {
       var div = parent.ownerDocument.createElement('div');
@@ -4398,11 +4461,18 @@ FileManager.prototype = {
 
     var self = this;
 
-    var RESIZE_DELAY = 200; // Resize only after the animation is done.
-
     function showBanner(type, messageId) {
-      self.dialogContainer_.setAttribute('gdrive-welcome', type);
-      self.requestResize_(RESIZE_DELAY);
+      if (!self.dialogContainer_.hasAttribute('gdrive-welcome-style')) {
+        self.dialogContainer_.setAttribute('gdrive-welcome-style', true);
+        var style = self.document_.createElement('link');
+        style.rel = 'stylesheet';
+        style.href = 'css/gdrive_welcome.css';
+        self.document_.head.appendChild(style);
+        style.onload = function() { showBanner(type, messageId) };
+        return;
+      }
+
+      self.showGDataWelcome_(type);
 
       var container = self.dialogDom_.querySelector('.gdrive-welcome.' + type);
       if (container.firstElementChild)
@@ -4439,8 +4509,7 @@ FileManager.prototype = {
 
     function maybeShowBanner() {
       if (!self.isOnGData()) {
-        self.dialogContainer_.removeAttribute('gdrive-welcome');
-        self.requestResize_(RESIZE_DELAY);
+        self.showGDataWelcome_('none');
         previousDirWasOnGData = false;
         return;
       }
@@ -4465,24 +4534,11 @@ FileManager.prototype = {
     }
 
     function closeBanner() {
-      self.directoryModel_.removeEventListener('scan-completed',
-          maybeShowBanner);
-      self.directoryModel_.removeEventListener('rescan-completed',
-          maybeShowBanner);
-
-      self.dialogContainer_.removeAttribute('gdrive-welcome');
-      self.requestResize_(RESIZE_DELAY);
-
+      self.cleanupGDataWelcome_();
       // Stop showing the welcome banner.
       localStorage[WELCOME_HEADER_COUNTER_KEY] = WELCOME_HEADER_COUNTER_LIMIT;
     }
 
-    this.directoryModel_.addEventListener('scan-completed', maybeShowBanner);
-    this.directoryModel_.addEventListener('rescan-completed', maybeShowBanner);
-
-    var style = this.document_.createElement('link');
-    style.rel = 'stylesheet';
-    style.href = 'css/gdrive_welcome.css';
-    this.document_.head.appendChild(style);
+    return maybeShowBanner;
   };
 })();

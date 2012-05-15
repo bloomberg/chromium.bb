@@ -15,18 +15,14 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {DirectoryEntry} root File system root.
  * @param {boolean} singleSelection True if only one file could be selected
  *                                  at the time.
- * @param {boolean} showGData Defines whether GData root should be should
- *   (regardless of its mounts status).
  * @param {MetadataCache} metadataCache The metadata cache service.
  */
-function DirectoryModel(root, singleSelection, showGData, metadataCache) {
+function DirectoryModel(root, singleSelection, metadataCache) {
   this.root_ = root;
   this.metadataCache_ = metadataCache;
   this.fileList_ = new cr.ui.ArrayDataModel([]);
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
-
-  this.showGData_ = showGData;
 
   this.runningScan_ = null;
   this.pendingScan_ = null;
@@ -93,6 +89,21 @@ DirectoryModel.DOWNLOADS_DIRECTORY = 'Downloads';
 * The name of the gdata provider directory.
 */
 DirectoryModel.GDATA_DIRECTORY = 'drive';
+
+/**
+ * GData access mode: disabled (no GData root displayed in the list).
+ */
+DirectoryModel.GDATA_ACCESS_DISABLED = 0;
+
+/**
+ * GData access mode: lazy (GData root displayed, no content is fetched yet).
+ */
+DirectoryModel.GDATA_ACCESS_LAZY = 1;
+
+/**
+ * GData access mode: full (GData root displayed, content is available).
+ */
+DirectoryModel.GDATA_ACCESS_FULL = 2;
 
 /**
  * DirectoryModel extends cr.EventTarget.
@@ -958,9 +969,9 @@ DirectoryModel.prototype.prepareSortEntries_ = function(entries, field,
  * Get root entries asynchronously.
  * @private
  * @param {function(Array.<Entry>)} callback Called when roots are resolved.
- * @param {boolean} resolveGData See comment for updateRoots.
+ * @param {number} gdataAccess One of GDATA_ACCESS_* constants.
  */
-DirectoryModel.prototype.resolveRoots_ = function(callback, resolveGData) {
+DirectoryModel.prototype.resolveRoots_ = function(callback, gdataAccess) {
   var groups = {
     downloads: null,
     archives: null,
@@ -998,17 +1009,18 @@ DirectoryModel.prototype.resolveRoots_ = function(callback, resolveGData) {
     done();
   }
 
-  function onGData(entry) {
-    console.log('GData found:', entry);
+  function onGDataMounted(entry) {
+    console.log('GData mounted:', entry);
     self.unmountedGDataEntry_ = null;
     groups.gdata = [entry];
     done();
   }
 
-  function onGDataError(error) {
-    console.log('GData error: ' + error);
+  function onGDataNotMounted(error) {
+    console.log('GData not mounted: ' + (error || 'lazy'));
     self.unmountedGDataEntry_ = {
       unmounted: true,  // Clients use this field to distinguish a fake root.
+      error: error,
       toURL: function() { return '' },
       fullPath: '/' + DirectoryModel.GDATA_DIRECTORY
     };
@@ -1023,25 +1035,22 @@ DirectoryModel.prototype.resolveRoots_ = function(callback, resolveGData) {
                      append.bind(this, 'archives'));
   util.readDirectory(root, DirectoryModel.REMOVABLE_DIRECTORY,
                      append.bind(this, 'removables'));
-  if (this.showGData_) {
-    if (resolveGData) {
-      root.getDirectory(DirectoryModel.GDATA_DIRECTORY, { create: false },
-                        onGData, onGDataError);
-    } else {
-      onGDataError('lazy mount');
-    }
+
+  if (gdataAccess == DirectoryModel.GDATA_ACCESS_FULL) {
+    root.getDirectory(DirectoryModel.GDATA_DIRECTORY, { create: false },
+                      onGDataMounted, onGDataNotMounted);
+  } else if (gdataAccess == DirectoryModel.GDATA_ACCESS_LAZY) {
+    onGDataNotMounted();
   } else {
     groups.gdata = [];
   }
 };
 
 /**
-* @param {function} opt_callback Called when all roots are resolved.
-* @param {boolean} opt_resolveGData If true GData should be resolved for real,
-*                                   If false a stub entry should be created.
-*/
-DirectoryModel.prototype.updateRoots = function(opt_callback,
-                                                opt_resolveGData) {
+ * @param {function} callback Called when all roots are resolved.
+ * @param {number} gdataAccess One of GDATA_ACCESS_* constants.
+ */
+DirectoryModel.prototype.updateRoots = function(callback, gdataAccess) {
   var self = this;
   this.resolveRoots_(function(rootEntries) {
     var dm = self.rootsList_;
@@ -1050,9 +1059,8 @@ DirectoryModel.prototype.updateRoots = function(opt_callback,
 
     self.updateRootsListSelection_();
 
-    if (opt_callback)
-      opt_callback();
-  }, opt_resolveGData);
+    callback();
+  }, gdataAccess);
 };
 
 /**

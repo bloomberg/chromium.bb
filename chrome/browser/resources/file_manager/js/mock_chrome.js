@@ -26,6 +26,14 @@ MockEventSource.prototype.notify = function(var_args) {
   }.bind(this, arguments), 0);
 };
 
+function cloneShallow(object) {
+  var clone = {};
+  for (var key in object)
+    if (object.hasOwnProperty(key))
+      clone[key] = object[key];
+  return clone;
+}
+
 /**
  * Mock out the chrome.fileBrowserPrivate API for use in the harness.
  */
@@ -327,6 +335,7 @@ chrome.fileBrowserPrivate = {
   },
 
   gdataPreferences_: {
+    driveEnabled: true,
     cellularDisabled: true,
     hostedFilesDisabled: false
   },
@@ -334,7 +343,8 @@ chrome.fileBrowserPrivate = {
   onGDataPreferencesChanged: new MockEventSource(),
 
   getGDataPreferences: function(callback) {
-    setTimeout(callback, 0, chrome.fileBrowserPrivate.gdataPreferences_);
+    setTimeout(callback, 0, cloneShallow(
+        chrome.fileBrowserPrivate.gdataPreferences_));
   },
 
   setGDataPreferences: function(preferences) {
@@ -352,7 +362,8 @@ chrome.fileBrowserPrivate = {
   onNetworkConnectionChanged: new MockEventSource(),
 
   getNetworkConnectionState: function(callback) {
-    setTimeout(callback, 0, chrome.fileBrowserPrivate.networkConnectionState_);
+    setTimeout(callback, 0, cloneShallow(
+        chrome.fileBrowserPrivate.networkConnectionState_));
   },
 
   setConnectionState_: function(state) {
@@ -389,7 +400,7 @@ chrome.fileBrowserPrivate = {
   getStrings: function(callback) {
     // Keep this list in sync with the strings in generated_resources.grd and
     // extension_file_browser_private_api.cc!
-    callback({
+    setTimeout(callback, 0, {
       // These two are from locale_settings*.grd
       WEB_FONT_FAMILY: 'Open Sans,Chrome Droid Sans,' +
                        'Droid Sans Fallback,sans-serif',

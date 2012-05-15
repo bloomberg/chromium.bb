@@ -32,9 +32,6 @@ class RequestLocalFileSystemFunction : public AsyncExtensionFunction {
  private:
   class LocalFileSystemCallbackDispatcher;
 
-  // Adds gdata mount point.
-  void AddGDataMountPoint();
-
   void RespondSuccessOnUIThread(const std::string& name,
                                 const GURL& root_path);
   void RespondFailedOnUIThread(base::PlatformFileError error_code);

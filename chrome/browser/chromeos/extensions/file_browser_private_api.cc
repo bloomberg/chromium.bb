@@ -179,6 +179,55 @@ void GrantFilePermissionsToHost(content::RenderViewHost* host,
       host->GetProcess()->GetID(), path, permissions);
 }
 
+void AddGDataMountPoint(
+    Profile* profile,
+    const std::string& extension_id,
+    content::RenderViewHost* render_view_host) {
+  fileapi::ExternalFileSystemMountPointProvider* provider =
+      BrowserContext::GetFileSystemContext(profile)->external_provider();
+  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
+  if (!render_view_host || !render_view_host->GetProcess())
+    return;
+  if (!provider || provider->HasMountPoint(mount_point))
+    return;
+
+  // Grant R/W permissions to gdata 'folder'. File API layer still
+  // expects this to be satisfied.
+  GrantFilePermissionsToHost(render_view_host,
+                             mount_point,
+                             file_handler_util::GetReadWritePermissions());
+
+  // Grant R/W permission for tmp and pinned cache folder.
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile);
+  // |system_service| is NULL if incognito window / guest login.
+  if (!system_service || !system_service->file_system())
+    return;
+  gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
+
+  // We check permissions for raw cache file paths only for read-only
+  // operations (when fileEntry.file() is called), so read only permissions
+  // should be sufficient for all cache paths. For the rest of supported
+  // operations the file access check is done for drive/ paths.
+  GrantFilePermissionsToHost(render_view_host,
+                             gdata_file_system->GetCacheDirectoryPath(
+                                 gdata::GDataRootDirectory::CACHE_TYPE_TMP),
+                             file_handler_util::GetReadOnlyPermissions());
+  GrantFilePermissionsToHost(
+      render_view_host,
+      gdata_file_system->GetCacheDirectoryPath(
+          gdata::GDataRootDirectory::CACHE_TYPE_PERSISTENT),
+      file_handler_util::GetReadOnlyPermissions());
+
+  provider->AddRemoteMountPoint(
+      mount_point,
+      new gdata::GDataFileSystemProxy(gdata_file_system));
+
+  FilePath mount_point_virtual;
+  if (provider->GetVirtualPath(mount_point, &mount_point_virtual))
+    provider->GrantFileAccessToExtension(extension_id, mount_point_virtual);
+}
+
 // Given a file url, find the virtual FilePath associated with it.
 FilePath GetVirtualPathFromURL(const GURL& file_url) {
   FilePath virtual_path;
@@ -328,59 +377,13 @@ void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
   // manager. The actual mount event will be sent to UI only when we perform
   // proper authentication.
   if (gdata::util::IsGDataAvailable(profile_))
-    AddGDataMountPoint();
+    AddGDataMountPoint(profile_, extension_id(), render_view_host());
   result_.reset(new DictionaryValue());
   DictionaryValue* dict = reinterpret_cast<DictionaryValue*>(result_.get());
   dict->SetString("name", name);
   dict->SetString("path", root_path.spec());
   dict->SetInteger("error", base::PLATFORM_FILE_OK);
   SendResponse(true);
-}
-
-void RequestLocalFileSystemFunction::AddGDataMountPoint() {
-  fileapi::ExternalFileSystemMountPointProvider* provider =
-      BrowserContext::GetFileSystemContext(profile_)->external_provider();
-  const FilePath mount_point = gdata::util::GetGDataMountPointPath();
-  if (!render_view_host() || !render_view_host()->GetProcess())
-    return;
-  if (!provider || provider->HasMountPoint(mount_point))
-    return;
-
-  // Grant R/W permissions to gdata 'folder'. File API layer still
-  // expects this to be satisfied.
-  GrantFilePermissionsToHost(render_view_host(),
-                             mount_point,
-                             file_handler_util::GetReadWritePermissions());
-
-  // Grant R/W permission for tmp and pinned cache folder.
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  // |system_service| is NULL if incognito window / guest login.
-  if (!system_service || !system_service->file_system())
-    return;
-  gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
-
-  // We check permissions for raw cache file paths only for read-only
-  // operations (when fileEntry.file() is called), so read only permissions
-  // should be sufficient for all cache paths. For the rest of supported
-  // operations the file access check is done for drive/ paths.
-  GrantFilePermissionsToHost(render_view_host(),
-                             gdata_file_system->GetCacheDirectoryPath(
-                                 gdata::GDataRootDirectory::CACHE_TYPE_TMP),
-                             file_handler_util::GetReadOnlyPermissions());
-  GrantFilePermissionsToHost(
-      render_view_host(),
-      gdata_file_system->GetCacheDirectoryPath(
-          gdata::GDataRootDirectory::CACHE_TYPE_PERSISTENT),
-      file_handler_util::GetReadOnlyPermissions());
-
-  provider->AddRemoteMountPoint(
-      mount_point,
-      new gdata::GDataFileSystemProxy(gdata_file_system));
-
-  FilePath mount_point_virtual;
-  if (provider->GetVirtualPath(mount_point, &mount_point_virtual))
-    provider->GrantFileAccessToExtension(extension_id(), mount_point_virtual);
 }
 
 void RequestLocalFileSystemFunction::RespondFailedOnUIThread(
@@ -2030,6 +2033,13 @@ bool GetGDataPreferencesFunction::RunImpl() {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
 
   const PrefService* service = profile_->GetPrefs();
+
+  bool driveEnabled = gdata::util::IsGDataAvailable(profile_);
+
+  if (driveEnabled)
+    AddGDataMountPoint(profile_, extension_id(), render_view_host());
+
+  value->SetBoolean("driveEnabled", driveEnabled);
 
   value->SetBoolean("cellularDisabled",
                     service->GetBoolean(prefs::kDisableGDataOverCellular));
