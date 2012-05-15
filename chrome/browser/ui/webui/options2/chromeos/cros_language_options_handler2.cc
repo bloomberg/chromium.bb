@@ -205,7 +205,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
 }
 
 string16 CrosLanguageOptionsHandler::GetProductName() {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME);
+  return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
 }
 
 void CrosLanguageOptionsHandler::SetApplicationLocale(

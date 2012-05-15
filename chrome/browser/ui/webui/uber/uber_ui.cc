@@ -91,9 +91,9 @@ ChromeWebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
   source->add_resource_path("uber_frame.js", IDR_UBER_FRAME_JS);
   source->set_default_resource(IDR_UBER_FRAME_HTML);
 
-  // TODO(jhawkins): Attempt to get rid of IDS_PRODUCT_OS_NAME.
+  // TODO(jhawkins): Attempt to get rid of IDS_SHORT_PRODUCT_OS_NAME.
 #if defined(OS_CHROMEOS)
-  source->AddLocalizedString("shortProductName", IDS_PRODUCT_OS_NAME);
+  source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_OS_NAME);
 #else
   source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
 #endif  // defined(OS_CHROMEOS)

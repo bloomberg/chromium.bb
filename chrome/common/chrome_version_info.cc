@@ -119,7 +119,7 @@ std::string VersionInfo::OSType() const {
   return "Mac OS X";
 #elif defined(OS_CHROMEOS)
   if (ui::ResourceBundle::HasSharedInstance())
-    return UTF16ToASCII(l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
+    return UTF16ToASCII(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
   else
     return "Chromium OS";
 #elif defined(OS_LINUX)

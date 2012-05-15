@@ -124,7 +124,11 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   static L10nResources resources[] = {
     { "helpTitle", IDS_HELP_TITLE },
     { "aboutTitle", IDS_ABOUT_TAB_TITLE },
+#if defined(OS_CHROMEOS)
+    { "aboutProductTitle", IDS_PRODUCT_OS_NAME },
+#else
     { "aboutProductTitle", IDS_PRODUCT_NAME },
+#endif
     { "aboutProductDescription", IDS_ABOUT_PRODUCT_DESCRIPTION },
     { "relaunch", IDS_RELAUNCH_BUTTON },
     { "productName", IDS_PRODUCT_NAME },

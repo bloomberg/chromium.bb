@@ -215,6 +215,9 @@ be available for now. -->
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Chromium OS
         </message>
+        <message name="IDS_SHORT_PRODUCT_OS_NAME" desc="The Chrome OS application short name">
+          Chromium OS
+        </message>
       </if>
       <if expr="is_win">
         <message name="IDS_PRODUCT_FRAME_NAME" desc="The Chrome Frame application name">

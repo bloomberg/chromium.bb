@@ -99,7 +99,7 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
   switch (error_msg_id) {
     case IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED:
       error_text = l10n_util::GetStringFUTF8(
-          error_msg_id, l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
+          error_msg_id, l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
       break;
     case IDS_LOGIN_ERROR_CAPTIVE_PORTAL:
       error_text = l10n_util::GetStringFUTF8(

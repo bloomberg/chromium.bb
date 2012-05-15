@@ -32,7 +32,7 @@ void UpdateRecommendedMessageBox::Show(gfx::NativeWindow parent_window) {
 UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
   const int kDialogWidth = 400;
 #if defined(OS_CHROMEOS)
-  const int kProductNameID = IDS_PRODUCT_OS_NAME;
+  const int kProductNameID = IDS_SHORT_PRODUCT_OS_NAME;
 #else
   const int kProductNameID = IDS_PRODUCT_NAME;
 #endif

@@ -136,6 +136,9 @@ Chrome supports. -->
       </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
+          Google Chrome OS
+        </message>
+        <message name="IDS_SHORT_PRODUCT_OS_NAME" desc="The Chrome OS application short name">
           Chrome OS
         </message>
       </if>
