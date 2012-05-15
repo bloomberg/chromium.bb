@@ -123,9 +123,8 @@ void TapSuppressionController::GestureFlingCancelAck(bool processed) {
       break;
     case GFC_IN_PROGRESS:
       if (processed)
-        state_ = LAST_CANCEL_STOPPED_FLING;
-      else
-        state_ = NOTHING;
+        fling_cancel_time_ = base::TimeTicks::Now();
+      state_ = LAST_CANCEL_STOPPED_FLING;
       break;
     case MD_STASHED:
       if (!processed) {
@@ -144,7 +143,6 @@ void TapSuppressionController::GestureFlingCancel(double cancel_time) {
     case NOTHING:
     case GFC_IN_PROGRESS:
     case LAST_CANCEL_STOPPED_FLING:
-      fling_cancel_time_ = base::TimeTicks::Now();
       state_ = GFC_IN_PROGRESS;
       break;
     case MD_STASHED:
