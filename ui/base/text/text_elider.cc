@@ -793,6 +793,7 @@ class RectangleText {
         wrap_behavior_(wrap_behavior),
         current_width_(0),
         current_height_(0),
+        last_line_ended_in_lf_(false),
         lines_(lines),
         full_(false) {}
 
@@ -812,9 +813,6 @@ class RectangleText {
   bool Finalize();
 
  private:
-  // Returns |true| if |text| is entirely composed of whitespace.
-  bool IsWhitespaceString(const string16& text) const;
-
   // Add a line to the rectangular region at the current position,
   // either by itself or by breaking it into words.
   void AddLine(const string16& line);
@@ -863,6 +861,9 @@ class RectangleText {
   // The current line of text.
   string16 current_line_;
 
+  // Indicates whether the last line ended with \n.
+  bool last_line_ended_in_lf_;
+
   // The output vector of lines.
   std::vector<string16>* lines_;
 
@@ -881,7 +882,8 @@ void RectangleText::AddString(const string16& input) {
       // The BREAK_NEWLINE iterator will keep the trailing newline character,
       // except in the case of the last line, which may not have one.  Remove
       // the newline character, if it exists.
-      if (!line.empty() && line[line.length() - 1] == '\n')
+      last_line_ended_in_lf_ = !line.empty() && line[line.length() - 1] == '\n';
+      if (last_line_ended_in_lf_)
         line.resize(line.length() - 1);
       AddLine(line);
     }
@@ -895,14 +897,12 @@ bool RectangleText::Finalize() {
   // completely, if it's just whitespace.
   if (!full_ && !lines_->empty()) {
     TrimWhitespace(lines_->back(), TRIM_TRAILING, &lines_->back());
-    if (lines_->back().empty())
+    if (lines_->back().empty() && !last_line_ended_in_lf_)
       lines_->pop_back();
   }
+  if (last_line_ended_in_lf_)
+    lines_->push_back(string16());
   return full_;
-}
-
-bool RectangleText::IsWhitespaceString(const string16& text) const {
-  return text.find_first_not_of(kWhitespaceUTF16) == string16::npos;
 }
 
 void RectangleText::AddLine(const string16& line) {
@@ -925,7 +925,7 @@ void RectangleText::AddLine(const string16& line) {
             const int line = lines_->size() - lines_added;
             TrimWhitespace(lines_->at(line), TRIM_TRAILING, &lines_->at(line));
           }
-          if (IsWhitespaceString(word)) {
+          if (ContainsOnlyWhitespace(word)) {
             // Skip the first space if the previous line was carried over.
             current_width_ = 0;
             current_line_.clear();
@@ -996,7 +996,8 @@ int RectangleText::AddWord(const string16& word) {
     // Append the non-trimmed word, in case more words are added after.
     AddToCurrentLine(word);
   } else {
-    lines_added = AddWordOverflow(word);
+    lines_added = AddWordOverflow(wrap_behavior_ == ui::IGNORE_LONG_WORDS ?
+                                  trimmed : word);
   }
   return lines_added;
 }

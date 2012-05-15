@@ -530,6 +530,14 @@ TEST(TextEliderTest, ElideRectangleText) {
     { "\nTest", test_width, line_height, true, "" },
     { "\n\nTest", test_width, line_height * 3, false, "||Test" },
     { "\n\nTest", test_width, line_height * 2, true, "|" },
+    { "Test\n", 2 * test_width, line_height * 5, false, "Test|" },
+    { "Test\n\n", 2 * test_width, line_height * 5, false, "Test||" },
+    { "Test\n\n\n", 2 * test_width, line_height * 5, false, "Test|||" },
+    { "Test\nTest\n\n", 2 * test_width, line_height * 5, false, "Test|Test||" },
+    { "Test\n\nTest\n", 2 * test_width, line_height * 5, false, "Test||Test|" },
+    { "Test\n\n\nTest", 2 * test_width, line_height * 5, false, "Test|||Test" },
+    { "Te ", test_width, line_height, false, "Te" },
+    { "Te  Te Test", test_width, 3 * line_height, false, "Te|Te|Test" },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
@@ -541,10 +549,12 @@ TEST(TextEliderTest, ElideRectangleText) {
                                  cases[i].available_pixel_height,
                                  TRUNCATE_LONG_WORDS,
                                  &lines));
-    if (cases[i].output)
-      EXPECT_EQ(cases[i].output, UTF16ToUTF8(JoinString(lines, '|')));
-    else
-      EXPECT_TRUE(lines.empty());
+    if (cases[i].output) {
+      const std::string result = UTF16ToUTF8(JoinString(lines, '|'));
+      EXPECT_EQ(cases[i].output, result) << "Case " << i << " failed!";
+    } else {
+      EXPECT_TRUE(lines.empty()) << "Case " << i << " failed!";
+    }
   }
 }
 
@@ -579,10 +589,12 @@ TEST(TextEliderTest, ElideRectangleTextPunctuation) {
                                  cases[i].available_pixel_height,
                                  wrap_behavior,
                                  &lines));
-    if (cases[i].output)
-      EXPECT_EQ(cases[i].output, UTF16ToUTF8(JoinString(lines, '|')));
-    else
-      EXPECT_TRUE(lines.empty());
+    if (cases[i].output) {
+      const std::string result = UTF16ToUTF8(JoinString(lines, '|'));
+      EXPECT_EQ(cases[i].output, result) << "Case " << i << " failed!";
+    } else {
+      EXPECT_TRUE(lines.empty()) << "Case " << i << " failed!";
+    }
   }
 }
 
@@ -638,7 +650,8 @@ TEST(TextEliderTest, ElideRectangleTextLongWords) {
                        &lines);
     std::string expected_output(cases[i].output);
     ReplaceSubstringsAfterOffset(&expected_output, 0, "...", kEllipsis);
-    EXPECT_EQ(expected_output, UTF16ToUTF8(JoinString(lines, '|')));
+    const std::string result = UTF16ToUTF8(JoinString(lines, '|'));
+    EXPECT_EQ(expected_output, result) << "Case " << i << " failed!";
   }
 }
 
