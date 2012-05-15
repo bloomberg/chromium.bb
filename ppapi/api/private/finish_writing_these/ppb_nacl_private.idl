@@ -6,20 +6,20 @@
 /* This file contains NaCl private interfaces. */
 
 /* PPB_NaCl_Private */
-interface PPB_NaCl_Private_0_2 {
+interface PPB_NaCl_Private_0_5 {
   /* This function launches NaCl's sel_ldr process.  On success, the function
    * returns true, otherwise it returns false.  When it returns true, it will
-   * write |socket_count| nacl::Handles to imc_handles and will write the
-   * nacl::Handle of the created process to |nacl_process_handle|.  Finally,
-   * the function will write the process ID of the created process to
-   * |nacl_process_id|.
+   * write |socket_count| nacl::Handles to imc_handles.
    */
-  bool LaunchSelLdr(
-      [in] str_t alleged_url,
-      [in] int32_t socket_count,
-      [out] mem_t imc_handles,
-      [out] mem_t nacl_process_handle,
-      [out] int32_t nacl_process_id);
+  bool LaunchSelLdr([in] PP_Instance instance,
+                    [in] str_t alleged_url,
+                    [in] int32_t socket_count,
+                    [out] mem_t imc_handles);
+
+  /* This function starts the PPAPI proxy so the nexe can communicate with the
+   * browser's renderer process.
+   */
+  bool StartPpapiProxy([in] PP_Instance instance);
 
   /* On POSIX systems, this function returns the file descriptor of
    * /dev/urandom.  On non-POSIX systems, this function returns 0.

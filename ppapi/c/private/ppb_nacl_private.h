@@ -5,10 +5,12 @@
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_UTIL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_UTIL_PRIVATE_H_
 
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_NACL_PRIVATE_INTERFACE "PPB_NaCl(Private);0.4"
+#define PPB_NACL_PRIVATE_INTERFACE "PPB_NaCl(Private);0.5"
 
 struct PPB_NaCl_Private {
   // This function launches NaCl's sel_ldr process.  On success, the function
@@ -16,8 +18,14 @@ struct PPB_NaCl_Private {
   // write |socket_count| nacl::Handles to imc_handles.  Unless
   // EnableBackgroundSelLdrLaunch is called, this method must be invoked from
   // the main thread.
-  bool (*LaunchSelLdr)(const char* alleged_url, int socket_count,
-                       void* imc_handles);
+  PP_Bool (*LaunchSelLdr)(PP_Instance instance,
+                          const char* alleged_url,
+                          int socket_count,
+                          void* imc_handles);
+
+  // This function starts the PPAPI proxy so the nexe can communicate with the
+  // browser's renderer process.
+  PP_Bool (*StartPpapiProxy)(PP_Instance instance);
 
   // On POSIX systems, this function returns the file descriptor of
   // /dev/urandom.  On non-POSIX systems, this function returns 0.

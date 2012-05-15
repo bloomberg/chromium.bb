@@ -628,11 +628,12 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
                  reinterpret_cast<void*>(nacl_desc)));
 
-  nacl::scoped_ptr<nacl::SelLdrLauncherBase> tmp_subprocess;
 #ifdef NACL_STANDALONE
-  tmp_subprocess.reset(new nacl::SelLdrLauncherStandalone());
+  nacl::scoped_ptr<nacl::SelLdrLauncherStandalone>
+      tmp_subprocess(new nacl::SelLdrLauncherStandalone());
 #else
-  tmp_subprocess.reset(new SelLdrLauncherChrome());
+  nacl::scoped_ptr<SelLdrLauncherChrome>
+      tmp_subprocess(new SelLdrLauncherChrome());
 #endif
   if (NULL == tmp_subprocess.get()) {
     PLUGIN_PRINTF(("ServiceRuntime::Start (subprocess create failed)\n"));
@@ -640,7 +641,12 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                           "ServiceRuntime: failed to create sel_ldr launcher");
     return false;
   }
-  if (!tmp_subprocess->Start(url.c_str())) {
+#ifdef NACL_STANDALONE
+  bool started = tmp_subprocess->Start(url.c_str());
+#else
+  bool started = tmp_subprocess->Start(plugin_->pp_instance(), url.c_str());
+#endif
+  if (!started) {
     PLUGIN_PRINTF(("ServiceRuntime::Start (start failed)\n"));
     error_info->SetReport(ERROR_SEL_LDR_LAUNCH,
                           "ServiceRuntime: failed to start");
