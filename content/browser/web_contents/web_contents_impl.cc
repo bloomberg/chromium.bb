@@ -1218,7 +1218,7 @@ void WebContentsImpl::OnSavePage() {
   if (!IsSavable()) {
     download_stats::RecordDownloadSource(
         download_stats::INITIATED_BY_SAVE_PACKAGE_ON_NON_HTML);
-    SaveURL(GetURL(), GURL(), true);
+    SaveURL(GetURL(), content::Referrer(), true);
     return;
   }
 
@@ -1748,7 +1748,8 @@ void WebContentsImpl::OnUpdateZoomLimits(int minimum_percent,
   temporary_zoom_settings_ = !remember;
 }
 
-void WebContentsImpl::OnSaveURL(const GURL& url) {
+void WebContentsImpl::OnSaveURL(const GURL& url,
+                                const content::Referrer& referrer) {
   download_stats::RecordDownloadSource(
       download_stats::INITIATED_BY_PEPPER_SAVE);
   // Check if the URL to save matches the URL of the main frame. Since this
@@ -1758,7 +1759,7 @@ void WebContentsImpl::OnSaveURL(const GURL& url) {
   if (!main_frame_url.is_valid())
     return;
   bool is_main_frame = (url == main_frame_url);
-  SaveURL(url, main_frame_url, is_main_frame);
+  SaveURL(url, referrer, is_main_frame);
 }
 
 void WebContentsImpl::OnEnumerateDirectory(int request_id,
@@ -2752,7 +2753,7 @@ void WebContentsImpl::SetEncoding(const std::string& encoding) {
 }
 
 void WebContentsImpl::SaveURL(const GURL& url,
-                              const GURL& referrer,
+                              const content::Referrer& referrer,
                               bool is_main_frame) {
   DownloadManager* dlm = GetBrowserContext()->GetDownloadManager();
   if (!dlm)
@@ -2767,7 +2768,8 @@ void WebContentsImpl::SaveURL(const GURL& url,
   save_info.prompt_for_save_location = true;
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(this, url, save_info));
-  params->set_referrer(referrer);
+  // TODO(jochen): Pass in the referrer policy as well.
+  params->set_referrer(referrer.url);
   params->set_post_id(post_id);
   params->set_prefer_cache(true);
   if (post_id >= 0)

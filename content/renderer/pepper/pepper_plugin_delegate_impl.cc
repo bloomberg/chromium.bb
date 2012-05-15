@@ -32,6 +32,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_hardware.h"
@@ -1256,8 +1257,11 @@ void PepperPluginDelegateImpl::SetContentRestriction(int restrictions) {
 }
 
 void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
+  WebFrame* frame = render_view_->webview()->mainFrame();
+  content::Referrer referrer(frame->document().url(),
+                             frame->document().referrerPolicy());
   render_view_->Send(new ViewHostMsg_SaveURLAs(
-      render_view_->routing_id(), url));
+      render_view_->routing_id(), url, referrer));
 }
 
 webkit_glue::P2PTransport* PepperPluginDelegateImpl::CreateP2PTransport() {

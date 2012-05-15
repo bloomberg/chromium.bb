@@ -455,7 +455,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
                           bool remember);
-  void OnSaveURL(const GURL& url);
+  void OnSaveURL(const GURL& url, const content::Referrer& referrer);
   void OnEnumerateDirectory(int request_id, const FilePath& path);
   void OnJSOutOfMemory();
 
@@ -552,7 +552,9 @@ class CONTENT_EXPORT WebContentsImpl
   void SetEncoding(const std::string& encoding);
 
   // Save a URL to the local filesystem.
-  void SaveURL(const GURL& url, const GURL& referrer, bool is_main_frame);
+  void SaveURL(const GURL& url,
+               const content::Referrer& referrer,
+               bool is_main_frame);
 
   content::RenderViewHostImpl* GetRenderViewHostImpl();
 

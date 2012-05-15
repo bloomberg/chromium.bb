@@ -1987,8 +1987,9 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateContentRestrictions,
                     int /* restrictions */)
 
 // Brings up SaveAs... dialog to save specified URL.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SaveURLAs,
-                    GURL /* url */)
+IPC_MESSAGE_ROUTED2(ViewHostMsg_SaveURLAs,
+                    GURL /* url */,
+                    content::Referrer /* referrer */)
 
 // Displays a JavaScript out-of-memory message in the infobar.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_JSOutOfMemory)
