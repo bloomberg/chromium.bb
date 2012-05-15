@@ -6,6 +6,7 @@ import os
 import signal
 import sys
 
+from chromite.lib import cros_build_lib
 from chromite.lib import locking
 
 
@@ -66,6 +67,11 @@ class EnforcedCleanupSection(object):
 
     if os.read(self._lock.fd, 1):
       os._exit(0)
+
+    # Allow masterpid context managers to run in this case, since we're
+    # explicitly designed for this cleanup.
+    cros_build_lib.MasterPidContextManager._ALTERNATE_MASTER_PID = os.getpid()
+
     raise RuntimeError("Parent exited uncleanly; forcing cleanup code to run.")
 
   def __enter__(self):

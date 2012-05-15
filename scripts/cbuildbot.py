@@ -562,31 +562,15 @@ def _RunBuildStagesWrapper(options, build_config):
 
     return False
 
-  # Start tee-ing output to file.
-  log_file = None
-  if options.tee:
-    default_dir = os.path.join(options.buildroot, _DEFAULT_LOG_DIR)
-    dirname = options.log_dir or default_dir
-    log_file = os.path.join(dirname, _BUILDBOT_LOG_FILE)
+  cros_lib.Info("cbuildbot executed with args %s"
+                % ' '.join(map(repr, sys.argv)))
+  if IsDistributedBuilder():
+    buildbot = DistributedBuilder(options, build_config)
+  else:
+    buildbot = SimpleBuilder(options, build_config)
 
-    osutils.SafeMakedirs(dirname)
-    _BackupPreviousLog(log_file)
-
-  try:
-    with cros_lib.AllowDisabling(options.tee, tee.Tee, log_file):
-      cros_lib.Info("cbuildbot executed with args %s"
-                    % ' '.join(map(repr, sys.argv)))
-      options.preserve_paths = set([_DEFAULT_LOG_DIR])
-      if IsDistributedBuilder():
-        buildbot = DistributedBuilder(options, build_config)
-      else:
-        buildbot = SimpleBuilder(options, build_config)
-
-      if not buildbot.Run():
-        sys.exit(1)
-  finally:
-    if options.tee:
-      cros_lib.Info('Output should be saved to %s' % log_file)
+  if not buildbot.Run():
+    sys.exit(1)
 
 
 # Parser related functions
@@ -1116,14 +1100,29 @@ def main(argv):
                  'rather than the root of it.  This is not supported.'
                  % options.buildroot)
 
+  log_file = None
+  if options.tee:
+    default_dir = os.path.join(options.buildroot, _DEFAULT_LOG_DIR)
+    dirname = options.log_dir or default_dir
+    log_file = os.path.join(dirname, _BUILDBOT_LOG_FILE)
+
+    osutils.SafeMakedirs(dirname)
+    _BackupPreviousLog(log_file)
+
   with cros_lib.ContextManagerStack() as stack:
     critical_section = stack.Add(cleanup.EnforcedCleanupSection)
     stack.Add(sudo.SudoKeepAlive)
+
     if not options.resume:
       # If we're in resume mode, use our parents tempdir rather than
       # nesting another layer.
       stack.Add(osutils.TempDirContextManager, 'cbuildbot-tmp')
       logging.debug("Cbuildbot tempdir is %r.", os.environ.get('TMP'))
+
+    if log_file is not None:
+      stack.Add(tee.Tee, log_file)
+      options.preserve_paths = set([_DEFAULT_LOG_DIR])
+
     if options.cgroups:
       stack.Add(cgroups.SimpleContainChildren, 'cbuildbot')
 
@@ -1132,6 +1131,7 @@ def main(argv):
     # ensures that sudo bits cannot outlive cbuildbot, that anything
     # cgroups would kill gets killed, etc.
     critical_section.ForkWatchdog()
+
     if options.timeout > 0:
       stack.Add(cros_lib.Timeout, options.timeout)
 

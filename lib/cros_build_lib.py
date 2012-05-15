@@ -1075,6 +1075,12 @@ class MasterPidContextManager(object):
   strictly from within the same PID.
   """
 
+  # In certain cases we actually want this ran outside
+  # of the main pid- specifically in backup processes
+  # doing cleanup.
+
+  _ALTERNATE_MASTER_PID = None
+
   def __init__(self):
     self._invoking_pid = None
 
@@ -1083,7 +1089,10 @@ class MasterPidContextManager(object):
     return self._enter()
 
   def __exit__(self, exc_type, exc, traceback):
-    if self._invoking_pid == os.getpid():
+    curpid = os.getpid()
+    if curpid == self._ALTERNATE_MASTER_PID:
+      self._invoking_pid = curpid
+    if curpid == self._invoking_pid:
       return self._exit(exc_type, exc, traceback)
 
   def _enter(self):
