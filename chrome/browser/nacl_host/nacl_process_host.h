@@ -82,7 +82,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
   virtual void OnProcessLaunched() OVERRIDE;
 
-  void IrtReady();
+  void OnResourcesReady();
 
   // Sends the reply message to the renderer who is waiting for the plugin
   // to load. Returns true on success.

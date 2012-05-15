@@ -4,6 +4,7 @@
 
 #include "chrome/browser/nacl_host/nacl_browser.h"
 
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"
@@ -41,8 +42,11 @@ const FilePath::StringType NaClIrtName() {
 }  // namespace
 
 NaClBrowser::NaClBrowser()
-    : irt_platform_file_(base::kInvalidPlatformFileValue),
-      irt_filepath_() {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      irt_platform_file_(base::kInvalidPlatformFileValue),
+      irt_filepath_(),
+      irt_state_(NaClResourceUninitialized),
+      ok_(true) {
   InitIrtFilePath();
 }
 
@@ -65,10 +69,10 @@ void NaClBrowser::InitIrtFilePath() {
   } else {
     FilePath plugin_dir;
     if (!PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &plugin_dir)) {
-      DLOG(ERROR) << "Failed to locate the plugins directory";
+      DLOG(ERROR) << "Failed to locate the plugins directory, NaCl disabled.";
+      MarkAsFailed();
       return;
     }
-
     irt_filepath_ = plugin_dir.Append(NaClIrtName());
   }
 }
@@ -77,53 +81,86 @@ NaClBrowser* NaClBrowser::GetInstance() {
   return Singleton<NaClBrowser>::get();
 }
 
-bool NaClBrowser::IrtAvailable() const {
-  return irt_platform_file_ != base::kInvalidPlatformFileValue;
+bool NaClBrowser::IsReady() const {
+  return IsOk() && irt_state_ == NaClResourceReady;
+}
+
+bool NaClBrowser::IsOk() const {
+  return ok_;
 }
 
 base::PlatformFile NaClBrowser::IrtFile() const {
+  CHECK_EQ(irt_state_, NaClResourceReady);
   CHECK_NE(irt_platform_file_, base::kInvalidPlatformFileValue);
   return irt_platform_file_;
 }
 
-// Attempt to ensure the IRT will be available when we need it, but don't wait.
-bool NaClBrowser::EnsureIrtAvailable() {
-  if (IrtAvailable())
-    return true;
-
-  return content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&NaClBrowser::DoOpenIrtLibraryFile));
+void NaClBrowser::EnsureAllResourcesAvailable() {
+  // Currently the only resource we need to initialize is the IRT.
+  // In the future we will need to load the validation cache from disk.
+  EnsureIrtAvailable();
 }
 
-// We really need the IRT to be available now, so make sure that it is.
-// When it's ready, we'll run the reply closure.
-bool NaClBrowser::MakeIrtAvailable(const base::Closure& reply) {
-  return content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&NaClBrowser::DoOpenIrtLibraryFile), reply);
+// Load the IRT async.
+void NaClBrowser::EnsureIrtAvailable() {
+  if (IsOk() && irt_state_ == NaClResourceUninitialized) {
+    irt_state_ = NaClResourceRequested;
+    // TODO(ncbray) use blocking pool.
+    if (!base::FileUtilProxy::CreateOrOpen(
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::FILE),
+            irt_filepath_,
+            base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+            base::Bind(&NaClBrowser::OnIrtOpened,
+                       weak_factory_.GetWeakPtr()))) {
+      LOG(ERROR) << "Internal error, NaCl disabled.";
+      MarkAsFailed();
+    }
+  }
+}
+
+void NaClBrowser::OnIrtOpened(base::PlatformFileError error_code,
+                              base::PassPlatformFile file,
+                              bool created) {
+  DCHECK_EQ(irt_state_, NaClResourceRequested);
+  DCHECK(!created);
+  if (error_code == base::PLATFORM_FILE_OK) {
+    irt_platform_file_ = file.ReleaseValue();
+  } else {
+    LOG(ERROR) << "Failed to open NaCl IRT file \""
+               << irt_filepath_.LossyDisplayName()
+               << "\": " << error_code;
+    MarkAsFailed();
+  }
+  irt_state_ = NaClResourceReady;
+  CheckWaiting();
+}
+
+void NaClBrowser::CheckWaiting() {
+  if (!IsOk() || IsReady()) {
+    // Queue the waiting tasks into the message loop.  This helps avoid
+    // re-entrancy problems that could occur if the closure was invoked
+    // directly.  For example, this could result in use-after-free of the
+    // process host.
+    for (std::vector<base::Closure>::iterator iter = waiting_.begin();
+         iter != waiting_.end(); ++iter) {
+      MessageLoop::current()->PostTask(FROM_HERE, *iter);
+    }
+    waiting_.clear();
+  }
+}
+
+void NaClBrowser::MarkAsFailed() {
+  ok_ = false;
+  CheckWaiting();
+}
+
+void NaClBrowser::WaitForResources(const base::Closure& reply) {
+  waiting_.push_back(reply);
+  EnsureAllResourcesAvailable();
+  CheckWaiting();
 }
 
 const FilePath& NaClBrowser::GetIrtFilePath() {
   return irt_filepath_;
-}
-
-// This only ever runs on the BrowserThread::FILE thread.
-// If multiple tasks are posted, the later ones are no-ops.
-void NaClBrowser::OpenIrtLibraryFile() {
-  if (irt_platform_file_ != base::kInvalidPlatformFileValue)
-    // We've already run.
-    return;
-
-  base::PlatformFileError error_code;
-  irt_platform_file_ = base::CreatePlatformFile(irt_filepath_,
-                                                base::PLATFORM_FILE_OPEN |
-                                                base::PLATFORM_FILE_READ,
-                                                NULL,
-                                                &error_code);
-  if (error_code != base::PLATFORM_FILE_OK) {
-    LOG(ERROR) << "Failed to open NaCl IRT file \""
-               << irt_filepath_.LossyDisplayName()
-               << "\": " << error_code;
-  }
 }

@@ -211,8 +211,10 @@ void NaClProcessHost::Launch(
 
   // Start getting the IRT open asynchronously while we launch the NaCl process.
   // We'll make sure this actually finished in StartWithLaunchedProcess, below.
-  if (!NaClBrowser::GetInstance()->EnsureIrtAvailable()) {
-    DLOG(ERROR) << "Cannot launch NaCl process after IRT file open failed";
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  nacl_browser->EnsureAllResourcesAvailable();
+  if (!nacl_browser->IsOk()) {
+    DLOG(ERROR) << "Cannot launch NaCl process";
     delete this;
     return;
   }
@@ -538,10 +540,10 @@ void NaClProcessHost::OnProcessLaunched() {
     delete this;
 }
 
-// The asynchronous attempt to get the IRT file open has completed.
-void NaClProcessHost::IrtReady() {
+// Called when the NaClBrowser singleton has been fully initialized.
+void NaClProcessHost::OnResourcesReady() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  if (!nacl_browser->IrtAvailable() || !SendStart()) {
+  if (!nacl_browser->IsReady() || !SendStart()) {
     DLOG(ERROR) << "Cannot launch NaCl process";
     delete this;
   }
@@ -671,12 +673,17 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
 #endif
 
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  if (nacl_browser->IrtAvailable())
-    return SendStart();  // The IRT is already open.  Away we go.
 
-  // We're waiting for the IRT to be open.
-  return nacl_browser->MakeIrtAvailable(
-      base::Bind(&NaClProcessHost::IrtReady, weak_factory_.GetWeakPtr()));
+  if (nacl_browser->IsReady()) {
+    return SendStart();
+  } else if (nacl_browser->IsOk()) {
+    nacl_browser->WaitForResources(
+        base::Bind(&NaClProcessHost::OnResourcesReady,
+                   weak_factory_.GetWeakPtr()));
+    return true;
+  } else {
+    return false;
+  }
 }
 
 void NaClProcessHost::OnQueryKnownToValidate(const std::string& signature,
