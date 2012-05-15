@@ -72,6 +72,8 @@ class AbstractStageTest(mox.MoxTestBase):
     self.options.buildnumber = 1234
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
+    self.portage_overlay = os.path.join(self.build_root,
+                                        'src/third_party/portage-stable')
 
     bs.BuilderStage.SetManifestBranch(self.TARGET_MANIFEST_BRANCH)
     portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
@@ -742,7 +744,7 @@ class UprevStageTest(AbstractStageTest):
     commands.UprevPackages(
         self.build_root,
         self._boards,
-        [self.overlay])
+        [self.overlay, self.portage_overlay])
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -773,7 +775,7 @@ class UprevStageTest(AbstractStageTest):
     commands.UprevPackages(
         self.build_root,
         self._boards,
-        [self.overlay])
+        [self.overlay, self.portage_overlay])
 
     self.mox.ReplayAll()
     self.RunStage()
