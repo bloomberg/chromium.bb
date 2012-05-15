@@ -163,17 +163,11 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
   // TODO(gman): Update this code to check for a specific version of
   // the drivers above which we no longer need this fix.
 #if defined(OS_MACOSX)
-  const char* vendor_str = reinterpret_cast<const char*>(
-      glGetString(GL_VENDOR));
-  if (vendor_str) {
-    std::string lc_str(::StringToLowerASCII(std::string(vendor_str)));
-    bool intel_on_mac = strstr(lc_str.c_str(), "intel");
-    if (intel_on_mac) {
-      max_texture_size = std::min(
+  if (feature_info_->feature_flags().is_intel) {
+    max_texture_size = std::min(
         static_cast<GLint>(4096), max_texture_size);
-      max_cube_map_texture_size = std::min(
+    max_cube_map_texture_size = std::min(
         static_cast<GLint>(512), max_cube_map_texture_size);
-    }
   }
 #endif
   texture_manager_.reset(new TextureManager(feature_info_.get(),

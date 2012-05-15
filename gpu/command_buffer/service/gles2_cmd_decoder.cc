@@ -2236,12 +2236,10 @@ bool GLES2DecoderImpl::Initialize(
 
   if (!disable_workarounds_) {
 #if defined(OS_MACOSX)
-    const char* vendor_str = reinterpret_cast<const char*>(
-        glGetString(GL_VENDOR));
     needs_mac_nvidia_driver_workaround_ =
-        vendor_str && strstr(vendor_str, "NVIDIA");
+        feature_info_->feature_flags().is_nvidia;
     needs_glsl_built_in_function_emulation_ =
-        vendor_str && (strstr(vendor_str, "ATI") || strstr(vendor_str, "AMD"));
+        feature_info_->feature_flags().is_amd;
 #endif
   }
 

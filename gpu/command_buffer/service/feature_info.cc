@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -108,6 +109,16 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
           gfx::GLContext::GetCurrent()->GetExtensions().c_str() :
           reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)),
       desired_features);
+  const char* vendor_str = reinterpret_cast<const char*>(
+      glGetString(GL_VENDOR));
+  if (vendor_str) {
+    std::string str(StringToLowerASCII(std::string(vendor_str)));
+    feature_flags_.is_intel = str.find("intel") != std::string::npos;
+    feature_flags_.is_nvidia = str.find("nvidia") != std::string::npos;
+    feature_flags_.is_amd =
+        str.find("amd") != std::string::npos ||
+        str.find("ati") != std::string::npos;
+  }
 
   bool npot_ok = false;
 
@@ -446,7 +457,15 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
       ext.Have("GL_EXT_occlusion_query_boolean");
   bool have_arb_occlusion_query2 = ext.Have("GL_ARB_occlusion_query2");
   bool have_arb_occlusion_query = ext.Have("GL_ARB_occlusion_query");
-  if (ext.Desire("GL_EXT_occlusion_query_boolean") &&
+  bool ext_occlusion_query_disallowed = false;
+
+#if defined(OS_LINUX)
+  // Intel drivers on Linux appear to be buggy.
+  ext_occlusion_query_disallowed = feature_flags_.is_intel;
+#endif
+
+  if (!ext_occlusion_query_disallowed &&
+      ext.Desire("GL_EXT_occlusion_query_boolean") &&
       (have_ext_occlusion_query_boolean ||
        have_arb_occlusion_query2 ||
        have_arb_occlusion_query)) {

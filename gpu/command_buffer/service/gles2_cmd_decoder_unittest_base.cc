@@ -296,12 +296,6 @@ void GLES2DecoderTestBase::InitDecoder(
       .Times(1)
       .RetiresOnSaturation();
 
-#if defined(OS_MACOSX)
-  EXPECT_CALL(*gl_, GetString(GL_VENDOR))
-      .Times(1)
-      .RetiresOnSaturation();
-#endif
-
   EXPECT_CALL(*gl_, Viewport(
       kViewportX, kViewportY, kViewportWidth, kViewportHeight))
       .Times(1)

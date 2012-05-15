@@ -35,7 +35,10 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
           angle_instanced_arrays(false),
           occlusion_query_boolean(false),
           use_arb_occlusion_query2_for_occlusion_query_boolean(false),
-          use_arb_occlusion_query_for_occlusion_query_boolean(false) {
+          use_arb_occlusion_query_for_occlusion_query_boolean(false),
+          is_intel(false),
+          is_nvidia(false),
+          is_amd(false) {
     }
 
     bool chromium_framebuffer_multisample;
@@ -53,6 +56,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool occlusion_query_boolean;
     bool use_arb_occlusion_query2_for_occlusion_query_boolean;
     bool use_arb_occlusion_query_for_occlusion_query_boolean;
+    bool is_intel;
+    bool is_nvidia;
+    bool is_amd;
   };
 
   FeatureInfo();

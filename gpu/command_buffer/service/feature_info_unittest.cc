@@ -33,7 +33,13 @@ class FeatureInfoTest : public testing::Test {
   }
 
   void SetupInitExpectations(const char* extensions) {
-    TestHelper::SetupFeatureInfoInitExpectations(gl_.get(), extensions);
+    SetupInitExpectationsWithVendor(extensions, "");
+  }
+
+  void SetupInitExpectationsWithVendor(
+      const char* extensions, const char* vendor) {
+    TestHelper::SetupFeatureInfoInitExpectationsWithVendor(
+        gl_.get(), extensions, vendor);
   }
 
  protected:
@@ -72,6 +78,9 @@ TEST_F(FeatureInfoTest, Basic) {
       ).use_arb_occlusion_query2_for_occlusion_query_boolean);
   EXPECT_FALSE(info_->feature_flags(
       ).use_arb_occlusion_query_for_occlusion_query_boolean);
+  EXPECT_FALSE(info_->feature_flags().is_intel);
+  EXPECT_FALSE(info_->feature_flags().is_nvidia);
+  EXPECT_FALSE(info_->feature_flags().is_amd);
 }
 
 TEST_F(FeatureInfoTest, InitializeNoExtensions) {
@@ -489,6 +498,38 @@ TEST_F(FeatureInfoTest, InitializeARB_occlusion_query2) {
       ).use_arb_occlusion_query2_for_occlusion_query_boolean);
   EXPECT_FALSE(info_->feature_flags(
       ).use_arb_occlusion_query_for_occlusion_query_boolean);
+}
+
+TEST_F(FeatureInfoTest, IsIntel) {
+  SetupInitExpectationsWithVendor("", "iNTel");
+  info_->Initialize(NULL);
+  EXPECT_TRUE(info_->feature_flags().is_intel);
+  EXPECT_FALSE(info_->feature_flags().is_nvidia);
+  EXPECT_FALSE(info_->feature_flags().is_amd);
+}
+
+TEST_F(FeatureInfoTest, IsNvidia) {
+  SetupInitExpectationsWithVendor("", "nvIdIa");
+  info_->Initialize(NULL);
+  EXPECT_FALSE(info_->feature_flags().is_intel);
+  EXPECT_TRUE(info_->feature_flags().is_nvidia);
+  EXPECT_FALSE(info_->feature_flags().is_amd);
+}
+
+TEST_F(FeatureInfoTest, IsAMD) {
+  SetupInitExpectationsWithVendor("", "aMd");
+  info_->Initialize(NULL);
+  EXPECT_FALSE(info_->feature_flags().is_intel);
+  EXPECT_FALSE(info_->feature_flags().is_nvidia);
+  EXPECT_TRUE(info_->feature_flags().is_amd);
+}
+
+TEST_F(FeatureInfoTest, IsAMDATI) {
+  SetupInitExpectationsWithVendor("", "aTI");
+  info_->Initialize(NULL);
+  EXPECT_FALSE(info_->feature_flags().is_intel);
+  EXPECT_FALSE(info_->feature_flags().is_nvidia);
+  EXPECT_TRUE(info_->feature_flags().is_amd);
 }
 
 }  // namespace gles2

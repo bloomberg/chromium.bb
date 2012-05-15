@@ -190,13 +190,6 @@ void TestHelper::SetupContextGroupInitExpectations(
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
       .RetiresOnSaturation();
-
-#if defined(OS_MACOSX)
-  EXPECT_CALL(*gl, GetString(GL_VENDOR))
-      .WillOnce(Return(reinterpret_cast<const uint8*>("")))
-      .RetiresOnSaturation();
-#endif
-
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, _))
       .WillOnce(SetArgumentPointee<1>(kMaxTextureImageUnits))
       .RetiresOnSaturation();
@@ -218,10 +211,18 @@ void TestHelper::SetupContextGroupInitExpectations(
 
 void TestHelper::SetupFeatureInfoInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions) {
+  SetupFeatureInfoInitExpectationsWithVendor(gl, extensions, "");
+}
+
+void TestHelper::SetupFeatureInfoInitExpectationsWithVendor(
+     ::gfx::MockGLInterface* gl, const char* extensions, const char* vendor) {
   InSequence sequence;
 
   EXPECT_CALL(*gl, GetString(GL_EXTENSIONS))
       .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl, GetString(GL_VENDOR))
+      .WillOnce(Return(reinterpret_cast<const uint8*>(vendor)))
       .RetiresOnSaturation();
 }
 
