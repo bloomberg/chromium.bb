@@ -9,10 +9,30 @@ import fcntl
 import os
 import multiprocessing
 import select
+import signal
+import subprocess
 import sys
+import traceback
 from chromite.lib import cros_build_lib
 
+
+# Max amount of data we're hold in the buffer at a given time.
 _BUFSIZE = 1024
+
+# Custom signal handlers so we can catch the exception and handle
+# it.
+class ToldToDie(Exception):
+  """Exception thrown via signal handlers."""
+
+  def __init__(self, signum):
+    Exception.__init__(self, "We received signal %i" % (signum,))
+
+# pylint: disable=W0613
+def _TeeProcessSignalHandler(signum, frame):
+  """TeeProcess custom signal handler.
+
+  This is used to decide whether or not to kill our parent."""
+  raise ToldToDie(signum)
 
 def _output(line, output_files, complain):
   """Print line to output_files.
@@ -56,54 +76,98 @@ def _tee(input_file, output_files, complain):
 class _TeeProcess(multiprocessing.Process):
   """Replicate output to multiple file handles."""
 
-  def __init__(self, output_filenames, complain):
+  def __init__(self, output_filenames, complain, error_fd,
+               master_pid):
     """Write to stdout and supplied filenames.
 
     Args:
       output_filenames: List of filenames to print to.
       complain: Print a warning if we get EAGAIN errors.
+      error: The fd to write exceptions/errors to during
+        shutdown.
+      master_pid: Pid to SIGTERM if we shutdown uncleanly.
     """
 
     self._reader_pipe, self.writer_pipe = os.pipe()
     self._output_filenames = output_filenames
     self._complain = complain
+    # Dupe the fd on the offchance it's stdout/stderr,
+    # which we screw with.
+    self._error_handle = os.fdopen(os.dup(error_fd), 'w', 0)
+    self.master_pid = master_pid
     multiprocessing.Process.__init__(self)
+
+  def _CloseUnnecessaryFds(self):
+    preserve = set([1, 2, self._error_handle.fileno(), self._reader_pipe,
+                    subprocess.MAXFD])
+    preserve = iter(sorted(preserve))
+    fd = 0
+    while fd < subprocess.MAXFD:
+      current_low = preserve.next()
+      if fd != current_low:
+        os.closerange(fd, current_low)
+        fd = current_low
+      fd += 1
 
   def run(self):
     """Main function for tee subprocess."""
 
-    # Close other end of writer pipe.
-    os.close(self.writer_pipe)
-
-    # Read from the pipe.
-    input_file = os.fdopen(self._reader_pipe, 'r', 0)
-
-    # Create list of files to write to.
-    output_files = [os.fdopen(sys.stdout.fileno(), 'w', 0)]
-    for filename in self._output_filenames:
-      output_files.append(open(filename, 'w', 0))
-
+    failed = True
     try:
+      signal.signal(signal.SIGINT, _TeeProcessSignalHandler)
+      signal.signal(signal.SIGTERM, _TeeProcessSignalHandler)
+
+      # Cleanup every fd except for what we use.
+      self._CloseUnnecessaryFds()
+
+      # Read from the pipe.
+      input_file = os.fdopen(self._reader_pipe, 'r', 0)
+
+      # Create list of files to write to.
+      output_files = [os.fdopen(sys.stdout.fileno(), 'w', 0)]
+      for filename in self._output_filenames:
+        output_files.append(open(filename, 'w', 0))
+
       # Read all lines from input_file and write to output_files.
       _tee(input_file, output_files, self._complain)
+      failed = False
+    except ToldToDie:
+      failed = False
+    # pylint: disable=W0703
+    except Exception, e:
+      tb = traceback.format_exc()
+      self._error_handle.write(
+          "\n@@@STEP_FAILURE@@@\n"
+          "Unhandled exception occured in tee:\n%s\n"
+          % (tb,))
+      # Try to signal the parent telling them of our
+      # imminent demise.
 
     finally:
       # Close input file.
       input_file.close()
 
+      if failed:
+        try:
+          os.kill(self.master_pid, signal.SIGTERM)
+        # pylint: disable=W0703
+        except Exception, e:
+          self._error_handle.write("\nTee failed signaling %s\n" % e)
+
       # Finally, kill ourself.
       # Specifically do it in a fashion that ensures no inherited
       # cleanup code from our parent process is ran- leave that to
       # the parent.
+      # pylint: disable=W0212
       os._exit(0)
 
 
 class Tee(cros_build_lib.MasterPidContextManager):
   """Class that handles tee-ing output to a file."""
-  def __init__(self, file):
+  def __init__(self, output_file):
     """Initializes object with path to log file."""
     cros_build_lib.MasterPidContextManager.__init__(self)
-    self._file = file
+    self._file = output_file
     self._old_stdout = None
     self._old_stderr = None
     self._old_stdout_fd = None
@@ -126,7 +190,8 @@ class Tee(cros_build_lib.MasterPidContextManager):
     sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
     # Create a tee subprocess.
-    self._tee = _TeeProcess([self._file], True)
+    self._tee = _TeeProcess([self._file], True, self._old_stderr_fd,
+                            os.getpid())
     self._tee.start()
 
     # Redirect stdout and stderr to the tee subprocess.
@@ -155,7 +220,7 @@ class Tee(cros_build_lib.MasterPidContextManager):
   def _enter(self):
     self.start()
 
-  def _exit(self, exc_type, exc, traceback):
+  def _exit(self, exc_type, exc, exc_traceback):
     try:
       self.stop()
     finally:
