@@ -312,6 +312,115 @@ def CreateResourceInputFile(
     f.write(resource_file)
 
 
+# Copies component build DLLs and generates required config files and manifests
+# in order for chrome.exe and setup.exe to be able to find those DLLs at
+# run-time.
+# This is meant for developer builds only and should never be used to package
+# an official build.
+def DoComponentBuildTasks(staging_dir, build_dir, current_version):
+  # Get the required directories for the upcoming operations.
+  chrome_dir = os.path.join(staging_dir, CHROME_DIR)
+  version_dir = os.path.join(chrome_dir, current_version)
+  installer_dir = os.path.join(version_dir, 'Installer')
+  # |installer_dir| is technically only created post-install, but we need it
+  # now to add setup.exe's config and manifest to the archive.
+  if not os.path.exists(installer_dir):
+    os.mkdir(installer_dir)
+
+  # Copy all the DLLs in |build_dir| to the version directory.
+  dlls = glob.glob(os.path.join(build_dir, '*.dll'))
+  for dll in dlls:
+    shutil.copy(dll, version_dir)
+
+  exe_config = (
+      "<configuration>\n"
+      "  <windows>\n"
+      "    <assemblyBinding xmlns='urn:schemas-microsoft-com:asm.v1'>\n"
+      "        <probing privatePath='{rel_path}'/>\n"
+      "    </assemblyBinding>\n"
+      "  </windows>\n"
+      "</configuration>")
+
+  # Write chrome.exe.config to point to the version directory.
+  chrome_exe_config_file = open(
+      os.path.join(chrome_dir, 'chrome.exe.config'), 'w')
+  chrome_exe_config_file.write(exe_config.format(rel_path=current_version))
+  chrome_exe_config_file.close()
+
+  # Write setup.exe.config to point to the version directory (which is one
+  # level up from setup.exe post-install).
+  setup_exe_config_file = open(
+      os.path.join(installer_dir, 'setup.exe.config'), 'w')
+  setup_exe_config_file.write(exe_config.format(rel_path='..'))
+  setup_exe_config_file.close()
+
+  # Build a list containing the name of each DLL found in |build_dir|.
+  dll_names = []
+  for dll in dlls:
+    dll_names.append(os.path.splitext(os.path.basename(dll))[0])
+
+  # Build the manifests for chrome.exe and setup.exe in which we list all the
+  # DLLs as side by side assembly dependencies.
+  # TODO (gab): These extra properties should be merged with the existing
+  # chrome/app/chrome.exe.manifest and
+  # chrome/installer/setup/setup.exe.manifest.
+  exe_manifest_parts = [
+      "<assembly\n"
+      "    xmlns='urn:schemas-microsoft-com:asm.v1' manifestVersion='1.0'>\n"
+      "  <trustInfo xmlns='urn:schemas-microsoft-com:asm.v3'>\n"
+      "    <security>\n"
+      "      <requestedPrivileges>\n"
+      "        <requestedExecutionLevel level='asInvoker' uiAccess='false'/>\n"
+      "      </requestedPrivileges>\n"
+      "    </security>\n"
+      "  </trustInfo>\n"]
+
+  for name in dll_names:
+    exe_manifest_parts.append(
+        "  <dependency>\n"
+        "    <dependentAssembly>\n"
+        "      <assemblyIdentity type='win32' name='chrome.{dll_basename}'\n"
+        "          version='0.0.0.0' processorArchitecture='x86'\n"
+        "          language='*'/>\n"
+        "    </dependentAssembly>\n"
+        "  </dependency>\n".format(dll_basename=name))
+
+  exe_manifest_parts.append("</assembly>")
+  exe_manifest = ''.join(exe_manifest_parts)
+
+  # Write chrome.exe.manifest beside chrome.exe.
+  chrome_exe_manifest_file = open(
+      os.path.join(chrome_dir, 'chrome.exe.manifest'), 'w')
+  chrome_exe_manifest_file.write(exe_manifest)
+  chrome_exe_manifest_file.close()
+
+  # Write setup.exe.manifest beside setup.exe in |version_dir|/Installer.
+  setup_exe_manifest_file = open(
+      os.path.join(installer_dir, 'setup.exe.manifest'), 'w')
+  setup_exe_manifest_file.write(exe_manifest)
+  setup_exe_manifest_file.close()
+
+  # Write chrome.{dllname}.manifest in the version directory for each DLLs
+  # listed as a dependency in the previous step.
+  # TODO (gab): The properties should probably be merged with the existing
+  # chrome/app/chrome.dll.manifest which could be duplicated for every extra
+  # DLL in the component build.
+  for name in dll_names:
+    dll_manifest = (
+        "<assembly\n"
+        "    xmlns='urn:schemas-microsoft-com:asm.v1' manifestVersion='1.0'>\n"
+        "  <assemblyIdentity name='chrome.{dll_basename}' version='0.0.0.0'\n"
+        "      type='win32' processorArchitecture='x86'/>\n"
+        "  <file name='{dll_basename}.dll'/>\n"
+        "</assembly>".format(dll_basename=name))
+
+    dll_manifest_file = open(os.path.join(
+        version_dir,
+        "chrome.{dll_basename}.manifest".format(dll_basename=name)), 'w')
+    dll_manifest_file.write(dll_manifest)
+    dll_manifest_file.close()
+
+
 def main(options):
   """Main method that reads input file, creates archive file and write
   resource input file.
@@ -337,6 +446,9 @@ def main(options):
   CopyAllFilesToStagingDir(config, options.distribution,
                            staging_dir, options.build_dir,
                            options.enable_hidpi, options.enable_metro)
+
+  if options.component_build == '1':
+    DoComponentBuildTasks(staging_dir, options.build_dir, current_version)
 
   version_numbers = current_version.split('.')
   current_build_number = version_numbers[2] + '.' + version_numbers[3]
@@ -393,6 +505,8 @@ def _ParseOptions():
   parser.add_option('--enable_metro', default='0',
       help='Whether to include resource files from the "METRO" section of the '
            'input file.')
+  parser.add_option('--component_build', default='0',
+      help='Whether this archive is packaging a component build.')
 
   options, args = parser.parse_args()
   if not options.build_dir:
@@ -401,12 +515,15 @@ def _ParseOptions():
   if not options.staging_dir:
     parser.error('You must provide a staging dir.')
 
+  if not options.input_file:
+    parser.error('You must provide an input file')
+
   if not options.output_dir:
     options.output_dir = options.build_dir
 
   if not options.resource_file_path:
-    options.options.resource_file_path = os.path.join(options.build_dir,
-                                                      MINI_INSTALLER_INPUT_FILE)
+    options.resource_file_path = os.path.join(options.build_dir,
+                                              MINI_INSTALLER_INPUT_FILE)
 
   return options
 
