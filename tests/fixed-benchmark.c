@@ -30,6 +30,21 @@
 volatile double global_d;
 
 static void
+noop_conversion(void)
+{
+	wl_fixed_t f;
+	union {
+		int64_t i;
+		double d;
+	} u;
+
+	for (f = 0; f < INT32_MAX; f++) {
+		u.i = f;
+		global_d = u.d;
+	}
+}
+
+static void
 magic_conversion(void)
 {
 	wl_fixed_t f;
@@ -80,6 +95,7 @@ benchmark(const char *s, void (*f)(void))
 
 int main(int argc, char *argv[])
 {
+	benchmark("noop", noop_conversion);
 	benchmark("magic", magic_conversion);
 	benchmark("div", div_conversion);
 	benchmark("mul", mul_conversion);
