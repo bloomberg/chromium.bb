@@ -435,7 +435,15 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
   DCHECK(extension_url.SchemeIs(chrome::kExtensionScheme));
   DCHECK_EQ("/", extension_url.path());
 
-  GURL ret_val = GURL(extension_url.spec() + relative_path);
+  std::string path = relative_path;
+
+  // If the relative path starts with "/", it is "absolute" relative to the
+  // extension base directory, but extension_url is already specified to refer
+  // to that base directory, so strip the leading "/" if present.
+  if (relative_path.size() > 0 && relative_path[0] == '/')
+    path = relative_path.substr(1);
+
+  GURL ret_val = GURL(extension_url.spec() + path);
   DCHECK(StartsWithASCII(ret_val.spec(), extension_url.spec(), false));
 
   return ret_val;

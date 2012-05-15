@@ -176,6 +176,10 @@ TEST(ExtensionTest, GetResourceURLAndPath) {
                                       "bar/../baz.js").spec());
   EXPECT_EQ(extension->url().spec() + "baz.js",
             Extension::GetResourceURL(extension->url(), "../baz.js").spec());
+
+  // Test that absolute-looking paths ("/"-prefixed) are pasted correctly.
+  EXPECT_EQ(extension->url().spec() + "test.html",
+            extension->GetResourceURL("/test.html").spec());
 }
 
 TEST(ExtensionTest, GetAbsolutePathNoError) {

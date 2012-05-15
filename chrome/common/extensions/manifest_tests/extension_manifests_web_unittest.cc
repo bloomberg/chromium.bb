@@ -73,7 +73,7 @@ TEST_F(ExtensionManifestTest, WebIntents) {
             UTF16ToUTF8(extension->intents_services()[0].action));
   EXPECT_EQ("chrome-extension",
             extension->intents_services()[0].service_url.scheme());
-  EXPECT_EQ("//services/share",
+  EXPECT_EQ("/services/share",
             extension->intents_services()[0].service_url.path());
   EXPECT_EQ("Sample Sharing Intent",
             UTF16ToUTF8(extension->intents_services()[0].title));
@@ -96,7 +96,7 @@ TEST_F(ExtensionManifestTest, WebIntents) {
   extension = LoadAndExpectSuccess("intent_valid_using_href.json");
   ASSERT_TRUE(extension.get() != NULL);
   ASSERT_EQ(1u, extension->intents_services().size());
-  EXPECT_EQ("//services/share",
+  EXPECT_EQ("/services/share",
       extension->intents_services()[0].service_url.path());
 }
 
@@ -114,7 +114,7 @@ TEST_F(ExtensionManifestTest, WebIntentsWithMultipleMimeTypes) {
               UTF16ToUTF8(extension->intents_services()[i].action));
     EXPECT_EQ("chrome-extension",
               extension->intents_services()[i].service_url.scheme());
-    EXPECT_EQ("//services/share",
+    EXPECT_EQ("/services/share",
               extension->intents_services()[i].service_url.path());
     EXPECT_EQ("Sample Sharing Intent",
               UTF16ToUTF8(extension->intents_services()[i].title));
@@ -164,11 +164,11 @@ TEST_F(ExtensionManifestTest, WebIntentsMultiHref) {
       extension->intents_services();
 
   EXPECT_EQ("chrome-extension", intents[0].service_url.scheme());
-  EXPECT_EQ("//services/sharelink.html",intents[0].service_url.path());
+  EXPECT_EQ("/services/sharelink.html",intents[0].service_url.path());
   EXPECT_EQ("text/uri-list",UTF16ToUTF8(intents[0].type));
 
   EXPECT_EQ("chrome-extension", intents[1].service_url.scheme());
-  EXPECT_EQ("//services/shareimage.html",intents[1].service_url.path());
+  EXPECT_EQ("/services/shareimage.html",intents[1].service_url.path());
   EXPECT_EQ("image/*",UTF16ToUTF8(intents[1].type));
 }
 

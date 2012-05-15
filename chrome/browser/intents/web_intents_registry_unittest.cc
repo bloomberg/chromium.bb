@@ -239,6 +239,9 @@ TEST_F(WebIntentsRegistryTest, GetIntentServicesForExtensionFilter) {
           base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
+
+  EXPECT_EQ(edit_extension->url().spec() + "services/edit",
+            consumer.services_[0].service_url.spec());
 }
 
 TEST_F(WebIntentsRegistryTest, GetAllIntents) {
