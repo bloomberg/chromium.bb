@@ -688,6 +688,13 @@ const char kModemManager1SmsInterface[] =
 const char kSMSAddedSignal[] = "Added";
 }  // namespace modemmanager
 
+namespace wimax_manager {
+// WiMaxManager D-Bus service identifiers
+const char kWiMaxManagerServiceName[] = "org.chromium.WiMaxManager";
+const char kWiMaxManagerServicePath[] = "/org/chromium/WiMaxManager";
+const char kWiMaxManagerInterface[] = "org.chromium.WiMaxManager";
+}  // namespace wimax_manager
+
 namespace bluetooth_common {
 const char kGetProperties[] = "GetProperties";
 const char kSetProperty[] = "SetProperty";
