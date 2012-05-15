@@ -1,62 +1,55 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A dialog box that tells the user that we can't write to the specified user
-// data directory.  Provides the user a chance to pick a different directory.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_USER_DATA_DIR_DIALOG_H_
-#define CHROME_BROWSER_UI_VIEWS_USER_DATA_DIR_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_USER_DATA_DIR_DIALOG_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_USER_DATA_DIR_DIALOG_VIEW_H_
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "ui/views/window/dialog_delegate.h"
-
-class FilePath;
 
 namespace views {
 class MessageBoxView;
 }
 
-class UserDataDirDialog : public views::DialogDelegate,
-                          public MessageLoopForUI::Dispatcher,
-                          public SelectFileDialog::Listener {
+// A dialog box that tells the user that we can't write to the specified user
+// data directory. Provides the user a chance to pick a different directory.
+class UserDataDirDialogView : public views::DialogDelegate,
+                              public MessageLoopForUI::Dispatcher,
+                              public SelectFileDialog::Listener {
  public:
-  // Creates and runs a user data directory picker dialog.  The method blocks
-  // while the dialog is showing.  If the user picks a directory, this method
-  // returns the chosen directory. |user_data_dir| is the value of the
-  // directory we were not able to use.
-  static FilePath RunUserDataDirDialog(const FilePath& user_data_dir);
-  virtual ~UserDataDirDialog();
+  explicit UserDataDirDialogView(const FilePath& user_data_dir);
+  virtual ~UserDataDirDialogView();
 
   FilePath user_data_dir() const { return user_data_dir_; }
 
-  // views::DialogDelegate methods:
+  // Overridden from views::DialogDelegate:
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  // views::WidgetDelegate methods:
+  // Overridden from views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  // MessageLoop::Dispatcher method:
+  // Overridden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& msg) OVERRIDE;
 
-  // SelectFileDialog::Listener methods:
+  // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
  private:
-  explicit UserDataDirDialog(const FilePath& user_data_dir);
-
   // Empty until the user picks a directory.
   FilePath user_data_dir_;
 
@@ -67,7 +60,7 @@ class UserDataDirDialog : public views::DialogDelegate,
   // waiting for the user to dismiss the dialog).
   bool is_blocking_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserDataDirDialog);
+  DISALLOW_COPY_AND_ASSIGN(UserDataDirDialogView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_USER_DATA_DIR_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_USER_DATA_DIR_DIALOG_VIEW_H_

@@ -49,8 +49,8 @@
 #include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/language_usage_metrics.h"
-#include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
+#include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -80,6 +80,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
@@ -148,7 +149,6 @@
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/views/network_profile_bubble.h"
-#include "chrome/browser/ui/views/user_data_dir_dialog.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -391,8 +391,7 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   // prompt the user to pick a different user-data-dir and restart chrome
   // with the new dir.
   // http://code.google.com/p/chromium/issues/detail?id=11510
-  FilePath new_user_data_dir = UserDataDirDialog::RunUserDataDirDialog(
-      user_data_dir);
+  FilePath new_user_data_dir = browser::ShowUserDataDirDialog(user_data_dir);
   if (!parameters.ui_task && browser_shutdown::delete_resources_on_shutdown) {
     // Only delete the resources if we're not running tests. If we're running
     // tests the resources need to be reused as many places in the UI cache

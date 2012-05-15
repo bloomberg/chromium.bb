@@ -2,25 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/user_data_dir_dialog_view.h"
+
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/views/user_data_dir_dialog.h"
+#include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 
-// static
-FilePath UserDataDirDialog::RunUserDataDirDialog(
-    const FilePath& user_data_dir) {
-  // When the window closes, it will delete itself.
-  UserDataDirDialog* dialog = new UserDataDirDialog(user_data_dir);
-  MessageLoopForUI::current()->RunWithDispatcher(dialog);
-  return dialog->user_data_dir();
-}
-
-UserDataDirDialog::UserDataDirDialog(const FilePath& user_data_dir)
+UserDataDirDialogView::UserDataDirDialogView(const FilePath& user_data_dir)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           select_file_dialog_(SelectFileDialog::Create(this))),
       is_blocking_(true) {
@@ -30,15 +23,13 @@ UserDataDirDialog::UserDataDirDialog(const FilePath& user_data_dir)
                                  user_data_dir.LossyDisplayName()));
   params.message_width = kDialogWidth;
   message_box_view_ = new views::MessageBoxView(params);
-
-  views::Widget::CreateWindow(this)->Show();
 }
 
-UserDataDirDialog::~UserDataDirDialog() {
+UserDataDirDialogView::~UserDataDirDialogView() {
   select_file_dialog_->ListenerDestroyed();
 }
 
-string16 UserDataDirDialog::GetDialogButtonLabel(
+string16 UserDataDirDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   switch (button) {
     case ui::DIALOG_BUTTON_OK:
@@ -53,15 +44,15 @@ string16 UserDataDirDialog::GetDialogButtonLabel(
   return string16();
 }
 
-string16 UserDataDirDialog::GetWindowTitle() const {
+string16 UserDataDirDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CANT_WRITE_USER_DIRECTORY_TITLE);
 }
 
-void UserDataDirDialog::DeleteDelegate() {
+void UserDataDirDialogView::DeleteDelegate() {
   delete this;
 }
 
-bool UserDataDirDialog::Accept() {
+bool UserDataDirDialogView::Accept() {
   // Directory picker
   std::wstring dialog_title = UTF16ToWide(l10n_util::GetStringUTF16(
       IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON));
@@ -73,34 +64,47 @@ bool UserDataDirDialog::Accept() {
   return false;
 }
 
-bool UserDataDirDialog::Cancel() {
+bool UserDataDirDialogView::Cancel() {
   is_blocking_ = false;
   return true;
 }
 
-views::View* UserDataDirDialog::GetContentsView() {
+views::View* UserDataDirDialogView::GetContentsView() {
   return message_box_view_;
 }
 
-views::Widget* UserDataDirDialog::GetWidget() {
+views::Widget* UserDataDirDialogView::GetWidget() {
   return message_box_view_->GetWidget();
 }
 
-const views::Widget* UserDataDirDialog::GetWidget() const {
+const views::Widget* UserDataDirDialogView::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 
-bool UserDataDirDialog::Dispatch(const base::NativeEvent& msg) {
+bool UserDataDirDialogView::Dispatch(const base::NativeEvent& msg) {
   TranslateMessage(&msg);
   DispatchMessage(&msg);
   return is_blocking_;
 }
 
-void UserDataDirDialog::FileSelected(const FilePath& path,
-                                     int index, void* params) {
+void UserDataDirDialogView::FileSelected(const FilePath& path,
+                                         int index,
+                                         void* params) {
   user_data_dir_ = path;
   is_blocking_ = false;
 }
 
-void UserDataDirDialog::FileSelectionCanceled(void* params) {
+void UserDataDirDialogView::FileSelectionCanceled(void* params) {
 }
+
+namespace browser {
+
+FilePath ShowUserDataDirDialog(const FilePath& user_data_dir) {
+  // When the window closes, it will delete itself.
+  UserDataDirDialogView* dialog = new UserDataDirDialogView(user_data_dir);
+  views::Widget::CreateWindow(dialog)->Show();
+  MessageLoopForUI::current()->RunWithDispatcher(dialog);
+  return dialog->user_data_dir();
+}
+
+}  // namespace browser
