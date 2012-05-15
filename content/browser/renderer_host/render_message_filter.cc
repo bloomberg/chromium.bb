@@ -723,6 +723,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
   download_stats::RecordDownloadSource(download_stats::INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),
+      true,  // is_content_initiated
       resource_context_,
       render_process_id_,
       message.routing_id(),

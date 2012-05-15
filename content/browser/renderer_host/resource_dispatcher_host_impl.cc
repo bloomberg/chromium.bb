@@ -465,6 +465,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
 
 net::Error ResourceDispatcherHostImpl::BeginDownload(
     scoped_ptr<net::URLRequest> request,
+    bool is_content_initiated,
     ResourceContext* context,
     int child_id,
     int route_id,
@@ -513,7 +514,8 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   // |started_callback|.
   scoped_refptr<ResourceHandler> handler(
       CreateResourceHandlerForDownload(request.get(), context, child_id,
-                                       route_id, request_id_, save_info,
+                                       route_id, request_id_,
+                                       is_content_initiated, save_info,
                                        started_callback));
 
   if (!request_context->job_factory()->IsHandledURL(url)) {
@@ -575,6 +577,7 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     int child_id,
     int route_id,
     int request_id,
+    bool is_content_initiated,
     const DownloadSaveInfo& save_info,
     const DownloadResourceHandler::OnStartedCallback& started_cb) {
   scoped_refptr<ResourceHandler> handler(
@@ -584,7 +587,7 @@ ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
   if (delegate_) {
     ScopedVector<ResourceThrottle> throttles;
     delegate_->DownloadStarting(request, context, child_id, route_id,
-                                request_id, !request->is_pending(), &throttles);
+                                request_id, is_content_initiated, &throttles);
     if (!throttles.empty()) {
       handler = new ThrottlingResourceHandler(this, handler, child_id,
                                               request_id, throttles.Pass());

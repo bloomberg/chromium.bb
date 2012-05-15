@@ -502,6 +502,7 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
 
   net::Error error = iodata_->rdh->BeginDownload(
       request.Pass(),
+      false,  // is_content_initiated
       iodata_->resource_context,
       iodata_->render_process_host_id,
       iodata_->render_view_host_routing_id,

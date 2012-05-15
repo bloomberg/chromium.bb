@@ -76,6 +76,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   virtual void SetAllowCrossOriginAuthPrompt(bool value) OVERRIDE;
   virtual net::Error BeginDownload(
       scoped_ptr<net::URLRequest> request,
+      bool is_content_initiated,
       ResourceContext* context,
       int child_id,
       int route_id,
@@ -252,6 +253,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int child_id,
       int route_id,
       int request_id,
+      bool is_content_initiated,
       const DownloadSaveInfo& save_info,
       const DownloadResourceHandler::OnStartedCallback& started_cb);
 

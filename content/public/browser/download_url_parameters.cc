@@ -21,16 +21,17 @@ DownloadUrlParameters::DownloadUrlParameters(
     int render_view_host_routing_id,
     ResourceContext* resource_context,
     const DownloadSaveInfo& save_info)
-  : load_flags_(0),
-    method_("GET"),
-    post_id_(-1),
-    prefer_cache_(false),
-    render_process_host_id_(render_process_host_id),
-    render_view_host_routing_id_(render_view_host_routing_id),
-    resource_context_(resource_context),
-    resource_dispatcher_host_(ResourceDispatcherHost::Get()),
-    save_info_(save_info),
-    url_(url) {
+    : content_initiated_(false),
+      load_flags_(0),
+      method_("GET"),
+      post_id_(-1),
+      prefer_cache_(false),
+      render_process_host_id_(render_process_host_id),
+      render_view_host_routing_id_(render_view_host_routing_id),
+      resource_context_(resource_context),
+      resource_dispatcher_host_(ResourceDispatcherHost::Get()),
+      save_info_(save_info),
+      url_(url) {
   DCHECK(resource_dispatcher_host_);
 }
 

@@ -44,6 +44,7 @@ void BeginDownload(
   scoped_ptr<net::URLRequest> request(new net::URLRequest(url, NULL));
   net::Error error = rdh->BeginDownload(
       request.Pass(),
+      false,  // is_content_initiated
       resource_context,
       render_process_host_id,
       render_view_host_routing_id,

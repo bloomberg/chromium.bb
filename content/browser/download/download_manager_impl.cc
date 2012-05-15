@@ -83,6 +83,7 @@ void BeginDownload(content::DownloadUrlParameters* params) {
   }
   resource_dispatcher_host->BeginDownload(
       request.Pass(),
+      params->content_initiated(),
       params->resource_context(),
       params->render_process_host_id(),
       params->render_view_host_routing_id(),

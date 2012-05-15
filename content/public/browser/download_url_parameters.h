@@ -58,6 +58,9 @@ class CONTENT_EXPORT DownloadUrlParameters {
 
   ~DownloadUrlParameters();
 
+  void set_content_initiated(bool content_initiated) {
+    content_initiated_ = content_initiated;
+  }
   void add_request_header(const std::string& name, const std::string& value) {
     request_headers_.push_back(make_pair(name, value));
   }
@@ -81,6 +84,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   }
 
   const OnStartedCallback& callback() const { return callback_; }
+  bool content_initiated() const { return content_initiated_; }
   int load_flags() const { return load_flags_; }
   const std::string& method() const { return method_; }
   const std::string& post_body() const { return post_body_; }
@@ -109,6 +113,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
 
  private:
   OnStartedCallback callback_;
+  bool content_initiated_;
   RequestHeadersType request_headers_;
   int load_flags_;
   std::string method_;

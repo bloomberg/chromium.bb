@@ -203,27 +203,28 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     int child_id,
     int route_id,
     int request_id,
-    bool is_new_request,
+    bool is_content_initiated,
     ScopedVector<content::ResourceThrottle>* throttles) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NotifyDownloadInitiatedOnUI, child_id, route_id));
 
-  // If this isn't a new request, we've seen this before and added the safe
-  // browsing resource throttle already so no need to add it again. This code
-  // path is only hit for requests initiated through the browser, and not the
-  // web, so no need to add the download throttle.
-  if (is_new_request) {
+  // If it's from the web, we don't trust it, so we push the throttle on.
+  if (is_content_initiated) {
+    throttles->push_back(new DownloadResourceThrottle(
+        download_request_limiter_, child_id, route_id, request_id,
+        request->method()));
+  }
+
+  // If this isn't a new request, we've seen this before and added the standard
+  //  resource throttles already so no need to add it again.
+  if (!request->is_pending()) {
     AppendStandardResourceThrottles(request,
                                     resource_context,
                                     child_id,
                                     route_id,
                                     ResourceType::MAIN_FRAME,
                                     throttles);
-  } else {
-    throttles->push_back(new DownloadResourceThrottle(
-        download_request_limiter_, child_id, route_id, request_id,
-        request->method()));
   }
 }
 

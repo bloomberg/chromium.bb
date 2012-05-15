@@ -300,6 +300,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
             info->GetChildID(),
             info->GetRouteID(),
             info->GetRequestID(),
+            true,  // is_content_initiated
             DownloadSaveInfo(),
             DownloadResourceHandler::OnStartedCallback()));
 
