@@ -31,6 +31,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   virtual int GetNumberOfFocusCalls() OVERRIDE;
   virtual RenderViewHost* GetPendingRenderViewHost() const OVERRIDE;
   virtual void NavigateAndCommit(const GURL& url) OVERRIDE;
+  virtual void TestSetIsLoading(bool value) OVERRIDE;
   virtual void ProceedWithCrossSiteNavigation() OVERRIDE;
   virtual void TestDidNavigate(RenderViewHost* render_view_host,
                                int page_id,

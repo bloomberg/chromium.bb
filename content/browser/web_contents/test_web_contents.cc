@@ -115,6 +115,10 @@ void TestWebContents::NavigateAndCommit(const GURL& url) {
   CommitPendingNavigation();
 }
 
+void TestWebContents::TestSetIsLoading(bool value) {
+  SetIsLoading(value, NULL);
+}
+
 void TestWebContents::CommitPendingNavigation() {
   // If we are doing a cross-site navigation, this simulates the current RVH
   // notifying that it has unloaded so the pending RVH is resumed and can

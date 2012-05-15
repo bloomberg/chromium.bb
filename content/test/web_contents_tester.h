@@ -94,6 +94,9 @@ class WebContentsTester {
   // emulates what happens on a new navigation.
   virtual void NavigateAndCommit(const GURL& url) = 0;
 
+  // Sets the loading state to the given value.
+  virtual void TestSetIsLoading(bool value) = 0;
+
   // Simulates the current RVH notifying that it has unloaded so that the
   // pending RVH navigation can proceed.
   // Does nothing if no cross-navigation is pending.
