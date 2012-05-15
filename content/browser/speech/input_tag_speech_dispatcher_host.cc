@@ -100,7 +100,10 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
 
   SpeechRecognitionSessionConfig config;
   config.language = params.language;
-  config.grammar = params.grammar;
+  if (!params.grammar.empty()) {
+    config.grammars.push_back(
+        content::SpeechRecognitionGrammar(params.grammar));
+  }
   config.origin_url = params.origin_url;
   config.initial_context = context;
   config.url_request_context_getter = url_request_context_getter_.get();

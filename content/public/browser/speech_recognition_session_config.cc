@@ -8,7 +8,8 @@
 namespace content {
 
 SpeechRecognitionSessionConfig::SpeechRecognitionSessionConfig()
-    : filter_profanities(false) {
+    : is_one_shot(true),
+      filter_profanities(false) {
 }
 
 SpeechRecognitionSessionConfig::~SpeechRecognitionSessionConfig() {

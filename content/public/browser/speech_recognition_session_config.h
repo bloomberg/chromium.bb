@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/speech_recognition_session_context.h"
+#include "content/public/common/speech_recognition_grammar.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -22,8 +23,12 @@ struct CONTENT_EXPORT SpeechRecognitionSessionConfig {
   SpeechRecognitionSessionConfig();
   ~SpeechRecognitionSessionConfig();
 
+  // Enables one shot mode, which delivers a single result at the end of the
+  // speech, ending automatically recognition. When deasserted, continuous mode
+  // is used instead, carrying out recognition until an explicit stop request.
+  bool is_one_shot;
   std::string language;
-  std::string grammar;
+  SpeechRecognitionGrammarArray grammars;
   std::string origin_url;
   bool filter_profanities;
   SpeechRecognitionSessionContext initial_context;

@@ -75,7 +75,8 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
     EXPECT_EQ(0, session_id_);
     EXPECT_EQ(NULL, listener_);
     listener_ = event_listener;
-    grammar_ = config.grammar;
+    if (config.grammars.size() > 0)
+      grammar_ = config.grammars[0].url;
     session_ctx_ = config.initial_context;
     session_id_ = 1;
     return session_id_;

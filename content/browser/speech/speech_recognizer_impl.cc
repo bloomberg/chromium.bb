@@ -14,6 +14,7 @@
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognizer.h"
 #include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_grammar.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -21,6 +22,7 @@ using content::BrowserMainLoop;
 using content::BrowserThread;
 using content::SpeechRecognitionError;
 using content::SpeechRecognitionEventListener;
+using content::SpeechRecognitionGrammar;
 using content::SpeechRecognitionResult;
 using content::SpeechRecognizer;
 using media::AudioInputController;
@@ -79,9 +81,10 @@ SpeechRecognizer* SpeechRecognizer::Create(
     bool filter_profanities,
     const std::string& hardware_info,
     const std::string& origin_url) {
-  speech::GoogleOneShotRemoteEngineConfig remote_engine_config;
+  speech::SpeechRecognitionEngineConfig remote_engine_config;
   remote_engine_config.language = language;
-  remote_engine_config.grammar = grammar;
+  if (!grammar.empty())
+    remote_engine_config.grammars.push_back(SpeechRecognitionGrammar(grammar));
   remote_engine_config.audio_sample_rate =
       speech::SpeechRecognizerImpl::kAudioSampleRate;
   remote_engine_config.audio_num_bits_per_sample =

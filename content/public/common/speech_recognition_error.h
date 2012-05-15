@@ -38,13 +38,19 @@ struct CONTENT_EXPORT SpeechRecognitionError {
   SpeechRecognitionErrorCode code;
   SpeechAudioErrorDetails details;
 
-  SpeechRecognitionError(SpeechRecognitionErrorCode code_value)
+  SpeechRecognitionError()
+      : code(SPEECH_RECOGNITION_ERROR_NONE),
+        details(SPEECH_AUDIO_ERROR_DETAILS_NONE) {
+  }
+  explicit SpeechRecognitionError(SpeechRecognitionErrorCode code_value)
       : code(code_value),
-        details(SPEECH_AUDIO_ERROR_DETAILS_NONE) {}
+        details(SPEECH_AUDIO_ERROR_DETAILS_NONE) {
+  }
   SpeechRecognitionError(SpeechRecognitionErrorCode code_value,
                          SpeechAudioErrorDetails details_value)
       : code(code_value),
-        details(details_value) {}
+        details(details_value) {
+  }
 };
 
 }  // namespace content

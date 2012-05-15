@@ -174,7 +174,8 @@ void SpeechInputExtensionApiTest::ProvideResults(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (next_error_ != content::SPEECH_RECOGNITION_ERROR_NONE) {
-    GetManager()->OnRecognitionError(session_id, next_error_);
+    GetManager()->OnRecognitionError(
+        session_id, content::SpeechRecognitionError(next_error_));
     return;
   }
 

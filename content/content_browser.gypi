@@ -640,6 +640,7 @@
     'browser/speech/google_one_shot_remote_engine.h',
     'browser/speech/input_tag_speech_dispatcher_host.cc',
     'browser/speech/input_tag_speech_dispatcher_host.h',
+    'browser/speech/speech_recognition_engine.cc',
     'browser/speech/speech_recognition_engine.h',
     'browser/speech/speech_recognition_manager_impl.cc',
     'browser/speech/speech_recognition_manager_impl.h',

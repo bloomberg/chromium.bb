@@ -31,19 +31,6 @@ namespace speech {
 
 class AudioChunk;
 
-struct CONTENT_EXPORT GoogleOneShotRemoteEngineConfig {
-  std::string language;
-  std::string grammar;
-  bool filter_profanities;
-  std::string hardware_info;
-  std::string origin_url;
-  int audio_sample_rate;
-  int audio_num_bits_per_sample;
-
-  GoogleOneShotRemoteEngineConfig();
-  ~GoogleOneShotRemoteEngineConfig();
-};
-
 // Implements a SpeechRecognitionEngine by means of remote interaction with
 // Google speech recognition webservice.
 class CONTENT_EXPORT GoogleOneShotRemoteEngine
@@ -57,9 +44,9 @@ class CONTENT_EXPORT GoogleOneShotRemoteEngine
 
   explicit GoogleOneShotRemoteEngine(net::URLRequestContextGetter* context);
   virtual ~GoogleOneShotRemoteEngine();
-  void SetConfig(const GoogleOneShotRemoteEngineConfig& config);
 
   // SpeechRecognitionEngine methods.
+  virtual void SetConfig(const SpeechRecognitionEngineConfig& config) OVERRIDE;
   virtual void StartRecognition() OVERRIDE;
   virtual void EndRecognition() OVERRIDE;
   virtual void TakeAudioChunk(const AudioChunk& data) OVERRIDE;
@@ -71,7 +58,7 @@ class CONTENT_EXPORT GoogleOneShotRemoteEngine
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
-  GoogleOneShotRemoteEngineConfig config_;
+  SpeechRecognitionEngineConfig config_;
   scoped_ptr<content::URLFetcher> url_fetcher_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   scoped_ptr<AudioEncoder> encoder_;

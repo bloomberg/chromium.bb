@@ -82,6 +82,7 @@
     'public/common/show_desktop_notification_params.cc',
     'public/common/show_desktop_notification_params.h',
     'public/common/speech_recognition_error.h',
+    'public/common/speech_recognition_grammar.h',
     'public/common/speech_recognition_result.h',
     'public/common/speech_recognition_result.cc',
     'public/common/ssl_status.cc',

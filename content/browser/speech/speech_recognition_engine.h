@@ -7,9 +7,10 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
+#include "content/public/common/speech_recognition_grammar.h"
 
 namespace content {
 struct SpeechRecognitionResult;
@@ -27,7 +28,9 @@ class AudioChunk;
 //   TakeAudioChunk      For every audio chunk pushed.
 //   AudioChunksEnded    Finalize the audio stream (omitted in case of errors).
 // EndRecognition        Mandatory at end of SR (even on errors).
-// No delegate callback is allowed before Initialize() or after Cleanup().
+// No delegate callbacks are allowed before StartRecognition or after
+// EndRecognition. If a recognition was started, the caller can free the
+// SpeechRecognitionEngine only after calling EndRecognition.
 class SpeechRecognitionEngine {
  public:
   // Interface for receiving callbacks from this object.
@@ -45,7 +48,25 @@ class SpeechRecognitionEngine {
     virtual ~Delegate() {}
   };
 
+  // Remote engine configuration.
+  struct CONTENT_EXPORT Config {
+    Config();
+    ~Config();
+
+    std::string language;
+    content::SpeechRecognitionGrammarArray grammars;
+    bool filter_profanities;
+    std::string hardware_info;
+    std::string origin_url;
+    int audio_sample_rate;
+    int audio_num_bits_per_sample;
+  };
+
   virtual ~SpeechRecognitionEngine() {}
+
+  // Set/change the recognition engine configuration. It is not allowed to call
+  // this function while a recognition is ongoing.
+  virtual void SetConfig(const Config& config) = 0;
 
   // Called when the speech recognition begins, before any TakeAudioChunk call.
   virtual void StartRecognition() = 0;
@@ -81,11 +102,11 @@ class SpeechRecognitionEngine {
   Delegate* delegate_;
 };
 
-// This typedef is to workaround the issue with certain versions of
+// These typedefs are to workaround the issue with certain versions of
 // Visual Studio where it gets confused between multiple Delegate
-// classes and gives a C2500 error. (I saw this error on the try bots -
-// the workaround was not needed for my machine).
+// classes and gives a C2500 error.
 typedef SpeechRecognitionEngine::Delegate SpeechRecognitionEngineDelegate;
+typedef SpeechRecognitionEngine::Config SpeechRecognitionEngineConfig;
 
 }  // namespace speech
 

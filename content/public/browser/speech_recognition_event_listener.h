@@ -31,13 +31,13 @@ class CONTENT_EXPORT SpeechRecognitionEventListener {
   // recognition UI once this callback is received.
   virtual void OnEnvironmentEstimationComplete(int session_id) = 0;
 
-  // Informs that the end pointer has started detecting sound (possibly speech).
+  // Informs that the endpointer has started detecting sound (possibly speech).
   virtual void OnSoundStart(int session_id) = 0;
 
-  // Informs that the end pointer has stopped detecting sound (a long silence).
+  // Informs that the endpointer has stopped detecting sound (a long silence).
   virtual void OnSoundEnd(int session_id) = 0;
 
-  // Invoked when audio capture stops, either due to the end pointer detecting
+  // Invoked when audio capture stops, either due to the endpointer detecting
   // silence, an internal error, or an explicit stop was issued.
   virtual void OnAudioEnd(int session_id) = 0;
 

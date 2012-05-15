@@ -108,9 +108,9 @@ class SpeechRecognizerImplTest : public content::SpeechRecognitionEventListener,
         error_(content::SPEECH_RECOGNITION_ERROR_NONE),
         volume_(-1.0f) {
     // SpeechRecognizerImpl takes ownership of sr_engine.
-    GoogleOneShotRemoteEngine* sr_engine =
+    SpeechRecognitionEngine* sr_engine =
         new GoogleOneShotRemoteEngine(NULL /* URLRequestContextGetter */);
-    GoogleOneShotRemoteEngineConfig config;
+    SpeechRecognitionEngineConfig config;
     config.audio_num_bits_per_sample =
         SpeechRecognizerImpl::kNumBitsPerAudioSample;
     config.audio_sample_rate = SpeechRecognizerImpl::kAudioSampleRate;

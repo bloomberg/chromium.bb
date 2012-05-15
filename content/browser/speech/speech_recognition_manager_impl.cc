@@ -77,9 +77,9 @@ int SpeechRecognitionManagerImpl::CreateSession(
   if (delegate_)
     delegate_->GetDiagnosticInformation(&can_report_metrics, &hardware_info);
 
-  GoogleOneShotRemoteEngineConfig remote_engine_config;
+  SpeechRecognitionEngineConfig remote_engine_config;
   remote_engine_config.language = config.language;
-  remote_engine_config.grammar = config.grammar;
+  remote_engine_config.grammars = config.grammars;
   remote_engine_config.audio_sample_rate =
       SpeechRecognizerImpl::kAudioSampleRate;
   remote_engine_config.audio_num_bits_per_sample =
@@ -88,8 +88,8 @@ int SpeechRecognitionManagerImpl::CreateSession(
   remote_engine_config.hardware_info = hardware_info;
   remote_engine_config.origin_url = can_report_metrics ? config.origin_url : "";
 
-  GoogleOneShotRemoteEngine* google_remote_engine =
-      new GoogleOneShotRemoteEngine(config.url_request_context_getter);
+  SpeechRecognitionEngine* google_remote_engine =
+        new GoogleOneShotRemoteEngine(config.url_request_context_getter);
   google_remote_engine->SetConfig(remote_engine_config);
 
   session.recognizer = new SpeechRecognizerImpl(this,

@@ -6,10 +6,11 @@
 
 namespace content {
 
-SpeechRecognitionResult::SpeechRecognitionResult() {
+SpeechRecognitionResult::SpeechRecognitionResult()
+    : provisional(false) {
 }
 
 SpeechRecognitionResult::~SpeechRecognitionResult() {
 }
 
-}
+}  // namespace content
