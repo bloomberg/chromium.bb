@@ -589,7 +589,7 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
     delegate_->OnBoundsChanged(old_bounds, actual_new_bounds);
   FOR_EACH_OBSERVER(WindowObserver,
                     observers_,
-                    OnWindowBoundsChanged(this, actual_new_bounds));
+                    OnWindowBoundsChanged(this, old_bounds, actual_new_bounds));
 
   if (root_window)
     root_window->OnWindowBoundsChanged(this, contained_mouse);

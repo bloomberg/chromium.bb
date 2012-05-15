@@ -37,7 +37,9 @@ class ResizeShadowController : public aura::WindowObserver {
 
   // aura::WindowObserver overrides:
   virtual void OnWindowBoundsChanged(
-      aura::Window* window, const gfx::Rect& bounds) OVERRIDE;
+      aura::Window* window,
+      const gfx::Rect& old_bounds,
+      const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:

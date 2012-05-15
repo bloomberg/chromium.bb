@@ -102,10 +102,11 @@ void ShadowController::OnWindowPropertyChanged(aura::Window* window,
 }
 
 void ShadowController::OnWindowBoundsChanged(aura::Window* window,
-                                             const gfx::Rect& bounds) {
+                                             const gfx::Rect& old_bounds,
+                                             const gfx::Rect& new_bounds) {
   Shadow* shadow = GetShadowForWindow(window);
   if (shadow)
-    shadow->SetContentBounds(gfx::Rect(bounds.size()));
+    shadow->SetContentBounds(gfx::Rect(new_bounds.size()));
 }
 
 void ShadowController::OnWindowDestroyed(aura::Window* window) {

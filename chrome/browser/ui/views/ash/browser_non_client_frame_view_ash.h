@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
 #pragma once
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
@@ -62,8 +63,13 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, UseShortHeader);
+
   // Distance between top of window and client area.
   int NonClientTopBorderHeight(bool force_restored) const;
+
+  // Returns true if we should use a short header, such as for popup windows.
+  bool UseShortHeader() const;
 
   // Layout the incognito icon.
   void LayoutAvatar();

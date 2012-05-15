@@ -45,8 +45,9 @@ const int kTabstripRightSpacing = 10;
 // Height of the shadow of the content area, at the top of the toolbar.
 const int kContentShadowHeight = 1;
 
-// Space between top of window and top of tabstrip for restored windows.
-int tabstrip_top_spacing_restored() {
+// Space between top of window and top of tabstrip for tall headers, such as
+// for restored windows, apps, etc.
+int tabstrip_top_spacing_tall() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
@@ -64,8 +65,9 @@ int tabstrip_top_spacing_restored() {
   return value;
 }
 
-// Space between top of window and top of tabstrip for maximized windows.
-int tabstrip_top_spacing_maximized() {
+// Space between top of window and top of tabstrip for short headers, such as
+// for maximized windows, pop-ups, etc.
+int tabstrip_top_spacing_short() {
   static int value = -1;
   if (value == -1) {
     switch (ui::GetDisplayLayout()) {
@@ -265,9 +267,7 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
 }
 
 void BrowserNonClientFrameViewAsh::Layout() {
-  // Maximized windows and app/popup windows use shorter buttons.
-  bool maximized_layout =
-      frame()->IsMaximized() || !browser_view()->IsBrowserTypeNormal();
+  bool maximized_layout = UseShortHeader();
   frame_painter_->LayoutHeader(this, maximized_layout);
   if (avatar_button())
     LayoutAvatar();
@@ -355,18 +355,42 @@ SkBitmap BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
     bool force_restored) const {
   if (force_restored)
-    return tabstrip_top_spacing_restored();
+    return tabstrip_top_spacing_tall();
   if (frame()->IsFullscreen())
     return 0;
   // Windows with tab strips need a smaller non-client area.
   if (browser_view()->IsTabStripVisible()) {
-    if (frame()->IsMaximized())
-      return tabstrip_top_spacing_maximized();
-    return tabstrip_top_spacing_restored();
+    if (UseShortHeader())
+      return tabstrip_top_spacing_short();
+    return tabstrip_top_spacing_tall();
   }
   // For windows without a tab strip (popups, etc.) ensure we have enough space
-  // to see the window caption buttons and the content separator line.
-  return close_button_->bounds().bottom() + kClientEdgeThickness;
+  // to see the window caption buttons.
+  return close_button_->bounds().bottom() - kContentShadowHeight;
+}
+
+bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
+  // Window at top of screen -> short header
+  if (frame()->GetWindowScreenBounds().y() == 0)
+    return true;
+  // Restored browser -> tall header
+  // Maximized browser -> short header
+  // App window -> tall header
+  // Popup window -> short header
+  // Panel -> short header
+  // Dialogs use short header and are handled via CustomFrameViewAsh.
+  Browser* browser = browser_view()->browser();
+  switch (browser->type()) {
+    case Browser::TYPE_TABBED:
+      return frame()->IsMaximized();
+    case Browser::TYPE_POPUP:
+      return !browser->is_app();
+    case Browser::TYPE_PANEL:
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 void BrowserNonClientFrameViewAsh::LayoutAvatar() {

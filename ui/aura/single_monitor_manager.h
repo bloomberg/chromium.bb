@@ -42,7 +42,8 @@ class AURA_EXPORT SingleMonitorManager : public MonitorManager,
 
   // WindowObserver overrides:
   virtual void OnWindowBoundsChanged(Window* window,
-                                     const gfx::Rect& bounds) OVERRIDE;
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnWindowDestroying(Window* window) OVERRIDE;
 
  private:

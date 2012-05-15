@@ -58,7 +58,9 @@ class ASH_EXPORT ShadowController : public aura::EnvObserver,
   virtual void OnWindowPropertyChanged(
       aura::Window* window, const void* key, intptr_t old) OVERRIDE;
   virtual void OnWindowBoundsChanged(
-      aura::Window* window, const gfx::Rect& bounds) OVERRIDE;
+      aura::Window* window,
+      const gfx::Rect& old_bounds,
+      const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  private:

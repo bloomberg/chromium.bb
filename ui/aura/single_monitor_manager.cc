@@ -73,9 +73,9 @@ const gfx::Monitor& SingleMonitorManager::GetMonitorNearestPoint(
 }
 
 void SingleMonitorManager::OnWindowBoundsChanged(
-    Window* window, const gfx::Rect& bounds) {
+    Window* window, const gfx::Rect& old_bounds, const gfx::Rect& new_bounds) {
   if (!use_fullscreen_host_window()) {
-    Update(bounds.size());
+    Update(new_bounds.size());
     NotifyBoundsChanged(monitor_);
   }
 }

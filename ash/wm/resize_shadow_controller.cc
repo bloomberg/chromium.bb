@@ -35,11 +35,13 @@ void ResizeShadowController::HideShadow(aura::Window* window) {
     shadow->Hide();
 }
 
-void ResizeShadowController::OnWindowBoundsChanged(aura::Window* window,
-                                                   const gfx::Rect& bounds) {
+void ResizeShadowController::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
   ResizeShadow* shadow = GetShadowForWindow(window);
   if (shadow)
-    shadow->Layout(bounds);
+    shadow->Layout(new_bounds);
 }
 
 void ResizeShadowController::OnWindowDestroyed(aura::Window* window) {
