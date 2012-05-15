@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,6 +84,7 @@ TEST_F(AccessiblePaneViewTest, SimpleSetPaneFocus) {
   View* root = widget->GetRootView();
   root->AddChildView(test_view);
   widget->Show();
+  widget->Activate();
 
   // Set pane focus succeeds, focus on child.
   EXPECT_TRUE(test_view->SetPaneFocusAndFocusDefault());
@@ -113,6 +114,7 @@ TEST_F(AccessiblePaneViewTest, TwoSetPaneFocus) {
   root->AddChildView(test_view);
   root->AddChildView(test_view_2);
   widget->Show();
+  widget->Activate();
 
   // Set pane focus succeeds, focus on child.
   EXPECT_TRUE(test_view->SetPaneFocusAndFocusDefault());
@@ -142,6 +144,7 @@ TEST_F(AccessiblePaneViewTest, PaneFocusTraversal) {
   root->AddChildView(original_test_view);
   root->AddChildView(test_view);
   widget->Show();
+  widget->Activate();
 
   // Set pane focus on first view.
   EXPECT_TRUE(original_test_view->SetPaneFocus(

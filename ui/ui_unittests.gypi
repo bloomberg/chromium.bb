@@ -6,6 +6,7 @@
   'targets': [
     {
       'target_name': 'ui_test_support',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
@@ -15,16 +16,11 @@
         'base/test/cocoa_test_event_utils.mm',
         'base/test/ui_cocoa_test_helper.h',
         'base/test/ui_cocoa_test_helper.mm',
+        'base/test/dummy_input_method.cc',
+        'base/test/dummy_input_method.h',
       ],
       'include_dirs': [
         '../',
-      ],
-      'conditions': [
-        ['OS=="mac"', {
-          'type': 'static_library',
-        }, { # OS != "mac"
-          'type': 'none',
-        }],
       ],
     },
     {
