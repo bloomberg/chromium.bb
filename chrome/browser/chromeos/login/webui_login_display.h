@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"

@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cellular_data_plan.h"
 #include "chrome/browser/chromeos/cros/network_ip_config.h"
 #include "third_party/cros/chromeos_network.h"
