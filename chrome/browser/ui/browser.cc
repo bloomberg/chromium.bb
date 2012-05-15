@@ -204,7 +204,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #endif
 

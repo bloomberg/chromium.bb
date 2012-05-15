@@ -352,12 +352,7 @@ void ShowExtensionInstallDialogImpl(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
     const ExtensionInstallUI::Prompt& prompt) {
-#if defined(OS_CHROMEOS)
-  // Use a tabbed browser window as parent on ChromeOS.
-  Browser* browser = BrowserList::FindTabbedBrowser(profile, true);
-#else
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
-#endif
   if (!browser) {
     delegate->InstallUIAbort(false);
     return;

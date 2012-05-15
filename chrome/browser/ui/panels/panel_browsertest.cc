@@ -1725,19 +1725,10 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
 
   EXPECT_EQ(2U, BrowserList::size());
 
-#if defined(OS_CHROMEOS)
-  // ChromeOS uses a download panel instead of a download shelf.
-  std::set<Browser*> original_browsers;
-  original_browsers.insert(panel_browser);
-  Browser* added = ui_test_utils::GetBrowserNotInSet(original_browsers);
-  ASSERT_TRUE(added->is_type_panel());
-  ASSERT_FALSE(added->window()->IsDownloadShelfVisible());
-#else
   Browser* tabbed_browser = Browser::GetTabbedBrowser(profile, false);
   EXPECT_EQ(1, tabbed_browser->tab_count());
   ASSERT_TRUE(tabbed_browser->window()->IsDownloadShelfVisible());
   tabbed_browser->CloseWindow();
-#endif
 
   EXPECT_EQ(1, panel_browser->tab_count());
   ASSERT_FALSE(panel_browser->window()->IsDownloadShelfVisible());

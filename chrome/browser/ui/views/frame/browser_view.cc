@@ -119,10 +119,6 @@
 #include "ui/gfx/screen.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
-#endif
-
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 #endif
