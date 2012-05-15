@@ -258,12 +258,10 @@ void FullscreenController::WindowFullscreenStateChanged() {
 #endif
   if (exiting_fullscreen)
     NotifyTabOfFullscreenExitIfNecessary();
-#if !defined(OS_CHROMEOS)
   if (exiting_fullscreen)
     window_->GetDownloadShelf()->Unhide();
   else
     window_->GetDownloadShelf()->Hide();
-#endif
 }
 
 bool FullscreenController::HandleUserPressedEscape() {

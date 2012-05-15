@@ -49,14 +49,6 @@ void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   views::View::ConvertPointToView(view,
                                   browser_view_->frame()->GetFrameView(),
                                   &origin);
-#if defined(OS_CHROMEOS)
-  const int kCustomFrameBackgroundVerticalOffset = 15;
-  // TODO(oshima): Remove this once we fully migrated to views.
-  // See http://crbug.com/28580.
-  if (browser_view_->IsMaximized()) {
-    origin.Offset(0, kCustomFrameBackgroundVerticalOffset + 1);
-  }
-#endif
   canvas->TileImageInt(*background,
                        origin.x(), origin.y(), 0, 0,
                        view->width(), view->height());
