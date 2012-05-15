@@ -134,10 +134,6 @@ class TestBrowserWindow : public BrowserWindow {
                                 const gfx::Rect& rect) OVERRIDE {}
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE {}
 
-#if defined(OS_CHROMEOS)
-  virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE {}
-#endif
-
  protected:
   virtual void DestroyBrowser() OVERRIDE {}
 
