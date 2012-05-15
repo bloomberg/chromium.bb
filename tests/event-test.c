@@ -56,7 +56,8 @@ handle_surface(struct test_client *client)
 	device = client->compositor->input_device;
 	client->compositor->focus = 1; /* Make it work even if pointer is
 					* outside X window. */
-	notify_motion(device, 100, 150, 150);
+	notify_motion(device, 100,
+		      wl_fixed_from_int(150), wl_fixed_from_int(150));
 
 	test_client_send(client, "bye\n");
 }
