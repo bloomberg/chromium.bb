@@ -5,6 +5,7 @@
 #import "remoting/host/me2me_preference_pane.h"
 
 #import <Cocoa/Cocoa.h>
+#include <CommonCrypto/CommonHMAC.h>
 #include <launch.h>
 #import <PreferencePanes/PreferencePanes.h>
 #import <SecurityInterface/SFAuthorizationView.h>
@@ -23,7 +24,7 @@
 #include "base/sys_string_conversions.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/json_host_config.h"
-#include "remoting/protocol/me2me_host_authenticator_factory.h"
+#include "third_party/modp_b64/modp_b64.h"
 
 namespace {
 // The name of the Remoting Host service that is registered with launchd.
@@ -51,15 +52,42 @@ bool IsConfigValid(const remoting::JsonHostConfig* config) {
 
 bool IsPinValid(const std::string& pin, const std::string& host_id,
                 const std::string& host_secret_hash) {
-  remoting::protocol::SharedSecretHash hash;
-  if (!hash.Parse(host_secret_hash)) {
-    LOG(ERROR) << "Invalid host_secret_hash.";
+  // TODO(lambroslambrou): Once the "base" target supports building for 64-bit
+  // on Mac OS X, remove this code and replace it with |VerifyHostPinHash()|
+  // from host/pin_hash.h.
+  size_t separator = host_secret_hash.find(':');
+  if (separator == std::string::npos)
+    return false;
+
+  std::string method = host_secret_hash.substr(0, separator);
+  if (method != "hmac") {
+    LOG(ERROR) << "Authentication method '" << method << "' not supported";
     return false;
   }
-  std::string result =
-      remoting::protocol::AuthenticationMethod::ApplyHashFunction(
-          hash.hash_function, host_id, pin);
-  return result == hash.value;
+
+  std::string hash_base64 = host_secret_hash.substr(separator + 1);
+
+  // Convert |hash_base64| to |hash|, based on code from base/base64.cc.
+  int hash_base64_size = static_cast<int>(hash_base64.size());
+  std::string hash;
+  hash.resize(modp_b64_decode_len(hash_base64_size));
+  int hash_size = modp_b64_decode(&(hash[0]), hash_base64.data(),
+                                  hash_base64_size);
+  if (hash_size < 0) {
+    LOG(ERROR) << "Failed to parse host_secret_hash";
+    return false;
+  }
+  hash.resize(hash_size);
+
+  std::string computed_hash;
+  computed_hash.resize(CC_SHA256_DIGEST_LENGTH);
+
+  CCHmac(kCCHmacAlgSHA256,
+         host_id.data(), host_id.size(),
+         pin.data(), pin.size(),
+         &(computed_hash[0]));
+
+  return computed_hash == hash;
 }
 
 }  // namespace
