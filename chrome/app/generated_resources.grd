@@ -4396,6 +4396,21 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_MANIFEST_INVALID" desc="">
         Manifest file is invalid.
       </message>
+      <message name="IDS_EXTENSION_INSTALL_NOT_ENABLED" desc="Error displayed during installation of apps or extensions when installation is not enabled.">
+        Installation is not enabled.
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_INCORRECT_APP_CONTENT_TYPE" desc="Error displayed during installation of apps when the app is not served with the correct content-type.">
+        Apps must be served with content-type "<ph name="CONTENT_TYPE">$1<ex>application/x-chrome-extension</ex></ph>".
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_INCORRECT_INSTALL_HOST" desc="Error displayed during installation of apps when the app is served from a different host than it affects.">
+        Apps must be served from the host they affect.
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_UNEXPECTED_ID" desc="Error displayed during installation of a side-loaded app, extension, or theme when the ID of the referenced extension does not match the ID the developer declared during registration.">
+        Expected ID "<ph name="EXPECTED_ID">$1<ex>bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb</ex></ph>", but ID was "<ph name="NEW_ID">$2<ex>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</ex></ph>".
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION" desc="Error displayed during installation of a side-loaded app, extension, or theme when the version of the referenced extension does not match the version the developer declared during registration.">
+        Expected version "<ph name="EXPECTED_VERSION">$1<ex>2.0</ex></ph>", but version was "<ph name="NEW_ID">$2<ex>1.0</ex></ph>".
+      </message>
       <message name="IDS_EXTENSION_OVERLAPPING_WEB_EXTENT" desc="Error message when a user tries to install an app with a web extent that overlaps another installed app.">
         Could not add application because it conflicts with "<ph name="APP_NAME">$1<ex>Google Mail</ex></ph>".
       </message>

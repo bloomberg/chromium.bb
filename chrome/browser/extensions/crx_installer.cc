@@ -191,21 +191,18 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
   // bypass the prompt.
   if ((approved_ || !expected_id_.empty()) &&
       expected_id_ != extension->id()) {
-    *error = ASCIIToUTF16(base::StringPrintf(
-        "ID in new CRX manifest (%s) does not match expected id (%s)",
-        extension->id().c_str(),
-        expected_id_.c_str()));
+    *error = l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALL_UNEXPECTED_ID,
+                                        ASCIIToUTF16(expected_id_),
+                                        ASCIIToUTF16(extension->id()));
     return false;
   }
 
   if (expected_version_.get() &&
       !expected_version_->Equals(*extension->version())) {
-    *error = ASCIIToUTF16(base::StringPrintf(
-        "Version in new CRX %s manifest (%s) does not match expected "
-        "version (%s)",
-        extension->id().c_str(),
-        expected_version_->GetString().c_str(),
-        extension->version()->GetString().c_str()));
+    *error = l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_INSTALL_UNEXPECTED_VERSION,
+        ASCIIToUTF16(expected_version_->GetString()),
+        ASCIIToUTF16(extension->version()->GetString()));
     return false;
   }
 
@@ -222,7 +219,7 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
     return true;
 
   if (!extensions_enabled_) {
-    *error = ASCIIToUTF16("Extensions are not enabled.");
+    *error = l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_NOT_ENABLED);
     return false;
   }
 
@@ -234,9 +231,9 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
     if (!download_url_.SchemeIsFile() &&
         apps_require_extension_mime_type_ &&
         original_mime_type_ != Extension::kMimeType) {
-      *error = ASCIIToUTF16(base::StringPrintf(
-          "Apps must be served with content type %s.",
-          Extension::kMimeType));
+      *error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_INSTALL_INCORRECT_APP_CONTENT_TYPE,
+          ASCIIToUTF16(Extension::kMimeType));
       return false;
     }
 
@@ -265,8 +262,8 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
       for (URLPatternSet::const_iterator i = patterns.begin();
            i != patterns.end(); ++i) {
         if (!pattern.MatchesHost(i->host())) {
-          *error = ASCIIToUTF16(base::StringPrintf(
-              "Apps must be served from the host that they affect."));
+          *error = l10n_util::GetStringUTF16(
+              IDS_EXTENSION_INSTALL_INCORRECT_INSTALL_HOST);
           return false;
         }
       }
