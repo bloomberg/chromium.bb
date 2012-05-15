@@ -25,7 +25,7 @@ inline void Abort() {
 namespace tcmalloc {
 inline void Abort() {
   // Make a segmentation fault to force abort.
-  *reinterpret_cast<int*>(NULL) = 0x2001;
+  *reinterpret_cast<volatile int*>(NULL) = 0x2001;
 }
 } // namespace tcmalloc
 
