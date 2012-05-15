@@ -4,10 +4,8 @@
   "name": "Chrome OS ECHO Extension",
   "version": "0.0.2",
   "description": "Chrome OS ECHO Extension",
-  // TODO(gauravsh): Get rid of https://www-googleapis-test.sandbox.google.com once
-  //                 production service is up and running. crosbug.com/29809
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; script-src 'self' https://apis.google.com; frame-src 'self' https://www.googleapis.com https://www-googleapis-test.sandbox.google.com;",
+  "content_security_policy": "default-src 'self'; script-src 'self' https://apis.google.com; frame-src 'self' https://chromeos-registration.googleapis.com",
   "permissions": [
       "cookies",
       "echoPrivate",
