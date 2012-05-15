@@ -1128,6 +1128,7 @@ div.shade[fadein] {
 }
 
 div.unmounted-panel {
+  color: #333;
   padding-left: 50px;
   padding-top: 20px;
 }
@@ -1154,6 +1155,11 @@ div.unmounted-panel > div {
   right: 100%;
   top: 0;
   width: 40px;
+}
+
+.unmounted-panel > .gdata.progress {
+  color: #999;
+  margin-top: -10px;
 }
 
 .unmounted-panel:not([loading]) > .gdata.loading,
