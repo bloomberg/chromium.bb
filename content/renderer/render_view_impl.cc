@@ -853,6 +853,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
+    IPC_MESSAGE_HANDLER(ViewMsg_OrientationChangeEvent,
+                        OnOrientationChangeEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
     IPC_MESSAGE_HANDLER(ViewMsg_SetNavigationStartTime,
@@ -4481,6 +4483,10 @@ void RenderViewImpl::OnMediaPlayerActionAt(const gfx::Point& location,
                                            const WebMediaPlayerAction& action) {
   if (webview())
     webview()->performMediaPlayerAction(action, location);
+}
+
+void RenderViewImpl::OnOrientationChangeEvent(int orientation) {
+  webview()->mainFrame()->sendOrientationChangeEvent(orientation);
 }
 
 void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,

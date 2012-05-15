@@ -2060,3 +2060,7 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_PepperPluginHung,
                     int /* plugin_child_id */,
                     FilePath /* path */,
                     bool /* is_hung */)
+
+// Screen was rotated. Dispatched to the onorientationchange javascript API.
+IPC_MESSAGE_ROUTED1(ViewMsg_OrientationChangeEvent,
+                    int /* orientation */)

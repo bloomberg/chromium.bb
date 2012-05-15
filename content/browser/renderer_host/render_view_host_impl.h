@@ -384,6 +384,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   void DidCancelPopupMenu();
 #endif
 
+  // User rotated the screen. Calls the "onorientationchange" Javascript hook.
+  void SendOrientationChangeEvent(int orientation);
+
   void set_save_accessibility_tree_for_testing(bool save) {
     save_accessibility_tree_for_testing_ = save;
   }
@@ -409,7 +412,9 @@ class CONTENT_EXPORT RenderViewHostImpl
                         GURL* url);
 
   // NOTE: Do not add functions that just send an IPC message that are called in
-  // one or two places.  Have the caller send the IPC message directly.
+  // one or two places. Have the caller send the IPC message directly (unless
+  // the caller places are in different platforms, in which case it's better
+  // to keep them consistent).
 
  protected:
   friend class RenderViewHostObserver;

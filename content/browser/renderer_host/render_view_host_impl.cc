@@ -1545,6 +1545,10 @@ void RenderViewHostImpl::DidCancelPopupMenu() {
 }
 #endif
 
+void RenderViewHostImpl::SendOrientationChangeEvent(int orientation) {
+  Send(new ViewMsg_OrientationChangeEvent(GetRoutingID(), orientation));
+}
+
 void RenderViewHostImpl::ToggleSpeechInput() {
   Send(new InputTagSpeechMsg_ToggleSpeechInput(GetRoutingID()));
 }

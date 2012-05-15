@@ -867,6 +867,10 @@ class RenderViewImpl : public RenderWidget,
       const FilePath& local_directory_name);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
+
+  // Screen has rotated. 0 = default (portrait), 90 = one turn right, and so on.
+  void OnOrientationChangeEvent(int orientation);
+
   void OnPluginActionAt(const gfx::Point& location,
                         const WebKit::WebPluginAction& action);
   void OnMoveOrResizeStarted();
