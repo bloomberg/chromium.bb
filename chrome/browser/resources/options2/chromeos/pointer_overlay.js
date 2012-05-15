@@ -62,7 +62,7 @@ cr.define('options', function() {
     var button = $('pointer-settings-button');
     var noPointersLabel = $('no-pointing-devices');
     if (label.length > 0) {
-      var title = localStrings.getString(label);
+      var title = loadTimeData.getString(label);
       header.textContent = title;
       button.textContent = title;
       button.hidden = false;

@@ -12,7 +12,7 @@ cr.define('options', function() {
   function BluetoothOptions() {
     OptionsPage.call(this,
                      'bluetooth',
-                     templateData.bluetoothOptionsPageTabTitle,
+                     loadTimeData.getString('bluetoothOptionsPageTabTitle'),
                      'bluetooth-options');
   }
 

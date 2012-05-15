@@ -6,7 +6,7 @@
  * @fileoverview This file contains methods that allow to tweak
  * internal page UI based on the status of current user (owner/user/guest).
  * It is assumed that required data is passed via i18n strings
- * (using templateData variable) that are filled with call to
+ * (using loadTimeData dictionary) that are filled with call to
  * AddAccountUITweaksLocalizedValues in ui_account_tweaks.cc.
  * It is also assumed that tweaked page has chrome://resources/css/widgets.css
  * included.
@@ -28,14 +28,14 @@ cr.define('uiAccountTweaks', function() {
    * @return {boolean} Whether the current user is owner or not.
    */
   UIAccountTweaks.currentUserIsOwner = function() {
-    return templateData['currentUserIsOwner'] == 'true';
+    return loadTimeData.getBoolean('currentUserIsOwner');
   };
 
   /**
    * @return {boolean} Whether we're currently in guest mode.
    */
   UIAccountTweaks.loggedInAsGuest = function() {
-    return templateData['loggedInAsGuest'] == 'true';
+    return loadTimeData.getBoolean('loggedInAsGuest');
   };
 
   /**

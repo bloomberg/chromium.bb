@@ -296,7 +296,7 @@ function getKeyTextValue(keyData) {
  * @param {Array} modifiers Key Modifier list.
  */
 function update(modifiers) {
-  var instructions = document.getElementById('instructions');
+  var instructions = $('instructions');
   if (modifiers.length == 0) {
     instructions.style.visibility = 'visible';
   } else {
@@ -326,14 +326,14 @@ function update(modifiers) {
       classes.push('is-shortcut');
     }
 
-    var key = document.getElementById(keyId(identifier, i));
+    var key = $(keyId(identifier, i));
     key.className = classes.join(' ');
 
     if (!keyData) {
       continue;
     }
 
-    var keyText = document.getElementById(keyTextId(identifier, i));
+    var keyText = $(keyTextId(identifier, i));
     var keyTextValue = getKeyTextValue(keyData);
     if (keyTextValue) {
        keyText.style.visibility = 'visible';
@@ -342,10 +342,10 @@ function update(modifiers) {
     }
     keyText.textContent = keyTextValue;
 
-    var shortcutText = document.getElementById(shortcutTextId(identifier, i));
+    var shortcutText = $(shortcutTextId(identifier, i));
     if (shortcutId) {
       shortcutText.style.visibility = 'visible';
-      shortcutText.textContent = templateData[shortcutId];
+      shortcutText.textContent = loadTimeData.getString('shortcutId');
     } else {
       shortcutText.style.visibility = 'hidden';
     }
@@ -450,20 +450,24 @@ function initLayout() {
   var instructionsText = document.createElement('div');
   instructionsText.id = 'instructions-text';
   instructionsText.className = 'keyboard-overlay-instructions-text';
-  instructionsText.innerHTML = templateData.keyboardOverlayInstructions;
+  instructionsText.innerHTML =
+      loadTimeData.getString('keyboardOverlayInstructions');
   instructions.appendChild(instructionsText);
   var instructionsHideText = document.createElement('div');
   instructionsHideText.id = 'instructions-hide-text';
   instructionsHideText.className = 'keyboard-overlay-instructions-hide-text';
-  instructionsHideText.innerHTML = templateData.keyboardOverlayInstructionsHide;
+  instructionsHideText.innerHTML =
+      loadTimeData.getString('keyboardOverlayInstructionsHide');
   instructions.appendChild(instructionsHideText);
   var learnMoreLinkText = document.createElement('div');
   learnMoreLinkText.id = 'learn-more-text';
   learnMoreLinkText.className = 'keyboard-overlay-learn-more-text';
   learnMoreLinkText.addEventListener('click', learnMoreClicked);
   var learnMoreLinkAnchor = document.createElement('a');
-  learnMoreLinkAnchor.href = templateData.keyboardOverlayLearnMoreURL;
-  learnMoreLinkAnchor.textContent = templateData.keyboardOverlayLearnMore;
+  learnMoreLinkAnchor.href =
+      loadTimeData.getString('keyboardOverlayLearnMoreURL');
+  learnMoreLinkAnchor.textContent =
+      loadTimeData.getString('keyboardOverlayLearnMore');
   learnMoreLinkText.appendChild(learnMoreLinkAnchor);
   instructions.appendChild(learnMoreLinkText);
   keyboard.appendChild(instructions);

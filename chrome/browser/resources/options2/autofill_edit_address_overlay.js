@@ -16,7 +16,7 @@ cr.define('options', function() {
    */
   function AutofillEditAddressOverlay() {
     OptionsPage.call(this, 'autofillEditAddress',
-                     templateData.autofillEditAddressTitle,
+                     loadTimeData.getString('autofillEditAddressTitle'),
                      'autofill-edit-address-overlay');
   }
 
@@ -209,11 +209,10 @@ cr.define('options', function() {
      * @private
      */
     countryChanged_: function() {
-      var countryCode = $('country').value;
-      if (!countryCode)
-        countryCode = templateData.defaultCountryCode;
+      var countryCode = $('country').value ||
+          loadTimeData.getString('defaultCountryCode');
 
-      var details = templateData.autofillCountryData[countryCode];
+      var details = loadTimeData.getValue('autofillCountryData')[countryCode];
       var postal = $('postal-code-label');
       postal.textContent = details['postalCodeLabel'];
       $('state-label').textContent = details['stateLabel'];
@@ -227,8 +226,8 @@ cr.define('options', function() {
      * @private
      */
     populateCountryList_: function() {
-      var countryData = templateData.autofillCountryData;
-      var defaultCountryCode = templateData.defaultCountryCode;
+      var countryData = loadTimeData.getValue('autofillCountryData');
+      var defaultCountryCode = loadTimeData.getString('defaultCountryCode');
 
       // Build an array of the country names and their corresponding country
       // codes, so that we can sort and insert them in order.

@@ -30,7 +30,8 @@ cr.define('options', function() {
    * @class
    */
   function SyncSetupOverlay() {
-    OptionsPage.call(this, 'syncSetup', templateData.syncSetupOverlayTabTitle,
+    OptionsPage.call(this, 'syncSetup',
+                     loadTimeData.getString('syncSetupOverlayTabTitle'),
                      'sync-setup-overlay');
   }
 
@@ -717,7 +718,7 @@ cr.define('options', function() {
       } else if (4 == args.error) {
         this.showCaptcha_(args);
       } else if (7 == args.error) {
-        this.setBlurbError_(localStrings.getString('serviceUnavailableError'));
+        this.setBlurbError_(loadTimeData.getString('serviceUnavailableError'));
       } else if (8 == args.error) {
         if (args.askForOtp) {
           this.showOtpRequired_();
@@ -735,7 +736,7 @@ cr.define('options', function() {
       }
 
       $('sign-in').disabled = false;
-      $('sign-in').value = templateData['signin'];
+      $('sign-in').value = loadTimeData.getString('signin');
       this.loginSetFocus_();
     },
 
@@ -833,12 +834,12 @@ cr.define('options', function() {
     },
 
     showSuccessAndClose_: function() {
-      $('sign-in').value = localStrings.getString('loginSuccess');
+      $('sign-in').value = loadTimeData.getString('loginSuccess');
       setTimeout(this.closeOverlay_, 1600);
     },
 
     showSuccessAndSettingUp_: function() {
-      $('sign-in').value = localStrings.getString('settingUp');
+      $('sign-in').value = loadTimeData.getString('settingUp');
       this.setThrobbersVisible_(true);
       $('top-blurb-error').hidden = true;
     },

@@ -10,8 +10,6 @@ cr.define('options', function() {
   /** @const */ var DeletableItem = options.DeletableItem;
   /** @const */ var DeletableItemList = options.DeletableItemList;
 
-  /** @const */ var localStrings = new LocalStrings();
-
   /**
    * Creates a new ignored protocol / content handler list item.
    *
@@ -126,7 +124,7 @@ cr.define('options', function() {
       var defaultOptionElement = document.createElement('option');
       defaultOptionElement.selected = data.default_handler == -1;
       defaultOptionElement.textContent =
-          localStrings.getString('handlers_none_handler');
+          loadTimeData.getString('handlers_none_handler');
       defaultOptionElement.value = -1;
       selectElement.appendChild(defaultOptionElement);
 
@@ -157,7 +155,7 @@ cr.define('options', function() {
       // Remove link.
       var removeElement = document.createElement('div');
       removeElement.textContent =
-          localStrings.getString('handlers_remove_link');
+          loadTimeData.getString('handlers_remove_link');
       removeElement.addEventListener('click', function(e) {
         var value = selectElement ? selectElement.value : 0;
         delegate.removeHandler(value, data.handlers[value]);

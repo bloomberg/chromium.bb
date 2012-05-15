@@ -16,9 +16,7 @@ cr.define('options', function() {
     this.activeNavTab = null;
     OptionsPage.call(this,
                      'virtualKeyboards',
-                     // The templateData.virtualKeyboardPageTabTitle is added
-                     // in OptionsPageUIHandler::RegisterTitle().
-                     templateData.virtualKeyboardPageTabTitle,
+                     loadTimeData.getString('virtualKeyboardPageTabTitle'),
                      'virtual-keyboard-manager');
   }
 

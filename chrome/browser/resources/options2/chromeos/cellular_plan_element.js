@@ -26,7 +26,7 @@ cr.define('options.internet', function() {
       this.textContent = '';
       if (!plans || !plans.length) {
         var noplansDiv = this.ownerDocument.createElement('div');
-        noplansDiv.textContent = localStrings.getString('noPlansFound');
+        noplansDiv.textContent = loadTimeData.getString('noPlansFound');
         this.appendChild(detailsTable);
       } else {
         for (var i = 0; i < plans.length; ++i) {
@@ -78,13 +78,13 @@ cr.define('options.internet', function() {
       this.addRow_(detailsTable, 'plan-details-info',
           'option-name', 'planSummary', this.data.planSummary);
       this.addRow_(detailsTable, 'plan-details-info',
-          'option-name', null, localStrings.getString('planName'),
+          'option-name', null, loadTimeData.getString('planName'),
           'option-value', 'planName', this.data.name);
       this.addRow_(detailsTable, 'plan-details-info',
-        'option-name', null, localStrings.getString('dataRemaining'),
+        'option-name', null, loadTimeData.getString('dataRemaining'),
         'option-value', 'dataRemaining', this.data.dataRemaining);
       this.addRow_(detailsTable, 'plan-details-info',
-        'option-name', null, localStrings.getString('planExpires'),
+        'option-name', null, loadTimeData.getString('planExpires'),
         'option-value', 'dataRemaining', this.data.planExpires);
       if (this.data.warning && this.data.warning != '') {
         this.addRow_(detailsTable, 'plan-details-info',

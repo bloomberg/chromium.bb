@@ -21,15 +21,13 @@ void AddAccountUITweaksLocalizedValues(
   // Translate owner's email to the display email.
   std::string display_email =
       UserManager::Get()->GetUserDisplayEmail(owner_email);
-  localized_strings->SetString("ownerUserId", UTF8ToUTF16(display_email));
+  localized_strings->SetString("ownerUserId", display_email);
 
-  localized_strings->SetString("currentUserIsOwner",
-      UserManager::Get()->IsCurrentUserOwner() ?
-      ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+  localized_strings->SetBoolean("currentUserIsOwner",
+      UserManager::Get()->IsCurrentUserOwner());
 
-  localized_strings->SetString("loggedInAsGuest",
-      chromeos::UserManager::Get()->IsLoggedInAsGuest() ?
-      ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+  localized_strings->SetBoolean("loggedInAsGuest",
+      UserManager::Get()->IsLoggedInAsGuest());
 }
 
 void AddAccountUITweaksLocalizedValues(

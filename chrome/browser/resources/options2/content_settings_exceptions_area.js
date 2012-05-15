@@ -64,27 +64,27 @@ cr.define('options.contentSettings', function() {
       // Setting select element for edit mode.
       var select = cr.doc.createElement('select');
       var optionAllow = cr.doc.createElement('option');
-      optionAllow.textContent = templateData.allowException;
+      optionAllow.textContent = loadTimeData.getString('allowException');
       optionAllow.value = 'allow';
       select.appendChild(optionAllow);
 
       if (this.enableAskOption) {
         var optionAsk = cr.doc.createElement('option');
-        optionAsk.textContent = templateData.askException;
+        optionAsk.textContent = loadTimeData.getString('askException');
         optionAsk.value = 'ask';
         select.appendChild(optionAsk);
       }
 
       if (this.contentType == 'cookies') {
         var optionSession = cr.doc.createElement('option');
-        optionSession.textContent = templateData.sessionException;
+        optionSession.textContent = loadTimeData.getString('sessionException');
         optionSession.value = 'session';
         select.appendChild(optionSession);
       }
 
       if (this.contentType != 'fullscreen') {
         var optionBlock = cr.doc.createElement('option');
-        optionBlock.textContent = templateData.blockException;
+        optionBlock.textContent = loadTimeData.getString('blockException');
         optionBlock.value = 'block';
         select.appendChild(optionBlock);
       }
@@ -169,13 +169,13 @@ cr.define('options.contentSettings', function() {
     settingForDisplay: function() {
       var setting = this.setting;
       if (setting == 'allow')
-        return templateData.allowException;
+        return loadTimeData.getString('allowException');
       else if (setting == 'block')
-        return templateData.blockException;
+        return loadTimeData.getString('blockException');
       else if (setting == 'ask')
-        return templateData.askException;
+        return loadTimeData.getString('askException');
       else if (setting == 'session')
-        return templateData.sessionException;
+        return loadTimeData.getString('sessionException');
     },
 
     /**
@@ -299,7 +299,8 @@ cr.define('options.contentSettings', function() {
     decorate: function() {
       ExceptionsListItem.prototype.decorate.call(this);
 
-      this.input.placeholder = templateData.addNewExceptionInstructions;
+      this.input.placeholder =
+          loadTimeData.getString('addNewExceptionInstructions');
 
       // Do we always want a default of allow?
       this.setting = 'allow';
@@ -472,7 +473,7 @@ cr.define('options.contentSettings', function() {
    */
   function ContentSettingsExceptionsArea() {
     OptionsPage.call(this, 'contentExceptions',
-                     templateData.contentSettingsPageTabTitle,
+                     loadTimeData.getString('contentSettingsPageTabTitle'),
                      'content-settings-exceptions-area');
   }
 
@@ -504,7 +505,7 @@ cr.define('options.contentSettings', function() {
      */
     showList: function(type) {
       var header = this.pageDiv.querySelector('h1');
-      header.textContent = templateData[type + '_header'];
+      header.textContent = loadTimeData.getString(type + '_header');
 
       var divs = this.pageDiv.querySelectorAll('div[contentType]');
       for (var i = 0; i < divs.length; i++) {

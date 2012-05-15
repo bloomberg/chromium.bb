@@ -69,6 +69,7 @@ namespace {
 ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIPluginsHost);
+  source->set_use_json_js_format_v2();
 
   source->AddLocalizedString("pluginsTitle", IDS_PLUGINS_TITLE);
   source->AddLocalizedString("pluginsDetailsModeLink",

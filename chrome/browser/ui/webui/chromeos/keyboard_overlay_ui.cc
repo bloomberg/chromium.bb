@@ -211,6 +211,7 @@ ChromeWebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
 
   source->AddString("keyboardOverlayLearnMoreURL", UTF8ToUTF16(kLearnMoreURL));
   source->set_json_path("strings.js");
+  source->set_use_json_js_format_v2();
   source->add_resource_path("keyboard_overlay.js", IDR_KEYBOARD_OVERLAY_JS);
   source->set_default_resource(IDR_KEYBOARD_OVERLAY_HTML);
   return source;
