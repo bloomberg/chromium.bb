@@ -16,7 +16,11 @@
 #endif  // defined(PRINTING_IMPLEMENTATION)
 
 #else  // defined(WIN32)
+#if defined(PRINTING_IMPLEMENTATION)
 #define PRINTING_EXPORT __attribute__((visibility("default")))
+#else
+#define PRINTING_EXPORT
+#endif
 #endif
 
 #else  // defined(COMPONENT_BUILD)

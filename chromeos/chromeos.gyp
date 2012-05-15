@@ -18,6 +18,9 @@
         'power_state_control_proto',
         'power_supply_properties_proto',
       ],
+      'defines': [
+        'CHROMEOS_IMPLEMENTATION',
+      ],
       'sources': [
         'chromeos_export.h',
         'chromeos_switches.cc',

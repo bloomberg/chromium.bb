@@ -19,7 +19,11 @@
 #endif  // defined(IPC_IMPLEMENTATION)
 
 #else  // defined(WIN32)
+#if defined(IPC_IMPLEMENTATION)
 #define IPC_EXPORT __attribute__((visibility("default")))
+#else
+#define IPC_EXPORT
+#endif
 #endif
 
 #else  // defined(COMPONENT_BUILD)

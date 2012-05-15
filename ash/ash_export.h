@@ -19,7 +19,11 @@
 #endif  // defined(ASH_IMPLEMENTATION)
 
 #else  // defined(WIN32)
+#if defined(ASH_IMPLEMENTATION)
 #define ASH_EXPORT __attribute__((visibility("default")))
+#else
+#define ASH_EXPORT
+#endif
 #endif
 
 #else  // defined(COMPONENT_BUILD)

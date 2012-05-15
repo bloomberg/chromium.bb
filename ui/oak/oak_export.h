@@ -19,7 +19,11 @@
 #endif  // defined(OAK_IMPLEMENTATION)
 
 #else  // defined(WIN32)
+#if defined(OAK_IMPLEMENTATION)
 #define OAK_EXPORT __attribute__((visibility("default")))
+#else
+#define OAK_EXPORT
+#endif
 #endif
 
 #else  // defined(COMPONENT_BUILD)

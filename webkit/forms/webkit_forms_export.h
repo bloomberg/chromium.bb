@@ -16,7 +16,11 @@
 #endif  // defined(WEBKIT_FORMS_IMPLEMENTATION)
 
 #else // defined(WIN32)
+#if defined(WEBKIT_FORMS_IMPLEMENTATION)
 #define WEBKIT_FORMS_EXPORT __attribute__((visibility("default")))
+#else
+#define WEBKIT_FORMS_EXPORT
+#endif
 #endif
 
 #else // defined(COMPONENT_BUILD)
