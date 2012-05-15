@@ -5,6 +5,7 @@
  */
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/posix/nacl_fast_mutex.h"
 
 int NaClFastMutexCtor(struct NaClFastMutex *flp) {
@@ -20,6 +21,10 @@ void NaClFastMutexDtor(struct NaClFastMutex *flp) {
 
 void NaClFastMutexLock(struct NaClFastMutex *flp) {
   CHECK(0 == pthread_mutex_lock(&flp->mu));
+}
+
+int NaClFastMutexTryLock(struct NaClFastMutex *flp) {
+  return NaClXlateErrno(pthread_mutex_trylock(&flp->mu));
 }
 
 void NaClFastMutexUnlock(struct NaClFastMutex *flp) {
