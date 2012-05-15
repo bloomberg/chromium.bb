@@ -250,6 +250,30 @@ struct drm_mode_connector_set_property {
 	__u32 connector_id;
 };
 
+#define DRM_MODE_OBJECT_CRTC 0xcccccccc
+#define DRM_MODE_OBJECT_CONNECTOR 0xc0c0c0c0
+#define DRM_MODE_OBJECT_ENCODER 0xe0e0e0e0
+#define DRM_MODE_OBJECT_MODE 0xdededede
+#define DRM_MODE_OBJECT_PROPERTY 0xb0b0b0b0
+#define DRM_MODE_OBJECT_FB 0xfbfbfbfb
+#define DRM_MODE_OBJECT_BLOB 0xbbbbbbbb
+#define DRM_MODE_OBJECT_PLANE 0xeeeeeeee
+
+struct drm_mode_obj_get_properties {
+	__u64 props_ptr;
+	__u64 prop_values_ptr;
+	__u32 count_props;
+	__u32 obj_id;
+	__u32 obj_type;
+};
+
+struct drm_mode_obj_set_property {
+	__u64 value;
+	__u32 prop_id;
+	__u32 obj_id;
+	__u32 obj_type;
+};
+
 struct drm_mode_get_blob {
 	__u32 blob_id;
 	__u32 length;
