@@ -468,3 +468,102 @@ class ManageExceptionsPage(object):
     pattern_elem = listitem_elem.find_element_by_tag_name('input')
     _FocusField(self._driver, list_elem, pattern_elem)
     pattern_elem.send_keys('\n')
+
+
+class RestoreOnStartupType(object):
+  NEW_TAB_PAGE = 5
+  RESTORE_SESSION = 1
+  RESTORE_URLS = 4
+
+
+class BasicSettingsPage(object):
+  """The basic settings page."""
+  _URL = 'chrome://settings-frame/settings'
+
+  @staticmethod
+  def FromNavigation(driver):
+    """Creates an instance of BasicSetting page by navigating to it."""
+    driver.get(BasicSettingsPage._URL)
+    return BasicSettingsPage(driver)
+
+  def __init__(self, driver):
+    self._driver = driver
+    assert self._URL == driver.current_url
+
+  def SetOnStartupOptions(self, on_startup_option):
+    """Set on-startup options.
+
+    Args:
+      on_startup_option: option types for on start up settings.
+
+    Raises:
+      AssertionError when invalid startup option type is provided.
+    """
+    if on_startup_option == RestoreOnStartupType.NEW_TAB_PAGE:
+      startup_option_elem = self._driver.find_element_by_id('startup-newtab')
+    elif on_startup_option == RestoreOnStartupType.RESTORE_SESSION:
+      startup_option_elem = self._driver.find_element_by_id(
+          'startup-restore-session')
+    elif on_startup_option == RestoreOnStartupType.RESTORE_URLS:
+      startup_option_elem = self._driver.find_element_by_id(
+          'startup-show-pages')
+    else:
+      raise AssertionError('Invalid value for restore start up option!')
+    startup_option_elem.click()
+
+  def _GoToStartupSetPages(self):
+    self._driver.find_element_by_id('startup-set-pages').click()
+
+  def _FillStartupURLs(self, url_list):
+    list = DynamicList(self._driver, self._driver.find_element_by_id(
+                       'startupPagesList'))
+    for url in url_list:
+      list.Add(url + '\n')
+
+  def AddStartupPages(self, url_list):
+    """Add startup URLs.
+
+    Args:
+      url_list: A list or startup urls
+    """
+    self._GoToStartupSetPages()
+    self._FillStartupURLs(url_list)
+    self._driver.find_element_by_id('startup-overlay-confirm').click()
+    self._driver.get(self._URL)
+
+  def UseCurrentPageForStartup(self):
+    """Use current pages and verify page url show up in settings."""
+    self._GoToStartupSetPages()
+    self._driver.find_element_by_id('startupUseCurrentButton').click()
+    self._driver.find_element_by_id('startup-overlay-confirm').click()
+    self._driver.get(self._URL)
+
+  def VerifyStartupURLs(self, title_list):
+    """Verify saved startup URLs appear in set page UI.
+
+    Args:
+      title_list: A list of startup page title.
+
+    Raises:
+      AssertionError when start up URLs do not appear in set page UI.
+    """
+    self._GoToStartupSetPages()
+    for i in range(len(title_list)):
+      try:
+        self._driver.find_element_by_xpath(
+            '//*[contains(@class, "title")][text()="%s"]' % title_list[i])
+      except selenium.common.exceptions.NoSuchElementException:
+        raise AssertionError("Current page %s did not appear as startup page."
+            % title_list[i])
+    self._driver.find_element_by_id('startup-overlay-cancel').click()
+
+  def CancelStartupURLSetting(self, url_list):
+    """Cancel start up URL settings.
+
+    Args:
+      url_list: A list of startup urls.
+    """
+    self._GoToStartupSetPages()
+    self._FillStartupURLs(url_list)
+    self._driver.find_element_by_id('startup-overlay-cancel').click()
+    self._driver.get(self._URL)

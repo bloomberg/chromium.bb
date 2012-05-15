@@ -7,6 +7,7 @@ import pyauto_functional  # Must be imported before pyauto
 import pyauto
 from webdriver_pages import settings
 from webdriver_pages.settings import Behaviors, ContentTypes
+from webdriver_pages.settings import RestoreOnStartupType
 
 
 class PrefsUITest(pyauto.PyUITest):
@@ -194,6 +195,76 @@ class PrefsUITest(pyauto.PyUITest):
     self._VerifyContentExceptionUI(
         ContentTypes.PLUGINS, 'http://maps.google.com:80',
         Behaviors.BLOCK, incognito=True)
+
+
+class BasicSettingsUITest(pyauto.PyUITest):
+  """Testcases for uber page basic settings UI."""
+
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+    self._driver = self.NewWebDriver()
+
+  def Debug(self):
+    """chrome://plugins test debug method.
+
+    This method will not run automatically.
+    """
+    driver = self.NewWebDriver()
+    page = settings.BasicSettingsPage.FromNavigation(driver)
+    import pdb
+    pdb.set_trace()
+
+  def testOnStartupSettings(self):
+    """Verify user can set startup options."""
+    page = settings.BasicSettingsPage.FromNavigation(self._driver)
+    page.SetOnStartupOptions(RestoreOnStartupType.NEW_TAB_PAGE)
+    self.assertEqual(RestoreOnStartupType.NEW_TAB_PAGE,
+        self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
+    page.SetOnStartupOptions(RestoreOnStartupType.RESTORE_SESSION)
+    self.assertEqual(RestoreOnStartupType.RESTORE_SESSION,
+        self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
+    page.SetOnStartupOptions(RestoreOnStartupType.RESTORE_URLS)
+    self.assertEqual(RestoreOnStartupType.RESTORE_URLS,
+        self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
+
+  def testSetStartupPages(self):
+    """Verify user can add urls for startup pages."""
+    url_list = ['www.google.com', 'http://www.amazon.com', 'ebay.com']
+    page = settings.BasicSettingsPage.FromNavigation(self._driver)
+    page.AddStartupPages(url_list)
+    self.assertEqual(RestoreOnStartupType.RESTORE_URLS,
+        self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
+    startup_urls = self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup)
+    self.assertEqual(startup_urls[0], 'http://www.google.com/')
+    self.assertEqual(startup_urls[1], 'http://www.amazon.com/')
+    self.assertEqual(startup_urls[2], 'http://ebay.com/')
+
+  def testUseCurrentPagesForStartup(self):
+    """Verify user can start up browser using current pages."""
+    page = settings.BasicSettingsPage.FromNavigation(self._driver)
+    self.OpenNewBrowserWindow(True)
+    url1 = self.GetHttpURLForDataPath('title2.html')
+    url2 = self.GetHttpURLForDataPath('title3.html')
+    self.NavigateToURL(url1, 1, 0)
+    self.AppendTab(pyauto.GURL(url2), 1)
+    title_list = ['Title Of Awesomeness',
+                  'Title Of More Awesomeness']
+    page.UseCurrentPageForStartup()
+    page.VerifyStartupURLs(title_list)
+    self.assertEqual(RestoreOnStartupType.RESTORE_URLS,
+        self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
+    startup_urls = self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup)
+    self.assertEqual(len(startup_urls), 3)
+    self.assertEqual(startup_urls[1], url1)
+    self.assertEqual(startup_urls[2], url2)
+
+  def testCancelStartupURLSetting(self):
+    """Verify canceled start up URLs settings are not saved."""
+    page = settings.BasicSettingsPage.FromNavigation(self._driver)
+    url_list = ['www.google.com', 'http://www.amazon.com']
+    page.CancelStartupURLSetting(url_list)
+    startup_urls = self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup)
+    self.assertEqual(len(startup_urls), 0)
 
 
 if __name__ == '__main__':
