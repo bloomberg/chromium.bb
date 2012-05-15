@@ -35,9 +35,8 @@ LIBPATH_SHARED_X8664=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-64
 # These looks like they have arch bias but we are just pulling bitcode
 LIBPATH_NEWLIB=$(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib
 LIBPATH_BITCODE_SDK=$(ROOT)/scons-out/nacl-x86-32-pnacl-pexe-clang/lib
+LIBPATH_SHIM=$(ROOT)/scons-out/nacl-x86-64-pnacl-pexe-clang/obj/src/untrusted/pnacl_irt_shim
 PATH_CRT_BITCODE=$(ROOT)/toolchain/pnacl_linux_x86_64/newlib/lib
-PATH_CRT_X8632=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-32
-PATH_CRT_X8664=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-64
 
 COMMON_FLAGS= --pnacl-driver-verbose -save-temps
 RUNNER_DEBUG= # -E LD_DEBUG=all
@@ -86,86 +85,63 @@ prereqs.x8664: ld.so.pso
             libpthread pnacl_irt_shim
 
 ######################################################################
-# bookends for shared libs
-S_INIT_BITCODE = $(PATH_CRT_BITCODE)/crti.bc $(PATH_CRT_BITCODE)/crtbeginS.bc
-S_FINI_BITCODE =
-
-S_INIT_X8632 = $(PATH_CRT_X8632)/crtbeginS.o
-S_FINI_X8632 = $(PATH_CRT_X8632)/crtendS.o
-
-S_INIT_X8664 = $(PATH_CRT_X8664)/crtbeginS.o
-S_FINI_X8664 = $(PATH_CRT_X8664)/crtendS.o
-
-SHARED_FLAGS_X8632 = $(COMMON_FLAGS) -arch x86-32 -nostdlib -shared -fPIC -Wl,-Lx8632
-SHARED_FLAGS_X8664 = $(COMMON_FLAGS) -arch x86-64 -nostdlib -shared -fPIC -Wl,-Lx8664
+SHARED_FLAGS_X8632 = $(COMMON_FLAGS) --newlib-shared-experiment -shared -fPIC \
+                     -Wl,-Lx8632 -arch x86-32
+SHARED_FLAGS_X8664 = $(COMMON_FLAGS) --newlib-shared-experiment -shared -fPIC \
+                     -Wl,-Lx8664 -arch x86-64
 ######################################################################
-# NOTE: without -nostdlib a gratuitous libc dep is added
 libsimple.pso: fortytwo.bc
-	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
-        $(S_INIT_BITCODE) fortytwo.bc $(S_FINI_BITCODE) \
-        -Wl,--soname=libsimple.so -o $@
+	$(PNACL_CC) $(COMMON_FLAGS) -nodefaultlibs -shared \
+        -Wl,--soname=libsimple.so -o $@ $^
 
 x8632/libsimple.so: libsimple.pso
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ \
-            $(S_INIT_X8632) $^ $(S_FINI_X8632)
+	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ $^
 
 x8664/libsimple.so: libsimple.pso
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ \
-            $(S_INIT_X8664) $^ $(S_FINI_X8664)
+	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ $^
+
 # build a shared version of libnosys from the bitcode archive
 mylibnosys.pso: $(LIBPATH_BITCODE_SDK)/libnosys.a
-	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
-              $(S_INIT_BITCODE) \
+	$(PNACL_CC) $(COMMON_FLAGS) -nodefaultlibs -shared \
               -Wl,--whole-archive \
               $(LIBPATH_BITCODE_SDK)/libnosys.a \
               -Wl,--no-whole-archive \
-              $(S_FINI_BITCODE) \
               -Wl,--soname=mylibnosys.so -o $@
 
 x8632/mylibnosys.so: mylibnosys.pso
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ \
-            $(S_INIT_X8632) $^ $(S_FINI_X8632)
+	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ $^
 
 x8664/mylibnosys.so: mylibnosys.pso
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ \
-            $(S_INIT_X8664) $^ $(S_FINI_X8664)
+	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ $^
 
 # build a shared version of libpthread from the bitcode archive
 mylibpthread.pso: $(LIBPATH_BITCODE_SDK)/libpthread.a
-	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
-              $(S_INIT_BITCODE) \
+	$(PNACL_CC) $(COMMON_FLAGS) -nodefaultlibs -shared \
               -Wl,--whole-archive \
               $(LIBPATH_BITCODE_SDK)/libpthread.a \
               -Wl,--no-whole-archive \
-              $(S_FINI_BITCODE) \
               -Wl,--soname=mylibpthread.so -o $@
 
 x8632/mylibpthread.so: mylibpthread.pso
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ \
-            $(S_INIT_X8632) $^ $(S_FINI_X8632)
+	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ $^
 
 x8664/mylibpthread.so: mylibpthread.pso
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ \
-            $(S_INIT_X8664) $^ $(S_FINI_X8664)
+	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ $^
 
 # build a shared version of libc (newlib) from the bitcode archive
 mylibc.pso: mylibnosys.pso \
             $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a
-	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
-              $(S_INIT_BITCODE) \
+	$(PNACL_CC) $(COMMON_FLAGS) -nodefaultlibs -shared \
               -Wl,--whole-archive \
               $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a \
               -Wl,--no-whole-archive \
-              $(S_FINI_BITCODE) \
               -Wl,--soname=mylibc.so -o $@
 
 x8632/mylibc.so: mylibc.pso
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ \
-            $(S_INIT_X8632) $^ $(S_FINI_X8632)
+	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ $^
 
 x8664/mylibc.so: mylibc.pso x8664/mylibnosys.so
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ \
-            $(S_INIT_X8664) $^ $(S_FINI_X8664)
+	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ $^
 ######################################################################
 mylibnacl.a: $(LIBPATH_BITCODE_SDK)/libnacl.a
 	rm -f $@
@@ -179,20 +155,14 @@ mylibnacl.a: $(LIBPATH_BITCODE_SDK)/libnacl.a
 	$(PNACL_AR) cr $@ /tmp/libnacl/*
 ######################################################################
 # bookends for dynamic images
-# NOTE: the duplication of crtbegin.bc.
-# The one here was build from $(PATH_CRT_SRC)/bitcode
-# The one above from $(PATH_CRT_SRC)
-INIT_BITCODE = startup_newlib_dynamic.bc \
-       $(PATH_CRT_BITCODE)/crti.bc $(PATH_CRT_BITCODE)/crtbegin.bc
+# NOTE: we could almost use the default ones used by the driver except for:
+# * a custom glibc crti in the driver
+# * our custom startup_newlib_dynamic.bc
+INIT_BITCODE = \
+       $(PATH_CRT_BITCODE)/crti.bc \
+       $(PATH_CRT_BITCODE)/crtbegin.bc \
+       startup_newlib_dynamic.bc
 FINI_BITCODE =
-
-INIT_X8632 = $(PATH_CRT_X8632)/crtbegin.o
-FINI_X8632 = $(PATH_CRT_X8632)/crtend.o
-
-
-INIT_X8664 = $(PATH_CRT_X8664)/crtbegin.o \
-             $(ROOT)/scons-out/nacl-x86-64-pnacl-pexe-clang/lib/libpnacl_irt_shim.a
-FINI_X8664 = $(PATH_CRT_X8664)/crtend.o
 
 LIBS = -l:keep_alive.x \
        -L . \
@@ -206,12 +176,14 @@ LIBS = -l:keep_alive.x \
 #       which should be the same as the loader.
 #       Without it ___tls_get_addr is not found
 #
-#       Note: we are adding the shim manually
+#       Note: LIBPATH_SHIM can go with a more elaborate prereqs step
 DYNAMIC_FLAGS =  -nodefaultlibs -Wl,-l:libgcc.a  -Wl,-l:libcrt_platform.a
-DYNAMIC_FLAGS_X8632 = $(DYNAMIC_FLAGS)  -rpath-link=x8632 -arch x86-32 \
+DYNAMIC_FLAGS_X8632 = $(DYNAMIC_FLAGS) --newlib-shared-experiment \
+                      -rpath-link=x8632 -arch x86-32 \
                       $(LIBPATH_SHARED_X8632)/ld-2.9.so
-DYNAMIC_FLAGS_X8664 = $(DYNAMIC_FLAGS)  -rpath-link=x8664/ -arch x86-64 \
-                      --noirtshim -Wl,--entry=_pnacl_wrapper_start \
+DYNAMIC_FLAGS_X8664 = $(DYNAMIC_FLAGS) --newlib-shared-experiment \
+                      -rpath-link=x8664/ -arch x86-64 \
+                      -rpath-link=$(LIBPATH_SHIM) \
                       $(LIBPATH_SHARED_X8664)/ld-2.9.so
 
 hello1.pexe: hello1.bc startup_newlib_dynamic.bc ld.so.pso libsimple.pso \
@@ -221,13 +193,11 @@ hello1.pexe: hello1.bc startup_newlib_dynamic.bc ld.so.pso libsimple.pso \
 
 x8632/hello1.nexe: hello1.pexe \
     x8632/libsimple.so x8632/mylibc.so x8632/mylibnosys.so x8632/mylibpthread.so
-	$(PNACL_TRANS) $(COMMON_FLAGS) $(DYNAMIC_FLAGS_X8632)  -o $@ \
-            $(INIT_X8632) $^ $(FINI_X8632)
-# We are sneaking in the shim manually via $(INIT_X8664) for now
+	$(PNACL_TRANS) $(COMMON_FLAGS) $(DYNAMIC_FLAGS_X8632)  -o $@ $^
+
 x8664/hello1.nexe: hello1.pexe \
     x8664/libsimple.so x8664/mylibc.so x8664/mylibnosys.so x8664/mylibpthread.so
-	$(PNACL_TRANS) $(COMMON_FLAGS) $(DYNAMIC_FLAGS_X8664)  -o $@ \
-            $(INIT_X8664) $^ $(FINI_X8664)
+	$(PNACL_TRANS) $(COMMON_FLAGS) $(DYNAMIC_FLAGS_X8664)  -o $@ $^
 
 ######################################################################
 
