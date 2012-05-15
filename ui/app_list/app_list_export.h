@@ -19,7 +19,11 @@
 #endif  // defined(APP_LIST_IMPLEMENTATION)
 
 #else  // defined(WIN32)
+#if defined(APP_LIST_IMPLEMENTATION)
 #define APP_LIST_EXPORT __attribute__((visibility("default")))
+#else
+#define APP_LIST_EXPORT
+#endif
 #endif
 
 #else  // defined(COMPONENT_BUILD)
