@@ -763,17 +763,14 @@ void NaClUntrustedThreadsResumeAll(struct NaClApp *nap);
 
 #else
 
-/*
- * Suspending untrusted threads is only needed for preventing mmap
- * races on Windows, so these are no-ops on other platforms.
- */
-
 static INLINE void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap) {
   UNREFERENCED_PARAMETER(nap);
+  NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspendAll: Not implemented\n");
 }
 
 static INLINE void NaClUntrustedThreadsResumeAll(struct NaClApp *nap) {
   UNREFERENCED_PARAMETER(nap);
+  NaClLog(LOG_FATAL, "NaClUntrustedThreadsResumeAll: Not implemented\n");
 }
 
 #endif

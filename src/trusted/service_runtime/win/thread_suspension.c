@@ -78,11 +78,7 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
 
 /*
  * NaClUntrustedThreadsSuspend() ensures that any untrusted code is
- * temporarily suspended.  This is used when we are about to open a
- * hole in untrusted address space.  In this case, if another trusted
- * thread (outside of control) allocates memory that is placed into
- * that hole, we do not want untrusted code to being to write to that
- * location.
+ * temporarily suspended.
  *
  * If a thread is currently executing a NaCl syscall, we tell the
  * thread not to return to untrusted code yet.  If a thread is
