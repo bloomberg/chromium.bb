@@ -43,6 +43,8 @@ cr.define('oobe', function() {
 
       this.dropdown_ = $('networks-list');
       cr.ui.DropDown.decorate(this.dropdown_);
+      this.dropdown_.setAttribute('aria-label',
+                                  localStrings.getString('selectNetwork'));
     },
 
     onBeforeShow: function(data) {

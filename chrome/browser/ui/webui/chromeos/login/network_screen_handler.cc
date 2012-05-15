@@ -116,6 +116,8 @@ void NetworkScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT));
   localized_strings->SetString("selectKeyboard",
       l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT));
+  localized_strings->SetString("selectNetwork",
+      l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT));
   localized_strings->SetString("proxySettings",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
   localized_strings->SetString("continueButton",
