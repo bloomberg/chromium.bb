@@ -430,7 +430,7 @@ div.root-eject:hover {
 }
 
 #search-box {
-  background: url('../images/icon_search.png') no-repeat scroll 3px 3px;
+  background: url('../images/icon_search.png') no-repeat scroll 2px 1.5px;
   border: 1px solid #BBB;
   border-radius: 2px;
   display: -webkit-box;
