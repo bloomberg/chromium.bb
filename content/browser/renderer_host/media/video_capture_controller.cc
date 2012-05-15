@@ -421,7 +421,7 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
 }
 
 void VideoCaptureController::DoFrameInfoOnIOThread(
-    const media::VideoCaptureCapability info) {
+    const media::VideoCaptureCapability& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(owned_dibs_.empty())
       << "Device is restarted without releasing shared memory.";

@@ -91,7 +91,7 @@ class VideoCaptureController
 
   // Worker functions on IO thread.
   void DoIncomingCapturedFrameOnIOThread(int buffer_id, base::Time timestamp);
-  void DoFrameInfoOnIOThread(const media::VideoCaptureCapability info);
+  void DoFrameInfoOnIOThread(const media::VideoCaptureCapability& info);
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();
 
