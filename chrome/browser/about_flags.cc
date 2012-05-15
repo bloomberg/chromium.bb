@@ -534,6 +534,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableSoftwareRasterizer)
   },
   {
+    "enable-media-stream",
+    IDS_FLAGS_MEDIA_STREAM_NAME,
+    IDS_FLAGS_MEDIA_STREAM_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableMediaStream)
+  },
+  {
     "enable-peer-connection",
     IDS_FLAGS_PEER_CONNECTION_NAME,
     IDS_FLAGS_PEER_CONNECTION_DESCRIPTION,

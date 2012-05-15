@@ -5540,6 +5540,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_DESCRIPTION" desc="Description for the flag to disable using a software renderer.">
         Don't fall back to a 3D software rasterizer when the GPU cannot be used.
       </message>
+      <message name="IDS_FLAGS_MEDIA_STREAM_NAME" desc="Name for the flag to enable MediaStream and GetUserMedia.">
+        Enable MediaStream.
+      </message>
+      <message name="IDS_FLAGS_MEDIA_STREAM_DESCRIPTION" desc="Description for the flag to enable MediaStream and GetUserMedia.">
+        Enable MediaStream and GetUserMedia APIs for WebRTC functionality. More info at webrtc.org.
+      </message>
       <message name="IDS_FLAGS_PEER_CONNECTION_NAME" desc="Name for the flag to enable PeerConnection.">
         Enable PeerConnection.
       </message>

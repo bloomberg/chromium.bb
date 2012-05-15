@@ -691,6 +691,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGPUClientLogging,
     switches::kEnableLogging,
     switches::kEnableMediaSource,
+    switches::kEnableMediaStream,
     switches::kEnablePeerConnection,
     switches::kEnableShadowDOM,
     switches::kEnableStrictSiteIsolation,

@@ -3337,6 +3337,10 @@ void RenderViewImpl::CheckPreferredSize() {
 }
 
 void RenderViewImpl::EnsureMediaStreamImpl() {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kEnableMediaStream))
+    return;
+
 #if defined(ENABLE_P2P_APIS)
   if (!p2p_socket_dispatcher_)
     p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
