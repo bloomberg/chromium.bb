@@ -641,9 +641,9 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
   EXPECT_NE(result.match_at(0).description, result.match_at(1).description);
 }
 
-// Verifies Navsuggest results don't set a TemplateURL (which instant relies
-// on).
-TEST_F(SearchProviderTest, NoTemplateURLForNavsuggest) {
+// Verifies Navsuggest results don't set a TemplateURL, which instant relies on.
+// Also verifies that just the *first* navigational result is listed as a match.
+TEST_F(SearchProviderTest, Navsuggest) {
   QueryForInput(ASCIIToUTF16("a.c"), false);
 
   // Make sure the default providers suggest service was queried.
@@ -654,16 +654,17 @@ TEST_F(SearchProviderTest, NoTemplateURLForNavsuggest) {
   // Tell the SearchProvider the suggest query is done.
   fetcher->set_response_code(200);
   fetcher->SetResponseString(
-      "[\"a.c\",[\"a.com\"],[\"\"],[],"
-      "{\"google:suggesttype\":[\"NAVIGATION\"]}]");
+      "[\"a.c\",[\"a.com\", \"a.com/b\"],[\"\"],[],"
+      "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"]}]");
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   fetcher = NULL;
 
   // Run till the history results complete.
   RunTillProviderDone();
 
-  // Make sure there is a match for 'a.com' and it doesn't have a template_url.
+  // Make sure the only match is 'a.com' and it doesn't have a template_url.
   AutocompleteMatch nav_match;
   EXPECT_TRUE(FindMatchWithDestination(GURL("http://a.com"), &nav_match));
+  EXPECT_FALSE(FindMatchWithDestination(GURL("http://a.com/b"), &nav_match));
   EXPECT_TRUE(nav_match.keyword.empty());
 }

@@ -660,11 +660,13 @@ void SearchProvider::AddNavigationResultsToMatches(
     const NavigationResults& navigation_results,
     bool is_keyword) {
   if (!navigation_results.empty()) {
-    // TODO(kochi): http://b/1170574  We add only one results for navigational
-    // suggestions. If we can get more useful information about the score,
-    // consider adding more results.
-    matches_.push_back(
-        NavigationToMatch(navigation_results.front(), is_keyword));
+    // TODO(kochi|msw): Add more navigational results if they get more
+    //                  meaningful relevance values; see http://b/1170574.
+    NavigationResults::const_iterator result(
+        std::max_element(navigation_results.begin(),
+                         navigation_results.end(),
+                         CompareScoredResults()));
+    matches_.push_back(NavigationToMatch(*result, is_keyword));
   }
 }
 
