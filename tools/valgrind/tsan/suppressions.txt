@@ -698,6 +698,14 @@
   fun:StartThread
 }
 {
+  bug_103711j
+  ThreadSanitizer:Race
+  fun:webrtc::ProcessThreadImpl::Stop
+  fun:webrtc::VoEBaseImpl::TerminateInternal
+  fun:webrtc::VoEBaseImpl::Terminate
+  fun:WebRTCAudioDeviceTest_PlayLocalFile_Test::TestBody
+}
+{
    bug_104769
    ThreadSanitizer:Race
    fun:timeout_correct
