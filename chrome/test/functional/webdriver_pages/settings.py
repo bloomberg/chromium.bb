@@ -512,6 +512,7 @@ class BasicSettingsPage(object):
     startup_option_elem.click()
 
   def _GoToStartupSetPages(self):
+    self._driver.get(self._URL)
     self._driver.find_element_by_id('startup-set-pages').click()
 
   def _FillStartupURLs(self, url_list):
