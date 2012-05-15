@@ -541,7 +541,7 @@ Gallery.prototype.renameItem_ = function(item, name) {
   }
 
   function doRename() {
-    if (self.imageChanges_ > 0) {
+    if (item.hasNameForSaving()) {
       // Use this name in the next save operation.
       item.setNameForSaving(newName);
       self.filenameSpacer_.removeAttribute('overwrite');
@@ -1179,6 +1179,10 @@ Ribbon.Item.prototype.setUrl = function (url) { this.url_ = url };
 
 Ribbon.Item.prototype.getNameAfterSaving = function () {
   return this.nameForSaving_ || ImageUtil.getFullNameFromUrl(this.url_);
+};
+
+Ribbon.Item.prototype.hasNameForSaving = function() {
+  return !!this.nameForSaving_;
 };
 
 Ribbon.Item.prototype.isSelected = function() {
