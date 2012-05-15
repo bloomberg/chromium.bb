@@ -37,6 +37,13 @@ const int NSLibraryDirectory = 5;
 
 // The name of the Remoting Host service that is registered with launchd.
 #define kServiceName "org.chromium.chromoting"
+
+// Use separate named notifications for success and failure because sandboxed
+// components can't include a dictionary when sending distributed notifications.
+// The preferences panel is not yet sandboxed, but err on the side of caution.
+#define kUpdateSucceededNotificationName kServiceName ".update_succeeded"
+#define kUpdateFailedNotificationName kServiceName ".update_failed"
+
 #define kConfigDir "/Library/PrivilegedHelperTools/"
 
 // This helper script is used to get the installed host version.
@@ -47,9 +54,6 @@ const char kHostHelperScript[] = kConfigDir kServiceName ".me2me.sh";
 // dictionary, and splitting this into two dictionaries would require
 // knowledge of which keys belong in which files.
 const char kHostConfigFile[] = kConfigDir kServiceName ".json";
-
-const int kPrefPaneWaitRetryLimit = 60;
-const int kPrefPaneWaitTimeout = 1000;
 
 class DaemonControllerMac : public remoting::DaemonController {
  public:
@@ -75,13 +79,22 @@ class DaemonControllerMac : public remoting::DaemonController {
   void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
                       const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
-  void NotifyOnState(DaemonController::State state,
-                     const CompletionCallback& done_callback,
-                     int tries_remaining,
-                     const base::TimeDelta& sleep);
-  bool ShowPreferencePane(const std::string& config_data);
+
+  void ShowPreferencePane(const std::string& config_data,
+                          const CompletionCallback& done_callback);
+  void RegisterForPreferencePaneNotifications(
+      const CompletionCallback &done_callback);
+  void DeregisterForPreferencePaneNotifications();
+  void PreferencePaneCallbackDelegate(CFStringRef name);
+  static bool DoShowPreferencePane(const std::string& config_data);
+  static void PreferencePaneCallback(CFNotificationCenterRef center,
+                                     void* observer,
+                                     CFStringRef name,
+                                     const void* object,
+                                     CFDictionaryRef user_info);
 
   base::Thread auth_thread_;
+  CompletionCallback current_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerMac);
 };
@@ -93,6 +106,20 @@ DaemonControllerMac::DaemonControllerMac()
 
 DaemonControllerMac::~DaemonControllerMac() {
   auth_thread_.Stop();
+  DeregisterForPreferencePaneNotifications();
+}
+
+void DaemonControllerMac::DeregisterForPreferencePaneNotifications() {
+  CFNotificationCenterRemoveObserver(
+      CFNotificationCenterGetDistributedCenter(),
+      this,
+      CFSTR(kUpdateSucceededNotificationName),
+      NULL);
+  CFNotificationCenterRemoveObserver(
+      CFNotificationCenterGetDistributedCenter(),
+      this,
+      CFSTR(kUpdateFailedNotificationName),
+      NULL);
 }
 
 DaemonController::State DaemonControllerMac::GetState() {
@@ -196,18 +223,7 @@ void DaemonControllerMac::DoSetConfigAndStart(
     const CompletionCallback& done_callback) {
   std::string config_data;
   base::JSONWriter::Write(config.get(), &config_data);
-
-  bool result = ShowPreferencePane(config_data);
-
-  if (!result) {
-    done_callback.Run(RESULT_FAILED);
-  }
-
-  // TODO(jamiewalch): Replace this with something a bit more robust
-  NotifyOnState(DaemonController::STATE_STARTED,
-                done_callback,
-                kPrefPaneWaitRetryLimit,
-                base::TimeDelta::FromMilliseconds(kPrefPaneWaitTimeout));
+  ShowPreferencePane(config_data, done_callback);
 }
 
 void DaemonControllerMac::DoUpdateConfig(
@@ -231,12 +247,19 @@ void DaemonControllerMac::DoUpdateConfig(
   }
 
   std::string config_data = config_file.GetSerializedData();
-  bool success = ShowPreferencePane(config_data);
-
-  done_callback.Run(success ? RESULT_OK : RESULT_FAILED);
+  ShowPreferencePane(config_data, done_callback);
 }
 
-bool DaemonControllerMac::ShowPreferencePane(const std::string& config_data) {
+void DaemonControllerMac::ShowPreferencePane(
+    const std::string& config_data, const CompletionCallback& done_callback) {
+  if (DoShowPreferencePane(config_data)) {
+    RegisterForPreferencePaneNotifications(done_callback);
+  } else {
+    done_callback.Run(RESULT_FAILED);
+  }
+}
+
+bool DaemonControllerMac::DoShowPreferencePane(const std::string& config_data) {
   if (!config_data.empty()) {
     FilePath config_path;
     if (!file_util::GetTempDir(&config_path)) {
@@ -284,37 +307,65 @@ bool DaemonControllerMac::ShowPreferencePane(const std::string& config_data) {
 }
 
 void DaemonControllerMac::DoStop(const CompletionCallback& done_callback) {
-  if (!ShowPreferencePane("")) {
-    done_callback.Run(RESULT_FAILED);
-    return;
-  }
-
-  // TODO(jamiewalch): Replace this with something a bit more robust
-  NotifyOnState(DaemonController::STATE_STOPPED,
-                done_callback,
-                kPrefPaneWaitRetryLimit,
-                base::TimeDelta::FromMilliseconds(kPrefPaneWaitTimeout));
+  ShowPreferencePane("", done_callback);
 }
 
-void DaemonControllerMac::NotifyOnState(
-    DaemonController::State state,
-    const CompletionCallback& done_callback,
-    int tries_remaining,
-    const base::TimeDelta& sleep) {
-  if (GetState() == state) {
-    done_callback.Run(RESULT_OK);
-  } else if (tries_remaining == 0) {
-    done_callback.Run(RESULT_FAILED);
+// CFNotificationCenterAddObserver ties the thread on which distributed
+// notifications are received to the one on which it is first called.
+// This is safe because HostNPScriptObject::InvokeAsyncResultCallback
+// bounces the invocation to the correct thread, so it doesn't matter
+// which thread CompletionCallbacks are called on.
+void DaemonControllerMac::RegisterForPreferencePaneNotifications(
+    const CompletionCallback& done_callback) {
+  // We can only have one callback registered at a time. This is enforced by the
+  // UX flow of the web-app.
+  DCHECK(current_callback_.is_null());
+  current_callback_ = done_callback;
+
+  CFNotificationCenterAddObserver(
+      CFNotificationCenterGetDistributedCenter(),
+      this,
+      &DaemonControllerMac::PreferencePaneCallback,
+      CFSTR(kUpdateSucceededNotificationName),
+      NULL,
+      CFNotificationSuspensionBehaviorDeliverImmediately);
+  CFNotificationCenterAddObserver(
+      CFNotificationCenterGetDistributedCenter(),
+      this,
+      &DaemonControllerMac::PreferencePaneCallback,
+      CFSTR(kUpdateFailedNotificationName),
+      NULL,
+      CFNotificationSuspensionBehaviorDeliverImmediately);
+}
+
+void DaemonControllerMac::PreferencePaneCallbackDelegate(CFStringRef name) {
+  AsyncResult result = RESULT_FAILED;
+  if (CFStringCompare(name, CFSTR(kUpdateSucceededNotificationName), 0) ==
+          kCFCompareEqualTo) {
+    result = RESULT_OK;
+  } else if (CFStringCompare(name, CFSTR(kUpdateFailedNotificationName), 0) ==
+          kCFCompareEqualTo) {
+    result = RESULT_CANCELLED;
   } else {
-    auth_thread_.message_loop_proxy()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&DaemonControllerMac::NotifyOnState,
-                   base::Unretained(this),
-                   state,
-                   done_callback,
-                   tries_remaining - 1,
-                   sleep),
-        sleep);
+    LOG(WARNING) << "Ignoring unexpected notification: " << name;
+    return;
+  }
+  DCHECK(!current_callback_.is_null());
+  current_callback_.Run(result);
+  current_callback_.Reset();
+  DeregisterForPreferencePaneNotifications();
+}
+
+void DaemonControllerMac::PreferencePaneCallback(CFNotificationCenterRef center,
+                                                 void* observer,
+                                                 CFStringRef name,
+                                                 const void* object,
+                                                 CFDictionaryRef user_info) {
+  DaemonControllerMac* self = reinterpret_cast<DaemonControllerMac*>(observer);
+  if (self) {
+    self->PreferencePaneCallbackDelegate(name);
+  } else {
+    LOG(WARNING) << "Ignoring notification with NULL observer: " << name;
   }
 }
 

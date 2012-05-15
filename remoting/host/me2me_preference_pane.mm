@@ -29,6 +29,13 @@
 namespace {
 // The name of the Remoting Host service that is registered with launchd.
 #define kServiceName "org.chromium.chromoting"
+
+// Use separate named notifications for success and failure because sandboxed
+// components can't include a dictionary when sending distributed notifications.
+// The preferences panel is not yet sandboxed, but err on the side of caution.
+#define kUpdateSucceededNotificationName kServiceName ".update_succeeded"
+#define kUpdateFailedNotificationName kServiceName ".update_failed"
+
 #define kConfigDir "/Library/PrivilegedHelperTools/"
 
 // This helper script is executed as root.  It is passed a command-line option
@@ -131,6 +138,9 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
   [service_status_timer_ invalidate];
   [service_status_timer_ release];
   service_status_timer_ = nil;
+  if (have_new_config_) {
+    [self notifyPlugin: kUpdateFailedNotificationName];
+  }
 }
 
 - (void)onApply:(id)sender {
@@ -319,6 +329,10 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
   } else {
     [self sendJobControlMessage:LAUNCH_KEY_STARTJOB];
   }
+
+  // Broadcast a distributed notification to inform the plugin that the
+  // configuration has been applied.
+  [self notifyPlugin: kUpdateSucceededNotificationName];
 }
 
 - (BOOL)runHelperAsRootWithCommand:(const char*)command
@@ -426,6 +440,15 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
     return NO;
   }
   return YES;
+}
+
+- (void)notifyPlugin:(const char*)message {
+  NSDistributedNotificationCenter* center =
+      [NSDistributedNotificationCenter defaultCenter];
+  NSString* name = [NSString stringWithUTF8String:message];
+  [center postNotificationName:name
+                        object:nil
+                      userInfo:nil];
 }
 
 @end
