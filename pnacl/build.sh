@@ -562,15 +562,7 @@ svn-update-llvm-master() {
 }
 
 svn-update-clang() {
-  # hack to work around a bug in clang that prevents building gold:
-  # http://llvm.org/bugs/show_bug.cgi?id=12480
-  local parser="${TC_SRC_CLANG}/include/clang/Parse/Parser.h"
-  if [ -f ${parser} ] ; then
-      svn revert ${parser}
-  fi
   svn-update-common "clang" ${CLANG_REV} "${TC_SRC_CLANG}"
-  # continuation of the hack
-  sed -i -e "s/MaxDepth = 256/MaxDepth = 512/" ${parser}
 }
 
 #@ hg-update-binutils    - Update BINUTILS to the stable revision
