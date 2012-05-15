@@ -243,7 +243,6 @@
         'sources': [
           'shared_impl/callback_tracker.cc',
           'shared_impl/file_type_conversion.cc',
-          'shared_impl/function_group_base.cc',
           'shared_impl/id_assignment.cc',
           'shared_impl/platform_file.cc',
           'shared_impl/ppapi_globals.cc',
@@ -374,7 +373,6 @@
 #          'proxy/ppb_tcp_server_socket_private_proxy.cc',
 #          'proxy/ppb_tcp_socket_private_proxy.cc',
 #          'proxy/ppb_testing_proxy.cc',
-          'proxy/ppb_text_input_proxy.cc',
 #          'proxy/ppb_udp_socket_private_proxy.cc',
           'proxy/ppb_url_loader_proxy.cc',
           'proxy/ppb_url_response_info_proxy.cc',
