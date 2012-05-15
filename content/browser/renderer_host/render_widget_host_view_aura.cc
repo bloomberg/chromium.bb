@@ -193,6 +193,7 @@ class RenderWidgetHostViewAura::ResizeLock :
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
     : host_(RenderWidgetHostImpl::From(host)),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
+      in_shutdown_(false),
       is_fullscreen_(false),
       popup_parent_host_view_(NULL),
       popup_child_host_view_(NULL),
@@ -400,6 +401,7 @@ void RenderWidgetHostViewAura::Destroy() {
   // Beware, this function is not called on all destruction paths. It will
   // implicitly end up calling ~RenderWidgetHostViewAura though, so all
   // destruction/cleanup code should happen there, not here.
+  in_shutdown_ = true;
   delete window_;
 }
 
@@ -919,11 +921,16 @@ void RenderWidgetHostViewAura::OnBlur() {
   host_->Blur();
 
   ui::InputMethod* input_method = GetInputMethod();
-  if (input_method) {
-    if (input_method->GetTextInputClient() == this)
-      input_method->SetFocusedTextInputClient(NULL);
-  }
+  if (input_method && input_method->GetTextInputClient() == this)
+    input_method->SetFocusedTextInputClient(NULL);
   host_->SetInputMethodActive(false);
+
+  // If we lose the focus while fullscreen, close the window; Pepper Flash won't
+  // do it for us (unlike NPAPI Flash).
+  if (is_fullscreen_ && !in_shutdown_) {
+    in_shutdown_ = true;
+    host_->Shutdown();
+  }
 }
 
 bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
@@ -933,7 +940,10 @@ bool RenderWidgetHostViewAura::OnKeyEvent(aura::KeyEvent* event) {
 
   // We need to handle the Escape key for Pepper Flash.
   if (is_fullscreen_ && event->key_code() == ui::VKEY_ESCAPE) {
-    host_->Shutdown();
+    if (!in_shutdown_) {
+      in_shutdown_ = true;
+      host_->Shutdown();
+    }
   } else {
     // We don't have to communicate with an input method here.
     if (!event->HasNativeEvent()) {

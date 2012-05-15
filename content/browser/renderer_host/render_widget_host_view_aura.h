@@ -225,6 +225,11 @@ class RenderWidgetHostViewAura
 
   scoped_ptr<WindowObserver> window_observer_;
 
+  // Are we in the process of closing?  Tracked so fullscreen views can avoid
+  // sending a second shutdown request to the host when they lose the focus
+  // after requesting shutdown for another reason (e.g. Escape key).
+  bool in_shutdown_;
+
   // Is this a fullscreen view?
   bool is_fullscreen_;
 
