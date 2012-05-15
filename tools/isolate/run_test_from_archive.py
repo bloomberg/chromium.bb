@@ -188,14 +188,20 @@ class Cache(object):
         self.min_free_space and
         self.state and
         get_free_space(self.cache_dir) < self.min_free_space):
-      os.remove(self.path(self.state.pop(0)))
+      try:
+        os.remove(self.path(self.state.pop(0)))
+      except OSError as e:
+        logging.error('Error attempting to delete a file\n%s' % e)
 
     # Ensure maximum cache size.
     if self.max_cache_size and self.state:
       sizes = [os.stat(self.path(f)).st_size for f in self.state]
       while sizes and sum(sizes) > self.max_cache_size:
         # Delete the oldest item.
-        os.remove(self.path(self.state.pop(0)))
+        try:
+          os.remove(self.path(self.state.pop(0)))
+        except OSError as e:
+          logging.error('Error attempting to delete a file\n%s' % e)
         sizes.pop(0)
 
     self.save()
@@ -212,7 +218,10 @@ class Cache(object):
     except ValueError:
       out = self.path(item)
       download_or_copy(os.path.join(self.remote, item), out)
-      self.state.append(item)
+      if os.path.exists(out):
+        self.state.append(item)
+      else:
+        logging.error('File, %s, not placed in cache' % item)
       return True
     finally:
       self.save()
