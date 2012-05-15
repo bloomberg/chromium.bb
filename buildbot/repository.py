@@ -70,7 +70,7 @@ def IsInternalRepoCheckout(root):
           == os.path.splitext(os.path.basename(constants.MANIFEST_INT_URL))[0])
 
 
-def CloneGitRepo(working_dir, repo_url, reference=None):
+def CloneGitRepo(working_dir, repo_url, reference=None, bare=False):
   """Clone given git repo
   Args:
     repo_url: git repo to clone
@@ -78,11 +78,14 @@ def CloneGitRepo(working_dir, repo_url, reference=None):
     reference: If given, pathway to a git repository to access git objects
       from.  Note that the reference must exist as long as the newly created
       repo is to be usable.
+    bare: Clone a bare checkout.
   """
   osutils.SafeMakedirs(working_dir)
   cmd = ['git', 'clone', repo_url, working_dir]
   if reference:
     cmd += ['--reference', reference]
+  if bare:
+    cmd += ['--bare']
   cros_build_lib.RunCommandCaptureOutput(cmd, cwd=working_dir)
 
 
