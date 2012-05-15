@@ -3241,8 +3241,6 @@
         'browser/ui/toolbar/toolbar_model_delegate.h',
         'browser/ui/toolbar/wrench_menu_model.cc',
         'browser/ui/toolbar/wrench_menu_model.h',
-        'browser/ui/touch/status_bubble_touch.cc',
-        'browser/ui/touch/status_bubble_touch.h',
         'browser/ui/uninstall_browser_prompt.h',
         'browser/ui/user_data_dir_dialog.h',
         'browser/ui/view_ids.h',
@@ -4379,7 +4377,6 @@
         ['use_virtual_keyboard==0', {
           'sources/': [
             ['exclude', '^browser/chromeos/input_method/virtual_keyboard_selector.*'],
-            ['exclude', '^browser/ui/touch/status_bubble_touch.*'],
             ['exclude', '^browser/ui/virtual_keyboard/*'],
             ['exclude', '^browser/ui/webui/keyboard_ui.*'],
             ['exclude', '^browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2.*'],

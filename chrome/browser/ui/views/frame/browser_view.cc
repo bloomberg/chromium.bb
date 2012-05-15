@@ -123,10 +123,6 @@
 #include "chrome/browser/ui/views/sync/one_click_signin_bubble_view.h"
 #endif
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-#include "chrome/browser/ui/touch/status_bubble_touch.h"
-#endif
-
 using base::TimeDelta;
 using content::SSLStatus;
 using content::UserMetricsAction;
@@ -1815,11 +1811,7 @@ void BrowserView::Init() {
   AddChildView(contents_split_);
   set_contents_view(contents_split_);
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-  status_bubble_.reset(new StatusBubbleTouch(contents_));
-#else
   status_bubble_.reset(new StatusBubbleViews(contents_));
-#endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Create a custom JumpList and add it to an observer of TabRestoreService
