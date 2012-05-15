@@ -571,7 +571,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableJavaScriptI18NAPI(
       !command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI));
 
-  WebRuntimeFeatures::enableGamepad(true);
+  WebRuntimeFeatures::enableGamepad(
+      command_line.HasSwitch(switches::kEnableGamepad));
 
   WebRuntimeFeatures::enableQuota(true);
 
