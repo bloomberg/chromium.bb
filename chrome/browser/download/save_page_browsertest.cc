@@ -156,11 +156,13 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
     bool operator() (const DownloadPersistentStoreInfo& info) const {
       return info.url == url_ &&
-        info.path == path_ &&
-        // For save packages, received bytes is actually the number of files.
-        info.received_bytes == num_files_ &&
-        info.total_bytes == 0 &&
-        info.state == DownloadItem::COMPLETE;
+             info.path == path_ &&
+             // For non-MHTML save packages, received_bytes is actually the
+             // number of files.
+             ((num_files_ < 0) ||
+              (info.received_bytes == num_files_)) &&
+             info.total_bytes == 0 &&
+             info.state == DownloadItem::COMPLETE;
     }
 
     GURL url_;
@@ -388,9 +390,8 @@ class SavePageAsMHTMLBrowserTest : public SavePageBrowserTest {
 SavePageAsMHTMLBrowserTest::~SavePageAsMHTMLBrowserTest() {
 }
 
-// Bug 127527: This test fails when the day of the month is >9.
-IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, DISABLED_SavePageAsMHTML) {
-  static const int64 kFileSize = 2759;
+IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
+  static const int64 kFileSizeMin = 2758;
   GURL url = NavigateToMockURL("b");
   FilePath download_dir = DownloadPrefs::FromDownloadManager(
       GetDownloadManager())->download_path();
@@ -406,10 +407,10 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, DISABLED_SavePageAsMHTML) {
         content::NotificationService::AllSources());
   browser()->SavePage();
   observer.Wait();
-  CheckDownloadHistory(url, full_file_name, kFileSize);
+  CheckDownloadHistory(url, full_file_name, -1);
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   int64 actual_file_size = -1;
   EXPECT_TRUE(file_util::GetFileSize(full_file_name, &actual_file_size));
-  EXPECT_EQ(kFileSize, actual_file_size);
+  EXPECT_LE(kFileSizeMin, actual_file_size);
 }
