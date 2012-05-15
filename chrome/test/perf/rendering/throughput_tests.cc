@@ -462,16 +462,13 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasDemoGPU) {
 
 // CompositingHugeDivSW timed out on Mac Intel Release GPU bot
 // See crbug.com/114781
-#if defined(OS_MACOSX)
-#define MAYBE_CompositingHugeDivSW DISABLED_CompositingHugeDivSW
-#else
-#define MAYBE_CompositingHugeDivSW CompositingHugeDivSW
-#endif
-IN_PROC_BROWSER_TEST_F(ThroughputTestSW, MAYBE_CompositingHugeDivSW) {
+// Stopped producing results in SW: crbug.com/127621
+IN_PROC_BROWSER_TEST_F(ThroughputTestSW, DISABLED_CompositingHugeDivSW) {
   RunTest("compositing_huge_div", kNone);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CompositingHugeDivGPU) {
+// Failing with insufficient frames: crbug.com/127595
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DISABLED_CompositingHugeDivGPU) {
   RunTest("compositing_huge_div", kNone);
 }
 
