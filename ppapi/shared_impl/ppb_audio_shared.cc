@@ -42,13 +42,7 @@ PPB_Audio_Shared::PPB_Audio_Shared()
 }
 
 PPB_Audio_Shared::~PPB_Audio_Shared() {
-  // Closing the socket causes the thread to exit - wait for it.
-  if (socket_.get())
-    socket_->Close();
-  if (audio_thread_.get()) {
-    audio_thread_->Join();
-    audio_thread_.reset();
-  }
+  StopThread();
 }
 
 void PPB_Audio_Shared::SetCallback(PPB_Audio_Callback callback,
@@ -72,11 +66,7 @@ void PPB_Audio_Shared::SetStartPlaybackState() {
 
 void PPB_Audio_Shared::SetStopPlaybackState() {
   DCHECK(playing_);
-
-  if (audio_thread_.get()) {
-    audio_thread_->Join();
-    audio_thread_.reset();
-  }
+  StopThread();
   playing_ = false;
 }
 
@@ -85,7 +75,7 @@ void PPB_Audio_Shared::SetStreamInfo(
     base::SharedMemoryHandle shared_memory_handle,
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
-  socket_.reset(new base::SyncSocket(socket_handle));
+  socket_.reset(new base::CancelableSyncSocket(socket_handle));
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
   shared_memory_size_ = shared_memory_size;
 
@@ -105,6 +95,16 @@ void PPB_Audio_Shared::StartThread() {
   audio_thread_.reset(new base::DelegateSimpleThread(
       this, "plugin_audio_thread"));
   audio_thread_->Start();
+}
+
+void PPB_Audio_Shared::StopThread() {
+  // Shut down the socket to escape any hanging |Receive|s.
+  if (socket_.get())
+    socket_->Shutdown();
+  if (audio_thread_.get()) {
+    audio_thread_->Join();
+    audio_thread_.reset();
+  }
 }
 
 void PPB_Audio_Shared::Run() {

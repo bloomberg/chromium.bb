@@ -100,6 +100,9 @@ class PPAPI_SHARED_EXPORT PPB_AudioInput_Shared
   // Starts execution of the audio input thread.
   void StartThread();
 
+  // Stops execution of the audio input thread.
+  void StopThread();
+
   // DelegateSimpleThread::Delegate implementation.
   // Run on the audio input thread.
   virtual void Run();
@@ -123,7 +126,7 @@ class PPAPI_SHARED_EXPORT PPB_AudioInput_Shared
 
   // Socket used to notify us when new samples are available. This pointer is
   // created in SetStreamInfo().
-  scoped_ptr<base::SyncSocket> socket_;
+  scoped_ptr<base::CancelableSyncSocket> socket_;
 
   // Sample buffer in shared memory. This pointer is created in
   // SetStreamInfo(). The memory is only mapped when the audio thread is

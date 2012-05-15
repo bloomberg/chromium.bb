@@ -125,14 +125,7 @@ void PPB_AudioInput_Shared::Close() {
 
   open_state_ = CLOSED;
   InternalClose();
-
-  // Closing the socket causes the thread to exit - wait for it.
-  if (socket_.get())
-    socket_->Close();
-  if (audio_input_thread_.get()) {
-    audio_input_thread_->Join();
-    audio_input_thread_.reset();
-  }
+  StopThread();
 
   if (TrackedCallback::IsPending(open_callback_))
     open_callback_->PostAbort();
@@ -187,11 +180,7 @@ void PPB_AudioInput_Shared::SetStartCaptureState() {
 
 void PPB_AudioInput_Shared::SetStopCaptureState() {
   DCHECK(capturing_);
-
-  if (audio_input_thread_.get()) {
-    audio_input_thread_->Join();
-    audio_input_thread_.reset();
-  }
+  StopThread();
   capturing_ = false;
 }
 
@@ -199,7 +188,7 @@ void PPB_AudioInput_Shared::SetStreamInfo(
     base::SharedMemoryHandle shared_memory_handle,
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
-  socket_.reset(new base::SyncSocket(socket_handle));
+  socket_.reset(new base::CancelableSyncSocket(socket_handle));
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
   shared_memory_size_ = shared_memory_size;
 
@@ -228,6 +217,16 @@ void PPB_AudioInput_Shared::StartThread() {
   audio_input_thread_.reset(new base::DelegateSimpleThread(
       this, "plugin_audio_input_thread"));
   audio_input_thread_->Start();
+}
+
+void PPB_AudioInput_Shared::StopThread() {
+  // Shut down the socket to escape any hanging |Receive|s.
+  if (socket_.get())
+    socket_->Shutdown();
+  if (audio_input_thread_.get()) {
+    audio_input_thread_->Join();
+    audio_input_thread_.reset();
+  }
 }
 
 void PPB_AudioInput_Shared::Run() {

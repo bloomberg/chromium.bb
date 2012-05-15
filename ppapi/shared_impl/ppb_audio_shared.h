@@ -58,6 +58,9 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // Starts execution of the audio thread.
   void StartThread();
 
+  // Stop execution of the audio thread.
+  void StopThread();
+
   // DelegateSimpleThread::Delegate implementation. Run on the audio thread.
   virtual void Run();
 
@@ -66,7 +69,7 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
 
   // Socket used to notify us when audio is ready to accept new samples. This
   // pointer is created in StreamCreated().
-  scoped_ptr<base::SyncSocket> socket_;
+  scoped_ptr<base::CancelableSyncSocket> socket_;
 
   // Sample buffer in shared memory. This pointer is created in
   // StreamCreated(). The memory is only mapped when the audio thread is
