@@ -61,9 +61,9 @@ static int RoundPositive(double x) {
 // DesktopBackgroundView, public:
 
 DesktopBackgroundView::DesktopBackgroundView(const SkBitmap& wallpaper,
-                                             ImageLayout layout) {
+                                             WallpaperLayout wallpaper_layout) {
   wallpaper_ = wallpaper;
-  image_layout_ = layout;
+  wallpaper_layout_ = wallpaper_layout;
   wallpaper_.buildMipMap(false);
 }
 
@@ -80,7 +80,7 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   // streching to avoid upsampling artifacts (Note that we could tile too, but
   // decided not to do this at the moment).
   gfx::Rect wallpaper_rect(0, 0, wallpaper_.width(), wallpaper_.height());
-  if (image_layout_ == ash::CENTER_CROPPED && wallpaper_.width() > width()
+  if (wallpaper_layout_ == ash::CENTER_CROPPED && wallpaper_.width() > width()
       && wallpaper_.height() > height()) {
     // The dimension with the smallest ratio must be cropped, the other one
     // is preserved. Both are set in gfx::Size cropped_size.
@@ -105,9 +105,9 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
         wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(),
         0, 0, width(), height(),
         true);
-  } else if (image_layout_ == ash::TILE) {
+  } else if (wallpaper_layout_ == ash::TILE) {
     canvas->TileImageInt(wallpaper_, 0, 0, width(), height());
-  } else if (image_layout_ == ash::STRETCH) {
+  } else if (wallpaper_layout_ == ash::STRETCH) {
     // This is generally not recommended as it may show artifacts.
     canvas->DrawBitmapInt(wallpaper_, 0, 0, wallpaper_.width(),
         wallpaper_.height(), 0, 0, width(), height(), true);
@@ -127,11 +127,13 @@ void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
     Shell::GetInstance()->ShowBackgroundMenu(GetWidget(), event.location());
 }
 
-void CreateDesktopBackground(const SkBitmap& wallpaper, ImageLayout layout) {
+void CreateDesktopBackground(const SkBitmap& wallpaper,
+                             WallpaperLayout wallpaper_layout) {
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  DesktopBackgroundView* view = new DesktopBackgroundView(wallpaper, layout);
+  DesktopBackgroundView* view = new DesktopBackgroundView(wallpaper,
+                                                          wallpaper_layout);
   params.delegate = view;
   params.parent =
       Shell::GetInstance()->GetContainer(

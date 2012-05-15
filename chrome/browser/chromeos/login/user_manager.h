@@ -11,6 +11,7 @@
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler2.h"
 
 class SkBitmap;
 class FilePath;
@@ -140,7 +141,7 @@ class UserManager {
       const std::string& username,
       User::OAuthTokenStatus oauth_token_status) = 0;
 
-  // Save user's displayed (non-canonical) email in local state preferences.
+  // Saves user's displayed (non-canonical) email in local state preferences.
   // Ignored If there is no such user.
   virtual void SaveUserDisplayEmail(const std::string& username,
                                     const std::string& display_email) = 0;
@@ -152,16 +153,16 @@ class UserManager {
       const std::string& username) const = 0;
 
   // Returns the index of the default wallpapers saved in local state for login
-  // user if it is known (was previousely set by |SaveWallpaperToLocalState|
+  // user if it is known (was previously set by |SaveWallpaperToLocalState|
   // call). Otherwise, returns the default wallpaper index.
   virtual int GetLoggedInUserWallpaperIndex() = 0;
 
-  // Set |type| and |index| to the value saved in local state for logged in
+  // Sets |type| and |index| to the value saved in local state for logged in
   // user.
   virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType* type,
                                                   int* index) = 0;
 
-  // Save |type| and |index| chose by logged in user to Local State.
+  // Saves |type| and |index| chose by logged in user to Local State.
   virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
                                                    int index) = 0;
 
@@ -175,22 +176,34 @@ class UserManager {
   virtual void SaveUserImage(const std::string& username,
                              const SkBitmap& image) = 0;
 
+  // Updates custom wallpaper to selected layout and saves layout to Local
+  // State.
+  virtual void SetLoggedInUserCustomWallpaperLayout(
+      ash::WallpaperLayout layout) = 0;
+
   // Tries to load user image from disk; if successful, sets it for the user,
   // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
   virtual void SaveUserImageFromFile(const std::string& username,
                                      const FilePath& path) = 0;
 
+  // Tries to load user image from disk; if successful, sets it for the user,
+  // and updates Local State.
+  virtual void SaveUserWallpaperFromFile(const std::string& username,
+                                         const FilePath& path,
+                                         ash::WallpaperLayout layout,
+                                         WallpaperDelegate* delegate) = 0;
+
   // Sets profile image as user image for |username|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If the user
   // is not logged-in or the last |DownloadProfileImage| call has failed, a
   // default grey avatar will be used until the user logs in and profile image
-  // is downloaded successfuly.
+  // is downloaded successfully.
   virtual void SaveUserImageFromProfileImage(const std::string& username) = 0;
 
   // Starts downloading the profile image for the logged-in user.
   // If user's image index is |kProfileImageIndex|, newly downloaded image
   // is immediately set as user's current picture.
-  // |reason| is an arbitraty string (used to report UMA histograms with
+  // |reason| is an arbitrary string (used to report UMA histograms with
   // download times).
   virtual void DownloadProfileImage(const std::string& reason) = 0;
 

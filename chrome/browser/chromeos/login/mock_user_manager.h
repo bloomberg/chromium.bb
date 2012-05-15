@@ -42,8 +42,14 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));
   MOCK_METHOD2(SaveUserDefaultImageIndex, void(const std::string&, int));
   MOCK_METHOD2(SaveUserImage, void(const std::string&, const SkBitmap&));
+  MOCK_METHOD1(SetLoggedInUserCustomWallpaperLayout,void(
+      ash::WallpaperLayout));
   MOCK_METHOD2(SaveUserImageFromFile, void(const std::string&,
                                            const FilePath&));
+  MOCK_METHOD4(SaveUserWallpaperFromFile, void(const std::string&,
+                                               const FilePath&,
+                                               ash::WallpaperLayout,
+                                               WallpaperDelegate*));
   MOCK_METHOD1(SaveUserImageFromProfileImage, void(const std::string&));
   MOCK_METHOD1(DownloadProfileImage, void(const std::string&));
   MOCK_CONST_METHOD0(IsCurrentUserOwner, bool(void));

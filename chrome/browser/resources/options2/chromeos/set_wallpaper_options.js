@@ -7,6 +7,8 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
   var UserImagesGrid = options.UserImagesGrid;
 
+  /** @const */ var CUSTOM_WALLPAPER_PREFIX = 'chrome://wallpaper/custom_';
+
   /////////////////////////////////////////////////////////////////////////////
   // SetWallpaperOptions class:
 
@@ -45,6 +47,9 @@ cr.define('options', function() {
       wallpaperGrid.addEventListener('activate',
                                      function() { OptionsPage.closeOverlay() });
 
+      $('set-wallpaper-layout').addEventListener('change',
+          this.handleLayoutChange_);
+      $('set-custom-wallpaper').onclick = this.handleChooseFile_;
       $('use-random-wallpaper').onclick = this.handleCheckboxClick_.bind(this);
       $('set-wallpaper-overlay-confirm').onclick = function() {
         OptionsPage.closeOverlay();
@@ -52,6 +57,9 @@ cr.define('options', function() {
 
       // @type {Array.<author: string, url: string, website: string>}
       this.wallpapers_ = [];
+
+      // @type {Object} Old user custom wallpaper thumbnail.
+      this.oldImage_ = null;
 
       chrome.send('onSetWallpaperPageInitialized');
     },
@@ -75,6 +83,11 @@ cr.define('options', function() {
     willHidePage: function() {
       var wallpaperGrid = $('wallpaper-grid');
       wallpaperGrid.blur();
+      if (this.oldImage_) {
+        wallpaperGrid.removeItem(this.oldImage_);
+        this.oldImage_ = null;
+      }
+      $('set-wallpaper-layout').innerText = '';
     },
 
     /**
@@ -95,6 +108,44 @@ cr.define('options', function() {
     },
 
     /**
+     * Populates the drop down box for custom wallpaper layouts.
+     * param {string} layouts Available wallpaper layouts.
+     * param {number} selectedLayout The value of selected/default layout.
+     * @private
+     */
+    populateWallpaperLayouts_: function(layouts, selectedLayout) {
+      var wallpaperLayout = $('set-wallpaper-layout');
+      var selectedIndex = -1;
+      for (var i = 0; i < layouts.length; i++) {
+        var option = new Option(layouts[i]['name'], layouts[i]['index']);
+        if (selectedLayout == option.value)
+          selectedIndex = i;
+        wallpaperLayout.appendChild(option);
+      }
+      if (selectedIndex >= 0)
+        wallpaperLayout.selectedIndex = selectedIndex;
+    },
+
+    /**
+     * Handles "Custom..." button activation.
+     * @private
+     */
+    handleChooseFile_: function() {
+      chrome.send('chooseWallpaper');
+    },
+
+    /**
+     * Handle the wallpaper layout setting change.
+     * @private
+     */
+    handleLayoutChange_: function() {
+      var setWallpaperLayout = $('set-wallpaper-layout');
+      var layout = setWallpaperLayout.options[
+          setWallpaperLayout.selectedIndex].value;
+      chrome.send('changeWallpaperLayout', [layout]);
+    },
+
+    /**
      * Handles image selection change.
      * @private
      */
@@ -103,8 +154,17 @@ cr.define('options', function() {
       var url = wallpaperGrid.selectedItemUrl;
       if (url &&
           !wallpaperGrid.inProgramSelection) {
+        if (url.indexOf(CUSTOM_WALLPAPER_PREFIX) == 0) {
+          // User custom wallpaper is selected
+          this.isCustom = true;
+          // When users select the custom wallpaper thumbnail from picker UI,
+          // use the saved layout value and redraw the wallpaper.
+          this.handleLayoutChange_();
+        } else {
+          this.isCustom = false;
+          chrome.send('selectDefaultWallpaper', [url]);
+        }
         this.setWallpaperAttribution_(url);
-        chrome.send('selectDefaultWallpaper', [url]);
       }
     },
 
@@ -129,8 +189,10 @@ cr.define('options', function() {
       var wallpaperGrid = $('wallpaper-grid');
       if ($('use-random-wallpaper').checked) {
         wallpaperGrid.disabled = true;
+        $('attribution-label').hidden = false;
         chrome.send('selectRandomWallpaper');
         wallpaperGrid.classList.add('grayout');
+        $('set-wallpaper-layout').hidden = true;
       } else {
         wallpaperGrid.disabled = false;
         wallpaperGrid.classList.remove('grayout');
@@ -178,12 +240,73 @@ cr.define('options', function() {
       }
     },
 
+    /**
+     * Display layout drop down box and disable random mode if enabled. Called
+     * when user select a valid file from file system.
+     */
+    didSelectFile_: function() {
+      $('set-wallpaper-layout').hidden = false;
+      var wallpaperGrid = $('wallpaper-grid');
+      if ($('use-random-wallpaper').checked) {
+        $('use-random-wallpaper').checked = false;
+        wallpaperGrid.disabled = false;
+        wallpaperGrid.classList.remove('grayout');
+      }
+    },
+
+    /**
+     * Returns url of current user's custom wallpaper thumbnail.
+     * @private
+     */
+    currentWallpaperImageUrl_: function() {
+      return CUSTOM_WALLPAPER_PREFIX + BrowserOptions.getLoggedInUsername() +
+          '?id=' + (new Date()).getTime();
+    },
+
+    /**
+     * Updates the visibility of attribution-label and set-wallpaper-layout.
+     * @param {boolean} isCustom True if users select custom wallpaper.
+     */
+    set isCustom(isCustom) {
+      if (isCustom) {
+        // Clear attributions for custom wallpaper.
+        $('attribution-label').hidden = true;
+        // Enable the layout drop down box when custom wallpaper is selected.
+        $('set-wallpaper-layout').hidden = false;
+      } else {
+        $('attribution-label').hidden = false;
+        $('set-wallpaper-layout').hidden = true;
+      }
+    },
+
+    /**
+     * Adds or updates custom user wallpaper thumbnail from file.
+     * @private
+     */
+    setCustomImage_: function() {
+      var wallpaperGrid = $('wallpaper-grid');
+      var url = this.currentWallpaperImageUrl_();
+      if (this.oldImage_) {
+        this.oldImage_ = wallpaperGrid.updateItem(this.oldImage_, url);
+      } else {
+        // Insert to the end of wallpaper list.
+        var pos = wallpaperGrid.length;
+        this.oldImage_ = wallpaperGrid.addItem(url, undefined, undefined, pos);
+      }
+
+      this.isCustom = true;
+      this.setWallpaperAttribution_('');
+      wallpaperGrid.selectedItem = this.oldImage_;
+     },
   };
 
   // Forward public APIs to private implementations.
   [
     'setDefaultImages',
-    'setSelectedImage'
+    'setSelectedImage',
+    'populateWallpaperLayouts',
+    'didSelectFile',
+    'setCustomImage'
   ].forEach(function(name) {
     SetWallpaperOptions[name] = function() {
       var instance = SetWallpaperOptions.getInstance();

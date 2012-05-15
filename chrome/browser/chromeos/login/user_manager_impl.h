@@ -74,8 +74,14 @@ class UserManagerImpl : public UserManager,
                                          int image_index) OVERRIDE;
   virtual void SaveUserImage(const std::string& username,
                              const SkBitmap& image) OVERRIDE;
+  virtual void SetLoggedInUserCustomWallpaperLayout(
+      ash::WallpaperLayout layout) OVERRIDE;
   virtual void SaveUserImageFromFile(const std::string& username,
                                      const FilePath& path) OVERRIDE;
+  virtual void SaveUserWallpaperFromFile(const std::string& username,
+                                         const FilePath& path,
+                                         ash::WallpaperLayout layout,
+                                         WallpaperDelegate* delegate) OVERRIDE;
   virtual void SaveUserImageFromProfileImage(
       const std::string& username) OVERRIDE;
   virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
@@ -105,6 +111,10 @@ class UserManagerImpl : public UserManager,
 
   // Returns image filepath for the given user.
   FilePath GetImagePathForUser(const std::string& username);
+
+  // Returns wallpaper/thumbnail filepath for the given user.
+  FilePath GetWallpaperPathForUser(const std::string& username,
+                                   bool is_thumbnail);
 
  private:
   friend class UserManagerImplWrapper;
@@ -177,6 +187,32 @@ class UserManagerImpl : public UserManager,
                              int image_index,
                              const SkBitmap& image);
 
+  // Saves wallpaper to file, post task to generate thumbnail and updates local
+  // state preferences.
+  void SaveUserWallpaperInternal(const std::string& username,
+                                 ash::WallpaperLayout layout,
+                                 User::WallpaperType type,
+                                 WallpaperDelegate* delegate,
+                                 const SkBitmap& image);
+
+  // Loads custom wallpaper thumbnail asynchronously.
+  void LoadCustomWallpaperThumbnail(const std::string& email,
+                                    ash::WallpaperLayout layout,
+                                    const SkBitmap& wallpaper);
+
+  // Caches the loaded wallpaper for the given user.
+  void OnCustomWallpaperThumbnailLoaded(const std::string& email,
+                                        const SkBitmap& wallpaper);
+
+  // Updates the custom wallpaper thumbnail in wallpaper picker UI.
+  void OnThumbnailUpdated(WallpaperDelegate* delegate);
+
+  // Generates a 128x80 thumbnail and saves it to local file system.
+  void GenerateUserWallpaperThumbnail(const std::string& username,
+                                      User::WallpaperType type,
+                                      WallpaperDelegate* delegate,
+                                      const SkBitmap& wallpaper);
+
   // Saves image to file with specified path and sends LOGIN_USER_IMAGE_CHANGED
   // notification. Runs on FILE thread. Posts task for saving image info to
   // Local State on UI thread.
@@ -185,6 +221,14 @@ class UserManagerImpl : public UserManager,
                        const FilePath& image_path,
                        int image_index);
 
+  // Saves wallpaper to file with specified path. Runs on FILE thread. Posts
+  // task for saving wallpaper info to Local State on UI thread.
+  void SaveWallpaperToFile(const std::string& username,
+                           const SkBitmap& wallpaper,
+                           const FilePath& wallpaper_path,
+                           ash::WallpaperLayout layout,
+                           User::WallpaperType type);
+
   // Stores path to the image and its index in local state. Runs on UI thread.
   // If |is_async| is true, it has been posted from the FILE thread after
   // saving the image.
@@ -192,6 +236,16 @@ class UserManagerImpl : public UserManager,
                              const std::string& image_path,
                              int image_index,
                              bool is_async);
+
+  // Stores layout and type preference in local state. Runs on UI thread.
+  void SaveWallpaperToLocalState(const std::string& username,
+                                 const std::string& wallpaper_path,
+                                 ash::WallpaperLayout layout,
+                                 User::WallpaperType type);
+
+  // Saves |image| to the specified |image_path|. Runs on FILE thread.
+  bool SaveBitmapToFile(const SkBitmap& image,
+                        const FilePath& image_path);
 
   // Initializes |downloaded_profile_picture_| with the picture of the logged-in
   // user.

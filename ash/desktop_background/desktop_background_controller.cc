@@ -41,10 +41,8 @@ class DesktopBackgroundController::WallpaperOperation
   void LoadingWallpaper() {
     if (cancel_flag_.IsSet())
       return;
-
     wallpaper_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       GetWallpaperInfo(index_).id).ToSkBitmap();
-
     if (cancel_flag_.IsSet())
       return;
     layout_ = GetWallpaperInfo(index_).layout;
@@ -58,7 +56,7 @@ class DesktopBackgroundController::WallpaperOperation
     return wallpaper_;
   }
 
-  ImageLayout image_layout() {
+  WallpaperLayout wallpaper_layout() {
     return layout_;
   }
 
@@ -69,12 +67,11 @@ class DesktopBackgroundController::WallpaperOperation
  private:
   friend class base::RefCountedThreadSafe<
       DesktopBackgroundController::WallpaperOperation>;
-  ~WallpaperOperation(){};
 
   base::CancellationFlag cancel_flag_;
 
   const SkBitmap* wallpaper_;
-  ImageLayout layout_;
+  WallpaperLayout layout_;
   int index_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperOperation);
@@ -93,6 +90,7 @@ DesktopBackgroundController::~DesktopBackgroundController() {
 void DesktopBackgroundController::SetDefaultWallpaper(int index) {
   if (previous_index_ == index)
     return;
+
   CancelPendingWallpaperOperation();
 
   wallpaper_op_ = new WallpaperOperation(index);
@@ -103,6 +101,15 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index) {
                  weak_ptr_factory_.GetWeakPtr(),
                  wallpaper_op_),
       true /* task_is_slow */);
+}
+
+void DesktopBackgroundController::SetCustomWallpaper(const SkBitmap& wallpaper,
+                                                     WallpaperLayout layout) {
+  internal::RootWindowLayoutManager* root_window_layout =
+      Shell::GetInstance()->root_window_layout();
+  root_window_layout->SetBackgroundLayer(NULL);
+  internal::CreateDesktopBackground(wallpaper, layout);
+  desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 
 void DesktopBackgroundController::CancelPendingWallpaperOperation() {
@@ -148,7 +155,7 @@ void DesktopBackgroundController::SetDesktopBackgroundImageMode(
       Shell::GetInstance()->root_window_layout();
   root_window_layout->SetBackgroundLayer(NULL);
   if(wo->wallpaper()) {
-    internal::CreateDesktopBackground(*wo->wallpaper(), wo->image_layout());
+    internal::CreateDesktopBackground(*wo->wallpaper(), wo->wallpaper_layout());
     desktop_background_mode_ = BACKGROUND_IMAGE;
   }
 }

@@ -61,6 +61,10 @@ void User::SetStubImage(int image_index) {
   image_is_stub_ = true;
 }
 
+void User::SetWallpaperThumbnail(const SkBitmap& wallpaper_thumbnail) {
+  wallpaper_thumbnail_ = wallpaper_thumbnail;
+}
+
 std::string User::GetAccountName() const {
   return GetUserName(email_);
 }

@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
@@ -27,8 +28,9 @@ namespace options2 {
 namespace {
 
 const char kDefaultWallpaperPrefix[] = "default_";
+const char kCustomWallpaperPrefix[] = "custom_";
 
-// Parse an integer from |path| and save it to |index|. For example, deafult_20
+// Parse an integer from |path| and save it to |index|. For example, default_20
 // will set |index| to 20.
 // |path| and |index| must not be NULL.
 bool ParseIndexFromPath(const std::string& path, int* index) {
@@ -49,6 +51,18 @@ int PathToIDR(const std::string& path) {
   if (ParseIndexFromPath(path, &index))
     idr = ash::GetWallpaperInfo(index).thumb_id;
   return idr;
+}
+
+// True if |path| is a custom wallpaper thumbnail URL and set |email| parsed
+// from |path|.
+// custom url = "custom_|email|?date" where date is current time.
+bool IsCustomWallpaperPath(const std::string& path, std::string* email) {
+  if (!StartsWithASCII(path, kCustomWallpaperPrefix, false))
+    return false;
+
+  std::string sub_path = path.substr(strlen(kCustomWallpaperPrefix));
+  *email = sub_path.substr(0, sub_path.find_first_of("?"));
+  return true;
 }
 
 }  // namespace
@@ -78,6 +92,17 @@ WallpaperThumbnailSource::~WallpaperThumbnailSource() {
 void WallpaperThumbnailSource::StartDataRequest(const std::string& path,
                                                 bool is_incognito,
                                                 int request_id) {
+  std::string email;
+  if (IsCustomWallpaperPath(path, &email)) {
+    const chromeos::User* user = chromeos::UserManager::Get()->FindUser(email);
+    if (user) {
+      std::vector<unsigned char> data;
+      gfx::PNGCodec::EncodeBGRASkBitmap(user->wallpaper_thumbnail(),
+                                        false, &data);
+      SendResponse(request_id, new base::RefCountedBytes(data));
+      return;
+    }
+  }
   int idr = PathToIDR(path);
   if (idr != -1) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));

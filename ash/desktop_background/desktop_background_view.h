@@ -16,7 +16,8 @@ namespace internal {
 
 class DesktopBackgroundView : public views::WidgetDelegateView {
  public:
-  DesktopBackgroundView(const SkBitmap& wallpaper, ImageLayout layout);
+  DesktopBackgroundView(const SkBitmap& wallpaper,
+                        WallpaperLayout wallpaper_layout);
   virtual ~DesktopBackgroundView();
 
  private:
@@ -26,7 +27,7 @@ class DesktopBackgroundView : public views::WidgetDelegateView {
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
 
   SkBitmap wallpaper_;
-  ImageLayout image_layout_;
+  WallpaperLayout wallpaper_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);
 };

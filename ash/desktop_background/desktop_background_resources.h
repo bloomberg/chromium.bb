@@ -11,7 +11,7 @@ class SkBitmap;
 
 namespace ash {
 
-enum ImageLayout {
+enum WallpaperLayout {
   CENTER,
   CENTER_CROPPED,
   STRETCH,
@@ -21,7 +21,7 @@ enum ImageLayout {
 struct ASH_EXPORT WallpaperInfo {
   int id;
   int thumb_id;
-  ImageLayout layout;
+  WallpaperLayout layout;
   // TODO(bshe): author member should be encoded to UTF16. We need to use i18n
   // string for this member after M19.
   const char* author;

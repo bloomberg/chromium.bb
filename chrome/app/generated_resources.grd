@@ -13333,6 +13333,18 @@ Press any key to continue exploring.
       <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM" desc="Label for option to randomly choose wallpaper at login.">
         I'm feeling lucky
       </message>
+      <message name="IDS_OPTIONS_WALLPAPER_CENTER_LAYOUT" desc="Label for option to center a customized wallpaper.">
+        Center
+      </message>
+      <message name="IDS_OPTIONS_WALLPAPER_CENTER_CROPPED_LAYOUT" desc="Label for option to center crop a customized wallpaper.">
+        Center Cropped
+      </message>
+      <message name="IDS_OPTIONS_WALLPAPER_STRETCH_LAYOUT" desc="Label for option to stretch a customized wallpaper.">
+        Stretch
+      </message>
+      <message name="IDS_OPTIONS_CUSTOME_WALLPAPER" desc="Label for option to choose a customized wallpaper.">
+        Custom...
+      </message>
       <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user.">
         Change picture...
       </message>

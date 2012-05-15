@@ -65,6 +65,9 @@ class User {
   const SkBitmap& image() const { return image_; }
   int image_index() const { return image_index_; }
 
+  // The thumbnail of user custom wallpaper.
+  const SkBitmap& wallpaper_thumbnail() const { return wallpaper_thumbnail_; }
+
   // True if user image is a stub (while real image is being loaded from file).
   bool image_is_stub() const { return image_is_stub_; }
 
@@ -92,6 +95,9 @@ class User {
   // one of |kExternalImageIndex| or |kProfileImageIndex|.
   void SetStubImage(int image_index);
 
+  // Set thumbnail of user custom wallpaper.
+  void SetWallpaperThumbnail(const SkBitmap& wallpaper_thumbnail);
+
   void set_oauth_token_status(OAuthTokenStatus status) {
     oauth_token_status_ = status;
   }
@@ -105,6 +111,7 @@ class User {
   std::string display_email_;
   SkBitmap image_;
   OAuthTokenStatus oauth_token_status_;
+  SkBitmap wallpaper_thumbnail_;
 
   // Either index of a default image for the user, |kExternalImageIndex| or
   // |kProfileImageIndex|.
