@@ -15,21 +15,14 @@
     long id;
   };
 
-  // TODO(bryeung): This is a temporary hack until Blobs are supported
-  dictionary Blob {
-    DOMString data;
-  };
-
   dictionary OutOfBandPairingData {
     // Simple Pairing Hash C
     // Always 16 octets long.
-    // TODO(bryeung): this should really be an octet[]
-    DOMString hash;
+    ArrayBuffer hash;
 
     // Simple Pairing Randomizer R
     // Always 16 octets long.
-    // TODO(bryeung): this should really be an octet[]
-    DOMString randomizer;
+    ArrayBuffer randomizer;
   };
 
   // Reports failures via chrome.extension.lastError.
@@ -38,7 +31,7 @@
   callback AddressCallback = void (DOMString result);
   callback DevicesCallback = void (Device[] result);
   callback SocketCallback = void (Socket result);
-  callback DataCallback = void (Blob result);
+  callback DataCallback = void (ArrayBuffer result);
   callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
 
   interface Functions {
@@ -91,7 +84,7 @@
     // |data|     : The data to write.
     // |callback| : Called to indicate success or failure.
     static void write(
-        Socket socket, Blob data, optional ResultCallback callback);
+        Socket socket, ArrayBuffer data, optional ResultCallback callback);
 
     // Get the local Out of Band Pairing data.
     // |callback| : Called with the data.
