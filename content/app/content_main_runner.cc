@@ -488,12 +488,6 @@ static void ReleaseFreeMemoryThunk() {
 
     ui::RegisterPathProvider();
     content::RegisterPathProvider();
-
-    // TODO(jrg): "up to here" is how far we get without crashing on
-    // content shell bringup.
-#if defined(ANDROID_UPSTREAM_BRINGUP)
-    return 0;
-#endif
     content::RegisterContentSchemes(true);
 
     CHECK(icu_util::Initialize());

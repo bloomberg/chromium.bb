@@ -33,16 +33,8 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   // browser process initialization gets checked in.
   ShellMainDelegate* delegate = new ShellMainDelegate();
 
-  // We use a ShellContentClient, created as a member of
-  // ShellMainDelegate and set with a call to
-  // content::SetContentClient() in PreSandboxStartup().
-  // That must be done before ContentMainRunner::Initialize().
-  // TODO(jrg): resolve the upstream/downstream discrepancy; we
-  // shouldn't need to do this.
-  delegate->PreSandboxStartup();
-
   // TODO(jrg): find command line info from java; pass down in here.
-  g_content_main_runner->Initialize(0, NULL, NULL);
+  g_content_main_runner->Initialize(0, NULL, delegate);
 
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
