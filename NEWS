@@ -23,6 +23,7 @@ liblouis NEWS -- history of user-visible changes.
    - lou_allround and lou_translate now properly handle unicode
      characters
    - Fix some issues reported by Valgrind
+   - Fix inputPos for situation where context and multipass opcodes are involved
 
 ** Braille Table Improvements
    - Added:

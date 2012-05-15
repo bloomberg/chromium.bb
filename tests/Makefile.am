@@ -49,6 +49,11 @@ inpos_SOURCES =			\
 	brl_checks.h		\
 	inpos.c	
 
+inpos_match_replace_SOURCES =	\
+	brl_checks.c		\
+	brl_checks.h		\
+	inpos_match_replace.c
+
 letterDefTest_SOURCES = 	\
 	brl_checks.c		\
 	brl_checks.h		\
@@ -63,6 +68,7 @@ check_PROGRAMS =			\
 	pass2				\
 	pass2_inpos			\
 	inpos				\
+	inpos_match_replace		\
 	uplow_with_unicode		\
 	present_progressive		\
 	capitalized_word		\
