@@ -674,7 +674,8 @@ For other examples and for help in viewing the source code, see
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.pageAction.setIcon</span>(<span class="null"><span>object</span>
-                      <var><span>details</span></var></span>)</div>
+                      <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Sets the icon for the page action. The icon can be specified either as the path to an image file or as the pixel data from a canvas element. Either the <b>path</b> or the <b>imageData</b> property must be specified.</p>
                 <!-- PARAMETERS -->
@@ -805,12 +806,51 @@ For other examples and for help in viewing the source code, see
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
         </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
                   </div>
                 </dl>
                 <!-- RETURNS -->
                 <dl>
                 </dl>
                 <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                  </dl>
+                  </div>
+                </div>
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">

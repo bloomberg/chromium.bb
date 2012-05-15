@@ -5,10 +5,10 @@
 var SetIconCommon = requireNative('setIcon').SetIconCommon;
 var sendRequest = require('sendRequest').sendRequest;
 
-function setIcon(details, name, parameters, actionType) {
+function setIcon(details, callback, name, parameters, actionType) {
   var iconSize = 19;
   if ("iconIndex" in details) {
-    sendRequest(name, [details], parameters);
+    sendRequest(name, [details, callback], parameters);
   } else if ("imageData" in details) {
     // Verify that this at least looks like an ImageData element.
     // Unfortunately, we cannot use instanceof because the ImageData
@@ -30,7 +30,7 @@ function setIcon(details, name, parameters, actionType) {
           "is no larger than " + iconSize + " pixels square.");
     }
 
-    sendRequest(name, [details], parameters,
+    sendRequest(name, [details, callback], parameters,
                 {noStringify: true, nativeFunction: SetIconCommon});
   } else if ("path" in details) {
     var img = new Image();
@@ -49,7 +49,7 @@ function setIcon(details, name, parameters, actionType) {
       delete details.path;
       details.imageData = canvas_context.getImageData(0, 0, canvas.width,
                                                       canvas.height);
-      sendRequest(name, [details], parameters,
+      sendRequest(name, [details, callback], parameters,
                   {noStringify: true, nativeFunction: SetIconCommon});
     };
     img.src = details.path;

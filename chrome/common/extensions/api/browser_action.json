@@ -97,6 +97,12 @@
                 "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
           }
         ]
       },

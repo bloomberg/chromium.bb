@@ -10,7 +10,8 @@ var setIcon = require('setIcon').setIcon;
 chromeHidden.registerCustomHook('pageAction', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setHandleRequest('setIcon', function(details) {
-    setIcon(details, this.name, this.definition.parameters, 'page action');
+  apiFunctions.setHandleRequest('setIcon', function(details, callback) {
+    setIcon(details, callback, this.name, this.definition.parameters,
+        'page action');
   });
 });

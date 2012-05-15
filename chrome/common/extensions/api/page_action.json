@@ -95,6 +95,12 @@
                 "optional": true
               }
             }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
           }
         ]
       },
