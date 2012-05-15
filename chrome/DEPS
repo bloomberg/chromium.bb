@@ -44,6 +44,7 @@ include_rules = [
   # Allow inclusion of third-party code:
   "+third_party/hunspell",
   "+third_party/icon_family", # IconFamily for Mac.
+  "+third_party/libxml",
   "+third_party/mozilla",     # Mozilla interface headers.
   "+third_party/npapi",       # NPAPI interface headers.
   "+third_party/skia",

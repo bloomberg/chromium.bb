@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/libxml_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
 
 using base::Value;
 using base::DictionaryValue;

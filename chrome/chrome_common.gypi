@@ -229,8 +229,6 @@
         'common/nacl_messages.h',
         'common/nacl_types.cc',
         'common/nacl_types.h',
-        'common/libxml_utils.cc',
-        'common/libxml_utils.h',
         'common/pepper_flash.cc',
         'common/pepper_flash.h',
         'common/persistent_pref_store.h',

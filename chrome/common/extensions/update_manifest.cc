@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/version.h"
-#include "chrome/common/libxml_utils.h"
 #include "libxml/tree.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
 
 static const char* kExpectedGupdateProtocol = "2.0";
 static const char* kExpectedGupdateXmlns =

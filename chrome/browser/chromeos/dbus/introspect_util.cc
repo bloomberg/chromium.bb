@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/dbus/introspect_util.h"
 
-#include "chrome/common/libxml_utils.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace {
 

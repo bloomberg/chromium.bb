@@ -1,14 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/libxml_utils.h"
-
-#include "base/compiler_specific.h"
-#include "base/file_path.h"
-#include "base/logging.h"
-#include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "libxml_utils.h"
 
 #include "libxml/xmlreader.h"
 
@@ -20,25 +14,12 @@ std::string XmlStringToStdString(const xmlChar* xmlstring) {
     return "";
 }
 
-XmlReader::XmlReader()
-    : reader_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          error_func_(this, &XmlReader::GenericErrorCallback)) {
+XmlReader::XmlReader() : reader_(NULL) {
 }
 
 XmlReader::~XmlReader() {
   if (reader_)
     xmlFreeTextReader(reader_);
-}
-
-// static
-void XmlReader::GenericErrorCallback(void* context, const char* msg, ...) {
-  va_list args;
-  va_start(args, msg);
-
-  XmlReader* reader = static_cast<XmlReader*>(context);
-  reader->errors_.append(base::StringPrintV(msg, args));
-  va_end(args);
 }
 
 bool XmlReader::Load(const std::string& input) {
@@ -51,19 +32,10 @@ bool XmlReader::Load(const std::string& input) {
   return reader_ != NULL;
 }
 
-bool XmlReader::LoadFile(const FilePath& file_path) {
+bool XmlReader::LoadFile(const std::string& file_path) {
   const int kParseOptions = XML_PARSE_RECOVER |  // recover on errors
                             XML_PARSE_NONET;     // forbid network access
-  reader_ = xmlReaderForFile(
-#if defined(OS_WIN)
-      // libxml takes UTF-8 paths on Windows; search the source for
-      // xmlWrapOpenUtf8 to see it converting UTF-8 back to wide
-      // characters.
-      WideToUTF8(file_path.value()).c_str(),
-#else
-      file_path.value().c_str(),
-#endif
-      NULL, kParseOptions);
+  reader_ = xmlReaderForFile(file_path.c_str(), NULL, kParseOptions);
   return reader_ != NULL;
 }
 
@@ -77,7 +49,6 @@ bool XmlReader::NodeAttribute(const char* name, std::string* out) {
 }
 
 bool XmlReader::ReadElementContent(std::string* content) {
-  DCHECK(NodeType() == XML_READER_TYPE_ELEMENT);
   const int start_depth = Depth();
 
   if (xmlTextReaderIsEmptyElement(reader_)) {
@@ -103,7 +74,6 @@ bool XmlReader::ReadElementContent(std::string* content) {
   }
 
   // Advance past ending element tag.
-  DCHECK_EQ(NodeType(), XML_READER_TYPE_END_ELEMENT);
   if (!Read())
     return false;
 

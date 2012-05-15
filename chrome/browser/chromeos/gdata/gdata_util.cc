@@ -19,7 +19,6 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/libxml_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
@@ -33,6 +32,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/escape.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace gdata {
 namespace util {

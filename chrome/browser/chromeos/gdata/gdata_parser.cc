@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/libxml_utils.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
 
 using base::Value;
 using base::DictionaryValue;

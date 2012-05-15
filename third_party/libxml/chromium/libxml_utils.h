@@ -1,17 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_LIBXML_UTILS_H__
-#define CHROME_COMMON_LIBXML_UTILS_H__
+#ifndef THIRD_PARTY_LIBXML_CHROMIUM_LIBXML_UTILS_H_
+#define THIRD_PARTY_LIBXML_CHROMIUM_LIBXML_UTILS_H_
 #pragma once
 
 #include <string>
 
 #include "libxml/xmlreader.h"
 #include "libxml/xmlwriter.h"
-
-class FilePath;
 
 // Converts a libxml xmlChar* into a UTF-8 std::string.
 // NULL inputs produce an empty string.
@@ -49,7 +47,7 @@ class XmlReader {
   bool Load(const std::string& input);
 
   // Load a document into the reader from a file.  Returns false on error.
-  bool LoadFile(const FilePath& file_path);
+  bool LoadFile(const std::string& file_path);
 
   // Wrappers around libxml functions -----------------------------------------
 
@@ -90,24 +88,12 @@ class XmlReader {
   // If currently on an opening tag, doesn't advance at all.
   bool SkipToElement();
 
-  // Returns the errors reported by libxml, if any.
-  // (libxml normally just dumps these errors to stderr.)
-  const std::string& errors() const { return errors_; }
-
  private:
-  // A callback for libxml to report errors.
-  static void GenericErrorCallback(void* context, const char* msg, ...);
-
   // Returns the libxml node type of the current node.
   int NodeType() { return xmlTextReaderNodeType(reader_); }
 
   // The underlying libxml xmlTextReader.
   xmlTextReaderPtr reader_;
-
-  // error_func_ is used to reassign libxml's global error function
-  // to report errors into |errors_| for the lifetime of this object.
-  ScopedXmlErrorFunc error_func_;
-  std::string errors_;
 };
 
 // XmlWriter is a wrapper class around libxml's xmlWriter,
@@ -182,4 +168,4 @@ class XmlWriter {
   xmlBufferPtr buffer_;
 };
 
-#endif  // CHROME_COMMON_LIBXML_UTILS_H__
+#endif  // THIRD_PARTY_LIBXML_CHROMIUM_INCLUDE_LIBXML_LIBXML_UTILS_H_
