@@ -66,7 +66,7 @@ PasswordManager::PasswordManager(WebContents* web_contents,
       observer_(NULL) {
   DCHECK(delegate_);
   password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
-      delegate_->GetProfileForPasswordManager()->GetPrefs(), NULL);
+                                 delegate_->GetProfile()->GetPrefs(), NULL);
 
   ReportMetrics(*password_manager_enabled_);
 }
@@ -74,13 +74,12 @@ PasswordManager::PasswordManager(WebContents* web_contents,
 PasswordManager::~PasswordManager() {
 }
 
-bool PasswordManager::IsEnabled() const {
-  const Profile* profile = delegate_->GetProfileForPasswordManager();
-  return profile && !profile->IsOffTheRecord() && *password_manager_enabled_;
+bool PasswordManager::IsSavingEnabled() const {
+  return IsFillingEnabled() && !delegate_->GetProfile()->IsOffTheRecord();
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
-  if (!IsEnabled())
+  if (!IsSavingEnabled())
     return;
 
   // No password to save? Then don't.
@@ -163,7 +162,7 @@ bool PasswordManager::OnMessageReceived(const IPC::Message& message) {
 
 void PasswordManager::OnPasswordFormsParsed(
     const std::vector<PasswordForm>& forms) {
-  if (!IsEnabled())
+  if (!IsFillingEnabled())
     return;
 
   // Ask the SSLManager for current security.
@@ -173,8 +172,8 @@ void PasswordManager::OnPasswordFormsParsed(
        iter != forms.end(); ++iter) {
     bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
     PasswordFormManager* manager =
-        new PasswordFormManager(delegate_->GetProfileForPasswordManager(),
-                                this, *iter, ssl_valid);
+        new PasswordFormManager(delegate_->GetProfile(), this, *iter,
+                                ssl_valid);
     pending_login_managers_.push_back(manager);
     manager->FetchMatchingLoginsFromPasswordStore();
   }
@@ -185,7 +184,7 @@ void PasswordManager::OnPasswordFormsRendered(
   if (!provisional_save_manager_.get())
     return;
 
-  DCHECK(IsEnabled());
+  DCHECK(IsSavingEnabled());
 
   // First, check for a failed login attempt.
   for (std::vector<PasswordForm>::const_iterator iter = visible_forms.begin();
@@ -244,4 +243,8 @@ void PasswordManager::Autofill(
                                            preferred_match.password_value);
       }
   }
+}
+
+bool PasswordManager::IsFillingEnabled() const {
+  return delegate_->GetProfile() && *password_manager_enabled_;
 }

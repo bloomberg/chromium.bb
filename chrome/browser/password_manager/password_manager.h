@@ -38,8 +38,10 @@ class PasswordManager : public LoginModel,
 
   virtual ~PasswordManager();
 
-  // Is password autofill enabled for the current profile?
-  bool IsEnabled() const;
+  // Is saving new data for password autofill enabled for the current profile?
+  // For example, saving new data is disabled in Incognito mode, whereas filling
+  // data is not.
+  bool IsSavingEnabled() const;
 
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.
@@ -72,6 +74,9 @@ class PasswordManager : public LoginModel,
       const std::vector<webkit::forms::PasswordForm>& visible_forms);
 
  private:
+  // Is password autofill enabled for the current profile?
+  bool IsFillingEnabled() const;
+
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //

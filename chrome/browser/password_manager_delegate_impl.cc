@@ -150,7 +150,7 @@ void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
           tab_contents_->infobar_tab_helper(), form_to_save));
 }
 
-Profile* PasswordManagerDelegateImpl::GetProfileForPasswordManager() {
+Profile* PasswordManagerDelegateImpl::GetProfile() {
   return tab_contents_->profile();
 }
 

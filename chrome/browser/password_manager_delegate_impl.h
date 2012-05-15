@@ -21,7 +21,7 @@ class PasswordManagerDelegateImpl : public PasswordManagerDelegate {
       const webkit::forms::PasswordFormFillData& form_data) OVERRIDE;
   virtual void AddSavePasswordInfoBarIfPermitted(
       PasswordFormManager* form_to_save) OVERRIDE;
-  virtual Profile* GetProfileForPasswordManager() OVERRIDE;
+  virtual Profile* GetProfile() OVERRIDE;
   virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
  private:
   TabContentsWrapper* tab_contents_;

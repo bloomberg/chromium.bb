@@ -34,7 +34,7 @@ class MockPasswordManagerDelegate : public PasswordManagerDelegate {
   MOCK_METHOD1(FillPasswordForm, void(
      const webkit::forms::PasswordFormFillData&));
   MOCK_METHOD1(AddSavePasswordInfoBarIfPermitted, void(PasswordFormManager*));
-  MOCK_METHOD0(GetProfileForPasswordManager, Profile*());
+  MOCK_METHOD0(GetProfile, Profile*());
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
 };
 
@@ -61,8 +61,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     browser_context_.reset(testing_profile);
     ChromeRenderViewHostTestHarness::SetUp();
 
-    EXPECT_CALL(delegate_, GetProfileForPasswordManager())
-        .WillRepeatedly(Return(profile()));
+    EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
     manager_.reset(new PasswordManager(contents(), &delegate_));
     EXPECT_CALL(delegate_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));

@@ -36,7 +36,7 @@ class PasswordManagerDelegate {
       PasswordFormManager* form_to_save) = 0;
 
   // Get the profile for which we are managing passwords.
-  virtual Profile* GetProfileForPasswordManager() = 0;
+  virtual Profile* GetProfile() = 0;
 
   // If any SSL certificate errors were encountered as a result of the last
   // page load.

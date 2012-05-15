@@ -253,7 +253,7 @@ void AutofillManager::UpdatePasswordGenerationState(
                                 sync_set.Has(syncable::PASSWORDS));
   bool new_password_generation_enabled =
       password_sync_enabled &&
-      tab_contents_wrapper_->password_manager()->IsEnabled();
+      tab_contents_wrapper_->password_manager()->IsSavingEnabled();
   if (new_password_generation_enabled != password_generation_enabled_ ||
       new_renderer) {
     password_generation_enabled_ = new_password_generation_enabled;
