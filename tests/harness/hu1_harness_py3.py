@@ -524,7 +524,7 @@ tests = [
     }, {
         'txt':  'Gombosszeg', 
         'brl':  '$gombos5eg', 
-'BRLCursorPos': 1,
+        'BRLCursorPos': 1,
     }, {
         'txt':  'gondviselésszerű', 
         'brl':  'gondvisel1s5er}', 
@@ -937,14 +937,14 @@ tests = [
     }, {
         'txt':  'Kisszentmárton', 
         'brl':  '$kis5entm"rton', 
-'BRLCursorPos': 1,
+        'BRLCursorPos': 1,
     }, {
         'txt':  'kisszerű', 
         'brl':  'kis5er}', 
     }, {
         'txt':  'Kissziget', 
         'brl':  '$kis5iget', 
-'BRLCursorPos': 1,
+        'BRLCursorPos': 1,
     }, {
         'txt':  'kisszobában', 
         'brl':  'kis5ob"ban', 
@@ -1270,7 +1270,7 @@ tests = [
     }, {
         'txt':  'Meggyesi', 
         'brl':  '$me44esi', 
-       'BRLCursorPos': 1,
+        'BRLCursorPos': 1,
     }, {
         'txt':  'meggyet', 
         'brl':  'me44et', 
