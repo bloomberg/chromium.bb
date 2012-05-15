@@ -14,12 +14,14 @@ SourceBuffer::SourceBuffer() {}
 
 SourceBuffer::~SourceBuffer() {}
 
-void SourceBuffer::Init(const InitCB& init_cb,
+void SourceBuffer::Init(scoped_ptr<StreamParser> parser,
+                        const InitCB& init_cb,
                         const NewConfigCB& config_cb,
                         const NewBuffersCB& audio_cb,
                         const NewBuffersCB& video_cb,
                         const KeyNeededCB& key_needed_cb) {
   DCHECK(init_cb_.is_null());
+  DCHECK(parser.get());
   DCHECK(!init_cb.is_null());
   DCHECK(!config_cb.is_null());
   DCHECK(!audio_cb.is_null() || !video_cb.is_null());
@@ -31,7 +33,7 @@ void SourceBuffer::Init(const InitCB& init_cb,
   video_cb_ = video_cb;
   key_needed_cb_ = key_needed_cb;
 
-  stream_parser_.reset(new WebMStreamParser());
+  stream_parser_.reset(parser.release());
 
   stream_parser_->Init(
       base::Bind(&SourceBuffer::OnStreamParserInitDone, base::Unretained(this)),
@@ -58,6 +60,13 @@ void SourceBuffer::OnStreamParserInitDone(bool success,
 bool SourceBuffer::OnNewConfigs(const AudioDecoderConfig& audio_config,
                     const VideoDecoderConfig& video_config) {
   CHECK(audio_config.IsValidConfig() || video_config.IsValidConfig());
+
+  // Signal an error if we get configuration info for stream types
+  // we don't have a callback to handle.
+  if ((audio_config.IsValidConfig() && audio_cb_.is_null()) ||
+      (video_config.IsValidConfig() && video_cb_.is_null())) {
+    return false;
+  }
 
   return config_cb_.Run(audio_config, video_config);
 }

@@ -25,7 +25,8 @@ class MEDIA_EXPORT SourceBuffer {
   typedef base::Callback<bool(const StreamParser::BufferQueue&)> NewBuffersCB;
   typedef base::Callback<bool(scoped_array<uint8>, int)> KeyNeededCB;
 
-  void Init(const InitCB& init_cb,
+  void Init(scoped_ptr<StreamParser> parser,
+            const InitCB& init_cb,
             const NewConfigCB& config_cb,
             const NewBuffersCB& audio_cb,
             const NewBuffersCB& video_cb,
