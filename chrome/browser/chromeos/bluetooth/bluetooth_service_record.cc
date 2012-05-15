@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "chrome/common/libxml_utils.h"
+#include "third_party/libxml/chromium/libxml_utils.h"
 
 namespace {
 
