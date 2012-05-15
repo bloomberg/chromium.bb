@@ -380,6 +380,13 @@ bool DownloadsDownloadFunction::ParseArgs() {
     return false;
   }
 
+  if (!iodata_->url.SchemeIs("data") &&
+      iodata_->url.GetOrigin() != GetExtension()->url().GetOrigin() &&
+      !GetExtension()->HasHostPermission(iodata_->url)) {
+    error_ = download_extension_errors::kInvalidURLError;
+    return false;
+  }
+
   if (options->HasKey(kFilenameKey)) {
     EXTENSION_FUNCTION_VALIDATE(options->GetString(
         kFilenameKey, &iodata_->filename));

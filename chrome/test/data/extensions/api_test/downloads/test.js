@@ -15,6 +15,10 @@ function debugObject(obj) {
 }
 
 var downloads = chrome.experimental.downloads;
+window.requestFileSystem  = (window.requestFileSystem ||
+                             window.webkitRequestFileSystem);
+window.BlobBuilder = (window.BlobBuilder ||
+                      window.WebKitBlobBuilder);
 
 chrome.test.getConfig(function(testConfig) {
   function getURL(path) {
@@ -93,6 +97,54 @@ chrome.test.getConfig(function(testConfig) {
     //         chrome.test.assertEq(downloadId, id);
     //       }));
     // },
+
+    function downloadBlob() {
+      // Test that we can begin a download for a blob.
+      var downloadId = getNextId();
+      console.debug(downloadId);
+      function getBlobURL(data, filename, callback) {
+        var dirname = '' + Math.random();
+        function fileSystemError(operation, data) {
+          return function(fileError) {
+            callback(null, {operation: operation,
+                            data: data,
+                            code: fileError.code});
+          }
+        }
+        window.requestFileSystem(TEMPORARY, 5*1024*1024, function(fs) {
+          fs.root.getDirectory(dirname, {create: true, exclusive: true},
+                               function(dirEntry) {
+            dirEntry.getFile(filename, {create: true, exclusive: true},
+                             function(fileEntry) {
+              fileEntry.createWriter(function(fileWriter) {
+                fileWriter.onwriteend = function(e) {
+                  callback(fileEntry.toURL(), null);
+                };
+                fileWriter.onerror = function(e) {
+                  callback(null, ('Write failed: ' + e.toString()));
+                };
+                var bb = new window.BlobBuilder();
+                bb.append(data);
+                fileWriter.write(bb.getBlob());
+              }, fileSystemError('createWriter'));
+            }, fileSystemError('getFile', filename));
+          }, fileSystemError('getDirectory',  dirname));
+        }, fileSystemError('requestFileSystem'));
+      }
+
+      getBlobURL('Lorem ipsum', downloadId + '.txt',
+                 chrome.test.callback(function(blobUrl, blobError) {
+        if (blobError)
+          throw blobError;
+        console.debug(blobUrl);
+        downloads.download(
+            {'url': blobUrl},
+            chrome.test.callback(function(id) {
+              console.debug(id);
+              chrome.test.assertEq(downloadId, id);
+            }));
+      }));
+    },
 
     function downloadSimple() {
       // Test that we can begin a download.
@@ -932,7 +984,30 @@ chrome.test.getConfig(function(testConfig) {
             }));
     },
 
-    // TODO(benjhayden): Set up a test ftp server.
+    function downloadInvalidURL7() {
+      // Test that download() rejects javascript urls.
+      downloads.download(
+          {'url': 'javascript:document.write("hello");'},
+          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    function downloadInvalidURL8() {
+      // Test that download() rejects javascript urls.
+      downloads.download(
+          {'url': 'javascript:return false;'},
+          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    function downloadInvalidURL9() {
+      // Test that download() rejects otherwise-valid URLs that fail the host
+      // permissions check.
+      downloads.download(
+          {'url': 'ftp://example.com/example.txt'},
+          chrome.test.callbackFail(downloads.ERROR_INVALID_URL));
+    },
+
+    // TODO(benjhayden): Set up a test ftp server, add ftp://localhost* to
+    // permissions, maybe update downloadInvalidURL9.
     // function downloadAllowFTPURLs() {
     //   // Valid ftp URLs are valid URLs.
     //   var downloadId = getNextId();
@@ -943,20 +1018,6 @@ chrome.test.getConfig(function(testConfig) {
     //         chrome.test.assertEq(downloadId, id);
     //       }));
     // },
-
-    function downloadInvalidURL7() {
-      // Test that download() rejects javascript urls.
-      downloads.download(
-          {'url': 'javascript:document.write("hello");'},
-          chrome.test.callbackFail('net::ERR_ACCESS_DENIED'));
-    },
-
-    function downloadInvalidURL8() {
-      // Test that download() rejects javascript urls.
-      downloads.download(
-          {'url': 'javascript:return false;'},
-          chrome.test.callbackFail('net::ERR_ACCESS_DENIED'));
-    },
 
     function downloadInvalidMethod() {
       assertThrows(('Invalid value for argument 1. Property \'method\': ' +
