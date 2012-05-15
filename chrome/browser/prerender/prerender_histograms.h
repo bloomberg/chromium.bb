@@ -75,6 +75,10 @@ class PrerenderHistograms {
   // Record the time since a page was recently visited.
   void RecordTimeSinceLastRecentVisit(base::TimeDelta time) const;
 
+  // Record a percentage of pixels of the final page already in place at
+  // swap-in.
+  void RecordFractionPixelsFinalAtSwapin(double fraction) const;
+
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
 

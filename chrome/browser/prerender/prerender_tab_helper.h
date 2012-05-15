@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PRERENDER_PRERENDER_TAB_HELPER_H_
 
 #include "base/time.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
@@ -42,11 +43,20 @@ class PrerenderTabHelper : public content::WebContentsObserver {
   void PrerenderSwappedIn();
 
  private:
+  // Helper class to compute pixel-based stats on the paint progress
+  // between when a prerendered page is swapped in and when the onload event
+  // fires.
+  class PixelStats;
+  scoped_ptr<PixelStats> pixel_stats_;
+
   // Retrieves the PrerenderManager, or NULL, if none was found.
   PrerenderManager* MaybeGetPrerenderManager() const;
 
   // Returns whether the WebContents being observed is currently prerendering.
   bool IsPrerendering();
+
+  // Returns whether the WebContents being observed was prerendered.
+  bool IsPrerendered();
 
   bool IsTopSite(const GURL& url);
 

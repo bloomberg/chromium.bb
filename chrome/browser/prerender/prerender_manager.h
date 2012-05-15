@@ -252,6 +252,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   Profile* profile() const { return profile_; }
 
+  PrerenderHistograms* histograms() const { return histograms_.get(); }
+
  protected:
   void SetPrerenderContentsFactory(
       PrerenderContents::Factory* prerender_contents_factory);
