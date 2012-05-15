@@ -78,9 +78,11 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
   GetNativeWindow()->SetName("BrowserFrameAura");
   GetNativeWindow()->AddObserver(window_property_watcher_.get());
 #if defined(USE_ASH)
-  ash::SetPersistsAcrossAllWorkspaces(
-      GetNativeWindow(),
-      ash::WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO);
+  if (browser_view->browser()->type() != Browser::TYPE_POPUP) {
+    ash::SetPersistsAcrossAllWorkspaces(
+        GetNativeWindow(),
+        ash::WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO);
+  }
 #endif
 }
 
