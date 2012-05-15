@@ -173,7 +173,7 @@ bool CrashGenerationClient::RequestUpload(DWORD crash_id) {
     return false;
   }
 
-  CustomClientInfo custom_info;
+  CustomClientInfo custom_info = {NULL, 0};
   ProtocolMessage msg(MESSAGE_TAG_UPLOAD_REQUEST, crash_id,
                       static_cast<MINIDUMP_TYPE>(NULL), NULL, NULL, NULL,
                       custom_info, NULL, NULL, NULL);
