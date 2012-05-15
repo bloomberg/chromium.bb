@@ -782,13 +782,8 @@ void Panel::OnMinimizeButtonClicked(panel::ClickModifier modifier) {
 }
 
 void Panel::OnRestoreButtonClicked(panel::ClickModifier modifier) {
-  if (!panel_strip_)
-    return;
-
-  if (modifier == panel::APPLY_TO_ALL)
-    panel_strip_->RestoreAll();
-  else
-    Restore();
+  // Clicking the restore button has the same behavior as clicking the titlebar.
+  OnTitlebarClicked(modifier);
 }
 
 void Panel::OnPanelStartUserResizing() {
