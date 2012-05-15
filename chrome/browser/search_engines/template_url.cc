@@ -407,12 +407,11 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
-  } else {
+  } else if (!prepopulated_) {
     // If it's a prepopulated URL, we know that it's safe to remove unknown
-    // parameters. Otherwise it could be some garbage but can also be a
-    // javascript block. Put it back.
-    if (!prepopulated_)
-      url->insert(start, full_parameter);
+    // parameters, so just ignore this and return true below. Otherwise it could
+    // be some garbage but can also be a javascript block. Put it back.
+    url->insert(start, full_parameter);
     return false;
   }
   return true;

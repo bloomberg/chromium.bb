@@ -166,19 +166,19 @@ TEST_F(TemplateURLTest, URLRefTestEncoding) {
 // TemplateURLRef to handle parsing the URL parameters differently.
 TEST_F(TemplateURLTest, SetPrepopulatedAndParse) {
   TemplateURLData data;
-  data.SetURL("http://foo{fhqwhgads}");
+  data.SetURL("http://foo{fhqwhgads}bar");
   TemplateURL url(NULL, data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
-  EXPECT_EQ("http://foo{fhqwhgads}",
-      url.url_ref().ParseURL("http://foo{fhqwhgads}", &replacements, &valid));
+  EXPECT_EQ("http://foo{fhqwhgads}bar", url.url_ref().ParseURL(
+      "http://foo{fhqwhgads}bar", &replacements, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_TRUE(valid);
 
   data.prepopulate_id = 123;
   TemplateURL url2(NULL, data);
-  EXPECT_EQ("http://foo", url2.url_ref().ParseURL("http://foo{fhqwhgads}",
-                                                  &replacements, &valid));
+  EXPECT_EQ("http://foobar", url2.url_ref().ParseURL("http://foo{fhqwhgads}bar",
+                                                     &replacements, &valid));
   EXPECT_TRUE(replacements.empty());
   EXPECT_TRUE(valid);
 }
@@ -505,7 +505,7 @@ TEST_F(TemplateURLTest, ParseParameterKnown) {
 }
 
 TEST_F(TemplateURLTest, ParseParameterUnknown) {
-  std::string parsed_url("{fhqwhgads}");
+  std::string parsed_url("{fhqwhgads}abc");
   TemplateURLData data;
   data.SetURL(parsed_url);
   TemplateURL url(NULL, data);
@@ -514,16 +514,16 @@ TEST_F(TemplateURLTest, ParseParameterUnknown) {
   // By default, TemplateURLRef should not consider itself prepopulated.
   // Therefore we should not replace the unknown parameter.
   EXPECT_FALSE(url.url_ref().ParseParameter(0, 10, &parsed_url, &replacements));
-  EXPECT_EQ("{fhqwhgads}", parsed_url);
+  EXPECT_EQ("{fhqwhgads}abc", parsed_url);
   EXPECT_TRUE(replacements.empty());
 
   // If the TemplateURLRef is prepopulated, we should remove unknown parameters.
-  parsed_url = "{fhqwhgads}";
+  parsed_url = "{fhqwhgads}abc";
   data.prepopulate_id = 1;
   TemplateURL url2(NULL, data);
   EXPECT_FALSE(url2.url_ref().ParseParameter(0, 10, &parsed_url,
                                              &replacements));
-  EXPECT_EQ(std::string(), parsed_url);
+  EXPECT_EQ("abc", parsed_url);
   EXPECT_TRUE(replacements.empty());
 }
 
