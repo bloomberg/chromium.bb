@@ -172,11 +172,6 @@
 #include "ui/views/focus/accelerator_handler.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/gtk_util.h"
-#include "ui/gfx/gtk_util.h"
-#endif
-
 #if defined(USE_X11)
 #include "chrome/browser/chrome_browser_main_x11.h"
 #endif
