@@ -4,6 +4,7 @@
 
 #include "chrome/browser/mac/keychain_reauthorize.h"
 
+#import <Foundation/Foundation.h>
 #include <Security/Security.h>
 
 #include <algorithm>
@@ -14,6 +15,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/mac/security_wrappers.h"
@@ -117,6 +119,32 @@ void KeychainReauthorize() {
                                                this_application);
 
   WriteKCItemsAndReauthorizedAccesses(items_and_reauthorized_accesses);
+}
+
+void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
+  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+  int pref_value = [user_defaults integerForKey:pref_key];
+
+  if (pref_value < max_tries) {
+    if (pref_value > 0) {
+      // Logs the number of previous tries that didn't complete.
+      UMA_HISTOGRAM_COUNTS("OSX.KeychainReauthorizeIfNeeded", pref_value);
+    }
+
+    ++pref_value;
+    [user_defaults setInteger:pref_value forKey:pref_key];
+    [user_defaults synchronize];
+
+    chrome::browser::mac::KeychainReauthorize();
+
+    [user_defaults setInteger:max_tries forKey:pref_key];
+    NSString* success_pref_key = [pref_key stringByAppendingString:@"Success"];
+    [user_defaults setBool:YES forKey:success_pref_key];
+    [user_defaults synchronize];
+
+    // Logs the try number (1, 2) that succeeded.
+    UMA_HISTOGRAM_COUNTS("OSX.KeychainReauthorizeIfNeededSuccess", pref_value);
+  }
 }
 
 namespace {

@@ -17,6 +17,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/mac/install_from_dmg.h"
+#include "chrome/browser/mac/keychain_reauthorize.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -135,6 +136,17 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   // |-application:openFiles:|, since we already handle them directly.
   [[NSUserDefaults standardUserDefaults]
       setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
+
+  // Do Keychain reauthorization. This gets two chances to run. If the first
+  // try doesn't complete successfully (crashes or is interrupted for any
+  // reason), there will be a second chance. Once this step completes
+  // successfully, it should never have to run again.
+  NSString* const keychain_reauthorize_pref =
+      @"KeychainReauthorizeInAppMay2012";
+  const int kKeychainReauthorizeMaxTries = 2;
+
+  chrome::browser::mac::KeychainReauthorizeIfNeeded(
+      keychain_reauthorize_pref, kKeychainReauthorizeMaxTries);
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {

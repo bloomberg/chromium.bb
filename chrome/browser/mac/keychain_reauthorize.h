@@ -6,6 +6,12 @@
 #define CHROME_BROWSER_MAC_KEYCHAIN_REAUTHORIZE_H_
 #pragma once
 
+#ifdef __OBJC__
+@class NSString;
+#else
+class NSString;
+#endif
+
 namespace chrome {
 namespace browser {
 namespace mac {
@@ -23,6 +29,25 @@ namespace mac {
 // control policies on existing Keychain items (even when they are able to
 // decrypt those items), but any application can remove a Keychain item.
 void KeychainReauthorize();
+
+// Calls KeychainReauthorize, but only if it's determined that it's necessary.
+// pref_key is looked up in the system's standard user defaults (preferences)
+// and if its integer value is less than max_tries, KeychainReauthorize is
+// attempted. Before the attempt, the preference is incremented, allowing a
+// finite number of incomplete attempts at performing the KeychainReauthorize
+// operation. When the step completes successfully, the preference is set to
+// max_tries to prevent further attempts, and the preference name with the
+// word "Success" appended is also stored with a boolean value of YES,
+// disambiguating between the cases where the step completed successfully and
+// the step completed unsuccessfully while reaching the maximum number of
+// tries.
+//
+// The system's standard user defaults for the application are used
+// (~/Library/Preferences/com.google.Chrome.plist,
+// com.google.Chrome.canary.plist, etc.) instead of Chrome preferences because
+// Keychain access is tied more closely to the bundle identifier and signed
+// product than it is to any specific profile (--user-data-dir).
+void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries);
 
 }  // namespace mac
 }  // namespace browser
