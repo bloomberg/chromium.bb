@@ -159,7 +159,7 @@ def _TempDirTearDown(self):
 
 
 @contextlib.contextmanager
-def TempDirContextManager(prefix=None, storage=None):
+def TempDirContextManager(prefix='tmp', storage=None):
   """ContextManager constraining all tempfile/TMPDIR activity to a tempdir"""
   if storage is None:
     # Fake up a mutable object.
