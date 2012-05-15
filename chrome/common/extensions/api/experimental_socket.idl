@@ -109,8 +109,7 @@
 
     // Writes data on the given socket.
     // |socketId| : The socketId.
-    // |data| : The data to write. Warning: will probably become a blob or other
-    // appropriate binary-friendly type.
+    // |data| : The data to write.
     // |callback| : Called when the first of any of the following happens: the
     // write operation completes without blocking, the write operation blocked
     // before completion (in which case onEvent() will eventually be called with
@@ -130,8 +129,7 @@
 
     // Writes data on the given socket.
     // |socketId| : The socketId.
-    // |data| : The data to write. Warning: will probably become a blob or other
-    // appropriate binary-friendly type.
+    // |data| : The data to write.
     // |address| : The address of the remote machine.
     // |port| : The port of the remote machine.
     // |callback| : Called when the first of any of the following happens: the
