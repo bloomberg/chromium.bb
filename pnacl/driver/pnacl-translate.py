@@ -22,6 +22,8 @@ EXTRA_ENV = {
   # Use the IRT shim by default on x86-64. This can be disabled with an
   # explicit flag (--noirtshim) or via -nostdlib.
   'USE_IRT_SHIM'  : '${ARCH==X8664 && !SHARED ? 1 : 0}',
+  # Experimental mode exploring newlib as a shared library
+  'NEWLIB_SHARED_EXPERIMENT': '0',
 
   # Flags for pnacl-nativeld
   'LD_FLAGS': '${STATIC ? -static} ${SHARED ? -shared}',
@@ -43,7 +45,11 @@ EXTRA_ENV = {
 
   'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : -l:crtbegin.o}',
   'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
-  'LIBGCC_EH': '${STATIC ? -l:libgcc_eh.a : -l:libgcc_s.so.1}',
+  'LIBGCC_EH': '${STATIC ? -l:libgcc_eh.a : ' +
+               # libgcc_s.so drags in "glibc.so"
+               # (it is likely overkill to link it when SHARED==1 also)
+               # TODO(robertm): provide a "better" libgcc_s.so
+               '${NEWLIB_SHARED_EXPERIMENT ? : -l:libgcc_s.so.1}}',
 
   # List of user requested libraries (according to bitcode metadata).
   'NEEDED_LIBRARIES': '',   # Set by ApplyBitcodeConfig.
@@ -155,6 +161,8 @@ TranslatorPatterns = [
   ( '-nodefaultlibs',  "env.set('USE_DEFAULTLIBS', '0')"),
 
   ( '--noirtshim',      "env.set('USE_IRT_SHIM', '0')"),
+
+  ( '--newlib-shared-experiment',  "env.set('NEWLIB_SHARED_EXPERIMENT', '1')"),
 
   # Toggle the use of ELF-stubs / bitcode metadata, which represent real .so
   # files in the final native link.
