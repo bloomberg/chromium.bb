@@ -76,6 +76,10 @@ class FileBrowserNotificationsTest : public InProcessBrowserTest {
  public:
   FileBrowserNotificationsTest() : collection_(NULL) {}
 
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    notifications_.reset();
+  }
+
  protected:
   // This must be initialized late in test startup.
   void InitNotifications() {

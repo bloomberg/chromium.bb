@@ -141,6 +141,11 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // Notifies PowerManager that screen is unlocked.
   virtual void NotifyScreenUnlockCompleted() = 0;
 
+  // Return whether or not the screen is locked. Implementation should cache
+  // this state so that it can return immediately. Useful for observers that
+  // need to know the current screen lock state when they are added.
+  virtual bool GetIsScreenLocked() = 0;
+
   // Idle management functions:
 
   // Calculates idle time asynchronously, after the idle time request has

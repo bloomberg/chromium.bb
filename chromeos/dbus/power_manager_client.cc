@@ -29,6 +29,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
  public:
   explicit PowerManagerClientImpl(dbus::Bus* bus)
       : power_manager_proxy_(NULL),
+        screen_locked_(false),
         weak_ptr_factory_(this) {
     power_manager_proxy_ = bus->GetObjectProxy(
         power_manager::kPowerManagerServiceName,
@@ -270,6 +271,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
     SimpleMethodCallToPowerManager(power_manager::kScreenIsUnlockedMethod);
   }
 
+  virtual bool GetIsScreenLocked() OVERRIDE {
+    return screen_locked_;
+  }
+
  private:
   // Called when a dbus signal is initially connected.
   void SignalConnected(const std::string& interface_name,
@@ -437,10 +442,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
     // as expected. As per http://crbug.com/126217, this will help determine
     // if the problem is with dbus or in chrome.
     LOG(WARNING) << "LockScreen signal received from power manager.";
+    screen_locked_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
   }
 
   void ScreenUnlockSignalReceived(dbus::Signal* signal) {
+    screen_locked_ = false;
     FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
   }
 
@@ -502,6 +509,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
   dbus::ObjectProxy* power_manager_proxy_;
   dbus::ObjectProxy* session_manager_proxy_;
   ObserverList<Observer> observers_;
+  bool screen_locked_;
   base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientImpl);
@@ -515,7 +523,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       : discharging_(true),
         battery_percentage_(40),
         brightness_(50.0),
-        pause_count_(2) {
+        pause_count_(2),
+        screen_locked_(false) {
   }
 
   virtual ~PowerManagerClientStubImpl() {}
@@ -589,14 +598,18 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       const PowerStateRequestIdCallback& callback) OVERRIDE {}
 
   virtual void NotifyScreenLockRequested() OVERRIDE {
+    screen_locked_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
   }
   virtual void NotifyScreenLockCompleted() OVERRIDE {}
   virtual void NotifyScreenUnlockRequested() OVERRIDE {
+    screen_locked_ = false;
     FOR_EACH_OBSERVER(Observer, observers_, UnlockScreen());
   }
-
   virtual void NotifyScreenUnlockCompleted() OVERRIDE {}
+  virtual bool GetIsScreenLocked() OVERRIDE {
+    return screen_locked_;
+  }
 
  private:
   void Update() {
@@ -644,6 +657,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   ObserverList<Observer> observers_;
   base::RepeatingTimer<PowerManagerClientStubImpl> timer_;
   PowerSupplyStatus status_;
+  bool screen_locked_;
 };
 
 PowerManagerClient::PowerManagerClient() {

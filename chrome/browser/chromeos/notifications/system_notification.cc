@@ -11,10 +11,12 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 
 void SystemNotification::Init(int icon_resource_id) {
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   collection_ = static_cast<BalloonCollectionImplType*>(
       g_browser_process->notification_ui_manager()->balloon_collection());
   std::string url = web_ui_util::GetImageDataUrlFromResource(icon_resource_id);
@@ -32,7 +34,9 @@ SystemNotification::SystemNotification(Profile* profile,
       delegate_(delegate),
       title_(title),
       visible_(false),
-      urgent_(false) {
+      sticky_(false),
+      urgent_(false),
+      show_on_unlock_(false) {
   Init(icon_resource_id);
 }
 
@@ -45,11 +49,23 @@ SystemNotification::SystemNotification(Profile* profile,
       delegate_(new Delegate(id)),
       title_(title),
       visible_(false),
-      urgent_(false) {
+      sticky_(false),
+      urgent_(false),
+      show_on_unlock_(false) {
   Init(icon_resource_id);
 }
 
 SystemNotification::~SystemNotification() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+}
+
+void SystemNotification::UnlockScreen() {
+  if (show_on_unlock_) {
+    DCHECK(!visible_);
+    Notification notify = SystemNotificationFactory::Create(
+        icon_, title_, message_, link_, delegate_.get());
+    ShowNotification(notify);
+  }
 }
 
 void SystemNotification::Show(const string16& message,
@@ -63,8 +79,24 @@ void SystemNotification::Show(const string16& message,
                               const BalloonViewHost::MessageCallback& callback,
                               bool urgent,
                               bool sticky) {
-  Notification notify = SystemNotificationFactory::Create(icon_,
-      title_, message, link, delegate_.get());
+  message_ = message;
+  link_ = link;
+  callback_ = callback;
+  sticky_ = sticky;
+
+  if (DBusThreadManager::Get()->GetPowerManagerClient()->GetIsScreenLocked()) {
+    if (visible_ && urgent && !urgent_) {
+      // Hide the notification so that we show/update it on unlock.
+      Hide();
+      urgent_ = true;
+    }
+    if (!visible_)
+      show_on_unlock_ = true;
+    return;
+  }
+
+  Notification notify = SystemNotificationFactory::Create(
+      icon_, title_, message_, link_, delegate_.get());
   if (visible_) {
     // Force showing a user hidden notification on an urgent transition.
     if (urgent && !urgent_) {
@@ -74,12 +106,15 @@ void SystemNotification::Show(const string16& message,
       collection_->UpdateNotification(notify);
     }
   }
-  if (!visible_) {
-    collection_->AddSystemNotification(notify, profile_, sticky);
-    collection_->AddWebUIMessageCallback(notify, "link", callback);
-  }
-  visible_ = true;
+  if (!visible_)
+    ShowNotification(notify);
   urgent_ = urgent;
+}
+
+void SystemNotification::ShowNotification(const Notification& notify) {
+  collection_->AddSystemNotification(notify, profile_, sticky_);
+  collection_->AddWebUIMessageCallback(notify, "link", callback_);
+  visible_ = true;
 }
 
 void SystemNotification::Hide() {
