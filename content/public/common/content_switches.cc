@@ -264,7 +264,6 @@ const char kEnableMediaSource[]             = "enable-media-source";
 
 // Enable media stream in WebKit.
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#mediastream
-const char kEnableMediaStream[]             = "enable-media-stream";
 const char kEnablePeerConnection[]          = "enable-peer-connection";
 
 // On Windows, converts the page to the currently-installed monitor profile.

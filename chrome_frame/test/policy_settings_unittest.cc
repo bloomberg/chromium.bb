@@ -225,8 +225,6 @@ TEST_F(PolicySettingsTest, AdditionalLaunchParameters) {
       AdditionalLaunchParameters().GetProgram().empty());
 
   std::string test_switches("--");
-  test_switches += switches::kEnableMediaStream;
-  test_switches += " --";
   test_switches += switches::kEnableMediaSource;
 
   HKEY root[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
@@ -236,14 +234,12 @@ TEST_F(PolicySettingsTest, AdditionalLaunchParameters) {
     ResetPolicySettings();
     const CommandLine& additional_params =
         PolicySettings::GetInstance()->AdditionalLaunchParameters();
-    EXPECT_TRUE(additional_params.HasSwitch(switches::kEnableMediaStream));
     EXPECT_TRUE(additional_params.HasSwitch(switches::kEnableMediaSource));
 
     FilePath program_path(FILE_PATH_LITERAL("my_chrome.exe"));
     CommandLine new_cmd_line(program_path);
     new_cmd_line.AppendArguments(additional_params, false);
     EXPECT_NE(new_cmd_line.GetProgram(), additional_params.GetProgram());
-    EXPECT_TRUE(new_cmd_line.HasSwitch(switches::kEnableMediaStream));
     EXPECT_TRUE(new_cmd_line.HasSwitch(switches::kEnableMediaSource));
 
     DeleteChromeFramePolicyEntries(root[i]);
