@@ -218,6 +218,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
 #endif
   }
 
+#if !defined(OS_ANDROID)
   static int FirefoxProxySettingsTask(
       FirefoxProxySettings* firefox_settings) {
     if (!FirefoxProxySettings::GetSettings(firefox_settings))
@@ -243,6 +244,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     }
     callback.Run(rv);
   }
+#endif
 
   // Creates a fixed proxy config service that is initialized using Firefox's
   // current proxy settings. On success returns net::OK and fills
