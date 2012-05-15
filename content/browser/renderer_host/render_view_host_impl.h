@@ -38,6 +38,7 @@ struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
+struct ViewMsg_PostMessage_Params;
 struct ViewMsg_StopFinding_Params;
 
 namespace base {
@@ -486,6 +487,7 @@ class CONTENT_EXPORT RenderViewHostImpl
                                    const gfx::Rect& end_rect);
   void OnMsgPasteFromSelectionClipboard();
   void OnMsgRouteCloseEvent();
+  void OnMsgRouteMessageEvent(const ViewMsg_PostMessage_Params& params);
   void OnMsgRunJavaScriptMessage(const string16& message,
                                  const string16& default_prompt,
                                  const GURL& frame_url,

@@ -875,6 +875,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDidChangeNumWheelEvents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
                         OnMsgRouteCloseEvent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RouteMessageEvent, OnMsgRouteMessageEvent)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunJavaScriptMessage,
                                     OnMsgRunJavaScriptMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunBeforeUnloadConfirm,
@@ -1279,6 +1280,12 @@ void RenderViewHostImpl::OnMsgSelectionBoundsChanged(
 void RenderViewHostImpl::OnMsgRouteCloseEvent() {
   // Have the delegate route this to the active RenderViewHost.
   delegate_->RouteCloseEvent(this);
+}
+
+void RenderViewHostImpl::OnMsgRouteMessageEvent(
+    const ViewMsg_PostMessage_Params& params) {
+  // Give to the delegate to route to the active RenderViewHost.
+  delegate_->RouteMessageEvent(this, params);
 }
 
 void RenderViewHostImpl::OnMsgRunJavaScriptMessage(

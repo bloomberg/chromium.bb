@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -394,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title1.html"));
   scoped_refptr<SiteInstance> new_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      new_contents->GetSiteInstance());
   EXPECT_NE(orig_site_instance, new_site_instance);
 
   // Clicking the original link in the first tab should cause us to swap back.
@@ -432,6 +433,152 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       &success));
   EXPECT_TRUE(success);
   close_observer.Wait();
+}
+
+// Test for crbug.com/99202.  PostMessage calls should still work after
+// navigating the source and target windows to different sites.
+// Specifically:
+// 1) Create 3 windows (opener, "foo", and _blank) and send "foo" cross-process.
+// 2) Fail to post a message from "foo" to opener with the wrong target origin.
+// 3) Post a message from "foo" to opener, which replies back to "foo".
+// 4) Post a message from _blank to "foo".
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+                       SupportCrossProcessPostMessage) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Load a page with links that open in a new window.
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/click-noreferrer-links.html",
+      https_server.host_port_pair(),
+      &replacement_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(replacement_path));
+
+  // Get the original SiteInstance and RVHM for later comparison.
+  content::WebContents* opener_contents = browser()->GetSelectedWebContents();
+  scoped_refptr<SiteInstance> orig_site_instance(
+      opener_contents->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance != NULL);
+  RenderViewHostManager* opener_manager =
+      static_cast<WebContentsImpl*>(opener_contents)->
+          GetRenderManagerForTesting();
+
+  // 1) Open two more windows, one named.  These initially have openers but no
+  // reference to each other.  We will later post a message between them.
+
+  // First, a named target=foo window.
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
+      content::Source<content::WebContentsDelegate>(browser())));
+  bool success = false;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      opener_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(clickSameSiteTargetedLink());",
+      &success));
+  EXPECT_TRUE(success);
+  new_tab_observer.Wait();
+
+  // Wait for the navigation in the new tab to finish, if it hasn't, then
+  // send it to post_message.html on a different site.
+  content::WebContents* foo_contents = browser()->GetSelectedWebContents();
+  ui_test_utils::WaitForLoadStop(foo_contents);
+  EXPECT_EQ("/files/navigate_opener.html", foo_contents->GetURL().path());
+  EXPECT_EQ(1, browser()->active_index());
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server.GetURL("files/post_message.html"));
+  scoped_refptr<SiteInstance> foo_site_instance(
+      foo_contents->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, foo_site_instance);
+
+  // Second, a target=_blank window.
+  browser()->ActivateTabAt(0, true);
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer2((
+      content::Source<content::WebContentsDelegate>(browser())));
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(clickSameSiteTargetBlankLink());",
+      &success));
+  EXPECT_TRUE(success);
+  new_tab_observer2.Wait();
+
+  // Wait for the navigation in the new tab to finish, if it hasn't, then
+  // send it to post_message.html on the original site.
+  content::WebContents* new_contents = browser()->GetSelectedWebContents();
+  ui_test_utils::WaitForLoadStop(new_contents);
+  EXPECT_EQ("/files/title2.html", new_contents->GetURL().path());
+  EXPECT_EQ(1, browser()->active_index());
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("files/post_message.html"));
+  EXPECT_EQ(orig_site_instance, new_contents->GetSiteInstance());
+  RenderViewHostManager* new_manager =
+      static_cast<WebContentsImpl*>(new_contents)->GetRenderManagerForTesting();
+
+  // We now have three windows.  The opener should have a swapped out RVH
+  // for the new SiteInstance, but the _blank window should not.
+  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_TRUE(opener_manager->GetSwappedOutRenderViewHost(foo_site_instance));
+  EXPECT_FALSE(new_manager->GetSwappedOutRenderViewHost(foo_site_instance));
+
+  // 2) Fail to post a message from the foo window to the opener if the target
+  // origin is wrong.  We won't see an error, but we can check for the right
+  // number of received messages below.
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      foo_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(postToOpener('msg',"
+      L"'http://google.com'));",
+      &success));
+  EXPECT_TRUE(success);
+
+  // 3) Post a message from the foo window to the opener.  The opener will
+  // reply, causing the foo window to update its own title.
+  ui_test_utils::WindowedNotificationObserver title_observer(
+        content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+        content::Source<content::WebContents>(foo_contents));
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      foo_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(postToOpener('msg','*'));",
+      &success));
+  EXPECT_TRUE(success);
+  title_observer.Wait();
+
+  // We should have received only 1 message in the opener and "foo" tabs,
+  // and updated the title.
+  int opener_received_messages = 0;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
+      opener_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(window.receivedMessages);",
+      &opener_received_messages));
+  int foo_received_messages = 0;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
+      foo_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(window.receivedMessages);",
+      &foo_received_messages));
+  EXPECT_EQ(1, foo_received_messages);
+  EXPECT_EQ(1, opener_received_messages);
+  EXPECT_EQ(ASCIIToUTF16("msg"), foo_contents->GetTitle());
+
+  // 4) Now post a message from the _blank window to the foo window.  The
+  // foo window will update its title and will not reply.
+  ui_test_utils::WindowedNotificationObserver title_observer2(
+        content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
+        content::Source<content::WebContents>(foo_contents));
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      new_contents->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(postToFoo('msg2'));",
+      &success));
+  EXPECT_TRUE(success);
+  title_observer2.Wait();
+  EXPECT_EQ(ASCIIToUTF16("msg2"), foo_contents->GetTitle());
+
+  // This postMessage should have created a swapped out RVH for the new
+  // SiteInstance in the target=_blank window.
+  EXPECT_TRUE(new_manager->GetSwappedOutRenderViewHost(foo_site_instance));
 }
 
 // Test for crbug.com/116192.  Navigations to a window's opener should

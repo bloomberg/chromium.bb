@@ -102,6 +102,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMessageEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
@@ -143,6 +145,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSocketStreamHandle.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -204,6 +207,8 @@ using WebKit::WebCookieJar;
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDocument;
+using WebKit::WebDOMEvent;
+using WebKit::WebDOMMessageEvent;
 using WebKit::WebDragData;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -252,6 +257,7 @@ using WebKit::WebScriptSource;
 using WebKit::WebSearchableFormData;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSecurityPolicy;
+using WebKit::WebSerializedScriptValue;
 using WebKit::WebSettings;
 using WebKit::WebSharedWorker;
 using WebKit::WebSize;
@@ -314,6 +320,11 @@ static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 static const float kScalingIncrement = 0.1f;
 
 static const float kScalingIncrementForGesture = 0.01f;
+
+static RenderViewImpl* FromRoutingID(int32 routing_id) {
+  return static_cast<RenderViewImpl*>(
+      ChildThread::current()->ResolveRoute(routing_id));
+}
 
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   WebVector<WebURL> urls;
@@ -575,9 +586,9 @@ RenderViewImpl::RenderViewImpl(
   // it's the browser asking us to set our opener to another RenderView.
   // TODO(creis): This doesn't yet handle openers that are subframes.
   if (opener_id != MSG_ROUTING_NONE && !is_renderer_created) {
-    RenderViewImpl* opener_view = static_cast<RenderViewImpl*>(
-        ChildThread::current()->ResolveRoute(opener_id));
-    webview()->mainFrame()->setOpener(opener_view->webview()->mainFrame());
+    RenderViewImpl* opener_view = FromRoutingID(opener_id);
+    if (opener_view)
+      webview()->mainFrame()->setOpener(opener_view->webview()->mainFrame());
   }
 
   // If we are initially swapped out, navigate to kSwappedOutURL.
@@ -805,6 +816,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
     IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
+    IPC_MESSAGE_HANDLER(ViewMsg_PostMessageEvent, OnPostMessageEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
@@ -3520,6 +3532,32 @@ void RenderViewImpl::dispatchIntent(
       routing_id_, intent_data, id));
 }
 
+bool RenderViewImpl::willCheckAndDispatchMessageEvent(
+    WebKit::WebFrame* source,
+    WebKit::WebSecurityOrigin target_origin,
+    WebKit::WebDOMMessageEvent event) {
+  if (!is_swapped_out_)
+    return false;
+
+  ViewMsg_PostMessage_Params params;
+  params.data = event.data().toString();
+  params.source_origin = event.origin();
+  if (!target_origin.isNull())
+    params.target_origin = target_origin.toString();
+
+  // Include the routing ID for the source frame, which the browser process
+  // will translate into the routing ID for the equivalent frame in the target
+  // process.
+  // TODO(creis): Support source subframes.
+  params.source_routing_id = MSG_ROUTING_NONE;
+  RenderViewImpl* source_view = FromWebView(source->view());
+  if (source_view)
+    params.source_routing_id = source_view->routing_id();
+
+  Send(new ViewHostMsg_RouteMessageEvent(routing_id_, params));
+  return true;
+}
+
 void RenderViewImpl::willOpenSocketStream(
     WebSocketStreamHandle* handle) {
   SocketStreamHandleData::AddToHandle(handle, routing_id_);
@@ -4190,6 +4228,40 @@ void RenderViewImpl::OnScriptEvalRequest(const string16& frame_xpath,
                                          int id,
                                          bool notify_result) {
   EvaluateScript(frame_xpath, jscript, id, notify_result);
+}
+
+void RenderViewImpl::OnPostMessageEvent(
+    const ViewMsg_PostMessage_Params& params) {
+  // TODO(creis): Support sending to subframes.
+  WebFrame *frame = webview()->mainFrame();
+
+  // Find the source frame if it exists.
+  // TODO(creis): Support source subframes.
+  WebFrame* source_frame = NULL;
+  if (params.source_routing_id != MSG_ROUTING_NONE) {
+    RenderViewImpl* source_view = FromRoutingID(params.source_routing_id);
+    if (source_view)
+      source_frame = source_view->webview()->mainFrame();
+  }
+
+  // Create an event with the message.  The final parameter to initMessageEvent
+  // is the last event ID, which is not used with postMessage.
+  WebDOMEvent event = frame->document().createEvent("MessageEvent");
+  WebDOMMessageEvent msg_event = event.to<WebDOMMessageEvent>();
+  msg_event.initMessageEvent("message",
+                             // |canBubble| and |cancellable| are always false
+                             false, false,
+                             WebSerializedScriptValue::fromString(params.data),
+                             params.source_origin, source_frame, "");
+
+  // We must pass in the target_origin to do the security check on this side,
+  // since it may have changed since the original postMessage call was made.
+  WebSecurityOrigin target_origin;
+  if (!params.target_origin.empty()) {
+    target_origin =
+        WebSecurityOrigin::createFromString(WebString(params.target_origin));
+  }
+  frame->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
 }
 
 void RenderViewImpl::OnCSSInsertRequest(const string16& frame_xpath,

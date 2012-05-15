@@ -524,6 +524,23 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(bool, needs_ack)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)
+  // The serialized script value.
+  IPC_STRUCT_MEMBER(string16, data)
+
+  // When sent to the browser, this is the routing ID of the source frame in
+  // the source process.  The browser replaces it with the routing ID of the
+  // equivalent (swapped out) frame in the destination process.  Set to
+  // MSG_ROUTING_NONE if the source frame isn't supported (e.g., subframes).
+  IPC_STRUCT_MEMBER(int, source_routing_id)
+
+  // The origin of the source frame.
+  IPC_STRUCT_MEMBER(string16, source_origin)
+
+  // The origin for the message's target.
+  IPC_STRUCT_MEMBER(string16, target_origin)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewHostMsg_DidFailProvisionalLoadWithError_Params)
   // The frame ID for the failure report.
   IPC_STRUCT_MEMBER(int64, frame_id)
@@ -926,6 +943,10 @@ IPC_MESSAGE_ROUTED4(ViewMsg_ScriptEvalRequest,
                     string16,  /* jscript_url */
                     int,  /* ID */
                     bool  /* If true, result is sent back. */)
+
+// Posts a message from a frame in another process to the current renderer.
+IPC_MESSAGE_ROUTED1(ViewMsg_PostMessageEvent,
+                    ViewMsg_PostMessage_Params)
 
 // Request for the renderer to evaluate an xpath to a frame and insert css
 // into that frame's document. See ViewMsg_ScriptEvalRequest for details on
@@ -1615,6 +1636,11 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_GoToEntryAtOffset,
 // Sent from an inactive renderer for the browser to route to the active
 // renderer, instructing it to close.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
+
+// Sent to the browser from an inactive renderer to post a message to the
+// active renderer.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_RouteMessageEvent,
+                    ViewMsg_PostMessage_Params)
 
 IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_RunJavaScriptMessage,
                            string16     /* in - alert message */,

@@ -35,6 +35,7 @@
 class InterstitialPageImpl;
 class SavePackage;
 class SessionStorageNamespaceImpl;
+struct ViewMsg_PostMessage_Params;
 
 namespace content {
 class ColorChooser;
@@ -311,6 +312,9 @@ class CONTENT_EXPORT WebContentsImpl
       int64 source_frame_id,
       const content::GlobalRequestID& transferred_global_request_id) OVERRIDE;
   virtual void RouteCloseEvent(content::RenderViewHost* rvh) OVERRIDE;
+  virtual void RouteMessageEvent(
+      content::RenderViewHost* rvh,
+      const ViewMsg_PostMessage_Params& params) OVERRIDE;
   virtual void RunJavaScriptMessage(content::RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,

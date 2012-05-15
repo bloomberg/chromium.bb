@@ -30,6 +30,7 @@ struct NativeWebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_FrameNavigate_Params;
+struct ViewMsg_PostMessage_Params;
 struct WebDropData;
 struct WebMenuItem;
 
@@ -329,6 +330,11 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // The page wants to close the active view in this tab.
   virtual void RouteCloseEvent(RenderViewHost* rvh) {}
+
+  // The page wants to post a message to the active view in this tab.
+  virtual void RouteMessageEvent(
+      RenderViewHost* rvh,
+      const ViewMsg_PostMessage_Params& params) {}
 
   // A javascript message, confirmation or prompt should be shown.
   virtual void RunJavaScriptMessage(RenderViewHost* rvh,

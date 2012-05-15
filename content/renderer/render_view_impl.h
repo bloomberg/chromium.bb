@@ -43,6 +43,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
@@ -81,6 +82,7 @@ class RendererWebColorChooserImpl;
 class SkBitmap;
 class InputTagSpeechDispatcher;
 struct ViewMsg_Navigate_Params;
+struct ViewMsg_PostMessage_Params;
 struct ViewMsg_StopFinding_Params;
 struct ViewMsg_SwapOut_Params;
 struct WebDropData;
@@ -120,6 +122,7 @@ class ResourceFetcher;
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
+class WebDOMMessageEvent;
 class WebDataSource;
 class WebDragData;
 class WebGeolocationClient;
@@ -593,6 +596,10 @@ class RenderViewImpl : public RenderWidget,
                               const WebKit::WebIntentRequest& intentRequest);
   virtual void willOpenSocketStream(
       WebKit::WebSocketStreamHandle* handle);
+  virtual bool willCheckAndDispatchMessageEvent(
+      WebKit::WebFrame* source,
+      WebKit::WebSecurityOrigin targetOrigin,
+      WebKit::WebDOMMessageEvent event) OVERRIDE;
 
   // WebKit::WebPageSerializerClient implementation ----------------------------
 
@@ -869,6 +876,7 @@ class RenderViewImpl : public RenderWidget,
 #if defined(OS_MACOSX)
   void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
 #endif
+  void OnPostMessageEvent(const ViewMsg_PostMessage_Params& params);
   void OnRedo();
   void OnReloadFrame();
   void OnReplace(const string16& text);

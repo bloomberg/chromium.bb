@@ -2427,6 +2427,46 @@ void WebContentsImpl::RouteCloseEvent(RenderViewHost* rvh) {
     GetRenderViewHost()->ClosePage();
 }
 
+void WebContentsImpl::RouteMessageEvent(
+    RenderViewHost* rvh,
+    const ViewMsg_PostMessage_Params& params) {
+  // Only deliver the message to the active RenderViewHost if the request
+  // came from a RenderViewHost in the same BrowsingInstance.
+  if (!rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance()))
+    return;
+
+  ViewMsg_PostMessage_Params new_params(params);
+
+  // If there is a source_routing_id, translate it to the routing ID for
+  // the equivalent swapped out RVH in the target process.  If we need
+  // to create a swapped out RVH for the source tab, we create its opener
+  // chain as well, since those will also be accessible to the target page.
+  if (new_params.source_routing_id != MSG_ROUTING_NONE) {
+    // Try to look up the WebContents for the source page.
+    WebContentsImpl* source_contents = NULL;
+    RenderViewHostImpl* source_rvh = RenderViewHostImpl::FromID(
+        rvh->GetProcess()->GetID(), params.source_routing_id);
+    if (source_rvh) {
+      source_contents = static_cast<WebContentsImpl*>(
+          source_rvh->GetDelegate()->GetAsWebContents());
+    }
+
+    if (source_contents) {
+      new_params.source_routing_id =
+          source_contents->CreateOpenerRenderViews(GetSiteInstance());
+    } else {
+      // We couldn't find it, so don't pass a source frame.
+      new_params.source_routing_id = MSG_ROUTING_NONE;
+    }
+  }
+
+  // In most cases, we receive this from a swapped out RenderViewHost.
+  // It is possible to receive it from one that has just been swapped in,
+  // in which case we might as well deliver the message anyway.
+  GetRenderViewHost()->Send(new ViewMsg_PostMessageEvent(
+      GetRenderViewHost()->GetRoutingID(), new_params));
+}
+
 void WebContentsImpl::RunJavaScriptMessage(
     RenderViewHost* rvh,
     const string16& message,

@@ -30,6 +30,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_DomOperationResponse::ID:
     // Allow cross-process JavaScript calls.
     case ViewHostMsg_RouteCloseEvent::ID:
+    case ViewHostMsg_RouteMessageEvent::ID:
       return true;
     default:
       break;
