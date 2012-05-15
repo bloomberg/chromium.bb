@@ -494,7 +494,7 @@ bool NativeTextfieldViews::HandleKeyPressed(const KeyEvent& e) {
 }
 
 bool NativeTextfieldViews::HandleKeyReleased(const KeyEvent& e) {
-  return true;
+  return false;  // crbug.com/127520
 }
 
 void NativeTextfieldViews::HandleFocus() {

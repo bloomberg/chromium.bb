@@ -221,7 +221,7 @@ bool NativeComboboxViews::HandleKeyPressed(const KeyEvent& e) {
 }
 
 bool NativeComboboxViews::HandleKeyReleased(const KeyEvent& e) {
-  return true;
+  return false;  // crbug.com/127520
 }
 
 void NativeComboboxViews::HandleFocus() {
