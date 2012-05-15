@@ -40,7 +40,7 @@ AC_ARG_ENABLE(xserver-launcher, [  --enable-xserver-launcher],,
 	      enable_xserver_launcher=yes)
 AM_CONDITIONAL(ENABLE_XSERVER_LAUNCHER, test x$enable_xserver_launcher = xyes)
 if test x$enable_xserver_launcher = xyes; then
-  PKG_CHECK_MODULES([XSERVER_LAUNCHER], xcb xcb-xfixes)
+  PKG_CHECK_MODULES([XSERVER_LAUNCHER], xcb xcb-xfixes cairo-xcb)
   AC_DEFINE([BUILD_XSERVER_LAUNCHER], [1], [Build the X server launcher])
 
   AC_ARG_WITH(xserver-path, AS_HELP_STRING([--with-xserver-path=PATH],

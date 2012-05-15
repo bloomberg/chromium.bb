@@ -34,6 +34,7 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xfixes.h>
+#include <cairo/cairo-xcb.h>
 
 #include <wayland-server.h>
 
@@ -71,6 +72,7 @@ struct weston_wm {
 	struct hash_table *window_hash;
 	struct weston_xserver *server;
 	xcb_window_t wm_window;
+	int border_width;
 
 	xcb_window_t selection_window;
 	int incr;
@@ -117,6 +119,7 @@ struct weston_wm {
 
 struct weston_wm_window {
 	xcb_window_t id;
+	xcb_window_t frame_id;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 	struct wl_listener surface_destroy_listener;
@@ -125,6 +128,7 @@ struct weston_wm_window {
 	struct weston_wm_window *transient_for;
 	uint32_t protocols;
 	xcb_atom_t type;
+	int width, height;
 };
 
 static struct weston_wm_window *
@@ -498,6 +502,7 @@ weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *ev
 {
 	xcb_configure_request_event_t *configure_request = 
 		(xcb_configure_request_event_t *) event;
+	struct weston_wm_window *window;
 	uint32_t values[16];
 	int i = 0;
 
@@ -506,16 +511,23 @@ weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *ev
 		configure_request->x, configure_request->y,
 		configure_request->width, configure_request->height);
 
+	window = hash_table_lookup(wm->window_hash, configure_request->window);
+
 	if (configure_request->value_mask & XCB_CONFIG_WINDOW_X)
 		values[i++] = configure_request->x;
 	if (configure_request->value_mask & XCB_CONFIG_WINDOW_Y)
 		values[i++] = configure_request->y;
-	if (configure_request->value_mask & XCB_CONFIG_WINDOW_WIDTH)
+	if (configure_request->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
 		values[i++] = configure_request->width;
-	if (configure_request->value_mask & XCB_CONFIG_WINDOW_HEIGHT)
+		window->width = configure_request->width;
+	}
+	if (configure_request->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
 		values[i++] = configure_request->height;
-	if (configure_request->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH)
-		values[i++] = configure_request->border_width;
+		window->height = configure_request->height;
+	}
+
+	values[i++] = 0; /* XCB_CONFIG_WINDOW_BORDER_WIDTH */
+
 	if (configure_request->value_mask & XCB_CONFIG_WINDOW_SIBLING)
 		values[i++] = configure_request->sibling;
 	if (configure_request->value_mask & XCB_CONFIG_WINDOW_STACK_MODE)
@@ -523,7 +535,8 @@ weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *ev
 
 	xcb_configure_window(wm->conn,
 			     configure_request->window,
-			     configure_request->value_mask, values);
+			     configure_request->value_mask |
+			     XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
 }
 
 static void
@@ -577,15 +590,64 @@ weston_xserver_surface_activate(struct wl_listener *listener, void *data)
 				     XCB_TIME_CURRENT_TIME);
 }
 
+static int
+our_resource(struct weston_wm *wm, uint32_t id)
+{
+	const xcb_setup_t *setup;
+
+	setup = xcb_get_setup(wm->conn);
+
+	return (id & ~setup->resource_id_mask) == setup->resource_id_base;
+}
+
 static void
 weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_map_request_event_t *map_request =
 		(xcb_map_request_event_t *) event;
+	struct weston_wm_window *window;
+	uint32_t values[1];
 
-	fprintf(stderr, "XCB_MAP_REQUEST (window %d)\n", map_request->window);
+	if (our_resource(wm, map_request->window)) {
+		fprintf(stderr, "XCB_MAP_REQUEST (window %d, ours)\n",
+			map_request->window);
+		return;
+	}
+
+	window = hash_table_lookup(wm->window_hash, map_request->window);
+
+	values[0] =
+		XCB_EVENT_MASK_KEY_PRESS |
+		XCB_EVENT_MASK_KEY_RELEASE |
+		XCB_EVENT_MASK_BUTTON_PRESS |
+		XCB_EVENT_MASK_BUTTON_RELEASE |
+		XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
+		XCB_EVENT_MASK_EXPOSURE;
+
+	window->frame_id = xcb_generate_id(wm->conn);
+	xcb_create_window(wm->conn,
+			  XCB_COPY_FROM_PARENT,
+			  window->frame_id,
+			  wm->screen->root,
+			  0, 0,
+			  window->width + wm->border_width * 2,
+			  window->height + wm->border_width * 2,
+			  0,
+			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
+			  wm->screen->root_visual,
+			  XCB_CW_EVENT_MASK, values);
+	xcb_reparent_window(wm->conn, window->id, window->frame_id,
+			    wm->border_width, wm->border_width);
+
+	fprintf(stderr, "XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
+		window->id, window, window->frame_id);
+
+	xcb_change_save_set(wm->conn, XCB_SET_MODE_DELETE, window->id);
 
 	xcb_map_window(wm->conn, map_request->window);
+	xcb_map_window(wm->conn, window->frame_id);
+
+	hash_table_insert(wm->window_hash, window->frame_id, window);
 }
 
 static void
@@ -594,10 +656,78 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_map_notify_event_t *map_notify = (xcb_map_notify_event_t *) event;
 	struct weston_wm_window *window;
 
+	if (our_resource(wm, map_notify->window)) {
+			fprintf(stderr, "XCB_MAP_NOTIFY (window %d, ours)\n",
+				map_notify->window);
+			return;
+	}
+
 	fprintf(stderr, "XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
 
 	window = hash_table_lookup(wm->window_hash, map_notify->window);
 	weston_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
+}
+
+static xcb_render_pictforminfo_t *
+find_depth (xcb_connection_t *connection, int depth)
+{
+	xcb_render_query_pict_formats_reply_t	*formats;
+	xcb_render_query_pict_formats_cookie_t cookie;
+	xcb_render_pictforminfo_iterator_t i;
+
+	cookie = xcb_render_query_pict_formats(connection);
+	xcb_flush(connection);
+
+	formats = xcb_render_query_pict_formats_reply(connection, cookie, 0);
+	if (formats == NULL)
+		return NULL;
+
+	for (i = xcb_render_query_pict_formats_formats_iterator (formats);
+	     i.rem;
+	     xcb_render_pictforminfo_next (&i)) {
+		if (i.data->type != XCB_RENDER_PICT_TYPE_DIRECT)
+			continue;
+
+		if (depth != i.data->depth)
+			continue;
+
+		free(formats);
+		return i.data;
+	}
+
+	free(formats);
+
+	return NULL;
+}
+
+static void
+weston_wm_handle_expose(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	cairo_surface_t *surface;
+	cairo_t *cr;
+	xcb_render_pictforminfo_t *render_format;
+	struct weston_wm_window *window;
+	xcb_expose_event_t *expose = (xcb_expose_event_t *) event;
+	int width, height;
+
+	window = hash_table_lookup(wm->window_hash, expose->window);
+
+	width = window->width + wm->border_width * 20;
+	height = window->height + wm->border_width * 20;
+
+	render_format = find_depth(wm->conn, 24);
+	surface = cairo_xcb_surface_create_with_xrender_format(wm->conn,
+							       wm->screen,
+							       window->frame_id,
+							       render_format,
+							       width,
+							       height);
+	cr = cairo_create(surface);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 1, 0, 0, 0.8);
+	cairo_paint(cr);
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
 }
 
 static const size_t incr_chunk_size = 64 * 1024;
@@ -906,8 +1036,14 @@ weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	struct weston_wm_window *window;
 	uint32_t values[1];
 
-	fprintf(stderr, "XCB_CREATE_NOTIFY (window %d)\n",
-		create_notify->window);
+	fprintf(stderr,
+		"XCB_CREATE_NOTIFY (window %d, width %d, height %d%s)\n",
+		create_notify->window,
+		create_notify->width, create_notify->height,
+		our_resource(wm, create_notify->window) ? ", ours" : "");
+
+	if (our_resource(wm, create_notify->window))
+		return;
 
 	window = malloc(sizeof *window);
 	if (window == NULL) {
@@ -921,6 +1057,10 @@ weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	memset(window, 0, sizeof *window);
 	window->id = create_notify->window;
+
+	window->width = create_notify->width;
+	window->height = create_notify->height;
+
 	hash_table_insert(wm->window_hash, window->id, window);
 }
 
@@ -931,18 +1071,20 @@ weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event
 		(xcb_destroy_notify_event_t *) event;
 	struct weston_wm_window *window;
 
-	fprintf(stderr, "XCB_DESTROY_NOTIFY, win %d\n",
-		destroy_notify->window);
-
-	window = hash_table_lookup(wm->window_hash, destroy_notify->window);
-	if (window == NULL) {
-		fprintf(stderr, "destroy notify for unknow window %d\n",
+	if (our_resource(wm, destroy_notify->window)) {
+		fprintf(stderr, "XCB_DESTROY_NOTIFY, win %d (ours)\n",
 			destroy_notify->window);
 		return;
 	}
 
-	fprintf(stderr, "destroy window %p\n", window);
+	window = hash_table_lookup(wm->window_hash, destroy_notify->window);
+
+	fprintf(stderr, "XCB_DESTROY_NOTIFY, win %d (%p)\n",
+		destroy_notify->window, window);
+
 	hash_table_remove(wm->window_hash, window->id);
+	hash_table_remove(wm->window_hash, window->frame_id);
+	xcb_destroy_window(wm->conn, window->frame_id);
 	if (window->surface)
 		wl_list_remove(&window->surface_destroy_listener.link);
 	free(window);
@@ -1013,6 +1155,13 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 
 	while (event = xcb_poll_for_event(wm->conn), event != NULL) {
 		switch (event->response_type & ~0x80) {
+		case XCB_BUTTON_PRESS:
+		case XCB_BUTTON_RELEASE:
+			fprintf(stderr, "button %d\n", event->response_type);
+			break;
+		case XCB_EXPOSE:
+			weston_wm_handle_expose(wm, event);
+			break;
 		case XCB_CREATE_NOTIFY:
 			weston_wm_handle_create_notify(wm, event);
 			break;
@@ -1245,6 +1394,7 @@ weston_wm_create(struct weston_xserver *wxs)
 		XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, wm->screen->root,
 				     XCB_CW_EVENT_MASK, values);
+	wm->border_width = 10;
 
 	weston_wm_create_wm_window(wm);
 
