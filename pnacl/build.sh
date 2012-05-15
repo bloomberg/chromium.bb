@@ -3052,6 +3052,7 @@ libs-support-bitcode() {
   # Install crtbegin bitcode (__dso_handle/__cxa_finalize for C++)
   StepBanner "LIBS-SUPPORT" "Install crtbegin.bc / crtbeginS.bc"
   ${cc_cmd} -c crtdummy.c -o "${build_dir}"/crtdummy.bc
+  # NOTE: we do not have "end" versions of these
   ${cc_cmd} -c crtbegin.c -o "${build_dir}"/crtbegin.bc
   ${cc_cmd} -c crtbegin.c -o "${build_dir}"/crtbeginS.bc \
             -DSHARED
@@ -3085,6 +3086,9 @@ libs-support-native() {
 
   spushd "${PNACL_SUPPORT}"
 
+  # NOTE: one of the reasons why we build these native is
+  #       the shim library on x86-64
+  #       c.f.: https://sites.google.com/a/google.com/nativeclient/project-pnacl/c-exception-handling
   # Compile crtbegin.o / crtend.o
   StepBanner "${label}" "Install crtbegin.o / crtend.o"
   ${cc_cmd} -c crtbegin.c -o "${destdir}"/crtbegin.o

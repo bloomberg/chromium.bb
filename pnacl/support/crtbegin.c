@@ -9,6 +9,13 @@
  * It contains the constructor/destructor for exception handling,
  * and the symbol for __EH_FRAME_BEGIN__. This is native because
  * exception handling is also native (externally provided).
+ *
+ * One x86-64 we also need to sneak in the native shim library
+ * between these bookends because otherwise the unwind tables will be
+ * messed up, c.f.
+ * https://chromiumcodereview.appspot.com/9909016/
+ * TODO(robertm): see whether this problem goes away once we switch
+ * eh_frame_headers
  */
 
 
