@@ -49,6 +49,7 @@ def test_repo():
     '/content/baz/froboz.h': '',
     '/content/views/OWNERS': owners_file(ben, john, owners.EVERYONE,
                                          noparent=True),
+    '/content/views/pie.h': '',
   })
 
 
@@ -156,6 +157,30 @@ class OwnersDatabaseTest(unittest.TestCase):
 
   def test_reviewers_for__wildcard_dir(self):
     self.assert_reviewers_for(['DEPS'], [owners.EVERYONE])
+
+  def test_reviewers_for__one_owner(self):
+    self.assert_reviewers_for([
+        '/chrome/gpu/gpu_channel.h',
+        '/content/baz/froboz.h',
+        '/chrome/renderer/gpu/gpu_channel_host.h'], [brett])
+
+  def test_reviewers_for__two_owners(self):
+    self.assert_reviewers_for([
+        '/chrome/gpu/gpu_channel.h',
+        '/content/content.gyp',
+        '/content/baz/froboz.h',
+        '/content/views/pie.h'
+        ], [john, brett])
+
+  def test_reviewers_for__all_files(self):
+    self.assert_reviewers_for([
+        '/chrome/gpu/gpu_channel.h',
+        '/chrome/renderer/gpu/gpu_channel_host.h',
+        '/chrome/renderer/safe_browsing/scorer.h',
+        '/content/content.gyp',
+        '/content/bar/foo.cc',
+        '/content/baz/froboz.h',
+        '/content/views/pie.h'], [john, brett])
 
   def assert_syntax_error(self, owners_file_contents):
     db = self.db()

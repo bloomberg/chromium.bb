@@ -178,20 +178,20 @@ class Database(object):
       current_owners = set()
       dirname = current_dir
       while dirname in self.owners_for:
-        for owner in self.owners_for[dirname]:
-          current_owners.add(owner)
+        current_owners |= self.owners_for[dirname]
         if self._stop_looking(dirname):
           break
+        prev_parent = dirname
         dirname = self.os_path.dirname(dirname)
+        if prev_parent == dirname:
+          break
 
       # Map each directory to a list of its owners.
       dir_owners[current_dir] = current_owners
 
       # Add the directory to the list of each owner.
       for owner in current_owners:
-        if not owner in owned_dirs:
-          owned_dirs[owner] = set()
-        owned_dirs[owner].add(current_dir)
+        owned_dirs.setdefault(owner, set()).add(current_dir)
 
     final_owners = set()
     while dirs:
@@ -205,6 +205,7 @@ class Database(object):
           owner_count[owner] = count
           if count >= max_count:
             max_owner = owner
+            max_count = count
 
       # If no more directories have OWNERS, we're done.
       if not max_owner:
@@ -215,7 +216,6 @@ class Database(object):
       # Remove all directories owned by the current owner from the remaining
       # list.
       for dirname in owned_dirs[max_owner]:
-        if dirname in dirs:
-          dirs.remove(dirname)
+        dirs.discard(dirname)
 
     return final_owners
