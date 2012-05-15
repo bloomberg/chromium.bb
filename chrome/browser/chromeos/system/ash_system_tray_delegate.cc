@@ -307,7 +307,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowDriveSettings() OVERRIDE {
-    // TODO(zelidrag): Show settings once we put them in.
+    // TODO(hshi): Open the drive-specific settings page once we put it in.
+    // For now just show the generic settings page.
+    GetAppropriateBrowser()->OpenOptionsDialog();
   }
 
   virtual void ShowIMESettings() OVERRIDE {
