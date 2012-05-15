@@ -1149,6 +1149,18 @@ const char kSocketReusePolicy[]             = "socket-reuse-policy";
 // Starts the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 
+// Controls the width of time-of-day filters on the 'suggested' ntp page, in
+// minutes.
+const char kSuggestionNtpFilterWidth[]      = "suggestion-ntp-filter-width";
+
+// Enables a normal distribution dropoff to the relevancy of visits with respect
+// to the time of day.
+const char kSuggestionNtpGaussianFilter[]   = "suggestion-ntp-gaussian-filter";
+
+// Enables a linear dropoff to the relevancy of visits with respect to the time
+// of day.
+const char kSuggestionNtpLinearFilter[]     = "suggestion-ntp-linear-filter";
+
 // Allows insecure XMPP connections for sync (for testing).
 const char kSyncAllowInsecureXmppConnection[] =
     "sync-allow-insecure-xmpp-connection";

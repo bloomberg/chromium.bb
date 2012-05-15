@@ -98,11 +98,12 @@ class VisitDatabase {
   // that, the most recent |max_count| will be returned. If 0, all visits in the
   // range will be computed.
   //
-  // Only one visit for each URL will be returned, and it will be the most
-  // recent one in the time range.
+  // If |unique| is set, only one visit for each URL will be returned, and it
+  // will be the most recent one in the time range.
   void GetVisibleVisitsInRange(base::Time begin_time, base::Time end_time,
                                int max_count,
-                               VisitVector* visits);
+                               VisitVector* visits,
+                               bool unique);
 
   // Fills all visits in the given time ranges into the given vector that should
   // be user-visible, which excludes things like redirects and subframes. The
@@ -111,9 +112,6 @@ class VisitDatabase {
   // Up to |max_count| visits will be returned. If there are more visits than
   // that, the most recent |max_count| will be returned. If 0, all visits in the
   // range will be computed.
-  //
-  // Only one visit for each URL will be returned, and it will be the most
-  // recent one in the time range.
   void GetVisibleVisitsDuringTimes(const VisitFilter& time_filter,
                                    int max_count,
                                    VisitVector* visits);

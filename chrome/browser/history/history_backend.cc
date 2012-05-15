@@ -1282,7 +1282,7 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
   // First get all visits.
   VisitVector visits;
   visit_db->GetVisibleVisitsInRange(options.begin_time, options.end_time,
-                                    options.max_count, &visits);
+                                    options.max_count, &visits, true);
   DCHECK(options.max_count == 0 ||
          static_cast<int>(visits.size()) <= options.max_count);
 
@@ -1482,8 +1482,6 @@ void HistoryBackend::QueryFilteredURLs(
   }
 
   std::map<URLID, double> score_map;
-  const double kLn2 = 0.6931471805599453;
-  base::Time now = base::Time::Now();
   for (size_t i = 0; i < visits.size(); ++i) {
     URLID segment_id = visits[i].segment_id;
     for (VisitID visit_id = visits[i].visit_id; !segment_id && visit_id;) {
@@ -1504,23 +1502,7 @@ void HistoryBackend::QueryFilteredURLs(
     }
     if (!segment_id)
       continue;
-    double score = 0.0;
-    switch (filter.sorting_order()) {
-      case VisitFilter::ORDER_BY_RECENCY: {
-        // Decay score by half each week.
-        base::TimeDelta time_passed = now - visits[i].visit_time;
-        // Clamp to 0 in case time jumps backwards (e.g. due to DST).
-        double decay_exponent = std::max(0.0, kLn2 * static_cast<double>(
-            time_passed.InMicroseconds()) / base::Time::kMicrosecondsPerWeek);
-        score = 1.0 / exp(decay_exponent);
-      } break;
-      case VisitFilter::ORDER_BY_VISIT_COUNT:
-        score = 1.0;  // Every visit counts the same.
-        break;
-      case VisitFilter::ORDER_BY_DURATION_SPENT:
-        NOTREACHED() << "Not implemented!";
-        break;
-    }
+    double score = filter.GetVisitScore(visits[i]);
 
     std::map<URLID, double>::iterator it = score_map.find(visits[i].segment_id);
     if (it == score_map.end())

@@ -613,7 +613,7 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   // But no visible visits.
   visits.clear();
   backend_->db()->GetVisibleVisitsInRange(base::Time(), base::Time(), 1,
-                                          &visits);
+                                          &visits, true);
   EXPECT_TRUE(visits.empty());
 
   // Expire the visits.
@@ -1258,6 +1258,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
   Time tested_time = Time::Now().LocalMidnight() +
                      base::TimeDelta::FromHours(4);
   base::TimeDelta half_an_hour = base::TimeDelta::FromMinutes(30);
+  base::TimeDelta one_hour = base::TimeDelta::FromHours(1);
   base::TimeDelta one_day = base::TimeDelta::FromDays(1);
 
   const content::PageTransition kTypedTransition =
@@ -1320,8 +1321,8 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
   VisitFilter filter;
   // Time limit is |tested_time| +/- 45 min.
   base::TimeDelta three_quarters_of_an_hour = base::TimeDelta::FromMinutes(45);
-  filter.SetTimeInRangeFilter(tested_time - three_quarters_of_an_hour,
-                              tested_time + three_quarters_of_an_hour);
+  filter.SetFilterTime(tested_time);
+  filter.SetFilterWidth(three_quarters_of_an_hour);
   backend_->QueryFilteredURLs(request1, 100, filter);
 
   ASSERT_EQ(4U, get_filtered_list().size());
@@ -1339,8 +1340,8 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
       request2);
-  filter.SetTimeInRangeFilter(tested_time,
-                              tested_time + base::TimeDelta::FromHours(2));
+  filter.SetFilterTime(tested_time + one_hour);
+  filter.SetFilterWidth(one_hour);
   backend_->QueryFilteredURLs(request2, 100, filter);
 
   ASSERT_EQ(3U, get_filtered_list().size());
@@ -1355,8 +1356,8 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
       request3);
-  filter.SetTimeInRangeFilter(tested_time - base::TimeDelta::FromHours(2),
-                              tested_time);
+  filter.SetFilterTime(tested_time - one_hour);
+  filter.SetFilterWidth(one_hour);
   backend_->QueryFilteredURLs(request3, 100, filter);
 
   ASSERT_EQ(3U, get_filtered_list().size());
@@ -1376,8 +1377,8 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
       request4);
-  filter.SetDayOfTheWeekFilter(static_cast<int>(exploded_time.day_of_week),
-                               tested_time);
+  filter.SetFilterTime(tested_time);
+  filter.SetDayOfTheWeekFilter(static_cast<int>(exploded_time.day_of_week));
   backend_->QueryFilteredURLs(request4, 100, filter);
 
   ASSERT_EQ(2U, get_filtered_list().size());
@@ -1392,8 +1393,8 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
                      base::Unretained(static_cast<HistoryBackendTest*>(this))));
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
       request5);
-  filter.SetTimeInRangeFilter(tested_time - base::TimeDelta::FromHours(1),
-                              tested_time - base::TimeDelta::FromMinutes(20));
+  filter.SetFilterTime(tested_time - base::TimeDelta::FromMinutes(40));
+  filter.SetFilterWidth(base::TimeDelta::FromMinutes(20));
   backend_->QueryFilteredURLs(request5, 100, filter);
 
   ASSERT_EQ(1U, get_filtered_list().size());

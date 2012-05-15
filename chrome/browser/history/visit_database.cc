@@ -301,7 +301,8 @@ bool VisitDatabase::GetVisitsInRangeForTransition(
 void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
                                             base::Time end_time,
                                             int max_count,
-                                            VisitVector* visits) {
+                                            VisitVector* visits,
+                                            bool unique) {
   visits->clear();
   // The visit_time values can be duplicated in a redirect chain, so we sort
   // by id too, to ensure a consistent ordering just in case.
@@ -329,10 +330,12 @@ void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
   while (statement.Step()) {
     VisitRow visit;
     FillVisitRow(statement, &visit);
-    // Make sure the URL this visit corresponds to is unique.
-    if (found_urls.find(visit.url_id) != found_urls.end())
-      continue;
-    found_urls.insert(visit.url_id);
+    if (unique) {
+      // Make sure the URL this visit corresponds to is unique.
+      if (found_urls.find(visit.url_id) != found_urls.end())
+        continue;
+      found_urls.insert(visit.url_id);
+    }
     visits->push_back(visit);
 
     if (max_count > 0 && static_cast<int>(visits->size()) >= max_count)
@@ -349,7 +352,7 @@ void VisitDatabase::GetVisibleVisitsDuringTimes(const VisitFilter& time_filter,
   for (VisitFilter::TimeVector::const_iterator it = time_filter.times().begin();
        it != time_filter.times().end(); ++it) {
     VisitVector v;
-    GetVisibleVisitsInRange(it->first, it->second, max_results, &v);
+    GetVisibleVisitsInRange(it->first, it->second, max_results, &v, false);
     size_t take_only = 0;
     if (max_results &&
         static_cast<int>(visits->size() + v.size()) > max_results) {

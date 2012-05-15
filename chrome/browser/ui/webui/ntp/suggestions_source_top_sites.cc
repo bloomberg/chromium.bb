@@ -6,13 +6,17 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/visit_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
+#include "chrome/common/chrome_switches.h"
+
 
 namespace {
 
@@ -56,10 +60,10 @@ void SuggestionsSourceTopSites::FetchItems(Profile* profile) {
   // |history| may be null during unit tests.
   if (history) {
     history::VisitFilter time_filter;
-    base::TimeDelta half_an_hour =
-       base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerHour / 2);
-    base::Time now = base::Time::Now();
-    time_filter.SetTimeInRangeFilter(now - half_an_hour, now + half_an_hour);
+    time_filter.SetFilterTime(base::Time::Now());
+    time_filter.SetFilterWidth(GetFilterWidth());
+    time_filter.set_sorting_order(GetSortingOrder());
+
     history->QueryFilteredURLs(0, time_filter, &history_consumer_,
         base::Bind(&SuggestionsSourceTopSites::OnSuggestionsURLsAvailable,
                    base::Unretained(this)));
@@ -89,4 +93,26 @@ void SuggestionsSourceTopSites::OnSuggestionsURLsAvailable(
   }
 
   combiner_->OnItemsReady();
+}
+
+// static
+base::TimeDelta SuggestionsSourceTopSites::GetFilterWidth() {
+  const CommandLine* cli = CommandLine::ForCurrentProcess();
+  const std::string filter_width_switch =
+      cli->GetSwitchValueASCII(switches::kSuggestionNtpFilterWidth);
+  unsigned int filter_width;
+  if (base::StringToUint(filter_width_switch, &filter_width))
+    return base::TimeDelta::FromMinutes(filter_width);
+  return base::TimeDelta::FromHours(1);
+}
+
+// static
+history::VisitFilter::SortingOrder
+SuggestionsSourceTopSites::GetSortingOrder() {
+  const CommandLine* cli = CommandLine::ForCurrentProcess();
+  if (cli->HasSwitch(switches::kSuggestionNtpGaussianFilter))
+    return history::VisitFilter::ORDER_BY_TIME_GAUSSIAN;
+  if (cli->HasSwitch(switches::kSuggestionNtpLinearFilter))
+    return history::VisitFilter::ORDER_BY_TIME_LINEAR;
+  return history::VisitFilter::ORDER_BY_RECENCY;
 }

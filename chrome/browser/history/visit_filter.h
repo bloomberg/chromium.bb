@@ -13,6 +13,8 @@
 
 namespace history {
 
+class VisitRow;
+
 // Helper class for creation of filters for VisitDatabase that is used to filter
 // out visits by time of the day, day of the week, workdays, holidays, duration
 // of the visit, location and the combinations of that.
@@ -42,36 +44,31 @@ class VisitFilter {
       times_.resize(max_results_);
   }
 
-  // Sets time in range during the day, for example, the following code would
-  // produce time vector with following values: 1/19/2005 9:07:06PM-9:27:06PM,
-  // 1/18/2005 9:07:06PM-9:27:06PM, 1/17/2005 9:07:06PM-9:27:06PM, etc.
-  // base::Time::Exploded et = { 2005, 1, 0, 19, 21, 17, 6, 0 };
-  // base::Time t(base::Time::FromLocalExploded(et));
-  // base::TimeDelta ten_minutes(base::TimeDelta::FromMinutes(10));
-  // VisitFilter f;
-  // f.SetTimeInRangeFilter(t - ten_minutes, t + ten_minutes);
-  // This filter could be applied simultaneously with day filters.
-  void SetTimeInRangeFilter(base::Time begin_time_of_the_day,
-                            base::Time end_time_of_the_day);
+  // Sets the time that should be used as a basis for the filter. Normally this
+  // is the time that a query is made.
+  void SetFilterTime(const base::Time& filter_time);
+
+  // Sets the amount of time around the filter time to take into account. This
+  // only applies to the filter time's time-of-day, restrictions on how long
+  // back in time to look should be controlled by changing |max_results|.
+  //
+  // How the filter width is used depends on the sorting order. For
+  // |ORDER_BY_TIME_LINEAR| it is the distance to the cutoff point, while for
+  // |ORDER_BY_TIME_GAUSSIAN| it is the standard deviation.
+  void SetFilterWidth(const base::TimeDelta& filter_width);
 
   // The following two filters are exclusive - setting one, clears the other
-  // one. But both of them could be used with SetTimeInRangeFilter().
+  // one.
 
-  // Sets time in range for the day of the week staring with the day on the
-  // |week|. The intervals counted from midnight to midnight.
+  // Sets the filter to use only visits that happened on the specified day of
+  // the week.
   // |day| - day of the week: 0 - sunday, 1 - monday, etc.
-  // |week| - the week relative to which everything is calculated. If |week| is
-  // unset, the current week is used.
-  void SetDayOfTheWeekFilter(int day, base::Time week);
+  void SetDayOfTheWeekFilter(int day);
 
-  // Sets time in range for the holidays or workdays of the week staring with
-  // |week|. The intervals counted from midnight of the first workday/holiday
-  // to midnight of the last workday/holiday.
+  // Sets the filter to use only visits that happened on a holiday/workday.
   // |workday| - if true means Monday-Friday, if false means Saturday-Sunday.
   // TODO(georgey) - internationalize it.
-  // |week| - the week relative to which everything is calculated. If |week| is
-  // unset, the current week is used.
-  void SetDayTypeFilter(bool workday, base::Time week);
+  void SetDayTypeFilter(bool workday);
 
   // Sorting order that results after applying this filter are sorted by.
   enum SortingOrder {
@@ -79,10 +76,21 @@ class VisitFilter {
     ORDER_BY_VISIT_COUNT,  // Most visited are listed first.
     ORDER_BY_DURATION_SPENT,  // The sites that user spents more time in are
                               // sorted first.
+    ORDER_BY_TIME_GAUSSIAN,  // Visits that happened closer to the filter time's
+                             // time-of-day are scored higher. The dropoff in
+                             // score follows a normal distribution curve with
+                             // the filter width as the standard deviation.
+    ORDER_BY_TIME_LINEAR,  // Visits that happened closer to the filter time's
+                           // time-of-day are score higher. The dropoff in score
+                           // is a linear function, with filter width being the
+                           // point where a visit does not count at all anymore.
   };
+
+  double GetVisitScore(const VisitRow& visit) const;
 
   void set_sorting_order(SortingOrder order) {
     sorting_order_ = order;
+    UpdateTimeVector();
   }
 
   SortingOrder sorting_order() const {
@@ -136,15 +144,18 @@ class VisitFilter {
                                    const TimeVector& vector2,
                                    TimeVector* result);
 
-  base::Time begin_time_of_the_day_;
-  base::Time end_time_of_the_day_;
+  // Returns the time-of-day difference between the two times. The result will
+  // always represent a value between 0 and 12 hours inclusive.
+  static base::TimeDelta GetTimeOfDayDifference(base::Time t1, base::Time t2);
+
+  base::Time filter_time_;
+  base::TimeDelta filter_width_;
   enum {
     DAY_UNDEFINED = -1,
     WORKDAY = 7,
     HOLIDAY = 8,
   };
   int day_;
-  base::Time week_;
   TimeVector times_;
   size_t max_results_;
   SortingOrder sorting_order_;

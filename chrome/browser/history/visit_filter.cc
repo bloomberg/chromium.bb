@@ -4,12 +4,17 @@
 
 #include "chrome/browser/history/visit_filter.h"
 
+#include <math.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
 #include "base/time.h"
+#include "chrome/browser/history/history_types.h"
 
 namespace history {
+
+const double kLn2 = 0.6931471805599453;
 
 VisitFilter::VisitFilter()
     : day_(DAY_UNDEFINED),
@@ -20,54 +25,58 @@ VisitFilter::VisitFilter()
 VisitFilter::~VisitFilter() {
 }
 
-void VisitFilter::SetTimeInRangeFilter(base::Time begin_time_of_the_day,
-                                       base::Time end_time_of_the_day) {
-  DCHECK(!begin_time_of_the_day.is_null());
-  DCHECK(!end_time_of_the_day.is_null());
-  if ((end_time_of_the_day < begin_time_of_the_day) ||
-      ((end_time_of_the_day - begin_time_of_the_day) >
-      base::TimeDelta::FromDays(1))) {
-    begin_time_of_the_day_ = base::Time();
-    end_time_of_the_day_ = base::Time();
-  } else {
-    begin_time_of_the_day_ = begin_time_of_the_day;
-    end_time_of_the_day_ = end_time_of_the_day;
-  }
+void VisitFilter::SetFilterTime(const base::Time& filter_time) {
+  filter_time_ = filter_time;
   UpdateTimeVector();
 }
 
-void VisitFilter::SetDayOfTheWeekFilter(int day, base::Time week) {
+void VisitFilter::SetFilterWidth(const base::TimeDelta& filter_width) {
+  filter_width_ = filter_width;
+  UpdateTimeVector();
+}
+
+void VisitFilter::SetDayOfTheWeekFilter(int day) {
   day_ = day;
-  week_ = week;
   UpdateTimeVector();
 }
 
-void VisitFilter::SetDayTypeFilter(bool workday, base::Time week) {
+void VisitFilter::SetDayTypeFilter(bool workday) {
   day_ = workday ? WORKDAY : HOLIDAY;
-  week_ = week;
   UpdateTimeVector();
 }
 
 void VisitFilter::ClearFilters() {
-  begin_time_of_the_day_ = base::Time();
-  end_time_of_the_day_ = base::Time();
+  filter_time_ = base::Time();
+  filter_width_ = base::TimeDelta::FromHours(0);
   day_ = DAY_UNDEFINED;
   UpdateTimeVector();
 }
 
 bool VisitFilter::UpdateTimeVector() {
-  TimeVector times_of_the_day;
-  if (!begin_time_of_the_day_.is_null()) {
-    GetTimesInRange(begin_time_of_the_day_, end_time_of_the_day_,
-                    max_results_, &times_of_the_day);
-  }
+
   TimeVector days_of_the_week;
   if (day_ >= 0 && day_ <= 6) {
-    GetTimesOnTheDayOfTheWeek(day_, week_, max_results_, &days_of_the_week);
+    GetTimesOnTheDayOfTheWeek(day_, filter_time_, max_results_,
+                              &days_of_the_week);
   } else if (day_ == WORKDAY || day_ == HOLIDAY) {
     GetTimesOnTheSameDayType(
-        (day_ == WORKDAY), week_, max_results_, &days_of_the_week);
+        (day_ == WORKDAY), filter_time_, max_results_, &days_of_the_week);
   }
+
+  TimeVector times_of_the_day;
+  if (filter_width_ != base::TimeDelta::FromSeconds(0)) {
+    if (sorting_order_ == ORDER_BY_TIME_GAUSSIAN) {
+      // Limit queries to 5 standard deviations.
+      GetTimesInRange(filter_time_ - 5 * filter_width_,
+                      filter_time_ + 5 * filter_width_,
+                      max_results_, &times_of_the_day);
+    } else {
+      GetTimesInRange(filter_time_ - filter_width_,
+                      filter_time_ + filter_width_,
+                      max_results_, &times_of_the_day);
+    }
+  }
+
   if (times_of_the_day.empty()) {
     if (days_of_the_week.empty())
       times_.clear();
@@ -79,6 +88,7 @@ bool VisitFilter::UpdateTimeVector() {
     else
       IntersectTimeVectors(times_of_the_day, days_of_the_week, &times_);
   }
+
   return !times_.empty();
 }
 
@@ -95,11 +105,85 @@ void VisitFilter::GetTimesInRange(base::Time begin_time_of_the_day,
   if (!max_results)
     max_results = kMaxReturnedResults;
 
+  // If range is more than 24 hours, return a contiguous interval covering
+  // |max_results| days.
+  base::TimeDelta one_day = base::TimeDelta::FromDays(1);
+  if (end_time_of_the_day - begin_time_of_the_day >= one_day) {
+    times->push_back(
+        std::make_pair(begin_time_of_the_day - one_day * (max_results - 1),
+                       end_time_of_the_day));
+    return;
+  }
+
   for (size_t i = 0; i < max_results; ++i) {
     times->push_back(
         std::make_pair(begin_time_of_the_day - base::TimeDelta::FromDays(i),
                        end_time_of_the_day - base::TimeDelta::FromDays(i)));
   }
+}
+
+double VisitFilter::GetVisitScore(const VisitRow& visit) const {
+  // Decay score by half each week.
+  base::TimeDelta time_passed = filter_time_ - visit.visit_time;
+  // Clamp to 0 in case time jumps backwards (e.g. due to DST).
+  double decay_exponent = std::max(0.0, kLn2 * static_cast<double>(
+      time_passed.InMicroseconds()) / base::Time::kMicrosecondsPerWeek);
+  double staleness = 1.0 / exp(decay_exponent);
+
+  double score = 0;
+  switch (sorting_order()) {
+    case ORDER_BY_RECENCY:
+      score = 1.0;  // Let the staleness factor take care of it.
+      break;
+    case ORDER_BY_VISIT_COUNT:
+      score = 1.0;  // Every visit counts the same.
+      staleness = 1.0;  // No decay on this one.
+      break;
+    case ORDER_BY_TIME_GAUSSIAN: {
+      double offset =
+          GetTimeOfDayDifference(filter_time_,
+                                 visit.visit_time).InMicroseconds();
+      double sd = filter_width_.InMicroseconds();
+
+      // Calculate score using the normal distribution density function.
+      score = exp(-(offset * offset) / (2 * sd * sd));
+      break;
+    }
+    case ORDER_BY_TIME_LINEAR: {
+      base::TimeDelta offset = GetTimeOfDayDifference(filter_time_,
+                                                      visit.visit_time);
+      if (offset > filter_width_) {
+        score = 0;
+      } else {
+        score = 1 - offset.InMicroseconds() / static_cast<double>(
+            filter_width_.InMicroseconds());
+      }
+      break;
+    }
+    case ORDER_BY_DURATION_SPENT:
+    default:
+      NOTREACHED() << "Not implemented!";
+  }
+  return staleness * score;
+}
+
+base::TimeDelta
+VisitFilter::GetTimeOfDayDifference(base::Time t1, base::Time t2) {
+  base::TimeDelta time_of_day1 = t1 - t1.LocalMidnight();
+  base::TimeDelta time_of_day2 = t2 - t2.LocalMidnight();
+
+  base::TimeDelta difference;
+  if (time_of_day1 < time_of_day2)
+    difference = time_of_day2 - time_of_day1;
+  else
+    difference = time_of_day1 - time_of_day2;
+
+  // If the difference is more than 12 hours, we'll get closer by 'wrapping'
+  // around the day barrier.
+  if (difference > base::TimeDelta::FromHours(12))
+    difference = base::TimeDelta::FromHours(24) - difference;
+
+  return difference;
 }
 
 // static

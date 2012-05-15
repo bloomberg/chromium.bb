@@ -4,8 +4,11 @@
 
 #include "chrome/browser/history/visit_filter.h"
 
+#include <math.h>
+
 #include "base/logging.h"
 #include "base/time.h"
+#include "chrome/browser/history/history_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -43,7 +46,8 @@ TEST_F(VisitFilterTest, CheckFilters) {
   base::TimeDelta two_hours(base::TimeDelta::FromHours(2));
   VisitFilter f;
   f.set_max_results(21U);
-  f.SetTimeInRangeFilter(t - two_hours, t + two_hours);
+  f.SetFilterTime(t);
+  f.SetFilterWidth(two_hours);
   EXPECT_EQ(21U, f.times().size());
   for (size_t i = 0; i < f.times().size(); ++i) {
     base::Time t_interval(t);
@@ -55,7 +59,7 @@ TEST_F(VisitFilterTest, CheckFilters) {
   }
   base::Time::Exploded et;
   t.LocalExplode(&et);
-  f.SetDayOfTheWeekFilter(et.day_of_week, t);
+  f.SetDayOfTheWeekFilter(et.day_of_week);
   // 3 weeks in 21 days.
   ASSERT_EQ(3U, f.times().size());
   for (size_t i = 1; i < f.times().size(); ++i) {
@@ -233,6 +237,76 @@ TEST_F(VisitFilterTest, IntersectTimeVectors) {
   times2.push_back(std::make_pair(t, t + one_hour));
   EXPECT_FALSE(VisitFilter::IntersectTimeVectors(times1, times2, &result));
   EXPECT_TRUE(result.empty());
+}
+
+TEST_F(VisitFilterTest, GetVisitScore) {
+  base::Time filter_time = GetClosestMidday();
+  VisitFilter filter;
+  VisitRow visit;
+
+  filter.set_sorting_order(VisitFilter::ORDER_BY_RECENCY);
+  filter.SetFilterTime(filter_time);
+  filter.SetFilterWidth(base::TimeDelta::FromHours(1));
+
+  double one_week_one_hour_staleness = pow(2, -(24.0 * 7.0 + 1.0) /
+                                               (24.0 * 7.0));
+
+  // No decay on current visit.
+  visit.visit_time = filter_time;
+  EXPECT_DOUBLE_EQ(1.0, filter.GetVisitScore(visit));
+  // Half score after a week.
+  visit.visit_time = filter_time - base::TimeDelta::FromDays(7);
+  EXPECT_DOUBLE_EQ(0.5, filter.GetVisitScore(visit));
+  // Future visits should be treated as current.
+  visit.visit_time = filter_time + base::TimeDelta::FromDays(1);
+  EXPECT_DOUBLE_EQ(1.0, filter.GetVisitScore(visit));
+
+  filter.set_sorting_order(VisitFilter::ORDER_BY_VISIT_COUNT);
+  // Every visit should score 1 with this filter.
+  visit.visit_time = filter_time;
+  EXPECT_DOUBLE_EQ(1.0, filter.GetVisitScore(visit));
+  visit.visit_time = filter_time - base::TimeDelta::FromDays(7);
+  EXPECT_DOUBLE_EQ(1.0, filter.GetVisitScore(visit));
+  visit.visit_time = filter_time + base::TimeDelta::FromDays(7);
+  EXPECT_DOUBLE_EQ(1.0, filter.GetVisitScore(visit));
+
+  filter.set_sorting_order(VisitFilter::ORDER_BY_TIME_LINEAR);
+  visit.visit_time = filter_time;
+  EXPECT_DOUBLE_EQ(1.0, filter.GetVisitScore(visit));
+  // Half the filter width forward in time should get half the score for the
+  // time difference, but no staleness decay.
+  visit.visit_time = filter_time + base::TimeDelta::FromMinutes(30);
+  EXPECT_DOUBLE_EQ(0.5, filter.GetVisitScore(visit));
+  // One week back in time gets full time difference score, but a staleness
+  // factor of 0.5
+  visit.visit_time = filter_time - base::TimeDelta::FromDays(7);
+  EXPECT_DOUBLE_EQ(0.5, filter.GetVisitScore(visit));
+  // One week plus half a filter width should have it's score halved before
+  // the staleness factor.
+  filter.SetFilterWidth(base::TimeDelta::FromHours(2));
+  visit.visit_time = filter_time - base::TimeDelta::FromDays(7) -
+                     base::TimeDelta::FromHours(1);
+  EXPECT_DOUBLE_EQ(0.5 * one_week_one_hour_staleness,
+                   filter.GetVisitScore(visit));
+  filter.SetFilterWidth(base::TimeDelta::FromHours(1));
+
+  filter.set_sorting_order(VisitFilter::ORDER_BY_TIME_GAUSSIAN);
+  visit.visit_time = filter_time;
+  EXPECT_DOUBLE_EQ(1.0, filter.GetVisitScore(visit));
+  // Going forward in time to test the normal distribution function.
+  visit.visit_time = filter_time + base::TimeDelta::FromHours(1);
+  EXPECT_DOUBLE_EQ(exp(-0.5), filter.GetVisitScore(visit));
+  visit.visit_time = filter_time + base::TimeDelta::FromMinutes(30);
+  EXPECT_DOUBLE_EQ(exp(-0.125), filter.GetVisitScore(visit));
+  // One week back in time gets full time difference score, but a staleness
+  // factor of 0.5
+  visit.visit_time = filter_time - base::TimeDelta::FromDays(7);
+  EXPECT_DOUBLE_EQ(0.5, filter.GetVisitScore(visit));
+  // One standard deviation of decay, plus the staleness factor.
+  visit.visit_time = filter_time - base::TimeDelta::FromDays(7) -
+                     base::TimeDelta::FromHours(1);
+  EXPECT_DOUBLE_EQ(exp(-0.5) * one_week_one_hour_staleness,
+                   filter.GetVisitScore(visit));
 }
 
 }  // namespace history
