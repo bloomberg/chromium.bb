@@ -380,11 +380,16 @@ html[dir='rtl'] #chrome-web-store-title {
 
 #vertical-separator {
   background-color: rgb(178, 178, 178);
-  display: inline-block;
+  display: none;
   height: 20px;
   margin: 0;
   vertical-align: middle;
   width: 1px;
+}
+
+/* Show the separator only if one of the menus is visible. */
+.footer-menu-button:not(.invisible) ~ #vertical-separator {
+  display: inline-block;
 }
 
 /* In trash mode, hide the menus and web store link. */
