@@ -147,9 +147,8 @@ x8632/mylibpthread.so: mylibpthread.pso
 x8664/mylibpthread.so: mylibpthread.pso
 	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ \
             $(S_INIT_X8664) $^ $(S_FINI_X8664)
-# build a shared version of newlib from the bitcode archive
-# work around some hacks that introduced a common symbol in the
-# disabled malloc/free portions
+
+# build a shared version of libc (newlib) from the bitcode archive
 mylibc.pso: mylibnosys.pso \
             $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a
 	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
@@ -158,18 +157,15 @@ mylibc.pso: mylibnosys.pso \
               $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a \
               -Wl,--no-whole-archive \
               $(S_FINI_BITCODE) \
-              -Wl,--soname=mylibc.so -L . -l:mylibnosys.pso -o $@
+              -Wl,--soname=mylibc.so -o $@
 
-# NOTE: we are requiring the final .so here - we do not want this!
-#       Eventually, the meta info embedded in mylibc.pso
-#       should make this obsolete
-x8632/mylibc.so: mylibc.pso x8632/mylibnosys.so
+x8632/mylibc.so: mylibc.pso
 	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ \
-            $(S_INIT_X8632) mylibc.pso $(S_FINI_X8632)
+            $(S_INIT_X8632) $^ $(S_FINI_X8632)
 
 x8664/mylibc.so: mylibc.pso x8664/mylibnosys.so
 	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ \
-            $(S_INIT_X8664) mylibc.pso $(S_FINI_X8664)
+            $(S_INIT_X8664) $^ $(S_FINI_X8664)
 ######################################################################
 mylibnacl.a: $(LIBPATH_BITCODE_SDK)/libnacl.a
 	rm -f $@
