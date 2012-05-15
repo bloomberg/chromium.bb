@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,7 @@
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/notifier_options_util.h"
 #include "jingle/notifier/base/task_pump.h"
-#include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/login.h"
-#include "jingle/notifier/communicator/xmpp_connection_generator.h"
 #include "jingle/notifier/listener/push_notifications_listen_task.h"
 #include "jingle/notifier/listener/push_notifications_send_update_task.h"
 #include "jingle/notifier/listener/push_notifications_subscribe_task.h"
@@ -99,11 +97,9 @@ void MediatorThreadImpl::Core::Login(const buzz::XmppClientSettings& settings) {
       BelongsToCurrentThread());
   VLOG(1) << "P2P: Thread logging into talk network.";
 
-  // TODO(sanjeevr): Pass in the URLRequestContextGetter to Login.
   base_task_.reset();
   login_.reset(new notifier::Login(this,
                                    settings,
-                                   notifier::ConnectionOptions(),
                                    notifier_options_.request_context_getter,
                                    GetServerList(notifier_options_),
                                    notifier_options_.try_ssltcp_first,

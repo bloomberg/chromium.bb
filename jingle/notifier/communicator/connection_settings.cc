@@ -1,111 +1,102 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-#include <deque>
-#include <string>
-#include <vector>
+#include "jingle/notifier/communicator/connection_settings.h"
 
 #include "base/logging.h"
-#include "jingle/notifier/communicator/connection_settings.h"
-#include "talk/base/helpers.h"
+
+// Ideally we shouldn't include anything from talk/p2p, but we need
+// the definition of ProtocolType.  Don't use any functions from
+// port.h, since it won't link.
+#include "talk/p2p/base/port.h"
+
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {
 
-class RandomGenerator {
- public:
-  int operator()(int ceiling) {
-    return static_cast<int>(talk_base::CreateRandomId() % ceiling);
-  }
-};
+const uint16 kSslTcpPort = 443;
 
-ConnectionSettings::ConnectionSettings() : protocol_(cricket::PROTO_TCP) {}
+ConnectionSettings::ConnectionSettings(
+    const talk_base::SocketAddress& server,
+    SslTcpMode ssltcp_mode,
+    SslTcpSupport ssltcp_support)
+    : server(server),
+      ssltcp_mode(ssltcp_mode),
+      ssltcp_support(ssltcp_support) {}
+
+ConnectionSettings::ConnectionSettings()
+    : ssltcp_mode(DO_NOT_USE_SSLTCP),
+      ssltcp_support(DOES_NOT_SUPPORT_SSLTCP) {}
 
 ConnectionSettings::~ConnectionSettings() {}
 
+bool ConnectionSettings::Equals(const ConnectionSettings& settings) const {
+  return
+      server == settings.server &&
+      ssltcp_mode == settings.ssltcp_mode &&
+      ssltcp_support == settings.ssltcp_support;
+}
+
+namespace {
+
+const char* SslTcpModeToString(SslTcpMode ssltcp_mode) {
+  return (ssltcp_mode == USE_SSLTCP) ? "USE_SSLTCP" : "DO_NOT_USE_SSLTCP";
+}
+
+const char* SslTcpSupportToString(SslTcpSupport ssltcp_support) {
+  return
+      (ssltcp_support == SUPPORTS_SSLTCP) ?
+      "SUPPORTS_SSLTCP" :
+      "DOES_NOT_SUPPORT_SSLTCP";
+}
+
+}  // namespace
+
+std::string ConnectionSettings::ToString() const {
+  return
+      server.ToString() + ":" + SslTcpModeToString(ssltcp_mode) + ":" +
+      SslTcpSupportToString(ssltcp_support);
+}
+
 void ConnectionSettings::FillXmppClientSettings(
-    buzz::XmppClientSettings* xcs) const {
-  DCHECK(xcs);
-  xcs->set_protocol(protocol_);
-  xcs->set_server(server_);
-  xcs->set_proxy(talk_base::PROXY_NONE);
-  xcs->set_use_proxy_auth(false);
+    buzz::XmppClientSettings* client_settings) const {
+  client_settings->set_protocol(
+      (ssltcp_mode == USE_SSLTCP) ?
+      cricket::PROTO_SSLTCP :
+      cricket::PROTO_TCP);
+  client_settings->set_server(server);
 }
 
-ConnectionSettingsList::ConnectionSettingsList() {}
+ConnectionSettingsList MakeConnectionSettingsList(
+    const ServerList& servers,
+    bool try_ssltcp_first) {
+  ConnectionSettingsList settings_list;
 
-ConnectionSettingsList::~ConnectionSettingsList() {}
+  for (ServerList::const_iterator it = servers.begin();
+       it != servers.end(); ++it) {
+    const ConnectionSettings settings(
+        talk_base::SocketAddress(it->server.host(), it->server.port()),
+        DO_NOT_USE_SSLTCP, it->ssltcp_support);
 
-void ConnectionSettingsList::AddPermutations(const std::string& hostname,
-                                             const std::vector<uint32>& iplist,
-                                             uint16 port,
-                                             bool special_port_magic,
-                                             bool try_ssltcp_first) {
-  // randomize the list. This ensures the iplist isn't always
-  // evaluated in the order returned by DNS
-  std::vector<uint32> iplist_random = iplist;
-  RandomGenerator rg;
-  std::random_shuffle(iplist_random.begin(), iplist_random.end(), rg);
+    if (it->ssltcp_support == SUPPORTS_SSLTCP) {
+      const ConnectionSettings settings_with_ssltcp(
+        talk_base::SocketAddress(it->server.host(), kSslTcpPort),
+        USE_SSLTCP, it->ssltcp_support);
 
-  // Put generated addresses in a new deque, then append on the list_, since
-  // there are order dependencies and AddPermutations() may be called more
-  // than once.
-  std::deque<ConnectionSettings> list_temp;
-
-  // Permute addresses for this server. In some cases we haven't resolved the
-  // to ip addresses.
-  talk_base::SocketAddress server(hostname, port);
-  if (iplist_random.empty()) {
-    // We couldn't pre-resolve the hostname, so let's hope it will resolve
-    // further down the pipeline (by a proxy, for example).
-    PermuteForAddress(server, special_port_magic, try_ssltcp_first,
-                      &list_temp);
-  } else {
-    // Generate a set of possibilities for each server address.
-    // Don't do permute duplicates.
-    for (size_t index = 0; index < iplist_random.size(); ++index) {
-      if (std::find(iplist_seen_.begin(), iplist_seen_.end(),
-                    iplist_random[index]) != iplist_seen_.end()) {
-        continue;
+      if (try_ssltcp_first) {
+        settings_list.push_back(settings_with_ssltcp);
+        settings_list.push_back(settings);
+      } else {
+        settings_list.push_back(settings);
+        settings_list.push_back(settings_with_ssltcp);
       }
-      iplist_seen_.push_back(iplist_random[index]);
-      server.SetResolvedIP(iplist_random[index]);
-      PermuteForAddress(server, special_port_magic, try_ssltcp_first,
-                        &list_temp);
-    }
-  }
-
-  // Add this list to the instance list
-  while (!list_temp.empty()) {
-    list_.push_back(list_temp[0]);
-    list_temp.pop_front();
-  }
-}
-
-
-void ConnectionSettingsList::PermuteForAddress(
-    const talk_base::SocketAddress& server,
-    bool special_port_magic,
-    bool try_ssltcp_first,
-    std::deque<ConnectionSettings>* list_temp) {
-  DCHECK(list_temp);
-  *(template_.mutable_server()) = server;
-
-  // Use all of the original settings
-  list_temp->push_back(template_);
-
-  // Try alternate port
-  if (special_port_magic) {
-    ConnectionSettings settings(template_);
-    settings.set_protocol(cricket::PROTO_SSLTCP);
-    settings.mutable_server()->SetPort(443);
-    if (try_ssltcp_first) {
-      list_temp->push_front(settings);
     } else {
-      list_temp->push_back(settings);
+      settings_list.push_back(settings);
     }
   }
+
+  return settings_list;
 }
+
 }  // namespace notifier

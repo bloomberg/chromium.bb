@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,19 +42,20 @@ ServerList GetServerList(
   // provided.
   if (!notifier_options.xmpp_host_port.host().empty()) {
     servers.push_back(
-        ServerInformation(notifier_options.xmpp_host_port, false));
+        ServerInformation(notifier_options.xmpp_host_port,
+                          DOES_NOT_SUPPORT_SSLTCP));
   } else {
-    // The default servers know how to serve over port 443 (that's the magic).
+    // The default servers support SSLTCP.
     servers.push_back(
         ServerInformation(
             net::HostPortPair("talk.google.com",
                               notifier::kDefaultXmppPort),
-            true));
+            SUPPORTS_SSLTCP));
     servers.push_back(
         ServerInformation(
             net::HostPortPair("talkx.l.google.com",
                               notifier::kDefaultXmppPort),
-            true));
+            SUPPORTS_SSLTCP));
   }
   return servers;
 }

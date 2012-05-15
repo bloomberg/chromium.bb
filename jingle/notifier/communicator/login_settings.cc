@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,44 +8,65 @@
 
 #include "base/logging.h"
 #include "jingle/notifier/base/server_information.h"
-#include "jingle/notifier/communicator/connection_options.h"
-#include "jingle/notifier/communicator/xmpp_connection_generator.h"
 #include "net/base/cert_verifier.h"
 #include "talk/base/common.h"
 #include "talk/base/socketaddress.h"
-#include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {
 
 LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
-                             const ConnectionOptions& options,
                              const scoped_refptr<net::URLRequestContextGetter>&
                                  request_context_getter,
-                             const ServerList& servers,
+                             const ServerList& default_servers,
                              bool try_ssltcp_first,
                              const std::string& auth_mechanism)
-    :  try_ssltcp_first_(try_ssltcp_first),
-       request_context_getter_(request_context_getter),
-       servers_(servers),
-       user_settings_(new buzz::XmppClientSettings(user_settings)),
-       connection_options_(new ConnectionOptions(options)),
-       auth_mechanism_(auth_mechanism) {
-  DCHECK_GT(servers_.size(), 0u);
+    : user_settings_(user_settings),
+      request_context_getter_(request_context_getter),
+      default_servers_(default_servers),
+      try_ssltcp_first_(try_ssltcp_first),
+      auth_mechanism_(auth_mechanism) {
+  DCHECK_GT(default_servers_.size(), 0u);
 }
 
-// Defined so that the destructors are executed here (and the corresponding
-// classes don't need to be included in the header file).
-LoginSettings::~LoginSettings() {
+LoginSettings::~LoginSettings() {}
+
+void LoginSettings::set_user_settings(
+    const buzz::XmppClientSettings& user_settings) {
+  user_settings_ = user_settings;
 }
 
-void LoginSettings::set_server_override(
-    const net::HostPortPair& server) {
-  server_override_.reset(
-      new ServerInformation(server, servers_[0].special_port_magic));
+ServerList LoginSettings::GetServers() const {
+  return GetServersForTime(base::Time::Now());
 }
 
-void LoginSettings::clear_server_override() {
-  server_override_.reset();
+namespace {
+
+// How long a redirect is valid for.
+const int kRedirectExpirationTimeMinutes = 5;
+
+}  // namespace
+
+void LoginSettings::SetRedirectServer(
+    const ServerInformation& redirect_server) {
+  redirect_server_ = redirect_server;
+  redirect_expiration_ =
+      base::Time::Now() +
+      base::TimeDelta::FromMinutes(kRedirectExpirationTimeMinutes);
+}
+
+ServerList LoginSettings::GetServersForTimeForTest(base::Time now) const {
+  return GetServersForTime(now);
+}
+
+base::Time LoginSettings::GetRedirectExpirationForTest() const {
+  return redirect_expiration_;
+}
+
+ServerList LoginSettings::GetServersForTime(base::Time now) const {
+  return
+      (now < redirect_expiration_) ?
+      ServerList(1, redirect_server_) :
+      default_servers_;
 }
 
 }  // namespace notifier

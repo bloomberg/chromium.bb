@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -13,13 +13,18 @@
 
 namespace notifier {
 
+enum SslTcpSupport { DOES_NOT_SUPPORT_SSLTCP, SUPPORTS_SSLTCP };
+
 struct ServerInformation {
   ServerInformation(const net::HostPortPair& server,
-                    bool special_port_magic);
+                    SslTcpSupport ssltcp_support);
   ServerInformation();
+  ~ServerInformation();
+
+  bool Equals(const ServerInformation& other) const;
 
   net::HostPortPair server;
-  bool special_port_magic;
+  SslTcpSupport ssltcp_support;
 };
 
 typedef std::vector<ServerInformation> ServerList;

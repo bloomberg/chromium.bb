@@ -8,7 +8,6 @@
 #include "base/message_loop_proxy.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/notifier_options_util.h"
-#include "jingle/notifier/communicator/connection_options.h"
 #include "net/url_request/url_request_context.h"
 #include "sync/notifier/sync_notifier_observer.h"
 #include "sync/protocol/service_constants.h"
@@ -75,12 +74,10 @@ void InvalidationNotifier::UpdateCredentials(
   if (state_ >= CONNECTING) {
     login_->UpdateXmppSettings(xmpp_client_settings);
   } else {
-    notifier::ConnectionOptions options;
     DVLOG(1) << "First time updating credentials: connecting";
     login_.reset(
         new notifier::Login(this,
                             xmpp_client_settings,
-                            notifier::ConnectionOptions(),
                             notifier_options_.request_context_getter,
                             notifier::GetServerList(notifier_options_),
                             notifier_options_.try_ssltcp_first,

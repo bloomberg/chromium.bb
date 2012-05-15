@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,74 +7,68 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/time.h"
 #include "jingle/notifier/base/server_information.h"
-#include "jingle/notifier/communicator/xmpp_connection_generator.h"
 #include "net/url_request/url_request_context_getter.h"
-
-namespace buzz {
-class XmppClientSettings;
-}
+#include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {
-class ConnectionOptions;
 
 class LoginSettings {
  public:
   LoginSettings(const buzz::XmppClientSettings& user_settings,
-                const ConnectionOptions& options,
                 const scoped_refptr<net::URLRequestContextGetter>&
                     request_context_getter,
-                const ServerList& servers,
+                const ServerList& default_servers,
                 bool try_ssltcp_first,
                 const std::string& auth_mechanism);
 
   ~LoginSettings();
 
+  // Copy constructor and assignment operator welcome.
+
+  const buzz::XmppClientSettings& user_settings() const {
+    return user_settings_;
+  }
+
+  void set_user_settings(const buzz::XmppClientSettings& user_settings);
+
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter() const {
+    return request_context_getter_;
+  }
+
   bool try_ssltcp_first() const {
     return try_ssltcp_first_;
   }
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter() {
-    return request_context_getter_;
-  }
-
-  ServerList servers() const {
-    return
-        server_override_.get() ? ServerList(1, *server_override_) : servers_;
-  }
-
-  const buzz::XmppClientSettings& user_settings() const {
-    return *user_settings_.get();
-  }
-
-  buzz::XmppClientSettings* modifiable_user_settings() {
-    return user_settings_.get();
-  }
-
-  const ConnectionOptions& connection_options() const {
-    return *connection_options_.get();
-  }
-
-  void set_server_override(const net::HostPortPair& server);
-  void clear_server_override();
-
-  std::string auth_mechanism() const {
+  const std::string& auth_mechanism() const {
     return auth_mechanism_;
   }
 
+  ServerList GetServers() const;
+
+  // The redirect server will eventually expire.
+  void SetRedirectServer(const ServerInformation& redirect_server);
+
+  ServerList GetServersForTimeForTest(base::Time now) const;
+
+  base::Time GetRedirectExpirationForTest() const;
+
  private:
-  bool try_ssltcp_first_;
+  ServerList GetServersForTime(base::Time now) const;
 
+  buzz::XmppClientSettings user_settings_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  const ServerList servers_;
-  // Used to handle redirects
-  scoped_ptr<ServerInformation> server_override_;
-
-  scoped_ptr<buzz::XmppClientSettings> user_settings_;
-  scoped_ptr<ConnectionOptions> connection_options_;
+  ServerList default_servers_;
+  bool try_ssltcp_first_;
   std::string auth_mechanism_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginSettings);
+  // Used to handle redirects
+  ServerInformation redirect_server_;
+  base::Time redirect_expiration_;
+
 };
+
 }  // namespace notifier
+
 #endif  // JINGLE_NOTIFIER_COMMUNICATOR_LOGIN_SETTINGS_H_

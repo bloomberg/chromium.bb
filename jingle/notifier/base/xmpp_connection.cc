@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,8 @@
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {
+
+XmppConnection::Delegate::~Delegate() {}
 
 namespace {
 
@@ -47,7 +49,8 @@ buzz::AsyncSocket* CreateSocket(
 XmppConnection::XmppConnection(
     const buzz::XmppClientSettings& xmpp_client_settings,
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-    Delegate* delegate, buzz::PreXmppAuth* pre_xmpp_auth)
+    Delegate* delegate,
+    buzz::PreXmppAuth* pre_xmpp_auth)
     : task_pump_(new TaskPump()),
       on_connect_called_(false),
       delegate_(delegate) {

@@ -1,50 +1,40 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-#include <cstddef>
 #include <string>
-#include <vector>
 
 #include "jingle/notifier/communicator/single_login_attempt.h"
 
-#include "base/compiler_specific.h"
+#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/gaia_token_pre_xmpp_auth.h"
-#include "jingle/notifier/communicator/connection_options.h"
-#include "jingle/notifier/communicator/connection_settings.h"
-#include "jingle/notifier/communicator/login_settings.h"
 #include "jingle/notifier/listener/xml_element_util.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "net/base/host_port_pair.h"
 #include "talk/xmllite/xmlelement.h"
-#include "talk/xmpp/xmppclient.h"
-#include "talk/xmpp/xmppclientsettings.h"
 #include "talk/xmpp/constants.h"
-
-namespace net {
-class NetLog;
-}  // namespace net
+#include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {
 
-SingleLoginAttempt::SingleLoginAttempt(LoginSettings* login_settings,
+SingleLoginAttempt::Delegate::~Delegate() {}
+
+SingleLoginAttempt::SingleLoginAttempt(const LoginSettings& login_settings,
                                        Delegate* delegate)
     : login_settings_(login_settings),
       delegate_(delegate),
-      connection_generator_(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this),
-          login_settings_->request_context_getter()->GetURLRequestContext()->
-              host_resolver(),
-          &login_settings_->connection_options(),
-          login_settings_->try_ssltcp_first(),
-          login_settings_->servers()) {
-  // DNS resolution will happen at a lower layer (we are using the socket
-  // pools).
-  connection_generator_.SetShouldResolveDNS(false);
-  connection_generator_.StartGenerating();
+      settings_list_(
+          MakeConnectionSettingsList(login_settings_.GetServers(),
+                                     login_settings_.try_ssltcp_first())),
+      current_settings_(settings_list_.begin()) {
+  if (settings_list_.empty()) {
+    NOTREACHED();
+    return;
+  }
+  TryConnect(*current_settings_);
 }
 
 SingleLoginAttempt::~SingleLoginAttempt() {}
@@ -54,15 +44,64 @@ void SingleLoginAttempt::OnConnect(
   delegate_->OnConnect(base_task);
 }
 
+namespace {
+
+// This function is more permissive than
+// net::HostPortPair::FromString().  If the port is missing or
+// unparseable, it assumes the default XMPP port.  The hostname may be
+// empty.
+net::HostPortPair ParseRedirectText(const std::string& redirect_text) {
+  std::vector<std::string> parts;
+  base::SplitString(redirect_text, ':', &parts);
+  net::HostPortPair redirect_server;
+  redirect_server.set_port(kDefaultXmppPort);
+  if (parts.empty()) {
+    return redirect_server;
+  }
+  redirect_server.set_host(parts[0]);
+  if (parts.size() <= 1) {
+    return redirect_server;
+  }
+  // Try to parse the port, falling back to kDefaultXmppPort.
+  int port = kDefaultXmppPort;
+  if (!base::StringToInt(parts[1], &port)) {
+    port = kDefaultXmppPort;
+  }
+  if (port <= 0 || port > kuint16max) {
+    port = kDefaultXmppPort;
+  }
+  redirect_server.set_port(port);
+  return redirect_server;
+}
+
+}  // namespace
+
 void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
                                  const buzz::XmlElement* stream_error) {
-  VLOG(1) << "Error: " << error << ", subcode: " << subcode;
-  if (stream_error) {
-    DCHECK_EQ(error, buzz::XmppEngine::ERROR_STREAM);
-    VLOG(1) << "Stream error: " << XmlElementToString(*stream_error);
-  }
+  DVLOG(1) << "Error: " << error << ", subcode: " << subcode
+           << (stream_error ?
+               (", stream error: " + XmlElementToString(*stream_error)) :
+               "");
 
-  // Check for redirection.
+  DCHECK_EQ(error == buzz::XmppEngine::ERROR_STREAM, stream_error != NULL);
+
+  // Check for redirection.  We expect something like:
+  //
+  // <stream:error><see-other-host xmlns="urn:ietf:params:xml:ns:xmpp-streams"/><str:text xmlns:str="urn:ietf:params:xml:ns:xmpp-streams">talk.google.com</str:text></stream:error> [2]
+  //
+  // There are some differences from the spec [1]:
+  //
+  //   - we expect a separate text element with the redirection info
+  //     (which is the format Google Talk's servers use), whereas the
+  //     spec puts the redirection info directly in the see-other-host
+  //     element;
+  //   - we check for redirection only during login, whereas the
+  //     server can send down a redirection at any time according to
+  //     the spec. (TODO(akalin): Figure out whether we need to handle
+  //     redirection at any other point.)
+  //
+  // [1]: http://xmpp.org/internet-drafts/draft-saintandre-rfc3920bis-08.html#streams-error-conditions-see-other-host
+  // [2]: http://forums.miranda-im.org/showthread.php?24376-GoogleTalk-drops
   if (stream_error) {
     const buzz::XmlElement* other =
         stream_error->FirstNamed(buzz::QN_XSTREAM_SEE_OTHER_HOST);
@@ -73,38 +112,45 @@ void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
         // Yep, its a "stream:error" with "see-other-host" text,
         // let's parse out the server:port, and then reconnect
         // with that.
-        const std::string& redirect = text->BodyText();
-        size_t colon = redirect.find(":");
-        int redirect_port = kDefaultXmppPort;
-        std::string redirect_server;
-        if (colon == std::string::npos) {
-          redirect_server = redirect;
-        } else {
-          redirect_server = redirect.substr(0, colon);
-          const std::string& port_text = redirect.substr(colon + 1);
-          std::istringstream ist(port_text);
-          ist >> redirect_port;
+        const net::HostPortPair& redirect_server =
+            ParseRedirectText(text->BodyText());
+        // ParseRedirectText shouldn't return a zero port.
+        DCHECK_NE(redirect_server.port(), 0u);
+        // If we don't have a host, ignore the redirection and treat
+        // it like a regular error.
+        if (!redirect_server.host().empty()) {
+          delegate_->OnRedirect(
+              ServerInformation(
+                  redirect_server,
+                  current_settings_->ssltcp_support));
+          // May be deleted at this point.
+          return;
         }
-        // We never allow a redirect to port 0.
-        if (redirect_port == 0) {
-          redirect_port = kDefaultXmppPort;
-        }
-        delegate_->OnRedirect(redirect_server, redirect_port);
-        // May be deleted at this point.
-        return;
       }
     }
   }
 
-  // Iterate to the next possible connection (still trying to connect).
-  connection_generator_.UseNextConnection();
+  if (current_settings_ == settings_list_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  ++current_settings_;
+  if (current_settings_ == settings_list_.end()) {
+    VLOG(1) << "Could not connect to any XMPP server";
+    delegate_->OnNeedReconnect();
+    return;
+  }
+
+  TryConnect(*current_settings_);
 }
 
-void SingleLoginAttempt::OnNewSettings(
+void SingleLoginAttempt::TryConnect(
     const ConnectionSettings& connection_settings) {
-  buzz::XmppClientSettings client_settings =
-      login_settings_->user_settings();
-  // Fill in the rest of the client settings.
+  DVLOG(1) << "Trying to connect to " << connection_settings.ToString();
+  // Copy the user settings and fill in the connection parameters from
+  // |connection_settings|.
+  buzz::XmppClientSettings client_settings = login_settings_.user_settings();
   connection_settings.FillXmppClientSettings(&client_settings);
 
   buzz::Jid jid(client_settings.user(), client_settings.host(),
@@ -113,20 +159,12 @@ void SingleLoginAttempt::OnNewSettings(
       new GaiaTokenPreXmppAuth(
           jid.Str(), client_settings.auth_cookie(),
           client_settings.token_service(),
-          login_settings_->auth_mechanism());
+          login_settings_.auth_mechanism());
   xmpp_connection_.reset(
       new XmppConnection(client_settings,
-                         login_settings_->request_context_getter(),
-                         this, pre_xmpp_auth));
-}
-
-void SingleLoginAttempt::OnExhaustedSettings(
-    bool successfully_resolved_dns,
-    int first_dns_error) {
-  if (!successfully_resolved_dns)
-    VLOG(1) << "Could not resolve DNS: " << first_dns_error;
-  VLOG(1) << "Could not connect to any XMPP server";
-  delegate_->OnNeedReconnect();
+                         login_settings_.request_context_getter(),
+                         this,
+                         pre_xmpp_auth));
 }
 
 }  // namespace notifier

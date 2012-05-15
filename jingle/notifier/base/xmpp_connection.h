@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -34,8 +34,6 @@ class XmppConnection : public sigslot::has_slots<> {
  public:
   class Delegate {
    public:
-    virtual ~Delegate() {}
-
     // Called (at most once) when a connection has been established.
     // |base_task| can be used by the client as the parent of any Task
     // it creates as long as it is valid (i.e., non-NULL).
@@ -52,22 +50,25 @@ class XmppConnection : public sigslot::has_slots<> {
     // is non-NULL iff |error| == ERROR_STREAM.  |stream_error| is
     // valid only for the lifetime of this function.
     //
-    // Ideally, |error| would be set to something that is not
+    // Ideally, |error| would always be set to something that is not
     // ERROR_NONE, but due to inconsistent error-handling this doesn't
     // always happen.
     virtual void OnError(buzz::XmppEngine::Error error, int subcode,
                          const buzz::XmlElement* stream_error) = 0;
+
+   protected:
+    virtual ~Delegate();
   };
 
-  // Does not take ownership of |cert_verifier|, which may not be NULL.
-  // Does not take ownership of |delegate|, which may not be NULL.
-  // Takes ownership of |pre_xmpp_auth|, which may be NULL.
+  // Does not take ownership of |delegate|, which must not be
+  // NULL.  Takes ownership of |pre_xmpp_auth|, which may be NULL.
   //
   // TODO(akalin): Avoid the need for |pre_xmpp_auth|.
   XmppConnection(const buzz::XmppClientSettings& xmpp_client_settings,
                  const scoped_refptr<net::URLRequestContextGetter>&
                      request_context_getter,
-                 Delegate* delegate, buzz::PreXmppAuth* pre_xmpp_auth);
+                 Delegate* delegate,
+                 buzz::PreXmppAuth* pre_xmpp_auth);
 
   // Invalidates any weak pointers passed to the delegate by
   // OnConnect(), but does not trigger a call to the delegate's

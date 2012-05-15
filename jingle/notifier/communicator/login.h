@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "jingle/notifier/base/server_information.h"
+#include "jingle/notifier/communicator/login_settings.h"
 #include "jingle/notifier/communicator/single_login_attempt.h"
 #include "net/base/network_change_notifier.h"
 #include "talk/xmpp/xmppengine.h"
@@ -30,7 +31,6 @@ class URLRequestContextGetter;
 
 namespace notifier {
 
-class ConnectionOptions;
 class LoginSettings;
 
 // Workaround for MSVS 2005 bug that fails to handle inheritance from a nested
@@ -52,11 +52,9 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
     virtual void OnDisconnect() = 0;
   };
 
-  // Does not take ownership of |delegate|, |host_resolver|, |cert_verifier|,
-  // or |server_list|, none of which may be NULL.
+  // Does not take ownership of |delegate|, which must not be NULL.
   Login(Delegate* delegate,
         const buzz::XmppClientSettings& user_settings,
-        const ConnectionOptions& options,
         const scoped_refptr<net::URLRequestContextGetter>&
             request_context_getter,
         const ServerList& servers,
@@ -76,8 +74,7 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   virtual void OnConnect(
       base::WeakPtr<buzz::XmppTaskParentInterface> base_task) OVERRIDE;
   virtual void OnNeedReconnect() OVERRIDE;
-  virtual void OnRedirect(const std::string& redirect_server,
-                          int redirect_port) OVERRIDE;
+  virtual void OnRedirect(const ServerInformation& redirect_server) OVERRIDE;
 
  private:
   void OnLogoff();
@@ -94,18 +91,13 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   // reconnection.
   void DoReconnect();
 
-  Delegate* delegate_;
-  scoped_ptr<LoginSettings> login_settings_;
+  Delegate* const delegate_;
+  LoginSettings login_settings_;
   scoped_ptr<SingleLoginAttempt> single_attempt_;
 
   // reconnection state.
   base::TimeDelta reconnect_interval_;
   base::OneShotTimer<Login> reconnect_timer_;
-
-  // server redirect information
-  base::Time redirect_time_;
-  std::string redirect_server_;
-  int redirect_port_;
 
   DISALLOW_COPY_AND_ASSIGN(Login);
 };
