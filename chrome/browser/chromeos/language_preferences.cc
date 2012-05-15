@@ -14,7 +14,6 @@ namespace language_prefs {
 // For ibus-daemon
 // ---------------------------------------------------------------------------
 const char kGeneralSectionName[] = "general";
-const char kHotKeySectionName[] = "general/hotkey";
 const char kPreloadEnginesConfigName[] = "preload_engines";
 
 // ---------------------------------------------------------------------------

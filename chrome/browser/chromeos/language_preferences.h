@@ -66,7 +66,6 @@ struct LanguageIntegerRangePreference {
 // For ibus-daemon
 // ---------------------------------------------------------------------------
 extern const char kGeneralSectionName[];
-extern const char kHotKeySectionName[];
 extern const char kPreloadEnginesConfigName[];
 
 // ---------------------------------------------------------------------------
