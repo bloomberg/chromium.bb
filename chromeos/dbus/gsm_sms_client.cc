@@ -269,7 +269,8 @@ class GsmSMSClientStubImpl : public GsmSMSClient {
       callback.Run(*dictionary);
       return;
     }
-    callback.Run(base::DictionaryValue());
+    base::DictionaryValue empty_dictionary;
+    callback.Run(empty_dictionary);
   }
 
   // GsmSMSClient override.
