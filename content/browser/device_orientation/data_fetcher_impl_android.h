@@ -45,7 +45,7 @@ class DataFetcherImplAndroid : public DataFetcher {
   DataFetcherImplAndroid();
 
   // Wrappers for JNI methods.
-  bool Start(int rateInMilliseconds);
+  bool Start(int rate_in_milliseconds);
   void Stop();
 
   // Value returned by GetOrientation.
