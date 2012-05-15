@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/automation/automation_event_observers.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 
 LoginEventObserver::LoginEventObserver(
     AutomationEventQueue* event_queue,
-    chromeos::ExistingUserController* controller)
+    chromeos::ExistingUserController* controller,
+    AutomationProvider* automation)
     : AutomationEventObserver(event_queue, false),
-      controller_(controller) {
+      controller_(controller),
+      automation_(automation->AsWeakPtr()) {
   controller_->set_login_status_consumer(this);
 }
 
@@ -23,6 +26,12 @@ void LoginEventObserver::OnLoginSuccess(const std::string& username,
                                         const std::string& password,
                                         bool pending_requests,
                                         bool using_oauth) {
+  // Profile changes after login. Ensure AutomationProvider refers to
+  // the correct one.
+  if (automation_) {
+    automation_->set_profile(
+        g_browser_process->profile_manager()->GetLastUsedProfile());
+  }
   _NotifyLoginEvent(std::string());
 }
 

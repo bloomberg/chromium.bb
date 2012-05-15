@@ -13,6 +13,7 @@ import pyauto
 
 sys.path.append('/usr/local')  # To make autotest libs importable.
 from autotest.cros import cros_ui
+from autotest.cros import cryptohome
 
 
 class ChromeosLogin(pyauto.PyUITest):
@@ -24,6 +25,7 @@ class ChromeosLogin(pyauto.PyUITest):
     # We want a clean session_manager instance for every run,
     # so restart ui now.
     cros_ui.stop(allow_fail=True)
+    cryptohome.remove_all_vaults()
     cros_ui.start(wait_for_login_prompt=False)
     pyauto.PyUITest.setUp(self)
 
@@ -167,6 +169,24 @@ class ChromeosLogin(pyauto.PyUITest):
                      msg='Could not close all browser windows')
     self.Logout()
     self.testGoodLogin()
+
+  def testInitialLoginState(self):
+    """Verify basic state of browser windows at initial login."""
+    self.testGoodLogin()
+    # Should have 1 browser window with 1 tab.
+    info = self.GetBrowserInfo()
+    self.assertEqual(1, len(info['windows']))
+    self.assertFalse(info['windows'][0]['incognito'],
+        msg='Did not expect incognito window after login')
+    self.assertEqual(1, len(info['windows'][0]['tabs']))
+
+    self.OpenNewBrowserWindow(True)
+    # Should have 2 regular browser windows.
+    info = self.GetBrowserInfo()
+    self.assertEqual(2, len(info['windows']))
+    self.assertFalse(info['windows'][0]['incognito'])
+    self.assertFalse(info['windows'][1]['incognito'],
+        msg='Expected a regular new window.')
 
 
 if __name__ == '__main__':

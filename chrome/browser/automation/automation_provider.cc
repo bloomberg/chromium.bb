@@ -182,6 +182,10 @@ AutomationProvider::~AutomationProvider() {
     channel_->Close();
 }
 
+void AutomationProvider::set_profile(Profile* profile) {
+  profile_ = profile;
+}
+
 bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
   TRACE_EVENT_BEGIN_ETW("AutomationProvider::InitializeChannel", 0, "");
 

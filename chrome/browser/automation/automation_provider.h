@@ -88,6 +88,8 @@ class AutomationProvider
 
   Profile* profile() const { return profile_; }
 
+  void set_profile(Profile* profile);
+
   // Initializes a channel for a connection to an AutomationProxy.
   // If channel_id starts with kNamedInterfacePrefix, it will act
   // as a server, create a named IPC socket with channel_id as its
