@@ -29,21 +29,12 @@ namespace {
 
 const int kFileTypePopupTag = 1234;
 
-CFStringRef CreateUTIFromExtensionList(
-    const std::vector<FilePath::StringType>& ext_list) {
-  // The extensions specified in FileTypeInfo contains a list of lists; the
-  // example given there is:
-  // { { "htm", "html" }, { "txt" } }
-  // In that case, each extension list holds synonym extensions for the same
-  // file type. With Uniform Type Identifiers there is one identifier that
-  // covers all those extensions, so if they are all synonymous anyway, just
-  // make a UTI from the first.
-  DCHECK(!ext_list.empty());
-  base::mac::ScopedCFTypeRef<CFStringRef> type_extension(
-      base::SysUTF8ToCFStringRef(ext_list[0]));
-  return UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
-                                               type_extension.get(),
-                                               NULL);
+CFStringRef CreateUTIFromExtension(const FilePath::StringType& ext) {
+base::mac::ScopedCFTypeRef<CFStringRef> ext_cf(
+   base::SysUTF8ToCFStringRef(ext));
+return UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
+                                            ext_cf.get(),
+                                            NULL);
 }
 
 }  // namespace
@@ -226,15 +217,28 @@ void SelectFileDialogImpl::SelectFileImpl(
     }
   }
 
-  NSMutableArray* allowed_file_types = nil;
+  NSArray* allowed_file_types = nil;
   if (file_types) {
     if (!file_types->extensions.empty()) {
-      allowed_file_types = [NSMutableArray array];
+      // While the example given in the header for FileTypeInfo lists an example
+      // |file_types->extensions| value as
+      //   { { "htm", "html" }, { "txt" } }
+      // it is not always the case that the given extensions in one of the sub-
+      // lists are all synonyms. In fact, in the case of a <select> element with
+      // multiple "accept" types, all the extensions allowed for all the types
+      // will be part of one list. To be safe, allow the types of all the
+      // specified extensions.
+      NSMutableSet* file_type_set = [NSMutableSet set];
       for (size_t i = 0; i < file_types->extensions.size(); ++i) {
-        base::mac::ScopedCFTypeRef<CFStringRef> uti(
-            CreateUTIFromExtensionList(file_types->extensions[i]));
-        [allowed_file_types addObject:base::mac::CFToNSCast(uti.get())];
+        const std::vector<FilePath::StringType>& ext_list =
+            file_types->extensions[i];
+        for (size_t j = 0; j < ext_list.size(); ++j) {
+          base::mac::ScopedCFTypeRef<CFStringRef> uti(
+              CreateUTIFromExtension(ext_list[j]));
+          [file_type_set addObject:base::mac::CFToNSCast(uti.get())];
+        }
       }
+      allowed_file_types = [file_type_set allObjects];
     }
     if (type == SELECT_SAVEAS_FILE)
       [dialog setAllowedFileTypes:allowed_file_types];
@@ -340,8 +344,13 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
       type_description = base::SysUTF16ToNSString(
           file_types->extension_description_overrides[type]);
     } else {
+      // No description given for a list of extensions; pick the first one from
+      // the list (arbitrarily) and use its description.
+      const std::vector<FilePath::StringType>& ext_list =
+          file_types->extensions[type];
+      DCHECK(!ext_list.empty());
       base::mac::ScopedCFTypeRef<CFStringRef> uti(
-          CreateUTIFromExtensionList(file_types->extensions[type]));
+          CreateUTIFromExtension(ext_list[0]));
       base::mac::ScopedCFTypeRef<CFStringRef> description(
           UTTypeCopyDescription(uti.get()));
 
