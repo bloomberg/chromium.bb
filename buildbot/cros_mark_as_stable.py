@@ -74,16 +74,15 @@ def CleanStalePackages(boards, package_atoms):
   background.RunTasksInProcessPool(_CleanStalePackages, tasks)
 
 
-# TODO(build): This code needs to be gutted and rebased to cros_build_lib.
-def _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
+def _DoWeHaveLocalCommits(stable_branch, tracking_branch):
   """Returns true if there are local commits."""
   current_branch = cros_build_lib.RunCommandCaptureOutput(
-      'git branch | grep \*', shell=True, cwd=cwd).output.split()[1]
+      'git branch | grep \*', shell=True).output.split()[1]
   if current_branch == stable_branch:
     current_commit_id = cros_build_lib.RunCommandCaptureOutput(
-        ['git', 'rev-parse', 'HEAD'], cwd=cwd).output
+        ['git', 'rev-parse', 'HEAD']).output
     tracking_commit_id = cros_build_lib.RunCommandCaptureOutput(
-        ['git', 'rev-parse', tracking_branch], cwd=cwd).output
+        ['git', 'rev-parse', tracking_branch]).output
     return current_commit_id != tracking_commit_id
   else:
     return False
@@ -121,7 +120,7 @@ def _PrintUsageAndDie(error_message=''):
 # ======================= End Global Helper Functions ========================
 
 
-def PushChange(stable_branch, tracking_branch, dryrun, cwd):
+def PushChange(stable_branch, tracking_branch, dryrun, cwd='.'):
   """Pushes commits in the stable_branch to the remote git repository.
 
   Pushes local commits from calls to CommitChange to the remote git
@@ -133,11 +132,10 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
     stable_branch: The local branch with commits we want to push.
     tracking_branch: The tracking branch of the local branch.
     dryrun: Use git push --dryrun to emulate a push.
-    cwd: The directory to run commands in.
   Raises:
       OSError: Error occurred while pushing.
   """
-  if not _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
+  if not _DoWeHaveLocalCommits(stable_branch, tracking_branch):
     cros_build_lib.Info('No work found to push.  Exiting')
     return
 
@@ -148,22 +146,19 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
   cros_build_lib.SyncPushBranch(cwd, remote, push_branch)
 
   # Check whether any local changes remain after the sync.
-  if not _DoWeHaveLocalCommits(stable_branch, '%s/%s' % (remote, push_branch),
-                               cwd):
+  if not _DoWeHaveLocalCommits(stable_branch, '%s/%s' % (remote, push_branch)):
     cros_build_lib.Info('All changes already pushed. Exiting')
     return
 
   description = cros_build_lib.RunCommandCaptureOutput(
       ['git', 'log', '--format=format:%s%n%n%b', '%s/%s..%s' % (
-       remote, push_branch, stable_branch)], cwd=cwd).output
+       remote, push_branch, stable_branch)]).output
   description = 'Marking set of ebuilds as stable\n\n%s' % description
   cros_build_lib.Info('Using description %s' % description)
   cros_build_lib.CreatePushBranch(constants.MERGE_BRANCH, cwd)
-  cros_build_lib.RunCommand(['git', 'merge', '--squash', stable_branch],
-                            cwd=cwd)
-  cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
-  cros_build_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
-                            cwd=cwd)
+  cros_build_lib.RunCommand(['git', 'merge', '--squash', stable_branch])
+  cros_build_lib.RunCommand(['git', 'commit', '-m', description])
+  cros_build_lib.RunCommand(['git', 'config', 'push.default', 'tracking'])
   cros_build_lib.GitPushWithRetry(constants.MERGE_BRANCH, cwd=cwd,
                                   dryrun=dryrun)
 
@@ -171,34 +166,37 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
 class GitBranch(object):
   """Wrapper class for a git branch."""
 
-  def __init__(self, branch_name, tracking_branch, cwd):
+  def __init__(self, branch_name, tracking_branch):
     """Sets up variables but does not create the branch."""
     self.branch_name = branch_name
     self.tracking_branch = tracking_branch
-    self.cwd = cwd
 
   def CreateBranch(self):
-    self.Checkout()
+    GitBranch.Checkout(self)
 
-  def Checkout(self, branch=None):
+  @classmethod
+  def Checkout(cls, target):
     """Function used to check out to another GitBranch."""
-    if not branch:
-      branch = self.branch_name
-    if branch == self.tracking_branch or self.Exists(branch):
-      git_cmd = ['git', 'checkout', '-f', branch]
+    if target.branch_name == target.tracking_branch or target.Exists():
+      git_cmd = ['git', 'checkout', '-f', target.branch_name]
     else:
-      git_cmd = ['repo', 'start', branch, '.']
-    cros_build_lib.RunCommandCaptureOutput(git_cmd, print_cmd=False,
-                                           cwd=self.cwd)
+      git_cmd = ['repo', 'start', target.branch_name, '.']
+    cros_build_lib.RunCommandCaptureOutput(git_cmd, print_cmd=False)
 
-  def Exists(self, branch=None):
+  def Exists(self):
     """Returns True if the branch exists."""
-    if not branch:
-      branch = self.branch_name
     branches = cros_build_lib.RunCommandCaptureOutput(['git', 'branch'],
-                                                      print_cmd=False,
-                                                      cwd=self.cwd).output
-    return branch in branches.split()
+                                                      print_cmd=False).output
+    return self.branch_name in branches.split()
+
+  def Delete(self):
+    """Deletes the branch and returns the user to the master branch.
+
+    Returns True on success.
+    """
+    tracking_branch = GitBranch(self.tracking_branch, self.tracking_branch)
+    GitBranch.Checkout(tracking_branch)
+    cros_build_lib.RunCommand(['repo', 'abandon', self.branch_name])
 
 
 def main():
@@ -288,13 +286,17 @@ def main():
         cros_build_lib.Warning("Skipping %s" % overlay)
         continue
 
+      # TODO(davidjames): Currently, all code that interacts with git depends on
+      # the cwd being set to the overlay directory. We should instead pass in
+      # this parameter so that we don't need to modify the cwd globally.
+      os.chdir(overlay)
+
       if command == 'push':
         PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
-                   options.dryrun, cwd=overlay)
+                   options.dryrun)
       elif command == 'commit' and ebuilds:
-        existing_branch = cros_build_lib.GetCurrentBranch(overlay)
-        work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
-                                cwd=overlay)
+        existing_branch = cros_build_lib.GetCurrentBranch('.')
+        work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch)
         work_branch.CreateBranch()
         if not work_branch.Exists():
           cros_build_lib.Die('Unable to create stabilizing branch in %s' %
@@ -304,7 +306,7 @@ def main():
         # include the patched changes in the stabilizing branch.
         if existing_branch:
           cros_build_lib.RunCommand(['git', 'rebase', existing_branch],
-                                    print_cmd=False, cwd=overlay)
+                                    print_cmd=False)
 
         for ebuild in ebuilds:
           try:

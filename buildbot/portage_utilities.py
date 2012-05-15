@@ -196,8 +196,10 @@ class EBuild(object):
     EBuild.UpdateEBuild(new_stable_ebuild_path, variables, redirect_file,
                         make_stable)
 
+  # TODO: Modify cros_mark_as_stable to no longer require chdir's and remove the
+  # default '.' behavior from this method.
   @classmethod
-  def CommitChange(cls, message, overlay):
+  def CommitChange(cls, message, overlay='.'):
     """Commits current changes in git locally with given commit message.
 
     Args:
@@ -213,7 +215,7 @@ class EBuild(object):
 
   def __init__(self, path):
     """Sets up data about an ebuild from its path."""
-    self._overlay, self._category, self._pkgname, filename = path.rsplit('/', 3)
+    _path, self._category, self._pkgname, filename = path.rsplit('/', 3)
     m = self._PACKAGE_VERSION_PATTERN.match(filename)
     if not m:
       raise EBuildVersionFormatException(filename)
@@ -384,16 +386,14 @@ class EBuild(object):
       return None
     else:
       self._Print('Adding new stable ebuild to git')
-      self._RunCommand(['git', 'add', new_stable_ebuild_path],
-                       cwd=self._overlay)
+      self._RunCommand(['git', 'add', new_stable_ebuild_path])
 
       if self.is_stable:
         self._Print('Removing old ebuild from git')
-        self._RunCommand(['git', 'rm', old_ebuild_path],
-                         cwd=self._overlay)
+        self._RunCommand(['git', 'rm', old_ebuild_path])
 
       message = _GIT_COMMIT_MESSAGE % (self.package, commit_id)
-      self.CommitChange(message, self._overlay)
+      self.CommitChange(message)
       return '%s-%s' % (self.package, new_version)
 
   @classmethod

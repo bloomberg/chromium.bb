@@ -141,9 +141,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    self.overlay = '/sources/overlay'
-    package_name = os.path.join(self.overlay,
-                                'category/test_package/test_package-0.0.1')
+    package_name = '/sources/overlay/category/test_package/test_package-0.0.1'
     ebuild_path = package_name + '-r1.ebuild'
     self.m_ebuild = StubEBuild(ebuild_path)
     self.revved_ebuild_path = package_name + '-r2.ebuild'
@@ -187,17 +185,14 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
                                   shallow=False).AndReturn(not rev)
     if rev:
       portage_utilities.EBuild._RunCommand(
-          ['git', 'add', self.revved_ebuild_path],
-          cwd=self.overlay)
+        ['git', 'add', self.revved_ebuild_path])
       if self.m_ebuild.is_stable:
         portage_utilities.EBuild._RunCommand(
-            ['git', 'rm', self.m_ebuild.ebuild_path],
-            cwd=self.overlay)
+          ['git', 'rm', self.m_ebuild.ebuild_path])
       message = portage_utilities._GIT_COMMIT_MESSAGE % (
         self.m_ebuild.package, 'my_id')
       cros_build_lib.RunCommand(
-          ['git', 'commit', '-a', '-m', message], cwd=self.overlay,
-          print_cmd=False)
+          ['git', 'commit', '-a', '-m', message], cwd='.', print_cmd=False)
     else:
       os.unlink(self.revved_ebuild_path)
 
@@ -239,7 +234,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     cros_build_lib.RunCommand(
         ['git', 'commit', '-a', '-m', mock_message], cwd='.', print_cmd=False)
     self.mox.ReplayAll()
-    self.m_ebuild.CommitChange(mock_message, '.')
+    self.m_ebuild.CommitChange(mock_message)
     self.mox.VerifyAll()
 
   def testUpdateCommitHashesForChanges(self):
@@ -324,8 +319,6 @@ class FindOverlaysTest(mox.MoxTestBase):
     self.build_root = '/fake_root'
     self.overlay = os.path.join(self.build_root,
                                 'src/third_party/chromiumos-overlay')
-    self.portage_overlay = os.path.join(self.build_root,
-                                        'src/third_party/portage-stable')
 
   def testFindOverlays(self):
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
@@ -353,7 +346,7 @@ class FindOverlaysTest(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     portage_utilities._OVERLAY_LIST_CMD = stub_list_cmd
-    public_overlays = ['public1', 'public2', self.overlay, self.portage_overlay]
+    public_overlays = ['public1', 'public2', self.overlay]
     private_overlays = ['private1', 'private2']
 
     self.assertEqual(portage_utilities.FindOverlays(self.build_root, 'public'),
