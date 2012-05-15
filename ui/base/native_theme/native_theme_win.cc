@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/native_theme_win.h"
+#include "ui/base/native_theme/native_theme_win.h"
 
 #include <windows.h>
 #include <uxtheme.h>
@@ -120,7 +120,7 @@ RECT InsetRect(const RECT* rect, int size) {
 
 }  // namespace
 
-namespace gfx {
+namespace ui {
 
 bool NativeThemeWin::IsThemingActive() const {
   if (is_theme_active_)
@@ -156,14 +156,14 @@ SkColor NativeThemeWin::GetThemeColorWithDefault(ThemeName theme,
   return color;
 }
 
-Size NativeThemeWin::GetThemeBorderSize(ThemeName theme) const {
+gfx::Size NativeThemeWin::GetThemeBorderSize(ThemeName theme) const {
   // For simplicity use the wildcard state==0, part==0, since it works
   // for the cases we currently depend on.
   int border;
   if (GetThemeInt(theme, 0, 0, TMT_BORDERSIZE, &border) == S_OK)
-    return Size(border, border);
+    return gfx::Size(border, border);
   else
-    return Size(GetSystemMetrics(SM_CXEDGE), GetSystemMetrics(SM_CYEDGE));
+    return gfx::Size(GetSystemMetrics(SM_CXEDGE), GetSystemMetrics(SM_CYEDGE));
 }
 
 void NativeThemeWin::DisableTheming() const {
@@ -279,7 +279,7 @@ gfx::Size NativeThemeWin::GetPartSize(Part part,
     }
   }
 
-  return Size(size.cx, size.cy);
+  return gfx::Size(size.cx, size.cy);
 }
 
 void NativeThemeWin::Paint(SkCanvas* canvas,
@@ -648,7 +648,7 @@ HRESULT NativeThemeWin::PaintMenuArrow(HDC hdc,
       // it doesn't have a flag equivalent to DFCS_MENUARROWRIGHT.  But they
       // are needed for RTL locales on Vista.  So use a memory DC and mirror
       // the region with GDI's StretchBlt.
-      Rect r(rect);
+      gfx::Rect r(rect);
       base::win::ScopedCreateDC mem_dc(CreateCompatibleDC(hdc));
       base::win::ScopedBitmap mem_bitmap(CreateCompatibleBitmap(hdc, r.width(),
                                                                 r.height()));
@@ -984,16 +984,16 @@ HRESULT NativeThemeWin::PaintScrollbarThumb(
   int state_id;
 
   switch (part) {
-    case gfx::NativeTheme::kScrollbarHorizontalThumb:
+    case NativeTheme::kScrollbarHorizontalThumb:
       part_id = SBP_THUMBBTNHORZ;
       break;
-    case gfx::NativeTheme::kScrollbarVerticalThumb:
+    case NativeTheme::kScrollbarVerticalThumb:
       part_id = SBP_THUMBBTNVERT;
       break;
-    case gfx::NativeTheme::kScrollbarHorizontalGripper:
+    case NativeTheme::kScrollbarHorizontalGripper:
       part_id = SBP_GRIPPERHORZ;
       break;
-    case gfx::NativeTheme::kScrollbarVerticalGripper:
+    case NativeTheme::kScrollbarVerticalGripper:
       part_id = SBP_GRIPPERVERT;
       break;
     default:
@@ -1042,10 +1042,10 @@ HRESULT NativeThemeWin::PaintScrollbarTrack(
   int state_id;
 
   switch (part) {
-    case gfx::NativeTheme::kScrollbarHorizontalTrack:
+    case NativeTheme::kScrollbarHorizontalTrack:
       part_id = extra.is_upper ? SBP_UPPERTRACKHORZ : SBP_LOWERTRACKHORZ;
       break;
-    case gfx::NativeTheme::kScrollbarVerticalTrack:
+    case NativeTheme::kScrollbarVerticalTrack:
       part_id = extra.is_upper ? SBP_UPPERTRACKVERT : SBP_LOWERTRACKVERT;
       break;
     default:
@@ -1696,15 +1696,15 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
   int bg_color_key;
   int text_color_key;
   switch (control_state) {
-    case gfx::NativeTheme::kHovered:
+    case NativeTheme::kHovered:
       bg_color_key = COLOR_HIGHLIGHT;
       text_color_key = COLOR_HIGHLIGHTTEXT;
       break;
-    case gfx::NativeTheme::kNormal:
+    case NativeTheme::kNormal:
       bg_color_key = COLOR_MENU;
       text_color_key = COLOR_MENUTEXT;
       break;
-    case gfx::NativeTheme::kDisabled:
+    case NativeTheme::kDisabled:
       bg_color_key = is_selected ? COLOR_HIGHLIGHT : COLOR_MENU;
       text_color_key = COLOR_GRAYTEXT;
       break;
@@ -1776,4 +1776,4 @@ HANDLE NativeThemeWin::GetThemeHandle(ThemeName theme_name) const {
   return handle;
 }
 
-}  // namespace gfx
+}  // namespace ui

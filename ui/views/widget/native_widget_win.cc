@@ -29,7 +29,7 @@
 #include "ui/gfx/canvas_paint.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/icon_util.h"
-#include "ui/gfx/native_theme_win.h"
+#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/accessibility/native_view_accessibility_win.h"
@@ -2036,7 +2036,7 @@ void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
 
 void NativeWidgetWin::OnThemeChanged() {
   // Notify NativeThemeWin.
-  gfx::NativeThemeWin::instance()->CloseHandles();
+  ui::NativeThemeWin::instance()->CloseHandles();
 }
 
 void NativeWidgetWin::OnVScroll(int scroll_type,

@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_NATIVE_THEME_GTK_H_
-#define UI_GFX_NATIVE_THEME_GTK_H_
+#ifndef UI_BASE_NATIVE_THEME_NATIVE_THEME_GTK_H_
+#define UI_BASE_NATIVE_THEME_NATIVE_THEME_GTK_H_
 #pragma once
 
-#include "ui/gfx/native_theme_base.h"
+#include "ui/base/native_theme/native_theme_base.h"
 
-namespace gfx {
+namespace ui {
 
 // GTK implementation of native theme support.
 class NativeThemeGtk : public NativeThemeBase {
@@ -22,6 +22,6 @@ class NativeThemeGtk : public NativeThemeBase {
   virtual ~NativeThemeGtk();
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_NATIVE_THEME_GTK_H_
+#endif  // UI_BASE_NATIVE_THEME_NATIVE_THEME_GTK_H_

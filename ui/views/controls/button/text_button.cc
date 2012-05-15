@@ -18,7 +18,7 @@
 
 #if defined(OS_WIN)
 #include "skia/ext/skia_utils_win.h"
-#include "ui/gfx/native_theme_win.h"
+#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/gfx/platform_font_win.h"
 #endif
 
@@ -208,30 +208,30 @@ TextButtonNativeThemeBorder::~TextButtonNativeThemeBorder() {
 void TextButtonNativeThemeBorder::Paint(const View& view,
                                         gfx::Canvas* canvas) const {
   const TextButtonBase* tb = static_cast<const TextButton*>(&view);
-  const gfx::NativeTheme* native_theme = gfx::NativeTheme::instance();
-  gfx::NativeTheme::Part part = delegate_->GetThemePart();
+  const ui::NativeTheme* native_theme = ui::NativeTheme::instance();
+  ui::NativeTheme::Part part = delegate_->GetThemePart();
   gfx::Rect rect(delegate_->GetThemePaintRect());
 
   if (tb->show_multiple_icon_states() &&
       delegate_->GetThemeAnimation() != NULL &&
       delegate_->GetThemeAnimation()->is_animating()) {
     // Paint background state.
-    gfx::NativeTheme::ExtraParams prev_extra;
-    gfx::NativeTheme::State prev_state =
+    ui::NativeTheme::ExtraParams prev_extra;
+    ui::NativeTheme::State prev_state =
         delegate_->GetBackgroundThemeState(&prev_extra);
     native_theme->Paint(canvas->sk_canvas(), part, prev_state, rect,
                         prev_extra);
 
     // Composite foreground state above it.
-    gfx::NativeTheme::ExtraParams extra;
-    gfx::NativeTheme::State state = delegate_->GetForegroundThemeState(&extra);
+    ui::NativeTheme::ExtraParams extra;
+    ui::NativeTheme::State state = delegate_->GetForegroundThemeState(&extra);
     int alpha = delegate_->GetThemeAnimation()->CurrentValueBetween(0, 255);
     canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
     native_theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
     canvas->Restore();
   } else {
-    gfx::NativeTheme::ExtraParams extra;
-    gfx::NativeTheme::State state = delegate_->GetThemeState(&extra);
+    ui::NativeTheme::ExtraParams extra;
+    ui::NativeTheme::State state = delegate_->GetThemeState(&extra);
     native_theme->Paint(canvas->sk_canvas(), part, state, rect, extra);
   }
 }
@@ -252,16 +252,16 @@ TextButtonBase::TextButtonBase(ButtonListener* listener, const string16& text)
       alignment_(ALIGN_LEFT),
       font_(ResourceBundle::GetSharedInstance().GetFont(
           ResourceBundle::BaseFont)),
-      color_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonEnabledColor)),
-      color_enabled_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonEnabledColor)),
-      color_disabled_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonDisabledColor)),
-      color_highlight_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonHighlightColor)),
-      color_hover_(gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonHoverColor)),
+      color_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonEnabledColor)),
+      color_enabled_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonEnabledColor)),
+      color_disabled_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonDisabledColor)),
+      color_highlight_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonHighlightColor)),
+      color_hover_(ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonHoverColor)),
       text_halo_color_(0),
       has_text_halo_(false),
       active_text_shadow_color_(0),
@@ -458,15 +458,15 @@ int TextButtonBase::ComputeCanvasStringFlags() const {
 }
 
 void TextButtonBase::GetExtraParams(
-    gfx::NativeTheme::ExtraParams* params) const {
+    ui::NativeTheme::ExtraParams* params) const {
   params->button.checked = false;
   params->button.indeterminate = false;
   params->button.is_default = false;
   params->button.has_border = false;
   params->button.classic_state = 0;
   params->button.background_color =
-      gfx::NativeTheme::instance()->GetSystemColor(
-          gfx::NativeTheme::kColorId_TextButtonBackgroundColor);
+      ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_TextButtonBackgroundColor);
 }
 
 gfx::Rect TextButtonBase::GetContentBounds(int extra_width) const {
@@ -608,21 +608,21 @@ gfx::Rect TextButtonBase::GetThemePaintRect() const {
   return GetLocalBounds();
 }
 
-gfx::NativeTheme::State TextButtonBase::GetThemeState(
-    gfx::NativeTheme::ExtraParams* params) const {
+ui::NativeTheme::State TextButtonBase::GetThemeState(
+    ui::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
   switch(state()) {
     case BS_DISABLED:
-      return gfx::NativeTheme::kDisabled;
+      return ui::NativeTheme::kDisabled;
     case BS_NORMAL:
-      return gfx::NativeTheme::kNormal;
+      return ui::NativeTheme::kNormal;
     case BS_HOT:
-      return gfx::NativeTheme::kHovered;
+      return ui::NativeTheme::kHovered;
     case BS_PUSHED:
-      return gfx::NativeTheme::kPressed;
+      return ui::NativeTheme::kPressed;
     default:
       NOTREACHED() << "Unknown state: " << state();
-      return gfx::NativeTheme::kNormal;
+      return ui::NativeTheme::kNormal;
   }
 }
 
@@ -630,23 +630,23 @@ const ui::Animation* TextButtonBase::GetThemeAnimation() const {
 #if defined(USE_AURA)
   return hover_animation_.get();
 #elif defined(OS_WIN)
-  return gfx::NativeThemeWin::instance()->IsThemingActive()
+  return ui::NativeThemeWin::instance()->IsThemingActive()
       ? hover_animation_.get() : NULL;
 #else
   return hover_animation_.get();
 #endif
 }
 
-gfx::NativeTheme::State TextButtonBase::GetBackgroundThemeState(
-  gfx::NativeTheme::ExtraParams* params) const {
+ui::NativeTheme::State TextButtonBase::GetBackgroundThemeState(
+  ui::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
-  return gfx::NativeTheme::kNormal;
+  return ui::NativeTheme::kNormal;
 }
 
-gfx::NativeTheme::State TextButtonBase::GetForegroundThemeState(
-  gfx::NativeTheme::ExtraParams* params) const {
+ui::NativeTheme::State TextButtonBase::GetForegroundThemeState(
+  ui::NativeTheme::ExtraParams* params) const {
   GetExtraParams(params);
-  return gfx::NativeTheme::kHovered;
+  return ui::NativeTheme::kHovered;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -756,11 +756,11 @@ void TextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
   }
 }
 
-gfx::NativeTheme::Part TextButton::GetThemePart() const {
-  return gfx::NativeTheme::kPushButton;
+ui::NativeTheme::Part TextButton::GetThemePart() const {
+  return ui::NativeTheme::kPushButton;
 }
 
-void TextButton::GetExtraParams(gfx::NativeTheme::ExtraParams* params) const {
+void TextButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   TextButtonBase::GetExtraParams(params);
   params->button.is_default = is_default_;
 }
@@ -848,7 +848,7 @@ void NativeTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
 }
 
 void NativeTextButton::GetExtraParams(
-    gfx::NativeTheme::ExtraParams* params) const {
+    ui::NativeTheme::ExtraParams* params) const {
   TextButton::GetExtraParams(params);
   params->button.has_border = true;
 }

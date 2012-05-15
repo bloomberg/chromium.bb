@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_NATIVE_THEME_H_
-#define UI_GFX_NATIVE_THEME_H_
+#ifndef UI_BASE_NATIVE_THEME_NATIVE_THEME_H_
+#define UI_BASE_NATIVE_THEME_NATIVE_THEME_H_
 #pragma once
 
 #include "third_party/skia/include/core/SkColor.h"
@@ -13,9 +13,11 @@
 class SkCanvas;
 
 namespace gfx {
-
 class Rect;
 class Size;
+}
+
+namespace ui {
 
 // This class supports drawing UI controls (like buttons, text fields, lists,
 // comboboxes, etc) that look like the native UI controls of the underlying
@@ -198,9 +200,9 @@ class UI_EXPORT NativeTheme {
   };
 
   // Return the size of the part.
-  virtual Size GetPartSize(Part part,
-                           State state,
-                           const ExtraParams& extra) const = 0;
+  virtual gfx::Size GetPartSize(Part part,
+                                State state,
+                                const ExtraParams& extra) const = 0;
 
   // Paint the part to the canvas.
   virtual void Paint(SkCanvas* canvas,
@@ -266,6 +268,6 @@ class UI_EXPORT NativeTheme {
   DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };
 
-}  // namespace gfx
+}  // namespace ui
 
-#endif  // UI_GFX_NATIVE_THEME_H_
+#endif  // UI_BASE_NATIVE_THEME_NATIVE_THEME_H_

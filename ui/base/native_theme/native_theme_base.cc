@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/native_theme_base.h"
+#include "ui/base/native_theme/native_theme_base.h"
 
 #include <limits>
 
@@ -51,7 +51,7 @@ SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
 
 }  // namespace
 
-namespace gfx {
+namespace ui {
 
 gfx::Size NativeThemeBase::GetPartSize(Part part,
                                        State state,
@@ -970,4 +970,4 @@ SkColor NativeThemeBase::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
   return SaturateAndBrighten(hsv2, -0.2f, diff);
 }
 
-}  // namespace gfx
+}  // namespace ui

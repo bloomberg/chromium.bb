@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/native_theme_android.h"
+#include "ui/base/native_theme/native_theme_android.h"
 
 #include <limits>
 
@@ -15,32 +15,30 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-namespace gfx {
+namespace ui {
 
-static const unsigned int kButtonLength = 14;
-static const unsigned int kScrollbarWidth = 15;
-static const unsigned int kThumbInactiveColor = 0xeaeaea;
-static const unsigned int kTrackColor= 0xd3d3d3;
+const unsigned int kButtonLength = 14;
+const unsigned int kScrollbarWidth = 15;
+const unsigned int kThumbInactiveColor = 0xeaeaea;
+const unsigned int kTrackColor= 0xd3d3d3;
 
 // These are the default dimensions of radio buttons and checkboxes.
-static const int kCheckboxAndRadioWidth = 13;
-static const int kCheckboxAndRadioHeight = 13;
+const int kCheckboxAndRadioWidth = 13;
+const int kCheckboxAndRadioHeight = 13;
 
 // These sizes match the sizes in Chromium Win.
-static const int kSliderThumbWidth = 11;
-static const int kSliderThumbHeight = 21;
+const int kSliderThumbWidth = 11;
+const int kSliderThumbHeight = 21;
 
-static const SkColor kSliderTrackBackgroundColor =
-    SkColorSetRGB(0xe3, 0xdd, 0xd8);
-static const SkColor kSliderThumbLightGrey = SkColorSetRGB(0xf4, 0xf2, 0xef);
-static const SkColor kSliderThumbDarkGrey = SkColorSetRGB(0xea, 0xe5, 0xe0);
-static const SkColor kSliderThumbBorderDarkGrey =
-    SkColorSetRGB(0x9d, 0x96, 0x8e);
+const SkColor kSliderTrackBackgroundColor = SkColorSetRGB(0xe3, 0xdd, 0xd8);
+const SkColor kSliderThumbLightGrey = SkColorSetRGB(0xf4, 0xf2, 0xef);
+const SkColor kSliderThumbDarkGrey = SkColorSetRGB(0xea, 0xe5, 0xe0);
+const SkColor kSliderThumbBorderDarkGrey = SkColorSetRGB(0x9d, 0x96, 0x8e);
 
 // Get lightness adjusted color.
-static SkColor BrightenColor(const color_utils::HSL& hsl,
-                             SkAlpha alpha,
-                             double lightness_amount) {
+SkColor BrightenColor(const color_utils::HSL& hsl,
+                      SkAlpha alpha,
+                      double lightness_amount) {
   color_utils::HSL adjusted = hsl;
   adjusted.l += lightness_amount;
   if (adjusted.l > 1.0)
@@ -801,4 +799,4 @@ SkColor NativeThemeAndroid::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
   return SaturateAndBrighten(hsv2, -0.2, diff);
 }
 
-}  // namespace gfx
+}  // namespace ui

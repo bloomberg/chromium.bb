@@ -10,7 +10,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/native_theme_win.h"
+#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/combobox/native_combobox_views.h"
 #include "ui/views/widget/widget.h"
@@ -109,8 +109,8 @@ gfx::Size NativeComboboxWin::GetPreferredSize() {
   GetComboBoxInfo(native_view(), &cbi);
   gfx::Rect rect_item(cbi.rcItem);
   gfx::Rect rect_button(cbi.rcButton);
-  gfx::Size border = gfx::NativeThemeWin::instance()->GetThemeBorderSize(
-      gfx::NativeThemeWin::MENULIST);
+  gfx::Size border = ui::NativeThemeWin::instance()->GetThemeBorderSize(
+      ui::NativeThemeWin::MENULIST);
 
   // The padding value of '3' is the xy offset from the corner of the control
   // to the corner of rcItem.  It does not seem to be queryable from the theme.

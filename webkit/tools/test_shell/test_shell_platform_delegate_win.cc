@@ -11,7 +11,7 @@
 #include "base/event_recorder.h"
 #include "base/win/win_util.h"
 #include "ui/base/win/foreground_helper.h"
-#include "ui/gfx/native_theme_win.h"
+#include "ui/base/native_theme/native_theme_win.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_platform_delegate.h"
 
@@ -140,7 +140,7 @@ void TestShellPlatformDelegate::InitializeGUI() {
 }
 
 void TestShellPlatformDelegate::SelectUnifiedTheme() {
-  gfx::NativeThemeWin::instance()->DisableTheming();
+  ui::NativeThemeWin::instance()->DisableTheming();
 }
 
 void TestShellPlatformDelegate::SetWindowPositionForRecording(

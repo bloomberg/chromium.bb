@@ -22,7 +22,7 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/range/range.h"
 #include "ui/base/win/mouse_wheel_util.h"
-#include "ui/gfx/native_theme_win.h"
+#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -920,7 +920,7 @@ void NativeTextfieldWin::OnNCPaint(HRGN region) {
   int classic_state =
       (!textfield_->enabled() || textfield_->read_only()) ? DFCS_INACTIVE : 0;
 
-  gfx::NativeThemeWin::instance()->PaintTextField(hdc, part, state,
+  ui::NativeThemeWin::instance()->PaintTextField(hdc, part, state,
                                                   classic_state, &window_rect,
                                                   bg_color_, false, true);
 

@@ -21,13 +21,13 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/native_theme.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/menu/menu_2.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_listener.h"
 
-using gfx::NativeTheme;
+using ui::NativeTheme;
 
 namespace views {
 

@@ -186,10 +186,10 @@
 #elif defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
-#include "ui/gfx/native_theme_win.h"
+#include "ui/base/native_theme/native_theme_win.h"
 #elif defined(USE_X11)
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebRenderTheme.h"
-#include "ui/gfx/native_theme.h"
+#include "ui/base/native_theme/native_theme.h"
 #elif defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
 #endif
@@ -4445,7 +4445,7 @@ void RenderViewImpl::OnSetRendererPrefs(
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
   WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
-  gfx::NativeTheme::instance()->SetScrollbarColors(
+  ui::NativeTheme::instance()->SetScrollbarColors(
       renderer_prefs.thumb_inactive_color,
       renderer_prefs.thumb_active_color,
       renderer_prefs.track_color);
@@ -4616,7 +4616,7 @@ void RenderViewImpl::OnThemeChanged() {
 #if defined(USE_AURA)
   // Aura doesn't care if we switch themes.
 #elif defined(OS_WIN)
-  gfx::NativeThemeWin::instance()->CloseHandles();
+  ui::NativeThemeWin::instance()->CloseHandles();
   if (webview())
     webview()->themeChanged();
 #else  // defined(OS_WIN)
