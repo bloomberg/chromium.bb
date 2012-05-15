@@ -32,10 +32,6 @@
 #include "net/test/test_server.h"
 #include "webkit/glue/webpreferences.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#endif
-
 using content::NavigationController;
 using content::WebContents;
 
