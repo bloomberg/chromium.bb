@@ -20,10 +20,10 @@ void PolicyServiceStub::RemoveObserver(PolicyDomain domain,
                                        const std::string& component_id,
                                        Observer* observer) {}
 
-const PolicyMap* PolicyServiceStub::GetPolicies(
+const PolicyMap& PolicyServiceStub::GetPolicies(
     PolicyDomain domain,
     const std::string& component_id) const {
-  return NULL;
+  return kEmpty_;
 };
 
 bool PolicyServiceStub::IsInitializationComplete() const {

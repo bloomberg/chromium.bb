@@ -5,7 +5,10 @@
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
+#include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -21,11 +24,14 @@ AsynchronousPolicyLoader::AsynchronousPolicyLoader(
       origin_loop_(MessageLoop::current()),
       stopped_(false) {}
 
-void AsynchronousPolicyLoader::Init(const base::Closure& callback) {
-  updates_callback_ = callback;
+void AsynchronousPolicyLoader::Init(const UpdateCallback& callback) {
+  update_callback_ = callback;
+
+  // Load initial policy synchronously at startup.
   scoped_ptr<PolicyMap> policy(delegate_->Load());
   if (policy.get())
-    policy_.Swap(policy.get());
+    UpdatePolicy(policy.Pass());
+
   // Initialization can happen early when the file thread is not yet available,
   // but the subclass of the loader must do some of their initialization on the
   // file thread. Posting to the file thread directly before it is initialized
@@ -95,17 +101,20 @@ void AsynchronousPolicyLoader::StopOnFileThread() {
 }
 
 void AsynchronousPolicyLoader::PostUpdatePolicyTask(PolicyMap* new_policy) {
-  // TODO(joaodasilva): make the callback own |new_policy|.
+  scoped_ptr<PolicyMap> policy(new_policy);
   origin_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&AsynchronousPolicyLoader::UpdatePolicy, this, new_policy));
+      base::Bind(&AsynchronousPolicyLoader::UpdatePolicy,
+                 this, base::Passed(&policy)));
 }
 
-void AsynchronousPolicyLoader::UpdatePolicy(PolicyMap* new_policy_raw) {
-  scoped_ptr<PolicyMap> new_policy(new_policy_raw);
-  policy_.Swap(new_policy_raw);
-  if (!stopped_)
-    updates_callback_.Run();
+void AsynchronousPolicyLoader::UpdatePolicy(scoped_ptr<PolicyMap> policy) {
+  if (!stopped_) {
+    // TODO(joaodasilva): make this load policy from other namespaces too.
+    scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+    bundle->Get(POLICY_DOMAIN_CHROME, std::string()).Swap(policy.get());
+    update_callback_.Run(bundle.Pass());
+  }
 }
 
 void AsynchronousPolicyLoader::InitAfterFileThreadAvailable() {

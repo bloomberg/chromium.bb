@@ -4,7 +4,10 @@
 
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "policy/policy_constants.h"
 
 namespace policy {
@@ -13,6 +16,13 @@ MockConfigurationPolicyProvider::MockConfigurationPolicyProvider()
     : ConfigurationPolicyProvider(GetChromePolicyDefinitionList()) {}
 
 MockConfigurationPolicyProvider::~MockConfigurationPolicyProvider() {}
+
+void MockConfigurationPolicyProvider::UpdateChromePolicy(
+    const PolicyMap& policy) {
+  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  bundle->Get(POLICY_DOMAIN_CHROME, std::string()).CopyFrom(policy);
+  UpdatePolicy(bundle.Pass());
+}
 
 MockConfigurationPolicyObserver::MockConfigurationPolicyObserver() {}
 

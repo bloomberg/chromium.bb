@@ -63,8 +63,7 @@ class PolicyService {
                               const std::string& component_id,
                               Observer* observer) = 0;
 
-  // Returns NULL if no policies are available for |domain|, | component_id|.
-  virtual const PolicyMap* GetPolicies(
+  virtual const PolicyMap& GetPolicies(
       PolicyDomain domain,
       const std::string& component_id) const = 0;
 

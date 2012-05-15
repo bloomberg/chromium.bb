@@ -12,24 +12,29 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
-#include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
 
 class MessageLoop;
 
 namespace policy {
+
+class PolicyBundle;
+class PolicyMap;
 
 // Used by the implementation of asynchronous policy provider to manage the
 // tasks on the FILE thread that do the heavy lifting of loading policies.
 class AsynchronousPolicyLoader
     : public base::RefCountedThreadSafe<AsynchronousPolicyLoader> {
  public:
+  // The type of the callback passed to Init().
+  typedef base::Callback<void(scoped_ptr<PolicyBundle>)> UpdateCallback;
+
   AsynchronousPolicyLoader(AsynchronousPolicyProvider::Delegate* delegate,
                            int reload_interval_minutes);
 
   // Triggers initial policy load, and installs |callback| as the callback to
-  // invoke on policy updates.
-  virtual void Init(const base::Closure& callback);
+  // invoke on policy updates. |callback| takes ownership of the passed
+  // PolicyBundle, which contains all the policies that were loaded.
+  virtual void Init(const UpdateCallback& callback);
 
   // Reloads policy, sending notification of changes if necessary. Must be
   // called on the FILE thread. When |force| is true, the loader should do an
@@ -39,8 +44,6 @@ class AsynchronousPolicyLoader
   // Stops any pending reload tasks. Updates callbacks won't be performed
   // anymore once the loader is stopped.
   virtual void Stop();
-
-  const PolicyMap& policy() const { return policy_; }
 
  protected:
   // AsynchronousPolicyLoader objects should only be deleted by
@@ -82,17 +85,13 @@ class AsynchronousPolicyLoader
   // intialized.
   void InitAfterFileThreadAvailable();
 
-  // Replaces the existing policy to value map with a new one, sending
-  // notification to the observers if there is a policy change. Must be called
-  // on |origin_loop_| so that it's safe to call back into the provider, which
-  // is not thread-safe. Takes ownership of |new_policy|.
-  void UpdatePolicy(PolicyMap* new_policy);
+  // Invokes the |update_callback_| with a new PolicyBundle that maps
+  // the chrome namespace to |policy|. Must be called on |origin_loop_| so that
+  // it's safe to invoke |update_callback_|.
+  void UpdatePolicy(scoped_ptr<PolicyMap> policy);
 
   // Provides the low-level mechanics for loading policy.
   scoped_ptr<AsynchronousPolicyProvider::Delegate> delegate_;
-
-  // Current policy.
-  PolicyMap policy_;
 
   // Used to create and invalidate WeakPtrs on the FILE thread. These are only
   // used to post reload tasks that can be cancelled.
@@ -110,7 +109,7 @@ class AsynchronousPolicyLoader
   bool stopped_;
 
   // Callback to invoke on policy updates.
-  base::Closure updates_callback_;
+  UpdateCallback update_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyLoader);
 };

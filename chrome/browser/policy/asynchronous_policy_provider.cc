@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
-#include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -30,12 +30,6 @@ AsynchronousPolicyProvider::~AsynchronousPolicyProvider() {
   // |loader_| won't invoke its callback anymore after Stop(), therefore
   // Unretained(this) is safe in the ctor.
   loader_->Stop();
-}
-
-bool AsynchronousPolicyProvider::ProvideInternal(PolicyMap* map) {
-  DCHECK(CalledOnValidThread());
-  map->CopyFrom(loader_->policy());
-  return true;
 }
 
 void AsynchronousPolicyProvider::RefreshPolicies() {
@@ -63,10 +57,11 @@ void AsynchronousPolicyProvider::OnReloadPosted() {
   pending_refreshes_--;
 }
 
-void AsynchronousPolicyProvider::OnLoaderReloaded() {
+void AsynchronousPolicyProvider::OnLoaderReloaded(
+    scoped_ptr<PolicyBundle> bundle) {
   DCHECK(CalledOnValidThread());
   if (pending_refreshes_ == 0)
-    NotifyPolicyUpdated();
+    UpdatePolicy(bundle.Pass());
 }
 
 }  // namespace policy

@@ -1376,7 +1376,7 @@
         'browser/policy/policy_bundle_unittest.cc',
         'browser/policy/policy_map_unittest.cc',
         'browser/policy/policy_path_parser_unittest.cc',
-        'browser/policy/policy_service_unittest.cc',
+        'browser/policy/policy_service_impl_unittest.cc',
         'browser/policy/testing_cloud_policy_subsystem.cc',
         'browser/policy/testing_cloud_policy_subsystem.h',
         'browser/policy/testing_policy_url_fetcher_factory.cc',

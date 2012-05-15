@@ -7,16 +7,19 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_service.h"
 
 namespace policy {
+
+class PolicyMap;
 
 class PolicyServiceImpl : public PolicyService,
                           public ConfigurationPolicyProvider::Observer {
@@ -37,46 +40,59 @@ class PolicyServiceImpl : public PolicyService,
   virtual void RemoveObserver(PolicyDomain domain,
                               const std::string& component_id,
                               PolicyService::Observer* observer) OVERRIDE;
-  virtual const PolicyMap* GetPolicies(
+  virtual const PolicyMap& GetPolicies(
       PolicyDomain domain,
       const std::string& component_id) const OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
   virtual void RefreshPolicies(const base::Closure& callback) OVERRIDE;
 
  private:
-  struct Entry;
-  struct ProviderData;
-
-  typedef std::pair<PolicyDomain, std::string> PolicyNamespace;
-  typedef std::map<PolicyNamespace, Entry*> EntryMap;
-  typedef std::vector<ProviderData*> ProviderList;
+  typedef ObserverList<PolicyService::Observer, true> Observers;
+  typedef std::map<PolicyBundle::PolicyNamespace, Observers*> ObserverMap;
+  typedef std::vector<ConfigurationPolicyObserverRegistrar*> RegistrarList;
 
   // ConfigurationPolicyProvider::Observer overrides:
   virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
   virtual void OnProviderGoingAway(
       ConfigurationPolicyProvider* provider) OVERRIDE;
 
-  Entry* GetOrCreate(const PolicyNamespace& ns);
-  ProviderList::iterator GetProviderData(ConfigurationPolicyProvider* provider);
+  // Returns an iterator to the entry in |registrars_| that corresponds to
+  // |provider|, or |registrars_.end()|.
+  RegistrarList::iterator GetRegistrar(ConfigurationPolicyProvider* provider);
 
-  // Erases the entry for |ns|, if it has no observers and no policies.
-  void MaybeCleanup(const PolicyNamespace& ns);
+  // Notifies observers of |ns| that its policies have changed, passing along
+  // the |previous| and the |current| policies.
+  void NotifyNamespaceUpdated(const PolicyBundle::PolicyNamespace& ns,
+                              const PolicyMap& previous,
+                              const PolicyMap& current);
 
   // Combines the policies from all the providers, and notifies the observers
   // of namespaces whose policies have been modified.
-  // |is_refresh| should be true if MergeAndTriggerUpdates() was invoked because
-  // a provider has just refreshed its policies.
-  void MergeAndTriggerUpdates(bool is_refresh);
+  void MergeAndTriggerUpdates();
 
-  // Contains all the providers together with a cached copy of their policies
-  // and their registrars.
-  ProviderList providers_;
+  // Checks if all providers are initialized, and notifies the observers
+  // if the service just became initialized.
+  void CheckInitializationComplete();
+
+  // Invokes all the refresh callbacks if there are no more refreshes pending.
+  void CheckRefreshComplete();
+
+  // Contains a registrar for each of the providers passed in the constructor,
+  // in order of decreasing priority.
+  RegistrarList registrars_;
 
   // Maps each policy namespace to its current policies.
-  EntryMap entries_;
+  PolicyBundle policy_bundle_;
+
+  // Maps each policy namespace to its observer list.
+  ObserverMap observers_;
 
   // True if all the providers are initialized.
   bool initialization_complete_;
+
+  // Set of providers that have a pending update that was triggered by a
+  // call to RefreshPolicies().
+  std::set<ConfigurationPolicyProvider*> refresh_pending_;
 
   // List of callbacks to invoke once all providers refresh after a
   // RefreshPolicies() call.

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/policy_ui.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/hash_tables.h"
@@ -192,15 +194,11 @@ void PolicyUIHandler::OnRefreshDone() {
 
 void PolicyUIHandler::SendDataToUI() {
   policy::PolicyService* service = g_browser_process->policy_service();
-  const policy::PolicyMap* policies =
-      service->GetPolicies(policy::POLICY_DOMAIN_CHROME, "");
   bool any_policies_set = false;
-  base::ListValue* list;
-  if (policies)
-    list = GetPolicyStatusList(*policies, &any_policies_set).release();
-  else
-    list = new base::ListValue();
-
+  base::ListValue* list =
+      GetPolicyStatusList(
+          service->GetPolicies(policy::POLICY_DOMAIN_CHROME, std::string()),
+          &any_policies_set).release();
   base::DictionaryValue results;
   results.Set("policies", list);
   results.SetBoolean("anyPoliciesSet", any_policies_set);

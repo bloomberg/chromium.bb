@@ -23,8 +23,6 @@ class NetworkConfigurationUpdaterTest
     : public testing::TestWithParam<const char*> {
  protected:
   virtual void SetUp() OVERRIDE {
-    EXPECT_CALL(provider_, ProvideInternal(_))
-        .WillRepeatedly(CopyPolicyMap(&policy_));
     EXPECT_CALL(network_library_, LoadOncNetworks(_, "", _, _))
         .WillRepeatedly(Return(true));
   }
@@ -40,13 +38,14 @@ class NetworkConfigurationUpdaterTest
   }
 
   chromeos::MockNetworkLibrary network_library_;
-  PolicyMap policy_;
   MockConfigurationPolicyProvider provider_;
 };
 
 TEST_P(NetworkConfigurationUpdaterTest, InitialUpdate) {
-  policy_.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-              Value::CreateStringValue(kFakeONC));
+  PolicyMap policy;
+  policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             Value::CreateStringValue(kFakeONC));
+  provider_.UpdateChromePolicy(policy);
 
   EXPECT_CALL(network_library_,
               LoadOncNetworks(kFakeONC, "", NameToONCSource(GetParam()), _))
@@ -63,16 +62,17 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
   EXPECT_CALL(network_library_,
               LoadOncNetworks(kFakeONC, "", NameToONCSource(GetParam()), _))
       .WillOnce(Return(true));
-  policy_.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-              Value::CreateStringValue(kFakeONC));
-  provider_.NotifyPolicyUpdated();
+  PolicyMap policy;
+  policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             Value::CreateStringValue(kFakeONC));
+  provider_.UpdateChromePolicy(policy);
   Mock::VerifyAndClearExpectations(&network_library_);
 
   // No update if the set the same value again.
   EXPECT_CALL(network_library_,
               LoadOncNetworks(kFakeONC, "", NameToONCSource(GetParam()), _))
       .Times(0);
-  provider_.NotifyPolicyUpdated();
+  provider_.UpdateChromePolicy(policy);
   Mock::VerifyAndClearExpectations(&network_library_);
 
   // Another update is expected if the policy goes away.
@@ -80,8 +80,8 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
               LoadOncNetworks(NetworkConfigurationUpdater::kEmptyConfiguration,
                               "", NameToONCSource(GetParam()), _))
       .WillOnce(Return(true));
-  policy_.Erase(GetParam());
-  provider_.NotifyPolicyUpdated();
+  policy.Erase(GetParam());
+  provider_.UpdateChromePolicy(policy);
   Mock::VerifyAndClearExpectations(&network_library_);
 }
 

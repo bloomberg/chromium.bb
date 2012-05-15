@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
 #pragma once
 
-#include <map>
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/policy/policy_bundle.h"
 
 namespace policy {
 
@@ -37,7 +35,12 @@ class ConfigurationPolicyProvider {
   // Fills the given |result| with the current policy values. Returns true if
   // the policies were provided. This is used mainly by the
   // ConfigurationPolicyPrefStore, which retrieves policy values from here.
+  // DEPRECATED: this call is going away, use policies() instead.
+  // http://crbug.com/108993
   bool Provide(PolicyMap* result);
+
+  // Returns the current PolicyBundle.
+  const PolicyBundle& policies() const { return policy_bundle_; }
 
   // Check whether this provider has completed initialization. This is used to
   // detect whether initialization is done in case providers implementations
@@ -57,11 +60,10 @@ class ConfigurationPolicyProvider {
   static void FixDeprecatedPolicies(PolicyMap* policies);
 
  protected:
-  // Sends a policy update notification to observers.
-  void NotifyPolicyUpdated();
-
-  // Must be implemented by subclasses to provide their policy values.
-  virtual bool ProvideInternal(PolicyMap* result) = 0;
+  // Subclasses must invoke this to update the policies currently served by
+  // this provider. UpdatePolicy() takes ownership of |policies|.
+  // The observers are notified after the policies are updated.
+  void UpdatePolicy(scoped_ptr<PolicyBundle> bundle);
 
   const PolicyDefinitionList* policy_definition_list() const {
     return policy_definition_list_;
@@ -72,6 +74,9 @@ class ConfigurationPolicyProvider {
 
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
+
+  // The policies currently configured at this provider.
+  PolicyBundle policy_bundle_;
 
   // Contains the default mapping from policy values to the actual names.
   const PolicyDefinitionList* policy_definition_list_;

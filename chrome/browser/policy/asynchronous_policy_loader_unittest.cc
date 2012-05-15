@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "chrome/browser/policy/asynchronous_policy_test_base.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -19,13 +20,6 @@ using ::testing::_;
 
 namespace policy {
 
-namespace {
-
-void IgnoreCallback() {
-}
-
-}  // namespace
-
 class AsynchronousPolicyLoaderTest : public AsynchronousPolicyTestBase {
  public:
   AsynchronousPolicyLoaderTest() {}
@@ -33,13 +27,19 @@ class AsynchronousPolicyLoaderTest : public AsynchronousPolicyTestBase {
 
   virtual void SetUp() {
     AsynchronousPolicyTestBase::SetUp();
-    ignore_callback_ = base::Bind(&IgnoreCallback);
+    update_callback_ = base::Bind(&AsynchronousPolicyLoaderTest::UpdateCallback,
+                                  base::Unretained(this));
   }
 
  protected:
-  base::Closure ignore_callback_;
+  AsynchronousPolicyLoader::UpdateCallback update_callback_;
+  scoped_ptr<PolicyBundle> bundle_;
 
  private:
+  void UpdateCallback(scoped_ptr<PolicyBundle> bundle) {
+    bundle_.swap(bundle);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyLoaderTest);
 };
 
@@ -54,11 +54,6 @@ ACTION_P(CreateSequencedTestPolicyMap, number) {
   return test_policy_map;
 }
 
-ACTION(RescheduleImmediatePolicyReload) {
-  *arg1 = base::TimeDelta();
-  return false;
-}
-
 TEST_F(AsynchronousPolicyLoaderTest, InitialLoad) {
   PolicyMap template_policy;
   template_policy.Set("test", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -69,9 +64,12 @@ TEST_F(AsynchronousPolicyLoaderTest, InitialLoad) {
   EXPECT_CALL(*delegate, Load()).WillOnce(Return(result));
   scoped_refptr<AsynchronousPolicyLoader> loader =
       new AsynchronousPolicyLoader(delegate, 10);
-  loader->Init(ignore_callback_);
-  const PolicyMap& loaded_policy(loader->policy());
-  EXPECT_TRUE(loaded_policy.Equals(template_policy));
+  EXPECT_FALSE(bundle_.get());
+  loader->Init(update_callback_);
+  ASSERT_TRUE(bundle_.get());
+  const PolicyMap& chrome_policy =
+      bundle_->Get(POLICY_DOMAIN_CHROME, std::string());
+  EXPECT_TRUE(chrome_policy.Equals(template_policy));
 }
 
 // Verify that the fallback policy requests are made.
@@ -85,15 +83,16 @@ TEST_F(AsynchronousPolicyLoaderTest, InitialLoadWithFallback) {
       CreateSequencedTestPolicyMap(&policy_number));
   scoped_refptr<AsynchronousPolicyLoader> loader =
       new AsynchronousPolicyLoader(delegate, 10);
-  loader->Init(ignore_callback_);
+  loader->Init(update_callback_);
   loop_.RunAllPending();
   loader->Reload(true);
   loop_.RunAllPending();
 
-  const PolicyMap& loaded_policy(loader->policy());
+  const PolicyMap& chrome_policy =
+      bundle_->Get(POLICY_DOMAIN_CHROME, std::string());
   base::FundamentalValue expected(policy_number);
-  EXPECT_TRUE(Value::Equals(&expected, loaded_policy.GetValue("id")));
-  EXPECT_EQ(1U, loaded_policy.size());
+  EXPECT_TRUE(Value::Equals(&expected, chrome_policy.GetValue("id")));
+  EXPECT_EQ(1U, chrome_policy.size());
 }
 
 // Ensure that calling stop on the loader stops subsequent reloads from
@@ -104,7 +103,7 @@ TEST_F(AsynchronousPolicyLoaderTest, Stop) {
   EXPECT_CALL(*delegate, Load()).Times(1);
   scoped_refptr<AsynchronousPolicyLoader> loader =
       new AsynchronousPolicyLoader(delegate, 10);
-  loader->Init(ignore_callback_);
+  loader->Init(update_callback_);
   loop_.RunAllPending();
   loader->Stop();
   loop_.RunAllPending();

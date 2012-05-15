@@ -127,12 +127,9 @@ void ConfigurationPolicyPrefStore::Refresh() {
 
 PrefValueMap* ConfigurationPolicyPrefStore::CreatePreferencesFromPolicies() {
   scoped_ptr<PrefValueMap> prefs(new PrefValueMap);
-  const PolicyMap* policies =
-      policy_service_->GetPolicies(POLICY_DOMAIN_CHROME, "");
-  if (!policies)
-    return prefs.release();
   PolicyMap filtered_policies;
-  filtered_policies.CopyFrom(*policies);
+  filtered_policies.CopyFrom(
+      policy_service_->GetPolicies(POLICY_DOMAIN_CHROME, ""));
   filtered_policies.FilterLevel(level_);
 
   scoped_ptr<PolicyErrorMap> errors(new PolicyErrorMap);

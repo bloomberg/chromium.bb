@@ -19,20 +19,16 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   MockConfigurationPolicyProvider();
   virtual ~MockConfigurationPolicyProvider();
 
-  MOCK_METHOD1(ProvideInternal, bool(PolicyMap*));
   MOCK_CONST_METHOD0(IsInitializationComplete, bool());
   MOCK_METHOD0(RefreshPolicies, void());
 
   // Make public for tests.
-  using ConfigurationPolicyProvider::NotifyPolicyUpdated;
-};
+  using ConfigurationPolicyProvider::UpdatePolicy;
 
-// A gmock action that copies |policy_map| into the first argument of the mock
-// method, as expected by ProvideInternal().
-ACTION_P(CopyPolicyMap, policy_map) {
-  arg0->CopyFrom(*policy_map);
-  return true;
-}
+  // Utility method that invokes UpdatePolicy() with a PolicyBundle that maps
+  // the Chrome namespace to a copy of |policy|.
+  void UpdateChromePolicy(const PolicyMap& policy);
+};
 
 class MockConfigurationPolicyObserver
     : public ConfigurationPolicyProvider::Observer {

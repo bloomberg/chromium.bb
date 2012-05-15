@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
@@ -14,6 +15,7 @@
 namespace policy {
 
 class AsynchronousPolicyLoader;
+class PolicyBundle;
 class PolicyMap;
 
 // Policy provider that loads policy asynchronously. Providers should subclass
@@ -42,7 +44,6 @@ class AsynchronousPolicyProvider
   virtual ~AsynchronousPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.
-  virtual bool ProvideInternal(PolicyMap* map) OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
 
  private:
@@ -54,7 +55,7 @@ class AsynchronousPolicyProvider
 
   // Callback from the loader. This is invoked whenever the loader has completed
   // a reload of the policies.
-  void OnLoaderReloaded();
+  void OnLoaderReloaded(scoped_ptr<PolicyBundle> bundle);
 
   // The loader object used internally.
   scoped_refptr<AsynchronousPolicyLoader> loader_;

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
 
 namespace policy {
@@ -26,7 +27,7 @@ class PolicyServiceStub : public PolicyService {
                               const std::string& component_id,
                               Observer* observer) OVERRIDE;
 
-  virtual const PolicyMap* GetPolicies(
+  virtual const PolicyMap& GetPolicies(
       PolicyDomain domain,
       const std::string& component_id) const OVERRIDE;
 
@@ -34,6 +35,8 @@ class PolicyServiceStub : public PolicyService {
 
   virtual void RefreshPolicies(const base::Closure& callback) OVERRIDE;
  private:
+  const PolicyMap kEmpty_;
+
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceStub);
 };
 
