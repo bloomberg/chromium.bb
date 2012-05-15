@@ -50,7 +50,7 @@ class GaiaOAuthClient::Core
   friend class base::RefCountedThreadSafe<Core>;
   virtual ~Core() {}
 
-  void MakeGaiaRequest(std::string post_body,
+  void MakeGaiaRequest(const std::string& post_body,
                        int max_retries,
                        GaiaOAuthClient::Delegate* delegate);
   void HandleResponse(const net::URLFetcher* source,
@@ -94,7 +94,7 @@ void GaiaOAuthClient::Core::RefreshToken(
 }
 
 void GaiaOAuthClient::Core::MakeGaiaRequest(
-    std::string post_body,
+    const std::string& post_body,
     int max_retries,
     GaiaOAuthClient::Delegate* delegate) {
   DCHECK(!request_.get()) << "Tried to fetch two things at once!";
