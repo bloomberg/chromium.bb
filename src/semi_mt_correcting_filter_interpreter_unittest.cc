@@ -525,4 +525,74 @@ TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest) {
     EXPECT_EQ(interpreter.moving_finger_, 1);
   }
 }
+
+TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    { 0, 0, 0, 0, 41, 0, 3032, 1849, 67, 0},
+
+    // index 1
+    { 0, 0, 0, 0, 65, 0, 3134, 2894, 67, 0},
+    { 0, 0, 0, 0, 65, 0, 3132, 1891, 68, 0},
+
+    // index 3
+    { 0, 0, 0, 0, 65, 0, 3135, 2890, 67, 0},
+    { 0, 0, 0, 0, 65, 0, 3136, 1895, 68, 0},
+
+    // index 5
+    { 0, 0, 0, 0, 65, 0, 3136, 2890, 67, 0},
+    { 0, 0, 0, 0, 65, 0, 3136, 1900, 68, 0},
+
+    // index 7
+    { 0, 0, 0, 0, 65, 0, 3136, 2912, 67, 0},
+    { 0, 0, 0, 0, 65, 0, 3136, 1901, 68, 0},
+
+    // index 9
+    { 0, 0, 0, 0, 65, 0, 3088, 3004, 67, 0},
+    { 0, 0, 0, 0, 65, 0, 3100, 2065, 68, 0},
+
+    // index 11
+    { 0, 0, 0, 0, 65, 0, 3086, 3120, 67, 0},
+    { 0, 0, 0, 0, 65, 0, 3078, 2186, 68, 0},
+
+    // index 13
+    { 0, 0, 0, 0, 65, 0, 3084, 3266, 67, 0},
+    { 0, 0, 0, 0, 65, 0, 3078, 2325, 68, 0},
+
+    // index 15
+    { 0, 0, 0, 0, 66, 0, 3082, 3396, 67, 0},  // big Y move within a short time
+    { 0, 0, 0, 0, 66, 0, 3078, 2414, 68, 0},
+  };
+
+  HardwareState hs[] = {
+    { 0.728409, 0, 1, 1, &fs[0] },
+    { 0.755274, 0, 2, 2, &fs[1] },
+    { 0.780463, 0, 2, 2, &fs[3] },
+    { 0.804492, 0, 2, 2, &fs[5] },
+    { 0.829245, 0, 2, 2, &fs[7] },
+    { 0.854290, 0, 2, 2, &fs[9] },
+    { 0.879543, 0, 2, 2, &fs[11] },
+    { 0.907806, 0, 2, 2, &fs[13] },
+    { 0.934839, 0, 2, 2, &fs[15] },
+  };
+
+  HardwareProperties hwprops = {
+    1217, 5733, 1061, 4798,  // left, top, right, bottom
+    1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = true;
+
+  for (size_t i = 0; i < arraysize(hs); i++)
+    interpreter.SyncInterpret(&hs[i], NULL);
+
+  // As there is a big move in Y between fs[15] and fs[13] for the first finger,
+  // then test if the WARP flag is set for fs[15].
+  EXPECT_EQ(fs[15].flags, GESTURES_FINGER_WARP_Y);
+}
 }  // namespace gestures

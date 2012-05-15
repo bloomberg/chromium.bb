@@ -65,6 +65,7 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest);
 
  public:
   SemiMtCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
@@ -132,6 +133,10 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // bounding box instead of real finger positions.
   void CorrectFingerPosition(HardwareState* hwstate);
 
+  // Set WARP flags for both fingers if their positions are either unreliable
+  // or jumpy.
+  void SuppressFingerJump(HardwareState* hwstate);
+
   // Starting finger positions of the two-finger gesture.
   FingerPosition start_pos_[kMaxSemiMtFingers];
 
@@ -170,6 +175,9 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   DoubleProperty non_linear_bottom_;
   DoubleProperty non_linear_left_;
   DoubleProperty non_linear_right_;
+
+  // Speed threshold for big jumps (pixels/second).
+  DoubleProperty big_jump_;
 
   scoped_ptr<Interpreter> next_;
 };
