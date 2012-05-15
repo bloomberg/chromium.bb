@@ -30,11 +30,10 @@ namespace {
 const int kFileTypePopupTag = 1234;
 
 CFStringRef CreateUTIFromExtension(const FilePath::StringType& ext) {
-base::mac::ScopedCFTypeRef<CFStringRef> ext_cf(
-   base::SysUTF8ToCFStringRef(ext));
-return UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
-                                            ext_cf.get(),
-                                            NULL);
+  base::mac::ScopedCFTypeRef<CFStringRef> ext_cf(
+      base::SysUTF8ToCFStringRef(ext));
+  return UTTypeCreatePreferredIdentifierForTag(
+      kUTTagClassFilenameExtension, ext_cf.get(), NULL);
 }
 
 }  // namespace
