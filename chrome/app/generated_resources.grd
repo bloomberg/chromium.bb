@@ -13109,7 +13109,7 @@ Press any key to continue exploring.
         Enable tap-to-click
       </message>
       <message name="IDS_OPTIONS_SETTINGS_NATURAL_SCROLL_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables natural scrolling.">
-        Enable simple scrolling direction <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>
+        Enable simple scrolling <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad touch sensitivity.">
         Speed:
