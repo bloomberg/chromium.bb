@@ -95,7 +95,7 @@ GestureRecognizerImpl::~GestureRecognizerImpl() {
 }
 
 GestureConsumer* GestureRecognizerImpl::GetTouchLockedTarget(
-  TouchEvent* event) {
+    TouchEvent* event) {
   return touch_id_target_[event->GetTouchId()];
 }
 
@@ -120,7 +120,7 @@ GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
       gfx::Point delta =
           points[j].last_touch_position().Subtract(location);
       int distance = delta.x() * delta.x() + delta.y() * delta.y();
-      if ( !closest_point || distance < closest_distance_squared ) {
+      if (!closest_point || distance < closest_distance_squared) {
         closest_point = &points[j];
         closest_distance_squared = distance;
       }

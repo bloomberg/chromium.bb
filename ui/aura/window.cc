@@ -485,7 +485,7 @@ const internal::FocusManager* Window::GetFocusManager() const {
   return parent_ ? parent_->GetFocusManager() : NULL;
 }
 
-void Window::SetCapture(unsigned int flags) {
+void Window::SetCapture() {
   if (!IsVisible())
     return;
 
@@ -493,7 +493,7 @@ void Window::SetCapture(unsigned int flags) {
   if (!root_window)
     return;
 
-  root_window->SetCapture(this, flags);
+  root_window->SetCapture(this);
 }
 
 void Window::ReleaseCapture() {
@@ -504,11 +504,9 @@ void Window::ReleaseCapture() {
   root_window->ReleaseCapture(this);
 }
 
-bool Window::HasCapture(unsigned int flags) {
+bool Window::HasCapture() {
   RootWindow* root_window = GetRootWindow();
-  if (!root_window)
-    return false;
-  return root_window->HasCapture(this, flags);
+  return root_window && root_window->capture_window() == this;
 }
 
 void Window::SuppressPaint() {

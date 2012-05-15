@@ -20,6 +20,8 @@
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/widget/native_widget_aura.h"
+#include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -146,6 +148,34 @@ class TestDragDropController : public internal::DragDropController {
   DISALLOW_COPY_AND_ASSIGN(TestDragDropController);
 };
 
+class TestNativeWidgetAura : public views::NativeWidgetAura {
+ public:
+  explicit TestNativeWidgetAura(views::internal::NativeWidgetDelegate* delegate)
+      : NativeWidgetAura(delegate),
+        check_if_capture_lost_(false) {
+  }
+
+  void set_check_if_capture_lost(bool value) {
+    check_if_capture_lost_ = value;
+  }
+
+  virtual void OnCaptureLost() OVERRIDE {
+    DCHECK(!check_if_capture_lost_);
+    views::NativeWidgetAura::OnCaptureLost();
+  }
+
+ private:
+  bool check_if_capture_lost_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestNativeWidgetAura);
+};
+
+// TODO(sky): this is for debugging, remove when track down failure.
+void SetCheckIfCaptureLost(views::Widget* widget, bool value) {
+  static_cast<TestNativeWidgetAura*>(widget->native_widget())->
+      set_check_if_capture_lost(value);
+}
+
 views::Widget* CreateNewWidget() {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
@@ -154,6 +184,7 @@ views::Widget* CreateNewWidget() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = Shell::GetRootWindow();
   params.child = true;
+  params.native_widget = new TestNativeWidgetAura(widget);
   widget->Init(params);
   widget->Show();
   return widget;
@@ -223,6 +254,7 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
   generator.PressLeftButton();
 
   int num_drags = 17;
+  SetCheckIfCaptureLost(widget.get(), true);
   for (int i = 0; i < num_drags; ++i) {
     // Because we are not doing a blocking drag and drop, the original
     // OSDragExchangeData object is lost as soon as we return from the drag
@@ -230,6 +262,10 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
     // drag_data_ to a fake drag data object that we created.
     if (i > 0)
       UpdateDragData(&data);
+    // 7 comes from views::View::GetVerticalDragThreshold()).
+    if (i >= 7)
+      SetCheckIfCaptureLost(widget.get(), false);
+
     generator.MoveMouseBy(0, 1);
 
     // Execute any scheduled draws to process deferred mouse events.

@@ -650,21 +650,17 @@ void NativeWidgetWin::SendNativeAccessibilityEvent(
                    GetNativeView(), OBJID_CLIENT, child_id);
 }
 
-void NativeWidgetWin::SetCapture(unsigned int flags) {
-  if (flags & ui::CW_LOCK_MOUSE) {
-    DCHECK(!HasCapture(ui::CW_LOCK_MOUSE));
-    ::SetCapture(hwnd());
-  }
+void NativeWidgetWin::SetCapture() {
+  DCHECK(!HasCapture());
+  ::SetCapture(hwnd());
 }
 
 void NativeWidgetWin::ReleaseCapture() {
   ::ReleaseCapture();
 }
 
-bool NativeWidgetWin::HasCapture(unsigned int flags) const {
-  if (flags == ui::CW_LOCK_MOUSE)
-    return ::GetCapture() == hwnd();
-  return false;
+bool NativeWidgetWin::HasCapture() const {
+  return ::GetCapture() == hwnd();
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
@@ -1580,7 +1576,7 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
     // We SetCapture() to ensure we only show the menu when the button
     // down and up are both on the caption. Note: this causes the button up to
     // be WM_RBUTTONUP instead of WM_NCRBUTTONUP.
-    SetCapture(ui::CW_LOCK_MOUSE);
+    SetCapture();
   }
 
   MSG msg = { hwnd(), message, w_param, l_param, 0,
@@ -1591,7 +1587,7 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
     if (tooltip_manager_.get())
       tooltip_manager_->OnMouse(message, w_param, l_param);
 
-  if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture(ui::CW_LOCK_MOUSE)) {
+  if (event.type() == ui::ET_MOUSE_MOVED && !HasCapture()) {
     // Windows only fires WM_MOUSELEAVE events if the application begins
     // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
     // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
