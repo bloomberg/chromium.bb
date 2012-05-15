@@ -72,6 +72,9 @@ class SearchProvider : public AutocompleteProvider,
                      bool minimal_changes) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
+  // Adds search-provider-specific information to omnibox event logs.
+  virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
+
   // content::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 

@@ -91,33 +91,6 @@ OmniboxEventProto::InputType AsOmniboxEventInputType(
   }
 }
 
-OmniboxEventProto::Suggestion::ProviderType AsOmniboxEventProviderType(
-    const AutocompleteProvider* provider) {
-  if (!provider)
-    return OmniboxEventProto::Suggestion::UNKNOWN_PROVIDER;
-
-  const std::string& name = provider->name();
-  if (name == "HistoryURL")
-    return OmniboxEventProto::Suggestion::URL;
-  if (name == "HistoryContents")
-    return OmniboxEventProto::Suggestion::HISTORY_CONTENTS;
-  if (name == "HistoryQuickProvider")
-    return OmniboxEventProto::Suggestion::HISTORY_QUICK;
-  if (name == "Search")
-    return OmniboxEventProto::Suggestion::SEARCH;
-  if (name == "Keyword")
-    return OmniboxEventProto::Suggestion::KEYWORD;
-  if (name == "Builtin")
-    return OmniboxEventProto::Suggestion::BUILTIN;
-  if (name == "ShortcutsProvider")
-    return OmniboxEventProto::Suggestion::SHORTCUTS;
-  if (name == "ExtensionApps")
-    return OmniboxEventProto::Suggestion::EXTENSION_APPS;
-
-  NOTREACHED();
-  return OmniboxEventProto::Suggestion::UNKNOWN_PROVIDER;
-}
-
 OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
     AutocompleteMatch::Type type) {
   switch (type) {
@@ -967,10 +940,16 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
   for (AutocompleteResult::const_iterator i(log.result.begin());
        i != log.result.end(); ++i) {
     OmniboxEventProto::Suggestion* suggestion = omnibox_event->add_suggestion();
-    suggestion->set_provider(AsOmniboxEventProviderType(i->provider));
+    suggestion->set_provider(i->provider->AsOmniboxEventProviderType());
     suggestion->set_result_type(AsOmniboxEventResultType(i->type));
     suggestion->set_relevance(i->relevance);
     suggestion->set_is_starred(i->starred);
+  }
+  for (ProvidersInfo::const_iterator i(log.providers_info.begin());
+       i != log.providers_info.end(); ++i) {
+    OmniboxEventProto::ProviderInfo* provider_info =
+        omnibox_event->add_provider_info();
+    provider_info->CopyFrom(*i);
   }
 
   ++num_events_;

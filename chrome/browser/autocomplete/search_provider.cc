@@ -305,6 +305,13 @@ void SearchProvider::Stop() {
   default_provider_suggest_text_.clear();
 }
 
+void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
+  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
+  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
+  new_entry.set_provider(AsOmniboxEventProviderType());
+  new_entry.set_provider_done(done_);
+}
+
 void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(!done_);
   suggest_results_pending_--;

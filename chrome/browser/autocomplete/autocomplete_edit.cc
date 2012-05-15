@@ -539,6 +539,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
       log.tab_id = controller_->GetTabContentsWrapper()->
           restore_tab_helper()->session_id().id();
     }
+    autocomplete_controller_->AddProvidersInfo(&log.providers_info);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
         content::Source<Profile>(profile_),

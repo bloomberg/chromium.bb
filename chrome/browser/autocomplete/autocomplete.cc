@@ -544,9 +544,36 @@ void AutocompleteProvider::Stop() {
   done_ = true;
 }
 
+metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
+    AsOmniboxEventProviderType() const {
+  if (name_ == "HistoryURL")
+    return metrics::OmniboxEventProto::HISTORY_URL;
+  if (name_ == "HistoryContents")
+    return metrics::OmniboxEventProto::HISTORY_CONTENTS;
+  if (name_ == "HistoryQuickProvider")
+    return metrics::OmniboxEventProto::HISTORY_QUICK;
+  if (name_ == "Search")
+    return metrics::OmniboxEventProto::SEARCH;
+  if (name_ == "Keyword")
+    return metrics::OmniboxEventProto::KEYWORD;
+  if (name_ == "Builtin")
+    return metrics::OmniboxEventProto::BUILTIN;
+  if (name_ == "ShortcutsProvider")
+    return metrics::OmniboxEventProto::SHORTCUTS;
+  if (name_ == "ExtensionApps")
+    return metrics::OmniboxEventProto::EXTENSION_APPS;
+
+  NOTREACHED();
+  return metrics::OmniboxEventProto::UNKNOWN_PROVIDER;
+}
+
 void AutocompleteProvider::DeleteMatch(const AutocompleteMatch& match) {
   DLOG(WARNING) << "The AutocompleteProvider '" << name()
                 << "' has not implemented DeleteMatch.";
+}
+
+void AutocompleteProvider::AddProviderInfo(
+    ProvidersInfo* provider_info) const {
 }
 
 AutocompleteProvider::~AutocompleteProvider() {
@@ -981,6 +1008,19 @@ void AutocompleteController::OnProviderUpdate(bool updated_matches) {
     UpdateResult(false);
 }
 
+void AutocompleteController::AddProvidersInfo(
+    ProvidersInfo* provider_info) const {
+  provider_info->clear();
+  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
+       ++i) {
+    // Add per-provider info, if any.
+    (*i)->AddProviderInfo(provider_info);
+
+    // This is also a good place to put code to add info that you want to
+    // add for every provider.
+  }
+}
+
 void AutocompleteController::UpdateResult(bool is_synchronous_pass) {
   AutocompleteResult last_result;
   last_result.Swap(&result_);
@@ -1142,5 +1182,10 @@ AutocompleteLog::AutocompleteLog(
       elapsed_time_since_user_first_modified_omnibox(
           elapsed_time_since_user_first_modified_omnibox),
       inline_autocompleted_length(inline_autocompleted_length),
-      result(result) {
+      result(result),
+      providers_info() {
 }
+
+AutocompleteLog::~AutocompleteLog() {
+}
+

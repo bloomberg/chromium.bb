@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 12
+// Next tag: 13
 message OmniboxEventProto {
   // The timestamp for the event, in seconds since the epoch.
   optional int64 time = 1;
@@ -73,21 +73,23 @@ message OmniboxEventProto {
   }
   optional InputType input_type = 8;
 
+  // An enum used in multiple places below.
+  enum ProviderType {
+    UNKNOWN_PROVIDER = 0;  // Unknown provider (should not reach here)
+    HISTORY_URL = 1;       // URLs in history, or user-typed URLs
+    HISTORY_CONTENTS = 2;  // Matches for page contents of pages in history
+    HISTORY_QUICK = 3;     // Matches for recently or frequently visited pages
+                           // in history
+    SEARCH = 4;            // Search suggestions for the default search engine
+    KEYWORD = 5;           // Keyword-triggered searches
+    BUILTIN = 6;           // Built-in URLs, such as chrome://version
+    SHORTCUTS = 7;         // Recently selected omnibox suggestions
+    EXTENSION_APPS = 8;    // Custom suggestions from extensions and/or apps
+  }
+
   // The result set displayed on the completion popup
   message Suggestion {
     // Where does this result come from?
-    enum ProviderType {
-      UNKNOWN_PROVIDER = 0;  // Unknown provider (should not reach here)
-      URL = 1;               // URLs in history, or user-typed URLs
-      HISTORY_CONTENTS = 2;  // Matches for page contents of pages in history
-      HISTORY_QUICK = 3;     // Matches for recently or frequently visited pages
-                             // in history
-      SEARCH = 4;            // Search suggestions for the default search engine
-      KEYWORD = 5;           // Keyword-triggered searches
-      BUILTIN = 6;           // Built-in URLs, such as chrome://version
-      SHORTCUTS = 7;         // Recently selected omnibox suggestions
-      EXTENSION_APPS = 8;    // Custom suggestions from extensions and/or apps
-    }
     optional ProviderType provider = 1;
 
     // What kind of result this is.
@@ -121,4 +123,19 @@ message OmniboxEventProto {
     optional bool is_starred = 4;
   }
   repeated Suggestion suggestion = 9;
+
+  // A data structure that holds per-provider information, general information
+  // not associated with a particular result.
+  message ProviderInfo {
+    // Which provider generated this ProviderInfo entry.
+    optional ProviderType provider = 1;
+
+    // The provider's done() value, i.e., whether it's completed processing
+    // the query.  Providers which don't do any asynchronous processing
+    // will always be done.
+    optional bool provider_done = 2;
+  }
+  // A list of diagnostic information about each provider.  Providers
+  // will appear at most once in this list.
+  repeated ProviderInfo provider_info = 12;
 }
