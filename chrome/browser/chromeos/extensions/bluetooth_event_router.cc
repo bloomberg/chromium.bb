@@ -4,8 +4,12 @@
 
 #include "chrome/browser/chromeos/extensions/bluetooth_event_router.h"
 
+#include <map>
+
 #include "base/json/json_writer.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 
@@ -13,7 +17,8 @@ namespace chromeos {
 
 ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
     : profile_(profile),
-      adapter_(chromeos::BluetoothAdapter::CreateDefaultAdapter()) {
+      adapter_(chromeos::BluetoothAdapter::CreateDefaultAdapter()),
+      next_socket_id_(1) {
   DCHECK(profile_);
   DCHECK(adapter_.get());
   adapter_->AddObserver(this);
@@ -21,6 +26,37 @@ ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
 
 ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
   adapter_->RemoveObserver(this);
+  socket_map_.clear();
+}
+
+int ExtensionBluetoothEventRouter::RegisterSocket(
+    scoped_refptr<BluetoothSocket> socket) {
+  // If there is a socket registered with the same fd, just return it's id
+  for (SocketMap::const_iterator i = socket_map_.begin();
+      i != socket_map_.end(); ++i) {
+    if (i->second->fd() == socket->fd()) {
+      return i->first;
+    }
+  }
+  int return_id = next_socket_id_++;
+  socket_map_[return_id] = socket;
+  return return_id;
+}
+
+bool ExtensionBluetoothEventRouter::ReleaseSocket(int id) {
+  SocketMap::iterator socket_entry = socket_map_.find(id);
+  if (socket_entry == socket_map_.end())
+    return false;
+  socket_map_.erase(socket_entry);
+  return true;
+}
+
+scoped_refptr<BluetoothSocket> ExtensionBluetoothEventRouter::GetSocket(
+    int id) {
+  SocketMap::iterator socket_entry = socket_map_.find(id);
+  if (socket_entry == socket_map_.end())
+    return NULL;
+  return socket_entry->second;
 }
 
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(

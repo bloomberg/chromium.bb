@@ -9,10 +9,14 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/memory/ref_counted.h"
+
 namespace chromeos {
 
 class BluetoothAdapter;
 class BluetoothDevice;
+class BluetoothSocket;
+class ExtensionBluetoothEventRouter;
 
 }  // namespace chromeos
 #endif
@@ -25,6 +29,7 @@ class BluetoothExtensionFunction : public SyncExtensionFunction {
   virtual ~BluetoothExtensionFunction() {}
 
 #if defined(OS_CHROMEOS)
+  chromeos::ExtensionBluetoothEventRouter* event_router();
   const chromeos::BluetoothAdapter* adapter() const;
   chromeos::BluetoothAdapter* GetMutableAdapter();
 #endif
@@ -35,6 +40,7 @@ class AsyncBluetoothExtensionFunction : public AsyncExtensionFunction {
   virtual ~AsyncBluetoothExtensionFunction() {}
 
 #if defined(OS_CHROMEOS)
+  chromeos::ExtensionBluetoothEventRouter* event_router();
   const chromeos::BluetoothAdapter* adapter() const;
   chromeos::BluetoothAdapter* GetMutableAdapter();
 #endif
@@ -111,6 +117,20 @@ class BluetoothGetDevicesWithServiceNameFunction
 #endif
 };
 
+class BluetoothConnectFunction : public AsyncBluetoothExtensionFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.connect")
+
+ private:
+#if defined(OS_CHROMEOS)
+  void ConnectToServiceCallback(
+      const chromeos::BluetoothDevice* device,
+      const std::string& service_uuid,
+      scoped_refptr<chromeos::BluetoothSocket> socket);
+#endif
+};
+
 class BluetoothDisconnectFunction : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.disconnect")
@@ -165,17 +185,6 @@ class BluetoothWriteFunction : public BluetoothExtensionFunction {
 
  private:
   virtual ~BluetoothWriteFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class BluetoothConnectFunction : public BluetoothExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.connect")
-
- protected:
-  virtual ~BluetoothConnectFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

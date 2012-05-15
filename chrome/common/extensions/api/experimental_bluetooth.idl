@@ -12,6 +12,8 @@
   };
 
   dictionary Socket {
+    Device device;
+    DOMString serviceUUID;
     long id;
   };
 
