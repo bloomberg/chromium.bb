@@ -15,6 +15,8 @@
 #if defined(OS_WIN)
 #include "ui/base/win/hwnd_subclass.h"
 #include "ui/views/widget/widget_message_filter.h"
+#elif defined(USE_X11)
+#include "ui/views/widget/x11_window_event_filter.h"
 #endif
 
 namespace views {
@@ -27,8 +29,13 @@ DesktopNativeWidgetHelperAura::DesktopNativeWidgetHelperAura(
 }
 
 DesktopNativeWidgetHelperAura::~DesktopNativeWidgetHelperAura() {
-  if (root_window_event_filter_)
+  if (root_window_event_filter_) {
+#if defined(USE_X11)
+    root_window_event_filter_->RemoveFilter(x11_window_event_filter_.get());
+#endif
+
     root_window_event_filter_->RemoveFilter(input_method_filter_.get());
+  }
 }
 
 void DesktopNativeWidgetHelperAura::PreInitialize(
@@ -62,6 +69,12 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   input_method_filter_.reset(
       new aura::shared::InputMethodEventFilter(root_window_.get()));
   root_window_event_filter_->AddFilter(input_method_filter_.get());
+
+#if defined(USE_X11)
+  x11_window_event_filter_.reset(new X11WindowEventFilter(root_window_.get()));
+  x11_window_event_filter_->SetUseHostWindowBorders(false);
+  root_window_event_filter_->AddFilter(x11_window_event_filter_.get());
+#endif
 
   root_window_->AddRootWindowObserver(this);
 

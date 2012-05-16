@@ -29,6 +29,9 @@ class HWNDSubclass;
 namespace views {
 class NativeWidgetAura;
 class WidgetMessageFilter;
+#if defined(USE_X11)
+class X11WindowEventFilter;
+#endif
 
 // Implementation of non-Ash desktop integration code, allowing
 // NativeWidgetAuras to work in a traditional desktop environment.
@@ -73,6 +76,8 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
 
 #if defined(OS_WIN)
   scoped_ptr<ui::HWNDSubclass> subclass_;
+#elif defined(USE_X11)
+  scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetHelperAura);

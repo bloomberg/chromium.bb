@@ -82,18 +82,6 @@ class RootWindowHostLinux : public RootWindowHost,
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
 
-  // Names of cached atoms that we fetch during the constructor to minimize
-  // round trips to the X11 server.
-  enum AtomList {
-    ATOM_WM_DELETE_WINDOW = 0,
-    ATOM__NET_WM_PING,
-    ATOM__NET_WM_PID,
-    ATOM_WM_S0,
-
-    ATOM_COUNT
-  };
-  ::Atom cached_atoms_[ATOM_COUNT];
-
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;
 

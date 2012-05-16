@@ -348,6 +348,8 @@
         'widget/widget_hwnd_utils.h',
         'widget/widget_message_filter.cc',
         'widget/widget_message_filter.h',
+        'widget/x11_window_event_filter.cc',
+        'widget/x11_window_event_filter.h',
         'window/client_view.cc',
         'window/client_view.h',
         'window/custom_frame_view.cc',
