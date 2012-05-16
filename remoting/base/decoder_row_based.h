@@ -5,6 +5,8 @@
 #ifndef REMOTING_BASE_DECODER_ROW_BASED_H_
 #define REMOTING_BASE_DECODER_ROW_BASED_H_
 
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "remoting/base/decoder.h"
 
 namespace remoting {

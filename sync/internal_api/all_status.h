@@ -10,9 +10,9 @@
 #pragma once
 
 #include <map>
+#include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/sync_engine_event.h"

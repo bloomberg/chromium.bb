@@ -1,15 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_MESSAGES_DECODER_H_
-#define REMOTING_PROTOCOL_MESSAGES_DECODER_H_
+#ifndef REMOTING_PROTOCOL_MESSAGE_DECODER_H_
+#define REMOTING_PROTOCOL_MESSAGE_DECODER_H_
 
 #include <deque>
 #include <list>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
@@ -59,4 +58,4 @@ class MessageDecoder {
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_MESSAGES_DECODER_H_
+#endif  // REMOTING_PROTOCOL_MESSAGE_DECODER_H_

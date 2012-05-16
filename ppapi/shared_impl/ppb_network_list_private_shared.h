@@ -5,10 +5,11 @@
 #ifndef PPAPI_SHARED_IMPL_PPB_NETWORK_LIST_PRIVATE_SHARED_H_
 #define PPAPI_SHARED_IMPL_PPB_NETWORK_LIST_PRIVATE_SHARED_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_network_list_private_api.h"
 
@@ -33,7 +34,7 @@ typedef std::vector<NetworkInfo> NetworkList;
 class PPAPI_SHARED_EXPORT NetworkListStorage
     : public base::RefCountedThreadSafe<NetworkListStorage> {
  public:
-  NetworkListStorage(const NetworkList& list);
+  explicit NetworkListStorage(const NetworkList& list);
 
   const NetworkList& list() { return list_; }
 

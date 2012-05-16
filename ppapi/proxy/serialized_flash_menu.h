@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
 class PickleIterator;

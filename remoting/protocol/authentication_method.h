@@ -15,8 +15,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
-
 namespace remoting {
 namespace protocol {
 
@@ -63,7 +61,7 @@ class AuthenticationMethod {
 
  private:
   AuthenticationMethod();
-  AuthenticationMethod(HashFunction hash_function);
+  explicit AuthenticationMethod(HashFunction hash_function);
 
   bool invalid_;
   HashFunction hash_function_;

@@ -21,9 +21,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "sync/engine/model_safe_worker.h"
 #include "sync/engine/syncer_types.h"
@@ -89,7 +89,7 @@ class SyncSessionContext {
   bool notifications_enabled() { return notifications_enabled_; }
 
   // Account name, set once a directory has been opened.
-  void set_account_name(const std::string name) {
+  void set_account_name(const std::string& name) {
     DCHECK(account_name_.empty());
     account_name_ = name;
   }
@@ -200,7 +200,8 @@ class ScopedSessionContextConflictResolver {
   }
   ~ScopedSessionContextConflictResolver() {
     context_->resolver_ = NULL;
-   }
+  }
+
  private:
   SyncSessionContext* context_;
   ConflictResolver* resolver_;

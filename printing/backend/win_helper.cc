@@ -9,52 +9,53 @@
 #include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 
 namespace {
-typedef HRESULT (WINAPI *PTOpenProviderProc)(PCWSTR printer_name,
+typedef HRESULT (WINAPI* PTOpenProviderProc)(PCWSTR printer_name,
                                              DWORD version,
-                                             HPTPROVIDER *provider);
-typedef HRESULT (WINAPI *PTGetPrintCapabilitiesProc)(HPTPROVIDER provider,
-                                                     IStream *print_ticket,
-                                                     IStream *capabilities,
+                                             HPTPROVIDER* provider);
+typedef HRESULT (WINAPI* PTGetPrintCapabilitiesProc)(HPTPROVIDER provider,
+                                                     IStream* print_ticket,
+                                                     IStream* capabilities,
                                                      BSTR* error_message);
-typedef HRESULT (WINAPI *PTConvertDevModeToPrintTicketProc)(
+typedef HRESULT (WINAPI* PTConvertDevModeToPrintTicketProc)(
     HPTPROVIDER provider,
     ULONG devmode_size_in_bytes,
     PDEVMODE devmode,
     EPrintTicketScope scope,
     IStream* print_ticket);
-typedef HRESULT (WINAPI *PTConvertPrintTicketToDevModeProc)(
+typedef HRESULT (WINAPI* PTConvertPrintTicketToDevModeProc)(
     HPTPROVIDER provider,
     IStream* print_ticket,
     EDefaultDevmodeType base_devmode_type,
     EPrintTicketScope scope,
     ULONG* devmode_byte_count,
-    PDEVMODE *devmode,
+    PDEVMODE* devmode,
     BSTR* error_message);
-typedef HRESULT (WINAPI *PTMergeAndValidatePrintTicketProc)(
+typedef HRESULT (WINAPI* PTMergeAndValidatePrintTicketProc)(
     HPTPROVIDER provider,
     IStream* base_ticket,
     IStream* delta_ticket,
     EPrintTicketScope scope,
     IStream* result_ticket,
     BSTR* error_message);
-typedef HRESULT (WINAPI *PTReleaseMemoryProc)(PVOID buffer);
-typedef HRESULT (WINAPI *PTCloseProviderProc)(HPTPROVIDER provider);
-typedef HRESULT (WINAPI *StartXpsPrintJobProc)(
+typedef HRESULT (WINAPI* PTReleaseMemoryProc)(PVOID buffer);
+typedef HRESULT (WINAPI* PTCloseProviderProc)(HPTPROVIDER provider);
+typedef HRESULT (WINAPI* StartXpsPrintJobProc)(
     const LPCWSTR printer_name,
     const LPCWSTR job_name,
     const LPCWSTR output_file_name,
     HANDLE progress_event,
     HANDLE completion_event,
-    UINT8 *printable_pages_on,
+    UINT8* printable_pages_on,
     UINT32 printable_pages_on_count,
-    IXpsPrintJob **xps_print_job,
-    IXpsPrintJobStream **document_stream,
-    IXpsPrintJobStream **print_ticket_stream);
+    IXpsPrintJob** xps_print_job,
+    IXpsPrintJobStream** document_stream,
+    IXpsPrintJobStream** print_ticket_stream);
 
 PTOpenProviderProc g_open_provider_proc = NULL;
 PTGetPrintCapabilitiesProc g_get_print_capabilities_proc = NULL;
@@ -107,7 +108,7 @@ const DRIVER_INFO_6* GetDriverInfo6(HANDLE printer,
   return reinterpret_cast<const DRIVER_INFO_6*>(buffer->get());
 }
 
-}
+}  // namespace
 
 namespace printing {
 
@@ -172,13 +173,13 @@ bool XPSModule::InitImpl() {
 
 HRESULT XPSModule::OpenProvider(const string16& printer_name,
                                 DWORD version,
-                                HPTPROVIDER *provider) {
+                                HPTPROVIDER* provider) {
   return g_open_provider_proc(printer_name.c_str(), version, provider);
 }
 
 HRESULT XPSModule::GetPrintCapabilities(HPTPROVIDER provider,
-                                        IStream *print_ticket,
-                                        IStream *capabilities,
+                                        IStream* print_ticket,
+                                        IStream* capabilities,
                                         BSTR* error_message) {
   return g_get_print_capabilities_proc(provider,
                                        print_ticket,
@@ -204,7 +205,7 @@ HRESULT XPSModule::ConvertPrintTicketToDevMode(
     EDefaultDevmodeType base_devmode_type,
     EPrintTicketScope scope,
     ULONG* devmode_byte_count,
-    PDEVMODE *devmode,
+    PDEVMODE* devmode,
     BSTR* error_message) {
   return g_convert_print_ticket_to_devmode_proc(provider,
                                                 print_ticket,
@@ -293,11 +294,11 @@ HRESULT XPSPrintModule::StartXpsPrintJob(
     const LPCWSTR output_file_name,
     HANDLE progress_event,
     HANDLE completion_event,
-    UINT8 *printable_pages_on,
+    UINT8* printable_pages_on,
     UINT32 printable_pages_on_count,
-    IXpsPrintJob **xps_print_job,
-    IXpsPrintJobStream **document_stream,
-    IXpsPrintJobStream **print_ticket_stream) {
+    IXpsPrintJob** xps_print_job,
+    IXpsPrintJobStream** document_stream,
+    IXpsPrintJobStream** print_ticket_stream) {
   return g_start_xps_print_job_proc(printer_name,
                                     job_name,
                                     output_file_name,

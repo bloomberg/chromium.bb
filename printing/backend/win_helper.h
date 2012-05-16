@@ -13,7 +13,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/win/scoped_handle.h"
 #include "printing/printing_export.h"
@@ -58,10 +57,10 @@ class PRINTING_EXPORT XPSModule {
   static bool Init();
   static HRESULT OpenProvider(const string16& printer_name,
                               DWORD version,
-                              HPTPROVIDER *provider);
+                              HPTPROVIDER* provider);
   static HRESULT GetPrintCapabilities(HPTPROVIDER provider,
-                                      IStream *print_ticket,
-                                      IStream *capabilities,
+                                      IStream* print_ticket,
+                                      IStream* capabilities,
                                       BSTR* error_message);
   static HRESULT ConvertDevModeToPrintTicket(HPTPROVIDER provider,
                                              ULONG devmode_size_in_bytes,
@@ -74,7 +73,7 @@ class PRINTING_EXPORT XPSModule {
       EDefaultDevmodeType base_devmode_type,
       EPrintTicketScope scope,
       ULONG* devmode_byte_count,
-      PDEVMODE *devmode,
+      PDEVMODE* devmode,
       BSTR* error_message);
   static HRESULT MergeAndValidatePrintTicket(HPTPROVIDER provider,
                                              IStream* base_ticket,
@@ -84,6 +83,7 @@ class PRINTING_EXPORT XPSModule {
                                              BSTR* error_message);
   static HRESULT ReleaseMemory(PVOID buffer);
   static HRESULT CloseProvider(HPTPROVIDER provider);
+
  private:
   XPSModule() { }
   static bool InitImpl();
@@ -115,7 +115,7 @@ class PRINTING_EXPORT XPSPrintModule {
       const LPCWSTR output_file_name,
       HANDLE progress_event,
       HANDLE completion_event,
-      UINT8 *printable_pages_on,
+      UINT8* printable_pages_on,
       UINT32 printable_pages_on_count,
       IXpsPrintJob **xps_print_job,
       IXpsPrintJobStream **document_stream,

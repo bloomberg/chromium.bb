@@ -5,6 +5,7 @@
 #ifndef REMOTING_BASE_DECODER_VP8_H_
 #define REMOTING_BASE_DECODER_VP8_H_
 
+#include "base/compiler_specific.h"
 #include "remoting/base/decoder.h"
 
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;

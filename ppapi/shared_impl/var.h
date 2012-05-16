@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
@@ -92,7 +91,7 @@ class PPAPI_SHARED_EXPORT Var : public base::RefCounted<Var> {
 //   DoSomethingWithTheString(string->value());
 class PPAPI_SHARED_EXPORT StringVar : public Var {
  public:
-  StringVar(const std::string& str);
+  explicit StringVar(const std::string& str);
   StringVar(const char* str, uint32 len);
   virtual ~StringVar();
 

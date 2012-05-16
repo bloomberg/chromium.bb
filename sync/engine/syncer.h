@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/syncer_types.h"

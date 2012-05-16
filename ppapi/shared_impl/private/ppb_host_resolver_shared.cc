@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstring>
 
+#include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"

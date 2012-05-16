@@ -10,7 +10,6 @@
 
 #include <list>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/point.h"
@@ -25,8 +24,7 @@ class FrameProducer;
 
 class PepperView : public ChromotingView,
                    public FrameConsumer,
-                   public base::SupportsWeakPtr<PepperView>
-{
+                   public base::SupportsWeakPtr<PepperView> {
  public:
   // Constructs a PepperView for the |instance|. The |instance|, |context|
   // and |producer| must outlive this class.

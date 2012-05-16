@@ -6,7 +6,6 @@
 #define REMOTING_BASE_DECODER_H_
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "remoting/proto/video.pb.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
