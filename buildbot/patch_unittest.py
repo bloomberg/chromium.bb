@@ -510,7 +510,7 @@ class ApplyLocalPatchesTests(mox.MoxTestBase):
 
 if __name__ == '__main__':
   logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
-  date_format = '%H:%M:%S'
+  date_format = constants.LOGGER_DATE_FMT
   logging.basicConfig(level=logging.DEBUG, format=logging_format,
 
                       datefmt=date_format)

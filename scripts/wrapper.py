@@ -15,6 +15,8 @@ path = os.path.normpath(os.path.join(os.path.dirname(path), '..', '..'))
 sys.path.insert(0, path)
 del path
 
+from chromite.buildbot import constants
+
 
 def FindTarget(name):
   target = os.path.basename(sys.argv[0])
@@ -66,8 +68,8 @@ if __name__ == '__main__':
   # which will take precedence over this.
   logging.basicConfig(
       level=logging.DEBUG,
-      format='%(levelname)s: %(asctime)s: %(message)s',
-      datefmt='%H:%M:%S')
+      format=constants.LOGGER_FMT,
+      datefmt=constants.LOGGER_DATE_FMT)
 
 
   signal.signal(signal.SIGTERM, _DefaultHandler)
