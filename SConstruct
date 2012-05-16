@@ -742,14 +742,6 @@ def GetPlatformString(env):
   return build + '-' + subarch
 
 
-tests_to_disable = set([
-    # these sel_universal tests are broken and it's won't fix
-    # http://code.google.com/p/nativeclient/issues/detail?id=2390
-    'run_ppapi_simple_audio_test',
-    'run_ppapi_simple_graphics2d_test',
-    'run_ppapi_emu_file_test',
-])
-
 tests_to_disable_qemu = set([
     # These tests do not work under QEMU but do work on hardware. They should
     # not be marked as 'broken' because then they would not get built as part
@@ -777,6 +769,7 @@ tests_to_disable_qemu = set([
     'run_trusted_mmap_test',
 ])
 
+tests_to_disable = set()
 if ARGUMENTS.get('disable_tests', '') != '':
   tests_to_disable.update(ARGUMENTS['disable_tests'].split(','))
 
