@@ -110,12 +110,13 @@
               # a template, and builds them.
               'action_name': 'generate_and_build',
               'inputs': [
+                '../testing/android/AndroidManifest.xml',
                 '../testing/android/generate_native_test.py',
                 '<(PRODUCT_DIR)/lib.target/libipc_tests.so',
                 '<(PRODUCT_DIR)/lib.java/chromium_base.jar'
               ],
               'outputs': [
-                '<(PRODUCT_DIR)/ChromeNativeTests_ipc_tests-debug.apk',
+                '<(PRODUCT_DIR)/ipc_tests_apk/ipc_tests-debug.apk',
               ],
               'action': [ 
                 '../testing/android/generate_native_test.py',
