@@ -794,6 +794,13 @@
         '../third_party/skia/include/core/SkTypes.h',
       ],
       'conditions': [
+        ['order_profiling != 0', {
+          'target_conditions' : [
+            ['_toolset=="target"', {
+              'cflags!': [ '-finstrument-functions' ],
+            }],
+          ],
+        }],
         # For POSIX platforms, prefer the Mutex implementation provided by Skia
         # since it does not generate static initializers.
         [ 'OS == "android" or OS == "linux" or OS == "mac"', {
@@ -1092,6 +1099,13 @@
         '../third_party/skia/src/core',
       ],
       'conditions': [
+        ['order_profiling != 0', {
+          'target_conditions' : [
+            ['_toolset=="target"', {
+              'cflags!': [ '-finstrument-functions' ],
+            }],
+          ],
+        }],
         [ 'os_posix == 1 and OS != "mac" and OS != "android" and target_arch != "arm"', {
           'cflags': [
             '-msse2',
@@ -1120,6 +1134,13 @@
         },
         {  # arm
           'conditions': [
+            ['order_profiling != 0', {
+              'target_conditions' : [
+                ['_toolset=="target"', {
+                  'cflags!': [ '-finstrument-functions' ],
+                }],
+              ],
+            }],
             [ 'armv7 == 1', {
               'defines': [
                 '__ARM_ARCH__=7',
@@ -1196,6 +1217,13 @@
         [ 'OS in ["linux", "freebsd", "openbsd", "solaris"]', {
           'cflags': [
             '-mssse3',
+          ],
+        }],
+        ['order_profiling != 0', {
+          'target_conditions' : [
+            ['_toolset=="target"', {
+              'cflags!': [ '-finstrument-functions' ],
+            }],
           ],
         }],
         [ 'OS == "mac"', {

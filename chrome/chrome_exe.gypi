@@ -44,6 +44,11 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
+        ['order_profiling!=0 and (chromeos==1 or OS=="linux")', {
+          'dependencies' : [
+            '../tools/cygprofile/cygprofile.gyp:cygprofile',
+          ],
+        }],
         ['order_text_section!=""', {
           'target_conditions' : [
             ['_toolset=="target"', {
