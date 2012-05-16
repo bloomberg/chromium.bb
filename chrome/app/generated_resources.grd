@@ -5643,6 +5643,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enables a menu that allows changing the side the launcher is aligned to.
       </message>
 
+      <message name="IDS_FLAGS_SHOW_TOUCH_HUD_NAME" desc="Name for the flag to show a heads-up display for tracking touch-points.">
+        Show HUD for touch points
+      </message>
+      <message name="IDS_FLAGS_SHOW_TOUCH_HUD_DESCRIPTION" desc="Description for the flag to show a heads-up display for tracking touch-points.">
+        Enables a heads-up display at the top-left corner of the screen that lists information about the touch-points on the screen.
+      </message>
+
       <message name="IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME" desc="Name for the NaCl Socket API feature.">
         NaCl Socket API.
       </message>

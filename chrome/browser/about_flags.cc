@@ -725,13 +725,20 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowLauncherAlignmentMenu)
   },
   {
+    "show-touch-hud",
+    IDS_FLAGS_SHOW_TOUCH_HUD_NAME,
+    IDS_FLAGS_SHOW_TOUCH_HUD_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)
+  },
+  {
     "ash-notify",
     IDS_FLAGS_ENABLE_ASH_NOTIFY_NAME,
     IDS_FLAGS_ENABLE_ASH_NOTIFY_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(ash::switches::kAshNotify),
   },
-#endif
+#endif  // defined(USE_ASH)
 };
 
 const Experiment* experiments = kExperiments;

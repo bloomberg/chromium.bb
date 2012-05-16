@@ -13,6 +13,9 @@ const char kAshEnableOak[] = "ash-enable-oak";
 // Use Ash notifications.
 const char kAshNotify[] = "ash-notify";
 
+// Enables the heads-up display for tracking touch points.
+const char kAshTouchHud[] = "ash-touch-hud";
+
 // Use Google-style dialog box frames.
 const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";
 

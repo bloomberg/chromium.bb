@@ -177,6 +177,8 @@
         'system/user/user_observer.h',
         'tooltips/tooltip_controller.cc',
         'tooltips/tooltip_controller.h',
+        'touch/touch_observer_hud.cc',
+        'touch/touch_observer_hud.h',
         'volume_control_delegate.h',
         'wm/app_list_controller.cc',
         'wm/app_list_controller.h',
