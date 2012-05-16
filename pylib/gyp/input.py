@@ -2270,7 +2270,9 @@ def ValidateActionsInTarget(target, target_dict, build_file):
       raise Exception("Anonymous action in target %s.  "
                       "An action must have an 'action_name' field." %
                       target_name)
-    inputs = action.get('inputs', [])
+    inputs = action.get('inputs', None)
+    if inputs is None:
+      raise Exception('Action in target %s has no inputs.' % target_name)
     action_command = action.get('action')
     if action_command and not action_command[0]:
       raise Exception("Empty action as command in target %s." % target_name)

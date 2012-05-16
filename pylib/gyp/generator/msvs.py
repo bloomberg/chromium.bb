@@ -1274,7 +1274,7 @@ def _PrepareListOfSources(spec, gyp_file):
 
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
-    inputs = a.get('inputs', [])
+    inputs = a['inputs']
     inputs = [_NormalizedSource(i) for i in inputs]
     # Add all inputs to sources and excluded sources.
     inputs = set(inputs)
