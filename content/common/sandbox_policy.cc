@@ -453,9 +453,9 @@ bool AddPolicyForPepperPlugin(sandbox::TargetPolicy* policy) {
   return result == sandbox::SBOX_ALL_OK;
 }
 
-// This code is debug only, and attempts to catch unsafe uses of
+// This code is test only, and attempts to catch unsafe uses of
 // DuplicateHandle() that copy privileged handles into sandboxed processes.
-#ifndef NDEBUG
+#ifndef OFFICIAL_BUILD
 base::win::IATPatchFunction g_iat_patch_duplicate_handle;
 
 BOOL (WINAPI *g_iat_orig_duplicate_handle)(HANDLE source_process_handle,
@@ -563,14 +563,22 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
   sandbox::ResultCode result = broker_services->Init();
   g_broker_services = broker_services;
 
-// In the debug build we want to warn about dangerous uses of DuplicateHandle.
-#if !defined(NDEBUG) && !defined(NACL_WIN64)
+// In non-official builds warn about dangerous uses of DuplicateHandle.
+#ifndef OFFICIAL_BUILD
   if (!g_iat_patch_duplicate_handle.is_patched()) {
-    ResolveNTFunctionPtr("NtQueryObject", &g_QueryObject);
-    g_iat_orig_duplicate_handle = ::DuplicateHandle;
-    g_iat_patch_duplicate_handle.Patch(
-        L"chrome.dll", "kernel32.dll", "DuplicateHandle",
-        DuplicateHandlePatch);
+    HMODULE module = NULL;
+    wchar_t module_name[MAX_PATH];
+    CHECK(::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                              reinterpret_cast<LPCWSTR>(InitBrokerServices),
+                              &module));
+    DWORD result = ::GetModuleFileNameW(module, module_name, MAX_PATH);
+    if (result && (result != MAX_PATH)) {
+      ResolveNTFunctionPtr("NtQueryObject", &g_QueryObject);
+      g_iat_orig_duplicate_handle = ::DuplicateHandle;
+      g_iat_patch_duplicate_handle.Patch(
+          module_name, "kernel32.dll", "DuplicateHandle",
+          DuplicateHandlePatch);
+    }
   }
 #endif
 
