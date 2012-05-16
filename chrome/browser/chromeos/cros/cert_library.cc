@@ -101,7 +101,6 @@ class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
   virtual ~RealTPMTokenInfoDelegate();
 
   // TPMTokenInfoDeleagte overrides:
-  virtual bool IsTokenAvailable() const OVERRIDE;
   virtual void RequestIsTokenReady(
       base::Callback<void(bool result)> callback) const OVERRIDE;
   virtual void GetTokenInfo(std::string* token_name,
@@ -131,15 +130,6 @@ RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() : token_ready_(false),
 }
 
 RealTPMTokenInfoDelegate::~RealTPMTokenInfoDelegate() {}
-
-bool RealTPMTokenInfoDelegate::IsTokenAvailable() const {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool result = false;
-  // TODO(hashimoto): Use non-blocking method instead. crbug.com/126674
-  DBusThreadManager::Get()->GetCryptohomeClient()->CallTpmIsEnabledAndBlock(
-      &result);
-  return result;
-}
 
 void RealTPMTokenInfoDelegate::RequestIsTokenReady(
     base::Callback<void(bool result)> callback) const {
