@@ -57,9 +57,7 @@ noinst_LIBRARIES = libtoytoolkit.a
 
 libtoytoolkit_a_SOURCES =			\
 	window.c				\
-	window.h				\
-	cairo-util.c				\
-	cairo-util.h
+	window.h
 
 toolkit_libs =						\
 	libtoytoolkit.a					\

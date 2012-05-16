@@ -27,7 +27,7 @@
 #include <sys/wait.h>
 
 #include "window.h"
-#include "cairo-util.h"
+#include "../shared/cairo-util.h"
 #include "../shared/config-parser.h"
 
 #include "tablet-shell-client-protocol.h"

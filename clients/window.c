@@ -59,7 +59,7 @@
 
 #include <linux/input.h>
 #include <wayland-client.h>
-#include "cairo-util.h"
+#include "../shared/cairo-util.h"
 
 #include "window.h"
 

@@ -34,7 +34,7 @@
 #include <wayland-client.h>
 
 #include "window.h"
-#include "cairo-util.h"
+#include "../shared/cairo-util.h"
 
 struct dnd {
 	struct window *window;
