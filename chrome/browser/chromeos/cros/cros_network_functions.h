@@ -42,6 +42,12 @@ typedef base::Callback<void(
     const std::string& modem_service_path,
     CellularDataPlanVector* data_plan_vector)> DataPlanUpdateWatcherCallback;
 
+// Callback for methods that initiate an operation and return no data.
+typedef base::Callback<void(
+    const std::string& path,
+    NetworkMethodErrorType error,
+    const std::string& error_message)> NetworkOperationCallback;
+
 // Base class of signal watchers.
 class CrosNetworkWatcher {
  public:
@@ -142,8 +148,7 @@ CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
 // connection state to determine if the connection was established
 // successfully.
 void CrosRequestNetworkServiceConnect(const std::string& service_path,
-                                      NetworkActionCallback callback,
-                                      void* object);
+                                      const NetworkOperationCallback& callback);
 
 // Retrieves the latest info for the manager.
 void CrosRequestNetworkManagerProperties(
@@ -201,14 +206,12 @@ void CrosRequestNetworkDeviceEnable(const std::string& network_type,
 void CrosRequestRequirePin(const std::string& device_path,
                            const std::string& pin,
                            bool enable,
-                           NetworkActionCallback callback,
-                           void* object);
+                           const NetworkOperationCallback& callback);
 
 // Enters a PIN to unlock a SIM card.
 void CrosRequestEnterPin(const std::string& device_path,
                          const std::string& pin,
-                         NetworkActionCallback callback,
-                         void* object);
+                         const NetworkOperationCallback& callback);
 
 // Enters a PUK to unlock a SIM card whose PIN has been entered
 // incorrectly too many times. A new |pin| must be supplied
@@ -216,15 +219,13 @@ void CrosRequestEnterPin(const std::string& device_path,
 void CrosRequestUnblockPin(const std::string& device_path,
                            const std::string& unblock_code,
                            const std::string& pin,
-                           NetworkActionCallback callback,
-                           void* object);
+                           const NetworkOperationCallback& callback);
 
 // Changes the PIN used to unlock a SIM card.
 void CrosRequestChangePin(const std::string& device_path,
                           const std::string& old_pin,
                           const std::string& new_pin,
-                          NetworkActionCallback callback,
-                          void* object);
+                          const NetworkOperationCallback& callback);
 
 // Proposes to trigger a scan transaction. For cellular networks scan result
 // is set in the property Cellular.FoundNetworks.
@@ -235,8 +236,7 @@ void CrosProposeScan(const std::string& device_path);
 // automatic registration mode before initiating registration.
 void CrosRequestCellularRegister(const std::string& device_path,
                                  const std::string& network_id,
-                                 NetworkActionCallback callback,
-                                 void* object);
+                                 const NetworkOperationCallback& callback);
 
 // Enables or disables the specific network device for connection.
 // Set offline mode. This will turn off all radios.

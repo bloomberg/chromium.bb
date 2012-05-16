@@ -235,11 +235,11 @@ class CrosNetworkFunctionsLibcrosTest : public testing::Test {
     OnRequestNetworkProperties2(callback, object);
   }
 
-  // Does nothing.  Used as an argument.
-  static void OnNetworkAction(void* object,
-                              const char* path,
-                              NetworkMethodErrorType error,
-                              const char* error_message) {}
+  // Mock NetworkOperationCallback.
+  MOCK_METHOD3(MockNetworkOperationCallback,
+               void(const std::string& path,
+                    NetworkMethodErrorType error,
+                    const std::string& error_message));
 
   // Does nothing.  Used as an argument.
   static void OnSmsReceived(void* object,
@@ -494,12 +494,22 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosMonitorSMS) {
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkServiceConnect) {
   const std::string service_path = "service path";
-  void* object = this;
+
+  NetworkActionCallback callback = NULL;
+  void* object = NULL;
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
-              RequestNetworkServiceConnect(StrEq(service_path),
-                                           &OnNetworkAction,
-                                           object)).Times(1);
-  CrosRequestNetworkServiceConnect(service_path, &OnNetworkAction, object);
+              RequestNetworkServiceConnect(StrEq(service_path), _, _))
+      .WillOnce(DoAll(SaveArg<1>(&callback), SaveArg<2>(&object)));
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      service_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+
+  CrosRequestNetworkServiceConnect(
+      service_path,
+      base::Bind(&CrosNetworkFunctionsLibcrosTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
+
+  ASSERT_TRUE(callback);
+  callback(object, service_path.c_str(), NETWORK_METHOD_ERROR_NONE, NULL);
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkManagerProperties) {
@@ -712,43 +722,87 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestRequirePin) {
   const std::string device_path = "/device/path";
   const std::string pin = "123456";
   const bool kEnable = true;
+
+  NetworkActionCallback callback = NULL;
   void* object = this;
   EXPECT_CALL(*MockChromeOSNetwork::Get(), RequestRequirePin(
-      StrEq(device_path), StrEq(pin), kEnable, &OnNetworkAction, object))
-      .Times(1);
-  CrosRequestRequirePin(device_path, pin, kEnable, &OnNetworkAction, object);
+      StrEq(device_path), StrEq(pin), kEnable, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&callback), SaveArg<4>(&object)));
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+
+  CrosRequestRequirePin(
+      device_path, pin, kEnable,
+      base::Bind(&CrosNetworkFunctionsLibcrosTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
+
+  ASSERT_TRUE(callback);
+  callback(object, device_path.c_str(), NETWORK_METHOD_ERROR_NONE, NULL);
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestEnterPin) {
   const std::string device_path = "/device/path";
   const std::string pin = "123456";
+
+  NetworkActionCallback callback = NULL;
   void* object = this;
   EXPECT_CALL(*MockChromeOSNetwork::Get(), RequestEnterPin(
-      StrEq(device_path), StrEq(pin), &OnNetworkAction, object)).Times(1);
-  CrosRequestEnterPin(device_path, pin, &OnNetworkAction, object);
+      StrEq(device_path), StrEq(pin), _, _))
+      .WillOnce(DoAll(SaveArg<2>(&callback), SaveArg<3>(&object)));
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+
+  CrosRequestEnterPin(
+      device_path, pin,
+      base::Bind(&CrosNetworkFunctionsLibcrosTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
+
+  ASSERT_TRUE(callback);
+  callback(object, device_path.c_str(), NETWORK_METHOD_ERROR_NONE, NULL);
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestUnblockPin) {
   const std::string device_path = "/device/path";
   const std::string unblock_code = "987654";
   const std::string pin = "123456";
+
+  NetworkActionCallback callback = NULL;
   void* object = this;
   EXPECT_CALL(*MockChromeOSNetwork::Get(), RequestUnblockPin(
-      StrEq(device_path), StrEq(unblock_code), StrEq(pin), &OnNetworkAction,
-      object)).Times(1);
-  CrosRequestUnblockPin(device_path, unblock_code, pin, &OnNetworkAction,
-                        object);
+      StrEq(device_path), StrEq(unblock_code), StrEq(pin), _, _))
+      .WillOnce(DoAll(SaveArg<3>(&callback), SaveArg<4>(&object)));
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+
+  CrosRequestUnblockPin(
+      device_path, unblock_code, pin,
+      base::Bind(&CrosNetworkFunctionsLibcrosTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
+
+  ASSERT_TRUE(callback);
+  callback(object, device_path.c_str(), NETWORK_METHOD_ERROR_NONE, NULL);
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestChangePin) {
   const std::string device_path = "/device/path";
   const std::string old_pin = "123456";
   const std::string new_pin = "234567";
+
+  NetworkActionCallback callback = NULL;
   void* object = this;
   EXPECT_CALL(*MockChromeOSNetwork::Get(), RequestChangePin(
-      StrEq(device_path), StrEq(old_pin), StrEq(new_pin), &OnNetworkAction,
-      object)).Times(1);
-  CrosRequestChangePin(device_path, old_pin, new_pin, &OnNetworkAction, object);
+      StrEq(device_path), StrEq(old_pin), StrEq(new_pin), _, _))
+      .WillOnce(DoAll(SaveArg<3>(&callback), SaveArg<4>(&object)));
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+
+  CrosRequestChangePin(
+      device_path, old_pin, new_pin,
+      base::Bind(&CrosNetworkFunctionsLibcrosTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
+
+  ASSERT_TRUE(callback);
+  callback(object, device_path.c_str(), NETWORK_METHOD_ERROR_NONE, NULL);
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosProposeScan) {
@@ -761,12 +815,22 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosProposeScan) {
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestCellularRegister) {
   const std::string device_path = "/device/path";
   const std::string network_id = "networkid";
+
+  NetworkActionCallback callback = NULL;
   void* object = this;
   EXPECT_CALL(*MockChromeOSNetwork::Get(), RequestCellularRegister(
-      StrEq(device_path), StrEq(network_id), &OnNetworkAction, object))
-      .Times(1);
-  CrosRequestCellularRegister(device_path, network_id, &OnNetworkAction,
-                              object);
+      StrEq(device_path), StrEq(network_id), _, _))
+      .WillOnce(DoAll(SaveArg<2>(&callback), SaveArg<3>(&object)));
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+
+  CrosRequestCellularRegister(
+      device_path, network_id,
+      base::Bind(&CrosNetworkFunctionsLibcrosTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
+
+  ASSERT_TRUE(callback);
+  callback(object, device_path.c_str(), NETWORK_METHOD_ERROR_NONE, NULL);
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetOfflineMode) {
@@ -956,18 +1020,11 @@ class CrosNetworkFunctionsTest : public testing::Test {
     callback.Run(DBUS_METHOD_CALL_SUCCESS, *dictionary_value_result_);
   }
 
-  // Mock NetworkActionCallback.
-  MOCK_METHOD4(MockNetworkActionCallback, void(void* object,
-                                               const char* path,
-                                               NetworkMethodErrorType error,
-                                               const char* error_message));
-  static void MockNetworkActionCallbackThunk(void* object,
-                                             const char* path,
-                                             NetworkMethodErrorType error,
-                                             const char* error_message) {
-    static_cast<CrosNetworkFunctionsTest*>(object)->MockNetworkActionCallback(
-        object, path, error, error_message);
-  }
+  // Mock NetworkOperationCallback.
+  MOCK_METHOD3(MockNetworkOperationCallback,
+               void(const std::string& path,
+                    NetworkMethodErrorType error,
+                    const std::string& error_message));
 
   // Mock MonitorSMSCallback.
   MOCK_METHOD3(MockMonitorSMSCallback, void(void* object,
@@ -1550,17 +1607,18 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestRequirePin) {
   const std::string device_path = "/device/path";
   const std::string pin = "123456";
   const bool kRequire = true;
-  void* object = this;
 
   // Set expectations.
   base::Closure callback;
   EXPECT_CALL(*mock_device_client_,
               RequirePin(dbus::ObjectPath(device_path), pin, kRequire, _, _))
       .WillOnce(SaveArg<3>(&callback));
-  EXPECT_CALL(*this, MockNetworkActionCallback(
-      object, StrEq(device_path), NETWORK_METHOD_ERROR_NONE, _)).Times(1);
-  CrosRequestRequirePin(device_path, pin, kRequire,
-                        &MockNetworkActionCallbackThunk, this);
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+  CrosRequestRequirePin(
+      device_path, pin, kRequire,
+      base::Bind(&CrosNetworkFunctionsTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
   // Run saved callback.
   callback.Run();
 }
@@ -1568,16 +1626,18 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestRequirePin) {
 TEST_F(CrosNetworkFunctionsTest, CrosRequestEnterPin) {
   const std::string device_path = "/device/path";
   const std::string pin = "123456";
-  void* object = this;
 
   // Set expectations.
   base::Closure callback;
   EXPECT_CALL(*mock_device_client_,
               EnterPin(dbus::ObjectPath(device_path), pin, _, _))
       .WillOnce(SaveArg<2>(&callback));
-  EXPECT_CALL(*this, MockNetworkActionCallback(
-      object, StrEq(device_path), NETWORK_METHOD_ERROR_NONE, _)).Times(1);
-  CrosRequestEnterPin(device_path, pin, &MockNetworkActionCallbackThunk, this);
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+  CrosRequestEnterPin(
+      device_path, pin,
+      base::Bind(&CrosNetworkFunctionsTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
   // Run saved callback.
   callback.Run();
 }
@@ -1586,7 +1646,6 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestUnblockPin) {
   const std::string device_path = "/device/path";
   const std::string unblock_code = "987654";
   const std::string pin = "123456";
-  void* object = this;
 
   // Set expectations.
   base::Closure callback;
@@ -1594,10 +1653,11 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestUnblockPin) {
       *mock_device_client_,
       UnblockPin(dbus::ObjectPath(device_path), unblock_code, pin, _, _))
       .WillOnce(SaveArg<3>(&callback));
-  EXPECT_CALL(*this, MockNetworkActionCallback(
-      object, StrEq(device_path), NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
   CrosRequestUnblockPin(device_path, unblock_code, pin,
-                        &MockNetworkActionCallbackThunk, object);
+      base::Bind(&CrosNetworkFunctionsTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
   // Run saved callback.
   callback.Run();
 }
@@ -1606,17 +1666,17 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestChangePin) {
   const std::string device_path = "/device/path";
   const std::string old_pin = "123456";
   const std::string new_pin = "234567";
-  void* object = this;
 
   // Set expectations.
   base::Closure callback;
   EXPECT_CALL(*mock_device_client_,
               ChangePin(dbus::ObjectPath(device_path), old_pin, new_pin,  _, _))
       .WillOnce(SaveArg<3>(&callback));
-  EXPECT_CALL(*this, MockNetworkActionCallback(
-      object, StrEq(device_path), NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
   CrosRequestChangePin(device_path, old_pin, new_pin,
-                       &MockNetworkActionCallbackThunk, object);
+      base::Bind(&CrosNetworkFunctionsTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
   // Run saved callback.
   callback.Run();
 }
@@ -1631,17 +1691,17 @@ TEST_F(CrosNetworkFunctionsTest, CrosProposeScan) {
 TEST_F(CrosNetworkFunctionsTest, CrosRequestCellularRegister) {
   const std::string device_path = "/device/path";
   const std::string network_id = "networkid";
-  void* object = this;
 
   // Set expectations.
   base::Closure callback;
   EXPECT_CALL(*mock_device_client_,
               Register(dbus::ObjectPath(device_path), network_id, _, _))
       .WillOnce(SaveArg<2>(&callback));
-  EXPECT_CALL(*this, MockNetworkActionCallback(
-      object, StrEq(device_path), NETWORK_METHOD_ERROR_NONE, _)).Times(1);
+  EXPECT_CALL(*this, MockNetworkOperationCallback(
+      device_path, NETWORK_METHOD_ERROR_NONE, _)).Times(1);
   CrosRequestCellularRegister(device_path, network_id,
-                              &MockNetworkActionCallbackThunk, object);
+      base::Bind(&CrosNetworkFunctionsTest::MockNetworkOperationCallback,
+                 base::Unretained(this)));
   // Run saved callback.
   callback.Run();
 }

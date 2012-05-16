@@ -84,20 +84,17 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   // and notification should be skipped.
   bool UpdateCellularDeviceStatus(NetworkDevice* device, PropertyIndex index);
 
-  static void PinOperationCallback(void* object,
-                                   const char* path,
-                                   NetworkMethodErrorType error,
-                                   const char* error_message);
+  void PinOperationCallback(const std::string& path,
+                            NetworkMethodErrorType error,
+                            const std::string& error_message);
 
-  static void CellularRegisterCallback(void* object,
-                                       const char* path,
-                                       NetworkMethodErrorType error,
-                                       const char* error_message);
+  void CellularRegisterCallback(const std::string& path,
+                                NetworkMethodErrorType error,
+                                const std::string& error_message);
 
-  static void NetworkConnectCallback(void* object,
-                                     const char* service_path,
-                                     NetworkMethodErrorType error,
-                                     const char* error_message);
+  void NetworkConnectCallback(const std::string& service_path,
+                              NetworkMethodErrorType error,
+                              const std::string& error_message);
 
   void WifiServiceUpdateAndConnect(const std::string& service_path,
                                    const base::DictionaryValue* properties);
@@ -153,6 +150,8 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   };
 
   typedef std::map<std::string, CrosNetworkWatcher*> NetworkWatcherMap;
+
+  base::WeakPtrFactory<NetworkLibraryImplCros> weak_ptr_factory_;
 
   // For monitoring network manager status changes.
   scoped_ptr<CrosNetworkWatcher> network_manager_watcher_;
