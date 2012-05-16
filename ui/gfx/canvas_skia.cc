@@ -19,14 +19,36 @@
 
 namespace {
 
-// Based on |flags| and |text| content, returns whether text should be
-// rendered right-to-left.
-bool IsTextRTL(int flags, const string16& text) {
-  if (flags & gfx::Canvas::FORCE_RTL_DIRECTIONALITY)
-    return true;
-  if (flags & gfx::Canvas::FORCE_LTR_DIRECTIONALITY)
+// If necessary, wraps |text| with RTL/LTR directionality characters based on
+// |flags| and |text| content.
+// Returns true if the text will be rendered right-to-left.
+// TODO(asvitkine): Support setting directionality directly on RenderText, so
+//                  that wrapping the text is not needed.
+bool AdjustStringDirection(int flags, string16* text) {
+  // If the string is empty or LTR was forced, simply return false since the
+  // default RenderText directionality is already LTR.
+  if (text->empty() || (flags & gfx::Canvas::FORCE_LTR_DIRECTIONALITY))
     return false;
-  return base::i18n::IsRTL() && base::i18n::StringContainsStrongRTLChars(text);
+
+  // If RTL is forced, apply it to the string.
+  if (flags & gfx::Canvas::FORCE_RTL_DIRECTIONALITY) {
+    base::i18n::WrapStringWithRTLFormatting(text);
+    return true;
+  }
+
+  // If a direction wasn't forced but the UI language is RTL and there were
+  // strong RTL characters, ensure RTL is applied.
+  if (base::i18n::IsRTL() && base::i18n::StringContainsStrongRTLChars(*text)) {
+    base::i18n::WrapStringWithRTLFormatting(text);
+    return true;
+  }
+
+  // In the default case, the string should be rendered as LTR. RenderText's
+  // default directionality is LTR, so the text doesn't need to be wrapped.
+  // Note that individual runs within the string may still be rendered RTL
+  // (which will be the case for RTL text under non-RTL locales, since under RTL
+  // locales it will be handled by the if statement above).
+  return false;
 }
 
 // Checks each pixel immediately adjacent to the given pixel in the bitmap. If
@@ -175,6 +197,12 @@ void Canvas::SizeStringInt(const string16& text,
   DCHECK_GE(*height, 0);
 
   flags = AdjustPlatformSpecificFlags(text, flags);
+
+  string16 adjusted_text = text;
+#if defined(OS_WIN)
+  AdjustStringDirection(flags, &adjusted_text);
+#endif
+
   if ((flags & MULTI_LINE) && *width != 0) {
     ui::WordWrapBehavior wrap_behavior = ui::TRUNCATE_LONG_WORDS;
     if (flags & CHARACTER_BREAK)
@@ -184,7 +212,7 @@ void Canvas::SizeStringInt(const string16& text,
 
     gfx::Rect rect(*width, INT_MAX);
     std::vector<string16> strings;
-    ui::ElideRectangleText(text, font, rect.width(), rect.height(),
+    ui::ElideRectangleText(adjusted_text, font, rect.width(), rect.height(),
                            wrap_behavior, &strings);
     scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
     UpdateRenderText(rect, string16(), font, flags, 0, render_text.get());
@@ -204,13 +232,12 @@ void Canvas::SizeStringInt(const string16& text,
     // If the string is too long, the call by |RenderTextWin| to |ScriptShape()|
     // will inexplicably fail with result E_INVALIDARG. Guard against this.
     const size_t kMaxRenderTextLength = 5000;
-    if (text.length() >= kMaxRenderTextLength) {
-      *width = text.length() * font.GetAverageCharacterWidth();
+    if (adjusted_text.length() >= kMaxRenderTextLength) {
+      *width = adjusted_text.length() * font.GetAverageCharacterWidth();
       *height = font.GetHeight();
     } else {
       scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
       gfx::Rect rect(*width, *height);
-      string16 adjusted_text = text;
       StripAcceleratorChars(flags, &adjusted_text);
       UpdateRenderText(rect, adjusted_text, font, flags, 0, render_text.get());
       const Size string_size = render_text->GetStringSize();
@@ -250,8 +277,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
   string16 adjusted_text = text;
 
 #if defined(OS_WIN)
-  if (IsTextRTL(flags, adjusted_text))
-    base::i18n::AdjustStringForLocaleDirection(&adjusted_text);
+  AdjustStringDirection(flags, &adjusted_text);
 #endif
 
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
@@ -392,9 +418,7 @@ void Canvas::DrawFadeTruncatingString(
 
   scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
   string16 clipped_text = text;
-  const bool is_rtl = IsTextRTL(flags, text);
-  if (is_rtl)
-    base::i18n::AdjustStringForLocaleDirection(&clipped_text);
+  const bool is_rtl = AdjustStringDirection(flags, &clipped_text);
 
   switch (truncate_mode) {
     case TruncateFadeTail:
