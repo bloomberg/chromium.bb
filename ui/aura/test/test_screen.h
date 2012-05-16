@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/screen_impl.h"
 
 namespace aura {

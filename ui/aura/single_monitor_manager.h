@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/window_observer.h"
@@ -58,4 +57,4 @@ class AURA_EXPORT SingleMonitorManager : public MonitorManager,
 
 }  // namespace aura
 
-#endif  //  UI_AURA_SINGLE_MONITOR_MANAGER_H_
+#endif  // UI_AURA_SINGLE_MONITOR_MANAGER_H_

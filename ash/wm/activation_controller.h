@@ -9,7 +9,6 @@
 #include "ash/wm/scoped_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/root_window_observer.h"

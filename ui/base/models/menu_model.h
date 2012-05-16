@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define UI_BASE_MODELS_MENU_MODEL_H_
 #pragma once
 
-#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/base/ui_export.h"

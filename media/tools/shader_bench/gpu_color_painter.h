@@ -6,7 +6,7 @@
 #define MEDIA_TOOLS_SHADER_BENCH_GPU_COLOR_PAINTER_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
 #include "media/tools/shader_bench/gpu_painter.h"
 #include "ui/gl/gl_context.h"

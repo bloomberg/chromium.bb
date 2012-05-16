@@ -8,8 +8,6 @@
 
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/tray/tray_image_item.h"
-#include "base/memory/scoped_ptr.h"
-
 
 namespace views {
 class Label;

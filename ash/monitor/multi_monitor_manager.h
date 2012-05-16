@@ -6,9 +6,10 @@
 #define ASH_MONITOR_MULTI_MONITOR_MANAGER_H_
 #pragma once
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
@@ -78,4 +79,4 @@ extern const aura::WindowProperty<int>* const kMonitorIdKey;
 }  // namespace internal
 }  // namespace ash
 
-#endif  //  ASH_MONITOR_MULTI_MONITOR_MANAGER_H_
+#endif  // ASH_MONITOR_MULTI_MONITOR_MANAGER_H_

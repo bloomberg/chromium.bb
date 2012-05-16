@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/view.h"

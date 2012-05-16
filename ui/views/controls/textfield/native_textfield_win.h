@@ -15,6 +15,7 @@
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl
 #include <vsstyle.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/base/models/simple_menu_model.h"

@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 
 namespace views {
