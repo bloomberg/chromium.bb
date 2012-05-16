@@ -1517,6 +1517,7 @@ weston_wm_create(struct weston_xserver *wxs)
 	if (wm == NULL)
 		return NULL;
 
+	memset(wm, 0, sizeof *wm);
 	wm->server = wxs;
 	wm->window_hash = hash_table_create();
 	if (wm->window_hash == NULL) {
