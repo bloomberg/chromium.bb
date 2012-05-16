@@ -78,6 +78,12 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
+  // TODO(battre): Remove "declarative" permission when APIs can be set to
+  // dev-only, without having to have a permission. See: crbug.com/120069.
+  "declarative": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app"]
+  },
   "declarativeWebRequest": {
     "channel": "dev",
     "extension_types": ["extension", "packaged_app"]

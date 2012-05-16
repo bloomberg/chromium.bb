@@ -1,0 +1,140 @@
+<!-- BEGIN AUTHORED CONTENT -->
+
+<h2 id="notes">Notes</h2>
+
+<p>
+The Declarative API is a framework to define rules consisting of declarative
+conditions and actions. Conditions are evaluated in the browser rather than the
+JavaScript engine which reduces roundtrip latencies and allows for very high
+efficiency.
+</p>
+
+</p>The Declarative API is an abstract foundation for the <a
+  href="declarativeWebRequest.html">Declarative Web Request API</a> and
+possibly further extension APIs in the future. This page describes the
+underlying concepts of all Declarative APIs.
+</p>
+
+<h2 id="manifest">Manifest</h2>
+
+<p>
+You must declare the "declarative" permission in your extension's manifest
+to use APIs that are based on this API.
+</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+<b>  "permissions": [
+    "declarative",
+  ]</b>,
+  ...
+}</pre>
+
+<h2 id="rules">Rules</h2>
+
+<p>The simplest possible rule consists of one or more conditions and one or more
+actions:</p>
+<pre>
+var rule = {
+  conditions: [ /* my conditions */ ],
+  actions: [ /* my actions */ ]
+};
+</pre>
+
+<p>If any of the conditions is fulfilled, all actions are executed.</p>
+
+<p>In addition to conditions and actions you may give each rule an identifier,
+which simplifies unregistering previously registered rules, and a priority to
+define precedences among rules. Priorities are only considered if rules conflict
+each other or need to be executed in a specific order.</p>
+
+<pre>
+var rule = {
+  id: "my rule",  // optional, will be generated if not set.
+  priority: 100,  // optional, defaults to 100.
+  conditions: [ /* my conditions */ ],
+  actions: [ /* my actions */ ]
+};
+</pre>
+
+<h2 id="eventobjects">Event objects</h2>
+
+<p>
+<a href="events.html">Event objects</a> may support rules. These event objects
+don't call a callback function when events happer but test whether any
+registered rule has at least one fulfilled condition and execute the actions
+associated with this rule. Event objects supporting the declarative API have
+three relevant methods: <a href="#method-addRules"><code>addRules()</code></a>,
+<a href="#method-removeRules"><code>removeRules()</code></a>, and
+<a href="#method-getRules"><code>getRules()</code></a>.
+</p>
+
+<h3 id="addingrules">Adding rules</h3>
+
+<p>
+To add rules call the <code>addRules()</code> function of the event object. It
+takes an array of rule instances as its first parameter and a callback function
+that is called on completion.
+</p>
+
+<pre>
+var rule_list = [rule1, rule2, ...];
+function addRules(rule_list, function callback(details) {...});
+</pre>
+
+<p>
+If the rules were inserted successfully, the <code>details</code> parameter
+contains an array of inserted rules appearing in the same order as in the passed
+<code>rule_list</code> where the optional parameters <code>id</code> and
+<code>priority</code> were filled with the generated values. If any rule is
+invalid, e.g., because it contained an invalid condition or action, none of the
+rules are added and the <a
+  href="extension.html#property-lastError">lastError</a> variable is set when
+the callback function is called. Each rule in <code>rule_list</code> must
+contain a unique identifier that is not currently used by another rule or an
+empty identifier.
+</p>
+
+<h3 id="removingrules">Removing rules</h3>
+
+<p>
+To remove rules call the <code>removeRules()</code> function. It accepts an
+optional array of rule identifiers as its first parameter and a callback
+function as its second parameter.
+</p>
+
+<pre>
+var rule_ids = ["id1", "id2", ...];
+function removeRules(rule_ids, function callback() {...});
+</pre>
+
+<p>
+If <code>rule_ids</code> is an array of identifiers, all rules having
+identifiers listed in the array are removed. If <code>rule_ids</code> lists an
+identifier, that is unknown, this identifier is silently ignored. If
+<code>rule_ids</code> is <code>undefined</code>, all registered rules of this
+extension are removed. The <code>callback()</code> function is called when the
+rules were removed.
+</p>
+
+<h3 id="retrievingrules">Retrieving rules</h3>
+
+<p>
+To retrieve a list of currently registered rules, call the
+<code>getRules()</code> function. It accepts an optional array of rule
+identifiers with the same semantics as <code>removeRules</code> and a callback
+function.
+<p>
+
+<pre>
+var rule_ids = ["id1", "id2", ...];
+function getRules(rule_ids, function callback(details) {...});
+</pre>
+
+<p>
+The <code>details</code> parameter passed to the <code>calback()</code> function
+refers to an array of rules including filled optional parameters.
+</p>
+
+<!-- END AUTHORED CONTENT -->

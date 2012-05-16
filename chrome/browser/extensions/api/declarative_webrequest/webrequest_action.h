@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
-#include "chrome/common/extensions/api/events.h"
+#include "chrome/common/extensions/api/declarative.h"
 #include "googleurl/src/gurl.h"
 
 namespace base {

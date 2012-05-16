@@ -11,14 +11,14 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/events.h"
+#include "chrome/common/extensions/api/declarative.h"
 #include "content/public/browser/browser_thread.h"
 
-using extensions::api::events::Rule;
+using extensions::api::declarative::Rule;
 
-namespace AddRules = extensions::api::events::Event::AddRules;
-namespace GetRules = extensions::api::events::Event::GetRules;
-namespace RemoveRules = extensions::api::events::Event::RemoveRules;
+namespace AddRules = extensions::api::declarative::AddRules;
+namespace GetRules = extensions::api::declarative::GetRules;
+namespace RemoveRules = extensions::api::declarative::RemoveRules;
 
 namespace {
 

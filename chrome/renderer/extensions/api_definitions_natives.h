@@ -19,9 +19,8 @@ class ApiDefinitionsNatives : public ChromeV8Extension {
   explicit ApiDefinitionsNatives(ExtensionDispatcher* extension_dispatcher);
 
  private:
-  // Returns the list of schemas that are available to the calling context
-  // and have their names listed in |args|. If |args| is empty, returns the list
-  // of all schemas that are available to the calling context.
+  // Takes no arguments and returns the list of schemas that are available to
+  // the calling context.
   v8::Handle<v8::Value> GetExtensionAPIDefinition(const v8::Arguments& args);
 
   DISALLOW_COPY_AND_ASSIGN(ApiDefinitionsNatives);

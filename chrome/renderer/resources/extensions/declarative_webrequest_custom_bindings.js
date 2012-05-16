@@ -5,14 +5,16 @@
 // Custom bindings for the declarativeWebRequest API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var utils = require('utils');
 
 chromeHidden.registerCustomHook('declarativeWebRequest', function(api) {
   // Returns the schema definition of type |typeId| defined in |namespace|.
   function getSchema(namespace, typeId) {
-    var apiSchema = utils.lookup(api.apiDefinitions, 'namespace', namespace);
-    var resultSchema = utils.lookup(
-        apiSchema.types, 'id', namespace + '.' + typeId);
+    var filterNamespace = function(val) {return val.namespace === namespace;};
+    var apiSchema = api.apiDefinitions.filter(filterNamespace)[0];
+    var filterTypeId = function (val) {
+      return val.id === namespace + "." + typeId;
+    };
+    var resultSchema = apiSchema.types.filter(filterTypeId)[0];
     return resultSchema;
   }
 

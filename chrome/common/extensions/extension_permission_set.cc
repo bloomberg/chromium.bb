@@ -45,7 +45,6 @@ const char* kNonPermissionModuleNames[] = {
   "app",
   "browserAction",
   "devtools",
-  "events",
   "extension",
   "i18n",
   "omnibox",

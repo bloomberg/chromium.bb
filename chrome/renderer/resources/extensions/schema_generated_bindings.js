@@ -5,15 +5,11 @@
 // This script contains privileged chrome extension related javascript APIs.
 // It is loaded by pages whose URL has the chrome-extension protocol.
 
-  // TODO(battre): cleanup the usage of packages everywhere, as described here
-  // http://codereview.chromium.org/10392008/diff/38/chrome/renderer/resources/extensions/schema_generated_bindings.js
-
   require('json_schema');
   require('event_bindings');
   var GetExtensionAPIDefinition =
       requireNative('apiDefinitions').GetExtensionAPIDefinition;
   var sendRequest = require('sendRequest').sendRequest;
-  var utils = require('utils');
 
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
@@ -25,6 +21,13 @@
   // having strict permissions and aren't generated *anywhere* unless needed.
   var internalAPIs = {};
   chromeHidden.internalAPIs = internalAPIs;
+
+  function forEach(dict, f) {
+    for (key in dict) {
+      if (dict.hasOwnProperty(key))
+        f(key, dict[key]);
+    }
+  }
 
   // Validate arguments.
   var schemaValidator = new chromeHidden.JSONSchemaValidator();
@@ -507,7 +510,7 @@
         if (!properties)
           return;
 
-        utils.forEach(properties, function(propertyName, propertyDef) {
+        forEach(properties, function(propertyName, propertyDef) {
           if (propertyName in m)
             return;  // TODO(kalman): be strict like functions/events somehow.
           if (!isSchemaNodeSupported(propertyDef, platform, manifestVersion))

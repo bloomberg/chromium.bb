@@ -508,7 +508,6 @@ void ExtensionDispatcher::PopulateSourceMap() {
   // Libraries.
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
   source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);
-  source_map_.RegisterSource("utils", IDR_UTILS_JS);
 
   // Custom bindings.
   source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
@@ -518,6 +517,8 @@ void ExtensionDispatcher::PopulateSourceMap() {
                              IDR_CONTENT_SETTINGS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("contextMenus",
                              IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("declarative",
+                             IDR_DECLARATIVE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("declarativeWebRequest",
                              IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("devtools", IDR_DEVTOOLS_CUSTOM_BINDINGS_JS);

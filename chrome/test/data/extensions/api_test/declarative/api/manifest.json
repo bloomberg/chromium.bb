@@ -7,6 +7,6 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "declarativeWebRequest"
+    "declarative", "declarativeWebRequest"
   ]
 }
