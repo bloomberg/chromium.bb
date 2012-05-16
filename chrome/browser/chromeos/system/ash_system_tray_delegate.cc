@@ -169,6 +169,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         clock_type_(base::k24HourClock),
         search_key_mapped_to_(input_method::kSearchKey),
         screen_locked_(false),
+        state_(STATE_UNKNOWN),
+        connected_network_(NULL),
         data_promo_notification_(new DataPromoNotification()) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
@@ -760,13 +762,43 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   void NotifyRefreshNetwork() {
     ash::NetworkObserver* observer = tray_->network_observer();
+    chromeos::NetworkLibrary* crosnet =
+        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
     if (observer) {
-      NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
       ash::NetworkIconInfo info;
       info.image = network_icon_->GetIconAndText(&info.description);
       info.tray_icon_visible =
           ShouldShowNetworkIconInTray(crosnet->connected_network());
       observer->OnNetworkRefresh(info);
+    }
+
+    // Determine whether or not we need to update the icon.
+    const Network* connected_network = crosnet->connected_network();
+    if (accessibility::IsSpokenFeedbackEnabled()) {
+      bool speak = false;
+      if (connected_network_ != connected_network) {
+        speak = true;
+      } else if (connected_network) {
+        if ((Network::IsConnectedState(state_) &&
+             !connected_network->connected()) ||
+            (Network::IsConnectingState(state_) &&
+             !connected_network->connecting()) ||
+            (Network::IsDisconnectedState(state_) &&
+             !connected_network->disconnected())) {
+          speak = true;
+        }
+      }
+
+      if (speak) {
+        AccessibilitySpeak(connected_network);
+      }
+    }
+
+    connected_network_ = connected_network;
+    if (connected_network) {
+      state_ = connected_network->state();
+    } else {
+      state_ = STATE_UNKNOWN;
     }
   }
 
@@ -806,6 +838,40 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         cellular->device_path() : std::string();
     if (cellular_device_path_ != new_cellular_device_path)
       cellular_device_path_ = new_cellular_device_path;
+  }
+
+  // Generate accessability text and call Speak().
+  void AccessibilitySpeak(const Network* network) {
+    if (!network)
+      return;
+    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+    std::string connection_string;
+    if (Network::IsConnectedState(network->state())) {
+      switch (network->type()) {
+        case TYPE_ETHERNET:
+          connection_string = l10n_util::GetStringFUTF8(
+              IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+              l10n_util::GetStringUTF16(
+                  IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
+          break;
+        default:
+          connection_string = l10n_util::GetStringFUTF8(
+              IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+              UTF8ToUTF16(network->name()));
+          break;
+      }
+    } else if (Network::IsConnectingState(network->state())) {
+      const Network* connecting_network = cros->connecting_network();
+      if (connecting_network && connecting_network->type() != TYPE_ETHERNET) {
+        connection_string = l10n_util::GetStringFUTF8(
+            IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
+            UTF8ToUTF16(connecting_network->name()));
+      }
+    } else if (Network::IsDisconnectedState(network->state())) {
+      connection_string = l10n_util::GetStringUTF8(
+          IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
+    }
+    accessibility::Speak(connection_string.c_str());
   }
 
   // Overridden from AudioHandler::VolumeObserver.
@@ -1114,6 +1180,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   base::HourClockType clock_type_;
   int search_key_mapped_to_;
   bool screen_locked_;
+  ConnectionState state_;
+  const Network* connected_network_;
 
   scoped_ptr<BluetoothAdapter> bluetooth_adapter_;
 

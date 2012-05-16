@@ -246,14 +246,6 @@ class NetworkIcon {
 
     // Determine whether or not we need to update the icon.
     bool dirty = bitmap_.empty();
-    bool speak = false;
-    if (accessibility::IsSpokenFeedbackEnabled()) {
-      if ((Network::IsConnectedState(state_) && !network->connected()) ||
-          (Network::IsConnectingState(state_) && !network->connecting()) ||
-          (Network::IsDisconnectedState(state_) && !network->disconnected())) {
-        speak = true;
-      }
-    }
 
     // If the network state has changed, the icon needs updating.
     if (state_ != network->state()) {
@@ -284,10 +276,6 @@ class NetworkIcon {
       UpdateIcon(network);
       // Generate the bitmap from the icon.
       GenerateBitmap();
-    }
-
-    if (speak) {
-      AccessabilitySpeak(network);
     }
   }
 
@@ -479,38 +467,6 @@ class NetworkIcon {
       dirty = true;
     }
     return dirty;
-  }
-
-  // Generate accessability text and call Speak().
-  void AccessabilitySpeak(const Network* network) {
-    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-    std::string connection_string;
-    if (Network::IsConnectedState(state_)) {
-      switch (network->type()) {
-        case TYPE_ETHERNET:
-          connection_string = l10n_util::GetStringFUTF8(
-              IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-              l10n_util::GetStringUTF16(
-                  IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
-          break;
-        default:
-          connection_string = l10n_util::GetStringFUTF8(
-              IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-              UTF8ToUTF16(network->name()));
-          break;
-      }
-    } else if (Network::IsConnectingState(state_)) {
-      const Network* connecting_network = cros->connecting_network();
-      if (connecting_network && connecting_network->type() != TYPE_ETHERNET) {
-        connection_string = l10n_util::GetStringFUTF8(
-            IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
-            UTF8ToUTF16(connecting_network->name()));
-      }
-    } else if (Network::IsDisconnectedState(state_)) {
-      connection_string = l10n_util::GetStringUTF8(
-          IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
-    }
-    accessibility::Speak(connection_string.c_str());
   }
 
   std::string service_path_;
