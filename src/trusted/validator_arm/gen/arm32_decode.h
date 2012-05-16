@@ -134,9 +134,7 @@ class Arm32DecoderState : DecoderState {
   // by the table methods above. This speeds up the code since
   // the class decoders need to only be built once (and reused
   // for each call to "decode").
-  const Binary2RegisterImmedShiftedTest Binary2RegisterImmedShiftedTest_instance_;
   const Binary2RegisterImmediateOp Binary2RegisterImmediateOp_instance_;
-  const Binary3RegisterImmedShiftedOp Binary3RegisterImmedShiftedOp_instance_;
   const Binary3RegisterOp Binary3RegisterOp_instance_;
   const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
@@ -146,11 +144,11 @@ class Arm32DecoderState : DecoderState {
   const BxBlx BxBlx_instance_;
   const CoprocessorOp CoprocessorOp_instance_;
   const DataProc DataProc_instance_;
+  const Defs12To15 Defs12To15_instance_;
   const Defs12To15RdRnRsRmNotPc Defs12To15RdRnRsRmNotPc_instance_;
   const Deprecated Deprecated_instance_;
   const EffectiveNoOp EffectiveNoOp_instance_;
   const Forbidden Forbidden_instance_;
-  const ImmediateBic ImmediateBic_instance_;
   const LoadCoprocessor LoadCoprocessor_instance_;
   const LoadDoubleExclusive LoadDoubleExclusive_instance_;
   const LoadDoubleI LoadDoubleI_instance_;
@@ -160,6 +158,8 @@ class Arm32DecoderState : DecoderState {
   const LoadMultiple LoadMultiple_instance_;
   const LoadRegister LoadRegister_instance_;
   const LongMultiply LongMultiply_instance_;
+  const MaskAddress MaskAddress_instance_;
+  const MaybeSetsConds MaybeSetsConds_instance_;
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
   const MoveFromCoprocessor MoveFromCoprocessor_instance_;
   const MoveToStatusRegister MoveToStatusRegister_instance_;
@@ -171,7 +171,7 @@ class Arm32DecoderState : DecoderState {
   const StoreExclusive StoreExclusive_instance_;
   const StoreImmediate StoreImmediate_instance_;
   const StoreRegister StoreRegister_instance_;
-  const TestImmediate TestImmediate_instance_;
+  const TestIfAddressMasked TestIfAddressMasked_instance_;
   const Unary1RegisterImmediateOp Unary1RegisterImmediateOp_instance_;
   const Unary2RegisterImmedShiftedOp Unary2RegisterImmedShiftedOp_instance_;
   const Unary2RegisterOp Unary2RegisterOp_instance_;

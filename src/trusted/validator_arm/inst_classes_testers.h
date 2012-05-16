@@ -169,6 +169,23 @@ class Binary2RegisterImmediateOpTesterNotRdIsPcAndS
 };
 
 // Implements a decoder tester for decoder Binary2RegisterImmediateOp,
+// where it should not parse when either:
+// (1) Rd=15 and S=1; or
+// (2) Rn=15 and S=0;
+class Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS
+    : public Binary2RegisterImmediateOpTesterNotRdIsPcAndS {
+ public:
+  Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS);
+};
+
+// Implements a decoder tester for decoder Binary2RegisterImmediateOp,
 // where Rd can be Pc (overriding default NaCl assumptions),
 // and should not parse when Rd=15 and S=1.
 class Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS

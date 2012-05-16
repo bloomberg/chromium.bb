@@ -59,9 +59,10 @@
 #
 # Constraints identifiers used are:
 #    Imm5NotZero - The immediate (5-bit) value must not be zero.
-#    NotRdIsPcAndS - Rd not Pc (R15) and S=1 (updates register bit).
-#    NotRdIsPcAndSOrRnValues - not (Rd=15 & S=1), or not Rn=13, or
-#                not (Rn=15 and S=0).
+#    NotRdIsPcAndS - not (Rd is Pc (R15) and S=1 (updates register bit)).
+#    NeitherRdIsPcAndSNorRnIsPcAndNotS - Neither
+#        (1) Rd is Pc and S=1; nor
+#        (2) Rn is Pc ans S=0;
 #    RegsNotPc - All register defined by instruction are not Pc (R15).
 #    RdCanBePc - Overrides Nacl Constraint that Rd!=Pc.
 #    RdCanBePcAndNotRdIsPcAndS - Overrides Nacl Constraint that Rd!=Pc,
@@ -109,7 +110,7 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
 | "      0xx1x      1011     =Forbidden  # Load/Store Unprivileged, plus undef
 | "      "          11x1     "
 | 1      ~10xx0     -        ->dp_immed
-| "      10000      -        = Unary1RegisterImmediateOp
+| "      10000      -        = Unary1RegisterImmediateOp => Defs12To15
                                   Mov_Rule_96_A2_P_194
                                   cccc00110000iiiiddddIIIIIIIIIIII
                                   RegsNotPc
@@ -121,54 +122,67 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
 +-- dp_reg (See Section A5.2.1)
 | op1(24:20) op2(11:7) op3(6:5)
 | 0000x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
                                      And_Rule_7_A1_P36
                                      cccc0000000unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0001x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
                                      Eor_Rule_45_A1_P96
                                      cccc0000001unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0010x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
 # Note: For arm, the case where Rn=SP is NOT a special case (only in thumb2).
 # Hence, parse restriction does not apply (See Sub_Rule_216_P428 in manual).
                                      SubRule_213_A1_P422
                                      cccc0000010unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0011x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
                                      Rsb_Rule_143_P286
                                      cccc0000011unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0100x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
 # Note: For arm, the case where Rn=SP is NOT a special case (only in thumb2).
 # Hence, parse restriction does not apply (See Add_Rule_8_A1_P28 in manual).
                                      Add_Rule_6_A1_P24
                                      cccc0000100unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0101x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
                                      Adc_Rule_2_A1_P16
                                      cccc0000101unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0110x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
                                      Sbc_Rule_152_A1_P304
                                      cccc0000110unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0111x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
                                      Rsc_Rule_146_A1_P292
                                      cccc0000111unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 10001      -         -        = Binary2RegisterImmedShiftedTest
+                                     => MaybeSetsConds
                                      Tst_Rule_231_A1_P456
                                      cccc00010001nnnn0000iiiiitt0mmmm 
 | 10011      -         -        = Binary2RegisterImmedShiftedTest
+                                     => MaybeSetsConds
                                      Teq_Rule_228_A1_P450
                                      cccc00010011nnnn0000iiiiitt0mmmm
 | 10101      -         -        = Binary2RegisterImmedShiftedTest
+                                     => MaybeSetsConds
                                      Cmp_Rule_36_A1_P82
                                      cccc00010101nnnn0000iiiiitt0mmmm
 | 10111      -         -        = Binary2RegisterImmedShiftedTest
+                                     => MaybeSetsConds
                                      Cmn_Rule_33_A1_P76
                                      cccc00010111nnnn0000iiiiitt0mmmm
 | 1100x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
                                      Orr_Rule_114_A1_P230
                                      cccc0001100unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
@@ -194,6 +208,7 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                                      cccc0001101u0000ddddiiiii110mmmm
                                      Imm5NotZero
 | 1110x      -         -        = Binary3RegisterImmedShiftedOp
+                                     => Defs12To15
                                      Bic_Rule_20_A1_P52
                                      cccc0001110unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
@@ -250,9 +265,10 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
 +--
 
 +-- dp_immed (See Section A5.2.3)
-# Note: The two interesting instructions in this set are TestImmediate
-# and ImmediateBic. These two instructions are the ones that we
-# allow testing/setting of bits to mask data addresses appropriately.
+# Note: The two interesting instructions in this set are
+# TestIfAddressMasked and MaskAddress. These two instructions are the
+# ones that we# allow testing/setting of bits to mask data addresses
+# appropriately.
 | op(24:20) Rn(19:16)
 | 0000x      -        = Binary2RegisterImmediateOp And_Rule_11_A1_P34
                            cccc0010000unnnnddddiiiiiiiiiiii NotRdIsPcAndS
@@ -260,7 +276,7 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                            cccc0010001unnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0010x      ~1111    = Binary2RegisterImmediateOp Sub_Rule_212_A1_P420
                            cccc0010010unnnnddddiiiiiiiiiiii
-                           NotRdIsPcAndS
+                           NeitherRdIsPcAndSNorRnIsPcAndNotS
                         # Note: Table says that op=0010x for ADR, but
                         # patterns for ADR do not match (page A8-32).
                         # Causes parsing conflicts with SUB (previous
@@ -277,13 +293,13 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                         # this case matches the patterns for SUB in A8.6.212
                         # (page A8-420). Assuming SUB should be recognized.
 | 00101      1111     = Binary2RegisterImmediateOp Sub_Rule_212_A1_P420
-                           cccc0010010unnnnddddiiiiiiiiiiii
-                           NotRdIsPcAndS
+                           cccc001001011111ddddiiiiiiiiiiii
+                           NeitherRdIsPcAndSNorRnIsPcAndNotS
 | 0011x      -        = Binary2RegisterImmediateOp Rsb_Rule_142_A1_P284
                            cccc0010011unnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0100x      ~1111    = Binary2RegisterImmediateOp Add_Rule_5_A1_P22
                            cccc0010100unnnnddddiiiiiiiiiiii 
-                           NotRdIsPcAndS
+                           NeitherRdIsPcAndSNorRnIsPcAndNotS
                         # Note: Table says that op=0100x for ADR, but
                         # patterns for ADR do not match (page A8-32).
                         # Causes parsing conflicts with ADD (previous
@@ -300,8 +316,8 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                         # this case matches the patterns for ADD in A8.6.5
                         # (page A8-22). Assuming ADD should be recognized.
 | 01001      1111     = Binary2RegisterImmediateOp Add_Rule_5_A1_P22
-                           cccc0010100unnnnddddiiiiiiiiiiii 
-                           NotRdIsPcAndS
+                           cccc001010011111ddddiiiiiiiiiiii 
+                           NeitherRdIsPcAndSNorRnIsPcAndNotS
 | 0101x      -        = Binary2RegisterImmediateOp Adc_Rule_6_A1_P14
                            cccc0010101unnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 0110x      -        = Binary2RegisterImmediateOp Sbc_Rule_151_A1_P302
@@ -311,7 +327,8 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                         # Note: Following instruction is used to test
                         # if the immediate value appropriately (data address)
                         # masks the value in Rn.
-| 10001      -        = MaskedBinaryRegisterImmediateTest => TestImmediate
+| 10001      -        = MaskedBinaryRegisterImmediateTest
+                           => TestIfAddressMasked
                            Tst_Rule_230_A1_P454
                            cccc00110001nnnn0000iiiiiiiiiiii
 | 10011      -        = BinaryRegisterImmediateTest Teq_Rule_227_A1_P448
@@ -326,7 +343,7 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
                            cccc0011101u0000ddddiiiiiiiiiiii NotRdIsPcAndS
                         # Note: The following instruction is used to mask
                         # memory addresses.
-| 1110x      -        = MaskedBinary2RegisterImmediateOp => ImmediateBic
+| 1110x      -        = MaskedBinary2RegisterImmediateOp => MaskAddress
                            Bic_Rule_19_A1_P50
                            cccc0011110unnnnddddiiiiiiiiiiii NotRdIsPcAndS
 | 1111x      -        = Unary1RegisterImmediateOp Mvn_Rule_106_A1_P214
@@ -366,22 +383,22 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
 
 +-- extra_load_store (See Section A5.2.8)
 | op2(6:5) op1(24:20) Rn(19:16)
-| 01       xx0x0      -         =StoreRegister      # STRH(register)
-| "        xx0x1      -         =LoadRegister       # LDRH(register)
-| "        xx1x0      -         =StoreImmediate     # STRH(immediate)
-| "        xx1x1      ~1111     =LoadImmediate      # LDRH(immediate)
-| "        "          1111      =LoadImmediate      # LDRH(literal)
-| 10       xx0x0      -         =LoadDoubleR(v5TE)  # LDRD(register)
-| "        xx0x1      -         =LoadRegister       # LDRSB(register)
-| "        xx1x0      ~1111     =LoadDoubleI(v5TE)  # LDRD(immediate)
-| "        "          1111      =LoadDoubleI(v5TE)  # LDRD(literal)
-| "        xx1x1      ~1111     =LoadImmediate      # LDRSB(immediate)
-| "        "          1111      =LoadImmediate      # LDRSB(literal)
-| 11       xx0x0      -         =StoreRegister      # STRD(register)
-| "        xx0x1      -         =LoadRegister       # LDRSH(register)
-| "        xx1x0      -         =StoreImmediate     # STRD(immediate)
-| "        xx1x1      ~1111     =LoadImmediate      # LDRSH(immediate)
-| "        "          1111      =LoadImmediate      # LDRSH(literal)
+| 01       xx0x0      -         =StoreRegister      # STRH(register)  A8-412
+| "        xx0x1      -         =LoadRegister       # LDRH(register)  A8-156
+| "        xx1x0      -         =StoreImmediate     # STRH(immediate) A8-410
+| "        xx1x1      ~1111     =LoadImmediate      # LDRH(immediate) A8-152
+| "        "          1111      =LoadImmediate      # LDRH(literal)   A8-154
+| 10       xx0x0      -         =LoadDoubleR(v5TE)  # LDRD(register)  A8-140
+| "        xx0x1      -         =LoadRegister       # LDRSB(register) A8-164
+| "        xx1x0      ~1111     =LoadDoubleI(v5TE)  # LDRD(immediate) A8-136
+| "        "          1111      =LoadDoubleI(v5TE)  # LDRD(literal)   A8-138
+| "        xx1x1      ~1111     =LoadImmediate      # LDRSB(immediate)A8-160
+| "        "          1111      =LoadImmediate      # LDRSB(literal)  A8-162
+| 11       xx0x0      -         =StoreRegister      # STRD(register)  A8-398
+| "        xx0x1      -         =LoadRegister       # LDRSH(register) A8-172
+| "        xx1x0      -         =StoreImmediate     # STRD(immediate) A8-396
+| "        xx1x1      ~1111     =LoadImmediate      # LDRSH(immediate)A8-168
+| "        "          1111      =LoadImmediate      # LDRSH(literal)  A8-170
 +--
 
 # Unprivileged load-store table omitted: modeled as Forbidden.

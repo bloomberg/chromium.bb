@@ -169,6 +169,27 @@ ApplySanityChecks(Instruction inst,
   return Binary2RegisterImmediateOpTester::ApplySanityChecks(inst, decoder);
 }
 
+// Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS
+Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS::
+Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS(
+    const NamedClassDecoder& decoder)
+    : Binary2RegisterImmediateOpTesterNotRdIsPcAndS(decoder) {}
+
+bool Binary2RegisterImmediateOpTesterNeitherRdIsPcAndSNorRnIsPcAndNotS::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary2RegisterImmediateOp expected_decoder;
+
+  // Check that we don't parse when Rn=15 and S=0.
+  if ((expected_decoder.n.reg(inst) == kRegisterPc) &&
+      !expected_decoder.conditions.is_updated(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  return Binary2RegisterImmediateOpTesterNotRdIsPcAndS::
+      ApplySanityChecks(inst, decoder);
+}
+
 // Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS
 Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS::
 Binary2RegisterImmediateOpTesterRdCanBePcAndNotRdIsPcAndS(

@@ -15,9 +15,7 @@ namespace nacl_arm_dec {
 
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
-  , Binary2RegisterImmedShiftedTest_instance_()
   , Binary2RegisterImmediateOp_instance_()
-  , Binary3RegisterImmedShiftedOp_instance_()
   , Binary3RegisterOp_instance_()
   , Binary3RegisterShiftedTest_instance_()
   , Binary4RegisterShiftedOp_instance_()
@@ -27,11 +25,11 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , BxBlx_instance_()
   , CoprocessorOp_instance_()
   , DataProc_instance_()
+  , Defs12To15_instance_()
   , Defs12To15RdRnRsRmNotPc_instance_()
   , Deprecated_instance_()
   , EffectiveNoOp_instance_()
   , Forbidden_instance_()
-  , ImmediateBic_instance_()
   , LoadCoprocessor_instance_()
   , LoadDoubleExclusive_instance_()
   , LoadDoubleI_instance_()
@@ -41,6 +39,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LoadMultiple_instance_()
   , LoadRegister_instance_()
   , LongMultiply_instance_()
+  , MaskAddress_instance_()
+  , MaybeSetsConds_instance_()
   , MoveDoubleFromCoprocessor_instance_()
   , MoveFromCoprocessor_instance_()
   , MoveToStatusRegister_instance_()
@@ -52,7 +52,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreExclusive_instance_()
   , StoreImmediate_instance_()
   , StoreRegister_instance_()
-  , TestImmediate_instance_()
+  , TestIfAddressMasked_instance_()
   , Unary1RegisterImmediateOp_instance_()
   , Unary2RegisterImmedShiftedOp_instance_()
   , Unary2RegisterOp_instance_()
@@ -160,7 +160,7 @@ const ClassDecoder& Arm32DecoderState::decode_dp_immed(
 
   if ((insn & 0x01F00000) == 0x01100000 /* op(24:20) == 10001 */ &&
       true)
-    return TestImmediate_instance_;
+    return TestIfAddressMasked_instance_;
 
   if ((insn & 0x01F00000) == 0x01500000 /* op(24:20) == 10101 */ &&
       true)
@@ -192,7 +192,7 @@ const ClassDecoder& Arm32DecoderState::decode_dp_immed(
 
   if ((insn & 0x01E00000) == 0x01C00000 /* op(24:20) == 1110x */ &&
       true)
-    return ImmediateBic_instance_;
+    return MaskAddress_instance_;
 
   if ((insn & 0x01600000) == 0x00600000 /* op(24:20) == 0x11x */ &&
       true)
@@ -271,7 +271,7 @@ const ClassDecoder& Arm32DecoderState::decode_dp_misc(
   if ((insn & 0x02000000) == 0x02000000 /* op(25:25) == 1 */ &&
       (insn & 0x01F00000) == 0x01000000 /* op1(24:20) == 10000 */ &&
       true)
-    return Unary1RegisterImmediateOp_instance_;
+    return Defs12To15_instance_;
 
   if ((insn & 0x02000000) == 0x02000000 /* op(25:25) == 1 */ &&
       (insn & 0x01F00000) == 0x01400000 /* op1(24:20) == 10100 */ &&
@@ -338,17 +338,17 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg(
   if ((insn & 0x01900000) == 0x01100000 /* op1(24:20) == 10xx1 */ &&
       true &&
       true)
-    return Binary2RegisterImmedShiftedTest_instance_;
+    return MaybeSetsConds_instance_;
 
   if ((insn & 0x01A00000) == 0x01800000 /* op1(24:20) == 11x0x */ &&
       true &&
       true)
-    return Binary3RegisterImmedShiftedOp_instance_;
+    return Defs12To15_instance_;
 
   if ((insn & 0x01000000) == 0x00000000 /* op1(24:20) == 0xxxx */ &&
       true &&
       true)
-    return Binary3RegisterImmedShiftedOp_instance_;
+    return Defs12To15_instance_;
 
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: dp_reg could not parse %08X",

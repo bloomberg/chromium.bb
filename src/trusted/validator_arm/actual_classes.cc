@@ -18,8 +18,16 @@ namespace nacl_arm_dec {
 //      N E W    C L A S S    D E C O D E R S
 // **************************************************************
 
-// Defs12To15
-SafetyLevel Defs12To15::safety(const Instruction i) const {
+SafetyLevel MaybeSetsConds::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList MaybeSetsConds::defs(const Instruction i) const {
+  return conditions.conds_if_updated(i);
+}
+
+SafetyLevel NoPcAssignClassDecoder::safety(const Instruction i) const {
   if (defs(i)[kRegisterPc]) {
     return FORBIDDEN_OPERANDS;
   }
@@ -37,6 +45,22 @@ SafetyLevel Defs12To15RdRnRsRmNotPc::safety(const Instruction i) const {
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
   // since the ARM restriction doesn't allow it anyway.
   return MAY_BE_SAFE;
+}
+
+RegisterList TestIfAddressMasked::defs(Instruction i) const {
+  return conditions.conds_if_updated(i);
+}
+
+bool TestIfAddressMasked::sets_Z_if_bits_clear(Instruction i,
+                                               Register r,
+                                               uint32_t mask) const {
+  return n.reg(i) == r
+      && (imm12.get_modified_immediate(i) & mask) == mask
+      && defs(i)[kConditions];
+}
+
+bool MaskAddress::clears_bits(const Instruction i, uint32_t mask) const {
+  return (imm12.get_modified_immediate(i) & mask) == mask;
 }
 
 // **************************************************************
@@ -62,26 +86,6 @@ SafetyLevel DataProc::safety(const Instruction i) const {
 RegisterList DataProc::defs(const Instruction i) const {
   return Rd(i) + (UpdatesConditions(i) ? kConditions : kRegisterNone);
 }
-
-RegisterList Test::defs(const Instruction i) const {
-  return (UpdatesConditions(i) ? kConditions : kRegisterNone);
-}
-
-
-bool TestImmediate::sets_Z_if_bits_clear(Instruction i,
-                                         Register r,
-                                         uint32_t mask) const {
-  // Rn = 19:16 for TST(immediate) - section A8.6.230
-  return Rn(i) == r
-      && (imm12.get_modified_immediate(i) & mask) == mask
-      && defs(i)[kConditions];
-}
-
-
-bool ImmediateBic::clears_bits(const Instruction i, uint32_t mask) const {
-  return (imm12.get_modified_immediate(i) & mask) == mask;
-}
-
 
 SafetyLevel PackSatRev::safety(const Instruction i) const {
   if (defs(i)[kRegisterPc]) {

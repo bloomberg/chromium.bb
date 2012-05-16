@@ -33,17 +33,45 @@ namespace nacl_arm_dec {
 //      N E W    C L A S S    D E C O D E R S
 // **************************************************************
 
-// Data processing and arithmetic
-class Defs12To15 : public ClassDecoder {
+// Defines a class decoder that only worries about whether condition
+// flags (S - bit(20)) is set.
+class MaybeSetsConds : public ClassDecoder {
  public:
-  inline Defs12To15() : ClassDecoder() {}
-  virtual ~Defs12To15() {}
+  inline MaybeSetsConds() {}
+  virtual ~MaybeSetsConds() {}
 
-  // We use Rd to capture the register being set.
-  static const RegDBits12To15Interface d;
   static const UpdatesConditionsBit20Interface conditions;
 
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MaybeSetsConds);
+};
+
+// Defines a default (assignment) class decoder, which assumes that
+// the instruction is unsafe if it assigns register PC.
+class NoPcAssignClassDecoder : public MaybeSetsConds {
+ public:
+  inline NoPcAssignClassDecoder() {}
+  virtual ~NoPcAssignClassDecoder() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(NoPcAssignClassDecoder);
+};
+
+// Computes a value and stores in in Rd (bits 12-15). Doesn't
+// allow Rd=PC.
+class Defs12To15 : public NoPcAssignClassDecoder {
+ public:
+  inline Defs12To15() {}
+  virtual ~Defs12To15() {}
+
+  // We use the following Rd to capture the register being set.
+  static const RegDBits12To15Interface d;
+
   virtual RegisterList defs(Instruction i) const;
 
  private:
@@ -56,6 +84,8 @@ class Defs12To15 : public ClassDecoder {
 // hence do not need a separate class decoder.
 class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
  public:
+  // We use the following Rm, Rs, and Rn to capture the
+  // registers that need checking.
   static const RegMBits0To3Interface m;
   static const RegSBits8To11Interface s;
   static const RegNBits16To19Interface n;
@@ -67,6 +97,38 @@ class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15RdRnRsRmNotPc);
+};
+
+// Defines test masking instruction to be used with a
+// load/store (eq condition) to access memory.
+class TestIfAddressMasked : public NoPcAssignClassDecoder {
+ public:
+  static const Imm12Bits0To11Interface imm12;
+  static const RegNBits16To19Interface n;
+
+  inline TestIfAddressMasked() {}
+  virtual ~TestIfAddressMasked() {}
+  virtual RegisterList defs(Instruction i) const;
+  virtual bool sets_Z_if_bits_clear(Instruction i,
+                                    Register r,
+                                    uint32_t mask) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(TestIfAddressMasked);
+};
+
+// Defines the masking instruction to be used with
+//  a load/store to conditionally access memory.
+class MaskAddress : public Defs12To15 {
+ public:
+  static const Imm12Bits0To11Interface imm12;
+
+  inline MaskAddress() {}
+  virtual ~MaskAddress() {}
+  virtual bool clears_bits(Instruction i, uint32_t mask) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MaskAddress);
 };
 
 // **************************************************************
@@ -219,64 +281,6 @@ class DataProc : public OldClassDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(DataProc);
-};
-
-// Models the few data-processing instructions that *don't* produce a result,
-// but may still set flags.
-//
-// Includes:
-// TST(register), TEQ(register),
-// CMP(register), CMN(register),
-// TST(immediate), TEQ(immediate), CMP(immediate), CMN(immediate)
-class Test : public DataProc {
- public:
-  inline Test() {}
-  virtual ~Test() {}
-  virtual RegisterList defs(Instruction i) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Test);
-};
-
-// Specifically models the TST register-immediate instruction, which is
-// important to our conditional store sandbox.
-class TestImmediate : public Test {
- public:
-  static const Imm12Bits0To11Interface imm12;
-  inline TestImmediate() {}
-  virtual ~TestImmediate() {}
-
-  virtual bool sets_Z_if_bits_clear(Instruction i,
-                                    Register r,
-                                    uint32_t mask) const;
-  // Defines the operand register.
-  inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
-  }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(TestImmediate);
-};
-
-// A special-case data processing instruction: the immediate BIC.  We consider
-// this the only instruction that reliably clears bits in its result, so we
-// model it separately from other logic ops.
-class ImmediateBic : public DataProc {
- public:
-  static const Imm12Bits0To11Interface imm12;
-  inline ImmediateBic() {}
-  virtual ~ImmediateBic() {}
-
-  // TODO(karl) Determine why we ever allowed BIC to directly write PC.
-  // ImmediateBic is exempted from the writes-r15 check.
-  // virtual SafetyLevel safety(Instruction i) const {
-  //   UNREFERENCED_PARAMETER(i);
-  //   return MAY_BE_SAFE;
-  // }
-  virtual bool clears_bits(Instruction i, uint32_t mask) const;
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ImmediateBic);
 };
 
 // Models the Pack/Saturate/Reverse instructions, which
