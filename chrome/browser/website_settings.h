@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_WEBSITE_SETTINGS_H_
 #define CHROME_BROWSER_WEBSITE_SETTINGS_H_
 
-#include "base/string16.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
+#include "base/time.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "googleurl/src/gurl.h"
@@ -93,6 +96,13 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   void OnSitePermissionChanged(ContentSettingsType type,
                                ContentSetting value);
 
+  // Callback used for requests to fetch the number of page visits from history
+  // service and the time of the first visit.
+  void OnGotVisitCountToHost(HistoryService::Handle handle,
+                             bool found_visits,
+                             int visit_count,
+                             base::Time first_visit);
+
   // Accessors.
   SiteConnectionStatus site_connection_status() const {
     return site_connection_status_;
@@ -134,6 +144,11 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // Sets (presents) the information about the site's identity and connection
   // in the |ui_|.
   void PresentSiteIdentity();
+
+  // Sets (presents) history information about the site in the |ui_|. Passing
+  // base::Time() as value for |first_visit| will clear the history information
+  // in the UI.
+  void PresentHistoryInfo(base::Time first_visit);
 
   // The website settings UI displays information and controls for site
   // specific data (local stored objects like cookies), site specific
@@ -182,6 +197,9 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // The |HostContentSettingsMap| is the service that provides and manages
   // content settings (aka. site permissions).
   HostContentSettingsMap* content_settings_;
+
+  // Used to request the number of page visits.
+  CancelableRequestConsumer visit_count_request_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettings);
 };

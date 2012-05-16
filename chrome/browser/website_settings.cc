@@ -7,6 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -74,9 +77,20 @@ WebsiteSettings::WebsiteSettings(
   ui_->SetPresenter(this);
   Init(profile, url, ssl);
 
+  HistoryService* history_service =
+      profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  if (history_service) {
+    history_service->GetVisibleVisitCountToHost(
+        site_url_,
+        &visit_count_request_consumer_,
+        base::Bind(&WebsiteSettings::OnGotVisitCountToHost,
+                   base::Unretained(this)));
+  }
+
   PresentSitePermissions();
   PresentSiteData();
   PresentSiteIdentity();
+  PresentHistoryInfo(base::Time());
 }
 
 WebsiteSettings::~WebsiteSettings() {
@@ -142,6 +156,20 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     value = Value::CreateIntegerValue(setting);
   content_settings_->SetWebsiteSetting(
       primary_pattern, secondary_pattern, type, "", value);
+}
+
+void WebsiteSettings::OnGotVisitCountToHost(HistoryService::Handle handle,
+                                            bool found_visits,
+                                            int visit_count,
+                                            base::Time first_visit) {
+  if (!found_visits) {
+    // This indicates an error, such as the page's URL scheme wasn't
+    // http/https.
+    first_visit = base::Time();
+  } else if (visit_count == 0) {
+    first_visit = base::Time::Now();
+  }
+  PresentHistoryInfo(first_visit);
 }
 
 void WebsiteSettings::OnSiteDataAccessed() {
@@ -449,6 +477,30 @@ void WebsiteSettings::PresentSiteIdentity() {
       UTF16ToUTF8(site_identity_details_);
   info.cert_id = cert_id_;
   ui_->SetIdentityInfo(info);
+}
+
+void WebsiteSettings::PresentHistoryInfo(base::Time first_visit) {
+  if (first_visit == base::Time()) {
+    ui_->SetFirstVisit(string16());
+    return;
+  }
+
+  bool visited_before_today = false;
+  base::Time today = base::Time::Now().LocalMidnight();
+  base::Time first_visit_midnight = first_visit.LocalMidnight();
+  visited_before_today = (first_visit_midnight < today);
+
+  string16 first_visit_text;
+  if (visited_before_today) {
+    first_visit_text = l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY,
+        base::TimeFormatShortDate(first_visit));
+  } else {
+    first_visit_text = l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY);
+
+  }
+  ui_->SetFirstVisit(first_visit_text);
 }
 
 // static

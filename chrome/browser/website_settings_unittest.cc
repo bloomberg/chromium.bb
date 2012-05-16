@@ -6,6 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -61,6 +62,7 @@ class MockWebsiteSettingsUI : public WebsiteSettingsUI {
   MOCK_METHOD1(SetPermissionInfo,
                void(const PermissionInfoList& permission_info_list));
   MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));
+  MOCK_METHOD1(SetFirstVisit, void(const string16& first_visit));
 };
 
 class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
@@ -118,6 +120,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(*mock_ui, SetIdentityInfo(_));
     EXPECT_CALL(*mock_ui, SetPresenter(_));
     EXPECT_CALL(*mock_ui, SetCookieInfo(_));
+    EXPECT_CALL(*mock_ui, SetFirstVisit(string16()));
   }
 
   const GURL& url() const { return url_; }
@@ -204,6 +207,7 @@ TEST_F(WebsiteSettingsTest, OnSiteDataAccessed) {
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_));
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetPresenter(_));
+  EXPECT_CALL(*mock_ui(), SetFirstVisit(string16()));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_)).Times(2);
 
   website_settings()->OnSiteDataAccessed();

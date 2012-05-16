@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/website_settings.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -95,6 +96,9 @@ class WebsiteSettingsUI {
 
   // Sets site identity information.
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) = 0;
+
+  // Sets the first visited data. |first_visit| can be an empty string.
+  virtual void SetFirstVisit(const string16& first_visit) = 0;
 };
 
 class CookieInfoList : public std::vector<WebsiteSettingsUI::CookieInfo> {

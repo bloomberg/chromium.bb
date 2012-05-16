@@ -35,6 +35,7 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   virtual void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) OVERRIDE;
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
+  virtual void SetFirstVisit(const string16& first_visit) OVERRIDE;
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
@@ -101,6 +102,9 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
 
   // Container for the identity tab content.
   GtkWidget* identity_tab_contents_;
+
+  // Container for the information about the first visit date of the website.
+  GtkWidget* first_visit_contents_;
 
   // The UI translates user actions to specific events and forwards them to the
   // |presenter_|. The |presenter_| handles these events and updates the UI.

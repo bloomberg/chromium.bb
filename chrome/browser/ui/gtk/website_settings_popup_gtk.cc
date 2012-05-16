@@ -83,6 +83,7 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
       cookies_section_contents_(NULL),
       permissions_section_contents_(NULL),
       identity_tab_contents_(NULL),
+      first_visit_contents_(NULL),
       presenter_(NULL) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
@@ -162,6 +163,13 @@ void WebsiteSettingsPopupGtk::InitContents() {
   gtk_box_pack_start(GTK_BOX(info_tab),
                      identity_tab_contents_,
                      FALSE, FALSE, 0);
+  first_visit_contents_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  GtkWidget* history_contents = CreateSection(
+      l10n_util::GetStringUTF8(IDS_PAGE_INFO_SITE_INFO_TITLE),
+      first_visit_contents_);
+  gtk_container_set_border_width(GTK_CONTAINER(history_contents), 10);
+  gtk_box_pack_start(GTK_BOX(info_tab), gtk_hseparator_new(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(info_tab), history_contents, FALSE, FALSE, 0);
 
   // Create tab container and add all tabs.
   GtkWidget* notebook = gtk_notebook_new();
@@ -361,6 +369,16 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
        0);
 
   gtk_widget_show_all(identity_tab_contents_);
+}
+
+void WebsiteSettingsPopupGtk::SetFirstVisit(const string16& first_visit) {
+  DCHECK(first_visit_contents_);
+  ClearContainer(first_visit_contents_);
+
+  GtkWidget* first_visit_label = CreateTextLabel(UTF16ToUTF8(first_visit), 400);
+  gtk_box_pack_start(
+      GTK_BOX(first_visit_contents_), first_visit_label, FALSE, FALSE, 0);
+  gtk_widget_show_all(first_visit_contents_);
 }
 
 void WebsiteSettingsPopupGtk::SetPermissionInfo(
