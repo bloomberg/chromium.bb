@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-localStrings = new LocalStrings();
-
 /**
  * Requests the list of crashes from the backend.
  */
@@ -18,7 +16,7 @@ function requestCrashes() {
  * @param {string} version The browser version.
  */
 function updateCrashList(enabled, crashes, version) {
-  $('countBanner').textContent = localStrings.getStringF('crashCountFormat',
+  $('countBanner').textContent = loadTimeData.getStringF('crashCountFormat',
                                                          crashes.length);
 
   var crashSection = $('crashList');
@@ -37,11 +35,11 @@ function updateCrashList(enabled, crashes, version) {
 
     var crashBlock = document.createElement('div');
     var title = document.createElement('h3');
-    title.textContent = localStrings.getStringF('crashHeaderFormat',
+    title.textContent = loadTimeData.getStringF('crashHeaderFormat',
                                                 crash['id']);
     crashBlock.appendChild(title);
     var date = document.createElement('p');
-    date.textContent = localStrings.getStringF('crashTimeFormat',
+    date.textContent = loadTimeData.getStringF('crashTimeFormat',
                                                crash['time']);
     crashBlock.appendChild(date);
     var linkBlock = document.createElement('p');
@@ -76,7 +74,7 @@ function updateCrashList(enabled, crashes, version) {
     }
     link.href = href;
     link.target = '_blank';
-    link.textContent = localStrings.getString('bugLinkText');
+    link.textContent = loadTimeData.getString('bugLinkText');
     linkBlock.appendChild(link);
     crashBlock.appendChild(linkBlock);
     crashSection.appendChild(crashBlock);

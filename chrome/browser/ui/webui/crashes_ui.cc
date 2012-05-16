@@ -44,6 +44,7 @@ namespace {
 ChromeWebUIDataSource* CreateCrashesUIHTMLSource() {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUICrashesHost);
+  source->set_use_json_js_format_v2();
 
   source->AddLocalizedString("crashesTitle", IDS_CRASHES_TITLE);
   source->AddLocalizedString("crashCountFormat",
