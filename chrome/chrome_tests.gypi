@@ -449,7 +449,8 @@
         'chrome_resources.gyp:chrome_strings',
         'debugger',
         'test_support_common',
-        'test_support_ui',
+        # NOTE: don't add test_support_ui, no more UITests. See
+        # http://crbug.com/137365
         '../third_party/hunspell/hunspell.gyp:hunspell',
         '../net/net.gyp:net',
         '../net/net.gyp:net_resources',
@@ -473,7 +474,6 @@
         'BROWSER_TESTS_HEADER_OVERRIDE="chrome/test/base/in_process_browser_test.h"',
       ],
       'sources': [
-        'browser/accessibility/accessibility_mac_uitest.mm',
         'browser/browser_focus_uitest.cc',
         'browser/browser_keyevents_browsertest.cc',
         'browser/instant/instant_browsertest.cc',
@@ -489,7 +489,6 @@
         'browser/ui/panels/panel_resize_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/button_dropdown_test.cc',
-        'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
         'browser/ui/views/menu_item_view_test.cc',
         'browser/ui/views/menu_model_adapter_test.cc',
@@ -497,7 +496,6 @@
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
-        'browser/ui/webui/inspect_ui_browsertest.cc',
         'test/base/chrome_test_launcher.cc',
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
@@ -657,7 +655,6 @@
           },  # configurations
         }, { # else: OS != "win"
           'sources!': [
-            'browser/ui/views/constrained_window_views_browsertest.cc',
             'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
           ],
         }],  # OS != "win"
@@ -2852,6 +2849,7 @@
         'browser/ui/views/ash/caps_lock_handler_browsertest.cc',
         'browser/ui/views/ash/launcher/launcher_favicon_loader_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
+        'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
         'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
@@ -2863,6 +2861,7 @@
         'browser/ui/webui/bidi_checker_web_ui_test.h',
         'browser/ui/webui/bookmarks_ui_browsertest.cc',
         'browser/ui/webui/extensions/extension_settings_browsertest.js',
+        'browser/ui/webui/inspect_ui_browsertest.cc',
         'browser/ui/webui/net_internals/net_internals_ui_browsertest.cc',
         'browser/ui/webui/net_internals/net_internals_ui_browsertest.h',
         'browser/ui/webui/ntp/new_tab_ui_browsertest.cc',
@@ -2941,7 +2940,7 @@
         'test/data/webui/print_preview.cc',
         'test/data/webui/print_preview.h',
         'test/data/webui/print_preview.js',
-	'test/data/webui/suidsandbox_browsertest.js',
+        'test/data/webui/suidsandbox_browsertest.js',
         'test/gpu/gpu_feature_browsertest.cc',
         'test/security_tests/sandbox_browsertest.cc',
         'test/ui/ppapi_uitest.cc',
@@ -3179,6 +3178,7 @@
             'app/chrome_version.rc.version',
             # TODO(port): http://crbug.com/45770
             'browser/printing/printing_layout_browsertest.cc',
+            'browser/ui/views/constrained_window_views_browsertest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1', {
