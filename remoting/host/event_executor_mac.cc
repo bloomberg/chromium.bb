@@ -336,8 +336,9 @@ void EventExecutorMac::OnSessionFinished() {
 
 }  // namespace
 
-scoped_ptr<EventExecutor> EventExecutor::Create(
-    MessageLoop* message_loop, Capturer* capturer) {
+scoped_ptr<EventExecutor> EventExecutor::Create(MessageLoop* message_loop,
+                                                base::MessageLoopProxy* ui_loop,
+                                                Capturer* capturer) {
   return scoped_ptr<EventExecutor>(
       new EventExecutorMac(message_loop));
 }

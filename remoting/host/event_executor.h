@@ -10,14 +10,21 @@
 
 class MessageLoop;
 
+namespace base {
+class MessageLoopProxy;
+}  // namespace base
+
 namespace remoting {
 
 class Capturer;
 
 class EventExecutor : public protocol::HostEventStub {
  public:
-  // Creates default event executor for the current platform.
+  // Creates a default event executor for the current platform.
+  // This object should do as much work as possible on |message_loop|, using
+  // |ui_loop| only when necessary.
   static scoped_ptr<EventExecutor> Create(MessageLoop* message_loop,
+                                          base::MessageLoopProxy* ui_loop,
                                           Capturer* capturer);
 
   // Initialises any objects needed to execute events.

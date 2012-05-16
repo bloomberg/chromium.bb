@@ -15,20 +15,19 @@ namespace protocol {
 class ClipboardEvent;
 }  // namespace protocol
 
+// All Clipboard methods should be run on the UI thread, so that the Clipboard
+// can get change notifications.
 class Clipboard {
  public:
   virtual ~Clipboard() {};
 
   // Initialises any objects needed to read from or write to the clipboard.
-  // This method must be called on the desktop thread.
   virtual void Start() = 0;
 
   // Destroys any objects initialised by Start().
-  // This method must be called on the desktop thread.
   virtual void Stop() = 0;
 
-  // Writes an item to the clipboard.
-  // This method must be called on the desktop thread, after Start().
+  // Writes an item to the clipboard. It must be called after Start().
   virtual void InjectClipboardEvent(const protocol::ClipboardEvent& event) = 0;
 
   static scoped_ptr<Clipboard> Create();

@@ -429,8 +429,9 @@ void EventExecutorLinux::OnSessionFinished() {
 
 }  // namespace
 
-scoped_ptr<EventExecutor> EventExecutor::Create(
-    MessageLoop* message_loop, Capturer* capturer) {
+scoped_ptr<EventExecutor> EventExecutor::Create(MessageLoop* message_loop,
+                                                base::MessageLoopProxy* ui_loop,
+                                                Capturer* capturer) {
   scoped_ptr<EventExecutorLinux> executor(
       new EventExecutorLinux(message_loop));
   if (!executor->Init())
