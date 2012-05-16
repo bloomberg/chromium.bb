@@ -190,8 +190,6 @@ class ConstrainedNetworkServer(object):
       new_port: whether to use a new port for this request or not.
       no_cache: Set reponse's cache-control to no-cache.
     """
-    cherrypy.log('Got request string: %s' % cherrypy.request.request_line)
-
     if no_cache:
       response = cherrypy.response
       response.headers['Pragma'] = 'no-cache'
@@ -232,7 +230,7 @@ class ConstrainedNetworkServer(object):
     constrained_port = self._port_allocator.Get(
         cherrypy.request.remote.ip, server_port=self._options.port,
         interface=self._options.interface, bandwidth=bandwidth, latency=latency,
-        loss=loss, new_port=new_port)
+        loss=loss, new_port=new_port, file=f, **kwargs)
     end_time = time.time()
 
     if not constrained_port:
@@ -326,6 +324,7 @@ def ParseArgs():
   # Required so that cherrypy logs do not get propagated to root logger causing
   # the logs to be printed twice.
   cherrypy.log.error_log.propagate = False
+  cherrypy.log.access_log.propagate = False
 
   _SetLogger(options.verbose)
 
