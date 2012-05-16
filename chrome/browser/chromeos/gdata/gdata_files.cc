@@ -866,6 +866,15 @@ bool GDataRootDirectory::ParseFromString(const std::string& serialized_proto) {
       new GDataRootDirectoryProto());
   bool ok = proto->ParseFromString(serialized_proto);
   if (ok) {
+    // The title field for the root directory was originally empty, then
+    // changed to "gdata", then changed to "drive". Discard the proto data if
+    // the older formats are detected. See crbug.com/128133 for details.
+    const std::string& title = proto->gdata_directory().gdata_entry().title();
+    if (title != "drive") {
+      LOG(ERROR) << "Incompatible proto detected: " << title;
+      return false;
+    }
+
     FromProto(*proto.get());
     set_origin(FROM_CACHE);
     set_refresh_time(base::Time::Now());
