@@ -138,30 +138,6 @@ SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
                         (trailing > 0) ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
-size_t RenderTextLinux::IndexOfAdjacentGrapheme(
-    size_t index,
-    LogicalCursorDirection direction) {
-  if (index > text().length())
-    return text().length();
-  EnsureLayout();
-  ptrdiff_t char_offset = ui::UTF16IndexToOffset(text(), 0, index);
-  if (direction == CURSOR_BACKWARD) {
-    if (char_offset > 0) {
-      do {
-        --char_offset;
-      } while (char_offset > 0 && !log_attrs_[char_offset].is_cursor_position);
-    }
-  } else {  // direction == CURSOR_FORWARD
-    if (char_offset < num_log_attrs_ - 1) {
-      do {
-        ++char_offset;
-      } while (char_offset < num_log_attrs_ - 1 &&
-               !log_attrs_[char_offset].is_cursor_position);
-    }
-  }
-  return ui::UTF16OffsetToIndex(text(), 0, char_offset);
-}
-
 std::vector<RenderText::FontSpan> RenderTextLinux::GetFontSpansForTesting() {
   EnsureLayout();
 
@@ -281,6 +257,10 @@ std::vector<Rect> RenderTextLinux::GetSubstringBounds(ui::Range range) {
 bool RenderTextLinux::IsCursorablePosition(size_t position) {
   if (position == 0 && text().empty())
     return true;
+  if (position >= text().length())
+    return position == text().length();
+  if (!ui::IsValidCodePointIndex(text(), position))
+    return false;
 
   EnsureLayout();
   ptrdiff_t offset = ui::UTF16IndexToOffset(text(), 0, position);

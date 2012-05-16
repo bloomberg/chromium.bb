@@ -617,6 +617,13 @@ TEST_F(RenderTextTest, GraphemePositions) {
   // LTR ab, LTR 2-character grapheme, LTR cd.
   const string16 kText2 = WideToUTF16(L"ab"L"\x0915\x093f"L"cd");
 
+  // The below is 'MUSICAL SYMBOL G CLEF', which is represented in UTF-16 as
+  // two characters forming the surrogate pair 0x0001D11E.
+  const std::string kSurrogate = "\xF0\x9D\x84\x9E";
+
+  // LTR ab, UTF16 surrogate pair, LTR cd.
+  const string16 kText3 = UTF8ToUTF16("ab" + kSurrogate + "cd");
+
   struct {
     string16 text;
     size_t index;
@@ -645,6 +652,15 @@ TEST_F(RenderTextTest, GraphemePositions) {
     { kText2, 6, 5, 6 },
     { kText2, 7, 6, 6 },
     { kText2, 50, 6, 6 },
+    { kText3, 0, 0, 1 },
+    { kText3, 1, 0, 2 },
+    { kText3, 2, 1, 4 },
+    { kText3, 3, 2, 4 },
+    { kText3, 4, 2, 5 },
+    { kText3, 5, 4, 6 },
+    { kText3, 6, 5, 6 },
+    { kText3, 7, 6, 6 },
+    { kText3, 50, 6, 6 },
   };
 
   // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete

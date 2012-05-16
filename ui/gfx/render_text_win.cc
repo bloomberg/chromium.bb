@@ -251,57 +251,6 @@ SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
   return SelectionModel(cursor, trailing ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
-size_t RenderTextWin::IndexOfAdjacentGrapheme(
-    size_t index,
-    LogicalCursorDirection direction) {
-  EnsureLayout();
-
-  if (text().empty())
-    return 0;
-
-  if (index >= text().length()) {
-    if (direction == CURSOR_FORWARD || index > text().length()) {
-      return text().length();
-    } else {
-      // The requested |index| is at the end of the text. Use the index of the
-      // last character to find the grapheme.
-      index = text().length() - 1;
-      if (IsCursorablePosition(index))
-        return index;
-    }
-  }
-
-  size_t run_index =
-      GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
-  DCHECK(run_index < runs_.size());
-  internal::TextRun* run = runs_[run_index];
-  size_t start = run->range.start();
-  size_t ch = index - start;
-
-  if (direction == CURSOR_BACKWARD) {
-    // If |ch| is the start of the run, use the preceding run, if any.
-    if (ch == 0) {
-      if (run_index == 0)
-        return 0;
-      run = runs_[run_index - 1];
-      start = run->range.start();
-      ch = run->range.length();
-    }
-
-    // Loop to find the start of the grapheme.
-    WORD cluster = run->logical_clusters[ch - 1];
-    do {
-      ch--;
-    } while (ch > 0 && run->logical_clusters[ch - 1] == cluster);
-  } else {  // direction == CURSOR_FORWARD
-    WORD cluster = run->logical_clusters[ch];
-    while (ch < run->range.length() && run->logical_clusters[ch] == cluster)
-      ch++;
-  }
-
-  return start + ch;
-}
-
 std::vector<RenderText::FontSpan> RenderTextWin::GetFontSpansForTesting() {
   EnsureLayout();
 

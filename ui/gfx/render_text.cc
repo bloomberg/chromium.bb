@@ -653,6 +653,30 @@ const Rect& RenderText::GetUpdatedCursorBounds() {
   return cursor_bounds_;
 }
 
+size_t RenderText::IndexOfAdjacentGrapheme(size_t index,
+    LogicalCursorDirection direction) {
+  if (index > text().length())
+    return text().length();
+
+  EnsureLayout();
+
+  if (direction == CURSOR_FORWARD) {
+    while (index < text().length()) {
+      index++;
+      if (IsCursorablePosition(index))
+        return index;
+    }
+    return text().length();
+  }
+
+  while (index > 0) {
+    index--;
+    if (IsCursorablePosition(index))
+      return index;
+  }
+  return 0;
+}
+
 SelectionModel RenderText::GetSelectionModelForSelectionStart() {
   const ui::Range& sel = selection();
   if (sel.is_empty())

@@ -269,8 +269,8 @@ class UI_EXPORT RenderText {
   // range 0 to text().length() inclusive (the input is clamped if it is out of
   // that range). Always moves by at least one character index unless the
   // supplied index is already at the boundary of the string.
-  virtual size_t IndexOfAdjacentGrapheme(size_t index,
-                                         LogicalCursorDirection direction) = 0;
+  size_t IndexOfAdjacentGrapheme(size_t index,
+                                 LogicalCursorDirection direction);
 
   // Return a SelectionModel with the cursor at the current selection's start.
   // The returned value represents a cursor/caret position without a selection.

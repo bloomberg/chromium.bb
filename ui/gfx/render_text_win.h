@@ -69,9 +69,6 @@ class RenderTextWin : public RenderText {
   virtual base::i18n::TextDirection GetTextDirection() OVERRIDE;
   virtual Size GetStringSize() OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
-  virtual size_t IndexOfAdjacentGrapheme(
-      size_t index,
-      LogicalCursorDirection direction) OVERRIDE;
   virtual std::vector<FontSpan> GetFontSpansForTesting() OVERRIDE;
 
  protected:
