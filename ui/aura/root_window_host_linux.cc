@@ -49,7 +49,7 @@ const char kRootWindowHostLinuxKey[] = "__AURA_ROOT_WINDOW_HOST_LINUX__";
 // The events reported for slave devices can have incorrect information for some
 // fields. This utility function is used to check for such inconsistencies.
 void CheckXEventForConsistency(XEvent* xevent) {
-#if defined(USE_XI2_MT)
+#if defined(USE_XI2_MT) && !defined(NDEBUG)
   static bool expect_master_event = false;
   static XIDeviceEvent slave_event;
   static gfx::Point slave_location;
@@ -94,7 +94,7 @@ void CheckXEventForConsistency(XEvent* xevent) {
     CHECK_EQ(slave_event.mods.locked, xievent->mods.locked);
     CHECK_EQ(slave_event.mods.effective, xievent->mods.effective);
   }
-#endif  // defined(USE_XI2_MT)
+#endif  // defined(USE_XI2_MT) && !defined(NDEBUG)
 }
 
 // Returns X font cursor shape from an Aura cursor.

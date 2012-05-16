@@ -39,9 +39,11 @@ namespace aura {
 
 DispatcherLinux::DispatcherLinux() {
   base::MessagePumpX::SetDefaultDispatcher(this);
+  MessageLoopForUI::current()->AddObserver(this);
 }
 
 DispatcherLinux::~DispatcherLinux() {
+  MessageLoopForUI::current()->RemoveObserver(this);
   base::MessagePumpX::SetDefaultDispatcher(NULL);
 }
 
@@ -56,8 +58,6 @@ void DispatcherLinux::WindowDispatcherDestroying(::Window window) {
 }
 
 bool DispatcherLinux::Dispatch(const base::NativeEvent& xev) {
-  PreprocessXEvent(xev);
-
   // XI_HierarchyChanged events are special. There is no window associated with
   // these events. So process them directly from here.
   if (xev->type == GenericEvent &&
@@ -79,6 +79,15 @@ bool DispatcherLinux::Dispatch(const base::NativeEvent& xev) {
 
   MessageLoop::Dispatcher* dispatcher = GetDispatcherForXEvent(xev);
   return dispatcher ? dispatcher->Dispatch(xev) : true;
+}
+
+base::EventStatus DispatcherLinux::WillProcessEvent(
+    const base::NativeEvent& event) {
+  PreprocessXEvent(event);
+  return base::EVENT_CONTINUE;
+}
+
+void DispatcherLinux::DidProcessEvent(const base::NativeEvent& event) {
 }
 
 MessageLoop::Dispatcher* DispatcherLinux::GetDispatcherForXEvent(

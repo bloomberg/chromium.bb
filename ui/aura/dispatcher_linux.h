@@ -17,7 +17,8 @@
 
 namespace aura {
 
-class DispatcherLinux : public MessageLoop::Dispatcher {
+class DispatcherLinux : public MessageLoop::Dispatcher,
+                        public base::MessagePumpObserver {
  public:
   DispatcherLinux();
   virtual ~DispatcherLinux();
@@ -28,6 +29,11 @@ class DispatcherLinux : public MessageLoop::Dispatcher {
 
   // Overridden from MessageLoop::Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+
+  // Overridden from base::MessagePumpObserver:
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
  private:
   typedef std::map< ::Window, MessageLoop::Dispatcher* > DispatchersMap;
