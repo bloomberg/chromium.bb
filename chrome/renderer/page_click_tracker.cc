@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/renderer/page_click_tracker.h"
 
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/autofill/form_autofill_util.h"
 #include "chrome/renderer/page_click_listener.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -29,19 +30,17 @@ using WebKit::WebView;
 namespace {
 
 // Casts |node| to a WebInputElement.
-// Returns an empty (isNull()) WebInputElement if |node| is not a text
-// WebInputElement.
+// Returns an empty (isNull()) WebInputElement if |node| is not a text field.
 const WebInputElement GetTextWebInputElement(const WebNode& node) {
   if (!node.isElementNode())
     return WebInputElement();
   const WebElement element = node.toConst<WebElement>();
-  if (!element.isFormControlElement())
+  if (!element.hasTagName("input"))
     return WebInputElement();
-  const WebFormControlElement control =
-      element.toConst<WebFormControlElement>();
-  if (control.formControlType() != WebString::fromUTF8("text"))
+  const WebInputElement* input = WebKit::toWebInputElement(&element);
+  if (!autofill::IsTextInput(input))
     return WebInputElement();
-  return element.toConst<WebInputElement>();
+  return *input;
 }
 
 // Checks to see if a text field was the previously selected node and is now
