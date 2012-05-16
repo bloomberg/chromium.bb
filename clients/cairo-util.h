@@ -53,9 +53,16 @@ struct theme {
 	int titlebar_height;
 };
 
+struct theme *
+theme_create(void);
 void
-display_render_theme(struct theme *t);
+theme_destroy(struct theme *t);
+
+#define THEME_FRAME_ACTIVE 1
+
 void
-fini_theme(struct theme *t);
+theme_render_frame(struct theme *t, 
+		   cairo_t *cr, int width, int height,
+		   const char *title, uint32_t flags);
 
 #endif

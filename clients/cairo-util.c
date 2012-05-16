@@ -315,12 +315,14 @@ load_cairo_surface(const char *filename)
 						   width, height, stride);
 }
 
-void
-display_render_theme(struct theme *t)
+struct theme *
+theme_create(void)
 {
+	struct theme *t;
 	cairo_t *cr;
 	cairo_pattern_t *pattern;
 
+	t = malloc(sizeof *t);
 	t->margin = 32;
 	t->width = 6;
 	t->titlebar_height = 27;
@@ -357,12 +359,71 @@ display_render_theme(struct theme *t)
 	rounded_rect(cr, 0, 0, 128, 128, t->frame_radius);
 	cairo_fill(cr);
 	cairo_destroy(cr);
+
+	return t;
 }
 
 void
-fini_theme(struct theme *t)
+theme_destroy(struct theme *t)
 {
 	cairo_surface_destroy(t->active_frame);
 	cairo_surface_destroy(t->inactive_frame);
 	cairo_surface_destroy(t->shadow);
+	free(t);
+}
+
+void
+theme_render_frame(struct theme *t, 
+		   cairo_t *cr, int width, int height,
+		   const char *title, uint32_t flags)
+{
+	cairo_text_extents_t extents;
+	cairo_font_extents_t font_extents;
+	cairo_surface_t *source;
+	int x, y;
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0);
+	cairo_paint(cr);
+
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
+	tile_mask(cr, t->shadow,
+		  2, 2, width + 8, height + 8,
+		  64, 64);
+
+	if (flags & THEME_FRAME_ACTIVE)
+		source = t->active_frame;
+	else
+		source = t->inactive_frame;
+
+	tile_source(cr, source,
+		    t->margin, t->margin,
+		    width - t->margin * 2, height - t->margin * 2,
+		    t->width, t->titlebar_height);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_select_font_face(cr, "sans",
+			       CAIRO_FONT_SLANT_NORMAL,
+			       CAIRO_FONT_WEIGHT_BOLD);
+	cairo_set_font_size(cr, 14);
+	cairo_text_extents(cr, title, &extents);
+	cairo_font_extents (cr, &font_extents);
+	x = (width - extents.width) / 2;
+	y = t->margin +
+		(t->titlebar_height -
+		 font_extents.ascent - font_extents.descent) / 2 +
+		font_extents.ascent;
+
+	if (flags & THEME_FRAME_ACTIVE) {
+		cairo_move_to(cr, x + 1, y  + 1);
+		cairo_set_source_rgb(cr, 1, 1, 1);
+		cairo_show_text(cr, title);
+		cairo_move_to(cr, x, y);
+		cairo_set_source_rgb(cr, 0, 0, 0);
+		cairo_show_text(cr, title);
+	} else {
+		cairo_move_to(cr, x, y);
+		cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
+		cairo_show_text(cr, title);
+	}
 }

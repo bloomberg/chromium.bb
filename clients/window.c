@@ -91,7 +91,7 @@ struct display {
 	struct wl_list input_list;
 	struct wl_list output_list;
 
-	struct theme theme;
+	struct theme *theme;
 
 	struct {
 		struct xkb_rule_names names;
@@ -1171,7 +1171,7 @@ frame_resize_handler(struct widget *widget,
 	struct rectangle allocation;
 	struct display *display = widget->window->display;
 	struct frame_button * button;
-	struct theme *t = &display->theme;
+	struct theme *t = display->theme;
 	int x_l, x_r, y, w, h;
 	int decoration_width, decoration_height;
 	int opaque_margin;
@@ -1420,65 +1420,19 @@ static void
 frame_redraw_handler(struct widget *widget, void *data)
 {
 	cairo_t *cr;
-	cairo_text_extents_t extents;
-	cairo_font_extents_t font_extents;
-	cairo_surface_t *source;
-	int x, y, width, height;
 	struct window *window = widget->window;
-	struct theme *t = &window->display->theme;
+	struct theme *t = window->display->theme;
+	uint32_t flags = 0;
 
 	if (window->type == TYPE_FULLSCREEN)
 		return;
 
-	width = widget->allocation.width;
-	height = widget->allocation.height;
-
 	cr = cairo_create(window->cairo_surface);
 
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 0, 0, 0, 0);
-	cairo_paint(cr);
-
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
-	tile_mask(cr, t->shadow,
-		  2, 2, width + 8, height + 8,
-		  64, 64);
-
 	if (window->keyboard_device)
-		source = t->active_frame;
-	else
-		source = t->inactive_frame;
-
-	tile_source(cr, source,
-		    t->margin, t->margin,
-		    width - t->margin * 2, height - t->margin * 2,
-		    t->width, t->titlebar_height);
-
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_select_font_face(cr, "sans",
-			       CAIRO_FONT_SLANT_NORMAL,
-			       CAIRO_FONT_WEIGHT_BOLD);
-	cairo_set_font_size(cr, 14);
-	cairo_text_extents(cr, window->title, &extents);
-	cairo_font_extents (cr, &font_extents);
-	x = (width - extents.width) / 2;
-	y = t->margin +
-		(t->titlebar_height -
-		 font_extents.ascent - font_extents.descent) / 2 +
-		font_extents.ascent;
-
-	if (window->keyboard_device) {
-		cairo_move_to(cr, x + 1, y  + 1);
-		cairo_set_source_rgb(cr, 1, 1, 1);
-		cairo_show_text(cr, window->title);
-		cairo_move_to(cr, x, y);
-		cairo_set_source_rgb(cr, 0, 0, 0);
-		cairo_show_text(cr, window->title);
-	} else {
-		cairo_move_to(cr, x, y);
-		cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
-		cairo_show_text(cr, window->title);
-	}
+		flags |= THEME_FRAME_ACTIVE;
+	theme_render_frame(t, cr, widget->allocation.width,
+			   widget->allocation.height, window->title, flags);
 
 	cairo_destroy(cr);
 }
@@ -1489,7 +1443,7 @@ frame_get_pointer_location(struct frame *frame, int32_t x, int32_t y)
 	struct widget *widget = frame->widget;
 	int vlocation, hlocation, location;
 	const int grip_size = 8;
-	struct theme *t = &widget->window->display->theme;
+	struct theme *t = widget->window->display->theme;
 
 	if (x < t->margin)
 		hlocation = WINDOW_EXTERIOR;
@@ -3320,7 +3274,7 @@ display_create(int argc, char *argv[])
 
 	create_cursors(d);
 
-	display_render_theme(&d->theme);
+	d->theme = theme_create();
 
 	wl_list_init(&d->window_list);
 
@@ -3363,7 +3317,7 @@ display_destroy(struct display *display)
 
 	fini_xkb(display);
 
-	fini_theme(&display->theme);
+	theme_destroy(display->theme);
 	destroy_cursors(display);
 
 #ifdef HAVE_CAIRO_EGL
