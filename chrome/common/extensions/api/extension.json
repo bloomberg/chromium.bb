@@ -6,7 +6,7 @@
   {
     "namespace": "extension",
     "nocompile": true,
-    "dependencies": [ "tabs" ],
+    "dependencies": [ "events", "tabs" ],
     "types": [
       {
         "id": "MessageSender",
@@ -16,18 +16,6 @@
           "tab": {"$ref": "tabs.Tab", "optional": true, "description":"This property will <b>only</b> be present when the connection was opened from a tab or content script."},
           "id": {"type": "string", "description": "The extension ID of the extension that opened the connection."}
         }
-      },
-      {
-        "id": "Event",
-        "type": "object",
-        "description": "An object which allows the addition and removal of listeners for a Chrome event.",
-        "properties": {
-          "addListener": {"type": "function"},
-          "removeListener": {"type": "function"},
-          "hasListener": {"type": "function"},
-          "hasListeners": {"type": "function"}
-        },
-        "additionalProperties": { "type": "any"}
       },
       {
         "id": "Port",

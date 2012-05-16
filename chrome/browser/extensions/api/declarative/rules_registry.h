@@ -11,7 +11,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/extensions/api/declarative.h"
+#include "chrome/common/extensions/api/events.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace base {
@@ -37,7 +37,7 @@ class RulesRegistry
     : public base::RefCountedThreadSafe<RulesRegistry,
                                         RulesRegistryDeleteTraits> {
  public:
-  typedef extensions::api::declarative::Rule Rule;
+  typedef extensions::api::events::Rule Rule;
 
   // Registers |rules|, owned by |extension_id| to this RulesRegistry.
   // If a concrete RuleRegistry does not support some of the rules,

@@ -4,10 +4,116 @@
 
 [
   {
-    "namespace": "declarative",
+    "namespace": "events",
     "internal": true,
-    "documentation_permissions_required": ["declarative"],
+    "unprivileged": true,
     "types": [
+      {
+        "id": "Event",
+        "type": "object",
+        "description": "An object which allows the addition and removal of listeners for a Chrome event.",
+        "additionalProperties": { "type": "any"},
+        "functions": [
+          // TODO(battre): Add correct signatures.
+          { "name": "addListener", "type": "function", "parameters": [] },
+          { "name": "removeListener", "type": "function", "parameters": [] },
+          { "name": "hasListener", "type": "function", "parameters": [] },
+          { "name": "hasListeners", "type": "function", "parameters": [] },
+          {
+            "name": "addRules",
+            "type": "function",
+            "description": "Registers rules to handle events. Note that you cannot call this function as <code>chrome.declarative.addRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.",
+            "parameters": [
+              {
+                "nodoc": "true",
+                "name": "eventName",
+                "type": "string",
+                "description": "Name of the event this function affects."
+              },
+              {
+                "name": "rules",
+                "type": "array",
+                "items": {"$ref": "Rule"},
+                "description": "Rules to be registered. These do not replace previously registered rules."
+              },
+              {
+                "name": "callback",
+                "optional": true,
+                "type": "function",
+                "parameters": [
+                  {
+                    "name": "rules",
+                    "type": "array",
+                    "items": {"$ref": "Rule"},
+                    "description": "Rules that were registered, the optional parameters are filled with values."
+                  }
+                ],
+                "description": "Called with registered rules."
+              }
+            ]
+          },
+          {
+            "name": "getRules",
+            "type": "function",
+            "description": "Returns currently registered rules. Note that you cannot call this function as <code>chrome.declarative.getRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.",
+            "parameters": [
+              {
+                "nodoc": "true",
+                "name": "eventName",
+                "type": "string",
+                "description": "Name of the event this function affects."
+              },
+              {
+                "name": "ruleIdentifiers",
+                "optional": "true",
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "If an array is passed, only rules with identifiers contained in this array are returned."
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "parameters": [
+                  {
+                    "name": "rules",
+                    "type": "array",
+                    "items": {"$ref": "Rule"},
+                    "description": "Rules that were registered, the optional parameters are filled with values."
+                  }
+                ],
+                "description": "Called with registered rules."
+              }
+            ]
+          },
+          {
+            "name": "removeRules",
+            "type": "function",
+            "description": "Unregisters currently registered rules. Note that you cannot call this function as <code>chrome.declarative.removeRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.",
+            "parameters": [
+              {
+                "nodoc": "true",
+                "name": "eventName",
+                "type": "string",
+                "description": "Name of the event this function affects."
+              },
+              {
+                "name": "ruleIdentifiers",
+                "optional": "true",
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "If an array is passed, only rules with identifiers contained in this array are unregistered."
+              },
+              {
+                "name": "callback",
+                "optional": true,
+                "type": "function",
+                "parameters": [],
+                "description": "Called when rules were unregistered."
+              }
+            ]
+          }
+        ]
+      },
       {
         "id": "Rule",
         "type": "object",
@@ -134,101 +240,6 @@
             }
           }
         }
-      }
-    ],
-    "functions": [
-      {
-        "name": "addRules",
-        "type": "function",
-        "description": "Registers rules to handle events. Note that you cannot call this function as <code>chrome.declarative.addRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.",
-        "parameters": [
-          {
-            "nodoc": "true",
-            "name": "eventName",
-            "type": "string",
-            "description": "Name of the event this function affects."
-          },
-          {
-            "name": "rules",
-            "type": "array",
-            "items": {"$ref": "Rule"},
-            "description": "Rules to be registered. These do not replace previously registered rules."
-          },
-          {
-            "name": "callback",
-            "optional": true,
-            "type": "function",
-            "parameters": [
-              {
-                "name": "rules",
-                "type": "array",
-                "items": {"$ref": "Rule"},
-                "description": "Rules that were registered, the optional parameters are filled with values."
-              }
-            ],
-            "description": "Called with registered rules."
-          }
-        ]
-      },
-      {
-        "name": "getRules",
-        "type": "function",
-        "description": "Returns currently registered rules. Note that you cannot call this function as <code>chrome.declarative.getRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.",
-        "parameters": [
-          {
-            "nodoc": "true",
-            "name": "eventName",
-            "type": "string",
-            "description": "Name of the event this function affects."
-          },
-          {
-            "name": "ruleIdentifiers",
-            "optional": "true",
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "If an array is passed, only rules with identifiers contained in this array are returned."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name": "rules",
-                "type": "array",
-                "items": {"$ref": "Rule"},
-                "description": "Rules that were registered, the optional parameters are filled with values."
-              }
-            ],
-            "description": "Called with registered rules."
-          }
-        ]
-      },
-      {
-        "name": "removeRules",
-        "type": "function",
-        "description": "Unregisters currently registered rules. Note that you cannot call this function as <code>chrome.declarative.removeRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.",
-        "parameters": [
-          {
-            "nodoc": "true",
-            "name": "eventName",
-            "type": "string",
-            "description": "Name of the event this function affects."
-          },
-          {
-            "name": "ruleIdentifiers",
-            "optional": "true",
-            "type": "array",
-            "items": {"type": "string"},
-            "description": "If an array is passed, only rules with identifiers contained in this array are unregistered."
-          },
-          {
-            "name": "callback",
-            "optional": true,
-            "type": "function",
-            "parameters": [],
-            "description": "Called when rules were unregistered."
-          }
-        ]
       }
     ]
   }

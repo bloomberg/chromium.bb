@@ -33,7 +33,7 @@ class RulesFunction : public AsyncExtensionFunction {
 
 class AddRulesFunction : public RulesFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("declarative.addRules");
+  DECLARE_EXTENSION_FUNCTION_NAME("events.addRules");
 
  protected:
   virtual ~AddRulesFunction() {}
@@ -44,7 +44,7 @@ class AddRulesFunction : public RulesFunction {
 
 class RemoveRulesFunction : public RulesFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("declarative.removeRules");
+  DECLARE_EXTENSION_FUNCTION_NAME("events.removeRules");
 
  protected:
   virtual ~RemoveRulesFunction() {}
@@ -55,7 +55,7 @@ class RemoveRulesFunction : public RulesFunction {
 
 class GetRulesFunction : public RulesFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("declarative.getRules");
+  DECLARE_EXTENSION_FUNCTION_NAME("events.getRules");
 
  protected:
   virtual ~GetRulesFunction() {}
