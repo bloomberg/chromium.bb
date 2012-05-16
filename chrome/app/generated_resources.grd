@@ -11042,7 +11042,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_FILE_BROWSER_SEARCH_NO_MATCHING_FILES" desc="In the File Manager, the message informing the user that the search did not match any files.">
-        No files match "<ph name="SEARCH_STRING">$1<ex>abc</ex></ph>"
+        No files match &lt;b&gt;"<ph name="SEARCH_STRING">$1<ex>abc</ex></ph>"&lt;/b&gt;
       </message>
       <message name="IDS_FILE_BROWSER_SEARCH_EXPAND" desc="In the File Manager, the text on the link to expand search when no matching files were found.">
         Search all <ph name="DRIVE_NAME">$1<ex>Downloads</ex></ph>
