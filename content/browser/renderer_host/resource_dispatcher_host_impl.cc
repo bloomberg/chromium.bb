@@ -1939,35 +1939,31 @@ void ResourceDispatcherHostImpl::ResponseCompleted(net::URLRequest* request) {
   VLOG(1) << "ResponseCompleted: " << request->url().spec();
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
 
-  // If the load for a main frame has failed, track it in a histogram,
-  // since it will probably cause the user to see an error page.
-  if (!request->status().is_success() &&
-      request->status().error() != net::ERR_ABORTED) {
-    if (info->GetResourceType() == ResourceType::MAIN_FRAME) {
-      // This enumeration has "2" appended to its name to distinguish it from
-      // its original version. We changed the buckets at one point (added
-      // guard buckets by using CustomHistogram::ArrayToCustomRanges).
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-          "Net.ErrorCodesForMainFrame2",
-          -request->status().error(),
-          base::CustomHistogram::ArrayToCustomRanges(
-              kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+  // Record final result of all resource loads.
+  if (info->GetResourceType() == ResourceType::MAIN_FRAME) {
+    // This enumeration has "3" appended to its name to distinguish it from
+    // older versions.
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+        "Net.ErrorCodesForMainFrame3",
+        -request->status().error(),
+        base::CustomHistogram::ArrayToCustomRanges(
+            kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
 
-      if (request->url().SchemeIsSecure() &&
-          request->url().host() == "www.google.com") {
-        UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-            "Net.ErrorCodesForHTTPSGoogleMainFrame",
-            -request->status().error(),
-            base::CustomHistogram::ArrayToCustomRanges(
-                kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
-      }
-    } else {
+    if (request->url().SchemeIsSecure() &&
+        request->url().host() == "www.google.com") {
       UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-          "Net.ErrorCodesForSubresources",
+          "Net.ErrorCodesForHTTPSGoogleMainFrame2",
           -request->status().error(),
           base::CustomHistogram::ArrayToCustomRanges(
               kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
     }
+  } else {
+    // This enumeration has "2" appended to distinguish it from older versions.
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+        "Net.ErrorCodesForSubresources2",
+        -request->status().error(),
+        base::CustomHistogram::ArrayToCustomRanges(
+            kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
   }
 
   std::string security_info;
