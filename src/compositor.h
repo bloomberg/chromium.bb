@@ -166,6 +166,7 @@ struct weston_shader {
 	GLint saturation_uniform;
 	GLint color_uniform;
 	GLint texwidth_uniform;
+	GLint opaque_uniform;
 };
 
 struct weston_animation {
@@ -326,6 +327,7 @@ struct weston_surface {
 	struct wl_list layer_link;
 	struct weston_shader *shader;
 	GLfloat color[4];
+	GLfloat opaque_rect[4];
 	uint32_t alpha;
 	uint32_t brightness;
 	uint32_t saturation;

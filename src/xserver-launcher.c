@@ -841,6 +841,22 @@ weston_wm_window_draw_decoration(void *data)
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
+
+	if (window->surface) {
+		/* We leave an extra pixel around the X window area to
+		 * make sure we don't sample from the undefined alpha
+		 * channel when filtering. */
+		window->surface->opaque_rect[0] =
+			(double) (t->margin + t->width - 1) / width;
+		window->surface->opaque_rect[1] =
+			(double) (t->margin + t->width + 
+				  window->width + 1) / width;
+		window->surface->opaque_rect[2] =
+			(double) (t->margin + t->titlebar_height - 1) / height;
+		window->surface->opaque_rect[3] =
+			(double) (t->margin + t->titlebar_height +
+				  window->height + 1) / height;
+	}
 }
 
 static void
@@ -1766,6 +1782,8 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 	window->surface_destroy_listener.notify = surface_destroy;
 	wl_signal_add(&surface->resource.destroy_signal,
 		      &window->surface_destroy_listener);
+
+	weston_wm_window_schedule_repaint(window);
 
 	if (shell_interface->create_shell_surface) {
 		shell_interface->create_shell_surface(shell_interface->shell,

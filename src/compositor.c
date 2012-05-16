@@ -228,6 +228,10 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->alpha = 255;
 	surface->brightness = 255;
 	surface->saturation = 255;
+	surface->opaque_rect[0] = 0.0;
+	surface->opaque_rect[1] = 0.0;
+	surface->opaque_rect[2] = 0.0;
+	surface->opaque_rect[3] = 0.0;
 	surface->pitch = 1;
 
 	surface->buffer = NULL;
@@ -861,6 +865,7 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 	glUniform1f(es->shader->saturation_uniform, es->saturation / 255.0);
 	glUniform1f(es->shader->texwidth_uniform,
 		    (GLfloat)es->geometry.width / es->pitch);
+	glUniform4fv(es->shader->opaque_uniform, 1, es->opaque_rect);
 
 	if (es->transform.enabled || output->zoom.active)
 		filter = GL_LINEAR;
@@ -2325,6 +2330,7 @@ static const char texture_fragment_shader[] =
 	"uniform float bright;\n"
 	"uniform float saturation;\n"
 	"uniform float texwidth;\n"
+	"uniform vec4 opaque;\n"
 	"void main()\n"
 	"{\n"
 	"   if (v_texcoord.x < 0.0 || v_texcoord.x > texwidth ||\n"
@@ -2335,6 +2341,9 @@ static const char texture_fragment_shader[] =
 	"   vec3 range = (gl_FragColor.rgb - vec3 (gray, gray, gray)) * saturation;\n"
 	"   gl_FragColor = vec4(vec3(gray + range), gl_FragColor.a);\n"
 	"   gl_FragColor = vec4(vec3(bright, bright, bright) * gl_FragColor.rgb, gl_FragColor.a);\n"
+	"   if (opaque.x <= v_texcoord.x && v_texcoord.x < opaque.y &&\n"
+	"       opaque.z <= v_texcoord.y && v_texcoord.y < opaque.w)\n"
+	"      gl_FragColor.a = 1.0;\n"
 	"   gl_FragColor = alpha * gl_FragColor;\n"
 	"}\n";
 
@@ -2401,6 +2410,8 @@ weston_shader_init(struct weston_shader *shader,
 	shader->color_uniform = glGetUniformLocation(shader->program, "color");
 	shader->texwidth_uniform = glGetUniformLocation(shader->program,
 							"texwidth");
+	shader->opaque_uniform =
+		glGetUniformLocation(shader->program, "opaque");
 
 	return 0;
 }
