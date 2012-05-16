@@ -213,7 +213,7 @@
       ],
       'sources': [
         'demo/demo_main.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/base/native_theme/native_theme_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
       ],
     },
