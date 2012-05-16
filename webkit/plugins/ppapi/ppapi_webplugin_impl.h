@@ -18,6 +18,7 @@
 
 namespace WebKit {
 struct WebPluginParams;
+struct WebPrintParams;
 }
 
 namespace webkit {
@@ -75,8 +76,12 @@ class WebPluginImpl : public WebKit::WebPlugin {
   virtual void stopFind();
   virtual bool supportsPaginatedPrint() OVERRIDE;
   virtual bool isPrintScalingDisabled() OVERRIDE;
-  virtual int printBegin(const WebKit::WebRect& printable_area,
-                         int printer_dpi) OVERRIDE;
+
+  // TODO(kmadhusu): Remove this function after fixing crbug.com/85132 and add
+  // OVERRIDE keyword to the overloaded function.
+  virtual int printBegin(const WebKit::WebRect& content_area,
+                         int printer_dpi);
+  virtual int printBegin(const WebKit::WebPrintParams& print_params);
   virtual bool printPage(int page_number, WebKit::WebCanvas* canvas) OVERRIDE;
   virtual void printEnd() OVERRIDE;
 

@@ -16,8 +16,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintScalingOption.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/plugins/ppapi/message_channel.h"
 #include "webkit/plugins/ppapi/npobject_var.h"
@@ -31,7 +34,9 @@ using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginParams;
 using WebKit::WebPoint;
+using WebKit::WebPrintParams;
 using WebKit::WebRect;
+using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
@@ -264,9 +269,19 @@ bool WebPluginImpl::isPrintScalingDisabled() {
   return instance_->IsPrintScalingDisabled();
 }
 
-int WebPluginImpl::printBegin(const WebKit::WebRect& printable_area,
-                              int printer_dpi) {
-  return instance_->PrintBegin(printable_area, printer_dpi);
+// TODO(kmadhusu): This is a temporary interface to avoid the compile errors.
+// Remove this function after fixing crbug.com/85132.
+int WebPluginImpl::printBegin(const WebRect& content_area, int printer_dpi) {
+  WebRect printable_area(content_area);
+  WebSize paper_size(content_area.width, content_area.height);
+  WebPrintParams print_params (content_area, printable_area, paper_size,
+                               printer_dpi,
+                               WebKit::WebPrintScalingOptionSourceSize);
+  return printBegin(print_params);
+}
+
+int WebPluginImpl::printBegin(const WebPrintParams& print_params) {
+  return instance_->PrintBegin(print_params);
 }
 
 bool WebPluginImpl::printPage(int page_number,

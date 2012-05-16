@@ -50,6 +50,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintScalingOption.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -120,6 +122,8 @@ using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
+using WebKit::WebPrintParams;
+using WebKit::WebPrintScalingOption;
 using WebKit::WebScopedUserGesture;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
@@ -178,6 +182,11 @@ const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_TEXT;
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name) \
     COMPILE_ASSERT(static_cast<int>(WebCursorInfo::webkit_name) \
                        == static_cast<int>(np_name), \
+                   mismatching_enums)
+
+#define COMPILE_ASSERT_PRINT_SCALING_MATCHING_ENUM(webkit_name, pp_name) \
+    COMPILE_ASSERT(static_cast<int>(webkit_name) \
+                       == static_cast<int>(pp_name), \
                    mismatching_enums)
 
 // <embed>/<object> attributes.
@@ -248,6 +257,14 @@ COMPILE_ASSERT_MATCHING_ENUM(TypeGrab, PP_MOUSECURSOR_TYPE_GRAB);
 COMPILE_ASSERT_MATCHING_ENUM(TypeGrabbing, PP_MOUSECURSOR_TYPE_GRABBING);
 // Do not assert WebCursorInfo::TypeCustom == PP_CURSORTYPE_CUSTOM;
 // PP_CURSORTYPE_CUSTOM is pinned to allow new cursor types.
+
+COMPILE_ASSERT_PRINT_SCALING_MATCHING_ENUM(WebKit::WebPrintScalingOptionNone,
+                                           PP_PRINTSCALINGOPTION_NONE);
+COMPILE_ASSERT_PRINT_SCALING_MATCHING_ENUM(
+    WebKit::WebPrintScalingOptionFitToPrintableArea,
+    PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA);
+COMPILE_ASSERT_PRINT_SCALING_MATCHING_ENUM(
+    WebKit::WebPrintScalingOptionSourceSize, PP_PRINTSCALINGOPTION_SOURCE_SIZE);
 
 // Sets |*security_origin| to be the WebKit security origin associated with the
 // document containing the given plugin instance. On success, returns true. If
@@ -1118,8 +1135,7 @@ bool PluginInstance::IsPrintScalingDisabled() {
   return plugin_print_interface_->IsScalingDisabled(pp_instance()) == PP_TRUE;
 }
 
-int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
-                               int printer_dpi) {
+int PluginInstance::PrintBegin(const WebPrintParams& print_params) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
   PP_PrintOutputFormat_Dev format;
@@ -1129,13 +1145,16 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
     NOTREACHED();
     return 0;
   }
-
   int num_pages = 0;
   PP_PrintSettings_Dev print_settings;
-  print_settings.printable_area = PP_FromGfxRect(printable_area);
-  print_settings.dpi = printer_dpi;
+  print_settings.printable_area = PP_FromGfxRect(print_params.printableArea);
+  print_settings.content_area = PP_FromGfxRect(print_params.printContentArea);
+  print_settings.paper_size = PP_FromGfxSize(print_params.paperSize);
+  print_settings.dpi = print_params.printerDPI;
   print_settings.orientation = PP_PRINTORIENTATION_NORMAL;
   print_settings.grayscale = PP_FALSE;
+  print_settings.print_scaling_option = static_cast<PP_PrintScalingOption_Dev>(
+      print_params.printScalingOption);
   print_settings.format = format;
   num_pages = plugin_print_interface_->Begin(pp_instance(),
                                              &print_settings);

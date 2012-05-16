@@ -60,6 +60,7 @@ class WebMouseEvent;
 class WebPluginContainer;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
+struct WebPrintParams;
 }
 
 namespace ppapi {
@@ -227,7 +228,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   bool SupportsPrintInterface();
   bool IsPrintScalingDisabled();
-  int PrintBegin(const gfx::Rect& printable_area, int printer_dpi);
+  int PrintBegin(const WebKit::WebPrintParams& print_params);
   bool PrintPage(int page_number, WebKit::WebCanvas* canvas);
   void PrintEnd();
 
