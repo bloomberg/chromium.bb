@@ -303,6 +303,8 @@ class BufferedResourceLoaderTest : public testing::Test {
   MockWebFrameClient client_;
   WebView* view_;
 
+  MessageLoop message_loop_;
+
   uint8 data_[kDataSize];
 
  private:

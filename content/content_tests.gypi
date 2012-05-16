@@ -191,6 +191,7 @@
         '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
+        '../webkit/support/webkit_support.gyp:webkit_media',
       ],
       'include_dirs': [
         '..',
@@ -294,6 +295,13 @@
         'test/gpu/gpu_test_config_unittest.cc',
         'test/gpu/gpu_test_expectations_parser_unittest.cc',
         'test/run_all_unittests.cc',
+        '../webkit/media/buffered_data_source_unittest.cc',
+        '../webkit/media/buffered_resource_loader_unittest.cc',
+        '../webkit/media/skcanvas_video_renderer_unittest.cc',
+        '../webkit/media/test_response_generator.cc',
+        '../webkit/media/test_response_generator.h',
+        '../webkit/mocks/mock_weburlloader.cc',
+        '../webkit/mocks/mock_weburlloader.h',
       ],
       'conditions': [
         ['enable_webrtc==1', {

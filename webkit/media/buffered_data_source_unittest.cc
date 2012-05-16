@@ -82,11 +82,10 @@ class BufferedDataSourceTest : public testing::Test {
  public:
   BufferedDataSourceTest()
       : response_generator_(GURL("http://localhost/foo.webm"), kFileSize),
-        view_(WebView::create(NULL)),
-        message_loop_(MessageLoop::current()) {
+        view_(WebView::create(NULL)) {
     view_->initializeMainFrame(&client_);
 
-    data_source_ = new MockBufferedDataSource(message_loop_,
+    data_source_ = new MockBufferedDataSource(&message_loop_,
                                               view_->mainFrame());
     data_source_->set_host(&host_);
   }
@@ -99,7 +98,7 @@ class BufferedDataSourceTest : public testing::Test {
     ExpectCreateResourceLoader();
     data_source_->Initialize(response_generator_.gurl(),
                              media::NewExpectedStatusCB(expected));
-    message_loop_->RunAllPending();
+    message_loop_.RunAllPending();
   }
 
   // Helper to initialize tests with a valid 206 response.
@@ -118,34 +117,34 @@ class BufferedDataSourceTest : public testing::Test {
   void Stop() {
     if (data_source_->loading()) {
       loader()->didFail(url_loader(), response_generator_.GenerateError());
-      message_loop_->RunAllPending();
+      message_loop_.RunAllPending();
     }
 
     data_source_->Stop(media::NewExpectedClosure());
-    message_loop_->RunAllPending();
+    message_loop_.RunAllPending();
   }
 
   void ExpectCreateResourceLoader() {
     EXPECT_CALL(*data_source_, CreateResourceLoader(_, _))
         .WillOnce(Invoke(data_source_.get(),
                          &MockBufferedDataSource::CreateMockResourceLoader));
-    message_loop_->RunAllPending();
+    message_loop_.RunAllPending();
   }
 
   void Respond(const WebURLResponse& response) {
     loader()->didReceiveResponse(url_loader(), response);
-    message_loop_->RunAllPending();
+    message_loop_.RunAllPending();
   }
 
   void FinishRead() {
     loader()->didReceiveData(url_loader(), data_, kDataSize, kDataSize);
-    message_loop_->RunAllPending();
+    message_loop_.RunAllPending();
   }
 
   void FinishLoading() {
     data_source_->set_loading(false);
     loader()->didFinishLoading(url_loader(), 0);
-    message_loop_->RunAllPending();
+    message_loop_.RunAllPending();
   }
 
   MOCK_METHOD1(ReadCallback, void(int size));
@@ -154,7 +153,7 @@ class BufferedDataSourceTest : public testing::Test {
     data_source_->Read(position, kDataSize, buffer_,
                        base::Bind(&BufferedDataSourceTest::ReadCallback,
                                   base::Unretained(this)));
-    message_loop_->RunAllPending();
+    message_loop_.RunAllPending();
   }
 
   // Accessors for private variables on |data_source_|.
@@ -182,7 +181,7 @@ class BufferedDataSourceTest : public testing::Test {
   WebView* view_;
 
   StrictMock<media::MockDataSourceHost> host_;
-  MessageLoop* message_loop_;
+  MessageLoop message_loop_;
 
  private:
   // Used for calling BufferedDataSource::Read().
@@ -312,7 +311,7 @@ TEST_F(BufferedDataSourceTest, Range_AbortWhileReading) {
   // Abort!!!
   EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
   data_source_->Abort();
-  message_loop_->RunAllPending();
+  message_loop_.RunAllPending();
 
   EXPECT_FALSE(data_source_->loading());
   Stop();
@@ -367,7 +366,7 @@ TEST_F(BufferedDataSourceTest, StopDoesNotUseMessageLoopForCallback) {
 
   // Verify that the callback was called inside the Stop() call.
   EXPECT_TRUE(stop_done_called);
-  message_loop_->RunAllPending();
+  message_loop_.RunAllPending();
 }
 
 TEST_F(BufferedDataSourceTest, DefaultValues) {
@@ -390,7 +389,7 @@ TEST_F(BufferedDataSourceTest, SetBitrate) {
   InitializeWith206Response();
 
   data_source_->SetBitrate(1234);
-  message_loop_->RunAllPending();
+  message_loop_.RunAllPending();
   EXPECT_EQ(1234, data_source_bitrate());
   EXPECT_EQ(1234, loader_bitrate());
 
@@ -416,7 +415,7 @@ TEST_F(BufferedDataSourceTest, SetPlaybackRate) {
   InitializeWith206Response();
 
   data_source_->SetPlaybackRate(2.0f);
-  message_loop_->RunAllPending();
+  message_loop_.RunAllPending();
   EXPECT_EQ(2.0f, data_source_playback_rate());
   EXPECT_EQ(2.0f, loader_playback_rate());
 
