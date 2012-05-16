@@ -667,11 +667,12 @@
     ],
   },
 
-  # ChromeOS policy tests. These are shared with Desktop Chrome tests, but
-  # require custom setup on ChromeOS.
+  # ChromeOS policy tests. Some of these are shared with Desktop Chrome tests
+  # but require custom setup on ChromeOS. Others are specific to ChromeOS only.
   'CHROMEOS_POLICY': {
     'chromeos': [
       'chromeos_ephemeral',
+      'chromeos_device_policy',
       'chromeos_onc',
       'policy',
       'policy_prefs_ui',

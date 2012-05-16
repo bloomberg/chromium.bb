@@ -143,11 +143,12 @@ class NetworkManagerInitObserver
   DISALLOW_COPY_AND_ASSIGN(NetworkManagerInitObserver);
 };
 
-// Observes when webui login becomes ready on chromeos.
+// Observes when the ChromeOS login WebUI becomes ready (by showing the login
+// form, account picker, a network error or the OOBE wizard, depending on Chrome
+// flags and state).
 class LoginWebuiReadyObserver : public content::NotificationObserver {
  public:
   explicit LoginWebuiReadyObserver(AutomationProvider* automation);
-  virtual ~LoginWebuiReadyObserver();
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);

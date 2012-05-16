@@ -48,21 +48,26 @@ void NetworkManagerInitObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   }
 }
 
-LoginWebuiReadyObserver::LoginWebuiReadyObserver(
-    AutomationProvider* automation)
+LoginWebuiReadyObserver::LoginWebuiReadyObserver(AutomationProvider* automation)
     : automation_(automation->AsWeakPtr()) {
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_READY,
                  content::NotificationService::AllSources());
-}
-
-LoginWebuiReadyObserver::~LoginWebuiReadyObserver() {
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
+                 content::NotificationService::AllSources());
 }
 
 void LoginWebuiReadyObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_READY);
+  DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_READY ||
+         type == chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED ||
+         type == chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN ||
+         type == chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN);
   if (automation_)
     automation_->OnLoginWebuiReady();
   delete this;
