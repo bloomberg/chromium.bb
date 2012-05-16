@@ -102,7 +102,8 @@ class LocationProvider {
             // native object will no longer exist.
             if (mIsRunning) {
                 nativeNewLocationAvailable(location.getLatitude(), location.getLongitude(),
-                        location.getTime(), location.hasAltitude(), location.getAltitude(),
+                        location.getTime() / 1000.0,
+                        location.hasAltitude(), location.getAltitude(),
                         location.hasAccuracy(), location.getAccuracy(),
                         location.hasBearing(), location.getBearing(),
                         location.hasSpeed(), location.getSpeed());
@@ -223,7 +224,7 @@ class LocationProvider {
 
     // Native functions
     public static native void nativeNewLocationAvailable(
-            double latitude, double longitude, long timeStamp,
+            double latitude, double longitude, double timeStamp,
             boolean hasAltitude, double altitude,
             boolean hasAccuracy, double accuracy,
             boolean hasHeading, double heading,

@@ -19,7 +19,7 @@ using base::android::GetMethodID;
 static void NewLocationAvailable(JNIEnv* env, jclass,
                                  jdouble latitude,
                                  jdouble longitude,
-                                 jlong time_stamp,
+                                 jdouble time_stamp,
                                  jboolean has_altitude, jdouble altitude,
                                  jboolean has_accuracy, jdouble accuracy,
                                  jboolean has_heading, jdouble heading,
@@ -98,7 +98,7 @@ void AndroidLocationApiAdapter::NotifyProviderNewGeoposition(
 
 // static
 void AndroidLocationApiAdapter::OnNewLocationAvailable(
-    double latitude, double longitude, long time_stamp,
+    double latitude, double longitude, double time_stamp,
     bool has_altitude, double altitude,
     bool has_accuracy, double accuracy,
     bool has_heading, double heading,
@@ -106,7 +106,7 @@ void AndroidLocationApiAdapter::OnNewLocationAvailable(
   content::Geoposition position;
   position.latitude = latitude;
   position.longitude = longitude;
-  position.timestamp = base::Time::FromDoubleT(time_stamp / 1000.0);
+  position.timestamp = base::Time::FromDoubleT(time_stamp);
   if (has_altitude)
     position.altitude = altitude;
   if (has_accuracy)

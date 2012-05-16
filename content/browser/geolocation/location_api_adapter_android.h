@@ -49,7 +49,7 @@ class AndroidLocationApiAdapter {
   // Called by JNI on main thread looper.
   static void OnNewLocationAvailable(double latitude,
                                      double longitude,
-                                     long time_stamp,
+                                     double time_stamp,
                                      bool has_altitude, double altitude,
                                      bool has_accuracy, double accuracy,
                                      bool has_heading, double heading,
