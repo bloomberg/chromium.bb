@@ -19,6 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "jingle/glue/thread_wrapper.h"
 #include "media/base/media.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/input_event.h"
@@ -32,12 +33,14 @@
 #include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
+#include "remoting/client/plugin/pepper_port_allocator.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/client/plugin/pepper_xmpp_proxy.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
+#include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/mouse_input_filter.h"
 
 // Windows defines 'PostMessage', so we have to undef it.
@@ -396,8 +399,10 @@ ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
 void ChromotingInstance::Connect(const ClientConfig& config) {
   DCHECK(plugin_message_loop_->BelongsToCurrentThread());
 
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
+
   host_connection_.reset(new protocol::ConnectionToHost(
-      context_.network_message_loop(), this, true));
+      context_.network_message_loop(), true));
   client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
                                      view_.get(), rectangle_decoder_.get(),
                                      base::Closure()));
@@ -430,8 +435,13 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
       plugin_message_loop_,
       context_.network_message_loop());
 
+  scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
+      PepperPortAllocator::Create(this));
+  scoped_ptr<protocol::TransportFactory> transport_factory(
+      new protocol::LibjingleTransportFactory(port_allocator.Pass(), false));
+
   // Kick off the connection.
-  client_->Start(xmpp_proxy_);
+  client_->Start(xmpp_proxy_, transport_factory.Pass());
 
   // Start timer that periodically sends perf stats.
   plugin_message_loop_->PostDelayedTask(
