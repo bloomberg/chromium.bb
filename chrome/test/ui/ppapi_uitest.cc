@@ -436,6 +436,7 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
 #define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name)
 #define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name)
 #define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name)
+#define TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(test_name)
 #else
 
 // NaCl based PPAPI tests
