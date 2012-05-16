@@ -27,7 +27,7 @@ class ConstrainedWebDialogDelegateBase
   bool closed_via_webui() const;
 
   // ConstrainedWebDialogDelegate interface.
-  virtual const WebDialogDelegate* 
+  virtual const WebDialogDelegate*
       GetWebDialogDelegate() const OVERRIDE;
   virtual WebDialogDelegate* GetWebDialogDelegate() OVERRIDE;
   virtual void OnDialogCloseFromWebUI() OVERRIDE;

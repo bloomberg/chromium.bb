@@ -102,7 +102,8 @@ class ConstrainedWebDialogDelegateViewViews
     return View::GetWidget();
   }
   virtual string16 GetWindowTitle() const OVERRIDE {
-    return GetWebDialogDelegate()->GetDialogTitle();
+    return impl_->closed_via_webui() ? string16() :
+        GetWebDialogDelegate()->GetDialogTitle();
   }
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
@@ -111,7 +112,8 @@ class ConstrainedWebDialogDelegateViewViews
   // views::WebView overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size size;
-    GetWebDialogDelegate()->GetDialogSize(&size);
+    if (!impl_->closed_via_webui())
+      GetWebDialogDelegate()->GetDialogSize(&size);
     return size;
   }
 
