@@ -1,9 +1,10 @@
-libconfig_parser_la_LIBADD = $(SHARED_LIBS)
+noinst_LTLIBRARIES = libshared.la
+
+libshared_la_LIBADD = $(SHARED_LIBS)
 AM_CPPFLAGS = $(SHARED_CFLAGS)
 AM_CFLAGS = $(GCC_CFLAGS)
 
-noinst_LTLIBRARIES = libconfig-parser.la
-libconfig_parser_la_SOURCES =			\
+libshared_la_SOURCES =				\
 	config-parser.c				\
 	option-parser.c				\
 	image-loader.c				\

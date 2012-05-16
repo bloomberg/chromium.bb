@@ -11,7 +11,7 @@ AM_CPPFLAGS =					\
 weston_LDFLAGS = -export-dynamic
 weston_CFLAGS = $(GCC_CFLAGS)
 weston_LDADD =								\
-	$(COMPOSITOR_LIBS) $(DLOPEN_LIBS) -lm ../shared/libconfig-parser.la
+	$(COMPOSITOR_LIBS) $(DLOPEN_LIBS) -lm ../shared/libshared.la
 
 weston_SOURCES =			\
 	compositor.c				\
@@ -63,7 +63,7 @@ if ENABLE_X11_COMPOSITOR
 x11_backend = x11-backend.la
 x11_backend_la_LDFLAGS = -module -avoid-version
 x11_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(X11_COMPOSITOR_LIBS) \
-	../shared/libconfig-parser.la
+	../shared/libshared.la
 x11_backend_la_CFLAGS = $(X11_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
 x11_backend_la_SOURCES = compositor-x11.c
 endif
@@ -72,7 +72,7 @@ if ENABLE_DRM_COMPOSITOR
 drm_backend = drm-backend.la
 drm_backend_la_LDFLAGS = -module -avoid-version
 drm_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(DRM_COMPOSITOR_LIBS) \
-	../shared/libconfig-parser.la
+	../shared/libshared.la
 drm_backend_la_CFLAGS = $(DRM_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
 drm_backend_la_SOURCES =			\
 	compositor-drm.c			\
@@ -89,7 +89,7 @@ if ENABLE_WAYLAND_COMPOSITOR
 wayland_backend = wayland-backend.la
 wayland_backend_la_LDFLAGS = -module -avoid-version
 wayland_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(WAYLAND_COMPOSITOR_LIBS) \
-	../shared/libconfig-parser.la
+	../shared/libshared.la
 wayland_backend_la_CFLAGS = $(WAYLAND_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
 wayland_backend_la_SOURCES = compositor-wayland.c
 endif
@@ -119,7 +119,7 @@ if ENABLE_DESKTOP_SHELL
 desktop_shell = desktop-shell.la
 desktop_shell_la_LDFLAGS = -module -avoid-version
 desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)	\
-	../shared/libconfig-parser.la
+	../shared/libshared.la
 desktop_shell_la_CFLAGS = $(GCC_CFLAGS)
 desktop_shell_la_SOURCES =			\
 	shell.c					\

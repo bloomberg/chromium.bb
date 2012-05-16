@@ -61,7 +61,7 @@ libtoytoolkit_a_SOURCES =			\
 
 toolkit_libs =						\
 	libtoytoolkit.a					\
-	../shared/libconfig-parser.la			\
+	../shared/libshared.la				\
 	$(CLIENT_LIBS) $(CAIRO_EGL_LIBS) -lrt -lm
 
 flower_SOURCES = flower.c
@@ -95,15 +95,13 @@ weston_desktop_shell_SOURCES =			\
 	desktop-shell.c				\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c
-weston_desktop_shell_LDADD = $(toolkit_libs)	\
-	../shared/libconfig-parser.la
+weston_desktop_shell_LDADD = $(toolkit_libs)
 
 weston_tablet_shell_SOURCES =			\
 	tablet-shell.c				\
 	tablet-shell-client-protocol.h		\
 	tablet-shell-protocol.c
-weston_tablet_shell_LDADD = $(toolkit_libs)	\
-	../shared/libconfig-parser.la
+weston_tablet_shell_LDADD = $(toolkit_libs)
 
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\
