@@ -1,0 +1,47 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+option optimize_for = LITE_RUNTIME;
+
+// TODO(primiano) Commented out due to compilation errors. What's its purpose?
+//option cc_api_version = 2;
+
+package speech;
+
+// Used for receiving results from the Google continuous speech recognition
+// webservice.
+message HttpStreamingResult {
+  // Used in case of errors.
+  // TODO(primiano) Not completely sure about its semantic. Ask gshires@.
+  optional int32 status = 1;
+
+  // TODO(primiano) this seems to be not used anymore. Ask gshires@.
+  optional int32 id = 2;
+
+  // Definitive results provide an array of hypotheses.
+  repeated HttpStreamingHypothesis hypotheses = 3;
+
+  // Non definitive results, instead, provide a provisional (read: likely to be
+  // confirmed) and an ephemeral (read: likely to be changed soon) string.
+  optional string provisional = 4;
+  optional string ephemeral = 5;
+
+  // TODO(primiano) this seems to be not used anymore. Ask gshires@.
+  optional string upstream_url = 6;
+
+  // Used by the webservice to acknowledge the successfull connection of the
+  // upstream (the one pushing audio data).
+  optional bool upstream_connected = 7;
+}
+
+// Part of a definitive result. See HttpStreamingResult.hypotheses array.
+message HttpStreamingHypothesis {
+  // Textual transcript of the hypothesis.
+  optional string utterance = 1;
+
+  // Confidence score associated with the hypothesis.
+  optional float confidence = 2;
+}
+

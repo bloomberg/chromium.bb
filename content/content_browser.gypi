@@ -5,6 +5,7 @@
 {
   'dependencies': [
     'browser/debugger/devtools_resources.gyp:devtools_resources',
+    'browser/speech/proto/speech_proto.gyp:speech_proto',
     '../base/base.gyp:base_static',
     '../crypto/crypto.gyp:crypto',
     '../net/net.gyp:http_server',
