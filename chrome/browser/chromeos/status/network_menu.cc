@@ -1025,26 +1025,17 @@ void NetworkMenu::DoConnect(Network* network) {
     VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network);
     if (vpn->NeedMoreInfoToConnect()) {
       // Show the connection UI if info for a field is missing.
-      NetworkConfigView* view = new NetworkConfigView(vpn);
-      views::Widget* window = views::Widget::CreateWindowWithParent(
-          view, delegate()->GetNativeWindow());
-      window->SetAlwaysOnTop(true);
-      window->Show();
+      NetworkConfigView::Show(vpn, delegate()->GetNativeWindow());
     } else {
       cros->ConnectToVirtualNetwork(vpn);
       // Connection failures are responsible for updating the UI, including
       // reopening dialogs.
     }
-  }
-  if (network->type() == TYPE_WIFI) {
+  } else if (network->type() == TYPE_WIFI) {
     WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
     if (wifi->IsPassphraseRequired()) {
       // Show the connection UI if we require a passphrase.
-      NetworkConfigView* view = new NetworkConfigView(wifi);
-      views::Widget* window = views::Widget::CreateWindowWithParent(
-          view, delegate()->GetNativeWindow());
-      window->SetAlwaysOnTop(true);
-      window->Show();
+      NetworkConfigView::Show(wifi, delegate()->GetNativeWindow());
     } else {
       cros->ConnectToWifiNetwork(wifi);
       // Connection failures are responsible for updating the UI, including
@@ -1091,11 +1082,7 @@ void NetworkMenu::ToggleCellular() {
 }
 
 void NetworkMenu::ShowOtherWifi() {
-  NetworkConfigView* view = new NetworkConfigView(TYPE_WIFI);
-  views::Widget* window = views::Widget::CreateWindowWithParent(
-      view, delegate_->GetNativeWindow());
-  window->SetAlwaysOnTop(true);
-  window->Show();
+  NetworkConfigView::ShowForType(TYPE_WIFI, delegate_->GetNativeWindow());
 }
 
 void NetworkMenu::ShowOtherCellular() {

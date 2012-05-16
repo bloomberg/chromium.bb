@@ -6,12 +6,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -23,20 +18,6 @@ NetworkLoginObserver::NetworkLoginObserver(NetworkLibrary* netlib) {
 
 NetworkLoginObserver::~NetworkLoginObserver() {
   CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
-}
-
-void NetworkLoginObserver::CreateModalPopup(views::WidgetDelegate* view) {
-  gfx::NativeWindow parent = NULL;
-  if (BaseLoginDisplayHost::default_host()) {
-    parent = BaseLoginDisplayHost::default_host()->GetNativeWindow();
-  } else {
-    Browser* browser = BrowserList::FindTabbedBrowser(
-        ProfileManager::GetDefaultProfileOrOffTheRecord(), true);
-    parent = browser ? browser->window()->GetNativeHandle() : NULL;
-  }
-  views::Widget* window = views::Widget::CreateWindowWithParent(view, parent);
-  window->SetAlwaysOnTop(true);
-  window->Show();
 }
 
 void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
@@ -59,7 +40,7 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
           wifi->error() == ERROR_BAD_WEPKEY ||
           wifi->connection_started() ||
           (wifi->encrypted() && wifi->added())) {
-        CreateModalPopup(new NetworkConfigView(wifi));
+        NetworkConfigView::Show(wifi, NULL);
         return;  // Only support one failure per notification.
       }
     }
@@ -74,7 +55,7 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
               << ", added: " << vpn->added();
       // Display login dialog for any error or newly added network.
       if (vpn->error() != ERROR_NO_ERROR || vpn->added()) {
-        CreateModalPopup(new NetworkConfigView(vpn));
+        NetworkConfigView::Show(vpn, NULL);
         return;  // Only support one failure per notification.
       }
     }

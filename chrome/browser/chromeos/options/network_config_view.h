@@ -42,11 +42,10 @@ class NetworkConfigView : public views::DialogDelegateView,
      virtual ~Delegate() {}
   };
 
-  // Login dialog for known networks.
-  explicit NetworkConfigView(Network* network);
-  // Login dialog for new/hidden networks.
-  explicit NetworkConfigView(ConnectionType type);
-  virtual ~NetworkConfigView() {}
+  // Shows a network connection dialog if none is currently visible.
+  // Returns false if a dialog is already visible.
+  static bool Show(Network* network, gfx::NativeWindow parent);
+  static bool ShowForType(ConnectionType type, gfx::NativeWindow parent);
 
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;
@@ -84,6 +83,12 @@ class NetworkConfigView : public views::DialogDelegateView,
                                     views::View* child) OVERRIDE;
 
  private:
+  // Login dialog for known networks.
+  explicit NetworkConfigView(Network* network);
+  // Login dialog for new/hidden networks.
+  explicit NetworkConfigView(ConnectionType type);
+  virtual ~NetworkConfigView();
+
   // Creates an "Advanced" button in the lower-left corner of the dialog.
   void CreateAdvancedButton();
 

@@ -8,8 +8,13 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/options/vpn_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -25,6 +30,36 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+gfx::NativeWindow GetDialogParent() {
+  if (chromeos::BaseLoginDisplayHost::default_host()) {
+    return chromeos::BaseLoginDisplayHost::default_host()->GetNativeWindow();
+  } else {
+    Browser* browser = BrowserList::FindTabbedBrowser(
+        ProfileManager::GetDefaultProfileOrOffTheRecord(), true);
+    if (browser)
+      return browser->window()->GetNativeHandle();
+  }
+  return NULL;
+}
+
+// Avoid global static initializer.
+chromeos::NetworkConfigView** GetActiveDialogPointer() {
+  static chromeos::NetworkConfigView* active_dialog = NULL;
+  return &active_dialog;
+}
+
+chromeos::NetworkConfigView* GetActiveDialog() {
+  return *(GetActiveDialogPointer());
+}
+
+void SetActiveDialog(chromeos::NetworkConfigView* dialog) {
+  *(GetActiveDialogPointer()) = dialog;
+}
+
+}  // namespace
+
 namespace chromeos {
 
 // static
@@ -34,6 +69,8 @@ NetworkConfigView::NetworkConfigView(Network* network)
     : delegate_(NULL),
       advanced_button_(NULL),
       advanced_button_container_(NULL) {
+  DCHECK(GetActiveDialog() == NULL);
+  SetActiveDialog(this);
   if (network->type() == TYPE_WIFI) {
     child_config_view_ =
         new WifiConfigView(this, static_cast<WifiNetwork*>(network));
@@ -50,6 +87,8 @@ NetworkConfigView::NetworkConfigView(ConnectionType type)
     : delegate_(NULL),
       advanced_button_(NULL),
       advanced_button_container_(NULL) {
+  DCHECK(GetActiveDialog() == NULL);
+  SetActiveDialog(this);
   if (type == TYPE_WIFI) {
     child_config_view_ = new WifiConfigView(this, false /* show_8021x */);
     CreateAdvancedButton();
@@ -59,6 +98,38 @@ NetworkConfigView::NetworkConfigView(ConnectionType type)
     NOTREACHED();
     child_config_view_ = NULL;
   }
+}
+
+NetworkConfigView::~NetworkConfigView() {
+  DCHECK(GetActiveDialog() == this);
+  SetActiveDialog(NULL);
+}
+
+// static
+bool NetworkConfigView::Show(Network* network, gfx::NativeWindow parent) {
+  if (GetActiveDialog() != NULL)
+    return false;
+  NetworkConfigView* view = new NetworkConfigView(network);
+  if (parent == NULL)
+    parent = GetDialogParent();
+  views::Widget* window = views::Widget::CreateWindowWithParent(view, parent);
+  window->SetAlwaysOnTop(true);
+  window->Show();
+  return true;
+}
+
+// static
+bool NetworkConfigView::ShowForType(ConnectionType type,
+                                    gfx::NativeWindow parent) {
+  if (GetActiveDialog() != NULL)
+    return false;
+  NetworkConfigView* view = new NetworkConfigView(type);
+  if (parent == NULL)
+    parent = GetDialogParent();
+  views::Widget* window = views::Widget::CreateWindowWithParent(view, parent);
+  window->SetAlwaysOnTop(true);
+  window->Show();
+  return true;
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
