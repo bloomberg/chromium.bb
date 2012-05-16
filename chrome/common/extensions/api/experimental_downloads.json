@@ -142,6 +142,11 @@
             "type": "string",
             "description": "absolute local path"
           },
+          "incognito": {
+            "type": "boolean",
+            "description": "False if this download is recorded in the history, true if it is not recorded.",
+            "optional": true
+          },
           "danger": {
             "$ref": "DownloadDangerType",
             "description": "Indication of whether this download is thought to be safe or known to be suspicious.",

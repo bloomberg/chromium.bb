@@ -93,6 +93,8 @@ class SyncDownloadsFunction : public SyncExtensionFunction,
   // DownloadsFunctionInterface:
   virtual DownloadsFunctionName function() const OVERRIDE;
 
+  content::DownloadItem* GetActiveItem(int download_id);
+
  private:
   DownloadsFunctionName function_;
 
@@ -110,6 +112,8 @@ class AsyncDownloadsFunction : public AsyncExtensionFunction,
 
   // DownloadsFunctionInterface:
   virtual DownloadsFunctionName function() const OVERRIDE;
+
+  content::DownloadItem* GetActiveItem(int download_id);
 
  private:
   DownloadsFunctionName function_;

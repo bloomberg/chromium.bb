@@ -59,21 +59,23 @@ class DownloadExtensionTest : public InProcessBrowserTest {
     content::DownloadDangerType danger_type;
   };
 
+  virtual Browser* current_browser() { return browser(); }
+
   // InProcessBrowserTest
   virtual void SetUpOnMainThread() OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     InProcessBrowserTest::SetUpOnMainThread();
-    ASSERT_TRUE(CreateAndSetDownloadsDirectory(browser()));
-    browser()->profile()->GetPrefs()->SetBoolean(prefs::kPromptForDownload,
-                                                 false);
+    CreateAndSetDownloadsDirectory();
+    current_browser()->profile()->GetPrefs()->SetBoolean(
+        prefs::kPromptForDownload, false);
     GetDownloadManager()->RemoveAllDownloads();
   }
 
-  DownloadManager* GetDownloadManager() {
+  virtual DownloadManager* GetDownloadManager() {
     DownloadService* download_service =
-        DownloadServiceFactory::GetForProfile(browser()->profile());
+        DownloadServiceFactory::GetForProfile(current_browser()->profile());
     return download_service->GetDownloadManager();
   }
 
@@ -124,16 +126,16 @@ class DownloadExtensionTest : public InProcessBrowserTest {
           CreateInProgressDownloadObserver(1));
       GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
       ui_test_utils::NavigateToURLWithDisposition(
-          browser(), slow_download_url, CURRENT_TAB,
+          current_browser(), slow_download_url, CURRENT_TAB,
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
       observer->WaitForFinished();
       EXPECT_EQ(
           1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
       // We don't expect a select file dialog.
-      CHECK(!observer->select_file_dialog_seen());
+      ASSERT_FALSE(observer->select_file_dialog_seen());
     }
     GetDownloadManager()->GetAllDownloads(FilePath(), items);
-    CHECK_EQ(count, items->size());
+    ASSERT_EQ(count, items->size());
   }
 
   DownloadItem* CreateSlowTestDownload() {
@@ -147,7 +149,7 @@ class DownloadExtensionTest : public InProcessBrowserTest {
       return NULL;
 
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), slow_download_url, CURRENT_TAB,
+        current_browser(), slow_download_url, CURRENT_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
     observer->WaitForFinished();
@@ -176,7 +178,7 @@ class DownloadExtensionTest : public InProcessBrowserTest {
         CreateDownloadObserver(1));
     GURL finish_url(URLRequestSlowDownloadJob::kFinishDownloadUrl);
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), finish_url, NEW_FOREGROUND_TAB,
+        current_browser(), finish_url, NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -195,25 +197,35 @@ class DownloadExtensionTest : public InProcessBrowserTest {
                                               true);
   }
 
+  extension_function_test_utils::RunFunctionFlags GetFlags() {
+    return current_browser()->profile()->IsOffTheRecord() ?
+           extension_function_test_utils::INCLUDE_INCOGNITO :
+           extension_function_test_utils::NONE;
+  }
+
+  // extension_function_test_utils::RunFunction*() only uses browser for its
+  // profile(), so pass it the on-record browser so that it always uses the
+  // on-record profile.
+
   bool RunFunction(UIThreadExtensionFunction* function,
                    const std::string& args) {
     // extension_function_test_utils::RunFunction() does not take
     // ownership of |function|.
     scoped_refptr<ExtensionFunction> function_owner(function);
     return extension_function_test_utils::RunFunction(
-        function, args, browser(), extension_function_test_utils::NONE);
+        function, args, browser(), GetFlags());
   }
 
   base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
                                           const std::string& args) {
     return extension_function_test_utils::RunFunctionAndReturnResult(
-        function, args, browser(), extension_function_test_utils::NONE);
+        function, args, browser(), GetFlags());
   }
 
   std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                         const std::string& args) {
     return extension_function_test_utils::RunFunctionAndReturnError(
-        function, args, browser(), extension_function_test_utils::NONE);
+        function, args, browser(), GetFlags());
   }
 
   bool RunFunctionAndReturnString(UIThreadExtensionFunction* function,
@@ -256,16 +268,34 @@ class DownloadExtensionTest : public InProcessBrowserTest {
   }
 
  private:
-  bool CreateAndSetDownloadsDirectory(Browser* browser) {
-    if (!downloads_directory_.CreateUniqueTempDir())
-      return false;
-    browser->profile()->GetPrefs()->SetFilePath(
+  void CreateAndSetDownloadsDirectory() {
+    ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
+    current_browser()->profile()->GetPrefs()->SetFilePath(
         prefs::kDownloadDefaultDirectory,
         downloads_directory_.path());
-    return true;
   }
 
   ScopedTempDir downloads_directory_;
+};
+
+class DownloadExtensionTestIncognito : public DownloadExtensionTest {
+ public:
+  virtual Browser* current_browser() OVERRIDE { return current_browser_; }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    GoOnTheRecord();
+    DownloadExtensionTest::SetUpOnMainThread();
+    incognito_browser_ = CreateIncognitoBrowser();
+    GoOffTheRecord();
+    GetDownloadManager()->RemoveAllDownloads();
+  }
+
+  void GoOnTheRecord() { current_browser_ = browser(); }
+  void GoOffTheRecord() { current_browser_ = incognito_browser_; }
+
+ private:
+  Browser* incognito_browser_;
+  Browser* current_browser_;
 };
 
 class MockIconExtractorImpl : public DownloadFileIconExtractor {
@@ -785,4 +815,139 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchPlural) {
   FilePath::StringType item_name;
   ASSERT_TRUE(item_value->GetString("filename", &item_name));
   ASSERT_EQ(items[2]->GetFullPath().value(), item_name);
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTestIncognito,
+                       DownloadsApi_SearchIncognito) {
+  scoped_ptr<base::Value> result_value;
+  base::ListValue* result_list = NULL;
+  base::DictionaryValue* result_dict = NULL;
+  FilePath::StringType filename;
+  bool is_incognito = false;
+  std::string error;
+  std::string on_item_arg;
+  std::string off_item_arg;
+  std::string result_string;
+
+  // Set up one on-record item and one off-record item.
+
+  GoOnTheRecord();
+  DownloadItem* on_item = CreateSlowTestDownload();
+  ASSERT_TRUE(on_item);
+  ASSERT_FALSE(on_item->IsOtr());
+  on_item_arg = DownloadItemIdAsArgList(on_item);
+
+  GoOffTheRecord();
+  DownloadItem* off_item = CreateSlowTestDownload();
+  ASSERT_TRUE(off_item);
+  ASSERT_TRUE(off_item->IsOtr());
+  ASSERT_TRUE(on_item->GetFullPath() != off_item->GetFullPath());
+  off_item_arg = DownloadItemIdAsArgList(off_item);
+
+  // Extensions running in the incognito window should have access to both
+  // items because the Test extension is in spanning mode.
+  result_value.reset(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{}]"));
+  ASSERT_TRUE(result_value.get());
+  ASSERT_TRUE(result_value->GetAsList(&result_list));
+  ASSERT_EQ(2UL, result_list->GetSize());
+  ASSERT_TRUE(result_list->GetDictionary(0, &result_dict));
+  ASSERT_TRUE(result_dict->GetString("filename", &filename));
+  ASSERT_TRUE(result_dict->GetBoolean("incognito", &is_incognito));
+  EXPECT_TRUE(on_item->GetFullPath() == FilePath(filename));
+  EXPECT_FALSE(is_incognito);
+  ASSERT_TRUE(result_list->GetDictionary(1, &result_dict));
+  ASSERT_TRUE(result_dict->GetString("filename", &filename));
+  ASSERT_TRUE(result_dict->GetBoolean("incognito", &is_incognito));
+  EXPECT_TRUE(off_item->GetFullPath() == FilePath(filename));
+  EXPECT_TRUE(is_incognito);
+
+  // Extensions running in the on-record window should have access only to the
+  // on-record item.
+  GoOnTheRecord();
+  result_value.reset(RunFunctionAndReturnResult(
+      new DownloadsSearchFunction(), "[{}]"));
+  ASSERT_TRUE(result_value.get());
+  ASSERT_TRUE(result_value->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+  ASSERT_TRUE(result_list->GetDictionary(0, &result_dict));
+  ASSERT_TRUE(result_dict->GetString("filename", &filename));
+  EXPECT_TRUE(on_item->GetFullPath() == FilePath(filename));
+  ASSERT_TRUE(result_dict->GetBoolean("incognito", &is_incognito));
+  EXPECT_FALSE(is_incognito);
+
+  // Pausing/Resuming the off-record item while on the record should return an
+  // error. Cancelling "non-existent" downloads is not an error.
+  error = RunFunctionAndReturnError(new DownloadsPauseFunction(), off_item_arg);
+  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+               error.c_str());
+  error = RunFunctionAndReturnError(new DownloadsResumeFunction(),
+                                    off_item_arg);
+  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+               error.c_str());
+  error = RunFunctionAndReturnError(
+      new DownloadsGetFileIconFunction(),
+      base::StringPrintf("[%d, {}]", off_item->GetId()));
+  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+               error.c_str());
+
+  // TODO(benjhayden): Test incognito_split_mode() extension.
+  // TODO(benjhayden): Test download(), onCreated, onChanged, onErased.
+
+  GoOffTheRecord();
+
+  // Do the FileIcon test for both the on- and off-items while off the record.
+  // NOTE(benjhayden): This does not include the FileIcon test from history,
+  // just active downloads. This shouldn't be a problem.
+  EXPECT_TRUE(RunFunctionAndReturnString(
+      new DownloadsGetFileIconFunction(),
+      base::StringPrintf("[%d, {}]", on_item->GetId()), &result_string));
+  EXPECT_TRUE(RunFunctionAndReturnString(
+      new DownloadsGetFileIconFunction(),
+      base::StringPrintf("[%d, {}]", off_item->GetId()), &result_string));
+
+  // Do the pause/resume/cancel test for both the on- and off-items while off
+  // the record.
+  EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), on_item_arg));
+  EXPECT_TRUE(on_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), on_item_arg));
+  EXPECT_TRUE(on_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsResumeFunction(), on_item_arg));
+  EXPECT_FALSE(on_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsResumeFunction(), on_item_arg));
+  EXPECT_FALSE(on_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), on_item_arg));
+  EXPECT_TRUE(on_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), on_item_arg));
+  EXPECT_TRUE(on_item->IsCancelled());
+  EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), on_item_arg));
+  EXPECT_TRUE(on_item->IsCancelled());
+  error = RunFunctionAndReturnError(new DownloadsPauseFunction(), on_item_arg);
+  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+               error.c_str());
+  error = RunFunctionAndReturnError(new DownloadsResumeFunction(), on_item_arg);
+  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+               error.c_str());
+  EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), off_item_arg));
+  EXPECT_TRUE(off_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), off_item_arg));
+  EXPECT_TRUE(off_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsResumeFunction(), off_item_arg));
+  EXPECT_FALSE(off_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsResumeFunction(), off_item_arg));
+  EXPECT_FALSE(off_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsPauseFunction(), off_item_arg));
+  EXPECT_TRUE(off_item->IsPaused());
+  EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), off_item_arg));
+  EXPECT_TRUE(off_item->IsCancelled());
+  EXPECT_TRUE(RunFunction(new DownloadsCancelFunction(), off_item_arg));
+  EXPECT_TRUE(off_item->IsCancelled());
+  error = RunFunctionAndReturnError(new DownloadsPauseFunction(),
+                                    off_item_arg);
+  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+               error.c_str());
+  error = RunFunctionAndReturnError(new DownloadsResumeFunction(),
+                                    off_item_arg);
+  EXPECT_STREQ(download_extension_errors::kInvalidOperationError,
+               error.c_str());
 }
