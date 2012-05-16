@@ -76,6 +76,10 @@ cr.define('print_preview', function() {
         }
       }
       this.setVisible_(headerFooterApplies);
+      var headerFooterEvent = new cr.Event(
+          customEvents.HEADER_FOOTER_VISIBILITY_CHANGED);
+      headerFooterEvent.headerFooterApplies = headerFooterApplies;
+      document.dispatchEvent(headerFooterEvent);
     },
 
     /**
@@ -108,17 +112,14 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Hides or shows |this.headerFooterOption|.
-     * @param {boolean} visible True if |this.headerFooterOption| should be
+     * Hides or shows |this.headerFooterOption_|.
+     * @param {boolean} visible True if |this.headerFooterOption_| should be
      *     shown.
      * @private
      */
     setVisible_: function(visible) {
-      if (visible)
-        fadeInOption(this.headerFooterOption_);
-      else
-        fadeOutOption(this.headerFooterOption_);
-    }
+        this.headerFooterOption_.style.display = visible ? 'block' : 'none';
+    },
   };
 
   return {

@@ -80,6 +80,13 @@ var marginSettings;
 //     related settings.
 var headerFooterSettings;
 
+// @type {print_preview.FitToPageSettings} Holds all the fit to page related
+//     settings.
+var fitToPageSettings;
+
+// @type {print_preview.MoreOptions} Holds the more options implementation.
+var moreOptions;
+
 // @type {print_preview.ColorSettings} Holds all the color related settings.
 var colorSettings;
 
@@ -119,6 +126,8 @@ var addedCloudPrinters = {};
 
 // Names of all the custom events used.
 var customEvents = {
+  // Fired when the header footer option visibility changed.
+  HEADER_FOOTER_VISIBILITY_CHANGED: 'headerFooterVisibilityChanged',
   // Fired when the mouse moves while a margin line is being dragged.
   MARGIN_LINE_DRAG: 'marginLineDrag',
   // Fired when a mousedown event occurs on a margin line.
@@ -133,6 +142,8 @@ var customEvents = {
   PDF_LOADED: 'PDFLoaded',
   // Fired when the selected printer capabilities change.
   PRINTER_CAPABILITIES_UPDATED: 'printerCapabilitiesUpdated',
+  // Fired when the destination printer is changed.
+  PRINTER_SELECTION_CHANGED: 'printerSelectionChanged',
   // Fired when the print button needs to be updated.
   UPDATE_PRINT_BUTTON: 'updatePrintButton',
   // Fired when the print summary needs to be updated.
@@ -178,6 +189,8 @@ function onLoad() {
   layoutSettings = print_preview.LayoutSettings.getInstance();
   marginSettings = print_preview.MarginSettings.getInstance();
   headerFooterSettings = print_preview.HeaderFooterSettings.getInstance();
+  fitToPageSettings = print_preview.FitToPageSettings.getInstance();
+  moreOptions = print_preview.MoreOptions.getInstance();
   colorSettings = print_preview.ColorSettings.getInstance();
   $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
 
@@ -278,6 +291,16 @@ function launchNativePrintDialog() {
 }
 
 /**
+ * Notifies listeners of |customEvents.PRINTER_SELECTION_CHANGED| event about
+ * the current selected printer.
+ */
+function dispatchPrinterSelectionChangedEvent() {
+  var customEvent = cr.Event(customEvents.PRINTER_SELECTION_CHANGED);
+  customEvent.selectedPrinter = getSelectedPrinterName();
+  document.dispatchEvent(customEvent);
+}
+
+/**
  * Gets the selected printer capabilities and updates the controls accordingly.
  */
 function updateControlsWithSelectedPrinterCapabilities() {
@@ -289,6 +312,7 @@ function updateControlsWithSelectedPrinterCapabilities() {
     $('open-pdf-in-preview-link').disabled = false;
 
   var skip_refresh = false;
+  var selectedPrinterChanged = true;
   var selectedValue = printerList.options[selectedIndex].value;
   if (cloudprint.isCloudPrint(printerList.options[selectedIndex])) {
     cloudprint.updatePrinterCaps(printerList.options[selectedIndex],
@@ -300,6 +324,7 @@ function updateControlsWithSelectedPrinterCapabilities() {
     printerList.selectedIndex = lastSelectedPrinterIndex;
     chrome.send(selectedValue);
     skip_refresh = true;
+    selectedPrinterChanged = false;
   } else if (selectedValue == PRINT_TO_PDF ||
              selectedValue == PRINT_WITH_CLOUD_PRINT) {
     updateWithPrinterCapabilities({
@@ -316,6 +341,9 @@ function updateControlsWithSelectedPrinterCapabilities() {
     // function.
     chrome.send('getPrinterCapabilities', [selectedValue]);
   }
+  if (selectedPrinterChanged)
+    dispatchPrinterSelectionChangedEvent();
+
   if (!skip_refresh) {
     lastSelectedPrinterIndex = selectedIndex;
 
@@ -394,6 +422,16 @@ function finishedCloudPrinting() {
 }
 
 /**
+ * Updates the fit to page option state based on the print scaling option of
+ * source pdf. PDF's have an option to enable/disable print scaling. When we
+ * find out that the print scaling option is disabled for the source pdf, we
+ * uncheck the fit to page checkbox. This function is called from C++ code.
+ */
+function printScalingDisabledForSourcePDF() {
+  fitToPageSettings.onPrintScalingDisabled();
+}
+
+/**
  * Checks whether the specified settings are valid.
  *
  * @return {boolean} true if settings are valid, false if not.
@@ -431,6 +469,7 @@ function getSettings() {
        'marginsType': marginSettings.selectedMarginsValue,
        'requestID': -1,
        'generateDraftData': generateDraftData,
+       'fitToPageEnabled': fitToPageSettings.hasFitToPage(),
        'previewModifiable': previewModifiable};
 
   if (marginSettings.isCustomMarginsSelected())
@@ -579,9 +618,9 @@ function loadSelectedPages() {
 }
 
 /**
- * Asks the browser to generate a preview PDF based on current print settings.
+ * Updates the variables states for preview.
  */
-function requestPrintPreview() {
+function updateStateForPreview() {
   if (!isTabHidden)
     previewArea.showLoadingAnimation();
 
@@ -604,8 +643,15 @@ function requestPrintPreview() {
   var totalPageCount = pageSettings.totalPageCount;
   if (!previewModifiable && totalPageCount > 0)
     generateDraftData = false;
+}
 
-  var pageCount = totalPageCount != undefined ? totalPageCount : -1;
+/**
+ * Asks the browser to generate a preview PDF based on current print settings.
+ */
+function requestPrintPreview() {
+  updateStateForPreview();
+  var totalPageCount = pageSettings.totalPageCount;
+  var pageCount = totalPageCount || -1;
   chrome.send('getPreview', [JSON.stringify(getSettingsWithRequestID()),
                              pageCount,
                              previewModifiable]);
@@ -828,6 +874,10 @@ function invalidPrinterSettings() {
 function onPDFLoad() {
   if (previewModifiable) {
     setPluginPreviewPageCount();
+  } else {
+    // If the source is pdf, print ready metafile is available only after
+    // loading the pdf in the plugin.
+    isPrintReadyMetafileReady = true;
   }
   // Instruct the plugin which page numbers to display in the page number
   // indicator.
@@ -911,6 +961,8 @@ function reloadPreviewPages(previewUid, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
 
+  if (!previewModifiable)
+    previewArea.createOrReloadPDFPlugin(PRINT_READY_DATA_INDEX);
   cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
   checkAndHideOverlayLayerIfValid();
   var pageSet = pageSettings.previouslySelectedPages;
@@ -974,13 +1026,14 @@ function onDidPreviewPage(pageNumber, previewUid, previewResponseId) {
 function updatePrintPreview(previewUid, previewResponseId) {
   if (!isExpectedPreviewResponse(previewResponseId))
     return;
-  isPrintReadyMetafileReady = true;
 
   if (!previewModifiable) {
     // If the preview is not modifiable the plugin has not been created yet.
     currentPreviewUid = previewUid;
     hasPendingPreviewRequest = false;
     previewArea.createOrReloadPDFPlugin(PRINT_READY_DATA_INDEX);
+  } else {
+    isPrintReadyMetafileReady = true;
   }
 
   cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
@@ -1203,6 +1256,7 @@ window.addEventListener('keydown', onKeyDown);
 <include src="page_settings.js"/>
 <include src="copies_settings.js"/>
 <include src="header_footer_settings.js"/>
+<include src="fit_to_page_settings.js"/>
 <include src="layout_settings.js"/>
 <include src="color_settings.js"/>
 <include src="margin_settings.js"/>
@@ -1210,4 +1264,5 @@ window.addEventListener('keydown', onKeyDown);
 <include src="margin_utils.js"/>
 <include src="margins_ui.js"/>
 <include src="margins_ui_pair.js"/>
+<include src="more_options.js"/>
 <include src="preview_area.js"/>

@@ -214,6 +214,13 @@ void PrintPreviewMessageHandler::OnInvalidPrinterSettings(int document_cookie) {
   print_preview_ui->OnInvalidPrinterSettings();
 }
 
+void PrintPreviewMessageHandler::OnPrintPreviewScalingDisabled() {
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  if (!print_preview_ui)
+    return;
+  print_preview_ui->OnPrintPreviewScalingDisabled();
+}
+
 bool PrintPreviewMessageHandler::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
@@ -234,6 +241,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnPrintPreviewCancelled)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewInvalidPrinterSettings,
                         OnInvalidPrinterSettings)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewScalingDisabled,
+                        OnPrintPreviewScalingDisabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

@@ -321,3 +321,7 @@ void PrintPreviewUI::OnClosePrintPreviewTab() {
 void PrintPreviewUI::OnReloadPrintersList() {
   web_ui()->CallJavascriptFunction("reloadPrintersList");
 }
+
+void PrintPreviewUI::OnPrintPreviewScalingDisabled() {
+  web_ui()->CallJavascriptFunction("printScalingDisabledForSourcePDF");
+}

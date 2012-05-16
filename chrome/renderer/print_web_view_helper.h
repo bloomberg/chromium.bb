@@ -160,6 +160,17 @@ class PrintWebViewHelper
   // Returns true if the current destination printer is PRINT_TO_PDF.
   bool IsPrintToPdfRequested(const base::DictionaryValue& settings);
 
+  // Returns false if
+  // (1) The current destination printer is SAVE_AS_PDF or
+  // (2) Source is PDF. This is the first preview request and print scaling
+  // option is disabled for initiator renderer plugin.
+  // (3) Source is PDF and the user has requested not to fit to printable area
+  // via |job_settings|.
+  // In all other cases returns true to fit the print contents in paper size.
+  bool IsFitToPaperSizeRequested(bool source_is_html,
+                                 const base::DictionaryValue& job_settings,
+                                 const PrintMsg_Print_Params& params);
+
   // Initiate print preview.
   void OnInitiatePrintPreview();
 

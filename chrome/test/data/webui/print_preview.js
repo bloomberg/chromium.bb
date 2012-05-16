@@ -23,6 +23,7 @@ PrintPreviewWebUITest.prototype = {
    * Register a mock handler to ensure expectations are met and print preview
    * behaves correctly.
    * @type {Function}
+   * @this {PrintPreviewWebUITest}
    * @override
    */
   preLoad: function() {
@@ -120,6 +121,7 @@ PrintPreviewWebUITest.prototype = {
    * empty methods, which are used by testing and that would be provided by the
    * HTMLEmbedElement when the PDF plugin exists.
    * @param {number} srcDataIndex Preview data source index.
+   * @this {PrintPreviewWebUITest}
    */
   createOrReloadPDFPlugin: function(srcDataIndex) {
     var pdfViewer = $('pdf-viewer');
@@ -193,6 +195,13 @@ var fooIndex = 0;
  */
 var barIndex = 1;
 
+/**
+ * The expected "Save as PDF" option text returned by the stubbed handler.
+ * @type {string}
+ * @const
+ */
+var saveAsPDFOptionStr = 'Save as PDF';
+
 // Test some basic assumptions about the print preview WebUI.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
   var printerList = $('printer-list');
@@ -250,6 +259,16 @@ function checkSectionVisible(section, visible) {
                'section=' + section);
 }
 
+/**
+ * Verify that |section| style display matches |value|.
+ * @param {HTMLDivElement} section The section to check.
+ * @param {string} value The expected display style value.
+ */
+function checkSectionDisplayStyle(section, value) {
+  assertNotEquals(null, section);
+  expectEquals(section.style.display, value, 'section=' + section);
+}
+
 // Test that disabled settings hide the disabled sections.
 TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
   this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
@@ -270,6 +289,120 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
   checkSectionVisible(copiesSettings.copiesOption_, false);
 });
 
+// When the source is 'PDF' and 'Save as PDF' option is selected, we hide the
+// fit to page option.
+TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedHideFitToPageOption',
+       function() {
+  var savedArgs = new SaveMockArguments();
+  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
+      will(callFunctionWithSavedArgs(savedArgs, function(args) {
+        updatePrintPreview(2, JSON.parse(args[0]).requestID);
+      }));
+
+  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
+      savedArgs.match(ANYTHING)).
+          will(callGlobalWithSavedArgs(
+              savedArgs, 'updateWithPrinterCapabilities'));
+
+  setInitialSettings({previewModifiable: false});
+  var printerList = $('printer-list');
+  assertNotEquals(null, printerList, 'printerList');
+  assertGE(printerList.options.length, printerListMinLength);
+  for (var i = 0; i < printerList.options.length; i++) {
+    if (printerList.options[i].text == saveAsPDFOptionStr &&
+        printerList.options[i].value == saveAsPDFOptionStr) {
+      printerList.selectedIndex = i;
+      break;
+    }
+  }
+  updateControlsWithSelectedPrinterCapabilities();
+  checkSectionDisplayStyle(fitToPageSettings.fitToPageOption_, 'none');
+});
+
+// When the source is 'HTML', we always hide the fit to page option.
+TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLHideFitToPageOption', function() {
+  var savedArgs = new SaveMockArguments();
+  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
+      will(callFunctionWithSavedArgs(savedArgs, function(args) {
+        updatePrintPreview(2, JSON.parse(args[0]).requestID);
+      }));
+
+  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
+      savedArgs.match(ANYTHING)).
+          will(callGlobalWithSavedArgs(
+              savedArgs, 'updateWithPrinterCapabilities'));
+
+  setInitialSettings({previewModifiable: true});
+  var printerList = $('printer-list');
+  assertNotEquals(null, printerList, 'printerList');
+  assertGE(printerList.options.length, printerListMinLength);
+  updateControlsWithSelectedPrinterCapabilities();
+  checkSectionDisplayStyle(fitToPageSettings.fitToPageOption_, 'none');
+  expectTrue(fitToPageSettings.hasFitToPage());
+});
+
+// When the source is "PDF", depending on the selected destination printer, we
+// show/hide the fit to page option.
+TEST_F('PrintPreviewWebUITest', 'SourceIsPDFShowFitToPageOption', function() {
+  var savedArgs = new SaveMockArguments();
+  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
+      will(callFunctionWithSavedArgs(savedArgs, function(args) {
+        updatePrintPreview(2, JSON.parse(args[0]).requestID);
+      }));
+
+  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
+      savedArgs.match(ANYTHING)).
+          will(callGlobalWithSavedArgs(
+              savedArgs, 'updateWithPrinterCapabilities'));
+
+  setInitialSettings({previewModifiable: false});
+  var printerList = $('printer-list');
+  assertNotEquals(null, printerList, 'printerList');
+  assertGE(printerList.options.length, printerListMinLength);
+  var saveAsPDFOptionSelected = false;
+  var selectedPrinterOption = printerList.options[printerList.selectedIndex];
+  if (selectedPrinterOption.text == saveAsPDFOptionStr &&
+      selectedPrinterOption.value == saveAsPDFOptionStr) {
+    saveAsPDFOptionSelected = true;
+  }
+  updateControlsWithSelectedPrinterCapabilities();
+  checkSectionDisplayStyle(fitToPageSettings.fitToPageOption_,
+                           saveAsPDFOptionSelected ? 'none' : 'block');
+  expectTrue(fitToPageSettings.hasFitToPage());
+});
+
+// When the print scaling is disabled for the source "PDF", we show the fit
+// to page option but the state is unchecked by default.
+TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
+  var savedArgs = new SaveMockArguments();
+  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
+      will(callFunctionWithSavedArgs(savedArgs, function(args) {
+        updatePrintPreview(2, JSON.parse(args[0]).requestID);
+      }));
+
+  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
+      savedArgs.match(ANYTHING)).
+          will(callGlobalWithSavedArgs(
+              savedArgs, 'updateWithPrinterCapabilities'));
+
+  setInitialSettings({previewModifiable: false});
+  var printerList = $('printer-list');
+  assertNotEquals(null, printerList, 'printerList');
+  assertGE(printerList.options.length, printerListMinLength);
+  var saveAsPDFOptionSelected = false;
+  var selectedPrinterOption = printerList.options[printerList.selectedIndex];
+  if (selectedPrinterOption.text == saveAsPDFOptionStr &&
+      selectedPrinterOption.value == saveAsPDFOptionStr) {
+    saveAsPDFOptionSelected = true;
+  }
+  updateControlsWithSelectedPrinterCapabilities();
+  printScalingDisabledForSourcePDF();
+  checkSectionDisplayStyle(fitToPageSettings.fitToPageOption_,
+                           saveAsPDFOptionSelected ? 'none' : 'block');
+  // Make sure the fit to page checkbox is unchecked.
+  expectFalse(fitToPageSettings.hasFitToPage());
+});
+
 // Page layout has zero margins. Hide header and footer option.
 TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
        function() {
@@ -278,7 +411,7 @@ TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
       contentWidth: 100, contentHeight: 200, marginLeft: 0, marginRight: 0,
       marginTop: 0, marginBottom: 0, printableAreaX: 0, printableAreaY: 0,
       printableAreaWidth: 100, printableAreaHeight: 200}, true);
-  checkSectionVisible(headerFooterSettings.headerFooterOption_, false);
+  checkSectionDisplayStyle(headerFooterSettings.headerFooterOption_, 'none');
 });
 
 // Page layout has non-zero margins. Show header and footer option.
@@ -289,7 +422,7 @@ TEST_F('PrintPreviewWebUITest', 'PageLayoutHasMarginsShowHeaderFooter',
       contentWidth: 100, contentHeight: 200, marginLeft: 3, marginRight: 2,
       marginTop: 4, marginBottom: 1, printableAreaX: 1, printableAreaY: 1,
       printableAreaWidth: 103, printableAreaHeight: 203}, true);
-  checkSectionVisible(headerFooterSettings.headerFooterOption_, true);
+  checkSectionDisplayStyle(headerFooterSettings.headerFooterOption_, 'block');
 });
 
 // Page layout has zero top and bottom margins. Hide header and footer option.
@@ -300,7 +433,7 @@ TEST_F('PrintPreviewWebUITest', 'ZeroTopAndBottomMarginsHideHeaderFooter',
       contentWidth: 100, contentHeight: 200, marginLeft: 3, marginRight: 2,
       marginTop: 0, marginBottom: 0, printableAreaX: 1, printableAreaY: 1,
       printableAreaWidth: 98, printableAreaHeight: 198}, false);
-  checkSectionVisible(headerFooterSettings.headerFooterOption_, false);
+  checkSectionDisplayStyle(headerFooterSettings.headerFooterOption_, 'none');
 });
 
 // Page layout has zero top and non-zero bottom margin. Show header and footer
@@ -312,7 +445,7 @@ TEST_F('PrintPreviewWebUITest', 'ZeroTopAndNonZeroBottomMarginShowHeaderFooter',
       contentWidth: 100, contentHeight: 200, marginLeft: 6, marginRight: 4,
       marginTop: 0, marginBottom: 3, printableAreaX: 1, printableAreaY: 1,
       printableAreaWidth: 103, printableAreaHeight: 208}, false);
-  checkSectionVisible(headerFooterSettings.headerFooterOption_, true);
+  checkSectionDisplayStyle(headerFooterSettings.headerFooterOption_, 'block');
 });
 
 // Test that the color settings are set according to the printer capabilities.

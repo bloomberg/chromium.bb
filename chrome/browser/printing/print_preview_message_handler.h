@@ -60,6 +60,7 @@ class PrintPreviewMessageHandler : public content::WebContentsObserver {
   void OnPrintPreviewFailed(int document_cookie);
   void OnPrintPreviewCancelled(int document_cookie);
   void OnInvalidPrinterSettings(int document_cookie);
+  void OnPrintPreviewScalingDisabled();
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewMessageHandler);
 };

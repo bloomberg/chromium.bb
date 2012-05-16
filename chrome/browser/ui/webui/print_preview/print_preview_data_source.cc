@@ -122,6 +122,8 @@ void PrintPreviewDataSource::Init() {
   AddLocalizedString("optionsLabel", IDS_PRINT_PREVIEW_OPTIONS_LABEL);
   AddLocalizedString("optionHeaderFooter",
                      IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER);
+  AddLocalizedString("optionFitToPage",
+                     IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE);
   AddLocalizedString("marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL);
   AddLocalizedString("defaultMargins", IDS_PRINT_PREVIEW_DEFAULT_MARGINS);
   AddLocalizedString("noMargins", IDS_PRINT_PREVIEW_NO_MARGINS);

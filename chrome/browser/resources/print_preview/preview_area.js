@@ -171,7 +171,7 @@ cr.define('print_preview', function() {
      * Resets the state variables of |this|.
      */
     resetState: function() {
-      if (this.pdfPlugin_) {
+      if (this.pdfPlugin_ && previewModifiable) {
         this.zoomLevel_ = this.pdfPlugin_.getZoomLevel();
         this.pageOffset_ = {
             x: this.pdfPlugin_.pageXOffset(),

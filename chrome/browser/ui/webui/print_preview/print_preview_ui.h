@@ -140,6 +140,10 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Reload the printers list.
   void OnReloadPrintersList();
 
+  // Notifies the WebUI that the pdf print scaling option is disabled by
+  // default.
+  void OnPrintPreviewScalingDisabled();
+
  private:
   friend class PrintPreviewHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, StickyMarginsCustom);

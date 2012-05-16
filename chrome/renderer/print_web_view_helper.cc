@@ -345,6 +345,15 @@ printing::MarginType GetMarginsForPdf(WebFrame* frame, const WebNode& node) {
     return printing::PRINTABLE_AREA_MARGINS;
 }
 
+bool FitToPageEnabled(const DictionaryValue& job_settings) {
+  bool fit_to_paper_size = false;
+  if (!job_settings.GetBoolean(printing::kSettingFitToPageEnabled,
+                               &fit_to_paper_size)) {
+    NOTREACHED();
+  }
+  return fit_to_paper_size;
+}
+
 // Get the (x, y) coordinate from where printing of the current text should
 // start depending on the horizontal alignment (LEFT, RIGHT, CENTER) and
 // vertical alignment (TOP, BOTTOM).
@@ -899,6 +908,36 @@ bool PrintWebViewHelper::IsPrintToPdfRequested(
   return print_to_pdf;
 }
 
+bool PrintWebViewHelper::IsFitToPaperSizeRequested(
+    bool source_is_html, const DictionaryValue& job_settings,
+    const PrintMsg_Print_Params& params) {
+  DCHECK(!print_for_preview_);
+
+  // Do not fit to paper size when the user is saving the print contents as pdf.
+  if (params.print_to_pdf)
+    return false;
+
+  if (!source_is_html) {
+    if (!FitToPageEnabled(job_settings))
+      return false;
+
+    // Get the print scaling option for the initiator renderer pdf.
+    bool print_scaling_disabled_for_plugin =
+        print_preview_context_.frame()->isPrintScalingDisabledForPlugin(
+            print_preview_context_.node());
+
+    // If this is the first preview request, UI doesn't know about the print
+    // scaling option of the plugin. Therefore, check the print scaling option
+    // and update the print params accordingly.
+    //
+    // If this is not the first preview request, update print params based on
+    // preview job settings.
+    if (params.is_first_request && print_scaling_disabled_for_plugin)
+      return false;
+  }
+  return true;
+}
+
 void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   DCHECK(is_preview_enabled_);
   print_preview_context_.OnPrintPreview();
@@ -933,6 +972,16 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
                                                    preview_params));
     return;
   }
+
+  // If we are previewing a pdf and the print scaling is disabled, send a
+  // message to browser.
+  if (print_pages_params_->params.is_first_request &&
+      !print_preview_context_.IsModifiable() &&
+      print_preview_context_.frame()->isPrintScalingDisabledForPlugin(
+          print_preview_context_.node())) {
+    Send(new PrintHostMsg_PrintPreviewScalingDisabled(routing_id()));
+  }
+
   // Always clear |old_print_pages_params_| before rendering the pages.
   old_print_pages_params_.reset();
   is_print_ready_metafile_sent_ = false;
@@ -1375,26 +1424,8 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     modified_job_settings.MergeDictionary(job_settings);
     modified_job_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
                                      false);
-
-    // - On Windows, we don't add a margin until we turn it into an EMF when
-    //   printing for print preview (We could add it in the plugin).
-    // - On Mac with Skia, we don't add a margin until we send it to the printer
-    //   using the CG PDF class (We could add it in the plugin).
-    // - On Mac with CG, we can add a margin when generating the preview.
-    // - On Linux, we never add a margin (We Could add it in the plugin).
-#if defined(OS_MACOSX) && !defined(USE_SKIA)
-    bool get_margins_from_pdf = !source_is_html && !print_for_preview_;
-#elif defined(OS_WIN) || defined(OS_MACOSX)
-    bool get_margins_from_pdf = !source_is_html && print_for_preview_;
-#else
-    bool get_margins_from_pdf = false;
-#endif
-
-    printing::MarginType margin_type = printing::NO_MARGINS;
-    if (get_margins_from_pdf)
-      margin_type = GetMarginsForPdf(frame, node);
     modified_job_settings.SetInteger(printing::kSettingMarginsType,
-                                     margin_type);
+                                     printing::NO_MARGINS);
     job_settings = &modified_job_settings;
   }
 
@@ -1445,11 +1476,9 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     }
 
     settings.params.print_to_pdf = IsPrintToPdfRequested(*job_settings);
+    settings.params.fit_to_paper_size = IsFitToPaperSizeRequested(
+        source_is_html, *job_settings, settings.params);
     UpdateFrameMarginsCssInfo(*job_settings);
-
-    // Fit to paper size.
-    settings.params.fit_to_paper_size = source_is_html &&
-                                        !IsPrintToPdfRequested(*job_settings);
 
     // Header/Footer: Set |header_footer_info_|.
     if (settings.params.display_header_footer) {
@@ -1490,12 +1519,18 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
 
   Send(new PrintHostMsg_DidShowPrintDialog(routing_id()));
 
+  // PrintHostMsg_ScriptedPrint will reset print_scaling_option, so we save the
+  // value before and restore it afterwards.
+  bool fit_to_paper_size = print_pages_params_->params.fit_to_paper_size;
+
   print_pages_params_.reset();
   IPC::SyncMessage* msg =
       new PrintHostMsg_ScriptedPrint(routing_id(), params, &print_settings);
   msg->EnableMessagePumping();
   Send(msg);
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(print_settings));
+
+  print_pages_params_->params.fit_to_paper_size = fit_to_paper_size;
   return (print_settings.params.dpi && print_settings.params.document_cookie);
 }
 

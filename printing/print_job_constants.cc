@@ -42,6 +42,10 @@ const char kSettingDeviceName[] = "deviceName";
 // Print job duplex mode.
 const char kSettingDuplexMode[] = "duplex";
 
+// Option to fit source page contents to printer paper size: true if
+// selected else false.
+const char kSettingFitToPageEnabled[] = "fitToPageEnabled";
+
 // True, when a new set of draft preview data is required.
 const char kSettingGenerateDraftData[] = "generateDraftData";
 
