@@ -106,6 +106,14 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
   user_cloud_policy_subsystem_.reset();
   user_policy_token_cache_.reset();
   user_data_store_.reset();
+
+  // Delete the providers while the |handler_list_| is still valid, since
+  // OnProviderGoingAway() can trigger refreshes at the
+  // ConfigurationPolicyPrefStore.
+  recommended_cloud_provider_.reset();
+  managed_cloud_provider_.reset();
+  recommended_platform_provider_.reset();
+  managed_platform_provider_.reset();
 }
 
 void BrowserPolicyConnector::Init() {
