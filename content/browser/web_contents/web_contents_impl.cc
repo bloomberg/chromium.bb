@@ -499,6 +499,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       prefs.accelerated_video_enabled = false;
       prefs.accelerated_animation_enabled = false;
       prefs.accelerated_layers_enabled = false;
+      prefs.accelerated_plugins_enabled = false;
     }
   }
 
