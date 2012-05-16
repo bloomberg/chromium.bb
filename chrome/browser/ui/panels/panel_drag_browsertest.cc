@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 
 class PanelDragBrowserTest : public BasePanelBrowserTest {
  public:
@@ -397,6 +398,96 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragThreeDockedPanels) {
   EXPECT_EQ(position2, panel1->GetBounds().origin());
   EXPECT_EQ(position3, panel2->GetBounds().origin());
   EXPECT_EQ(position1, panel3->GetBounds().origin());
+
+  PanelManager::GetInstance()->CloseAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragMinimizedPanel) {
+  // We'll simulate mouse movements for test.
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
+
+  Panel* panel = CreatePanel("panel1");
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+
+  panel->Minimize();
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+
+  // Hover over minimized panel to bring up titlebar.
+  gfx::Point hover_point(panel->GetBounds().origin());
+  MoveMouseAndWaitForExpansionStateChange(panel, hover_point);
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
+  // Verify we can drag a minimized panel.
+  gfx::Rect panel_old_bounds = panel->GetBounds();
+  gfx::Point mouse_location = panel_old_bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
+  mouse_location.Offset(-70, 0);
+  panel_testing->DragTitlebar(mouse_location);
+  gfx::Rect panel_new_bounds = panel_old_bounds;
+  panel_new_bounds.Offset(-70, 0);
+  EXPECT_EQ(panel_new_bounds, panel->GetBounds());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
+  // Verify panel returns to fully minimized state after dragging ends once
+  // mouse moves away from panel.
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
+  MoveMouseAndWaitForExpansionStateChange(panel, mouse_location);
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+
+  panel->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
+                       DragMinimizedPanelWhileDrawingAttention) {
+  // We'll simulate mouse movements for test.
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
+
+  Panel* panel = CreatePanel("panel1");
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
+  CreatePanel("panel2");
+
+  panel->Minimize();
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
+
+  panel->FlashFrame(true);
+  EXPECT_TRUE(panel->IsDrawingAttention());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
+  // Drag the panel. Verify panel stays in title-only state after attention is
+  // cleared because it is being dragged.
+  gfx::Rect panel_old_bounds = panel->GetBounds();
+  gfx::Point mouse_location = panel_old_bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
+  EXPECT_EQ(panel_old_bounds, panel->GetBounds());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
+  mouse_location.Offset(-70, 0);
+  panel_testing->DragTitlebar(mouse_location);
+  gfx::Rect panel_new_bounds = panel_old_bounds;
+  panel_new_bounds.Offset(-70, 0);
+  EXPECT_EQ(panel_new_bounds, panel->GetBounds());
+
+  panel->FlashFrame(false);
+  EXPECT_FALSE(panel->IsDrawingAttention());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
+  // Verify panel returns to fully minimized state after dragging ends once
+  // mouse moves away from the panel.
+  panel_testing->FinishDragTitlebar();
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
+
+  mouse_location.Offset(0, -50);
+  MoveMouseAndWaitForExpansionStateChange(panel, mouse_location);
+  EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
 
   PanelManager::GetInstance()->CloseAll();
 }

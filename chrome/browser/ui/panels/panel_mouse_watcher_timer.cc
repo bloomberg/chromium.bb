@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@ class PanelMouseWatcherTimer : public PanelMouseWatcher {
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
+  virtual gfx::Point GetMousePosition() const OVERRIDE;
 
   // Specifies the rate at which we want to sample the mouse position.
   static const int kMousePollingIntervalMs = 250;
@@ -63,6 +64,10 @@ bool PanelMouseWatcherTimer::IsActive() const {
   return timer_.IsRunning();
 }
 
+gfx::Point PanelMouseWatcherTimer::GetMousePosition() const {
+  return gfx::Screen::GetCursorScreenPoint();
+}
+
 void PanelMouseWatcherTimer::DoWork() {
-  NotifyMouseMovement(gfx::Screen::GetCursorScreenPoint());
+  NotifyMouseMovement(GetMousePosition());
 }

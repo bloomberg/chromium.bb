@@ -57,15 +57,6 @@ class PanelBrowserTest : public BasePanelBrowserTest {
   }
 
  protected:
-  void MoveMouseAndWaitForExpansionStateChange(Panel* panel,
-                                               const gfx::Point& position) {
-    ui_test_utils::WindowedNotificationObserver signal(
-        chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
-        content::Source<Panel>(panel));
-    MoveMouse(position);
-    signal.Wait();
-  }
-
   // Helper function for debugging.
   void PrintAllPanelBounds() {
     const std::vector<Panel*>& panels = PanelManager::GetInstance()->panels();
@@ -1074,6 +1065,25 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, StopDrawingAttentionWhileMinimized) {
 
   // Move mouse away. All panels should return to minimized state.
   hover_point.set_y(hover_point.y() - 200);
+  MoveMouseAndWaitForExpansionStateChange(panel1, hover_point);
+  EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+  EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
+
+  // Verify minimized panel that is drawing attention stays in title-only mode
+  // after attention is cleared if mouse is in the titlebar area.
+  panel1->FlashFrame(true);
+  EXPECT_TRUE(panel1->IsDrawingAttention());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+
+  gfx::Point hover_point_in_panel(panel1->GetBounds().origin());
+  MoveMouse(hover_point_in_panel);
+
+  panel1->FlashFrame(false);
+  EXPECT_FALSE(panel1->IsDrawingAttention());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+  EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
+
+  // Move mouse away and panel should go back to fully minimized state.
   MoveMouseAndWaitForExpansionStateChange(panel1, hover_point);
   EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
   EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());

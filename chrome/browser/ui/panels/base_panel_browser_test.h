@@ -96,6 +96,8 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
                                            Extension::Location location,
                                            const DictionaryValue& extra_value);
 
+  void MoveMouseAndWaitForExpansionStateChange(Panel* panel,
+                                               const gfx::Point& position);
   static void MoveMouse(const gfx::Point& position);
   void CloseWindowAndWait(Browser* browser);
   static std::string MakePanelName(int index);

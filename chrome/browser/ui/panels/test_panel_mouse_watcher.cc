@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,4 +26,14 @@ void TestPanelMouseWatcher::Stop() {
 
 bool TestPanelMouseWatcher::IsActive() const {
   return started_;
+}
+
+void TestPanelMouseWatcher::NotifyMouseMovement(
+    const gfx::Point& mouse_position) {
+  mouse_position_ = mouse_position;
+  PanelMouseWatcher::NotifyMouseMovement(mouse_position);
+}
+
+gfx::Point TestPanelMouseWatcher::GetMousePosition() const {
+  return mouse_position_;
 }

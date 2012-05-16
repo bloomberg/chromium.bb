@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -471,15 +470,35 @@ void DockedPanelStrip::AdjustPanelBoundsPerExpansionState(Panel* panel,
 
 void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
+  Panel::ExpansionState state = panel->expansion_state();
   if (panel->IsDrawingAttention()) {
     // Bring up the titlebar to get user's attention.
-    if (panel->expansion_state() == Panel::MINIMIZED)
+    if (state == Panel::MINIMIZED)
       panel->SetExpansionState(Panel::TITLE_ONLY);
-  } else {
-    // Maybe bring down the titlebar now that panel is not drawing attention.
-    if (panel->expansion_state() == Panel::TITLE_ONLY && !are_titlebars_up_)
-      panel->SetExpansionState(Panel::MINIMIZED);
+    return;
   }
+
+  // Panel is no longer drawing attention, but leave the panel in
+  // title-only mode if all titlebars are currently up.
+  if (state != Panel::TITLE_ONLY || are_titlebars_up_)
+    return;
+
+  // Leave titlebar up if panel is being dragged.
+  if (dragging_panel_current_iterator_ != panels_.end() &&
+      *dragging_panel_current_iterator_ == panel)
+    return;
+
+  // Leave titlebar up if mouse is in/below the panel.
+  const gfx::Point mouse_position =
+      panel_manager_->mouse_watcher()->GetMousePosition();
+  gfx::Rect bounds = panel->GetBounds();
+  if (bounds.x() <= mouse_position.x() &&
+      mouse_position.x() <= bounds.right() &&
+      mouse_position.y() >= bounds.y())
+    return;
+
+  // Bring down the titlebar now that panel is not drawing attention.
+  panel->SetExpansionState(Panel::MINIMIZED);
 }
 
 void DockedPanelStrip::OnPanelTitlebarClicked(Panel* panel,
@@ -637,10 +656,7 @@ bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
 }
 
 void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
-  if (are_titlebars_up_ == bring_up)
-    return;
   are_titlebars_up_ = bring_up;
-
   int task_delay_ms = 0;
 
   // If the auto-hiding bottom bar exists, delay the action until the bottom
