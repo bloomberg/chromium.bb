@@ -1126,7 +1126,8 @@ bool Channel::Connect() {
 }
 
 void Channel::Close() {
-  channel_impl_->Close();
+  if (channel_impl_)
+    channel_impl_->Close();
 }
 
 void Channel::set_listener(Listener* listener) {

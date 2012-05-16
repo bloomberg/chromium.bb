@@ -5762,12 +5762,6 @@
    fun:_ZN16RenderThreadImpl4InitEv
 }
 {
-   bug_127954
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12_GLOBAL__N_118NaClIPCAdapterTest5SetUpEv
-}
-{
    bug_128145a
    Memcheck:Leak
    fun:_Znw*

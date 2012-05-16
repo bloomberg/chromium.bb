@@ -24,13 +24,19 @@ class NaClIPCAdapterTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     sink_ = new IPC::TestSink;
 
-    // Takes ownership of the sink_ pointer.
+    // Takes ownership of the sink_ pointer. Note we provide the current message
+    // loop instead of using a real IO thread. This should work OK since we do
+    // not need real IPC for the tests.
     adapter_ = new NaClIPCAdapter(scoped_ptr<IPC::Channel>(sink_),
                                   base::MessageLoopProxy::current());
   }
   virtual void TearDown() OVERRIDE {
     sink_ = NULL;  // This pointer is actually owned by the IPCAdapter.
     adapter_ = NULL;
+    // The adapter destructor has to post a task to destroy the Channel on the
+    // IO thread. For the purposes of the test, we just need to make sure that
+    // task gets run, or it will appear as a leak.
+    message_loop_.RunAllPending();
   }
 
  protected:
@@ -108,7 +114,7 @@ TEST_F(NaClIPCAdapterTest, SendRewriting) {
   EXPECT_EQ(buf_size, result);
 
   // Check that the message came out the other end in the test sink
-  // (messages are posted to we have to pump).
+  // (messages are posted, so we have to pump).
   message_loop_.RunAllPending();
   ASSERT_EQ(1u, sink_->message_count());
   const IPC::Message* msg = sink_->GetMessageAt(0);
