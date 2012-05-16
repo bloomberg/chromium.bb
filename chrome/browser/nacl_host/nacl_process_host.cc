@@ -605,6 +605,7 @@ bool NaClProcessHost::StartNaClExecution() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
   nacl::NaClStartParams params;
+  params.validation_cache_enabled = nacl_browser->validation_cache.IsEnabled();
   params.validation_cache_key =
       nacl_browser->validation_cache.GetValidationCacheKey();
   params.version = chrome::VersionInfo().CreateVersionString();

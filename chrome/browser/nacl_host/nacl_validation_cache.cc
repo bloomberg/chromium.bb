@@ -32,11 +32,21 @@ void LogCacheSet(ValidationCacheStatus status) {
   UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Set", status, CACHE_MAX);
 }
 
+bool CheckEnvVar(const char* name, bool default_value) {
+  bool result = default_value;
+  const char* var = getenv(name);
+  if (var && strlen(var) > 0) {
+    result = var[0] != '0';
+  }
+  return result;
+}
+
 }  // namespace
 
 NaClValidationCache::NaClValidationCache()
     : validation_cache_(kValidationCacheCacheSize),
-      validation_cache_key_(base::RandBytesAsString(kValidationCacheKeySize)){
+      validation_cache_key_(base::RandBytesAsString(kValidationCacheKeySize)),
+      enabled_(CheckEnvVar("NACL_VALIDATION_CACHE", false)){
 }
 
 NaClValidationCache::~NaClValidationCache() {

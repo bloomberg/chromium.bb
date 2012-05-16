@@ -95,16 +95,6 @@ int AttachDebugExceptionHandler(const void* info, size_t info_size) {
 
 #endif
 
-// Use an env var because command line args are eaten by nacl_helper.
-bool CheckEnvVar(const char* name, bool default_value) {
-  bool result = default_value;
-  const char* var = getenv(name);
-  if (var && strlen(var) > 0) {
-    result = var[0] != '0';
-  }
-  return result;
-}
-
 }  // namespace
 
 class BrowserValidationDBProxy : public NaClValidationDB {
@@ -224,7 +214,9 @@ void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
   args->irt_fd = irt_handle;
 #endif
 
-  if (CheckEnvVar("NACL_VALIDATION_CACHE", false)) {
+  if (params.validation_cache_enabled) {
+    // SHA256 block size.
+    CHECK_EQ(params.validation_cache_key.length(), (size_t) 64);
     LOG(INFO) << "NaCl validation cache enabled.";
     // The cache structure is not freed and exists until the NaCl process exits.
     args->validation_cache = CreateValidationCache(

@@ -27,11 +27,18 @@ class NaClValidationCache {
   // Put the validation signature in the database.
   void SetKnownToValidate(const std::string& signature);
 
+  // Should the cache be used?
+  bool IsEnabled() {
+    return enabled_;
+  }
+
  private:
   typedef base::HashingMRUCache<std::string, bool> ValidationCacheType;
   ValidationCacheType validation_cache_;
 
   std::string validation_cache_key_;
+
+  bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClValidationCache);
 };
