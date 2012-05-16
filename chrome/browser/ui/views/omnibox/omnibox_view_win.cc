@@ -54,7 +54,9 @@
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/button_drag_utils.h"
-#include "ui/views/controls/menu/menu_2.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/native_textfield_win.h"
 #include "ui/views/widget/widget.h"
 
@@ -1341,14 +1343,21 @@ void OmniboxViewWin::OnChar(TCHAR ch, UINT repeat_count, UINT flags) {
 
 void OmniboxViewWin::OnContextMenu(HWND window, const CPoint& point) {
   BuildContextMenu();
+
+  views::MenuModelAdapter adapter(context_menu_contents_.get());
+  context_menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+
+  gfx::Point location(point);
   if (point.x == -1 || point.y == -1) {
     POINT p;
     GetCaretPos(&p);
     MapWindowPoints(HWND_DESKTOP, &p, 1);
-    context_menu_->RunContextMenuAt(gfx::Point(p));
-  } else {
-    context_menu_->RunContextMenuAt(gfx::Point(point));
+    location.SetPoint(p.x, p.y);
   }
+
+  ignore_result(context_menu_runner_->RunMenuAt(native_view_host_->GetWidget(),
+      NULL, gfx::Rect(location, gfx::Size()), views::MenuItemView::TOPLEFT,
+      views::MenuRunner::HAS_MNEMONICS));
 }
 
 void OmniboxViewWin::OnCopy() {
@@ -2617,7 +2626,6 @@ void OmniboxViewWin::BuildContextMenu() {
     context_menu_contents_->AddItemWithStringId(IDS_EDIT_SEARCH_ENGINES,
                                                 IDS_EDIT_SEARCH_ENGINES);
   }
-  context_menu_.reset(new views::Menu2(context_menu_contents_.get()));
 }
 
 void OmniboxViewWin::SelectAllIfNecessary(MouseButton button,

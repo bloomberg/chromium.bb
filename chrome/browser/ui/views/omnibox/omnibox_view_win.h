@@ -30,7 +30,7 @@ class AutocompletePopupView;
 class LocationBarView;
 
 namespace views {
-class Menu2;
+class MenuRunner;
 class NativeViewHost;
 class View;
 }
@@ -493,7 +493,7 @@ class OmniboxViewWin
 
   // The context menu for the edit.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;
-  scoped_ptr<views::Menu2> context_menu_;
+  scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   // Font we're using.  We keep a reference to make sure the font supplied to
   // the constructor doesn't go away before we do.
