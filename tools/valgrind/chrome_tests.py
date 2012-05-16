@@ -345,11 +345,6 @@ class ChromeTests:
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
                            cmd_args=(["--ui-test-action-max-timeout=450000"]))
 
-  def TestUI(self):
-    return self.SimpleTest("chrome", "ui_tests",
-                           valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=self.UI_TEST_ARGS)
-
   def TestLayoutChunk(self, chunk_num, chunk_size):
     # Run tests [chunk_num*chunk_size .. (chunk_num+1)*chunk_size) from the
     # list of tests.  Wrap around to beginning of list at end.
@@ -494,7 +489,6 @@ class ChromeTests:
     "sync_integration_tests": TestSyncIntegration,
     "sync_integration": TestSyncIntegration,
     "test_shell": TestTestShell, "test_shell_tests": TestTestShell,
-    "ui": TestUI,                "ui_tests": TestUI,
     "unit": TestUnit,            "unit_tests": TestUnit,
     "sql": TestSql,              "sql_unittests": TestSql,
     "ui_unit": TestUIUnit,       "ui_unittests": TestUIUnit,

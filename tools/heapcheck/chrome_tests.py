@@ -96,7 +96,6 @@ class ChromeTests(object):
       "startup": self.TestStartup,      "startup_tests": self.TestStartup,
       "sync": self.TestSync,            "sync_unit_tests": self.TestSync,
       "test_shell": self.TestTestShell, "test_shell_tests": self.TestTestShell,
-      "ui": self.TestUI,                "ui_tests": self.TestUI,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
       "views": self.TestViews,          "views_unittests": self.TestViews,
       "sql": self.TestSql,              "sql_unittests": self.TestSql,
@@ -310,12 +309,6 @@ class ChromeTests(object):
 
   def TestGfx(self):
     return self.SimpleTest("chrome", "gfx_unittests")
-
-  def TestUI(self):
-    return self.SimpleTest("chrome", "ui_tests",
-                           cmd_args=[
-                            "--ui-test-action-timeout=80000",
-                            "--ui-test-action-max-timeout=180000"])
 
   def TestLayoutChunk(self, chunk_num, chunk_size):
     '''Runs tests [chunk_num*chunk_size .. (chunk_num+1)*chunk_size).
