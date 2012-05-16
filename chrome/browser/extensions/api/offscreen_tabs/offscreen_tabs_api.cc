@@ -544,7 +544,7 @@ GetAllOffscreenTabFunction::~GetAllOffscreenTabFunction() {}
 bool GetAllOffscreenTabFunction::RunImpl() {
   WebContents* web_contents = GetCurrentWebContents(this, &error_);
   if (!web_contents)
-    return NULL;
+    return false;
 
   ParentTab* parent_tab = GetMap()->GetParentTab(web_contents, extension_id());
   ListValue* tab_list = new ListValue();

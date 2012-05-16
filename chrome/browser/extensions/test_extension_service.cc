@@ -31,7 +31,7 @@ bool TestExtensionService::UpdateExtension(
     const GURL& download_url,
     CrxInstaller** out_crx_installer) {
   ADD_FAILURE();
-  return NULL;
+  return false;
 }
 
 const Extension* TestExtensionService::GetExtensionById(

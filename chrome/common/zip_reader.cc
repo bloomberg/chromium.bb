@@ -148,9 +148,9 @@ bool ZipReader::OpenCurrentEntryInZip() {
                                            NULL,  // szComment.
                                            0);  // commentBufferSize.
   if (result != UNZ_OK)
-    return NULL;
+    return false;
   if (raw_file_name_in_zip[0] == '\0')
-    return NULL;
+    return false;
   current_entry_info_.reset(
       new EntryInfo(raw_file_name_in_zip, raw_file_info));
   return true;

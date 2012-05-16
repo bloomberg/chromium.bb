@@ -289,7 +289,7 @@ bool SuddenMotionSensor::Init() {
   size_t local_model_size = sizeof(local_model);
   int params[2] = { CTL_HW, HW_MODEL };
   if (sysctl(params, 2, local_model, &local_model_size, NULL, 0) != 0)
-    return NULL;
+    return false;
 
   const SensorDescriptor* sensor_candidate = NULL;
 

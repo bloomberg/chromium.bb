@@ -73,7 +73,7 @@ bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
                                 const gfx::Rect& content_area,
                                 const float& scale_factor) {
   NOTREACHED();
-  return NULL;
+  return false;
 }
 
 bool PdfMetafileSkia::FinishPage() {

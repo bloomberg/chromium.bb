@@ -101,7 +101,7 @@ TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
 // static
 bool DevToolsWindow::IsDevToolsWindow(RenderViewHost* window_rvh) {
   if (g_instances == NULL)
-    return NULL;
+    return false;
   DevToolsWindowList& instances = g_instances.Get();
   for (DevToolsWindowList::iterator it = instances.begin();
        it != instances.end(); ++it) {
