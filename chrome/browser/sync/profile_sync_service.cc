@@ -158,27 +158,19 @@ ProfileSyncService::~ProfileSyncService() {
   Shutdown();
 }
 
-bool ProfileSyncService::AreCredentialsAvailable() {
-  if (IsManaged()) {
-    return false;
-  }
-
-  // If we have start suppressed, then basically just act like we have no
-  // credentials (login is required to fix this, since we need the user's
-  // passphrase to encrypt/decrypt anyway).
-  // TODO(sync): Revisit this when we move to a server-based keystore.
-  if (sync_prefs_.IsStartSuppressed())
+bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
+  // Exit if sync is disabled.
+  if (IsManaged() || sync_prefs_.IsStartSuppressed())
     return false;
 
-  // CrOS user is always logged in. Chrome uses signin_ to check logged in.
-  if (signin_->GetAuthenticatedUsername().empty())
-    return false;
+  // Sync is logged in if there is a non-empty authenticated username.
+  return !signin_->GetAuthenticatedUsername().empty();
+}
 
+bool ProfileSyncService::IsSyncTokenAvailable() {
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   if (!token_service)
     return false;
-
-  // TODO(chron): Verify CrOS unit test behavior.
   return token_service->HasTokenForService(GaiaConstants::kSyncService);
 }
 
@@ -207,7 +199,15 @@ void ProfileSyncService::Initialize() {
 }
 
 void ProfileSyncService::TryStart() {
-  if (!sync_prefs_.IsStartSuppressed() && AreCredentialsAvailable()) {
+  if (!IsSyncEnabledAndLoggedIn())
+    return;
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  if (!token_service)
+    return;
+  // Don't start the backend if the token service hasn't finished loading tokens
+  // yet (if the backend is started before the sync token has been loaded,
+  // GetCredentials() will return bogus credentials).
+  if (IsSyncTokenAvailable() || token_service->TokensLoadedFromDB()) {
     if (HasSyncSetupCompleted() || auto_start_enabled_) {
       // If sync setup has completed we always start the backend.
       // If autostart is enabled, but we haven't completed sync setup, we try to
@@ -216,15 +216,6 @@ void ProfileSyncService::TryStart() {
       // Note that if we haven't finished setting up sync, backend bring up will
       // be done by the wizard.
       StartUp();
-    }
-  } else if (HasSyncSetupCompleted()) {
-    TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-    if (token_service && token_service->TokensLoadedFromDB() &&
-        !AreCredentialsAvailable()) {
-      // The token service has lost sync's tokens. We cannot recover from this
-      // without signing back in, which is not yet supported. For now, we
-      // trigger an unrecoverable error.
-      OnUnrecoverableError(FROM_HERE, "Sync credentials lost.");
     }
   }
 }
@@ -312,8 +303,16 @@ SyncCredentials ProfileSyncService::GetCredentials() {
   credentials.email = signin_->GetAuthenticatedUsername();
   DCHECK(!credentials.email.empty());
   TokenService* service = TokenServiceFactory::GetForProfile(profile_);
-  credentials.sync_token = service->GetTokenForService(
-      GaiaConstants::kSyncService);
+  if (service->HasTokenForService(GaiaConstants::kSyncService)) {
+      credentials.sync_token = service->GetTokenForService(
+          GaiaConstants::kSyncService);
+    UMA_HISTOGRAM_BOOLEAN("Sync.CredentialsLost", false);
+  } else {
+    // We've lost our sync credentials (crbug.com/121755), so just make up some
+    // invalid credentials so the backend will generate an auth error.
+    UMA_HISTOGRAM_BOOLEAN("Sync.CredentialsLost", true);
+    credentials.sync_token = "credentials_lost";
+  }
   return credentials;
 }
 
@@ -404,7 +403,7 @@ void ProfileSyncService::StartUp() {
     return;
   }
 
-  DCHECK(AreCredentialsAvailable());
+  DCHECK(IsSyncEnabledAndLoggedIn());
 
   last_synced_time_ = sync_prefs_.GetLastSyncedTime();
 
@@ -1393,7 +1392,10 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   NotifyObservers();
   if (is_sync_managed) {
     DisableForUser();
-  } else if (HasSyncSetupCompleted() && AreCredentialsAvailable()) {
+  } else if (HasSyncSetupCompleted() &&
+             IsSyncEnabledAndLoggedIn() &&
+             IsSyncTokenAvailable()) {
+    // Previously-configured sync has been re-enabled, so start sync now.
     StartUp();
   }
 }
@@ -1515,8 +1517,8 @@ void ProfileSyncService::Observe(int type,
           *(content::Details<const TokenService::TokenRequestFailedDetails>(
               details).ptr());
       if (IsTokenServiceRelevant(token_details.service()) &&
-          !AreCredentialsAvailable()) {
-        // The additional check around AreCredentialsAvailable above prevents us
+          !IsSyncTokenAvailable()) {
+        // The additional check around IsSyncTokenAvailable() above prevents us
         // sounding the alarm if we actually have a valid token but a refresh
         // attempt by TokenService failed for any variety of reasons (e.g. flaky
         // network). It's possible the token we do have is also invalid, but in
@@ -1533,10 +1535,11 @@ void ProfileSyncService::Observe(int type,
           *(content::Details<const TokenService::TokenAvailableDetails>(
               details).ptr());
       if (IsTokenServiceRelevant(token_details.service()) &&
-          AreCredentialsAvailable()) {
+          IsSyncEnabledAndLoggedIn() &&
+          IsSyncTokenAvailable()) {
         if (backend_initialized_)
           backend_->UpdateCredentials(GetCredentials());
-        else if (!sync_prefs_.IsStartSuppressed())
+        else
           StartUp();
       }
       break;
@@ -1544,20 +1547,14 @@ void ProfileSyncService::Observe(int type,
     case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED: {
       // This notification gets fired when TokenService loads the tokens
       // from storage.
-      if (AreCredentialsAvailable()) {
-        // Initialize the backend if sync token was loaded.
-        if (backend_initialized_) {
+      if (IsSyncEnabledAndLoggedIn()) {
+        // Initialize the backend if sync is enabled. If the sync token was
+        // not loaded, GetCredentials() will generate invalid credentials to
+        // cause the backend to generate an auth error (crbug.com/121755).
+        if (backend_initialized_)
           backend_->UpdateCredentials(GetCredentials());
-        }
-        if (!sync_prefs_.IsStartSuppressed())
+        else
           StartUp();
-      } else if (!auto_start_enabled_ &&
-                 !signin_->GetAuthenticatedUsername().empty() &&
-                 HasSyncSetupCompleted()) {
-        // If not in auto-start / Chrome OS mode, and we have a username
-        // without tokens, the user will need to signin again. At the moment
-        // this is not supported, so we trigger an unrecoverable error.
-        OnUnrecoverableError(FROM_HERE, "Sync credentials lost.");
       }
       break;
     }

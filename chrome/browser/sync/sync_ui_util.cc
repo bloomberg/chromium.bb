@@ -551,7 +551,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
         user_state, "Username",
         service->signin() ? service->signin()->GetAuthenticatedUsername() : "");
     sync_ui_util::AddBoolSyncDetail(
-        user_state, "Sync Token Available", service->AreCredentialsAvailable());
+        user_state, "Sync Token Available", service->IsSyncTokenAvailable());
 
     ListValue* local_state = AddSyncDetailsSection(details, "Local State");
     sync_ui_util::AddStringSyncDetails(local_state, "Last Synced",

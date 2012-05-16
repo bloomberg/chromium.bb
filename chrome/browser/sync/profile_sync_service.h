@@ -180,9 +180,16 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   void RegisterAuthNotifications();
 
+  // Returns true if sync is enabled/not suppressed and the user is logged in.
+  // (being logged in does not mean that tokens are available - tokens may
+  // be missing because they have not loaded yet, or because they were deleted
+  // due to http://crbug.com/121755).
+  // Virtual to enable mocking in tests.
+  virtual bool IsSyncEnabledAndLoggedIn();
+
   // Return whether all sync tokens are loaded and available for the backend to
   // start up. Virtual to enable mocking in tests.
-  virtual bool AreCredentialsAvailable();
+  virtual bool IsSyncTokenAvailable();
 
   // Registers a data type controller with the sync service.  This
   // makes the data type controller available for use, it does not

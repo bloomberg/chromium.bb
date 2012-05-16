@@ -907,7 +907,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
 
   // There are several different UI flows that can bring the user here:
   // 1) Signin promo (passes force_login=true)
-  // 2) Normal signin through options page (AreCredentialsAvailable() will
+  // 2) Normal signin through options page (IsSyncEnabledAndLoggedIn() will
   //    return false).
   // 3) Previously working credentials have expired
   //    (service->GetAuthError() != NONE).
@@ -920,7 +920,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
   // 7) ChromeOS re-enable after disabling sync.
 #if !defined(OS_CHROMEOS)
   if (force_login ||
-      !service->AreCredentialsAvailable() ||
+      !service->IsSyncEnabledAndLoggedIn() ||
       service->GetAuthError().state() != GoogleServiceAuthError::NONE) {
     // User is not logged in, or login has been specially requested - need to
     // display login UI (cases 1-4).

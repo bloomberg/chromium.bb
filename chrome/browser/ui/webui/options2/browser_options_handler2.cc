@@ -1021,9 +1021,10 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
   sync_status->SetBoolean("managed", service->IsManaged());
   sync_status->SetBoolean("hasUnrecoverableError",
                           service->unrecoverable_error_detected());
-  sync_status->SetBoolean("autoLoginVisible",
+  sync_status->SetBoolean(
+      "autoLoginVisible",
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin) &&
-      service->AreCredentialsAvailable());
+      service->IsSyncEnabledAndLoggedIn() && service->IsSyncTokenAvailable());
 
   return sync_status.Pass();
 }

@@ -93,7 +93,7 @@ TEST_F(SigninTrackerTest, GaiaSignInSucceeded) {
   // SIGNIN_SUCCEEDED notification should lead us to get a GaiCredentialsValid()
   // callback.
   EXPECT_CALL(observer_, GaiaCredentialsValid());
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_token_service_, HasTokenForService(_))
       .WillRepeatedly(Return(false));
@@ -111,7 +111,9 @@ static void ExpectSignedInSyncService(ProfileSyncServiceMock* sync_service,
     EXPECT_CALL(*token_service, HasTokenForService(_))
         .WillRepeatedly(Return(true));
   }
-  EXPECT_CALL(*sync_service, AreCredentialsAvailable()).WillRepeatedly(
+  EXPECT_CALL(*sync_service, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
+      Return(true));
+  EXPECT_CALL(*sync_service, IsSyncTokenAvailable()).WillRepeatedly(
       Return(true));
   EXPECT_CALL(*sync_service, waiting_for_auth()).WillRepeatedly(Return(false));
   EXPECT_CALL(*sync_service, GetAuthError()).WillRepeatedly(ReturnRef(error));
@@ -217,7 +219,9 @@ TEST_F(SigninTrackerTest, NoGaiaSigninWhenServicesNotRunning) {
   EXPECT_CALL(observer_, GaiaCredentialsValid());
   EXPECT_CALL(*mock_token_service_, HasTokenForService(_))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable()).WillRepeatedly(
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
+      Return(false));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable()).WillRepeatedly(
       Return(false));
   GoogleServiceSigninSuccessDetails details("username@gmail.com", "password");
   content::NotificationService::current()->Notify(
@@ -230,7 +234,7 @@ TEST_F(SigninTrackerTest, GaiaSigninAfterSyncStarts) {
   // Make sure that we don't get a SigninSuccess() callback until after the
   // sync service reports that it's signed in.
   EXPECT_CALL(observer_, GaiaCredentialsValid());
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable()).WillOnce(
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillOnce(
       Return(false));
   EXPECT_CALL(*mock_token_service_, HasTokenForService(_))
       .WillRepeatedly(Return(true));
@@ -251,7 +255,9 @@ TEST_F(SigninTrackerTest, SyncSigninError) {
   // Make sure that we get a SigninFailed() callback if sync gets an error after
   // initializaiton.
   EXPECT_CALL(observer_, GaiaCredentialsValid());
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable()).WillRepeatedly(
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn()).WillRepeatedly(
+      Return(false));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable()).WillRepeatedly(
       Return(false));
   EXPECT_CALL(*mock_token_service_, HasTokenForService(_))
       .WillRepeatedly(Return(true));

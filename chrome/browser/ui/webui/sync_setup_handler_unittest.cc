@@ -333,7 +333,9 @@ class SyncSetupHandlerTest : public testing::Test {
   void SetupInitializedProfileSyncService() {
     // An initialized ProfileSyncService will have already completed sync setup
     // and will have an initialized sync backend.
-    EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+    EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
         .WillRepeatedly(Return(true));
@@ -373,7 +375,9 @@ TEST_F(SyncSetupHandlerTest, Basic) {
 
 #if !defined(OS_CHROMEOS)
 TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -399,7 +403,9 @@ TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
 }
 
 TEST_F(SyncSetupHandlerTest, DisplayForceLogin) {
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(true));
@@ -427,7 +433,9 @@ TEST_F(SyncSetupHandlerTest, DisplayForceLogin) {
 }
 
 TEST_F(SyncSetupHandlerTest, HandleGaiaAuthFailure) {
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
       .WillRepeatedly(Return(false));
@@ -457,7 +465,9 @@ TEST_F(SyncSetupHandlerTest, HandleGaiaAuthFailure) {
 }
 
 TEST_F(SyncSetupHandlerTest, HandleCaptcha) {
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
       .WillRepeatedly(Return(false));
@@ -488,7 +498,9 @@ TEST_F(SyncSetupHandlerTest, HandleCaptcha) {
 }
 
 TEST_F(SyncSetupHandlerTest, HandleFatalError) {
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -510,7 +522,9 @@ TEST_F(SyncSetupHandlerTest, HandleFatalError) {
 #if !defined(OS_CHROMEOS)
 // TODO(kochi): We need equivalent tests for ChromeOS.
 TEST_F(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -547,7 +561,9 @@ TEST_F(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
 }
 
 TEST_F(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -794,7 +810,9 @@ TEST_F(SyncSetupHandlerTest, ShowSyncSetupWithAuthError) {
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   SetupInitializedProfileSyncService();
   mock_signin_->SetAuthenticatedUsername(kTestUser);
-  EXPECT_CALL(*mock_pss_, AreCredentialsAvailable())
+  EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));

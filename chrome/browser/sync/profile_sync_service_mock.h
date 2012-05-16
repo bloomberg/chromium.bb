@@ -87,7 +87,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(OnActionableError, void(
       const browser_sync::SyncProtocolError&));
 
-  MOCK_METHOD0(AreCredentialsAvailable, bool());
+  MOCK_METHOD0(IsSyncEnabledAndLoggedIn, bool());
+  MOCK_METHOD0(IsSyncTokenAvailable, bool());
 
   MOCK_CONST_METHOD0(IsPassphraseRequired, bool());
   MOCK_CONST_METHOD0(IsPassphraseRequiredForDecryption, bool());
