@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -187,36 +187,16 @@ TEST_F(SkiaUtilsMacTest, FAILS_BitmapToNSImage_BlueRectangle444) {
   ShapeHelper(200, 200, false, false);
 }
 
-TEST_F(SkiaUtilsMacTest, FAILS_MultipleBitmapsToNSImage) {
-  int redWidth = 10;
-  int redHeight = 15;
-  int blueWidth = 20;
-  int blueHeight = 30;
+TEST_F(SkiaUtilsMacTest, FAILS_BitmapToNSBitmapImageRep_BlueRectangle20x30) {
+  int width = 20;
+  int height = 30;
 
-  SkBitmap redBitmap(CreateSkBitmap(redWidth, redHeight, true, true));
-  SkBitmap blueBitmap(CreateSkBitmap(blueWidth, blueHeight, false, true));
-  std::vector<const SkBitmap*> bitmaps;
-  bitmaps.push_back(&redBitmap);
-  bitmaps.push_back(&blueBitmap);
+  SkBitmap bitmap(CreateSkBitmap(width, height, false, true));
+  NSBitmapImageRep* imageRep = gfx::SkBitmapToNSBitmapImageRep(bitmap);
 
-  NSImage* image = gfx::SkBitmapsToNSImage(bitmaps);
-
-  // Image size should be the same as the smallest bitmap.
-  EXPECT_DOUBLE_EQ(redWidth, [image size].width);
-  EXPECT_DOUBLE_EQ(redHeight, [image size].height);
-
-  EXPECT_EQ(2u, [[image representations] count]);
-
-  for (NSBitmapImageRep* imageRep in [image representations]) {
-    bool isred = [imageRep size].width == redWidth;
-    if (isred) {
-      EXPECT_DOUBLE_EQ(redHeight, [imageRep size].height);
-    } else {
-      EXPECT_DOUBLE_EQ(blueWidth, [imageRep size].width);
-      EXPECT_DOUBLE_EQ(blueHeight, [imageRep size].height);
-    }
-    TestImageRep(imageRep, isred);
-  }
+  EXPECT_DOUBLE_EQ(width, [imageRep size].width);
+  EXPECT_DOUBLE_EQ(height, [imageRep size].height);
+  TestImageRep(imageRep, false);
 }
 
 TEST_F(SkiaUtilsMacTest, NSImageRepToSkBitmap) {

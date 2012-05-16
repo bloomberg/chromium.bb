@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
@@ -240,46 +241,42 @@ class UI_EXPORT Canvas {
   // Draws the given path using the given |paint| parameters.
   void DrawPath(const SkPath& path, const SkPaint& paint);
 
-  // Draws a bitmap with the origin at the specified location. The upper left
+  // Draws an image with the origin at the specified location. The upper left
   // corner of the bitmap is rendered at the specified location.
-  void DrawBitmapInt(const SkBitmap& bitmap, int x, int y);
+  // Parameters are specified relative to current canvas scale not in pixels.
+  // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
+  void DrawBitmapInt(const gfx::ImageSkia&, int x, int y);
 
-  // Draws a bitmap with the origin at the specified location, using the
+  // Draws an image with the origin at the specified location, using the
   // specified paint. The upper left corner of the bitmap is rendered at the
   // specified location.
-  void DrawBitmapInt(const SkBitmap& bitmap,
+  // Parameters are specified relative to current canvas scale not in pixels.
+  // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
+  void DrawBitmapInt(const gfx::ImageSkia& image,
                      int x, int y,
                      const SkPaint& paint);
 
-  // Draws a portion of a bitmap in the specified location. The src parameters
+  // Draws a portion of an image in the specified location. The src parameters
   // correspond to the region of the bitmap to draw in the region defined
   // by the dest coordinates.
   //
   // If the width or height of the source differs from that of the destination,
-  // the bitmap will be scaled. When scaling down, it is highly recommended
-  // that you call buildMipMap(false) on your bitmap to ensure that it has
-  // a mipmap, which will result in much higher-quality output. Set |filter|
-  // to use filtering for bitmaps, otherwise the nearest-neighbor algorithm
-  // is used for resampling.
+  // the image will be scaled. When scaling down, a mipmap will be generated.
+  // Set |filter| to use filtering for images, otherwise the nearest-neighbor
+  // algorithm is used for resampling.
   //
   // An optional custom SkPaint can be provided.
-  void DrawBitmapInt(const SkBitmap& bitmap,
+  // Parameters are specified relative to current canvas scale not in pixels.
+  // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
+  void DrawBitmapInt(const gfx::ImageSkia& image,
                      int src_x, int src_y, int src_w, int src_h,
                      int dest_x, int dest_y, int dest_w, int dest_h,
                      bool filter);
-  void DrawBitmapInt(const SkBitmap& bitmap,
+  void DrawBitmapInt(const gfx::ImageSkia& image,
                      int src_x, int src_y, int src_w, int src_h,
                      int dest_x, int dest_y, int dest_w, int dest_h,
                      bool filter,
                      const SkPaint& paint);
-
-  // TODO(pkotwicz): make this function private once gfx::ImageSkia stops
-  // calling this method.
-  void DrawBitmapFloat(const SkBitmap& bitmap,
-                       float src_x, float src_y, float src_w, float src_h,
-                       float dest_x, float dest_y, float dest_w, float dest_h,
-                       bool filter,
-                       const SkPaint& paint);
 
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
@@ -315,9 +312,11 @@ class UI_EXPORT Canvas {
   void DrawFocusRect(const gfx::Rect& rect);
 
   // Tiles the image in the specified region.
-  void TileImageInt(const SkBitmap& bitmap,
+  // Parameters are specified relative to current canvas scale not in pixels.
+  // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
+  void TileImageInt(const gfx::ImageSkia& image,
                     int x, int y, int w, int h);
-  void TileImageInt(const SkBitmap& bitmap,
+  void TileImageInt(const gfx::ImageSkia& image,
                     int src_x, int src_y,
                     int dest_x, int dest_y, int w, int h);
 
@@ -353,6 +352,19 @@ class UI_EXPORT Canvas {
   // Test whether the provided rectangle intersects the current clip rect.
   bool IntersectsClipRectInt(int x, int y, int w, int h);
   bool IntersectsClipRect(const gfx::Rect& rect);
+
+  // Returns the bitmap whose density best matches the current canvas scale.
+  // Returns a null bitmap if |image| contains no bitmaps.
+  // |bitmap_scale_factor| is set to the scale factor of the returned bitmap.
+  // Builds mip map for returned bitmap if necessary.
+  //
+  // An optional additional user defined scale can be provided.
+  const SkBitmap& GetBitmapToPaint(const gfx::ImageSkia& image,
+                                   float* bitmap_scale_factor) const;
+  const SkBitmap& GetBitmapToPaint(const gfx::ImageSkia& image,
+                                   float user_defined_scale_factor_x,
+                                   float user_defined_scale_factor_y,
+                                   float* bitmap_scale_factor)  const;
 
 #if defined(OS_WIN)
   // Draws text with the specified color, font and location. The text is

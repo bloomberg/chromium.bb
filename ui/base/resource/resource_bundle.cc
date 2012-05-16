@@ -24,6 +24,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ui {
 
@@ -231,25 +232,26 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   if (image.IsEmpty()) {
     DCHECK(!delegate_ && !data_packs_.empty()) <<
         "Missing call to SetResourcesDataDLL?";
-    ScopedVector<const SkBitmap> bitmaps;
+    gfx::ImageSkia image_skia;
     for (size_t i = 0; i < data_packs_.size(); ++i) {
-      SkBitmap* bitmap = LoadBitmap(*data_packs_[i], resource_id);
-      if (bitmap)
-        bitmaps.push_back(bitmap);
+      scoped_ptr<SkBitmap> bitmap(LoadBitmap(*data_packs_[i], resource_id));
+      if (bitmap.get()) {
+#if defined(ENABLE_DIP)
+        image_skia.AddBitmapForScale(*bitmap, data_packs_[i]->GetScaleFactor());
+#else
+        image_skia.AddBitmapForScale(*bitmap, 1.0f);
+#endif
+      }
     }
 
-    if (bitmaps.empty()) {
+    if (image_skia.empty()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;
       NOTREACHED();  // Want to assert in debug mode.
       // The load failed to retrieve the image; show a debugging red square.
       return GetEmptyImage();
     }
 
-    std::vector<const SkBitmap*> tmp_bitmaps;
-    bitmaps.release(&tmp_bitmaps);
-
-    // Takes ownership of bitmaps.
-    image = gfx::Image(tmp_bitmaps);
+    image = gfx::Image(image_skia);
   }
 
   // The load was successful, so cache the image.

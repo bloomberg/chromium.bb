@@ -67,8 +67,7 @@ TEST_F(ImageTest, SkiaToSkia) {
 }
 
 TEST_F(ImageTest, SkiaRefToSkia) {
-  SkBitmap originalBitmap(gt::CreateBitmap(25, 25));
-  gfx::Image image(originalBitmap);
+  gfx::Image image(gt::CreateBitmap(25, 25));
   const SkBitmap* bitmap = image.ToSkBitmap();
   EXPECT_TRUE(bitmap);
   EXPECT_FALSE(bitmap->isNull());
@@ -251,41 +250,48 @@ TEST_F(ImageTest, Assign) {
   EXPECT_EQ(image1.ToSkBitmap(), image2.ToSkBitmap());
 }
 
-TEST_F(ImageTest, MultiResolutionSkBitmap) {
-  const int width1 = 10;
-  const int height1 = 12;
-  const int width2 = 20;
-  const int height2 = 24;
+TEST_F(ImageTest, MultiResolutionImage) {
+  const int width1x = 10;
+  const int height1x = 12;
+  const int width2x = 20;
+  const int height2x = 24;
 
-  std::vector<const SkBitmap*> bitmaps;
-  bitmaps.push_back(new SkBitmap(gt::CreateBitmap(width1, height1)));
-  bitmaps.push_back(new SkBitmap(gt::CreateBitmap(width2, height2)));
-  gfx::Image image(bitmaps);
+  gfx::ImageSkia image_skia;
+  image_skia.AddBitmapForScale(gt::CreateBitmap(width1x, height1x), 1.0f);
+  image_skia.AddBitmapForScale(gt::CreateBitmap(width2x, height2x), 2.0f);
 
+  EXPECT_EQ(2u, image_skia.bitmaps().size());
+
+  float scale_factor;
+  const SkBitmap& bitmap1x = image_skia.GetBitmapForScale(1.0f, 1.0f,
+                                                          &scale_factor);
+  EXPECT_TRUE(!bitmap1x.isNull());
+  EXPECT_EQ(1.0f, scale_factor);
+  EXPECT_EQ(width1x, bitmap1x.width());
+  EXPECT_EQ(height1x, bitmap1x.height());
+
+  const SkBitmap& bitmap2x = image_skia.GetBitmapForScale(2.0f, 2.0f,
+                                                          &scale_factor);
+  EXPECT_TRUE(!bitmap2x.isNull());
+  EXPECT_EQ(2.0f, scale_factor);
+  EXPECT_EQ(width2x, bitmap2x.width());
+  EXPECT_EQ(height2x, bitmap2x.height());
+
+  // Check that the image has a single representation.
+  gfx::Image image(image_skia);
   EXPECT_EQ(1u, image.RepresentationCount());
-  const std::vector<const SkBitmap*>& image_bitmaps =
-      image.ToImageSkia()->bitmaps();
-  EXPECT_EQ(2u, image_bitmaps.size());
+}
 
-  const SkBitmap* bitmap1 = image_bitmaps[0];
-  EXPECT_TRUE(bitmap1);
-  const SkBitmap* bitmap2 = image_bitmaps[1];
-  EXPECT_TRUE(bitmap2);
-
-  if (bitmap1->width() == width1) {
-    EXPECT_EQ(bitmap1->height(), height1);
-    EXPECT_EQ(bitmap2->width(), width2);
-    EXPECT_EQ(bitmap2->height(), height2);
-  } else {
-    EXPECT_EQ(bitmap1->width(), width2);
-    EXPECT_EQ(bitmap1->height(), height2);
-    EXPECT_EQ(bitmap2->width(), width1);
-    EXPECT_EQ(bitmap2->height(), height1);
+// Tests that gfx::Image does indeed take ownership of the SkBitmap it is
+// passed.
+TEST_F(ImageTest, OwnershipTest) {
+  gfx::Image image;
+  {
+    SkBitmap bitmap = gt::CreateBitmap(10, 10);
+    EXPECT_TRUE(!bitmap.isNull());
+    image = gfx::Image(bitmap);
   }
-
-  // Sanity check.
-  EXPECT_EQ(1u, image.RepresentationCount());
-  EXPECT_EQ(2u, image.ToImageSkia()->bitmaps().size());
+  EXPECT_TRUE(!image.ToSkBitmap()->isNull());
 }
 
 // Integration tests with UI toolkit frameworks require linking against the
