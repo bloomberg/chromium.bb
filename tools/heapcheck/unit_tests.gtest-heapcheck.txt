@@ -35,3 +35,6 @@ BookmarkEditorGtkTest.MoveToNewParent
 # fails with gmock errors
 # http://crbug.com/117796
 SyncNewNonFrontendDataTypeControllerTest.StartAfterSyncShutdown
+
+# Randomly fails on the linux heapcheck bot
+HistoryQuickProviderTest.*
