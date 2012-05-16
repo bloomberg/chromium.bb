@@ -38,7 +38,6 @@ void LoginEventObserver::OnLoginSuccess(const std::string& username,
 void LoginEventObserver::_NotifyLoginEvent(const std::string& error_string) {
   DictionaryValue* dict = new DictionaryValue;
   dict->SetString("type", "login_event");
-  dict->SetInteger("observer_id", GetId());
   if (error_string.length())
     dict->SetString("error_string", error_string);
   NotifyEvent(dict);

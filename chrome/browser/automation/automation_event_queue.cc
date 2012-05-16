@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "chrome/browser/automation/automation_event_observers.h"
 #include "chrome/browser/automation/automation_event_queue.h"
 #include "chrome/browser/automation/automation_provider_json.h"
@@ -74,6 +75,8 @@ AutomationEventQueue::AutomationEvent* AutomationEventQueue::PopEvent(
 
 void AutomationEventQueue::NotifyEvent(
     AutomationEventQueue::AutomationEvent* event) {
+  DCHECK(event);
+  VLOG(2) << "AutomationEventQueue::NotifyEvent id=" << event->GetId();
   event_queue_.push_front(event);
   CheckReturnEvent();
 }
@@ -87,6 +90,7 @@ int AutomationEventQueue::AddObserver(AutomationEventObserver* observer) {
 
 bool AutomationEventQueue::RemoveObserver(int observer_id) {
   if (observers_.find(observer_id) != observers_.end()) {
+    VLOG(2) << "AutomationEventQueue::RemoveObserver id=" << observer_id;
     delete observers_[observer_id];
     observers_.erase(observer_id);
     return true;

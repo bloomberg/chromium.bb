@@ -29,10 +29,15 @@ AutomationEventObserver::~AutomationEventObserver() {}
 
 void AutomationEventObserver::NotifyEvent(DictionaryValue* value) {
   if (event_queue_) {
+    if (!value)
+      value = new DictionaryValue;
+    value->SetInteger("observer_id", GetId());
     event_queue_->NotifyEvent(
         new AutomationEventQueue::AutomationEvent(
             GetId(), value));
     event_count_++;
+  } else if (value) {
+    delete value;
   }
 }
 
@@ -92,7 +97,6 @@ void DomEventObserver::Observe(
       DictionaryValue* dict = new DictionaryValue;
       dict->SetString("type", "raised_event");
       dict->SetString("name", dom_op_details->json);
-      dict->SetInteger("observer_id", GetId());
       NotifyEvent(dict);
     }
   }
