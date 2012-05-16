@@ -243,6 +243,8 @@ class PrerenderContents : public content::NotificationObserver,
   virtual content::WebContents* CreateWebContents(
       content::SessionStorageNamespace* session_storage_namespace);
 
+  bool prerendering_has_started_;
+
  private:
   class TabContentsDelegateImpl;
 
@@ -299,8 +301,6 @@ class PrerenderContents : public content::NotificationObserver,
   // This must be the same value as the PrerenderTracker has recorded for
   // |this|, when |this| has a RenderView.
   FinalStatus final_status_;
-
-  bool prerendering_has_started_;
 
   // The MatchComplete status of the prerender, indicating how it relates
   // to being a MatchComplete dummy (see definition of MatchCompleteStatus
