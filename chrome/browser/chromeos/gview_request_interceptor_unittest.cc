@@ -128,29 +128,32 @@ class GViewRequestInterceptorTest : public testing::Test {
     webkit::WebPluginInfo info;
     info.path = pdf_path_;
     plugin_list_.AddPluginToLoad(info);
+    plugin_list_.RefreshPlugins();
   }
 
   void UnregisterPDFPlugin() {
     plugin_list_.ClearPluginsToLoad();
+    plugin_list_.RefreshPlugins();
   }
 
   void SetPDFPluginLoadedState(bool want_loaded) {
     webkit::WebPluginInfo info;
     bool is_loaded = PluginService::GetInstance()->GetPluginInfoByPath(
         pdf_path_, &info);
-    if (is_loaded && !want_loaded) {
-      UnregisterPDFPlugin();
-      is_loaded = PluginService::GetInstance()->GetPluginInfoByPath(
-          pdf_path_, &info);
-    } else if (!is_loaded && want_loaded) {
+    if (is_loaded == want_loaded)
+      return;
+
+    if (want_loaded) {
       // This "loads" the plug-in even if it's not present on the
       // system - which is OK since we don't actually use it, just
       // need it to be "enabled" for the test.
       RegisterPDFPlugin();
-      is_loaded = PluginService::GetInstance()->GetPluginInfoByPath(
-          pdf_path_, &info);
+    } else {
+      UnregisterPDFPlugin();
     }
-    EXPECT_EQ(want_loaded, is_loaded);
+    is_loaded = PluginService::GetInstance()->GetPluginInfoByPath(
+        pdf_path_, &info);
+    ASSERT_EQ(want_loaded, is_loaded);
   }
 
   void SetupRequest(net::URLRequest* request) {
@@ -196,7 +199,7 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptDownload) {
 }
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
-  SetPDFPluginLoadedState(true);
+  ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(true));
   plugin_prefs_->EnablePlugin(true, pdf_path_, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
@@ -209,7 +212,7 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
 }
 
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
-  SetPDFPluginLoadedState(true);
+  ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(true));
   plugin_prefs_->EnablePlugin(false, pdf_path_, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
 
@@ -226,7 +229,7 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
 // test fails. Since pdf plugin is always present, we don't need to run this
 // test.
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
-  SetPDFPluginLoadedState(false);
+  ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(false));
 
   net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
   SetupRequest(&request);
@@ -247,7 +250,7 @@ TEST_F(GViewRequestInterceptorTest, InterceptPowerpoint) {
 }
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptPost) {
-  SetPDFPluginLoadedState(false);
+  ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(false));
 
   net::URLRequest request(GURL(kPdfUrl), &test_delegate_);
   SetupRequest(&request);
@@ -259,7 +262,7 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPost) {
 }
 
 TEST_F(GViewRequestInterceptorTest, DoNotInterceptBlob) {
-  SetPDFPluginLoadedState(false);
+  ASSERT_NO_FATAL_FAILURE(SetPDFPluginLoadedState(false));
 
   net::URLRequest request(GURL(kPdfBlob), &test_delegate_);
   SetupRequest(&request);

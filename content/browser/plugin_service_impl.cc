@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -60,13 +59,17 @@ static void GetPluginsForGroupsCallback(
 
 // Callback set on the PluginList to assert that plugin loading happens on the
 // correct thread.
-void WillLoadPluginsCallback() {
 #if defined(OS_WIN)
-  CHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-#else
-  CHECK(false) << "Plugin loading should happen out-of-process.";
-#endif
+void WillLoadPluginsCallbackWin(
+    base::SequencedWorkerPool::SequenceToken token) {
+  CHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      token));
 }
+#else
+void WillLoadPluginsCallbackPosix() {
+  CHECK(false) << "Plugin loading should happen out-of-process.";
+}
+#endif
 
 }  // namespace
 
@@ -147,8 +150,14 @@ void PluginServiceImpl::Init() {
   if (!plugin_list_)
     plugin_list_ = webkit::npapi::PluginList::Singleton();
 
+#if defined(OS_WIN)
+  plugin_list_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
   plugin_list_->set_will_load_plugins_callback(
-      base::Bind(&WillLoadPluginsCallback));
+      base::Bind(&WillLoadPluginsCallbackWin, plugin_list_token_));
+#else
+  plugin_list_->set_will_load_plugins_callback(
+      base::Bind(&WillLoadPluginsCallbackPosix));
+#endif
 
   RegisterPepperPlugins();
 
@@ -162,6 +171,7 @@ void PluginServiceImpl::Init() {
   path = command_line->GetSwitchValuePath(switches::kExtraPluginDir);
   if (!path.empty())
     plugin_list_->AddExtraPluginDir(path);
+
 
 #if defined(OS_MACOSX)
   // We need to know when the browser comes forward so we can bring modal plugin
@@ -192,7 +202,8 @@ void PluginServiceImpl::StartWatchingPlugins() {
       hklm_watcher_.StartWatching(hklm_event_.get(), this);
     }
   }
-#elif defined(OS_POSIX) && !defined(OS_OPENBSD)
+#endif
+#if defined(OS_POSIX) && !defined(OS_OPENBSD)
 // On ChromeOS the user can't install plugins anyway and on Windows all
 // important plugins register themselves in the registry so no need to do that.
   file_watcher_delegate_ = new PluginDirWatcherDelegate();
@@ -506,12 +517,13 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
       MessageLoop::current()->message_loop_proxy());
 
 #if defined(OS_WIN)
-  BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
+      plugin_list_token_,
       FROM_HERE,
       base::Bind(&PluginServiceImpl::GetPluginsInternal, base::Unretained(this),
                  target_loop, callback),
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-#else
+#elif defined(OS_POSIX)
   std::vector<webkit::WebPluginInfo> cached_plugins;
   if (plugin_list_->GetPluginsIfNoRefreshNeeded(&cached_plugins)) {
     // Can't assume the caller is reentrant.
@@ -526,6 +538,8 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
         base::Bind(&PluginLoaderPosix::LoadPlugins, plugin_loader_,
                    target_loop, callback));
   }
+#else
+#error Not implemented
 #endif
 }
 
@@ -534,10 +548,12 @@ void PluginServiceImpl::GetPluginGroups(
   GetPlugins(base::Bind(&GetPluginsForGroupsCallback, callback));
 }
 
+#if defined(OS_WIN)
 void PluginServiceImpl::GetPluginsInternal(
      base::MessageLoopProxy* target_loop,
      const PluginService::GetPluginsCallback& callback) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      plugin_list_token_));
 
   std::vector<webkit::WebPluginInfo> plugins;
   plugin_list_->GetPlugins(&plugins);
@@ -545,6 +561,7 @@ void PluginServiceImpl::GetPluginsInternal(
   target_loop->PostTask(FROM_HERE,
       base::Bind(callback, plugins));
 }
+#endif
 
 void PluginServiceImpl::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
