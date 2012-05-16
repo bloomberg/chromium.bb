@@ -167,8 +167,36 @@ void CommonSubprocessInit(const std::string& process_type) {
 #endif
 }
 
-void InitializeStatsTable(base::ProcessId browser_pid,
-                          const CommandLine& command_line) {
+static base::ProcessId GetBrowserPid(const CommandLine& command_line) {
+  base::ProcessId browser_pid = base::GetCurrentProcId();
+  if (command_line.HasSwitch(switches::kProcessChannelID)) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    std::string channel_name =
+        command_line.GetSwitchValueASCII(switches::kProcessChannelID);
+
+    int browser_pid_int;
+    base::StringToInt(channel_name, &browser_pid_int);
+    browser_pid = static_cast<base::ProcessId>(browser_pid_int);
+    DCHECK_NE(browser_pid_int, 0);
+#elif defined(OS_ANDROID)
+    // On Android, the browser process isn't the parent. A bunch
+    // of work will be required before callers of this routine will
+    // get what they want.
+    //
+    // Note: On Linux, base::GetParentProcessId() is defined in
+    // process_util_linux.cc. Note that *_linux.cc is excluded from
+    // Android builds but a special exception is made in base.gypi
+    // for a few files including process_util_linux.cc.
+    LOG(ERROR) << "GetBrowserPid() not implemented for Android().";
+#elif defined(OS_POSIX)
+    // On linux, we're in the zygote here; so we need the parent process' id.
+    browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
+#endif
+  }
+  return browser_pid;
+}
+
+static void InitializeStatsTable(const CommandLine& command_line) {
   // Initialize the Stats Counters table.  With this initialized,
   // the StatsViewer can be utilized to read counters outside of
   // Chrome.  These lines can be commented out to effectively turn
@@ -178,9 +206,9 @@ void InitializeStatsTable(base::ProcessId browser_pid,
     // NOTIMPLEMENTED: we probably need to shut this down correctly to avoid
     // leaking shared memory regions on posix platforms.
     std::string statsfile =
-        base::StringPrintf("%s-%u",
-                           content::kStatsFilename,
-                           static_cast<unsigned int>(browser_pid));
+      base::StringPrintf(
+          "%s-%u", content::kStatsFilename,
+          static_cast<unsigned int>(GetBrowserPid(command_line)));
     base::StatsTable* stats_table = new base::StatsTable(statsfile,
         content::kStatsMaxThreads, content::kStatsMaxCounters);
     base::StatsTable::set_current(stats_table);
@@ -240,9 +268,7 @@ int RunZygote(const content::MainFunctionParams& main_function_params,
   // The StatsTable must be initialized in each process; we already
   // initialized for the browser process, now we need to initialize
   // within the new processes as well.
-  pid_t browser_pid = base::GetParentProcessId(
-      base::GetParentProcessId(base::GetCurrentProcId()));
-  InitializeStatsTable(browser_pid, command_line);
+  InitializeStatsTable(command_line);
 
   content::MainFunctionParams main_params(command_line);
 
@@ -492,23 +518,7 @@ static void ReleaseFreeMemoryThunk() {
 
     CHECK(icu_util::Initialize());
 
-    base::ProcessId browser_pid = base::GetCurrentProcId();
-    if (command_line.HasSwitch(switches::kProcessChannelID)) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      std::string channel_name =
-          command_line.GetSwitchValueASCII(switches::kProcessChannelID);
-
-      int browser_pid_int;
-      base::StringToInt(channel_name, &browser_pid_int);
-      browser_pid = static_cast<base::ProcessId>(browser_pid_int);
-      DCHECK_NE(browser_pid_int, 0);
-#elif defined(OS_POSIX)
-      // On linux, we're in the zygote here; so we need the parent process' id.
-      browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
-#endif
-    }
-
-    InitializeStatsTable(browser_pid, command_line);
+    InitializeStatsTable(command_line);
 
     if (delegate)
       delegate->PreSandboxStartup();
