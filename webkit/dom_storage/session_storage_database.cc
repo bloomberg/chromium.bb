@@ -41,7 +41,8 @@ SessionStorageDatabase::SessionStorageDatabase(const FilePath& file_path)
     : file_path_(file_path),
       db_error_(false),
       is_inconsistent_(false),
-      namespace_offset_(0) { }
+      namespace_offset_(0) {
+}
 
 SessionStorageDatabase::~SessionStorageDatabase() {
 }
@@ -205,7 +206,7 @@ bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
   }
 
   leveldb::DB* db;
-  leveldb::Status s = TryToOpen(file_path_, &db);
+  leveldb::Status s = TryToOpen(&db);
   if (!s.ok()) {
     LOG(WARNING) << "Failed to open leveldb in " << file_path_.value()
                  << ", error: " << s.ToString();
@@ -213,7 +214,7 @@ bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
 
     // Clear the directory and try again.
     file_util::Delete(file_path_, true);
-    s = TryToOpen(file_path_, &db);
+    s = TryToOpen(&db);
     if (!s.ok()) {
       LOG(WARNING) << "Failed to open leveldb in " << file_path_.value()
                    << ", error: " << s.ToString();
@@ -227,17 +228,16 @@ bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
   return GetNextNamespaceId(&namespace_offset_);
 }
 
-leveldb::Status SessionStorageDatabase::TryToOpen(const FilePath& file_path,
-                                                  leveldb::DB** db) {
+leveldb::Status SessionStorageDatabase::TryToOpen(leveldb::DB** db) {
   leveldb::Options options;
   // The directory exists but a valid leveldb database might not exist inside it
   // (e.g., a subset of the needed files might be missing). Handle this
   // situation gracefully by creating the database now.
   options.create_if_missing = true;
 #if defined(OS_WIN)
-  return leveldb::DB::Open(options, WideToUTF8(file_path.value()), db);
+  return leveldb::DB::Open(options, WideToUTF8(file_path_.value()), db);
 #elif defined(OS_POSIX)
-  return leveldb::DB::Open(options, file_path.value(), db);
+  return leveldb::DB::Open(options, file_path_.value(), db);
 #endif
 }
 
@@ -275,7 +275,7 @@ bool SessionStorageDatabase::DatabaseErrorCheck(bool ok) {
 bool SessionStorageDatabase::CreateNamespace(int64 namespace_id,
                                              bool ok_if_exists,
                                              leveldb::WriteBatch* batch) {
-  std::string namespace_prefix = NamespacePrefix();
+  leveldb::Slice namespace_prefix = NamespacePrefix();
   std::string dummy;
   leveldb::Status s = db_->Get(leveldb::ReadOptions(), namespace_prefix,
                                &dummy);
@@ -419,7 +419,7 @@ bool SessionStorageDatabase::CreateMapForArea(int64 namespace_id,
                                               const GURL& origin,
                                               std::string* map_id,
                                               leveldb::WriteBatch* batch) {
-  std::string next_map_id_key = NextMapIdKey();
+  leveldb::Slice next_map_id_key = NextMapIdKey();
   leveldb::Status s = db_->Get(leveldb::ReadOptions(), next_map_id_key, map_id);
   if (!DatabaseErrorCheck(s.ok() || s.IsNotFound()))
     return false;

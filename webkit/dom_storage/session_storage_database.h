@@ -29,7 +29,7 @@ namespace dom_storage {
 // origins. All DomStorageAreas for session storage share the same
 // SessionStorageDatabase.
 class SessionStorageDatabase :
-      public base::RefCountedThreadSafe<SessionStorageDatabase> {
+    public base::RefCountedThreadSafe<SessionStorageDatabase> {
  public:
   explicit SessionStorageDatabase(const FilePath& file_path);
 
@@ -68,8 +68,19 @@ class SessionStorageDatabase :
 
   ~SessionStorageDatabase();
 
+  // Opens the database at file_path_ if it exists already and creates it if
+  // |create_if_needed| is true. Returns true if the database was opened, false
+  // if the opening failed or was not necessary (the database doesn't exist and
+  // |create_if_needed| is false). The possible failures are:
+  // - leveldb cannot open the database.
+  // - The database is in an inconsistent or errored state.
   bool LazyOpen(bool create_if_needed);
-  leveldb::Status TryToOpen(const FilePath& file_path, leveldb::DB** db);
+
+  // Tries to open the database at file_path_, assigns |db| to point to the
+  // opened leveldb::DB instance.
+  leveldb::Status TryToOpen(leveldb::DB** db);
+
+  // Returns true if the database is already open, false otherwise.
   bool IsOpen() const;
 
   // Helpers for checking caller erros, invariants and database errors. All
