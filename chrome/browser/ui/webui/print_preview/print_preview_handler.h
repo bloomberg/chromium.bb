@@ -176,7 +176,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void ClearInitiatorTabDetails();
 
   // Posts a task to save |data| to pdf at |print_to_pdf_path_|.
-  void PostPrintToPdfTask(base::RefCountedBytes* data);
+  void PostPrintToPdfTask(scoped_refptr<base::RefCountedBytes> data);
 
   // Populates |settings| according to the current locale.
   void GetNumberFormatAndMeasurementSystem(base::DictionaryValue* settings);
