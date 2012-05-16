@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,11 +44,14 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/shell.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #endif
 
 using content::BrowserThread;
@@ -84,13 +88,10 @@ bool ScreenshotTimestampComp(const std::string& filepath1,
 void GetSavedScreenshots(std::vector<std::string>* saved_screenshots) {
   saved_screenshots->clear();
 
-  FilePath fileshelf_path;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
-                        &fileshelf_path))
-    return;
-
-  FeedbackUI::GetMostRecentScreenshots(fileshelf_path, saved_screenshots,
-                                       kMaxSavedScreenshots);
+  FeedbackUI::GetMostRecentScreenshots(
+      download_util::GetDefaultDownloadDirectory(),
+      saved_screenshots,
+      kMaxSavedScreenshots);
 }
 
 std::string GetUserEmail() {
@@ -145,8 +146,19 @@ void ShowWebFeedbackView(Browser* browser,
       FeedbackUtil::GetScreenshotPng();
   last_screenshot_png->clear();
 
-  gfx::NativeWindow native_window = browser->window()->GetNativeHandle();
-  gfx::Rect snapshot_bounds = gfx::Rect(browser->window()->GetBounds().size());
+  gfx::NativeWindow native_window;
+  gfx::Rect snapshot_bounds;
+
+#if defined(OS_CHROMEOS)
+  // For ChromeOS, don't use the browser window but the root window
+  // instead to grab the screenshot. We want everything on the screen, not
+  // just the current browser.
+  native_window = ash::Shell::GetRootWindow();
+  snapshot_bounds = gfx::Rect(native_window->bounds());
+#else
+  native_window = browser->window()->GetNativeHandle();
+  snapshot_bounds = gfx::Rect(browser->window()->GetBounds().size());
+#endif
   bool success = browser::GrabWindowSnapshot(native_window,
                                              last_screenshot_png,
                                              snapshot_bounds);

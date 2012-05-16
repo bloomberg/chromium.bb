@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 
@@ -87,14 +88,8 @@ void ScreenshotSource::SendSavedScreenshot(const std::string& screenshot_path,
   std::string filename = screenshot_path.substr(
       strlen(kSavedScreenshotsBasePath));
 
-  FilePath fileshelf_path;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &fileshelf_path)) {
-    CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
-    return;
-  }
-
   int64 file_size = 0;
-  FilePath file = fileshelf_path.Append(filename);
+  FilePath file = download_util::GetDefaultDownloadDirectory().Append(filename);
   if (!file_util::GetFileSize(file, &file_size)) {
     CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
     return;
