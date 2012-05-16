@@ -1075,7 +1075,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kFlingTapSuppressMaxGap,
       ::switches::kTouchDevices,
       ::switches::kTouchOptimizedUI,
-      ash::switches::kAshTouchHud,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
       ash::switches::kAuraPanelManager,

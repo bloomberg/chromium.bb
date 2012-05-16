@@ -27,7 +27,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/tooltips/tooltip_controller.h"
-#include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/base_layout_manager.h"
@@ -554,8 +553,6 @@ Shell::~Shell() {
 #if !defined(OS_MACOSX)
   RemoveRootWindowEventFilter(accelerator_filter_.get());
 #endif
-  if (touch_observer_hud_.get())
-    RemoveRootWindowEventFilter(touch_observer_hud_.get());
 
   // Close background widget now so that the focus manager of the
   // widget gets deleted in the final message loop run.
@@ -687,19 +684,14 @@ void Shell::Init() {
 
   CreateSpecialContainers(root_window);
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-
-  if (command_line->HasSwitch(switches::kAshTouchHud)) {
-    touch_observer_hud_.reset(new internal::TouchObserverHUD);
-    AddRootWindowEventFilter(touch_observer_hud_.get());
-  }
-
   stacking_controller_.reset(new internal::StackingController);
 
   root_window_layout_ = new internal::RootWindowLayoutManager(root_window);
   root_window->SetLayoutManager(root_window_layout_);
 
   event_client_.reset(new internal::EventClientImpl(root_window));
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   tray_.reset(new SystemTray());
   if (delegate_.get())
