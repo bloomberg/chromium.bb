@@ -10,16 +10,18 @@
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/string_util.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 @interface BaseBubbleController (Private)
 - (void)updateOriginFromAnchor;
+- (void)activateTabWithContents:(TabContentsWrapper*)newContents
+               previousContents:(TabContentsWrapper*)oldContents
+                        atIndex:(NSInteger)index
+                    userGesture:(bool)wasUserGesture;
 @end
 
 #if !defined(MAC_OS_X_VERSION_10_6) || \
@@ -43,31 +45,6 @@ typedef unsigned long long NSEventMask;
               usingBlock:(void (^)(NSNotification*))block;
 @end
 #endif  // MAC_OS_X_VERSION_10_6
-
-namespace BaseBubbleControllerInternal {
-
-// This bridge listens for notifications so that the bubble closes when a user
-// switches tabs (including by opening a new one).
-class Bridge : public content::NotificationObserver {
- public:
-  explicit Bridge(BaseBubbleController* controller) : controller_(controller) {
-    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
-        content::NotificationService::AllSources());
-  }
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-    [controller_ close];
-  }
-
- private:
-  BaseBubbleController* controller_;  // Weak, owns this.
-  content::NotificationRegistrar registrar_;
-};
-
-}  // namespace BaseBubbleControllerInternal
 
 @implementation BaseBubbleController
 
@@ -142,7 +119,14 @@ class Bridge : public content::NotificationObserver {
   DCHECK(bubble_);
   DCHECK_EQ(self, [[self window] delegate]);
 
-  baseBridge_.reset(new BaseBubbleControllerInternal::Bridge(self));
+  BrowserWindowController* bwc =
+      [BrowserWindowController browserWindowControllerForWindow:parentWindow_];
+  if (bwc) {
+    TabStripController* tabStripController = [bwc tabStripController];
+    TabStripModel* tabStripModel = [tabStripController tabStripModel];
+    tabStripObserverBridge_.reset(new TabStripModelObserverBridge(tabStripModel,
+                                                                  self));
+  }
 
   [bubble_ setArrowLocation:info_bubble::kTopRight];
 }
@@ -204,6 +188,8 @@ class Bridge : public content::NotificationObserver {
                 object:nil];
     resignationObserver_ = nil;
   }
+
+  tabStripObserverBridge_.reset();
 
   [[[self window] parentWindow] removeChildWindow:[self window]];
   [super close];
@@ -303,6 +289,14 @@ class Bridge : public content::NotificationObserver {
 
   origin.y -= NSHeight([window frame]);
   [window setFrameOrigin:origin];
+}
+
+- (void)activateTabWithContents:(TabContentsWrapper*)newContents
+               previousContents:(TabContentsWrapper*)oldContents
+                        atIndex:(NSInteger)index
+                    userGesture:(bool)wasUserGesture {
+  // The user switched tabs; close.
+  [self close];
 }
 
 @end  // BaseBubbleController

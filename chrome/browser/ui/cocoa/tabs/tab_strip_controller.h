@@ -161,6 +161,9 @@ class TabStripModel;
            browser:(Browser*)browser
           delegate:(id<TabStripControllerDelegate>)delegate;
 
+// Returns the model behind this controller.
+- (TabStripModel*)tabStripModel;
+
 // Return the view for the currently active tab.
 - (NSView*)activeTabView;
 

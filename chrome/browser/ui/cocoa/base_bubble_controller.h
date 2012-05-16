@@ -7,11 +7,8 @@
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace BaseBubbleControllerInternal {
-class Bridge;
-}
-
 @class InfoBubbleView;
+class TabStripModelObserverBridge;
 
 // Base class for bubble controllers. Manages a xib that contains an
 // InfoBubbleWindow which contains an InfoBubbleView. Contains code to close
@@ -29,8 +26,8 @@ class Bridge;
   NSWindow* parentWindow_;  // weak
   NSPoint anchor_;
   IBOutlet InfoBubbleView* bubble_;  // to set arrow position
-  // Bridge that listens for notifications.
-  scoped_ptr<BaseBubbleControllerInternal::Bridge> baseBridge_;
+  // Bridge for tab change notifications.
+  scoped_ptr<TabStripModelObserverBridge> tabStripObserverBridge_;
 
   // Non-nil only on 10.7+. Both weak, owned by AppKit.
   // A local event tap that will dismiss the bubble when a click is delivered

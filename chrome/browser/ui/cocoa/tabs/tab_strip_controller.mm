@@ -1584,6 +1584,10 @@ private:
   [view setFrame:frame];
 }
 
+- (TabStripModel*)tabStripModel {
+  return tabStripModel_;
+}
+
 - (NSView*)activeTabView {
   int activeIndex = tabStripModel_->active_index();
   // Take closing tabs into account. They can't ever be selected.
