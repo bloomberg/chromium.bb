@@ -15,7 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -237,7 +237,7 @@ void SetWallpaperOptionsHandler::HandleRandomWallpaper(const ListValue* args) {
 
 gfx::NativeWindow SetWallpaperOptionsHandler::GetBrowserWindow() const {
   Browser* browser =
-      BrowserList::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
+      browser::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
   if (!browser)
     return NULL;
   return browser->window()->GetNativeHandle();

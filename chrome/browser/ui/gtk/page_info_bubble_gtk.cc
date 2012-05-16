@@ -11,7 +11,7 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_model_observer.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
@@ -227,7 +227,7 @@ void PageInfoBubbleGtk::OnViewCertLinkClicked(GtkWidget* widget) {
 }
 
 void PageInfoBubbleGtk::OnHelpLinkClicked(GtkWidget* widget) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   browser->OpenURL(OpenURLParams(
       GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));

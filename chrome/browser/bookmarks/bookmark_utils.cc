@@ -21,7 +21,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/pref_names.h"
@@ -155,7 +155,7 @@ void OpenAllImpl(const BookmarkNode* node,
       *opened_url = true;
       // We opened the first URL which may have opened a new window or clobbered
       // the current page, reset the navigator just to be sure.
-      Browser* new_browser = BrowserList::GetLastActiveWithProfile(profile);
+      Browser* new_browser = browser::FindLastActiveWithProfile(profile);
       if (new_browser) {
         WebContents* current_tab = new_browser->GetSelectedWebContents();
         if (current_tab)
@@ -388,7 +388,7 @@ void OpenAll(gfx::NativeWindow parent,
 
   NewBrowserPageNavigator navigator_impl(profile);
   if (!navigator) {
-    Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
+    Browser* browser = browser::FindTabbedBrowser(profile, false);
     if (!browser || !browser->GetSelectedWebContents()) {
       navigator = &navigator_impl;
     } else {
@@ -666,7 +666,7 @@ void GetURLAndTitleToBookmark(WebContents* web_contents,
 void GetURLAndTitleToBookmarkFromCurrentTab(Profile* profile,
                                             GURL* url,
                                             string16* title) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   WebContents* web_contents = browser ? browser->GetSelectedWebContents()
                                         : NULL;
   if (web_contents)

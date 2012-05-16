@@ -102,6 +102,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
@@ -493,7 +494,7 @@ Browser::~Browser() {
     tab_restore_service->BrowserClosed(tab_restore_service_delegate());
 
 #if !defined(OS_MACOSX)
-  if (!BrowserList::HasBrowserWithProfile(profile_)) {
+  if (!browser::GetBrowserCount(profile_)) {
     // We're the last browser window with this profile. We need to nuke the
     // TabRestoreService, which will start the shutdown of the
     // NavigationControllers and allow for proper shutdown. If we don't do this
@@ -680,7 +681,7 @@ void Browser::OpenWindowWithRestoredTabs(Profile* profile) {
 
 // static
 void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
-  Browser* browser = GetOrCreateTabbedBrowser(
+  Browser* browser = browser::FindOrCreateTabbedBrowser(
       profile->GetOffTheRecordProfile());
   browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_LINK);
   browser->window()->Show();
@@ -854,7 +855,7 @@ WebContents* Browser::OpenApplicationTab(Profile* profile,
                                          const Extension* extension,
                                          const GURL& override_url,
                                          WindowOpenDisposition disposition) {
-  Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
+  Browser* browser = browser::FindTabbedBrowser(profile, false);
   WebContents* contents = NULL;
   if (!browser) {
     // No browser for this profile, need to open a new one.
@@ -1680,7 +1681,7 @@ void Browser::NewTab() {
     AddBlankTab(true);
     GetSelectedWebContents()->GetView()->RestoreFocus();
   } else {
-    Browser* b = GetOrCreateTabbedBrowser(profile_);
+    Browser* b = browser::FindOrCreateTabbedBrowser(profile_);
     b->AddBlankTab(true);
     b->window()->Show();
     // The call to AddBlankTab above did not set the focus to the tab as its
@@ -2497,36 +2498,6 @@ bool Browser::RunUnloadEventsHelper(WebContents* contents) {
     return true;
   }
   return false;
-}
-
-// static
-Browser* Browser::GetBrowserForController(
-    const NavigationController* controller, int* index_result) {
-  BrowserList::const_iterator it;
-  for (it = BrowserList::begin(); it != BrowserList::end(); ++it) {
-    int index = (*it)->GetIndexOfController(controller);
-    if (index != TabStripModel::kNoTab) {
-      if (index_result)
-        *index_result = index;
-      return *it;
-    }
-  }
-
-  return NULL;
-}
-
-// static
-Browser* Browser::GetTabbedBrowser(Profile* profile,
-                                   bool match_original_profiles) {
-  return BrowserList::FindTabbedBrowser(profile, match_original_profiles);
-}
-
-// static
-Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
-  Browser* browser = GetTabbedBrowser(profile, false);
-  if (!browser)
-    browser = Browser::Create(profile);
-  return browser;
 }
 
 // static

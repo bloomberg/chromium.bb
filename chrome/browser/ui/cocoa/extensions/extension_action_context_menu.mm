@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -151,7 +152,7 @@ int CurrentTabId() {
 }
 
 - (void)dispatch:(id)menuItem {
-  Browser* browser = BrowserList::FindBrowserWithProfile(profile_);
+  Browser* browser = browser::FindBrowserWithProfile(profile_);
   if (!browser)
     return;
 

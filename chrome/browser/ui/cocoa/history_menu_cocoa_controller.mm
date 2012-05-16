@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -37,7 +38,7 @@ using content::Referrer;
 
 // Open the URL of the given history item in the current tab.
 - (void)openURLForItem:(const HistoryMenuBridge::HistoryItem*)node {
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(bridge_->profile());
+  Browser* browser = browser::FindOrCreateTabbedBrowser(bridge_->profile());
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
 

@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
       browser()->profile(),
       test_server()->GetURL("files/extensions/test_file.html"));
 
-  Browser* otr_browser = BrowserList::FindTabbedBrowser(
+  Browser* otr_browser = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
   WebContents* tab = otr_browser->GetSelectedWebContents();
 
@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
       browser()->profile(),
       test_server()->GetURL("files/extensions/test_file.html"));
 
-  Browser* otr_browser = BrowserList::FindTabbedBrowser(
+  Browser* otr_browser = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
   WebContents* tab = otr_browser->GetSelectedWebContents();
 
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoPopup) {
       browser()->profile(),
       test_server()->GetURL("files/extensions/test_file.html"));
 
-  Browser* incognito_browser = BrowserList::FindTabbedBrowser(
+  Browser* incognito_browser = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
 
   // Simulate the incognito's browser action being clicked.

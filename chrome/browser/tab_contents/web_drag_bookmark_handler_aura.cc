@@ -6,6 +6,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -68,7 +69,7 @@ void WebDragBookmarkHandlerAura::OnDrop() {
     }
 
     // Focus the target browser.
-    Browser* browser = Browser::GetBrowserForController(
+    Browser* browser = browser::FindBrowserForController(
         &tab_->web_contents()->GetController(), NULL);
     if (browser)
       browser->window()->Show();

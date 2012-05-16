@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
@@ -1436,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
   signal.Wait();
   EXPECT_EQ(0, PanelManager::GetInstance()->num_panels());
 
-  Browser* tabbed_browser = BrowserList::FindTabbedBrowser(profile, false);
+  Browser* tabbed_browser = browser::FindTabbedBrowser(profile, false);
   EXPECT_EQ(contents, tabbed_browser->GetSelectedTabContentsWrapper());
   tabbed_browser->window()->Close();
 }
@@ -1711,7 +1712,7 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
   browser()->CloseWindow();
   signal.Wait();
   ASSERT_EQ(1U, BrowserList::size());
-  ASSERT_EQ(NULL, Browser::GetTabbedBrowser(profile, false));
+  ASSERT_EQ(NULL, browser::FindTabbedBrowser(profile, false));
 
   scoped_ptr<DownloadObserver> observer(new DownloadObserver(profile));
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
@@ -1725,7 +1726,7 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
 
   EXPECT_EQ(2U, BrowserList::size());
 
-  Browser* tabbed_browser = Browser::GetTabbedBrowser(profile, false);
+  Browser* tabbed_browser = browser::FindTabbedBrowser(profile, false);
   EXPECT_EQ(1, tabbed_browser->tab_count());
   ASSERT_TRUE(tabbed_browser->window()->IsDownloadShelfVisible());
   tabbed_browser->CloseWindow();

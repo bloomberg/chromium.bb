@@ -9,6 +9,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -116,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        AppInstallConfirmation_Incognito) {
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
-  Browser* incognito_browser = Browser::GetOrCreateTabbedBrowser(
+  Browser* incognito_browser = browser::FindOrCreateTabbedBrowser(
       incognito_profile);
 
   int num_incognito_tabs = incognito_browser->tab_count();

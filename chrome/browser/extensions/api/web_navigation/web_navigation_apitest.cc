@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
       "files/extensions/api_test/webnavigation/targetBlank/a.html");
 
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
-  WebContents* tab = BrowserList::FindTabbedBrowser(
+  WebContents* tab = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false)->
           GetSelectedWebContents();
 

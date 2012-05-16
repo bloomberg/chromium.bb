@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
@@ -564,7 +565,7 @@ void ExtensionHost::AddNewContents(WebContents* source,
   // NULL argument to NavigateParams is valid.
   Profile* profile =
       Profile::FromBrowserContext(new_contents->GetBrowserContext());
-  Browser* browser = BrowserList::FindTabbedBrowser(
+  Browser* browser = browser::FindTabbedBrowser(
       profile, false);  // Match incognito exactly.
   TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
   browser::NavigateParams params(browser, wrapper);

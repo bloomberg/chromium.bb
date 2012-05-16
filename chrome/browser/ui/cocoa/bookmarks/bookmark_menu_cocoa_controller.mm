@@ -11,6 +11,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "content/public/browser/user_metrics.h"
@@ -92,7 +93,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 // Open the URL of the given BookmarkNode in the current tab.
 - (void)openURLForNode:(const BookmarkNode*)node {
-  Browser* browser = Browser::GetTabbedBrowser(bridge_->GetProfile(), true);
+  Browser* browser = browser::FindTabbedBrowser(bridge_->GetProfile(), true);
   if (!browser)
     browser = Browser::Create(bridge_->GetProfile());
   WindowOpenDisposition disposition =
@@ -111,7 +112,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   const BookmarkNode* node = [self nodeForIdentifier:identifier];
   DCHECK(node);
 
-  Browser* browser = Browser::GetTabbedBrowser(bridge_->GetProfile(), true);
+  Browser* browser = browser::FindTabbedBrowser(bridge_->GetProfile(), true);
   if (!browser)
     browser = Browser::Create(bridge_->GetProfile());
   DCHECK(browser);

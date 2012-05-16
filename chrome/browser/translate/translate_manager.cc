@@ -26,7 +26,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -676,7 +676,7 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
   // Open that URL in a new tab so that the user can tell us more.
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (!browser) {
     NOTREACHED();
     return;

@@ -25,7 +25,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -1025,7 +1025,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIncognito) {
   Profile* normal_profile = current_browser()->profile();
   ui_test_utils::OpenURLOffTheRecord(normal_profile, GURL("about:blank"));
-  set_browser(BrowserList::FindBrowserWithProfile(
+  set_browser(browser::FindBrowserWithProfile(
       normal_profile->GetOffTheRecordProfile()));
   // Increase memory expectations on the incognito PrerenderManager.
   IncreasePrerenderMemory();

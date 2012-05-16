@@ -22,7 +22,7 @@
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/status_bubble.h"
@@ -56,7 +56,7 @@ bool WindowCanOpenTabs(Browser* browser) {
 // Finds an existing Browser compatible with |profile|, making a new one if no
 // such Browser is located.
 Browser* GetOrCreateBrowser(Profile* profile) {
-  Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
+  Browser* browser = browser::FindTabbedBrowser(profile, false);
   return browser ? browser : Browser::Create(profile);
 }
 
@@ -101,7 +101,7 @@ bool AdjustNavigateParamsForURL(browser::NavigateParams* params) {
 
     params->disposition = SINGLETON_TAB;
     params->profile = profile;
-    params->browser = Browser::GetOrCreateTabbedBrowser(profile);
+    params->browser = browser::FindOrCreateTabbedBrowser(profile);
     params->window_action = browser::NavigateParams::SHOW_WINDOW;
   }
 
@@ -127,7 +127,7 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
     case CURRENT_TAB:
       if (!params->browser && profile) {
         // We specified a profile instead of a browser; find or create one.
-        params->browser = Browser::GetOrCreateTabbedBrowser(profile);
+        params->browser = browser::FindOrCreateTabbedBrowser(profile);
       }
       return params->browser;
     case SINGLETON_TAB:

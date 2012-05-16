@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -247,7 +248,7 @@ void SelectFileDialogExtension::SelectFileImpl(
   }
   // Extension background pages may not supply an owner_window.
   owner_browser_ = (owner_window ?
-      BrowserList::FindBrowserWithWindow(owner_window) :
+      browser::FindBrowserWithWindow(owner_window) :
       BrowserList::GetLastActive());
   if (!owner_browser_) {
     NOTREACHED() << "Can't find owning browser";

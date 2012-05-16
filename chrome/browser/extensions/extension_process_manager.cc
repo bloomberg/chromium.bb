@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -284,7 +285,7 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
   // able to save settings from OTR.
   if (!browser || browser->profile()->IsOffTheRecord()) {
     Profile* profile = GetProfile();
-    browser = Browser::GetOrCreateTabbedBrowser(profile->GetOriginalProfile());
+    browser = browser::FindOrCreateTabbedBrowser(profile->GetOriginalProfile());
   }
 
   OpenURLParams params(extension->options_url(), Referrer(), SINGLETON_TAB,

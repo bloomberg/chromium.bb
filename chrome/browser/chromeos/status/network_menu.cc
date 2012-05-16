@@ -24,6 +24,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -498,7 +499,7 @@ void NetworkMenuModel::ActivatedAt(int index) {
     if (active_vpn)
       cros->DisconnectFromNetwork(active_vpn);
   } else if (flags & FLAG_VIEW_ACCOUNT) {
-    Browser* browser = Browser::GetOrCreateTabbedBrowser(
+    Browser* browser = browser::FindOrCreateTabbedBrowser(
         ProfileManager::GetDefaultProfileOrOffTheRecord());
     browser->ShowSingletonTab(GURL(top_up_url_));
   }
@@ -1095,7 +1096,7 @@ bool NetworkMenu::ShouldHighlightNetwork(const Network* network) {
 
 Browser* NetworkMenu::GetAppropriateBrowser() const {
   DCHECK(chromeos::UserManager::Get()->IsSessionStarted());
-  return Browser::GetOrCreateTabbedBrowser(
+  return browser::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
 

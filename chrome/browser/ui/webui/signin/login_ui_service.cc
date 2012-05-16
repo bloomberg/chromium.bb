@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
 
@@ -36,7 +36,7 @@ void LoginUIService::ShowLoginUI() {
 
   // Need to navigate to the settings page and display the UI.
   if (profile_) {
-    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (!browser) {
       browser = Browser::Create(profile_);
       browser->ShowOptionsTab(chrome::kSyncSetupSubPage);

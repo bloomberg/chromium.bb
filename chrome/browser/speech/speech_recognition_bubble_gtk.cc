@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
@@ -186,7 +187,7 @@ void SpeechRecognitionBubbleGtk::Show() {
       target_rect.y() > container_rect.height()) {
     // Target is not in screen view, so point to wrench.
     Browser* browser =
-        Browser::GetOrCreateTabbedBrowser(profile);
+        browser::FindOrCreateTabbedBrowser(profile);
     BrowserWindowGtk* browser_window =
         BrowserWindowGtk::GetBrowserWindowForNativeWindow(
             browser->window()->GetNativeHandle());

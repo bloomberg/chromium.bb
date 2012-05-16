@@ -20,7 +20,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -163,7 +163,7 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
 
     GURL url("https://accounts.google.com/ServiceLogin");
     DCHECK(profile_);
-    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (browser)
       browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
 

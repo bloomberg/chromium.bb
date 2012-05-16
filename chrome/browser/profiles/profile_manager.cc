@@ -28,6 +28,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -38,9 +39,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#if defined(OS_WIN)
-#include "chrome/installer/util/browser_distribution.h"
-#endif
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -50,6 +48,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_WIN)
+#include "chrome/installer/util/browser_distribution.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -476,7 +478,7 @@ void ProfileManager::FindOrCreateNewWindowForProfile(
   DCHECK(profile);
 
   if (!always_create) {
-    Browser* browser = BrowserList::FindTabbedBrowser(profile, false);
+    Browser* browser = browser::FindTabbedBrowser(profile, false);
     if (browser) {
       browser->window()->Activate();
       return;

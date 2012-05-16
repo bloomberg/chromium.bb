@@ -33,6 +33,7 @@
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -303,7 +304,7 @@ bool GetLastFocusedWindowFunction::RunImpl() {
   // Note: currently this returns the last active browser. If we decide to
   // include other window types (e.g. panels), we will need to add logic to
   // ExtensionWindowList that mirrors the active behavior of BrowserList.
-  Browser* browser = BrowserList::FindAnyBrowser(
+  Browser* browser = browser::FindAnyBrowser(
       profile(), include_incognito());
   if (!browser || !browser->window()) {
     error_ = keys::kNoLastFocusedWindowError;
@@ -979,7 +980,7 @@ bool CreateTabFunction::RunImpl() {
 
   // Ensure the selected browser is tabbed.
   if (!browser->is_type_tabbed() && browser->IsAttemptingToCloseBrowser())
-    browser = Browser::GetTabbedBrowser(profile(), include_incognito());
+    browser = browser::FindTabbedBrowser(profile(), include_incognito());
 
   if (!browser || !browser->window())
     return false;
@@ -1050,7 +1051,7 @@ bool CreateTabFunction::RunImpl() {
       !GetExtension()->incognito_split_mode() &&
       browser->profile()->IsOffTheRecord()) {
     Profile* profile = browser->profile()->GetOriginalProfile();
-    browser = BrowserList::FindTabbedBrowser(profile, false);
+    browser = browser::FindTabbedBrowser(profile, false);
     if (!browser) {
       browser = Browser::Create(profile);
       browser->window()->Show();

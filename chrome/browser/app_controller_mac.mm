@@ -37,6 +37,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -106,7 +107,7 @@ bool g_is_opening_new_window = false;
 // not possible. If the last active browser is minimized (in particular, if
 // there are only minimized windows), it will unminimize it.
 Browser* ActivateBrowser(Profile* profile) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (browser)
     browser->window()->Activate();
   return browser;
@@ -372,8 +373,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 }
 
 - (void)didEndMainMessageLoop {
-  DCHECK(!BrowserList::HasBrowserWithProfile([self lastProfile]));
-  if (!BrowserList::HasBrowserWithProfile([self lastProfile])) {
+  DCHECK_EQ(0u, browser::GetBrowserCount([self lastProfile]));
+  if (!browser::GetBrowserCount([self lastProfile])) {
     // As we're shutting down, we need to nuke the TabRestoreService, which
     // will start the shutdown of the NavigationControllers and allow for
     // proper shutdown. If we don't do this, Chrome won't shut down cleanly,
@@ -682,7 +683,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {
         // Create a new browser window (if necessary) and navigate to the
         // downloads page if the user chooses to wait.
-        Browser* browser = BrowserList::FindBrowserWithProfile(profiles[i]);
+        Browser* browser = browser::FindBrowserWithProfile(profiles[i]);
         if (!browser) {
           browser = Browser::Create(profiles[i]);
           browser->window()->Show();

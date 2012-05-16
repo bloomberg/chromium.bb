@@ -13,7 +13,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/net/url_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
@@ -311,7 +313,7 @@ void GaiaOAuthFetcher::StartGetOAuthToken() {
                  chrome::NOTIFICATION_COOKIE_CHANGED,
                  content::Source<Profile>(profile_));
 
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   DCHECK(browser);
 
   OpenGetOAuthTokenURL(browser,
@@ -321,7 +323,7 @@ void GaiaOAuthFetcher::StartGetOAuthToken() {
                         WebKit::WebReferrerPolicyDefault),
       NEW_POPUP,
       content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  popup_ = BrowserList::GetLastActiveWithProfile(profile_);
+  popup_ = browser::FindLastActiveWithProfile(profile_);
   DCHECK(popup_ && popup_ != browser);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSING,

@@ -10,8 +10,10 @@
 #include <vector>
 
 #include "base/observer_list.h"
-#include "chrome/browser/ui/browser.h"
 #include "ui/gfx/native_widget_types.h"
+
+class Browser;
+class Profile;
 
 // Stores a list of all Browser objects.
 class BrowserList {
@@ -62,50 +64,6 @@ class BrowserList {
   // WARNING #2: this will always be NULL in unit tests run on the bots.
   static Browser* GetLastActive();
 
-  // Identical in behavior to GetLastActive(), except that the most recently
-  // open browser owned by |profile| is returned. If none exist, returns NULL.
-  // WARNING: see warnings in GetLastActive().
-  static Browser* GetLastActiveWithProfile(Profile* profile);
-
-  // Retrieve the last active tabbed browser with a profile matching |profile|.
-  // If |match_original_profiles| is true, matching is done based on the
-  // original profile, eg profile->GetOriginalProfile() ==
-  // browser->profile()->GetOriginalProfile(). This has the effect of matching
-  // against both non-incognito and incognito profiles. If
-  // |match_original_profiles| is false, only an exact match may be returned.
-  static Browser* FindTabbedBrowser(Profile* profile,
-                                    bool match_original_profiles);
-
-  // Find an existing browser window with any type. See comment above for
-  // additional information.
-  static Browser* FindAnyBrowser(Profile* profile,
-                                 bool match_original_profiles);
-
-  // Find an existing browser window that can provide the specified type (this
-  // uses Browser::CanSupportsWindowFeature, not
-  // Browser::SupportsWindowFeature). This searches in the order of last
-  // activation. Only browsers that have been active can be returned. Returns
-  // NULL if no such browser currently exists.
-  static Browser* FindBrowserWithFeature(Profile* profile,
-                                         Browser::WindowFeature feature);
-
-  // Find an existing browser window with the provided profile. Searches in the
-  // order of last activation. Only browsers that have been active can be
-  // returned. Returns NULL if no such browser currently exists.
-  static Browser* FindBrowserWithProfile(Profile* profile);
-
-  // Find an existing browser with the provided ID. Returns NULL if no such
-  // browser currently exists.
-  static Browser* FindBrowserWithID(SessionID::id_type desired_id);
-
-  // Find the browser represented by |window| or NULL if not found.
-  static Browser* FindBrowserWithWindow(gfx::NativeWindow window);
-
-  // Find the browser containing |web_contents| or NULL if none is found.
-  // |web_contents| must not be NULL.
-  static Browser* FindBrowserWithWebContents(
-      content::WebContents* web_contents);
-
   // Checks if the browser can be automatically restarted to install upgrades
   // The browser can be automatically restarted when:
   // 1. It's in the background mode (no visible windows).
@@ -155,9 +113,6 @@ class BrowserList {
   // Begins shutdown of the application when the desktop session is ending.
   static void SessionEnding();
 
-  // Returns true if there is at least one Browser with the specified profile.
-  static bool HasBrowserWithProfile(Profile* profile);
-
   // Tells the BrowserList to keep the application alive after the last Browser
   // closes. This is implemented as a count, so callers should pair their calls
   // to StartKeepAlive() with matching calls to EndKeepAlive() when they no
@@ -186,14 +141,6 @@ class BrowserList {
   // latest accessed browser first.
   static const_reverse_iterator begin_last_active();
   static const_reverse_iterator end_last_active();
-
-  // Return the number of browsers with the following profile which are
-  // currently open.
-  static size_t GetBrowserCount(Profile* profile);
-
-  // Return the number of browsers with the following profile and type which are
-  // currently open.
-  static size_t GetBrowserCountForType(Profile* profile, bool match_tabbed);
 
   // Returns true if at least one incognito session is active.
   static bool IsOffTheRecordSessionActive();

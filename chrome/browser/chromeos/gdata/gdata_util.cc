@@ -28,7 +28,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/escape.h"
@@ -86,7 +86,7 @@ void GetHostedDocumentURLBlockingThread(const FilePath& gdata_cache_path,
 }
 
 void OpenEditURLUIThread(Profile* profile, GURL* edit_url) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (browser) {
     browser->OpenURL(content::OpenURLParams(*edit_url, content::Referrer(),
         CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));

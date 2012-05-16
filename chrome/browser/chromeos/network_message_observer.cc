@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
@@ -86,7 +86,7 @@ void NetworkMessageObserver::OpenMobileSetupPage(const ListValue* args) {
 }
 
 void NetworkMessageObserver::OpenMoreInfoPage(const ListValue* args) {
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+  Browser* browser = browser::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();

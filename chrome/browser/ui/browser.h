@@ -271,7 +271,7 @@ class Browser : public TabStripModelDelegate,
   // Browser Creation Helpers /////////////////////////////////////////////////
 
   // Opens a new window with the default blank tab.
-  static void  NewEmptyWindow(Profile* profile);
+  static void NewEmptyWindow(Profile* profile);
 
   // Opens a new window with the default blank tab. This bypasses metrics and
   // various internal bookkeeping; NewEmptyWindow (above) is preferred.
@@ -679,27 +679,6 @@ class Browser : public TabStripModelDelegate,
 
   // Helper function to run unload listeners on a WebContents.
   static bool RunUnloadEventsHelper(content::WebContents* contents);
-
-  // Returns the Browser which contains the tab with the given
-  // NavigationController, also filling in |index| (if valid) with the tab's
-  // index in the tab strip.
-  // Returns NULL if not found.
-  // This call is O(N) in the number of tabs.
-  static Browser* GetBrowserForController(
-      const content::NavigationController* controller, int* index);
-
-  // Retrieve the last active tabbed browser with a profile matching |profile|.
-  // If |match_original_profiles| is true, matching is done based on the
-  // original profile, eg profile->GetOriginalProfile() ==
-  // browser->profile()->GetOriginalProfile(). This has the effect of matching
-  // against both non-incognito and incognito profiles. If
-  // |match_original_profiles| is false, only an exact match may be returned.
-  static Browser* GetTabbedBrowser(Profile* profile,
-                                   bool match_original_profiles);
-
-  // Retrieve the last active tabbed browser with a profile matching |profile|.
-  // Creates a new Browser if none are available.
-  static Browser* GetOrCreateTabbedBrowser(Profile* profile);
 
   // Helper function to display the file selection dialog.
   static void RunFileChooserHelper(

@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -43,14 +44,14 @@ void WaitForTabsAndPopups(Browser* browser,
   const base::TimeDelta kWaitTime = base::TimeDelta::FromSeconds(15);
   base::TimeTicks end_time = base::TimeTicks::Now() + kWaitTime;
   while (base::TimeTicks::Now() < end_time) {
-    if (BrowserList::GetBrowserCount(browser->profile()) == num_browsers &&
+    if (browser::GetBrowserCount(browser->profile()) == num_browsers &&
         browser->tab_count() == num_tabs)
       break;
 
     ui_test_utils::RunAllPendingInMessageLoop();
   }
 
-  EXPECT_EQ(num_browsers, BrowserList::GetBrowserCount(browser->profile()));
+  EXPECT_EQ(num_browsers, browser::GetBrowserCount(browser->profile()));
   EXPECT_EQ(num_tabs, browser->tab_count());
 
   int num_popups_seen = 0;

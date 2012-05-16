@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -150,7 +151,7 @@ class AppApiTest : public ExtensionApiTest {
 
     // Opening tabs with window.open should keep the page in the opener's
     // process.
-    ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
+    ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
     WindowOpenHelper(browser(), host1,
                     base_url.Resolve("path1/empty.html"), true);
     LOG(INFO) << "WindowOpenHelper 1.";
@@ -222,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
             browser()->GetWebContentsAt(3)->GetRenderProcessHost());
 
   // Now let's do the same using window.open. The same should happen.
-  ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
   WindowOpenHelper(browser(), host,
                    base_url.Resolve("path1/empty.html"), true);
   LOG(INFO) << "WindowOpenHelper 1.";
@@ -333,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
             browser()->GetWebContentsAt(2)->GetRenderProcessHost());
 
   // Now let's do the same using window.open. The same should happen.
-  ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
   WindowOpenHelper(browser(), host,
                    base_url.Resolve("path1/empty.html"), true);
   WindowOpenHelper(browser(), host,

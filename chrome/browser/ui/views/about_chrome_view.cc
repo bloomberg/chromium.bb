@@ -19,6 +19,8 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
@@ -621,7 +623,7 @@ void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
     NOTREACHED() << "Unknown link source";
   }
 
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   OpenURLParams params(
       url, Referrer(), NEW_WINDOW, content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);

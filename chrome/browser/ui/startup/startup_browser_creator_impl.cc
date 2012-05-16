@@ -41,6 +41,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -509,7 +510,7 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
   if (adjust_urls.empty())
     AddStartupURLs(&adjust_urls);
   else if (!command_line_.HasSwitch(switches::kOpenInNewWindow))
-    browser = BrowserList::GetLastActiveWithProfile(profile_);
+    browser = browser::FindLastActiveWithProfile(profile_);
 
   // This will launch a browser; prevent session restore.
   in_synchronous_profile_launch = true;

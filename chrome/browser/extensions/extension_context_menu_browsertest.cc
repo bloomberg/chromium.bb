@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/context_menu_params.h"
 #include "net/base/mock_host_resolver.h"
@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, MAYBE_IncognitoSplit) {
   GURL page_url("http://www.google.com");
 
   // Create and build our test context menu.
-  Browser* browser_incognito = BrowserList::FindTabbedBrowser(
+  Browser* browser_incognito = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
   ASSERT_TRUE(browser_incognito);
   scoped_ptr<TestRenderViewContextMenu> menu(

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/devtools_discovery_page_resources.h"

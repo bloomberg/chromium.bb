@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/feedback/proto/extension.pb.h"
 #include "content/public/browser/navigation_controller.h"
@@ -45,7 +46,7 @@ string16 AutofillFeedbackInfoBarDelegate::GetLinkText() const {
 bool AutofillFeedbackInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   browser::ShowWebFeedbackView(
-      Browser::GetBrowserForController(
+      browser::FindBrowserForController(
           &owner()->web_contents()->GetController(), NULL),
       feedback_message_,
       std::string(kCategoryTagAutofill));

@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "chrome/common/url_constants.h"
@@ -119,7 +120,7 @@ int EnrollmentDialogView::GetDialogButtons() const {
 
 bool EnrollmentDialogView::Accept() {
   // Navigate to the target URI in a browser tab.
-  Browser* browser = BrowserList::FindTabbedBrowser(profile_, false);
+  Browser* browser = browser::FindTabbedBrowser(profile_, false);
   if (!browser) {
     // Couldn't find a tabbed browser: create one.
     browser = Browser::Create(profile_);

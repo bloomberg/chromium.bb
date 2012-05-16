@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/app_non_client_frame_view_aura.h"
@@ -94,6 +95,5 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ClickClose) {
   eg.ClickLeftButton();
   signal.Wait();
   EXPECT_EQ(1,
-            static_cast<int>(
-                BrowserList::GetBrowserCount(browser()->profile())));
+            static_cast<int>(browser::GetBrowserCount(browser()->profile())));
 }

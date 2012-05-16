@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -238,7 +238,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     LOG(WARNING) << "before navigate";
     if (options == INITIALIZATION_OFFTHERECORD) {
       ui_test_utils::OpenURLOffTheRecord(browser()->profile(), current_url_);
-      current_browser_ = BrowserList::FindTabbedBrowser(
+      current_browser_ = browser::FindTabbedBrowser(
           browser()->profile()->GetOffTheRecordProfile(), false);
     } else if (options == INITIALIZATION_NEWTAB) {
       current_browser_ = browser();

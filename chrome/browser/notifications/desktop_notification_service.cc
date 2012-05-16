@@ -21,7 +21,8 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
@@ -332,7 +333,7 @@ void DesktopNotificationService::RequestPermission(
     WebContents* tab) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tab) {
-    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (browser)
       tab = browser->GetSelectedWebContents();
   }

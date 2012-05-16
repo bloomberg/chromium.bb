@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -153,7 +153,7 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
       }
     }
     // Any existing UI is now closed - display new login UI.
-    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (browser) {
       browser->ShowOptionsTab(chrome::kSyncSetupForceLoginSubPage);
       return;

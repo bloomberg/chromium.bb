@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/common/extensions/extension.h"
@@ -46,7 +46,7 @@ ExtensionUninstallDialogGtk::ExtensionUninstallDialogGtk(
       dialog_(NULL) {}
 
 void ExtensionUninstallDialogGtk::Show() {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   if (!browser) {
     delegate_->ExtensionUninstallCanceled();
     return;

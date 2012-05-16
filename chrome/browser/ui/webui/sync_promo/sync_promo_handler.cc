@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -192,7 +192,7 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
   // If the browser window is being closed then don't try to navigate to another
   // URL. This prevents the browser window from flashing during close.
   Browser* browser =
-      BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
+      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (!browser || !browser->IsAttemptingToCloseBrowser()) {
     GURL url = SyncPromoUI::GetNextPageURLForSyncPromoURL(
         web_ui()->GetWebContents()->GetURL());

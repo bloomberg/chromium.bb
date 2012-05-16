@@ -20,7 +20,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
@@ -245,7 +245,7 @@ void ChromeToMobileService::SendToMobile(const string16& mobile_id,
   RequestData data;
   data.mobile_id = mobile_id;
   content::WebContents* web_contents =
-      BrowserList::GetLastActiveWithProfile(profile_)->GetSelectedWebContents();
+      browser::FindLastActiveWithProfile(profile_)->GetSelectedWebContents();
   data.url = web_contents->GetURL();
   data.title = web_contents->GetTitle();
   data.snapshot_path = snapshot;
@@ -331,7 +331,7 @@ void ChromeToMobileService::SnapshotFileCreated(
   // Track the set of temporary files to be deleted later.
   snapshots_.insert(path);
 
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   if (success && browser && browser->GetSelectedWebContents()) {
     // Generate the snapshot and have the observer be called back on completion.
     browser->GetSelectedWebContents()->GenerateMHTML(path,
@@ -473,7 +473,7 @@ void ChromeToMobileService::HandleSearchResponse() {
     if (!mobiles_.empty())
       LogMetric(DEVICES_AVAILABLE);
 
-    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (browser && browser->command_updater())
       browser->command_updater()->UpdateCommandEnabled(
           IDC_CHROME_TO_MOBILE_PAGE, !mobiles_.empty());

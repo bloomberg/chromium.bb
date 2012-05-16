@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -412,7 +412,7 @@ void ChromeLauncherController::SetAutoHideBehavior(
 }
 
 void ChromeLauncherController::CreateNewTab() {
-  Browser *last_browser = BrowserList::FindTabbedBrowser(
+  Browser *last_browser = browser::FindTabbedBrowser(
       GetProfileForNewWindows(), true);
 
   if (!last_browser) {

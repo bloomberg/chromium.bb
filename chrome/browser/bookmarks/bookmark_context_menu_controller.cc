@@ -13,7 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
@@ -197,7 +197,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
     case IDC_BOOKMARK_MANAGER: {
       content::RecordAction(UserMetricsAction("ShowBookmarkManager"));
-      Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+      Browser* browser = browser::FindLastActiveWithProfile(profile_);
       if (!browser) NOTREACHED();
 
       if (selection_.size() != 1)

@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
@@ -135,7 +135,7 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
 - (IBAction)storeLinkClicked:(id)sender {
   GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
                  prompt_->extension()->id());
-  BrowserList::GetLastActiveWithProfile(profile_)->OpenURL(OpenURLParams(
+  browser::FindLastActiveWithProfile(profile_)->OpenURL(OpenURLParams(
       store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
       false));
 
@@ -321,7 +321,7 @@ void ShowExtensionInstallDialogImpl(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
     const ExtensionInstallUI::Prompt& prompt) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort(false);
     return;

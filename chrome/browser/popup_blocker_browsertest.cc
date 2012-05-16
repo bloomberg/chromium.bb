@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupBlockedPostBlank) {
   // If the popup blocker blocked the blank post, there should be only one
   // tab in only one browser window and the URL of current tab must be equal
   // to the original URL.
-  EXPECT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
+  EXPECT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
   EXPECT_EQ(1, browser()->tab_count());
   WebContents* cur_tab = browser()->GetSelectedWebContents();
   ASSERT_TRUE(cur_tab);

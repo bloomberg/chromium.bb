@@ -47,6 +47,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
@@ -1690,7 +1691,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
       NavigationController* controller = &source_web_contents_->GetController();
       NavigationEntry* nav_entry = controller->GetActiveEntry();
-      Browser* browser = Browser::GetBrowserForController(controller, NULL);
+      Browser* browser = browser::FindBrowserForController(controller, NULL);
       browser->ShowPageInfo(source_web_contents_, nav_entry->GetURL(),
                             nav_entry->GetSSL(), true);
       break;
@@ -1732,7 +1733,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO: {
-      Browser* browser = Browser::GetBrowserForController(
+      Browser* browser = browser::FindBrowserForController(
           &source_web_contents_->GetController(), NULL);
       browser->ShowPageInfo(source_web_contents_, params_.frame_url,
                             params_.security_info, false);

@@ -25,7 +25,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -261,7 +261,7 @@ void TabLoader::LoadNextTab() {
     tab->LoadIfNecessary();
     if (tab->GetWebContents()) {
       int tab_index;
-      Browser* browser = Browser::GetBrowserForController(tab, &tab_index);
+      Browser* browser = browser::FindBrowserForController(tab, &tab_index);
       if (browser && browser->active_index() != tab_index) {
         // By default tabs are marked as visible. As only the active tab is
         // visible we need to explicitly tell non-active tabs they are hidden.
@@ -574,7 +574,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     DCHECK(browser_ == NULL);
     Browser* browser = use_new_window ?
         Browser::Create(profile_) :
-        BrowserList::GetLastActiveWithProfile(profile_);
+        browser::FindLastActiveWithProfile(profile_);
 
     RecordAppLaunchForTab(browser, tab, selected_index);
 
@@ -737,7 +737,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     StartTabCreation();
 
     Browser* current_browser =
-        browser_ ? browser_ : BrowserList::GetLastActiveWithProfile(profile_);
+        browser_ ? browser_ : browser::FindLastActiveWithProfile(profile_);
     // After the for loop this contains the last TABBED_BROWSER. Is null if no
     // tabbed browsers exist.
     Browser* last_browser = NULL;

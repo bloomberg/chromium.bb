@@ -77,7 +77,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -1787,7 +1787,7 @@ void ExtensionService::IdentifyAlertableExtensions() {
   if (PopulateExtensionGlobalError(extension_global_error_.get())) {
     if (extension_prefs_->SetAlertSystemFirstRun()) {
       CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+      Browser* browser = browser::FindLastActiveWithProfile(profile_);
       if (browser) {
         extension_global_error_->ShowBubbleView(browser);
         did_show_alert = true;

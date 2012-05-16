@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/panels/panel_browser_window_gtk.h"
 
 #include "base/bind.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/gtk/custom_button.h"

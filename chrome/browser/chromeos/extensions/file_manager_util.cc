@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -218,7 +219,7 @@ DictionaryValue* ProgessStatusToDictionaryValue(
 
 void OpenNewTab(const GURL& url, Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+  Browser* browser = browser::FindOrCreateTabbedBrowser(
       profile ? profile : ProfileManager::GetDefaultProfileOrOffTheRecord());
   browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_LINK);
   // If the current browser is not tabbed then the new tab will be created
@@ -228,7 +229,9 @@ void OpenNewTab(const GURL& url, Profile* profile) {
 
 // Shows a warning message box saying that the file could not be opened.
 void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
+  // TODO: if FindOrCreateTabbedBrowser creates a new browser the returned
+  // browser is leaked.
+  Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
   browser::ShowMessageBox(
       browser->window()->GetNativeHandle(),
       l10n_util::GetStringFUTF16(
@@ -503,7 +506,7 @@ class StandaloneExecutor : public FileTaskExecutor {
  protected :
   // FileTaskExecutor overrides.
   virtual Browser* browser() {
-    return Browser::GetOrCreateTabbedBrowser(profile());
+    return browser::FindOrCreateTabbedBrowser(profile());
   }
   virtual void Done(bool) {}
 };

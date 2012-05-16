@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -119,7 +120,8 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
     web_contents_->OpenURL(params);
   } else if (source == feedback_link_) {
     browser::ShowWebFeedbackView(
-        Browser::GetBrowserForController(&web_contents_->GetController(), NULL),
+        browser::FindBrowserForController(&web_contents_->GetController(),
+                                          NULL),
         l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
         std::string(kCategoryTagCrash));
   }

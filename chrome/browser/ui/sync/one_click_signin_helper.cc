@@ -20,7 +20,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/sync/one_click_signin_dialog.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
@@ -155,7 +155,7 @@ void StartSync(content::WebContents* web_contents,
       new OneClickSigninSyncStarter(
           profile, session_index, email, password, use_default_settings));
 
-  Browser* browser = BrowserList::FindBrowserWithWebContents(web_contents);
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
   browser->window()->ShowOneClickSigninBubble(
       base::Bind(&OnLearnMore, base::Unretained(browser)),
       base::Bind(&OnAdvanced, base::Unretained(browser)));

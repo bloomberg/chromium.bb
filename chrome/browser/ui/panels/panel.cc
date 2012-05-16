@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
@@ -530,7 +531,7 @@ bool Panel::IsDownloadShelfVisible() const {
 DownloadShelf* Panel::GetDownloadShelf() {
   Browser* panel_browser = native_panel_->GetPanelBrowser();
   Profile* profile = panel_browser->profile();
-  Browser* tabbed_browser = Browser::GetTabbedBrowser(profile, true);
+  Browser* tabbed_browser = browser::FindTabbedBrowser(profile, true);
 
   if (!tabbed_browser) {
     // Set initial bounds so window will not be positioned at an offset

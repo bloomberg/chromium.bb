@@ -11,7 +11,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/spellcheck_messages.h"
@@ -177,7 +177,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   if (gotUnhandledWheelEvent_ &&
       [NSEvent isSwipeTrackingFromScrollEventsEnabled] &&
       [theEvent phase] == NSEventPhaseChanged) {
-    Browser* browser = BrowserList::FindBrowserWithWindow([theEvent window]);
+    Browser* browser = browser::FindBrowserWithWindow([theEvent window]);
     totalScrollDelta_.width += [theEvent scrollingDeltaX];
     totalScrollDelta_.height += [theEvent scrollingDeltaY];
 
@@ -258,7 +258,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 
           // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
           // automatically.
-          Browser* browser = BrowserList::FindBrowserWithWindow(
+          Browser* browser = browser::FindBrowserWithWindow(
               historyOverlay.view.window);
           if (ended && browser) {
             if (goForward)

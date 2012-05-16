@@ -40,7 +40,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/autofill_messages.h"
@@ -635,7 +635,7 @@ void AutofillManager::OnShowAutofillDialog() {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
-  Browser* browser = BrowserList::GetLastActiveWithProfile(
+  Browser* browser = browser::FindLastActiveWithProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   if (browser)
     browser->ShowOptionsTab(chrome::kAutofillSubPage);
@@ -691,7 +691,7 @@ void AutofillManager::OnShowPasswordGenerationPopup(const gfx::Rect& bounds) {
 #if defined(OS_ANDROID)
   NOTIMPLEMENTED();
 #else
-  Browser* browser = BrowserList::GetLastActiveWithProfile(
+  Browser* browser = browser::FindLastActiveWithProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   browser->window()->ShowPasswordGenerationBubble(bounds);
 #endif  // #if defined(OS_ANDROID)

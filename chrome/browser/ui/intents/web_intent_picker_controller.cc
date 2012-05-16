@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
@@ -263,7 +264,7 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
 
     case WebIntentPickerModel::DISPOSITION_WINDOW: {
       int index = TabStripModel::kNoTab;
-      Browser* browser = Browser::GetBrowserForController(
+      Browser* browser = browser::FindBrowserForController(
           &wrapper_->web_contents()->GetController(), &index);
       TabContentsWrapper* contents = Browser::TabContentsFactory(
           wrapper_->profile(),
@@ -319,7 +320,7 @@ void WebIntentPickerController::OnExtensionInstallRequested(
 void WebIntentPickerController::OnExtensionLinkClicked(const std::string& id) {
   // Navigate from source tab.
   Browser* browser =
-      BrowserList::FindBrowserWithWebContents(wrapper_->web_contents());
+      browser::FindBrowserWithWebContents(wrapper_->web_contents());
   GURL extension_url(extension_urls::GetWebstoreItemDetailURLPrefix() + id);
   browser::NavigateParams params(browser, extension_url,
       content::PAGE_TRANSITION_AUTO_BOOKMARK);
@@ -330,7 +331,7 @@ void WebIntentPickerController::OnExtensionLinkClicked(const std::string& id) {
 void WebIntentPickerController::OnSuggestionsLinkClicked() {
   // Navigate from source tab.
   Browser* browser =
-      BrowserList::FindBrowserWithWebContents(wrapper_->web_contents());
+      browser::FindBrowserWithWebContents(wrapper_->web_contents());
   GURL query_url = extension_urls::GetWebstoreIntentQueryURL(
       UTF16ToUTF8(picker_model_->action()),
       UTF16ToUTF8(picker_model_->mimetype()));
@@ -395,7 +396,7 @@ void WebIntentPickerController::OnSendReturnMessage(
   if (service_tab_ &&
       reply_type != webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED) {
     int index = TabStripModel::kNoTab;
-    Browser* browser = Browser::GetBrowserForController(
+    Browser* browser = browser::FindBrowserForController(
         &service_tab_->GetController(), &index);
     if (browser) {
       browser->tab_strip_model()->CloseTabContentsAt(
@@ -403,7 +404,7 @@ void WebIntentPickerController::OnSendReturnMessage(
 
       // Activate source tab.
       Browser* source_browser =
-          BrowserList::FindBrowserWithWebContents(wrapper_->web_contents());
+          browser::FindBrowserWithWebContents(wrapper_->web_contents());
       if (source_browser) {
         int source_index =
             source_browser->tab_strip_model()->GetIndexOfTabContents(wrapper_);

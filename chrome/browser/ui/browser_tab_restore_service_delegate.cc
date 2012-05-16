@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/navigation_controller.h"
 
@@ -99,7 +99,7 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
 TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateForController(
     const NavigationController* controller,
     int* index) {
-  Browser* browser = Browser::GetBrowserForController(controller, index);
+  Browser* browser = browser::FindBrowserForController(controller, index);
   if (browser)
     return browser->tab_restore_service_delegate();
   else
@@ -109,7 +109,7 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateForController(
 // static
 TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateWithID(
     SessionID::id_type desired_id) {
-  Browser* browser = BrowserList::FindBrowserWithID(desired_id);
+  Browser* browser = browser::FindBrowserWithID(desired_id);
   if (browser)
     return browser->tab_restore_service_delegate();
   else

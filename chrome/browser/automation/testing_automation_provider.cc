@@ -98,6 +98,8 @@
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/fullscreen_controller.h"
@@ -631,7 +633,7 @@ void TestingAutomationProvider::CloseTab(int tab_handle,
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* controller = tab_tracker_->GetResource(tab_handle);
     int index;
-    Browser* browser = Browser::GetBrowserForController(controller, &index);
+    Browser* browser = browser::FindBrowserForController(controller, &index);
     DCHECK(browser);
     new TabClosedNotificationObserver(this, wait_until_closed, reply_message);
     browser->CloseTabContents(controller->GetWebContents());
@@ -748,8 +750,7 @@ void TestingAutomationProvider::GetBrowserWindowCount(int* window_count) {
 }
 
 void TestingAutomationProvider::GetNormalBrowserWindowCount(int* window_count) {
-  *window_count = static_cast<int>(
-      BrowserList::GetBrowserCountForType(profile_, true));
+  *window_count = static_cast<int>(browser::GetTabbedBrowserCount(profile_));
 }
 
 void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {
@@ -761,7 +762,7 @@ void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {
 
 void TestingAutomationProvider::FindTabbedBrowserWindow(int* handle) {
   *handle = 0;
-  Browser* browser = BrowserList::FindTabbedBrowser(profile_, false);
+  Browser* browser = browser::FindTabbedBrowser(profile_, false);
   if (browser)
     *handle = browser_tracker_->Add(browser);
 }
@@ -1253,7 +1254,7 @@ void TestingAutomationProvider::GetTabIndex(int handle, int* tabstrip_index) {
 
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    Browser* browser = Browser::GetBrowserForController(tab, NULL);
+    Browser* browser = browser::FindBrowserForController(tab, NULL);
     *tabstrip_index = browser->GetIndexOfController(tab);
   }
 }
@@ -7107,7 +7108,7 @@ void TestingAutomationProvider::GetParentBrowserOfTab(int tab_handle,
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* controller = tab_tracker_->GetResource(tab_handle);
     int index;
-    Browser* browser = Browser::GetBrowserForController(controller, &index);
+    Browser* browser = browser::FindBrowserForController(controller, &index);
     if (browser) {
       *browser_handle = browser_tracker_->Add(browser);
       *success = true;

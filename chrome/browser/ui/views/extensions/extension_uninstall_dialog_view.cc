@@ -8,7 +8,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
@@ -46,7 +47,7 @@ gfx::NativeWindow GetParent(Profile* profile) {
     return app_list;
 #endif
 
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (browser && browser->window())
     return browser->window()->GetNativeHandle();
 

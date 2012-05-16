@@ -40,7 +40,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -541,7 +541,7 @@ void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
 void InternetOptionsHandler::ShowMorePlanInfoCallback(const ListValue* args) {
   if (!web_ui())
     return;
-  Browser* browser = BrowserList::FindBrowserWithFeature(
+  Browser* browser = browser::FindBrowserWithFeature(
       Profile::FromWebUI(web_ui()), Browser::FEATURE_TABSTRIP);
   if (!browser)
     return;
@@ -1057,12 +1057,12 @@ gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
   Browser* browser =
-      BrowserList::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
+      browser::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
   return browser->window()->GetNativeHandle();
 }
 
 Browser* InternetOptionsHandler::GetAppropriateBrowser() {
-  return Browser::GetOrCreateTabbedBrowser(
+  return browser::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
 

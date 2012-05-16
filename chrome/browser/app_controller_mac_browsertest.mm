@@ -8,6 +8,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
+#import "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/browser_list.h"
 #import "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"

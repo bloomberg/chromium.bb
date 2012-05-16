@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -200,7 +200,7 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
   // |include_incognito|.
   Profile* profile = Profile::FromBrowserContext(
       render_view_host_->GetProcess()->GetBrowserContext());
-  Browser* browser = BrowserList::FindAnyBrowser(profile, include_incognito_);
+  Browser* browser = browser::FindAnyBrowser(profile, include_incognito_);
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
   // a background_page onload chrome.tabs api call can make it into here

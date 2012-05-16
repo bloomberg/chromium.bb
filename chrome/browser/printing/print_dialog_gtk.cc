@@ -18,6 +18,8 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "printing/metafile.h"
@@ -152,7 +154,7 @@ void PrintDialogGtk::UseDefaultSettings() {
   InitPrintSettings(ranges_vector, &settings);
 }
 
-bool PrintDialogGtk::UpdateSettings(const DictionaryValue& job_settings,
+bool PrintDialogGtk::UpdateSettings(const base::DictionaryValue& job_settings,
                                     const printing::PageRanges& ranges,
                                     printing::PrintSettings* settings) {
   bool collate;

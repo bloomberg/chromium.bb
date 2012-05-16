@@ -17,7 +17,7 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/icon_messages.h"
@@ -296,7 +296,7 @@ void PrerenderContents::StartPrerendering(
     // can't get the size, and |default_tab_bounds| will be set to the right
     // value.
     if (Browser* active_browser =
-            BrowserList::GetLastActiveWithProfile(profile_)) {
+            browser::FindLastActiveWithProfile(profile_)) {
       if (WebContents* active_web_contents = active_browser->GetWebContentsAt(
               active_browser->active_index())) {
         gfx::Rect container_bounds;

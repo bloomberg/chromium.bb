@@ -9,7 +9,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewtabIncognito) {
   // new tab page because we can't load chrome-extension URLs in incognito.
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
                                      GURL("chrome://newtab/"));
-  Browser* otr_browser = BrowserList::FindTabbedBrowser(
+  Browser* otr_browser = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
   WebContents* tab = otr_browser->GetSelectedWebContents();
   ASSERT_TRUE(tab->GetController().GetActiveEntry());

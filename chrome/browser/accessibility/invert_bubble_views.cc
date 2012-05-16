@@ -6,6 +6,8 @@
 #include "chrome/browser/accessibility/invert_bubble_views.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/common/pref_names.h"
@@ -141,7 +143,7 @@ void InvertBubbleView::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   if (browser) {
     WindowOpenDisposition disposition =
         event_utils::DispositionFromEventFlags(event_flags);

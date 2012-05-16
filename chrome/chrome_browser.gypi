@@ -2305,6 +2305,8 @@
         'browser/ui/browser_content_setting_bubble_model_delegate.cc',
         'browser/ui/browser_content_setting_bubble_model_delegate.h',
         'browser/ui/browser_dialogs.h',
+        'browser/ui/browser_finder.cc',
+        'browser/ui/browser_finder.h',
         'browser/ui/browser_list.cc',
         'browser/ui/browser_list.h',
         'browser/ui/browser_list_aura.cc',

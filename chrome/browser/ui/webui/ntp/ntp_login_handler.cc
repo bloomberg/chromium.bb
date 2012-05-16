@@ -23,7 +23,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -127,7 +127,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   content::WebContents* web_contents = web_ui()->GetWebContents();
-  Browser* browser = BrowserList::FindBrowserWithWebContents(web_contents);
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
 
@@ -185,7 +185,7 @@ void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
 
 void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
   Browser* browser =
-      BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
+      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (browser)
     browser->ShowSyncSetup(SyncPromoUI::SOURCE_NTP_LINK);
 }

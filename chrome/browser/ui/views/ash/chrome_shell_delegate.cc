@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
@@ -135,7 +136,7 @@ void ChromeShellDelegate::Search() {
     }
   }
 
-  Browser* target_browser = Browser::GetOrCreateTabbedBrowser(
+  Browser* target_browser = browser::FindOrCreateTabbedBrowser(
       last_active ? last_active->profile() :
                     ProfileManager::GetDefaultProfileOrOffTheRecord());
   const GURL& url = target_browser->GetSelectedWebContents() ?
@@ -158,7 +159,7 @@ void ChromeShellDelegate::OpenFileManager() {
 
 void ChromeShellDelegate::OpenCrosh() {
 #if defined(OS_CHROMEOS)
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+  Browser* browser = browser::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
   GURL crosh_url = TerminalExtensionHelper::GetCroshExtensionURL(
       browser->profile());
@@ -175,7 +176,7 @@ void ChromeShellDelegate::OpenCrosh() {
 
 void ChromeShellDelegate::OpenMobileSetup() {
 #if defined(OS_CHROMEOS)
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+  Browser* browser = browser::FindOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableMobileSetupDialog)) {

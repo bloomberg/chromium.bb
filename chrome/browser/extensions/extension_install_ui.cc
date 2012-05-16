@@ -22,7 +22,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -364,7 +364,7 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
   // Extensions aren't enabled by default in incognito so we confirm
   // the install in a normal window.
   Profile* profile = profile_->GetOriginalProfile();
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
+  Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
   if (browser->tab_count() == 0)
     browser->AddBlankTab(true);
   browser->window()->Show();
@@ -396,7 +396,7 @@ void ExtensionInstallUI::OnInstallFailure(const string16& error) {
   if (disable_failure_ui_for_tests || skip_post_install_ui_)
     return;
 
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   browser::ShowMessageBox(browser ? browser->window()->GetNativeHandle() : NULL,
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_FAILURE_TITLE), error,
       browser::MESSAGE_BOX_TYPE_WARNING);
@@ -457,7 +457,7 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
     return;
 
   // Get last active tabbed browser of profile.
-  Browser* browser = BrowserList::FindTabbedBrowser(profile, true);
+  Browser* browser = browser::FindTabbedBrowser(profile, true);
   if (!browser)
     return;
 

@@ -12,7 +12,7 @@
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_installed_bubble_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -31,7 +31,7 @@ static void ShowGenericExtensionInstalledInfoBar(
     const Extension* new_extension,
     const SkBitmap& icon,
     Profile* profile) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (!browser)
     return;
 

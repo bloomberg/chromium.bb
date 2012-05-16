@@ -46,7 +46,7 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -472,7 +472,7 @@ bool AutomationProvider::Send(IPC::Message* msg) {
 Browser* AutomationProvider::FindAndActivateTab(
     NavigationController* controller) {
   int tab_index;
-  Browser* browser = Browser::GetBrowserForController(controller, &tab_index);
+  Browser* browser = browser::FindBrowserForController(controller, &tab_index);
   if (browser)
     browser->ActivateTabAt(tab_index, true);
 

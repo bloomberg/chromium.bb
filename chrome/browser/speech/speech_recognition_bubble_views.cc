@@ -8,6 +8,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -358,7 +359,7 @@ SpeechRecognitionBubbleImpl::~SpeechRecognitionBubbleImpl() {
 void SpeechRecognitionBubbleImpl::Show() {
   if (!bubble_) {
     // Anchor to the location icon view, in case |element_rect| is offscreen.
-    Browser* browser = Browser::GetOrCreateTabbedBrowser(
+    Browser* browser = browser::FindOrCreateTabbedBrowser(
         Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()));
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
     views::View* icon = browser_view->GetLocationBarView() ?

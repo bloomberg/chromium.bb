@@ -35,6 +35,7 @@ class PowerManagerClientObserverForTesting;
 class AutofillProfile;
 class CreditCard;
 class ImporterList;
+struct NativeWebKeyboardEvent;
 
 namespace base {
 class DictionaryValue;
@@ -42,6 +43,10 @@ class DictionaryValue;
 
 namespace content {
 class RenderViewHost;
+}
+
+namespace gfx {
+class Rect;
 }
 
 namespace webkit {

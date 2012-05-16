@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -39,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunch) {
   ui_test_utils::BrowserAddedObserver observer;
   Relaunch(GetCommandLineForRelaunch());
   observer.WaitForSingleNewBrowser();
-  ASSERT_EQ(BrowserList::GetBrowserCount(browser()->profile()), 2u);
+  ASSERT_EQ(2u, browser::GetBrowserCount(browser()->profile()));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
@@ -61,8 +62,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
 
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchWithIncognitoUrl) {
   // We should start with one normal window.
-  ASSERT_EQ(1u,
-            BrowserList::GetBrowserCountForType(browser()->profile(), true));
+  ASSERT_EQ(1u, browser::GetTabbedBrowserCount(browser()->profile()));
 
   // Run with --incognito switch and an URL specified.
   FilePath test_file_path = ui_test_utils::GetTestFilePath(
@@ -79,21 +79,18 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchWithIncognitoUrl) {
   observer.WaitForSingleNewBrowser();
   ASSERT_EQ(2u, BrowserList::size());
 
-  ASSERT_EQ(1u,
-            BrowserList::GetBrowserCountForType(browser()->profile(), true));
+  ASSERT_EQ(1u, browser::GetTabbedBrowserCount(browser()->profile()));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   // We should start with one normal window.
-  ASSERT_EQ(1u,
-            BrowserList::GetBrowserCountForType(browser()->profile(), true));
+  ASSERT_EQ(1u, browser::GetTabbedBrowserCount(browser()->profile()));
 
   // Create an incognito window.
   browser()->NewIncognitoWindow();
 
   ASSERT_EQ(2u, BrowserList::size());
-  ASSERT_EQ(1u,
-            BrowserList::GetBrowserCountForType(browser()->profile(), true));
+  ASSERT_EQ(1u, browser::GetTabbedBrowserCount(browser()->profile()));
 
   // Close the first window.
   Profile* profile = browser()->profile();
@@ -105,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
 
   // There should only be the incognito window open now.
   ASSERT_EQ(1u, BrowserList::size());
-  ASSERT_EQ(0u, BrowserList::GetBrowserCountForType(profile, true));
+  ASSERT_EQ(0u, browser::GetTabbedBrowserCount(profile));
 
   // Run with just an URL specified, no --incognito switch.
   FilePath test_file_path = ui_test_utils::GetTestFilePath(
@@ -120,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
 
   // There should be one normal and one incognito window now.
   ASSERT_EQ(2u, BrowserList::size());
-  ASSERT_EQ(1u, BrowserList::GetBrowserCountForType(profile, true));
+  ASSERT_EQ(1u, browser::GetTabbedBrowserCount(profile));
 }
 
 #endif  // !OS_MACOSX

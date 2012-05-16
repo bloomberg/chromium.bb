@@ -8,6 +8,7 @@
 
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -30,7 +31,7 @@ const std::set<browser_sync::SyncedWindowDelegate*>
 const browser_sync::SyncedWindowDelegate*
     browser_sync::SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
         SessionID::id_type id) {
-  Browser* browser = BrowserList::FindBrowserWithID(id);
+  Browser* browser = browser::FindBrowserWithID(id);
   // In case we don't find the browser (e.g. for Developer Tools).
   return browser ? browser->synced_window_delegate() : NULL;
 }

@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -217,7 +218,7 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
 void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
 
-  Browser* browser = Browser::GetBrowserForController(
+  Browser* browser = browser::FindBrowserForController(
       &web_ui()->GetWebContents()->GetController(), NULL);
   if (browser)
     browser->ExecuteCommand(IDC_EXIT);

@@ -16,7 +16,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -183,7 +183,7 @@ void PrintPreviewWebContentDelegate::HandleKeyboardEvent(
   // Disabled on Mac due to http://crbug.com/112173.
 #if !defined(OS_MACOSX)
   Browser* current_browser =
-      BrowserList::FindBrowserWithWebContents(tab_->web_contents());
+      browser::FindBrowserWithWebContents(tab_->web_contents());
   if (!current_browser)
     return;
   current_browser->window()->HandleKeyboardEvent(event);
@@ -410,7 +410,7 @@ TabContentsWrapper* PrintPreviewTabController::CreatePrintPreviewTab(
   AutoReset<bool> auto_reset(&is_creating_print_preview_tab_, true);
   WebContents* web_contents = initiator_tab->web_contents();
   Browser* current_browser =
-      BrowserList::FindBrowserWithWebContents(web_contents);
+      browser::FindBrowserWithWebContents(web_contents);
   if (!current_browser) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
       Profile* profile =

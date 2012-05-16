@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -74,7 +75,7 @@ void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
   profile_->ChangeAppLocale(
       from_locale_, Profile::APP_LOCALE_CHANGED_VIA_REVERT);
 
-  Browser* browser = Browser::GetTabbedBrowser(profile_, false);
+  Browser* browser = browser::FindTabbedBrowser(profile_, false);
   if (browser)
     browser->ExecuteCommand(IDC_EXIT);
 }
