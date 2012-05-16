@@ -2140,9 +2140,7 @@ void BrowserView::LoadAccelerators() {
   // Let's fill our own accelerator table.
   for (size_t i = 0; i < browser::kAcceleratorMapLength; ++i) {
     ui::Accelerator accelerator(browser::kAcceleratorMap[i].keycode,
-                                browser::kAcceleratorMap[i].shift_pressed,
-                                browser::kAcceleratorMap[i].ctrl_pressed,
-                                browser::kAcceleratorMap[i].alt_pressed);
+                                browser::kAcceleratorMap[i].modifiers);
     accelerator_table_[accelerator] = browser::kAcceleratorMap[i].command_id;
 
     // Also register with the focus manager.

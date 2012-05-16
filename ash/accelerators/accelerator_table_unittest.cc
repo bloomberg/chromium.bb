@@ -19,11 +19,7 @@ struct Cmp {
       return lhs.trigger_on_press < rhs.trigger_on_press;
     if (lhs.keycode != rhs.keycode)
       return lhs.keycode < rhs.keycode;
-    if (lhs.shift != rhs.shift)
-      return lhs.shift < rhs.shift;
-    if (lhs.ctrl != rhs.ctrl)
-      return lhs.ctrl < rhs.ctrl;
-    return lhs.alt < rhs.alt;
+    return lhs.modifiers < rhs.modifiers;
     // Do not check |action|.
   }
 };
@@ -36,8 +32,9 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
     const AcceleratorData& entry = kAcceleratorData[i];
     EXPECT_TRUE(acclerators.insert(entry).second)
         << "Duplicated accelerator: " << entry.trigger_on_press << ", "
-        << entry.keycode << ", " << entry.shift << ", " << entry.ctrl << ", "
-        << entry.alt;
+        << entry.keycode << ", " << (entry.modifiers & ui::EF_SHIFT_DOWN)
+        << ", " << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
+        << (entry.modifiers & ui::EF_ALT_DOWN);
   }
 }
 

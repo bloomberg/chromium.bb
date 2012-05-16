@@ -195,9 +195,7 @@ void AcceleratorController::Init() {
 
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
     ui::Accelerator accelerator(kAcceleratorData[i].keycode,
-                                kAcceleratorData[i].shift,
-                                kAcceleratorData[i].ctrl,
-                                kAcceleratorData[i].alt);
+                                kAcceleratorData[i].modifiers);
     accelerator.set_type(kAcceleratorData[i].trigger_on_press ?
                          ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED);
     Register(accelerator, this);

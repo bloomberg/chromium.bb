@@ -15,9 +15,7 @@ namespace browser {
 
 struct AcceleratorMapping {
   ui::KeyboardCode keycode;
-  bool shift_pressed;
-  bool ctrl_pressed;
-  bool alt_pressed;
+  int modifiers;
   int command_id;
 };
 

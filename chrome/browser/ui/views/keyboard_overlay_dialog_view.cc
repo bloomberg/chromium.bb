@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/generated_resources.h"
+#include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
@@ -22,13 +23,11 @@
 namespace {
 struct Accelerator {
   ui::KeyboardCode keycode;
-  bool shift_pressed;
-  bool ctrl_pressed;
-  bool alt_pressed;
-} kCloseAccelerators[] = {
-  {ui::VKEY_OEM_2, false, true, true},
-  {ui::VKEY_OEM_2, true, true, true},
-  {ui::VKEY_ESCAPE, true, false, false},
+  int modifiers;
+} const kCloseAccelerators[] = {
+  {ui::VKEY_OEM_2, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN},
+  {ui::VKEY_OEM_2, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN},
+  {ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN},
 };
 }  // namespace
 
@@ -47,20 +46,16 @@ KeyboardOverlayDialogView::~KeyboardOverlayDialogView() {
 void KeyboardOverlayDialogView::RegisterDialogAccelerators() {
   for (size_t i = 0; i < arraysize(kCloseAccelerators); ++i) {
     ui::Accelerator accelerator(kCloseAccelerators[i].keycode,
-                                kCloseAccelerators[i].shift_pressed,
-                                kCloseAccelerators[i].ctrl_pressed,
-                                kCloseAccelerators[i].alt_pressed);
+                                kCloseAccelerators[i].modifiers);
     close_accelerators_.insert(accelerator);
     AddAccelerator(accelerator);
   }
 
   for (size_t i = 0; i < browser::kAcceleratorMapLength; ++i) {
     ui::Accelerator accelerator(browser::kAcceleratorMap[i].keycode,
-                                browser::kAcceleratorMap[i].shift_pressed,
-                                browser::kAcceleratorMap[i].ctrl_pressed,
-                                browser::kAcceleratorMap[i].alt_pressed);
+                                browser::kAcceleratorMap[i].modifiers);
     // Skip a sole ALT key since it's handled on the keyboard overlay.
-    if (ui::Accelerator(ui::VKEY_MENU, false, false, false) == accelerator) {
+    if (ui::Accelerator(ui::VKEY_MENU, ui::EF_NONE) == accelerator) {
       continue;
     }
     // Skip accelerators for closing the dialog since they are already added.

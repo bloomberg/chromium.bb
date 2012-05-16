@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/events.h"
 
 #if defined(USE_ASH)
 #include "ash/accelerators/accelerator_table.h"
@@ -19,11 +20,7 @@ struct Cmp {
                   const browser::AcceleratorMapping& rhs) {
     if (lhs.keycode != rhs.keycode)
       return lhs.keycode < rhs.keycode;
-    if (lhs.shift_pressed != rhs.shift_pressed)
-      return lhs.shift_pressed < rhs.shift_pressed;
-    if (lhs.ctrl_pressed != rhs.ctrl_pressed)
-      return lhs.ctrl_pressed < rhs.ctrl_pressed;
-    return lhs.alt_pressed < rhs.alt_pressed;
+    return lhs.modifiers < rhs.modifiers;
     // Do not check |command_id|.
   }
 };
@@ -36,8 +33,9 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
     const browser::AcceleratorMapping& entry = browser::kAcceleratorMap[i];
     EXPECT_TRUE(acclerators.insert(entry).second)
         << "Duplicated accelerator: " << entry.keycode << ", "
-        << entry.shift_pressed << ", " << entry.ctrl_pressed << ", "
-        << entry.alt_pressed;
+        << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
+        << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
+        << (entry.modifiers & ui::EF_ALT_DOWN);
   }
 }
 
@@ -54,14 +52,13 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
       continue;  // kAcceleratorMap does not have any release accelerators.
     browser::AcceleratorMapping entry;
     entry.keycode = ash_entry.keycode;
-    entry.shift_pressed = ash_entry.shift;
-    entry.ctrl_pressed = ash_entry.ctrl;
-    entry.alt_pressed = ash_entry.alt;
+    entry.modifiers = ash_entry.modifiers;
     entry.command_id = 0;  // dummy
     EXPECT_TRUE(acclerators.insert(entry).second)
         << "Duplicated accelerator: " << entry.keycode << ", "
-        << entry.shift_pressed << ", " << entry.ctrl_pressed << ", "
-        << entry.alt_pressed;
+        << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
+        << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
+        << (entry.modifiers & ui::EF_ALT_DOWN);
   }
 }
 #endif  // USE_ASH
