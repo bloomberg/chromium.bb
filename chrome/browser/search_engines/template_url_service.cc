@@ -613,7 +613,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   TemplateURL* default_search_provider = NULL;
   int new_resource_keyword_version = 0;
   GetSearchProvidersUsingKeywordResult(*result, service_.get(), profile_,
-      &template_urls, &default_search_provider, &new_resource_keyword_version);
+      &template_urls, &default_search_provider, &new_resource_keyword_version,
+      &pre_sync_deletes_);
 
   bool database_specified_a_default = (default_search_provider != NULL);
 
@@ -979,6 +980,16 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
     if (!sync_turl.get())
       continue;
 
+    if (pre_sync_deletes_.find(sync_turl->sync_guid()) !=
+        pre_sync_deletes_.end()) {
+      // This entry was deleted before the initial sync began (possibly through
+      // preprocessing in TemplateURLService's loading code). Ignore it and send
+      // an ACTION_DELETE up to the server.
+      new_changes.push_back(SyncChange(SyncChange::ACTION_DELETE,
+                                       iter->second));
+      continue;
+    }
+
     if (local_turl) {
       // This local search engine is already synced. If the timestamp differs
       // from Sync, we need to update locally or to the cloud. Note that if the
@@ -1047,6 +1058,10 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
   SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   if (error.IsSet())
     return error;
+
+  // The ACTION_DELETEs from this set are processed. Empty it so we don't try to
+  // reuse them on the next call to MergeDataAndStartSyncing.
+  pre_sync_deletes_.clear();
 
   models_associated_ = true;
   return SyncError();

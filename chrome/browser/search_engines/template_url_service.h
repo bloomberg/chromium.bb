@@ -354,6 +354,8 @@ class TemplateURLService : public WebDataServiceConsumer,
                            FindDuplicateOfSyncTemplateURL);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
                            MergeSyncAndLocalURLDuplicates);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
+                           PreSyncDeletes);
 
   friend class TemplateURLServiceTestUtil;
 
@@ -627,6 +629,12 @@ class TemplateURLService : public WebDataServiceConsumer,
   // TemplateURL entry it refers to, and to handle the case when we want to use
   // the Synced default when the default search provider becomes unmanaged.
   bool pending_synced_default_search_;
+
+  // A set of sync GUIDs denoting TemplateURLs that have been removed from this
+  // model or the underlying WebDataService prior to MergeDataAndStartSyncing.
+  // This set is used to determine what entries from the server we want to
+  // ignore locally and return a delete command for.
+  std::set<std::string> pre_sync_deletes_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };

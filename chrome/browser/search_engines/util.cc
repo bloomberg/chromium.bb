@@ -5,6 +5,7 @@
 #include "chrome/browser/search_engines/util.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/logging.h"
@@ -38,10 +39,12 @@ string16 GetDefaultSearchEngineName(Profile* profile) {
 // prepopulate ids. Duplicate prepopulate ids are not allowed, but due to a
 // bug it was possible get dups. This step is only called when the version
 // number changes. Only pass in a non-NULL value for |service| if the removed
-// items should be removed from the DB.
+// items should be removed from the DB. If |removed_keyword_guids| is not NULL,
+// the Sync GUID of each item removed from the DB will be added to it.
 static void RemoveDuplicatePrepopulateIDs(
     std::vector<TemplateURL*>* template_urls,
-    WebDataService* service) {
+    WebDataService* service,
+    std::set<std::string>* removed_keyword_guids) {
   DCHECK(template_urls);
   DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -51,8 +54,11 @@ static void RemoveDuplicatePrepopulateIDs(
     int prepopulate_id = (*i)->prepopulate_id();
     if (prepopulate_id) {
       if (ids.find(prepopulate_id) != ids.end()) {
-        if (service)
+        if (service) {
           service->RemoveKeyword((*i)->id());
+          if (removed_keyword_guids)
+            removed_keyword_guids->insert((*i)->sync_guid());
+        }
         delete *i;
         i = template_urls->erase(i);
       } else {
@@ -81,11 +87,14 @@ TemplateURL* GetTemplateURLByID(
 
 // Loads engines from prepopulate data and merges them in with the existing
 // engines.  This is invoked when the version of the prepopulate data changes.
+// If |removed_keyword_guids| is not NULL, the Sync GUID of each item removed
+// from the DB will be added to it.
 void MergeEnginesFromPrepopulateData(
     Profile* profile,
     WebDataService* service,
     std::vector<TemplateURL*>* template_urls,
-    TemplateURL** default_search_provider) {
+    TemplateURL** default_search_provider,
+    std::set<std::string>* removed_keyword_guids) {
   DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(template_urls);
   DCHECK(default_search_provider);
@@ -163,8 +172,11 @@ void MergeEnginesFromPrepopulateData(
           std::find(template_urls->begin(), template_urls->end(), template_url);
       DCHECK(j != template_urls->end());
       template_urls->erase(j);
-       if (service)
+       if (service) {
          service->RemoveKeyword(template_url->id());
+         if (removed_keyword_guids)
+           removed_keyword_guids->insert(template_url->sync_guid());
+       }
       delete template_url;
     }
   }
@@ -176,7 +188,8 @@ void GetSearchProvidersUsingKeywordResult(
     Profile* profile,
     std::vector<TemplateURL*>* template_urls,
     TemplateURL** default_search_provider,
-    int* new_resource_keyword_version) {
+    int* new_resource_keyword_version,
+    std::set<std::string>* removed_keyword_guids) {
   DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(template_urls);
   DCHECK(template_urls->empty());
@@ -201,7 +214,8 @@ void GetSearchProvidersUsingKeywordResult(
     // There should never be duplicate TemplateURLs. We had a bug such that
     // duplicate TemplateURLs existed for one locale. As such we invoke
     // RemoveDuplicatePrepopulateIDs to nuke the duplicates.
-    RemoveDuplicatePrepopulateIDs(template_urls, service);
+    RemoveDuplicatePrepopulateIDs(template_urls, service,
+                                  removed_keyword_guids);
   }
 
   int64 default_search_provider_id = keyword_result.default_search_provider_id;
@@ -212,7 +226,8 @@ void GetSearchProvidersUsingKeywordResult(
 
   if (keyword_result.builtin_keyword_version != resource_keyword_version) {
     MergeEnginesFromPrepopulateData(profile, service, template_urls,
-                                    default_search_provider);
+                                    default_search_provider,
+                                    removed_keyword_guids);
     *new_resource_keyword_version = resource_keyword_version;
   }
 }
@@ -237,4 +252,3 @@ bool DidDefaultSearchProviderChange(
   }
   return true;
 }
-

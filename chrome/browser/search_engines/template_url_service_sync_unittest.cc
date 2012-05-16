@@ -1530,3 +1530,27 @@ TEST_F(TemplateURLServiceSyncTest, DeleteBogusData) {
   EXPECT_EQ(SyncChange::ACTION_DELETE,
             processor()->change_for_guid(std::string()).change_type());
 }
+
+TEST_F(TemplateURLServiceSyncTest, PreSyncDeletes) {
+  model()->pre_sync_deletes_.insert("key1");
+  model()->pre_sync_deletes_.insert("key2");
+  model()->pre_sync_deletes_.insert("aaa");
+  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("whatever"),
+      "http://key1.com", "bbb"));
+  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
+      CreateInitialSyncData(), PassProcessor(),
+      CreateAndPassSyncErrorFactory());
+
+  // We expect the model to have GUIDs {bbb, key3} after our initial merge.
+  EXPECT_TRUE(model()->GetTemplateURLForGUID("bbb"));
+  EXPECT_TRUE(model()->GetTemplateURLForGUID("key3"));
+  SyncChange change = processor()->change_for_guid("key1");
+  EXPECT_EQ(SyncChange::ACTION_DELETE, change.change_type());
+  change = processor()->change_for_guid("key2");
+  EXPECT_EQ(SyncChange::ACTION_DELETE, change.change_type());
+  // "aaa" should have been pruned out on account of not being from Sync.
+  EXPECT_FALSE(processor()->contains_guid("aaa"));
+  // The set of pre-sync deletes should be cleared so they're not reused if
+  // MergeDataAndStartSyncing gets called again.
+  EXPECT_TRUE(model()->pre_sync_deletes_.empty());
+}

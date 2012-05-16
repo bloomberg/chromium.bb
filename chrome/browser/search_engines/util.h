@@ -7,6 +7,8 @@
 #pragma once
 
 // This file contains utility functions for search engine functionality.
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -31,14 +33,17 @@ string16 GetDefaultSearchEngineName(Profile* profile);
 //    |*new_resource_keyword_version| is set to 0 if no new value. Otherwise,
 //    it is the new value.
 // Only pass in a non-NULL value for service if the WebDataService should be
-// updated.
+// updated. If |removed_keyword_guids| is not NULL, any TemplateURLs removed
+// from the keyword table in the WebDataService will have their Sync GUIDs
+// added to it.
 void GetSearchProvidersUsingKeywordResult(
     const WDTypedResult& result,
     WebDataService* service,
     Profile* profile,
     std::vector<TemplateURL*>* template_urls,
     TemplateURL** default_search_provider,
-    int* new_resource_keyword_version);
+    int* new_resource_keyword_version,
+    std::set<std::string>* removed_keyword_guids);
 
 // Returns true if the default search provider setting has been changed or
 // corrupted. Returns the backup setting in |backup_default_search_provider|.

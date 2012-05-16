@@ -245,12 +245,9 @@ void SearchProviderInstallData::OnWebDataServiceRequestDone(
   TemplateURL* default_search_provider = NULL;
   int new_resource_keyword_version = 0;
   std::vector<TemplateURL*> extracted_template_urls;
-  GetSearchProvidersUsingKeywordResult(*result,
-                                       NULL,
-                                       NULL,
-                                       &extracted_template_urls,
-                                       &default_search_provider,
-                                       &new_resource_keyword_version);
+  GetSearchProvidersUsingKeywordResult(*result, NULL, NULL,
+      &extracted_template_urls, &default_search_provider,
+      &new_resource_keyword_version, NULL);
   template_urls_.get().insert(template_urls_.get().begin(),
                               extracted_template_urls.begin(),
                               extracted_template_urls.end());
