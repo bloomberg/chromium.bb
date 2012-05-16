@@ -124,7 +124,7 @@ struct weston_wm_window {
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 	struct wl_listener surface_destroy_listener;
-	int repaint_scheduled;
+	struct wl_event_source *repaint_source;
 	int properties_dirty;
 	char *class;
 	char *name;
@@ -800,7 +800,7 @@ weston_wm_window_draw_decoration(void *data)
 
 	weston_wm_window_read_properties(window);
 
-	window->repaint_scheduled = 0;
+	window->repaint_source = NULL;
 	width = window->width + wm->border_width * 2;
 	height = window->height + wm->border_width * 2 + wm->title_height;
 
@@ -846,12 +846,13 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
 
-	if (window->repaint_scheduled)
+	if (window->repaint_source)
 		return;
 
-	wl_event_loop_add_idle(wm->server->loop,
-			       weston_wm_window_draw_decoration, window);
-	window->repaint_scheduled = 1;
+	window->repaint_source =
+		wl_event_loop_add_idle(wm->server->loop,
+				       weston_wm_window_draw_decoration,
+				       window);
 }
 
 static void
@@ -1226,6 +1227,9 @@ weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event
 
 	fprintf(stderr, "XCB_DESTROY_NOTIFY, win %d (%p)\n",
 		destroy_notify->window, window);
+
+	if (window->repaint_source)
+		wl_event_source_remove(window->repaint_source);
 
 	hash_table_remove(wm->window_hash, window->id);
 	hash_table_remove(wm->window_hash, window->frame_id);
