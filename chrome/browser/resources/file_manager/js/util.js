@@ -541,3 +541,109 @@ util.applyTransform = function(element, transform) {
                   'rotate(' + transform.rotate90 * 90 + 'deg)' :
       '';
 };
+
+/**
+ * Given a list of gdata search result urls, generates a list of urls which
+ * gdata search result urls reference.
+ *
+ * @param {Array.<string>} urls List of gdata search result urls.
+ * @param {string} rootUrl Root url for resolved urls. Should be gdata root
+ *      url.
+ * @param {function(Array.<string>)} callback Callback that will be invoked
+ *     when the method finishes. It will be passed list of resolved urls.
+ */
+util.resolveGDataSearchUrls = function(urls, rootUrl, callback) {
+  var resolvedUrls = [];
+  // If the list of urls is empty, there's nothing to do.
+  if (urls.length == 0) {
+    callback([]);
+    return;
+  }
+
+  // Given relative file path, it will generate escaped file path that will
+  // be appended to rootUrl to form the resolved url.
+  function getURIEncodedPath(filePath) {
+    var components = filePath.split('/');
+    // Root url should already contain path's root dir, so clear it.
+    components[0] = '';
+    for (var i = 0; i < components.length; i++)
+      components[i] = encodeURIComponent(components[i]);
+    return components.join('/');
+  }
+
+  // Resolves single url at |urls[index]| and calls |onResolved| with |index|.
+  function resolveUrl(index, onResolved) {
+    chrome.fileBrowserPrivate.getPathForDriveSearchResult(urls[index],
+        function(filePath) {
+          if (filePath) {
+            resolvedUrls.push(rootUrl + getURIEncodedPath(filePath));
+          } else {
+            // If we weren't able to resolve the url, fallback to using
+            // original url.
+            resolvedUrls.push(urls[index]);
+          }
+          onResolved(index);
+        });
+  }
+
+  // If not all urls are resolved, starts resolving next one, else calls
+  // callback
+  function resolveNextOrFinish(lastIndex) {
+    var nextIndex = lastIndex + 1;
+    if (nextIndex == urls.length) {
+      callback(resolvedUrls);
+      return;
+    }
+    resolveUrl(nextIndex, resolveNextOrFinish);
+  }
+
+  // Start resolving first url.
+  resolveUrl(0, resolveNextOrFinish);
+};
+
+/**
+ * Tests if the given path is a gdata search result path, and if it is,
+ * returns file's fileName in virtual search file system, its gdata resourceId
+ * and the display name that should be used when the file is shown in file
+ * browser.
+ *
+ * @param {string} path The potential gdata search result path.
+ * @return {object.<string, stringi, string>} Object that will contain file's
+ *     fileName, displayName and resourceId; or null if the path is not gdata
+ *     search result path.
+ */
+util.getFileAndDisplayNameForGDataSearchResult = function(path) {
+  // Nothing to do if the path is not under gdata search root path.
+  if (path.indexOf(DirectoryModel.GDATA_SEARCH_ROOT_PATH) != 0)
+    return null;
+
+  var pathComponents = path.split('/');
+
+  // Search result should be formatted like:
+  //     gdataSearchRoot/query/result
+  if (pathComponents.length !=
+      DirectoryModel.GDATA_SEARCH_ROOT_COMPONENTS.length + 2)
+    return null;
+  for (var i = 0;
+       i < DirectoryModel.GDATA_SEARCH_ROOT_COMPONENTS.length;
+       i++) {
+    if (pathComponents[i] != DirectoryModel.GDATA_SEARCH_ROOT_COMPONENTS[i])
+      return null;
+  }
+
+  // Search result file name should be formatted like:
+  //    resource_id.referenced_file_name
+  // We should display referenced file name only.
+  var result = {};
+  result.fileName = pathComponents.pop();
+  result.displayName =
+      result.fileName.slice(result.fileName.indexOf('.') + 1);
+  result.resourceId =
+      result.fileName.substr(0, result.fileName.indexOf('.'));
+
+  if (result.fileName.length > 0 && result.displayName.length > 0) {
+    return result;
+  } else {
+    return null;
+  }
+};

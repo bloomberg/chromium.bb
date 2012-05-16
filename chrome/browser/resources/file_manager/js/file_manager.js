@@ -1034,6 +1034,7 @@ FileManager.prototype = {
 
       case 'newfolder':
         return !readonly &&
+               !this.directoryModel_.isSearching() &&
                (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ||
                 this.dialogType_ == FileManager.DialogType.FULL_PAGE);
 
@@ -1287,7 +1288,11 @@ FileManager.prototype = {
    * update event).
    */
   FileManager.prototype.onCopyManagerOperationComplete_ = function(event) {
-    var currentPath = this.directoryModel_.getCurrentDirEntry().fullPath;
+    var currentPath =
+        this.directoryModel_.getCurrentDirPath();
+    if (this.isOnGData() && this.directoryModel_.isSearching())
+      return;
+
     function inCurrentDirectory(entry) {
       var fullPath = entry.fullPath;
       var dirPath = fullPath.substr(0, fullPath.length -
@@ -1525,6 +1530,8 @@ FileManager.prototype = {
       case FileManager.DialogType.SELECT_SAVEAS_FILE:
         defaultTitle = str('SELECT_SAVEAS_FILE_TITLE');
         okLabel = str('SAVE_LABEL');
+        // We don't want search enabled in save as dialog.
+        this.dialogDom_.querySelector('#search-box').style.display = 'none';
         break;
 
       case FileManager.DialogType.FULL_PAGE:
@@ -1870,8 +1877,8 @@ FileManager.prototype = {
     fileName.className = 'filename-label';
 
     fileName.textContent =
-        this.directoryModel_.getCurrentDirEntry().name == '' ?
-            this.getRootLabel_(entry.name) : entry.name;
+        this.directoryModel_.getDisplayName(entry.fullPath, entry.name);
+
     return fileName;
   };
 
@@ -2704,7 +2711,7 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
       this.setMountPoints_(mountPoints);
 
-      if (event.eventType == 'mount') {
+      if (event.eventType == 'mount' && event.mountType != 'gdata') {
         // Mount request finished - remove it.
         // Currently we only request mounts for archive files.
         var index = this.mountRequests_.indexOf(event.sourcePath);
@@ -2722,7 +2729,7 @@ FileManager.prototype = {
         }
       }
 
-      if (event.eventType == 'unmount') {
+      if (event.eventType == 'unmount' && event.mountType != 'gdata') {
         // Unmount request finished - remove it.
         var index = this.unmountRequests_.indexOf(event.mountPath);
         if (index != -1) {
@@ -2862,14 +2869,12 @@ FileManager.prototype = {
     }.bind(this));
   };
 
+  /**
+   * Does preprocessing of url list to open before calling |doOpenGallery_|.
+   *
+   * @param {Array.<string>} urls List of urls to open in the gallery.
+   */
   FileManager.prototype.openGallery_ = function(urls) {
-    var self = this;
-
-    var galleryFrame = this.document_.createElement('iframe');
-    galleryFrame.className = 'overlay-pane';
-    galleryFrame.scrolling = 'no';
-    galleryFrame.setAttribute('webkitallowfullscreen', true);
-
     var singleSelection = urls.length == 1;
     var selectedUrl;
     if (singleSelection && FileType.isImage(urls[0])) {
@@ -2886,8 +2891,39 @@ FileManager.prototype = {
       selectedUrl = urls[0];
     }
 
-    var dirPath = this.directoryModel_.getCurrentDirEntry().fullPath;
+    // TODO(tbarzic): There's probably a better way to do this.
+    if (this.directoryModel_.isOnGDataSearchDir()) {
+      var self = this;
+      var gdataRootUrl = this.directoryModel_.getCurrentRootDirEntry().toURL();
+      util.resolveGDataSearchUrls([selectedUrl], gdataRootUrl,
+        function(resolved) {
+          util.resolveGDataSearchUrls(urls, gdataRootUrl,
+              self.doOpenGallery_.bind(self, singleSelection, resolved[0]));
+      });
+      return;
+    }
+    this.doOpenGallery_(singleSelection, selectedUrl, urls);
+  };
 
+  /**
+   * Opens provided urls in the gallery.
+   *
+   * @param {string} selectedUrl Url of the item that should initially be
+   *     selected.
+   * @param {Array.<string>} urls List of all the urls that will be shown in
+   *     the gallery.
+   */
+  FileManager.prototype.doOpenGallery_ = function(singleSelection,
+                                                  selectedUrl,
+                                                  urls) {
+    var self = this;
+
+    var galleryFrame = this.document_.createElement('iframe');
+    galleryFrame.className = 'overlay-pane';
+    galleryFrame.scrolling = 'no';
+    galleryFrame.setAttribute('webkitallowfullscreen', true);
+
+    var dirPath = this.directoryModel_.getCurrentDirEntry().fullPath;
     // Push a temporary state which will be replaced every time an individual
     // item is selected in the Gallery.
     this.updateLocation_(false /*push*/, dirPath);
@@ -2975,7 +3011,6 @@ FileManager.prototype = {
         div.classList.add('breadcrumb-last');
       } else {
         div.addEventListener('click', this.onBreadcrumbClick_.bind(this));
-
         var spacer = doc.createElement('div');
         spacer.className = 'separator';
         bc.appendChild(spacer);
@@ -3126,12 +3161,22 @@ FileManager.prototype = {
         this.directoryModel_.getCurrentDirEntry().toURL();
   };
 
+  /**
+   * Return URL of the search directory, current directory or null.
+   */
+  FileManager.prototype.getSearchOrCurrentDirectoryURL = function() {
+    return this.directoryModel_ &&
+        this.directoryModel_.getSearchOrCurrentDirEntry().toURL();
+  };
+
   FileManager.prototype.deleteEntries = function(entries, force, opt_callback) {
     if (!force) {
       var self = this;
       var msg;
       if (entries.length == 1) {
-        msg = strf('CONFIRM_DELETE_ONE', entries[0].name);
+        var entryName = this.directoryModel_.getDisplayName(entries[0].fullPath,
+                                                            entries[0].name);
+        msg = strf('CONFIRM_DELETE_ONE', entryName);
       } else {
         msg = strf('CONFIRM_DELETE_SOME', entries.length);
       }
@@ -3408,19 +3453,28 @@ FileManager.prototype = {
     return false;
   };
 
+  /**
+   * Executes directory action (i.e. changes directory). If new directory is a
+   * search result directory, we'll have to calculate its real path before we
+   * actually do the operation.
+   *
+   * @param {DirectoryEntry} entry Directory entry to which directory should be
+   *                               changed.
+   */
   FileManager.prototype.onDirectoryAction = function(entry) {
-    var deviceNumber = this.getDeviceNumber(entry);
-    if (deviceNumber != undefined &&
-        this.mountPoints_[deviceNumber].mountCondition ==
-        'unknown_filesystem') {
-      return this.showButter(str('UNKNOWN_FILESYSTEM_WARNING'));
-    } else if (deviceNumber != undefined &&
-               this.mountPoints_[deviceNumber].mountCondition ==
-               'unsupported_filesystem') {
-      return this.showButter(str('UNSUPPORTED_FILESYSTEM_WARNING'));
-    } else {
+    if (!DirectoryModel.isGDataSearchPath(entry.fullPath))
       return this.directoryModel_.changeDirectory(entry.fullPath);
-    }
+
+    // If we are under gdata search path, the real entries file path may be
+    // different from |entry.fullPath|.
+    var self = this;
+    chrome.fileBrowserPrivate.getPathForDriveSearchResult(entry.toURL(),
+      function(path) {
+        // |path| may be undefined if there was an error. If that is the case,
+        // change to the original file path.
+        var changeToPath = path;
+        self.directoryModel_.changeDirectory(changeToPath);
+      });
   };
 
   /**
@@ -3471,6 +3525,15 @@ FileManager.prototype = {
   },
 
   /**
+   * Updates search box value when directory gets changed.
+   */
+  FileManager.prototype.updateSearchBoxOnDirChange_ = function() {
+    var searchBox = this.dialogDom_.querySelector('#search-box');
+    if (!searchBox.disabled)
+      searchBox.value = '';
+  },
+
+  /**
    * Update the UI when the current directory changes.
    *
    * @param {cr.Event} event The directory-changed event.
@@ -3480,6 +3543,7 @@ FileManager.prototype = {
     this.updateOkButton_();
     this.updateBreadcrumbs_();
     this.updateColumnModel_();
+    this.updateSearchBoxOnDirChange_();
 
     // Sometimes we rescan the same directory (when mounting GData lazily first,
     // then for real). Do not update the location then.
@@ -3588,7 +3652,7 @@ FileManager.prototype = {
 
   FileManager.prototype.onFileChanged_ = function(event) {
     // We receive a lot of events even in folders we are not interested in.
-    if (encodeURI(event.fileUrl) == this.getCurrentDirectoryURL())
+    if (encodeURI(event.fileUrl) == this.getSearchOrCurrentDirectoryURL())
       this.directoryModel_.rescanLater();
   };
 
@@ -3668,8 +3732,10 @@ FileManager.prototype = {
       return;
 
     function onError(err) {
-      nameNode.textContent = entry.name;
-      this.alert.show(strf('ERROR_RENAMING', entry.name,
+      var entryName =
+          this.directoryModel_.getDisplayName(entry.fullPath, entry.name);
+      nameNode.textContent = entryName;
+      this.alert.show(strf('ERROR_RENAMING', entryName,
                            getFileErrorString(err.code)));
     }
 
@@ -3678,11 +3744,12 @@ FileManager.prototype = {
     // case of success.
     nameNode.textContent = newName;
 
-    this.directoryModel_.doesExist(newName, function(exists, isFile) {
+    this.directoryModel_.doesExist(entry, newName, function(exists, isFile) {
       if (!exists) {
         this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
       } else {
-        nameNode.textContent = entry.name;
+        nameNode.textContent =
+            this.directoryModel_.getDisplayName(entry.fullPath, entry.name);
         var message = isFile ? 'FILE_ALREADY_EXISTS' :
                                'DIRECTORY_ALREADY_EXISTS';
         this.alert.show(strf(message, newName));
@@ -4050,7 +4117,7 @@ FileManager.prototype = {
    * Performs preprocessing if needed (e.g. for GData).
    * @param {Object} selection Contains urls, filterIndex and multiple fields.
    */
-  FileManager.prototype.selectFilesAndClose_ = function(selection) {
+  FileManager.prototype.doSelectFilesAndClose_ = function(selection) {
     if (!this.isOnGData()) {
       setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
       return;
@@ -4152,6 +4219,25 @@ FileManager.prototype = {
   };
 
   /**
+   * Does selection urls list preprocessing and calls |doSelectFilesAndClose_|.
+   *
+   * @param {Object} selection Contains urls, filterIndex and multiple fields.
+   */
+  FileManager.prototype.selectFilesAndClose_ = function(selection) {
+    if (this.directoryModel_.isOnGDataSearchDir()) {
+      var self = this;
+      var gdataRootUrl = this.directoryModel_.getCurrentRootDirEntry().toURL();
+      util.resolveGDataSearchUrls(selection.urls, gdataRootUrl,
+          function(resolved) {
+            selection.urls = resolved;
+            self.doSelectFilesAndClose_(selection);
+          });
+      return;
+    }
+    this.doSelectFilesAndClose_(selection);
+  };
+
+  /**
    * Handle a click of the ok button.
    *
    * The ok button has different UI labels depending on the type of dialog, but
@@ -4160,7 +4246,7 @@ FileManager.prototype = {
    * @param {Event} event The click event.
    */
   FileManager.prototype.onOk_ = function(event) {
-    var currentDirUrl = this.getCurrentDirectoryURL();
+    var currentDirUrl = this.getSearchOrCurrentDirectoryURL();
 
     if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
       currentDirUrl += '/';
@@ -4222,7 +4308,7 @@ FileManager.prototype = {
         continue;
       }
 
-      files.push(currentDirUrl + encodeURIComponent(entry.name));
+      files.push(entry.toURL());
     }
 
     // Multi-file selection has no other restrictions.
@@ -4367,31 +4453,25 @@ FileManager.prototype = {
 
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {
     var searchString = this.document_.getElementById('search-box').value;
-    var searchStringLC = searchString.toLowerCase();
     var noResultsDiv = this.document_.getElementById('no-search-results');
-    if (searchString) {
-      this.directoryModel_.addFilter(
-          'searchbox',
-          function(e) {
-            return e.name.toLowerCase().indexOf(searchStringLC) > -1;
-          });
 
-      this.reportEmptySearchResults_ = function() {
-        if (this.directoryModel_.getFileList().length === 0) {
-          var text = strf('SEARCH_NO_MATCHING_FILES', searchString);
-          noResultsDiv.innerHTML = text;
-          noResultsDiv.hidden = false;
-        }
-      }.bind(this);
-
-      this.directoryModel_.addEventListener(
-          'rescan-completed', this.reportEmptySearchResults_);
-    } else {
-      this.directoryModel_.removeFilter('searchbox');
-      noResultsDiv.hidden = true;
-      this.directoryModel_.removeEventListener(
-          'rescan-completed', this.reportEmptySearchResults_);
+    function reportEmptySearchResults() {
+      if (this.directoryModel_.getFileList().length === 0) {
+        var text = strf('SEARCH_NO_MATCHING_FILES', searchString);
+        noResultsDiv.innerHTML = text;
+        noResultsDiv.hidden = false;
+      } else {
+        noResultsDiv.hidden = true;
+      }
     }
+
+    function hideNoResultsDiv() {
+      noResultsDiv.hidden = true;
+    }
+
+    this.directoryModel_.search(searchString,
+                                reportEmptySearchResults.bind(this),
+                                hideNoResultsDiv.bind(this));
   };
 
   FileManager.prototype.decorateSplitter = function(splitterElement) {

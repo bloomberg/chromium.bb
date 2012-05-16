@@ -428,6 +428,8 @@ FileTransferController.prototype = {
     if (this.directoryModel_.isPathReadOnly(destinationPath)) {
       return false;
     }
+    if (this.directoryModel_.isSearching())
+      return false;
 
     if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') == -1)
       return false;  // Unsupported type of content.
@@ -509,7 +511,7 @@ FileTransferController.prototype = {
   },
 
   get currentDirectory() {
-    return this.directoryModel_.getCurrentDirEntry();
+    return this.directoryModel_.getSearchOrCurrentDirEntry();
   },
 
   get readonly() {

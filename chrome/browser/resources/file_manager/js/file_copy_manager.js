@@ -325,7 +325,9 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
     util.getFiles(self.root_, {create: false}, files, onEntryFound,
                   onPathError);
   }
-
+if (!clipboard.sourceDir)
+  onSourceEntryFound();
+else
   self.root_.getDirectory(clipboard.sourceDir,
                           {create: false},
                           onSourceEntryFound,
@@ -491,6 +493,29 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
   var targetDirEntry = task.targetDirEntry;
   var originalPath = sourceEntry.fullPath.substr(sourcePath.length + 1);
+
+  // If the source entry is GData search result, we should not use the file name
+  // we get from file entry (this will be in format
+  // resource_id.original_file_name). Instead, we should use original_file_name.
+  // Note that if the entry is GData search result, it can only be immediate
+  // child of |task.sourceDirEntry|, so originalPath should be equal to
+  // gdataSearchResult.fileName.
+  var gdataSearchResult =
+      util.getFileAndDisplayNameForGDataSearchResult(sourceEntry.fullPath);
+  if (gdataSearchResult && originalPath != gdataSearchResult.displayName) {
+    if (sourceEntry.isDirectory) {
+      // We usually register paths relative to sourceDirEntry, but since the
+      // entries for which we have to do this can only be immediate children of
+      // the source dir, registering names should be fine.
+      task.registerRename(gdataSearchResult.fileName,
+                          gdataSearchResult.displayName);
+    }
+    // Registered rename paths are appended '/', so we have to change
+    // |originalPath| for directory entries too. |originalPath| won't be changed
+    // during applyRenames (at least not by applying just registered rename).
+    originalPath = gdataSearchResult.displayName;
+  }
+
   originalPath = task.applyRenames(originalPath);
 
   var targetRelativePrefix = originalPath;
