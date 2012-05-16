@@ -51,6 +51,23 @@ string16 ProviderTypeToString(chromeos::ProviderType type) {
   return string16();
 }
 
+// Translates the provider type to the name of the respective ONC dictionary
+// containing configuration data for the type.
+std::string ProviderTypeToONCDictKey(chromeos::ProviderType type) {
+  switch (type) {
+    case chromeos::PROVIDER_TYPE_L2TP_IPSEC_PSK:
+    case chromeos::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
+      return chromeos::onc::vpn::kIPsec;
+    case chromeos::PROVIDER_TYPE_OPEN_VPN:
+      return chromeos::onc::vpn::kOpenVPN;
+    case chromeos::PROVIDER_TYPE_MAX:
+      break;
+  }
+
+  NOTREACHED() << "Unhandled provider type " << type;
+  return std::string();
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -434,12 +451,24 @@ const std::string VPNConfigView::GetUserCertID() const {
 
 void VPNConfigView::Init(VirtualNetwork* vpn) {
   if (vpn) {
-    ParseVPNUIProperty(&ca_cert_ui_data_, vpn, onc::vpn::kServerCARef);
-    ParseVPNUIProperty(&psk_passphrase_ui_data_, vpn, onc::vpn::kPSK);
-    ParseVPNUIProperty(&user_cert_ui_data_, vpn, onc::vpn::kClientCertRef);
-    ParseVPNUIProperty(&username_ui_data_, vpn, onc::vpn::kUsername);
-    ParseVPNUIProperty(&user_passphrase_ui_data_, vpn, onc::vpn::kPassword);
-    ParseVPNUIProperty(&group_name_ui_data_, vpn, onc::vpn::kGroup);
+    ProviderType type = vpn->provider_type();
+    std::string type_dict_name = ProviderTypeToONCDictKey(type);
+    ParseVPNUIProperty(&ca_cert_ui_data_, vpn, type_dict_name,
+                       onc::vpn::kServerCARef);
+    ParseVPNUIProperty(&psk_passphrase_ui_data_, vpn, type_dict_name,
+                       onc::vpn::kPSK);
+    ParseVPNUIProperty(&user_cert_ui_data_, vpn, type_dict_name,
+                       onc::vpn::kClientCertRef);
+    ParseVPNUIProperty(&group_name_ui_data_, vpn, type_dict_name,
+                       onc::vpn::kGroup);
+
+    const std::string credentials_dict_name(
+        type == PROVIDER_TYPE_L2TP_IPSEC_PSK ?
+            onc::vpn::kL2TP : type_dict_name);
+    ParseVPNUIProperty(&username_ui_data_, vpn, credentials_dict_name,
+                       onc::vpn::kUsername);
+    ParseVPNUIProperty(&user_passphrase_ui_data_, vpn, credentials_dict_name,
+                       onc::vpn::kPassword);
   }
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
@@ -853,22 +882,15 @@ const std::string VPNConfigView::GetPassphraseFromField(
 
 void VPNConfigView::ParseVPNUIProperty(NetworkPropertyUIData* property_ui_data,
                                        Network* network,
+                                       const std::string& dict_key,
                                        const std::string& key) {
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   const base::DictionaryValue* onc =
       network_library->FindOncForNetwork(network->unique_id());
 
-  base::DictionaryValue* vpn_dict = NULL;
-  if (!onc || !onc->GetDictionary(onc::kVPN, &vpn_dict))
-    return;
-
-  std::string vpn_type;
-  if (!vpn_dict || !vpn_dict->GetString(onc::kType, &vpn_type))
-    return;
-
   property_ui_data->ParseOncProperty(
       network->ui_data(), onc,
-      base::StringPrintf("%s.%s.%s", onc::kVPN, vpn_type.c_str(), key.c_str()));
+      base::StringPrintf("%s.%s.%s", onc::kVPN, dict_key.c_str(), key.c_str()));
 }
 
 }  // namespace chromeos
