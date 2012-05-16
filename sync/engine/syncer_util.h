@@ -25,19 +25,9 @@ class SyncEntity;
 
 class SyncerUtil {
  public:
-  static void ChangeEntryIDAndUpdateChildren(
-      syncable::WriteTransaction* trans,
-      syncable::MutableEntry* entry,
-      const syncable::Id& new_id,
-      syncable::Directory::ChildHandles* children);
-
   // Returns the number of unsynced entries.
   static int GetUnsyncedEntries(syncable::BaseTransaction* trans,
                                 std::vector<int64> *handles);
-
-  static void ChangeEntryIDAndUpdateChildren(syncable::WriteTransaction* trans,
-                                             syncable::MutableEntry* entry,
-                                             const syncable::Id& new_id);
 
   // If the server sent down a client-tagged entry, or an entry whose
   // commit response was lost, it is necessary to update a local entry

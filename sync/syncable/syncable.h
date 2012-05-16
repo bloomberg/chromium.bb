@@ -1345,6 +1345,10 @@ bool IsLegalNewParent(BaseTransaction* trans, const Id& id, const Id& parentid);
 // This function sets only the flags needed to get this entry to sync.
 bool MarkForSyncing(syncable::MutableEntry* e);
 
+void ChangeEntryIDAndUpdateChildren(syncable::WriteTransaction* trans,
+                                    syncable::MutableEntry* entry,
+                                    const syncable::Id& new_id);
+
 }  // namespace syncable
 
 std::ostream& operator <<(std::ostream&, const syncable::Blob&);

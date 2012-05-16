@@ -1450,28 +1450,28 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNesting) {
       MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(),
                           "Pete");
       ASSERT_TRUE(parent.good());
+      parent.Put(syncable::ID, ids_.FromNumber(103));
       parent.Put(syncable::IS_UNSYNCED, true);
       parent.Put(syncable::IS_DIR, true);
       parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
       parent.Put(syncable::IS_DEL, true);
-      parent.Put(syncable::ID, ids_.FromNumber(103));
       parent.Put(syncable::BASE_VERSION, 1);
       parent.Put(syncable::MTIME, now_minus_2h);
       MutableEntry child(&wtrans, syncable::CREATE, ids_.FromNumber(103),
                          "Pete");
       ASSERT_TRUE(child.good());
+      child.Put(syncable::ID, ids_.FromNumber(104));
       child.Put(syncable::IS_UNSYNCED, true);
       child.Put(syncable::IS_DIR, true);
       child.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
       child.Put(syncable::IS_DEL, true);
-      child.Put(syncable::ID, ids_.FromNumber(104));
       child.Put(syncable::BASE_VERSION, 1);
       child.Put(syncable::MTIME, now_minus_2h);
       MutableEntry grandchild(&wtrans, syncable::CREATE, ids_.FromNumber(104),
                               "Pete");
       ASSERT_TRUE(grandchild.good());
-      grandchild.Put(syncable::IS_UNSYNCED, true);
       grandchild.Put(syncable::ID, ids_.FromNumber(105));
+      grandchild.Put(syncable::IS_UNSYNCED, true);
       grandchild.Put(syncable::IS_DEL, true);
       grandchild.Put(syncable::IS_DIR, false);
       grandchild.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
@@ -3709,6 +3709,7 @@ TEST_F(SyncerTest, ClientTagUncommittedTagMatchesUpdate) {
 
 TEST_F(SyncerTest, ClientTagConflictWithDeletedLocalEntry) {
   {
+    // Create a deleted local entry with a unique client tag.
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry perm_folder(&trans, CREATE, ids_.root(), "clientname");
     ASSERT_TRUE(perm_folder.good());
@@ -3716,24 +3717,28 @@ TEST_F(SyncerTest, ClientTagConflictWithDeletedLocalEntry) {
     perm_folder.Put(UNIQUE_CLIENT_TAG, "clientperm");
     perm_folder.Put(SPECIFICS, DefaultBookmarkSpecifics());
     perm_folder.Put(IS_UNSYNCED, true);
+
+    // Note: IS_DEL && !ServerKnows() will clear the UNSYNCED bit.
+    // (We never attempt to commit server-unknown deleted items, so this
+    // helps us clean up those entries).
     perm_folder.Put(IS_DEL, true);
   }
 
+  // Prepare an update with the same unique client tag.
   mock_server_->AddUpdateDirectory(1, 0, "permitem_renamed", 10, 100);
   mock_server_->SetLastUpdateClientTag("clientperm");
-  mock_server_->set_conflict_all_commits(true);
 
   SyncShareNudge();
-  // This should cause client tag overwrite.
+  // The local entry will be overwritten.
   {
     ReadTransaction trans(FROM_HERE, directory());
 
     Entry perm_folder(&trans, GET_BY_CLIENT_TAG, "clientperm");
     ASSERT_TRUE(perm_folder.good());
     ASSERT_TRUE(perm_folder.Get(ID).ServerKnows());
-    EXPECT_TRUE(perm_folder.Get(IS_DEL));
+    EXPECT_FALSE(perm_folder.Get(IS_DEL));
     EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
-    EXPECT_TRUE(perm_folder.Get(IS_UNSYNCED));
+    EXPECT_FALSE(perm_folder.Get(IS_UNSYNCED));
     EXPECT_EQ(perm_folder.Get(BASE_VERSION), 10);
     EXPECT_EQ(perm_folder.Get(UNIQUE_CLIENT_TAG), "clientperm");
   }

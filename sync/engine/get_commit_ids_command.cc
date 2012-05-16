@@ -127,14 +127,6 @@ bool IsEntryReadyForCommit(syncable::ModelTypeSet throttled_types,
   if (throttled_types.Has(type))
     return false;
 
-  // Drop deleted uncommitted entries.
-  if (entry.Get(syncable::IS_DEL) && !entry.Get(syncable::ID).ServerKnows()) {
-    // TODO(zea): These will remain unsynced indefinitely. This is harmless,
-    // but we should clean them up somewhere.
-    DVLOG(1) << "Ignoring deleted and uncommitted item." << entry;
-    return false;
-  }
-
   // Extra validity checks.
   syncable::Id id = entry.Get(syncable::ID);
   if (id == entry.Get(syncable::PARENT_ID)) {

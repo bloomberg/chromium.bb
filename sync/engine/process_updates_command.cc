@@ -120,8 +120,7 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   // change the ID now, after we're sure that the update can succeed.
   if (local_id != server_id) {
     DCHECK(!update.deleted());
-    SyncerUtil::ChangeEntryIDAndUpdateChildren(trans, &target_entry,
-        server_id);
+    ChangeEntryIDAndUpdateChildren(trans, &target_entry, server_id);
     // When IDs change, versions become irrelevant.  Forcing BASE_VERSION
     // to zero would ensure that this update gets applied, but would indicate
     // creation or undeletion if it were committed that way.  Instead, prefer

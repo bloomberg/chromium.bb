@@ -429,7 +429,8 @@ class SyncableDirectoryTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    dir_->SaveChanges();
+    if (dir_.get())
+      dir_->SaveChanges();
     dir_.reset();
   }
 
@@ -508,6 +509,15 @@ class SyncableDirectoryTest : public testing::Test {
                      int64 base_version,
                      int64 server_version,
                      bool is_del);
+
+  // When a directory is saved then loaded from disk, it will pass through
+  // DropDeletedEntries().  This will remove some entries from the directory.
+  // This function is intended to simulate that process.
+  //
+  // WARNING: The directory will be deleted by this operation.  You should
+  // not have any pointers to the directory (open transactions included)
+  // when you call this.
+  DirOpenResult SimulateSaveAndReloadDir();
 };
 
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
@@ -1154,6 +1164,102 @@ TEST_F(SyncableDirectoryTest, GetModelType) {
   }
 }
 
+// A test that roughly mimics the directory interaction that occurs when a
+// bookmark folder and entry are created then synced for the first time.  It is
+// a more common variant of the 'DeletedAndUnsyncedChild' scenario tested below.
+TEST_F(SyncableDirectoryTest, ChangeEntryIDAndUpdateChildren_ParentAndChild) {
+  TestIdFactory id_factory;
+  Id orig_parent_id;
+  Id orig_child_id;
+
+  {
+    // Create two client-side items, a parent and child.
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    MutableEntry parent(&trans, CREATE, id_factory.root(), "parent");
+    parent.Put(IS_DIR, true);
+    parent.Put(IS_UNSYNCED, true);
+
+    MutableEntry child(&trans, CREATE, parent.Get(ID), "child");
+    child.Put(IS_UNSYNCED, true);
+
+    orig_parent_id = parent.Get(ID);
+    orig_child_id = child.Get(ID);
+  }
+
+  {
+    // Simulate what happens after committing two items.  Their IDs will be
+    // replaced with server IDs.  The child is renamed first, then the parent.
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    MutableEntry parent(&trans, GET_BY_ID, orig_parent_id);
+    MutableEntry child(&trans, GET_BY_ID, orig_child_id);
+
+    ChangeEntryIDAndUpdateChildren(&trans, &child, id_factory.NewServerId());
+    child.Put(IS_UNSYNCED, false);
+    child.Put(BASE_VERSION, 1);
+    child.Put(SERVER_VERSION, 1);
+
+    ChangeEntryIDAndUpdateChildren(&trans, &parent, id_factory.NewServerId());
+    parent.Put(IS_UNSYNCED, false);
+    parent.Put(BASE_VERSION, 1);
+    parent.Put(SERVER_VERSION, 1);
+  }
+
+  // Final check for validity.
+  EXPECT_EQ(OPENED, SimulateSaveAndReloadDir());
+}
+
+// A test based on the scenario where we create a bookmark folder and entry
+// locally, but with a twist.  In this case, the bookmark is deleted before we
+// are able to sync either it or its parent folder.  This scenario used to cause
+// directory corruption, see crbug.com/125381.
+TEST_F(SyncableDirectoryTest,
+       ChangeEntryIDAndUpdateChildren_DeletedAndUnsyncedChild) {
+  TestIdFactory id_factory;
+  Id orig_parent_id;
+  Id orig_child_id;
+
+  {
+    // Create two client-side items, a parent and child.
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    MutableEntry parent(&trans, CREATE, id_factory.root(), "parent");
+    parent.Put(IS_DIR, true);
+    parent.Put(IS_UNSYNCED, true);
+
+    MutableEntry child(&trans, CREATE, parent.Get(ID), "child");
+    child.Put(IS_UNSYNCED, true);
+
+    orig_parent_id = parent.Get(ID);
+    orig_child_id = child.Get(ID);
+  }
+
+  {
+    // Delete the child.
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    MutableEntry child(&trans, GET_BY_ID, orig_child_id);
+    child.Put(IS_DEL, true);
+  }
+
+  {
+    // Simulate what happens after committing the parent.  Its ID will be
+    // replaced with server a ID.
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    MutableEntry parent(&trans, GET_BY_ID, orig_parent_id);
+
+    ChangeEntryIDAndUpdateChildren(&trans, &parent, id_factory.NewServerId());
+    parent.Put(IS_UNSYNCED, false);
+    parent.Put(BASE_VERSION, 1);
+    parent.Put(SERVER_VERSION, 1);
+  }
+
+  // Final check for validity.
+  EXPECT_EQ(OPENED, SimulateSaveAndReloadDir());
+}
+
 // A variant of SyncableDirectoryTest that uses a real sqlite database.
 class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
  protected:
@@ -1534,6 +1640,32 @@ void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans,
   ASSERT_TRUE(base_version == e.Get(BASE_VERSION));
   ASSERT_TRUE(server_version == e.Get(SERVER_VERSION));
   ASSERT_TRUE(is_del == e.Get(IS_DEL));
+}
+
+DirOpenResult SyncableDirectoryTest::SimulateSaveAndReloadDir() {
+  if (!dir_->SaveChanges())
+    return FAILED_IN_UNITTEST;
+
+  // Do some tricky things to preserve the backing store.
+  DirectoryBackingStore* saved_store = dir_->store_;
+  dir_->store_ = NULL;
+
+  // Close the current directory.
+  dir_->Close();
+  dir_.reset();
+
+  dir_.reset(new Directory(&encryptor_, &handler_, NULL));
+  if (!dir_.get())
+    return FAILED_IN_UNITTEST;
+  DirOpenResult result = dir_->OpenImpl(saved_store, kName, &delegate_,
+                                        NullTransactionObserver());
+
+  // If something went wrong, we need to clear this member.  If we don't,
+  // TearDown() will be guaranteed to crash when it calls SaveChanges().
+  if (result != OPENED)
+    dir_.reset();
+
+  return result;
 }
 
 namespace {

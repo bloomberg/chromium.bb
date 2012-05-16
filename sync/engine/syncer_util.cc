@@ -81,59 +81,6 @@ int SyncerUtil::GetUnsyncedEntries(syncable::BaseTransaction* trans,
 }
 
 // static
-void SyncerUtil::ChangeEntryIDAndUpdateChildren(
-    syncable::WriteTransaction* trans,
-    syncable::MutableEntry* entry,
-    const syncable::Id& new_id,
-    syncable::Directory::ChildHandles* children) {
-  syncable::Id old_id = entry->Get(ID);
-  if (!entry->Put(ID, new_id)) {
-    Entry old_entry(trans, GET_BY_ID, new_id);
-    CHECK(old_entry.good());
-    LOG(FATAL) << "Attempt to change ID to " << new_id
-               << " conflicts with existing entry.\n\n"
-               << *entry << "\n\n" << old_entry;
-  }
-  if (entry->Get(IS_DIR)) {
-    // Get all child entries of the old id.
-    trans->directory()->GetChildHandlesById(trans, old_id, children);
-    Directory::ChildHandles::iterator i = children->begin();
-    while (i != children->end()) {
-      MutableEntry child_entry(trans, GET_BY_HANDLE, *i++);
-      CHECK(child_entry.good());
-      // Use the unchecked setter here to avoid touching the child's NEXT_ID
-      // and PREV_ID fields (which Put(PARENT_ID) would normally do to
-      // maintain linked-list invariants).  In this case, NEXT_ID and PREV_ID
-      // among the children will be valid after the loop, since we update all
-      // the children at once.
-      child_entry.PutParentIdPropertyOnly(new_id);
-    }
-  }
-  // Update Id references on the previous and next nodes in the sibling
-  // order.  Do this by reinserting into the linked list; the first
-  // step in PutPredecessor is to Unlink from the existing order, which
-  // will overwrite the stale Id value from the adjacent nodes.
-  if (entry->Get(PREV_ID) == entry->Get(NEXT_ID) &&
-      entry->Get(PREV_ID) == old_id) {
-    // We just need a shallow update to |entry|'s fields since it is already
-    // self looped.
-    entry->Put(NEXT_ID, new_id);
-    entry->Put(PREV_ID, new_id);
-  } else {
-    entry->PutPredecessor(entry->Get(PREV_ID));
-  }
-}
-
-// static
-void SyncerUtil::ChangeEntryIDAndUpdateChildren(
-    syncable::WriteTransaction* trans,
-    syncable::MutableEntry* entry,
-    const syncable::Id& new_id) {
-  syncable::Directory::ChildHandles children;
-  ChangeEntryIDAndUpdateChildren(trans, entry, new_id, &children);
-}
-
-// static
 syncable::Id SyncerUtil::FindLocalIdToUpdate(
     syncable::BaseTransaction* trans,
     const SyncEntity& update) {

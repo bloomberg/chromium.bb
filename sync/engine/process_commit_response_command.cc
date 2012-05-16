@@ -336,8 +336,7 @@ bool ProcessCommitResponseCommand::ChangeIdAfterCommit(
                  << " during commit " << same_id;
       return false;
     }
-    SyncerUtil::ChangeEntryIDAndUpdateChildren(
-        trans, local_entry, entry_response.id());
+    ChangeEntryIDAndUpdateChildren(trans, local_entry, entry_response.id());
     DVLOG(1) << "Changing ID to " << entry_response.id();
   }
   return true;

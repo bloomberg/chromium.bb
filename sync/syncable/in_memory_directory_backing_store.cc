@@ -21,6 +21,8 @@ DirOpenResult InMemoryDirectoryBackingStore::Load(
   if (!InitializeTables())
     return FAILED_OPEN_DATABASE;
 
+  if (!DropDeletedEntries())
+    return FAILED_DATABASE_CORRUPT;
   if (!LoadEntries(entry_bucket))
     return FAILED_DATABASE_CORRUPT;
   if (!LoadInfo(kernel_load_info))

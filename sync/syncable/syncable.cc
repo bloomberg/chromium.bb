@@ -1736,6 +1736,18 @@ bool MutableEntry::PutIsDel(bool is_del) {
     if (!UnlinkFromOrder()) {
       return false;
     }
+
+    // If the server never knew about this item and it's deleted then we don't
+    // need to keep it around.  Unsetting IS_UNSYNCED will:
+    // - Ensure that the item is never committed to the server.
+    // - Allow any items with the same UNIQUE_CLIENT_TAG created on other
+    //   clients to override this entry.
+    // - Let us delete this entry permanently through
+    //   DirectoryBackingStore::DropDeletedEntries() when we next restart sync.
+    //   This will save memory and avoid crbug.com/125381.
+    if (!Get(ID).ServerKnows()) {
+      Put(IS_UNSYNCED, false);
+    }
   }
 
   {
@@ -2374,6 +2386,49 @@ EntryKernel* Directory::GetPossibleLastChildForTest(
   }
   // There were no children in the linked list.
   return NULL;
+}
+
+void ChangeEntryIDAndUpdateChildren(
+    syncable::WriteTransaction* trans,
+    syncable::MutableEntry* entry,
+    const syncable::Id& new_id) {
+  syncable::Id old_id = entry->Get(ID);
+  if (!entry->Put(ID, new_id)) {
+    Entry old_entry(trans, GET_BY_ID, new_id);
+    CHECK(old_entry.good());
+    LOG(FATAL) << "Attempt to change ID to " << new_id
+               << " conflicts with existing entry.\n\n"
+               << *entry << "\n\n" << old_entry;
+  }
+  if (entry->Get(IS_DIR)) {
+    // Get all child entries of the old id.
+    syncable::Directory::ChildHandles children;
+    trans->directory()->GetChildHandlesById(trans, old_id, &children);
+    Directory::ChildHandles::iterator i = children.begin();
+    while (i != children.end()) {
+      MutableEntry child_entry(trans, GET_BY_HANDLE, *i++);
+      CHECK(child_entry.good());
+      // Use the unchecked setter here to avoid touching the child's NEXT_ID
+      // and PREV_ID fields (which Put(PARENT_ID) would normally do to
+      // maintain linked-list invariants).  In this case, NEXT_ID and PREV_ID
+      // among the children will be valid after the loop, since we update all
+      // the children at once.
+      child_entry.PutParentIdPropertyOnly(new_id);
+    }
+  }
+  // Update Id references on the previous and next nodes in the sibling
+  // order.  Do this by reinserting into the linked list; the first
+  // step in PutPredecessor is to Unlink from the existing order, which
+  // will overwrite the stale Id value from the adjacent nodes.
+  if (entry->Get(PREV_ID) == entry->Get(NEXT_ID) &&
+      entry->Get(PREV_ID) == old_id) {
+    // We just need a shallow update to |entry|'s fields since it is already
+    // self looped.
+    entry->Put(NEXT_ID, new_id);
+    entry->Put(PREV_ID, new_id);
+  } else {
+    entry->PutPredecessor(entry->Get(PREV_ID));
+  }
 }
 
 }  // namespace syncable
