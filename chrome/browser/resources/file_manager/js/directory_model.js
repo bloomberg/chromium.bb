@@ -196,16 +196,6 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
 };
 
 /**
- * @return {boolean} If current directory is system.
- */
-DirectoryModel.prototype.isSystemDirectory = function() {
-  var path = this.currentDirEntry_.fullPath;
-  return path == '/' ||
-         path == '/' + DirectoryModel.REMOVABLE_DIRECTORY ||
-         path == '/' + DirectoryModel.ARCHIVE_DIRECTORY;
-};
-
-/**
  * @return {boolean} If the files with names starting with "." are not shown.
  */
 DirectoryModel.prototype.isFilterHiddenOn = function() {
@@ -864,7 +854,13 @@ DirectoryModel.prototype.setupPath = function(path, opt_loadedCallback,
     // Usually, leaf does not exist, because it's just a suggested file name.
     if (err.code != FileError.NOT_FOUND_ERR)
       console.log('Unexpected error resolving default leaf: ' + err);
-    changeDirectoryEntry(baseDirEntry, INITIAL, !EXISTS);
+    // |baseDirEntry| would point to a system directory if we are trying
+    // to change to a non-existing removable drive or an archive.
+    // Try to change to the default directory then.
+    if (DirectoryModel.isSystemDirectory(baseDirEntry.fullPath))
+      onBaseError(err);
+    else
+      changeDirectoryEntry(baseDirEntry, INITIAL, !EXISTS);
   }
 
   var onBaseError = function(err) {
@@ -1127,6 +1123,15 @@ DirectoryModel.prototype.prepareUnmount = function(rootPath) {
     // TODO(kaznacheev): Consider changing to the most recently used root.
     this.changeDirectory(this.getDefaultDirectory());
   }
+};
+
+/**
+ * @param {string} path Path
+ * @return {boolean} If current directory is system.
+ */
+DirectoryModel.isSystemDirectory = function(path) {
+  return path == '/' + DirectoryModel.REMOVABLE_DIRECTORY ||
+         path == '/' + DirectoryModel.ARCHIVE_DIRECTORY;
 };
 
 /**

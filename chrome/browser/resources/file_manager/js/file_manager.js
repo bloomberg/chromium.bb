@@ -1945,11 +1945,6 @@ FileManager.prototype = {
   FileManager.prototype.updateDate_ = function(div, filesystemProps) {
     if (!filesystemProps) {
       div.textContent = '...';
-    } else if (this.directoryModel_.isSystemDirectory() &&
-        filesystemProps.modificationTime.getTime() == 0) {
-      // Mount points for FAT volumes have this time associated with them.
-      // We'd rather display nothing than this bogus date.
-      div.textContent = '';
     } else {
       div.textContent =
           this.shortDateFormatter_.format(filesystemProps.modificationTime);
