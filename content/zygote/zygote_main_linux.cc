@@ -173,7 +173,9 @@ typedef int (*Xstat64Function)(int version, const char *path,
 
 static pthread_once_t g_libc_localtime_funcs_guard = PTHREAD_ONCE_INIT;
 static LocaltimeFunction g_libc_localtime;
+static LocaltimeFunction g_libc_localtime64;
 static LocaltimeRFunction g_libc_localtime_r;
+static LocaltimeRFunction g_libc_localtime64_r;
 
 static pthread_once_t g_libc_file_io_funcs_guard = PTHREAD_ONCE_INIT;
 static FopenFunction g_libc_fopen;
@@ -184,8 +186,12 @@ static Xstat64Function g_libc_xstat64;
 static void InitLibcLocaltimeFunctions() {
   g_libc_localtime = reinterpret_cast<LocaltimeFunction>(
       dlsym(RTLD_NEXT, "localtime"));
+  g_libc_localtime64 = reinterpret_cast<LocaltimeFunction>(
+      dlsym(RTLD_NEXT, "localtime64"));
   g_libc_localtime_r = reinterpret_cast<LocaltimeRFunction>(
       dlsym(RTLD_NEXT, "localtime_r"));
+  g_libc_localtime64_r = reinterpret_cast<LocaltimeRFunction>(
+      dlsym(RTLD_NEXT, "localtime64_r"));
 
   if (!g_libc_localtime || !g_libc_localtime_r) {
     // http://code.google.com/p/chromium/issues/detail?id=16800
@@ -201,11 +207,23 @@ static void InitLibcLocaltimeFunctions() {
 
   if (!g_libc_localtime)
     g_libc_localtime = gmtime;
+  if (!g_libc_localtime64)
+    g_libc_localtime64 = g_libc_localtime;
   if (!g_libc_localtime_r)
     g_libc_localtime_r = gmtime_r;
+  if (!g_libc_localtime64_r)
+    g_libc_localtime64_r = g_libc_localtime_r;
 }
 
-struct tm* localtime(const time_t* timep) {
+// Define localtime_override() function with asm name "localtime", so that all
+// references to localtime() will resolve to this function. Notice that we need
+// to set visibility attribute to "default" to export the symbol, as it is set
+// to "hidden" by default in chrome per build/common.gypi.
+__attribute__ ((__visibility__("default")))
+struct tm* localtime_override(const time_t* timep) __asm__ ("localtime");
+
+__attribute__ ((__visibility__("default")))
+struct tm* localtime_override(const time_t* timep) {
   if (g_am_zygote_or_renderer) {
     static struct tm time_struct;
     static char timezone_string[64];
@@ -219,7 +237,31 @@ struct tm* localtime(const time_t* timep) {
   }
 }
 
-struct tm* localtime_r(const time_t* timep, struct tm* result) {
+// Use same trick to override localtime64(), localtime_r() and localtime64_r().
+__attribute__ ((__visibility__("default")))
+struct tm* localtime64_override(const time_t* timep) __asm__ ("localtime64");
+
+__attribute__ ((__visibility__("default")))
+struct tm* localtime64_override(const time_t* timep) {
+  if (g_am_zygote_or_renderer) {
+    static struct tm time_struct;
+    static char timezone_string[64];
+    ProxyLocaltimeCallToBrowser(*timep, &time_struct, timezone_string,
+                                sizeof(timezone_string));
+    return &time_struct;
+  } else {
+    CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
+                             InitLibcLocaltimeFunctions));
+    return g_libc_localtime64(timep);
+  }
+}
+
+__attribute__ ((__visibility__("default")))
+struct tm* localtime_r_override(const time_t* timep,
+                                struct tm* result) __asm__ ("localtime_r");
+
+__attribute__ ((__visibility__("default")))
+struct tm* localtime_r_override(const time_t* timep, struct tm* result) {
   if (g_am_zygote_or_renderer) {
     ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
     return result;
@@ -227,6 +269,22 @@ struct tm* localtime_r(const time_t* timep, struct tm* result) {
     CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
                              InitLibcLocaltimeFunctions));
     return g_libc_localtime_r(timep, result);
+  }
+}
+
+__attribute__ ((__visibility__("default")))
+struct tm* localtime64_r_override(const time_t* timep,
+                                  struct tm* result) __asm__ ("localtime64_r");
+
+__attribute__ ((__visibility__("default")))
+struct tm* localtime64_r_override(const time_t* timep, struct tm* result) {
+  if (g_am_zygote_or_renderer) {
+    ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
+    return result;
+  } else {
+    CHECK_EQ(0, pthread_once(&g_libc_localtime_funcs_guard,
+                             InitLibcLocaltimeFunctions));
+    return g_libc_localtime64_r(timep, result);
   }
 }
 
