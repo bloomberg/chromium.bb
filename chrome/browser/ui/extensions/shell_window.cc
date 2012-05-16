@@ -9,8 +9,11 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/ui/intents/web_intent_picker_controller.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
@@ -22,6 +25,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/renderer_preferences.h"
 
 using content::SiteInstance;
@@ -92,10 +96,11 @@ ShellWindow::ShellWindow(Profile* profile,
       extension_(extension),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile, this)) {
-  web_contents_.reset(WebContents::Create(
+  web_contents_ = WebContents::Create(
       profile, SiteInstance::CreateForURL(profile, url), MSG_ROUTING_NONE, NULL,
-      NULL));
-  content::WebContentsObserver::Observe(web_contents_.get());
+      NULL);
+  contents_wrapper_.reset(new TabContentsWrapper(web_contents_));
+  content::WebContentsObserver::Observe(web_contents_);
   web_contents_->SetDelegate(this);
   web_contents_->SetViewType(chrome::VIEW_TYPE_APP_SHELL);
   web_contents_->GetMutableRendererPrefs()->browser_handles_all_requests =
@@ -153,6 +158,22 @@ void ShellWindow::CloseContents(WebContents* contents) {
 bool ShellWindow::ShouldSuppressDialogs() {
   return true;
 }
+
+void ShellWindow::WebIntentDispatch(
+    content::WebContents* web_contents,
+    content::WebIntentsDispatcher* intents_dispatcher) {
+
+#if defined(ENABLE_WEB_INTENTS)
+  if (!web_intents::IsWebIntentsEnabled(profile_))
+    return;
+
+  contents_wrapper_->web_intent_picker_controller()->SetIntentsDispatcher(
+      intents_dispatcher);
+  contents_wrapper_->web_intent_picker_controller()->ShowDialog(
+      intents_dispatcher->GetIntent().action,
+      intents_dispatcher->GetIntent().type);
+#endif  // defined(ENABLE_WEB_INTENTS)
+ }
 
 void ShellWindow::Observe(int type,
                           const content::NotificationSource& source,

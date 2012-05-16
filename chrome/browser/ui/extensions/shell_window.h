@@ -19,6 +19,7 @@ class Extension;
 class ExtensionWindowController;
 class GURL;
 class Profile;
+class TabContentsWrapper;
 
 namespace content {
 class WebContents;
@@ -53,7 +54,7 @@ class ShellWindow : public content::NotificationObserver,
   virtual ~ShellWindow();
 
   const Extension* extension() const { return extension_; }
-  content::WebContents* web_contents() const { return web_contents_.get(); }
+  content::WebContents* web_contents() const { return web_contents_; }
 
  private:
   // PlatformAppBrowserTest needs access to web_contents()
@@ -71,6 +72,9 @@ class ShellWindow : public content::NotificationObserver,
   // content::WebContentsDelegate
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
+  virtual void WebIntentDispatch(
+      content::WebContents* web_contents,
+      content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -87,7 +91,8 @@ class ShellWindow : public content::NotificationObserver,
   const Extension* extension_;  // weak pointer - owned by ExtensionService.
 
   const SessionID session_id_;
-  scoped_ptr<content::WebContents> web_contents_;
+  scoped_ptr<TabContentsWrapper> contents_wrapper_;
+  content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<ExtensionWindowController> extension_window_controller_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
