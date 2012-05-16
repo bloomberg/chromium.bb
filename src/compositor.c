@@ -2356,12 +2356,16 @@ weston_output_destroy(struct weston_output *output)
 }
 
 WL_EXPORT void
-weston_output_update_zoom(struct weston_output *output, int x, int y)
+weston_output_update_zoom(struct weston_output *output, wl_fixed_t fx, wl_fixed_t fy)
 {
 	float ratio;
+	int32_t x, y;
 
 	if (output->zoom.level <= 0)
 		return;
+
+	x = wl_fixed_to_int(fx);
+	y = wl_fixed_to_int(fy);
 
 	output->zoom.magnification = 1 / output->zoom.level;
 	ratio = 1 - (1 / output->zoom.magnification);

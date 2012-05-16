@@ -1642,9 +1642,7 @@ zoom_binding(struct wl_input_device *device, uint32_t time,
 			if (output->zoom.level < output->zoom.increment)
 				output->zoom.level = output->zoom.increment;
 
-			weston_output_update_zoom(output,
-			                          wl_fixed_to_int(device->x),
-						  wl_fixed_to_int(device->y));
+			weston_output_update_zoom(output, device->x, device->y);
 		}
 	}
 }
