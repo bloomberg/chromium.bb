@@ -45,12 +45,7 @@ typedef void (*TYPE_nacl_exit) (int status);
 
 /* ====================================================================== */
 /* prototypes for functions inside ld.so */
-#define REGPARM(n) __attribute__((regparm(n)))
-
-extern REGPARM(2) void _dl_get_tls_static_info(int *static_tls_size,
-                                               int *static_tls_align);
 extern void _dl_debug_state();
-extern void *_dl_allocate_tls (void *mem);
 
 /* this may be x86 specific but we do not have ld.so for arm anyway */
 extern char *__nacl_read_tp();
@@ -124,73 +119,6 @@ void __deregister_frame_info(const void *begin) {
 void __register_frame_info(void *begin, void *ob) {
   myprint("STUB __register_frame_info\n");
 }
-
-/* This is usually provided by
- * src/untrusted/nacl/pthread_initialize_minimal.c
- */
-int __pthread_initialize_minimal(size_t tdb_size) {
-  /* ld.so does some of the work for us, e.g.
-   *  allocating and initialzing the tls area
-   * but we still need put it in a
-   * state which our libpthread expects.
-   * We also do not call  __newlib_thread_init here
-   */
-   char *tp = __nacl_read_tp();
-   void *tdb = tp + __nacl_tp_tdb_offset(tdb_size);
-   /*
-    * This should only be done for x86 - but this is all we support now anyway
-    */
-   *(void **) tdb = tdb;
-
-   /* I do not think we need this as it has been setup already: confirm */
-   /* nacl_tls_init(tdb); */
-   myprint("tdb_size: ");
-   myprinthex(tdb_size);
-   myprint("\n");
-
-   myprint("tp: ");
-   myprinthex((int)tp);
-   myprint("\n");
-
-   myprint("tdb: ");
-   myprinthex((int)tdb);
-   myprint("\n");
-
-   return 0;
-}
-
-/* This is usually provided by
- * src/untrusted/nacl/tls.c
- */
-size_t __nacl_tls_combined_size(size_t tdb_size) {
-  myprint("STUB:  __nacl_tls_combined_size\n");
-  /* generous size for now to kick the tires */
-  /* switch to using the results from _dl_get_tls_static_info */
-  return 10 * 1024;
-}
-
-static size_t aligned_size(size_t size, size_t alignment) {
-   return (size + alignment - 1) & -alignment;
- }
-
-/* This is usually provided by
- * src/untrusted/nacl/tls.c
- */
-void *__nacl_tls_data_bss_initialize_from_template(void *combined_area,
-                                                   size_t tdb_size) {
-  myprint("STUB:  __nacl_tls_data_bss_initialize_from_template\n");
-  /* just point to somewhere in the middle with a generous alignment */
-  int tdb = aligned_size((int) combined_area + 5 * 1024, 1024);
-  myprint("tdb is: ");
-  myprinthex((int) tdb);
-  myprint("\n");
-  void *tp = _dl_allocate_tls((void *) tdb);
-  myprint("tp is: ");
-  myprinthex((int) tp);
-  myprint("\n");
-  return tp;
-}
-
 
 /* ====================================================================== */
 /*
@@ -279,6 +207,9 @@ int main(int argc, char** argv, char** envp) {
 #if USE_PTHREAD == 1
   /* Note: this calls __pthread_initialize_minimal */
   __pthread_initialize();
+#else
+  /* c.f. src/untrusted/nacl/pthread_stubs.c */
+  __pthread_initialize_minimal(sizeof(void *));
 #endif
   /* ======================================== */
   /* this is usually called by either
@@ -286,7 +217,6 @@ int main(int argc, char** argv, char** envp) {
    * but we do not want any of the tls setup which goes with it
    */
 #if USE_LIBC == 1
-  __newlib_thread_init();
   puts("libc call\n");
   void *addr = (void *) &main;
   double d = 3.1415;
@@ -313,20 +243,6 @@ int main(int argc, char** argv, char** envp) {
 #endif
 
   /* ======================================== */
-  /* non-trivial call into ld.so */
-#if CALL_LDSO == 1
-  int static_tls_size;
-  int static_tls_align;
-  _dl_get_tls_static_info (&static_tls_size, &static_tls_align);
-  myprint("tls size: ");
-  myprinthex(static_tls_size);
-  myprint("\n");
-
-  myprint("tls align: ");
-  myprinthex(static_tls_align);
-  myprint("\n");
-#endif
-
 #if USE_PTHREAD == 1
   pthread_mutex_lock(&my_mutex);
   int i;

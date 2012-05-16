@@ -76,11 +76,13 @@ ld.so.pso: ld.so.dummy.c
 prereqs.x8632: ld.so.pso
 	mkdir -p x8632
 	cd ../../ ; ./scons bitcode=1 platform=x86-32 -j 8 \
+	    pnacl_shared_newlib=1 \
             irt nacl_helper_bootstrap sel_ldr libnosys libnacl libpthread
 
 prereqs.x8664: ld.so.pso
 	mkdir -p x8664
 	cd ../../ ; ./scons bitcode=1 platform=x86-64 -j 8 \
+	    pnacl_shared_newlib=1 \
             irt nacl_helper_bootstrap sel_ldr libnosys libnacl \
             libpthread pnacl_irt_shim
 
@@ -148,10 +150,7 @@ mylibnacl.a: $(LIBPATH_BITCODE_SDK)/libnacl.a
 	rm -rf /tmp/libnacl
 	mkdir -p /tmp/libnacl
 	cd /tmp/libnacl; ar xv $^
-	rm /tmp/libnacl/pthread_initialize_minimal.bc
-	rm /tmp/libnacl/pthread_stubs.bc
 	rm /tmp/libnacl/start.bc
-	rm /tmp/libnacl/tls.bc
 	$(PNACL_AR) cr $@ /tmp/libnacl/*
 ######################################################################
 # bookends for dynamic images
