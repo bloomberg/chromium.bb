@@ -23,6 +23,7 @@
 #include "ui/base/gtk/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/pango_util.h"
 
 namespace {
 
@@ -635,11 +636,10 @@ void CertificateViewer::InitDetailsPage() {
                      value_scroll_window, TRUE, TRUE, 0);
 
   gtk_widget_ensure_style(field_value_view);
-  PangoFontDescription* font_desc = pango_font_description_copy(
-      gtk_widget_get_style(field_value_view)->font_desc);
-  pango_font_description_set_family(font_desc, kDetailsFontFamily);
-  gtk_widget_modify_font(field_value_view, font_desc);
-  pango_font_description_free(font_desc);
+  gfx::ScopedPangoFontDescription font_desc(pango_font_description_copy(
+      gtk_widget_get_style(field_value_view)->font_desc));
+  pango_font_description_set_family(font_desc.get(), kDetailsFontFamily);
+  gtk_widget_modify_font(field_value_view, font_desc.get());
 
   GtkWidget* export_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(details_page_vbox_), export_hbox,

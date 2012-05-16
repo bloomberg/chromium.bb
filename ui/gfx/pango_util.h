@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_export.h"
@@ -29,6 +30,26 @@ PangoContext* GetPangoContext();
 // Returns the resolution (DPI) used by pango. A negative values means the
 // resolution hasn't been set.
 double GetPangoResolution();
+
+// Utility class to ensure that PangoFontDescription is freed.
+class ScopedPangoFontDescription {
+ public:
+  explicit ScopedPangoFontDescription(PangoFontDescription* description)
+      : description_(description) {
+    DCHECK(description);
+  }
+
+  ~ScopedPangoFontDescription() {
+    pango_font_description_free(description_);
+  }
+
+  PangoFontDescription* get() { return description_; }
+
+ private:
+  PangoFontDescription* description_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedPangoFontDescription);
+};
 
 // Uses Pango to draw text onto |cr|. This is the public method for d
 void UI_EXPORT DrawTextOntoCairoSurface(cairo_t* cr,

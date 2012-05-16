@@ -98,10 +98,9 @@ PlatformFontPango::PlatformFontPango() {
   if (default_font_ == NULL) {
     std::string font_name = GetDefaultFont();
 
-    PangoFontDescription* desc =
-        pango_font_description_from_string(font_name.c_str());
-    default_font_ = new Font(desc);
-    pango_font_description_free(desc);
+    ScopedPangoFontDescription desc(
+        pango_font_description_from_string(font_name.c_str()));
+    default_font_ = new Font(desc.get());
 
     DCHECK(default_font_);
   }
@@ -340,8 +339,8 @@ void PlatformFontPango::PaintSetup(SkPaint* paint) const {
 void PlatformFontPango::InitPangoMetrics() {
   if (!pango_metrics_inited_) {
     pango_metrics_inited_ = true;
-    PangoFontDescription* pango_desc = GetNativeFont();
-    PangoFontMetrics* pango_metrics = GetPangoFontMetrics(pango_desc);
+    ScopedPangoFontDescription pango_desc(GetNativeFont());
+    PangoFontMetrics* pango_metrics = GetPangoFontMetrics(pango_desc.get());
 
     underline_position_pixels_ =
         pango_font_metrics_get_underline_position(pango_metrics) /
@@ -367,7 +366,6 @@ void PlatformFontPango::InitPangoMetrics() {
         ASCIIToUTF16("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
     const double dialog_units_pixels = (text_width_pixels / 26 + 1) / 2;
     average_width_pixels_ = std::min(pango_width_pixels, dialog_units_pixels);
-    pango_font_description_free(pango_desc);
   }
 }
 

@@ -8,6 +8,7 @@
 #include <fontconfig/fontconfig.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
+#include <string>
 
 #include <algorithm>
 #include <map>
@@ -19,6 +20,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
@@ -28,8 +30,6 @@
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
 #endif
-
-#include "ui/gfx/skia_util.h"
 
 namespace {
 
@@ -352,9 +352,8 @@ void SetupPangoLayout(PangoLayout* layout,
                       int flags) {
   SetupPangoLayoutWithoutFont(layout, text, width, text_direction, flags);
 
-  PangoFontDescription* desc = font.GetNativeFont();
-  pango_layout_set_font_description(layout, desc);
-  pango_font_description_free(desc);
+  ScopedPangoFontDescription desc(font.GetNativeFont());
+  pango_layout_set_font_description(layout, desc.get());
 }
 
 void SetupPangoLayoutWithFontDescription(
@@ -366,10 +365,9 @@ void SetupPangoLayoutWithFontDescription(
     int flags) {
   SetupPangoLayoutWithoutFont(layout, text, width, text_direction, flags);
 
-  PangoFontDescription* desc = pango_font_description_from_string(
-      font_description.c_str());
-  pango_layout_set_font_description(layout, desc);
-  pango_font_description_free(desc);
+  ScopedPangoFontDescription desc(
+      pango_font_description_from_string(font_description.c_str()));
+  pango_layout_set_font_description(layout, desc.get());
 }
 
 void AdjustTextRectBasedOnLayout(PangoLayout* layout,

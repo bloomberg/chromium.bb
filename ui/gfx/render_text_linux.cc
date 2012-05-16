@@ -148,10 +148,8 @@ std::vector<RenderText::FontSpan> RenderTextLinux::GetFontSpansForTesting() {
     const int end = LayoutIndexToTextIndex(item->offset + item->length);
     const ui::Range range(start, end);
 
-    PangoFontDescription* native_font =
-        pango_font_describe(item->analysis.font);
-    spans.push_back(RenderText::FontSpan(Font(native_font), range));
-    pango_font_description_free(native_font);
+    ScopedPangoFontDescription desc(pango_font_describe(item->analysis.font));
+    spans.push_back(RenderText::FontSpan(Font(desc.get()), range));
   }
 
   return spans;
@@ -341,14 +339,13 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
     // with the same Fonts (to avoid unnecessarily splitting up runs).
     if (i->font_style != default_font_style) {
       FontList derived_font_list = font_list().DeriveFontList(i->font_style);
-      PangoFontDescription* desc = pango_font_description_from_string(
-          derived_font_list.GetFontDescriptionString().c_str());
+      ScopedPangoFontDescription desc(pango_font_description_from_string(
+          derived_font_list.GetFontDescriptionString().c_str()));
 
-      PangoAttribute* pango_attr = pango_attr_font_desc_new(desc);
+      PangoAttribute* pango_attr = pango_attr_font_desc_new(desc.get());
       pango_attr->start_index = TextIndexToLayoutIndex(i->range.start());
       pango_attr->end_index = TextIndexToLayoutIndex(i->range.end());
       pango_attr_list_insert(attrs, pango_attr);
-      pango_font_description_free(desc);
     }
   }
 
@@ -411,14 +408,12 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
     }
     DCHECK_GE(style, 0);
 
-    PangoFontDescription* native_font =
-        pango_font_describe(run->item->analysis.font);
+    ScopedPangoFontDescription desc(
+        pango_font_describe(run->item->analysis.font));
 
     const std::string family_name =
-        pango_font_description_get_family(native_font);
-    renderer.SetTextSize(GetPangoFontSizeInPixels(native_font));
-
-    pango_font_description_free(native_font);
+        pango_font_description_get_family(desc.get());
+    renderer.SetTextSize(GetPangoFontSizeInPixels(desc.get()));
 
     SkScalar glyph_x = x;
     SkScalar start_x = x;

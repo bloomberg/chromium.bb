@@ -46,6 +46,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/pango_util.h"
 
 // These conflict with base/tracked_objects.h, so need to come last.
 #include <gdk/gdkx.h>  // NOLINT
@@ -503,13 +504,12 @@ void RemoveAllChildren(GtkWidget* container) {
 }
 
 void ForceFontSizePixels(GtkWidget* widget, double size_pixels) {
-  PangoFontDescription* font_desc = pango_font_description_new();
+  gfx::ScopedPangoFontDescription font_desc(pango_font_description_new());
   // pango_font_description_set_absolute_size sets the font size in device
   // units, which for us is pixels.
-  pango_font_description_set_absolute_size(font_desc,
+  pango_font_description_set_absolute_size(font_desc.get(),
                                            PANGO_SCALE * size_pixels);
-  gtk_widget_modify_font(widget, font_desc);
-  pango_font_description_free(font_desc);
+  gtk_widget_modify_font(widget, font_desc.get());
 }
 
 void UndoForceFontSize(GtkWidget* widget) {
