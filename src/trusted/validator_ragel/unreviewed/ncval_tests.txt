@@ -36,6 +36,7 @@ TESTS64 += invalid_base
 TESTS64 += invalid_base_store
 TESTS64 += invalid_width_index
 TESTS64 += jmp-16
+TESTS64 += jump_outside
 TESTS64 += lea
 TESTS64 += lea-add-rsp
 TESTS64 += lea-rsp

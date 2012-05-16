@@ -19,22 +19,66 @@
 
 #include "native_client/src/trusted/validator_ragel/gen/validator-x86_64-instruction-consts.c"
 
-#define check_jump_dest \
-    if ((jump_dest & bundle_mask) != bundle_mask) { \
-      if (jump_dest >= size) { \
-        printf("direct jump out of range: %"NACL_PRIxS"\n", jump_dest); \
-        result = 1; \
-        goto error_detected; \
-      } else { \
-        BitmapSetBit(jump_dests, jump_dest + 1); \
-      } \
-    } \
-    SET_OPERAND_NAME(0, JMP_TO); \
-    SET_MODRM_BASE(REG_RIP); \
-    SET_MODRM_INDEX(NO_REG);
-
 static void PrintError(const char* msg, uintptr_t ptr) {
   printf("offset 0x%"NACL_PRIxS": %s", ptr, msg);
+}
+
+static const int kBitsPerByte = 8;
+
+static inline uint8_t *BitmapAllocate(size_t indexes) {
+  size_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
+  uint8_t *bitmap = malloc(byte_count);
+  if (bitmap != NULL) {
+    memset(bitmap, 0, byte_count);
+  }
+  return bitmap;
+}
+
+static inline int BitmapIsBitSet(uint8_t *bitmap, size_t index) {
+  return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
+}
+
+static inline void BitmapSetBit(uint8_t *bitmap, size_t index) {
+  bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
+}
+
+static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
+  bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
+}
+
+static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
+                            size_t size) {
+  size_t i;
+  for (i = 0; i < size / 32; i++) {
+    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
+    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
+    if ((jump_dest_mask & ~valid_target_mask) != 0) {
+      printf("bad jump to around %x\n", (unsigned)(i * 32));
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static const size_t kBundleSize = 32;
+static const size_t kBundleMask = 31;
+
+static int CheckJumpDest(size_t jump_dest,
+                         uint8_t *jump_dests,
+                         size_t size,
+                         size_t report_offset) {
+  if ((jump_dest & kBundleMask) != 0) {
+    if (jump_dest >= size) {
+      printf("offset 0x%zx: direct jump out of range at destination: %"NACL_PRIxS
+             "\n",
+             report_offset,
+             jump_dest);
+      return FALSE;
+    } else {
+      BitmapSetBit(jump_dests, jump_dest);
+    }
+  }
+  return TRUE;
 }
 
 %%{
@@ -75,17 +119,31 @@ static void PrintError(const char* msg, uintptr_t ptr) {
 
   action rel8_operand {
     int8_t offset = (uint8_t) (p[0]);
-    size_t jump_dest = offset + (p - data);
-    check_jump_dest;
+    size_t jump_dest = offset + (p - data) + 1;
+
+    if (!CheckJumpDest(jump_dest, jump_dests, size, begin - data)) {
+      result = 1;
+      goto error_detected;
+    }
+    SET_OPERAND_NAME(0, JMP_TO);
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
   }
   action rel16_operand {
     assert(FALSE);
   }
   action rel32_operand {
     int32_t offset =
-           (uint32_t) (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * (p[0]))));
-    size_t jump_dest = offset + (p - data);
-    check_jump_dest;
+        (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * ((uint32_t) p[0]))));
+    size_t jump_dest = offset + (p - data) + 1;
+
+    if (!CheckJumpDest(jump_dest, jump_dests, size, begin - data)) {
+      result = 1;
+      goto error_detected;
+    }
+    SET_OPERAND_NAME(0, JMP_TO);
+    SET_MODRM_BASE(REG_RIP);
+    SET_MODRM_INDEX(NO_REG);
   }
 
   action process_0_operands {
@@ -532,50 +590,10 @@ enum {
   REX_W = 8
 };
 
-static const int kBitsPerByte = 8;
-
-static inline uint8_t *BitmapAllocate(size_t indexes) {
-  size_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
-  uint8_t *bitmap = malloc(byte_count);
-  if (bitmap != NULL) {
-    memset(bitmap, 0, byte_count);
-  }
-  return bitmap;
-}
-
-static inline int BitmapIsBitSet(uint8_t *bitmap, size_t index) {
-  return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
-}
-
-static inline void BitmapSetBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
-}
-
-static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
-}
-
-static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
-                            size_t size) {
-  size_t i;
-  for (i = 0; i < size / 32; i++) {
-    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
-    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
-    if ((jump_dest_mask & ~valid_target_mask) != 0) {
-      printf("bad jump to around %x\n", (unsigned)(i * 32));
-      return 1;
-    }
-  }
-  return 0;
-}
-
 int ValidateChunkAMD64(const uint8_t *data, size_t size,
                        const NaClCPUFeaturesX86 *cpu_features,
                        process_validation_error_func process_error,
                        void *userdata) {
-  const size_t bundle_size = 32;
-  const size_t bundle_mask = bundle_size - 1;
-
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
 
@@ -599,10 +617,10 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   const uint8_t *sandboxed_rsi_restricted_rdi = 0;
   const uint8_t *sandboxed_rdi = 0;
 
-  assert(size % bundle_size == 0);
+  assert(size % kBundleSize == 0);
 
   while (p < data + size) {
-    const uint8_t *pe = p + bundle_size;
+    const uint8_t *pe = p + kBundleSize;
     const uint8_t *eof = pe;
     int cs;
     enum {
