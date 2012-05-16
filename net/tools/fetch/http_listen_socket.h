@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/message_loop.h"
+#include "net/base/stream_listen_socket.h"
 #include "net/base/tcp_listen_socket.h"
 
 class HttpServerRequestInfo;
@@ -14,7 +15,7 @@ class HttpServerResponseInfo;
 
 // Implements a simple HTTP listen socket on top of the raw socket interface.
 class HttpListenSocket : public net::TCPListenSocket,
-                         public net::ListenSocket::ListenSocketDelegate {
+                         public net::StreamListenSocket::Delegate {
  public:
   class Delegate {
    public:
@@ -25,27 +26,30 @@ class HttpListenSocket : public net::TCPListenSocket,
     virtual ~Delegate() {}
   };
 
-  static HttpListenSocket* Listen(const std::string& ip, int port,
-                                  HttpListenSocket::Delegate* delegate);
-
-  virtual void Listen() OVERRIDE;
-  virtual void Accept() OVERRIDE;
+  static scoped_refptr<HttpListenSocket> CreateAndListen(
+      const std::string& ip, int port, HttpListenSocket::Delegate* delegate);
 
   // Send a server response.
   // TODO(mbelshe): make this capable of non-ascii data.
   void Respond(HttpServerResponseInfo* info, std::string& data);
 
-  // ListenSocketDelegate
-  virtual void DidAccept(net::ListenSocket* server,
-                         net::ListenSocket* connection) OVERRIDE;
-  virtual void DidRead(net::ListenSocket* connection,
+  // StreamListenSocket::Delegate.
+  virtual void DidAccept(net::StreamListenSocket* server,
+                         net::StreamListenSocket* connection) OVERRIDE;
+  virtual void DidRead(net::StreamListenSocket* connection,
                        const char* data, int len) OVERRIDE;
-  virtual void DidClose(net::ListenSocket* sock) OVERRIDE;
+  virtual void DidClose(net::StreamListenSocket* sock) OVERRIDE;
+
+ protected:
+  // Overrides TCPListenSocket::Accept().
+  virtual void Accept() OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<net::ListenSocket>;
+  friend class base::RefCountedThreadSafe<net::StreamListenSocket>;
 
   static const int kReadBufSize = 16 * 1024;
+
+  // Must run in the IO thread.
   HttpListenSocket(SOCKET s, HttpListenSocket::Delegate* del);
   virtual ~HttpListenSocket();
 
@@ -54,7 +58,7 @@ class HttpListenSocket : public net::TCPListenSocket,
   // recv data.
   HttpServerRequestInfo* ParseHeaders();
 
-  HttpListenSocket::Delegate* delegate_;
+  HttpListenSocket::Delegate* const delegate_;
   std::string recv_data_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpListenSocket);

@@ -75,6 +75,12 @@ void Request::OnDataReceived(const std::string& data) {
   }
 }
 
+ResponseForPath::~ResponseForPath() {
+}
+
+SimpleResponse::~SimpleResponse() {
+}
+
 bool FileResponse::GetContentType(std::string* content_type) const {
   size_t length = ContentLength();
   char buffer[4096];
@@ -100,7 +106,7 @@ bool FileResponse::GetContentType(std::string* content_type) const {
   return content_type->length() > 0;
 }
 
-void FileResponse::WriteContents(net::ListenSocket* socket) const {
+void FileResponse::WriteContents(net::StreamListenSocket* socket) const {
   DCHECK(file_.get());
   if (file_.get()) {
     socket->Send(reinterpret_cast<const char*>(file_->data()),
@@ -168,7 +174,7 @@ Response* SimpleWebServer::FindResponse(const Request& request) const {
 }
 
 Connection* SimpleWebServer::FindConnection(
-    const net::ListenSocket* socket) const {
+    const net::StreamListenSocket* socket) const {
   ConnectionList::const_iterator it;
   for (it = connections_.begin(); it != connections_.end(); it++) {
     if ((*it)->IsSame(socket)) {
@@ -178,12 +184,12 @@ Connection* SimpleWebServer::FindConnection(
   return NULL;
 }
 
-void SimpleWebServer::DidAccept(net::ListenSocket* server,
-                                net::ListenSocket* connection) {
+void SimpleWebServer::DidAccept(net::StreamListenSocket* server,
+                                net::StreamListenSocket* connection) {
   connections_.push_back(new Connection(connection));
 }
 
-void SimpleWebServer::DidRead(net::ListenSocket* connection,
+void SimpleWebServer::DidRead(net::StreamListenSocket* connection,
                               const char* data,
                               int len) {
   Connection* c = FindConnection(connection);
@@ -220,7 +226,7 @@ void SimpleWebServer::DidRead(net::ListenSocket* connection,
   }
 }
 
-void SimpleWebServer::DidClose(net::ListenSocket* sock) {
+void SimpleWebServer::DidClose(net::StreamListenSocket* sock) {
   // To keep the historical list of connections reasonably tidy, we delete
   // 404's when the connection ends.
   Connection* c = FindConnection(sock);
@@ -246,7 +252,7 @@ HTTPTestServer::~HTTPTestServer() {
 }
 
 std::list<scoped_refptr<ConfigurableConnection>>::iterator
-HTTPTestServer::FindConnection(const net::ListenSocket* socket) {
+HTTPTestServer::FindConnection(const net::StreamListenSocket* socket) {
   ConnectionList::iterator it;
   // Scan through the list searching for the desired socket. Along the way,
   // erase any connections for which the corresponding socket has already been
@@ -266,19 +272,19 @@ HTTPTestServer::FindConnection(const net::ListenSocket* socket) {
 }
 
 scoped_refptr<ConfigurableConnection> HTTPTestServer::ConnectionFromSocket(
-    const net::ListenSocket* socket) {
+    const net::StreamListenSocket* socket) {
   ConnectionList::iterator it = FindConnection(socket);
   if (it != connection_list_.end())
     return *it;
   return NULL;
 }
 
-void HTTPTestServer::DidAccept(net::ListenSocket* server,
-                               net::ListenSocket* socket) {
+void HTTPTestServer::DidAccept(net::StreamListenSocket* server,
+                               net::StreamListenSocket* socket) {
   connection_list_.push_back(new ConfigurableConnection(socket));
 }
 
-void HTTPTestServer::DidRead(net::ListenSocket* socket,
+void HTTPTestServer::DidRead(net::StreamListenSocket* socket,
                              const char* data,
                              int len) {
   scoped_refptr<ConfigurableConnection> connection =
@@ -298,7 +304,7 @@ void HTTPTestServer::DidRead(net::ListenSocket* socket,
   }
 }
 
-void HTTPTestServer::DidClose(net::ListenSocket* socket) {
+void HTTPTestServer::DidClose(net::StreamListenSocket* socket) {
   ConnectionList::iterator it = FindConnection(socket);
   if (it != connection_list_.end())
     connection_list_.erase(it);
@@ -373,8 +379,8 @@ void ConfigurableConnection::SendWithOptions(const std::string& headers,
     socket_->Send(headers);
     socket_->Send(content_length_header, true);
     socket_->Send(content);
-    // Post a task to close the socket since ListenSocket doesn't like instances
-    // to go away from within its callbacks.
+    // Post a task to close the socket since StreamListenSocket doesn't like
+    // instances to go away from within its callbacks.
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&ConfigurableConnection::Close, this));
 

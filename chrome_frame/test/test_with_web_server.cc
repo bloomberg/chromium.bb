@@ -22,6 +22,7 @@
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
 #include "chrome_frame/test/test_scrubber.h"
 #include "net/base/mime_util.h"
+#include "net/base/stream_listen_socket.h"
 #include "net/http/http_util.h"
 
 using chrome_frame_test::kChromeFrameLongNavigationTimeout;
@@ -879,7 +880,7 @@ class UaTemplateFileResponse : public test_server::FileResponse {
     return content_.length();
   }
 
-  virtual void WriteContents(net::ListenSocket* socket) const {
+  virtual void WriteContents(net::StreamListenSocket* socket) const {
     DCHECK(content_.length());
     socket->Send(content_.c_str(), content_.length(), false);
     request_id_++;
@@ -1005,7 +1006,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
       return match;
     }
 
-    virtual void WriteContents(net::ListenSocket* socket) const {
+    virtual void WriteContents(net::StreamListenSocket* socket) const {
       if (is_post_) {
         socket->Send(kText, sizeof(kText) - 1, false);
       } else {

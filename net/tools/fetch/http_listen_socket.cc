@@ -13,43 +13,38 @@
 #include "net/tools/fetch/http_server_request_info.h"
 #include "net/tools/fetch/http_server_response_info.h"
 
-// must run in the IO thread
 HttpListenSocket::HttpListenSocket(SOCKET s,
                                    HttpListenSocket::Delegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(net::TCPListenSocket(s, this)),
       delegate_(delegate) {
 }
 
-// must run in the IO thread
 HttpListenSocket::~HttpListenSocket() {
 }
 
-void HttpListenSocket::Listen() {
-  net::TCPListenSocket::Listen();
-}
-
 void HttpListenSocket::Accept() {
-  SOCKET conn = net::TCPListenSocket::Accept(socket_);
+  SOCKET conn = net::TCPListenSocket::AcceptSocket();
   DCHECK_NE(conn, net::TCPListenSocket::kInvalidSocket);
   if (conn == net::TCPListenSocket::kInvalidSocket) {
     // TODO
   } else {
     scoped_refptr<HttpListenSocket> sock(
         new HttpListenSocket(conn, delegate_));
-    // it's up to the delegate to AddRef if it wants to keep it around
+    // It's up to the delegate to AddRef if it wants to keep it around.
     DidAccept(this, sock);
   }
 }
 
-HttpListenSocket* HttpListenSocket::Listen(
+// static
+scoped_refptr<HttpListenSocket> HttpListenSocket::CreateAndListen(
     const std::string& ip,
     int port,
     HttpListenSocket::Delegate* delegate) {
   SOCKET s = net::TCPListenSocket::CreateAndBind(ip, port);
   if (s == net::TCPListenSocket::kInvalidSocket) {
-    // TODO (ibrar): error handling
+    // TODO (ibrar): error handling.
   } else {
-    HttpListenSocket *serv = new HttpListenSocket(s, delegate);
+    scoped_refptr<HttpListenSocket> serv = new HttpListenSocket(s, delegate);
     serv->Listen();
     return serv;
   }
@@ -78,19 +73,19 @@ enum header_parse_inputs {
 
 // Parser states.
 enum header_parse_states {
-  ST_METHOD,     // Receiving the method
-  ST_URL,        // Receiving the URL
-  ST_PROTO,      // Receiving the protocol
-  ST_HEADER,     // Starting a Request Header
-  ST_NAME,       // Receiving a request header name
-  ST_SEPARATOR,  // Receiving the separator between header name and value
-  ST_VALUE,      // Receiving a request header value
-  ST_DONE,       // Parsing is complete and successful
+  ST_METHOD,     // Receiving the method.
+  ST_URL,        // Receiving the URL.
+  ST_PROTO,      // Receiving the protocol.
+  ST_HEADER,     // Starting a Request Header.
+  ST_NAME,       // Receiving a request header name.
+  ST_SEPARATOR,  // Receiving the separator between header name and value.
+  ST_VALUE,      // Receiving a request header value.
+  ST_DONE,       // Parsing is complete and successful.
   ST_ERR,        // Parsing encountered invalid syntax.
   MAX_STATES
 };
 
-// State transition table
+// State transition table.
 int parser_state[MAX_STATES][MAX_INPUTS] = {
 /* METHOD    */ { ST_URL,       ST_ERR,     ST_ERR,  ST_ERR,       ST_METHOD },
 /* URL       */ { ST_PROTO,     ST_ERR,     ST_ERR,  ST_URL,       ST_URL },
@@ -154,7 +149,7 @@ HttpServerRequestInfo* HttpListenSocket::ParseHeaders() {
           break;
         case ST_VALUE:
           header_value = buffer;
-          // TODO(mbelshe): Deal better with duplicate headers
+          // TODO(mbelshe): Deal better with duplicate headers.
           DCHECK(info->headers.find(header_name) == info->headers.end());
           info->headers[header_name] = header_value;
           buffer.clear();
@@ -162,7 +157,7 @@ HttpServerRequestInfo* HttpListenSocket::ParseHeaders() {
       }
       state = next_state;
     } else {
-      // Do any actions based on current state
+      // Do any actions based on current state.
       switch (state) {
         case ST_METHOD:
         case ST_URL:
@@ -185,12 +180,12 @@ HttpServerRequestInfo* HttpListenSocket::ParseHeaders() {
   return NULL;
 }
 
-void HttpListenSocket::DidAccept(net::ListenSocket* server,
-                                 net::ListenSocket* connection) {
+void HttpListenSocket::DidAccept(net::StreamListenSocket* server,
+                                 net::StreamListenSocket* connection) {
   connection->AddRef();
 }
 
-void HttpListenSocket::DidRead(net::ListenSocket* connection,
+void HttpListenSocket::DidRead(net::StreamListenSocket* connection,
                                const char* data,
                                int len) {
   recv_data_.append(data, len);
@@ -203,12 +198,12 @@ void HttpListenSocket::DidRead(net::ListenSocket* connection,
   }
 }
 
-void HttpListenSocket::DidClose(net::ListenSocket* sock) {
+void HttpListenSocket::DidClose(net::StreamListenSocket* sock) {
   sock->Release();
 }
 
 // Convert the numeric status code to a string.
-// e.g.  200 -> "200 OK"
+// e.g.  200 -> "200 OK".
 std::string ServerStatus(int code) {
   switch(code) {
     case 200:
@@ -223,12 +218,12 @@ void HttpListenSocket::Respond(HttpServerResponseInfo* info,
                                std::string& data) {
   std::string response;
 
-  // status line
+  // Status line.
   response = info->protocol + " ";
   response += ServerStatus(info->status);
   response += "\r\n";
 
-  // standard headers
+  // Standard headers.
   if (info->content_type.length())
     response += "Content-type: " + info->content_type + "\r\n";
 
@@ -239,12 +234,12 @@ void HttpListenSocket::Respond(HttpServerResponseInfo* info,
   if (info->connection_close)
     response += "Connection: close\r\n";
 
-  // TODO(mbelshe): support additional headers
+  // TODO(mbelshe): support additional headers.
 
-  // End of headers
+  // End of headers.
   response += "\r\n";
 
-  // Add data
+  // Add data.
   response += data;
 
   // Write it all out.

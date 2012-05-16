@@ -41,7 +41,7 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "net/base/listen_socket.h"
+#include "net/base/stream_listen_socket.h"
 
 namespace test_server {
 
@@ -106,13 +106,13 @@ class Request {
 // shut down.
 class Connection {
  public:
-  explicit Connection(net::ListenSocket* sock) : socket_(sock) {
+  explicit Connection(net::StreamListenSocket* sock) : socket_(sock) {
   }
 
   ~Connection() {
   }
 
-  bool IsSame(const net::ListenSocket* socket) const {
+  bool IsSame(const net::StreamListenSocket* socket) const {
     return socket_ == socket;
   }
 
@@ -129,7 +129,7 @@ class Connection {
   }
 
  protected:
-  scoped_refptr<net::ListenSocket> socket_;
+  scoped_refptr<net::StreamListenSocket> socket_;
   Request request_;
 
  private:
@@ -165,7 +165,7 @@ class Response {
     return 0;
   }
 
-  virtual void WriteContents(net::ListenSocket* socket) const {
+  virtual void WriteContents(net::StreamListenSocket* socket) const {
   }
 
   virtual void IncrementAccessCounter() {
@@ -192,6 +192,8 @@ class ResponseForPath : public Response {
       : request_path_(request_path) {
   }
 
+  virtual ~ResponseForPath();
+
   virtual bool Matches(const Request& r) const {
     std::string path = r.path();
     std::string::size_type pos = path.find('?');
@@ -216,7 +218,9 @@ class SimpleResponse : public ResponseForPath {
       : ResponseForPath(request_path), contents_(contents) {
   }
 
-  virtual void WriteContents(net::ListenSocket* socket) const {
+  virtual ~SimpleResponse();
+
+  virtual void WriteContents(net::StreamListenSocket* socket) const {
     socket->Send(contents_.c_str(), contents_.length(), false);
   }
 
@@ -242,7 +246,7 @@ class FileResponse : public ResponseForPath {
   }
 
   virtual bool GetContentType(std::string* content_type) const;
-  virtual void WriteContents(net::ListenSocket* socket) const;
+  virtual void WriteContents(net::StreamListenSocket* socket) const;
   virtual size_t ContentLength() const;
 
  protected:
@@ -276,7 +280,7 @@ typedef std::list<Connection*> ConnectionList;
 // Implementation of a simple http server.
 // Before creating an instance of the server, make sure the current thread
 // has a message loop.
-class SimpleWebServer : public net::ListenSocket::ListenSocketDelegate {
+class SimpleWebServer : public net::StreamListenSocket::Delegate {
  public:
   explicit SimpleWebServer(int port);
   virtual ~SimpleWebServer();
@@ -291,13 +295,13 @@ class SimpleWebServer : public net::ListenSocket::ListenSocketDelegate {
   // the cleanup process.
   void DeleteAllResponses();
 
-  // ListenSocketDelegate overrides.
-  virtual void DidAccept(net::ListenSocket* server,
-                         net::ListenSocket* connection);
-  virtual void DidRead(net::ListenSocket* connection,
+  // StreamListenSocket::Delegate overrides.
+  virtual void DidAccept(net::StreamListenSocket* server,
+                         net::StreamListenSocket* connection);
+  virtual void DidRead(net::StreamListenSocket* connection,
                        const char* data,
                        int len);
-  virtual void DidClose(net::ListenSocket* sock);
+  virtual void DidClose(net::StreamListenSocket* sock);
 
   const ConnectionList& connections() const {
     return connections_;
@@ -310,17 +314,17 @@ class SimpleWebServer : public net::ListenSocket::ListenSocketDelegate {
         : SimpleResponse("/quit", "So long and thanks for all the fish.") {
     }
 
-    virtual void QuitResponse::WriteContents(net::ListenSocket* socket) const {
+    virtual void WriteContents(net::StreamListenSocket* socket) const {
       SimpleResponse::WriteContents(socket);
       MessageLoop::current()->Quit();
     }
   };
 
   Response* FindResponse(const Request& request) const;
-  Connection* FindConnection(const net::ListenSocket* socket) const;
+  Connection* FindConnection(const net::StreamListenSocket* socket) const;
 
  protected:
-  scoped_refptr<net::ListenSocket> server_;
+  scoped_refptr<net::StreamListenSocket> server_;
   ConnectionList connections_;
   std::list<Response*> responses_;
   QuitResponse quit_;
@@ -345,7 +349,7 @@ class ConfigurableConnection : public base::RefCounted<ConfigurableConnection> {
     int64 timeout_;
   };
 
-  explicit ConfigurableConnection(net::ListenSocket* sock)
+  explicit ConfigurableConnection(net::StreamListenSocket* sock)
       : socket_(sock),
         cur_pos_(0) {}
 
@@ -368,7 +372,7 @@ class ConfigurableConnection : public base::RefCounted<ConfigurableConnection> {
   // Closes the connection by releasing this instance's reference on its socket.
   void Close();
 
-  scoped_refptr<net::ListenSocket> socket_;
+  scoped_refptr<net::StreamListenSocket> socket_;
   Request r_;
   SendOptions options_;
   std::string data_;
@@ -380,7 +384,7 @@ class ConfigurableConnection : public base::RefCounted<ConfigurableConnection> {
 // Simple class used as a base class for mock webserver.
 // Override virtual functions Get and Post and use passed ConfigurableConnection
 // instance to send the response.
-class HTTPTestServer : public net::ListenSocket::ListenSocketDelegate {
+class HTTPTestServer : public net::StreamListenSocket::Delegate {
  public:
   HTTPTestServer(int port, const std::wstring& address, FilePath root_dir);
   virtual ~HTTPTestServer();
@@ -407,16 +411,19 @@ class HTTPTestServer : public net::ListenSocket::ListenSocketDelegate {
 
  private:
   typedef std::list<scoped_refptr<ConfigurableConnection> > ConnectionList;
-  ConnectionList::iterator FindConnection(const net::ListenSocket* socket);
+  ConnectionList::iterator FindConnection(
+      const net::StreamListenSocket* socket);
   scoped_refptr<ConfigurableConnection> ConnectionFromSocket(
-      const net::ListenSocket* socket);
+      const net::StreamListenSocket* socket);
 
-  // ListenSocketDelegate overrides.
-  virtual void DidAccept(net::ListenSocket* server, net::ListenSocket* socket);
-  virtual void DidRead(net::ListenSocket* socket, const char* data, int len);
-  virtual void DidClose(net::ListenSocket* socket);
+  // StreamListenSocket::Delegate overrides.
+  virtual void DidAccept(net::StreamListenSocket* server,
+                         net::StreamListenSocket* socket);
+  virtual void DidRead(net::StreamListenSocket* socket,
+                       const char* data, int len);
+  virtual void DidClose(net::StreamListenSocket* socket);
 
-  scoped_refptr<net::ListenSocket> server_;
+  scoped_refptr<net::StreamListenSocket> server_;
   ConnectionList connection_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HTTPTestServer);
