@@ -294,7 +294,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DownloadDirectory,
 // This message requests the id of the view that has the focus in the
 // specified window. If no view is focused, -1 is returned.  Note that the
 // window should either be a ViewWindow or a Browser.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_GetFocusedViewID,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_GetFocusedViewID,
                             int /* view_handle */,
                             int /* focused_view_id */)
 
@@ -1275,7 +1275,7 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_RemoveBrowsingData,
 
 // Block until the focused view id changes to something other than
 // |previous_view_id|.
-IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_WaitForFocusedViewIDToChange,
+IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_DEPRECATED_WaitForFocusedViewIDToChange,
                             int /* window handle */,
                             int /* previous_view_id */,
                             bool /* success */,
@@ -1286,10 +1286,10 @@ IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_WaitForFocusedViewIDToChange,
 //   1. Call StartTrackingPopupMenus.
 //   2. Call an automation method that results in opening the popup menu.
 //   3. Call WaitForPopupMenuToOpen and check for success.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_StartTrackingPopupMenus,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_StartTrackingPopupMenus,
                             int /* browser handle */,
                             bool /* success */)
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_WaitForPopupMenuToOpen,
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DEPRECATED_WaitForPopupMenuToOpen,
                             bool /* success */)
 
 // Generic pyauto pattern to help avoid future addition of

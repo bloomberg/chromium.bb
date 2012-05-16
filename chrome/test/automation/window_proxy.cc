@@ -107,26 +107,6 @@ bool WindowProxy::SetBounds(const gfx::Rect& bounds) {
   return result;
 }
 
-bool WindowProxy::GetFocusedViewID(int* view_id) {
-  if (!is_valid()) return false;
-
-  if (!view_id) {
-    NOTREACHED();
-    return false;
-  }
-
-  return sender_->Send(new AutomationMsg_GetFocusedViewID(handle_, view_id));
-}
-
-bool WindowProxy::WaitForFocusedViewIDToChange(
-    int old_view_id, int* new_view_id) {
-  bool result = false;
-  if (!sender_->Send(new AutomationMsg_WaitForFocusedViewIDToChange(
-                     handle_, old_view_id, &result, new_view_id)))
-    return false;
-  return result;
-}
-
 scoped_refptr<BrowserProxy> WindowProxy::GetBrowser() {
   return GetBrowserWithTimeout(base::kNoTimeout, NULL);
 }

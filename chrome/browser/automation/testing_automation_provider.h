@@ -63,8 +63,6 @@ class TestingAutomationProvider : public AutomationProvider,
   virtual void OnChannelError() OVERRIDE;
 
  private:
-  class PopupMenuWaiter;
-
   // Storage for ImportSettings() to resume operations after a callback.
   struct ImportSettingsData {
     string16 browser_name;
@@ -169,23 +167,6 @@ class TestingAutomationProvider : public AutomationProvider,
                          const std::wstring& frame_xpath,
                          const std::wstring& script,
                          IPC::Message* reply_message);
-
-#if defined(TOOLKIT_VIEWS)
-  void GetFocusedViewID(int handle, int* view_id);
-
-  // Block until the focused view ID changes to something other than
-  // previous_view_id.
-  void WaitForFocusedViewIDToChange(int handle,
-                                    int previous_view_id,
-                                    IPC::Message* reply_message);
-
-  // Start tracking popup menus. Must be called before executing the
-  // command that might open the popup menu; then call WaitForPopupMenuToOpen.
-  void StartTrackingPopupMenus(int browser_handle, bool* success);
-
-  // Wait until a popup menu has opened.
-  void WaitForPopupMenuToOpen(IPC::Message* reply_message);
-#endif  // defined(TOOLKIT_VIEWS)
 
   void HandleInspectElementRequest(int handle,
                                    int x,
@@ -1600,15 +1581,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void ExecuteJavascriptInRenderViewFrame(
       const string16& frame_xpath, const string16& script,
       IPC::Message* reply_message, content::RenderViewHost* render_view_host);
-
-#if defined(TOOLKIT_VIEWS)
-  // Keep track of whether a popup menu has been opened since the last time
-  // that StartTrackingPopupMenus has been called.
-  bool popup_menu_opened_;
-
-  // A temporary object that receives a notification when a popup menu opens.
-  PopupMenuWaiter* popup_menu_waiter_;
-#endif  // defined(TOOLKIT_VIEWS)
 
 #if defined(OS_CHROMEOS)
   // Avoid scoped ptr here to avoid having to define it completely in the

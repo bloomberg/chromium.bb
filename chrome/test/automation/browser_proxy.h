@@ -216,15 +216,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // on success.
   bool ShutdownSessionService() WARN_UNUSED_RESULT;
 
-  // To avoid race conditions, waiting until a popup menu opens is a
-  // three-step process:
-  //   1. Call StartTrackingPopupMenus.
-  //   2. Call an automation method that results in opening the popup menu.
-  //   3. Call WaitForPopupMenuToOpen and check for success.
-  // Both methods return true on success.
-  bool StartTrackingPopupMenus() WARN_UNUSED_RESULT;
-  bool WaitForPopupMenuToOpen() WARN_UNUSED_RESULT;
-
   // Generic pattern for sending automation requests.
   bool SendJSONRequest(const std::string& request,
                        int timeout_ms,

@@ -85,14 +85,6 @@ class WindowProxy : public AutomationResourceProxy {
   // bounds was successful.
   bool SetBounds(const gfx::Rect& bounds);
 
-  // Gets the id of the view that currently has focus.  Returns true if the id
-  // was retrieved.
-  bool GetFocusedViewID(int* view_id);
-
-  // Waits until the focused view ID changes to something other than
-  // |old_view_id|. Returns true if the focused view ID did change.
-  bool WaitForFocusedViewIDToChange(int old_view_id, int* new_view_id);
-
   // Returns the browser this window corresponds to, or NULL if this window
   // is not a browser.  The caller owns the returned BrowserProxy.
   scoped_refptr<BrowserProxy> GetBrowser();

@@ -239,9 +239,6 @@ class AutomationInterstitialPage : public content::InterstitialPageDelegate {
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
     : AutomationProvider(profile)
-#if defined(TOOLKIT_VIEWS)
-      , popup_menu_waiter_(NULL)
-#endif
 #if defined(OS_CHROMEOS)
       , power_manager_observer_(NULL)
 #endif
@@ -405,15 +402,6 @@ bool TestingAutomationProvider::OnMessageReceived(
                         GetFullscreenBubbleVisibility)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_DomOperation,
                                     ExecuteJavascript)
-#if defined(TOOLKIT_VIEWS)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetFocusedViewID, GetFocusedViewID)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForFocusedViewIDToChange,
-                                    WaitForFocusedViewIDToChange)
-    IPC_MESSAGE_HANDLER(AutomationMsg_StartTrackingPopupMenus,
-                        StartTrackingPopupMenus)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForPopupMenuToOpen,
-                                    WaitForPopupMenuToOpen)
-#endif  // defined(TOOLKIT_VIEWS)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InspectElement,
                                     HandleInspectElementRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_DownloadDirectory, GetDownloadDirectory)

@@ -553,27 +553,6 @@ bool BrowserProxy::ShutdownSessionService() {
   return did_shutdown;
 }
 
-bool BrowserProxy::StartTrackingPopupMenus() {
-  if (!is_valid())
-    return false;
-
-  bool result = false;
-  if (!sender_->Send(new AutomationMsg_StartTrackingPopupMenus(
-          handle_, &result)))
-    return false;
-  return result;
-}
-
-bool BrowserProxy::WaitForPopupMenuToOpen() {
-  if (!is_valid())
-    return false;
-
-  bool result = false;
-  if (!sender_->Send(new AutomationMsg_WaitForPopupMenuToOpen(&result)))
-    return false;
-  return result;
-}
-
 bool BrowserProxy::SendJSONRequest(const std::string& request,
                                    int timeout_ms,
                                    std::string* response) {

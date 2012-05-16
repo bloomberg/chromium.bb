@@ -477,7 +477,7 @@
         'browser/browser_focus_uitest.cc',
         'browser/browser_keyevents_browsertest.cc',
         'browser/instant/instant_browsertest.cc',
-        'browser/keyboard_access_uitest.cc',
+        'browser/keyboard_access_browsertest.cc',
         'browser/printing/print_dialog_cloud_interative_uitest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
