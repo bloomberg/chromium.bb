@@ -2539,6 +2539,9 @@ shell_destroy(struct wl_listener *listener, void *data)
 	if (shell->child.client)
 		wl_client_destroy(shell->child.client);
 
+	wl_list_remove(&shell->lock_listener.link);
+	wl_list_remove(&shell->unlock_listener.link);
+
 	free(shell->screensaver.path);
 	free(shell);
 }
