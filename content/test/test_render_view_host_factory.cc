@@ -28,13 +28,15 @@ void TestRenderViewHostFactory::set_render_process_host_factory(
 content::RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
+    RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     bool swapped_out,
     SessionStorageNamespace* session_storage) {
   // See declaration of render_process_host_factory_ below.
   static_cast<SiteInstanceImpl*>(instance)->
       set_render_process_host_factory(render_process_host_factory_);
-  return new TestRenderViewHost(instance, delegate, routing_id, swapped_out);
+  return new TestRenderViewHost(
+      instance, delegate, widget_delegate, routing_id, swapped_out);
 }
 
 }  // namespace content

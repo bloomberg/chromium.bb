@@ -489,7 +489,7 @@ WebContents* InterstitialPageImpl::web_contents() const {
 
 RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   RenderViewHostImpl* render_view_host = new RenderViewHostImpl(
-      SiteInstance::Create(web_contents()->GetBrowserContext()), this,
+      SiteInstance::Create(web_contents()->GetBrowserContext()), this, this,
       MSG_ROUTING_NONE, false, dom_storage::kInvalidSessionStorageNamespaceId);
   return render_view_host;
 }

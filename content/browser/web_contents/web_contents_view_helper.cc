@@ -130,7 +130,7 @@ RenderWidgetHostView* WebContentsViewHelper::CreateNewWidget(
     WebKit::WebPopupType popup_type) {
   content::RenderProcessHost* process = web_contents->GetRenderProcessHost();
   RenderWidgetHostImpl* widget_host =
-      new RenderWidgetHostImpl(process, route_id);
+      new RenderWidgetHostImpl(web_contents, process, route_id);
   RenderWidgetHostViewPort* widget_view =
       RenderWidgetHostViewPort::CreateViewForWidget(widget_host);
   if (!is_fullscreen) {

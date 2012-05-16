@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/tap_suppression_controller.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -98,11 +99,13 @@ size_t RenderWidgetHost::BackingStoreMemorySize() {
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostImpl
 
-RenderWidgetHostImpl::RenderWidgetHostImpl(RenderProcessHost* process,
+RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
+                                           RenderProcessHost* process,
                                            int routing_id)
     : view_(NULL),
       renderer_initialized_(false),
       hung_renderer_delay_ms_(kHungRendererDelayMs),
+      delegate_(delegate),
       process_(process),
       routing_id_(routing_id),
       surface_id_(0),
@@ -130,6 +133,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderProcessHost* process,
       has_touch_handler_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       tap_suppression_controller_(new TapSuppressionController(this)) {
+  CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
     routing_id_ = process_->GetNextRoutingID();
     surface_id_ = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
@@ -213,12 +217,6 @@ void RenderWidgetHostImpl::CompositingSurfaceUpdated() {
   GpuSurfaceTracker::Get()->SetSurfaceHandle(
       surface_id_, GetCompositingSurface());
   process_->SurfaceUpdated(surface_id_);
-}
-
-bool RenderWidgetHostImpl::PreHandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event,
-    bool* is_keyboard_shortcut) {
-  return false;
 }
 
 void RenderWidgetHostImpl::Init() {
@@ -854,7 +852,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 
       // Tab switching/closing accelerators aren't sent to the renderer to avoid
       // a hung/malicious renderer from interfering.
-      if (PreHandleKeyboardEvent(key_event, &is_keyboard_shortcut))
+      if (delegate_->PreHandleKeyboardEvent(key_event, &is_keyboard_shortcut))
         return;
 
       if (key_event.type == WebKeyboardEvent::RawKeyDown)
@@ -866,7 +864,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
       return;
 
     // Put all WebKeyboardEvent objects in a queue since we can't trust the
-    // renderer and we need to give something to the UnhandledInputEvent
+    // renderer and we need to give something to the HandleKeyboardEvent
     // handler.
     key_queue_.push_back(key_event);
     HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
@@ -1599,11 +1597,11 @@ void RenderWidgetHostImpl::ProcessKeyboardEventAck(int type, bool processed) {
     // because the user has moved away from us and no longer expect any effect
     // of this key event.
     if (!processed && !is_hidden_ && !front_item.skip_in_browser) {
-      UnhandledKeyboardEvent(front_item);
+      delegate_->HandleKeyboardEvent(front_item);
 
       // WARNING: This RenderWidgetHostImpl can be deallocated at this point
       // (i.e.  in the case of Ctrl+W, where the call to
-      // UnhandledKeyboardEvent destroys this RenderWidgetHostImpl).
+      // HandleKeyboardEvent destroys this RenderWidgetHostImpl).
     }
   }
 }

@@ -32,6 +32,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
   virtual content::RenderViewHost* CreateRenderViewHost(
       content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
+      content::RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       bool swapped_out,
       content::SessionStorageNamespace* session_storage) OVERRIDE;

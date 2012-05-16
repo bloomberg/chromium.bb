@@ -130,12 +130,14 @@ RenderViewHostImpl* RenderViewHostImpl::FromID(int render_process_id,
       RenderViewHost::FromID(render_process_id, render_view_id));
 }
 
-RenderViewHostImpl::RenderViewHostImpl(SiteInstance* instance,
-                                       RenderViewHostDelegate* delegate,
-                                       int routing_id,
-                                       bool swapped_out,
-                                       SessionStorageNamespace* session_storage)
-    : RenderWidgetHostImpl(instance->GetProcess(), routing_id),
+RenderViewHostImpl::RenderViewHostImpl(
+    SiteInstance* instance,
+    RenderViewHostDelegate* delegate,
+    RenderWidgetHostDelegate* widget_delegate,
+    int routing_id,
+    bool swapped_out,
+    SessionStorageNamespace* session_storage)
+    : RenderWidgetHostImpl(widget_delegate, instance->GetProcess(), routing_id),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       waiting_for_drag_context_response_(false),
@@ -1399,16 +1401,6 @@ void RenderViewHostImpl::AddObserver(
 void RenderViewHostImpl::RemoveObserver(
     content::RenderViewHostObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool RenderViewHostImpl::PreHandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  return delegate_->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
-}
-
-void RenderViewHostImpl::UnhandledKeyboardEvent(
-    const NativeWebKeyboardEvent& event) {
-  delegate_->HandleKeyboardEvent(event);
 }
 
 void RenderViewHostImpl::OnUserGesture() {

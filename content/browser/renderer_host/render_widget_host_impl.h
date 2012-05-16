@@ -48,6 +48,7 @@ struct WebScreenInfo;
 
 namespace content {
 
+class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
 class TapSuppressionController;
 
@@ -58,7 +59,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
  public:
   // routing_id can be MSG_ROUTING_NONE, in which case the next available
   // routing id is taken from the RenderProcessHost.
-  RenderWidgetHostImpl(RenderProcessHost* process, int routing_id);
+  RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
+                       RenderProcessHost* process,
+                       int routing_id);
   virtual ~RenderWidgetHostImpl();
 
   // Use RenderWidgetHostImpl::From(rwh) to downcast a
@@ -377,22 +380,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // when accelerated compositing is enabled.
   gfx::GLSurfaceHandle GetCompositingSurface();
 
-  // Called to handled a keyboard event before sending it to the renderer.
-  // This is overridden by RenderViewHost to send upwards to its delegate.
-  // Returns true if the event was handled, and then the keyboard event will
-  // not be sent to the renderer anymore. Otherwise, if the |event| would
-  // be handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
-  // |*is_keyboard_shortcut| should be set to true.
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-
   // "RenderWidgetHostDelegate" ------------------------------------------------
   // There is no RenderWidgetHostDelegate but the following methods serve the
   // same purpose. They are overridden by RenderViewHost to send upwards to its
   // delegate.
-
-  // Called when a keyboard event was not processed by the renderer.
-  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
   // Called when a mousewheel event was not processed by the renderer.
   virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) {}
@@ -560,6 +551,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).
   void DelayedAutoResized();
+
+  // Our delegate, which wants to know mainly about keyboard events.
+  RenderWidgetHostDelegate* delegate_;
 
   // Created during construction but initialized during Init*(). Therefore, it
   // is guaranteed never to be NULL, but its channel may be NULL if the

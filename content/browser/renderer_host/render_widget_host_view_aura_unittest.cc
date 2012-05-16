@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/test/mock_render_process_host.h"
@@ -23,6 +24,12 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
+
+class MockRenderWidgetHostDelegate : public content::RenderWidgetHostDelegate {
+ public:
+  MockRenderWidgetHostDelegate() {}
+  virtual ~MockRenderWidgetHostDelegate() {}
+};
 
 // Simple observer that keeps track of changes to a window for tests.
 class TestWindowObserver : public aura::WindowObserver {
@@ -70,8 +77,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext);
     content::MockRenderProcessHost* process_host =
         new content::MockRenderProcessHost(browser_context_.get());
-    widget_host_ =
-        new content::RenderWidgetHostImpl(process_host, MSG_ROUTING_NONE);
+    widget_host_ = new content::RenderWidgetHostImpl(
+        &delegate_, process_host, MSG_ROUTING_NONE);
     view_ = static_cast<RenderWidgetHostViewAura*>(
         content::RenderWidgetHostView::CreateViewForWidget(widget_host_));
   }
@@ -89,6 +96,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
   scoped_ptr<content::BrowserContext> browser_context_;
+  MockRenderWidgetHostDelegate delegate_;
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.

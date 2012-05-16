@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -33,7 +34,8 @@ enum ResourceRequestAction {
 class CONTENT_EXPORT InterstitialPageImpl
     : public NON_EXPORTED_BASE(content::InterstitialPage),
       public content::NotificationObserver,
-      public content::RenderViewHostDelegate {
+      public content::RenderViewHostDelegate,
+      public content::RenderWidgetHostDelegate {
  public:
   // The different state of actions the user can take in an interstitial.
   enum ActionState {
@@ -96,12 +98,14 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
   virtual webkit_glue::WebPreferences GetWebkitPrefs() OVERRIDE;
+  virtual content::ViewType GetRenderViewType() const OVERRIDE;
+  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
+
+  // RenderWidgetHostDelegate implementation:
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual content::ViewType GetRenderViewType() const OVERRIDE;
-  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
 
   bool enabled() const { return enabled_; }
   content::WebContents* web_contents() const;

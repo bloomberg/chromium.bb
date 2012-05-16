@@ -39,10 +39,12 @@ using content::WebUIControllerFactory;
 
 RenderViewHostManager::RenderViewHostManager(
     content::RenderViewHostDelegate* render_view_delegate,
+    content::RenderWidgetHostDelegate* render_widget_delegate,
     Delegate* delegate)
     : delegate_(delegate),
       cross_navigation_pending_(false),
       render_view_delegate_(render_view_delegate),
+      render_widget_delegate_(render_widget_delegate),
       render_view_host_(NULL),
       pending_render_view_host_(NULL),
       interstitial_page_(NULL) {
@@ -75,7 +77,8 @@ void RenderViewHostManager::Init(content::BrowserContext* browser_context,
     site_instance = SiteInstance::Create(browser_context);
   render_view_host_ = static_cast<RenderViewHostImpl*>(
       RenderViewHostFactory::Create(
-          site_instance, render_view_delegate_, routing_id, false, delegate_->
+          site_instance, render_view_delegate_, render_widget_delegate_,
+          routing_id, false, delegate_->
           GetControllerForRenderManager().GetSessionStorageNamespace()));
 
   // Keep track of renderer processes as they start to shut down.
@@ -566,7 +569,8 @@ int RenderViewHostManager::CreateRenderView(
     // Create a new RenderViewHost if we don't find an existing one.
     new_render_view_host = static_cast<RenderViewHostImpl*>(
         RenderViewHostFactory::Create(instance,
-            render_view_delegate_, MSG_ROUTING_NONE, swapped_out, delegate_->
+            render_view_delegate_, render_widget_delegate_, MSG_ROUTING_NONE,
+            swapped_out, delegate_->
             GetControllerForRenderManager().GetSessionStorageNamespace()));
 
     // If the new RVH is swapped out already, store it.  Otherwise prevent the

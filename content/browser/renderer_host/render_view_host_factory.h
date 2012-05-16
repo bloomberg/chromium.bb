@@ -12,6 +12,7 @@
 namespace content {
 class RenderViewHost;
 class RenderViewHostDelegate;
+class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
 }
@@ -27,6 +28,7 @@ class RenderViewHostFactory {
   static content::RenderViewHost* Create(
       content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
+      content::RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       bool swapped_out,
       content::SessionStorageNamespace* session_storage);
@@ -45,6 +47,7 @@ class RenderViewHostFactory {
   virtual content::RenderViewHost* CreateRenderViewHost(
       content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
+      content::RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       bool swapped_out,
       content::SessionStorageNamespace* session_storage_namespace) = 0;

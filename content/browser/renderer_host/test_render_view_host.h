@@ -217,6 +217,7 @@ class TestRenderViewHost
  public:
   TestRenderViewHost(SiteInstance* instance,
                      RenderViewHostDelegate* delegate,
+                     RenderWidgetHostDelegate* widget_delegate,
                      int routing_id,
                      bool swapped_out);
   virtual ~TestRenderViewHost();

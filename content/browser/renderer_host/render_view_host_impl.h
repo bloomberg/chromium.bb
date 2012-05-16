@@ -61,6 +61,7 @@ namespace content {
 
 class SessionStorageNamespace;
 class RenderViewHostObserver;
+class RenderWidgetHostDelegate;
 struct FileChooserParams;
 struct ContextMenuParams;
 struct Referrer;
@@ -134,6 +135,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   RenderViewHostImpl(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
+      RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       bool swapped_out,
       SessionStorageNamespace* session_storage_namespace);
@@ -427,10 +429,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void RemoveObserver(RenderViewHostObserver* observer);
 
   // RenderWidgetHost protected overrides.
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) OVERRIDE;
-  virtual void UnhandledKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void OnUserGesture() OVERRIDE;
   virtual void NotifyRendererUnresponsive() OVERRIDE;
   virtual void NotifyRendererResponsive() OVERRIDE;

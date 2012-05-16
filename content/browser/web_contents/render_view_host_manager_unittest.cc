@@ -391,7 +391,7 @@ TEST_F(RenderViewHostManagerTest, Init) {
   EXPECT_FALSE(instance->HasSite());
 
   TestWebContents web_contents(browser_context(), instance);
-  RenderViewHostManager manager(&web_contents, &web_contents);
+  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
@@ -417,7 +417,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
           &web_contents.GetController()));
 
   // Create.
-  RenderViewHostManager manager(&web_contents, &web_contents);
+  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
@@ -509,7 +509,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
           &web_contents.GetController()));
 
   // Create.
-  RenderViewHostManager manager(&web_contents, &web_contents);
+  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
@@ -654,7 +654,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
   TestWebContents web_contents(browser_context(), instance);
-  RenderViewHostManager manager(&web_contents, &web_contents);
+  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 

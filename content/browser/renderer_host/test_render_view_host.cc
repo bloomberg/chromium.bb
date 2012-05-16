@@ -202,12 +202,15 @@ bool TestRenderWidgetHostView::LockMouse() {
 void TestRenderWidgetHostView::UnlockMouse() {
 }
 
-TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
-                                       RenderViewHostDelegate* delegate,
-                                       int routing_id,
-                                       bool swapped_out)
+TestRenderViewHost::TestRenderViewHost(
+    SiteInstance* instance,
+    RenderViewHostDelegate* delegate,
+    RenderWidgetHostDelegate* widget_delegate,
+    int routing_id,
+    bool swapped_out)
     : RenderViewHostImpl(instance,
                          delegate,
+                         widget_delegate,
                          routing_id,
                          swapped_out,
                          dom_storage::kInvalidSessionStorageNamespaceId),

@@ -8,6 +8,7 @@
 #include "base/timer.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/backing_store.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
@@ -147,27 +148,18 @@ class TestView : public content::TestRenderWidgetHostView {
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
 
-// MockRenderWidgetHost ----------------------------------------------------
+// MockRenderWidgetHostDelegate --------------------------------------------
 
-class MockRenderWidgetHost : public RenderWidgetHostImpl {
+class MockRenderWidgetHostDelegate : public content::RenderWidgetHostDelegate {
  public:
-  MockRenderWidgetHost(content::RenderProcessHost* process, int routing_id)
-      : RenderWidgetHostImpl(process, routing_id),
-        prehandle_keyboard_event_(false),
+  MockRenderWidgetHostDelegate()
+      : prehandle_keyboard_event_(false),
         prehandle_keyboard_event_called_(false),
         prehandle_keyboard_event_type_(WebInputEvent::Undefined),
         unhandled_keyboard_event_called_(false),
-        unhandled_keyboard_event_type_(WebInputEvent::Undefined),
-        unresponsive_timer_fired_(false) {
+        unhandled_keyboard_event_type_(WebInputEvent::Undefined) {
   }
-
-  // Allow poking at a few private members.
-  using RenderWidgetHostImpl::OnMsgPaintAtSizeAck;
-  using RenderWidgetHostImpl::OnMsgUpdateRect;
-  using RenderWidgetHostImpl::RendererExited;
-  using RenderWidgetHostImpl::in_flight_size_;
-  using RenderWidgetHostImpl::is_hidden_;
-  using RenderWidgetHostImpl::resize_ack_pending_;
+  virtual ~MockRenderWidgetHostDelegate() {}
 
   // Tests that make sure we ignore keyboard event acknowledgments to events we
   // didn't send work by making sure we didn't call UnhandledKeyboardEvent().
@@ -191,29 +183,18 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     prehandle_keyboard_event_ = handle;
   }
 
-  bool unresponsive_timer_fired() const {
-    return unresponsive_timer_fired_;
-  }
-
-  void set_hung_renderer_delay_ms(int delay_ms) {
-    hung_renderer_delay_ms_ = delay_ms;
-  }
-
  protected:
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) {
+                                      bool* is_keyboard_shortcut) OVERRIDE {
     prehandle_keyboard_event_type_ = event.type;
     prehandle_keyboard_event_called_ = true;
     return prehandle_keyboard_event_;
   }
 
-  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE {
     unhandled_keyboard_event_type_ = event.type;
     unhandled_keyboard_event_called_ = true;
-  }
-
-  virtual void NotifyRendererUnresponsive() {
-    unresponsive_timer_fired_ = true;
   }
 
  private:
@@ -223,7 +204,42 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   bool unhandled_keyboard_event_called_;
   WebInputEvent::Type unhandled_keyboard_event_type_;
+};
 
+// MockRenderWidgetHost ----------------------------------------------------
+
+class MockRenderWidgetHost : public RenderWidgetHostImpl {
+ public:
+  MockRenderWidgetHost(
+      content::RenderWidgetHostDelegate* delegate,
+      content::RenderProcessHost* process,
+      int routing_id)
+      : RenderWidgetHostImpl(delegate, process, routing_id),
+        unresponsive_timer_fired_(false) {
+  }
+
+  // Allow poking at a few private members.
+  using RenderWidgetHostImpl::OnMsgPaintAtSizeAck;
+  using RenderWidgetHostImpl::OnMsgUpdateRect;
+  using RenderWidgetHostImpl::RendererExited;
+  using RenderWidgetHostImpl::in_flight_size_;
+  using RenderWidgetHostImpl::is_hidden_;
+  using RenderWidgetHostImpl::resize_ack_pending_;
+
+  bool unresponsive_timer_fired() const {
+    return unresponsive_timer_fired_;
+  }
+
+  void set_hung_renderer_delay_ms(int delay_ms) {
+    hung_renderer_delay_ms_ = delay_ms;
+  }
+
+ protected:
+  virtual void NotifyRendererUnresponsive() OVERRIDE {
+    unresponsive_timer_fired_ = true;
+  }
+
+ private:
   bool unresponsive_timer_fired_;
 };
 
@@ -278,8 +294,10 @@ class RenderWidgetHostTest : public testing::Test {
   // testing::Test
   void SetUp() {
     browser_context_.reset(new TestBrowserContext());
+    delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
-    host_.reset(new MockRenderWidgetHost(process_, MSG_ROUTING_NONE));
+    host_.reset(
+        new MockRenderWidgetHost(delegate_.get(), process_, MSG_ROUTING_NONE));
     view_.reset(new TestView(host_.get()));
     host_->SetView(view_.get());
     host_->Init();
@@ -287,6 +305,7 @@ class RenderWidgetHostTest : public testing::Test {
   void TearDown() {
     view_.reset();
     host_.reset();
+    delegate_.reset();
     process_ = NULL;
     browser_context_.reset();
 
@@ -320,6 +339,7 @@ class RenderWidgetHostTest : public testing::Test {
 
   scoped_ptr<TestBrowserContext> browser_context_;
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
+  scoped_ptr<MockRenderWidgetHostDelegate> delegate_;
   scoped_ptr<MockRenderWidgetHost> host_;
   scoped_ptr<TestView> view_;
 
@@ -641,15 +661,16 @@ TEST_F(RenderWidgetHostTest, MAYBE_HandleKeyEventsWeSent) {
   // Send the simulated response from the renderer back.
   SendInputEventACK(WebInputEvent::RawKeyDown, false);
 
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::RawKeyDown, host_->unhandled_keyboard_event_type());
+  EXPECT_TRUE(delegate_->unhandled_keyboard_event_called());
+  EXPECT_EQ(WebInputEvent::RawKeyDown,
+            delegate_->unhandled_keyboard_event_type());
 }
 
 TEST_F(RenderWidgetHostTest, IgnoreKeyEventsWeDidntSend) {
   // Send a simulated, unrequested key response. We should ignore this.
   SendInputEventACK(WebInputEvent::RawKeyDown, false);
 
-  EXPECT_FALSE(host_->unhandled_keyboard_event_called());
+  EXPECT_FALSE(delegate_->unhandled_keyboard_event_called());
 }
 
 TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
@@ -663,26 +684,27 @@ TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
 
   // Send the simulated response from the renderer back.
   SendInputEventACK(WebInputEvent::RawKeyDown, true);
-  EXPECT_FALSE(host_->unhandled_keyboard_event_called());
+  EXPECT_FALSE(delegate_->unhandled_keyboard_event_called());
 }
 
 TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
   // Simluate the situation that the browser handled the key down event during
   // pre-handle phrase.
-  host_->set_prehandle_keyboard_event(true);
+  delegate_->set_prehandle_keyboard_event(true);
   process_->sink().ClearMessages();
 
   // Simulate a keyboard event.
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
-  EXPECT_TRUE(host_->prehandle_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::RawKeyDown, host_->prehandle_keyboard_event_type());
+  EXPECT_TRUE(delegate_->prehandle_keyboard_event_called());
+  EXPECT_EQ(WebInputEvent::RawKeyDown,
+            delegate_->prehandle_keyboard_event_type());
 
   // Make sure the RawKeyDown event is not sent to the renderer.
   EXPECT_EQ(0U, process_->sink().message_count());
 
   // The browser won't pre-handle a Char event.
-  host_->set_prehandle_keyboard_event(false);
+  delegate_->set_prehandle_keyboard_event(false);
 
   // Forward the Char event.
   SimulateKeyboardEvent(WebInputEvent::Char);
@@ -702,8 +724,8 @@ TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
   // Send the simulated response from the renderer back.
   SendInputEventACK(WebInputEvent::KeyUp, false);
 
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::KeyUp, host_->unhandled_keyboard_event_type());
+  EXPECT_TRUE(delegate_->unhandled_keyboard_event_called());
+  EXPECT_EQ(WebInputEvent::KeyUp, delegate_->unhandled_keyboard_event_type());
 }
 
 TEST_F(RenderWidgetHostTest, CoalescesWheelEvents) {

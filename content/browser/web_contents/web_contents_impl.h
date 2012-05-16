@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/property_bag.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/render_view_host_manager.h"
 #include "content/common/content_export.h"
@@ -57,6 +58,7 @@ struct WebIntentData;
 class CONTENT_EXPORT WebContentsImpl
     : public NON_EXPORTED_BASE(content::WebContents),
       public content::RenderViewHostDelegate,
+      public content::RenderWidgetHostDelegate,
       public RenderViewHostManager::Delegate,
       public content::NotificationObserver {
  public:
@@ -337,10 +339,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void Activate() OVERRIDE;
   virtual void Deactivate() OVERRIDE;
   virtual void LostCapture() OVERRIDE;
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) OVERRIDE;
-  virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void HandleMouseDown() OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
@@ -353,6 +351,13 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
   virtual void RequestToLockMouse(bool user_gesture) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
+
+  // RenderWidgetHostDelegate --------------------------------------------------
+
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // RenderViewHostManager::Delegate -------------------------------------------
 

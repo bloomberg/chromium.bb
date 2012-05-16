@@ -261,7 +261,7 @@ WebContentsImpl::WebContentsImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(
           this, browser_context, session_storage_namespace)),
       opener_(opener),
-      ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this, this)),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
