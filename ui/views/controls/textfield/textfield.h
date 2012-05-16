@@ -6,13 +6,12 @@
 #define UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -157,14 +156,19 @@ class VIEWS_EXPORT Textfield : public View {
   void RemoveBorder();
 
   // Sets the text to display when empty.
-  void set_text_to_display_when_empty(const string16& text) {
-    text_to_display_when_empty_ = text;
+  void set_placeholder_text(const string16& text) {
+    placeholder_text_ = text;
 #if !defined(OS_LINUX)
     NOTIMPLEMENTED();
 #endif
   }
-  const string16& text_to_display_when_empty() {
-    return text_to_display_when_empty_;
+  const string16& placeholder_text() const {
+    return placeholder_text_;
+  }
+
+  SkColor placeholder_text_color() const { return placeholder_text_color_; }
+  void set_placeholder_text_color(SkColor color) {
+    placeholder_text_color_ = color;
   }
 
   // Getter for the horizontal margins that were set. Returns false if
@@ -306,7 +310,10 @@ class VIEWS_EXPORT Textfield : public View {
   bool vertical_margins_were_set_;
 
   // Text to display when empty.
-  string16 text_to_display_when_empty_;
+  string16 placeholder_text_;
+
+  // Placeholder text color.
+  SkColor placeholder_text_color_;
 
   // The accessible name of the text field.
   string16 accessible_name_;

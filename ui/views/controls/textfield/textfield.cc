@@ -27,6 +27,13 @@
 #include "ui/views/controls/textfield/native_textfield_win.h"
 #endif
 
+namespace {
+
+// Default placeholder text color.
+const SkColor kDefaultPlaceholderTextColor = SK_ColorLTGRAY;
+
+}  // namespace
+
 namespace views {
 
 // static
@@ -51,6 +58,7 @@ Textfield::Textfield()
       initialized_(false),
       horizontal_margins_were_set_(false),
       vertical_margins_were_set_(false),
+      placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT) {
   set_focusable(true);
 }
@@ -71,6 +79,7 @@ Textfield::Textfield(StyleFlags style)
       initialized_(false),
       horizontal_margins_were_set_(false),
       vertical_margins_were_set_(false),
+      placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT) {
   set_focusable(true);
   if (IsObscured())

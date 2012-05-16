@@ -114,7 +114,7 @@ void PasswordChangedView::Init() {
   delta_sync_radio_->SetMultiLine(true);
 
   old_password_field_ = new TextfieldWithMargin(Textfield::STYLE_OBSCURED);
-  old_password_field_->set_text_to_display_when_empty(
+  old_password_field_->set_placeholder_text(
       l10n_util::GetStringUTF16(IDS_LOGIN_PREVIOUS_PASSWORD));
   old_password_field_->set_default_width_in_chars(kPasswordFieldWidthChars);
   old_password_field_->SetController(this);

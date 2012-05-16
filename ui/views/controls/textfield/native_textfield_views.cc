@@ -5,6 +5,7 @@
 #include "ui/views/controls/textfield/native_textfield_views.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -830,6 +831,16 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
           textfield_->cursor_color());
   // Draw the text, cursor, and selection.
   GetRenderText()->Draw(canvas);
+
+  // Draw placeholder text if needed.
+  if (model_->GetText().empty() &&
+      !textfield_->placeholder_text().empty()) {
+    canvas->DrawStringInt(
+        textfield_->placeholder_text(),
+        GetRenderText()->GetFont(),
+        textfield_->placeholder_text_color(),
+        GetRenderText()->display_rect());
+  }
   canvas->Restore();
 }
 
@@ -1097,7 +1108,7 @@ void NativeTextfieldViews::HandleMousePressEvent(const MouseEvent& event) {
     initiating_drag_ = false;
     bool can_drag = true;
 
-    switch(aggregated_clicks_) {
+    switch (aggregated_clicks_) {
       case 0:
         if (can_drag && GetRenderText()->IsPointInSelection(event.location()))
           initiating_drag_ = true;
