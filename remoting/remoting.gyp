@@ -383,7 +383,19 @@
             'remoting_base',
             'remoting_host',
           ],
+          'defines': [
+            'JSON_USE_EXCEPTION=0',
+          ],
+	  'include_dirs': [
+            '../third_party/jsoncpp/overrides/include/',
+            '../third_party/jsoncpp/source/include/',
+            '../third_party/jsoncpp/source/src/lib_json/',
+	  ],
           'sources': [
+	    # The jsoncpp target is not yet built for Mac OS X 64-bit, so
+	    # include the files directly, instead of depending on the target. 
+	    '../third_party/jsoncpp/source/src/lib_json/json_reader.cpp',
+	    '../third_party/jsoncpp/source/src/lib_json/json_writer.cpp',
             'host/me2me_preference_pane.h',
             'host/me2me_preference_pane.mm',
           ],

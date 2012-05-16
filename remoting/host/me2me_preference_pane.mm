@@ -9,10 +9,11 @@
 #include <launch.h>
 #import <PreferencePanes/PreferencePanes.h>
 #import <SecurityInterface/SFAuthorizationView.h>
+#include <unistd.h>
+
+#include <fstream>
 
 #include "base/eintr_wrapper.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"
 #include "base/mac/foundation_util.h"
@@ -23,7 +24,8 @@
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "remoting/host/host_config.h"
-#include "remoting/host/json_host_config.h"
+#include "third_party/jsoncpp/source/include/json/reader.h"
+#include "third_party/jsoncpp/source/include/json/writer.h"
 #include "third_party/modp_b64/modp_b64.h"
 
 namespace {
@@ -43,10 +45,13 @@ namespace {
 // informs the host's launch script of whether the host is enabled or disabled.
 const char kHelperTool[] = kConfigDir kServiceName ".me2me.sh";
 
-bool GetTemporaryConfigFilePath(FilePath* path) {
-  if (!file_util::GetTempDir(path))
+bool GetTemporaryConfigFilePath(std::string* path) {
+  NSString* filename = NSTemporaryDirectory();
+  if (filename == nil)
     return false;
-  *path = path->Append(kServiceName ".json");
+
+  filename = [filename stringByAppendingString:@"/" kServiceName ".json"];
+  *path = [filename UTF8String];
   return true;
 }
 
@@ -99,6 +104,42 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
 
 }  // namespace
 
+namespace remoting {
+JsonHostConfig::JsonHostConfig(const std::string& filename)
+    : filename_(filename) {
+}
+
+JsonHostConfig::~JsonHostConfig() {
+}
+
+bool JsonHostConfig::Read() {
+  std::ifstream file(filename_.c_str());
+  Json::Reader reader;
+  return reader.parse(file, config_, false /* ignore comments */);
+}
+
+bool JsonHostConfig::GetString(const std::string& path,
+                               std::string* out_value) const {
+  if (!config_.isObject())
+    return false;
+
+  if (!config_.isMember(path))
+    return false;
+
+  Json::Value value = config_[path];
+  if (!value.isString())
+    return false;
+
+  *out_value = value.asString();
+  return true;
+}
+
+std::string JsonHostConfig::GetSerializedData() const {
+  Json::FastWriter writer;
+  return writer.write(config_);
+}
+
+}  // namespace remoting
 
 @implementation Me2MePreferencePane
 
@@ -220,13 +261,13 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
 }
 
 - (void)readNewConfig {
-  FilePath file;
+  std::string file;
   if (!GetTemporaryConfigFilePath(&file)) {
     LOG(ERROR) << "Failed to get path of configuration data.";
     [self showError];
     return;
   }
-  if (!file_util::PathExists(file))
+  if (access(file.c_str(), F_OK) != 0)
     return;
 
   scoped_ptr<remoting::JsonHostConfig> new_config_(
@@ -234,11 +275,11 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
   if (!new_config_->Read()) {
     // Report the error, because the file exists but couldn't be read.  The
     // case of non-existence is normal and expected.
-    LOG(ERROR) << "Error reading configuration data from " << file.value();
+    LOG(ERROR) << "Error reading configuration data from " << file.c_str();
     [self showError];
     return;
   }
-  file_util::Delete(file, false);
+  remove(file.c_str());
   if (!IsConfigValid(new_config_.get())) {
     LOG(ERROR) << "Invalid configuration data read.";
     [self showError];

@@ -9,9 +9,32 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace remoting {
-class JsonHostConfig;
+
+// This is an implementation of JsonHostConfig which does not use code from
+// the "base" target, so it can be built for 64-bit on Mac OS X.
+
+// TODO(lambroslambrou): Once the "base" target has 64-bit support, remove this
+// implementation and use the one in remoting/host/json_host_config.h - see
+// http://crbug.com/128122.
+class JsonHostConfig {
+ public:
+  JsonHostConfig(const std::string& filename);
+  ~JsonHostConfig();
+
+  bool Read();
+  bool GetString(const std::string& path, std::string* out_value) const;
+  std::string GetSerializedData() const;
+
+ private:
+  Json::Value config_;
+  std::string filename_;
+
+  DISALLOW_COPY_AND_ASSIGN(JsonHostConfig);
+};
+
 }
 
 @interface Me2MePreferencePane : NSPreferencePane {
