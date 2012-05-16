@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -1653,6 +1654,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_AutoOpen) {
 // Download an extension.  Expect a dangerous download warning.
 // Deny the download.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
+  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+    return;
+
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
   scoped_ptr<DownloadTestObserver> observer(
@@ -1677,6 +1681,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, deny the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
+  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+    return;
+
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
   // Install a mock install UI that simulates a user denying permission to
@@ -1707,6 +1714,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
 // Download an extension.  Expect a dangerous download warning.
 // Allow the download, and the install.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
+  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+    return;
+
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
   // Install a mock install UI that simulates a user allowing permission to
@@ -1763,6 +1773,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
 
 // Install a large (100kb) theme.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
+  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+    return;
+
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kLargeThemePath));
 
   // Install a mock install UI that simulates a user allowing permission to

@@ -14,9 +14,7 @@
 namespace extension_urls {
   // Returns the URL prefix for the extension/apps gallery. Can be set via the
   // --apps-gallery-url switch. The URL returned will not contain a trailing
-  // slash. Do not use this as a prefix/extent for the store.  Instead see
-  // ExtensionService::GetWebStoreApp or
-  // ExtensionService::IsDownloadFromGallery
+  // slash. Do not use this as a prefix/extent for the store.
   std::string GetWebstoreLaunchURL();
 
   // Returns the URL prefix for an item in the extension/app gallery. This URL

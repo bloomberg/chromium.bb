@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 
 class SkBitmap;
@@ -67,10 +68,10 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
       return false;
 
     scoped_ptr<WebstoreInstaller::Approval> approval(
-        new WebstoreInstaller::Approval);
-    approval->extension_id = id;
-    approval->profile = browser()->profile();
-    approval->parsed_manifest.reset(parsed_manifest);
+        WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
+            browser()->profile(),
+            id,
+            scoped_ptr<base::DictionaryValue>(parsed_manifest)));
 
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::Create(service,
@@ -124,6 +125,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
+  if (!extensions::switch_utils::IsOffStoreInstallEnabled())
+    return;
+
   const int kNumDownloadsExpected = 1;
   const bool kExpectFileSelectDialog = false;
 
