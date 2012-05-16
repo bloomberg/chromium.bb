@@ -7,6 +7,7 @@
 #
 # How to use:
 # -----------
+# make prereqs
 # make prereqs.x8632
 # make run1.x8632
 
@@ -73,15 +74,18 @@ ld.so.pso: ld.so.dummy.c
 	$(PNACL_CC) $(COMMON_FLAGS) -nostdlib -shared \
         -Wl,--soname=ld-nacl-x86-32.so.1 $^ -o $@
 
+prereqs:
+	cd ${ROOT} ; pnacl/build.sh newlib-shared
+
 prereqs.x8632: ld.so.pso
 	mkdir -p x8632
-	cd ../../ ; ./scons bitcode=1 platform=x86-32 -j 8 \
+	cd ${ROOT} ; ./scons bitcode=1 platform=x86-32 -j 8 \
 	    pnacl_shared_newlib=1 \
             irt nacl_helper_bootstrap sel_ldr libnosys libnacl libpthread
 
 prereqs.x8664: ld.so.pso
 	mkdir -p x8664
-	cd ../../ ; ./scons bitcode=1 platform=x86-64 -j 8 \
+	cd ${ROOT} ; ./scons bitcode=1 platform=x86-64 -j 8 \
 	    pnacl_shared_newlib=1 \
             irt nacl_helper_bootstrap sel_ldr libnosys libnacl \
             libpthread pnacl_irt_shim
@@ -130,20 +134,6 @@ x8632/mylibpthread.so: mylibpthread.pso
 x8664/mylibpthread.so: mylibpthread.pso
 	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ $^
 
-# build a shared version of libc (newlib) from the bitcode archive
-mylibc.pso: mylibnosys.pso \
-            $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a
-	$(PNACL_CC) $(COMMON_FLAGS) -nodefaultlibs -shared \
-              -Wl,--whole-archive \
-              $(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib/libc.a \
-              -Wl,--no-whole-archive \
-              -Wl,--soname=mylibc.so -o $@
-
-x8632/mylibc.so: mylibc.pso
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8632) -o $@ $^
-
-x8664/mylibc.so: mylibc.pso x8664/mylibnosys.so
-	$(PNACL_TRANS) $(SHARED_FLAGS_X8664) -o $@ $^
 ######################################################################
 mylibnacl.a: $(LIBPATH_BITCODE_SDK)/libnacl.a
 	rm -f $@
@@ -164,9 +154,10 @@ INIT_BITCODE = \
 FINI_BITCODE =
 
 LIBS = -l:keep_alive.x \
+       -L $(LIBPATH_NEWLIB) \
+       -l:libc.pso \
        -L . \
        -l:libsimple.pso \
-       -l:mylibc.pso \
        -l:mylibpthread.pso \
        -l:ld.so.pso \
        -l:mylibnacl.a
@@ -176,26 +167,31 @@ LIBS = -l:keep_alive.x \
 #       Without it ___tls_get_addr is not found
 #
 #       Note: LIBPATH_SHIM can go with a more elaborate prereqs step
-DYNAMIC_FLAGS =  -nodefaultlibs -Wl,-l:libgcc.a  -Wl,-l:libcrt_platform.a
-DYNAMIC_FLAGS_X8632 = $(DYNAMIC_FLAGS) --newlib-shared-experiment \
-                      -rpath-link=x8632 -arch x86-32 \
-                      $(LIBPATH_SHARED_X8632)/ld-2.9.so
-DYNAMIC_FLAGS_X8664 = $(DYNAMIC_FLAGS) --newlib-shared-experiment \
-                      -rpath-link=x8664/ -arch x86-64 \
+DYNAMIC_FLAGS =  -nodefaultlibs \
+                 --newlib-shared-experiment \
+                 -Wl,-l:libgcc.a  \
+                 -Wl,-l:libcrt_platform.a \
+                 -Wl,-l:libc.so \
+                 -Wl,-l:ld-2.9.so
+
+DYNAMIC_FLAGS_X8632 = -rpath-link=x8632 -arch x86-32 \
+                      $(DYNAMIC_FLAGS)
+
+DYNAMIC_FLAGS_X8664 = -rpath-link=x8664/ -arch x86-64 \
                       -rpath-link=$(LIBPATH_SHIM) \
-                      $(LIBPATH_SHARED_X8664)/ld-2.9.so
+	              $(DYNAMIC_FLAGS)
 
 hello1.pexe: hello1.bc startup_newlib_dynamic.bc ld.so.pso libsimple.pso \
-             mylibc.pso mylibnosys.pso mylibpthread.pso mylibnacl.a
+              mylibnosys.pso mylibpthread.pso mylibnacl.a
 	$(PNACL_CC) $(COMMON_FLAGS) -nodefaultlibs -nostdlib \
         $(INIT_BITCODE) hello1.bc $(LIBS) $(FINI_BITCODE)  -o $@
 
 x8632/hello1.nexe: hello1.pexe \
-    x8632/libsimple.so x8632/mylibc.so x8632/mylibnosys.so x8632/mylibpthread.so
+    x8632/libsimple.so  x8632/mylibnosys.so x8632/mylibpthread.so
 	$(PNACL_TRANS) $(COMMON_FLAGS) $(DYNAMIC_FLAGS_X8632)  -o $@ $^
 
 x8664/hello1.nexe: hello1.pexe \
-    x8664/libsimple.so x8664/mylibc.so x8664/mylibnosys.so x8664/mylibpthread.so
+    x8664/libsimple.so x8664/mylibnosys.so x8664/mylibpthread.so
 	$(PNACL_TRANS) $(COMMON_FLAGS) $(DYNAMIC_FLAGS_X8664)  -o $@ $^
 
 ######################################################################
