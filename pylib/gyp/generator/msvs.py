@@ -1457,12 +1457,17 @@ def _AddActions(actions_to_add, spec, relative_path_of_gyp_file, vcproj_file):
   actions = spec.get('actions', [])
   # Don't setup_env every time. When all the actions are run together in one
   # batch file in VS, the PATH will grow too long.
-  first_action = True
+  # Membership in this set means that the cygwin environment has been set up,
+  # and does not need to be set up again.
+  have_setup_env = set()
   for a in actions:
-    cmd = _BuildCommandLineForRule(spec, a, has_input_path=False,
-                                   do_setup_env=first_action)
     # Attach actions to the gyp file if nothing else is there.
     inputs = a.get('inputs') or [relative_path_of_gyp_file]
+    attached_to = inputs[0]
+    need_setup_env = attached_to not in have_setup_env
+    cmd = _BuildCommandLineForRule(spec, a, has_input_path=False,
+                                   do_setup_env=need_setup_env)
+    have_setup_env.add(attached_to)
     if vcproj_file:
       # Additionally, on MSVS 2008, we record the command in a file
       # and add this as a dependency so that when the command changes,
@@ -1477,7 +1482,6 @@ def _AddActions(actions_to_add, spec, relative_path_of_gyp_file, vcproj_file):
                    outputs=a.get('outputs', []),
                    description=a.get('message', a['action_name']),
                    command=cmd)
-    first_action = False
 
 
 def _WriteMSVSUserFile(project_path, version, spec):
