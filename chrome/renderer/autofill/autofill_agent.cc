@@ -61,7 +61,8 @@ void AppendDataListSuggestions(const WebKit::WebInputElement& element,
 
   for (WebOptionElement option = options.firstItem().to<WebOptionElement>();
       !option.isNull(); option = options.nextItem().to<WebOptionElement>()) {
-    if (!StartsWith(option.value(), element.value(), false))
+    if (!StartsWith(option.value(), element.value(), false) ||
+        !element.isValidValue(option.value()))
       continue;
 
     values->push_back(option.value());
