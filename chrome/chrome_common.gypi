@@ -474,7 +474,7 @@
         ],
         ['OS == "android"', {
             'dependencies': [
-              '../build/android/system.gyp:ssl',
+              '../third_party/openssl/openssl.gyp:openssl',
             ],
           },
         ],
