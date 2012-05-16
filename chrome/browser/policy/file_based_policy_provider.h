@@ -25,7 +25,7 @@ class FileBasedPolicyProvider : public AsynchronousPolicyProvider {
     virtual ~ProviderDelegate();
 
     // AsynchronousPolicyProvider::Delegate implementation:
-    virtual PolicyMap* Load() = 0;
+    virtual scoped_ptr<PolicyBundle> Load() = 0;
 
     // Gets the last modification timestamp for the policy information from the
     // filesystem. Returns base::Time() if the information is not present, in

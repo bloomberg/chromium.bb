@@ -6,7 +6,7 @@
 
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "content/public/browser/browser_thread.h"
 
 using ::base::files::FilePathWatcher;
@@ -74,7 +74,8 @@ void FileBasedPolicyLoader::Reload(bool force) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!delegate()) {
-    PostUpdatePolicyTask(NULL);
+    scoped_ptr<PolicyBundle> empty_bundle;
+    PostUpdatePolicyTask(empty_bundle.Pass());
     return;
   }
 
@@ -87,7 +88,7 @@ void FileBasedPolicyLoader::Reload(bool force) {
   }
 
   // Load the policy definitions.
-  scoped_ptr<PolicyMap> new_policy(delegate()->Load());
+  scoped_ptr<PolicyBundle> bundle(delegate()->Load());
 
   // Check again in case the directory has changed while reading it.
   if (!force && !IsSafeToReloadPolicy(now, &delay)) {
@@ -95,7 +96,7 @@ void FileBasedPolicyLoader::Reload(bool force) {
     return;
   }
 
-  PostUpdatePolicyTask(new_policy.release());
+  PostUpdatePolicyTask(bundle.Pass());
 
   ScheduleFallbackReloadTask();
 }

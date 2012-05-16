@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "chrome/browser/policy/policy_bundle.h"
-#include "chrome/browser/policy/policy_map.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -28,7 +27,7 @@ void AsynchronousPolicyLoader::Init(const UpdateCallback& callback) {
   update_callback_ = callback;
 
   // Load initial policy synchronously at startup.
-  scoped_ptr<PolicyMap> policy(delegate_->Load());
+  scoped_ptr<PolicyBundle> policy(delegate_->Load());
   if (policy.get())
     UpdatePolicy(policy.Pass());
 
@@ -58,9 +57,8 @@ AsynchronousPolicyLoader::~AsynchronousPolicyLoader() {
 
 void AsynchronousPolicyLoader::Reload(bool force) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (delegate_.get()) {
-    PostUpdatePolicyTask(delegate_->Load());
-  }
+  if (delegate_.get())
+    PostUpdatePolicyTask(delegate_->Load().Pass());
 }
 
 void AsynchronousPolicyLoader::CancelReloadTask() {
@@ -100,21 +98,17 @@ void AsynchronousPolicyLoader::StopOnFileThread() {
   CancelReloadTask();
 }
 
-void AsynchronousPolicyLoader::PostUpdatePolicyTask(PolicyMap* new_policy) {
-  scoped_ptr<PolicyMap> policy(new_policy);
+void AsynchronousPolicyLoader::PostUpdatePolicyTask(
+    scoped_ptr<PolicyBundle> bundle) {
   origin_loop_->PostTask(
       FROM_HERE,
       base::Bind(&AsynchronousPolicyLoader::UpdatePolicy,
-                 this, base::Passed(&policy)));
+                 this, base::Passed(&bundle)));
 }
 
-void AsynchronousPolicyLoader::UpdatePolicy(scoped_ptr<PolicyMap> policy) {
-  if (!stopped_) {
-    // TODO(joaodasilva): make this load policy from other namespaces too.
-    scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
-    bundle->Get(POLICY_DOMAIN_CHROME, std::string()).Swap(policy.get());
+void AsynchronousPolicyLoader::UpdatePolicy(scoped_ptr<PolicyBundle> bundle) {
+  if (!stopped_)
     update_callback_.Run(bundle.Pass());
-  }
 }
 
 void AsynchronousPolicyLoader::InitAfterFileThreadAvailable() {

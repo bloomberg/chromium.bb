@@ -48,7 +48,9 @@ extern const PolicyDefinitionList kList;
 // ConfigurationPolicyProviderTest below.
 class PolicyProviderTestHarness {
  public:
-  PolicyProviderTestHarness();
+  // |level| and |scope| are the level and scope of the policies returned by
+  // the providers from CreateProvider().
+  PolicyProviderTestHarness(PolicyLevel level, PolicyScope scope);
   virtual ~PolicyProviderTestHarness();
 
   // Actions to run at gtest SetUp() time.
@@ -57,6 +59,10 @@ class PolicyProviderTestHarness {
   // Create a new policy provider.
   virtual AsynchronousPolicyProvider* CreateProvider(
       const PolicyDefinitionList* policy_definition_list) = 0;
+
+  // Returns the policy level and scope set by the policy provider.
+  PolicyLevel policy_level() const;
+  PolicyScope policy_scope() const;
 
   // Helpers to configure the environment the policy provider reads from.
   virtual void InstallEmptyPolicy() = 0;
@@ -73,6 +79,9 @@ class PolicyProviderTestHarness {
       const base::DictionaryValue* policy_value) = 0;
 
  private:
+  PolicyLevel level_;
+  PolicyScope scope_;
+
   DISALLOW_COPY_AND_ASSIGN(PolicyProviderTestHarness);
 };
 

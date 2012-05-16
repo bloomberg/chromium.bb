@@ -14,7 +14,6 @@
 namespace policy {
 
 struct PolicyDefinitionList;
-class PolicyMap;
 
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
@@ -32,13 +31,6 @@ class ConfigurationPolicyProvider {
 
   virtual ~ConfigurationPolicyProvider();
 
-  // Fills the given |result| with the current policy values. Returns true if
-  // the policies were provided. This is used mainly by the
-  // ConfigurationPolicyPrefStore, which retrieves policy values from here.
-  // DEPRECATED: this call is going away, use policies() instead.
-  // http://crbug.com/108993
-  bool Provide(PolicyMap* result);
-
   // Returns the current PolicyBundle.
   const PolicyBundle& policies() const { return policy_bundle_; }
 
@@ -53,11 +45,6 @@ class ConfigurationPolicyProvider {
   // It is possible that OnProviderGoingAway is called first though, and
   // OnUpdatePolicy won't be called if that happens.
   virtual void RefreshPolicies() = 0;
-
-  // Utility method that converts deprecated policies into their corresponding
-  // actual policies. Subclasses can use this to fix deprecated policies in
-  // PolicyMaps that they obtained from elsewhere.
-  static void FixDeprecatedPolicies(PolicyMap* policies);
 
  protected:
   // Subclasses must invoke this to update the policies currently served by

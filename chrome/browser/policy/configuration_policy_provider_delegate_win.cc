@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/configuration_policy_provider_delegate_win.h"
 
+#include <string>
+
 #include <string.h>
 
 #include "base/basictypes.h"
@@ -14,6 +16,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
+#include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 
 using base::win::RegKey;
@@ -54,8 +58,9 @@ ConfigurationPolicyProviderDelegateWin::ConfigurationPolicyProviderDelegateWin(
       registry_key_(registry_key),
       level_(level) {}
 
-PolicyMap* ConfigurationPolicyProviderDelegateWin::Load() {
-  PolicyMap* result = new PolicyMap();
+scoped_ptr<PolicyBundle> ConfigurationPolicyProviderDelegateWin::Load() {
+  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  PolicyMap& chrome_policy = bundle->Get(POLICY_DOMAIN_CHROME, std::string());
   const PolicyDefinitionList::Entry* current;
   for (current = policy_definition_list_->begin;
        current != policy_definition_list_->end;
@@ -111,9 +116,9 @@ PolicyMap* ConfigurationPolicyProviderDelegateWin::Load() {
         NOTREACHED();
     }
     if (value)
-      result->Set(current->name, level_, scope, value);
+      chrome_policy.Set(current->name, level_, scope, value);
   }
-  return result;
+  return bundle.Pass();
 }
 
 bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyString(

@@ -49,6 +49,9 @@ class PolicyBundle {
   // See PolicyMap::MergeFrom for details on merging individual PolicyMaps.
   void MergeFrom(const PolicyBundle& other);
 
+  // Returns true if |other| has the same keys and value as |this|.
+  bool Equals(const PolicyBundle& other) const;
+
   // Returns iterators to the beginning and end of the underlying container.
   // These can be used to iterate over and read the PolicyMaps, but not to
   // modify them.

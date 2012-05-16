@@ -18,7 +18,6 @@ class MessageLoop;
 namespace policy {
 
 class PolicyBundle;
-class PolicyMap;
 
 // Used by the implementation of asynchronous policy provider to manage the
 // tasks on the FILE thread that do the heavy lifting of loading policies.
@@ -51,9 +50,8 @@ class AsynchronousPolicyLoader
   friend class base::RefCountedThreadSafe<AsynchronousPolicyLoader>;
   virtual ~AsynchronousPolicyLoader();
 
-  // Schedules a call to UpdatePolicy on |origin_loop_|. Takes ownership of
-  // |new_policy|.
-  void PostUpdatePolicyTask(PolicyMap* new_policy);
+  // Schedules a call to UpdatePolicy on |origin_loop_|.
+  void PostUpdatePolicyTask(scoped_ptr<PolicyBundle> bundle);
 
   AsynchronousPolicyProvider::Delegate* delegate() {
     return delegate_.get();
@@ -88,7 +86,7 @@ class AsynchronousPolicyLoader
   // Invokes the |update_callback_| with a new PolicyBundle that maps
   // the chrome namespace to |policy|. Must be called on |origin_loop_| so that
   // it's safe to invoke |update_callback_|.
-  void UpdatePolicy(scoped_ptr<PolicyMap> policy);
+  void UpdatePolicy(scoped_ptr<PolicyBundle> policy);
 
   // Provides the low-level mechanics for loading policy.
   scoped_ptr<AsynchronousPolicyProvider::Delegate> delegate_;

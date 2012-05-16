@@ -9,6 +9,7 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/file_based_policy_provider.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,7 +26,22 @@ class FileBasedPolicyProviderDelegateMock
  public:
   FileBasedPolicyProviderDelegateMock()
       : FileBasedPolicyProvider::ProviderDelegate(FilePath()) {}
-  MOCK_METHOD0(Load, PolicyMap*());
+
+  // Load() returns a scoped_ptr<PolicyBundle> but it can't be mocked because
+  // scoped_ptr is moveable but not copyable. This override forwards the
+  // call to MockLoad() which returns a PolicyBundle*, and returns a copy
+  // wrapped in a passed scoped_ptr.
+  virtual scoped_ptr<PolicyBundle> Load() OVERRIDE {
+    scoped_ptr<PolicyBundle> bundle;
+    PolicyBundle* loaded = MockLoad();
+    if (loaded) {
+      bundle.reset(new PolicyBundle());
+      bundle->CopyFrom(*loaded);
+    }
+    return bundle.Pass();
+  }
+
+  MOCK_METHOD0(MockLoad, PolicyBundle*());
   MOCK_METHOD0(GetLastModification, base::Time());
 };
 
@@ -36,23 +52,20 @@ TEST_F(AsynchronousPolicyTestBase, ProviderInit) {
   EXPECT_CALL(*provider_delegate, GetLastModification()).WillRepeatedly(
       Return(last_modified));
   InSequence s;
-  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(new PolicyMap));
-  PolicyMap* policies = new PolicyMap();
-  policies->Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                Value::CreateBooleanValue(true));
+  PolicyBundle empty_bundle;
+  EXPECT_CALL(*provider_delegate, MockLoad()).WillOnce(Return(&empty_bundle));
+  PolicyBundle bundle;
+  bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateBooleanValue(true));
   // A second call to Load gets triggered during the provider's construction
   // when the file watcher is initialized, since this file may have changed
   // between the initial load and creating watcher.
-  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(policies));
+  EXPECT_CALL(*provider_delegate, MockLoad()).WillOnce(Return(&bundle));
   FileBasedPolicyProvider provider(GetChromePolicyDefinitionList(),
                                    provider_delegate);
   loop_.RunAllPending();
-  PolicyMap policy_map;
-  provider.Provide(&policy_map);
-  base::FundamentalValue expected(true);
-  EXPECT_TRUE(Value::Equals(&expected,
-                            policy_map.GetValue(key::kSyncDisabled)));
-  EXPECT_EQ(1U, policy_map.size());
+  EXPECT_TRUE(provider.policies().Equals(bundle));
 }
 
 TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
@@ -62,32 +75,29 @@ TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
   EXPECT_CALL(*provider_delegate, GetLastModification()).WillRepeatedly(
       Return(last_modified));
   InSequence s;
-  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(new PolicyMap));
+  PolicyBundle empty_bundle;
+  EXPECT_CALL(*provider_delegate, MockLoad()).WillOnce(Return(&empty_bundle));
   FileBasedPolicyProvider file_based_provider(GetChromePolicyDefinitionList(),
                                               provider_delegate);
   // A second call to Load gets triggered during the provider's construction
   // when the file watcher is initialized, since this file may have changed
   // between the initial load and creating watcher.
-  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(new PolicyMap));
+  EXPECT_CALL(*provider_delegate, MockLoad()).WillOnce(Return(&empty_bundle));
   loop_.RunAllPending();
   // A third and final call to Load is made by the explicit Reload. This
   // should be the one that provides the current policy.
-  PolicyMap* policies = new PolicyMap();
-  policies->Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                Value::CreateBooleanValue(true));
-  EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(policies));
+  PolicyBundle bundle;
+  bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateBooleanValue(true));
+  EXPECT_CALL(*provider_delegate, MockLoad()).WillOnce(Return(&bundle));
   MockConfigurationPolicyObserver observer;
   ConfigurationPolicyObserverRegistrar registrar;
   registrar.Init(&file_based_provider, &observer);
   EXPECT_CALL(observer, OnUpdatePolicy(&file_based_provider)).Times(1);
   file_based_provider.RefreshPolicies();
   loop_.RunAllPending();
-  PolicyMap policy_map;
-  file_based_provider.Provide(&policy_map);
-  base::FundamentalValue expected(true);
-  EXPECT_TRUE(Value::Equals(&expected,
-                            policy_map.GetValue(key::kSyncDisabled)));
-  EXPECT_EQ(1U, policy_map.size());
+  EXPECT_TRUE(file_based_provider.policies().Equals(bundle));
 }
 
 }  // namespace policy

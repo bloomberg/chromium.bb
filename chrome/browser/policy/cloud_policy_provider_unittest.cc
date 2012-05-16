@@ -10,6 +10,8 @@
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_provider.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_map.h"
 #include "content/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -108,7 +110,6 @@ class CloudPolicyProviderTest : public testing::Test {
 
 TEST_F(CloudPolicyProviderTest, Initialization) {
   EXPECT_FALSE(cloud_policy_provider_.IsInitializationComplete());
-
   // The provider only becomes initialized when it has all caches, and the
   // caches are ready too.
   AddDeviceCache();
@@ -118,15 +119,11 @@ TEST_F(CloudPolicyProviderTest, Initialization) {
   AddUserCache();
   EXPECT_FALSE(user_policy_cache_.IsReady());
   EXPECT_FALSE(cloud_policy_provider_.IsInitializationComplete());
-
-  PolicyMap policy;
-  EXPECT_TRUE(cloud_policy_provider_.Provide(&policy));
-  EXPECT_TRUE(policy.empty());
-
+  PolicyBundle expected_bundle;
+  EXPECT_TRUE(cloud_policy_provider_.policies().Equals(expected_bundle));
   SetUserCacheReady();
   EXPECT_TRUE(cloud_policy_provider_.IsInitializationComplete());
-  EXPECT_TRUE(cloud_policy_provider_.Provide(&policy));
-  EXPECT_TRUE(policy.empty());
+  EXPECT_TRUE(cloud_policy_provider_.policies().Equals(expected_bundle));
 
   const std::string kUrl("http://chromium.org");
   user_policy_cache_.mutable_policy()->Set(key::kHomepageLocation,
@@ -136,14 +133,10 @@ TEST_F(CloudPolicyProviderTest, Initialization) {
   EXPECT_CALL(observer_, OnUpdatePolicy(&cloud_policy_provider_));
   user_policy_cache_.NotifyObservers();
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(cloud_policy_provider_.Provide(&policy));
-
-  PolicyMap expected;
-  expected.Set(key::kHomepageLocation,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
-               Value::CreateStringValue(kUrl));
-  EXPECT_TRUE(policy.Equals(expected));
+  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateStringValue(kUrl));
+  EXPECT_TRUE(cloud_policy_provider_.policies().Equals(expected_bundle));
 }
 
 TEST_F(CloudPolicyProviderTest, RefreshPolicies) {
@@ -194,9 +187,8 @@ TEST_F(CloudPolicyProviderTest, MergeProxyPolicies) {
   SetDeviceCacheReady();
   SetUserCacheReady();
   EXPECT_TRUE(cloud_policy_provider_.IsInitializationComplete());
-  PolicyMap policy;
-  EXPECT_TRUE(cloud_policy_provider_.Provide(&policy));
-  EXPECT_TRUE(policy.empty());
+  PolicyBundle expected_bundle;
+  EXPECT_TRUE(cloud_policy_provider_.policies().Equals(expected_bundle));
 
   // User policy takes precedence over device policy.
   EXPECT_CALL(observer_, OnUpdatePolicy(&cloud_policy_provider_));
@@ -213,25 +205,13 @@ TEST_F(CloudPolicyProviderTest, MergeProxyPolicies) {
   user_policy_cache_.NotifyObservers();
   Mock::VerifyAndClearExpectations(&observer_);
 
-  EXPECT_TRUE(cloud_policy_provider_.Provide(&policy));
-
   // The deprecated proxy policies are converted to the new ProxySettings.
-  EXPECT_TRUE(policy.Get(key::kProxyMode) == NULL);
-  EXPECT_TRUE(policy.Get(key::kProxyServerMode) == NULL);
-  EXPECT_TRUE(policy.Get(key::kProxyServer) == NULL);
-  EXPECT_TRUE(policy.Get(key::kProxyPacUrl) == NULL);
-
-  EXPECT_EQ(1u, policy.size());
-  const PolicyMap::Entry* entry = policy.Get(key::kProxySettings);
-  ASSERT_TRUE(entry != NULL);
-  ASSERT_TRUE(entry->value != NULL);
-  EXPECT_EQ(POLICY_LEVEL_MANDATORY, entry->level);
-  EXPECT_EQ(POLICY_SCOPE_USER, entry->scope);
-  const DictionaryValue* settings;
-  ASSERT_TRUE(entry->value->GetAsDictionary(&settings));
-  std::string mode;
-  EXPECT_TRUE(settings->GetString(key::kProxyMode, &mode));
-  EXPECT_EQ("user mode", mode);
+  base::DictionaryValue* proxy_settings = new base::DictionaryValue();
+  proxy_settings->SetString(key::kProxyMode, "user mode");
+  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(key::kProxySettings, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           proxy_settings);
+  EXPECT_TRUE(cloud_policy_provider_.policies().Equals(expected_bundle));
 }
 #endif
 

@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/file_based_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
 
 class MacPreferences;
 
@@ -32,7 +31,7 @@ class MacPreferencesPolicyProviderDelegate
   virtual ~MacPreferencesPolicyProviderDelegate();
 
   // FileBasedPolicyLoader::Delegate implementation.
-  virtual PolicyMap* Load() OVERRIDE;
+  virtual scoped_ptr<PolicyBundle>  Load() OVERRIDE;
   virtual base::Time GetLastModification() OVERRIDE;
 
   // Converts a CFPropertyListRef to the equivalent base::Value. CFDictionary

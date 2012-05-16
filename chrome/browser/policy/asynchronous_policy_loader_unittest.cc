@@ -20,6 +20,16 @@ using ::testing::_;
 
 namespace policy {
 
+namespace {
+
+void AddSequencedTestPolicy(PolicyBundle* bundle, int* number) {
+  bundle->Get(POLICY_DOMAIN_CHROME, "")
+      .Set("id", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateIntegerValue(++(*number)));
+}
+
+}  // namespace
+
 class AsynchronousPolicyLoaderTest : public AsynchronousPolicyTestBase {
  public:
   AsynchronousPolicyLoaderTest() {}
@@ -43,44 +53,35 @@ class AsynchronousPolicyLoaderTest : public AsynchronousPolicyTestBase {
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyLoaderTest);
 };
 
-ACTION(CreateTestPolicyMap) {
-  return new PolicyMap();
-}
-
-ACTION_P(CreateSequencedTestPolicyMap, number) {
-  PolicyMap* test_policy_map = new PolicyMap();
-  test_policy_map->Set("id", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                       Value::CreateIntegerValue(++(*number)));
-  return test_policy_map;
-}
-
 TEST_F(AsynchronousPolicyLoaderTest, InitialLoad) {
-  PolicyMap template_policy;
-  template_policy.Set("test", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                      Value::CreateIntegerValue(123));
-  PolicyMap* result = new PolicyMap();
-  result->CopyFrom(template_policy);
+  PolicyBundle template_bundle;
+  template_bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set("test", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateIntegerValue(123));
+  template_bundle.Get(POLICY_DOMAIN_EXTENSIONS, "extension-id")
+      .Set("test", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateIntegerValue(123));
   ProviderDelegateMock* delegate = new ProviderDelegateMock();
-  EXPECT_CALL(*delegate, Load()).WillOnce(Return(result));
+  EXPECT_CALL(*delegate, MockLoad()).WillOnce(Return(&template_bundle));
   scoped_refptr<AsynchronousPolicyLoader> loader =
       new AsynchronousPolicyLoader(delegate, 10);
   EXPECT_FALSE(bundle_.get());
   loader->Init(update_callback_);
   ASSERT_TRUE(bundle_.get());
-  const PolicyMap& chrome_policy =
-      bundle_->Get(POLICY_DOMAIN_CHROME, std::string());
-  EXPECT_TRUE(chrome_policy.Equals(template_policy));
+  EXPECT_TRUE(bundle_->Equals(template_bundle));
 }
 
 // Verify that the fallback policy requests are made.
 TEST_F(AsynchronousPolicyLoaderTest, InitialLoadWithFallback) {
   int policy_number = 0;
+  PolicyBundle bundle0;
+  AddSequencedTestPolicy(&bundle0, &policy_number);
+  PolicyBundle bundle1;
+  AddSequencedTestPolicy(&bundle1, &policy_number);
   InSequence s;
   ProviderDelegateMock* delegate = new ProviderDelegateMock();
-  EXPECT_CALL(*delegate, Load()).WillOnce(
-      CreateSequencedTestPolicyMap(&policy_number));
-  EXPECT_CALL(*delegate, Load()).WillOnce(
-      CreateSequencedTestPolicyMap(&policy_number));
+  EXPECT_CALL(*delegate, MockLoad()).WillOnce(Return(&bundle0));
+  EXPECT_CALL(*delegate, MockLoad()).WillOnce(Return(&bundle1));
   scoped_refptr<AsynchronousPolicyLoader> loader =
       new AsynchronousPolicyLoader(delegate, 10);
   loader->Init(update_callback_);
@@ -91,16 +92,17 @@ TEST_F(AsynchronousPolicyLoaderTest, InitialLoadWithFallback) {
   const PolicyMap& chrome_policy =
       bundle_->Get(POLICY_DOMAIN_CHROME, std::string());
   base::FundamentalValue expected(policy_number);
-  EXPECT_TRUE(Value::Equals(&expected, chrome_policy.GetValue("id")));
+  EXPECT_TRUE(base::Value::Equals(&expected, chrome_policy.GetValue("id")));
   EXPECT_EQ(1U, chrome_policy.size());
 }
 
 // Ensure that calling stop on the loader stops subsequent reloads from
 // happening.
 TEST_F(AsynchronousPolicyLoaderTest, Stop) {
+  PolicyBundle bundle;
   ProviderDelegateMock* delegate = new ProviderDelegateMock();
-  ON_CALL(*delegate, Load()).WillByDefault(CreateTestPolicyMap());
-  EXPECT_CALL(*delegate, Load()).Times(1);
+  ON_CALL(*delegate, MockLoad()).WillByDefault(Return(&bundle));
+  EXPECT_CALL(*delegate, MockLoad()).Times(1);
   scoped_refptr<AsynchronousPolicyLoader> loader =
       new AsynchronousPolicyLoader(delegate, 10);
   loader->Init(update_callback_);
@@ -115,12 +117,12 @@ TEST_F(AsynchronousPolicyLoaderTest, Stop) {
 TEST_F(AsynchronousPolicyLoaderTest, ProviderNotificationOnPolicyChange) {
   InSequence s;
   MockConfigurationPolicyObserver observer;
-  int policy_number_1 = 0;
-  int policy_number_2 = 0;
+  int policy_number = 0;
 
+  PolicyBundle bundle;
+  AddSequencedTestPolicy(&bundle, &policy_number);
   ProviderDelegateMock* delegate = new ProviderDelegateMock();
-  EXPECT_CALL(*delegate, Load()).WillOnce(
-      CreateSequencedTestPolicyMap(&policy_number_1));
+  EXPECT_CALL(*delegate, MockLoad()).WillOnce(Return(&bundle));
 
   scoped_refptr<AsynchronousPolicyLoader> loader =
       new AsynchronousPolicyLoader(delegate, 10);
@@ -130,16 +132,15 @@ TEST_F(AsynchronousPolicyLoaderTest, ProviderNotificationOnPolicyChange) {
   registrar.Init(&provider, &observer);
   Mock::VerifyAndClearExpectations(delegate);
 
-  EXPECT_CALL(*delegate, Load()).WillOnce(
-      CreateSequencedTestPolicyMap(&policy_number_2));
+  EXPECT_CALL(*delegate, MockLoad()).WillOnce(Return(&bundle));
   EXPECT_CALL(observer, OnUpdatePolicy(_)).Times(1);
   provider.RefreshPolicies();
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(delegate);
   Mock::VerifyAndClearExpectations(&observer);
 
-  EXPECT_CALL(*delegate, Load()).WillOnce(
-      CreateSequencedTestPolicyMap(&policy_number_1));
+  AddSequencedTestPolicy(&bundle, &policy_number);
+  EXPECT_CALL(*delegate, MockLoad()).WillOnce(Return(&bundle));
   EXPECT_CALL(observer, OnUpdatePolicy(_)).Times(1);
   provider.RefreshPolicies();
   loop_.RunAllPending();

@@ -6,13 +6,14 @@
 
 #include <algorithm>
 #include <set>
+#include <string>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
-#include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_bundle.h"
 
 namespace policy {
 
@@ -24,7 +25,7 @@ ConfigDirPolicyProviderDelegate::ConfigDirPolicyProviderDelegate(
       level_(level),
       scope_(scope) {}
 
-PolicyMap* ConfigDirPolicyProviderDelegate::Load() {
+scoped_ptr<PolicyBundle> ConfigDirPolicyProviderDelegate::Load() {
   // Enumerate the files and sort them lexicographically.
   std::set<FilePath> files;
   file_util::FileEnumerator file_enumerator(config_file_path(), false,
@@ -37,7 +38,7 @@ PolicyMap* ConfigDirPolicyProviderDelegate::Load() {
   // The files are processed in reverse order because |MergeFrom| gives priority
   // to existing keys, but the ConfigDirPolicyProvider gives priority to the
   // last file in lexicographic order.
-  PolicyMap* policy = new PolicyMap;
+  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
   for (std::set<FilePath>::reverse_iterator config_file_iter = files.rbegin();
        config_file_iter != files.rend(); ++config_file_iter) {
     JSONFileValueSerializer deserializer(*config_file_iter);
@@ -58,10 +59,10 @@ PolicyMap* ConfigDirPolicyProviderDelegate::Load() {
     }
     PolicyMap file_policy;
     file_policy.LoadFrom(dictionary_value, level_, scope_);
-    policy->MergeFrom(file_policy);
+    bundle->Get(POLICY_DOMAIN_CHROME, std::string()).MergeFrom(file_policy);
   }
 
-  return policy;
+  return bundle.Pass();
 }
 
 base::Time ConfigDirPolicyProviderDelegate::GetLastModification() {

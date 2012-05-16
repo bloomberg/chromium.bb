@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/asynchronous_policy_test_base.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,7 +59,7 @@ class ScopedGroupPolicyRegistrySandbox {
 
 class TestHarness : public PolicyProviderTestHarness {
  public:
-  explicit TestHarness(HKEY hive);
+  explicit TestHarness(HKEY hive, PolicyScope scope);
   virtual ~TestHarness();
 
   virtual void SetUp() OVERRIDE;
@@ -131,8 +132,8 @@ void ScopedGroupPolicyRegistrySandbox::DeleteKeys() {
   key.DeleteKey(L"");
 }
 
-TestHarness::TestHarness(HKEY hive)
-    : hive_(hive) {}
+TestHarness::TestHarness(HKEY hive, PolicyScope scope)
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, scope), hive_(hive) {}
 
 TestHarness::~TestHarness() {}
 
@@ -199,12 +200,12 @@ void TestHarness::InstallDictionaryPolicy(
 
 // static
 PolicyProviderTestHarness* TestHarness::CreateHKCU() {
-  return new TestHarness(HKEY_CURRENT_USER);
+  return new TestHarness(HKEY_CURRENT_USER, POLICY_SCOPE_USER);
 }
 
 // static
 PolicyProviderTestHarness* TestHarness::CreateHKLM() {
-  return new TestHarness(HKEY_LOCAL_MACHINE);
+  return new TestHarness(HKEY_LOCAL_MACHINE, POLICY_SCOPE_MACHINE);
 }
 
 }  // namespace
@@ -243,11 +244,13 @@ TEST_F(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
   provider_.RefreshPolicies();
   loop_.RunAllPending();
 
-  PolicyMap policy_map;
-  provider_.Provide(&policy_map);
-  const base::Value* value =
-      policy_map.GetValue(test_policy_definitions::kKeyString);
-  EXPECT_TRUE(base::StringValue("hklm").Equals(value));
+  PolicyBundle expected_bundle;
+  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(test_policy_definitions::kKeyString,
+           POLICY_LEVEL_MANDATORY,
+           POLICY_SCOPE_MACHINE,
+           base::Value::CreateStringValue("hklm"));
+  EXPECT_TRUE(provider_.policies().Equals(expected_bundle));
 }
 
 }  // namespace policy

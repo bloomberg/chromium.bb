@@ -8,7 +8,6 @@
 
 #include "base/time.h"
 #include "chrome/browser/policy/file_based_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
 
 class FilePath;
 
@@ -39,7 +38,7 @@ class ConfigDirPolicyProviderDelegate
                                   PolicyScope scope);
 
   // FileBasedPolicyProvider::ProviderDelegate implementation.
-  virtual PolicyMap* Load() OVERRIDE;
+  virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
   virtual base::Time GetLastModification() OVERRIDE;
 
  private:

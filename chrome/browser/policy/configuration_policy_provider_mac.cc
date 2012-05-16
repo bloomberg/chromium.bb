@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/configuration_policy_provider_mac.h"
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/mac/foundation_util.h"
@@ -12,6 +14,7 @@
 #include "base/platform_file.h"
 #include "base/sys_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/preferences_mac.h"
 #include "chrome/common/chrome_paths.h"
@@ -84,9 +87,10 @@ MacPreferencesPolicyProviderDelegate::MacPreferencesPolicyProviderDelegate(
 
 MacPreferencesPolicyProviderDelegate::~MacPreferencesPolicyProviderDelegate() {}
 
-PolicyMap* MacPreferencesPolicyProviderDelegate::Load() {
+scoped_ptr<PolicyBundle> MacPreferencesPolicyProviderDelegate::Load() {
   preferences_->AppSynchronize(kCFPreferencesCurrentApplication);
-  PolicyMap* policies = new PolicyMap;
+  scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+  PolicyMap& chrome_policy = bundle->Get(POLICY_DOMAIN_CHROME, std::string());
 
   const PolicyDefinitionList::Entry* current;
   for (current = policy_list_->begin; current != policy_list_->end; ++current) {
@@ -107,10 +111,10 @@ PolicyMap* MacPreferencesPolicyProviderDelegate::Load() {
 
     base::Value* policy = CreateValueFromProperty(value);
     if (policy)
-      policies->Set(current->name, level_, POLICY_SCOPE_USER, policy);
+      chrome_policy.Set(current->name, level_, POLICY_SCOPE_USER, policy);
   }
 
-  return policies;
+  return bundle.Pass();
 }
 
 base::Time MacPreferencesPolicyProviderDelegate::GetLastModification() {

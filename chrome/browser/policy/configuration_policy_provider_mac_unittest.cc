@@ -11,6 +11,7 @@
 #include "chrome/browser/policy/asynchronous_policy_test_base.h"
 #include "chrome/browser/policy/configuration_policy_provider_mac.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/preferences_mock_mac.h"
 #include "policy/policy_constants.h"
@@ -147,7 +148,8 @@ class TestHarness : public PolicyProviderTestHarness {
   DISALLOW_COPY_AND_ASSIGN(TestHarness);
 };
 
-TestHarness::TestHarness() {}
+TestHarness::TestHarness()
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER) {}
 
 TestHarness::~TestHarness() {}
 
@@ -254,11 +256,9 @@ TEST_F(ConfigurationPolicyProviderMacTest, Invalid) {
   mandatory_provider_.RefreshPolicies();
   recommended_provider_.RefreshPolicies();
   loop_.RunAllPending();
-  PolicyMap policy_map;
-  EXPECT_TRUE(mandatory_provider_.Provide(&policy_map));
-  EXPECT_TRUE(policy_map.empty());
-  EXPECT_TRUE(recommended_provider_.Provide(&policy_map));
-  EXPECT_TRUE(policy_map.empty());
+  const PolicyBundle kEmptyBundle;
+  EXPECT_TRUE(mandatory_provider_.policies().Equals(kEmptyBundle));
+  EXPECT_TRUE(recommended_provider_.policies().Equals(kEmptyBundle));
 }
 
 TEST_F(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
@@ -274,11 +274,12 @@ TEST_F(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
   mandatory_provider_.RefreshPolicies();
   recommended_provider_.RefreshPolicies();
   loop_.RunAllPending();
-  PolicyMap policy_map;
-  EXPECT_TRUE(mandatory_provider_.Provide(&policy_map));
-  EXPECT_TRUE(policy_map.empty());
-  EXPECT_TRUE(recommended_provider_.Provide(&policy_map));
-  EXPECT_EQ(1U, policy_map.size());
+  PolicyBundle expected_bundle;
+  EXPECT_TRUE(mandatory_provider_.policies().Equals(expected_bundle));
+  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(test_policy_definitions::kKeyString, POLICY_LEVEL_RECOMMENDED,
+           POLICY_SCOPE_USER, base::Value::CreateStringValue("string value"));
+  EXPECT_TRUE(recommended_provider_.policies().Equals(expected_bundle));
 }
 
 TEST_F(ConfigurationPolicyProviderMacTest, TestConversions) {

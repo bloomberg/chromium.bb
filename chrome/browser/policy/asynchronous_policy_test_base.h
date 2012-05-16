@@ -16,7 +16,7 @@
 
 namespace policy {
 
-class PolicyMap;
+class PolicyBundle;
 
 // A delegate for testing that can feed arbitrary information to the loader.
 class ProviderDelegateMock : public AsynchronousPolicyProvider::Delegate {
@@ -24,7 +24,21 @@ class ProviderDelegateMock : public AsynchronousPolicyProvider::Delegate {
   ProviderDelegateMock();
   virtual ~ProviderDelegateMock();
 
-  MOCK_METHOD0(Load, PolicyMap*());
+  // Load() returns a scoped_ptr<PolicyBundle> but it can't be mocked because
+  // scoped_ptr is moveable but not copyable. This override forwards the
+  // call to MockLoad() which returns a PolicyBundle*, and returns a copy
+  // wrapped in a passed scoped_ptr.
+  virtual scoped_ptr<PolicyBundle> Load() OVERRIDE {
+    scoped_ptr<PolicyBundle> bundle;
+    PolicyBundle* loaded = MockLoad();
+    if (loaded) {
+      bundle.reset(new PolicyBundle());
+      bundle->CopyFrom(*loaded);
+    }
+    return bundle.Pass();
+  }
+
+  MOCK_METHOD0(MockLoad, PolicyBundle*());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProviderDelegateMock);

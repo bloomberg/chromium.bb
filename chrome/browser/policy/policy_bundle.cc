@@ -86,6 +86,31 @@ void PolicyBundle::MergeFrom(const PolicyBundle& other) {
   }
 }
 
+bool PolicyBundle::Equals(const PolicyBundle& other) const {
+  // Equals() has the peculiarity that an entry with an empty PolicyMap equals
+  // an non-existant entry. This handles usage of non-const Get() that doesn't
+  // insert any policies.
+  const_iterator it_this = begin();
+  const_iterator it_other = other.begin();
+
+  while (true) {
+    // Skip empty PolicyMaps.
+    while (it_this != end() && it_this->second->empty())
+      ++it_this;
+    while (it_other != other.end() && it_other->second->empty())
+      ++it_other;
+    if (it_this == end() || it_other == other.end())
+      break;
+    if (it_this->first != it_other->first ||
+        !it_this->second->Equals(*it_other->second)) {
+      return false;
+    }
+    ++it_this;
+    ++it_other;
+  }
+  return it_this == end() && it_other == other.end();
+}
+
 PolicyBundle::const_iterator PolicyBundle::begin() const {
   return policy_bundle_.begin();
 }

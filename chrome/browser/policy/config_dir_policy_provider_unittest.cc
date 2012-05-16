@@ -11,6 +11,8 @@
 #include "base/values.h"
 #include "chrome/browser/policy/config_dir_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
+#include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 
@@ -54,7 +56,8 @@ class TestHarness : public PolicyProviderTestHarness {
   DISALLOW_COPY_AND_ASSIGN(TestHarness);
 };
 
-TestHarness::TestHarness() {}
+TestHarness::TestHarness()
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE) {}
 
 TestHarness::~TestHarness() {}
 
@@ -149,9 +152,10 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
   ConfigDirPolicyProviderDelegate loader(harness_.test_dir(),
                                          POLICY_LEVEL_MANDATORY,
                                          POLICY_SCOPE_MACHINE);
-  scoped_ptr<PolicyMap> policy(loader.Load());
-  EXPECT_TRUE(policy.get());
-  EXPECT_TRUE(policy->empty());
+  scoped_ptr<PolicyBundle> bundle(loader.Load());
+  ASSERT_TRUE(bundle.get());
+  const PolicyBundle kEmptyBundle;
+  EXPECT_TRUE(bundle->Equals(kEmptyBundle));
 }
 
 // Reading from a non-existent directory should result in an empty preferences
@@ -162,9 +166,10 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsNonExistentDirectory) {
   ConfigDirPolicyProviderDelegate loader(non_existent_dir,
                                          POLICY_LEVEL_MANDATORY,
                                          POLICY_SCOPE_MACHINE);
-  scoped_ptr<PolicyMap> policy(loader.Load());
-  EXPECT_TRUE(policy.get());
-  EXPECT_TRUE(policy->empty());
+  scoped_ptr<PolicyBundle> bundle(loader.Load());
+  ASSERT_TRUE(bundle.get());
+  const PolicyBundle kEmptyBundle;
+  EXPECT_TRUE(bundle->Equals(kEmptyBundle));
 }
 
 // Test merging values from different files.
@@ -186,11 +191,12 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   ConfigDirPolicyProviderDelegate loader(harness_.test_dir(),
                                          POLICY_LEVEL_MANDATORY,
                                          POLICY_SCOPE_USER);
-  scoped_ptr<PolicyMap> policy(loader.Load());
-  EXPECT_TRUE(policy.get());
-  PolicyMap expected;
-  expected.LoadFrom(&test_dict_foo, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
-  EXPECT_TRUE(policy->Equals(expected));
+  scoped_ptr<PolicyBundle> bundle(loader.Load());
+  ASSERT_TRUE(bundle.get());
+  PolicyBundle expected_bundle;
+  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .LoadFrom(&test_dict_foo, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
+  EXPECT_TRUE(bundle->Equals(expected_bundle));
 }
 
 }  // namespace policy

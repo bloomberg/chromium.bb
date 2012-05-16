@@ -23,46 +23,36 @@ namespace policy {
 // Creating the provider should provide initial policy.
 TEST_F(AsynchronousPolicyTestBase, Provide) {
   InSequence s;
-  PolicyMap* policies = new PolicyMap();
-  policies->Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                Value::CreateBooleanValue(true));
+  PolicyBundle bundle;
+  bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateBooleanValue(true));
   ProviderDelegateMock* delegate = new ProviderDelegateMock();
-  EXPECT_CALL(*delegate, Load()).WillOnce(Return(policies));
+  EXPECT_CALL(*delegate, MockLoad()).WillOnce(Return(&bundle));
   AsynchronousPolicyProvider provider(
       GetChromePolicyDefinitionList(),
       new AsynchronousPolicyLoader(delegate, 10));
-  PolicyMap policy_map;
-  provider.Provide(&policy_map);
-  base::FundamentalValue expected(true);
-  EXPECT_TRUE(Value::Equals(&expected,
-              policy_map.GetValue(key::kSyncDisabled)));
-  EXPECT_EQ(1U, policy_map.size());
+  EXPECT_TRUE(provider.policies().Equals(bundle));
 }
-
 
 // Trigger a refresh manually and ensure that policy gets reloaded.
 TEST_F(AsynchronousPolicyTestBase, ProvideAfterRefresh) {
   InSequence s;
-  PolicyMap* original_policies = new PolicyMap();
-  original_policies->Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY,
-                         POLICY_SCOPE_USER, Value::CreateBooleanValue(true));
+  PolicyBundle original_policies;
+  original_policies.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(key::kSyncDisabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateBooleanValue(true));
   ProviderDelegateMock* delegate = new ProviderDelegateMock();
-  EXPECT_CALL(*delegate, Load()).WillOnce(Return(original_policies));
-  PolicyMap* refresh_policies = new PolicyMap();
-  refresh_policies->Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY,
-                        POLICY_SCOPE_USER, Value::CreateBooleanValue(true));
-  EXPECT_CALL(*delegate, Load()).WillOnce(Return(refresh_policies));
+  EXPECT_CALL(*delegate, MockLoad()).WillOnce(Return(&original_policies));
+  PolicyBundle refresh_policies;
+  refresh_policies.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           base::Value::CreateBooleanValue(true));
+  EXPECT_CALL(*delegate, MockLoad()).WillOnce(Return(&refresh_policies));
   AsynchronousPolicyLoader* loader = new AsynchronousPolicyLoader(delegate, 10);
-  AsynchronousPolicyProvider provider(GetChromePolicyDefinitionList(),
-                                      loader);
+  AsynchronousPolicyProvider provider(GetChromePolicyDefinitionList(), loader);
   // The original policies have been loaded.
-  PolicyMap policy_map;
-  provider.Provide(&policy_map);
-  EXPECT_EQ(1U, policy_map.size());
-  base::FundamentalValue expected(true);
-  EXPECT_TRUE(Value::Equals(&expected,
-              policy_map.GetValue(key::kSyncDisabled)));
-  EXPECT_FALSE(policy_map.Get(key::kJavascriptEnabled));
+  EXPECT_TRUE(provider.policies().Equals(original_policies));
 
   MockConfigurationPolicyObserver observer;
   ConfigurationPolicyObserverRegistrar registrar;
@@ -71,12 +61,7 @@ TEST_F(AsynchronousPolicyTestBase, ProvideAfterRefresh) {
   provider.RefreshPolicies();
   loop_.RunAllPending();
   // The refreshed policies are now provided.
-  policy_map.Clear();
-  provider.Provide(&policy_map);
-  EXPECT_EQ(1U, policy_map.size());
-  EXPECT_TRUE(Value::Equals(&expected,
-              policy_map.GetValue(key::kJavascriptEnabled)));
-  EXPECT_FALSE(policy_map.Get(key::kSyncDisabled));
+  EXPECT_TRUE(provider.policies().Equals(refresh_policies));
 }
 
 }  // namespace policy

@@ -16,7 +16,6 @@ namespace policy {
 
 class AsynchronousPolicyLoader;
 class PolicyBundle;
-class PolicyMap;
 
 // Policy provider that loads policy asynchronously. Providers should subclass
 // from this class if loading the policy requires disk access or must for some
@@ -32,9 +31,8 @@ class AsynchronousPolicyProvider
    public:
     virtual ~Delegate() {}
 
-    // Load policy from the delegate's source, and return a PolicyMap. Ownership
-    // is transferred to the caller.
-    virtual PolicyMap* Load() = 0;
+    // Load policy from the delegate's source, and return a PolicyBundle.
+    virtual scoped_ptr<PolicyBundle> Load() = 0;
   };
 
   // Assumes ownership of |loader|.

@@ -5,11 +5,13 @@
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,9 +43,19 @@ const PolicyDefinitionList kList = {
 
 }  // namespace test_policy_definitions
 
-PolicyProviderTestHarness::PolicyProviderTestHarness() {}
+PolicyProviderTestHarness::PolicyProviderTestHarness(PolicyLevel level,
+                                                     PolicyScope scope)
+    : level_(level), scope_(scope) {}
 
 PolicyProviderTestHarness::~PolicyProviderTestHarness() {}
+
+PolicyLevel PolicyProviderTestHarness::policy_level() const {
+  return level_;
+}
+
+PolicyScope PolicyProviderTestHarness::policy_scope() const {
+  return scope_;
+}
 
 ConfigurationPolicyProviderTest::ConfigurationPolicyProviderTest() {}
 
@@ -61,9 +73,8 @@ void ConfigurationPolicyProviderTest::SetUp() {
   // are fired now.
   loop_.RunAllPending();
 
-  PolicyMap policy_map;
-  EXPECT_TRUE(provider_->Provide(&policy_map));
-  EXPECT_TRUE(policy_map.empty());
+  const PolicyBundle kEmptyBundle;
+  EXPECT_TRUE(provider_->policies().Equals(kEmptyBundle));
 }
 
 void ConfigurationPolicyProviderTest::TearDown() {
@@ -81,19 +92,22 @@ void ConfigurationPolicyProviderTest::CheckValue(
   install_value.Run();
   provider_->RefreshPolicies();
   loop_.RunAllPending();
-  PolicyMap policy_map;
-  EXPECT_TRUE(provider_->Provide(&policy_map));
-  EXPECT_EQ(1U, policy_map.size());
-  EXPECT_TRUE(base::Value::Equals(&expected_value,
-                                  policy_map.GetValue(policy_name)));
+  PolicyBundle expected_bundle;
+  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(policy_name,
+           test_harness_->policy_level(),
+           test_harness_->policy_scope(),
+           expected_value.DeepCopy());
+  EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
+  // TODO(joaodasilva): set the policy in the POLICY_DOMAIN_EXTENSIONS too,
+  // and extend the |expected_bundle|, once all providers are ready.
 }
 
 TEST_P(ConfigurationPolicyProviderTest, Empty) {
   provider_->RefreshPolicies();
   loop_.RunAllPending();
-  PolicyMap policy_map;
-  EXPECT_TRUE(provider_->Provide(&policy_map));
-  EXPECT_TRUE(policy_map.empty());
+  const PolicyBundle kEmptyBundle;
+  EXPECT_TRUE(provider_->policies().Equals(kEmptyBundle));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, StringValue) {
@@ -173,9 +187,8 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
 }
 
 TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
-  PolicyMap policy_map;
-  EXPECT_TRUE(provider_->Provide(&policy_map));
-  EXPECT_EQ(0U, policy_map.size());
+  PolicyBundle bundle;
+  EXPECT_TRUE(provider_->policies().Equals(bundle));
 
   // OnUpdatePolicy is called even when there are no changes.
   MockConfigurationPolicyObserver observer;
@@ -186,8 +199,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
 
-  EXPECT_TRUE(provider_->Provide(&policy_map));
-  EXPECT_EQ(0U, policy_map.size());
+  EXPECT_TRUE(provider_->policies().Equals(bundle));
 
   // OnUpdatePolicy is called when there are changes.
   test_harness_->InstallStringPolicy(test_policy_definitions::kKeyString,
@@ -197,9 +209,12 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
 
-  policy_map.Clear();
-  EXPECT_TRUE(provider_->Provide(&policy_map));
-  EXPECT_EQ(1U, policy_map.size());
+  bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(test_policy_definitions::kKeyString,
+           test_harness_->policy_level(),
+           test_harness_->policy_scope(),
+           base::Value::CreateStringValue("value"));
+  EXPECT_TRUE(provider_->policies().Equals(bundle));
 }
 
 TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
@@ -220,12 +235,16 @@ TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
                  POLICY_SCOPE_USER,
                  base::Value::CreateStringValue("http://example.com/wpad.dat"));
 
-  ConfigurationPolicyProvider::FixDeprecatedPolicies(&policy_map);
-  base::DictionaryValue expected;
-  expected.SetInteger(key::kProxyServerMode, 3);
-  EXPECT_EQ(1U, policy_map.size());
-  EXPECT_TRUE(base::Value::Equals(&expected,
-                                  policy_map.GetValue(key::kProxySettings)));
+  MockConfigurationPolicyProvider provider;
+  provider.UpdateChromePolicy(policy_map);
+
+  PolicyBundle expected_bundle;
+  base::DictionaryValue* expected_value = new base::DictionaryValue();
+  expected_value->SetInteger(key::kProxyServerMode, 3);
+  expected_bundle.Get(POLICY_DOMAIN_CHROME, "")
+      .Set(key::kProxySettings, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           expected_value);
+  EXPECT_TRUE(provider.policies().Equals(expected_bundle));
 }
 
 }  // namespace policy

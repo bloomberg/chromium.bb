@@ -21,37 +21,9 @@ const char* kProxyPolicies[] = {
   key::kProxyBypassList,
 };
 
-}  // namespace
-
-ConfigurationPolicyProvider::Observer::~Observer() {}
-
-void ConfigurationPolicyProvider::Observer::OnProviderGoingAway(
-    ConfigurationPolicyProvider* provider) {}
-
-// Class ConfigurationPolicyProvider.
-
-ConfigurationPolicyProvider::ConfigurationPolicyProvider(
-    const PolicyDefinitionList* policy_list)
-    : policy_definition_list_(policy_list) {
-}
-
-ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
-  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
-                    observer_list_,
-                    OnProviderGoingAway(this));
-}
-
-bool ConfigurationPolicyProvider::Provide(PolicyMap* result) {
-  result->CopyFrom(policy_bundle_.Get(POLICY_DOMAIN_CHROME, std::string()));
-  return true;
-}
-
-bool ConfigurationPolicyProvider::IsInitializationComplete() const {
-  return true;
-}
-
-// static
-void ConfigurationPolicyProvider::FixDeprecatedPolicies(PolicyMap* policies) {
+// Helper that converts deprecated chrome policies into their corresponding
+// actual policies.
+void FixDeprecatedPolicies(PolicyMap* policies) {
   // Proxy settings have been configured by 5 policies that didn't mix well
   // together, and maps of policies had to take this into account when merging
   // policy sources. The proxy settings will eventually be configured by a
@@ -89,9 +61,34 @@ void ConfigurationPolicyProvider::FixDeprecatedPolicies(PolicyMap* policies) {
   }
 }
 
+}  // namespace
+
+ConfigurationPolicyProvider::Observer::~Observer() {}
+
+void ConfigurationPolicyProvider::Observer::OnProviderGoingAway(
+    ConfigurationPolicyProvider* provider) {}
+
+ConfigurationPolicyProvider::ConfigurationPolicyProvider(
+    const PolicyDefinitionList* policy_list)
+    : policy_definition_list_(policy_list) {
+}
+
+ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_,
+                    OnProviderGoingAway(this));
+}
+
+bool ConfigurationPolicyProvider::IsInitializationComplete() const {
+  return true;
+}
+
 void ConfigurationPolicyProvider::UpdatePolicy(
     scoped_ptr<PolicyBundle> bundle) {
-  policy_bundle_.Swap(bundle.get());
+  if (bundle.get())
+    policy_bundle_.Swap(bundle.get());
+  else
+    policy_bundle_.Clear();
   FixDeprecatedPolicies(
       &policy_bundle_.Get(POLICY_DOMAIN_CHROME, std::string()));
   FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,

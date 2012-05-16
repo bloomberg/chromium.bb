@@ -8,7 +8,6 @@
 
 #include "base/string16.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
-#include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 
@@ -22,7 +21,7 @@ class ConfigurationPolicyProviderDelegateWin
   virtual ~ConfigurationPolicyProviderDelegateWin() {}
 
   // AsynchronousPolicyProvider::Delegate overrides:
-  virtual PolicyMap* Load() OVERRIDE;
+  virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
 
  private:
   // Methods to perform type-specific policy lookups in the registry.
