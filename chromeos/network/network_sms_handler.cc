@@ -35,6 +35,8 @@ class NetworkSmsHandler::NetworkSmsDeviceHandler {
                           std::string dbus_connection,
                           dbus::ObjectPath object_path);
 
+  void RequestUpdate();
+
  private:
   void ListCallback(const base::ListValue& message_list);
   void SmsReceivedCallback(uint32 index, bool complete);
@@ -72,6 +74,11 @@ NetworkSmsHandler::NetworkSmsDeviceHandler::NetworkSmsDeviceHandler(
       dbus_connection_, object_path_,
       base::Bind(&NetworkSmsDeviceHandler::ListCallback,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NetworkSmsHandler::NetworkSmsDeviceHandler::RequestUpdate() {
+  DBusThreadManager::Get()->GetGsmSMSClient()->RequestUpdate(
+      dbus_connection_, object_path_);
 }
 
 void NetworkSmsHandler::NetworkSmsDeviceHandler::ListCallback(
@@ -149,6 +156,13 @@ void NetworkSmsHandler::Init() {
   DBusThreadManager::Get()->GetFlimflamManagerClient()->GetProperties(
       base::Bind(&NetworkSmsHandler::ManagerPropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NetworkSmsHandler::RequestUpdate() {
+  for (ScopedVector<NetworkSmsDeviceHandler>::iterator iter =
+           device_handlers_.begin(); iter != device_handlers_.end(); ++iter) {
+    (*iter)->RequestUpdate();
+  }
 }
 
 void NetworkSmsHandler::AddObserver(Observer* observer) {

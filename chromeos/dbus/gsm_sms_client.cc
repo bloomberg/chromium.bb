@@ -198,6 +198,11 @@ class GsmSMSClientImpl : public GsmSMSClient {
     GetProxy(service_name, object_path)->List(callback);
   }
 
+  // GsmSMSClient override.
+  virtual void RequestUpdate(const std::string& service_name,
+                             const dbus::ObjectPath& object_path) {
+  }
+
  private:
   typedef std::map<std::pair<std::string, std::string>, SMSProxy*> ProxyMap;
 
@@ -231,6 +236,9 @@ class GsmSMSClientStubImpl : public GsmSMSClient {
     test_messages_.push_back("Test a relatively long message 2");
     test_messages_.push_back("Test a very, the quick brown fox jumped"
                              " over the lazy dog, long message 3");
+    test_messages_.push_back("Test Message 4");
+    test_messages_.push_back("Test Message 5");
+    test_messages_.push_back("Test Message 6");
   }
 
   virtual ~GsmSMSClientStubImpl() {}
@@ -277,21 +285,28 @@ class GsmSMSClientStubImpl : public GsmSMSClient {
   virtual void List(const std::string& service_name,
                     const dbus::ObjectPath& object_path,
                     const ListCallback& callback) OVERRIDE {
-    PushTestMessageChain();
     callback.Run(message_list_);
+  }
+
+  // GsmSMSClient override.
+  virtual void RequestUpdate(const std::string& service_name,
+                             const dbus::ObjectPath& object_path) {
+    PushTestMessageChain();
   }
 
  private:
   void PushTestMessageChain() {
-    if (PushTestMessage()) {
-      // Queue up the next message.
-      const int kSmsMessageDelaySeconds = 5;
-      MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&GsmSMSClientStubImpl::PushTestMessageChain,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::TimeDelta::FromSeconds(kSmsMessageDelaySeconds));
-    }
+    if (PushTestMessage())
+      PushTestMessageDelayed();
+  }
+
+  void PushTestMessageDelayed() {
+    const int kSmsMessageDelaySeconds = 5;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&GsmSMSClientStubImpl::PushTestMessageChain,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(kSmsMessageDelaySeconds));
   }
 
   bool PushTestMessage() {

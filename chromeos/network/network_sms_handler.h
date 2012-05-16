@@ -38,6 +38,9 @@ class CHROMEOS_EXPORT NetworkSmsHandler {
   // notified with initial messages should be added before calling this.
   void Init();
 
+  // Requests an immediate check for new messages.
+  void RequestUpdate();
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 

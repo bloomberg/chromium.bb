@@ -58,6 +58,8 @@ TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {
   sms_handler->AddObserver(test_observer.get());
   sms_handler->Init();
   message_loop_.RunAllPending();
+  sms_handler->RequestUpdate();
+  message_loop_.RunAllPending();
   EXPECT_GE(test_observer->message_count(), 1);
 }
 

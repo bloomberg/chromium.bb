@@ -69,6 +69,11 @@ class CHROMEOS_EXPORT GsmSMSClient {
                     const dbus::ObjectPath& object_path,
                     const ListCallback& callback) = 0;
 
+  // Requests a check for new messages. In flimflam this does nothing. The
+  // stub implementation uses it to generate a sequence of test messages.
+  virtual void RequestUpdate(const std::string& service_name,
+                             const dbus::ObjectPath& object_path) = 0;
+
  protected:
   // Create() should be used instead.
   GsmSMSClient();

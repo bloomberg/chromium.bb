@@ -35,6 +35,8 @@ class MockGsmSMSClient : public GsmSMSClient {
   MOCK_METHOD3(List, void(const std::string& service_name,
                           const dbus::ObjectPath& object_path,
                           const ListCallback& callback));
+  MOCK_METHOD2(RequestUpdate, void(const std::string& service_name,
+                                   const dbus::ObjectPath& object_path));
 };
 
 }  // namespace chromeos
