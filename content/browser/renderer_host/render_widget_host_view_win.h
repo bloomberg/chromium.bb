@@ -548,9 +548,9 @@ class RenderWidgetHostViewWin
   // members starting from virtual_keyboard_ to
   // received_focus_change_after_pointer_down_.
 
-  // IPenInputPanel to allow us to show the Windows virtual keyboard when a
+  // ITextInputPanel to allow us to show the Windows virtual keyboard when a
   // user touches an editable field on the page.
-  base::win::ScopedComPtr<IPenInputPanel> virtual_keyboard_;
+  base::win::ScopedComPtr<ITextInputPanel> virtual_keyboard_;
 
   // Set to true if we are in the context of a WM_POINTERDOWN message
   bool pointer_down_context_;

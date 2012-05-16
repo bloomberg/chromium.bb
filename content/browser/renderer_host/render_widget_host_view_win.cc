@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/threading/thread.h"
+#include "base/win/metro.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
@@ -350,20 +351,12 @@ RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
 void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
   // ATL function to create the window.
   Create(parent);
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    // MSDN recommends using the ITextInputPanel interface to display the on
-    // screen keyboard. This interface does not work predictably due to focus
-    // and activation bugs. We use the deprecated IPenInputPanel interface for
-    // now which works reliably with the caveat being that the keyboard cannot
-    // be closed via the system close menu. Esc or clicking elsewhere works.
-    // TODO(ananta): Revisit this.
-    virtual_keyboard_.CreateInstance(CLSID_PenInputPanel, NULL, CLSCTX_INPROC);
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      !base::win::GetMetroModule()) {
+    virtual_keyboard_.CreateInstance(CLSID_TextInputPanel, NULL, CLSCTX_INPROC);
     if (virtual_keyboard_) {
-      virtual_keyboard_->put_AttachedEditWindow(
-          reinterpret_cast<int>(m_hWnd));
-      virtual_keyboard_->put_DefaultPanel(PT_Keyboard);
-      virtual_keyboard_->put_Visible(VARIANT_FALSE);
-      virtual_keyboard_->put_AutoShow(VARIANT_FALSE);
+      virtual_keyboard_->put_AttachedEditWindow(m_hWnd);
+      virtual_keyboard_->SetInPlaceVisibility(FALSE);
     } else {
       NOTREACHED() << "Failed to create instance of pen input panel";
     }
@@ -2337,13 +2330,15 @@ LRESULT RenderWidgetHostViewWin::OnPointerMessage(
   lparam = MAKELPARAM(point.x, point.y);
 
   if (message == WM_POINTERDOWN) {
-    SetFocus();
-    pointer_down_context_ = true;
-    received_focus_change_after_pointer_down_ = false;
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&RenderWidgetHostViewWin::ResetPointerDownContext,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kPointerDownContextResetDelay));
+    if (!base::win::GetMetroModule()) {
+      SetFocus();
+      pointer_down_context_ = true;
+      received_focus_change_after_pointer_down_ = false;
+      MessageLoop::current()->PostDelayedTask(FROM_HERE,
+          base::Bind(&RenderWidgetHostViewWin::ResetPointerDownContext,
+                     weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMilliseconds(kPointerDownContextResetDelay));
+    }
   }
   handled = FALSE;
   return 0;
@@ -2669,10 +2664,10 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 void RenderWidgetHostViewWin::DisplayOnScreenKeyboardIfNeeded() {
   if (focus_on_editable_field_) {
     if (pointer_down_context_) {
-      virtual_keyboard_->put_Visible(VARIANT_TRUE);
+      virtual_keyboard_->SetInPlaceVisibility(TRUE);
     }
   } else {
-    virtual_keyboard_->put_Visible(VARIANT_FALSE);
+    virtual_keyboard_->SetInPlaceVisibility(FALSE);
   }
 }
 
