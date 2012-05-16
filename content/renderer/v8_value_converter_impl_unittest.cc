@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -293,14 +293,14 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
   TestWeirdType(converter, v8::Date::New(1000), Value::TYPE_DICTIONARY, NULL);
   TestWeirdType(converter, regex, Value::TYPE_DICTIONARY, NULL);
 
-  converter.set_allow_undefined(true);
+  converter.SetUndefinedAllowed(true);
   TestWeirdType(converter, v8::Undefined(), Value::TYPE_NULL, NULL);
 
-  converter.set_allow_date(true);
+  converter.SetDateAllowed(true);
   TestWeirdType(converter, v8::Date::New(1000), Value::TYPE_DOUBLE,
                 Value::CreateDoubleValue(1));
 
-  converter.set_allow_regexp(true);
+  converter.SetRegexpAllowed(true);
   TestWeirdType(converter, regex, Value::TYPE_STRING,
                 Value::CreateStringValue("/./"));
 }

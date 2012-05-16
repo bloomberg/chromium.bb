@@ -28,6 +28,17 @@ class CONTENT_EXPORT V8ValueConverter {
 
   virtual ~V8ValueConverter() {}
 
+  // Use the following setters to support additional types other than the
+  // default ones.
+  virtual bool GetUndefinedAllowed() const = 0;
+  virtual void SetUndefinedAllowed(bool val) = 0;
+
+  virtual bool GetDateAllowed() const = 0;
+  virtual void SetDateAllowed(bool val) = 0;
+
+  virtual bool GetRegexpAllowed() const = 0;
+  virtual void SetRegexpAllowed(bool val) = 0;
+
   // Converts Value to v8::Value. Unsupported types are replaced with null.
   // If an array or object throws while setting a value, that property or item
   // is skipped, leaving a hole in the case of arrays.

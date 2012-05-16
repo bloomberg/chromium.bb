@@ -29,9 +29,33 @@ V8ValueConverter* V8ValueConverter::create() {
 }
 
 V8ValueConverterImpl::V8ValueConverterImpl()
-    : allow_undefined_(false),
-      allow_date_(false),
-      allow_regexp_(false) {
+    : undefined_allowed_(false),
+      date_allowed_(false),
+      regexp_allowed_(false) {
+}
+
+bool V8ValueConverterImpl::GetUndefinedAllowed() const {
+  return undefined_allowed_;
+}
+
+void V8ValueConverterImpl::SetUndefinedAllowed(bool val) {
+  undefined_allowed_ = val;
+}
+
+bool V8ValueConverterImpl::GetDateAllowed() const {
+  return date_allowed_;
+}
+
+void V8ValueConverterImpl::SetDateAllowed(bool val) {
+  date_allowed_ = val;
+}
+
+bool V8ValueConverterImpl::GetRegexpAllowed() const {
+  return regexp_allowed_;
+}
+
+void V8ValueConverterImpl::SetRegexpAllowed(bool val) {
+  regexp_allowed_ = val;
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Value(
@@ -167,15 +191,15 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(v8::Handle<v8::Value> val) const {
     return Value::CreateStringValue(std::string(*utf8, utf8.length()));
   }
 
-  if (allow_undefined_ && val->IsUndefined())
+  if (undefined_allowed_ && val->IsUndefined())
     return Value::CreateNullValue();
 
-  if (allow_date_ && val->IsDate()) {
+  if (date_allowed_ && val->IsDate()) {
     v8::Date* date = v8::Date::Cast(*val);
     return Value::CreateDoubleValue(date->NumberValue() / 1000.0);
   }
 
-  if (allow_regexp_ && val->IsRegExp()) {
+  if (regexp_allowed_ && val->IsRegExp()) {
     return Value::CreateStringValue(
         *v8::String::Utf8Value(val->ToString()));
   }

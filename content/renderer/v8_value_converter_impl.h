@@ -20,18 +20,13 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
  public:
   V8ValueConverterImpl();
 
-  // Use the following setters to support additional types other than the
-  // default ones.
-  bool allow_undefined() const { return allow_undefined_; }
-  void set_allow_undefined(bool val) { allow_undefined_ = val; }
-
-  bool allow_date() const { return allow_date_; }
-  void set_allow_date(bool val) { allow_date_ = val; }
-
-  bool allow_regexp() const { return allow_regexp_; }
-  void set_allow_regexp(bool val) { allow_regexp_ = val; }
-
   // V8ValueConverter implementation.
+  virtual bool GetUndefinedAllowed() const OVERRIDE;
+  virtual void SetUndefinedAllowed(bool val) OVERRIDE;
+  virtual bool GetDateAllowed() const OVERRIDE;
+  virtual void SetDateAllowed(bool val) OVERRIDE;
+  virtual bool GetRegexpAllowed() const OVERRIDE;
+  virtual void SetRegexpAllowed(bool val) OVERRIDE;
   virtual v8::Handle<v8::Value> ToV8Value(
       const base::Value* value,
       v8::Handle<v8::Context> context) const OVERRIDE;
@@ -57,13 +52,13 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
   base::DictionaryValue* FromV8Object(v8::Handle<v8::Object> object) const;
 
   // If true, we will convert undefined JavaScript values to null.
-  bool allow_undefined_;
+  bool undefined_allowed_;
 
   // If true, we will convert Date JavaScript objects to doubles.
-  bool allow_date_;
+  bool date_allowed_;
 
   // If true, we will convet RegExp JavaScript objects to string.
-  bool allow_regexp_;
+  bool regexp_allowed_;
 };
 
 #endif  // CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_

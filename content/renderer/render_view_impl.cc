@@ -3676,8 +3676,8 @@ void RenderViewImpl::EvaluateScript(const string16& frame_xpath,
       v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
       v8::Context::Scope context_scope(context);
       V8ValueConverterImpl converter;
-      converter.set_allow_date(true);
-      converter.set_allow_regexp(true);
+      converter.SetDateAllowed(true);
+      converter.SetRegexpAllowed(true);
       list.Set(0, converter.FromV8Value(result, context));
     } else {
       list.Set(0, Value::CreateNullValue());

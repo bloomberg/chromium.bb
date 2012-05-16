@@ -41,6 +41,7 @@ v8::Handle<v8::Value> SendRequestNatives::StartRequest(
   bool for_io_thread = args[4]->BooleanValue();
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  converter->SetUndefinedAllowed(true);  // Allow passing optional values.
   scoped_ptr<Value> value_args(
       converter->FromV8Value(args[1], v8::Context::GetCurrent()));
   if (!value_args.get() || !value_args->IsType(Value::TYPE_LIST)) {
