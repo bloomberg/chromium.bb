@@ -16,6 +16,11 @@
 
 namespace plugin {
 
+const char PnaclUrls::kExtensionOrigin[] =
+    "chrome-extension://gcodniebolpnpaiggndmcmmfpldlknih/";
+const char PnaclUrls::kLlcUrl[] = "llc";
+const char PnaclUrls::kLdUrl[] = "ld";
+
 PnaclResources::~PnaclResources() {
   for (std::map<nacl::string, nacl::DescWrapper*>::iterator
            i = resource_wrappers_.begin(), e = resource_wrappers_.end();

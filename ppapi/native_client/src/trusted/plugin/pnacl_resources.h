@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/delayed_callback.h"
+#include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -22,6 +23,18 @@ class Manifest;
 class Plugin;
 class PnaclCoordinator;
 
+class PnaclUrls {
+ public:
+  static nacl::string GetExtensionUrl() {
+    return nacl::string(kExtensionOrigin) + GetSandboxISA() + "/";
+  }
+  static const nacl::string GetLlcUrl() { return nacl::string(kLlcUrl); }
+  static const nacl::string GetLdUrl() { return nacl::string(kLdUrl); }
+ private:
+  static const char kExtensionOrigin[];
+  static const char kLlcUrl[];
+  static const char kLdUrl[];
+};
 
 // Loads a list of remote resources, providing a way to get file descriptors for
 // thse resources.  All URLs in relative to resource_base_url_.

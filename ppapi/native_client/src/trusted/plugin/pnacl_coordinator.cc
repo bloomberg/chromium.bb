@@ -9,260 +9,23 @@
 
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/shared/platform/nacl_sync_raii.h"
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/plugin/local_temp_file.h"
 #include "native_client/src/trusted/plugin/manifest.h"
-#include "native_client/src/trusted/plugin/nacl_subprocess.h"
-#include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/pnacl_translate_thread.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
-#include "native_client/src/trusted/plugin/srpc_params.h"
-#include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/cpp/file_io.h"
 
-namespace plugin {
-
-class Plugin;
-
 namespace {
-
-const char kLlcUrl[] = "llc";
-const char kLdUrl[] = "ld";
 const char kPnaclTempDir[] = "/.pnacl";
-
-nacl::string ExtensionUrl() {
-  // TODO(sehr,jvoung): Find a better way to express the URL for the pnacl
-  // extension than a constant string here.
-  const nacl::string kPnaclExtensionOrigin =
-      "chrome-extension://gcodniebolpnpaiggndmcmmfpldlknih/";
-  return kPnaclExtensionOrigin + GetSandboxISA() + "/";
 }
 
-nacl::string Random32CharHexString(struct NaClDescRng* rng) {
-  struct NaClDesc* desc = reinterpret_cast<struct NaClDesc*>(rng);
-  const struct NaClDescVtbl* vtbl =
-      reinterpret_cast<const struct NaClDescVtbl*>(desc->base.vtbl);
-
-  nacl::string hex_string;
-  const int32_t kTempFileNameWords = 4;
-  for (int32_t i = 0; i < kTempFileNameWords; ++i) {
-    int32_t num;
-    CHECK(sizeof num == vtbl->Read(desc,
-                                   reinterpret_cast<char*>(&num),
-                                   sizeof num));
-    char frag[16];
-    SNPRINTF(frag, sizeof frag, "%08x", num);
-    hex_string += nacl::string(frag);
-  }
-  return hex_string;
-}
-
-// Some constants for PnaclFileDescPair::GetFD readability.
-const bool kReadOnly = false;
-const bool kWriteable = true;
-}  // namespace
-
-//////////////////////////////////////////////////////////////////////
-//  Local temporary file access.
-//////////////////////////////////////////////////////////////////////
-
-uint32_t LocalTempFile::next_identifier = 0;
-
-LocalTempFile::LocalTempFile(Plugin* plugin,
-                             pp::FileSystem* file_system)
-    : plugin_(plugin),
-      file_system_(file_system) {
-  PLUGIN_PRINTF(("LocalTempFile::LocalTempFile (plugin=%p, "
-                 "file_system=%p)\n",
-                 static_cast<void*>(plugin), static_cast<void*>(file_system)));
-  Initialize();
-}
-
-LocalTempFile::LocalTempFile(Plugin* plugin,
-                             pp::FileSystem* file_system,
-                             const nacl::string &filename)
-    : plugin_(plugin),
-      file_system_(file_system),
-      filename_(nacl::string(kPnaclTempDir) + "/" + filename) {
-  PLUGIN_PRINTF(("LocalTempFile::LocalTempFile (plugin=%p, "
-                 "file_system=%p, filename=%s)\n",
-                 static_cast<void*>(plugin), static_cast<void*>(file_system),
-                 filename.c_str()));
-  file_ref_.reset(new pp::FileRef(*file_system_, filename_.c_str()));
-  Initialize();
-}
-
-void LocalTempFile::Initialize() {
-  callback_factory_.Initialize(this);
-  rng_desc_ = (struct NaClDescRng *) malloc(sizeof *rng_desc_);
-  CHECK(rng_desc_ != NULL);
-  CHECK(NaClDescRngCtor(rng_desc_));
-  file_io_trusted_ = static_cast<const PPB_FileIOTrusted*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
-  ++next_identifier;
-  SNPRINTF(reinterpret_cast<char *>(identifier_), sizeof identifier_,
-           "%"NACL_PRIu32, next_identifier);
-}
-
-LocalTempFile::~LocalTempFile() {
-  PLUGIN_PRINTF(("LocalTempFile::~LocalTempFile\n"));
-  NaClDescUnref(reinterpret_cast<NaClDesc*>(rng_desc_));
-}
-
-void LocalTempFile::OpenWrite(const pp::CompletionCallback& cb) {
-  done_callback_ = cb;
-  // If we don't already have a filename, generate one.
-  if (filename_ == "") {
-    // Get a random temp file name.
-    filename_ =
-        nacl::string(kPnaclTempDir) + "/" + Random32CharHexString(rng_desc_);
-    // Remember the ref used to open for writing and reading.
-    file_ref_.reset(new pp::FileRef(*file_system_, filename_.c_str()));
-  }
-  PLUGIN_PRINTF(("LocalTempFile::OpenWrite: %s\n", filename_.c_str()));
-  // Open the writeable file.
-  write_io_.reset(new pp::FileIO(plugin_));
-  pp::CompletionCallback open_write_cb =
-      callback_factory_.NewCallback(&LocalTempFile::WriteFileDidOpen);
-  write_io_->Open(*file_ref_,
-                  PP_FILEOPENFLAG_WRITE |
-                  PP_FILEOPENFLAG_CREATE |
-                  PP_FILEOPENFLAG_EXCLUSIVE,
-                  open_write_cb);
-}
-
-int32_t LocalTempFile::GetFD(int32_t pp_error,
-                             const pp::Resource& resource,
-                             bool is_writable) {
-  PLUGIN_PRINTF(("LocalTempFile::GetFD (pp_error=%"NACL_PRId32
-                 ", is_writable=%d)\n", pp_error, is_writable));
-  if (pp_error != PP_OK) {
-    PLUGIN_PRINTF(("LocalTempFile::GetFD pp_error != PP_OK\n"));
-    return -1;
-  }
-  int32_t file_desc =
-      file_io_trusted_->GetOSFileDescriptor(resource.pp_resource());
-#if NACL_WINDOWS
-  // Convert the Windows HANDLE from Pepper to a POSIX file descriptor.
-  int32_t open_flags = ((is_writable ? _O_RDWR : _O_RDONLY) | _O_BINARY);
-  int32_t posix_desc = _open_osfhandle(file_desc, open_flags);
-  if (posix_desc == -1) {
-    // Close the Windows HANDLE if it can't be converted.
-    CloseHandle(reinterpret_cast<HANDLE>(file_desc));
-    PLUGIN_PRINTF(("LocalTempFile::GetFD _open_osfhandle failed.\n"));
-    return NACL_NO_FILE_DESC;
-  }
-  file_desc = posix_desc;
-#endif
-  int32_t file_desc_ok_to_close = DUP(file_desc);
-  if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
-    PLUGIN_PRINTF(("LocalTempFile::GetFD dup failed.\n"));
-    return -1;
-  }
-  return file_desc_ok_to_close;
-}
-
-void LocalTempFile::WriteFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("LocalTempFile::WriteFileDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error == PP_ERROR_FILEEXISTS) {
-    // Filenames clashed, retry.
-    filename_ = "";
-    OpenWrite(done_callback_);
-  }
-  // Run the client's completion callback.
-  pp::Core* core = pp::Module::Get()->core();
-  if (pp_error != PP_OK) {
-    core->CallOnMainThread(0, done_callback_, pp_error);
-    return;
-  }
-  // Remember the object temporary file descriptor.
-  int32_t fd = GetFD(pp_error, *write_io_, kWriteable);
-  if (fd < 0) {
-    core->CallOnMainThread(0, done_callback_, pp_error);
-    return;
-  }
-  // The descriptor for a writeable file needs to have quota management.
-  write_wrapper_.reset(
-      plugin_->wrapper_factory()->MakeFileDescQuota(fd, O_RDWR, identifier_));
-  core->CallOnMainThread(0, done_callback_, PP_OK);
-}
-
-void LocalTempFile::OpenRead(const pp::CompletionCallback& cb) {
-  PLUGIN_PRINTF(("LocalTempFile::OpenRead: %s\n", filename_.c_str()));
-  done_callback_ = cb;
-  // Open the read only file.
-  read_io_.reset(new pp::FileIO(plugin_));
-  pp::CompletionCallback open_read_cb =
-      callback_factory_.NewCallback(&LocalTempFile::ReadFileDidOpen);
-  read_io_->Open(*file_ref_, PP_FILEOPENFLAG_READ, open_read_cb);
-}
-
-void LocalTempFile::ReadFileDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("LocalTempFile::ReadFileDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  // Run the client's completion callback.
-  pp::Core* core = pp::Module::Get()->core();
-  if (pp_error != PP_OK) {
-    core->CallOnMainThread(0, done_callback_, pp_error);
-    return;
-  }
-  // Remember the object temporary file descriptor.
-  int32_t fd = GetFD(pp_error, *read_io_, kReadOnly);
-  if (fd < 0) {
-    core->CallOnMainThread(0, done_callback_, PP_ERROR_FAILED);
-    return;
-  }
-  read_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
-  core->CallOnMainThread(0, done_callback_, PP_OK);
-}
-
-void LocalTempFile::Close(const pp::CompletionCallback& cb) {
-  PLUGIN_PRINTF(("LocalTempFile::Close: %s\n", filename_.c_str()));
-  // Close the open DescWrappers and FileIOs.
-  if (write_io_.get() != NULL) {
-    write_io_->Close();
-  }
-  write_wrapper_.reset(NULL);
-  write_io_.reset(NULL);
-  if (read_io_.get() != NULL) {
-    read_io_->Close();
-  }
-  read_wrapper_.reset(NULL);
-  read_io_.reset(NULL);
-  // Run the client's completion callback.
-  pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, cb, PP_OK);
-}
-
-void LocalTempFile::Delete(const pp::CompletionCallback& cb) {
-  PLUGIN_PRINTF(("LocalTempFile::Delete: %s\n", filename_.c_str()));
-  file_ref_->Delete(cb);
-}
-
-void LocalTempFile::Rename(const nacl::string& new_name,
-                           const pp::CompletionCallback& cb) {
-  // Rename the temporary file.
-  filename_ = nacl::string(kPnaclTempDir) + "/" + new_name;
-  PLUGIN_PRINTF(("LocalTempFile::Rename %s to %s\n",
-                 file_ref_->GetName().AsString().c_str(),
-                 filename_.c_str()));
-  // Remember the old ref until the rename is complete.
-  old_ref_.reset(file_ref_.release());
-  file_ref_.reset(new pp::FileRef(*file_system_, filename_.c_str()));
-  old_ref_->Rename(*file_ref_, cb);
-}
-
-void LocalTempFile::FinishRename() {
-  // Now we can release the old ref.
-  old_ref_.reset(NULL);
-}
-
+namespace plugin {
 
 //////////////////////////////////////////////////////////////////////
 //  Pnacl-specific manifest support.
@@ -271,7 +34,7 @@ class ExtensionManifest : public Manifest {
  public:
   explicit ExtensionManifest(const pp::URLUtil_Dev* url_util)
       : url_util_(url_util),
-        manifest_base_url_(ExtensionUrl()) { }
+        manifest_base_url_(PnaclUrls::GetExtensionUrl()) { }
   virtual ~ExtensionManifest() { }
 
   virtual bool GetProgramURL(nacl::string* full_url,
@@ -416,8 +179,8 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
                  reinterpret_cast<const void*>(coordinator->manifest_.get())));
   // Load llc and ld.
   std::vector<nacl::string> resource_urls;
-  resource_urls.push_back(kLlcUrl);
-  resource_urls.push_back(kLdUrl);
+  resource_urls.push_back(PnaclUrls::GetLlcUrl());
+  resource_urls.push_back(PnaclUrls::GetLdUrl());
   pp::CompletionCallback resources_cb =
       coordinator->callback_factory_.NewCallback(
           &PnaclCoordinator::ResourcesDidLoad);
@@ -459,7 +222,6 @@ PnaclCoordinator::PnaclCoordinator(
     const pp::CompletionCallback& translate_notify_callback)
   : plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
-    subprocesses_should_die_(false),
     file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
     manifest_(new ExtensionManifest(plugin->url_util())),
     pexe_url_(pexe_url),
@@ -468,7 +230,6 @@ PnaclCoordinator::PnaclCoordinator(
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
-  NaClXMutexCtor(&subprocess_mu_);
   ld_manifest_.reset(new PnaclLDManifest(plugin_->manifest(), manifest_.get()));
 }
 
@@ -481,9 +242,8 @@ PnaclCoordinator::~PnaclCoordinator() {
   // will have been destroyed.  This will result in the cancellation of
   // translation_complete_callback_, so no notification will be delivered.
   if (translate_thread_.get() != NULL) {
-    SetSubprocessesShouldDie(true);
+    translate_thread_->SetSubprocessesShouldDie(true);
   }
-  NaClMutexDtor(&subprocess_mu_);
 }
 
 void PnaclCoordinator::ReportNonPpapiError(const nacl::string& message) {
@@ -521,6 +281,7 @@ void PnaclCoordinator::ReportPpapiError(int32_t pp_error) {
   }
 }
 
+// Signal that Pnacl translation completed normally.
 void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::TranslateFinished (pp_error=%"
                  NACL_PRId32")\n", pp_error));
@@ -627,15 +388,6 @@ void PnaclCoordinator::NexeFileWasDeleted(int32_t pp_error) {
   ReportPpapiError(translate_finish_error_);
 }
 
-void PnaclCoordinator::TranslateFailed(const nacl::string& error_string) {
-  PLUGIN_PRINTF(("PnaclCoordinator::TranslateFailed (error_string='%s')\n",
-                 error_string.c_str()));
-  pp::Core* core = pp::Module::Get()->core();
-  error_info_.SetReport(ERROR_UNKNOWN,
-                        nacl::string("PnaclCoordinator: ") + error_string);
-  core->CallOnMainThread(0, report_translate_finished_, PP_ERROR_FAILED);
-}
-
 void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::ResourcesDidLoad (pp_error=%"
                  NACL_PRId32")\n", pp_error));
@@ -659,7 +411,8 @@ void PnaclCoordinator::FileSystemDidOpen(int32_t pp_error) {
     ReportPpapiError(pp_error, "file system didn't open.");
     return;
   }
-  dir_ref_.reset(new pp::FileRef(*file_system_, kPnaclTempDir));
+  dir_ref_.reset(new pp::FileRef(*file_system_,
+                                 kPnaclTempDir));
   dir_io_.reset(new pp::FileIO(plugin_));
   // Attempt to create the directory.
   pp::CompletionCallback cb =
@@ -677,6 +430,7 @@ void PnaclCoordinator::DirectoryWasCreated(int32_t pp_error) {
   }
   if (cache_identity_ != "") {
     nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
+                                       nacl::string(kPnaclTempDir),
                                        cache_identity_));
     pp::CompletionCallback cb =
         callback_factory_.NewCallback(&PnaclCoordinator::CachedFileDidOpen);
@@ -714,7 +468,8 @@ void PnaclCoordinator::BitcodeFileDidOpen(int32_t pp_error) {
   }
   pexe_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
 
-  obj_file_.reset(new LocalTempFile(plugin_, file_system_.get()));
+  obj_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
+                                    nacl::string(kPnaclTempDir)));
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::ObjectWriteDidOpen);
   obj_file_->OpenWrite(cb);
@@ -741,7 +496,8 @@ void PnaclCoordinator::ObjectReadDidOpen(int32_t pp_error) {
   }
   // Create the nexe file for connecting ld and sel_ldr.
   // Start translation when done with this last step of setup!
-  nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get()));
+  nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
+                                     nacl::string(kPnaclTempDir)));
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::RunTranslate);
   nexe_file_->OpenWrite(cb);
@@ -752,121 +508,22 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
                  NACL_PRId32")\n", pp_error));
   // Invoke llc followed by ld off the main thread.  This allows use of
   // blocking RPCs that would otherwise block the JavaScript main thread.
-  report_translate_finished_ =
+  pp::CompletionCallback report_translate_finished =
       callback_factory_.NewCallback(&PnaclCoordinator::TranslateFinished);
-  translate_thread_.reset(new NaClThread);
+  translate_thread_.reset(new PnaclTranslateThread());
   if (translate_thread_ == NULL) {
-    ReportNonPpapiError("could not allocate thread struct.");
+    ReportNonPpapiError("could not allocate translation thread.");
     return;
   }
-  const int32_t kArbitraryStackSize = 128 * 1024;
-  if (!NaClThreadCreateJoinable(translate_thread_.get(),
-                                DoTranslateThread,
-                                this,
-                                kArbitraryStackSize)) {
-    ReportNonPpapiError("could not create thread.");
-  }
-}
-
-NaClSubprocess* PnaclCoordinator::StartSubprocess(
-    const nacl::string& url_for_nexe,
-    const Manifest* manifest) {
-  PLUGIN_PRINTF(("PnaclCoordinator::StartSubprocess (url_for_nexe=%s)\n",
-                 url_for_nexe.c_str()));
-  nacl::DescWrapper* wrapper = resources_->WrapperForUrl(url_for_nexe);
-  nacl::scoped_ptr<NaClSubprocess> subprocess(
-      plugin_->LoadHelperNaClModule(wrapper, manifest, &error_info_));
-  if (subprocess.get() == NULL) {
-    PLUGIN_PRINTF((
-        "PnaclCoordinator::StartSubprocess: subprocess creation failed\n"));
-    return NULL;
-  }
-  return subprocess.release();
-}
-
-// TODO(sehr): the thread body should be in a class by itself with a delegate
-// class for interfacing with the rest of the coordinator.
-void WINAPI PnaclCoordinator::DoTranslateThread(void* arg) {
-  PnaclCoordinator* coordinator = reinterpret_cast<PnaclCoordinator*>(arg);
-
-  nacl::scoped_ptr<NaClSubprocess> llc_subprocess(
-      coordinator->StartSubprocess(kLlcUrl, coordinator->manifest_.get()));
-  if (llc_subprocess == NULL) {
-    coordinator->TranslateFailed("Compile process could not be created.");
-    return;
-  }
-  // Run LLC.
-  SrpcParams params;
-  nacl::DescWrapper* llc_out_file = coordinator->obj_file_->write_wrapper();
-  PluginReverseInterface* llc_reverse =
-      llc_subprocess->service_runtime()->rev_interface();
-  llc_reverse->AddQuotaManagedFile(coordinator->obj_file_->identifier(),
-                                   coordinator->obj_file_->write_file_io());
-  if (!llc_subprocess->InvokeSrpcMethod("RunWithDefaultCommandLine",
-                                        "hh",
-                                        &params,
-                                        coordinator->pexe_wrapper_->desc(),
-                                        llc_out_file->desc())) {
-    coordinator->TranslateFailed("compile failed.");
-    return;
-  }
-  // LLC returns values that are used to determine how linking is done.
-  int is_shared_library = (params.outs()[0]->u.ival != 0);
-  nacl::string soname = params.outs()[1]->arrays.str;
-  nacl::string lib_dependencies = params.outs()[2]->arrays.str;
-  PLUGIN_PRINTF(("PnaclCoordinator: compile (coordinator=%p) succeeded"
-                 " is_shared_library=%d, soname='%s', lib_dependencies='%s')\n",
-                 arg, is_shared_library, soname.c_str(),
-                 lib_dependencies.c_str()));
-  // Shut down the llc subprocess.
-  llc_subprocess.reset(NULL);
-  if (coordinator->SubprocessesShouldDie()) {
-    coordinator->TranslateFailed("stopped by coordinator.");
-    return;
-  }
-  nacl::scoped_ptr<NaClSubprocess> ld_subprocess(
-      coordinator->StartSubprocess(kLdUrl, coordinator->ld_manifest_.get()));
-  if (ld_subprocess == NULL) {
-    coordinator->TranslateFailed("Link process could not be created.");
-    return;
-  }
-  // Run LD.
-  nacl::DescWrapper* ld_in_file = coordinator->obj_file_->read_wrapper();
-  nacl::DescWrapper* ld_out_file = coordinator->nexe_file_->write_wrapper();
-  PluginReverseInterface* ld_reverse =
-      ld_subprocess->service_runtime()->rev_interface();
-  ld_reverse->AddQuotaManagedFile(coordinator->nexe_file_->identifier(),
-                                  coordinator->nexe_file_->write_file_io());
-  if (!ld_subprocess->InvokeSrpcMethod("RunWithDefaultCommandLine",
-                                       "hhiCC",
-                                       &params,
-                                       ld_in_file->desc(),
-                                       ld_out_file->desc(),
-                                       is_shared_library,
-                                       soname.c_str(),
-                                       lib_dependencies.c_str())) {
-    coordinator->TranslateFailed("link failed.");
-    return;
-  }
-  PLUGIN_PRINTF(("PnaclCoordinator: link (coordinator=%p) succeeded\n", arg));
-  // Shut down the ld subprocess.
-  ld_subprocess.reset(NULL);
-  if (coordinator->SubprocessesShouldDie()) {
-    coordinator->TranslateFailed("stopped by coordinator.");
-    return;
-  }
-  pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, coordinator->report_translate_finished_, PP_OK);
-}
-
-bool PnaclCoordinator::SubprocessesShouldDie() {
-  nacl::MutexLocker ml(&subprocess_mu_);
-  return subprocesses_should_die_;
-}
-
-void PnaclCoordinator::SetSubprocessesShouldDie(bool subprocesses_should_die) {
-  nacl::MutexLocker ml(&subprocess_mu_);
-  subprocesses_should_die_ = subprocesses_should_die;
+  translate_thread_->RunTranslate(report_translate_finished,
+                                  manifest_.get(),
+                                  ld_manifest_.get(),
+                                  obj_file_.get(),
+                                  nexe_file_.get(),
+                                  pexe_wrapper_.get(),
+                                  &error_info_,
+                                  resources_.get(),
+                                  plugin_);
 }
 
 }  // namespace plugin
