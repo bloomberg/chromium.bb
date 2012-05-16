@@ -112,7 +112,7 @@ endif
 if ENABLE_XSERVER_LAUNCHER
 xserver_launcher = xserver-launcher.la
 xserver_launcher_la_LDFLAGS = -module -avoid-version
-xserver_launcher_la_LIBADD = $(XSERVER_LAUNCHER_LIBS)
+xserver_launcher_la_LIBADD = $(XSERVER_LAUNCHER_LIBS) ../shared/libshared.la
 xserver_launcher_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 xserver_launcher_la_SOURCES =			\
 	xserver-launcher.c			\

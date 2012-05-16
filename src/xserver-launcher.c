@@ -38,6 +38,7 @@
 
 #include <wayland-server.h>
 
+#include "../shared/cairo-util.h"
 #include "compositor.h"
 #include "xserver-server-protocol.h"
 #include "hash.h"
@@ -72,8 +73,8 @@ struct weston_wm {
 	struct hash_table *window_hash;
 	struct weston_xserver *server;
 	xcb_window_t wm_window;
-	int border_width, title_height;
 	struct weston_wm_window *focus_window;
+	struct theme *theme;
 
 	xcb_window_t selection_window;
 	int incr;
@@ -703,6 +704,7 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_map_request_event_t *map_request =
 		(xcb_map_request_event_t *) event;
 	struct weston_wm_window *window;
+	struct theme *t = wm->theme;
 	uint32_t values[1];
 
 	if (our_resource(wm, map_request->window)) {
@@ -727,15 +729,15 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 			  window->frame_id,
 			  wm->screen->root,
 			  0, 0,
-			  window->width + wm->border_width * 2,
-			  window->height + wm->border_width * 2 + wm->title_height,
+			  window->width + (t->margin + t->width) * 2,
+			  window->height + t->margin * 2 + t->width + t->titlebar_height,
 			  0,
 			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			  wm->screen->root_visual,
 			  XCB_CW_EVENT_MASK, values);
 	xcb_reparent_window(wm->conn, window->id, window->frame_id,
-			    wm->border_width,
-			    wm->border_width + wm->title_height);
+			    t->margin + t->width,
+			    t->margin + t->titlebar_height);
 
 	fprintf(stderr, "XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
 		window->id, window, window->frame_id);
@@ -803,19 +805,20 @@ weston_wm_window_draw_decoration(void *data)
 {
 	struct weston_wm_window *window = data;
 	struct weston_wm *wm = window->wm;
+	struct theme *t = wm->theme;
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	cairo_text_extents_t text_extents;
-	cairo_font_extents_t font_extents;
 	xcb_render_pictforminfo_t *render_format;
-	int x, y, width, height;
+	int width, height;
 	const char *title;
+	uint32_t flags = 0;
 
 	weston_wm_window_read_properties(window);
 
 	window->repaint_source = NULL;
-	width = window->width + wm->border_width * 2;
-	height = window->height + wm->border_width * 2 + wm->title_height;
+	width = window->width + (t->margin + t->width) * 2;
+	height = window->height +
+		t->margin * 2 + t->titlebar_height + t->width;
 
 	render_format = find_depth(wm->conn, 24);
 	surface = cairo_xcb_surface_create_with_xrender_format(wm->conn,
@@ -825,39 +828,16 @@ weston_wm_window_draw_decoration(void *data)
 							       width,
 							       height);
 	cr = cairo_create(surface);
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
 	if (wm->focus_window == window)
-		cairo_set_source_rgba(cr, 1, 0, 0, 0.8);
-	else
-		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
-
-	cairo_paint(cr);
+		flags |= THEME_FRAME_ACTIVE;
 
 	if (window->name)
 		title = window->name;
 	else
 		title = "untitled";
 
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_select_font_face(cr, "sans",
-			       CAIRO_FONT_SLANT_NORMAL,
-			       CAIRO_FONT_WEIGHT_BOLD);
-	cairo_set_font_size(cr, 14);
-	cairo_font_extents (cr, &font_extents);
-	cairo_text_extents(cr, title, &text_extents);
-	x = (width - text_extents.width) / 2;
-	y = (wm->border_width + wm->title_height -
-	     font_extents.ascent - font_extents.descent) / 2 +
-		font_extents.ascent;
-
-	cairo_move_to(cr, x, y);
-	if (wm->focus_window == window)
-		cairo_set_source_rgb(cr, 1, 1, 1);
-	else
-		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
-
-	cairo_show_text(cr, title);
+	theme_render_frame(t, cr, width, height, title, flags);
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
@@ -1566,8 +1546,7 @@ weston_wm_create(struct weston_xserver *wxs)
 		XCB_EVENT_MASK_PROPERTY_CHANGE;
 	xcb_change_window_attributes(wm->conn, wm->screen->root,
 				     XCB_CW_EVENT_MASK, values);
-	wm->border_width = 2;
-	wm->title_height = 24;
+	wm->theme = theme_create();
 
 	weston_wm_create_wm_window(wm);
 
