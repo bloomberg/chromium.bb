@@ -258,7 +258,7 @@
 	  </listitem>
 	</varlistentry>
 	<varlistentry>
-	  <term>wl_input_device</term>
+	  <term>wl_seat</term>
 	  <listitem>
 	    <para>
 	      cursor setting, motion, button, and key events, etc.
@@ -365,7 +365,7 @@
       delivered in both screen coordinates and surface local coordinates.
     </para>
     <para>
-      See <xref linkend="protocol-spec-interface-wl_input_device"/> for the
+      See <xref linkend="protocol-spec-interface-wl_seat"/> for the
       protocol description.
     </para>
     <para>
