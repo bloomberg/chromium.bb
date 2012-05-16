@@ -24,6 +24,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/sys_color_change_listener.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/single_split_view_listener.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
@@ -199,6 +200,8 @@ class BrowserView : public BrowserWindow,
   // Restores the focused view. This is also used to set the initial focus
   // when a new browser window is created.
   void RestoreFocus();
+
+  void SetWindowSwitcherButton(views::Button* button);
 
 #if defined(USE_ASH)
   BrowserLauncherItemController* launcher_item_controller() const {
@@ -579,6 +582,11 @@ class BrowserView : public BrowserWindow,
 
   // The Toolbar containing the navigation buttons, menus and the address bar.
   ToolbarView* toolbar_;
+
+  // This button sits next to the tabs on the right hand side and it is used
+  // only in windows metro metro mode to allow the user to flip among browser
+  // windows.
+  views::Button* window_switcher_button_;
 
   // The Bookmark Bar View for this window. Lazily created.
   scoped_ptr<BookmarkBarView> bookmark_bar_view_;

@@ -32,6 +32,8 @@ const int kToolbarTabStripVerticalOverlap = 3;
 // The number of pixels the bookmark bar should overlap the spacer by if the
 // spacer is visible.
 const int kSpacerBookmarkBarOverlap = 1;
+// The number of pixels the metro switcher is offset from the right edge.
+const int kWindowSwitcherOffsetX = 5;
 
 // Combines View::ConvertPointToView and View::HitTest for a given |point|.
 // Converts |point| from |src| to |dst| and hit tests it against |dst|. The
@@ -297,7 +299,6 @@ int BrowserViewLayout::LayoutTabStripRegion() {
     tabstrip_->SetBounds(0, 0, 0, 0);
     return 0;
   }
-
   // This retrieves the bounds for the tab strip based on whether or not we show
   // anything to the left of it, like the incognito avatar.
   gfx::Rect tabstrip_bounds(
@@ -309,7 +310,21 @@ int BrowserViewLayout::LayoutTabStripRegion() {
 
   tabstrip_->SetVisible(true);
   tabstrip_->SetBoundsRect(tabstrip_bounds);
-  return tabstrip_bounds.bottom();
+  int bottom = tabstrip_bounds.bottom();
+
+  // The metro window switcher sits at the far right edge of the tabstrip
+  // a |kWindowSwitcherOffsetY| pixels above the base of the tabstrip.
+  views::Button* switcher_button = browser_view_->window_switcher_button_;
+  if (switcher_button) {
+    int width = browser_view_->width();
+    gfx::Size ps = switcher_button->GetPreferredSize();
+    if (width > ps.width()) {
+      switcher_button->SetBounds(width - ps.width() - kWindowSwitcherOffsetX, 0,
+                                 ps.width(), ps.height());
+    }
+  }
+
+  return bottom;
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {

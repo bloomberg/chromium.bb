@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/native_widget_win.h"
 
 class BrowserView;
@@ -29,7 +30,8 @@ class NativeMenuWin;
 //  for the Chrome browser window.
 //
 class BrowserFrameWin : public views::NativeWidgetWin,
-                        public NativeBrowserFrame {
+                        public NativeBrowserFrame,
+                        public views::ButtonListener {
  public:
   BrowserFrameWin(BrowserFrame* browser_frame, BrowserView* browser_view);
   virtual ~BrowserFrameWin();
@@ -65,6 +67,10 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   virtual void InitSystemContextMenu() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
+
+  // Overriden from views::ImageButton override:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // Overridden from WindowImpl:
   virtual LRESULT OnWndProc(UINT message,

@@ -32,6 +32,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/menu/native_menu_win.h"
@@ -58,10 +59,24 @@ using content::WebContents;
 
 #if !defined(USE_AURA)
 extern "C" {
+// Windows metro exported functions from metro_driver.
 typedef void (*SetFrameWindow)(HWND window);
 typedef void (*CloseFrameWindow)(HWND window);
+typedef void (*FlipFrameWindows)();
 }
 #endif  // USE_AURA
+
+views::Button* MakeWindowSwitcherButton(views::ButtonListener* listener) {
+  views::ImageButton* switcher_button = new views::ImageButton(listener);
+  switcher_button->SetImage(
+      views::ImageButton::BS_NORMAL,
+      ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_PAGEINFO_WARNING_MINOR));
+  // TODO(cpu): Replace IDR_PAGEINFO_WARNING_MINOR with actual image.
+  switcher_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                     views::ImageButton::ALIGN_MIDDLE);
+  return switcher_button;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameWin, public:
@@ -73,6 +88,8 @@ BrowserFrameWin::BrowserFrameWin(BrowserFrame* browser_frame,
       browser_frame_(browser_frame),
       system_menu_delegate_(new SystemMenuModelDelegate(browser_view,
           browser_view->browser())) {
+  if (base::win::GetMetroModule())
+    browser_view->SetWindowSwitcherButton(MakeWindowSwitcherButton(this));
 }
 
 BrowserFrameWin::~BrowserFrameWin() {
@@ -261,6 +278,19 @@ int BrowserFrameWin::GetMinimizeButtonOffset() const {
 
 void BrowserFrameWin::TabStripDisplayModeChanged() {
   UpdateDWMFrame();
+}
+
+void BrowserFrameWin::ButtonPressed(views::Button* sender,
+                                    const views::Event& event) {
+  HMODULE metro = base::win::GetMetroModule();
+  if (!metro)
+    return;
+  // Tell the metro_driver to flip our window. This causes the current
+  // browser window to be hidden and the next window to be shown.
+  static FlipFrameWindows flip_window_fn = reinterpret_cast<FlipFrameWindows>(
+      ::GetProcAddress(metro, "FlipFrameWindows"));
+  if (flip_window_fn)
+    flip_window_fn();
 }
 
 LRESULT BrowserFrameWin::OnWndProc(UINT message,

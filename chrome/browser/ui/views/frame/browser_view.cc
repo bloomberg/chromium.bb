@@ -297,6 +297,7 @@ BrowserView::BrowserView(Browser* browser)
       active_bookmark_bar_(NULL),
       tabstrip_(NULL),
       toolbar_(NULL),
+      window_switcher_button_(NULL),
       infobar_container_(NULL),
       contents_container_(NULL),
       devtools_container_(NULL),
@@ -796,6 +797,13 @@ void BrowserView::RestoreFocus() {
   WebContents* selected_web_contents = GetSelectedWebContents();
   if (selected_web_contents)
     selected_web_contents->GetView()->RestoreFocus();
+}
+
+void BrowserView::SetWindowSwitcherButton(views::Button* button) {
+  if (window_switcher_button_)
+    RemoveChildView(window_switcher_button_);
+  window_switcher_button_ = button;
+  AddChildView(button);
 }
 
 LocationBar* BrowserView::GetLocationBar() const {
