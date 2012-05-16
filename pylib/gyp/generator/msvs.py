@@ -242,7 +242,7 @@ def _ConfigFullName(config_name, config_data):
 
 
 def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
-                                quote_cmd):
+                                quote_cmd, do_setup_env):
 
   if [x for x in cmd if '$(InputDir)' in x]:
     input_dir_preamble = (
@@ -273,9 +273,10 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
     #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
     direct_cmd = ' '.join(direct_cmd)
     # TODO(quote):  regularize quoting path names throughout the module
-    cmd = (
-        'call "$(ProjectDir)%(cygwin_dir)s\\setup_env.bat" && '
-        'set CYGWIN=nontsec&& ')
+    cmd = ''
+    if do_setup_env:
+      cmd += 'call "$(ProjectDir)%(cygwin_dir)s\\setup_env.bat" && '
+    cmd += 'set CYGWIN=nontsec&& '
     if direct_cmd.find('NUMBER_OF_PROCESSORS') >= 0:
       cmd += 'set /a NUMBER_OF_PROCESSORS_PLUS_1=%%NUMBER_OF_PROCESSORS%%+1&& '
     if direct_cmd.find('INTDIR') >= 0:
@@ -307,7 +308,7 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
     return input_dir_preamble + ' '.join(command + arguments)
 
 
-def _BuildCommandLineForRule(spec, rule, has_input_path):
+def _BuildCommandLineForRule(spec, rule, has_input_path, do_setup_env):
   # Currently this weird argument munging is used to duplicate the way a
   # python script would need to be run as part of the chrome tree.
   # Eventually we should add some sort of rule_default option to set this
@@ -319,7 +320,7 @@ def _BuildCommandLineForRule(spec, rule, has_input_path):
     mcs = int(mcs)
   quote_cmd = int(rule.get('msvs_quote_cmd', 1))
   return _BuildCommandLineForRuleRaw(spec, rule['action'], mcs, has_input_path,
-                                     quote_cmd)
+                                     quote_cmd, do_setup_env=do_setup_env)
 
 
 def _AddActionStep(actions_dict, inputs, outputs, description, command):
@@ -488,7 +489,8 @@ def _GenerateNativeRulesForMSVS(p, rules, output_dir, spec, options):
     rule_ext = r['extension']
     inputs = _FixPaths(r.get('inputs', []))
     outputs = _FixPaths(r.get('outputs', []))
-    cmd = _BuildCommandLineForRule(spec, r, has_input_path=True)
+    cmd = _BuildCommandLineForRule(spec, r, has_input_path=True,
+                                   do_setup_env=True)
     rules_file.AddCustomBuildRule(name=rule_name,
                                   description=r.get('message', rule_name),
                                   extensions=[rule_ext],
@@ -576,7 +578,7 @@ def _GenerateExternalRules(rules, output_dir, spec,
          'IntDir=$(IntDir)',
          '-j', '${NUMBER_OF_PROCESSORS_PLUS_1}',
          '-f', filename]
-  cmd = _BuildCommandLineForRuleRaw(spec, cmd, True, False, True)
+  cmd = _BuildCommandLineForRuleRaw(spec, cmd, True, False, True, True)
   # Insert makefile as 0'th input, so it gets the action attached there,
   # as this is easier to understand from in the IDE.
   all_inputs = list(all_inputs)
@@ -1453,8 +1455,12 @@ def _WriteFileIfChanged(filename, data):
 def _AddActions(actions_to_add, spec, relative_path_of_gyp_file, vcproj_file):
   # Add actions.
   actions = spec.get('actions', [])
+  # Don't setup_env every time. When all the actions are run together in one
+  # batch file in VS, the PATH will grow too long.
+  first_action = True
   for a in actions:
-    cmd = _BuildCommandLineForRule(spec, a, has_input_path=False)
+    cmd = _BuildCommandLineForRule(spec, a, has_input_path=False,
+                                   do_setup_env=first_action)
     # Attach actions to the gyp file if nothing else is there.
     inputs = a.get('inputs') or [relative_path_of_gyp_file]
     if vcproj_file:
@@ -1471,6 +1477,7 @@ def _AddActions(actions_to_add, spec, relative_path_of_gyp_file, vcproj_file):
                    outputs=a.get('outputs', []),
                    description=a.get('message', a['action_name']),
                    command=cmd)
+    first_action = False
 
 
 def _WriteMSVSUserFile(project_path, version, spec):
@@ -2019,7 +2026,8 @@ class MSBuildRule(object):
     old_outputs = _FixPaths(rule.get('outputs', []))
     self.outputs = ';'.join([MSVSSettings.ConvertVCMacrosToMSBuild(i)
                              for i in old_outputs])
-    old_command = _BuildCommandLineForRule(spec, rule, has_input_path=True)
+    old_command = _BuildCommandLineForRule(spec, rule, has_input_path=True,
+                                           do_setup_env=True)
     self.command = MSVSSettings.ConvertVCMacrosToMSBuild(old_command)
 
 
@@ -3077,7 +3085,13 @@ def _GenerateActionsForMSBuild(spec, actions_to_add):
       commands.append(cmd)
     # Add the custom build action for one input file.
     description = ', and also '.join(descriptions)
-    command = ' && '.join(commands)
+
+    # We can't join the commands simply with && because the command line will
+    # get too long. See also _AddActions: cygwin's setup_env mustn't be called
+    # for every invocation or the command that sets the PATH will grow too
+    # long.
+    command = (
+        '\r\nif %errorlevel% neq 0 exit /b %errorlevel%\r\n'.join(commands))
     _AddMSBuildAction(spec,
                       primary_input,
                       inputs,
