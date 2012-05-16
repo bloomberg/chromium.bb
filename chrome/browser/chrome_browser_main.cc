@@ -759,9 +759,10 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
   }
   if (use_field_trial) {
     const base::FieldTrial::Probability kSpdyDivisor = 100;
-    base::FieldTrial::Probability npnhttp_probability = 5;
-    // 5% is for HTTP (no SPDY) and 5% for default SPDY (SPDY/2).
-    base::FieldTrial::Probability spdy3_probability = 90;
+    // Enable SPDY/3 for 95% of the users, HTTP (no SPDY) for 1% of the users
+    // and SPDY/2 for 4% of the users.
+    base::FieldTrial::Probability npnhttp_probability = 1;
+    base::FieldTrial::Probability spdy3_probability = 95;
 
 #if defined(OS_CHROMEOS)
     // Always enable SPDY (spdy/2 or spdy/3) on Chrome OS
