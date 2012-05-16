@@ -35,6 +35,8 @@ class WebPluginImpl : public WebKit::WebPlugin {
       const WebKit::WebPluginParams& params,
       const base::WeakPtr<PluginDelegate>& plugin_delegate);
 
+  PluginInstance* instance() { return instance_.get(); }
+
   // WebKit::WebPlugin implementation.
   virtual WebKit::WebPluginContainer* container() const;
   virtual bool initialize(WebKit::WebPluginContainer* container);
