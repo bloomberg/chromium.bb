@@ -40,6 +40,17 @@ class View;
 #if !defined(WM_POINTERDOWN)
 #define WM_POINTERDOWN  0x0246
 #endif  // WM_POINTERDOWN
+#ifndef POINTER_MESSAGE_FLAG_FIRSTBUTTON
+#define POINTER_MESSAGE_FLAG_FIRSTBUTTON 0x00000010
+#endif  // POINTER_MESSAGE_FLAG_FIRSTBUTTON
+#ifndef IS_POINTER_FLAG_SET_WPARAM
+#define IS_POINTER_FLAG_SET_WPARAM(wParam, flag) \
+    (((DWORD)HIWORD(wParam) & (flag)) == (flag))
+#endif  // IS_POINTER_FLAG_SET_WPARAM
+#ifndef IS_POINTER_FIRSTBUTTON_WPARAM
+#define IS_POINTER_FIRSTBUTTON_WPARAM(wParam) \
+  IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIRSTBUTTON)
+#endif  // IS_POINTER_FIRSTBUTTON_WPARAM
 
 // Provides the implementation of an edit control with a drop-down
 // autocomplete box. The box itself is implemented in autocomplete_popup.cc

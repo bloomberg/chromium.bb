@@ -1456,6 +1456,12 @@ LRESULT OmniboxViewWin::OnPointerDown(UINT message,
                                       WPARAM wparam,
                                       LPARAM lparam) {
   SetFocus();
+
+  if (IS_POINTER_FIRSTBUTTON_WPARAM(wparam)) {
+    TrackMousePosition(kLeft, CPoint(GET_X_LPARAM(lparam),
+                                     GET_Y_LPARAM(lparam)));
+  }
+
   // ITextInputPanel is not supported on all platforms.  NULL is fine.
   if (keyboard_ != NULL)
     keyboard_->SetInPlaceVisibility(true);
@@ -1673,7 +1679,8 @@ LRESULT OmniboxViewWin::OnMouseActivate(HWND window,
   // there.  Also in those cases, we need to already know in OnSetFocus() that
   // we should not restore the saved selection.
   if (!model_->has_focus() &&
-      ((mouse_message == WM_LBUTTONDOWN || mouse_message == WM_RBUTTONDOWN)) &&
+      ((mouse_message == WM_LBUTTONDOWN || mouse_message == WM_RBUTTONDOWN ||
+        mouse_message == WM_POINTERDOWN)) &&
       (result == MA_ACTIVATE)) {
     DCHECK(!gaining_focus_.get());
     gaining_focus_.reset(new ScopedFreeze(this, GetTextObjectModel()));
