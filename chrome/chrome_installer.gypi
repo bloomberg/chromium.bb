@@ -324,21 +324,6 @@
             },
           ],
           'conditions': [
-            ['component == "shared_library"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)',
-                  'files': [
-                    'installer/setup/setup.exe.manifest',
-                  ],
-                },
-              ],
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'GenerateManifest': 'false',
-                },
-              },
-            }],
             # TODO(mark):  <(branding_dir) should be defined by the
             # global condition block at the bottom of the file, but
             # this doesn't work due to the following issue:

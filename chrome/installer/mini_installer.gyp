@@ -213,15 +213,6 @@
                     'enable_metro_flag': '',
                   },
                 }],
-                ['component == "shared_library"', {
-                  'variables': {
-                    'component_build_flag': '--component_build=1',
-                  },
-                }, {
-                  'variables': {
-                    'component_build_flag': '',
-                  },
-                }],
               ],
               'inputs': [
                 '<(create_installer_archive_py_path)',
@@ -250,7 +241,6 @@
                 '--resource_file_path', '<(INTERMEDIATE_DIR)/packed_files.rc',
                 '<(enable_hidpi_flag)',
                 '<(enable_metro_flag)',
-                '<(component_build_flag)',
                 # TODO(sgk):  may just use environment variables
                 #'--distribution=$(CHROMIUM_BUILD)',
                 '--distribution=_google_chrome',

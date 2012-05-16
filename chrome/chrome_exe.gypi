@@ -44,21 +44,6 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
-        ['component == "shared_library"', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                'app/chrome.exe.manifest',
-              ],
-            },
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'GenerateManifest': 'false',
-            },
-          },
-        }],
         ['order_text_section!=""', {
           'target_conditions' : [
             ['_toolset=="target"', {
