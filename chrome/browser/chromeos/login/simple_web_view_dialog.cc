@@ -10,9 +10,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -141,7 +142,18 @@ SimpleWebViewDialog::~SimpleWebViewDialog() {
 void SimpleWebViewDialog::StartLoad(const GURL& url) {
   web_view_container_.reset(new views::WebView(profile_));
   web_view_ = web_view_container_.get();
-  web_view_->GetWebContents()->SetDelegate(this);
+
+  // We create the WebContents ourselves because the TCW assumes ownership of
+  // it. This should be reworked once we don't need to use the TCW here.
+  WebContents* web_contents =
+      WebContents::Create(ProfileManager::GetDefaultProfile(),
+                          NULL,
+                          MSG_ROUTING_NONE,
+                          NULL,
+                          NULL);
+  wrapper_.reset(new TabContentsWrapper(web_contents));
+  web_view_->SetWebContents(web_contents);
+  web_contents->SetDelegate(this);
   web_view_->LoadInitialURL(url);
 }
 

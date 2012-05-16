@@ -29,6 +29,8 @@ class WebView;
 class Widget;
 }
 
+class TabContentsWrapper;
+
 namespace chromeos {
 
 // View used to render a WebUI supporting Widget. This widget is used for the
@@ -114,6 +116,11 @@ class WebUILoginView : public views::WidgetDelegateView,
   void ReturnFocus(bool reverse);
 
   content::NotificationRegistrar registrar_;
+
+  // TabContentsWrapper for the WebView.
+  // TODO: this is needed for password manager, should be refactored/replaced
+  //       so that this code can move to src/ash.
+  scoped_ptr<TabContentsWrapper> wrapper_;
 
   // Login window which shows the view.
   views::Widget* login_window_;

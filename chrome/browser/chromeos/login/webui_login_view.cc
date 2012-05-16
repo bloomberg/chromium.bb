@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -161,7 +162,17 @@ void WebUILoginView::Init(views::Widget* login_window) {
   webui_login_ = new views::WebView(ProfileManager::GetDefaultProfile());
   AddChildView(webui_login_);
 
-  WebContents* web_contents = webui_login_->GetWebContents();
+  // We create the WebContents ourselves because the TCW assumes ownership of
+  // it. This should be reworked once we don't need to use the TCW here.
+  WebContents* web_contents =
+      WebContents::Create(ProfileManager::GetDefaultProfile(),
+                          NULL,
+                          MSG_ROUTING_NONE,
+                          NULL,
+                          NULL);
+  wrapper_.reset(new TabContentsWrapper(web_contents));
+  webui_login_->SetWebContents(web_contents);
+
   web_contents->SetDelegate(this);
   renderer_preferences_util::UpdateFromSystemSettings(
       web_contents->GetMutableRendererPrefs(),
