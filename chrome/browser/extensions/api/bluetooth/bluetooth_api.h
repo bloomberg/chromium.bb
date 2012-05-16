@@ -13,10 +13,8 @@
 
 namespace chromeos {
 
-class BluetoothAdapter;
 class BluetoothDevice;
 class BluetoothSocket;
-class ExtensionBluetoothEventRouter;
 
 }  // namespace chromeos
 #endif
@@ -24,29 +22,7 @@ class ExtensionBluetoothEventRouter;
 namespace extensions {
 namespace api {
 
-class BluetoothExtensionFunction : public SyncExtensionFunction {
- protected:
-  virtual ~BluetoothExtensionFunction() {}
-
-#if defined(OS_CHROMEOS)
-  chromeos::ExtensionBluetoothEventRouter* event_router();
-  const chromeos::BluetoothAdapter* adapter() const;
-  chromeos::BluetoothAdapter* GetMutableAdapter();
-#endif
-};
-
-class AsyncBluetoothExtensionFunction : public AsyncExtensionFunction {
- protected:
-  virtual ~AsyncBluetoothExtensionFunction() {}
-
-#if defined(OS_CHROMEOS)
-  chromeos::ExtensionBluetoothEventRouter* event_router();
-  const chromeos::BluetoothAdapter* adapter() const;
-  chromeos::BluetoothAdapter* GetMutableAdapter();
-#endif
-};
-
-class BluetoothIsAvailableFunction : public BluetoothExtensionFunction {
+class BluetoothIsAvailableFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.isAvailable")
 
@@ -57,7 +33,7 @@ class BluetoothIsAvailableFunction : public BluetoothExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothIsPoweredFunction : public BluetoothExtensionFunction {
+class BluetoothIsPoweredFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.isPowered")
 
@@ -68,7 +44,7 @@ class BluetoothIsPoweredFunction : public BluetoothExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothGetAddressFunction : public BluetoothExtensionFunction {
+class BluetoothGetAddressFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getAddress")
 
@@ -80,7 +56,7 @@ class BluetoothGetAddressFunction : public BluetoothExtensionFunction {
 };
 
 class BluetoothGetDevicesWithServiceUUIDFunction
-    : public BluetoothExtensionFunction {
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.bluetooth.getDevicesWithServiceUUID")
@@ -93,7 +69,7 @@ class BluetoothGetDevicesWithServiceUUIDFunction
 };
 
 class BluetoothGetDevicesWithServiceNameFunction
-    : public AsyncBluetoothExtensionFunction {
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.bluetooth.getDevicesWithServiceName")
@@ -108,8 +84,8 @@ class BluetoothGetDevicesWithServiceNameFunction
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
-#if defined(OS_CHROMEOS)
  private:
+#if defined(OS_CHROMEOS)
   void AddDeviceIfTrue(
       ListValue* list, const chromeos::BluetoothDevice* device, bool result);
 
@@ -117,7 +93,7 @@ class BluetoothGetDevicesWithServiceNameFunction
 #endif
 };
 
-class BluetoothConnectFunction : public AsyncBluetoothExtensionFunction {
+class BluetoothConnectFunction : public AsyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.connect")
@@ -131,7 +107,7 @@ class BluetoothConnectFunction : public AsyncBluetoothExtensionFunction {
 #endif
 };
 
-class BluetoothDisconnectFunction : public BluetoothExtensionFunction {
+class BluetoothDisconnectFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.disconnect")
 
@@ -142,7 +118,7 @@ class BluetoothDisconnectFunction : public BluetoothExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothReadFunction : public BluetoothExtensionFunction {
+class BluetoothReadFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.read")
 
@@ -154,7 +130,7 @@ class BluetoothReadFunction : public BluetoothExtensionFunction {
 };
 
 class BluetoothSetOutOfBandPairingDataFunction
-    : public BluetoothExtensionFunction {
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.bluetooth.setOutOfBandPairingData")
@@ -167,7 +143,7 @@ class BluetoothSetOutOfBandPairingDataFunction
 };
 
 class BluetoothGetOutOfBandPairingDataFunction
-    : public BluetoothExtensionFunction {
+    : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.bluetooth.getOutOfBandPairingData")
@@ -179,7 +155,7 @@ class BluetoothGetOutOfBandPairingDataFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothWriteFunction : public BluetoothExtensionFunction {
+class BluetoothWriteFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.write")
 

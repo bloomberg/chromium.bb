@@ -21,6 +21,21 @@
 using chromeos::BluetoothAdapter;
 using chromeos::BluetoothDevice;
 
+namespace {
+
+chromeos::ExtensionBluetoothEventRouter* GetEventRouter(Profile* profile) {
+  return profile->GetExtensionService()->bluetooth_event_router();
+}
+
+const chromeos::BluetoothAdapter* GetAdapter(Profile* profile) {
+  return GetEventRouter(profile)->adapter();
+}
+
+chromeos::BluetoothAdapter* GetMutableAdapter(Profile* profile) {
+  return GetEventRouter(profile)->GetMutableAdapter();
+}
+
+}  // namespace
 #endif
 
 namespace GetDevicesWithServiceUUID =
@@ -35,50 +50,18 @@ namespace api {
 
 #if defined(OS_CHROMEOS)
 
-chromeos::ExtensionBluetoothEventRouter*
-BluetoothExtensionFunction::event_router() {
-  return profile()->GetExtensionService()->bluetooth_event_router();
-}
-
-const chromeos::BluetoothAdapter* BluetoothExtensionFunction::adapter() const {
-  const chromeos::ExtensionBluetoothEventRouter* bluetooth_event_router =
-      profile()->GetExtensionService()->bluetooth_event_router();
-  return bluetooth_event_router->adapter();
-}
-
-chromeos::BluetoothAdapter* BluetoothExtensionFunction::GetMutableAdapter() {
-  return event_router()->GetMutableAdapter();
-}
-
-chromeos::ExtensionBluetoothEventRouter*
-AsyncBluetoothExtensionFunction::event_router() {
-  return profile()->GetExtensionService()->bluetooth_event_router();
-}
-
-const chromeos::BluetoothAdapter*
-AsyncBluetoothExtensionFunction::adapter() const {
-  const chromeos::ExtensionBluetoothEventRouter* bluetooth_event_router =
-      profile()->GetExtensionService()->bluetooth_event_router();
-  return bluetooth_event_router->adapter();
-}
-
-chromeos::BluetoothAdapter*
-AsyncBluetoothExtensionFunction::GetMutableAdapter() {
-  return event_router()->GetMutableAdapter();
-}
-
 bool BluetoothIsAvailableFunction::RunImpl() {
-  result_.reset(Value::CreateBooleanValue(adapter()->IsPresent()));
+  result_.reset(Value::CreateBooleanValue(GetAdapter(profile())->IsPresent()));
   return true;
 }
 
 bool BluetoothIsPoweredFunction::RunImpl() {
-  result_.reset(Value::CreateBooleanValue(adapter()->IsPowered()));
+  result_.reset(Value::CreateBooleanValue(GetAdapter(profile())->IsPowered()));
   return true;
 }
 
 bool BluetoothGetAddressFunction::RunImpl() {
-  result_.reset(Value::CreateStringValue(adapter()->address()));
+  result_.reset(Value::CreateStringValue(GetAdapter(profile())->address()));
   return true;
 }
 
@@ -86,7 +69,8 @@ bool BluetoothGetDevicesWithServiceUUIDFunction::RunImpl() {
   scoped_ptr<GetDevicesWithServiceUUID::Params> params(
       GetDevicesWithServiceUUID::Params::Create(*args_));
 
-  const BluetoothAdapter::ConstDeviceList& devices = adapter()->GetDevices();
+  const BluetoothAdapter::ConstDeviceList& devices =
+      GetAdapter(profile())->GetDevices();
   ListValue* matches = new ListValue;
   for (BluetoothAdapter::ConstDeviceList::const_iterator i =
       devices.begin(); i != devices.end(); ++i) {
@@ -132,7 +116,8 @@ bool BluetoothGetDevicesWithServiceNameFunction::RunImpl() {
   ListValue* matches = new ListValue;
   result_.reset(matches);
 
-  BluetoothAdapter::DeviceList devices = GetMutableAdapter()->GetDevices();
+  BluetoothAdapter::DeviceList devices =
+      GetMutableAdapter(profile())->GetDevices();
   callbacks_pending_ = 0;
   for (BluetoothAdapter::DeviceList::iterator i = devices.begin();
       i != devices.end(); ++i) {
@@ -157,7 +142,7 @@ void BluetoothConnectFunction::ConnectToServiceCallback(
     const std::string& service_uuid,
     scoped_refptr<chromeos::BluetoothSocket> socket) {
   if (socket.get()) {
-    int socket_id = event_router()->RegisterSocket(socket);
+    int socket_id = GetEventRouter(profile())->RegisterSocket(socket);
 
     experimental_bluetooth::Socket result_socket;
     result_socket.device.address = device->address();
@@ -177,7 +162,7 @@ bool BluetoothConnectFunction::RunImpl() {
   scoped_ptr<Connect::Params> params(Connect::Params::Create(*args_));
 
   chromeos::BluetoothDevice* device =
-      GetMutableAdapter()->GetDevice(params->device.address);
+      GetMutableAdapter(profile())->GetDevice(params->device.address);
   if (!device) {
     SendResponse(false);
     return false;
@@ -194,7 +179,7 @@ bool BluetoothConnectFunction::RunImpl() {
 
 bool BluetoothDisconnectFunction::RunImpl() {
   scoped_ptr<Disconnect::Params> params(Disconnect::Params::Create(*args_));
-  return event_router()->ReleaseSocket(params->socket.id);
+  return GetEventRouter(profile())->ReleaseSocket(params->socket.id);
 }
 
 #else
