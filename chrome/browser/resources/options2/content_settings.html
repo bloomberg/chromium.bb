@@ -255,7 +255,9 @@
         </label>
       </div>
     </section>
-<if expr="pp_ifdef('chromeos')">
+<!-- TODO(markusheintz): Renable the Protected Content section once the 3rd
+     party dependencies of the backend are ready. -->
+<if expr="pp_ifdef('chromeos') and False">
     <!-- Protected Content filter -->
     <section guest-visibility="disabled">
       <h3 i18n-content="protectedContentTabLabel"
