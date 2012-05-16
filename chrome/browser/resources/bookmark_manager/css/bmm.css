@@ -255,13 +255,6 @@ html[dir=rtl] .header form {
   float: right;
 }
 
-input[type='search'] {
-  -webkit-appearance: textfield;
-  -webkit-margin-end: 2px;
-  -webkit-margin-start: 2px;
-  width: 100%;
-}
-
 #drop-overlay {
   background-color: hsla(214, 91%, 85%, .5);
   border: 1px solid hsl(214, 91%, 85%);
