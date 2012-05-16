@@ -1424,6 +1424,7 @@ frame_redraw_handler(struct widget *widget, void *data)
 	struct frame *frame = data;
 	cairo_t *cr;
 	cairo_text_extents_t extents;
+	cairo_font_extents_t font_extents;
 	cairo_surface_t *source;
 	int x, y, width, height;
 	struct window *window = widget->window;
@@ -1461,8 +1462,13 @@ frame_redraw_handler(struct widget *widget, void *data)
 			       CAIRO_FONT_WEIGHT_BOLD);
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, window->title, &extents);
+	cairo_font_extents (cr, &font_extents);
 	x = (width - extents.width) / 2;
-	y = frame->margin + 8 - extents.y_bearing;
+	y = frame->margin +
+		(frame->titlebar_height -
+		 font_extents.ascent - font_extents.descent) / 2 +
+		font_extents.ascent;
+
 	if (window->keyboard_device) {
 		cairo_move_to(cr, x + 1, y  + 1);
 		cairo_set_source_rgb(cr, 1, 1, 1);
