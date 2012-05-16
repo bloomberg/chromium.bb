@@ -46,7 +46,7 @@ class TestPackageApk(TestPackage):
     command_line_file.write(self.test_suite_basename + ' ' + options)
     command_line_file.flush()
     self.adb.PushIfNeeded(command_line_file.name,
-                          TestPackageApk.APK_DATA_DIR +
+                          '/data/local/tmp/' +
                           'chrome-native-tests-command-line')
 
   def _GetGTestReturnCode(self):
