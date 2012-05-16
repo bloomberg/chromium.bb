@@ -17,4 +17,18 @@ test.run_gyp('many-actions-unsorted.gyp')
 test.build('many-actions-unsorted.gyp', test.ALL)
 for i in range(15):
   test.built_file_must_exist('generated_%d.h' % i)
+
+# Make sure the optimized cygwin setup doesn't cause problems for incremental
+# builds.
+test.touch('file1')
+test.build('many-actions-unsorted.gyp', test.ALL)
+
+test.touch('file0')
+test.build('many-actions-unsorted.gyp', test.ALL)
+
+test.touch('file2')
+test.touch('file3')
+test.touch('file4')
+test.build('many-actions-unsorted.gyp', test.ALL)
+
 test.pass_test()
