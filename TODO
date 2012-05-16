@@ -41,16 +41,6 @@ Core wayland protocol
    keys down on pointer_focus and subsequent key events... or just key
    events for modifier keys... or for the non-repeating subset?
 
- - Input protocol restructuring: break up events into wl_pointer
-   (enter/leave/motion/button/axis events, set_pointer_surface
-   request), wl_keyboard (enter/leave/key events... what
-   else... unicode event, set_map request? pending kb work), and
-   wl_touch (down/up/motion/cancel events) interfaces.  Rename
-   wl_input_device to wl_seat.  wl_seat has zero or one of each, and
-   will announce this at bind time.  Raw devices are also tied to a
-   wl_seat, but we may not do that for 1.0, we just need to make sure
-   wl_seat has a forward compatible way to announce them.
-
  - Add timestamp to touch_cancel, add touch id to touch_cancel (?)
 
  - The output protocol needs to send all the ugly timing details for the modes.

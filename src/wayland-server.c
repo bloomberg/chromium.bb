@@ -453,33 +453,31 @@ wl_client_destroy(struct wl_client *client)
 static void
 lose_pointer_focus(struct wl_listener *listener, void *data)
 {
-	struct wl_input_device *device =
-		container_of(listener, struct wl_input_device,
-			     pointer_focus_listener);
+	struct wl_pointer *pointer =
+		container_of(listener, struct wl_pointer, focus_listener);
 
-	device->pointer_focus_resource = NULL;
+	pointer->focus_resource = NULL;
 }
 
 static void
 lose_keyboard_focus(struct wl_listener *listener, void *data)
 {
-	struct wl_input_device *device =
-		container_of(listener, struct wl_input_device,
-			     keyboard_focus_listener);
+	struct wl_keyboard *keyboard =
+		container_of(listener, struct wl_keyboard, focus_listener);
 
-	device->keyboard_focus_resource = NULL;
+	keyboard->focus_resource = NULL;
 }
 
 static void
 default_grab_focus(struct wl_pointer_grab *grab,
 		   struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y)
 {
-	struct wl_input_device *device = grab->input_device;
+	struct wl_pointer *pointer = grab->pointer;
 
-	if (device->button_count > 0)
+	if (pointer->button_count > 0)
 		return;
 
-	wl_input_device_set_pointer_focus(device, surface, x, y);
+	wl_pointer_set_focus(pointer, surface, x, y);
 }
 
 static void
@@ -488,31 +486,28 @@ default_grab_motion(struct wl_pointer_grab *grab,
 {
 	struct wl_resource *resource;
 
-	resource = grab->input_device->pointer_focus_resource;
+	resource = grab->pointer->focus_resource;
 	if (resource)
-		wl_input_device_send_motion(resource, time, x, y);
+		wl_pointer_send_motion(resource, time, x, y);
 }
 
 static void
 default_grab_button(struct wl_pointer_grab *grab,
 		    uint32_t time, uint32_t button, uint32_t state)
 {
-	struct wl_input_device *device = grab->input_device;
+	struct wl_pointer *pointer = grab->pointer;
 	struct wl_resource *resource;
 	uint32_t serial;
 
-	resource = device->pointer_focus_resource;
+	resource = pointer->focus_resource;
 	if (resource) {
 		serial = wl_display_next_serial(resource->client->display);
-		wl_input_device_send_button(resource, serial, time,
-					    button, state);
+		wl_pointer_send_button(resource, serial, time, button, state);
 	}
 
-	if (device->button_count == 0 && state == 0)
-		wl_input_device_set_pointer_focus(device,
-						  device->current,
-						  device->current_x,
-						  device->current_y);
+	if (pointer->button_count == 0 && state == 0)
+		wl_pointer_set_focus(pointer, pointer->current,
+				     pointer->current_x, pointer->current_y);
 }
 
 static const struct wl_pointer_grab_interface
@@ -526,14 +521,14 @@ static void
 default_grab_key(struct wl_keyboard_grab *grab,
 		 uint32_t time, uint32_t key, uint32_t state)
 {
-	struct wl_input_device *device = grab->input_device;
+	struct wl_keyboard *keyboard = grab->keyboard;
 	struct wl_resource *resource;
 	uint32_t serial;
 
-	resource = device->keyboard_focus_resource;
+	resource = keyboard->focus_resource;
 	if (resource) {
 		serial = wl_display_next_serial(resource->client->display);
-		wl_input_device_send_key(resource, serial, time, key, state);
+		wl_keyboard_send_key(resource, serial, time, key, state);
 	}
 }
 
@@ -543,43 +538,147 @@ static const struct wl_keyboard_grab_interface
 };
 
 WL_EXPORT void
-wl_input_device_init(struct wl_input_device *device)
+wl_pointer_init(struct wl_pointer *pointer)
 {
-	memset(device, 0, sizeof *device);
-	wl_list_init(&device->resource_list);
-	wl_array_init(&device->keys);
-	device->pointer_focus_listener.notify = lose_pointer_focus;
-	device->keyboard_focus_listener.notify = lose_keyboard_focus;
+	memset(pointer, 0, sizeof *pointer);
+	wl_list_init(&pointer->resource_list);
+	pointer->focus_listener.notify = lose_pointer_focus;
+	pointer->default_grab.interface = &default_pointer_grab_interface;
+	pointer->default_grab.pointer = pointer;
+	pointer->grab = &pointer->default_grab;
 
-	device->default_pointer_grab.interface = &default_pointer_grab_interface;
-	device->default_pointer_grab.input_device = device;
-	device->pointer_grab = &device->default_pointer_grab;
-
-	device->default_keyboard_grab.interface = &default_keyboard_grab_interface;
-	device->default_keyboard_grab.input_device = device;
-	device->keyboard_grab = &device->default_keyboard_grab;
-
-	wl_list_init(&device->drag_resource_list);
-	device->selection_data_source = NULL;
-	wl_signal_init(&device->selection_signal);
-	wl_signal_init(&device->drag_icon_signal);
-
-	device->x = wl_fixed_from_int(100);
-	device->y = wl_fixed_from_int(100);
+	/* FIXME: Pick better co-ords. */
+	pointer->x = wl_fixed_from_int(100);
+	pointer->y = wl_fixed_from_int(100);
 }
 
 WL_EXPORT void
-wl_input_device_release(struct wl_input_device *device)
+wl_pointer_release(struct wl_pointer *pointer)
 {
-	if (device->keyboard_focus_resource)
-		wl_list_remove(&device->keyboard_focus_listener.link);
+	/* XXX: What about pointer->resource_list? */
+	if (pointer->focus_resource)
+		wl_list_remove(&pointer->focus_listener.link);
+}
 
-	if (device->pointer_focus_resource)
-		wl_list_remove(&device->pointer_focus_listener.link);
+WL_EXPORT void
+wl_keyboard_init(struct wl_keyboard *keyboard)
+{
+	memset(keyboard, 0, sizeof *keyboard);
+	wl_list_init(&keyboard->resource_list);
+	wl_array_init(&keyboard->keys);
+	keyboard->focus_listener.notify = lose_keyboard_focus;
+	keyboard->default_grab.interface = &default_keyboard_grab_interface;
+	keyboard->default_grab.keyboard = keyboard;
+	keyboard->grab = &keyboard->default_grab;
+}
 
-	/* XXX: What about device->resource_list? */
+WL_EXPORT void
+wl_keyboard_release(struct wl_keyboard *keyboard)
+{
+	/* XXX: What about keyboard->resource_list? */
+	if (keyboard->focus_resource)
+		wl_list_remove(&keyboard->focus_listener.link);
+	wl_array_release(&keyboard->keys);
+}
 
-	wl_array_release(&device->keys);
+WL_EXPORT void
+wl_touch_init(struct wl_touch *touch)
+{
+	memset(touch, 0, sizeof *touch);
+	wl_list_init(&touch->resource_list);
+}
+
+WL_EXPORT void
+wl_touch_release(struct wl_touch *touch)
+{
+	/* XXX: What about touch->resource_list? */
+	if (touch->focus_resource)
+		wl_list_remove(&touch->focus_listener.link);
+}
+
+WL_EXPORT void
+wl_seat_init(struct wl_seat *seat)
+{
+	memset(seat, 0, sizeof *seat);
+
+	seat->selection_data_source = NULL;
+	wl_list_init(&seat->base_resource_list);
+	wl_signal_init(&seat->selection_signal);
+	wl_list_init(&seat->drag_resource_list);
+	wl_signal_init(&seat->drag_icon_signal);
+}
+
+WL_EXPORT void
+wl_seat_release(struct wl_seat *seat)
+{
+	if (seat->pointer)
+		wl_pointer_release(seat->pointer);
+	if (seat->keyboard)
+		wl_keyboard_release(seat->keyboard);
+	if (seat->touch)
+		wl_touch_release(seat->touch);
+}
+
+static void
+seat_send_updated_caps(struct wl_seat *seat)
+{
+	struct wl_resource *r;
+	enum wl_seat_capability caps = 0;
+
+	if (seat->pointer)
+		caps |= WL_SEAT_CAPABILITY_POINTER;
+	if (seat->keyboard)
+		caps |= WL_SEAT_CAPABILITY_KEYBOARD;
+	if (seat->touch)
+		caps |= WL_SEAT_CAPABILITY_TOUCH;
+
+	wl_list_for_each(r, &seat->base_resource_list, link)
+		wl_seat_send_capabilities(r, caps);
+}
+
+WL_EXPORT void
+wl_seat_set_pointer(struct wl_seat *seat, struct wl_pointer *pointer)
+{
+	if (pointer && (seat->pointer || pointer->seat))
+		return; /* XXX: error? */
+	if (!pointer && !seat->pointer)
+		return;
+
+	seat->pointer = pointer;
+	if (pointer)
+		pointer->seat = seat;
+
+	seat_send_updated_caps(seat);
+}
+
+WL_EXPORT void
+wl_seat_set_keyboard(struct wl_seat *seat, struct wl_keyboard *keyboard)
+{
+	if (keyboard && (seat->keyboard || keyboard->seat))
+		return; /* XXX: error? */
+	if (!keyboard && seat->keyboard)
+		return;
+
+	seat->keyboard = keyboard;
+	if (keyboard)
+		keyboard->seat = seat;
+
+	seat_send_updated_caps(seat);
+}
+
+WL_EXPORT void
+wl_seat_set_touch(struct wl_seat *seat, struct wl_touch *touch)
+{
+	if (touch && (seat->touch || touch->seat))
+		return; /* XXX: error? */
+	if (!touch && !seat->touch)
+		return;
+
+	seat->touch = touch;
+	if (!touch)
+		touch->seat = seat;
+
+	seat_send_updated_caps(seat);
 }
 
 static struct wl_resource *
@@ -599,113 +698,110 @@ find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
 }
 
 WL_EXPORT void
-wl_input_device_set_pointer_focus(struct wl_input_device *device,
-				  struct wl_surface *surface,
-				  wl_fixed_t sx, wl_fixed_t sy)
+wl_pointer_set_focus(struct wl_pointer *pointer, struct wl_surface *surface,
+		     wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct wl_resource *resource;
 	uint32_t serial;
 
-	if (device->pointer_focus == surface)
+	if (pointer->focus == surface)
 		return;
 
-	resource = device->pointer_focus_resource;
+	resource = pointer->focus_resource;
 	if (resource) {
 		serial = wl_display_next_serial(resource->client->display);
-		wl_input_device_send_pointer_leave(resource, serial,
-			&device->pointer_focus->resource);
-		wl_list_remove(&device->pointer_focus_listener.link);
+		wl_pointer_send_leave(resource, serial,
+				      &pointer->focus->resource);
+		wl_list_remove(&pointer->focus_listener.link);
 	}
 
-
-	resource = find_resource_for_surface(&device->resource_list, surface);
+	resource = find_resource_for_surface(&pointer->resource_list,
+					     surface);
 	if (resource) {
 		serial = wl_display_next_serial(resource->client->display);
-		wl_input_device_send_pointer_enter(resource, serial,
-						   &surface->resource,
-						   sx, sy);
+		wl_pointer_send_enter(resource, serial, &surface->resource,
+				      sx, sy);
 		wl_signal_add(&resource->destroy_signal,
-			      &device->pointer_focus_listener);
-		device->pointer_focus_serial = serial;
+			      &pointer->focus_listener);
+		pointer->focus_serial = serial;
 	}
 
-	device->pointer_focus_resource = resource;
-	device->pointer_focus = surface;
-	device->default_pointer_grab.focus = surface;
+	pointer->focus_resource = resource;
+	pointer->focus = surface;
+	pointer->default_grab.focus = surface;
 }
 
 WL_EXPORT void
-wl_input_device_set_keyboard_focus(struct wl_input_device *device,
-				   struct wl_surface *surface)
+wl_keyboard_set_focus(struct wl_keyboard *keyboard, struct wl_surface *surface)
 {
 	struct wl_resource *resource;
 	uint32_t serial;
 
-	if (device->keyboard_focus == surface)
+	if (keyboard->focus == surface)
 		return;
 
-	if (device->keyboard_focus_resource) {
-		resource = device->keyboard_focus_resource;
+	if (keyboard->focus_resource) {
+		resource = keyboard->focus_resource;
 		serial = wl_display_next_serial(resource->client->display);
-		wl_input_device_send_keyboard_leave(resource, serial,
-						    &device->keyboard_focus->resource);
-		wl_list_remove(&device->keyboard_focus_listener.link);
+		wl_keyboard_send_leave(resource, serial,
+				       &keyboard->focus->resource);
+		wl_list_remove(&keyboard->focus_listener.link);
 	}
 
-	resource = find_resource_for_surface(&device->resource_list, surface);
+	resource = find_resource_for_surface(&keyboard->resource_list,
+					     surface);
 	if (resource) {
 		serial = wl_display_next_serial(resource->client->display);
-		wl_input_device_send_keyboard_enter(resource, serial,
-						    &surface->resource,
-						    &device->keys);
+		wl_keyboard_send_enter(resource, serial, &surface->resource,
+				       &keyboard->keys);
 		wl_signal_add(&resource->destroy_signal,
-			      &device->keyboard_focus_listener);
-		device->keyboard_focus_serial = serial;
+			      &keyboard->focus_listener);
+		keyboard->focus_serial = serial;
 	}
 
-	device->keyboard_focus_resource = resource;
-	device->keyboard_focus = surface;
+	keyboard->focus_resource = resource;
+	keyboard->focus = surface;
 }
 
 WL_EXPORT void
-wl_input_device_start_keyboard_grab(struct wl_input_device *device,
-				    struct wl_keyboard_grab *grab)
+wl_keyboard_start_grab(struct wl_keyboard *keyboard,
+		       struct wl_keyboard_grab *grab)
 {
-	device->keyboard_grab = grab;
-	grab->input_device = device;
+	keyboard->grab = grab;
+	grab->keyboard = keyboard;
 
+	/* XXX focus? */
 }
 
 WL_EXPORT void
-wl_input_device_end_keyboard_grab(struct wl_input_device *device)
+wl_keyboard_end_grab(struct wl_keyboard *keyboard)
 {
-	device->keyboard_grab = &device->default_keyboard_grab;
+	keyboard->grab = &keyboard->default_grab;
 }
 
 WL_EXPORT void
-wl_input_device_start_pointer_grab(struct wl_input_device *device,
-				   struct wl_pointer_grab *grab)
-{
-	const struct wl_pointer_grab_interface *interface;
-
-	device->pointer_grab = grab;
-	interface = device->pointer_grab->interface;
-	grab->input_device = device;
-
-	if (device->current)
-		interface->focus(device->pointer_grab, device->current,
-				 device->current_x, device->current_y);
-}
-
-WL_EXPORT void
-wl_input_device_end_pointer_grab(struct wl_input_device *device)
+wl_pointer_start_grab(struct wl_pointer *pointer, struct wl_pointer_grab *grab)
 {
 	const struct wl_pointer_grab_interface *interface;
 
-	device->pointer_grab = &device->default_pointer_grab;
-	interface = device->pointer_grab->interface;
-	interface->focus(device->pointer_grab, device->current,
-			 device->current_x, device->current_y);
+	pointer->grab = grab;
+	interface = pointer->grab->interface;
+	grab->pointer = pointer;
+
+	if (pointer->current)
+		interface->focus(pointer->grab, pointer->current,
+				 pointer->current_x, pointer->current_y);
+}
+
+WL_EXPORT void
+wl_pointer_end_grab(struct wl_pointer *pointer)
+{
+	const struct wl_pointer_grab_interface *interface;
+
+	pointer->grab = &pointer->default_grab;
+	interface = pointer->grab->interface;
+	interface->focus(pointer->grab, pointer->current,
+			 pointer->current_x, pointer->current_y);
 }
 
 static void
