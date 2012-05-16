@@ -655,7 +655,7 @@ _toolchain.add_config('arm-tegra2-seaboard-toolchain', arm,
 
 _toolchain_minor = \
     full.derive(latest_toolchain=True, prebuilts=False,
-                gcc_githash='gcc.gnu.org/branches/google/gcc-4_6',
+                gcc_githash='gcc.gnu.org/branches/google/gcc-4_7',
                 trybot_list=False,
                 description='Toolchain',)
 
