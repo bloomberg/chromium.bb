@@ -425,10 +425,6 @@ class StoreImmediate : public OldClassDecoder {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
-  virtual bool writes_memory(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return true;
-  }
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
@@ -452,10 +448,6 @@ class StoreRegister : public OldClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual bool writes_memory(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return true;
-  }
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
@@ -479,10 +471,6 @@ class StoreExclusive : public OldClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual bool writes_memory(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return true;
-  }
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
@@ -720,7 +708,6 @@ class VectorStore : public OldClassDecoder {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
-  virtual bool writes_memory(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
   // Defines the base address for the access.
   inline Register Rn(const Instruction& i) const {
@@ -801,10 +788,6 @@ class StoreCoprocessor : public CoprocessorOp {
 
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
-  virtual bool writes_memory(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return true;
-  }
   virtual Register base_address_register(Instruction i) const;
   // Contains the base address for the access.
   inline Register Rn(const Instruction& i) const {

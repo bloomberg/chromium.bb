@@ -33,7 +33,6 @@ void ActualVsBaselineTester::ProcessMatch() {
   CheckSafety();
   CheckDefs();
   CheckImmediateAddressingDefs();
-  CheckWritesMemory();
   CheckBaseAddressRegister();
   CheckOffsetIsImmediate();
   CheckBranchTargetRegister();
@@ -77,11 +76,6 @@ void ActualVsBaselineTester::CheckDefs() {
 void ActualVsBaselineTester::CheckImmediateAddressingDefs() {
   EXPECT_EQ(baseline_decoder_.immediate_addressing_defs(inst_).number(),
             actual_decoder_.immediate_addressing_defs(inst_).number());
-}
-
-void ActualVsBaselineTester::CheckWritesMemory() {
-  EXPECT_EQ(baseline_decoder_.writes_memory(inst_),
-            actual_decoder_.writes_memory(inst_));
 }
 
 void ActualVsBaselineTester::CheckBaseAddressRegister() {

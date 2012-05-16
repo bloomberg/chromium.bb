@@ -52,10 +52,6 @@ class NamedClassDecoder : public nacl_arm_dec::ClassDecoder {
     return wrapped_decoder_.immediate_addressing_defs(i);
   }
 
-  virtual bool writes_memory(nacl_arm_dec::Instruction i) const {
-    return wrapped_decoder_.writes_memory(i);
-  }
-
   virtual nacl_arm_dec::Register
   base_address_register(nacl_arm_dec::Instruction i) const {
     return wrapped_decoder_.base_address_register(i);

@@ -312,18 +312,6 @@ class ClassDecoder {
     return kRegisterNone;
   }
 
-  //
-  // Checks whether the instruction can write to memory.  Note that we only
-  // permit base+immediate addressing stores, so if the safety() looks good
-  // and writes_memory() is true, you can assume base+immediate addressing is
-  // being used.
-  //
-  // Stubbed to return 'false', which is the common case.
-  virtual bool writes_memory(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return false;
-  }
-
   // For instructions that can read or write memory, gets the register used as
   // the base for generating the effective address.
   //

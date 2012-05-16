@@ -393,11 +393,6 @@ RegisterList VectorStore::immediate_addressing_defs(Instruction i) const {
   return kRegisterNone;
 }
 
-bool VectorStore::writes_memory(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return true;
-}
-
 Register VectorStore::base_address_register(Instruction i) const {
   return Rn(i);
 }

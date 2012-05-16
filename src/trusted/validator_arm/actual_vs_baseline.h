@@ -44,7 +44,6 @@ class ActualVsBaselineTester : public Arm32DecoderTester {
   void CheckSafety();
   void CheckDefs();
   void CheckImmediateAddressingDefs();
-  void CheckWritesMemory();
   void CheckBaseAddressRegister();
   void CheckOffsetIsImmediate();
   void CheckBranchTargetRegister();
