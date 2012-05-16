@@ -73,6 +73,7 @@ struct weston_wm {
 	struct weston_xserver *server;
 	xcb_window_t wm_window;
 	int border_width, title_height;
+	struct weston_wm_window *focus_window;
 
 	xcb_window_t selection_window;
 	int incr;
@@ -657,6 +658,9 @@ weston_wm_activate(struct weston_wm *wm,
 }
 
 static void
+weston_wm_window_schedule_repaint(struct weston_wm_window *window);
+
+static void
 weston_xserver_surface_activate(struct wl_listener *listener, void *data)
 {
 	struct weston_surface *surface = data;
@@ -665,13 +669,22 @@ weston_xserver_surface_activate(struct wl_listener *listener, void *data)
 		container_of(listener,
 			     struct weston_xserver, activate_listener);
 
+	if (!wxs->wm)
+		return;
+
 	if (window)
 		weston_wm_activate(wxs->wm, window, XCB_TIME_CURRENT_TIME);
-	else if (wxs && wxs->wm)
+	else
 		xcb_set_input_focus (wxs->wm->conn,
 				     XCB_INPUT_FOCUS_POINTER_ROOT,
 				     XCB_NONE,
 				     XCB_TIME_CURRENT_TIME);
+
+	if (wxs->wm->focus_window)
+		weston_wm_window_schedule_repaint(wxs->wm->focus_window);
+	wxs->wm->focus_window = window;
+	if (wxs->wm->focus_window)
+		weston_wm_window_schedule_repaint(wxs->wm->focus_window);
 }
 
 static int
@@ -813,7 +826,12 @@ weston_wm_window_draw_decoration(void *data)
 							       height);
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 1, 0, 0, 0.8);
+
+	if (wm->focus_window == window)
+		cairo_set_source_rgba(cr, 1, 0, 0, 0.8);
+	else
+		cairo_set_source_rgb(cr, 0.7, 0.7, 0.7);
+
 	cairo_paint(cr);
 
 	if (window->name)
@@ -834,7 +852,11 @@ weston_wm_window_draw_decoration(void *data)
 		font_extents.ascent;
 
 	cairo_move_to(cr, x, y);
-	cairo_set_source_rgb(cr, 1, 1, 1);
+	if (wm->focus_window == window)
+		cairo_set_source_rgb(cr, 1, 1, 1);
+	else
+		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+
 	cairo_show_text(cr, title);
 
 	cairo_destroy(cr);
