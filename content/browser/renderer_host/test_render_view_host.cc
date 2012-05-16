@@ -232,7 +232,8 @@ TestRenderViewHost::~TestRenderViewHost() {
 
 bool TestRenderViewHost::CreateRenderView(const string16& frame_name,
                                           int opener_route_id,
-                                          int32 max_page_id) {
+                                          int32 max_page_id,
+                                          int embedder_process_id) {
   DCHECK(!render_view_created_);
   render_view_created_ = true;
   return true;

@@ -231,13 +231,17 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Set up the RenderView child process. Virtual because it is overridden by
   // TestRenderViewHost. If the |frame_name| parameter is non-empty, it is used
-  // as the name of the new top-level frame.  The |opener_route_id| parameter
-  // indicates which RenderView created this (MSG_ROUTING_NONE if none). If
-  // |max_page_id| is larger than -1, the RenderView is told to start issuing
-  // page IDs at |max_page_id| + 1.
+  // as the name of the new top-level frame.
+  // The |opener_route_id| parameter indicates which RenderView created this
+  // (MSG_ROUTING_NONE if none). If |max_page_id| is larger than -1, the
+  // RenderView is told to start issuing page IDs at |max_page_id| + 1.
+  // If this RenderView is a guest, the embedder's process ID is also passed in
+  // so that the RenderView's process can establish a channel with its embedder
+  // if it's not already established.
   virtual bool CreateRenderView(const string16& frame_name,
                                 int opener_route_id,
-                                int32 max_page_id);
+                                int32 max_page_id,
+                                int embedder_process_id);
 
   base::TerminationStatus render_view_termination_status() const {
     return render_view_termination_status_;
@@ -350,8 +354,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void set_sudden_termination_allowed(bool enabled) {
     sudden_termination_allowed_ = enabled;
   }
-
-  void set_guest(bool guest) { guest_ = guest; }
 
   // RenderWidgetHost public overrides.
   virtual void Shutdown() OVERRIDE;
@@ -566,9 +568,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // A bitwise OR of bindings types that have been enabled for this RenderView.
   // See BindingsPolicy for details.
   int enabled_bindings_;
-
-  // Indicates whether or not this RenderViewHost refers to a guest RenderView.
-  bool guest_;
 
   // The request_id for the pending cross-site request. Set to -1 if
   // there is a pending request, but we have not yet started the unload

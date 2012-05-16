@@ -14,7 +14,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_plugin/browser_plugin_web_contents_observer.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -327,9 +326,6 @@ WebContentsImpl::WebContentsImpl(
   java_bridge_dispatcher_host_manager_.reset(
       new JavaBridgeDispatcherHostManager(this));
 #endif
-
-  browser_plugin_web_contents_observer_.reset(
-      new content::BrowserPluginWebContentsObserver(this));
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -2715,8 +2711,10 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
       GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
 
   if (!static_cast<RenderViewHostImpl*>(
-          render_view_host)->CreateRenderView(string16(), opener_route_id,
-                                              max_page_id)) {
+          render_view_host)->CreateRenderView(string16(),
+                                              opener_route_id,
+                                              max_page_id,
+                                              -1)) {
     return false;
   }
 

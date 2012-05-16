@@ -652,7 +652,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
 
 TEST_F(VisitedLinkEventsTest, Basics) {
   VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
-  rvh_tester()->CreateRenderView(string16(), MSG_ROUTING_NONE, -1);
+  rvh_tester()->CreateRenderView(string16(), MSG_ROUTING_NONE, -1, -1);
 
   // Add a few URLs.
   master->AddURL(GURL("http://acidtests.org/"));
@@ -676,7 +676,7 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 
 TEST_F(VisitedLinkEventsTest, TabVisibility) {
   VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
-  rvh_tester()->CreateRenderView(string16(), MSG_ROUTING_NONE, -1);
+  rvh_tester()->CreateRenderView(string16(), MSG_ROUTING_NONE, -1, -1);
 
   // Simulate tab becoming inactive.
   rvh_tester()->SimulateWasHidden();

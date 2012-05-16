@@ -668,9 +668,10 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // The properties of the screen associated with the view.
   IPC_STRUCT_MEMBER(WebKit::WebScreenInfo, screen_info)
 
-  // Indicates whether this newly created RenderView will be hosted by another
-  // RenderView.
-  IPC_STRUCT_MEMBER(bool, guest)
+  // The name of the channel with which a guest talks to its embedder.
+  // If this newly created RenderView has no embedder this string will be
+  // empty.
+  IPC_STRUCT_MEMBER(std::string, embedder_channel_name)
 
   // The accessibility mode of the renderer.
   IPC_STRUCT_MEMBER(AccessibilityMode, accessibility_mode)

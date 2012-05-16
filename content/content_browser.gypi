@@ -205,8 +205,6 @@
     'browser/browser_main_loop.cc',
     'browser/browser_main_loop.h',
     'browser/browser_main_runner.cc',
-    'browser/browser_plugin/browser_plugin_web_contents_observer.cc',
-    'browser/browser_plugin/browser_plugin_web_contents_observer.h',
     'browser/browser_process_sub_thread.cc',
     'browser/browser_process_sub_thread.h',
     'browser/browser_thread_impl.cc',

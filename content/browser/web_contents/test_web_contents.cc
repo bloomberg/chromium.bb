@@ -90,7 +90,7 @@ bool TestWebContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host, int opener_route_id) {
   // This will go to a TestRenderViewHost.
   static_cast<RenderViewHostImpl*>(
-      render_view_host)->CreateRenderView(string16(), opener_route_id, -1);
+      render_view_host)->CreateRenderView(string16(), opener_route_id, -1, -1);
   return true;
 }
 

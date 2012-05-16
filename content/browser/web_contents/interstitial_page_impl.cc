@@ -505,8 +505,10 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
 
   int32 max_page_id = web_contents()->
       GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
-  render_view_host_->CreateRenderView(string16(), MSG_ROUTING_NONE,
-                                      max_page_id);
+  render_view_host_->CreateRenderView(string16(),
+                                      MSG_ROUTING_NONE,
+                                      max_page_id,
+                                      -1);
   view->SetSize(web_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();

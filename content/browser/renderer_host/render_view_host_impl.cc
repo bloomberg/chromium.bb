@@ -140,7 +140,6 @@ RenderViewHostImpl::RenderViewHostImpl(SiteInstance* instance,
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
-      guest_(false),
       pending_request_id_(-1),
       navigations_suspended_(false),
       suspended_nav_message_(NULL),
@@ -205,7 +204,8 @@ content::SiteInstance* RenderViewHostImpl::GetSiteInstance() const {
 
 bool RenderViewHostImpl::CreateRenderView(const string16& frame_name,
                                           int opener_route_id,
-                                          int32 max_page_id) {
+                                          int32 max_page_id,
+                                          int embedder_process_id) {
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
 
   // The process may (if we're sharing a process with another host that already
@@ -254,7 +254,11 @@ bool RenderViewHostImpl::CreateRenderView(const string16& frame_name,
       WebKit::WebScreenInfoFactory::screenInfo(
           gfx::NativeViewFromId(GetNativeViewId()));
 #endif
-  params.guest = guest_;
+
+  if (embedder_process_id != -1)
+    params.embedder_channel_name =
+        StringPrintf("%d.r%d", GetProcess()->GetID(), embedder_process_id);
+
   params.accessibility_mode =
       BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser() ?
           AccessibilityModeComplete :

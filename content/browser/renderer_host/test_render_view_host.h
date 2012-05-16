@@ -274,7 +274,8 @@ class TestRenderViewHost
 
   virtual bool CreateRenderView(const string16& frame_name,
                                 int opener_route_id,
-                                int32 max_page_id) OVERRIDE;
+                                int32 max_page_id,
+                                int embedder_process_id) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
 
  private:
