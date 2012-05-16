@@ -217,10 +217,6 @@ class HostContentSettingsMap
   // Whether this settings map is for an OTR session.
   bool is_off_the_record_;
 
-  // Whether we are currently updating preferences, this is used to ignore
-  // notifications from the preferences service that we triggered ourself.
-  bool updating_preferences_;
-
   // Content setting providers.
   ProviderMap content_settings_providers_;
 
