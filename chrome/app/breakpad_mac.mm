@@ -187,6 +187,11 @@ void InitCrashReporter() {
   NSString *reporter_location =
       [[NSBundle bundleWithPath:reporter_bundle_location] executablePath];
 
+  if (!inspector_location || !reporter_location) {
+    VLOG_IF(1, is_browser && base::mac::AmIBundled()) << "Breakpad disabled";
+    return;
+  }
+
   NSDictionary* info_dictionary = [main_bundle infoDictionary];
   NSMutableDictionary *breakpad_config =
       [[info_dictionary mutableCopy] autorelease];
@@ -231,7 +236,7 @@ void InitCrashReporter() {
   // Initialize Breakpad.
   gBreakpadRef = BreakpadCreate(breakpad_config);
   if (!gBreakpadRef) {
-    LOG(ERROR) << "Breakpad initializaiton failed";
+    LOG_IF(ERROR, base::mac::AmIBundled()) << "Breakpad initializaiton failed";
     return;
   }
 

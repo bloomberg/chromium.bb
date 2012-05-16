@@ -1388,6 +1388,10 @@ const char kPasswordStore[]                 = "password-store";
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
 const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
 
+// Performs Keychain reauthorization from the command line on behalf of a
+// special Keychain reauthorization stub executable. Used during auto-update.
+const char kKeychainReauthorize[]           = "keychain-reauthorize";
+
 // A process type (switches::kProcessType) that relaunches the browser. See
 // chrome/browser/mac/relauncher.h.
 const char kRelauncherProcess[]             = "relauncher";

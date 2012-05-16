@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -142,6 +142,7 @@ make_patch_fs() {
   readonly APP_NAME_RE="${product_name}\\.app"
   readonly APP_PLIST="Contents/Info"
   readonly APP_VERSION_KEY="CFBundleShortVersionString"
+  readonly APP_BUNDLEID_KEY="CFBundleIdentifier"
   readonly KS_VERSION_KEY="KSVersion"
   readonly KS_PRODUCT_KEY="KSProductID"
   readonly KS_CHANNEL_KEY="KSChannelID"
@@ -167,6 +168,13 @@ make_patch_fs() {
     exit 10
   fi
   local old_app_version_build="${BASH_REMATCH[1]}"
+
+  local old_app_bundleid
+  if ! old_app_bundleid="$(defaults read "${old_app_plist}" \
+                                         "${APP_BUNDLEID_KEY}")"; then
+    err "could not read old app bundle ID"
+    exit 10
+  fi
 
   local old_ks_plist="${old_app_plist}"
   local old_ks_version
@@ -232,6 +240,18 @@ make_patch_fs() {
   if ! cp -p "${SCRIPT_DIR}/keystone_install.sh" \
              "${patch_fs}/.keystone_install"; then
     err "could not copy .keystone_install"
+    exit 13
+  fi
+
+  local patch_keychain_reauthorize_dir="${patch_fs}/.keychain_reauthorize"
+  if ! mkdir "${patch_keychain_reauthorize_dir}"; then
+    err "could not mkdir patch_keychain_reauthorize_dir"
+    exit 13
+  fi
+
+  if ! cp -p "${SCRIPT_DIR}/.keychain_reauthorize/${old_app_bundleid}" \
+             "${patch_keychain_reauthorize_dir}/${old_app_bundleid}"; then
+    err "could not copy keychain_reauthorize"
     exit 13
   fi
 

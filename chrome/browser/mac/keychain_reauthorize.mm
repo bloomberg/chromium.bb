@@ -128,7 +128,12 @@ void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
   if (pref_value < max_tries) {
     if (pref_value > 0) {
       // Logs the number of previous tries that didn't complete.
-      UMA_HISTOGRAM_COUNTS("OSX.KeychainReauthorizeIfNeeded", pref_value);
+      if (base::mac::AmIBundled()) {
+        UMA_HISTOGRAM_COUNTS("OSX.KeychainReauthorizeIfNeeded", pref_value);
+      } else {
+        UMA_HISTOGRAM_COUNTS("OSX.KeychainReauthorizeIfNeededAtUpdate",
+                             pref_value);
+      }
     }
 
     ++pref_value;
@@ -143,7 +148,13 @@ void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
     [user_defaults synchronize];
 
     // Logs the try number (1, 2) that succeeded.
-    UMA_HISTOGRAM_COUNTS("OSX.KeychainReauthorizeIfNeededSuccess", pref_value);
+    if (base::mac::AmIBundled()) {
+      UMA_HISTOGRAM_COUNTS("OSX.KeychainReauthorizeIfNeededSuccess",
+                           pref_value);
+    } else {
+      UMA_HISTOGRAM_COUNTS("OSX.KeychainReauthorizeIfNeededAtUpdateSuccess",
+                           pref_value);
+    }
   }
 }
 

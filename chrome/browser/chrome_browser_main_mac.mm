@@ -28,6 +28,28 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
 
+namespace {
+
+// This preference is used to track whether the KeychainReauthorize operation
+// has occurred at launch. This operation only makes sense while the
+// application continues to be signed by the old certificate.
+NSString* const kKeychainReauthorizeAtLaunchPref =
+    @"KeychainReauthorizeInAppMay2012";
+const int kKeychainReauthorizeAtLaunchMaxTries = 2;
+
+// Some users rarely restart Chrome, so they might never get a chance to run
+// the at-launch KeychainReauthorize. To account for them, there's also an
+// at-update KeychainReauthorize option, which runs from .keystone_install for
+// users on a user Keystone ticket. This operation may make sense for a period
+// of time after the application switches to being signed by the new
+// certificate, as long as the at-update stub executable is still signed by
+// the old one.
+NSString* const kKeychainReauthorizeAtUpdatePref =
+    @"KeychainReauthorizeAtUpdateMay2012";
+const int kKeychainReauthorizeAtUpdateMaxTries = 3;
+
+}  // namespace
+
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadRegistration(IsCrashReporterEnabled());
   metrics->RecordBreakpadHasDebugger(base::debug::BeingDebugged());
@@ -55,6 +77,27 @@ ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(
 }
 
 void ChromeBrowserMainPartsMac::PreEarlyInitialization() {
+  if (parsed_command_line().HasSwitch(switches::kKeychainReauthorize)) {
+    if (base::mac::AmIBundled()) {
+      LOG(FATAL) << "Inappropriate process type for Keychain reauthorization";
+    }
+
+    // Do Keychain reauthorization at the time of update installation. This
+    // gets three chances to run. If the first or second try doesn't complete
+    // successfully (crashes or is interrupted for any reason), there will be
+    // another chance. Once this step completes successfully, it should never
+    // have to run again.
+    //
+    // This is kicked off by a special stub executable during an automatic
+    // update. See chrome/installer/mac/keychain_reauthorize_main.cc. This is
+    // done during update installation in additon to browser app launch to
+    // help reauthorize Keychain items for users who never restart Chrome.
+    chrome::browser::mac::KeychainReauthorizeIfNeeded(
+        kKeychainReauthorizeAtUpdatePref, kKeychainReauthorizeAtUpdateMaxTries);
+
+    exit(0);
+  }
+
   ChromeBrowserMainPartsPosix::PreEarlyInitialization();
 
   if (base::mac::WasLaunchedAsHiddenLoginItem()) {
@@ -137,16 +180,12 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   [[NSUserDefaults standardUserDefaults]
       setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
 
-  // Do Keychain reauthorization. This gets two chances to run. If the first
-  // try doesn't complete successfully (crashes or is interrupted for any
-  // reason), there will be a second chance. Once this step completes
-  // successfully, it should never have to run again.
-  NSString* const keychain_reauthorize_pref =
-      @"KeychainReauthorizeInAppMay2012";
-  const int kKeychainReauthorizeMaxTries = 2;
-
+  // Do Keychain reauthorization at browser app launch. This gets two chances
+  // to run. If the first try doesn't complete successfully (crashes or is
+  // interrupted for any reason), there will be a second chance. Once this
+  // step completes successfully, it should never have to run again.
   chrome::browser::mac::KeychainReauthorizeIfNeeded(
-      keychain_reauthorize_pref, kKeychainReauthorizeMaxTries);
+      kKeychainReauthorizeAtLaunchPref, kKeychainReauthorizeAtLaunchMaxTries);
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {

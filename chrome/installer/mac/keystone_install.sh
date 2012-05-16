@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -413,6 +413,7 @@ main() {
   readonly UNROOTED_DEBUG_FILE="Library/Google/Google Chrome Updater Debug"
 
   readonly APP_VERSION_KEY="CFBundleShortVersionString"
+  readonly APP_BUNDLEID_KEY="CFBundleIdentifier"
   readonly KS_VERSION_KEY="KSVersion"
   readonly KS_PRODUCT_KEY="KSProductID"
   readonly KS_URL_KEY="KSUpdateURL"
@@ -420,6 +421,7 @@ main() {
   readonly KS_BRAND_KEY="KSBrandID"
 
   readonly QUARANTINE_ATTR="com.apple.quarantine"
+  readonly KEYCHAIN_REAUTHORIZE_DIR=".keychain_reauthorize"
 
   # Don't use rsync -a, because -a expands to -rlptgoD.  -g and -o copy owners
   # and groups, respectively, from the source, and that is undesirable in this
@@ -1266,6 +1268,51 @@ main() {
     # On earlier systems, xattr doesn't support -r, so run xattr via find.
     find "${installed_app}" -exec xattr -d "${QUARANTINE_ATTR}" {} + \
         2> /dev/null
+  fi
+
+  # Do Keychain reauthorization. This involves running a stub executable on
+  # the dmg that loads the newly-updated framework and jumps to it to perform
+  # the reauthorization. The stub executable can be signed by the old
+  # certificate even after the rest of Chrome switches to the new certificate,
+  # so it still has access to the old Keychain items. The stub executable is
+  # an unbundled flat file executable whose name matches the real
+  # application's bundle identifier, so it's permitted access to the Keychain
+  # items. Doing a reauthorization step at update time reauthorizes Keychain
+  # items for users who never bother restarting Chrome, and provides a
+  # mechanism to continue doing reauthorizations even after the certificate
+  # changes. However, it only works for non-system ticket installations of
+  # Chrome, because the updater runs as root when on a system ticket, and root
+  # can't access individual user Keychains.
+  #
+  # Even if the reauthorization tool is launched, it doesn't necessarily try
+  # to do anything. It will only attempt to perform a reauthorization if one
+  # hasn't yet been done at update time.
+  note "maybe reauthorizing Keychain"
+
+  if [[ -z "${system_ticket}" ]]; then
+    local new_bundleid_app
+    new_bundleid_app="$(defaults read "${installed_app_plist}" \
+                                      "${APP_BUNDLEID_KEY}" || true)"
+    note "new_bundleid_app = ${new_bundleid_app}"
+
+    local keychain_reauthorize_dir="\
+${update_dmg_mount_point}/${KEYCHAIN_REAUTHORIZE_DIR}"
+    local keychain_reauthorize_path="\
+${keychain_reauthorize_dir}/${new_bundleid_app}"
+    note "keychain_reauthorize_path = ${keychain_reauthorize_path}"
+
+    if [[ -x "${keychain_reauthorize_path}" ]]; then
+      local framework_dir="${new_versioned_dir}/${FRAMEWORK_DIR}"
+      local framework_code_path="${framework_dir}/${FRAMEWORK_NAME}"
+      note "framework_code_path = ${framework_code_path}"
+
+      if [[ -f "${framework_code_path}" ]]; then
+        note "reauthorizing Keychain"
+        "${keychain_reauthorize_path}" "${framework_code_path}"
+      fi
+    fi
+  else
+    note "system ticket, not reauthorizing Keychain"
   fi
 
   # Great success!
