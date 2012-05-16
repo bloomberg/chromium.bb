@@ -346,6 +346,12 @@ void SpeechInputExtensionManager::OnRecognitionError(
     int session_id, const content::SpeechRecognitionError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(session_id, kSpeechInputSessionId);
+
+  // Simply return in case of an ERROR_ABORTED, since it is not contemplated
+  // in the speech input extensions architecture.
+  if (error.code == content::SPEECH_RECOGNITION_ERROR_ABORTED)
+      return;
+
   VLOG(1) << "OnRecognitionError: " << error.code;
 
   base::AutoLock auto_lock(state_lock_);

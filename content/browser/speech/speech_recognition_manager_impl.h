@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
+#include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/speech_recognition_error.h"
 
@@ -29,36 +30,39 @@ class SpeechRecognizerImpl;
 // This is the manager for speech recognition. It is a singleton instance in
 // the browser process and can serve several requests. Each recognition request
 // corresponds to a session, initiated via |CreateSession|.
-// In every moment the manager has at most one "interactive" session (identified
-// by |interactive_session_id_|), that is the session that is currently holding
-// user attention. For privacy reasons, only the interactive session is allowed
-// to capture audio from the microphone. However, after audio capture is
-// completed, a session can be sent to background and can live in parallel with
-// other sessions, while waiting for its results.
+// In every moment the manager has at most one session capturing audio, which
+// is identified by |session_id_capturing_audio_|. However, multiple sessions
+// can live in parallel in respect of the aforementioned constraint, i.e. while
+// waiting for results.
+// This class does not handle user interface objects (bubbles, tray icon).
+// Those are managed by the delegate, which receives a copy of all sessions
+// events.
 //
-// More in details, SpeechRecognitionManager has the following responsibilities:
+// The SpeechRecognitionManager has the following responsibilities:
 //  - Handles requests received from various render views and makes sure only
 //    one of them accesses the audio device at any given time.
-//  - Relays recognition results/status/error events of each session to the
-//    corresponding listener (demuxing on the base of their session_id).
 //  - Handles the instantiation of SpeechRecognitionEngine objects when
 //    requested by SpeechRecognitionSessions.
+//  - Relays recognition results/status/error events of each session to the
+//    corresponding listener (demuxing on the base of their session_id).
+//  - Relays also recognition results/status/error events of every session to
+//    the catch-all snoop listener (optionally) provided by the delegate.
 class CONTENT_EXPORT SpeechRecognitionManagerImpl :
     public NON_EXPORTED_BASE(content::SpeechRecognitionManager),
-    public NON_EXPORTED_BASE(content::SpeechRecognitionEventListener) {
+    public content::SpeechRecognitionEventListener {
  public:
   static SpeechRecognitionManagerImpl* GetInstance();
 
   // SpeechRecognitionManager implementation.
   virtual int CreateSession(
-      const content::SpeechRecognitionSessionConfig& config,
-      SpeechRecognitionEventListener* event_listener) OVERRIDE;
+      const content::SpeechRecognitionSessionConfig& config) OVERRIDE;
   virtual void StartSession(int session_id) OVERRIDE;
   virtual void AbortSession(int session_id) OVERRIDE;
   virtual void AbortAllSessionsForListener(
         content::SpeechRecognitionEventListener* listener) OVERRIDE;
   virtual void StopAudioCaptureForSession(int session_id) OVERRIDE;
-  virtual void SendSessionToBackground(int session_id) OVERRIDE;
+  virtual const content::SpeechRecognitionSessionConfig& GetSessionConfig(
+      int session_id) const OVERRIDE;
   virtual content::SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const OVERRIDE;
   virtual int LookupSessionByContext(
@@ -94,22 +98,19 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
  private:
   // Data types for the internal Finite State Machine (FSM).
   enum FSMState {
-    STATE_IDLE = 0,
-    STATE_INTERACTIVE,
-    STATE_BACKGROUND,
-    STATE_WAITING_FOR_DELETION,
-    STATE_MAX_VALUE = STATE_WAITING_FOR_DELETION
+    SESSION_STATE_IDLE = 0,
+    SESSION_STATE_CAPTURING_AUDIO,
+    SESSION_STATE_WAITING_FOR_RESULT,
+    SESSION_STATE_MAX_VALUE = SESSION_STATE_WAITING_FOR_RESULT
   };
 
   enum FSMEvent {
     EVENT_ABORT = 0,
     EVENT_START,
     EVENT_STOP_CAPTURE,
-    EVENT_SET_BACKGROUND,
+    EVENT_AUDIO_ENDED,
     EVENT_RECOGNITION_ENDED,
-    EVENT_RECOGNITION_RESULT,
-    EVENT_RECOGNITION_ERROR,
-    EVENT_MAX_VALUE = EVENT_RECOGNITION_ERROR
+    EVENT_MAX_VALUE = EVENT_RECOGNITION_ENDED
   };
 
   struct Session {
@@ -117,19 +118,10 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
     ~Session();
 
     int id;
-    content::SpeechRecognitionEventListener* event_listener;
+    bool listener_is_active;
+    content::SpeechRecognitionSessionConfig config;
     content::SpeechRecognitionSessionContext context;
     scoped_refptr<SpeechRecognizerImpl> recognizer;
-    FSMState state;
-    bool error_occurred;
-  };
-
-  struct FSMEventArgs {
-    explicit FSMEventArgs(FSMEvent event_value);
-    ~FSMEventArgs();
-
-    FSMEvent event;
-    content::SpeechRecognitionError speech_error;
   };
 
   // Callback issued by the SpeechRecognitionManagerDelegate for reporting
@@ -137,36 +129,33 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   void RecognitionAllowedCallback(int session_id, bool is_allowed);
 
   // Entry point for pushing any external event into the session handling FSM.
-  void DispatchEvent(int session_id, FSMEventArgs args);
+  void DispatchEvent(int session_id, FSMEvent event);
 
   // Defines the behavior of the session handling FSM, selecting the appropriate
   // transition according to the session, its current state and the event.
-  FSMState ExecuteTransitionAndGetNextState(Session& session,
-                                            const FSMEventArgs& event_args);
+  void ExecuteTransitionAndGetNextState(
+      const Session& session, FSMState session_state, FSMEvent event);
+
+  // Retrieves the state of the session, enquiring directly the recognizer.
+  FSMState GetSessionState(int session_id) const;
 
   // The methods below handle transitions of the session handling FSM.
-  FSMState SessionStart(Session& session, const FSMEventArgs& event_args);
-  FSMState SessionAbort(Session& session, const FSMEventArgs& event_args);
-  FSMState SessionStopAudioCapture(Session& session,
-                                   const FSMEventArgs& event_args);
-  FSMState SessionAbortIfCapturingAudioOrBackground(
-      Session& session, const FSMEventArgs& event_args);
-  FSMState SessionSetBackground(Session& session,
-                                const FSMEventArgs& event_args);
-  FSMState SessionReportError(Session& session, const FSMEventArgs& event_args);
-  FSMState SessionReportNoMatch(Session& session,
-                                const FSMEventArgs& event_args);
-  FSMState SessionDelete(Session& session, const FSMEventArgs& event_args);
-  FSMState DoNothing(Session& session, const FSMEventArgs& event_args);
-  FSMState NotFeasible(Session& session, const FSMEventArgs& event_args);
+  void SessionStart(const Session& session);
+  void SessionAbort(const Session& session);
+  void SessionStopAudioCapture(const Session& session);
+  void ResetCapturingSessionId(const Session& session);
+  void SessionDelete(const Session& session);
+  void NotFeasible(const Session& session, FSMEvent event);
 
   bool SessionExists(int session_id) const;
+  const Session& GetSession(int session_id) const;
   content::SpeechRecognitionEventListener* GetListener(int session_id) const;
+  content::SpeechRecognitionEventListener* GetDelegateListener() const;
   int GetNextSessionID();
 
   typedef std::map<int, Session> SessionsTable;
   SessionsTable sessions_;
-  int interactive_session_id_;
+  int session_id_capturing_audio_;
   int last_session_id_;
   bool is_dispatching_event_;
   content::SpeechRecognitionManagerDelegate* delegate_;

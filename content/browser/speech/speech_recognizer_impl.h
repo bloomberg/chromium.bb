@@ -114,9 +114,9 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   FSMState StopCaptureAndWaitForResult(const FSMEventArgs& event_args);
   FSMState ProcessIntermediateResult(const FSMEventArgs& event_args);
   FSMState ProcessFinalResult(const FSMEventArgs& event_args);
-  FSMState Abort(const FSMEventArgs& event_args);
-  FSMState AbortWithError(const content::SpeechRecognitionError* error);
-  FSMState AbortWithError(const content::SpeechRecognitionError& error);
+  FSMState AbortSilently(const FSMEventArgs& event_args);
+  FSMState AbortWithError(const FSMEventArgs& event_args);
+  FSMState Abort(const content::SpeechRecognitionError& error);
   FSMState DetectEndOfSpeech(const FSMEventArgs& event_args);
   FSMState DoNothing(const FSMEventArgs& event_args) const;
   FSMState NotFeasible(const FSMEventArgs& event_args);

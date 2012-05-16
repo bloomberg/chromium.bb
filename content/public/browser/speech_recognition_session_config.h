@@ -18,6 +18,8 @@ class URLRequestContextGetter;
 
 namespace content {
 
+class SpeechRecognitionEventListener;
+
 // Configuration params for creating a new speech recognition session.
 struct CONTENT_EXPORT SpeechRecognitionSessionConfig {
   SpeechRecognitionSessionConfig();
@@ -33,6 +35,7 @@ struct CONTENT_EXPORT SpeechRecognitionSessionConfig {
   bool filter_profanities;
   SpeechRecognitionSessionContext initial_context;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter;
+  SpeechRecognitionEventListener* event_listener;
 };
 
 }  // namespace content

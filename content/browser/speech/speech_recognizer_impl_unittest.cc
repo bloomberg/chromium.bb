@@ -245,7 +245,7 @@ class SpeechRecognizerImplTest : public content::SpeechRecognitionEventListener,
 TEST_F(SpeechRecognizerImplTest, StopNoData) {
   // Check for callbacks when stopping record before any audio gets recorded.
   recognizer_->StartRecognition();
-  recognizer_->AbortRecognition();
+  recognizer_->StopAudioCapture();
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
@@ -258,12 +258,12 @@ TEST_F(SpeechRecognizerImplTest, CancelNoData) {
   // Check for callbacks when canceling recognition before any audio gets
   // recorded.
   recognizer_->StartRecognition();
-  recognizer_->StopAudioCapture();
+  recognizer_->AbortRecognition();
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(recognition_started_);
   EXPECT_FALSE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_ABORTED, error_);
   CheckFinalEventsConsistency();
 }
 
@@ -333,7 +333,7 @@ TEST_F(SpeechRecognizerImplTest, CancelWithData) {
   EXPECT_TRUE(recognition_started_);
   EXPECT_TRUE(audio_started_);
   EXPECT_FALSE(result_received_);
-  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
+  EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_ABORTED, error_);
   CheckFinalEventsConsistency();
 }
 

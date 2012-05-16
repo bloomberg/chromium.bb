@@ -30,14 +30,13 @@ struct SpeechRecognitionSessionContext;
 // operations that must be carried out, that will be handled by inner classes.
 class SpeechRecognitionManager {
  public:
-  static const int kSessionIDInvalid;
+  CONTENT_EXPORT static const int kSessionIDInvalid;
 
   // Returns the singleton instance.
   static CONTENT_EXPORT SpeechRecognitionManager* GetInstance();
 
   // Creates a new recognition session.
-  virtual int CreateSession(const SpeechRecognitionSessionConfig& config,
-                            SpeechRecognitionEventListener* listener) = 0;
+  virtual int CreateSession(const SpeechRecognitionSessionConfig& config) = 0;
 
   // Starts/restarts recognition for an existing session, after performing a
   // premilinary check on the delegate (CheckRecognitionIsAllowed).
@@ -54,13 +53,10 @@ class SpeechRecognitionManager {
   // call will be processed, possibly ending up with a result.
   virtual void StopAudioCaptureForSession(int session_id) = 0;
 
-  // Sends the session to background preventing it from further interacting with
-  // the browser (typically invoked when the user clicks outside the speech UI).
-  // The session will be silently continued in background if possible (in case
-  // it already finished capturing audio and was just waiting for the result) or
-  // will be aborted if user interaction (e.g., audio recording) was involved
-  // when this function was called.
-  virtual void SendSessionToBackground(int session_id) = 0;
+  // Retrieves the configuration of a session, as provided by the caller
+  // upon CreateSession.
+  virtual const SpeechRecognitionSessionConfig& GetSessionConfig(int session_id)
+      const = 0;
 
   // Retrieves the context associated to a session.
   virtual SpeechRecognitionSessionContext GetSessionContext(

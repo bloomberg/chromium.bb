@@ -9,7 +9,8 @@ namespace content {
 
 SpeechRecognitionSessionConfig::SpeechRecognitionSessionConfig()
     : is_one_shot(true),
-      filter_profanities(false) {
+      filter_profanities(false),
+      event_listener(NULL) {
 }
 
 SpeechRecognitionSessionConfig::~SpeechRecognitionSessionConfig() {

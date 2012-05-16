@@ -21,10 +21,12 @@
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/speech_recognition_manager.h"
+#include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "grit/generated_resources.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -33,7 +35,11 @@
 
 using content::BrowserThread;
 using content::SpeechRecognitionManager;
-using content::SpeechRecognitionSessionContext;
+
+namespace {
+const int kNoActiveBubble =
+    content::SpeechRecognitionManager::kSessionIDInvalid;
+}  // namespace
 
 namespace speech {
 
@@ -102,21 +108,158 @@ class ChromeSpeechRecognitionManagerDelegate::OptionalRequestInfo
 
 ChromeSpeechRecognitionManagerDelegate::ChromeSpeechRecognitionManagerDelegate()
     : bubble_controller_(new SpeechRecognitionBubbleController(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
+          ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+      active_bubble_session_id_(kNoActiveBubble) {
 }
 
 ChromeSpeechRecognitionManagerDelegate::
     ~ChromeSpeechRecognitionManagerDelegate() {
 }
 
-void ChromeSpeechRecognitionManagerDelegate::ShowRecognitionRequested(
+void ChromeSpeechRecognitionManagerDelegate::InfoBubbleButtonClicked(
+    int session_id, SpeechRecognitionBubble::Button button) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(active_bubble_session_id_, session_id);
+
+  if (button == SpeechRecognitionBubble::BUTTON_CANCEL) {
+    bubble_controller_->CloseBubble(session_id);
+    last_session_config_.reset();
+    active_bubble_session_id_ = kNoActiveBubble;
+
+    // We can safely call AbortSession even if the session has already ended,
+    // the manager's public methods are reliable and will handle it properly.
+    SpeechRecognitionManager::GetInstance()->AbortSession(session_id);
+  } else if (button == SpeechRecognitionBubble::BUTTON_TRY_AGAIN) {
+    bubble_controller_->CloseBubble(session_id);
+    active_bubble_session_id_ = kNoActiveBubble;
+    RestartLastSession();
+  }
+}
+
+void ChromeSpeechRecognitionManagerDelegate::InfoBubbleFocusChanged(
     int session_id) {
-  const SpeechRecognitionSessionContext& context =
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(active_bubble_session_id_, session_id);
+
+  bubble_controller_->CloseBubble(session_id);
+  last_session_config_.reset();
+  active_bubble_session_id_ = kNoActiveBubble;
+
+  // If the user clicks outside the bubble while capturing audio we abort the
+  // session. Otherwise, i.e. audio capture is ended and we are just waiting for
+  // results, this activity is carried silently in background.
+  if (SpeechRecognitionManager::GetInstance()->IsCapturingAudio())
+    SpeechRecognitionManager::GetInstance()->AbortSession(session_id);
+}
+
+void ChromeSpeechRecognitionManagerDelegate::RestartLastSession() {
+  DCHECK(last_session_config_.get());
+  SpeechRecognitionManager* manager = SpeechRecognitionManager::GetInstance();
+  const int new_session_id = manager->CreateSession(*last_session_config_);
+  DCHECK_NE(new_session_id, kNoActiveBubble);
+  last_session_config_.reset();
+  manager->StartSession(new_session_id);
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnRecognitionStart(
+    int session_id) {
+  // Copy the configuration of the session (for the "try again" button).
+  last_session_config_.reset(new content::SpeechRecognitionSessionConfig(
+      SpeechRecognitionManager::GetInstance()->GetSessionConfig(session_id)));
+
+  // Create and show the bubble.
+  DCHECK_EQ(active_bubble_session_id_, kNoActiveBubble);
+  active_bubble_session_id_ = session_id;
+  const content::SpeechRecognitionSessionContext& context =
       SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
   bubble_controller_->CreateBubble(session_id,
                                    context.render_process_id,
                                    context.render_view_id,
                                    context.element_rect);
+  // TODO(primiano) Why not create directly the bubble in warmup mode?
+  bubble_controller_->SetBubbleWarmUpMode(session_id);
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnAudioStart(int session_id) {
+  bubble_controller_->SetBubbleRecordingMode(session_id);
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnEnvironmentEstimationComplete(
+    int session_id) {
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnSoundStart(int session_id) {
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnSoundEnd(int session_id) {
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnAudioEnd(int session_id) {
+  // OnAudioEnd can be also raised after an abort, when the bubble has already
+  // been closed.
+  if (active_bubble_session_id_ == session_id)
+    bubble_controller_->SetBubbleRecognizingMode(session_id);
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnRecognitionResult(
+    int session_id, const content::SpeechRecognitionResult& result) {
+  // A result can be dispatched when the bubble is not visible anymore (e.g.,
+  // lost focus while waiting for a result, thus continuing in background).
+  if (active_bubble_session_id_ == session_id) {
+    bubble_controller_->CloseBubble(session_id);
+    last_session_config_.reset();
+    active_bubble_session_id_ = kNoActiveBubble;
+  }
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnRecognitionError(
+    int session_id, const content::SpeechRecognitionError& error) {
+  // An error can be dispatched when the bubble is not visible anymore.
+  if (active_bubble_session_id_ != session_id)
+    return;
+
+  int error_message_id = 0;
+  switch (error.code) {
+    case content::SPEECH_RECOGNITION_ERROR_AUDIO:
+      switch (error.details) {
+        case content::SPEECH_AUDIO_ERROR_DETAILS_NO_MIC:
+          error_message_id = IDS_SPEECH_INPUT_NO_MIC;
+          break;
+        case content::SPEECH_AUDIO_ERROR_DETAILS_IN_USE:
+          error_message_id = IDS_SPEECH_INPUT_MIC_IN_USE;
+          break;
+        default:
+          error_message_id = IDS_SPEECH_INPUT_MIC_ERROR;
+          break;
+      }
+      break;
+    case content::SPEECH_RECOGNITION_ERROR_ABORTED:
+      error_message_id = IDS_SPEECH_INPUT_ABORTED;
+      break;
+    case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
+      error_message_id = IDS_SPEECH_INPUT_NO_SPEECH;
+      break;
+    case content::SPEECH_RECOGNITION_ERROR_NO_MATCH:
+      error_message_id = IDS_SPEECH_INPUT_NO_RESULTS;
+      break;
+    case content::SPEECH_RECOGNITION_ERROR_NETWORK:
+      error_message_id = IDS_SPEECH_INPUT_NET_ERROR;
+      break;
+    default:
+      NOTREACHED() << "unknown error " << error.code;
+      return;
+  }
+  bubble_controller_->SetBubbleMessage(
+      session_id, l10n_util::GetStringUTF16(error_message_id));
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnAudioLevelsChange(
+    int session_id, float volume, float noise_volume) {
+  if (active_bubble_session_id_ == session_id)
+    bubble_controller_->SetBubbleInputVolume(session_id, volume, noise_volume);
+}
+
+void ChromeSpeechRecognitionManagerDelegate::OnRecognitionEnd(int session_id) {
 }
 
 void ChromeSpeechRecognitionManagerDelegate::GetDiagnosticInformation(
@@ -142,7 +285,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
     int session_id,
     base::Callback<void(int session_id, bool is_allowed)> callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  const SpeechRecognitionSessionContext& context =
+  const content::SpeechRecognitionSessionContext& context =
       SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
 
   // The check must be performed in the UI thread. We defer it posting to
@@ -155,76 +298,9 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
                                      context.render_view_id));
 }
 
-void ChromeSpeechRecognitionManagerDelegate::ShowWarmUp(int session_id) {
-  bubble_controller_->SetBubbleWarmUpMode(session_id);
-}
-
-void ChromeSpeechRecognitionManagerDelegate::ShowRecognizing(int session_id) {
-  bubble_controller_->SetBubbleRecognizingMode(session_id);
-}
-
-void ChromeSpeechRecognitionManagerDelegate::ShowRecording(int session_id) {
-  bubble_controller_->SetBubbleRecordingMode(session_id);
-}
-
-void ChromeSpeechRecognitionManagerDelegate::ShowInputVolume(
-    int session_id, float volume, float noise_volume) {
-  bubble_controller_->SetBubbleInputVolume(session_id, volume, noise_volume);
-}
-
-void ChromeSpeechRecognitionManagerDelegate::ShowError(
-    int session_id, const content::SpeechRecognitionError& error) {
-  int error_message_id = 0;
-  switch (error.code) {
-    case content::SPEECH_RECOGNITION_ERROR_AUDIO:
-      switch (error.details) {
-        case content::SPEECH_AUDIO_ERROR_DETAILS_NO_MIC:
-          error_message_id = IDS_SPEECH_INPUT_NO_MIC;
-          break;
-        case content::SPEECH_AUDIO_ERROR_DETAILS_IN_USE:
-          error_message_id = IDS_SPEECH_INPUT_MIC_IN_USE;
-          break;
-        default:
-          error_message_id = IDS_SPEECH_INPUT_MIC_ERROR;
-          break;
-      }
-      break;
-    case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
-      error_message_id = IDS_SPEECH_INPUT_NO_SPEECH;
-      break;
-    case content::SPEECH_RECOGNITION_ERROR_NO_MATCH:
-      error_message_id = IDS_SPEECH_INPUT_NO_RESULTS;
-      break;
-    case content::SPEECH_RECOGNITION_ERROR_NETWORK:
-      error_message_id = IDS_SPEECH_INPUT_NET_ERROR;
-      break;
-    default:
-      NOTREACHED() << "unknown error " << error.code;
-      return;
-  }
-  bubble_controller_->SetBubbleMessage(
-      session_id, l10n_util::GetStringUTF16(error_message_id));
-}
-
-void ChromeSpeechRecognitionManagerDelegate::DoClose(int session_id) {
-  bubble_controller_->CloseBubble(session_id);
-}
-
-void ChromeSpeechRecognitionManagerDelegate::InfoBubbleButtonClicked(
-    int session_id, SpeechRecognitionBubble::Button button) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (button == SpeechRecognitionBubble::BUTTON_CANCEL) {
-    SpeechRecognitionManager::GetInstance()->AbortSession(session_id);
-  } else if (button == SpeechRecognitionBubble::BUTTON_TRY_AGAIN) {
-    SpeechRecognitionManager::GetInstance()->StartSession(session_id);
-  }
-}
-
-void ChromeSpeechRecognitionManagerDelegate::InfoBubbleFocusChanged(
-    int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  SpeechRecognitionManager::GetInstance()->SendSessionToBackground(session_id);
+content::SpeechRecognitionEventListener*
+ChromeSpeechRecognitionManagerDelegate::GetEventListener() {
+  return this;
 }
 
 void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(

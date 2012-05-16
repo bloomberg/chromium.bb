@@ -108,8 +108,9 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
   config.initial_context = context;
   config.url_request_context_getter = url_request_context_getter_.get();
   config.filter_profanities = recognition_preferences_->FilterProfanities();
+  config.event_listener = this;
 
-  int session_id = manager()->CreateSession(config, this);
+  int session_id = manager()->CreateSession(config);
   if (session_id == content::SpeechRecognitionManager::kSessionIDInvalid)
     return;
 

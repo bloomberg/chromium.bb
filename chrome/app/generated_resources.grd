@@ -15731,6 +15731,9 @@ Battery full
     <message name="IDS_SPEECH_INPUT_BUBBLE_HEADING" desc="First line in the content area of the speech input bubble. Instructs the user that they can start speaking.">
       Speak now
     </message>
+    <message name="IDS_SPEECH_INPUT_ABORTED" desc="Message shown when speech recognition is aborted (due to another request).">
+      Speech recognition was aborted.
+    </message>
     <message name="IDS_SPEECH_INPUT_MIC_ERROR" desc="Message shown when audio recording failed with an error during speech recognition.">
       There was a problem with your microphone.
     </message>

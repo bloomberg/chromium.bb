@@ -69,12 +69,11 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
 
   // SpeechRecognitionManager methods.
   virtual int CreateSession(
-      const content::SpeechRecognitionSessionConfig& config,
-      SpeechRecognitionEventListener* event_listener) OVERRIDE {
+      const content::SpeechRecognitionSessionConfig& config) OVERRIDE {
     VLOG(1) << "FAKE CreateSession invoked.";
     EXPECT_EQ(0, session_id_);
     EXPECT_EQ(NULL, listener_);
-    listener_ = event_listener;
+    listener_ = config.event_listener;
     if (config.grammars.size() > 0)
       grammar_ = config.grammars[0].url;
     session_ctx_ = config.initial_context;
@@ -124,7 +123,6 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
     did_cancel_all_ = true;
   }
 
-  virtual void SendSessionToBackground(int session_id) OVERRIDE {}
   virtual bool HasAudioInputDevices() OVERRIDE { return true; }
   virtual bool IsCapturingAudio() OVERRIDE { return true; }
   virtual string16 GetAudioInputDeviceModel() OVERRIDE { return string16(); }
