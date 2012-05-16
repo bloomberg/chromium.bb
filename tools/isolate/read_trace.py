@@ -20,7 +20,7 @@ def read_trace(logname, root_dir, cwd_dir, product_dir):
   # Resolve any symlink
   root_dir = os.path.realpath(root_dir)
   api = trace_inputs.get_api()
-  _, _, _, _, simplified = trace_inputs.load_trace(logname, root_dir, api)
+  _, _, _, _, simplified, _ = trace_inputs.load_trace(logname, root_dir, api)
   variables = trace_inputs.generate_dict(simplified, cwd_dir, product_dir)
   trace_inputs.pretty_print(variables, sys.stdout)
 

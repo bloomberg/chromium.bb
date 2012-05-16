@@ -530,7 +530,9 @@ class Strace(object):
     It does not track directories.
 
     Most of the time, files that do not exist are temporary test files that
-    should be put in /tmp instead. See http://crbug.com/116251
+    should be put in /tmp instead. See http://crbug.com/116251.
+
+    Returns a tuple (existing files, non existing files, nb_processes_created)
     """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
     with open(filename, 'r') as f:
@@ -547,7 +549,8 @@ class Strace(object):
     # Resolve any symlink we hit.
     return (
         set(os.path.realpath(f) for f in context.files),
-        set(os.path.realpath(f) for f in context.non_existent))
+        set(os.path.realpath(f) for f in context.non_existent),
+        len(context.processes))
 
 
 class Dtrace(object):
@@ -740,6 +743,10 @@ class Dtrace(object):
           match.group(4),
           match.group(5))
 
+    @property
+    def nb_processes(self):
+      return len(self._cwd)
+
     def handle_dtrace_BEGIN(self, _ppid, _pid, _function, args, _result):
       pass
 
@@ -898,6 +905,8 @@ class Dtrace(object):
 
     Most of the time, files that do not exist are temporary test files that
     should be put in /tmp instead. See http://crbug.com/116251
+
+    Returns a tuple (existing files, non existing files, nb_processes_created)
     """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
     context = cls.Context(blacklist)
@@ -906,7 +915,8 @@ class Dtrace(object):
     # Resolve any symlink we hit.
     return (
         set(os.path.realpath(f) for f in context.files),
-        set(os.path.realpath(f) for f in context.non_existent))
+        set(os.path.realpath(f) for f in context.non_existent),
+        context.nb_processes)
 
   @staticmethod
   def _sort_log(logname):
@@ -1022,6 +1032,10 @@ class LogmanTrace(object):
         handler(line)
       else:
         assert False, '%s_%s' % (line[self.EVENT_NAME], line[self.TYPE])
+
+    @property
+    def nb_processes(self):
+      return len(self._processes)
 
     def handle_EventTrace_Any(self, line):
       pass
@@ -1227,6 +1241,16 @@ class LogmanTrace(object):
 
   @classmethod
   def parse_log(cls, filename, blacklist):
+    """Processes a ETL log and returns the files opened and the files that do
+    not exist.
+
+    It does not track directories.
+
+    Most of the time, files that do not exist are temporary test files that
+    should be put in /tmp instead. See http://crbug.com/116251
+
+    Returns a tuple (existing files, non existing files, nb_processes_created)
+    """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
 
     # Auto-detect the log format
@@ -1285,7 +1309,8 @@ class LogmanTrace(object):
 
     return (
         set(os.path.realpath(f) for f in context.files),
-        set(os.path.realpath(f) for f in context.non_existent))
+        set(os.path.realpath(f) for f in context.non_existent),
+        context.nb_processes)
 
 
 def relevant_files(files, root):
@@ -1476,13 +1501,13 @@ def load_trace(logfile, root_dir, api):
               trace or not.
   - api: a tracing api instance.
   """
-  files, non_existent = api.parse_log(logfile, get_blacklist(api))
+  files, non_existent, processes = api.parse_log(logfile, get_blacklist(api))
   expected, unexpected = relevant_files(
       files, root_dir.rstrip(os.path.sep) + os.path.sep)
   # In case the file system is case insensitive.
   expected = sorted(set(get_native_path_case(root_dir, f) for f in expected))
   simplified = extract_directories(expected, root_dir)
-  return files, expected, unexpected, non_existent, simplified
+  return files, expected, unexpected, non_existent, simplified, processes
 
 
 def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
@@ -1529,7 +1554,7 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
       return returncode
 
   print_if('Loading traces... %s' % logfile)
-  files, expected, unexpected, non_existent, simplified = load_trace(
+  files, expected, unexpected, non_existent, simplified, _ = load_trace(
       logfile, root_dir, api)
 
   print_if('Total: %d' % len(files))

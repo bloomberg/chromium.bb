@@ -45,6 +45,7 @@ def trace_test_case(
 
   try:
     simplified = None
+    processes = 0
     for i in range(10):
       start = time.time()
       returncode, output = trace_inputs.trace(
@@ -54,7 +55,8 @@ def trace_test_case(
         continue
       duration = time.time() - start
       try:
-        _, _, _, _, simplified = trace_inputs.load_trace(logname, root_dir, api)
+        _, _, _, _, simplified, processes = trace_inputs.load_trace(
+            logname, root_dir, api)
         break
       except Exception:
         print '\nFailed loading the trace for: %s' % ' '.join(cmd)
@@ -64,10 +66,11 @@ def trace_test_case(
       variables = {}
     return {
       'case': test_case,
-      'variables': variables,
-      'result': returncode,
       'duration': duration,
       'output': output,
+      'processes': processes,
+      'result': returncode,
+      'variables': variables,
     }
   finally:
     if f:
