@@ -548,7 +548,7 @@
             {
               'action_name': 'copy_and_strip_so',
               'inputs': ['<(SHARED_LIB_DIR)/libcontent_shell_content_view.so'],
-              'outputs': ['<(PRODUCT_DIR)/content_shell/libs/armeabi/libcontent_shell_content_view.so'],
+              'outputs': ['<(PRODUCT_DIR)/content_shell/libs/<(android_app_abi)/libcontent_shell_content_view.so'],
               'action': [
                 '<!(/bin/echo -n $STRIP)',
                 '--strip-unneeded',  # All symbols not needed for relocation.
@@ -568,7 +568,7 @@
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_net.jar',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_media.jar',
                 '<(PRODUCT_DIR)/content_shell/java/libs/chromium_content.jar',
-                '<(PRODUCT_DIR)/content_shell/libs/armeabi/libcontent_shell_content_view.so',
+                '<(PRODUCT_DIR)/content_shell/libs/<(android_app_abi)/libcontent_shell_content_view.so',
               ],
               'outputs': [
                 # Awkwardly, we build a Debug APK even when gyp is in
@@ -580,6 +580,7 @@
               'action': [
                 'ant',
                 '-DPRODUCT_DIR=<(PRODUCT_DIR)',
+                '-DAPP_ABI=<(android_app_abi)',
                 '-buildfile',
                 '<(DEPTH)/content/shell/android/content_shell_apk.xml',
               ]
