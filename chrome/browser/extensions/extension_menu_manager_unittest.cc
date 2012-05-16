@@ -45,7 +45,18 @@ class ExtensionMenuManagerTest : public testing::Test {
   ExtensionMenuItem* CreateTestItem(Extension* extension) {
     ExtensionMenuItem::Type type = ExtensionMenuItem::NORMAL;
     ExtensionMenuItem::ContextList contexts(ExtensionMenuItem::ALL);
-    ExtensionMenuItem::Id id(NULL, extension->id(), next_id_++);
+    ExtensionMenuItem::Id id(NULL, extension->id());
+    id.uid = next_id_++;
+    return new ExtensionMenuItem(id, "test", false, true, type, contexts);
+  }
+
+  // Returns a test item with the given string ID.
+  ExtensionMenuItem* CreateTestItemWithID(Extension* extension,
+                                          const std::string& string_id) {
+    ExtensionMenuItem::Type type = ExtensionMenuItem::NORMAL;
+    ExtensionMenuItem::ContextList contexts(ExtensionMenuItem::ALL);
+    ExtensionMenuItem::Id id(NULL, extension->id());
+    id.string_uid = string_id;
     return new ExtensionMenuItem(id, "test", false, true, type, contexts);
   }
 
@@ -87,7 +98,7 @@ TEST_F(ExtensionMenuManagerTest, AddGetRemoveItems) {
   ASSERT_EQ(item1, items->at(0));
 
   // Add a second item, make sure it comes back too.
-  ExtensionMenuItem* item2 = CreateTestItem(extension);
+  ExtensionMenuItem* item2 = CreateTestItemWithID(extension, "id2");
   ASSERT_TRUE(manager_.AddContextItem(extension, item2));
   ASSERT_EQ(item2, manager_.GetItemById(item2->id()));
   items = manager_.MenuItems(item2->extension_id());
@@ -107,8 +118,19 @@ TEST_F(ExtensionMenuManagerTest, AddGetRemoveItems) {
   ASSERT_EQ(2u, manager_.MenuItems(extension_id)->size());
 
   // Make sure removing a non-existent item returns false.
-  ExtensionMenuItem::Id id(NULL, extension->id(), id3.uid + 50);
+  ExtensionMenuItem::Id id(NULL, extension->id());
+  id.uid = id3.uid + 50;
   ASSERT_FALSE(manager_.RemoveContextMenuItem(id));
+
+  // Make sure adding an item with the same string ID returns false.
+  scoped_ptr<ExtensionMenuItem> item2too(
+      CreateTestItemWithID(extension, "id2"));
+  ASSERT_FALSE(manager_.AddContextItem(extension, item2too.get()));
+
+  // But the same string ID should not collide with another extension.
+  Extension* extension2 = AddExtension("test2");
+  ExtensionMenuItem* item2other = CreateTestItemWithID(extension2, "id2");
+  ASSERT_TRUE(manager_.AddContextItem(extension2, item2other));
 }
 
 // Test adding/removing child items.
@@ -119,7 +141,7 @@ TEST_F(ExtensionMenuManagerTest, ChildFunctions) {
 
   ExtensionMenuItem* item1 = CreateTestItem(extension1);
   ExtensionMenuItem* item2 = CreateTestItem(extension2);
-  ExtensionMenuItem* item2_child = CreateTestItem(extension2);
+  ExtensionMenuItem* item2_child = CreateTestItemWithID(extension2, "2child");
   ExtensionMenuItem* item2_grandchild = CreateTestItem(extension2);
 
   // This third item we expect to fail inserting, so we use a scoped_ptr to make
@@ -173,8 +195,8 @@ TEST_F(ExtensionMenuManagerTest, DeleteParent) {
   // Set up 5 items to add.
   ExtensionMenuItem* item1 = CreateTestItem(extension);
   ExtensionMenuItem* item2 = CreateTestItem(extension);
-  ExtensionMenuItem* item3 = CreateTestItem(extension);
-  ExtensionMenuItem* item4 = CreateTestItem(extension);
+  ExtensionMenuItem* item3 = CreateTestItemWithID(extension, "id3");
+  ExtensionMenuItem* item4 = CreateTestItemWithID(extension, "id4");
   ExtensionMenuItem* item5 = CreateTestItem(extension);
   ExtensionMenuItem* item6 = CreateTestItem(extension);
   ExtensionMenuItem::Id item1_id = item1->id();
@@ -370,7 +392,6 @@ class MockTestingProfile : public TestingProfile {
  public:
   MockTestingProfile() {}
   MOCK_METHOD0(GetExtensionEventRouter, ExtensionEventRouter*());
-  MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTestingProfile);
@@ -414,11 +435,14 @@ TEST_F(ExtensionMenuManagerTest, RemoveOneByOne) {
   Extension* extension1 = AddExtension("1111");
   ExtensionMenuItem* item1 = CreateTestItem(extension1);
   ExtensionMenuItem* item2 = CreateTestItem(extension1);
+  ExtensionMenuItem* item3 = CreateTestItemWithID(extension1, "id3");
   ASSERT_TRUE(manager_.AddContextItem(extension1, item1));
   ASSERT_TRUE(manager_.AddContextItem(extension1, item2));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, item3));
 
   ASSERT_FALSE(manager_.context_items_.empty());
 
+  manager_.RemoveContextMenuItem(item3->id());
   manager_.RemoveContextMenuItem(item1->id());
   manager_.RemoveContextMenuItem(item2->id());
 

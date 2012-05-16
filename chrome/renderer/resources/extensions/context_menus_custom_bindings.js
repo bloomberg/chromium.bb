@@ -14,9 +14,20 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   chromeHidden.contextMenus = {};
-  chromeHidden.contextMenus.handlers = {};
+  chromeHidden.contextMenus.generatedIdHandlers = {};
+  chromeHidden.contextMenus.stringIdHandlers = {};
   var eventName = 'contextMenus';
   chromeHidden.contextMenus.event = new chrome.Event(eventName);
+  chromeHidden.contextMenus.getIdFromCreateProperties = function(prop) {
+    if (typeof(prop.id) !== 'undefined')
+      return prop.id;
+    return prop.generatedId;
+  };
+  chromeHidden.contextMenus.handlersForId = function(id) {
+    if (typeof(id) === 'number')
+      return chromeHidden.contextMenus.generatedIdHandlers;
+    return chromeHidden.contextMenus.stringIdHandlers;
+  };
   chromeHidden.contextMenus.ensureListenerSetup = function() {
     if (chromeHidden.contextMenus.listening) {
       return;
@@ -26,7 +37,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
       // An extension context menu item has been clicked on - fire the onclick
       // if there is one.
       var id = arguments[0].menuItemId;
-      var onclick = chromeHidden.contextMenus.handlers[id];
+      var onclick = chromeHidden.contextMenus.handlersForId(id)[id];
       if (onclick) {
         onclick.apply(null, arguments);
       }
@@ -41,7 +52,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
                 args,
                 this.definition.parameters,
                 {customCallback: this.customCallback});
-    return id;
+    return chromeHidden.contextMenus.getIdFromCreateProperties(args[0]);
   });
 
   apiFunctions.setCustomCallback('create', function(name, request, response) {
@@ -49,13 +60,14 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
       return;
     }
 
-    var id = request.args[0].generatedId;
+    var id = chromeHidden.contextMenus.getIdFromCreateProperties(
+        request.args[0]);
 
     // Set up the onclick handler if we were passed one in the request.
     var onclick = request.args.length ? request.args[0].onclick : null;
     if (onclick) {
       chromeHidden.contextMenus.ensureListenerSetup();
-      chromeHidden.contextMenus.handlers[id] = onclick;
+      chromeHidden.contextMenus.handlersForId(id)[id] = onclick;
     }
   });
 
@@ -64,7 +76,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
       return;
     }
     var id = request.args[0];
-    delete chromeHidden.contextMenus.handlers[id];
+    delete chromeHidden.contextMenus.handlersForId(id)[id];
   });
 
   apiFunctions.setCustomCallback('update', function(name, request, response) {
@@ -73,7 +85,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     }
     var id = request.args[0];
     if (request.args[1].onclick) {
-      chromeHidden.contextMenus.handlers[id] = request.args[1].onclick;
+      chromeHidden.contextMenus.handlersForId(id)[id] = request.args[1].onclick;
     }
   });
 
@@ -82,6 +94,7 @@ chromeHidden.registerCustomHook('contextMenus', function(bindingsAPI) {
     if (chrome.extension.lastError) {
       return;
     }
-    chromeHidden.contextMenus.handlers = {};
+    chromeHidden.contextMenus.generatedIdHandlers = {};
+    chromeHidden.contextMenus.stringIdHandlers = {};
   });
 });

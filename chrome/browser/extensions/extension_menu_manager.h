@@ -40,7 +40,10 @@ class ExtensionMenuItem {
   // An Id uniquely identifies a context menu item registered by an extension.
   struct Id {
     Id();
-    Id(Profile* profile, const std::string& extension_id, int uid);
+    // Since the unique ID (uid or string_uid) is parsed from API arguments,
+    // the normal usage is to set the uid or string_uid immediately after
+    // construction.
+    Id(Profile* profile, const std::string& extension_id);
     ~Id();
 
     bool operator==(const Id& other) const;
@@ -49,7 +52,9 @@ class ExtensionMenuItem {
 
     Profile* profile;
     std::string extension_id;
+    // Only one of uid or string_uid will be defined.
     int uid;
+    std::string string_uid;
   };
 
   // For context menus, these are the contexts where an item can appear.

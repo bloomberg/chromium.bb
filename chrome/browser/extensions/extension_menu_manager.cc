@@ -25,6 +25,19 @@
 
 using content::WebContents;
 
+namespace {
+
+void SetIdKeyValue(base::DictionaryValue* properties,
+                   const char* key,
+                   ExtensionMenuItem::Id id) {
+  if (id.uid == 0)
+    properties->SetString(key, id.string_uid);
+  else
+    properties->SetInteger(key, id.uid);
+}
+
+}  // namespace
+
 ExtensionMenuItem::ExtensionMenuItem(const Id& id,
                                      const std::string& title,
                                      bool checked,
@@ -408,9 +421,9 @@ void ExtensionMenuManager::ExecuteCommand(
   ListValue args;
 
   DictionaryValue* properties = new DictionaryValue();
-  properties->SetInteger("menuItemId", item->id().uid);
+  SetIdKeyValue(properties, "menuItemId", item->id());
   if (item->parent_id())
-    properties->SetInteger("parentMenuItemId", item->parent_id()->uid);
+    SetIdKeyValue(properties, "parentMenuItemId", item->id());
 
   switch (params.media_type) {
     case WebKit::WebContextMenuData::MediaTypeImage:
@@ -464,6 +477,7 @@ void ExtensionMenuManager::ExecuteCommand(
   event_router->DispatchEventToExtension(
       item->extension_id(), event_name, json_args, profile, GURL(),
       ExtensionEventRouter::USER_GESTURE_ENABLED);
+  // TODO(yoz): dispatch another event onClicked.
 }
 
 void ExtensionMenuManager::SanitizeRadioList(
@@ -543,13 +557,13 @@ const SkBitmap& ExtensionMenuManager::GetIconForExtension(
 }
 
 ExtensionMenuItem::Id::Id()
-    : profile(NULL), uid(0) {
+    : profile(NULL), extension_id(""), uid(0), string_uid("") {
 }
 
 ExtensionMenuItem::Id::Id(Profile* profile,
-                          const std::string& extension_id,
-                          int uid)
-    : profile(profile), extension_id(extension_id), uid(uid) {
+                          const std::string& extension_id)
+    : profile(profile), extension_id(extension_id), uid(0),
+      string_uid("") {
 }
 
 ExtensionMenuItem::Id::~Id() {
@@ -558,7 +572,8 @@ ExtensionMenuItem::Id::~Id() {
 bool ExtensionMenuItem::Id::operator==(const Id& other) const {
   return (profile == other.profile &&
           extension_id == other.extension_id &&
-          uid == other.uid);
+          uid == other.uid &&
+          string_uid == other.string_uid);
 }
 
 bool ExtensionMenuItem::Id::operator!=(const Id& other) const {
@@ -571,8 +586,12 @@ bool ExtensionMenuItem::Id::operator<(const Id& other) const {
   if (profile == other.profile) {
     if (extension_id < other.extension_id)
       return true;
-    if (extension_id == other.extension_id)
-      return uid < other.uid;
+    if (extension_id == other.extension_id) {
+      if (uid < other.uid)
+        return true;
+      if (uid == other.uid)
+        return string_uid < other.string_uid;
+    }
   }
   return false;
 }

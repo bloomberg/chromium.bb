@@ -13,11 +13,17 @@
         "description": "Information sent when a context menu item is clicked.",
         "properties": {
           "menuItemId": {
-            "type": "integer",
+            "choices": [
+              { "type": "integer" },
+              { "type": "string" }
+            ],
             "description": "The ID of the menu item that was clicked."
           },
           "parentMenuItemId": {
-            "type": "integer",
+            "choices": [
+              { "type": "integer" },
+              { "type": "string" }
+            ],
             "optional": true,
             "description": "The parent ID, if any, for the item clicked."
           },
@@ -63,7 +69,10 @@
         "type": "function",
         "description": "Creates a new context menu item. Note that if an error occurs during creation, you may not find out until the creation callback fires (the details will be in chrome.extension.lastError).",
         "returns": {
-          "type": "integer",
+          "choices": [
+            { "type": "integer" },
+            { "type": "string" }
+          ],
           "description": "The ID of the newly created item."
         },
         "parameters": [
@@ -76,6 +85,11 @@
                 "enum": ["normal", "checkbox", "radio", "separator"],
                 "optional": true,
                 "description": "The type of menu item. Defaults to 'normal' if not specified."
+              },
+              "id": {
+                "type": "string",
+                "optional": true,
+                "description": "The unique ID to assign to this item. Mandatory for event pages. Cannot be the same as another ID for this extension."
               },
               "title": {
                 "type": "string",
@@ -115,7 +129,10 @@
                 ]
               },
               "parentId": {
-                "type": "integer",
+                "choices": [
+                  { "type": "integer" },
+                  { "type": "string" }
+                ],
                 "optional": true,
                 "description": "The ID of a parent menu item; this makes the item a child of a previously added item."
               },
@@ -153,7 +170,10 @@
         "description": "Updates a previously created context menu item.",
         "parameters": [
           {
-            "type": "integer",
+            "choices": [
+              { "type": "integer" },
+              { "type": "string" }
+            ],
             "name": "id",
             "description": "The ID of the item to update."
           },
@@ -189,7 +209,10 @@
                 "optional": true
               },
               "parentId": {
-                "type": "integer",
+                "choices": [
+                  { "type": "integer" },
+                  { "type": "string" }
+                ],
                 "optional": true,
                 "description": "Note: You cannot change an item to be a child of one of its own descendants."
               },
@@ -224,7 +247,10 @@
         "description": "Removes a context menu item.",
         "parameters": [
           {
-            "type": "integer",
+            "choices": [
+              { "type": "integer" },
+              { "type": "string" }
+            ],
             "name": "menuItemId",
             "description": "The ID of the context menu item to remove."
           },

@@ -306,7 +306,7 @@ You can find samples of this API on the
             <div class="apiItem">
               <a name="method-create"></a> <!-- method-anchor -->
               <h4>create</h4>
-              <div class="summary"><span>integer</span>
+              <div class="summary"><span>integer or string</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.contextMenus.create</span>(<span class="null"><span>object</span>
                       <var><span>createProperties</span></var></span><span class="optional"><span>, </span><span>function</span>
@@ -360,6 +360,30 @@ You can find samples of this API on the
               </em>
           </dt>
           <dd>The type of menu item. Defaults to 'normal' if not specified.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>id</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The unique ID to assign to this item. Mandatory for event pages. Cannot be the same as another ID for this extension.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -533,7 +557,7 @@ You can find samples of this API on the
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>integer or string</span>
                       </span>
                     </span>
                   )
@@ -675,7 +699,7 @@ You can find samples of this API on the
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>integer or string</span>
                       </span>
                     </span>
                   )
@@ -711,7 +735,7 @@ You can find samples of this API on the
               <h4>remove</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.contextMenus.remove</span>(<span class="null"><span>integer</span>
+                  <span>chrome.contextMenus.remove</span>(<span class="null"><span>integer or string</span>
                       <var><span>menuItemId</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
@@ -729,7 +753,7 @@ You can find samples of this API on the
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>integer or string</span>
                       </span>
                     </span>
                   )
@@ -849,7 +873,7 @@ You can find samples of this API on the
               <h4>update</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.contextMenus.update</span>(<span class="null"><span>integer</span>
+                  <span>chrome.contextMenus.update</span>(<span class="null"><span>integer or string</span>
                       <var><span>id</span></var></span><span class="null"><span>, </span><span>object</span>
                       <var><span>updateProperties</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
@@ -868,7 +892,7 @@ You can find samples of this API on the
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>integer or string</span>
                       </span>
                     </span>
                   )
@@ -1052,7 +1076,7 @@ You can find samples of this API on the
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>integer or string</span>
                       </span>
                     </span>
                   )
@@ -1248,7 +1272,7 @@ You can find samples of this API on the
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>integer or string</span>
                       </span>
                     </span>
                   )
@@ -1272,7 +1296,7 @@ You can find samples of this API on the
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>integer</span>
+                        <span>integer or string</span>
                       </span>
                     </span>
                   )

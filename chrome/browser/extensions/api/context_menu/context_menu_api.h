@@ -52,6 +52,11 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
   bool SetURLPatterns(const base::DictionaryValue& properties,
                       ExtensionMenuItem* item);
 
+  // Helper to read an ID from the Value*. The ID can be either a string or
+  // integer.
+  bool ParseID(const Value* value,
+               ExtensionMenuItem::Id* result);
+
   // If the parentId key was specified in properties, this will try looking up
   // an ExtensionMenuItem with that id and set it into |result|. Returns false
   // on error, with an explanation written into error_. Note that if the
