@@ -102,7 +102,8 @@ static const char kCUPSPrinterMakeModelOpt[] = "printer-make-and-model";
 
 class PrintBackendCUPS : public PrintBackend {
  public:
-  PrintBackendCUPS(const GURL& print_server_url, bool blocking);
+  PrintBackendCUPS(const GURL& print_server_url,
+                   http_encryption_t encryption, bool blocking);
 
   // PrintBackend implementation.
   virtual bool EnumeratePrinters(PrinterList* printer_list) OVERRIDE;
@@ -126,11 +127,16 @@ class PrintBackendCUPS : public PrintBackend {
   FilePath GetPPD(const char* name);
 
   GURL print_server_url_;
+  http_encryption_t cups_encryption_;
   bool blocking_;
 };
 
-PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url, bool blocking)
-    : print_server_url_(print_server_url), blocking_(blocking) {
+PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url,
+                                   http_encryption_t encryption,
+                                   bool blocking)
+    : print_server_url_(print_server_url),
+      cups_encryption_(encryption),
+      blocking_(blocking) {
 }
 
 bool PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
@@ -275,22 +281,27 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
 #endif
 
   std::string print_server_url_str, cups_blocking;
+  int encryption = HTTP_ENCRYPT_NEVER;
   if (print_backend_settings) {
     print_backend_settings->GetString(kCUPSPrintServerURL,
                                       &print_server_url_str);
 
     print_backend_settings->GetString(kCUPSBlocking,
                                       &cups_blocking);
+
+    print_backend_settings->GetInteger(kCUPSEncryption, &encryption);
   }
   GURL print_server_url(print_server_url_str.c_str());
-  return new PrintBackendCUPS(print_server_url, cups_blocking == kValueTrue);
+  return new PrintBackendCUPS(print_server_url,
+                              static_cast<http_encryption_t>(encryption),
+                              cups_blocking == kValueTrue);
 }
 
 int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
   if (print_server_url_.is_empty()) {  // Use default (local) print server.
     return cupsGetDests(dests);
   } else {
-    HttpConnectionCUPS http(print_server_url_);
+    HttpConnectionCUPS http(print_server_url_, cups_encryption_);
     http.SetBlocking(blocking_);
     return cupsGetDests2(http.http(), dests);
   }
@@ -314,7 +325,7 @@ FilePath PrintBackendCUPS::GetPPD(const char* name) {
     // Note: After looking at CUPS sources, it looks like non-blocking
     // connection will timeout after 10 seconds of no data period. And it will
     // return the same way as if data was completely and sucessfully downloaded.
-    HttpConnectionCUPS http(print_server_url_);
+    HttpConnectionCUPS http(print_server_url_, cups_encryption_);
     http.SetBlocking(blocking_);
     ppd_file_path = cupsGetPPD2(http.http(), name);
     // Check if the get full PPD, since non-blocking call may simply return

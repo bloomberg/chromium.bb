@@ -11,5 +11,6 @@ const char kDriverNameTagName[] = "drivername";
 const char kDriverInfoTagName[] = "system_driverinfo";
 const char kCUPSPrintServerURL[] = "print_server_url";
 const char kCUPSBlocking[] = "cups_blocking";
+const char kCUPSEncryption[] = "cups_encryption";
 const char kValueTrue[] = "true";
 const char kValueFalse[] = "false";

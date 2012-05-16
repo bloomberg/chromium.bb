@@ -13,6 +13,7 @@ PRINTING_EXPORT extern const char kDriverNameTagName[];
 PRINTING_EXPORT extern const char kDriverInfoTagName[];
 PRINTING_EXPORT extern const char kCUPSPrintServerURL[];
 PRINTING_EXPORT extern const char kCUPSBlocking[];
+PRINTING_EXPORT extern const char kCUPSEncryption[];
 PRINTING_EXPORT extern const char kValueTrue[];
 PRINTING_EXPORT extern const char kValueFalse[];
 
