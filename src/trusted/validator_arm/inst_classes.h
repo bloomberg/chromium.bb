@@ -43,26 +43,25 @@ enum SafetyLevel {
 
 // ------------------------------------------------------------------
 // The following list of Interface classes are "mixed" into the class
-// decoders below as static fields. The point of these interfaces is
-// to control access to data fields within the instruction the class
-// decoder, using higher level symbolic names.
+// decoders as static constant fields. The point of these interfaces
+// is to control access to data fields within the scope of the
+// instruction class decoder, using higher level symbolic names.
 //
 // For example, register Rn may be located in different bit sequences
 // in different instructions. However, they all refer to the concept
 // of register Rn (some use bits 0..3 while others use bits
 // 16..19). The interfaces for each possible Rn is integrated as a
-// static field named n_. Hence virtuals can now use n_.reg() to get
+// static const field named n. Hence virtuals can now use n.reg() to get
 // the corresponding register within its virtual functions.
 //
-// Note: These fields are static, and the corresponding methods are
-// static so that the reference to the static field can be optimized
-// out.
+// Note: These fields are static const, and the corresponding methods are
+// static so that the reference to the static field is only used to
+// control scope look ups, and will be optimized out of compiled code.
 // ------------------------------------------------------------------
 
 // Interface class to pull out shift type from bits 5 through 6
 class ShiftTypeBits5To6Interface {
  public:
-  inline ShiftTypeBits5To6Interface() {}
   static inline uint32_t value(const Instruction& i) {
     return i.bits(6, 5);
   }
@@ -72,6 +71,7 @@ class ShiftTypeBits5To6Interface {
     return ComputeDecodeImmShift(value(insn), imm5_value);
   }
  private:
+  ShiftTypeBits5To6Interface() {}
   static uint32_t ComputeDecodeImmShift(uint32_t shift_type,
                                         uint32_t imm5_value);
   NACL_DISALLOW_COPY_AND_ASSIGN(ShiftTypeBits5To6Interface);
@@ -80,7 +80,6 @@ class ShiftTypeBits5To6Interface {
 // Interface class to pull out the condition in bits 28 through 31
 class ConditionBits28To31Interface {
  public:
-  inline ConditionBits28To31Interface() {}
   static inline uint32_t value(const Instruction& i) {
     return i.bits(31, 28);
   }
@@ -92,13 +91,13 @@ class ConditionBits28To31Interface {
   }
 
  private:
+  ConditionBits28To31Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(ConditionBits28To31Interface);
 };
 
 // Interface class to pull out Register D from bits 12 through 15.
 class RegDBits12To15Interface {
  public:
-  inline RegDBits12To15Interface() {}
   static inline uint32_t number(const Instruction& i) {
     return i.bits(15, 12);
   }
@@ -107,13 +106,13 @@ class RegDBits12To15Interface {
   }
 
  private:
+  RegDBits12To15Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegDBits12To15Interface);
 };
 
 // Interface class to pull out Register M from bits 0 through 3.
 class RegMBits0To3Interface {
  public:
-  inline RegMBits0To3Interface() {}
   static inline uint32_t number(const Instruction& i) {
     return i.bits(3, 0);
   }
@@ -122,13 +121,13 @@ class RegMBits0To3Interface {
   }
 
  private:
+  RegMBits0To3Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegMBits0To3Interface);
 };
 
 // Interface class to pull out Register M from bits 8 through 11.
 class RegMBits8To11Interface {
  public:
-  inline RegMBits8To11Interface() {}
   static inline uint32_t number(const Instruction& i) {
     return i.bits(11, 8);
   }
@@ -137,13 +136,13 @@ class RegMBits8To11Interface {
   }
 
  private:
+  RegMBits8To11Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegMBits8To11Interface);
 };
 
 // Interface class to pull out Register N from bits 0 through 3.
 class RegNBits0To3Interface {
  public:
-  inline RegNBits0To3Interface() {}
   static inline uint32_t number(const Instruction& i) {
     return i.bits(3, 0);
   }
@@ -152,13 +151,13 @@ class RegNBits0To3Interface {
   }
 
  private:
+  RegNBits0To3Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegNBits0To3Interface);
 };
 
 // Interface class to pull out Register n from bits 16 through 19.
 class RegNBits16To19Interface {
  public:
-  inline RegNBits16To19Interface() {}
   static inline uint32_t number(const Instruction& i) {
     return i.bits(19, 16);
   }
@@ -167,13 +166,13 @@ class RegNBits16To19Interface {
   }
 
  private:
+  RegNBits16To19Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegNBits16To19Interface);
 };
 
 // Interface class to pull out Register S from bits 8 through 11.
 class RegSBits8To11Interface {
  public:
-  inline RegSBits8To11Interface() {}
   static inline uint32_t number(const Instruction& i) {
     return i.bits(11, 8);
   }
@@ -182,43 +181,44 @@ class RegSBits8To11Interface {
   }
 
  private:
+  RegSBits8To11Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegSBits8To11Interface);
 };
 
 // Interface class to pull out an immediate value in bits 0 through 11.
 class Imm12Bits0To11Interface {
  public:
-  inline Imm12Bits0To11Interface() {}
   static inline uint32_t value(const Instruction& i) {
     return i.bits(11, 0);
   }
   static uint32_t get_modified_immediate(Instruction i);
 
  private:
+  Imm12Bits0To11Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm12Bits0To11Interface);
 };
 
 // Interface class to pull out an immediate value in bits 7 through 11.
 class Imm5Bits7To11Interface {
  public:
-  inline Imm5Bits7To11Interface() {}
   static inline uint32_t value(const Instruction& i) {
     return i.bits(11, 7);
   }
 
  private:
+  Imm5Bits7To11Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm5Bits7To11Interface);
 };
 
 // Interface class to pull out an immediate value in bits 16 through 19.
 class Imm4Bits16To19Interface {
  public:
-  inline Imm4Bits16To19Interface() {}
   static inline uint32_t value(const Instruction& i) {
     return i.bits(19, 16);
   }
 
  private:
+  Imm4Bits16To19Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits16To19Interface);
 };
 
@@ -226,7 +226,6 @@ class Imm4Bits16To19Interface {
 // defines if the condition bits in APSR are updated by the instruction.
 class UpdatesConditionsBit20Interface {
  public:
-  inline UpdatesConditionsBit20Interface() {}
   // Returns true if bit is set that states that the condition bits
   // APSR is updated.
   static inline bool is_updated(const Instruction i) {
@@ -238,6 +237,7 @@ class UpdatesConditionsBit20Interface {
   }
 
  private:
+  UpdatesConditionsBit20Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesConditionsBit20Interface);
 };
 
