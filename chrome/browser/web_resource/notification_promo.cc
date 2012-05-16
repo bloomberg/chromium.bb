@@ -457,7 +457,6 @@ GURL NotificationPromo::PromoServerURL() {
 }
 
 double NotificationPromo::StartTimeForGroup() const {
-  // TODO(achuith): Write unittests for this.
   if (group_ < initial_segment_)
     return start_;
   return start_ +

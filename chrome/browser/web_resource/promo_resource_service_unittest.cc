@@ -465,7 +465,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     EXPECT_TRUE(notification_promo_->CanShow());
   }
 
-  void TestText() {
+  void TestPromoText() {
     notification_promo_->promo_text_.clear();
     EXPECT_FALSE(notification_promo_->CanShow());
 
@@ -498,6 +498,50 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
     EXPECT_TRUE(notification_promo_->CanShow());
   }
 
+  void TestIncrement() {
+    const double now = base::Time::Now().ToDoubleT();
+    const double slice = 60;
+
+    notification_promo_->num_groups_ = 18;
+    notification_promo_->initial_segment_ = 5;
+    notification_promo_->increment_ = 3;
+    notification_promo_->time_slice_ = slice;
+
+    notification_promo_->start_ = now - 1;
+    notification_promo_->end_ = now + slice;
+
+    // Test initial segment.
+    notification_promo_->group_ = 4;
+    EXPECT_TRUE(notification_promo_->CanShow());
+    notification_promo_->group_ = 5;
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    // Test first increment.
+    notification_promo_->start_ -= slice;
+    notification_promo_->group_ = 7;
+    EXPECT_TRUE(notification_promo_->CanShow());
+    notification_promo_->group_ = 8;
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    // Test second increment.
+    notification_promo_->start_ -= slice;
+    notification_promo_->group_ = 10;
+    EXPECT_TRUE(notification_promo_->CanShow());
+    notification_promo_->group_ = 11;
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    // Test penultimate increment.
+    notification_promo_->start_ -= 2 * slice;
+    notification_promo_->group_ = 16;
+    EXPECT_TRUE(notification_promo_->CanShow());
+    notification_promo_->group_ = 17;
+    EXPECT_FALSE(notification_promo_->CanShow());
+
+    // Test last increment.
+    notification_promo_->start_ -= slice;
+    EXPECT_TRUE(notification_promo_->CanShow());
+  }
+
  private:
   Profile* profile_;
   PrefService* prefs_;
@@ -527,7 +571,7 @@ class NotificationPromoTestDelegate : public NotificationPromo::Delegate {
   int current_platform_;
 };
 
-TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
+TEST_F(PromoResourceServiceTest, NotificationPromoTestLegacy) {
   // Check that prefs are set correctly.
   PrefService* prefs = profile_.GetPrefs();
   ASSERT_TRUE(prefs != NULL);
@@ -576,12 +620,12 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   delegate.TestViews();
   delegate.TestBuild();
   delegate.TestClosed();
-  delegate.TestText();
+  delegate.TestPromoText();
   delegate.TestTime();
   delegate.TestPlatforms();
 }
 
-TEST_F(PromoResourceServiceTest, NotificationPromoTest2) {
+TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   // Check that prefs are set correctly.
   PrefService* prefs = profile_.GetPrefs();
   ASSERT_TRUE(prefs != NULL);
@@ -645,8 +689,9 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest2) {
   delegate.TestViews();
   delegate.TestBuild();
   delegate.TestClosed();
-  delegate.TestText();
+  delegate.TestPromoText();
   delegate.TestTime();
+  delegate.TestIncrement();
   delegate.TestPlatforms();
 }
 
