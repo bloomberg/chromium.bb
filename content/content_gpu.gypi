@@ -38,6 +38,7 @@
       'dependencies': [
         '../third_party/angle/src/build_angle.gyp:libEGL',
         '../third_party/angle/src/build_angle.gyp:libGLESv2',
+        '../third_party/libxml/libxml.gyp:libxml',
       ],
       'link_settings': {
         'libraries': [
