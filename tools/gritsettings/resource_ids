@@ -120,7 +120,7 @@
     "structures": [18000],
   },
 
-  "ui/gfx/gfx_resources.grd": {
+ "ui/base/native_theme/resources/native_theme_resources.grd": {
     "includes": [18500],
   },
 

@@ -61,7 +61,7 @@
           # TODO(sky): before we make this real need to remove
           # IDR_BITMAP_BRUSH_IMAGE.
           'dependencies': [
-            '<(DEPTH)/ui/ui.gyp:gfx_resources',
+            '<(DEPTH)/ui/ui.gyp:native_theme_resources',
             '<(DEPTH)/third_party/angle/src/build_angle.gyp:libEGL',
             '<(DEPTH)/third_party/angle/src/build_angle.gyp:libGLESv2',
           ],
@@ -123,7 +123,7 @@
         'test/test_suite.h',
         'test/test_utils.cc',
         'test/test_utils.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc'
       ],
       'conditions': [

@@ -174,7 +174,7 @@
               'action_name': 'test_shell_repack',
               'variables': {
                 'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/test_shell/test_shell_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
@@ -328,7 +328,7 @@
           ],
         }, { # OS != "mac"
           'dependencies': [
-            '<(DEPTH)/ui/ui.gyp:gfx_resources',
+            '<(DEPTH)/ui/ui.gyp:native_theme_resources',
             '<(DEPTH)/net/net.gyp:net_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
             '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',

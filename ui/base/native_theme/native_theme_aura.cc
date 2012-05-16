@@ -5,7 +5,7 @@
 #include "ui/base/native_theme/native_theme_aura.h"
 
 #include "base/logging.h"
-#include "grit/gfx_resources.h"
+#include "grit/native_theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"

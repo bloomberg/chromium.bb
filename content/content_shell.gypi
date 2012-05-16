@@ -220,7 +220,7 @@
             'conditions': [
               ['OS != "mac"', {
                 'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.pak',
                 ]
               }],
             ],

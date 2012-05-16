@@ -39,7 +39,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libpng/libpng.gyp:libpng',
-        'gfx_resources',
+        'native_theme_resources',
         'ui',
         'ui_test_support',
       ],
@@ -98,7 +98,7 @@
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/ui/native_theme/native_theme_resources.rc',
       ],
       'include_dirs': [
         '../',

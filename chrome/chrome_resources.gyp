@@ -328,7 +328,7 @@
         '<(DEPTH)/content/content_resources.gyp:content_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
-        '<(DEPTH)/ui/ui.gyp:gfx_resources',
+        '<(DEPTH)/ui/ui.gyp:native_theme_resources',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',

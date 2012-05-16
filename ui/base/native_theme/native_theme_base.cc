@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "grit/gfx_resources.h"
+#include "grit/native_theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
