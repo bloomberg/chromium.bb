@@ -3337,8 +3337,7 @@ void RenderViewImpl::CheckPreferredSize() {
 }
 
 void RenderViewImpl::EnsureMediaStreamImpl() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kEnableMediaStream))
+  if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
     return;
 
 #if defined(ENABLE_P2P_APIS)
