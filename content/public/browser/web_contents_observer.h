@@ -48,18 +48,22 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
       const GURL& validated_url,
       bool is_error_page,
       RenderViewHost* render_view_host) {}
-  virtual void ProvisionalChangeToMainFrameUrl(const GURL& url,
-                                               const GURL& opener_url) {}
+  virtual void ProvisionalChangeToMainFrameUrl(
+      const GURL& url,
+      const GURL& opener_url,
+      RenderViewHost* render_view_host) {}
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,
       const GURL& url,
-      PageTransition transition_type) {}
+      PageTransition transition_type,
+      RenderViewHost* render_view_host) {}
   virtual void DidFailProvisionalLoad(int64 frame_id,
                                       bool is_main_frame,
                                       const GURL& validated_url,
                                       int error_code,
-                                      const string16& error_description) {}
+                                      const string16& error_description,
+                                      RenderViewHost* render_view_host) {}
   virtual void DocumentAvailableInMainFrame() {}
   virtual void DocumentLoadedInFrame(int64 frame_id) {}
   virtual void DidFinishLoad(int64 frame_id,

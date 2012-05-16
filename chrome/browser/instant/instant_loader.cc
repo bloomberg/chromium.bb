@@ -261,7 +261,8 @@ class InstantLoader::TabContentsDelegateImpl
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,
-      const string16& error_description) OVERRIDE;
+      const string16& error_description,
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
   typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
@@ -571,7 +572,8 @@ void InstantLoader::TabContentsDelegateImpl::DidFailProvisionalLoad(
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const string16& error_description) {
+    const string16& error_description,
+    content::RenderViewHost* render_view_host) {
   if (validated_url == loader_->url_) {
     // This typically happens with downloads (which are disabled with
     // instant active). To ensure the download happens when the user presses

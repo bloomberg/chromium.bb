@@ -156,13 +156,15 @@ class WebNavigationTabObserver : public content::NotificationObserver,
       int64 frame_id,
       bool is_main_frame,
       const GURL& url,
-      content::PageTransition transition_type) OVERRIDE;
+      content::PageTransition transition_type,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,
-      const string16& error_description) OVERRIDE;
+      const string16& error_description,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentLoadedInFrame(int64 frame_id) OVERRIDE;
   virtual void DidFinishLoad(int64 frame_id,
                              const GURL& validated_url,

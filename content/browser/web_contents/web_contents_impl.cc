@@ -1521,7 +1521,8 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
     // Notify observers about the provisional change in the main frame URL.
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       ProvisionalChangeToMainFrameUrl(validated_url,
-                                                      validated_opener_url));
+                                                      validated_opener_url,
+                                                      render_view_host));
   }
 }
 
@@ -1569,7 +1570,8 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
   // Notify observers about the provisional change in the main frame URL.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     ProvisionalChangeToMainFrameUrl(validated_target_url,
-                                                    validated_opener_url));
+                                                    validated_opener_url,
+                                                    render_view_host));
 }
 
 void WebContentsImpl::DidFailProvisionalLoadWithError(
@@ -1637,7 +1639,8 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
                                            params.is_main_frame,
                                            validated_url,
                                            params.error_code,
-                                           params.error_description));
+                                           params.error_description,
+                                           render_view_host));
 }
 
 void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
@@ -2175,7 +2178,7 @@ void WebContentsImpl::DidNavigate(
     // Notify observers about the commit of the provisional load.
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidCommitProvisionalLoadForFrame(params.frame_id,
-                      is_main_frame, params.url, transition_type));
+                      is_main_frame, params.url, transition_type, rvh));
   }
 
   if (!did_navigate)

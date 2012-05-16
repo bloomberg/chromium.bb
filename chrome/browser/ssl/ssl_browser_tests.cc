@@ -60,7 +60,8 @@ class ProvisionalLoadWaiter : public content::WebContentsObserver {
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,
-      const string16& error_description) OVERRIDE {
+      const string16& error_description,
+      content::RenderViewHost* render_view_host) OVERRIDE {
     seen_ = true;
     if (waiting_)
       MessageLoopForUI::current()->Quit();

@@ -202,7 +202,8 @@ class ExternalTabContainer : public content::WebContentsDelegate,
       bool is_main_frame,
       const GURL& validated_url,
       int error_code,
-      const string16& error_description) OVERRIDE;
+      const string16& error_description,
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Message handlers
   void OnForwardMessageToExternalHost(const std::string& message,

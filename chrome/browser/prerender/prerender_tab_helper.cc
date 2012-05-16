@@ -156,7 +156,8 @@ PrerenderTabHelper::~PrerenderTabHelper() {
 
 void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
-    const GURL& opener_url) {
+    const GURL& opener_url,
+    content::RenderViewHost* render_view_host) {
   url_ = url;
   RecordPageviewEvent(PAGEVIEW_EVENT_NEW_URL);
   if (IsTopSite(url))
@@ -173,7 +174,8 @@ void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
     const GURL& validated_url,
-    content::PageTransition transition_type) {
+    content::PageTransition transition_type,
+    content::RenderViewHost* render_view_host) {
   if (!is_main_frame)
     return;
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();

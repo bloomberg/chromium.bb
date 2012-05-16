@@ -781,7 +781,8 @@ void ExternalTabContainer::DidFailProvisionalLoad(
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const string16& error_description) {
+    const string16& error_description,
+    content::RenderViewHost* render_view_host) {
   automation_->Send(new AutomationMsg_NavigationFailed(
       tab_handle_, error_code, validated_url));
   ignore_next_load_notification_ = true;
