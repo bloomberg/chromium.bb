@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/singleton.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
@@ -20,6 +19,7 @@
 #include "content/public/common/speech_recognition_error.h"
 
 namespace content {
+class BrowserMainLoop;
 class SpeechRecognitionManagerDelegate;
 }
 
@@ -27,7 +27,7 @@ namespace speech {
 
 class SpeechRecognizerImpl;
 
-// This is the manager for speech recognition. It is a singleton instance in
+// This is the manager for speech recognition. It is a single instance in
 // the browser process and can serve several requests. Each recognition request
 // corresponds to a session, initiated via |CreateSession|.
 // In every moment the manager has at most one session capturing audio, which
@@ -51,6 +51,8 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
     public NON_EXPORTED_BASE(content::SpeechRecognitionManager),
     public content::SpeechRecognitionEventListener {
  public:
+  // Returns the current SpeechRecognitionManagerImpl. Can be called only after
+  // the RecognitionMnager has been created (by BrowserMainLoop).
   static SpeechRecognitionManagerImpl* GetInstance();
 
   // SpeechRecognitionManager implementation.
@@ -90,8 +92,9 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
                                    float noise_volume) OVERRIDE;
 
  protected:
-  // Private constructor to enforce singleton.
-  friend struct DefaultSingletonTraits<SpeechRecognitionManagerImpl>;
+  // BrowserMainLoop is the only one allowed to istantiate and free us.
+  friend class content::BrowserMainLoop;
+  friend class scoped_ptr<SpeechRecognitionManagerImpl>;  // Needed for dtor.
   SpeechRecognitionManagerImpl();
   virtual ~SpeechRecognitionManagerImpl();
 
@@ -158,7 +161,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   int session_id_capturing_audio_;
   int last_session_id_;
   bool is_dispatching_event_;
-  content::SpeechRecognitionManagerDelegate* delegate_;
+  scoped_ptr<content::SpeechRecognitionManagerDelegate> delegate_;
 };
 
 }  // namespace speech

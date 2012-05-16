@@ -23,6 +23,7 @@
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
+#include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/trace_controller_impl.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -480,6 +481,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   if (resource_dispatcher_host_.get())
     resource_dispatcher_host_.get()->Shutdown();
 
+  speech_recognition_manager_.reset();
+
 #if defined(USE_AURA)
   ImageTransportFactory::Terminate();
 #endif
@@ -592,6 +595,10 @@ void BrowserMainLoop::InitializeMainThread() {
 void BrowserMainLoop::BrowserThreadsStarted() {
   // RDH needs the IO thread to be created.
   resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
+
+#if defined(ENABLE_INPUT_SPEECH)
+  speech_recognition_manager_.reset(new speech::SpeechRecognitionManagerImpl());
+#endif
 
   // Start the GpuDataManager before we set up the MessageLoops because
   // otherwise we'll trigger the assertion about doing IO on the UI thread.

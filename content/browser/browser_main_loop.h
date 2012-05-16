@@ -32,6 +32,10 @@ namespace net {
 class NetworkChangeNotifier;
 }
 
+namespace speech {
+class SpeechRecognitionManagerImpl;
+}
+
 namespace content {
 
 class BrowserMainParts;
@@ -108,6 +112,7 @@ class BrowserMainLoop {
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   scoped_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
+  scoped_ptr<speech::SpeechRecognitionManagerImpl> speech_recognition_manager_;
 
   // Members initialized in |RunMainMessageLoopParts()| ------------------------
   scoped_ptr<BrowserProcessSubThread> db_thread_;

@@ -5,7 +5,6 @@
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 
 #include "base/bind.h"
-#include "base/memory/singleton.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/browser/speech/speech_recognition_engine.h"
@@ -39,22 +38,30 @@ SpeechRecognitionManager* SpeechRecognitionManager::GetInstance() {
 }
 }  // namespace content
 
+namespace {
+speech::SpeechRecognitionManagerImpl* g_speech_recognition_manager_impl;
+}  // namespace
+
 namespace speech {
 
 SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
-  return Singleton<SpeechRecognitionManagerImpl,
-                   LeakySingletonTraits<SpeechRecognitionManagerImpl> >::get();
+  DCHECK(g_speech_recognition_manager_impl);
+  return g_speech_recognition_manager_impl;
 }
 
 SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl()
     : session_id_capturing_audio_(kSessionIDInvalid),
       last_session_id_(kSessionIDInvalid),
-      is_dispatching_event_(false) {
-  delegate_ = content::GetContentClient()->browser()->
-      GetSpeechRecognitionManagerDelegate();
+      is_dispatching_event_(false),
+      delegate_(content::GetContentClient()->browser()->
+                    GetSpeechRecognitionManagerDelegate()) {
+  DCHECK(!g_speech_recognition_manager_impl);
+  g_speech_recognition_manager_impl = this;
 }
 
 SpeechRecognitionManagerImpl::~SpeechRecognitionManagerImpl() {
+  DCHECK(g_speech_recognition_manager_impl);
+  g_speech_recognition_manager_impl = NULL;
   // Recognition sessions will be aborted by the corresponding destructors.
   sessions_.clear();
 }
@@ -73,7 +80,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
 
   std::string hardware_info;
   bool can_report_metrics = false;
-  if (delegate_)
+  if (delegate_.get())
     delegate_->GetDiagnosticInformation(&can_report_metrics, &hardware_info);
 
   SpeechRecognitionEngineConfig remote_engine_config;
@@ -108,7 +115,7 @@ void SpeechRecognitionManagerImpl::StartSession(int session_id) {
     AbortSession(session_id_capturing_audio_);
   }
 
-  if (delegate_)
+  if (delegate_.get())
     delegate_->CheckRecognitionIsAllowed(
         session_id,
         base::Bind(&SpeechRecognitionManagerImpl::RecognitionAllowedCallback,
@@ -472,7 +479,7 @@ SpeechRecognitionEventListener* SpeechRecognitionManagerImpl::GetListener(
 
 SpeechRecognitionEventListener*
 SpeechRecognitionManagerImpl::GetDelegateListener() const {
-  return delegate_ ? delegate_->GetEventListener() : NULL;
+  return delegate_.get() ? delegate_->GetEventListener() : NULL;
 }
 
 const SpeechRecognitionSessionConfig&

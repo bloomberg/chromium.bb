@@ -14,6 +14,7 @@
 #include "content/public/browser/speech_recognition_session_context.h"
 
 using content::BrowserThread;
+using content::SpeechRecognitionManager;
 using content::SpeechRecognitionSessionConfig;
 using content::SpeechRecognitionSessionContext;
 
@@ -29,11 +30,11 @@ bool IsSameContext(int render_process_id,
 }  // namespace
 
 namespace speech {
-SpeechRecognitionManagerImpl* InputTagSpeechDispatcherHost::manager_;
+SpeechRecognitionManager* InputTagSpeechDispatcherHost::manager_for_tests_;
 
-void InputTagSpeechDispatcherHost::set_manager(
-    SpeechRecognitionManagerImpl* manager) {
-  manager_ = manager;
+void InputTagSpeechDispatcherHost::SetManagerForTests(
+    SpeechRecognitionManager* manager) {
+  manager_for_tests_ = manager;
 }
 
 InputTagSpeechDispatcherHost::InputTagSpeechDispatcherHost(
@@ -59,11 +60,11 @@ InputTagSpeechDispatcherHost::~InputTagSpeechDispatcherHost() {
     manager()->AbortAllSessionsForListener(this);
 }
 
-SpeechRecognitionManagerImpl* InputTagSpeechDispatcherHost::manager() {
-  if (manager_)
-    return manager_;
+SpeechRecognitionManager* InputTagSpeechDispatcherHost::manager() {
+  if (manager_for_tests_)
+    return manager_for_tests_;
 #if defined(ENABLE_INPUT_SPEECH)
-  return SpeechRecognitionManagerImpl::GetInstance();
+  return SpeechRecognitionManager::GetInstance();
 #else
   return NULL;
 #endif
@@ -111,7 +112,7 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
   config.event_listener = this;
 
   int session_id = manager()->CreateSession(config);
-  if (session_id == content::SpeechRecognitionManager::kSessionIDInvalid)
+  if (session_id == SpeechRecognitionManager::kSessionIDInvalid)
     return;
 
    manager()->StartSession(session_id);
@@ -125,7 +126,7 @@ void InputTagSpeechDispatcherHost::OnCancelRecognition(int render_view_id,
                  render_process_id_,
                  render_view_id,
                  request_id));
-  if (session_id != content::SpeechRecognitionManager::kSessionIDInvalid)
+  if (session_id != SpeechRecognitionManager::kSessionIDInvalid)
     manager()->AbortSession(session_id);
 }
 
@@ -137,7 +138,7 @@ void InputTagSpeechDispatcherHost::OnStopRecording(int render_view_id,
                  render_process_id_,
                  render_view_id,
                  request_id));
-  DCHECK_NE(session_id, content::SpeechRecognitionManager::kSessionIDInvalid);
+  DCHECK_NE(session_id, SpeechRecognitionManager::kSessionIDInvalid);
   manager()->StopAudioCaptureForSession(session_id);
 }
 

@@ -15,13 +15,12 @@
 struct InputTagSpeechHostMsg_StartRecognition_Params;
 
 namespace content {
+class SpeechRecognitionManager;
 class SpeechRecognitionPreferences;
 struct SpeechRecognitionResult;
 }
 
 namespace speech {
-
-class SpeechRecognitionManagerImpl;
 
 // InputTagSpeechDispatcherHost is a delegate for Speech API messages used by
 // RenderMessageFilter. Basically it acts as a proxy, relaying the events coming
@@ -56,7 +55,7 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
                                  bool* message_was_ok) OVERRIDE;
 
   // Singleton manager setter useful for tests.
-  static void set_manager(SpeechRecognitionManagerImpl* manager);
+  static void SetManagerForTests(content::SpeechRecognitionManager* manager);
 
  private:
   virtual ~InputTagSpeechDispatcherHost();
@@ -68,7 +67,7 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
 
   // Returns the speech recognition manager to forward events to, creating one
   // if needed.
-  SpeechRecognitionManagerImpl* manager();
+  content::SpeechRecognitionManager* manager();
 
   int render_process_id_;
   bool may_have_pending_requests_;  // Set if we received any speech IPC request
@@ -76,7 +75,7 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<content::SpeechRecognitionPreferences> recognition_preferences_;
 
-  static SpeechRecognitionManagerImpl* manager_;
+  static content::SpeechRecognitionManager* manager_for_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(InputTagSpeechDispatcherHost);
 };

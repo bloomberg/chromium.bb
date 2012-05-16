@@ -11,10 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/speech_recognition_grammar.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
+#include "net/url_request/url_request_context_getter.h"
 
 namespace content {
 
