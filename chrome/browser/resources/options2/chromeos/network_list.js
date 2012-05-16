@@ -667,7 +667,7 @@ cr.define('options.network', function() {
     /** @inheritDoc */
     decorate: function() {
       List.prototype.decorate.call(this);
-      this.autoExpand = true;
+      this.autoExpands = true;
       this.addEventListener('blur', this.onBlur_);
       this.dataModel = new ArrayDataModel([]);
 

@@ -107,6 +107,8 @@ cr.define('options', function() {
       // Internet connection section (ChromeOS only).
       if (cr.isChromeOS) {
         options.network.NetworkList.decorate($('network-list'));
+        options.network.NetworkList.refreshNetworkData(
+            loadTimeData.getValue('networkData'));
       }
 
       // On Startup section.
