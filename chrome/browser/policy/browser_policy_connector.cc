@@ -136,7 +136,7 @@ void BrowserPolicyConnector::Init() {
   if (command_line->HasSwitch(switches::kEnableONCPolicy)) {
     network_configuration_updater_.reset(
         new NetworkConfigurationUpdater(
-            managed_cloud_provider_.get(),
+            g_browser_process->policy_service(),
             chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
   }
 
