@@ -22,6 +22,10 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace {
 
 enum FrameRateTestFlags {
@@ -34,6 +38,7 @@ enum FrameRateTestFlags {
   kUseReferenceBuild  = 1 << 3, // Run test using the reference chrome build.
   kInternal           = 1 << 4, // Test uses internal test data.
   kHasRedirect        = 1 << 5, // Test page contains an HTML redirect.
+  kIsGpuCanvasTest    = 1 << 6  // Test uses GPU accelerated canvas features.
 };
 
 class FrameRateTest
@@ -134,6 +139,15 @@ class FrameRateTest
   }
 
   void RunTest(const std::string& name) {
+#if defined(OS_WIN)
+    if (HasFlag(kUseGpu) && HasFlag(kIsGpuCanvasTest) &&
+        base::win::OSInfo::GetInstance()->version() == base::win::VERSION_XP) {
+      // crbug.com/128208
+      LOG(WARNING) << "Test skipped: GPU canvas tests do not run on XP.";
+      return;
+    }
+#endif
+
     if (HasFlag(kUseGpu) && !IsGpuAvailable()) {
       printf("Test skipped: requires gpu. Pass --enable-gpu on the command "
              "line if use of GPU is desired.\n");
@@ -265,11 +279,12 @@ TEST_P(FrameRateNoVsyncCanvasInternalTest, content) { \
 
 INSTANTIATE_TEST_CASE_P(, FrameRateNoVsyncCanvasInternalTest, ::testing::Values(
     kInternal | kHasRedirect,
-    kInternal | kHasRedirect | kUseGpu,
-    kInternal | kHasRedirect | kUseGpu | kDisableVsync,
+    kIsGpuCanvasTest | kInternal | kHasRedirect | kUseGpu,
+    kIsGpuCanvasTest | kInternal | kHasRedirect | kUseGpu | kDisableVsync,
     kUseReferenceBuild | kInternal | kHasRedirect,
-    kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu,
-    kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu | kDisableVsync));
+    kIsGpuCanvasTest | kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu,
+    kIsGpuCanvasTest | kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu |
+        kDisableVsync));
 
 INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(fishbowl)
 
@@ -284,10 +299,11 @@ TEST_P(FrameRateGpuCanvasInternalTest, content) { \
 }
 
 INSTANTIATE_TEST_CASE_P(, FrameRateGpuCanvasInternalTest, ::testing::Values(
-    kInternal | kHasRedirect | kUseGpu,
-    kInternal | kHasRedirect | kUseGpu | kDisableVsync,
-    kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu,
-    kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu | kDisableVsync));
+    kIsGpuCanvasTest | kInternal | kHasRedirect | kUseGpu,
+    kIsGpuCanvasTest | kInternal | kHasRedirect | kUseGpu | kDisableVsync,
+    kIsGpuCanvasTest | kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu,
+    kIsGpuCanvasTest | kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu |
+        kDisableVsync));
 
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(fireflies)
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(FishIE)
