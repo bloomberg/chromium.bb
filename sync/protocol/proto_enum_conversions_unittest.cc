@@ -36,19 +36,19 @@ TEST_F(ProtoEnumConversionsTest, GetPageTransitionString) {
   // We have a gap, so we need to do two ranges.
   TestEnumStringFunction(
       GetPageTransitionString,
-      sync_pb::TabNavigation::PageTransition_MIN,
-      sync_pb::TabNavigation::KEYWORD_GENERATED);
+      sync_pb::SyncEnums::PageTransition_MIN,
+      sync_pb::SyncEnums::KEYWORD_GENERATED);
   TestEnumStringFunction(
       GetPageTransitionString,
-      sync_pb::TabNavigation::CHAIN_START,
-      sync_pb::TabNavigation::PageTransition_MAX);
+      sync_pb::SyncEnums::CHAIN_START,
+      sync_pb::SyncEnums::PageTransition_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetPageTransitionQualifierString) {
   TestEnumStringFunction(
       GetPageTransitionQualifierString,
-      sync_pb::TabNavigation::PageTransitionQualifier_MIN,
-      sync_pb::TabNavigation::PageTransitionQualifier_MAX);
+      sync_pb::SyncEnums::PageTransitionQualifier_MIN,
+      sync_pb::SyncEnums::PageTransitionQualifier_MAX);
 }
 
 TEST_F(ProtoEnumConversionsTest, GetUpdatesSourceString) {

@@ -170,7 +170,7 @@ TEST_F(SyncSessionModelAssociatorTest, PopulateSessionTab) {
   navigation->set_virtual_url("http://foo/1");
   navigation->set_referrer("referrer");
   navigation->set_title("title");
-  navigation->set_page_transition(sync_pb::TabNavigation_PageTransition_TYPED);
+  navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
 
   SyncedSessionTab tab;
   tab.tab_id.set_id(5);  // Expected to be set by the SyncedSessionTracker.

@@ -14,6 +14,8 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
+import "sync_enums.proto";
+
 message SessionSpecifics {
   // Unique id for the client.
   optional string session_tag = 1;
@@ -103,29 +105,8 @@ message TabNavigation {
   // state of the page. This includes form entries and scroll position for each
   // frame.
   optional string state = 5;
-  // Types of transitions between pages.
-  enum PageTransition {
-    LINK = 0;
-    TYPED = 1;
-    AUTO_BOOKMARK = 2;
-    AUTO_SUBFRAME = 3;
-    MANUAL_SUBFRAME = 4;
-    GENERATED = 5;
-    START_PAGE = 6;
-    FORM_SUBMIT = 7;
-    RELOAD = 8;
-    KEYWORD = 9;
-    KEYWORD_GENERATED = 10;
-    CHAIN_START = 12;
-    CHAIN_END = 13;
-  }
-  // These qualifiers further define the transition.
-  enum PageTransitionQualifier {
-    CLIENT_REDIRECT = 1;
-    SERVER_REDIRECT = 2;
-  }
-  optional PageTransition page_transition = 6 [default = TYPED];
-  optional PageTransitionQualifier navigation_qualifier = 7;
+  optional SyncEnums.PageTransition page_transition = 6 [default = TYPED];
+  optional SyncEnums.PageTransitionQualifier navigation_qualifier = 7;
   // The unique navigation id (within this client).
   optional int32 unique_id = 8;
   // Timestamp for when this navigation last occurred (in client time).

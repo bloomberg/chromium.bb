@@ -35,6 +35,29 @@ message SyncEnums {
     ACTIONABLE_ERROR = 8; // Client received an actionable error.
   }
 
+  // Types of transitions between pages.
+  enum PageTransition {
+    LINK = 0;
+    TYPED = 1;
+    AUTO_BOOKMARK = 2;
+    AUTO_SUBFRAME = 3;
+    MANUAL_SUBFRAME = 4;
+    GENERATED = 5;
+    START_PAGE = 6;
+    FORM_SUBMIT = 7;
+    RELOAD = 8;
+    KEYWORD = 9;
+    KEYWORD_GENERATED = 10;
+    CHAIN_START = 12;
+    CHAIN_END = 13;
+  }
+
+  // These qualifiers further define the transition.
+  enum PageTransitionQualifier {
+    CLIENT_REDIRECT = 1;
+    SERVER_REDIRECT = 2;
+  }
+
   enum ErrorType {
     SUCCESS            = 0;
     ACCESS_DENIED      = 1;   // Returned when the user doesn't have access to

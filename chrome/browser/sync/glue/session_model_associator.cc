@@ -648,67 +648,67 @@ void SessionModelAssociator::PopulateSessionSpecificsNavigation(
   switch (navigation.GetTransitionType()) {
     case content::PAGE_TRANSITION_LINK:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_LINK);
+        sync_pb::SyncEnums_PageTransition_LINK);
       break;
     case content::PAGE_TRANSITION_TYPED:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_TYPED);
+        sync_pb::SyncEnums_PageTransition_TYPED);
       break;
     case content::PAGE_TRANSITION_AUTO_BOOKMARK:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_AUTO_BOOKMARK);
+        sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK);
       break;
     case content::PAGE_TRANSITION_AUTO_SUBFRAME:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_AUTO_SUBFRAME);
+        sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
       break;
     case content::PAGE_TRANSITION_MANUAL_SUBFRAME:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_MANUAL_SUBFRAME);
+        sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME);
       break;
     case content::PAGE_TRANSITION_GENERATED:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_GENERATED);
+        sync_pb::SyncEnums_PageTransition_GENERATED);
       break;
     case content::PAGE_TRANSITION_START_PAGE:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_START_PAGE);
+        sync_pb::SyncEnums_PageTransition_START_PAGE);
       break;
     case content::PAGE_TRANSITION_FORM_SUBMIT:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_FORM_SUBMIT);
+        sync_pb::SyncEnums_PageTransition_FORM_SUBMIT);
       break;
     case content::PAGE_TRANSITION_RELOAD:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_RELOAD);
+        sync_pb::SyncEnums_PageTransition_RELOAD);
       break;
     case content::PAGE_TRANSITION_KEYWORD:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_KEYWORD);
+        sync_pb::SyncEnums_PageTransition_KEYWORD);
       break;
     case content::PAGE_TRANSITION_KEYWORD_GENERATED:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_KEYWORD_GENERATED);
+        sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED);
       break;
     case content::PAGE_TRANSITION_CHAIN_START:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_CHAIN_START);
+        sync_pb::SyncEnums_PageTransition_CHAIN_START);
       break;
     case content::PAGE_TRANSITION_CHAIN_END:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_CHAIN_END);
+        sync_pb::SyncEnums_PageTransition_CHAIN_END);
       break;
     case content::PAGE_TRANSITION_CLIENT_REDIRECT:
       tab_navigation->set_navigation_qualifier(
-        sync_pb::TabNavigation_PageTransitionQualifier_CLIENT_REDIRECT);
+        sync_pb::SyncEnums_PageTransitionQualifier_CLIENT_REDIRECT);
       break;
     case content::PAGE_TRANSITION_SERVER_REDIRECT:
       tab_navigation->set_navigation_qualifier(
-        sync_pb::TabNavigation_PageTransitionQualifier_SERVER_REDIRECT);
+        sync_pb::SyncEnums_PageTransitionQualifier_SERVER_REDIRECT);
       break;
     default:
       tab_navigation->set_page_transition(
-        sync_pb::TabNavigation_PageTransition_TYPED);
+        sync_pb::SyncEnums_PageTransition_TYPED);
   }
   tab_navigation->set_unique_id(navigation.GetUniqueID());
   tab_navigation->set_timestamp(TimeToProtoTime(base::Time::Now()));
@@ -1213,53 +1213,51 @@ void SessionModelAssociator::AppendSessionTabNavigation(
   if (specifics.has_page_transition() ||
       specifics.has_navigation_qualifier()) {
     switch (specifics.page_transition()) {
-      case sync_pb::TabNavigation_PageTransition_LINK:
+      case sync_pb::SyncEnums_PageTransition_LINK:
         transition = content::PAGE_TRANSITION_LINK;
         break;
-      case sync_pb::TabNavigation_PageTransition_TYPED:
+      case sync_pb::SyncEnums_PageTransition_TYPED:
         transition = content::PAGE_TRANSITION_TYPED;
         break;
-      case sync_pb::TabNavigation_PageTransition_AUTO_BOOKMARK:
+      case sync_pb::SyncEnums_PageTransition_AUTO_BOOKMARK:
         transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
         break;
-      case sync_pb::TabNavigation_PageTransition_AUTO_SUBFRAME:
+      case sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME:
         transition = content::PAGE_TRANSITION_AUTO_SUBFRAME;
         break;
-      case sync_pb::TabNavigation_PageTransition_MANUAL_SUBFRAME:
+      case sync_pb::SyncEnums_PageTransition_MANUAL_SUBFRAME:
         transition = content::PAGE_TRANSITION_MANUAL_SUBFRAME;
         break;
-      case sync_pb::TabNavigation_PageTransition_GENERATED:
+      case sync_pb::SyncEnums_PageTransition_GENERATED:
         transition = content::PAGE_TRANSITION_GENERATED;
         break;
-      case sync_pb::TabNavigation_PageTransition_START_PAGE:
+      case sync_pb::SyncEnums_PageTransition_START_PAGE:
         transition = content::PAGE_TRANSITION_START_PAGE;
         break;
-      case sync_pb::TabNavigation_PageTransition_FORM_SUBMIT:
+      case sync_pb::SyncEnums_PageTransition_FORM_SUBMIT:
         transition = content::PAGE_TRANSITION_FORM_SUBMIT;
         break;
-      case sync_pb::TabNavigation_PageTransition_RELOAD:
+      case sync_pb::SyncEnums_PageTransition_RELOAD:
         transition = content::PAGE_TRANSITION_RELOAD;
         break;
-      case sync_pb::TabNavigation_PageTransition_KEYWORD:
+      case sync_pb::SyncEnums_PageTransition_KEYWORD:
         transition = content::PAGE_TRANSITION_KEYWORD;
         break;
-      case sync_pb::TabNavigation_PageTransition_KEYWORD_GENERATED:
+      case sync_pb::SyncEnums_PageTransition_KEYWORD_GENERATED:
         transition = content::PAGE_TRANSITION_KEYWORD_GENERATED;
         break;
-      case sync_pb::TabNavigation_PageTransition_CHAIN_START:
+      case sync_pb::SyncEnums_PageTransition_CHAIN_START:
         transition = content::PAGE_TRANSITION_CHAIN_START;
         break;
-      case sync_pb::TabNavigation_PageTransition_CHAIN_END:
+      case sync_pb::SyncEnums_PageTransition_CHAIN_END:
         transition = content::PAGE_TRANSITION_CHAIN_END;
         break;
       default:
         switch (specifics.navigation_qualifier()) {
-          case sync_pb::
-              TabNavigation_PageTransitionQualifier_CLIENT_REDIRECT:
+          case sync_pb::SyncEnums_PageTransitionQualifier_CLIENT_REDIRECT:
             transition = content::PAGE_TRANSITION_CLIENT_REDIRECT;
             break;
-            case sync_pb::
-                TabNavigation_PageTransitionQualifier_SERVER_REDIRECT:
+            case sync_pb::SyncEnums_PageTransitionQualifier_SERVER_REDIRECT:
             transition = content::PAGE_TRANSITION_SERVER_REDIRECT;
               break;
             default:

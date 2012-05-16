@@ -100,7 +100,7 @@ void BuildTabSpecifics(const std::string& tag, int window_id, int tab_id,
   navigation->set_virtual_url("http://foo/1");
   navigation->set_referrer("referrer");
   navigation->set_title("title");
-  navigation->set_page_transition(sync_pb::TabNavigation_PageTransition_TYPED);
+  navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
 }
 
 // Verifies number of windows, number of tabs, and basic fields.

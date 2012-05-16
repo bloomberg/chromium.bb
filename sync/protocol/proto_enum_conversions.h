@@ -23,10 +23,10 @@ const char* GetBrowserTypeString(
     sync_pb::SessionWindow::BrowserType browser_type);
 
 const char* GetPageTransitionString(
-    sync_pb::TabNavigation::PageTransition page_transition);
+    sync_pb::SyncEnums::PageTransition page_transition);
 
 const char* GetPageTransitionQualifierString(
-    sync_pb::TabNavigation::PageTransitionQualifier
+    sync_pb::SyncEnums::PageTransitionQualifier
         page_transition_qualifier);
 
 const char* GetUpdatesSourceString(

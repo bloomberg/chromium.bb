@@ -33,36 +33,36 @@ const char* GetBrowserTypeString(
 }
 
 const char* GetPageTransitionString(
-    sync_pb::TabNavigation::PageTransition page_transition) {
-  ASSERT_ENUM_BOUNDS(sync_pb::TabNavigation, PageTransition,
+    sync_pb::SyncEnums::PageTransition page_transition) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, PageTransition,
                      LINK, CHAIN_END);
   switch (page_transition) {
-    ENUM_CASE(sync_pb::TabNavigation, LINK);
-    ENUM_CASE(sync_pb::TabNavigation, TYPED);
-    ENUM_CASE(sync_pb::TabNavigation, AUTO_BOOKMARK);
-    ENUM_CASE(sync_pb::TabNavigation, AUTO_SUBFRAME);
-    ENUM_CASE(sync_pb::TabNavigation, MANUAL_SUBFRAME);
-    ENUM_CASE(sync_pb::TabNavigation, GENERATED);
-    ENUM_CASE(sync_pb::TabNavigation, START_PAGE);
-    ENUM_CASE(sync_pb::TabNavigation, FORM_SUBMIT);
-    ENUM_CASE(sync_pb::TabNavigation, RELOAD);
-    ENUM_CASE(sync_pb::TabNavigation, KEYWORD);
-    ENUM_CASE(sync_pb::TabNavigation, KEYWORD_GENERATED);
-    ENUM_CASE(sync_pb::TabNavigation, CHAIN_START);
-    ENUM_CASE(sync_pb::TabNavigation, CHAIN_END);
+    ENUM_CASE(sync_pb::SyncEnums, LINK);
+    ENUM_CASE(sync_pb::SyncEnums, TYPED);
+    ENUM_CASE(sync_pb::SyncEnums, AUTO_BOOKMARK);
+    ENUM_CASE(sync_pb::SyncEnums, AUTO_SUBFRAME);
+    ENUM_CASE(sync_pb::SyncEnums, MANUAL_SUBFRAME);
+    ENUM_CASE(sync_pb::SyncEnums, GENERATED);
+    ENUM_CASE(sync_pb::SyncEnums, START_PAGE);
+    ENUM_CASE(sync_pb::SyncEnums, FORM_SUBMIT);
+    ENUM_CASE(sync_pb::SyncEnums, RELOAD);
+    ENUM_CASE(sync_pb::SyncEnums, KEYWORD);
+    ENUM_CASE(sync_pb::SyncEnums, KEYWORD_GENERATED);
+    ENUM_CASE(sync_pb::SyncEnums, CHAIN_START);
+    ENUM_CASE(sync_pb::SyncEnums, CHAIN_END);
   }
   NOTREACHED();
   return "";
 }
 
 const char* GetPageTransitionQualifierString(
-    sync_pb::TabNavigation::PageTransitionQualifier
+    sync_pb::SyncEnums::PageTransitionQualifier
         page_transition_qualifier) {
-  ASSERT_ENUM_BOUNDS(sync_pb::TabNavigation, PageTransitionQualifier,
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, PageTransitionQualifier,
                      CLIENT_REDIRECT, SERVER_REDIRECT);
   switch (page_transition_qualifier) {
-    ENUM_CASE(sync_pb::TabNavigation, CLIENT_REDIRECT);
-    ENUM_CASE(sync_pb::TabNavigation, SERVER_REDIRECT);
+    ENUM_CASE(sync_pb::SyncEnums, CLIENT_REDIRECT);
+    ENUM_CASE(sync_pb::SyncEnums, SERVER_REDIRECT);
   }
   NOTREACHED();
   return "";
