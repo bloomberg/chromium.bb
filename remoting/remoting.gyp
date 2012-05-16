@@ -396,6 +396,7 @@
 	    # include the files directly, instead of depending on the target. 
 	    '../third_party/jsoncpp/source/src/lib_json/json_reader.cpp',
 	    '../third_party/jsoncpp/source/src/lib_json/json_writer.cpp',
+	    '../third_party/modp_b64/modp_b64.cc',
             'host/me2me_preference_pane.h',
             'host/me2me_preference_pane.mm',
           ],
