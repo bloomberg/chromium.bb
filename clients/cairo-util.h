@@ -43,4 +43,19 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius);
 cairo_surface_t *
 load_cairo_surface(const char *filename);
 
+struct theme {
+	cairo_surface_t *active_frame;
+	cairo_surface_t *inactive_frame;
+	cairo_surface_t *shadow;
+	int frame_radius;
+	int margin;
+	int width;
+	int titlebar_height;
+};
+
+void
+display_render_theme(struct theme *t);
+void
+fini_theme(struct theme *t);
+
 #endif

@@ -66,16 +66,6 @@
 struct cursor;
 struct shm_pool;
 
-struct theme {
-	cairo_surface_t *active_frame;
-	cairo_surface_t *inactive_frame;
-	cairo_surface_t *shadow;
-	int frame_radius;
-	int margin;
-	int width;
-	int titlebar_height;
-};
-
 struct display {
 	struct wl_display *display;
 	struct wl_compositor *compositor;
@@ -3128,58 +3118,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 			wl_display_bind(display, id,
 					&wl_data_device_manager_interface);
 	}
-}
-
-static void
-display_render_theme(struct theme *t)
-{
-	cairo_t *cr;
-	cairo_pattern_t *pattern;
-
-	t->margin = 32;
-	t->width = 6;
-	t->titlebar_height = 27;
-	t->frame_radius = 3;
-	t->shadow = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
-	cr = cairo_create(t->shadow);
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-	rounded_rect(cr, 32, 32, 96, 96, t->frame_radius);
-	cairo_fill(cr);
-	cairo_destroy(cr);
-	blur_surface(t->shadow, 64);
-
-	t->active_frame =
-		cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
-	cr = cairo_create(t->active_frame);
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-
-	pattern = cairo_pattern_create_linear(16, 16, 16, 112);
-	cairo_pattern_add_color_stop_rgb(pattern, 0.0, 1.0, 1.0, 1.0);
-	cairo_pattern_add_color_stop_rgb(pattern, 0.2, 0.8, 0.8, 0.8);
-	cairo_set_source(cr, pattern);
-	cairo_pattern_destroy(pattern);
-
-	rounded_rect(cr, 0, 0, 128, 128, t->frame_radius);
-	cairo_fill(cr);
-	cairo_destroy(cr);
-
-	t->inactive_frame =
-		cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 128, 128);
-	cr = cairo_create(t->inactive_frame);
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, 1);
-	rounded_rect(cr, 0, 0, 128, 128, t->frame_radius);
-	cairo_fill(cr);
-	cairo_destroy(cr);
-}
-
-static void
-fini_theme(struct theme *t)
-{
-	cairo_surface_destroy(t->active_frame);
-	cairo_surface_destroy(t->inactive_frame);
-	cairo_surface_destroy(t->shadow);
 }
 
 static void
