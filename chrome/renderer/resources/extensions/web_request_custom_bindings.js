@@ -32,9 +32,10 @@ function WebRequestEvent(eventName, opt_argSchemas, opt_extraArgSchemas,
   this.eventOptions_ = opt_eventOptions ||
       {'supportsListeners': true, 'supportsRules': false};
 
-  if (this.eventOptions_.supportsRules)
+  if (this.eventOptions_.supportsRules) {
     this.eventForRules_ =
         new chrome.Event(eventName, opt_argSchemas, opt_eventOptions);
+  }
 };
 
 // Test if the given callback is registered for this event.

@@ -19,10 +19,10 @@
       <include name="IDR_EXTENSION_API_JSON_CONTEXTMENUS" file="extensions\api\context_menus.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_COOKIES" file="extensions\api\cookies.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DEBUGGER" file="extensions\api\debugger.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_DECLARATIVE" file="extensions\api\declarative.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST" file="extensions\api\declarative_web_request.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DEVTOOLS" file="extensions\api\devtools.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_ECHOPRIVATE" file="extensions\api\echo_private.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_EVENTS" file="extensions\api\events.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY" file="extensions\api\experimental_accessibility.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP" file="extensions\api\experimental_app.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER" file="extensions\api\experimental_bookmark_manager.json" type="BINDATA" />

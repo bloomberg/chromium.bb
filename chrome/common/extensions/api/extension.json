@@ -6,7 +6,7 @@
   {
     "namespace": "extension",
     "nocompile": true,
-    "dependencies": [ "tabs" ],
+    "dependencies": [ "events", "tabs" ],
     "types": [
       {
         "id": "MessageSender",
@@ -18,25 +18,13 @@
         }
       },
       {
-        "id": "Event",
-        "type": "object",
-        "description": "An object which allows the addition and removal of listeners for a Chrome event.",
-        "properties": {
-          "addListener": {"type": "function"},
-          "removeListener": {"type": "function"},
-          "hasListener": {"type": "function"},
-          "hasListeners": {"type": "function"}
-        },
-        "additionalProperties": { "type": "any"}
-      },
-      {
         "id": "Port",
         "type": "object",
         "description": "An object which allows two way communication with other pages.",
         "properties": {
           "name": {"type": "string"},
-          "onDisconnect": { "$ref": "Event" },
-          "onMessage": { "$ref": "Event" },
+          "onDisconnect": { "$ref": "events.Event" },
+          "onMessage": { "$ref": "events.Event" },
           "postMessage": {"type": "function"},
           "sender": {
             "$ref": "MessageSender",

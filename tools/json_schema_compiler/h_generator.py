@@ -161,12 +161,6 @@ class HGenerator(object):
     c = Code()
 
     if type_.functions:
-      # Types with functions are not instantiable in C++ because they are
-      # handled in pure Javascript and hence have no properties or
-      # additionalProperties.
-      if type_.properties:
-        raise NotImplementedError('\n'.join(model.GetModelHierarchy(type_)) +
-            '\nCannot generate both functions and properties on a type')
       c.Sblock('namespace %(classname)s {')
       for function in type_.functions.values():
         (c.Concat(self._GenerateFunction(function))

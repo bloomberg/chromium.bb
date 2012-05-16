@@ -345,12 +345,12 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_COOKIES));
   RegisterSchema("debugger", ReadFromResource(
       IDR_EXTENSION_API_JSON_DEBUGGER));
-  RegisterSchema("declarative", ReadFromResource(
-      IDR_EXTENSION_API_JSON_DECLARATIVE));
   RegisterSchema("declarativeWebRequest", ReadFromResource(
       IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST));
   RegisterSchema("devtools", ReadFromResource(
       IDR_EXTENSION_API_JSON_DEVTOOLS));
+  RegisterSchema("events", ReadFromResource(
+      IDR_EXTENSION_API_JSON_EVENTS));
   RegisterSchema("experimental.accessibility", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY));
   RegisterSchema("experimental.app", ReadFromResource(

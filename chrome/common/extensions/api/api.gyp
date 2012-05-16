@@ -18,7 +18,7 @@
       'variables': {
         'chromium_code': 1,
         'json_schema_files': [
-          'declarative.json',
+          'events.json',
           'experimental_record.json',
           'permissions.json',
           'storage.json',

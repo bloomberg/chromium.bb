@@ -13,7 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
-#include "chrome/common/extensions/api/declarative.h"
+#include "chrome/common/extensions/api/events.h"
 #include "webkit/glue/resource_type.h"
 
 namespace base {

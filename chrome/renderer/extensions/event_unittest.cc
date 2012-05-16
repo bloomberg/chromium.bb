@@ -14,6 +14,7 @@ class EventUnittest : public ModuleSystemTest {
     module_system_->RunString("chrome = {};", "setup-chrome");
 
     RegisterModule("event", IDR_EVENT_BINDINGS_JS);
+    RegisterModule("utils", IDR_UTILS_JS);
 
     // Mock out the native handler for event_bindings. These mocks will fail if
     // any invariants maintained by the real event_bindings are broken.
@@ -31,6 +32,10 @@ class EventUnittest : public ModuleSystemTest {
     OverrideNativeHandler("chrome_hidden",
         "var chromeHidden = {};"
         "exports.GetChromeHidden = function() { return chromeHidden; };");
+    OverrideNativeHandler("sendRequest",
+        "exports.sendRequest = function() {};");
+    OverrideNativeHandler("apiDefinitions",
+        "exports.GetExtensionAPIDefinition = function() {};");
   }
 };
 
