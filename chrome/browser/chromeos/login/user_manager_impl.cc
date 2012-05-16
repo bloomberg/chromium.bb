@@ -851,11 +851,18 @@ bool UserManagerImpl::IsEphemeralUser(const std::string& email) const {
   if (logged_in_user_ && (email == logged_in_user_->email()))
     return is_current_user_ephemeral_;
 
-  // Any other user is ephemeral iff ephemeral users are enabled, the user is
-  // not the owner and is not in the persistent list.
-  return AreEphemeralUsersEnabled() &&
-      (email != owner_email_) &&
-      !FindUserInList(email);
+  // The owner and any users found in the persistent list are never ephemeral.
+  if (email == owner_email_  || FindUserInList(email))
+    return false;
+
+  // Any other user is ephemeral when:
+  // a) Going through the regular login flow and ephemeral users are enabled.
+  //    - or -
+  // b) The browser is restarting after a crash.
+  return AreEphemeralUsersEnabled() ||
+         (base::chromeos::IsRunningOnChromeOS() &&
+          !CommandLine::ForCurrentProcess()->
+              HasSwitch(switches::kLoginManager));
 }
 
 const User* UserManagerImpl::FindUserInList(const std::string& email) const {

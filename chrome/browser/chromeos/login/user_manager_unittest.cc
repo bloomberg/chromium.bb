@@ -161,7 +161,7 @@ TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
   ResetUserManager();
 
   const UserList* users = &UserManager::Get()->GetUsers();
-  EXPECT_TRUE(users->size() == 3);
+  ASSERT_TRUE(users->size() == 3);
   EXPECT_EQ((*users)[0]->email(), "user1@invalid.domain");
   EXPECT_EQ((*users)[1]->email(), "user0@invalid.domain");
   EXPECT_EQ((*users)[2]->email(), "owner@invalid.domain");
