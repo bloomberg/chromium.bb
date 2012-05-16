@@ -21,17 +21,13 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(OS_WIN)
-// TODO(port): Port this file.
-#include "ui/base/win/message_box_win.h"
-#endif
 
 using content::BrowserThread;
 
@@ -161,12 +157,9 @@ void ImporterHost::StartImportSettings(
 void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
 #if defined(OS_WIN)
   if (!result) {
-    ui::MessageBox(
-        NULL,
-        UTF16ToWide(l10n_util::GetStringUTF16(
-            IDS_IMPORTER_GOOGLE_LOGIN_TEXT)).c_str(),
-        L"",
-        MB_OK | MB_TOPMOST);
+    browser::ShowMessageBox(NULL,
+        l10n_util::GetStringUTF16(IDS_IMPORTER_GOOGLE_LOGIN_TEXT), string16(),
+        browser::MESSAGE_BOX_TYPE_INFORMATION);
 
     GURL url("https://accounts.google.com/ServiceLogin");
     DCHECK(profile_);
