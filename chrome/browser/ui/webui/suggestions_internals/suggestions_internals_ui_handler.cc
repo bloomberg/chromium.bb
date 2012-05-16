@@ -9,8 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
-#include "chrome/browser/ui/webui/ntp/suggestions_source_discovery.h"
-#include "chrome/browser/ui/webui/ntp/suggestions_source_top_sites.h"
 #include "content/public/browser/web_ui.h"
 
 namespace {
@@ -33,9 +31,7 @@ void SuggestionsInternalsUIHandler::OnSuggestionsReady() {
 
 void SuggestionsInternalsUIHandler::RegisterMessages() {
   // Setup the suggestions sources.
-  suggestions_combiner_.reset(new SuggestionsCombiner(this));
-  suggestions_combiner_->AddSource(new SuggestionsSourceTopSites());
-  suggestions_combiner_->AddSource(new SuggestionsSourceDiscovery());
+  suggestions_combiner_.reset(SuggestionsCombiner::Create(this));
   suggestions_combiner_->SetSuggestionsCount(kSuggestionsCount);
 
   web_ui()->RegisterMessageCallback("getSuggestions",

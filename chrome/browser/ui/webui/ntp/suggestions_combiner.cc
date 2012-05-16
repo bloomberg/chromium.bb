@@ -10,6 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
+#include "chrome/browser/ui/webui/ntp/suggestions_source_discovery.h"
+#include "chrome/browser/ui/webui/ntp/suggestions_source_top_sites.h"
 
 namespace {
 
@@ -42,6 +44,28 @@ void SuggestionsCombiner::FetchItems(Profile* profile) {
 void SuggestionsCombiner::AddSource(SuggestionsSource* source) {
   source->SetCombiner(this);
   sources_.push_back(source);
+}
+
+void SuggestionsCombiner::OnItemsReady() {
+  DCHECK_GT(sources_fetching_count_, 0);
+  sources_fetching_count_--;
+  if (sources_fetching_count_ == 0) {
+    FillPageValues();
+    delegate_->OnSuggestionsReady();
+  }
+}
+
+void SuggestionsCombiner::SetSuggestionsCount(size_t suggestions_count) {
+  suggestions_count_ = suggestions_count;
+}
+
+// static
+SuggestionsCombiner* SuggestionsCombiner::Create(
+    SuggestionsCombiner::Delegate* delegate) {
+  SuggestionsCombiner* combiner = new SuggestionsCombiner(delegate);
+  combiner->AddSource(new SuggestionsSourceTopSites());
+  combiner->AddSource(new SuggestionsSourceDiscovery());
+  return combiner;
 }
 
 void SuggestionsCombiner::FillPageValues() {
@@ -85,17 +109,4 @@ void SuggestionsCombiner::FillPageValues() {
       extra_items_added++;
     }
   }
-}
-
-void SuggestionsCombiner::OnItemsReady() {
-  DCHECK_GT(sources_fetching_count_, 0);
-  sources_fetching_count_--;
-  if (sources_fetching_count_ == 0) {
-    FillPageValues();
-    delegate_->OnSuggestionsReady();
-  }
-}
-
-void SuggestionsCombiner::SetSuggestionsCount(size_t suggestions_count) {
-  suggestions_count_ = suggestions_count;
 }

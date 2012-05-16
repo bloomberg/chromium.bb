@@ -34,7 +34,6 @@ class SuggestionsCombiner {
     virtual void OnSuggestionsReady() = 0;
   };
 
-  explicit SuggestionsCombiner(SuggestionsCombiner::Delegate* delegate);
   virtual ~SuggestionsCombiner();
 
   // Add a new source. The SuggestionsCombiner takes ownership of |source|.
@@ -52,7 +51,15 @@ class SuggestionsCombiner {
 
   void SetSuggestionsCount(size_t suggestions_count);
 
+  // Creates a new instance of the SuggestionsCombiner (owned by the callee),
+  // and sets up the default sources.
+  static SuggestionsCombiner* Create(SuggestionsCombiner::Delegate* delegate);
+
  private:
+  friend class SuggestionsCombinerTest;
+
+  explicit SuggestionsCombiner(SuggestionsCombiner::Delegate* delegate);
+
   // Fill the page values from the suggestion sources so they can be sent to
   // the JavaScript side. This should only be called when all the suggestion
   // sources have items ready.

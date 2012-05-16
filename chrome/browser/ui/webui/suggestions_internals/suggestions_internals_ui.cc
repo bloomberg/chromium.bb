@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
+#include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/suggestions_internals/suggestions_internals_ui_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -25,6 +26,8 @@ SuggestionsInternalsUI::SuggestionsInternalsUI(content::WebUI* web_ui)
 
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::AddDataSource(profile, html_source);
+  ChromeURLDataManager::AddDataSource(profile,
+      new FaviconSource(profile, FaviconSource::FAVICON));
 
   // AddMessageHandler takes ownership of SuggestionsInternalsUIHandler
   web_ui->AddMessageHandler(new SuggestionsInternalsUIHandler(profile));
