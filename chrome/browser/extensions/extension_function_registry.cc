@@ -10,6 +10,7 @@
 #include "chrome/browser/download/download_extension_api.h"
 #include "chrome/browser/extensions/api/app/app_api.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
+#include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/context_menu/context_menu_api.h"
 #include "chrome/browser/extensions/api/declarative/declarative_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_chrome_auth_private_api.h"
 #include "chrome/browser/extensions/extension_content_settings_api.h"
-#include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_debugger_api.h"
 #include "chrome/browser/extensions/extension_font_settings_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
@@ -225,11 +225,11 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 #endif
 
   // Cookies.
-  RegisterFunction<GetCookieFunction>();
-  RegisterFunction<GetAllCookiesFunction>();
-  RegisterFunction<SetCookieFunction>();
-  RegisterFunction<RemoveCookieFunction>();
-  RegisterFunction<GetAllCookieStoresFunction>();
+  RegisterFunction<extensions::GetCookieFunction>();
+  RegisterFunction<extensions::GetAllCookiesFunction>();
+  RegisterFunction<extensions::SetCookieFunction>();
+  RegisterFunction<extensions::RemoveCookieFunction>();
+  RegisterFunction<extensions::GetAllCookieStoresFunction>();
 
   // Test.
   RegisterFunction<ExtensionTestPassFunction>();

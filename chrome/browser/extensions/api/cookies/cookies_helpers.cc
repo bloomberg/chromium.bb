@@ -4,13 +4,13 @@
 
 // Implements common functionality for the Chrome Extensions Cookies API.
 
-#include "chrome/browser/extensions/extension_cookies_helpers.h"
+#include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
 
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_cookies_api_constants.h"
+#include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,9 +22,11 @@
 #include "googleurl/src/gurl.h"
 #include "net/cookies/cookie_util.h"
 
-namespace keys = extension_cookies_api_constants;
+namespace extensions {
 
-namespace extension_cookies_helpers {
+namespace keys = cookies_api_constants;
+
+namespace cookies_helpers {
 
 static const char kOriginalProfileStoreId[] = "0";
 static const char kOffTheRecordProfileStoreId[] = "1";
@@ -125,7 +127,7 @@ void AppendMatchingCookiesToList(
     if (!extension->HasHostPermission(cookie_domain_url))
       continue;
     // Filter the cookie using the match filter.
-    extension_cookies_helpers::MatchFilter filter(details);
+    cookies_helpers::MatchFilter filter(details);
     if (filter.MatchesCookie(*it))
       match_list->Append(CreateCookieValue(*it, store_id));
   }
@@ -199,4 +201,5 @@ bool MatchFilter::MatchesDomain(const std::string& domain) {
   return false;
 }
 
-}  // namespace extension_cookies_helpers
+}  // namespace cookies_helpers
+}  // namespace extensions

@@ -52,7 +52,6 @@ class BookmarkExtensionEventRouter;
 class CrxInstaller;
 class ExtensionBrowserEventRouter;
 class ExtensionContentSettingsStore;
-class ExtensionCookiesEventRouter;
 class ExtensionDownloadsEventRouter;
 class ExtensionFontSettingsEventRouter;
 class ExtensionGlobalError;
@@ -78,6 +77,7 @@ namespace extensions {
 class APIResourceController;
 class AppSyncData;
 class ComponentLoader;
+class ExtensionCookiesEventRouter;
 class ExtensionSyncData;
 class ExtensionUpdater;
 class SettingsFrontend;
@@ -798,7 +798,7 @@ class ExtensionService
 
   scoped_ptr<BookmarkExtensionEventRouter> bookmark_event_router_;
 
-  scoped_ptr<ExtensionCookiesEventRouter> cookies_event_router_;
+  scoped_ptr<extensions::ExtensionCookiesEventRouter> cookies_event_router_;
 
   scoped_ptr<ExtensionManagementEventRouter> management_event_router_;
 

@@ -5,8 +5,8 @@
 // Defines the Chrome Extensions Cookies API functions for accessing internet
 // cookies, as specified in the extension API JSON.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_API_H_
 #pragma once
 
 #include <string>
@@ -28,6 +28,8 @@ namespace net {
 class CookieList;
 class URLRequestContextGetter;
 }
+
+namespace extensions {
 
 // Observes CookieMonster notifications and routes them as events to the
 // extension system.
@@ -211,4 +213,6 @@ class GetAllCookieStoresFunction : public CookiesFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_API_H_

@@ -4,11 +4,11 @@
 
 // Defines common functionality used by the implementation of the Chrome
 // Extensions Cookies API implemented in
-// chrome/browser/extensions/extension_cookies_api.cc. This separate interface
+// chrome/browser/extensions/api/cookies/cookies_api.cc. This separate interface
 // exposes pieces of the API implementation mainly for unit testing purposes.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_HELPERS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_HELPERS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_HELPERS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_HELPERS_H_
 #pragma once
 
 #include <string>
@@ -24,7 +24,8 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace extension_cookies_helpers {
+namespace extensions {
+namespace cookies_helpers {
 
 // Returns either the original profile or the incognito profile, based on the
 // given store ID.  Returns NULL if the profile doesn't exist or is not allowed
@@ -117,6 +118,7 @@ class MatchFilter {
   const base::DictionaryValue* details_;
 };
 
-}  // namespace extension_cookies_helpers
+}  // namespace cookies_helpers
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_HELPERS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_HELPERS_H_

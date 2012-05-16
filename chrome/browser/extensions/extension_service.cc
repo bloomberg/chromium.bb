@@ -32,6 +32,7 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/download/download_extension_api.h"
 #include "chrome/browser/extensions/api/api_resource_controller.h"
+#include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extension_cookies_api.h"
 #include "chrome/browser/extensions/extension_data_deleter.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -546,7 +546,8 @@ void ExtensionService::InitEventRouters() {
   bookmark_event_router_.reset(new BookmarkExtensionEventRouter(
       profile_->GetBookmarkModel()));
   bookmark_event_router_->Init();
-  cookies_event_router_.reset(new ExtensionCookiesEventRouter(profile_));
+  cookies_event_router_.reset(new
+      extensions::ExtensionCookiesEventRouter(profile_));
   cookies_event_router_->Init();
   management_event_router_.reset(new ExtensionManagementEventRouter(profile_));
   management_event_router_->Init();

@@ -4,13 +4,13 @@
 
 // Implements the Chrome Extensions Cookies API.
 
-#include "chrome/browser/extensions/extension_cookies_api.h"
+#include "chrome/browser/extensions/api/cookies/cookies_api.h"
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_cookies_api_constants.h"
-#include "chrome/browser/extensions/extension_cookies_helpers.h"
+#include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
+#include "chrome/browser/extensions/api/cookies/cookies_helpers.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -25,7 +25,8 @@
 
 using content::BrowserThread;
 
-namespace keys = extension_cookies_api_constants;
+namespace extensions {
+namespace keys = cookies_api_constants;
 
 ExtensionCookiesEventRouter::ExtensionCookiesEventRouter(Profile* profile)
     : profile_(profile) {}
@@ -67,8 +68,8 @@ void ExtensionCookiesEventRouter::CookieChanged(
   dict->SetBoolean(keys::kRemovedKey, details->removed);
   dict->Set(
       keys::kCookieKey,
-      extension_cookies_helpers::CreateCookieValue(*details->cookie,
-          extension_cookies_helpers::GetStoreIdFromProfile(profile)));
+      cookies_helpers::CreateCookieValue(*details->cookie,
+          cookies_helpers::GetStoreIdFromProfile(profile)));
 
   // Map the interal cause to an external string.
   std::string cause;
@@ -103,7 +104,7 @@ void ExtensionCookiesEventRouter::CookieChanged(
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
   GURL cookie_domain =
-      extension_cookies_helpers::GetURLFromCanonicalCookie(*details->cookie);
+      cookies_helpers::GetURLFromCanonicalCookie(*details->cookie);
   DispatchEvent(profile, keys::kOnChanged, json_args, cookie_domain);
 }
 
@@ -151,7 +152,7 @@ bool CookiesFunction::ParseStoreContext(const DictionaryValue* details,
     // Get the store ID string or return false.
     EXTENSION_FUNCTION_VALIDATE(
         details->GetString(keys::kStoreIdKey, &store_id_value));
-    store_profile = extension_cookies_helpers::ChooseProfileFromStoreId(
+    store_profile = cookies_helpers::ChooseProfileFromStoreId(
         store_id_value, profile(), include_incognito());
     if (!store_profile) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(
@@ -174,7 +175,7 @@ bool CookiesFunction::ParseStoreContext(const DictionaryValue* details,
   if (context)
     *context = store_profile->GetRequestContext();
   if (store_id)
-    *store_id = extension_cookies_helpers::GetStoreIdFromProfile(store_profile);
+    *store_id = cookies_helpers::GetStoreIdFromProfile(store_profile);
 
   return true;
 }
@@ -216,7 +217,7 @@ void GetCookieFunction::GetCookieOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store =
       store_context_->GetURLRequestContext()->cookie_store();
-  extension_cookies_helpers::GetCookieListFromStore(
+  cookies_helpers::GetCookieListFromStore(
       cookie_store, url_,
       base::Bind(&GetCookieFunction::GetCookieCallback, this));
 }
@@ -229,7 +230,7 @@ void GetCookieFunction::GetCookieCallback(const net::CookieList& cookie_list) {
     // earliest creation time).
     if (it->Name() == name_) {
       result_.reset(
-          extension_cookies_helpers::CreateCookieValue(*it, store_id_));
+          cookies_helpers::CreateCookieValue(*it, store_id_));
       break;
     }
   }
@@ -281,7 +282,7 @@ void GetAllCookiesFunction::GetAllCookiesOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store =
       store_context_->GetURLRequestContext()->cookie_store();
-  extension_cookies_helpers::GetCookieListFromStore(
+  cookies_helpers::GetCookieListFromStore(
       cookie_store, url_,
       base::Bind(&GetAllCookiesFunction::GetAllCookiesCallback, this));
 }
@@ -291,7 +292,7 @@ void GetAllCookiesFunction::GetAllCookiesCallback(
   const Extension* extension = GetExtension();
   if (extension) {
     ListValue* matching_list = new ListValue();
-    extension_cookies_helpers::AppendMatchingCookiesToList(
+    cookies_helpers::AppendMatchingCookiesToList(
         cookie_list, store_id_, url_, details_,
         GetExtension(), matching_list);
     result_.reset(matching_list);
@@ -394,7 +395,7 @@ void SetCookieFunction::PullCookie(bool set_cookie_result) {
       store_context_->GetURLRequestContext()->cookie_store()->
       GetCookieMonster();
   success_ = set_cookie_result;
-  extension_cookies_helpers::GetCookieListFromStore(
+  cookies_helpers::GetCookieListFromStore(
       cookie_monster, url_,
       base::Bind(&SetCookieFunction::PullCookieCallback, this));
 }
@@ -407,7 +408,7 @@ void SetCookieFunction::PullCookieCallback(const net::CookieList& cookie_list) {
     // earliest creation time).
     if (it->Name() == name_) {
       result_.reset(
-          extension_cookies_helpers::CreateCookieValue(*it, store_id_));
+          cookies_helpers::CreateCookieValue(*it, store_id_));
       break;
     }
   }
@@ -513,11 +514,11 @@ bool GetAllCookieStoresFunction::RunImpl() {
        iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     if (browser->profile() == original_profile) {
-      extension_cookies_helpers::AppendToTabIdList(browser,
+      cookies_helpers::AppendToTabIdList(browser,
                                                    original_tab_ids.get());
     } else if (incognito_tab_ids.get() &&
                browser->profile() == incognito_profile) {
-      extension_cookies_helpers::AppendToTabIdList(browser,
+      cookies_helpers::AppendToTabIdList(browser,
                                                    incognito_tab_ids.get());
     }
   }
@@ -525,13 +526,13 @@ bool GetAllCookieStoresFunction::RunImpl() {
   ListValue* cookie_store_list = new ListValue();
   if (original_tab_ids->GetSize() > 0) {
     cookie_store_list->Append(
-        extension_cookies_helpers::CreateCookieStoreValue(
+        cookies_helpers::CreateCookieStoreValue(
             original_profile, original_tab_ids.release()));
   }
   if (incognito_tab_ids.get() && incognito_tab_ids->GetSize() > 0 &&
       incognito_profile) {
     cookie_store_list->Append(
-        extension_cookies_helpers::CreateCookieStoreValue(
+        cookies_helpers::CreateCookieStoreValue(
             incognito_profile, incognito_tab_ids.release()));
   }
   result_.reset(cookie_store_list);
@@ -541,3 +542,5 @@ bool GetAllCookieStoresFunction::RunImpl() {
 void GetAllCookieStoresFunction::Run() {
   SendResponse(RunImpl());
 }
+
+}  // namespace extensions

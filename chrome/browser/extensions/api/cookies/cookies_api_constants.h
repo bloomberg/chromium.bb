@@ -1,14 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Constants used for the Cookies API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_CONSTANTS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_CONSTANTS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_API_CONSTANTS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_API_CONSTANTS_H_
 #pragma once
 
-namespace extension_cookies_api_constants {
+namespace extensions {
+namespace cookies_api_constants {
 
 // Keys.
 extern const char kCauseKey[];
@@ -45,6 +46,7 @@ extern const char kInvalidUrlError[];
 extern const char kNoCookieStoreFoundError[];
 extern const char kNoHostPermissionsError[];
 
-}  // namespace extension_cookies_api_constants
+}  // namespace cookies_api_constants
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIES_API_CONSTANTS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_COOKIES_COOKIES_API_CONSTANTS_H_
