@@ -38,7 +38,6 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES" file="extensions\api\experimental_processes.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RECORD" file="extensions\api\experimental_record.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ" file="extensions\api\experimental_rlz.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RUNTIME" file="extensions\api\experimental_runtime.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT" file="extensions\api\experimental_speech_input.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXTENSION" file="extensions\api\extension.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER" file="extensions\api\file_browser_handler.json" type="BINDATA" />
@@ -59,6 +58,7 @@
       <include name="IDR_EXTENSION_API_JSON_PERMISSIONS" file="extensions\api\permissions.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PRIVACY" file="extensions\api\privacy.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PROXY" file="extensions\api\proxy.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_RUNTIME" file="extensions\api\runtime.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_STORAGE" file="extensions\api\storage.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_SYSTEMPRIVATE" file="extensions\api\system_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_TABS" file="extensions\api\tabs.json" type="BINDATA" />

@@ -52,6 +52,7 @@ const char* kNonPermissionModuleNames[] = {
   "pageAction",
   "pageActions",
   "permissions",
+  "runtime",
   "test",
   "types"
 };

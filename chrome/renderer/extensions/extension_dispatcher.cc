@@ -10,6 +10,7 @@
 #include "base/string_piece.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension.h"
@@ -92,8 +93,7 @@ namespace {
 static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
 static const char kEventDispatchFunction[] = "Event.dispatchJSON";
-static const char kOnUnloadEvent[] =
-    "experimental.runtime.onBackgroundPageUnloadingSoon";
+static const char kOnUnloadEvent[] = "runtime.onBackgroundPageUnloadingSoon";
 
 class ChromeHiddenNativeHandler : public NativeHandler {
  public:
@@ -179,6 +179,22 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   }
 };
 
+class ChannelNativeHandler : public NativeHandler {
+ public:
+  explicit ChannelNativeHandler(chrome::VersionInfo::Channel channel)
+      : channel_(channel) {
+    RouteFunction("IsDevChannel",
+        base::Bind(&ChannelNativeHandler::IsDevChannel,
+                   base::Unretained(this)));
+  }
+
+  v8::Handle<v8::Value> IsDevChannel(const v8::Arguments& args) {
+    return v8::Boolean::New(channel_ <= chrome::VersionInfo::CHANNEL_DEV);
+  }
+
+  chrome::VersionInfo::Channel channel_;
+};
+
 void InstallAppBindings(ModuleSystem* module_system,
                         v8::Handle<v8::Object> chrome,
                         v8::Handle<v8::Object> chrome_hidden) {
@@ -204,7 +220,8 @@ ExtensionDispatcher::ExtensionDispatcher()
       webrequest_adblock_(false),
       webrequest_adblock_plus_(false),
       webrequest_other_(false),
-      source_map_(&ResourceBundle::GetSharedInstance()) {
+      source_map_(&ResourceBundle::GetSharedInstance()),
+      chrome_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
@@ -228,6 +245,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionDispatcher, message)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetChannel, OnSetChannel)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect, OnDispatchOnConnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnDeliverMessage)
@@ -290,6 +308,10 @@ void ExtensionDispatcher::OnSetFunctionNames(
   function_names_.clear();
   for (size_t i = 0; i < names.size(); ++i)
     function_names_.insert(names[i]);
+}
+
+void ExtensionDispatcher::OnSetChannel(int channel) {
+  chrome_channel_ = channel;
 }
 
 void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
@@ -525,8 +547,6 @@ void ExtensionDispatcher::PopulateSourceMap() {
                              IDR_MEDIA_GALLERY_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.offscreen",
                              IDR_EXPERIMENTAL_OFFSCREENTABS_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("experimental.runtime",
-                             IDR_EXPERIMENTAL_RUNTIME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.usb",
                              IDR_EXPERIMENTAL_USB_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS);
@@ -544,6 +564,7 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("pageCapture",
                              IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
+  source_map_.RegisterSource("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("storage", IDR_STORAGE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
@@ -621,6 +642,9 @@ void ExtensionDispatcher::DidCreateScriptContext(
       scoped_ptr<NativeHandler>(new PrintNativeHandler()));
   module_system->RegisterNativeHandler("lazy_background_page",
       scoped_ptr<NativeHandler>(new LazyBackgroundPageNativeHandler(this)));
+  module_system->RegisterNativeHandler("channel",
+      scoped_ptr<NativeHandler>(new ChannelNativeHandler(
+          static_cast<chrome::VersionInfo::Channel>(chrome_channel_))));
 
   int manifest_version = 1;
   if (extension)

@@ -181,6 +181,13 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
+  // Note: runtime is not actually a permission, but some systems check these
+  // values to verify restrictions.
+  "runtime": {
+    "channel": "dev",
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "min_manifest_version": 2
+  },
   "serial": {
     "channel": "stable",
     "extension_types": ["platform_app"]

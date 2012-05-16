@@ -18,7 +18,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.runtime module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.runtime - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.runtime module, which is part of the Google Chrome  extension APIs."><title>chrome.runtime - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -185,14 +185,14 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.runtime</h1>
+        <h1 class="page_title">chrome.runtime</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.runtime</a>
+                <a href="#apiReference">API reference: chrome.runtime</a>
                 <ol>
                   <li>
             <a href="#global-methods">Methods</a>
@@ -218,15 +218,23 @@
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
+        <p class="warning">
+          <!-- Standard content lead-in for APIs that are not yet available on
+          the stable channel. -->
+          <em>Warning:</em> This API is still under development. It is only
+          available for Chrome users on the
+          <span>
+            <strong>dev</strong>
+              <a href="http://www.chromium.org/getting-involved/dev-channel">early
+              release channel</a>.</span>
+          <a href="TODO">Learn more</a>.
         </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"></div>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.runtime</h2>
+        <h2>API reference: chrome.runtime</h2>
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
@@ -239,7 +247,7 @@
               <h4>getBackgroundPage</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.runtime.getBackgroundPage</span>(<span class="null"><span>function</span>
+                  <span>chrome.runtime.getBackgroundPage</span>(<span class="null"><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
                 <p>Retrieves the JavaScript 'window' object for the background page running inside the current extension. If the background page is transient, the system will ensure it is loaded before calling the callback. If there is no background page, an error is set.</p>
@@ -329,7 +337,7 @@
               <h4>onBackgroundPageUnloadingSoon</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.runtime.</span><span>onBackgroundPageUnloadingSoon</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.runtime.</span><span>onBackgroundPageUnloadingSoon</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Sent to the transient background page just before it is unloaded. This gives the extension opportunity to do some clean up. Note that since the page is unloading, any asynchronous operations started while handling this event are not guaranteed to complete.</p>
@@ -345,7 +353,7 @@
               <h4>onInstalled</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.runtime.</span><span>onInstalled</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.runtime.</span><span>onInstalled</span><span class="subdued">.addListener</span>(function(<span></span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
                 <p>Fired when the extension is first installed.</p>

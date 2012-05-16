@@ -15,7 +15,7 @@
 
 namespace {
 
-const char kOnInstalledEvent[] = "experimental.runtime.onInstalled";
+const char kOnInstalledEvent[] = "runtime.onInstalled";
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
 

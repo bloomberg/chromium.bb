@@ -381,8 +381,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_RECORD));
   RegisterSchema("experimental.rlz", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ));
-  RegisterSchema("experimental.runtime", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_RUNTIME));
+  RegisterSchema("runtime", ReadFromResource(
+      IDR_EXTENSION_API_JSON_RUNTIME));
   RegisterSchema("experimental.speechInput", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT));
   RegisterSchema("extension", ReadFromResource(

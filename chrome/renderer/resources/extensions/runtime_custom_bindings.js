@@ -9,7 +9,7 @@ var GetExtensionViews = extensionNatives.GetExtensionViews;
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var sendRequest = require('sendRequest').sendRequest;
 
-chromeHidden.registerCustomHook('experimental.runtime', function(bindingsAPI) {
+chromeHidden.registerCustomHook('runtime', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setCustomCallback('getBackgroundPage',

@@ -87,6 +87,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -2378,6 +2379,10 @@ void ExtensionService::Observe(int type,
           Profile::FromBrowserContext(process->GetBrowserContext());
       if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
           break;
+
+      // Extensions need to know the channel for API restrictions.
+      process->Send(new ExtensionMsg_SetChannel(
+          chrome::VersionInfo::GetChannel()));
 
       // Valid extension function names, used to setup bindings in renderer.
       std::vector<std::string> function_names;

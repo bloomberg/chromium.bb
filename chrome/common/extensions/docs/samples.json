@@ -186,9 +186,6 @@
     "chrome.experimental.offscreenTabs.update": "experimental.offscreenTabs.html#method-update",
     "chrome.experimental.record.captureURLs": "experimental.record.html#method-captureURLs",
     "chrome.experimental.record.replayURLs": "experimental.record.html#method-replayURLs",
-    "chrome.experimental.runtime.getBackgroundPage": "experimental.runtime.html#method-getBackgroundPage",
-    "chrome.experimental.runtime.onBackgroundPageUnloadingSoon": "experimental.runtime.html#event-onBackgroundPageUnloadingSoon",
-    "chrome.experimental.runtime.onInstalled": "experimental.runtime.html#event-onInstalled",
     "chrome.experimental.serial.close": "experimental.serial.html#method-close",
     "chrome.experimental.serial.getPorts": "experimental.serial.html#method-getPorts",
     "chrome.experimental.serial.open": "experimental.serial.html#method-open",
@@ -273,6 +270,9 @@
     "chrome.permissions.remove": "permissions.html#method-remove",
     "chrome.permissions.request": "permissions.html#method-request",
     "chrome.proxy.onProxyError": "proxy.html#event-onProxyError",
+    "chrome.runtime.getBackgroundPage": "runtime.html#method-getBackgroundPage",
+    "chrome.runtime.onBackgroundPageUnloadingSoon": "runtime.html#event-onBackgroundPageUnloadingSoon",
+    "chrome.runtime.onInstalled": "runtime.html#event-onInstalled",
     "chrome.storage.StorageArea.clear": "storage.html#method-StorageArea-clear",
     "chrome.storage.StorageArea.get": "storage.html#method-StorageArea-get",
     "chrome.storage.StorageArea.getBytesInUse": "storage.html#method-StorageArea-getBytesInUse",
@@ -1066,10 +1066,10 @@
         "chrome.browserAction.setBadgeText",
         "chrome.declarativeWebRequest.onRequest",
         "chrome.experimental.keybinding.onCommand",
-        "chrome.experimental.runtime.onBackgroundPageUnloadingSoon",
-        "chrome.experimental.runtime.onInstalled",
         "chrome.extension.onMessage",
         "chrome.extension.sendMessage",
+        "chrome.runtime.onBackgroundPageUnloadingSoon",
+        "chrome.runtime.onInstalled",
         "chrome.tabs.create",
         "chrome.tabs.executeScript",
         "chrome.tabs.query",
@@ -1094,13 +1094,13 @@
       "protocols": [
         "http://"
       ],
-      "search_string": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE ALARMS BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.DECLARATIVEWEBREQUEST.ONREQUEST CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXPERIMENTAL.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.RUNTIME.ONINSTALLED CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
+      "search_string": "EVENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE EVENT PAGE ALARMS BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.DECLARATIVEWEBREQUEST.ONREQUEST CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.RUNTIME.ONINSTALLED CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
       "source_files": [
         "background.js",
         "content.js",
         "manifest.json"
       ],
-      "source_hash": "38978d01b1ba2d4c52e6dcb7b279c921d3c494c1",
+      "source_hash": "1fdea1f122a967980955e3f644e7563c1d435c61",
       "zip_path": "examples/api/eventPage/basic.zip"
     },
     {

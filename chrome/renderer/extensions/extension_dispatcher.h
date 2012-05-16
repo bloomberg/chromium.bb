@@ -122,6 +122,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   virtual void WebKitInitialized() OVERRIDE;
   virtual void IdleNotification() OVERRIDE;
 
+  void OnSetChannel(int channel);
   void OnMessageInvoke(const std::string& extension_id,
                        const std::string& function_name,
                        const base::ListValue& args,
@@ -236,6 +237,10 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   // Sends API requests to the extension host.
   scoped_ptr<ExtensionRequestSender> request_sender_;
+
+  // The current channel. From VersionInfo::GetChannel().
+  // TODO(aa): Remove when we can restrict non-permission APIs to dev-only.
+  int chrome_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
 };

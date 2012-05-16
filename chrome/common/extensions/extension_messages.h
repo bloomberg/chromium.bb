@@ -297,9 +297,14 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
                     int /* target_port_id */,
                     std::string /* message */)
 
+// Dispatch the Port.onDisconnect event for message channels.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
                     int /* port_id */,
                     bool /* connection_error */)
+
+// Informs the renderer what channel (dev, beta, stable, etc) is running.
+IPC_MESSAGE_CONTROL1(ExtensionMsg_SetChannel,
+                     int /* channel */)
 
 // Messages sent from the renderer to the browser.
 

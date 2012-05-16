@@ -18,7 +18,7 @@ sendMessage();
 chrome.browserAction.setBadgeText({text: "ON"});
 console.log("Loaded.");
 
-chrome.experimental.runtime.onInstalled.addListener(function() {
+chrome.runtime.onInstalled.addListener(function() {
   console.log("Installed.");
 
   // localStorage is persisted, so it's a good place to keep state that you
@@ -79,7 +79,7 @@ chrome.alarms.onAlarm.addListener(function() {
   alert("Time's up!");
 });
 
-chrome.experimental.runtime.onBackgroundPageUnloadingSoon.addListener(
+chrome.runtime.onBackgroundPageUnloadingSoon.addListener(
     function() {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     // After the unload event listener runs, the page will unload, so any

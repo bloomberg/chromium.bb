@@ -24,7 +24,7 @@ class RuntimeEventRouter {
 class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {
  protected:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.runtime.getBackgroundPage");
+  DECLARE_EXTENSION_FUNCTION_NAME("runtime.getBackgroundPage");
  private:
   void OnPageLoaded(ExtensionHost*);
 };

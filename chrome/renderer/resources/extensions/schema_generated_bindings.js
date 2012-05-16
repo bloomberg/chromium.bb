@@ -14,7 +14,7 @@
       requireNative('apiDefinitions').GetExtensionAPIDefinition;
   var sendRequest = require('sendRequest').sendRequest;
   var utils = require('utils');
-
+  var isDevChannel = requireNative('channel').IsDevChannel;
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
   // The object to generate the bindings for "internal" APIs in, so that
@@ -338,9 +338,18 @@
         manifestVersion <= schemaNode.maximumManifestVersion;
   }
 
+  // Temporary hack to check if the runtime API is supported.
+  // TODO(aa): Remove when we can restrict non-permission APIs to dev-only.
+  function isRuntimeAPISupported(schemaNode) {
+    if (schemaNode.namespace == "runtime")
+      return isDevChannel();
+    return true;
+  }
+
   function isSchemaNodeSupported(schemaNode, platform, manifestVersion) {
     return isPlatformSupported(schemaNode, platform) &&
-        isManifestVersionSupported(schemaNode, manifestVersion);
+        isManifestVersionSupported(schemaNode, manifestVersion) &&
+        isRuntimeAPISupported(schemaNode);
   }
 
   chromeHidden.onLoad.addListener(function(extensionId,

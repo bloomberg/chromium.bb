@@ -4,7 +4,8 @@
 
 [
   {
-    "namespace": "experimental.runtime",
+    "namespace": "runtime",
+    "documentation_permissions_required": ["runtime"],
     "functions": [
       {
         "name": "getBackgroundPage",
