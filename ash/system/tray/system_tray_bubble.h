@@ -68,6 +68,16 @@ class SystemTrayBubble : public views::Widget::Observer {
     ANCHOR_TYPE_BUBBLE
   };
 
+  struct InitParams {
+    InitParams(AnchorType anchor_type);
+
+    views::View* anchor;
+    AnchorType anchor_type;
+    bool can_activate;
+    ash::user::LoginStatus login_status;
+    int arrow_offset;
+  };
+
   SystemTrayBubble(ash::SystemTray* tray,
                    const std::vector<ash::SystemTrayItem*>& items,
                    BubbleType bubble_type);
@@ -79,10 +89,7 @@ class SystemTrayBubble : public views::Widget::Observer {
 
   // Creates |bubble_view_| and a child views for each member of |items_|.
   // Also creates |bubble_widget_| and sets up animations.
-  void InitView(views::View* anchor,
-                AnchorType anchor_type,
-                bool can_activate,
-                ash::user::LoginStatus login_status);
+  void InitView(const InitParams& init_params);
 
   gfx::Rect GetAnchorRect() const;
 

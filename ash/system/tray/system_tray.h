@@ -16,6 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "ui/views/view.h"
 
+#include <map>
 #include <vector>
 
 namespace ash {
@@ -154,11 +155,20 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
 
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
+  // Calculates the x-offset for the item in the tray. Returns -1 if its tray
+  // item view is not visible.
+  int GetTrayXOffset(SystemTrayItem* item) const;
+
+  // Shows the default view and its arrow position is shifted by |x_offset|.
+  void ShowDefaultViewWithOffset(BubbleCreationType creation_type,
+                                 int x_offset);
+
   // Constructs or re-constructs |bubble_| and populates it with |items|.
   void ShowItems(const std::vector<SystemTrayItem*>& items,
                  bool details,
                  bool activate,
-                 BubbleCreationType creation_type);
+                 BubbleCreationType creation_type,
+                 int x_offset);
 
   // Constructs or re-constructs |notification_bubble_| and populates it with
   // |notification_items_|, or destroys it if there are no notification items.
@@ -186,6 +196,9 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
 
   // The container for all the tray views of the items.
   views::View* tray_container_;
+
+  // Mappings of system tray item and it's view in the tray.
+  std::map<SystemTrayItem*, views::View*> tray_item_map_;
 
   // These observers are not owned by the tray.
   AccessibilityObserver* accessibility_observer_;

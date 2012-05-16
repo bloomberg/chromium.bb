@@ -277,6 +277,7 @@ void SystemTray::AddTrayItem(SystemTrayItem* item) {
   if (tray_item) {
     tray_container_->AddChildViewAt(tray_item, 0);
     PreferredSizeChanged();
+    tray_item_map_[item] = tray_item;
   }
 }
 
@@ -285,7 +286,7 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
 }
 
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
-  ShowItems(items_.get(), false, true, creation_type);
+  ShowDefaultViewWithOffset(creation_type, -1);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
@@ -294,7 +295,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
                                   BubbleCreationType creation_type) {
   std::vector<SystemTrayItem*> items;
   items.push_back(item);
-  ShowItems(items, true, activate, creation_type);
+  ShowItems(items, true, activate, creation_type, GetTrayXOffset(item));
   bubble_->StartAutoCloseTimer(close_delay);
 }
 
@@ -369,10 +370,48 @@ void SystemTray::SetPaintsBackground(
   hide_background_animator_.SetPaintsBackground(value, change_type);
 }
 
+int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
+  std::map<SystemTrayItem*, views::View*>::const_iterator it =
+      tray_item_map_.find(item);
+  if (it == tray_item_map_.end())
+    return -1;
+
+  const views::View* item_view = it->second;
+  gfx::Rect item_bounds = item_view->bounds();
+  if (!item_bounds.IsEmpty()) {
+    int x_offset = item_bounds.x() + item_bounds.width() / 2;
+    return base::i18n::IsRTL() ? x_offset : tray_container_->width() - x_offset;
+  }
+
+  // The bounds of item could be still empty.  It could happen in the case that
+  // the view appears for the first time in the current session, because the
+  // bounds is not calculated yet. In that case, we want to guess the offset
+  // from the position of its parent.
+  int x_offset = 0;
+  for (int i = 0; i < tray_container_->child_count(); ++i) {
+    const views::View* child = tray_container_->child_at(i);
+    if (child == item_view)
+      return base::i18n::IsRTL() ?
+          x_offset : tray_container_->width() - x_offset;
+
+    if (!child->visible())
+      continue;
+    x_offset = child->bounds().right();
+  }
+
+  return -1;
+}
+
+void SystemTray::ShowDefaultViewWithOffset(BubbleCreationType creation_type,
+                                           int arrow_offset) {
+  ShowItems(items_.get(), false, true, creation_type, arrow_offset);
+}
+
 void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool detailed,
                            bool can_activate,
-                           BubbleCreationType creation_type) {
+                           BubbleCreationType creation_type,
+                           int arrow_offset) {
   // Destroy any existing bubble and create a new one.
   SystemTrayBubble::BubbleType bubble_type = detailed ?
       SystemTrayBubble::BUBBLE_TYPE_DETAILED :
@@ -383,8 +422,15 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     bubble_.reset(new SystemTrayBubble(this, items, bubble_type));
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    bubble_->InitView(tray_container_, SystemTrayBubble::ANCHOR_TYPE_TRAY,
-                      can_activate, delegate->GetUserLoginStatus());
+    views::View* anchor = tray_container_;
+    SystemTrayBubble::InitParams init_params(
+        SystemTrayBubble::ANCHOR_TYPE_TRAY);
+    init_params.anchor = anchor;
+    init_params.can_activate = can_activate;
+    init_params.login_status = delegate->GetUserLoginStatus();
+    if (arrow_offset >= 0)
+      init_params.arrow_offset = arrow_offset;
+    bubble_->InitView(init_params);
   }
   // If we have focus the shelf should be visible and we need to continue
   // showing the shelf when the popup is shown.
@@ -414,10 +460,14 @@ void SystemTray::UpdateNotificationBubble() {
     anchor = tray_container_;
     anchor_type = SystemTrayBubble::ANCHOR_TYPE_TRAY;
   }
-  notification_bubble_->InitView(
-      anchor, anchor_type,
-      false /* can_activate */,
-      ash::Shell::GetInstance()->tray_delegate()->GetUserLoginStatus());
+  SystemTrayBubble::InitParams init_params(anchor_type);
+  init_params.anchor = anchor;
+  init_params.login_status =
+      ash::Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
+  int arrow_offset = GetTrayXOffset(notification_items_[0]);
+  if (arrow_offset >= 0)
+    init_params.arrow_offset = arrow_offset;
+  notification_bubble_->InitView(init_params);
 }
 
 void SystemTray::UpdateNotificationAnchor() {
@@ -435,7 +485,14 @@ bool SystemTray::PerformAction(const views::Event& event) {
       bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DEFAULT) {
     bubble_->Close();
   } else {
-    ShowDefaultView(BUBBLE_CREATE_NEW);
+    int arrow_offset = -1;
+    if (event.IsMouseEvent() || event.IsTouchEvent()) {
+      const views::LocatedEvent& located_event =
+          static_cast<const views::LocatedEvent&>(event);
+      arrow_offset = base::i18n::IsRTL() ?
+          located_event.x() : tray_container_->width() - located_event.x();
+    }
+    ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset);
   }
   return true;
 }

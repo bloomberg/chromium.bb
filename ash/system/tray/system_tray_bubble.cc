@@ -176,11 +176,14 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
     ARROW_TYPE_BOTTOM,
   };
 
-  SystemTrayBubbleBorder(views::View* owner, ArrowType arrow_type)
+  SystemTrayBubbleBorder(views::View* owner,
+                         ArrowType arrow_type,
+                         int arrow_offset)
       : views::BubbleBorder(views::BubbleBorder::BOTTOM_RIGHT,
                             views::BubbleBorder::NO_SHADOW),
         owner_(owner),
-        arrow_type_(arrow_type) {
+        arrow_type_(arrow_type),
+        arrow_offset_(arrow_offset) {
     set_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   }
 
@@ -205,11 +208,12 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
 
     // Draw the arrow.
     if (arrow_type_ == ARROW_TYPE_BOTTOM) {
-      int left_base_x = base::i18n::IsRTL() ? kArrowWidth :
-          owner_->width() - kArrowPaddingFromRight - kArrowWidth;
+      int tip_x = base::i18n::IsRTL() ? arrow_offset_ :
+          owner_->width() - arrow_offset_;
+      int left_base_x = tip_x - kArrowWidth / 2;
       int left_base_y = y;
-      int tip_x = left_base_x + kArrowWidth / 2;
       int tip_y = left_base_y + kArrowHeight;
+
       SkPath path;
       path.incReserve(4);
       path.moveTo(SkIntToScalar(left_base_x), SkIntToScalar(left_base_y));
@@ -231,6 +235,7 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
 
   views::View* owner_;
   ArrowType arrow_type_;
+  const int arrow_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBorder);
 };
@@ -321,6 +326,16 @@ void SystemTrayBubbleView::OnMouseExited(const views::MouseEvent& event) {
     host_->RestartAutoCloseTimer();
 }
 
+// SystemTrayBubble::InitParams
+SystemTrayBubble::InitParams::InitParams(
+    SystemTrayBubble::AnchorType anchor_type)
+    : anchor(NULL),
+      anchor_type(anchor_type),
+      can_activate(false),
+      login_status(ash::user::LOGGED_IN_NONE),
+      arrow_offset(kArrowPaddingFromRight + kArrowWidth / 2) {
+}
+
 // SystemTrayBubble
 
 SystemTrayBubble::SystemTrayBubble(
@@ -360,15 +375,13 @@ void SystemTrayBubble::UpdateView(
   bubble_widget_->GetContentsView()->Layout();
 }
 
-void SystemTrayBubble::InitView(views::View* anchor,
-                                AnchorType anchor_type,
-                                bool can_activate,
-                                ash::user::LoginStatus login_status) {
+void SystemTrayBubble::InitView(const InitParams& init_params) {
   DCHECK(bubble_view_ == NULL);
-  anchor_type_ = anchor_type;
-  bubble_view_ = new SystemTrayBubbleView(anchor, this, can_activate);
+  anchor_type_ = init_params.anchor_type;
+  bubble_view_ = new SystemTrayBubbleView(
+      init_params.anchor, this, init_params.can_activate);
 
-  CreateItemViews(login_status);
+  CreateItemViews(init_params.login_status);
 
   DCHECK(bubble_widget_ == NULL);
   bubble_widget_ = views::BubbleDelegateView::CreateBubble(bubble_view_);
@@ -381,8 +394,10 @@ void SystemTrayBubble::InitView(views::View* anchor,
     arrow_type = SystemTrayBubbleBorder::ARROW_TYPE_BOTTOM;
   else
     arrow_type = SystemTrayBubbleBorder::ARROW_TYPE_NONE;
-  bubble_view_->SetBubbleBorder(
-      new SystemTrayBubbleBorder(bubble_view_, arrow_type));
+
+  SystemTrayBubbleBorder* bubble_border = new SystemTrayBubbleBorder(
+      bubble_view_, arrow_type, init_params.arrow_offset);
+  bubble_view_->SetBubbleBorder(bubble_border);
 
   bubble_widget_->AddObserver(this);
 
