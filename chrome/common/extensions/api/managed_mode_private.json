@@ -56,6 +56,24 @@
           }
         ]
       }
+    ],
+    "events": [
+      {
+        "name": "onChange",
+        "description": "Fired when the value of the setting changes.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "value": {
+                "description": "The value of the setting.",
+                "type": "any"
+              }
+            }
+          }
+        ]
+      }
     ]
   }
 ]

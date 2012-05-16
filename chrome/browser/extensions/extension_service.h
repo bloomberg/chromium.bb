@@ -55,6 +55,7 @@ class ExtensionContentSettingsStore;
 class ExtensionDownloadsEventRouter;
 class ExtensionFontSettingsEventRouter;
 class ExtensionGlobalError;
+class ExtensionManagedModeEventRouter;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionSyncData;
@@ -805,6 +806,8 @@ class ExtensionService
   scoped_ptr<extensions::WebNavigationEventRouter> web_navigation_event_router_;
 
   scoped_ptr<ExtensionFontSettingsEventRouter> font_settings_event_router_;
+
+  scoped_ptr<ExtensionManagedModeEventRouter> managed_mode_event_router_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::ExtensionBluetoothEventRouter> bluetooth_event_router_;

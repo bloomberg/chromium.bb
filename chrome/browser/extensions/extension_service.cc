@@ -49,6 +49,7 @@
 #include "chrome/browser/extensions/extension_global_error.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_input_ime_api.h"
+#include "chrome/browser/extensions/extension_managed_mode_api.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -558,6 +559,9 @@ void ExtensionService::InitEventRouters() {
   font_settings_event_router_.reset(
       new ExtensionFontSettingsEventRouter(profile_));
   font_settings_event_router_->Init();
+  managed_mode_event_router_.reset(
+      new ExtensionManagedModeEventRouter(profile_));
+  managed_mode_event_router_->Init();
 
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(

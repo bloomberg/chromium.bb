@@ -10,6 +10,29 @@
 #pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
+#include "content/public/browser/notification_observer.h"
+
+class Profile;
+
+class ExtensionManagedModeEventRouter : public content::NotificationObserver {
+ public:
+  explicit ExtensionManagedModeEventRouter(Profile* profile);
+  virtual ~ExtensionManagedModeEventRouter();
+
+  void Init();
+
+  // content::NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  PrefChangeRegistrar registrar_;
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionManagedModeEventRouter);
+};
 
 class GetManagedModeFunction : public SyncExtensionFunction {
  public:
