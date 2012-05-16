@@ -330,6 +330,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'pnacl_generate_pexe', default=env.Bit('bitcode'),
     desc='use pnacl to generate pexes and translate in a separate step')
 
+  BitFromArgument(env, 'pnacl_shared_newlib', default=False,
+    desc='build newlib (and other libs) shared in PNaCl')
+
   BitFromArgument(env, 'translate_in_build_step', default=True,
     desc='Run translation during build phase (e.g. if do_not_run_tests=1)')
 
@@ -3112,7 +3115,8 @@ target_variant_map = [
     ('nacl_pic', 'pic'),
     ('use_sandboxed_translator', 'sbtc'),
     ('nacl_glibc', 'glibc'),
-    ('pnacl_generate_pexe', 'pexe')
+    ('pnacl_generate_pexe', 'pexe'),
+    ('pnacl_shared_newlib', 'shared'),
     ]
 for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):
@@ -3393,6 +3397,7 @@ nacl_env.AddMethod(RawSyscallObjects)
 # TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
+nacl_irt_env.ClearBits('pnacl_shared_newlib')
 # For x86 systems we build the IRT using the nnacl TC even when
 # the pnacl TC is used otherwise
 if nacl_irt_env.Bit('target_x86_64') or nacl_irt_env.Bit('target_x86_32'):

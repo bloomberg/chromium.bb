@@ -16,7 +16,7 @@ if env.Bit('bitcode'):
 # object files.  Placing multiple definitions in one file may result in
 # object code bloat or possibly multiple definitions.
 
-sources_for_standard_interfaces = [
+SRCS_NEWLIB_SYSCALL =  [
     'clock.c',
     'clock_getres.c',
     'clock_gettime.c',
@@ -29,29 +29,43 @@ sources_for_standard_interfaces = [
     'gettimeofday.c',
     'lock.c',
     'lseek.c',
-    'malloc.c',
     'mmap.c',
     'munmap.c',
     'nanosleep.c',
     'nacl_interface_query.c',
-    'nacl_add_tp.c',
-    'nacl_read_tp.c',
     'open.c',
     'read.c',
-    'pthread_initialize_minimal.c',
-    'pthread_stubs.c',
     'sbrk.c',
     'sched_yield.c',
-    'stacktrace.c',
-    'start.c',
     'stat.c',
     'sysconf.c',
-    'tls.c',
     'write.c',
-    ]
+]
 
+SRCS_NEWLIB_MISC = [
+    'malloc.c',        # malloc wrapper
+    'stacktrace.c',    # stack tracing for use with "-finstrument"
+    'start.c',         # contains _start, preventing us from making this a .so
+    'nacl_add_tp.c',
+    'nacl_read_tp.c',
+]
 
-sources_for_nacl_extensions = [
+SRCS_NEWLIB_STATIC = [
+    'pthread_stubs.c',               # weak version of __pthread_initialize
+    'pthread_initialize_minimal.c',
+    'tls.c',
+]
+
+# For now assume newlib share will always be linked against pthread so
+# we do not have to deal with weak linkage and other problems.
+# TODO(robertm): support shared newlib without pthreads
+SRCS_NEWLIB_SHARED = [
+    'pthread_initialize_minimal_using_ldso.c',
+    'tls_using_ldso.c',
+]
+
+# used by both glibc and newlib
+SRCS_NACL_EXTENSIONS = [
     'gc_hooks.c',
     'nacl_irt.c',
     'nacl_tls_get.c',
@@ -61,9 +75,13 @@ sources_for_nacl_extensions = [
 if env.Bit('nacl_glibc'):
   # For nacl-glibc, the standard interfaces are provided by glibc, so
   # we do not build them here.
-  sources = sources_for_nacl_extensions
+  sources = SRCS_NACL_EXTENSIONS
 else:
-  sources = sources_for_nacl_extensions + sources_for_standard_interfaces
+  sources = SRCS_NACL_EXTENSIONS + SRCS_NEWLIB_SYSCALL + SRCS_NEWLIB_MISC
+  if env.Bit('pnacl_shared_newlib'):
+    sources += SRCS_NEWLIB_SHARED
+  else:
+    sources += SRCS_NEWLIB_STATIC
 
 # Do not make a shared version of libnacl.
 libnacl = env.ComponentLibrary('libnacl', sources)
