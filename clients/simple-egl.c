@@ -41,7 +41,8 @@ struct display {
 	struct wl_display *display;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
-	struct seat *seat;
+	struct wl_seat *seat;
+	struct wl_pointer *pointer;
 	struct {
 		EGLDisplay dpy;
 		EGLContext ctx;
@@ -49,14 +50,6 @@ struct display {
 	} egl;
 	uint32_t mask;
 	struct window *window;
-};
-
-struct seat {
-	struct display *display;
-	struct wl_seat *seat;
-	struct wl_pointer *pointer;
-	struct wl_keyboard *keyboard;
-	struct wl_touch *touch;
 };
 
 struct window {
@@ -408,32 +401,20 @@ static void
 seat_handle_capabilities(void *data, struct wl_seat *seat,
 			 enum wl_seat_capability caps)
 {
-	struct seat *s = data;
+	struct display *d = data;
 
-	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !s->pointer) {
-		s->pointer = wl_seat_get_pointer(seat);
-		wl_pointer_set_user_data(s->pointer, s);
-		wl_pointer_add_listener(s->pointer, &pointer_listener, s);
-	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && s->pointer) {
-		wl_pointer_destroy(s->pointer);
-		s->pointer = NULL;
+	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !d->pointer) {
+		d->pointer = wl_seat_get_pointer(seat);
+		wl_pointer_add_listener(d->pointer, &pointer_listener, d);
+	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && d->pointer) {
+		wl_pointer_destroy(d->pointer);
+		d->pointer = NULL;
 	}
 }
 
 static const struct wl_seat_listener seat_listener = {
 	seat_handle_capabilities,
 };
-
-static void
-bind_seat(struct display *d, uint32_t id)
-{
-	struct seat *s = calloc(1, sizeof *s);
-
-	s->display = d;
-	s->seat = wl_display_bind(d->display, id, &wl_seat_interface);
-	wl_seat_add_listener(s->seat, &seat_listener, s);
-	d->seat = s;
-}
 
 static void
 display_handle_global(struct wl_display *display, uint32_t id,
@@ -447,7 +428,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		d->shell = wl_display_bind(display, id, &wl_shell_interface);
 	} else if (strcmp(interface, "wl_seat") == 0) {
-		bind_seat(d, id);
+		d->seat = wl_display_bind(d->display, id, &wl_seat_interface);
+		wl_seat_add_listener(d->seat, &seat_listener, d);
 	}
 }
 
