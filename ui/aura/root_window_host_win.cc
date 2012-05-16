@@ -267,6 +267,13 @@ bool RootWindowHostWin::ConfineCursorToRootWindow() {
   return ClipCursor(&window_rect) != 0;
 }
 
+bool RootWindowHostWin::GrabSnapshot(
+    const gfx::Rect& snapshot_bounds,
+    std::vector<unsigned char>* png_representation) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void RootWindowHostWin::UnConfineCursor() {
   ClipCursor(NULL);
 }

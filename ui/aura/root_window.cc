@@ -532,6 +532,12 @@ void RootWindow::SetFocusWhenShown(bool focused) {
   host_->SetFocusWhenShown(focused);
 }
 
+bool RootWindow::GrabSnapshot(const gfx::Rect& snapshot_bounds,
+                              std::vector<unsigned char>* png_representation) {
+  DCHECK(bounds().Contains(snapshot_bounds));
+  return host_->GrabSnapshot(snapshot_bounds, png_representation);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, Window overrides:
 

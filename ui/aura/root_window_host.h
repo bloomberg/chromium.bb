@@ -6,6 +6,8 @@
 #define UI_AURA_ROOT_WINDOW_HOST_H_
 #pragma once
 
+#include <vector>
+
 #include "base/message_loop.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/native_widget_types.h"
@@ -87,6 +89,11 @@ class RootWindowHost {
 
   // Sets if the window should be focused when shown.
   virtual void SetFocusWhenShown(bool focus_when_shown) = 0;
+
+  // Grabs the snapshot of the root window by using the platform-dependent APIs.
+  virtual bool GrabSnapshot(
+      const gfx::Rect& snapshot_bounds,
+      std::vector<unsigned char>* png_representation) = 0;
 
   // Posts |native_event| to the platform's event queue.
 #if !defined(OS_MACOSX)

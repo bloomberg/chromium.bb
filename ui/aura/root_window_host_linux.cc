@@ -6,6 +6,7 @@
 
 #include <X11/Xatom.h>
 #include <X11/Xcursor/Xcursor.h>
+#include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xfixes.h>
@@ -30,6 +31,7 @@
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 
 using ui::X11AtomCache;
@@ -793,6 +795,48 @@ void RootWindowHostLinux::SetFocusWhenShown(bool focus_when_shown) {
                        k_NET_WM_USER_TIME,
                        0);
   }
+}
+
+bool RootWindowHostLinux::GrabSnapshot(
+    const gfx::Rect& snapshot_bounds,
+    std::vector<unsigned char>* png_representation) {
+  XImage* image = XGetImage(
+      xdisplay_, xwindow_,
+      snapshot_bounds.x(), snapshot_bounds.y(),
+      snapshot_bounds.width(), snapshot_bounds.height(),
+      AllPlanes, ZPixmap);
+
+  gfx::PNGCodec::ColorFormat color_format;
+
+  if (image->bits_per_pixel == 32) {
+    color_format = (image->byte_order == LSBFirst) ?
+        gfx::PNGCodec::FORMAT_BGRA : gfx::PNGCodec::FORMAT_RGBA;
+  } else if (image->bits_per_pixel == 24) {
+    // PNGCodec accepts FORMAT_RGB for 3 bytes per pixel:
+    color_format = gfx::PNGCodec::FORMAT_RGB;
+    if (image->byte_order == LSBFirst) {
+      LOG(WARNING) << "Converting BGR->RGB will damage the performance...";
+      int image_size =
+          image->width * image->height * image->bits_per_pixel / 8;
+      for (int i = 0; i < image_size; i += 3) {
+        char tmp = image->data[i];
+        image->data[i] = image->data[i+2];
+        image->data[i+2] = tmp;
+      }
+    }
+  } else {
+    LOG(ERROR) << "bits_per_pixel is too small";
+    XFree(image);
+    return false;
+  }
+
+  unsigned char* data = reinterpret_cast<unsigned char*>(image->data);
+  gfx::PNGCodec::Encode(data, color_format, snapshot_bounds.size(),
+                        image->width * image->bits_per_pixel / 8,
+                        true, std::vector<gfx::PNGCodec::Comment>(),
+                        png_representation);
+  XFree(image);
+  return true;
 }
 
 void RootWindowHostLinux::PostNativeEvent(

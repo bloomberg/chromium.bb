@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
@@ -18,6 +19,14 @@ namespace browser {
 bool GrabWindowSnapshot(gfx::NativeWindow window,
                         std::vector<unsigned char>* png_representation,
                         const gfx::Rect& snapshot_bounds) {
+#if defined(OS_LINUX)
+  // We use XGetImage() for Linux/ChromeOS for performance reasons.
+  // See crbug.com/122720
+  if (window->GetRootWindow()->GrabSnapshot(
+          snapshot_bounds, png_representation))
+    return true;
+#endif  // OS_LINUX
+
   ui::Compositor* compositor = window->layer()->GetCompositor();
 
   gfx::Rect read_pixels_bounds = snapshot_bounds;

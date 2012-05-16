@@ -45,6 +45,9 @@ class RootWindowHostMac : public RootWindowHost,
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual bool ConfineCursorToRootWindow() OVERRIDE;
   virtual void UnConfineCursor() OVERRIDE;
+  virtual bool GrabSnapshot(
+      const gfx::Rect& snapshot_bounds,
+      std::vector<unsigned char>* png_representation) OVERRIDE;
 
   // RootWindowHostMacDelegate:
   virtual void SendEvent(const base::NativeEvent& native_event) OVERRIDE;
@@ -167,6 +170,13 @@ bool RootWindowHostMac::ConfineCursorToRootWindow() {
 }
 
 void RootWindowHostMac::UnConfineCursor() {
+}
+
+bool RootWindowHostMac::GrabSnapshot(
+    const gfx::Rect& snapshot_bounds,
+    std::vector<unsigned char>* png_representation) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 void RootWindowHostMac::SendEvent(const base::NativeEvent& native_event) {

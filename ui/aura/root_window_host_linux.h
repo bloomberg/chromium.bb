@@ -50,6 +50,9 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void UnConfineCursor() OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual void SetFocusWhenShown(bool focus_when_shown) OVERRIDE;
+  virtual bool GrabSnapshot(
+      const gfx::Rect& snapshot_bounds,
+      std::vector<unsigned char>* png_representation) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Returns true if there's an X window manager present... in most cases.  Some

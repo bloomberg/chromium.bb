@@ -6,6 +6,8 @@
 #define UI_AURA_ROOT_WINDOW_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -240,6 +242,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Sets if the window should be focused when shown.
   void SetFocusWhenShown(bool focus_when_shown);
+
+  // Grabs the snapshot of the root window by using the platform-dependent APIs.
+  bool GrabSnapshot(const gfx::Rect& snapshot_bounds,
+                    std::vector<unsigned char>* png_representation);
 
   // Overridden from Window:
   virtual RootWindow* GetRootWindow() OVERRIDE;
