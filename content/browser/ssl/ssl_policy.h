@@ -52,11 +52,15 @@ class SSLPolicy {
                           bool allow);
 
   // Helper method for derived classes handling certificate errors.
-  // If the error can be overridden by the user, show a blocking page that
-  // lets the user continue or cancel the request.
-  // For fatal certificate errors, show a blocking page that only lets the
-  // user cancel the request.
-  void OnCertErrorInternal(SSLCertErrorHandler* handler, bool overridable);
+  //
+  // |overridable| indicates whether or not the user could (assuming perfect
+  // knowledge) successfully override the error and still get the security
+  // guarantees of TLS. |strict_enforcement| indicates whether or not the
+  // site the user is trying to connect to has requested strict enforcement
+  // of certificate validation (e.g. with HTTP Strict-Transport-Security).
+  void OnCertErrorInternal(SSLCertErrorHandler* handler,
+                           bool overridable,
+                           bool strict_enforcement);
 
   // If the security style of |entry| has not been initialized, then initialize
   // it with the default style for its URL.

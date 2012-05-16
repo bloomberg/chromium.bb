@@ -1020,6 +1020,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     bool overridable,
+    bool strict_enforcement,
     const base::Callback<void(bool)>& callback,
     bool* cancel_request) {
   // If the tab is being prerendered, cancel the prerender and the request.
@@ -1042,8 +1043,8 @@ void ChromeContentBrowserClient::AllowCertificateError(
   }
 
   // Otherwise, display an SSL blocking page.
-  new SSLBlockingPage(
-      tab, cert_error, ssl_info, request_url, overridable, callback);
+  new SSLBlockingPage(tab, cert_error, ssl_info, request_url, overridable,
+                      strict_enforcement, callback);
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(

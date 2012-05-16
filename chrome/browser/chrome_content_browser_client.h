@@ -8,6 +8,8 @@
 
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/content_browser_client.h"
@@ -105,6 +107,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       bool overridable,
+      bool strict_enforcement,
       const base::Callback<void(bool)>& callback,
       bool* cancel_request) OVERRIDE;
   virtual void SelectClientCertificate(

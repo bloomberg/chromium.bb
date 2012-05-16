@@ -261,12 +261,11 @@ class ContentBrowserClient {
   // Show the given file in a file manager. If possible, select the file.
   virtual void ShowItemInFolder(const FilePath& path) = 0;
 
-  // Informs the embedder that a certificate error has occured.  If overridable
-  // is true, the user can ignore the error and continue.  If it's false, then
-  // the certificate error is severe and the user isn't allowed to proceed.  The
-  // embedder can call the callback asynchronously. If |cancel_request| is set
-  // to true, the request will be cancelled immediately and the callback won't
-  // be run.
+  // Informs the embedder that a certificate error has occured.  If
+  // |overridable| is true and if |strict_enforcement| is false, the user
+  // can ignore the error and continue. The embedder can call the callback
+  // asynchronously. If |cancel_request| is set to true, the request will be
+  // cancelled immediately and the callback won't be run.
   virtual void AllowCertificateError(
       int render_process_id,
       int render_view_id,
@@ -274,6 +273,7 @@ class ContentBrowserClient {
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       bool overridable,
+      bool strict_enforcement,
       const base::Callback<void(bool)>& callback,
       bool* cancel_request) = 0;
 

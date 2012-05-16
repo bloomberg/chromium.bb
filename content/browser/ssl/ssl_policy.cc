@@ -64,7 +64,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_AUTHORITY_INVALID:
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
     case net::ERR_CERT_WEAK_KEY:
-      OnCertErrorInternal(handler, !handler->fatal());
+      OnCertErrorInternal(handler, !handler->fatal(), handler->fatal());
       break;
     case net::ERR_CERT_NO_REVOCATION_MECHANISM:
       // Ignore this error.
@@ -79,7 +79,7 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_REVOKED:
     case net::ERR_CERT_INVALID:
     case net::ERR_CERT_NOT_IN_DNS:
-      OnCertErrorInternal(handler, false);
+      OnCertErrorInternal(handler, false, handler->fatal());
       break;
     default:
       NOTREACHED();
@@ -194,7 +194,8 @@ void SSLPolicy::OnAllowCertificate(scoped_refptr<SSLCertErrorHandler> handler,
 // Certificate Error Routines
 
 void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
-                                    bool overridable) {
+                                    bool overridable,
+                                    bool strict_enforcement) {
   if (handler->resource_type() != ResourceType::MAIN_FRAME) {
     // A sub-resource has a certificate error.  The user doesn't really
     // have a context for making the right decision, so block the
@@ -212,6 +213,7 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
       handler->ssl_info(),
       handler->request_url(),
       overridable,
+      strict_enforcement,
       base::Bind(&SSLPolicy::OnAllowCertificate, base::Unretained(this),
                  make_scoped_refptr(handler)),
       &cancel_request);
