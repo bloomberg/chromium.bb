@@ -11,7 +11,13 @@
 
 class FilePath;
 
+namespace base {
+class Value;
+}
+
 namespace policy {
+
+class PolicyBundle;
 
 // Policy provider backed by JSON files in a configuration directory.
 class ConfigDirPolicyProvider : public FileBasedPolicyProvider {
@@ -42,6 +48,10 @@ class ConfigDirPolicyProviderDelegate
   virtual base::Time GetLastModification() OVERRIDE;
 
  private:
+  // Merges the 3rd party |policies| into the |bundle|.
+  void Merge3rdPartyPolicy(PolicyBundle* bundle,
+                           const base::Value* policies);
+
   // Policies loaded by this provider will have these attributes.
   PolicyLevel level_;
   PolicyScope scope_;

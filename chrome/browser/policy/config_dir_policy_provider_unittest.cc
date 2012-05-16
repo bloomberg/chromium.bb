@@ -199,4 +199,50 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   EXPECT_TRUE(bundle->Equals(expected_bundle));
 }
 
+// Tests loading of policy for 3rd parties.
+TEST_F(ConfigDirPolicyLoaderTest, Load3rdParty) {
+  base::DictionaryValue policy_dict;
+  policy_dict.SetBoolean("bool", true);
+  policy_dict.SetString("str", "string value");
+  policy_dict.SetDouble("double", 123.456);
+  policy_dict.SetInteger("int", 789);
+
+  base::ListValue* list = new base::ListValue();
+  for (int i = 0; i < 5; ++i) {
+    base::DictionaryValue* dict = new base::DictionaryValue();
+    dict->SetInteger("subdictindex", i);
+    dict->Set("subdict", policy_dict.DeepCopy());
+    list->Append(dict);
+  }
+  policy_dict.Set("list", list);
+
+  base::DictionaryValue json_dict;
+  // Merge |policy_dict|, which will become the chrome policies.
+  json_dict.MergeDictionary(&policy_dict);
+  json_dict.Set("3rdparty.extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                policy_dict.DeepCopy());
+  json_dict.Set("3rdparty.extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                policy_dict.DeepCopy());
+
+  harness_.WriteConfigFile(json_dict, "policy.json");
+  ConfigDirPolicyProviderDelegate loader(harness_.test_dir(),
+                                         POLICY_LEVEL_MANDATORY,
+                                         POLICY_SCOPE_USER);
+  scoped_ptr<PolicyBundle> bundle(loader.Load());
+  ASSERT_TRUE(bundle.get());
+  PolicyMap expected_policy;
+  expected_policy.LoadFrom(&policy_dict,
+                           POLICY_LEVEL_MANDATORY,
+                           POLICY_SCOPE_USER);
+  PolicyBundle expected_bundle;
+  expected_bundle.Get(POLICY_DOMAIN_CHROME, "").CopyFrom(expected_policy);
+  expected_bundle.Get(POLICY_DOMAIN_EXTENSIONS,
+                      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+                          .CopyFrom(expected_policy);
+  expected_bundle.Get(POLICY_DOMAIN_EXTENSIONS,
+                      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+                          .CopyFrom(expected_policy);
+  EXPECT_TRUE(bundle->Equals(expected_bundle));
+}
+
 }  // namespace policy

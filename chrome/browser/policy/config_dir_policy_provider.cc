@@ -13,6 +13,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
+#include "base/stl_util.h"
 #include "chrome/browser/policy/policy_bundle.h"
 
 namespace policy {
@@ -45,21 +46,31 @@ scoped_ptr<PolicyBundle> ConfigDirPolicyProviderDelegate::Load() {
     deserializer.set_allow_trailing_comma(true);
     int error_code = 0;
     std::string error_msg;
-    scoped_ptr<Value> value(deserializer.Deserialize(&error_code, &error_msg));
+    scoped_ptr<base::Value> value(
+        deserializer.Deserialize(&error_code, &error_msg));
     if (!value.get()) {
       LOG(WARNING) << "Failed to read configuration file "
                    << config_file_iter->value() << ": " << error_msg;
       continue;
     }
-    DictionaryValue* dictionary_value = NULL;
+    base::DictionaryValue* dictionary_value = NULL;
     if (!value->GetAsDictionary(&dictionary_value)) {
       LOG(WARNING) << "Expected JSON dictionary in configuration file "
                    << config_file_iter->value();
       continue;
     }
-    PolicyMap file_policy;
-    file_policy.LoadFrom(dictionary_value, level_, scope_);
-    bundle->Get(POLICY_DOMAIN_CHROME, std::string()).MergeFrom(file_policy);
+
+    // Detach the "3rdparty" node.
+    base::Value* third_party = NULL;
+    if (dictionary_value->Remove("3rdparty", &third_party)) {
+      Merge3rdPartyPolicy(bundle.get(), third_party);
+      delete third_party;
+    }
+
+    // Add chrome policy.
+    PolicyMap policy_map;
+    policy_map.LoadFrom(dictionary_value, level_, scope_);
+    bundle->Get(POLICY_DOMAIN_CHROME, "").MergeFrom(policy_map);
   }
 
   return bundle.Pass();
@@ -89,6 +100,55 @@ base::Time ConfigDirPolicyProviderDelegate::GetLastModification() {
   }
 
   return last_modification;
+}
+
+void ConfigDirPolicyProviderDelegate::Merge3rdPartyPolicy(
+    PolicyBundle* bundle,
+    const base::Value* value) {
+  // The first-level entries in |value| are PolicyDomains. The second-level
+  // entries are component IDs, and the third-level entries are the policies
+  // for that domain/component namespace.
+
+  const base::DictionaryValue* domains_dictionary;
+  if (!value->GetAsDictionary(&domains_dictionary)) {
+    LOG(WARNING) << "3rdparty value is not a dictionary!";
+    return;
+  }
+
+  // Helper to lookup a domain given its string name.
+  std::map<std::string, PolicyDomain> supported_domains;
+  supported_domains["extensions"] = POLICY_DOMAIN_EXTENSIONS;
+
+  for (base::DictionaryValue::Iterator domains_it(*domains_dictionary);
+       domains_it.HasNext(); domains_it.Advance()) {
+    if (!ContainsKey(supported_domains, domains_it.key())) {
+      LOG(WARNING) << "Unsupported 3rd party policy domain: "
+                   << domains_it.key();
+      continue;
+    }
+
+    const base::DictionaryValue* components_dictionary;
+    if (!domains_it.value().GetAsDictionary(&components_dictionary)) {
+      LOG(WARNING) << "3rdparty/" << domains_it.key()
+                   << " value is not a dictionary!";
+      continue;
+    }
+
+    PolicyDomain domain = supported_domains[domains_it.key()];
+    for (base::DictionaryValue::Iterator components_it(*components_dictionary);
+         components_it.HasNext(); components_it.Advance()) {
+      const base::DictionaryValue* policy_dictionary;
+      if (!components_it.value().GetAsDictionary(&policy_dictionary)) {
+        LOG(WARNING) << "3rdparty/" << domains_it.key() << "/"
+                     << components_it.key() << " value is not a dictionary!";
+        continue;
+      }
+
+      PolicyMap policy;
+      policy.LoadFrom(policy_dictionary, level_, scope_);
+      bundle->Get(domain, components_it.key()).MergeFrom(policy);
+    }
+  }
 }
 
 ConfigDirPolicyProvider::ConfigDirPolicyProvider(
