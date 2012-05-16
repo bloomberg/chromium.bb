@@ -164,8 +164,7 @@ SettingsStorage::ReadResult SettingsLeveldbStorage::Get() {
   options.snapshot = snapshot.get();
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
-    Value* value =
-        json_reader.JsonToValue(it->value().ToString(), false, false);
+    Value* value = json_reader.ReadToValue(it->value().ToString());
     if (value != NULL) {
       settings->SetWithoutPathExpansion(it->key().ToString(), value);
     } else {
@@ -276,8 +275,7 @@ SettingsStorage::WriteResult SettingsLeveldbStorage::Clear() {
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     const std::string key = it->key().ToString();
     const std::string old_value_json = it->value().ToString();
-    Value* old_value =
-        base::JSONReader().JsonToValue(old_value_json, false, false);
+    Value* old_value = base::JSONReader().ReadToValue(old_value_json);
     if (old_value) {
       changes->push_back(SettingChange(key, old_value, NULL));
     } else {
@@ -319,7 +317,7 @@ bool SettingsLeveldbStorage::ReadFromDb(
     return false;
   }
 
-  Value* value = base::JSONReader().JsonToValue(value_as_json, false, false);
+  Value* value = base::JSONReader().ReadToValue(value_as_json);
   if (value == NULL) {
     // TODO(kalman): clear the offending non-JSON value from the database.
     LOG(ERROR) << "Invalid JSON in database: " << value_as_json;

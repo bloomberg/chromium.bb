@@ -249,28 +249,13 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
   if (!result)
     return true;
 
-  // Wrap |json| in an array before deserializing because valid JSON has an
-  // array or an object as the root.
-  json.insert(0, "[");
-  json.append("]");
-
-  scoped_ptr<Value> root_val(
-      base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS));
-  if (!root_val->IsType(Value::TYPE_LIST)) {
-    DLOG(ERROR) << "JSON result is not a list.";
+  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
+  result->reset(reader.ReadToValue(json));
+  if (!result->get()) {
+    DLOG(ERROR) << reader.GetErrorMessage();
     return false;
   }
 
-  ListValue* list = static_cast<ListValue*>(root_val.get());
-  Value* result_val;
-  if (!list || !list->GetSize() ||
-      // Remove gives us ownership of the value.
-      !list->Remove(0, &result_val)) {
-    DLOG(ERROR) << "JSON result list is empty.";
-    return false;
-  }
-
-  result->reset(result_val);
   return true;
 }
 

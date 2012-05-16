@@ -99,8 +99,7 @@ void TabModalConfirmDialogWebUI::OnDialogClosed(
     const std::string& json_retval) {
   bool accepted = false;
   if (!json_retval.empty()) {
-    base::JSONReader reader;
-    scoped_ptr<Value> value(reader.JsonToValue(json_retval, false, false));
+    scoped_ptr<Value> value(base::JSONReader::Read(json_retval));
     if (!value.get() || !value->GetAsBoolean(&accepted))
       NOTREACHED() << "Missing or unreadable response from dialog";
   }

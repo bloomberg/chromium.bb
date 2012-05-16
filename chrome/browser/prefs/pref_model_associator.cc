@@ -49,8 +49,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
         sync_pref.GetSpecifics().preference();
     DCHECK_EQ(pref->name(), preference.name());
 
-    scoped_ptr<Value> value(
-        reader.JsonToValue(preference.value(), false, false));
+    scoped_ptr<Value> value(reader.ReadToValue(preference.value()));
     if (!value.get()) {
       LOG(ERROR) << "Failed to deserialize preference value: "
                  << reader.GetErrorMessage();
@@ -355,7 +354,7 @@ Value* PrefModelAssociator::ReadPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& preference,
     std::string* name) {
   base::JSONReader reader;
-  scoped_ptr<Value> value(reader.JsonToValue(preference.value(), false, false));
+  scoped_ptr<Value> value(reader.ReadToValue(preference.value()));
   if (!value.get()) {
     std::string err = "Failed to deserialize preference value: " +
         reader.GetErrorMessage();

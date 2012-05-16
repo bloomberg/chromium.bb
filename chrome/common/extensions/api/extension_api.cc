@@ -70,7 +70,7 @@ scoped_ptr<ListValue> LoadSchemaList(const std::string& name,
   scoped_ptr<Value> result(
       base::JSONReader::ReadAndReturnError(
           schema.as_string(),
-          base::JSON_PARSE_RFC,  // options
+          base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN,  // options
           NULL,  // error code
           &error_message));
 

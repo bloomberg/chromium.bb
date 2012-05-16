@@ -103,8 +103,8 @@ TEST_F(ExtensionUnpackerTest, MAYBE_InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
-    ASCIIToUTF16("*_locales?en_US?messages.json: Line: 2, column: 3,"
-                " Dictionary keys must be quoted.")));
+    ASCIIToUTF16("*_locales?en_US?messages.json: Line: 2, column: 11,"
+        " Syntax error."))) << unpacker_->error_message();
 }
 
 // Crashes intermittently on Vista, see http://crbug.com/109238

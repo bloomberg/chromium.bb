@@ -184,8 +184,7 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   // internal error.
   std::string response_body;
   source->GetResponseAsString(&response_body);
-  base::JSONReader reader;
-  scoped_ptr<base::Value> value(reader.Read(response_body, false));
+  scoped_ptr<base::Value> value(base::JSONReader::Read(response_body));
   DictionaryValue* dict = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict)) {
     ReportFailure(GoogleServiceAuthError::FromConnectionError(101));

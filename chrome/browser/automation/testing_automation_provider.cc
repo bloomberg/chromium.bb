@@ -2115,10 +2115,8 @@ void TestingAutomationProvider::GetBlockedPopupCount(int handle, int* count) {
 void TestingAutomationProvider::SendJSONRequest(int handle,
                                                 const std::string& json_request,
                                                 IPC::Message* reply_message) {
-  scoped_ptr<Value> values;
-  base::JSONReader reader;
   std::string error;
-  values.reset(reader.ReadAndReturnError(json_request,
+  scoped_ptr<Value> values(base::JSONReader::ReadAndReturnError(json_request,
       base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
   if (!error.empty()) {
     AutomationJSONReply(this, reply_message).SendError(error);

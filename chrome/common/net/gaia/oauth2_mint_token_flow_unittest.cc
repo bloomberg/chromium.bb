@@ -167,8 +167,7 @@ class OAuth2MintTokenFlowTest : public testing::Test {
 
   // Helper to parse the given string to DictionaryValue.
   static base::DictionaryValue* ParseJson(const std::string& str) {
-    base::JSONReader reader;
-    scoped_ptr<Value> value(reader.Read(str, false));
+    scoped_ptr<Value> value(base::JSONReader::Read(str));
     EXPECT_TRUE(value.get());
     EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
     return static_cast<base::DictionaryValue*>(value.release());
