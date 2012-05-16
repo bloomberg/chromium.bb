@@ -90,12 +90,10 @@ void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
 
   {
     base::AutoLock auto_lock(gpu_info_lock_);
-    if (gpu_info.gpu.vendor_id && gpu_info.gpu.device_id) {
+    if (gpu_info.gpu.vendor_id && gpu_info.gpu.device_id)
       gpu_info_ = gpu_info;
-    } else {
-      gpu_info_.gpu_accessible = false;
+    else
       gpu_info_.finalized = true;
-    }
     complete_gpu_info_available_ =
         complete_gpu_info_available_ || gpu_info_.finalized;
     complete_gpu_info_already_requested_ =
