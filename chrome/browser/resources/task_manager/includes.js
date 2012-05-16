@@ -7,7 +7,7 @@
 // reference the resources.
 
 var css = [
-  'chrome_shared.css',
+  'chrome_shared2.css',
   'list.css',
   'table.css',
   'menu.css',
