@@ -106,8 +106,6 @@
       '-omnibox.OmniboxTest.testHistoryResult',
       # crbug.com/123019
       '-omnibox.OmniboxTest.testAutoCompleteForNonAsciiSearch',
-      # crbug.com/117720
-      '-passwords.PasswordTest.testPasswordAutofilledInIncognito',
       # crbug.com/86524
       '-plugins.PluginsTest.testAllowPluginException',
       # crbug.com/97140
