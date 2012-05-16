@@ -4,15 +4,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs strace or dtrace on a test and processes the logs to extract the
-dependencies from the source tree.
+"""Traces an executable and its child processes and extract the files accessed
+by them.
 
-Automatically extracts directories where all the files are used to make the
-dependencies list more compact.
+The implementation uses OS-specific API. The native Kernel logger and the ETL
+interface is used on Windows. Dtrace is used on OSX. Strace is used otherwise.
+The OS-specific implementation is hidden in an 'API' interface.
+
+The list is done in two phases, the first is to do the actual trace and generate
+an technique-specific log file. Then the log file is parsed to extract the
+information, including the individual child processes and the files accessed
+from the log.
 """
 
 import codecs
 import csv
+import glob
+import json
 import logging
 import optparse
 import os
@@ -20,6 +28,7 @@ import posixpath
 import re
 import subprocess
 import sys
+import weakref
 
 ## OS-specific imports
 
@@ -132,16 +141,16 @@ if sys.platform == 'win32':
 
     def to_dos(self, path):
       """Converts a native NT path to DOS path."""
-      m = re.match(r'(^\\Device\\[a-zA-Z0-9]+)(\\.*)?$', path)
-      assert m, path
-      if not m.group(1) in self._MAPPING:
+      match = re.match(r'(^\\Device\\[a-zA-Z0-9]+)(\\.*)?$', path)
+      assert match, path
+      if not match.group(1) in self._MAPPING:
         # Unmapped partitions may be accessed by windows for the
         # fun of it while the test is running. Discard these.
         return None
-      drive = self._MAPPING[m.group(1)]
-      if not drive or not m.group(2):
+      drive = self._MAPPING[match.group(1)]
+      if not drive or not match.group(2):
         return drive
-      return drive + m.group(2)
+      return drive + match.group(2)
 
 
 def get_native_path_case(root, relative_path):
@@ -231,180 +240,269 @@ class Strace(object):
     existent files accessed.
 
     Ignores directories.
+
+    Uses late-binding to processes the cwd of each process. The problem is that
+    strace generates one log file per process it traced but doesn't give any
+    information about which process was started when and by who. So we don't
+    even know which process is the initial one. So process the logs out of
+    order and use late binding with RelativePath to be able to deduce the
+    initial directory of each process once all the logs are parsed.
     """
-    # This is the most common format. pid function(args) = result
-    RE_HEADER = re.compile(r'^(\d+)\s+([^\(]+)\((.+?)\)\s+= (.+)$')
-    # An interrupted function call, only grab the minimal header.
-    RE_UNFINISHED = re.compile(r'^(\d+)\s+([^\(]+).*$')
-    UNFINISHED = ' <unfinished ...>'
-    # A resumed function call.
-    RE_RESUMED = re.compile(r'^(\d+)\s+<\.\.\. ([^ ]+) resumed> (.+)$')
-    # A process received a signal.
-    RE_SIGNAL = re.compile(r'^\d+\s+--- SIG[A-Z]+ .+ ---')
-    # A process didn't handle a signal.
-    RE_KILLED = re.compile(r'^(\d+)\s+\+\+\+ killed by ([A-Z]+) \+\+\+$')
-    # A call was canceled.
-    RE_UNAVAILABLE = re.compile(r'\)\s+= \? <unavailable>$')
+    class Process(object):
+      """Represents the state of a process.
 
-    # Arguments parsing.
-    RE_CHDIR = re.compile(r'^\"(.+?)\"$')
-    RE_EXECVE = re.compile(r'^\"(.+?)\", \[.+?\], \[.+?\]$')
-    RE_OPEN2 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+)$')
-    RE_OPEN3 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+), (\d+)$')
-    RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
+      Contains all the information retrieved from the pid-specific log.
+      """
+      # Function names are using ([a-z_0-9]+)
+      # This is the most common format. function(args) = result
+      RE_HEADER = re.compile(r'^([a-z_0-9]+)\((.+?)\)\s+= (.+)$')
+      # An interrupted function call, only grab the minimal header.
+      RE_UNFINISHED = re.compile(r'^([^\(]+)(.*) \<unfinished \.\.\.\>$')
+      # A resumed function call.
+      RE_RESUMED = re.compile(r'^<\.\.\. ([^ ]+) resumed> (.+)$')
+      # A process received a signal.
+      RE_SIGNAL = re.compile(r'^--- SIG[A-Z]+ .+ ---')
+      # A process didn't handle a signal.
+      RE_KILLED = re.compile(r'^\+\+\+ killed by ([A-Z]+) \+\+\+$')
+      # A call was canceled.
+      RE_UNAVAILABLE = re.compile(r'\)\s+= \? <unavailable>$')
+      # Happens when strace fails to even get the function name.
+      UNNAMED_FUNCTION = '????'
 
-    def __init__(self, blacklist):
-      self._cwd = {}
+      # Arguments parsing.
+      RE_CHDIR = re.compile(r'^\"(.+?)\"$')
+      RE_EXECVE = re.compile(r'^\"(.+?)\", \[.+?\], \[.+?\]$')
+      RE_OPEN2 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+)$')
+      RE_OPEN3 = re.compile(r'^\"(.*?)\", ([A-Z\_\|]+), (\d+)$')
+      RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
+
+      class RelativePath(object):
+        """A late-bound relative path."""
+        def __init__(self, parent, value):
+          self.parent = parent
+          self.value = value
+
+        def render(self):
+          """Returns the current directory this instance is representing.
+
+          This function is used to return the late-bound value.
+          """
+          if self.value and self.value.startswith(u'/'):
+            # An absolute path.
+            return self.value
+          parent = self.parent.render() if self.parent else u'<None>'
+          if self.value:
+            return os.path.normpath(os.path.join(parent, self.value))
+          return parent
+
+        def __unicode__(self):
+          """Acts as a string whenever needed."""
+          return unicode(self.render())
+
+        def __str__(self):
+          """Acts as a string whenever needed."""
+          return str(self.render())
+
+      def __init__(self, root, pid):
+        self.root = weakref.ref(root)
+        self.pid = pid
+        self.children = []
+        self.parentid = None
+        # The dict key is the function name of the pending call, like 'open'
+        # or 'execve'.
+        self._pending_calls = {}
+        self._line_number = 0
+        # Current directory when the process started.
+        self.initial_cwd = self.RelativePath(self.root(), None)
+        self._cwd = None
+        self.files = set()
+
+      @property
+      def cwd(self):
+        return self._cwd or self.initial_cwd
+
+      def render(self):
+        """Returns the string value of the RelativePath() object.
+
+        Used by RelativePath. Returns the initial directory and not the
+        current one since the current directory '_cwd' validity is time-limited.
+
+        The validity is only guaranteed once all the logs are processed.
+        """
+        return self.initial_cwd.render()
+
+      def on_line(self, line):
+        self._line_number += 1
+        if self.RE_SIGNAL.match(line):
+          # Ignore signals.
+          return
+
+        match = self.RE_KILLED.match(line)
+        if match:
+          self.handle_exit_group(match.group(1), None, None)
+          return
+
+        match = self.RE_UNFINISHED.match(line)
+        if match:
+          assert match.group(1) not in self._pending_calls
+          self._pending_calls[match.group(1)] = match.group(1) + match.group(2)
+          return
+
+        match = self.RE_UNAVAILABLE.match(line)
+        if match:
+          # This usually means a process was killed and a pending call was
+          # canceled.
+          # TODO(maruel): Look up the last exit_group() trace just above and
+          # make sure any self._pending_calls[anything] is properly flushed.
+          return
+
+        match = self.RE_RESUMED.match(line)
+        if match:
+          assert match.group(1) in self._pending_calls, self._pending_calls
+          pending = self._pending_calls.pop(match.group(1))
+          # Reconstruct the line.
+          line = pending + match.group(2)
+
+        match = self.RE_HEADER.match(line)
+        assert match, (self.pid, self._line_number, line)
+        if match.group(1) == self.UNNAMED_FUNCTION:
+          return
+        handler = getattr(self, 'handle_%s' % match.group(1), None)
+        assert handler, (self.pid, self._line_number, line)
+        try:
+          return handler(
+              match.group(1),
+              match.group(2),
+              match.group(3))
+        except Exception:
+          print >> sys.stderr, (self.pid, self._line_number, line)
+          raise
+
+      def handle_chdir(self, _function, args, result):
+        """Updates cwd."""
+        assert result.startswith('0'), 'Unexecpected fail: %s' % result
+        cwd = self.RE_CHDIR.match(args).group(1)
+        self._cwd = self.RelativePath(self, cwd)
+        logging.debug('handle_chdir(%d, %s)' % (self.pid, self.cwd))
+
+      def handle_clone(self, _function, _args, result):
+        """Transfers cwd."""
+        if result == '? ERESTARTNOINTR (To be restarted)':
+          return
+        # Update the other process right away.
+        childpid = int(result)
+        child = self.root().get_or_set_proc(childpid)
+        # Copy the _cwd object.
+        child.initial_cwd = self.cwd
+        assert child.parentid is None
+        child.parentid = self.pid
+        self.children.append(childpid)
+
+      def handle_close(self, _function, _args, _result):
+        pass
+
+      def handle_execve(self, _function, args, result):
+        self._handle_file(self.RE_EXECVE.match(args).group(1), result)
+
+      def handle_exit_group(self, _function, _args, _result):
+        """Removes _cwd."""
+        self._cwd = None
+
+      @staticmethod
+      def handle_fork(_function, args, result):
+        assert False, (args, result)
+
+      def handle_open(self, _function, args, result):
+        args = (self.RE_OPEN3.match(args) or self.RE_OPEN2.match(args)).groups()
+        if 'O_DIRECTORY' in args[1]:
+          return
+        self._handle_file(args[0], result)
+
+      def handle_rename(self, _function, args, result):
+        args = self.RE_RENAME.match(args).groups()
+        self._handle_file(args[0], result)
+        self._handle_file(args[1], result)
+
+      @staticmethod
+      def handle_stat64(_function, args, result):
+        assert False, (args, result)
+
+      @staticmethod
+      def handle_vfork(_function, args, result):
+        assert False, (args, result)
+
+      def _handle_file(self, filepath, result):
+        if result.startswith('-1'):
+          return
+        filepath = self.RelativePath(self.cwd, filepath)
+        if self.root().blacklist(unicode(filepath)):
+          return
+        logging.debug('_handle_file(%d, %s)' % (self.pid, filepath))
+        self.files.add(filepath)
+
+    def __init__(self, blacklist, initial_cwd):
       self.blacklist = blacklist
       self.files = set()
       self.non_existent = set()
-      # Key is a tuple(pid, function name)
-      self._pending_calls = {}
-      self._line_number = 0
+      self.processes = {}
+      self.initial_cwd = initial_cwd
+
+    def render(self):
+      """Returns the string value of the initial cwd of the root process.
+
+      Used by RelativePath.
+      """
+      return self.initial_cwd
+
+    def on_line(self, pid, line):
+      self.get_or_set_proc(pid).on_line(line.strip())
+
+    def get_or_set_proc(self, pid):
+      """Returns the Context.Process instance for this pid or creates a new one.
+      """
+      assert isinstance(pid, int) and pid
+      return self.processes.setdefault(pid, self.Process(self, pid))
 
     @classmethod
     def traces(cls):
       prefix = 'handle_'
-      return [i[len(prefix):] for i in dir(cls) if i.startswith(prefix)]
+      return [i[len(prefix):] for i in dir(cls.Process) if i.startswith(prefix)]
 
-    def on_line(self, line):
-      self._line_number += 1
-      line = line.strip()
-      if self.RE_SIGNAL.match(line):
-        # Ignore signals.
-        return
-
-      m = self.RE_KILLED.match(line)
-      if m:
-        self.handle_exit_group(int(m.group(1)), m.group(2), None, None)
-        return
-
-      if line.endswith(self.UNFINISHED):
-        line = line[:-len(self.UNFINISHED)]
-        m = self.RE_UNFINISHED.match(line)
-        assert m, '%d: %s' % (self._line_number, line)
-        self._pending_calls[(m.group(1), m.group(2))] = line
-        return
-
-      m = self.RE_UNAVAILABLE.match(line)
-      if m:
-        # This usually means a process was killed and a pending call was
-        # canceled.
-        # TODO(maruel): Look up the last exit_group() trace just above and make
-        # sure any self._pending_calls[(pid, anything)] is properly flushed.
-        return
-
-      m = self.RE_RESUMED.match(line)
-      if m:
-        pending = self._pending_calls.pop((m.group(1), m.group(2)))
-        # Reconstruct the line.
-        line = pending + m.group(3)
-
-      m = self.RE_HEADER.match(line)
-      assert m, (self._line_number, line)
-      if m.group(2) == '????':
-        return
-      handler = getattr(self, 'handle_%s' % m.group(2), None)
-      assert handler, (self._line_number, line)
-      try:
-        return handler(
-            int(m.group(1)),
-            m.group(2),
-            m.group(3),
-            m.group(4))
-      except Exception:
-        print >> sys.stderr, (self._line_number, line)
-        raise
-
-    def handle_chdir(self, pid, _function, args, result):
-      """Updates cwd."""
-      if result.startswith('0'):
-        cwd = self.RE_CHDIR.match(args).group(1)
-        if not cwd.startswith('/'):
-          cwd2 = os.path.join(self._cwd[pid], cwd)
-          logging.debug('handle_chdir(%d, %s) -> %s' % (pid, cwd, cwd2))
-          self._cwd[pid] = cwd2
-        else:
-          logging.debug('handle_chdir(%d, %s)' % (pid, cwd))
-          self._cwd[pid] = cwd
-      else:
-        assert False, 'Unexecpected fail: %s' % result
-
-    def handle_clone(self, pid, _function, _args, result):
-      """Transfers cwd."""
-      if result == '? ERESTARTNOINTR (To be restarted)':
-        return
-      self._cwd[int(result)] = self._cwd[pid]
-
-    def handle_close(self, pid, _function, _args, _result):
-      pass
-
-    def handle_execve(self, pid, _function, args, result):
-      self._handle_file(pid, self.RE_EXECVE.match(args).group(1), result)
-
-    def handle_exit_group(self, pid, _function, _args, _result):
-      """Removes cwd."""
-      del self._cwd[pid]
-
-    @staticmethod
-    def handle_fork(_pid, _function, args, result):
-      assert False, (args, result)
-
-    def handle_open(self, pid, _function, args, result):
-      args = (self.RE_OPEN3.match(args) or self.RE_OPEN2.match(args)).groups()
-      if 'O_DIRECTORY' in args[1]:
-        return
-      self._handle_file(pid, args[0], result)
-
-    def handle_rename(self, pid, _function, args, result):
-      args = self.RE_RENAME.match(args).groups()
-      self._handle_file(pid, args[0], result)
-      self._handle_file(pid, args[1], result)
-
-    @staticmethod
-    def handle_stat64(_pid, _function, args, result):
-      assert False, (args, result)
-
-    @staticmethod
-    def handle_vfork(_pid, _function, args, result):
-      assert False, (args, result)
-
-    def _handle_file(self, pid, filepath, result):
-      assert pid in self._cwd
-      if result.startswith('-1'):
-        return
-      old_filepath = filepath
-      if not filepath.startswith('/'):
-        filepath = os.path.join(self._cwd[pid], filepath)
-      if self.blacklist(filepath):
-        return
-      if old_filepath != filepath:
-        logging.debug(
-            '_handle_file(%d, %s) -> %s' % (pid, old_filepath, filepath))
-      else:
-        logging.debug('_handle_file(%d, %s)' % (pid, filepath))
-      if filepath not in self.files and filepath not in self.non_existent:
-        if os.path.isfile(filepath):
-          self.files.add(filepath)
-        else:
-          self.non_existent.add(filepath)
+    def resolve(self):
+      """Resolve all the filenames."""
+      for p in self.processes.itervalues():
+        for filepath in p.files:
+          filepath = unicode(filepath)
+          if self.blacklist(filepath):
+            return
+          if os.path.isfile(filepath):
+            self.files.add(filepath)
+          else:
+            self.non_existent.add(filepath)
 
   @staticmethod
   def clean_trace(logname):
     """Deletes the old log."""
     if os.path.isfile(logname):
       os.remove(logname)
+    # Also delete any pid specific file from previous traces.
+    for i in glob.iglob(logname + '.*'):
+      if i.rsplit('.', 1)[1].isdigit():
+        os.remove(i)
 
   @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
-    """Runs strace on an executable."""
+    """Runs strace on an executable.
+
+    Since the logs are per pid, we need to log the list of the initial pid.
+    """
     logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
     stdout = stderr = None
     if output:
       stdout = subprocess.PIPE
       stderr = subprocess.STDOUT
     traces = ','.join(cls.Context.traces())
-    trace_cmd = ['strace', '-f', '-e', 'trace=%s' % traces, '-o', logname]
+    trace_cmd = ['strace', '-ff', '-e', 'trace=%s' % traces, '-o', logname]
     child = subprocess.Popen(
         trace_cmd + cmd,
         cwd=cwd,
@@ -412,17 +510,16 @@ class Strace(object):
         stdout=stdout,
         stderr=stderr)
     out = child.communicate()[0]
-    # Once it's done, inject a chdir() call to cwd to be able to reconstruct
-    # the full paths.
-    # TODO(maruel): cwd should be saved at each process creation, so forks needs
-    # to be traced properly.
-    if os.path.isfile(logname):
-      with open(logname) as f:
-        content = f.read()
-      with open(logname, 'w') as f:
-        pid = content.split(' ', 1)[0]
-        f.write('%s chdir("%s") = 0\n' % (pid, cwd))
-        f.write(content)
+    # Once it's done, write metadata into the log file to be able to follow the
+    # pid files.
+    assert not os.path.isfile(logname)
+    with open(logname, 'wb') as f:
+      json.dump(
+          {
+            'cwd': cwd,
+            'pid': child.pid,
+          },
+          f)
     return child.returncode, out
 
   @classmethod
@@ -436,9 +533,17 @@ class Strace(object):
     should be put in /tmp instead. See http://crbug.com/116251
     """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
-    context = cls.Context(blacklist)
-    for line in open(filename):
-      context.on_line(line)
+    with open(filename, 'r') as f:
+      data = json.load(f)
+    context = cls.Context(blacklist, data['cwd'])
+    for pidfile in glob.iglob(filename + '.*'):
+      pid = pidfile.rsplit('.', 1)[1]
+      if pid.isdigit():
+        pid = int(pid)
+        # TODO(maruel): Load as utf-8
+        for line in open(pidfile, 'rb'):
+          context.on_line(pid, line)
+    context.resolve()
     # Resolve any symlink we hit.
     return (
         set(os.path.realpath(f) for f in context.files),
@@ -622,18 +727,18 @@ class Dtrace(object):
       self.non_existent = set()
 
     def on_line(self, line):
-      m = self.RE_HEADER.match(line)
-      assert m, line
+      match = self.RE_HEADER.match(line)
+      assert match, line
       fn = getattr(
           self,
-          'handle_%s' % m.group(3).replace('-', '_'),
+          'handle_%s' % match.group(3).replace('-', '_'),
           self._handle_ignored)
       return fn(
-          int(m.group(1)),
-          int(m.group(2)),
-          m.group(3),
-          m.group(4),
-          m.group(5))
+          int(match.group(1)),
+          int(match.group(2)),
+          match.group(3),
+          match.group(4),
+          match.group(5))
 
     def handle_dtrace_BEGIN(self, _ppid, _pid, _function, args, _result):
       pass
@@ -922,8 +1027,8 @@ class LogmanTrace(object):
       pass
 
     def handle_FileIo_Create(self, line):
-      m = re.match(r'^\"(.+)\"$', line[self.FILE_PATH])
-      self._handle_file(self._drive_map.to_dos(m.group(1)))
+      match = re.match(r'^\"(.+)\"$', line[self.FILE_PATH])
+      self._handle_file(self._drive_map.to_dos(match.group(1)))
 
     def handle_FileIo_Rename(self, line):
       # TODO(maruel): Handle?

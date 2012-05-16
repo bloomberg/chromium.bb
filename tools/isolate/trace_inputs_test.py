@@ -97,76 +97,70 @@ class TraceInputs(unittest.TestCase):
 
 if trace_inputs.get_flavor() == 'linux':
   class StraceInputs(unittest.TestCase):
-    def _test_lines(self, lines, files, non_existent):
-      context = trace_inputs.Strace.Context(lambda _: False)
+    def _test_lines(self, lines, initial_cwd, files, non_existent):
+      context = trace_inputs.Strace.Context(lambda _: False, initial_cwd)
       for line in lines:
-        context.on_line(line)
+        context.on_line(*line)
+      context.resolve()
       self.assertEquals(sorted(files), sorted(context.files))
       self.assertEquals(sorted(non_existent), sorted(context.non_existent))
 
     def test_empty(self):
-      self._test_lines([], [], [])
+      self._test_lines([], None, [], [])
 
     def test_close(self):
       lines = [
-        '31426 close(7)                          = 0',
+        (90, 'close(7)                          = 0'),
       ]
-      self._test_lines(lines, [], [])
+      self._test_lines(lines, None, [], [])
 
     def test_clone(self):
       # Grand-child with relative directory.
       lines = [
-        '86 chdir("%s") = 0' % ROOT_DIR,
-        '86 clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID'
-            '|SIGCHLD, child_tidptr=0x7f5350f829d0) = 14',
-        ')                                       = ? <unavailable>',
-        '14 clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID'
-            '|SIGCHLD, child_tidptr=0x7f5350f829d0) = 70',
-        '14 close(75)                         = 0',
-        '70 open("%s", O_RDONLY)       = 76' % os.path.basename(FILE_NAME),
+        (86, 'clone(child_stack=0, flags=CLONE_CHILD_CLEARTID'
+            '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = 14'),
+        (86, ')                                       = ? <unavailable>'),
+        (14, 'clone(child_stack=0, flags=CLONE_CHILD_CLEARTID'
+            '|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f5350f829d0) = 70'),
+        (14, 'close(75)                         = 0'),
+        (70, 'open("%s", O_RDONLY)       = 76' % os.path.basename(FILE_NAME)),
       ]
       files = [
         FILE_NAME,
       ]
-      self._test_lines(lines, files, [])
+      self._test_lines(lines, ROOT_DIR, files, [])
 
     def test_open(self):
       lines = [
-        '42 chdir("/home/foo_bar_user/src") = 0',
-        '42 execve("../out/unittests", '
-            '["../out/unittests"...], [/* 44 vars */])         = 0',
-        '42 open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND, 0666) = 8',
+        (42, 'execve("../out/unittests", '
+            '["../out/unittests"...], [/* 44 vars */])         = 0'),
+        (42, 'open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND, 0666) = 8'),
       ]
       files = [
-        '/home/foo_bar_user/src/../out/unittests',
-        '/home/foo_bar_user/src/out/unittests.log',
+        u'/home/foo_bar_user/out/unittests',
+        u'/home/foo_bar_user/src/out/unittests.log',
       ]
-      self._test_lines(lines, [], files)
+      self._test_lines(lines, '/home/foo_bar_user/src', [], files)
 
     def test_open_resumed(self):
       lines = [
-        '42 chdir("/home/foo_bar_user/src") = 0',
-        '42 execve("../out/unittests", '
-            '["../out/unittests"...], [/* 44 vars */])         = 0',
-        '42 open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND '
-            '<unfinished ...>',
-        '42 <... open resumed> )              = 3',
+        (42, 'execve("../out/unittests", '
+            '["../out/unittests"...], [/* 44 vars */])         = 0'),
+        (42, 'open("out/unittests.log", O_WRONLY|O_CREAT|O_APPEND '
+          '<unfinished ...>'),
+        (42, '<... open resumed> )              = 3'),
       ]
       files = [
-        '/home/foo_bar_user/src/../out/unittests',
-        '/home/foo_bar_user/src/out/unittests.log',
+        u'/home/foo_bar_user/out/unittests',
+        u'/home/foo_bar_user/src/out/unittests.log',
       ]
-      self._test_lines(lines, [], files)
+      self._test_lines(lines, '/home/foo_bar_user/src', [], files)
 
     def test_sig_unexpected(self):
       lines = [
-        '27 exit_group(0)                     = ?',
+        (27, 'exit_group(0)                     = ?'),
       ]
-      try:
-        self._test_lines(lines, [], [])
-        self.fail()
-      except KeyError, e:
-        self.assertEqual(27, e.args[0])
+      self._test_lines(lines, ROOT_DIR, [], [])
 
 
 if __name__ == '__main__':

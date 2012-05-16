@@ -44,13 +44,13 @@ def trace_test_case(
     f = None
 
   try:
-    for i in range(3):
+    simplified = None
+    for i in range(10):
       start = time.time()
       returncode, output = trace_inputs.trace(
           logname, cmd, os.path.join(root_dir, cwd_dir), api, True)
-      if returncode and i != 2:
+      if returncode and i < 5:
         print '\nFailed while running: %s' % ' '.join(cmd)
-        print 'Trying again!'
         continue
       duration = time.time() - start
       try:
@@ -58,9 +58,10 @@ def trace_test_case(
         break
       except Exception:
         print '\nFailed loading the trace for: %s' % ' '.join(cmd)
-        print 'Trying again!'
-
-    variables = trace_inputs.generate_dict(simplified, cwd_dir, product_dir)
+    if simplified:
+      variables = trace_inputs.generate_dict(simplified, cwd_dir, product_dir)
+    else:
+      variables = {}
     return {
       'case': test_case,
       'variables': variables,
