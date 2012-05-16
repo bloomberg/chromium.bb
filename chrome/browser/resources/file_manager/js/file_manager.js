@@ -4371,15 +4371,31 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onSearchBoxUpdate_ = function(event) {
-    var searchString = this.dialogDom_.querySelector('#search-box').value;
+    var searchString = this.document_.getElementById('search-box').value;
+    var searchStringLC = searchString.toLowerCase();
+    var noResultsDiv = this.document_.getElementById('no-search-results');
     if (searchString) {
       this.directoryModel_.addFilter(
           'searchbox',
           function(e) {
-            return e.name.substr(0, searchString.length) == searchString;
+            return e.name.toLowerCase().indexOf(searchStringLC) > -1;
           });
+
+      this.reportEmptySearchResults_ = function() {
+        if (this.directoryModel_.getFileList().length === 0) {
+          var text = strf('SEARCH_NO_MATCHING_FILES', searchString);
+          noResultsDiv.innerHTML = text;
+          noResultsDiv.hidden = false;
+        }
+      }.bind(this);
+
+      this.directoryModel_.addEventListener(
+          'rescan-completed', this.reportEmptySearchResults_);
     } else {
       this.directoryModel_.removeFilter('searchbox');
+      noResultsDiv.hidden = true;
+      this.directoryModel_.removeEventListener(
+          'rescan-completed', this.reportEmptySearchResults_);
     }
   };
 

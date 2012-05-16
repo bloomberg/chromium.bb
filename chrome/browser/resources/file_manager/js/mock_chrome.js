@@ -612,7 +612,9 @@ chrome.fileBrowserPrivate = {
       PDF_DOCUMENT_FILE_TYPE: 'PDF document',
       WORD_DOCUMENT_FILE_TYPE: 'Word document',
       POWERPOINT_PRESENTATION_FILE_TYPE: 'PowerPoint presentation',
-      EXCEL_FILE_TYPE: 'Excel spreadsheet'
+      EXCEL_FILE_TYPE: 'Excel spreadsheet',
+
+      SEARCH_NO_MATCHING_FILES: 'No files match <b>"$1"</b>'
     });
   }
 };

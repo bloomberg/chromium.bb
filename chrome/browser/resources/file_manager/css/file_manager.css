@@ -1283,3 +1283,12 @@ body:not([type='saveas-file']):not([type='full-page'])
   -webkit-animation-timing-function: linear;
   opacity: 1;
 }
+
+#no-search-results {
+  bottom: 0;
+  left: 0;
+  padding: 10px;
+  position: absolute;
+  right: 0;
+  top: 28px;  /* Leave room for the file list header. */
+}
