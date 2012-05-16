@@ -380,6 +380,8 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
   anchor_type_ = init_params.anchor_type;
   bubble_view_ = new SystemTrayBubbleView(
       init_params.anchor, this, init_params.can_activate);
+  if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION)
+    bubble_view_->set_close_on_deactivate(false);
 
   CreateItemViews(init_params.login_status);
 
