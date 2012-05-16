@@ -457,6 +457,15 @@ webkit_blob::FileReader* SandboxMountPointProvider::CreateFileReader(
   return new FileSystemFileReader(context, url, offset);
 }
 
+fileapi::FileWriter* SandboxMountPointProvider::CreateFileWriter(
+    const GURL& url,
+    int64 offset,
+    FileSystemContext* context) const {
+  // TODO(kinaba,kinuko): return SandboxFileWriter when it is implemented.
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 FileSystemQuotaUtil* SandboxMountPointProvider::GetQuotaUtil() {
   return this;
 }

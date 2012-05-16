@@ -266,6 +266,16 @@ webkit_blob::FileReader* CrosMountPointProvider::CreateFileReader(
   return new fileapi::FileSystemFileReader(context, url, offset);
 }
 
+fileapi::FileWriter* CrosMountPointProvider::CreateFileWriter(
+    const GURL& url,
+    int64 offset,
+    fileapi::FileSystemContext* context) const {
+  // TODO(kinaba,kinuko,benchan,satorux): return a writer for remote or local
+  // file system depending on the mount point location.
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,
                                            FilePath* virtual_path) {
   for (MountPointMap::const_iterator iter = mount_point_map_.begin();

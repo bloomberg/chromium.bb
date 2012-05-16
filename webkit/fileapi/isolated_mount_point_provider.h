@@ -50,10 +50,15 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const OVERRIDE;
+  virtual FileWriter* CreateFileWriter(
+    const GURL& url,
+    int64 offset,
+    FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
  private:
   IsolatedContext* isolated_context() const;
+  FilePath GetPathFromURL(const GURL& url) const;
 
   scoped_ptr<FileSystemFileUtil> isolated_file_util_;
 };

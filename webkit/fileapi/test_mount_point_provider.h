@@ -60,6 +60,10 @@ class TestMountPointProvider : public FileSystemMountPointProvider {
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const OVERRIDE;
+  virtual FileWriter* CreateFileWriter(
+    const GURL& url,
+    int64 offset,
+    FileSystemContext* context) const OVERRIDE;
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
  private:

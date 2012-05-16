@@ -21,6 +21,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/isolated_file_util.h"
+#include "webkit/fileapi/local_file_writer.h"
 #include "webkit/fileapi/native_file_util.h"
 
 namespace fileapi {
@@ -105,19 +106,17 @@ webkit_blob::FileReader* IsolatedMountPointProvider::CreateFileReader(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  GURL origin_url;
-  FileSystemType file_system_type = kFileSystemTypeUnknown;
-  FilePath virtual_path;
-  if (!CrackFileSystemURL(url, &origin_url, &file_system_type, &virtual_path))
-    return NULL;
-  std::string fsid;
-  FilePath path;
-  if (!isolated_context()->CrackIsolatedPath(virtual_path, &fsid, NULL, &path))
-    return NULL;
-  if (path.empty())
-    return NULL;
-  return new webkit_blob::LocalFileReader(
+  FilePath path = GetPathFromURL(url);
+  return path.empty() ? NULL : new webkit_blob::LocalFileReader(
       context->file_task_runner(), path, offset, base::Time());
+}
+
+FileWriter* IsolatedMountPointProvider::CreateFileWriter(
+    const GURL& url,
+    int64 offset,
+    FileSystemContext* context) const {
+  FilePath path = GetPathFromURL(url);
+  return path.empty() ? NULL : new LocalFileWriter(path, offset);
 }
 
 FileSystemQuotaUtil* IsolatedMountPointProvider::GetQuotaUtil() {
@@ -127,6 +126,19 @@ FileSystemQuotaUtil* IsolatedMountPointProvider::GetQuotaUtil() {
 
 IsolatedContext* IsolatedMountPointProvider::isolated_context() const {
   return IsolatedContext::GetInstance();
+}
+
+FilePath IsolatedMountPointProvider::GetPathFromURL(const GURL& url) const {
+  GURL origin_url;
+  FileSystemType file_system_type = kFileSystemTypeUnknown;
+  FilePath virtual_path;
+  if (!CrackFileSystemURL(url, &origin_url, &file_system_type, &virtual_path))
+    return FilePath();
+  std::string fsid;
+  FilePath path;
+  if (!isolated_context()->CrackIsolatedPath(virtual_path, &fsid, NULL, &path))
+    return FilePath();
+  return path;
 }
 
 }  // namespace fileapi

@@ -72,6 +72,10 @@ class CrosMountPointProvider
     const GURL& path,
     int64 offset,
     fileapi::FileSystemContext* context) const OVERRIDE;
+  virtual fileapi::FileWriter* CreateFileWriter(
+    const GURL& url,
+    int64 offset,
+    fileapi::FileSystemContext* context) const OVERRIDE;
   virtual fileapi::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
   // fileapi::ExternalFileSystemMountPointProvider overrides.

@@ -26,6 +26,7 @@ class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperationInterface;
 class FileSystemQuotaUtil;
+class FileWriter;
 class RemoteFileSystemProxyInterface;
 
 // An interface to provide mount-point-specific path-related utilities
@@ -97,6 +98,16 @@ class FileSystemMountPointProvider {
   // This method itself does *not* check if the given path exists and is a
   // regular file.
   virtual webkit_blob::FileReader* CreateFileReader(
+    const GURL& url,
+    int64 offset,
+    FileSystemContext* context) const = 0;
+
+  // Creates a new file writer for a given filesystem URL |url| with a offset
+  // |offset|.
+  // The returned object must be owned and managed by the caller.
+  // This method itself does *not* check if the given path exists and is a
+  // regular file.
+  virtual FileWriter* CreateFileWriter(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const = 0;
