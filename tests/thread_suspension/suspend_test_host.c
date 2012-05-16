@@ -162,5 +162,9 @@ int main(int argc, char **argv) {
   printf("Running TrySuspendingSyscallInvokerThread...\n");
   TrySuspendingSyscallInvokerThread(&app);
 
-  return 0;
+  /*
+   * Avoid calling exit() because it runs process-global destructors
+   * which might break code that is running in our unjoined threads.
+   */
+  NaClExit(0);
 }
