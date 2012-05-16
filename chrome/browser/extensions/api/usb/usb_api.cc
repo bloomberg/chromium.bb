@@ -25,7 +25,7 @@ using std::vector;
 
 namespace extensions {
 
-UsbFindDeviceFunction::UsbFindDeviceFunction() {}
+UsbFindDeviceFunction::UsbFindDeviceFunction() : event_notifier_(NULL) {}
 
 UsbFindDeviceFunction::~UsbFindDeviceFunction() {}
 
