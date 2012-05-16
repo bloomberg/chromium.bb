@@ -5,11 +5,11 @@
 #include "chrome/browser/media_gallery/media_device_notifications_window_win.h"
 
 #include <dbt.h>
+
 #include <string>
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
@@ -39,8 +39,8 @@ class MediaDeviceNotificationsWindowWinTest : public testing::Test {
     system_monitor_.AddDevicesChangedObserver(&observer_);
   }
 
-  void DoDevicesAttachedTest(const std::vector<int>& deviceIndices);
-  void DoDevicesDetachedTest(const std::vector<int>& deviceIndices);
+  void DoDevicesAttachedTest(const std::vector<int>& device_indices);
+  void DoDevicesDetachedTest(const std::vector<int>& device_indices);
 
   MessageLoop message_loop_;
   base::SystemMonitor system_monitor_;
@@ -56,7 +56,7 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesAttachedTest(
   volume_broadcast.dbcv_unitmask = 0x0;
   volume_broadcast.dbcv_flags = 0x0;
   {
-    testing::InSequence sequnce;
+    testing::InSequence sequence;
     for (std::vector<int>::const_iterator it = device_indices.begin();
          it != device_indices.end();
          ++it) {

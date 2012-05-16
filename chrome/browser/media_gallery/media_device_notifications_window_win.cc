@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include <dbt.h>
+
 #include <string>
 
 #include "base/file_path.h"
@@ -13,10 +14,9 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
 
-static const wchar_t* const WindowClassName =
-    L"Chrome_MediaDeviceNotificationWindow";
-
 namespace {
+
+const wchar_t WindowClassName[] = L"Chrome_MediaDeviceNotificationWindow";
 
 LRESULT GetVolumeName(LPCWSTR drive,
                       LPWSTR volume_name,

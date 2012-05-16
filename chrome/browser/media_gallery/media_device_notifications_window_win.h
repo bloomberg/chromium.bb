@@ -21,9 +21,9 @@ class MediaDeviceNotificationsWindowWin {
   // Only for use in unit tests.
   explicit MediaDeviceNotificationsWindowWin(VolumeNameFunc volumeNameFunc);
 
-  virtual ~MediaDeviceNotificationsWindowWin();
+  ~MediaDeviceNotificationsWindowWin();
 
-  virtual LRESULT OnDeviceChange(UINT event_type, DWORD data);
+  LRESULT OnDeviceChange(UINT event_type, DWORD data);
 
  private:
   void Init();

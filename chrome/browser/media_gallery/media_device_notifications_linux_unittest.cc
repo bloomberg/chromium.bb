@@ -342,7 +342,6 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesMultiMountPoints) {
 
 // More complicated test case with multiple devices on one mount point.
 TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesOneMountPoint) {
-  testing::Sequence mock_sequence;
   FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
   FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
   ASSERT_FALSE(test_path_a.empty());
