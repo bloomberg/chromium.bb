@@ -10698,20 +10698,20 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Cut
       </message>
 
-      <message name="IDS_FILE_BROWSER_PASTE_ITEMS_REMAINING" desc="File picker status message.  'Item' is used here as a generic term for file or directory.">
-        Pasting $1 items
+      <message name="IDS_FILE_BROWSER_PASTE_ITEMS_REMAINING" desc="File Manager status message.  'Item' is used here as a generic term for file or directory.">
+        Transferring $1 items
       </message>
-      <message name="IDS_FILE_BROWSER_PASTE_CANCELLED" desc="File picker status message.">
-        Paste cancelled.
+      <message name="IDS_FILE_BROWSER_PASTE_CANCELLED" desc="File Manager status message.">
+        Transfer cancelled.
       </message>
-      <message name="IDS_FILE_BROWSER_PASTE_TARGET_EXISTS_ERROR" desc="File picker status message.  'Item' is used here as a generic term for file or directory.">
-        Paste failed, item exists: $1
+      <message name="IDS_FILE_BROWSER_PASTE_TARGET_EXISTS_ERROR" desc="File Manager error message.  'Item' is used here as a generic term for file or directory.">
+        Transfer failed, item exists: "$1"
       </message>
-      <message name="IDS_FILE_BROWSER_PASTE_FILESYSTEM_ERROR" desc="File picker status message.">
-        Paste failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
+      <message name="IDS_FILE_BROWSER_PASTE_FILESYSTEM_ERROR" desc="File Manager error message.">
+        Transfer failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
       </message>
-      <message name="IDS_FILE_BROWSER_PASTE_UNEXPECTED_ERROR" desc="File picker status message.">
-        Paste failed, unexpected error: $1
+      <message name="IDS_FILE_BROWSER_PASTE_UNEXPECTED_ERROR" desc="File Manager error message.">
+        Transfer failed, unexpected error: $1
       </message>
 
       <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">

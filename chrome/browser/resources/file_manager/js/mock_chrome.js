@@ -536,11 +536,11 @@ chrome.fileBrowserPrivate = {
       GSHEET_DOCUMENT_FILE_TYPE: 'Google spreadsheet',
       GSLIDES_DOCUMENT_FILE_TYPE: 'Google presentation',
 
-      PASTE_ITEMS_REMAINING: 'Pasting $1 items',
-      PASTE_CANCELLED: 'Paste cancelled.',
-      PASTE_TARGET_EXISTS_ERROR: 'Paste failed, item exists: $1',
-      PASTE_FILESYSTEM_ERROR: 'Paste failed, filesystem error: $1',
-      PASTE_UNEXPECTED_ERROR: 'Paste failed, unexpected error: $1',
+      PASTE_ITEMS_REMAINING: 'Transferring $1 items',
+      PASTE_CANCELLED: 'Transfer cancelled.',
+      PASTE_TARGET_EXISTS_ERROR: 'Transfer failed, item exists: "$1"',
+      PASTE_FILESYSTEM_ERROR: 'Transfer failed. $1',
+      PASTE_UNEXPECTED_ERROR: 'Transfer failed, unexpected error: $1',
 
       CANCEL_LABEL: 'Cancel',
       OPEN_LABEL: 'Open',
