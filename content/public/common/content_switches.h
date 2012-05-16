@@ -111,7 +111,6 @@ CONTENT_EXPORT extern const char kDisableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 CONTENT_EXPORT extern const char kEnableVideoTrack[];
 extern const char kEnableViewport[];
-CONTENT_EXPORT extern const char kDisableWebIntents[];
 CONTENT_EXPORT extern const char kExperimentalLocationFeatures[];
 extern const char kExtraPluginDir[];
 CONTENT_EXPORT extern const char kForceCompositingMode[];

@@ -20,13 +20,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 }
 
 bool IsWebIntentsEnabled(Profile* profile) {
-  bool disabled_flag = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableWebIntents);
-
-  bool enabled_pref = profile->GetPrefs()->GetBoolean(
-      prefs::kWebIntentsEnabled);
-
-  return !disabled_flag && enabled_pref;
+  return profile->GetPrefs()->GetBoolean(prefs::kWebIntentsEnabled);
 }
 
 bool IsWebIntentsEnabledInActiveBrowser() {

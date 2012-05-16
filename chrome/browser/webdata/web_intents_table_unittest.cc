@@ -185,7 +185,6 @@ TEST_F(WebIntentsTableTest, GetByURL) {
   ASSERT_EQ(2U, intents.size());
 }
 
-#if defined(ENABLE_WEB_INTENTS)
 TEST_F(WebIntentsTableTest, DefaultServices) {
   DefaultWebIntentService default_service;
   default_service.action = test_action;
@@ -235,6 +234,5 @@ TEST_F(WebIntentsTableTest, DefaultServices) {
   ASSERT_TRUE(IntentsTable()->GetAllDefaultServices(&defaults));
   ASSERT_EQ(1U, defaults.size());
 }
-#endif // defined(ENABLE_WEB_INTENTS)
 
 } // namespace

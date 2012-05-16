@@ -340,9 +340,6 @@ const char kEnableVideoTrack[]              = "enable-video-track";
 // pages to control aspects of their own layout.
 const char kEnableViewport[]                = "enable-viewport";
 
-// Disable Web Intents.
-const char kDisableWebIntents[]             = "disable-web-intents";
-
 // Enables experimental features for the geolocation API.
 // Current features:
 // - CoreLocation support for Mac OS X 10.6

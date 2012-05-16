@@ -229,10 +229,8 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   TokenServiceFactory::GetInstance();
   UserStyleSheetWatcherFactory::GetInstance();
-#if defined(ENABLE_WEB_INTENTS)
-  WebIntentsRegistryFactory::GetInstance();
-#endif
   WebDataServiceFactory::GetInstance();
+  WebIntentsRegistryFactory::GetInstance();
 
   built_factories_ = true;
 }

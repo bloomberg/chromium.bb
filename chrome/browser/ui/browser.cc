@@ -3958,14 +3958,11 @@ void Browser::RegisterIntentHandler(WebContents* tab,
                                     const string16& href,
                                     const string16& title,
                                     const string16& disposition) {
-#if defined(ENABLE_WEB_INTENTS)
   RegisterIntentHandlerHelper(tab, action, type, href, title, disposition);
-#endif
 }
 
 void Browser::WebIntentDispatch(
     WebContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
-#if defined(ENABLE_WEB_INTENTS)
   if (!web_intents::IsWebIntentsEnabled(profile_))
     return;
 
@@ -3975,7 +3972,6 @@ void Browser::WebIntentDispatch(
   tcw->web_intent_picker_controller()->ShowDialog(
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
-#endif  // defined(ENABLE_WEB_INTENTS)
 }
 
 void Browser::UpdatePreferredSize(WebContents* source,

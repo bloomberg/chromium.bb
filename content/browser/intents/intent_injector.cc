@@ -66,12 +66,8 @@ void IntentInjector::OnSendReturnMessage(
 }
 
 void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
-  if (source_intent_.get() == NULL ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebIntents) ||
-      web_contents()->GetRenderViewHost() == NULL) {
+  if (source_intent_.get() == NULL || !web_contents()->GetRenderViewHost())
     return;
-  }
 
   // Only deliver the intent to the renderer if it has the same origin
   // as the initial delivery target.
@@ -102,13 +98,11 @@ bool IntentInjector::OnMessageReceived(const IPC::Message& message) {
 
 void IntentInjector::OnReply(webkit_glue::WebIntentReplyType reply_type,
                              const string16& data) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebIntents))
-    NOTREACHED();
+  if (!intents_dispatcher_)
+    return;
 
-  if (intents_dispatcher_) {
-    // Ensure we only call SendReplyMessage once.
-    content::WebIntentsDispatcher* intents_dispatcher = intents_dispatcher_;
-    intents_dispatcher_ = NULL;
-    intents_dispatcher->SendReplyMessage(reply_type, data);
-  }
+  // Ensure SendReplyMessage is only called once.
+  content::WebIntentsDispatcher* intents_dispatcher = intents_dispatcher_;
+  intents_dispatcher_ = NULL;
+  intents_dispatcher->SendReplyMessage(reply_type, data);
 }

@@ -198,13 +198,10 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
+  web_intents::RegisterUserPrefs(user_prefs);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::URLBlacklistManager::RegisterPrefs(user_prefs);
-#endif
-
-#if defined(ENABLE_WEB_INTENTS)
-  web_intents::RegisterUserPrefs(user_prefs);
 #endif
 
 #if defined(TOOLKIT_VIEWS)

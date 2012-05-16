@@ -116,10 +116,7 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   synced_tab_delegate_.reset(new TabContentsWrapperSyncedTabDelegate(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
-
-#if defined(ENABLE_WEB_INTENTS)
   web_intent_picker_controller_.reset(new WebIntentPickerController(this));
-#endif
 
 #if !defined(OS_ANDROID)
   print_view_manager_.reset(new printing::PrintViewManager(this));
