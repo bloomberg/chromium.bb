@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -36,7 +36,7 @@ gfx::NativeWindow GetDialogParent() {
   if (chromeos::BaseLoginDisplayHost::default_host()) {
     return chromeos::BaseLoginDisplayHost::default_host()->GetNativeWindow();
   } else {
-    Browser* browser = BrowserList::FindTabbedBrowser(
+    Browser* browser = browser::FindTabbedBrowser(
         ProfileManager::GetDefaultProfileOrOffTheRecord(), true);
     if (browser)
       return browser->window()->GetNativeHandle();
