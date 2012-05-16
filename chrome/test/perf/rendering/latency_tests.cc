@@ -29,6 +29,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 // Run with --vmodule=latency_tests=1 to print verbose latency info.
 
 // How is latency measured?
@@ -256,6 +260,12 @@ void LatencyTest::RunTest(LatencyTestMode mode,
   if (gpu_vendor.size() == 1 && gpu_vendor[0] == 0x15AD)
     return;
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+  // Latency test doesn't work on WinXP. crbug.com/128066
+  if (base::win::OSInfo::GetInstance()->version() == base::win::VERSION_XP)
+    return;
+#endif
 
   // Construct queries for searching trace events via TraceAnalyzer.
   if (mode_ == kWebGL) {
