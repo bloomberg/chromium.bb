@@ -46,6 +46,7 @@ helper_eh_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper EH.app"
 helper_np_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper NP.app"
 
 requirement_string="\
+designated => \
 (identifier \"com.google.Chrome\" or identifier \"com.google.Chrome.canary\") \
 and (certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\" or \
 certificate leaf = H\"9481882581d8178db8b1649c0eaa4f9eb11288f0\")\
