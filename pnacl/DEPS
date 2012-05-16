@@ -1,7 +1,7 @@
 vars = {
   "pnacl_gcc_rev": "a8b45d06c8fdf36cfdb7c996393940077097d988",
 
-  "glibc_rev": "52e607964e9a432fffe4e88caaafa9c5ed83de4f",
+  "glibc_rev": "447c71ff7c46d6171a92ed302a21b1af04de8f68",
   "newlib_rev": "67e351079b71e78eaad782a19ffa9f3ff2c1d78d",
   "pnacl_llvm_testsuite_rev": "fe59b29a5837b4c83b631624f1cffc1118bbfddb",
   "compiler_rt_rev": "cad11a9ea0008d18125e81beafc27271ee71926e",
