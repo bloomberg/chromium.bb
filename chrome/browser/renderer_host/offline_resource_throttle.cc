@@ -20,6 +20,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_throttle_controller.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -119,9 +120,10 @@ void OfflineResourceThrottle::OnBlockingPageComplete(bool proceed) {
 }
 
 bool OfflineResourceThrottle::IsRemote(const GURL& url) const {
-  return url.SchemeIs(chrome::kFtpScheme) ||
-         url.SchemeIs(chrome::kHttpScheme) ||
-         url.SchemeIs(chrome::kHttpsScheme);
+  return !net::IsLocalhost(url.host()) &&
+    (url.SchemeIs(chrome::kFtpScheme) ||
+     url.SchemeIs(chrome::kHttpScheme) ||
+     url.SchemeIs(chrome::kHttpsScheme));
 }
 
 bool OfflineResourceThrottle::ShouldShowOfflinePage(const GURL& url) const {
