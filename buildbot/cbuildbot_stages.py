@@ -907,8 +907,8 @@ class VMTestStage(BoardSpecificBuilderStage):
 class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
-  # If the tests take longer than an hour, abort.
-  INSTRASTRUCTURE_TIMEOUT = 3600
+  # If the tests take longer than an hour and a half, abort.
+  INFRASTRUCTURE_TIMEOUT = 5400
   option_name = 'tests'
   config_name = 'hw_tests'
 
@@ -935,7 +935,7 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
     build = '%s/%s' % (self._bot_id, self._archive_stage.GetVersion())
 
     try:
-      with cros_lib.SubCommandTimeout(HWTestStage.INSTRASTRUCTURE_TIMEOUT):
+      with cros_lib.SubCommandTimeout(HWTestStage.INFRASTRUCTURE_TIMEOUT):
         commands.RunHWTestSuite(build, self._suite, self._current_board,
                                 self._options.debug)
 
