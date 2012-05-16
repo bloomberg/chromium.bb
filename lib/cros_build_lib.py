@@ -225,7 +225,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
                chroot_args=None, debug_level=logging.INFO,
-               error_code_ok=False, kill_timeout=1):
+               error_code_ok=False, kill_timeout=1, log_output=False):
   """Runs a command.
 
   Args:
@@ -268,6 +268,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     kill_timeout: If we're interrupted, how long should we give the invoked
                   process to shutdown from a SIGTERM before we SIGKILL it.
                   Specified in seconds.
+    log_output: Log the command and its output automatically.
   Returns:
     A CommandResult object.
 
@@ -304,12 +305,12 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # view of the file.
   if log_stdout_to_file:
     stdout = open(log_stdout_to_file, 'w+')
-  elif redirect_stdout or mute_output:
+  elif redirect_stdout or mute_output or log_output:
     stdout = _get_tempfile()
 
   if combine_stdout_stderr:
     stderr = subprocess.STDOUT
-  elif redirect_stderr or mute_output:
+  elif redirect_stderr or mute_output or log_output:
     stderr = _get_tempfile()
 
   # Work around broken buffering usage in cbuildbot and consumers via
@@ -360,7 +361,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     env.update(extra_env)
 
   # Print out the command before running.
-  if print_cmd:
+  if print_cmd or log_output:
     if cwd:
       logger.log(debug_level, 'RunCommand: %r in %s', cmd, cwd)
     else:
@@ -410,6 +411,12 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
         stderr.close()
 
     cmd_result.returncode = proc.returncode
+
+    if log_output:
+      if cmd_result.output:
+        logger.log(debug_level, '(stdout):\n%s' % cmd_result.output)
+      if cmd_result.error:
+        logger.log(debug_level, '(stderr):\n%s' % cmd_result.error)
 
     if not error_ok and not error_code_ok and proc.returncode:
       msg = 'Failed command "%r", cwd=%s, extra env=%r' % (cmd, cwd, extra_env)
