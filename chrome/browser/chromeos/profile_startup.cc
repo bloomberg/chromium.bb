@@ -34,7 +34,7 @@ void ProfileStartup(Profile* profile, bool process_startup) {
     // These observers are singletons. They are never deleted but the pointers
     // are kept in a statics so that they are not reported as leaks.
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAuraNotify)) {
+            ash::switches::kAshNotify)) {
       static chromeos::LowBatteryObserver* low_battery_observer =
           new chromeos::LowBatteryObserver(profile);
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(

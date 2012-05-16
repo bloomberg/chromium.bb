@@ -724,6 +724,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kShowLauncherAlignmentMenu)
   },
+  {
+    "ash-notify",
+    IDS_FLAGS_ENABLE_ASH_NOTIFY_NAME,
+    IDS_FLAGS_ENABLE_ASH_NOTIFY_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(ash::switches::kAshNotify),
+  },
 #endif
 };
 

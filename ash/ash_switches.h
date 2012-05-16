@@ -17,10 +17,10 @@ namespace switches {
 
 // Please keep alphabetized.
 ASH_EXPORT extern const char kAshEnableOak[];
+ASH_EXPORT extern const char kAshNotify[];
 ASH_EXPORT extern const char kAuraGoogleDialogFrames[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_EXPORT extern const char kAuraNoShadows[];
-ASH_EXPORT extern const char kAuraNotify[];
 ASH_EXPORT extern const char kAuraPanelManager[];
 ASH_EXPORT extern const char kAuraWindowAnimationsDisabled[];
 ASH_EXPORT extern const char kEnableAppListV2[];

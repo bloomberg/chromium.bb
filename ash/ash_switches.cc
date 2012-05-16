@@ -10,6 +10,9 @@ namespace switches {
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
+// Use Ash notifications.
+const char kAshNotify[] = "ash-notify";
+
 // Use Google-style dialog box frames.
 const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";
 
@@ -21,9 +24,6 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 
 // Avoid drawing drop shadows under windows.
 const char kAuraNoShadows[] = "aura-no-shadows";
-
-// Use Aura notifications.
-const char kAuraNotify[] = "aura-notify";
 
 // Use Aura to manage windows of type WINDOW_TYPE_PANEL.
 const char kAuraPanelManager[] = "aura-panels";

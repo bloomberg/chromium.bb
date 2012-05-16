@@ -5655,6 +5655,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_APPLIST_V2_DESCRIPTION" desc="Description of the flag to enable applist v2 in ash.">
         Enables the bubble-style applist v2.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ASH_NOTIFY_NAME" desc="Name of the flag to enable applist v2 in ash.">
+        Enable Ash notifications.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ASH_NOTIFY_DESCRIPTION" desc="Description of the flag to enable applist v2 in ash.">
+        Enables ash status tray notifications instead of desktop system notifications.
+      </message>
 
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME" desc="Name for the flag to enable touchpad three finger click as middle button.">
