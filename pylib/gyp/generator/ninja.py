@@ -1478,7 +1478,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         all_outputs.add(target.FinalOutput())
 
   if all_outputs:
+    master_ninja.newline()
     master_ninja.build('all', 'phony', list(all_outputs))
+    master_ninja.default('all')
 
 
 def GenerateOutput(target_list, target_dicts, data, params):
