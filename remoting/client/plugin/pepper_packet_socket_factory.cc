@@ -113,68 +113,6 @@ UdpPacketSocket::~UdpPacketSocket() {
   Close();
 }
 
-bool SocketAddressToPpAddressWithPort(const talk_base::SocketAddress& address,
-                                      PP_NetAddress_Private* pp_address,
-                                      uint16_t port) {
-  bool result = false;
-  switch (address.ipaddr().family()) {
-    case AF_INET: {
-      in_addr addr = address.ipaddr().ipv4_address();
-      result = pp::NetAddressPrivate::CreateFromIPv4Address(
-          reinterpret_cast<uint8_t*>(&addr), port, pp_address);
-      break;
-    }
-    case AF_INET6: {
-      in6_addr addr = address.ipaddr().ipv6_address();
-      result = pp::NetAddressPrivate::CreateFromIPv6Address(
-          addr.s6_addr, 0, port, pp_address);
-      break;
-    }
-    default: {
-      LOG(WARNING) << "Unknown address family: " << address.ipaddr().family();
-    }
-  }
-  if (!result) {
-    LOG(WARNING) << "Failed to convert address: " << address.ToString();
-  }
-  return result;
-}
-
-bool SocketAddressToPpAddress(const talk_base::SocketAddress& address,
-                              PP_NetAddress_Private* pp_address) {
-  return SocketAddressToPpAddressWithPort(address, pp_address, address.port());
-}
-
-bool PpAddressToSocketAddress(const PP_NetAddress_Private& pp_address,
-                              talk_base::SocketAddress* address) {
-  uint8_t addr_storage[16];
-  bool result = pp::NetAddressPrivate::GetAddress(
-      pp_address, &addr_storage, sizeof(addr_storage));
-
-  if (result) {
-    switch (pp::NetAddressPrivate::GetFamily(pp_address)) {
-      case PP_NETADDRESSFAMILY_IPV4:
-        address->SetIP(talk_base::IPAddress(
-            *reinterpret_cast<in_addr*>(addr_storage)));
-        break;
-      case PP_NETADDRESSFAMILY_IPV6:
-        address->SetIP(talk_base::IPAddress(
-            *reinterpret_cast<in6_addr*>(addr_storage)));
-        break;
-      default:
-        result = false;
-    }
-  }
-
-  if (!result) {
-    LOG(WARNING) << "Failed to convert address: "
-                 << pp::NetAddressPrivate::Describe(pp_address, true);
-  } else {
-    address->SetPort(pp::NetAddressPrivate::GetPort(pp_address));
-  }
-  return result;
-}
-
 bool UdpPacketSocket::Init(const talk_base::SocketAddress& local_address,
                            int min_port,
                            int max_port) {

@@ -13,9 +13,14 @@
 namespace remoting {
 
 // An implementation of cricket::PortAllocator for libjingle that is
-// used by the client plugin. The main difference from
-// cricket::HttpPortAllocator is that it uses Pepper URLLoader API
-// when creating relay sessions.
+// used by the client plugin. There are two differences from
+// cricket::HttpPortAllocator:
+//   * PepperPortAllocator uses Pepper URLLoader API when creating
+//     relay sessions.
+//   * PepperPortAllocator resolves STUN DNS names and passes IP
+//     addresses to BasicPortAllocator (it uses HostResolverPrivate API
+//     for that). This is needed because libjingle's DNS resolution
+//     code doesn't work in sandbox.
 class PepperPortAllocator : public cricket::HttpPortAllocatorBase {
  public:
   static scoped_ptr<PepperPortAllocator> Create(
