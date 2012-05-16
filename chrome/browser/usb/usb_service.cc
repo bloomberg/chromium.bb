@@ -6,40 +6,63 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/usb/usb_device.h"
 #include "third_party/libusb/libusb.h"
 
-UsbService::UsbService() : running_(true), thread_("UsbThread") {
+// The UsbEventHandler works around a design flaw in the libusb interface. There
+// is currently no way to signal to libusb that any caller into one of the event
+// handler calls should return without handling any events.
+class UsbEventHandler : public base::PlatformThread::Delegate {
+ public:
+  explicit UsbEventHandler(PlatformUsbContext context)
+      : running_(true), context_(context) {
+    base::PlatformThread::CreateNonJoinable(0, this);
+  }
+
+  virtual ~UsbEventHandler() {}
+
+  virtual void ThreadMain() {
+    base::PlatformThread::SetName("UsbEventHandler");
+
+    DLOG(INFO) << "UsbEventHandler started.";
+    while (running_) {
+      libusb_handle_events(context_);
+    }
+    DLOG(INFO) << "UsbEventHandler shutting down.";
+    libusb_exit(context_);
+
+    delete this;
+  }
+
+  void Stop() {
+    running_ = false;
+  }
+
+ private:
+  bool running_;
+  PlatformUsbContext context_;
+
+  DISALLOW_EVIL_CONSTRUCTORS(UsbEventHandler);
+};
+
+UsbService::UsbService() {
   libusb_init(&context_);
-  thread_.Start();
-  PostHandleEventTask();
+  event_handler_ = new UsbEventHandler(context_);
 }
 
 UsbService::~UsbService() {}
 
-// TODO(gdk): There is currently no clean way to indicate to the event handler
-// thread that it must break out of the handling loop before the event timeout,
-// therefore we currently are at the whim of the event handler timeout before
-// the message handling thread can be joined.
 void UsbService::Cleanup() {
-  running_ = false;
-
-  if (!devices_.empty()) {
-    libusb_close(devices_.begin()->second->handle());
-  } else {
-    LOG(WARNING) << "UsbService cannot force the USB event-handler thread to "
-                 << "exit because there are no open devices with which to "
-                 << "manipulate it. It maybe take up to 60 (!) seconds for the "
-                 << "thread to join from this point.";
-  }
-
-  thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-      &UsbService::PlatformShutdown, base::Unretained(this)));
+  event_handler_->Stop();
+  event_handler_ = NULL;
 }
 
 UsbDevice* UsbService::FindDevice(const uint16 vendor_id,
                                   const uint16 product_id) {
+  DCHECK(event_handler_) << "FindDevice called after event handler stopped.";
+
   const std::pair<uint16, uint16> key = std::make_pair(vendor_id, product_id);
   if (ContainsKey(devices_, key)) {
     return devices_[key];
@@ -58,7 +81,7 @@ UsbDevice* UsbService::FindDevice(const uint16 vendor_id,
 }
 
 void UsbService::CloseDevice(scoped_refptr<UsbDevice> device) {
-  DCHECK(running_) << "Cannot close device after service has stopped running.";
+  DCHECK(event_handler_) << "CloseDevice called after event handler stopped.";
 
   for (DeviceMap::iterator i = devices_.begin(); i != devices_.end(); ++i) {
     if (i->second.get() == device.get()) {
@@ -67,20 +90,4 @@ void UsbService::CloseDevice(scoped_refptr<UsbDevice> device) {
       return;
     }
   }
-}
-
-void UsbService::PostHandleEventTask() {
-  thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-      &UsbService::HandleEvent, base::Unretained(this)));
-}
-
-void UsbService::HandleEvent() {
-  libusb_handle_events(context_);
-  if (running_) {
-    PostHandleEventTask();
-  }
-}
-
-void UsbService::PlatformShutdown() {
-  libusb_exit(context_);
 }

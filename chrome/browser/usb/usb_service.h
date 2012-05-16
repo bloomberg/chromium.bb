@@ -10,11 +10,12 @@
 #include <utility>
 
 #include "base/basictypes.h"
-#include "base/threading/thread.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/usb/usb_device.h"
 #include "third_party/libusb/libusb.h"
 
+class UsbEventHandler;
 typedef libusb_context* PlatformUsbContext;
 
 // The USB service handles creating and managing an event handler thread that is
@@ -40,9 +41,6 @@ class UsbService : public ProfileKeyedService {
   void CloseDevice(scoped_refptr<UsbDevice> device);
 
  private:
-  // Posts a HandleEvent task to the event handling thread.
-  void PostHandleEventTask();
-
   // Handles a single USB event. If the service is still running after the event
   // is handled, posts another HandleEvent callback to the thread.
   void HandleEvent();
@@ -51,9 +49,8 @@ class UsbService : public ProfileKeyedService {
   // used to free the platform resources associated with the service.
   void PlatformShutdown();
 
-  bool running_;
   PlatformUsbContext context_;
-  base::Thread thread_;
+  UsbEventHandler *event_handler_;
 
   // The devices_ map contains scoped_refptrs to all open devices, indicated by
   // their vendor and product id. This allows for reusing an open device without
