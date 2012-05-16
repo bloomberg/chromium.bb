@@ -35,7 +35,8 @@ class TextureImageTransportSurface :
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
-  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
+  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
   virtual void* GetShareHandle() OVERRIDE;
   virtual void* GetDisplay() OVERRIDE;
   virtual void* GetConfig() OVERRIDE;
@@ -92,6 +93,9 @@ class TextureImageTransportSurface :
 
   // Whether or not the command buffer stub has been destroyed.
   bool stub_destroyed_;
+
+  bool backbuffer_suggested_allocation_;
+  bool frontbuffer_suggested_allocation_;
 
   scoped_ptr<ImageTransportHelper> helper_;
   GpuCommandBufferStub* parent_stub_;

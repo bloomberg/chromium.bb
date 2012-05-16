@@ -65,6 +65,8 @@ TextureImageTransportSurface::TextureImageTransportSurface(
       : fbo_id_(0),
         front_(0),
         stub_destroyed_(false),
+        backbuffer_suggested_allocation_(true),
+        frontbuffer_suggested_allocation_(true),
         parent_stub_(NULL) {
   GpuChannel* parent_channel = manager->LookupChannel(handle.parent_client_id);
   DCHECK(parent_channel);
@@ -155,19 +157,24 @@ unsigned int TextureImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
 }
 
-void TextureImageTransportSurface::SetBufferAllocation(
-    BufferAllocationState state) {
+void TextureImageTransportSurface::SetBackbufferAllocation(bool allocation) {
+  if (backbuffer_suggested_allocation_ == allocation)
+     return;
+  backbuffer_suggested_allocation_ = allocation;
+
   if (!helper_->MakeCurrent())
     return;
-  switch (state) {
-    case BUFFER_ALLOCATION_FRONT_AND_BACK:
-      CreateBackTexture(textures_[back()].size);
-      break;
-    case BUFFER_ALLOCATION_FRONT_ONLY:
-    case BUFFER_ALLOCATION_NONE:
-      ReleaseBackTexture();
-      break;
-  };
+
+  if (backbuffer_suggested_allocation_)
+    CreateBackTexture(textures_[back()].size);
+  else
+    ReleaseBackTexture();
+}
+
+void TextureImageTransportSurface::SetFrontbufferAllocation(bool allocation) {
+  if (frontbuffer_suggested_allocation_ == allocation)
+    return;
+  frontbuffer_suggested_allocation_ = allocation;
 }
 
 void* TextureImageTransportSurface::GetShareHandle() {
@@ -203,6 +210,11 @@ void TextureImageTransportSurface::OnWillDestroyStub(
 }
 
 bool TextureImageTransportSurface::SwapBuffers() {
+  DCHECK(backbuffer_suggested_allocation_);
+  if (!frontbuffer_suggested_allocation_) {
+    previous_damage_rect_ = gfx::Rect(textures_[front_].size);
+    return true;
+  }
   if (!parent_stub_) {
     LOG(ERROR) << "SwapBuffers failed because no parent stub.";
     return false;
@@ -223,6 +235,11 @@ bool TextureImageTransportSurface::SwapBuffers() {
 
 bool TextureImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
+  DCHECK(backbuffer_suggested_allocation_);
+  if (!frontbuffer_suggested_allocation_) {
+    previous_damage_rect_ = gfx::Rect(textures_[front_].size);
+    return true;
+  }
   if (!parent_stub_) {
     LOG(ERROR) << "PostSubBuffer failed because no parent stub.";
     return false;

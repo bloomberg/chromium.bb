@@ -93,7 +93,8 @@ class EGLImageTransportSurface
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
-  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
+  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -111,7 +112,11 @@ class EGLImageTransportSurface
   void SendPostSubBuffer(int x, int y, int width, int height);
 
   // Tracks the current buffer allocation state.
-  BufferAllocationState buffer_allocation_state_;
+  bool backbuffer_suggested_allocation_;
+  bool frontbuffer_suggested_allocation_;
+
+  // The expected size when visible.
+  gfx::Size visible_size_;
 
   uint32 fbo_id_;
 
@@ -145,7 +150,8 @@ class GLXImageTransportSurface
   virtual std::string GetExtensions();
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
-  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
+  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation:
@@ -168,7 +174,8 @@ class GLXImageTransportSurface
   void ResizeSurface(gfx::Size size);
 
   // Tracks the current buffer allocation state.
-  BufferAllocationState buffer_allocation_state_;
+  bool backbuffer_suggested_allocation_;
+  bool frontbuffer_suggested_allocation_;
 
   XID dummy_parent_;
   gfx::Size size_;
@@ -270,7 +277,8 @@ EGLImageTransportSurface::EGLImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
     : gfx::PbufferGLSurfaceEGL(false, gfx::Size(16, 16)),
-      buffer_allocation_state_(BUFFER_ALLOCATION_FRONT_AND_BACK),
+      backbuffer_suggested_allocation_(true),
+      frontbuffer_suggested_allocation_(true),
       fbo_id_(0),
       made_current_(false) {
   helper_.reset(new ImageTransportHelper(this,
@@ -336,31 +344,21 @@ unsigned int EGLImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
 }
 
-void EGLImageTransportSurface::SetBufferAllocation(
-    BufferAllocationState state) {
-  if (buffer_allocation_state_ == state)
+void EGLImageTransportSurface::SetBackbufferAllocation(bool allocated) {
+  if (backbuffer_suggested_allocation_ == allocated)
     return;
-  buffer_allocation_state_ = state;
+  backbuffer_suggested_allocation_ = allocated;
 
-  switch (state) {
-    case BUFFER_ALLOCATION_FRONT_AND_BACK:
-      if (!back_surface_.get() && front_surface_.get())
-        OnResize(front_surface_->size());
-      break;
+  if (backbuffer_suggested_allocation_)
+    OnResize(visible_size_);
+  else
+    ReleaseSurface(&back_surface_);
+}
 
-    case BUFFER_ALLOCATION_FRONT_ONLY:
-      if (back_surface_.get() && front_surface_.get())
-        ReleaseSurface(&back_surface_);
-      break;
-
-    case BUFFER_ALLOCATION_NONE:
-      if (back_surface_.get() && front_surface_.get())
-        ReleaseSurface(&back_surface_);
-      break;
-
-    default:
-      NOTREACHED();
-  }
+void EGLImageTransportSurface::SetFrontbufferAllocation(bool allocated) {
+  if (frontbuffer_suggested_allocation_ == allocated)
+    return;
+  frontbuffer_suggested_allocation_ = allocated;
 }
 
 void EGLImageTransportSurface::ReleaseSurface(
@@ -374,6 +372,7 @@ void EGLImageTransportSurface::ReleaseSurface(
 }
 
 void EGLImageTransportSurface::OnResize(gfx::Size size) {
+  visible_size_ = size;
   back_surface_ = new EGLAcceleratedSurface(size);
 
   GLint previous_fbo_id = 0;
@@ -399,6 +398,11 @@ void EGLImageTransportSurface::OnResize(gfx::Size size) {
 }
 
 bool EGLImageTransportSurface::SwapBuffers() {
+  DCHECK(backbuffer_suggested_allocation_);
+  if (!frontbuffer_suggested_allocation_) {
+    previous_damage_rect_ = gfx::Rect(visible_size_);
+    return true;
+  }
   front_surface_.swap(back_surface_);
   DCHECK_NE(front_surface_.get(), static_cast<EGLAcceleratedSurface*>(NULL));
   helper_->DeferToFence(base::Bind(
@@ -428,7 +432,11 @@ void EGLImageTransportSurface::SendBuffersSwapped() {
 
 bool EGLImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
-
+  DCHECK(backbuffer_suggested_allocation_);
+  if (!frontbuffer_suggested_allocation_) {
+    previous_damage_rect_ = gfx::Rect(visible_size_);
+    return true;
+  }
   DCHECK_NE(back_surface_.get(), static_cast<EGLAcceleratedSurface*>(NULL));
   gfx::Size expected_size = back_surface_->size();
   bool surfaces_same_size = front_surface_.get() &&
@@ -527,7 +535,8 @@ GLXImageTransportSurface::GLXImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
     : gfx::NativeViewGLSurfaceGLX(),
-      buffer_allocation_state_(BUFFER_ALLOCATION_FRONT_AND_BACK),
+      backbuffer_suggested_allocation_(true),
+      frontbuffer_suggested_allocation_(true),
       dummy_parent_(0),
       size_(1, 1),
       bound_(false),
@@ -611,30 +620,26 @@ void GLXImageTransportSurface::ReleaseSurface() {
   bound_ = false;
 }
 
-void GLXImageTransportSurface::SetBufferAllocation(
-    BufferAllocationState state) {
-  if (buffer_allocation_state_ == state)
+void GLXImageTransportSurface::SetBackbufferAllocation(bool allocated) {
+  if (backbuffer_suggested_allocation_ == allocated)
     return;
-  buffer_allocation_state_ = state;
+  backbuffer_suggested_allocation_ = allocated;
 
-  switch (state) {
-    case BUFFER_ALLOCATION_FRONT_AND_BACK: {
-      ResizeSurface(size_);
-      break;
-    }
-    case BUFFER_ALLOCATION_FRONT_ONLY: {
-      ResizeSurface(gfx::Size(1,1));
-      break;
-    }
-    case BUFFER_ALLOCATION_NONE: {
-      ResizeSurface(gfx::Size(1,1));
-      if (bound_)
-        ReleaseSurface();
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
+  if (backbuffer_suggested_allocation_)
+    ResizeSurface(size_);
+  else
+    ResizeSurface(gfx::Size(1,1));
+}
+
+void GLXImageTransportSurface::SetFrontbufferAllocation(bool allocated) {
+  if (frontbuffer_suggested_allocation_ == allocated)
+    return;
+  frontbuffer_suggested_allocation_ = allocated;
+
+  // We recreate frontbuffer by recreating backbuffer and swapping.
+  // But we release frontbuffer by telling UI to release its handle on it.
+  if (!frontbuffer_suggested_allocation_ && bound_)
+    ReleaseSurface();
 }
 
 void GLXImageTransportSurface::ResizeSurface(gfx::Size size) {
@@ -656,6 +661,9 @@ void GLXImageTransportSurface::OnResize(gfx::Size size) {
 }
 
 bool GLXImageTransportSurface::SwapBuffers() {
+  DCHECK(backbuffer_suggested_allocation_);
+  if (!frontbuffer_suggested_allocation_)
+    return true;
   gfx::NativeViewGLSurfaceGLX::SwapBuffers();
   helper_->DeferToFence(base::Bind(
       &GLXImageTransportSurface::SendBuffersSwapped,
@@ -682,6 +690,9 @@ void GLXImageTransportSurface::SendBuffersSwapped() {
 
 bool GLXImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
+  DCHECK(backbuffer_suggested_allocation_);
+  if (!frontbuffer_suggested_allocation_)
+    return true;
   gfx::NativeViewGLSurfaceGLX::PostSubBuffer(x, y, width, height);
   helper_->DeferToFence(base::Bind(
       &GLXImageTransportSurface::SendPostSubBuffer,

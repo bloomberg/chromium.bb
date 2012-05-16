@@ -60,9 +60,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       software_(software),
       client_has_memory_allocation_changed_callback_(false),
       last_flush_count_(0),
-      allocation_(GpuMemoryAllocation::INVALID_RESOURCE_SIZE,
-                  GpuMemoryAllocation::kHasFrontbuffer |
-                  GpuMemoryAllocation::kHasBackbuffer),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
       watchdog_(watchdog) {
@@ -579,20 +576,13 @@ void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
 void GpuCommandBufferStub::OnDiscardBackbuffer() {
   if (!surface_)
     return;
-  if (allocation_.suggest_have_frontbuffer)
-    surface_->SetBufferAllocation(
-        gfx::GLSurface::BUFFER_ALLOCATION_FRONT_ONLY);
-  else
-    surface_->SetBufferAllocation(
-        gfx::GLSurface::BUFFER_ALLOCATION_NONE);
+  surface_->SetBackbufferAllocation(false);
 }
 
 void GpuCommandBufferStub::OnEnsureBackbuffer() {
   if (!surface_)
     return;
-  // TODO(mmocny): Support backbuffer without frontbuffer.
-  surface_->SetBufferAllocation(
-      gfx::GLSurface::BUFFER_ALLOCATION_FRONT_AND_BACK);
+  surface_->SetBackbufferAllocation(true);
 }
 
 void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
@@ -650,16 +640,12 @@ const GpuCommandBufferStubBase::SurfaceState&
   return *surface_state_.get();
 }
 
-void GpuCommandBufferStub::SendMemoryAllocationToProxy(
-    const GpuMemoryAllocation& allocation) {
-  Send(new GpuCommandBufferMsg_SetMemoryAllocation(route_id_, allocation));
-}
-
 void GpuCommandBufferStub::SetMemoryAllocation(
     const GpuMemoryAllocation& allocation) {
-  allocation_ = allocation;
-
-  SendMemoryAllocationToProxy(allocation);
+  Send(new GpuCommandBufferMsg_SetMemoryAllocation(route_id_, allocation));
+  if (!surface_)
+    return;
+  surface_->SetFrontbufferAllocation(allocation.suggest_have_frontbuffer);
 }
 
 #endif  // defined(ENABLE_GPU)

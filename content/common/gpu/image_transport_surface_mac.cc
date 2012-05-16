@@ -37,7 +37,8 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
-  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
+  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -54,7 +55,9 @@ class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
   void UnrefIOSurface();
   void CreateIOSurface();
 
-  BufferAllocationState buffer_allocation_state_;
+  // Tracks the current buffer allocation state.
+  bool backbuffer_suggested_allocation_;
+  bool frontbuffer_suggested_allocation_;
 
   uint32 fbo_id_;
   GLuint texture_id_;
@@ -97,7 +100,8 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
     : gfx::NoOpGLSurfaceCGL(gfx::Size(1, 1)),
-      buffer_allocation_state_(BUFFER_ALLOCATION_FRONT_AND_BACK),
+      backbuffer_suggested_allocation_(true),
+      frontbuffer_suggested_allocation_(true),
       fbo_id_(0),
       texture_id_(0),
       io_surface_handle_(0),
@@ -158,31 +162,32 @@ unsigned int IOSurfaceImageTransportSurface::GetBackingFrameBufferObject() {
   return fbo_id_;
 }
 
-void IOSurfaceImageTransportSurface::SetBufferAllocation(
-    BufferAllocationState state) {
-  if (buffer_allocation_state_ == state)
+void IOSurfaceImageTransportSurface::SetBackbufferAllocation(bool allocation) {
+  if (backbuffer_suggested_allocation_ == allocation)
     return;
-  buffer_allocation_state_ = state;
+  backbuffer_suggested_allocation_ = allocation;
 
-  switch (state) {
-    case BUFFER_ALLOCATION_FRONT_AND_BACK:
-      CreateIOSurface();
-      break;
+  if (backbuffer_suggested_allocation_)
+    CreateIOSurface();
+  else
+    UnrefIOSurface();
+}
 
-    case BUFFER_ALLOCATION_FRONT_ONLY:
-      break;
+void IOSurfaceImageTransportSurface::SetFrontbufferAllocation(bool allocation) {
+  if (frontbuffer_suggested_allocation_ == allocation)
+    return;
+  frontbuffer_suggested_allocation_ = allocation;
 
-    case BUFFER_ALLOCATION_NONE:
-      UnrefIOSurface();
-      helper_->Suspend();
-      break;
-
-    default:
-      NOTREACHED();
-  }
+  // We recreate frontbuffer by recreating backbuffer and swapping.
+  // But we release frontbuffer by telling UI to release its handle on it.
+  if (!frontbuffer_suggested_allocation_)
+    helper_->Suspend();
 }
 
 bool IOSurfaceImageTransportSurface::SwapBuffers() {
+  DCHECK(backbuffer_suggested_allocation_);
+  if (!frontbuffer_suggested_allocation_)
+    return true;
   glFlush();
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
@@ -195,6 +200,9 @@ bool IOSurfaceImageTransportSurface::SwapBuffers() {
 
 bool IOSurfaceImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
+  DCHECK(backbuffer_suggested_allocation_);
+  if (!frontbuffer_suggested_allocation_)
+    return true;
   glFlush();
 
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;

@@ -101,7 +101,10 @@ bool GLSurface::OnMakeCurrent(GLContext* context) {
   return true;
 }
 
-void GLSurface::SetBufferAllocation(BufferAllocationState state) {
+void GLSurface::SetBackbufferAllocation(bool allocated) {
+}
+
+void GLSurface::SetFrontbufferAllocation(bool allocated) {
 }
 
 void* GLSurface::GetShareHandle() {
@@ -183,8 +186,12 @@ bool GLSurfaceAdapter::OnMakeCurrent(GLContext* context) {
   return surface_->OnMakeCurrent(context);
 }
 
-void GLSurfaceAdapter::SetBufferAllocation(BufferAllocationState state) {
-  surface_->SetBufferAllocation(state);
+void GLSurfaceAdapter::SetBackbufferAllocation(bool allocated) {
+  surface_->SetBackbufferAllocation(allocated);
+}
+
+void GLSurfaceAdapter::SetFrontbufferAllocation(bool allocated) {
+  surface_->SetFrontbufferAllocation(allocated);
 }
 
 void* GLSurfaceAdapter::GetShareHandle() {

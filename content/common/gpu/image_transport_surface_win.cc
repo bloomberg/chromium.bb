@@ -40,7 +40,8 @@ class PbufferImageTransportSurface
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
-  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
+  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -57,7 +58,8 @@ class PbufferImageTransportSurface
   void DestroySurface();
 
   // Tracks the current buffer allocation state.
-  BufferAllocationState buffer_allocation_state_;
+  bool backbuffer_suggested_allocation_;
+  bool frontbuffer_suggested_allocation_;
 
   // Size to resize to when the surface becomes visible.
   gfx::Size visible_size_;
@@ -71,7 +73,8 @@ PbufferImageTransportSurface::PbufferImageTransportSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub)
     : GLSurfaceAdapter(new gfx::PbufferGLSurfaceEGL(false, gfx::Size(1, 1))),
-      buffer_allocation_state_(BUFFER_ALLOCATION_FRONT_AND_BACK) {
+      backbuffer_suggested_allocation_(true),
+      frontbuffer_suggested_allocation_(true) {
   helper_.reset(new ImageTransportHelper(this,
                                          manager,
                                          stub,
@@ -105,6 +108,10 @@ bool PbufferImageTransportSurface::IsOffscreen() {
 }
 
 bool PbufferImageTransportSurface::SwapBuffers() {
+  DCHECK(backbuffer_suggested_allocation_);
+  if (!frontbuffer_suggested_allocation_)
+    return true;
+
   HANDLE surface_handle = GetShareHandle();
   if (!surface_handle)
     return false;
@@ -122,30 +129,27 @@ bool PbufferImageTransportSurface::PostSubBuffer(
   return false;
 }
 
-void PbufferImageTransportSurface::SetBufferAllocation(
-    BufferAllocationState state) {
-  if (buffer_allocation_state_ == state)
+void PbufferImageTransportSurface::SetBackbufferAllocation(bool allocation) {
+  if (backbuffer_suggested_allocation_ == allocation)
     return;
-  buffer_allocation_state_ = state;
+  backbuffer_suggested_allocation_ = allocation;
 
-  switch (state) {
-    case BUFFER_ALLOCATION_FRONT_AND_BACK:
-      Resize(visible_size_);
-      break;
-
-    case BUFFER_ALLOCATION_FRONT_ONLY:
-      Resize(gfx::Size(1, 1));
-      break;
-
-    case BUFFER_ALLOCATION_NONE:
-      Resize(gfx::Size(1, 1));
-      helper_->Suspend();
-      break;
-
-    default:
-      NOTREACHED();
-  }
+  if (backbuffer_suggested_allocation_)
+    Resize(visible_size_);
+  else
+    Resize(gfx::Size(1, 1));
   DestroySurface();
+}
+
+void PbufferImageTransportSurface::SetFrontbufferAllocation(bool allocation) {
+  if (frontbuffer_suggested_allocation_ == allocation)
+    return;
+  frontbuffer_suggested_allocation_ = allocation;
+
+  // We recreate frontbuffer by recreating backbuffer and swapping.
+  // But we release frontbuffer by telling UI to release its handle on it.
+  if (!frontbuffer_suggested_allocation_)
+    helper_->Suspend();
 }
 
 void PbufferImageTransportSurface::DestroySurface() {
@@ -188,8 +192,9 @@ void PbufferImageTransportSurface::OnResizeViewACK() {
 }
 
 void PbufferImageTransportSurface::OnResize(gfx::Size size) {
-  if (buffer_allocation_state_ == BUFFER_ALLOCATION_FRONT_AND_BACK)
-    Resize(size);
+  DCHECK(backbuffer_suggested_allocation_);
+  DCHECK(frontbuffer_suggested_allocation_);
+  Resize(size);
 
   DestroySurface();
 

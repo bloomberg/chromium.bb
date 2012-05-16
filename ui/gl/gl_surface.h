@@ -71,14 +71,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // on error.
   virtual bool OnMakeCurrent(GLContext* context);
 
-  // Used for explicit buffer management.  Expect buffers to be destroyed only
-  // when surface is not visible.
-  enum BufferAllocationState {
-    BUFFER_ALLOCATION_FRONT_AND_BACK,
-    BUFFER_ALLOCATION_FRONT_ONLY,
-    BUFFER_ALLOCATION_NONE
-  };
-  virtual void SetBufferAllocation(BufferAllocationState state);
+  // Used for explicit buffer management.
+  virtual void SetBackbufferAllocation(bool allocated);
+  virtual void SetFrontbufferAllocation(bool allocated);
 
   // Get a handle used to share the surface with another process. Returns null
   // if this is not possible.
@@ -135,7 +130,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual void* GetHandle() OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
   virtual bool OnMakeCurrent(GLContext* context) OVERRIDE;
-  virtual void SetBufferAllocation(BufferAllocationState state) OVERRIDE;
+  virtual void SetBackbufferAllocation(bool allocated) OVERRIDE;
+  virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
   virtual void* GetShareHandle() OVERRIDE;
   virtual void* GetDisplay() OVERRIDE;
   virtual void* GetConfig() OVERRIDE;

@@ -72,9 +72,6 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
   virtual bool IsInSameContextShareGroup(
       const GpuCommandBufferStubBase& other) const = 0;
 
-  virtual void SendMemoryAllocationToProxy(
-      const GpuMemoryAllocation& allocation) = 0;
-
   virtual void SetMemoryAllocation(
       const GpuMemoryAllocation& allocation) = 0;
 };
@@ -128,10 +125,6 @@ class GpuCommandBufferStub
   // Returns true iff |other| is in the same context share group as this stub.
   virtual bool IsInSameContextShareGroup(
       const GpuCommandBufferStubBase& other) const OVERRIDE;
-
-  // Sends memory allocation limits to render process.
-  virtual void SendMemoryAllocationToProxy(
-      const GpuMemoryAllocation& allocation) OVERRIDE;
 
   // Sets buffer usage depending on Memory Allocation
   virtual void SetMemoryAllocation(
@@ -240,7 +233,6 @@ class GpuCommandBufferStub
   bool client_has_memory_allocation_changed_callback_;
   uint32 last_flush_count_;
   scoped_ptr<GpuCommandBufferStubBase::SurfaceState> surface_state_;
-  GpuMemoryAllocation allocation_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
