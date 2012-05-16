@@ -4,10 +4,6 @@
 
 #include "chrome/browser/policy/network_configuration_updater.h"
 
-#include <string>
-
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
@@ -18,52 +14,44 @@ const char NetworkConfigurationUpdater::kEmptyConfiguration[] =
     "{\"NetworkConfigurations\":[],\"Certificates\":[]}";
 
 NetworkConfigurationUpdater::NetworkConfigurationUpdater(
-    PolicyService* policy_service,
+    ConfigurationPolicyProvider* provider,
     chromeos::NetworkLibrary* network_library)
-    : policy_change_registrar_(
-          policy_service, POLICY_DOMAIN_CHROME, std::string()),
-      network_library_(network_library) {
+    : network_library_(network_library) {
   DCHECK(network_library_);
-  policy_change_registrar_.Observe(
-      key::kDeviceOpenNetworkConfiguration,
-      base::Bind(&NetworkConfigurationUpdater::ApplyNetworkConfiguration,
-                 base::Unretained(this),
-                 chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY,
-                 &device_network_config_));
-  policy_change_registrar_.Observe(
-      key::kOpenNetworkConfiguration,
-      base::Bind(&NetworkConfigurationUpdater::ApplyNetworkConfiguration,
-                 base::Unretained(this),
-                 chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY,
-                 &user_network_config_));
-
-  // Apply the current values immediately.
-  const PolicyMap& policies = policy_service->GetPolicies(POLICY_DOMAIN_CHROME,
-                                                          std::string());
-  ApplyNetworkConfiguration(
-      chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY,
-      &device_network_config_,
-      NULL,
-      policies.GetValue(key::kDeviceOpenNetworkConfiguration));
-  ApplyNetworkConfiguration(
-      chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY,
-      &user_network_config_,
-      NULL,
-      policies.GetValue(key::kOpenNetworkConfiguration));
+  provider_registrar_.Init(provider, this);
+  Update();
 }
 
 NetworkConfigurationUpdater::~NetworkConfigurationUpdater() {}
 
+void NetworkConfigurationUpdater::OnUpdatePolicy(
+    ConfigurationPolicyProvider* provider) {
+  Update();
+}
+
+void NetworkConfigurationUpdater::Update() {
+  ConfigurationPolicyProvider* provider = provider_registrar_.provider();
+  const PolicyMap& policy = provider->policies().Get(POLICY_DOMAIN_CHROME, "");
+
+  ApplyNetworkConfiguration(policy, key::kDeviceOpenNetworkConfiguration,
+                            chromeos::NetworkUIData::ONC_SOURCE_DEVICE_POLICY,
+                            &device_network_config_);
+  ApplyNetworkConfiguration(policy, key::kOpenNetworkConfiguration,
+                            chromeos::NetworkUIData::ONC_SOURCE_USER_POLICY,
+                            &user_network_config_);
+}
+
 void NetworkConfigurationUpdater::ApplyNetworkConfiguration(
+    const PolicyMap& policy_map,
+    const char* policy_name,
     chromeos::NetworkUIData::ONCSource onc_source,
-    std::string* cached_value,
-    const base::Value* previous,
-    const base::Value* current) {
+    std::string* cached_value) {
   std::string new_network_config;
-  if (current != NULL) {
+  const base::Value* value = policy_map.GetValue(policy_name);
+  if (value != NULL) {
     // If the policy is not a string, we issue a warning, but still clear the
     // network configuration.
-    if (!current->GetAsString(&new_network_config))
+    if (!value->GetAsString(&new_network_config))
       LOG(WARNING) << "Invalid network configuration.";
   }
 

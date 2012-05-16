@@ -4,11 +4,9 @@
 
 #include "chrome/browser/policy/network_configuration_updater.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/policy/policy_service_impl.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +25,6 @@ class NetworkConfigurationUpdaterTest
   virtual void SetUp() OVERRIDE {
     EXPECT_CALL(network_library_, LoadOncNetworks(_, "", _, _))
         .WillRepeatedly(Return(true));
-    PolicyServiceImpl::Providers providers;
-    providers.push_back(&provider_);
-    policy_service_.reset(new PolicyServiceImpl(providers));
   }
 
   // Maps configuration policy name to corresponding ONC source.
@@ -44,7 +39,6 @@ class NetworkConfigurationUpdaterTest
 
   chromeos::MockNetworkLibrary network_library_;
   MockConfigurationPolicyProvider provider_;
-  scoped_ptr<PolicyServiceImpl> policy_service_;
 };
 
 TEST_P(NetworkConfigurationUpdaterTest, InitialUpdate) {
@@ -57,12 +51,12 @@ TEST_P(NetworkConfigurationUpdaterTest, InitialUpdate) {
               LoadOncNetworks(kFakeONC, "", NameToONCSource(GetParam()), _))
       .WillOnce(Return(true));
 
-  NetworkConfigurationUpdater updater(policy_service_.get(), &network_library_);
+  NetworkConfigurationUpdater updater(&provider_, &network_library_);
   Mock::VerifyAndClearExpectations(&network_library_);
 }
 
 TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
-  NetworkConfigurationUpdater updater(policy_service_.get(), &network_library_);
+  NetworkConfigurationUpdater updater(&provider_, &network_library_);
 
   // We should update if policy changes.
   EXPECT_CALL(network_library_,
