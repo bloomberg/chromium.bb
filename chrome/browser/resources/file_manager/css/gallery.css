@@ -471,6 +471,7 @@ body {
   display: -webkit-box;
   height: 40px;
   margin: 8px 0 7px 3px;
+  max-width: 90px;
   opacity: 0.99;  /* Workaround for http://crosbug.com/21065 */
   padding: 0 10px 0 35px;
 }
