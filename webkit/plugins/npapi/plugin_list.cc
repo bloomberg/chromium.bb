@@ -232,7 +232,7 @@ bool PluginList::DebugPluginLoading() {
 
 void PluginList::RefreshPlugins() {
   base::AutoLock lock(lock_);
-  loading_state_ = LOADING_STATE_NEEDS_REFRESH;
+  plugins_need_refresh_ = true;
 }
 
 void PluginList::AddExtraPluginPath(const FilePath& plugin_path) {
@@ -371,7 +371,7 @@ bool PluginList::ParseMimeTypes(
 }
 
 PluginList::PluginList()
-    : loading_state_(LOADING_STATE_NEEDS_REFRESH) {
+    : plugins_need_refresh_(true) {
   PlatformInit();
   AddHardcodedPluginGroups(kGroupDefinitions,
                            ARRAYSIZE_UNSAFE(kGroupDefinitions));
@@ -379,7 +379,7 @@ PluginList::PluginList()
 
 PluginList::PluginList(const PluginGroupDefinition* definitions,
                        size_t num_definitions)
-    : loading_state_(LOADING_STATE_NEEDS_REFRESH) {
+    : plugins_need_refresh_(true) {
   // Don't do platform-dependend initialization in unit tests.
   AddHardcodedPluginGroups(definitions, num_definitions);
 }
@@ -398,8 +398,12 @@ void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
   base::Closure will_load_callback;
   {
     base::AutoLock lock(lock_);
+    // Clear the refresh bit now, because it might get set again before we
+    // reach the end of the method.
+    plugins_need_refresh_ = false;
     will_load_callback = will_load_plugins_callback_;
   }
+
   if (!will_load_callback.is_null())
     will_load_callback.Run();
 
@@ -417,10 +421,8 @@ void PluginList::LoadPluginsInternal(ScopedVector<PluginGroup>* plugin_groups) {
 void PluginList::LoadPlugins() {
   {
     base::AutoLock lock(lock_);
-    if (loading_state_ == LOADING_STATE_UP_TO_DATE)
+    if (!plugins_need_refresh_)
       return;
-
-    loading_state_ = LOADING_STATE_REFRESHING;
   }
 
   ScopedVector<PluginGroup> new_plugin_groups;
@@ -429,10 +431,6 @@ void PluginList::LoadPlugins() {
 
   base::AutoLock lock(lock_);
   plugin_groups_.swap(new_plugin_groups);
-  // If we haven't been invalidated in the mean time, mark the plug-in list as
-  // up-to-date.
-  if (loading_state_ != LOADING_STATE_NEEDS_REFRESH)
-    loading_state_ = LOADING_STATE_UP_TO_DATE;
 }
 
 bool PluginList::LoadPlugin(const FilePath& path,
@@ -506,8 +504,7 @@ const std::vector<PluginGroup*>& PluginList::GetHardcodedPluginGroups() const {
 void PluginList::SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {
   base::AutoLock lock(lock_);
 
-  DCHECK_NE(LOADING_STATE_REFRESHING, loading_state_);
-  loading_state_ = LOADING_STATE_UP_TO_DATE;
+  plugins_need_refresh_ = false;
 
   plugin_groups_.reset();
   for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
@@ -535,7 +532,7 @@ void PluginList::GetPlugins(std::vector<WebPluginInfo>* plugins) {
 bool PluginList::GetPluginsIfNoRefreshNeeded(
     std::vector<webkit::WebPluginInfo>* plugins) {
   base::AutoLock lock(lock_);
-  if (loading_state_ != LOADING_STATE_UP_TO_DATE)
+  if (plugins_need_refresh_)
     return false;
 
   for (size_t i = 0; i < plugin_groups_.size(); ++i) {
@@ -560,7 +557,7 @@ void PluginList::GetPluginInfoArray(
     LoadPlugins();
   base::AutoLock lock(lock_);
   if (use_stale)
-    *use_stale = (loading_state_ != LOADING_STATE_UP_TO_DATE);
+    *use_stale = plugins_need_refresh_;
   info->clear();
   if (actual_mime_types)
     actual_mime_types->clear();
