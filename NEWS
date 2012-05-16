@@ -3,8 +3,9 @@ liblouis NEWS -- history of user-visible changes.
 * Noteworthy changes in release 2.?.? (????-??-??)
 
 ** New features
-   - Estonian grade 0, thanks to Jürgen Dengo.
-   - Portuguese 8 dot Computer braille, Thanks to Rui Fontes
+*** New Braille tables
+    - Estonian grade 0, thanks to Jürgen Dengo.
+    - Portuguese 8 dot Computer braille, Thanks to Rui Fontes
 *** Improvements to the python bindings
     All constants defined in liblouis.h are now exposed in the bindings.
 *** Add a doctest infrastructure
@@ -15,15 +16,20 @@ liblouis NEWS -- history of user-visible changes.
     simple and concise syntax. These test are also based on Python and
     are only run if Python is installed on the system. See the
     documentation for more information.
+*** Support for Python 3 in the Python bindings
+    The Python bindings now work for both Python 2 and Python 3.
+    Thanks to Michael Whapples.
 
 ** Improved the documentation
    - Document the test harness
+   - Document the use of Valgrind to find memory leaks
 
 ** Bug fixes
    - lou_allround and lou_translate now properly handle unicode
      characters
    - Fix some issues reported by Valgrind
-   - Fix inputPos for situation where context and multipass opcodes are involved
+   - Fix inputPos for situation where context and multipass opcodes
+     are involved
 
 ** Braille Table Improvements
    - Added:
@@ -36,6 +42,7 @@ liblouis NEWS -- history of user-visible changes.
      include the right class of definitions.
    - Most tables were touched by the deduplication tables mensioned above.
    - hu1.ctb: improvements and extensive test harness Thanks to Hammer Attila
+   - Fixes to de-de-comp8.ctb thanks to Aliminator83@gmail.com
 
 * Noteworthy changes in release 2.4.1 (2012-2-22)
 
