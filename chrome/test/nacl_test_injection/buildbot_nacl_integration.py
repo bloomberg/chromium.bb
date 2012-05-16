@@ -77,10 +77,6 @@ def Main(args):
       # http://code.google.com/p/nativeclient/issues/detail?id=1835
       tests_to_disable.append('run_ppapi_crash_browser_test')
 
-    # See http://crbug.com/120355
-    if sys.platform == 'win32':
-      tests_to_disable.append('run_inbrowser_test_runner')
-
   if sys.platform in ('win32', 'cygwin'):
     tests_to_disable.append('run_ppapi_ppp_input_event_browser_test')
 
