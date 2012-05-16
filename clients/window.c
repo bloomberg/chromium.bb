@@ -186,7 +186,9 @@ struct widget {
 
 struct input {
 	struct display *display;
-	struct wl_input_device *input_device;
+	struct wl_seat *seat;
+	struct wl_pointer *pointer;
+	struct wl_keyboard *keyboard;
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
 	int current_cursor;
@@ -1580,7 +1582,7 @@ frame_button_handler(struct widget *widget,
 			input_set_pointer_image(input, time, POINTER_DRAGGING);
 			input_ungrab(input);
 			wl_shell_surface_move(window->shell_surface,
-					      input_get_input_device(input),
+					      input_get_seat(input),
 					      display->serial);
 			break;
 		case WINDOW_RESIZING_TOP:
@@ -1605,7 +1607,7 @@ frame_button_handler(struct widget *widget,
 			}
 
 			wl_shell_surface_resize(window->shell_surface,
-						input_get_input_device(input),
+						input_get_seat(input),
 						display->serial, location);
 			break;
 		}
@@ -1699,13 +1701,13 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 }
 
 static void
-input_handle_motion(void *data, struct wl_input_device *input_device,
-		    uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
+pointer_handle_motion(void *data, struct wl_pointer *pointer,
+		      uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
 	struct widget *widget;
-	int pointer = POINTER_LEFT_PTR;
+	int cursor = POINTER_LEFT_PTR;
 	float sx = wl_fixed_to_double(sx_w);
 	float sy = wl_fixed_to_double(sy_w);
 
@@ -1722,11 +1724,11 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 	else
 		widget = input->focus_widget;
 	if (widget && widget->motion_handler)
-		pointer = widget->motion_handler(input->focus_widget,
-						 input, time, sx, sy,
-						 widget->user_data);
+		cursor = widget->motion_handler(input->focus_widget,
+						input, time, sx, sy,
+						widget->user_data);
 
-	input_set_pointer_image(input, time, pointer);
+	input_set_pointer_image(input, time, cursor);
 }
 
 void
@@ -1750,9 +1752,8 @@ input_ungrab(struct input *input)
 }
 
 static void
-input_handle_button(void *data,
-		    struct wl_input_device *input_device, uint32_t serial,
-		    uint32_t time, uint32_t button, uint32_t state)
+pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
+		      uint32_t time, uint32_t button, uint32_t state)
 {
 	struct input *input = data;
 	struct widget *widget;
@@ -1773,15 +1774,14 @@ input_handle_button(void *data,
 }
 
 static void
-input_handle_axis(void *data,
-		    struct wl_input_device *input_device,
+pointer_handle_axis(void *data, struct wl_pointer *pointer,
 		    uint32_t time, uint32_t axis, int32_t value)
 {
 }
 
 static void
-input_handle_key(void *data, struct wl_input_device *input_device,
-		 uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
+keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
+		    uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
 {
 	struct input *input = data;
 	struct window *window = input->keyboard_focus;
@@ -1842,10 +1842,9 @@ input_remove_pointer_focus(struct input *input)
 }
 
 static void
-input_handle_pointer_enter(void *data,
-			   struct wl_input_device *input_device,
-			   uint32_t serial, struct wl_surface *surface,
-			   wl_fixed_t sx_w, wl_fixed_t sy_w)
+pointer_handle_enter(void *data, struct wl_pointer *pointer,
+		     uint32_t serial, struct wl_surface *surface,
+		     wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
 	struct input *input = data;
 	struct window *window;
@@ -1878,9 +1877,8 @@ input_handle_pointer_enter(void *data,
 }
 
 static void
-input_handle_pointer_leave(void *data,
-			   struct wl_input_device *input_device,
-			   uint32_t serial, struct wl_surface *surface)
+pointer_handle_leave(void *data, struct wl_pointer *pointer,
+		     uint32_t serial, struct wl_surface *surface)
 {
 	struct input *input = data;
 
@@ -1905,11 +1903,9 @@ input_remove_keyboard_focus(struct input *input)
 }
 
 static void
-input_handle_keyboard_enter(void *data,
-			    struct wl_input_device *input_device,
-			    uint32_t serial,
-			    struct wl_surface *surface,
-			    struct wl_array *keys)
+keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+		      uint32_t serial, struct wl_surface *surface,
+		      struct wl_array *keys)
 {
 	struct input *input = data;
 	struct window *window;
@@ -1926,10 +1922,8 @@ input_handle_keyboard_enter(void *data,
 }
 
 static void
-input_handle_keyboard_leave(void *data,
-			    struct wl_input_device *input_device,
-			    uint32_t serial,
-			    struct wl_surface *surface)
+keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+		      uint32_t serial, struct wl_surface *surface)
 {
 	struct input *input = data;
 
@@ -1937,56 +1931,49 @@ input_handle_keyboard_leave(void *data,
 	input_remove_keyboard_focus(input);
 }
 
-static void
-input_handle_touch_down(void *data,
-			struct wl_input_device *wl_input_device,
-			uint32_t serial, uint32_t time,
-			struct wl_surface *surface,
-			int32_t id, wl_fixed_t x, wl_fixed_t y)
-{
-}
+static const struct wl_pointer_listener pointer_listener = {
+	pointer_handle_enter,
+	pointer_handle_leave,
+	pointer_handle_motion,
+	pointer_handle_button,
+	pointer_handle_axis,
+};
+
+static const struct wl_keyboard_listener keyboard_listener = {
+	keyboard_handle_enter,
+	keyboard_handle_leave,
+	keyboard_handle_key,
+};
 
 static void
-input_handle_touch_up(void *data,
-		      struct wl_input_device *wl_input_device,
-		      uint32_t serial, uint32_t time, int32_t id)
+seat_handle_capabilities(void *data, struct wl_seat *seat,
+			 enum wl_seat_capability caps)
 {
+	struct input *input = data;
+
+	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->pointer) {
+		input->pointer = wl_seat_get_pointer(seat);
+		wl_pointer_set_user_data(input->pointer, input);
+		wl_pointer_add_listener(input->pointer, &pointer_listener,
+					input);
+	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
+		wl_pointer_destroy(input->pointer);
+		input->pointer = NULL;
+	}
+
+	if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !input->keyboard) {
+		input->keyboard = wl_seat_get_keyboard(seat);
+		wl_keyboard_set_user_data(input->keyboard, input);
+		wl_keyboard_add_listener(input->keyboard, &keyboard_listener,
+					 input);
+	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
+		wl_keyboard_destroy(input->keyboard);
+		input->keyboard = NULL;
+	}
 }
 
-static void
-input_handle_touch_motion(void *data,
-			  struct wl_input_device *wl_input_device,
-			  uint32_t time, int32_t id,
-			  wl_fixed_t x, wl_fixed_t y)
-{
-}
-
-static void
-input_handle_touch_frame(void *data,
-			 struct wl_input_device *wl_input_device)
-{
-}
-
-static void
-input_handle_touch_cancel(void *data,
-			  struct wl_input_device *wl_input_device)
-{
-}
-
-static const struct wl_input_device_listener input_device_listener = {
-	input_handle_motion,
-	input_handle_button,
-	input_handle_axis,
-	input_handle_key,
-	input_handle_pointer_enter,
-	input_handle_pointer_leave,
-	input_handle_keyboard_enter,
-	input_handle_keyboard_leave,
-	input_handle_touch_down,
-	input_handle_touch_up,
-	input_handle_touch_motion,
-	input_handle_touch_frame,
-	input_handle_touch_cancel,
+static const struct wl_seat_listener seat_listener = {
+	seat_handle_capabilities,
 };
 
 void
@@ -1996,10 +1983,10 @@ input_get_position(struct input *input, int32_t *x, int32_t *y)
 	*y = input->sy;
 }
 
-struct wl_input_device *
-input_get_input_device(struct input *input)
+struct wl_seat *
+input_get_seat(struct input *input)
 {
-	return input->input_device;
+	return input->seat;
 }
 
 uint32_t
@@ -2189,8 +2176,8 @@ input_set_pointer_image(struct input *input, uint32_t time, int pointer)
 
 	input->current_cursor = pointer;
 	buffer = display_get_buffer_for_surface(display, image->surface);
-	wl_input_device_attach(input->input_device, time, buffer,
-			       image->hotspot_x, image->hotspot_y);
+	wl_pointer_attach(input->pointer, time, buffer,
+			  image->hotspot_x, image->hotspot_y);
 }
 
 struct wl_data_device *
@@ -2298,8 +2285,7 @@ window_move(struct window *window, struct input *input, uint32_t serial)
 	if (!window->shell_surface)
 		return;
 
-	wl_shell_surface_move(window->shell_surface,
-			      input->input_device, serial);
+	wl_shell_surface_move(window->shell_surface, input->seat, serial);
 }
 
 static void
@@ -2865,7 +2851,7 @@ window_show_menu(struct display *display,
 	window->y = y;
 
 	input_ungrab(input);
-	wl_shell_surface_set_popup(window->shell_surface, input->input_device,
+	wl_shell_surface_set_popup(window->shell_surface, input->seat,
 				   display_get_serial(window->display),
 				   window->parent->shell_surface,
 				   window->x, window->y, 0);
@@ -3015,21 +3001,19 @@ display_add_input(struct display *d, uint32_t id)
 
 	memset(input, 0, sizeof *input);
 	input->display = d;
-	input->input_device =
-		wl_display_bind(d->display, id, &wl_input_device_interface);
+	input->seat = wl_display_bind(d->display, id, &wl_seat_interface);
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
 	wl_list_insert(d->input_list.prev, &input->link);
 
-	wl_input_device_add_listener(input->input_device,
-				     &input_device_listener, input);
-	wl_input_device_set_user_data(input->input_device, input);
+	wl_seat_add_listener(input->seat, &seat_listener, input);
+	wl_seat_set_user_data(input->seat, input);
 
 	input->data_device =
 		wl_data_device_manager_get_data_device(d->data_device_manager,
-						       input->input_device);
-	wl_data_device_add_listener(input->data_device,
-				    &data_device_listener, input);
+						       input->seat);
+	wl_data_device_add_listener(input->data_device, &data_device_listener,
+				    input);
 }
 
 static void
@@ -3046,7 +3030,7 @@ input_destroy(struct input *input)
 
 	wl_data_device_destroy(input->data_device);
 	wl_list_remove(&input->link);
-	wl_input_device_destroy(input->input_device);
+	wl_seat_destroy(input->seat);
 	free(input);
 }
 
@@ -3061,7 +3045,7 @@ display_handle_global(struct wl_display *display, uint32_t id,
 			wl_display_bind(display, id, &wl_compositor_interface);
 	} else if (strcmp(interface, "wl_output") == 0) {
 		display_add_output(d, id);
-	} else if (strcmp(interface, "wl_input_device") == 0) {
+	} else if (strcmp(interface, "wl_seat") == 0) {
 		display_add_input(d, id);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		d->shell = wl_display_bind(display, id, &wl_shell_interface);

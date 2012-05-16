@@ -257,16 +257,16 @@ binding_key(struct wl_keyboard_grab *grab,
 	struct wl_display *display;
 	uint32_t serial;
 
-	resource = grab->input_device->keyboard_focus_resource;
+	resource = grab->keyboard->focus_resource;
 	if (key == b->key) {
 		if (!state) {
-			wl_input_device_end_keyboard_grab(grab->input_device);
+			wl_keyboard_end_grab(grab->keyboard);
 			free(b);
 		}
 	} else if (resource) {
 		display = wl_client_get_display(resource->client);
 		serial = wl_display_next_serial(display);
-		wl_input_device_send_key(resource, serial, time, key, state);
+		wl_keyboard_send_key(resource, serial, time, key, state);
 	}
 }
 
@@ -275,7 +275,7 @@ static const struct wl_keyboard_grab_interface binding_grab = {
 };
 
 static void
-install_binding_grab(struct wl_input_device *device,
+install_binding_grab(struct wl_seat *seat,
 		     uint32_t time, uint32_t key)
 {
 	struct binding_keyboard_grab *grab;
@@ -283,12 +283,12 @@ install_binding_grab(struct wl_input_device *device,
 	grab = malloc(sizeof *grab);
 	grab->key = key;
 	grab->grab.interface = &binding_grab;
-	wl_input_device_start_keyboard_grab(device, &grab->grab);
+	wl_keyboard_start_grab(seat->keyboard, &grab->grab);
 }
 
 WL_EXPORT void
 weston_compositor_run_binding(struct weston_compositor *compositor,
-			      struct weston_input_device *device,
+			      struct weston_seat *seat,
 			      uint32_t time, uint32_t key,
 			      uint32_t button, uint32_t axis, int32_t value)
 {
@@ -296,18 +296,17 @@ weston_compositor_run_binding(struct weston_compositor *compositor,
 
 	wl_list_for_each(b, &compositor->binding_list, link) {
 		if (b->key == key && b->button == button && b->axis == axis &&
-		    b->modifier == device->modifier_state && value) {
-			b->handler(&device->input_device,
+		    b->modifier == seat->modifier_state && value) {
+			b->handler(&seat->seat,
 				   time, key, button, axis, value, b->data);
 
 			/* If this was a key binding and it didn't
 			 * install a keyboard grab, install one now to
 			 * swallow the key release. */
 			if (b->key &&
-			    device->input_device.keyboard_grab ==
-			    &device->input_device.default_keyboard_grab)
-				install_binding_grab(&device->input_device,
-						     time, key);
+			    seat->seat.keyboard->grab ==
+			    &seat->seat.keyboard->default_grab)
+				install_binding_grab(&seat->seat, time, key);
 		}
 	}
 }

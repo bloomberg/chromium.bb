@@ -35,12 +35,13 @@
 #include <EGL/egl.h>
 
 struct window;
+struct seat;
 
 struct display {
 	struct wl_display *display;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
-	struct wl_input_device *input;
+	struct seat *seat;
 	struct {
 		EGLDisplay dpy;
 		EGLContext ctx;
@@ -48,6 +49,14 @@ struct display {
 	} egl;
 	uint32_t mask;
 	struct window *window;
+};
+
+struct seat {
+	struct display *display;
+	struct wl_seat *seat;
+	struct wl_pointer *pointer;
+	struct wl_keyboard *keyboard;
+	struct wl_touch *touch;
 };
 
 struct window {
@@ -352,117 +361,79 @@ static const struct wl_callback_listener frame_listener = {
 };
 
 static void
-input_handle_motion(void *data, struct wl_input_device *input_device,
-		    uint32_t time, int32_t sx, int32_t sy)
-{
-}
-
-static void
-input_handle_button(void *data,
-		    struct wl_input_device *input_device, uint32_t serial,
-		    uint32_t time, uint32_t button, uint32_t state)
-{
-}
-
-static void
-input_handle_axis(void *data,
-		    struct wl_input_device *input_device,
-		    uint32_t time, uint32_t axis, int32_t value)
-{
-}
-
-static void
-input_handle_key(void *data, struct wl_input_device *input_device,
-		 uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
-{
-}
-
-static void
-input_handle_pointer_enter(void *data,
-			   struct wl_input_device *input_device,
-			   uint32_t serial, struct wl_surface *surface,
-			   int32_t sx, int32_t sy)
+pointer_handle_enter(void *data, struct wl_pointer *pointer,
+		     uint32_t serial, struct wl_surface *surface,
+		     wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct display *display = data;
 
 	if (display->window->fullscreen)
-		wl_input_device_attach(input_device, serial, NULL, 0, 0);
+		wl_pointer_attach(pointer, serial, NULL, 0, 0);
 }
 
 static void
-input_handle_pointer_leave(void *data,
-			   struct wl_input_device *input_device,
-			   uint32_t serial, struct wl_surface *surface)
+pointer_handle_leave(void *data, struct wl_pointer *pointer,
+		     uint32_t serial, struct wl_surface *surface)
 {
 }
 
 static void
-input_handle_keyboard_enter(void *data,
-			    struct wl_input_device *input_device,
-			    uint32_t serial,
-			    struct wl_surface *surface,
-			    struct wl_array *keys)
+pointer_handle_motion(void *data, struct wl_pointer *pointer,
+		      uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
 {
 }
 
 static void
-input_handle_keyboard_leave(void *data,
-			    struct wl_input_device *input_device,
-			    uint32_t serial,
-			    struct wl_surface *surface)
+pointer_handle_button(void *data, struct wl_pointer *wl_pointer,
+		      uint32_t serial, uint32_t time, uint32_t button,
+		      uint32_t state)
 {
 }
 
 static void
-input_handle_touch_down(void *data,
-			struct wl_input_device *wl_input_device,
-			uint32_t serial, uint32_t time,
-			struct wl_surface *surface,
-			int32_t id, int32_t x, int32_t y)
+pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
+		    uint32_t time, uint32_t axis, int32_t value)
 {
 }
 
-static void
-input_handle_touch_up(void *data,
-		      struct wl_input_device *wl_input_device,
-		      uint32_t serial, uint32_t time, int32_t id)
-{
-}
-
-static void
-input_handle_touch_motion(void *data,
-			  struct wl_input_device *wl_input_device,
-			  uint32_t time, int32_t id, int32_t x, int32_t y)
-{
-}
-
-static void
-input_handle_touch_frame(void *data,
-			 struct wl_input_device *wl_input_device)
-{
-}
-
-static void
-input_handle_touch_cancel(void *data,
-			  struct wl_input_device *wl_input_device)
-{
-}
-
-static const struct wl_input_device_listener input_listener = {
-	input_handle_motion,
-	input_handle_button,
-	input_handle_axis,
-	input_handle_key,
-	input_handle_pointer_enter,
-	input_handle_pointer_leave,
-	input_handle_keyboard_enter,
-	input_handle_keyboard_leave,
-	input_handle_touch_down,
-	input_handle_touch_up,
-	input_handle_touch_motion,
-	input_handle_touch_frame,
-	input_handle_touch_cancel,
+static const struct wl_pointer_listener pointer_listener = {
+	pointer_handle_enter,
+	pointer_handle_leave,
+	pointer_handle_motion,
+	pointer_handle_button,
+	pointer_handle_axis,
 };
+
+static void
+seat_handle_capabilities(void *data, struct wl_seat *seat,
+			 enum wl_seat_capability caps)
+{
+	struct seat *s = data;
+
+	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !s->pointer) {
+		s->pointer = wl_seat_get_pointer(seat);
+		wl_pointer_set_user_data(s->pointer, s);
+		wl_pointer_add_listener(s->pointer, &pointer_listener, s);
+	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && s->pointer) {
+		wl_pointer_destroy(s->pointer);
+		s->pointer = NULL;
+	}
+}
+
+static const struct wl_seat_listener seat_listener = {
+	seat_handle_capabilities,
+};
+
+static void
+bind_seat(struct display *d, uint32_t id)
+{
+	struct seat *s = calloc(1, sizeof *s);
+
+	s->display = d;
+	s->seat = wl_display_bind(d->display, id, &wl_seat_interface);
+	wl_seat_add_listener(s->seat, &seat_listener, s);
+	d->seat = s;
+}
 
 static void
 display_handle_global(struct wl_display *display, uint32_t id,
@@ -475,9 +446,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 			wl_display_bind(display, id, &wl_compositor_interface);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		d->shell = wl_display_bind(display, id, &wl_shell_interface);
-	} else if (strcmp(interface, "wl_input_device") == 0) {
-		d->input = wl_display_bind(display, id, &wl_input_device_interface);
-		wl_input_device_add_listener(d->input, &input_listener, d);
+	} else if (strcmp(interface, "wl_seat") == 0) {
+		bind_seat(d, id);
 	}
 }
 

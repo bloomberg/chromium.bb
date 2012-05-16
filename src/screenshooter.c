@@ -193,7 +193,7 @@ screenshooter_sigchld(struct weston_process *process, int status)
 }
 
 static void
-screenshooter_binding(struct wl_input_device *device, uint32_t time,
+screenshooter_binding(struct wl_seat *seat, uint32_t time,
 		 uint32_t key, uint32_t button, uint32_t axis,
 		 int32_t state, void *data)
 {

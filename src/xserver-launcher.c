@@ -427,8 +427,8 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	}
 
 	compositor = wm->server->compositor;
-	wl_input_device_set_selection(compositor->input_device, source,
-				      wl_display_next_serial(compositor->wl_display));
+	wl_seat_set_selection(&compositor->seat->seat, source,
+			      wl_display_next_serial(compositor->wl_display));
 
 	free(reply);
 }
@@ -546,10 +546,10 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 static void
 weston_wm_set_selection(struct wl_listener *listener, void *data)
 {
-	struct wl_input_device *device = data;
+	struct wl_seat *seat = data;
 	struct weston_wm *wm =
 		container_of(listener, struct weston_wm, selection_listener);
-	struct wl_data_source *source = device->selection_data_source;
+	struct wl_data_source *source = seat->selection_data_source;
 	const char **p, **end;
 	int has_text_plain = 0;
 
@@ -1060,7 +1060,7 @@ weston_wm_read_data_source(int fd, uint32_t mask, void *data)
 static void
 weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_type)
 {
-	struct wl_input_device *device = wm->server->compositor->input_device;
+	struct wl_seat *seat = &wm->server->compositor->seat->seat;
 	int p[2];
 
 	if (pipe2(p, O_CLOEXEC | O_NONBLOCK) == -1) {
@@ -1078,7 +1078,7 @@ weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_ty
 						   weston_wm_read_data_source,
 						   wm);
 
-	wl_data_source_send_send(&device->selection_data_source->resource,
+	wl_data_source_send_send(&seat->selection_data_source->resource,
 				 mime_type, p[1]);
 	close(p[1]);
 }
@@ -1505,7 +1505,7 @@ weston_wm_create_wm_window(struct weston_wm *wm)
 static struct weston_wm *
 weston_wm_create(struct weston_xserver *wxs)
 {
-	struct wl_input_device *device;
+	struct wl_seat *seat;
 	struct weston_wm *wm;
 	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
@@ -1604,9 +1604,9 @@ weston_wm_create(struct weston_xserver *wxs)
 
 	xcb_flush(wm->conn);
 
-	device = wxs->compositor->input_device;
+	seat = &wxs->compositor->seat->seat;
 	wm->selection_listener.notify = weston_wm_set_selection;
-	wl_signal_add(&device->selection_signal, &wm->selection_listener);
+	wl_signal_add(&seat->selection_signal, &wm->selection_listener);
 
 	fprintf(stderr, "created wm\n");
 

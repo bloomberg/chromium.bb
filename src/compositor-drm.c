@@ -625,22 +625,22 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 
 static int
 drm_output_set_cursor(struct weston_output *output_base,
-		      struct weston_input_device *eid);
+		      struct weston_seat *es);
 
 static void
 weston_output_set_cursor(struct weston_output *output,
-			 struct weston_input_device *device,
+			 struct weston_seat *seat,
 			 pixman_region32_t *overlap)
 {
 	pixman_region32_t cursor_region;
 	int prior_was_hardware;
 
-	if (device->sprite == NULL)
+	if (seat->sprite == NULL)
 		return;
 
 	pixman_region32_init(&cursor_region);
 	pixman_region32_intersect(&cursor_region,
-				  &device->sprite->transform.boundingbox,
+				  &seat->sprite->transform.boundingbox,
 				  &output->region);
 
 	if (!pixman_region32_not_empty(&cursor_region)) {
@@ -648,19 +648,19 @@ weston_output_set_cursor(struct weston_output *output,
 		goto out;
 	}
 
-	prior_was_hardware = device->hw_cursor;
+	prior_was_hardware = seat->hw_cursor;
 	if (pixman_region32_not_empty(overlap) ||
-	    drm_output_set_cursor(output, device) < 0) {
+	    drm_output_set_cursor(output, seat) < 0) {
 		if (prior_was_hardware) {
-			weston_surface_damage(device->sprite);
+			weston_surface_damage(seat->sprite);
 			drm_output_set_cursor(output, NULL);
 		}
-		device->hw_cursor = 0;
+		seat->hw_cursor = 0;
 	} else {
 		if (!prior_was_hardware)
-			weston_surface_damage_below(device->sprite);
-		wl_list_remove(&device->sprite->link);
-		device->hw_cursor = 1;
+			weston_surface_damage_below(seat->sprite);
+		wl_list_remove(&seat->sprite->link);
+		seat->hw_cursor = 1;
 	}
 
 out:
@@ -673,7 +673,7 @@ drm_assign_planes(struct weston_output *output)
 	struct weston_compositor *ec = output->compositor;
 	struct weston_surface *es, *next;
 	pixman_region32_t overlap, surface_overlap;
-	struct weston_input_device *device;
+	struct weston_seat *seat;
 
 	/*
 	 * Find a surface for each sprite in the output using some heuristics:
@@ -698,12 +698,12 @@ drm_assign_planes(struct weston_output *output)
 		pixman_region32_intersect(&surface_overlap, &overlap,
 					  &es->transform.boundingbox);
 
-		device = (struct weston_input_device *) ec->input_device;
-		if (es == device->sprite) {
-			weston_output_set_cursor(output, device,
+		seat = (struct weston_seat *) ec->seat;
+		if (es == seat->sprite) {
+			weston_output_set_cursor(output, seat,
 						 &surface_overlap);
 
-			if (!device->hw_cursor)
+			if (!seat->hw_cursor)
 				pixman_region32_union(&overlap, &overlap,
 						      &es->transform.boundingbox);
 		} else if (!drm_output_prepare_overlay_surface(output, es,
@@ -723,7 +723,7 @@ drm_assign_planes(struct weston_output *output)
 
 static int
 drm_output_set_cursor(struct weston_output *output_base,
-		      struct weston_input_device *eid)
+		      struct weston_seat *es)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_compositor *c =
@@ -734,17 +734,17 @@ drm_output_set_cursor(struct weston_output *output_base,
 	uint32_t buf[64 * 64];
 	unsigned char *d, *s, *end;
 
-	if (eid == NULL) {
+	if (es == NULL) {
 		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
 		return 0;
 	}
 
-	if (eid->sprite->buffer == NULL ||
-	    !wl_buffer_is_shm(eid->sprite->buffer))
+	if (es->sprite->buffer == NULL ||
+	    !wl_buffer_is_shm(es->sprite->buffer))
 		goto out;
 
-	if (eid->sprite->geometry.width > 64 ||
-	    eid->sprite->geometry.height > 64)
+	if (es->sprite->geometry.width > 64 ||
+	    es->sprite->geometry.height > 64)
 		goto out;
 
 	output->current_cursor ^= 1;
@@ -754,11 +754,11 @@ drm_output_set_cursor(struct weston_output *output_base,
 
 	memset(buf, 0, sizeof buf);
 	d = (unsigned char *) buf;
-	stride = wl_shm_buffer_get_stride(eid->sprite->buffer);
-	s = wl_shm_buffer_get_data(eid->sprite->buffer);
-	end = s + stride * eid->sprite->geometry.height;
+	stride = wl_shm_buffer_get_stride(es->sprite->buffer);
+	s = wl_shm_buffer_get_data(es->sprite->buffer);
+	end = s + stride * es->sprite->geometry.height;
 	while (s < end) {
-		memcpy(d, s, eid->sprite->geometry.width * 4);
+		memcpy(d, s, es->sprite->geometry.width * 4);
 		s += stride;
 		d += 64 * 4;
 	}
@@ -774,8 +774,8 @@ drm_output_set_cursor(struct weston_output *output_base,
 	}
 
 	ret = drmModeMoveCursor(c->drm.fd, output->crtc_id,
-				eid->sprite->geometry.x - output->base.x,
-				eid->sprite->geometry.y - output->base.y);
+				es->sprite->geometry.x - output->base.x,
+				es->sprite->geometry.y - output->base.y);
 	if (ret) {
 		fprintf(stderr, "failed to move cursor: %s\n", strerror(-ret));
 		goto out;
@@ -1616,10 +1616,10 @@ static void
 drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_compositor *d = (struct drm_compositor *) ec;
-	struct weston_input_device *input, *next;
+	struct weston_seat *seat, *next;
 
-	wl_list_for_each_safe(input, next, &ec->input_device_list, link)
-		evdev_input_destroy(input);
+	wl_list_for_each_safe(seat, next, &ec->seat_list, link)
+		evdev_input_destroy(seat);
 
 	wl_event_source_remove(d->udev_drm_source);
 	wl_event_source_remove(d->drm_source);
@@ -1668,7 +1668,7 @@ vt_func(struct weston_compositor *compositor, int event)
 {
 	struct drm_compositor *ec = (struct drm_compositor *) compositor;
 	struct weston_output *output;
-	struct weston_input_device *input;
+	struct weston_seat *seat;
 	struct drm_sprite *sprite;
 	struct drm_output *drm_output;
 
@@ -1682,15 +1682,15 @@ vt_func(struct weston_compositor *compositor, int event)
 		compositor->state = ec->prev_state;
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
-		wl_list_for_each(input, &compositor->input_device_list, link) {
-			evdev_add_devices(ec->udev, input);
-			evdev_enable_udev_monitor(ec->udev, input);
+		wl_list_for_each(seat, &compositor->seat_list, link) {
+			evdev_add_devices(ec->udev, seat);
+			evdev_enable_udev_monitor(ec->udev, seat);
 		}
 		break;
 	case TTY_LEAVE_VT:
-		wl_list_for_each(input, &compositor->input_device_list, link) {
-			evdev_disable_udev_monitor(input);
-			evdev_remove_devices(input);
+		wl_list_for_each(seat, &compositor->seat_list, link) {
+			evdev_disable_udev_monitor(seat);
+			evdev_remove_devices(seat);
 		}
 
 		compositor->focus = 0;
@@ -1727,7 +1727,7 @@ vt_func(struct weston_compositor *compositor, int event)
 }
 
 static void
-switch_vt_binding(struct wl_input_device *device, uint32_t time,
+switch_vt_binding(struct wl_seat *seat, uint32_t time,
 		  uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct drm_compositor *ec = data;

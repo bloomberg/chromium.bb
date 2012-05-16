@@ -38,7 +38,10 @@ struct touch {
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_shm *shm;
-	struct wl_input_device *input_device;
+	struct wl_seat *seat;
+	struct wl_touch *wl_touch;
+	struct wl_pointer *pointer;
+	struct wl_keyboard *keyboard;
 	struct wl_surface *surface;
 	struct wl_shell_surface *shell_surface;
 	struct wl_buffer *buffer;
@@ -103,67 +106,6 @@ struct wl_shm_listener shm_listenter = {
 
 
 static void
-input_device_handle_motion(void *data, struct wl_input_device *input_device,
-			   uint32_t time,
-			   wl_fixed_t sx_w,
-			   wl_fixed_t sy_w)
-{
-}
-
-static void
-input_device_handle_button(void *data,
-			   struct wl_input_device *input_device,
-			   uint32_t serial, uint32_t time,
-			   uint32_t button, uint32_t state)
-{
-}
-
-static void
-input_device_handle_axis(void *data, struct wl_input_device *input_device,
-			uint32_t time, uint32_t axis, int32_t value)
-{
-}
-
-static void
-input_device_handle_key(void *data, struct wl_input_device *input_device,
-			uint32_t serial, uint32_t time,
-			uint32_t key, uint32_t state)
-{
-}
-
-static void
-input_device_handle_pointer_enter(void *data,
-				  struct wl_input_device *input_device,
-				  uint32_t serial, struct wl_surface *surface,
-				  wl_fixed_t sx_w, wl_fixed_t sy_w)
-{
-}
-
-static void
-input_device_handle_pointer_leave(void *data,
-				  struct wl_input_device *input_device,
-				  uint32_t serial, struct wl_surface *surface)
-{
-}
-
-static void
-input_device_handle_keyboard_enter(void *data,
-				   struct wl_input_device *input_device,
-				   uint32_t serial,
-				   struct wl_surface *surface,
-				   struct wl_array *keys)
-{
-}
-
-static void
-input_device_handle_keyboard_leave(void *data,
-				   struct wl_input_device *input_device,
-				   uint32_t serial,
-				   struct wl_surface *surface)
-{
-}
-
-static void
 touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 {
 	uint32_t *p, c;
@@ -196,13 +138,9 @@ touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 }
 
 static void
-input_device_handle_touch_down(void *data,
-			       struct wl_input_device *wl_input_device,
-			       uint32_t serial, uint32_t time,
-			       struct wl_surface *surface,
-			       int32_t id,
-			       wl_fixed_t x_w,
-			       wl_fixed_t y_w)
+touch_handle_down(void *data, struct wl_touch *wl_touch,
+		  uint32_t serial, uint32_t time, struct wl_surface *surface,
+		  int32_t id, wl_fixed_t x_w, wl_fixed_t y_w)
 {
 	struct touch *touch = data;
 	float x = wl_fixed_to_double(x_w);
@@ -212,19 +150,14 @@ input_device_handle_touch_down(void *data,
 }
 
 static void
-input_device_handle_touch_up(void *data,
-			     struct wl_input_device *wl_input_device,
-			     uint32_t serial, uint32_t time, int32_t id)
+touch_handle_up(void *data, struct wl_touch *wl_touch,
+		uint32_t serial, uint32_t time, int32_t id)
 {
 }
 
 static void
-input_device_handle_touch_motion(void *data,
-				 struct wl_input_device *wl_input_device,
-				 uint32_t time,
-				 int32_t id,
-				 wl_fixed_t x_w,
-				 wl_fixed_t y_w)
+touch_handle_motion(void *data, struct wl_touch *wl_touch,
+		    uint32_t time, int32_t id, wl_fixed_t x_w, wl_fixed_t y_w)
 {
 	struct touch *touch = data;
 	float x = wl_fixed_to_double(x_w);
@@ -234,31 +167,41 @@ input_device_handle_touch_motion(void *data,
 }
 
 static void
-input_device_handle_touch_frame(void *data,
-				struct wl_input_device *wl_input_device)
+touch_handle_frame(void *data, struct wl_touch *wl_touch)
 {
 }
 
 static void
-input_device_handle_touch_cancel(void *data,
-				 struct wl_input_device *wl_input_device)
+touch_handle_cancel(void *data, struct wl_touch *wl_touch)
 {
 }
 
-static const struct wl_input_device_listener input_device_listener = {
-	input_device_handle_motion,
-	input_device_handle_button,
-	input_device_handle_axis,
-	input_device_handle_key,
-	input_device_handle_pointer_enter,
-	input_device_handle_pointer_leave,
-	input_device_handle_keyboard_enter,
-	input_device_handle_keyboard_leave,
-	input_device_handle_touch_down,
-	input_device_handle_touch_up,
-	input_device_handle_touch_motion,
-	input_device_handle_touch_frame,
-	input_device_handle_touch_cancel,
+static const struct wl_touch_listener touch_listener = {
+	touch_handle_down,
+	touch_handle_up,
+	touch_handle_motion,
+	touch_handle_frame,
+	touch_handle_cancel,
+};
+
+static void
+seat_handle_capabilities(void *data, struct wl_seat *seat,
+			 enum wl_seat_capability caps)
+{
+	struct touch *touch = data;
+
+	if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !touch->wl_touch) {
+		touch->wl_touch = wl_seat_get_touch(seat);
+		wl_touch_set_user_data(touch->wl_touch, touch);
+		wl_touch_add_listener(touch->wl_touch, &touch_listener, touch);
+	} else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && touch->wl_touch) {
+		wl_touch_destroy(touch->wl_touch);
+		touch->wl_touch = NULL;
+	}
+}
+
+static const struct wl_seat_listener seat_listener = {
+	seat_handle_capabilities,
 };
 
 static void
@@ -276,12 +219,9 @@ handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		touch->shm = wl_display_bind(display, id, &wl_shm_interface);
 		wl_shm_add_listener(touch->shm, &shm_listenter, touch);
-	} else if (strcmp(interface, "wl_input_device") == 0) {
-		touch->input_device =
-			wl_display_bind(display, id,
-					&wl_input_device_interface);
-		wl_input_device_add_listener(touch->input_device,
-					     &input_device_listener, touch);
+	} else if (strcmp(interface, "wl_seat") == 0) {
+		touch->seat = wl_display_bind(display, id, &wl_seat_interface);
+		wl_seat_add_listener(touch->seat, &seat_listener, touch);
 	}
 }
 

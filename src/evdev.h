@@ -23,21 +23,20 @@
 #include <libudev.h>
 
 void
-evdev_add_devices(struct udev *udev, struct weston_input_device
-		  *input_base);
+evdev_add_devices(struct udev *udev, struct weston_seat *seat_base);
 
 void
-evdev_remove_devices(struct weston_input_device *input_base);
+evdev_remove_devices(struct weston_seat *seat_base);
 
 void
 evdev_input_create(struct weston_compositor *c, struct udev *udev,
 		   const char *seat);
 
 void
-evdev_input_destroy(struct weston_input_device *input_base);
+evdev_input_destroy(struct weston_seat *seat);
 
 int
-evdev_enable_udev_monitor(struct udev *udev, struct weston_input_device *input_base);
+evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base);
 
 void
-evdev_disable_udev_monitor(struct weston_input_device *input_base);
+evdev_disable_udev_monitor(struct weston_seat *seat_base);

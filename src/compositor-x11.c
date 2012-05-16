@@ -83,7 +83,7 @@ struct x11_output {
 };
 
 struct x11_input {
-	struct weston_input_device base;
+	struct weston_seat base;
 };
 
 
@@ -97,9 +97,9 @@ x11_input_create(struct x11_compositor *c)
 		return -1;
 
 	memset(input, 0, sizeof *input);
-	weston_input_device_init(&input->base, &c->base);
+	weston_seat_init(&input->base, &c->base);
 
-	c->base.input_device = &input->base.input_device;
+	c->base.seat = &input->base;
 
 	return 0;
 }
@@ -107,11 +107,11 @@ x11_input_create(struct x11_compositor *c)
 static void
 x11_input_destroy(struct x11_compositor *compositor)
 {
-	struct x11_input *input = container_of(compositor->base.input_device,
+	struct x11_input *input = container_of(compositor->base.seat,
 					       struct x11_input,
-					       base.input_device);
+					       base);
 
-	weston_input_device_release(&input->base);
+	weston_seat_release(&input->base);
 	free(input);
 }
 
@@ -500,31 +500,31 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 		break;
 	case 4:
 		if (state)
-			notify_axis(c->base.input_device,
+			notify_axis(&c->base.seat->seat,
 				      weston_compositor_get_time(),
-				      WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL, 1);
+				      WL_POINTER_AXIS_VERTICAL_SCROLL, 1);
 		return;
 	case 5:
 		if (state)
-			notify_axis(c->base.input_device,
+			notify_axis(&c->base.seat->seat,
 				      weston_compositor_get_time(),
-				      WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL, -1);
+				      WL_POINTER_AXIS_VERTICAL_SCROLL, -1);
 		return;
 	case 6:
 		if (state)
-			notify_axis(c->base.input_device,
+			notify_axis(&c->base.seat->seat,
 				      weston_compositor_get_time(),
-				      WL_INPUT_DEVICE_AXIS_HORIZONTAL_SCROLL, 1);
+				      WL_POINTER_AXIS_HORIZONTAL_SCROLL, 1);
 		return;
 	case 7:
 		if (state)
-			notify_axis(c->base.input_device,
+			notify_axis(&c->base.seat->seat,
 				      weston_compositor_get_time(),
-				      WL_INPUT_DEVICE_AXIS_HORIZONTAL_SCROLL, -1);
+				      WL_POINTER_AXIS_HORIZONTAL_SCROLL, -1);
 		return;
 	}
 
-	notify_button(c->base.input_device,
+	notify_button(&c->base.seat->seat,
 		      weston_compositor_get_time(), button, state);
 }
 
@@ -581,7 +581,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				/* Deliver the held key release now
 				 * and fall through and handle the new
 				 * event below. */
-				notify_key(c->base.input_device,
+				notify_key(&c->base.seat->seat,
 					   weston_compositor_get_time(),
 					   key_release->detail - 8, 0);
 				free(prev);
@@ -604,7 +604,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			}
 
 			output = x11_compositor_find_output(c, focus_in->event);
-			notify_keyboard_focus(c->base.input_device, &c->keys);
+			notify_keyboard_focus(&c->base.seat->seat, &c->keys);
 
 			free(prev);
 			prev = NULL;
@@ -618,7 +618,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 		switch (event->response_type & ~0x80) {
 		case XCB_KEY_PRESS:
 			key_press = (xcb_key_press_event_t *) event;
-			notify_key(c->base.input_device,
+			notify_key(&c->base.seat->seat,
 				   weston_compositor_get_time(),
 				   key_press->detail - 8, 1);
 			break;
@@ -636,7 +636,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			output = x11_compositor_find_output(c, motion_notify->event);
 			x = wl_fixed_from_int(output->base.x + motion_notify->event_x);
 			y = wl_fixed_from_int(output->base.y + motion_notify->event_y);
-			notify_motion(c->base.input_device,
+			notify_motion(&c->base.seat->seat,
 				      weston_compositor_get_time(), x, y);
 			break;
 
@@ -655,7 +655,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			x = wl_fixed_from_int(output->base.x + enter_notify->event_x);
 			y = wl_fixed_from_int(output->base.y + enter_notify->event_y);
 
-			notify_pointer_focus(c->base.input_device,
+			notify_pointer_focus(&c->base.seat->seat,
 					     &output->base, x, y);
 			break;
 
@@ -664,7 +664,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (enter_notify->state >= Button1Mask)
 				break;
 			output = x11_compositor_find_output(c, enter_notify->event);
-			notify_pointer_focus(c->base.input_device, NULL, 0, 0);
+			notify_pointer_focus(&c->base.seat->seat, NULL, 0, 0);
 			break;
 
 		case XCB_CLIENT_MESSAGE:
@@ -687,7 +687,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED ||
 			    focus_in->mode == XCB_NOTIFY_MODE_UNGRAB)
 				break;
-			notify_keyboard_focus(c->base.input_device, NULL);
+			notify_keyboard_focus(&c->base.seat->seat, NULL);
 			break;
 
 		default:
@@ -701,7 +701,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	switch (prev ? prev->response_type & ~0x80 : 0x80) {
 	case XCB_KEY_RELEASE:
 		key_release = (xcb_key_press_event_t *) prev;
-		notify_key(c->base.input_device,
+		notify_key(&c->base.seat->seat,
 			   weston_compositor_get_time(),
 			   key_release->detail - 8, 0);
 		free(prev);

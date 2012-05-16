@@ -45,7 +45,7 @@ struct weston_transform {
 
 struct weston_surface;
 struct shell_surface;
-struct weston_input_device;
+struct weston_seat;
 struct weston_output;
 
 struct weston_mode {
@@ -131,8 +131,11 @@ struct weston_output {
 	void (*set_dpms)(struct weston_output *output, enum dpms_enum level);
 };
 
-struct weston_input_device {
-	struct wl_input_device input_device;
+struct weston_seat {
+	struct wl_seat seat;
+	struct wl_pointer pointer;
+	struct wl_keyboard keyboard;
+	struct wl_touch touch;
 	struct weston_compositor *compositor;
 	struct weston_surface *sprite;
 	struct weston_surface *drag_surface;
@@ -213,13 +216,13 @@ struct weston_compositor {
 	struct wl_event_source *input_loop_source;
 
 	/* There can be more than one, but not right now... */
-	struct wl_input_device *input_device;
+	struct weston_seat *seat;
 
 	struct weston_layer fade_layer;
 	struct weston_layer cursor_layer;
 
 	struct wl_list output_list;
-	struct wl_list input_device_list;
+	struct wl_list seat_list;
 	struct wl_list layer_list;
 	struct wl_list surface_list;
 	struct wl_list binding_list;
@@ -419,34 +422,33 @@ weston_spring_done(struct weston_spring *spring);
 
 void
 weston_surface_activate(struct weston_surface *surface,
-			struct weston_input_device *device);
+			struct weston_seat *seat);
 void
 weston_surface_draw(struct weston_surface *es,
 		    struct weston_output *output, pixman_region32_t *damage);
 
 void
-notify_motion(struct wl_input_device *device,
-	      uint32_t time, wl_fixed_t x, wl_fixed_t y);
+notify_motion(struct wl_seat *seat, uint32_t time,
+	      wl_fixed_t x, wl_fixed_t y);
 void
-notify_button(struct wl_input_device *device,
-	      uint32_t time, int32_t button, uint32_t state);
+notify_button(struct wl_seat *seat, uint32_t time, int32_t button,
+	      uint32_t state);
 void
-notify_axis(struct wl_input_device *device,
-	      uint32_t time, uint32_t axis, int32_t value);
+notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
+	    int32_t value);
 void
-notify_key(struct wl_input_device *device,
-	   uint32_t time, uint32_t key, uint32_t state);
+notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
+	   uint32_t state);
 
 void
-notify_pointer_focus(struct wl_input_device *device,
-		     struct weston_output *output,
+notify_pointer_focus(struct wl_seat *seat, struct weston_output *output,
 		     wl_fixed_t x, wl_fixed_t y);
 
 void
-notify_keyboard_focus(struct wl_input_device *device, struct wl_array *keys);
+notify_keyboard_focus(struct wl_seat *seat, struct wl_array *keys);
 
 void
-notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
+notify_touch(struct wl_seat *seat, uint32_t time, int touch_id,
 	     wl_fixed_t x, wl_fixed_t y, int touch_type);
 
 void
@@ -477,7 +479,7 @@ weston_compositor_update_drag_surfaces(struct weston_compositor *compositor);
 
 
 struct weston_binding;
-typedef void (*weston_binding_handler_t)(struct wl_input_device *device,
+typedef void (*weston_binding_handler_t)(struct wl_seat *seat,
 					 uint32_t time, uint32_t key,
 					 uint32_t button,
 					 uint32_t axis,
@@ -495,7 +497,7 @@ weston_binding_list_destroy_all(struct wl_list *list);
 
 void
 weston_compositor_run_binding(struct weston_compositor *compositor,
-			      struct weston_input_device *device,
+			      struct weston_seat *seat,
 			      uint32_t time,
 			      uint32_t key, uint32_t button, uint32_t axis,
 			      int32_t value);
@@ -554,11 +556,10 @@ void
 weston_output_destroy(struct weston_output *output);
 
 void
-weston_input_device_init(struct weston_input_device *device,
-			 struct weston_compositor *ec);
+weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec);
 
 void
-weston_input_device_release(struct weston_input_device *device);
+weston_seat_release(struct weston_seat *seat);
 
 enum {
 	TTY_ENTER_VT,

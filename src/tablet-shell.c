@@ -52,7 +52,7 @@ struct tablet_shell {
 
 	struct weston_compositor *compositor;
 	struct weston_process process;
-	struct weston_input_device *device;
+	struct weston_seat *seat;
 	struct wl_client *client;
 
 	struct weston_surface *surface;
@@ -241,10 +241,9 @@ minimize_zoom_done(struct weston_zoom *zoom, void *data)
 {
 	struct tablet_shell *shell = data;
 	struct weston_compositor *compositor = shell->compositor;
-	struct weston_input_device *device =
-		(struct weston_input_device *) compositor->input_device;
+	struct weston_seat *seat = (struct weston_seat *) compositor->seat;
 
-	weston_surface_activate(shell->home_surface, device);
+	weston_surface_activate(shell->home_surface, seat);
 }
 
 static void
@@ -252,8 +251,7 @@ tablet_shell_switch_to(struct tablet_shell *shell,
 			     struct weston_surface *surface)
 {
 	struct weston_compositor *compositor = shell->compositor;
-	struct weston_input_device *device =
-		(struct weston_input_device *) compositor->input_device;
+	struct weston_seat *seat = (struct weston_seat *) compositor->seat;
 	struct weston_surface *current;
 
 	if (shell->state == STATE_SWITCHER) {
@@ -271,7 +269,7 @@ tablet_shell_switch_to(struct tablet_shell *shell,
 		}
 	} else {
 		fprintf(stderr, "switch to %p\n", surface);
-		weston_surface_activate(surface, device);
+		weston_surface_activate(surface, seat);
 		tablet_shell_set_state(shell, STATE_TASK);
 		weston_zoom_run(surface, 0.3, 1.0, NULL, NULL);
 	}
@@ -428,13 +426,13 @@ tablet_shell_unlock(struct wl_listener *listener, void *data)
 static void
 go_home(struct tablet_shell *shell)
 {
-	struct weston_input_device *device =
-		(struct weston_input_device *) shell->compositor->input_device;
+	struct weston_seat *seat =
+		(struct weston_seat *) shell->compositor->seat;
 
 	if (shell->state == STATE_SWITCHER)
 		tablet_shell_send_hide_switcher(&shell->resource);
 
-	weston_surface_activate(shell->home_surface, device);
+	weston_surface_activate(shell->home_surface, seat);
 
 	tablet_shell_set_state(shell, STATE_HOME);
 }
@@ -451,7 +449,7 @@ long_press_handler(void *data)
 }
 
 static void
-menu_key_binding(struct wl_input_device *device, uint32_t time,
+menu_key_binding(struct wl_seat *seat, uint32_t time,
 		 uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct tablet_shell *shell = data;
@@ -464,7 +462,7 @@ menu_key_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
-home_key_binding(struct wl_input_device *device, uint32_t time,
+home_key_binding(struct wl_seat *seat, uint32_t time,
 		 uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct tablet_shell *shell = data;
@@ -472,7 +470,7 @@ home_key_binding(struct wl_input_device *device, uint32_t time,
 	if (shell->state == STATE_LOCKED)
 		return;
 
-	shell->device = (struct weston_input_device *) device;
+	shell->seat = (struct weston_seat *) seat;
 
 	if (state) {
 		wl_event_source_timer_update(shell->long_press_source, 500);

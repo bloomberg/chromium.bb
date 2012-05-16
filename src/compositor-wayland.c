@@ -85,7 +85,10 @@ struct wayland_output {
 
 struct wayland_input {
 	struct wayland_compositor *compositor;
-	struct wl_input_device *input_device;
+	struct wl_seat *seat;
+	struct wl_pointer *pointer;
+	struct wl_keyboard *keyboard;
+	struct wl_touch *touch;
 	struct wl_list link;
 };
 
@@ -244,16 +247,16 @@ create_border(struct wayland_compositor *c)
 static int
 wayland_input_create(struct wayland_compositor *c)
 {
-	struct weston_input_device *input;
+	struct weston_seat *seat;
 
-	input = malloc(sizeof *input);
-	if (input == NULL)
+	seat = malloc(sizeof *seat);
+	if (seat == NULL)
 		return -1;
 
-	memset(input, 0, sizeof *input);
-	weston_input_device_init(input, &c->base);
+	memset(seat, 0, sizeof *seat);
+	weston_seat_init(seat, &c->base);
 
-	c->base.input_device = &input->input_device;
+	c->base.seat = seat;
 
 	return 0;
 }
@@ -507,52 +510,8 @@ static const struct wl_output_listener output_listener = {
 
 /* parent input interface */
 static void
-input_handle_motion(void *data, struct wl_input_device *input_device,
-		    uint32_t time, wl_fixed_t x, wl_fixed_t y)
-{
-	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
-
-	notify_motion(c->base.input_device, time,
-		      x - wl_fixed_from_int(c->border.left),
-		      y - wl_fixed_from_int(c->border.top));
-}
-
-static void
-input_handle_button(void *data,
-		    struct wl_input_device *input_device,
-		    uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
-{
-	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
-
-	notify_button(c->base.input_device, time, button, state);
-}
-
-static void
-input_handle_axis(void *data, struct wl_input_device *input_device,
-		  uint32_t time, uint32_t axis, int32_t value)
-{
-	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
-
-	notify_axis(c->base.input_device, time, axis, value);
-}
-
-static void
-input_handle_key(void *data, struct wl_input_device *input_device,
-		 uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
-{
-	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
-
-	notify_key(c->base.input_device, time, key, state);
-}
-
-static void
-input_handle_pointer_enter(void *data,
-			   struct wl_input_device *input_device,
-			   uint32_t time, struct wl_surface *surface,
+input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
+			   uint32_t serial, struct wl_surface *surface,
 			   wl_fixed_t x, wl_fixed_t y)
 {
 	struct wayland_input *input = data;
@@ -560,59 +519,134 @@ input_handle_pointer_enter(void *data,
 	struct wayland_compositor *c = input->compositor;
 
 	output = wl_surface_get_user_data(surface);
-	notify_pointer_focus(c->base.input_device, &output->base, x, y);
-	wl_input_device_attach(input->input_device, time, NULL, 0, 0);
+	notify_pointer_focus(&c->base.seat->seat, &output->base, x, y);
+	wl_pointer_attach(input->pointer, serial, NULL, 0, 0);
 }
 
 static void
-input_handle_pointer_leave(void *data,
-			   struct wl_input_device *input_device,
-			   uint32_t time, struct wl_surface *surface)
+input_handle_pointer_leave(void *data, struct wl_pointer *pointer,
+			   uint32_t serial, struct wl_surface *surface)
 {
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_pointer_focus(c->base.input_device, NULL, 0, 0);
+	notify_pointer_focus(&c->base.seat->seat, NULL, 0, 0);
 }
 
 static void
+input_handle_motion(void *data, struct wl_pointer *pointer,
+		    uint32_t time, wl_fixed_t x, wl_fixed_t y)
+{
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+
+	notify_motion(&c->base.seat->seat, time,
+		      x - wl_fixed_from_int(c->border.left),
+		      y - wl_fixed_from_int(c->border.top));
+}
+
+static void
+input_handle_button(void *data, struct wl_pointer *pointer,
+		    uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
+{
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+
+	notify_button(&c->base.seat->seat, time, button, state);
+}
+
+static void
+input_handle_axis(void *data, struct wl_pointer *pointer,
+		  uint32_t time, uint32_t axis, int32_t value)
+{
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+
+	notify_axis(&c->base.seat->seat, time, axis, value);
+}
+
+static const struct wl_pointer_listener pointer_listener = {
+	input_handle_pointer_enter,
+	input_handle_pointer_leave,
+	input_handle_motion,
+	input_handle_button,
+	input_handle_axis,
+};
+
+static void
 input_handle_keyboard_enter(void *data,
-			    struct wl_input_device *input_device,
-			    uint32_t time,
+			    struct wl_keyboard *keyboard,
+			    uint32_t serial,
 			    struct wl_surface *surface,
 			    struct wl_array *keys)
 {
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_keyboard_focus(c->base.input_device, keys);
+	notify_keyboard_focus(&c->base.seat->seat, keys);
 }
 
 static void
 input_handle_keyboard_leave(void *data,
-			    struct wl_input_device *input_device,
-			    uint32_t time,
+			    struct wl_keyboard *keyboard,
+			    uint32_t serial,
 			    struct wl_surface *surface)
 {
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_keyboard_focus(c->base.input_device, NULL);
+	notify_keyboard_focus(&c->base.seat->seat, NULL);
 }
 
-static const struct wl_input_device_listener input_device_listener = {
-	input_handle_motion,
-	input_handle_button,
-	input_handle_axis,
-	input_handle_key,
-	input_handle_pointer_enter,
-	input_handle_pointer_leave,
+static void
+input_handle_key(void *data, struct wl_keyboard *keyboard,
+		 uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
+{
+	struct wayland_input *input = data;
+	struct wayland_compositor *c = input->compositor;
+
+	notify_key(&c->base.seat->seat, time, key, state);
+}
+
+static const struct wl_keyboard_listener keyboard_listener = {
 	input_handle_keyboard_enter,
 	input_handle_keyboard_leave,
+	input_handle_key,
 };
 
 static void
-display_add_input(struct wayland_compositor *c, uint32_t id)
+input_handle_capabilities(void *data, struct wl_seat *seat,
+		          enum wl_seat_capability caps)
+{
+	struct wayland_input *input = data;
+
+	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->pointer) {
+		input->pointer = wl_seat_get_pointer(seat);
+		wl_pointer_set_user_data(input->pointer, input);
+		wl_pointer_add_listener(input->pointer, &pointer_listener,
+					input);
+	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
+		wl_pointer_destroy(input->pointer);
+		input->pointer = NULL;
+	}
+
+	if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !input->keyboard) {
+		input->keyboard = wl_seat_get_keyboard(seat);
+		wl_keyboard_set_user_data(input->keyboard, input);
+		wl_keyboard_add_listener(input->keyboard, &keyboard_listener,
+					 input);
+	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
+		wl_keyboard_destroy(input->keyboard);
+		input->keyboard = NULL;
+	}
+}
+
+static const struct wl_seat_listener seat_listener = {
+	input_handle_capabilities,
+};
+
+static void
+display_add_seat(struct wayland_compositor *c, uint32_t id)
 {
 	struct wayland_input *input;
 
@@ -623,13 +657,12 @@ display_add_input(struct wayland_compositor *c, uint32_t id)
 	memset(input, 0, sizeof *input);
 
 	input->compositor = c;
-	input->input_device = wl_display_bind(c->parent.display,
-					      id, &wl_input_device_interface);
+	input->seat = wl_display_bind(c->parent.display, id,
+				      &wl_seat_interface);
 	wl_list_insert(c->input_list.prev, &input->link);
 
-	wl_input_device_add_listener(input->input_device,
-				     &input_device_listener, input);
-	wl_input_device_set_user_data(input->input_device, input);
+	wl_seat_add_listener(input->seat, &seat_listener, input);
+	wl_seat_set_user_data(input->seat, input);
 }
 
 static void
@@ -645,8 +678,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		c->parent.output =
 			wl_display_bind(display, id, &wl_output_interface);
 		wl_output_add_listener(c->parent.output, &output_listener, c);
-	} else if (strcmp(interface, "wl_input_device") == 0) {
-		display_add_input(c, id);
+	} else if (strcmp(interface, "wl_seat") == 0) {
+		display_add_seat(c, id);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		c->parent.shell =
 			wl_display_bind(display, id, &wl_shell_interface);
