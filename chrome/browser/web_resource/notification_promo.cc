@@ -384,7 +384,7 @@ bool NotificationPromo::CanShow() const {
       !promo_text_.empty() &&
       group_ < max_group_ &&
       !ExceedsMaxViews() &&
-      base::Time::FromDoubleT(StartTimeForGroup()) <= base::Time::Now() &&
+      base::Time::FromDoubleT(StartTimeForGroup()) < base::Time::Now() &&
       base::Time::FromDoubleT(end_) > base::Time::Now() &&
       IsBuildAllowed(build_) &&
       IsPlatformAllowed(platform_);
