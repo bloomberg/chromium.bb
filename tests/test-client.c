@@ -151,26 +151,26 @@ static const struct wl_keyboard_listener keyboard_listener = {
 
 static void
 seat_handle_capabilities(void *data, struct wl_seat *seat,
-			 enum wl_seat_caps_mask caps)
+			 enum wl_seat_capability caps)
 {
 	struct input *input = data;
 
-	if ((caps & WL_SEAT_CAPS_MASK_POINTER) && !input->pointer) {
+	if ((caps & WL_SEAT_CAPABILITY_POINTER) && !input->pointer) {
 		input->pointer = wl_seat_get_pointer(seat);
 		wl_pointer_set_user_data(input->pointer, input);
 		wl_pointer_add_listener(input->pointer, &pointer_listener,
 					input);
-	} else if (!(caps & WL_SEAT_CAPS_MASK_POINTER) && input->pointer) {
+	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
 		wl_pointer_destroy(input->pointer);
 		input->pointer = NULL;
 	}
 
-	if ((caps & WL_SEAT_CAPS_MASK_KEYBOARD) && !input->keyboard) {
+	if ((caps & WL_SEAT_CAPABILITY_KEYBOARD) && !input->keyboard) {
 		input->keyboard = wl_seat_get_keyboard(seat);
 		wl_keyboard_set_user_data(input->keyboard, input);
 		wl_keyboard_add_listener(input->keyboard, &keyboard_listener,
 					 input);
-	} else if (!(caps & WL_SEAT_CAPS_MASK_KEYBOARD) && input->keyboard) {
+	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
 		wl_keyboard_destroy(input->keyboard);
 		input->keyboard = NULL;
 	}
