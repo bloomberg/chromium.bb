@@ -98,6 +98,8 @@
       '-autofill.AutofillTest.testNoDuplicatePhoneNumsInPrefs',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
+      # crbug.com/100593
+      '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
       '-notifications',
       # crbug.com/99506
@@ -489,6 +491,10 @@
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
       # The source is behind.  Waiting for dev to automate the update.
+      '-nacl_sdk.NaClSDKTest.testVerifyNaClSDKChecksum',
+      # crbug.com/98681
+      '-nacl_sdk.NaClSDKTest.testNaClSDK',
+      '-nacl_sdk.NaClSDKTest.testVerifyPrereleaseGallery',
       # crbug.com/109160
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
     ],
