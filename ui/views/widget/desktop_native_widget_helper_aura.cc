@@ -40,6 +40,7 @@ DesktopNativeWidgetHelperAura::~DesktopNativeWidgetHelperAura() {
 
 void DesktopNativeWidgetHelperAura::PreInitialize(
     const Widget::InitParams& params) {
+#if !defined(OS_WIN)
   // We don't want the status bubble or the omnibox to get their own root
   // window on the desktop; on Linux
   //
@@ -52,6 +53,7 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   } else if (params.type == Widget::InitParams::TYPE_CONTROL) {
     return;
   }
+#endif
 
   gfx::Rect bounds = params.bounds;
   if (bounds.IsEmpty()) {

@@ -18,7 +18,11 @@ DesktopStackingClient::~DesktopStackingClient() {
 }
 
 Window* DesktopStackingClient::GetDefaultParent(Window* window) {
-  return window->GetRootWindow();
+  if (!null_parent_.get()) {
+    null_parent_.reset(new aura::RootWindow(gfx::Rect(100, 100)));
+    null_parent_->Init();
+  }
+  return null_parent_.get();
 }
 
 }  // namespace aura

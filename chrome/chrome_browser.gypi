@@ -4369,6 +4369,19 @@
             '../ui/aura/aura.gyp:aura',
             '../ui/compositor/compositor.gyp:compositor',
           ],
+          'conditions': [
+            ['OS=="win"', {
+              'sources/': [
+                ['exclude', '^browser/background/background_mode_manager_aura.cc'],
+                ['exclude', '^browser/ui/webui/certificate_viewer_webui.cc'],
+                ['exclude', '^browser/ui/webui/certificate_viewer_webui.h'],
+                ['exclude', '^browser/ui/webui/certificate_viewer_ui.cc'],
+                ['exclude', '^browser/ui/webui/certificate_viewer_ui.h'],
+                ['exclude', '^browser/ui/browser_list_win.cc'],
+                ['exclude', '^browser/fullscreen_win.cc'],
+              ],
+            }],
+          ],
         }],
         ['ui_compositor_image_transport==1', {
           'dependencies': [

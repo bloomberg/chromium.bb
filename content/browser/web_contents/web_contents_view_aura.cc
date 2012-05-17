@@ -223,9 +223,7 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   window_->SetTransparent(false);
   window_->Init(ui::LAYER_NOT_DRAWN);
-#if defined(USE_ASH)
   window_->SetParent(NULL);
-#endif
   window_->layer()->SetMasksToBounds(true);
   window_->SetName("WebContentsViewAura");
 
