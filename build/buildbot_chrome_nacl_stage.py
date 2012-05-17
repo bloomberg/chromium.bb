@@ -223,10 +223,15 @@ def BuildAndTest(options):
   deps = chromebinaries.EvalDepsFile(os.path.join(nacl_dir, 'DEPS'))
 
   # Download the toolchain(s).
+  if options.integration_bot:
+    pnacl_toolchain = ['--pnacl-version',
+                       deps['vars']['pnacl_toolchain_version']]
+  else:
+    pnacl_toolchain = ['--no-pnacl']
   RunCommand([python,
               os.path.join(script_dir, 'download_toolchains.py'),
               '--x86-version', deps['vars']['x86_toolchain_version'],
-              '--no-pnacl', '--no-arm-trusted'], nacl_dir, os.environ)
+              '--no-arm-trusted'] + pnacl_toolchain, nacl_dir, os.environ)
 
   CleanTempDir()
 
@@ -243,6 +248,16 @@ def BuildAndTest(options):
     sys.stdout.write('\n\nRunning nacl-glibc tests...\n\n')
     RunCommand(cmd + ['--nacl_glibc'], nacl_dir, env)
 
+  # The chromium bots don't get the pnacl compiler, but the integration
+  # bots do. So, only run pnacl tests on the integration bot.
+  if not options.disable_pnacl and options.integration_bot:
+    # TODO(dschuff) Remove this when we pass pyauto tests
+    cmd = [opt for opt in cmd if opt != 'pyauto_tests']
+    sys.stdout.write('\n\nBuilding files needed for pnacl testing...\n\n')
+    RunCommand(cmd + ['bitcode=1', 'do_not_run_tests=1', '-j8'], nacl_dir, env)
+    sys.stdout.write('\n\nRunning pnacl tests...\n\n')
+    RunCommand(cmd + ['bitcode=1'], nacl_dir, env)
+
 
 def MakeCommandLineParser():
   parser = optparse.OptionParser()
@@ -256,6 +271,9 @@ def MakeCommandLineParser():
   parser.add_option('--disable_newlib', dest='disable_newlib',
                     action='store_true', default=False,
                     help='Do not test using newlib.')
+  parser.add_option('--disable_pnacl', dest='disable_pnacl',
+                    action='store_true', default=False,
+                    help='Do not test using pnacl.')
   parser.add_option('--disable_tests', dest='disable_tests',
                     type='string', default='',
                     help='Comma-separated list of tests to omit')
