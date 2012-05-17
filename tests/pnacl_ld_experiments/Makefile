@@ -35,8 +35,8 @@ LIBPATH_SHARED_X8664=$(ROOT)/toolchain/pnacl_linux_x86_64/lib-x86-64
 
 # These looks like they have arch bias but we are just pulling bitcode
 LIBPATH_NEWLIB=$(ROOT)/toolchain/pnacl_linux_x86_64/newlib/usr/lib
-LIBPATH_BITCODE_SDK=$(ROOT)/scons-out/nacl-x86-32-pnacl-pexe-clang/lib
-LIBPATH_SHIM=$(ROOT)/scons-out/nacl-x86-64-pnacl-pexe-clang/obj/src/untrusted/pnacl_irt_shim
+LIBPATH_BITCODE_SDK=$(ROOT)/scons-out/nacl-x86-32-pnacl-pexe-shared-clang/lib
+LIBPATH_SHIM=$(ROOT)/scons-out/nacl-x86-64-pnacl-pexe-shared-clang/obj/src/untrusted/pnacl_irt_shim
 PATH_CRT_BITCODE=$(ROOT)/toolchain/pnacl_linux_x86_64/newlib/lib
 
 COMMON_FLAGS= --pnacl-driver-verbose -save-temps
