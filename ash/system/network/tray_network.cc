@@ -468,8 +468,10 @@ class NetworkDetailedView : public TrayDetailsView,
     // on.
     ResetInfoBubble();
 
-    if (sender == footer()->content())
+    if (sender == footer()->content()) {
       Shell::GetInstance()->tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      return;
+    }
 
     if (login_ == user::LOGGED_IN_LOCKED)
       return;
