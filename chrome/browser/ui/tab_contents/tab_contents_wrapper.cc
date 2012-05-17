@@ -14,6 +14,8 @@
 #include "chrome/browser/download/download_request_limiter_observer.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/extensions/page_action_controller.h"
+#include "chrome/browser/extensions/script_executor_impl.h"
 #include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
@@ -93,6 +95,10 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
   core_tab_helper_.reset(new CoreTabHelper(contents));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));
+  extension_script_executor_.reset(
+      new extensions::ScriptExecutorImpl(web_contents()));
+  extension_action_box_controller_.reset(
+      new extensions::PageActionController(this));
   favicon_tab_helper_.reset(new FaviconTabHelper(contents));
   find_tab_helper_.reset(new FindTabHelper(contents));
   history_tab_helper_.reset(new HistoryTabHelper(contents));

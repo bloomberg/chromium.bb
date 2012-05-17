@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_ACTION_BOX_CONTROLLER_H_
 #pragma once
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -19,6 +18,22 @@ namespace extensions {
 // Controller of the "badges" (aka "page actions") in the UI.
 class ActionBoxController {
  public:
+  // UI decoration on a page box item.
+  enum Decoration {
+    DECORATION_NONE,
+  };
+
+  // Data about a UI badge.
+  struct Data {
+    // The type of decoration that should be applied to the badge.
+    Decoration decoration;
+
+    // The ExtensionAction that corresponds to the badge.
+    ExtensionAction* action;
+  };
+
+  typedef std::vector<Data> DataList;
+
   // The reaction that the UI should take after executing |OnClicked|.
   enum Action {
     ACTION_NONE,
@@ -28,13 +43,8 @@ class ActionBoxController {
 
   virtual ~ActionBoxController() {}
 
-  // Utility to add any actions to |out| which aren't present in |actions|.
-  static void AddMissingActions(
-      const std::set<ExtensionAction*>& actions,
-      std::vector<ExtensionAction*>* out);
-
-  // Gets the action data for all extensions.
-  virtual scoped_ptr<std::vector<ExtensionAction*> > GetCurrentActions() = 0;
+  // Gets the badge data for all extensions.
+  virtual scoped_ptr<DataList> GetAllBadgeData() = 0;
 
   // Notifies this that the badge for an extension has been clicked with some
   // mouse button (1 for left, 2 for middle, and 3 for right click), and

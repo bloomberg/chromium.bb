@@ -26,9 +26,9 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/commands/extension_command_service.h"
 #include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/action_box_controller.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
@@ -356,10 +356,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_ACTION_BOX_UPDATED,
-                 content::Source<Profile>(browser()->profile()));
-
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
                                profile->GetPrefs(), this);
 
@@ -448,10 +444,16 @@ void LocationBarViewGtk::SetPreviewEnabledPageAction(
     ExtensionAction *page_action,
     bool preview_enabled) {
   DCHECK(page_action);
-  if (preview_enabled && preview_enabled_actions_.insert(page_action).second)
-    UpdatePageActions();
-  if (!preview_enabled && preview_enabled_actions_.erase(page_action) > 0)
-    UpdatePageActions();
+  UpdatePageActions();
+  for (ScopedVector<PageActionViewGtk>::iterator iter =
+       page_action_views_.begin(); iter != page_action_views_.end();
+       ++iter) {
+    if ((*iter)->page_action() == page_action) {
+      (*iter)->set_preview_enabled(preview_enabled);
+      UpdatePageActions();
+      return;
+    }
+  }
 }
 
 GtkWidget* LocationBarViewGtk::GetPageActionWidget(
@@ -683,19 +685,13 @@ void LocationBarViewGtk::UpdateContentSettingsIcons() {
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
-  std::vector<ExtensionAction*> page_actions;
+  ActionBoxController::DataList page_actions;
 
   TabContentsWrapper* tab_contents = GetTabContentsWrapper();
   if (tab_contents) {
-    ActionBoxController* controller =
-        tab_contents->extension_tab_helper()->action_box_controller();
-    page_actions.swap(*controller->GetCurrentActions());
+    page_actions.swap(
+        *tab_contents->extension_action_box_controller()->GetAllBadgeData());
   }
-
-  // Add page actions for any extensions which have "preview enabled" and not
-  // already visible.
-  ActionBoxController::AddMissingActions(
-      preview_enabled_actions_, &page_actions);
 
   // Initialize on the first call, or re-inialize if more extensions have been
   // loaded or added after startup.
@@ -704,7 +700,7 @@ void LocationBarViewGtk::UpdatePageActions() {
 
     for (size_t i = 0; i < page_actions.size(); ++i) {
       page_action_views_.push_back(
-          new PageActionViewGtk(this, page_actions[i]));
+          new PageActionViewGtk(this, page_actions[i].action));
       gtk_box_pack_end(GTK_BOX(page_action_hbox_.get()),
                        page_action_views_[i]->widget(), FALSE, FALSE, 0);
     }
@@ -719,7 +715,7 @@ void LocationBarViewGtk::UpdatePageActions() {
     GURL url = browser()->GetSelectedWebContents()->GetURL();
 
     for (size_t i = 0; i < page_action_views_.size(); i++) {
-      page_action_views_[i]->Update(
+      page_action_views_[i]->UpdateVisibility(
           toolbar_model_->input_in_progress() ? NULL : contents, url);
     }
   }
@@ -782,7 +778,16 @@ ExtensionAction* LocationBarViewGtk::GetPageAction(size_t index) {
 }
 
 ExtensionAction* LocationBarViewGtk::GetVisiblePageAction(size_t index) {
-  return page_action_views_[index]->page_action();
+  size_t visible_index = 0;
+  for (size_t i = 0; i < page_action_views_.size(); ++i) {
+    if (page_action_views_[i]->IsVisible()) {
+      if (index == visible_index++)
+        return page_action_views_[i]->page_action();
+    }
+  }
+
+  NOTREACHED();
+  return NULL;
 }
 
 void LocationBarViewGtk::TestPageActionPressed(size_t index) {
@@ -800,15 +805,6 @@ void LocationBarViewGtk::Observe(int type,
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     UpdateStarIcon();
     UpdateChromeToMobileIcon();
-    return;
-  }
-
-  if (type == chrome::NOTIFICATION_EXTENSION_ACTION_BOX_UPDATED) {
-    // Only update if the updated action box was for the active tab contents.
-    TabContentsWrapper* target_tab =
-        content::Details<TabContentsWrapper>(details).ptr();
-    if (target_tab == GetTabContentsWrapper())
-      UpdatePageActions();
     return;
   }
 
@@ -1507,7 +1503,8 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
       tracker_(this),
       current_tab_id_(-1),
       window_(NULL),
-      accel_group_(NULL) {
+      accel_group_(NULL),
+      preview_enabled_(false) {
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_size_request(event_box_.get(),
                               Extension::kPageActionIconMaxSize,
@@ -1524,7 +1521,6 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
 
   image_.Own(gtk_image_new());
   gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
-  gtk_widget_show_all(event_box_.get());
 
   const Extension* extension = owner->browser()->profile()->
       GetExtensionService()->GetExtensionById(page_action->extension_id(),
@@ -1563,56 +1559,75 @@ LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
     g_object_unref(last_icon_pixbuf_);
 }
 
-void LocationBarViewGtk::PageActionViewGtk::Update(
+bool LocationBarViewGtk::PageActionViewGtk::IsVisible() {
+  return gtk_widget_get_visible(widget());
+}
+
+void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
     WebContents* contents, const GURL& url) {
   // Save this off so we can pass it back to the extension when the action gets
   // executed. See PageActionImageView::OnMousePressed.
   current_tab_id_ = contents ? ExtensionTabUtil::GetTabId(contents) : -1;
   current_url_ = url;
 
-  // Set the tooltip.
-  gtk_widget_set_tooltip_text(event_box_.get(),
-      page_action_->GetTitle(current_tab_id_).c_str());
+  bool visible = contents &&
+      (preview_enabled_ || page_action_->GetIsVisible(current_tab_id_));
+  if (visible) {
+    // Set the tooltip.
+    gtk_widget_set_tooltip_text(event_box_.get(),
+        page_action_->GetTitle(current_tab_id_).c_str());
 
-  // Set the image.
-  // It can come from three places. In descending order of priority:
-  // - The developer can set it dynamically by path or bitmap. It will be in
-  //   page_action_->GetIcon().
-  // - The developer can set it dyanmically by index. It will be in
-  //   page_action_->GetIconIndex().
-  // - It can be set in the manifest by path. It will be in page_action_->
-  //   default_icon_path().
+    // Set the image.
+    // It can come from three places. In descending order of priority:
+    // - The developer can set it dynamically by path or bitmap. It will be in
+    //   page_action_->GetIcon().
+    // - The developer can set it dyanmically by index. It will be in
+    //   page_action_->GetIconIndex().
+    // - It can be set in the manifest by path. It will be in page_action_->
+    //   default_icon_path().
 
-  // First look for a dynamically set bitmap.
-  SkBitmap icon = page_action_->GetIcon(current_tab_id_);
-  GdkPixbuf* pixbuf = NULL;
-
-  if (!icon.isNull()) {
-    if (icon.pixelRef() != last_icon_skbitmap_.pixelRef()) {
-      if (last_icon_pixbuf_)
-        g_object_unref(last_icon_pixbuf_);
-      last_icon_skbitmap_ = icon;
-      last_icon_pixbuf_ = gfx::GdkPixbufFromSkBitmap(&icon);
+    // First look for a dynamically set bitmap.
+    SkBitmap icon = page_action_->GetIcon(current_tab_id_);
+    GdkPixbuf* pixbuf = NULL;
+    if (!icon.isNull()) {
+      if (icon.pixelRef() != last_icon_skbitmap_.pixelRef()) {
+        if (last_icon_pixbuf_)
+          g_object_unref(last_icon_pixbuf_);
+        last_icon_skbitmap_ = icon;
+        last_icon_pixbuf_ = gfx::GdkPixbufFromSkBitmap(&icon);
+      }
+      DCHECK(last_icon_pixbuf_);
+      pixbuf = last_icon_pixbuf_;
+    } else {
+      // Otherwise look for a dynamically set index, or fall back to the
+      // default path.
+      int icon_index = page_action_->GetIconIndex(current_tab_id_);
+      std::string icon_path = (icon_index < 0) ?
+          page_action_->default_icon_path() :
+          page_action_->icon_paths()->at(icon_index);
+      if (!icon_path.empty()) {
+        PixbufMap::iterator iter = pixbufs_.find(icon_path);
+        if (iter != pixbufs_.end())
+          pixbuf = iter->second;
+      }
     }
-    DCHECK(last_icon_pixbuf_);
-    pixbuf = last_icon_pixbuf_;
-  } else {
-    // Otherwise look for a dynamically set index, or fall back to the
-    // default path.
-    int icon_index = page_action_->GetIconIndex(current_tab_id_);
-    std::string icon_path = icon_index < 0 ?
-        page_action_->default_icon_path() :
-        page_action_->icon_paths()->at(icon_index);
-    if (!icon_path.empty()) {
-      PixbufMap::iterator iter = pixbufs_.find(icon_path);
-      if (iter != pixbufs_.end())
-        pixbuf = iter->second;
-    }
+    // The pixbuf might not be loaded yet.
+    if (pixbuf)
+      gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbuf);
   }
 
-  // The pixbuf might not be loaded yet.
-  if (pixbuf)
-    gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()), pixbuf);
+  bool old_visible = IsVisible();
+  if (visible)
+    gtk_widget_show_all(event_box_.get());
+  else
+    gtk_widget_hide_all(event_box_.get());
+
+  if (visible != old_visible) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+        content::Source<ExtensionAction>(page_action_),
+        content::Details<WebContents>(contents));
+  }
 }
 
 void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
@@ -1733,7 +1748,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     return TRUE;
 
   ActionBoxController* controller =
-      tab_contents->extension_tab_helper()->action_box_controller();
+      tab_contents->extension_action_box_controller();
 
   switch (controller->OnClicked(extension->id(), event->button)) {
     case ActionBoxController::ACTION_NONE:

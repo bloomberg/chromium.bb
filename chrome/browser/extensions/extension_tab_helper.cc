@@ -5,8 +5,6 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/page_action_controller.h"
-#include "chrome/browser/extensions/script_executor_impl.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -29,8 +27,6 @@
 #include "ui/gfx/image/image.h"
 
 using content::WebContents;
-using extensions::ScriptExecutorImpl;
-using extensions::PageActionController;
 
 namespace {
 
@@ -45,8 +41,6 @@ ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(wrapper->profile(), this)),
       wrapper_(wrapper) {
-  script_executor_.reset(new ScriptExecutorImpl(wrapper->web_contents()));
-  action_box_controller_.reset(new PageActionController(wrapper, this));
 }
 
 ExtensionTabHelper::~ExtensionTabHelper() {
@@ -58,24 +52,12 @@ void ExtensionTabHelper::CopyStateFrom(const ExtensionTabHelper& source) {
 }
 
 void ExtensionTabHelper::PageActionStateChanged() {
-  // TODO(kalman): replace this with just the Observer interface.
   web_contents()->NotifyNavigationStateChanged(
       content::INVALIDATE_TYPE_PAGE_ACTIONS);
-
-  FOR_EACH_OBSERVER(Observer, observers_, OnPageActionStateChanged());
 }
 
 void ExtensionTabHelper::GetApplicationInfo(int32 page_id) {
   Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
-}
-
-void ExtensionTabHelper::AddObserver(ExtensionTabHelper::Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ExtensionTabHelper::RemoveObserver(
-    ExtensionTabHelper::Observer* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {

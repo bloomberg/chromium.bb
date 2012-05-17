@@ -1320,7 +1320,7 @@ bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
       return false;
     }
 
-    tab_contents_->extension_tab_helper()->script_executor()->ExecuteScript(
+    tab_contents_->extension_script_executor()->ExecuteScript(
         extension_id(),
         ScriptExecutor::JAVASCRIPT,
         url.path(),
