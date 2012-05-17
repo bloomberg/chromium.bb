@@ -97,6 +97,13 @@ class NetworkMenuIconTest : public testing::Test {
     wifi_connecting_bitmap_ = NetworkMenuIcon::GenerateConnectingBitmap(
         NetworkMenuIcon::GetBitmap(NetworkMenuIcon::ARCS, 1,
                                    NetworkMenuIcon::COLOR_DARK));
+    // 4G connected, strength = 50% = BARS4 icon + 4G badge.
+    wimax_connected_50_bitmap_ =
+        NetworkMenuIcon::GenerateBitmapFromComponents(
+            NetworkMenuIcon::GetBitmap(
+                NetworkMenuIcon::BARS, 3,
+                NetworkMenuIcon::COLOR_DARK),
+        NULL, NULL, NULL, rb_.GetBitmapNamed(IDR_STATUSBAR_NETWORK_4G));
     // 3G connected, strength = 100% = BARS4 icon + 3G badge.
     cellular_connected_100_bitmap_ =
         NetworkMenuIcon::GenerateBitmapFromComponents(
@@ -186,6 +193,7 @@ class NetworkMenuIconTest : public testing::Test {
   SkBitmap wifi_encrypted_50_bitmap_;
   SkBitmap wifi_disconnected_bitmap_;
   SkBitmap wifi_connecting_bitmap_;
+  SkBitmap wimax_connected_50_bitmap_;
   SkBitmap cellular_connected_100_bitmap_;
   SkBitmap cellular_roaming_50_bitmap_;
   SkBitmap cellular_disconnected_bitmap_;
@@ -343,12 +351,12 @@ TEST_F(NetworkMenuIconTest, StatusIconDropdownMode) {
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareBitmaps(icon, cellular_connected_100_bitmap_));
 
-  // Set cellular1 to disconnected; Icon should now be wifi connecting icon.
+  // Set cellular1 to disconnected; Icon should now be wimax icon.
   CellularNetwork* cellular1 = cros_->FindCellularNetworkByPath("cellular1");
   ASSERT_NE(static_cast<const Network*>(NULL), cellular1);
   SetConnected(cellular1, false);
   icon = menu_icon.GetIconAndText(NULL);
-  EXPECT_TRUE(CompareBitmaps(icon, wifi_connecting_bitmap_));
+  EXPECT_TRUE(CompareBitmaps(icon, wimax_connected_50_bitmap_));
 
   // Set wifi1 to connected. Icon should now be wifi connected icon.
   SetConnected(wifi1, true);
