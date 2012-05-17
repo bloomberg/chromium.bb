@@ -306,7 +306,6 @@ class XcodeSettings(object):
       self._WarnUnimplemented('COPY_PHASE_STRIP')
     self._WarnUnimplemented('GCC_DEBUGGING_SYMBOLS')
     self._WarnUnimplemented('GCC_ENABLE_OBJC_EXCEPTIONS')
-    self._WarnUnimplemented('GCC_ENABLE_OBJC_GC')
 
     # TODO: This is exported correctly, but assigning to it is not supported.
     self._WarnUnimplemented('MACH_O_TYPE')
@@ -377,16 +376,28 @@ class XcodeSettings(object):
     self.configname = None
     return cflags_cc
 
+  def _AddObjectiveCGarbageCollectionFlags(self, flags):
+    gc_policy = self._Settings().get('GCC_ENABLE_OBJC_GC', 'unsupported')
+    if gc_policy == 'supported':
+      flags.append('-fobjc-gc')
+    elif gc_policy == 'required':
+      flags.append('-fobjc-gc-only')
+
   def GetCflagsObjC(self, configname):
     """Returns flags that need to be added to .m compilations."""
     self.configname = configname
+    cflags_objc = []
+
+    self._AddObjectiveCGarbageCollectionFlags(cflags_objc)
+
     self.configname = None
-    return []
+    return cflags_objc
 
   def GetCflagsObjCC(self, configname):
     """Returns flags that need to be added to .mm compilations."""
     self.configname = configname
     cflags_objcc = []
+    self._AddObjectiveCGarbageCollectionFlags(cflags_objcc)
     if self._Test('GCC_OBJC_CALL_CXX_CDTORS', 'YES', default='NO'):
       cflags_objcc.append('-fobjc-call-cxx-cdtors')
     self.configname = None
