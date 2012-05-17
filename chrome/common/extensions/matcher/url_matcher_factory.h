@@ -25,6 +25,11 @@ class URLMatcherFactory {
   // by the extension, |id| is the identifier assigned to the created
   // URLMatcherConditionSet. In case of an error, |error| is set to contain
   // an error message.
+  //
+  // Note: In case this function fails or if you don't register the
+  // URLMatcherConditionSet to the URLMatcher, you need to call
+  // URLMatcher::ClearUnusedConditionSets() on the URLMatcher that owns this
+  // URLMatcherFactory. Otherwise you leak memory.
   static scoped_refptr<URLMatcherConditionSet> CreateFromURLFilterDictionary(
       URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::DictionaryValue* url_filter_dict,

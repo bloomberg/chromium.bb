@@ -113,6 +113,11 @@ class URLMatcherConditionFactory {
   std::string CanonicalizeURLForComponentSearches(const GURL& url);
 
   // Factory methods for various condition types.
+  //
+  // Note that these methods fill the pattern_singletons_. If you create
+  // conditions and don't register them to a URLMatcher, they will continue to
+  // consume memory. You need to call ForgetUnusedPatterns() or
+  // URLMatcher::ClearUnusedConditionSets() in this case.
   URLMatcherCondition CreateHostPrefixCondition(const std::string& prefix);
   URLMatcherCondition CreateHostSuffixCondition(const std::string& suffix);
   URLMatcherCondition CreateHostContainsCondition(const std::string& str);
