@@ -34,6 +34,41 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Adds menu item at the end of the list.
+     * @param {Object} item Menu item properties.
+     * @return {cr.ui.MenuItem} The created menu item.
+     */
+    addMenuItem: function(item) {
+      var menuItem = this.ownerDocument.createElement('menuitem');
+      this.appendChild(menuItem);
+
+      cr.ui.decorate(menuItem, MenuItem);
+
+      if (item.label)
+        menuItem.label = item.label;
+
+      if (item.iconUrl)
+        menuItem.iconUrl = item.iconUrl;
+
+      return menuItem;
+    },
+
+    /**
+     * Adds separator at the end of the list.
+     */
+    addSeparator: function() {
+      var separator = this.ownerDocument.createElement('hr');
+      this.appendChild(separator);
+    },
+
+    /**
+     * Clears menu.
+     */
+    clear: function() {
+      this.textContent = '';
+    },
+
+    /**
      * Walks up the ancestors of |el| until a menu item belonging to this menu
      * is found.
      * @param {Element} el The element to start searching from.
@@ -76,6 +111,13 @@ cr.define('cr.ui', function() {
     set selectedItem(item) {
       var index = Array.prototype.indexOf.call(this.children, item);
       this.selectedIndex = index;
+    },
+
+    /**
+     * Menu length
+     */
+    get length() {
+      return this.children.length;
     },
 
     /**

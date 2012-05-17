@@ -39,6 +39,10 @@ cr.define('cr.ui', function() {
       // Adding the 'custom-appearance' class prevents widgets.css from changing
       // the appearance of this element.
       this.classList.add('custom-appearance');
+
+      var iconUrl;
+      if ((iconUrl = this.getAttribute('icon')))
+        this.iconUrl = iconUrl;
     },
 
     /**
@@ -89,6 +93,17 @@ cr.define('cr.ui', function() {
     },
     set label(label) {
       this.textContent = label;
+    },
+
+    /**
+     * Menu icon.
+     * @type {string}
+     */
+    get iconUrl() {
+      return this.style.backgroundImage;
+    },
+    set iconUrl(url) {
+      this.style.backgroundImage = 'url(' + url + ')';
     },
 
     /**
