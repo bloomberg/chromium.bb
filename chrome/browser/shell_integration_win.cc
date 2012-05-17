@@ -19,6 +19,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -39,6 +40,160 @@
 using content::BrowserThread;
 
 namespace {
+
+// Gets the short (8.3) form of |path|, putting the result in |short_path| and
+// returning true on success.  |short_path| is not modified on failure.
+bool ShortNameFromPath(const FilePath& path, string16* short_path) {
+  DCHECK(short_path);
+  string16 result(MAX_PATH, L'\0');
+  DWORD short_length = GetShortPathName(path.value().c_str(), &result[0],
+                                        result.size());
+  if (short_length == 0 || short_length > result.size()) {
+    PLOG(ERROR) << "Error getting short (8.3) path";
+    return false;
+  }
+
+  result.resize(short_length);
+  short_path->swap(result);
+  return true;
+}
+
+// Probe using IApplicationAssociationRegistration::QueryCurrentDefault
+// (Windows 8); see ProbeProtocolHandlers.  This mechanism is not suitable for
+// use on previous versions of Windows despite the presence of
+// QueryCurrentDefault on them since versions of Windows prior to Windows 8
+// did not perform validation on the ProgID registered as the current default.
+// As a result, stale ProgIDs could be returned, leading to false positives.
+ShellIntegration::DefaultWebClientState ProbeCurrentDefaultHandlers(
+    const wchar_t* const* protocols,
+    size_t num_protocols) {
+  base::win::ScopedComPtr<IApplicationAssociationRegistration> registration;
+  HRESULT hr = registration.CreateInstance(
+      CLSID_ApplicationAssociationRegistration, NULL, CLSCTX_INPROC);
+  if (FAILED(hr))
+    return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
+
+  string16 prog_id(ShellUtil::kChromeHTMLProgId);
+
+  // If a user specific default browser entry exists, we check for that ProgID
+  // being default. If not, then the ProgID is ChromeHTML or ChromiumHTML so we
+  // do not append a suffix to the ProgID.
+  string16 suffix;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
+    prog_id += suffix;
+
+  for (size_t i = 0; i < num_protocols; ++i) {
+    base::win::ScopedCoMem<wchar_t> current_app;
+    hr = registration->QueryCurrentDefault(protocols[i], AT_URLPROTOCOL,
+                                           AL_EFFECTIVE, &current_app);
+    if (FAILED(hr) || prog_id.compare(current_app) != 0)
+      return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
+  }
+
+  return ShellIntegration::IS_DEFAULT_WEB_CLIENT;
+}
+
+// Probe using IApplicationAssociationRegistration::QueryAppIsDefault (Vista and
+// Windows 7); see ProbeProtocolHandlers.
+ShellIntegration::DefaultWebClientState ProbeAppIsDefaultHandlers(
+    const wchar_t* const* protocols,
+    size_t num_protocols) {
+  base::win::ScopedComPtr<IApplicationAssociationRegistration> registration;
+  HRESULT hr = registration.CreateInstance(
+      CLSID_ApplicationAssociationRegistration, NULL, CLSCTX_INPROC);
+  if (FAILED(hr))
+    return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  string16 app_name(dist->GetApplicationName());
+
+  // If a user specific default browser entry exists, we check for that
+  // app name being default. If not, then default browser is just called
+  // Google Chrome or Chromium so we do not append a suffix to the app name.
+  string16 suffix;
+  if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
+    app_name += suffix;
+
+  BOOL result;
+  for (size_t i = 0; i < num_protocols; ++i) {
+    result = TRUE;
+    hr = registration->QueryAppIsDefault(protocols[i], AT_URLPROTOCOL,
+        AL_EFFECTIVE, app_name.c_str(), &result);
+    if (FAILED(hr) || result == FALSE)
+      return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
+  }
+
+  return ShellIntegration::IS_DEFAULT_WEB_CLIENT;
+}
+
+// Probe the current commands registered to handle the shell "open" verb for
+// |protocols| (Windows XP); see ProbeProtocolHandlers.
+ShellIntegration::DefaultWebClientState ProbeOpenCommandHandlers(
+    const wchar_t* const* protocols,
+    size_t num_protocols) {
+  // Get the path to the current exe (Chrome).
+  FilePath app_path;
+  if (!PathService::Get(base::FILE_EXE, &app_path)) {
+    LOG(ERROR) << "Error getting app exe path";
+    return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
+  }
+
+  // Get its short (8.3) form.
+  string16 short_app_path;
+  if (!ShortNameFromPath(app_path, &short_app_path))
+    return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
+
+  const HKEY root_key = HKEY_CLASSES_ROOT;
+  string16 key_path;
+  base::win::RegKey key;
+  string16 value;
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  string16 short_path;
+
+  for (size_t i = 0; i < num_protocols; ++i) {
+    // Get the command line from HKCU\<protocol>\shell\open\command.
+    key_path.assign(protocols[i]).append(ShellUtil::kRegShellOpen);
+    if ((key.Open(root_key, key_path.c_str(),
+                  KEY_QUERY_VALUE) != ERROR_SUCCESS) ||
+        (key.ReadValue(L"", &value) != ERROR_SUCCESS)) {
+      return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
+    }
+
+    // Need to normalize path in case it's been munged.
+    command_line = CommandLine::FromString(value);
+    if (!ShortNameFromPath(command_line.GetProgram(), &short_path))
+      return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
+
+    if (!FilePath::CompareEqualIgnoreCase(short_path, short_app_path))
+      return ShellIntegration::NOT_DEFAULT_WEB_CLIENT;
+  }
+
+  return ShellIntegration::IS_DEFAULT_WEB_CLIENT;
+}
+
+// A helper function that probes default protocol handler registration (in a
+// manner appropriate for the current version of Windows) to determine if
+// Chrome is the default handler for |protocols|.  Returns IS_DEFAULT_WEB_CLIENT
+// only if Chrome is the default for all specified protocols.
+ShellIntegration::DefaultWebClientState ProbeProtocolHandlers(
+    const wchar_t* const* protocols,
+    size_t num_protocols) {
+  DCHECK(!num_protocols || protocols);
+  if (DCHECK_IS_ON()) {
+    for (size_t i = 0; i < num_protocols; ++i)
+      DCHECK(protocols[i] && *protocols[i]);
+  }
+
+  const base::win::Version windows_version = base::win::GetVersion();
+
+  if (windows_version >= base::win::VERSION_WIN8)
+    return ProbeCurrentDefaultHandlers(protocols, num_protocols);
+  else if (windows_version >= base::win::VERSION_VISTA)
+    return ProbeAppIsDefaultHandlers(protocols, num_protocols);
+
+  return ProbeOpenCommandHandlers(protocols, num_protocols);
+}
 
 // Helper function for ShellIntegration::GetAppId to generates profile id
 // from profile path. "profile_id" is composed of sanitized basenames of
@@ -281,13 +436,6 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
 }
 
 ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
-  // First determine the app path. If we can't determine what that is, we have
-  // bigger fish to fry...
-  FilePath app_path;
-  if (!PathService::Get(base::FILE_EXE, &app_path)) {
-    LOG(ERROR) << "Error getting app exe path";
-    return UNKNOWN_DEFAULT_WEB_CLIENT;
-  }
   // When we check for default browser we don't necessarily want to count file
   // type handlers and icons as having changed the default browser status,
   // since the user may have changed their shell settings to cause HTML files
@@ -297,67 +445,9 @@ ShellIntegration::DefaultWebClientState ShellIntegration::IsDefaultBrowser() {
   // re-run the installer or run with the --set-default-browser command line
   // flag. There is doubtless some other key we can hook into to cause "Repair"
   // to show up in Add/Remove programs for us.
-  const string16 kChromeProtocols[] = {L"http", L"https"};
+  static const wchar_t* const kChromeProtocols[] = { L"http", L"https" };
 
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
-    HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
-        NULL, CLSCTX_INPROC);
-    if (!SUCCEEDED(hr))
-      return NOT_DEFAULT_WEB_CLIENT;
-
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    string16 app_name = dist->GetApplicationName();
-    // If a user specific default browser entry exists, we check for that
-    // app name being default. If not, then default browser is just called
-    // Google Chrome or Chromium so we do not append suffix to app name.
-    string16 suffix;
-    if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
-      app_name += suffix;
-
-    for (int i = 0; i < _countof(kChromeProtocols); i++) {
-      BOOL result = TRUE;
-      hr = pAAR->QueryAppIsDefault(kChromeProtocols[i].c_str(), AT_URLPROTOCOL,
-          AL_EFFECTIVE, app_name.c_str(), &result);
-      if (!SUCCEEDED(hr) || result == FALSE) {
-        return NOT_DEFAULT_WEB_CLIENT;
-      }
-    }
-  } else {
-    string16 short_app_path;
-    DWORD get_path_result = GetShortPathName(app_path.value().c_str(),
-        WriteInto(&short_app_path, MAX_PATH), MAX_PATH);
-    if (!get_path_result || get_path_result > MAX_PATH) {
-      LOG(ERROR) << "GetShortPathName error in IsDefaultBrowser.";
-      return UNKNOWN_DEFAULT_WEB_CLIENT;
-    }
-
-    // open command for protocol associations
-    for (int i = 0; i < _countof(kChromeProtocols); i++) {
-      // Check in HKEY_CLASSES_ROOT that is the result of merge between
-      // HKLM and HKCU
-      HKEY root_key = HKEY_CLASSES_ROOT;
-      // Check <protocol>\shell\open\command
-      string16 key_path(kChromeProtocols[i] + ShellUtil::kRegShellOpen);
-      base::win::RegKey key(root_key, key_path.c_str(), KEY_READ);
-      string16 value;
-      if (!key.Valid() || (key.ReadValue(L"", &value) != ERROR_SUCCESS))
-        return NOT_DEFAULT_WEB_CLIENT;
-      // Need to normalize path in case it's been munged.
-      CommandLine command_line = CommandLine::FromString(value);
-      string16 short_path;
-      get_path_result = GetShortPathName(
-          command_line.GetProgram().value().c_str(),
-          WriteInto(&short_path, MAX_PATH), MAX_PATH);
-      if (!get_path_result || get_path_result > MAX_PATH) {
-        LOG(ERROR) << "GetShortPathName error in IsDefaultBrowser.";
-        return UNKNOWN_DEFAULT_WEB_CLIENT;
-      }
-      if (!FilePath::CompareEqualIgnoreCase(short_path, short_app_path))
-        return NOT_DEFAULT_WEB_CLIENT;
-    }
-  }
-  return IS_DEFAULT_WEB_CLIENT;
+  return ProbeProtocolHandlers(kChromeProtocols, arraysize(kChromeProtocols));
 }
 
 ShellIntegration::DefaultWebClientState
@@ -365,74 +455,10 @@ ShellIntegration::DefaultWebClientState
   if (protocol.empty())
     return UNKNOWN_DEFAULT_WEB_CLIENT;
 
-  // Determine the app path. If we can't determine what that is, we have
-  // bigger fish to fry...
-  FilePath app_path;
-  if (!PathService::Get(base::FILE_EXE, &app_path)) {
-    LOG(ERROR) << "Error getting app exe path";
-    return UNKNOWN_DEFAULT_WEB_CLIENT;
-  }
+  string16 wide_protocol(UTF8ToUTF16(protocol));
+  const wchar_t* const protocols[] = { wide_protocol.c_str() };
 
-  string16 wprotocol = UTF8ToUTF16(protocol);
-
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    // Windows 8 has removed the ability to ask about the default handlers.
-    return UNKNOWN_DEFAULT_WEB_CLIENT;
-  } else if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
-    HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
-        NULL, CLSCTX_INPROC);
-    if (!SUCCEEDED(hr))
-      return NOT_DEFAULT_WEB_CLIENT;
-
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    string16 app_name = dist->GetApplicationName();
-    // If a user specific default browser entry exists, we check for that
-    // app name being default. If not, then default browser is just called
-    // Google Chrome or Chromium so we do not append suffix to app name.
-    string16 suffix;
-    if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
-      app_name += suffix;
-
-    BOOL result = TRUE;
-    hr = pAAR->QueryAppIsDefault(wprotocol.c_str(), AT_URLPROTOCOL,
-        AL_EFFECTIVE, app_name.c_str(), &result);
-    if (!SUCCEEDED(hr) || result == FALSE) {
-      return NOT_DEFAULT_WEB_CLIENT;
-    }
-  } else {
-    string16 short_app_path;
-    DWORD get_path_result = GetShortPathName(app_path.value().c_str(),
-        WriteInto(&short_app_path, MAX_PATH), MAX_PATH);
-    if (!get_path_result || get_path_result > MAX_PATH) {
-      LOG(ERROR) << "GetShortPathName error in IsDefaultProtocolClient.";
-      return UNKNOWN_DEFAULT_WEB_CLIENT;
-    }
-
-    // open command for protocol associations
-    // Check in HKEY_CLASSES_ROOT that is the result of merge between
-    // HKLM and HKCU
-    HKEY root_key = HKEY_CLASSES_ROOT;
-    // Check <protocol>\shell\open\command
-    string16 key_path(wprotocol + ShellUtil::kRegShellOpen);
-    base::win::RegKey key(root_key, key_path.c_str(), KEY_READ);
-    string16 value;
-    if (!key.Valid() || (key.ReadValue(L"", &value) != ERROR_SUCCESS))
-      return NOT_DEFAULT_WEB_CLIENT;
-    // Need to normalize path in case it's been munged.
-    CommandLine command_line = CommandLine::FromString(value);
-    string16 short_path;
-    get_path_result = GetShortPathName(
-        command_line.GetProgram().value().c_str(),
-        WriteInto(&short_path, MAX_PATH), MAX_PATH);
-    if (!get_path_result || get_path_result > MAX_PATH) {
-      LOG(ERROR) << "GetShortPathName error in IsDefaultProtocolClient.";
-      return UNKNOWN_DEFAULT_WEB_CLIENT;
-    }
-    if (!FilePath::CompareEqualIgnoreCase(short_path, short_app_path))
-      return NOT_DEFAULT_WEB_CLIENT;
-  }
-  return IS_DEFAULT_WEB_CLIENT;
+  return ProbeProtocolHandlers(protocols, arraysize(protocols));
 }
 
 // There is no reliable way to say which browser is default on a machine (each
