@@ -30,53 +30,8 @@
 
 #include "compositor.h"
 #include "evdev.h"
+#include "evdev-private.h"
 #include "launcher-util.h"
-
-struct evdev_seat {
-	struct weston_seat base;
-	struct wl_list devices_list;
-	struct udev_monitor *udev_monitor;
-	struct wl_event_source *udev_monitor_source;
-	char *seat_id;
-};
-
-#define MAX_SLOTS 16
-
-struct evdev_input_device {
-	struct evdev_seat *master;
-	struct wl_list link;
-	struct wl_event_source *source;
-	struct weston_output *output;
-	char *devnode;
-	int fd;
-	struct {
-		int min_x, max_x, min_y, max_y;
-		int old_x, old_y, reset_x, reset_y;
-		int32_t x, y;
-	} abs;
-
-	struct {
-		int slot;
-		int32_t x[MAX_SLOTS];
-		int32_t y[MAX_SLOTS];
-	} mt;
-	struct mtdev *mtdev;
-
-	struct {
-		wl_fixed_t dx, dy;
-	} rel;
-
-	int type; /* event type flags */
-
-	int is_touchpad, is_mt;
-};
-
-/* event type flags */
-#define EVDEV_ABSOLUTE_MOTION		(1 << 0)
-#define EVDEV_ABSOLUTE_MT_DOWN		(1 << 1)
-#define EVDEV_ABSOLUTE_MT_MOTION	(1 << 2)
-#define EVDEV_ABSOLUTE_MT_UP		(1 << 3)
-#define EVDEV_RELATIVE_MOTION		(1 << 4)
 
 static inline void
 evdev_process_key(struct evdev_input_device *device,
@@ -341,9 +296,52 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 }
 
 static void
+fallback_process(struct evdev_dispatch *dispatch,
+		 struct evdev_input_device *device,
+		 struct input_event *event,
+		 uint32_t time)
+{
+	switch (event->type) {
+	case EV_REL:
+		evdev_process_relative(device, event, time);
+		break;
+	case EV_ABS:
+		evdev_process_absolute(device, event);
+		break;
+	case EV_KEY:
+		evdev_process_key(device, event, time);
+		break;
+	}
+}
+
+static void
+fallback_destroy(struct evdev_dispatch *dispatch)
+{
+	free(dispatch);
+}
+
+struct evdev_dispatch_interface fallback_interface = {
+	fallback_process,
+	fallback_destroy
+};
+
+static struct evdev_dispatch *
+fallback_dispatch_create(void)
+{
+	struct evdev_dispatch *dispatch = malloc(sizeof *dispatch);
+	if (dispatch == NULL)
+		return NULL;
+
+	dispatch->interface = &fallback_interface;
+
+	return dispatch;
+}
+
+static void
 evdev_process_events(struct evdev_input_device *device,
 		     struct input_event *ev, int count)
 {
+	struct evdev_dispatch *dispatch = device->dispatch;
 	struct input_event *e, *end;
 	uint32_t time = 0;
 
@@ -359,17 +357,8 @@ evdev_process_events(struct evdev_input_device *device,
 		 * events and send as a bunch */
 		if (!is_motion_event(e))
 			evdev_flush_motion(device, time);
-		switch (e->type) {
-		case EV_REL:
-			evdev_process_relative(device, e, time);
-			break;
-		case EV_ABS:
-			evdev_process_absolute(device, e);
-			break;
-		case EV_KEY:
-			evdev_process_key(device, e, time);
-			break;
-		}
+
+		dispatch->interface->process(dispatch, device, e, time);
 	}
 
 	evdev_flush_motion(device, time);
@@ -409,16 +398,6 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 
 	return 1;
 }
-
-/* copied from udev/extras/input_id/input_id.c */
-/* we must use this kernel-compatible implementation */
-#define BITS_PER_LONG (sizeof(unsigned long) * 8)
-#define NBITS(x) ((((x)-1)/BITS_PER_LONG)+1)
-#define OFF(x)  ((x)%BITS_PER_LONG)
-#define BIT(x)  (1UL<<OFF(x))
-#define LONG(x) ((x)/BITS_PER_LONG)
-#define TEST_BIT(array, bit)    ((array[LONG(bit)] >> OFF(bit)) & 1)
-/* end copied */
 
 static int
 evdev_configure_device(struct evdev_input_device *device)
@@ -494,6 +473,7 @@ evdev_input_device_create(struct evdev_seat *master,
 	device->mt.slot = -1;
 	device->rel.dx = 0;
 	device->rel.dy = 0;
+	device->dispatch = NULL;
 
 	/* Use non-blocking mode so that we can loop on read on
 	 * evdev_input_device_data() until all events on the fd are
@@ -505,6 +485,13 @@ evdev_input_device_create(struct evdev_seat *master,
 	if (evdev_configure_device(device) == -1)
 		goto err1;
 
+	/* If the dispatch was not set up use the fallback. */
+	if (device->dispatch == NULL)
+		device->dispatch = fallback_dispatch_create();
+	if (device->dispatch == NULL)
+		goto err1;
+
+
 	if (device->is_mt) {
 		device->mtdev = mtdev_new_open(device->fd);
 		if (!device->mtdev)
@@ -515,12 +502,14 @@ evdev_input_device_create(struct evdev_seat *master,
 					      WL_EVENT_READABLE,
 					      evdev_input_device_data, device);
 	if (device->source == NULL)
-		goto err1;
+		goto err2;
 
 	wl_list_insert(master->devices_list.prev, &device->link);
 
 	return device;
 
+err2:
+	device->dispatch->interface->destroy(device->dispatch);
 err1:
 	close(device->fd);
 err0:
@@ -553,6 +542,12 @@ device_added(struct udev_device *udev_device, struct evdev_seat *master)
 static void
 device_removed(struct evdev_input_device *device)
 {
+	struct evdev_dispatch *dispatch;
+
+	dispatch = device->dispatch;
+	if (dispatch)
+		dispatch->interface->destroy(dispatch);
+
 	wl_event_source_remove(device->source);
 	wl_list_remove(&device->link);
 	if (device->mtdev)

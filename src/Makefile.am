@@ -83,6 +83,7 @@ drm_backend_la_SOURCES =			\
 	tty.c					\
 	evdev.c					\
 	evdev.h					\
+	evdev-private.h				\
 	launcher-util.c				\
 	launcher-util.h				\
 	libbacklight.c				\
