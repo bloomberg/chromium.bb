@@ -2079,7 +2079,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     // Move focus out of the location bar if necessary.
     views::FocusManager* focus_manager = GetFocusManager();
     DCHECK(focus_manager);
-    if (focus_manager->GetFocusedView() == location_bar)
+    // Look for focus in the location bar itself or any child view.
+    if (location_bar->Contains(focus_manager->GetFocusedView()))
       focus_manager->ClearFocus();
 
 #if defined(OS_WIN) && !defined(USE_AURA)
