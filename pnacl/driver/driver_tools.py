@@ -1182,7 +1182,10 @@ def DriverMain(module, argv):
 
   # Handle help info
   help_func = getattr(module, 'get_help', None)
-  if '--help' in main_args or '-h' in main_args or '-help' in main_args:
+  if ('--help' in main_args or
+      '-h' in main_args or
+      '-help' in main_args or
+      '--help-full' in main_args):
     if not help_func:
       Log.Fatal('Help text not available')
     helpstr = help_func(main_args)

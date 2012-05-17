@@ -135,7 +135,7 @@ EXTRA_ENV = {
   'PNACL_ABI' : '-l:pnacl_abi.bc',
 
 
-  # IS_CC is set by pnacl-clang and pnacl-clang++ programmatically
+  # IS_CXX is set by pnacl-clang and pnacl-clang++ programmatically
   'CC' : '${IS_CXX ? ${CLANGXX} : ${CLANG}}',
   'RUN_CC': '${CC} -emit-llvm ${mode} ${CC_FLAGS} ' +
             '${@AddPrefix:-isystem :ISYSTEM} ' +
@@ -266,7 +266,9 @@ GCCPatterns = [
   ( ('-L','(.+)'), "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
   ( '-L(.+)',      "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
 
-  ( '(-Wp,.*)',       AddCCFlag),
+  ( '(-Wp,.*)', AddCCFlag),
+  ( '(-Xpreprocessor .*)', AddCCFlag),
+
   ( '(-MG)',          AddCCFlag),
   ( '(-MMD)',         AddCCFlag),
   ( '(-MM)',          "env.append('CC_FLAGS', $0)\n"
@@ -596,34 +598,47 @@ def SetupChain(chain, input_type, output_type):
 def get_help(argv):
   tool = env.getone('SCRIPT_NAME')
 
-  return """
+  if '--help-full' in argv:
+    # To get ${CC}, etc.
+    env.update(EXTRA_ENV)
+    _, stdout, _ = Run('"${CC}" --help', echo_stdout=False, return_stdout=True)
+    return stdout
+  else:
+    return """
 This is a "GCC-compatible" driver using clang under the hood.
 
 Usage: %s [options] <inputs> ...
 
 BASIC OPTIONS:
-  -o <file>          Output to <file>.
-  -E                 Only run the preprocessor.
-  -S                 Generate bitcode assembly.
-  -c                 Generate bitcode object.
-  -I <dir>           Add header search path.
-  -L <dir>           Add library search path.
-  -D<key>[=<val>]    Add definition for the preprocessor.
-  -W<id>             Toggle warning <id>.
-  -f<feature>        Enable <feature>.
-  -Wl,<arg>          Pass <arg> to the linker.
-  -Wp,<arg>          Pass <arg> to the preprocessor.
-  -Xassembler <arg>  Pass <arg> to the assembler.
-  -Xlinker <arg>     Pass <arg> to the linker.
-  -x <language>      Treat subsequent input files as having type <language>.
-  -static            Produce a static executable.
-  -shared            Produce a shared object.
-  -Bstatic           Link subsequent libraries statically.
-  -Bdynamic          Link subsequent libraries dynamically.
-  -fPIC              Ignored (for compatibility).
-  -pipe              Ignored (for compatibility).
-  -O<n>              Optimation level <n>: 0, 1, 2, 3, 4 or s.
-  -save-temps        Keep intermediate compilation results.
-  -v                 Verbose output / show commands.
-  -h | --help        Show this help.
+  -o <file>             Output to <file>.
+  -E                    Only run the preprocessor.
+  -S                    Generate bitcode assembly.
+  -c                    Generate bitcode object.
+  -I <dir>              Add header search path.
+  -L <dir>              Add library search path.
+  -D<key>[=<val>]       Add definition for the preprocessor.
+  -W<id>                Toggle warning <id>.
+  -f<feature>           Enable <feature>.
+  -Wl,<arg>             Pass <arg> to the linker.
+  -Xlinker <arg>        Pass <arg> to the linker.
+  -Wp,<arg>             Pass <arg> to the preprocessor.
+  -Xpreprocessor,<arg>  Pass <arg> to the preprocessor.
+  -x <language>         Treat subsequent input files as having type <language>.
+  -static               Produce a static executable.
+  -shared               Produce a shared object.
+  -Bstatic              Link subsequent libraries statically.
+  -Bdynamic             Link subsequent libraries dynamically.
+  -fPIC                 Ignored (only used by translator backend)
+                        (accepted for compatibility).
+  -pipe                 Ignored (for compatibility).
+  -O<n>                 Optimation level <n>: 0, 1, 2, 3, 4 or s.
+  -g                    Generate complete debug information.
+  -gline-tables-only    Generate debug line-information only
+                        (allowing for stack traces).
+  -flimit-debug-info    Generate limited debug information.
+  -save-temps           Keep intermediate compilation results.
+  -v                    Verbose output / show commands.
+  -h | --help           Show this help.
+  --help-full           Show underlying clang driver's help message
+                        (warning: not all options supported).
 """ % (tool)
