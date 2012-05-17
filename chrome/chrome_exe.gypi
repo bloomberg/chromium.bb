@@ -44,6 +44,13 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
+        ['component == "shared_library"', {
+          'msvs_settings': {
+            'VCManifestTool': {
+              'EmbedManifest': 'false',
+            },
+          },
+        }],
         ['order_profiling!=0 and (chromeos==1 or OS=="linux")', {
           'dependencies' : [
             '../tools/cygprofile/cygprofile.gyp:cygprofile',

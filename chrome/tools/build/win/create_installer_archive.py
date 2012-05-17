@@ -312,6 +312,121 @@ def CreateResourceInputFile(
     f.write(resource_file)
 
 
+# Reads |manifest_name| from |build_dir| and writes |manifest_name| to
+# |output_dir| with the same content plus |inserted_string| added just before
+# |insert_before|.
+def CopyAndAugmentManifest(build_dir, output_dir, manifest_name,
+                           inserted_string, insert_before):
+  manifest_file = open(
+      os.path.join(build_dir, manifest_name), 'r')
+  manifest_lines = manifest_file.readlines()
+  manifest_file.close()
+
+  insert_index = next((i for i, s in enumerate(manifest_lines)
+                       if s.find(insert_before) != -1), -1)
+  if insert_index == -1:
+    raise ValueError('could not find {0} in the manifest:\n{1}'.format(
+        insert_before, ''.join(manifest_lines)))
+  manifest_lines.insert(insert_index, inserted_string)
+
+  modified_manifest_file = open(
+      os.path.join(output_dir, manifest_name), 'w')
+  modified_manifest_file.write(''.join(manifest_lines))
+  modified_manifest_file.close()
+
+
+# Copies component build DLLs and generates required config files and manifests
+# in order for chrome.exe and setup.exe to be able to find those DLLs at
+# run-time.
+# This is meant for developer builds only and should never be used to package
+# an official build.
+def DoComponentBuildTasks(staging_dir, build_dir, current_version):
+  # Get the required directories for the upcoming operations.
+  chrome_dir = os.path.join(staging_dir, CHROME_DIR)
+  version_dir = os.path.join(chrome_dir, current_version)
+  installer_dir = os.path.join(version_dir, 'Installer')
+  # |installer_dir| is technically only created post-install, but we need it
+  # now to add setup.exe's config and manifest to the archive.
+  if not os.path.exists(installer_dir):
+    os.mkdir(installer_dir)
+
+  # Copy all the DLLs in |build_dir| to the version directory. Simultaneously
+  # build a list of their names to mark them as dependencies of chrome.exe and
+  # setup.exe later.
+  dlls = glob.glob(os.path.join(build_dir, '*.dll'))
+  dll_names = []
+  for dll in dlls:
+    shutil.copy(dll, version_dir)
+    dll_names.append(os.path.splitext(os.path.basename(dll))[0])
+
+  exe_config = (
+      "<configuration>\n"
+      "  <windows>\n"
+      "    <assemblyBinding xmlns='urn:schemas-microsoft-com:asm.v1'>\n"
+      "        <probing privatePath='{rel_path}'/>\n"
+      "    </assemblyBinding>\n"
+      "  </windows>\n"
+      "</configuration>")
+
+  # Write chrome.exe.config to point to the version directory.
+  chrome_exe_config_file = open(
+      os.path.join(chrome_dir, 'chrome.exe.config'), 'w')
+  chrome_exe_config_file.write(exe_config.format(rel_path=current_version))
+  chrome_exe_config_file.close()
+
+  # Write setup.exe.config to point to the version directory (which is one
+  # level up from setup.exe post-install).
+  setup_exe_config_file = open(
+      os.path.join(installer_dir, 'setup.exe.config'), 'w')
+  setup_exe_config_file.write(exe_config.format(rel_path='..'))
+  setup_exe_config_file.close()
+
+  # Add a dependency for each DLL in |dlls| to the existing manifests for
+  # chrome.exe and setup.exe. Some of these DLLs are not actually used by
+  # either process, but listing them all as dependencies doesn't hurt as it
+  # only makes them visible to the exes, just like they already are in the
+  # build output directory.
+  exe_manifest_dependencies_list = []
+  for name in dll_names:
+    exe_manifest_dependencies_list.append(
+        "  <dependency>\n"
+        "    <dependentAssembly>\n"
+        "      <assemblyIdentity type='win32' name='chrome.{dll_name}'\n"
+        "          version='0.0.0.0' processorArchitecture='x86'\n"
+        "          language='*'/>\n"
+        "    </dependentAssembly>\n"
+        "  </dependency>\n".format(dll_name=name))
+
+  exe_manifest_dependencies = ''.join(exe_manifest_dependencies_list)
+
+  # Write a modified chrome.exe.manifest beside chrome.exe.
+  CopyAndAugmentManifest(build_dir, chrome_dir, 'chrome.exe.manifest',
+                         exe_manifest_dependencies, '</assembly>')
+
+  # Write a modified setup.exe.manifest beside setup.exe in
+  # |version_dir|/Installer.
+  CopyAndAugmentManifest(build_dir, installer_dir, 'setup.exe.manifest',
+                         exe_manifest_dependencies, '</assembly>')
+
+  # Generate assembly manifests for each DLL in |dlls|. These do not interfere
+  # with the private manifests potentially embedded in each DLL. They simply
+  # allow chrome.exe and setup.exe to see those DLLs although they are in a
+  # separate directory post-install.
+  for name in dll_names:
+    dll_manifest = (
+        "<assembly\n"
+        "    xmlns='urn:schemas-microsoft-com:asm.v1' manifestVersion='1.0'>\n"
+        "  <assemblyIdentity name='chrome.{dll_name}' version='0.0.0.0'\n"
+        "      type='win32' processorArchitecture='x86'/>\n"
+        "  <file name='{dll_name}.dll'/>\n"
+        "</assembly>".format(dll_name=name))
+
+    dll_manifest_file = open(os.path.join(
+        version_dir, "chrome.{dll_name}.manifest".format(dll_name=name)), 'w')
+    dll_manifest_file.write(dll_manifest)
+    dll_manifest_file.close()
+
+
 def main(options):
   """Main method that reads input file, creates archive file and write
   resource input file.
@@ -337,6 +452,9 @@ def main(options):
   CopyAllFilesToStagingDir(config, options.distribution,
                            staging_dir, options.build_dir,
                            options.enable_hidpi, options.enable_metro)
+
+  if options.component_build == '1':
+    DoComponentBuildTasks(staging_dir, options.build_dir, current_version)
 
   version_numbers = current_version.split('.')
   current_build_number = version_numbers[2] + '.' + version_numbers[3]
@@ -393,6 +511,8 @@ def _ParseOptions():
   parser.add_option('--enable_metro', default='0',
       help='Whether to include resource files from the "METRO" section of the '
            'input file.')
+  parser.add_option('--component_build', default='0',
+      help='Whether this archive is packaging a component build.')
 
   options, args = parser.parse_args()
   if not options.build_dir:
@@ -401,12 +521,15 @@ def _ParseOptions():
   if not options.staging_dir:
     parser.error('You must provide a staging dir.')
 
+  if not options.input_file:
+    parser.error('You must provide an input file')
+
   if not options.output_dir:
     options.output_dir = options.build_dir
 
   if not options.resource_file_path:
-    options.options.resource_file_path = os.path.join(options.build_dir,
-                                                      MINI_INSTALLER_INPUT_FILE)
+    options.resource_file_path = os.path.join(options.build_dir,
+                                              MINI_INSTALLER_INPUT_FILE)
 
   return options
 

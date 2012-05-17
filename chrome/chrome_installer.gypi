@@ -324,6 +324,13 @@
             },
           ],
           'conditions': [
+            ['component == "shared_library"', {
+              'msvs_settings': {
+                'VCManifestTool': {
+                  'EmbedManifest': 'false',
+                },
+              },
+            }],
             # TODO(mark):  <(branding_dir) should be defined by the
             # global condition block at the bottom of the file, but
             # this doesn't work due to the following issue:
