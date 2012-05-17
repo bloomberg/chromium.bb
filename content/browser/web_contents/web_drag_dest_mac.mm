@@ -237,10 +237,9 @@ using content::Referrer;
     if ([files isKindOfClass:[NSArray class]] && [files count]) {
       for (NSUInteger i = 0; i < [files count]; i++) {
         NSString* filename = [files objectAtIndex:i];
-        BOOL isDir = NO;
-        BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:filename
-                                                           isDirectory:&isDir];
-        if (exists && !isDir) {
+        BOOL exists = [[NSFileManager defaultManager]
+                           fileExistsAtPath:filename];
+        if (exists) {
           data->filenames.push_back(
               WebDropData::FileInfo(
                   base::SysNSStringToUTF16(filename), string16()));
