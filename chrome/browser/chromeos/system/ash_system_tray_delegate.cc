@@ -242,7 +242,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual const std::string GetUserEmail() const OVERRIDE {
-    return UserManager::Get()->GetLoggedInUser().email();
+    return UserManager::Get()->GetLoggedInUser().display_email();
   }
 
   virtual const SkBitmap& GetUserImage() const OVERRIDE {
