@@ -24,6 +24,8 @@ class Widget;
 namespace ash {
 namespace internal {
 
+class TouchHudCanvas;
+
 // An event filter which handles system level gesture events.
 class TouchObserverHUD : public aura::EventFilter {
  public:
@@ -45,7 +47,9 @@ class TouchObserverHUD : public aura::EventFilter {
       aura::GestureEvent* event) OVERRIDE;
 
   static const int kMaxTouchPoints = 32;
+
   scoped_ptr<views::Widget> widget_;
+  TouchHudCanvas* canvas_;
   views::Label* touch_labels_[kMaxTouchPoints];
   gfx::Point touch_positions_[kMaxTouchPoints];
   ui::EventType touch_status_[kMaxTouchPoints];
