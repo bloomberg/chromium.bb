@@ -874,6 +874,75 @@ translator() {
   fi
 }
 
+newlib-shared() {
+  StepBanner "NEWLIB-SHARED"
+  local naclgcc_base="${NNACL_GLIBC_ROOT}/${NACL64_TARGET}"
+  mkdir -p "${INSTALL_LIB_X8632}"
+  mkdir -p "${INSTALL_LIB_X8664}"
+  mkdir -p "${INSTALL_LIB_ARM}"
+
+  StepBanner "NEWLIB-SHARED" "clean out glibc stuff"
+  local LIBS_TO_CLEAN="libstdc++.so.6 \
+                       libgcc_s.so.1 \
+                       libc_nonshared.a \
+                       libc.so.* \
+                       libm.so.* \
+                       libdl.so.* \
+                       librt.so.* \
+                       libmemusage.so \
+                       libpthread_nonshared.a \
+                       libpthread.so.* \
+                       runnable-ld.so \
+                       ld-2.9.so"
+  for lib in ${LIBS_TO_CLEAN} ; do
+      echo "${lib}"
+      # TODO(robertm): fix relaxed quoting due to wildcard usage
+      rm -rf ${INSTALL_LIB_X8664}/${lib}
+      rm -rf ${INSTALL_LIB_X8632}/${lib}
+  done
+
+  StepBanner "NEWLIB-SHARED" "stealing shared loader"
+  local glibc_libs_to_copy="runnable-ld.so ld-2.9.so ld-nacl-x86-*.so.1"
+  local lib
+  for lib in ${glibc_libs_to_copy} ; do
+    # TODO(robertm): fix relaxed quoting due to wildcard usage
+    echo "${lib}"
+    cp -a ${naclgcc_base}/lib32/${lib} "${INSTALL_LIB_X8632}"
+    cp -a ${naclgcc_base}/lib/${lib} "${INSTALL_LIB_X8664}"
+  done
+
+  StepBanner "NEWLIB-SHARED" "build native libgcc_eh"
+  # TBD
+
+  StepBanner "NEWLIB-SHARED" "building newlib shared libs"
+  local newlib_libs_to_convert="libc libg libm libstdc++"
+  for lib in ${newlib_libs_to_convert} ; do
+      echo "translating ${lib}"
+      archive_in=${NEWLIB_INSTALL_DIR}/lib/${lib}.a
+      pso_out=${NEWLIB_INSTALL_DIR}/lib/${lib}.pso
+      soname=${lib}.so
+      ${PNACL_CC_GLIBC} \
+           -nodefaultlibs \
+           -shared \
+           -Wl,--whole-archive \
+           ${archive_in} \
+           -Wl,--no-whole-archive \
+           -Wl,-soname=${soname} \
+           -o ${pso_out}
+      # This is not a long term solution we probably should not
+      # translate stuff we have in pso form in this script.
+      # However, it allow some reuse of the glibc infrastructure.
+      # NOTE: arm support missing
+      # NOTE: This overwrites glibc libraries as we done not have
+      # separate directories for native libs
+      ${PNACL_TRANSLATE} \
+           --newlib-shared-experiment -nostdlib -shared -fPIC \
+           -arch x86-32 ${pso_out} -o ${INSTALL_LIB_X8632}/${soname}
+      ${PNACL_TRANSLATE} \
+           --newlib-shared-experiment -nostdlib -shared -fPIC \
+           -arch x86-64 ${pso_out} -o ${INSTALL_LIB_X8664}/${soname}
+  done
+}
 
 # Builds crt1.bc for GlibC, which is just sysdeps/nacl/start.c and csu/init.c
 glibc-crt1() {

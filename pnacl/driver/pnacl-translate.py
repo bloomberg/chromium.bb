@@ -190,7 +190,8 @@ def main(argv):
   if env.getbool('SHARED'):
     env.set('PIC', '1')
 
-  if env.getbool('LIBMODE_NEWLIB'):
+  if (env.getbool('LIBMODE_NEWLIB') and
+      not env.getbool('NEWLIB_SHARED_EXPERIMENT')):
     env.set('STATIC', '1')
 
   if env.getbool('SHARED') and env.getbool('STATIC'):
@@ -347,10 +348,11 @@ def ApplyBitcodeConfig(metadata, bctype):
       env.append('NEEDED_LIBRARIES', '-l:' + needed)
     # libc and libpthread may need the nonshared components too.
     # Normally these are enclosed in --start-group and --end-group...
-    if needed.startswith('libc.so'):
-      env.append('NEEDED_LIBRARIES', '-l:libc_nonshared.a')
-    elif needed.startswith('libpthread.so'):
-      env.append('NEEDED_LIBRARIES', '-l:libpthread_nonshared.a')
+    if not env.getbool('NEWLIB_SHARED_EXPERIMENT'):
+      if needed.startswith('libc.so'):
+        env.append('NEEDED_LIBRARIES', '-l:libc_nonshared.a')
+      elif needed.startswith('libpthread.so'):
+        env.append('NEEDED_LIBRARIES', '-l:libpthread_nonshared.a')
 
 
 def RunAS(infile, outfile):

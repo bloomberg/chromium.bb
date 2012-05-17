@@ -97,6 +97,7 @@ EXTRA_ENV = {
 
   # For newlib, omit the -T flag (the builtin linker script works fine).
   'LD_SCRIPT_newlib_static': '',
+  'LD_SCRIPT_newlib_shared': '',
 
   # For glibc, the linker script is always explicitly specified.
   'LD_SCRIPT_glibc_static' : '${LD_EMUL}.x.static',
@@ -237,7 +238,7 @@ def main(argv):
     output = pathtools.normalize('a.out')
 
   # Default to -static for newlib
-  if env.getbool('LIBMODE_NEWLIB'):
+  if env.getbool('LIBMODE_NEWLIB') and not env.getbool('SHARED'):
     env.set('STATIC', '1')
 
   # Expand all parameters
