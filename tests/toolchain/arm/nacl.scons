@@ -1,0 +1,38 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# Test ARM float ABI to ensure that it is the hard ABI and not soft.
+
+# Do not try to run OBJDUMP if 'built_elsewhere', since that *might*
+# mean that a toolchain is not even present. E.g., the arm buildbots
+# do not have the pnacl toolchain, since that is built for x86 hosts.
+if (not env.Bit('build_arm') or
+    env.Bit('built_elsewhere') or
+    env.Bit('pnacl_generate_pexe')):
+  Return()
+
+# Force native .o generation and optimization (so that checks are cleaner).
+env.PNaClForceNative()
+env.Append(CFLAGS=['-O2'])
+
+arm_float_abi_obj = env.ComponentObject('arm_float_abi_obj',
+                                        'arm_float_abi_test.c')
+
+
+# Disassemble the .o file and look for register passing.
+node = env.CommandTest('arm_float_abi_test.out',
+                       ['${PYTHON}',
+                        env.File('file_check.py'),
+                        '${OBJDUMP}',
+                        arm_float_abi_obj,
+                        env.File('arm_float_abi_test.c')],
+                       # don't run ${PYTHON} under the emulator.
+                       direct_emulation=False)
+
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'nonpexe_tests', 'toolchain_tests'],
+                       'run_arm_float_abi_test')
