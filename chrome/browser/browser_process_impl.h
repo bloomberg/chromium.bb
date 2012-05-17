@@ -68,6 +68,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual PrefService* local_state() OVERRIDE;
   virtual ui::Clipboard* clipboard() OVERRIDE;
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
+  virtual VariationsService* variations_service() OVERRIDE;
 #if defined(OS_CHROMEOS)
   virtual chromeos::OomPriorityManager* oom_priority_manager() OVERRIDE;
 #endif  // defined(OS_CHROMEOS)
@@ -179,6 +180,8 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
 
   scoped_ptr<ui::Clipboard> clipboard_;
+
+  scoped_ptr<VariationsService> variations_service_;
 
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_;

@@ -36,6 +36,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
+#include "chrome/browser/metrics/variations_service.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -185,13 +186,14 @@ void BrowserProcessImpl::StartTearDown() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SdchDictionaryFetcher::Shutdown));
 
-  // We need to destroy the MetricsService, IntranetRedirectDetector, and
-  // SafeBrowsing ClientSideDetectionService (owned by the SafeBrowsingService)
-  // before the io_thread_ gets destroyed, since their destructors can call the
-  // URLFetcher destructor, which does a PostDelayedTask operation on the IO
-  // thread. (The IO thread will handle that URLFetcher operation before going
-  // away.)
+  // We need to destroy the MetricsService, VariationsService,
+  // IntranetRedirectDetector, and SafeBrowsing ClientSideDetectionService
+  // (owned by the SafeBrowsingService) before the io_thread_ gets destroyed,
+  // since their destructors can call the URLFetcher destructor, which does a
+  // PostDelayedTask operation on the IO thread. (The IO thread will handle that
+  // URLFetcher operation before going away.)
   metrics_service_.reset();
+  variations_service_.reset();
   intranet_redirect_detector_.reset();
 #if defined(ENABLE_SAFE_BROWSING)
   if (safe_browsing_service_.get()) {
@@ -393,6 +395,13 @@ ui::Clipboard* BrowserProcessImpl::clipboard() {
 net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
   DCHECK(CalledOnValidThread());
   return io_thread()->system_url_request_context_getter();
+}
+
+VariationsService* BrowserProcessImpl::variations_service() {
+  DCHECK(CalledOnValidThread());
+  if (!variations_service_.get())
+    variations_service_.reset(new VariationsService());
+  return variations_service_.get();
 }
 
 #if defined(OS_CHROMEOS)

@@ -30,6 +30,7 @@
         'safe_browsing_report_proto',
         'feedback_proto',
         'gdata_proto',
+        'variations_seed_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
@@ -1363,6 +1364,8 @@
         'browser/metrics/tracking_synchronizer.cc',
         'browser/metrics/tracking_synchronizer.h',
         'browser/metrics/tracking_synchronizer_observer.h',
+        'browser/metrics/variations_service.cc',
+        'browser/metrics/variations_service.h',
         'browser/native_window_notification_source.h',
         'browser/net/chrome_cookie_notification_details.h',
         'browser/net/chrome_fraudulent_certificate_reporter.cc',
@@ -5055,6 +5058,20 @@
       'variables': {
         'proto_in_dir': 'browser/chromeos/gdata',
         'proto_out_dir': 'chrome/browser/chromeos/gdata',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for Chrome Variations seed.
+      'target_name': 'variations_seed_proto',
+      'type': 'static_library',
+      'sources': [ 
+        'browser/metrics/proto/trials_seed.proto',
+        'browser/metrics/proto/study.proto',
+      ],
+      'variables': {
+        'proto_in_dir': 'browser/metrics/proto',
+        'proto_out_dir': 'chrome/browser/metrics/proto',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

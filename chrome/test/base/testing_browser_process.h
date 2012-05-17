@@ -55,6 +55,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual WatchDogThread* watchdog_thread() OVERRIDE;
   virtual ProfileManager* profile_manager() OVERRIDE;
   virtual PrefService* local_state() OVERRIDE;
+  virtual VariationsService* variations_service() OVERRIDE;
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
   virtual policy::PolicyService* policy_service() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;

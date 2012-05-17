@@ -55,6 +55,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
+#include "chrome/browser/metrics/variations_service.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/predictor.h"
@@ -583,6 +584,10 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
                   " list specified.";
   }
 #endif  // NDEBUG
+
+  VariationsService* variations_service =
+      browser_process_->variations_service();
+  variations_service->CreateTrialsFromSeed(browser_process_->local_state());
 
   SetupFieldTrials(metrics->recording_active(),
                    local_state_->IsManagedPreference(
@@ -1848,10 +1853,16 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       // http://crosbug.com/17687
 #if !defined(OS_CHROMEOS)
       // If we're running tests (ui_task is non-null), then we don't want to
-      // call FetchLanguageListFromTranslateServer
-      if (parameters().ui_task == NULL && translate_manager_ != NULL) {
-        translate_manager_->FetchLanguageListFromTranslateServer(
-            profile_->GetPrefs());
+      // call FetchLanguageListFromTranslateServer or
+      // StartFetchingVariationsSeed.
+      if (parameters().ui_task == NULL) {
+        // Request new variations seed information from server.
+        browser_process_->variations_service()->StartFetchingVariationsSeed();
+
+        if (translate_manager_ != NULL) {
+          translate_manager_->FetchLanguageListFromTranslateServer(
+              profile_->GetPrefs());
+        }
       }
 #endif
 

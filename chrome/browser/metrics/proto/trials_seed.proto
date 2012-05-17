@@ -1,0 +1,22 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package chrome_variations;
+
+import "study.proto";
+
+// The TrialsSeed is a protobuf response from the server that contains the list
+// of studies and a serial number to uniquely identify its contents. The
+// serial number allows the client to easily determine if the list of
+// experiments has changed from the previous TrialsSeed seen by the client.
+//
+// Next tag: 3
+message TrialsSeed {
+  optional string serial_number = 1;
+  repeated Study study = 2;
+}

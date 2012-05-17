@@ -62,6 +62,10 @@ PrefService* TestingBrowserProcess::local_state() {
   return local_state_;
 }
 
+VariationsService* TestingBrowserProcess::variations_service() {
+  return NULL;
+}
+
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
 #if defined(ENABLE_CONFIGURATION_POLICY)

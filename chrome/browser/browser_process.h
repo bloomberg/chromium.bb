@@ -35,6 +35,7 @@ class SafeBrowsingService;
 class StatusTray;
 class TabCloseableStateWatcher;
 class ThumbnailGenerator;
+class VariationsService;
 class WatchDogThread;
 
 #if defined(OS_CHROMEOS)
@@ -92,6 +93,7 @@ class BrowserProcess {
   virtual PrefService* local_state() = 0;
   virtual ui::Clipboard* clipboard() = 0;
   virtual net::URLRequestContextGetter* system_request_context() = 0;
+  virtual VariationsService* variations_service() = 0;
 
 #if defined(OS_CHROMEOS)
   // Returns the out-of-memory priority manager.
