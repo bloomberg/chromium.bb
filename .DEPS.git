@@ -175,7 +175,7 @@ deps_os = {
     'win':
     {
         'src/chrome/tools/test/reference_build/chrome_win':
-            Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
+            Var('git_url') + '/chromium/reference_builds/chrome_win.git@fc239c7dcabcd2a225c281963eedb6a5441fb13b',
         'src/chrome_frame/tools/test/reference_build/chrome_win':
             Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
         'src/rlz':
