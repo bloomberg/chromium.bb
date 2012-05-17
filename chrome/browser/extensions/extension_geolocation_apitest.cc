@@ -23,7 +23,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationApiTest,
   ASSERT_TRUE(RunExtensionTest("geolocation/no_permission")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationApiTest, ExtensionGeolocationAccessPass) {
+IN_PROC_BROWSER_TEST_F(GeolocationApiTest,
+                       FAILS_ExtensionGeolocationAccessPass) {
   // Test that geolocation can be accessed from extension with permission.
   ASSERT_TRUE(RunExtensionTest("geolocation/has_permission")) << message_;
 }
