@@ -26,7 +26,7 @@ const char* kRendererDestroyed = "The tab was closed.";
 class Handler : public content::WebContentsObserver {
  public:
   Handler(content::WebContents* web_contents,
-          const ExtensionMsg_ExecuteCode_Params params,
+          const ExtensionMsg_ExecuteCode_Params& params,
           const ScriptExecutor::ExecuteScriptCallback& callback)
           : content::WebContentsObserver(web_contents),
             request_id_(params.request_id),
