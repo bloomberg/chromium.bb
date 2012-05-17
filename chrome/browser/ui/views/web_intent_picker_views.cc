@@ -951,13 +951,12 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
 }
 
 void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
-  if (model->GetInstalledServiceCount() == 0) {
-    suggestions_label_->SetText(l10n_util::GetStringUTF16(
-        IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED));
-  } else {
-    suggestions_label_->SetText(
-        l10n_util::GetStringUTF16(IDS_INTENT_PICKER_GET_MORE_SERVICES));
-  }
+  suggestions_label_->SetText(l10n_util::GetStringUTF16(
+      model->GetInstalledServiceCount() ?
+          IDS_INTENT_PICKER_GET_MORE_SERVICES :
+          IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED));
+
+  suggestions_label_->SetVisible(model->GetSuggestedExtensionCount() > 0);
 
   service_buttons_->Update();
   extensions_->Update();
@@ -1099,8 +1098,8 @@ void WebIntentPickerViews::InitContents() {
 
   // Row with app suggestions label.
   grid_layout->StartRow(0, kIndentedFullWidthColumnSet);
-  suggestions_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_GET_MORE_SERVICES));
+  suggestions_label_ = new views::Label();
+  suggestions_label_->SetVisible(false);
   suggestions_label_->SetMultiLine(true);
   suggestions_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   grid_layout->AddView(suggestions_label_);
