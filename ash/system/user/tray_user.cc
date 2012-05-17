@@ -224,7 +224,7 @@ class UserView : public views::View,
       return;
 
     container_->SetBoundsRect(gfx::Rect(size()));
-    if (signout_) {
+    if (signout_ && user_info_) {
       gfx::Rect signout_bounds(signout_->GetPreferredSize());
       signout_bounds = bounds().Center(signout_bounds.size());
       signout_bounds.set_x(width() - signout_bounds.width() -
@@ -234,7 +234,9 @@ class UserView : public views::View,
       gfx::Rect usercard_bounds(user_info_->GetPreferredSize());
       usercard_bounds.set_width(signout_bounds.x());
       user_info_->SetBoundsRect(usercard_bounds);
-    } else {
+    } else if (signout_) {
+      signout_->SetBoundsRect(gfx::Rect(size()));
+    } else if (user_info_) {
       user_info_->SetBoundsRect(gfx::Rect(size()));
     }
   }
