@@ -130,6 +130,8 @@
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
+      # crbug.com/128300
+      '-prefs_ui.BasicSettingsUITest.testSetStartupPages',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/95140
