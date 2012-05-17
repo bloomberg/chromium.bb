@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
@@ -192,6 +193,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   DownloadServiceFactory::GetInstance();
   ExtensionCommandServiceFactory::GetInstance();
+  extensions::SuggestedLinksRegistryFactory::GetInstance();
   ExtensionSystemFactory::GetInstance();
   FindBarStateFactory::GetInstance();
 #if defined(USE_AURA)

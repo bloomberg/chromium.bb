@@ -86,6 +86,7 @@ bool AppNotifyFunction::RunImpl() {
   AppNotificationManager* manager =
       profile()->GetExtensionService()->app_notification_manager();
 
+  // TODO(beaudoin) We should probably report an error if Add returns false.
   manager->Add(item.release());
 
   return true;

@@ -18,7 +18,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.* APIs - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.experimental.discovery module, which is part of the Google Chrome  extension APIs."><title>Experimental Discovery APIs - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="devModeWarning" class="displayModeWarning">
     You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
   </div>
@@ -185,152 +185,276 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.* APIs</h1>
+        <h1 class="page_title">Experimental Discovery APIs</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li>
-              <a href="#overview">
-List of APIs
-</a>
-              <ol>
-              </ol>
-            </li><li>
-              <a href="#using">How to use experimental APIs</a>
-              <ol>
-              </ol>
-            </li><li>
-              <a href="#other">More APIs</a>
-              <ol>
-              </ol>
-            </li>
+              <li>
+                <a href="#apiReference">API reference: chrome.experimental.discovery</a>
+                <ol>
+                  <li>
+            <a href="#global-methods">Methods</a>
+            <ol>
+              <li>
+                <a href="#method-clearAllSuggestions">clearAllSuggestions</a>
+              </li><li>
+                <a href="#method-removeSuggestion">removeSuggestion</a>
+              </li><li>
+                <a href="#method-suggest">suggest</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
+            <a href="#types">Types</a>
+            <ol>
+              <li>
+                <a href="#type-experimental.discovery.SuggestDetails">experimental.discovery.SuggestDetails</a>
+                <ol>
+                </ol>
+              </li>
+            </ol>
+          </li>
+                </ol>
+              </li>
           </ol>
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">chrome.experimental.* APIs</div>
-<div id="pageData-showTOC" class="pageData">true</div>
-<p>
-Before you start, <strong>choose the right version of this page.</strong>
-You should read either:
-</p>
-<ul>
-  <li> <a href="http://code.google.com/chrome/extensions/trunk/experimental.html">Most recent experimental APIs</a>
-  </li><li> <a href="http://code.google.com/chrome/extensions/dev/experimental.html">Dev channel experimental APIs</a></li>
-</ul>
-<p>
-For information about browser versions such as
-Canary (bleeding edge) and the Dev channel, see
-<a href="http://www.chromium.org/getting-involved/dev-channel">Chrome Release Channels</a>.
-For details about channel-specific docs,
-see <a href="docs.html#versions">Doc versions</a>.
-</p>
-<h2 id="overview">
-List of APIs
-</h2>
-<p>
-We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
-on the following experimental APIs:
-</p>
-<ul>
-  <li>
-  <a href="experimental.app.html">experimental.app</a></li><li>
-  <a href="experimental.devtools.audits.html">experimental.devtools.audits</a></li><li>
-  <a href="experimental.devtools.console.html">experimental.devtools.console</a></li><li>
-  <a href="experimental.discovery.html">experimental.discovery</a></li><li>
-  <a href="experimental.downloads.html">experimental.downloads</a></li><li>
-  <a href="experimental.fontSettings.html">experimental.fontSettings</a></li><li>
-  <a href="experimental.infobars.html">experimental.infobars</a></li><li>
-  <a href="experimental.input.ime.html">experimental.input.ime</a></li><li>
-  <a href="experimental.keybinding.html">experimental.keybinding</a></li><li>
-  <a href="experimental.mediaGalleries.html">experimental.mediaGalleries</a></li><li>
-  <a href="experimental.offscreenTabs.html">experimental.offscreenTabs</a></li><li>
-  <a href="experimental.speechInput.html">experimental.speechInput</a></li>
-</ul>
-<p>
-Pay special attention to the following APIs,
-which we expect to finalize soon:
-<b>devtools</b>,
-<b>infobars</b>,
-<b>permissions</b>,
-For examples of using the experimental APIs, see
-<a href="samples.html#experimental">Samples</a>.
-</p>
-<p class="warning">
-<b>Caution:</b>
-Don't depend on these experimental APIs.
-They might disappear,
-and they <em>will</em> change.
-Also, the Chrome Web Store doesn't allow you to
-upload extensions that use experimental APIs.
-</p>
-<h2 id="using">How to use experimental APIs</h2>
-<ol>
-  <li>
-    Make sure you're using either
-    <a href="http://tools.google.com/dlpage/chromesxs">Canary</a>
-    (which you can use at the same time as other Chrome channels) or the
-<a href="http://www.chromium.org/getting-involved/dev-channel">Dev channel</a>.
-    Although the experimental APIs might work in other versions,
-    we need your feedback on the latest incarnation of the APIs,
-    which you can find in Canary and on the Dev channel.
-  </li>
-  <li>
-    Using either the
-    <a href="http://code.google.com/chrome/extensions/trunk/experimental.html">most recent API documentation</a> (if you're using Canary) or the
-    <a href="http://code.google.com/chrome/extensions/dev/experimental.html">API documentation for the Dev channel</a>,
-    write the code for your extension.
-  </li>
-  <li>
-    Specify the "experimental"
-    <a href="manifest.html#permissions">permission</a>
-    in your extension's manifest, like this:
-<pre>"permissions": [
-  <b>"experimental"</b>,
-  ...
-],
-</pre>
-  </li>
-  <li>
-    Enable the experimental API in your browser.
-    You can do this in either of two ways:
-    <ul>
-      <li> Go to <b>chrome://flags</b>,
-        find "Experimental Extension APIs",
-        click its "Enable" link,
-        and restart Chrome.
-        From now on,
-        unless you return to that page and disable experimental APIs,
-        you'll be able to run extensions that use experimental APIs.
-      </li>
-      <li> Specify the <b>--enable-experimental-extension-apis</b> flag
-        each time you launch the browser.
-        On Windows, you can do this by modifying
-        the properties of the shortcut that you use to launch Google Chrome.
-        For example:
-<pre><em>path_to_chrome.exe</em> <b>--enable-experimental-extension-apis</b></pre>
-      </li>
-    </ul>
-  </li>
-  <li>
-    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">Give us feedback!</a>
-    Your comments and suggestions help us
-    improve the APIs and decide
-    which ones should move from experimental to supported.
-  </li>
-</ol>
-<h2 id="other">More APIs</h2>
-<p>
-For information on the standard APIs that extensions can use, see
-<a href="api_index.html">chrome.* APIs</a> and
-<a href="api_other.html">Other APIs</a>.
-</p>
+        <div id="static"><div id="pageData-name" class="pageData">Experimental Discovery APIs</div>
+<!-- BEGIN AUTHORED CONTENT -->
+<p>The current methods allow extensions to inject suggested links in the recommended pane of the New Tab Page.</p>
+<!-- END AUTHORED CONTENT -->
 </div>
         <!-- API PAGE -->
-         <!-- /apiPage -->
+        <div class="apiPage">
+        <a name="apiReference"></a>
+        <h2>API reference: chrome.experimental.discovery</h2>
+          <!-- PROPERTIES -->
+           <!-- /apiGroup -->
+          <!-- METHODS -->
+          <div id="methodsTemplate" class="apiGroup">
+            <a name="global-methods"></a>
+            <h3>Methods</h3>
+            <!-- iterates over all functions -->
+            <div class="apiItem">
+              <a name="method-clearAllSuggestions"></a> <!-- method-anchor -->
+              <h4>clearAllSuggestions</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.discovery.clearAllSuggestions</span>()</div>
+              <div class="description">
+                <p>Clear all the URLs that were previously suggested for discovery by this extension.</p>
+                <!-- PARAMETERS -->
+                <dl>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-removeSuggestion"></a> <!-- method-anchor -->
+              <h4>removeSuggestion</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.discovery.removeSuggestion</span>(<span class="null"><span>string</span>
+                      <var><span>linkUrl</span></var></span>)</div>
+              <div class="description">
+                <p>Removes a URL that was previously suggested for discovery by this extension. a linkUrl previously used on a call to suggest.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>linkUrl</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The URl to remove from discovery. Must be exactly the same as</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-suggest"></a> <!-- method-anchor -->
+              <h4>suggest</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.discovery.suggest</span>(<span class="null"><span>experimental.discovery.SuggestDetails</span>
+                      <var><span>details</span></var></span>)</div>
+              <div class="description">
+                <p>Suggests a URL for discovery.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>details</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.discovery.html#type-experimental.discovery.SuggestDetails">experimental.discovery.SuggestDetails</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Detailed information on the URL to suggest.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div>  <!-- /apiItem -->
+          </div>  <!-- /apiGroup -->
+          <!-- EVENTS -->
+           <!-- /apiGroup -->
+          <!-- TYPES -->
+          <div class="apiGroup">
+            <a name="types"></a>
+            <h3 id="types">Types</h3>
+            <!-- iterates over all types -->
+            <div class="apiItem">
+              <a name="type-experimental.discovery.SuggestDetails"></a>
+              <h4>experimental.discovery.SuggestDetails</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>linkText</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The linkified text. It should be relatively short.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>linkUrl</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The URL to suggest and that will be displayed in the new tab page under the recommended pane.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>score</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>number</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A score indicating how interesting that suggestion is. The value must be between 0 and 1. A suggestion with score 1 is twice as likely to be displayed than one with a score of 0.5. Defaults to 1. TODO: need minimum=0 and maximum=1.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div> <!-- /apiItem -->
+          </div> <!-- /apiGroup -->
+        </div> <!-- /apiPage -->
       </div> <!-- /gc-pagecontent -->
     </div> <!-- /g-section -->
   </div> <!-- /codesiteContent -->

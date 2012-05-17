@@ -1,0 +1,39 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+
+namespace experimental.discovery {
+
+  dictionary SuggestDetails {
+    // The URL to suggest and that will be displayed in the new tab page under
+    // the recommended pane.
+    DOMString linkUrl;
+
+    // The linkified text. It should be relatively short.
+    DOMString linkText;
+
+    // A score indicating how interesting that suggestion is. The value must be
+    // between 0 and 1. A suggestion with score 1 is twice as likely to be
+    // displayed than one with a score of 0.5. Defaults to 1.
+    // TODO: need minimum=0 and maximum=1.
+    double? score;
+  };
+
+  interface Functions {
+    // Suggests a URL for discovery.
+    // |details|: Detailed information on the URL to suggest.
+    static void suggest(SuggestDetails details);
+
+    // Removes a URL that was previously suggested for discovery by this
+    // extension.
+    // |linkUrl|: The URl to remove from discovery. Must be exactly the same as
+    // a linkUrl previously used on a call to suggest.
+    static void removeSuggestion(DOMString linkUrl);
+
+    // Clear all the URLs that were previously suggested for discovery by this
+    // extension.
+    static void clearAllSuggestions();
+  };
+};

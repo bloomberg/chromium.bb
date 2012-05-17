@@ -126,7 +126,7 @@ class AppNotificationManager
 
   void DeleteOnFileThread(const std::string& extension_id);
 
-  // Gets notficiations for a given extension id.
+  // Gets notifications for a given extension id.
   AppNotificationList& GetAllInternal(const std::string& extension_id);
 
   // Removes the notification with given extension id and given guid.
