@@ -88,7 +88,9 @@ cr.define('suggestionsInternals', function() {
         columns.unshift(columns.splice(index, 1)[0]);
     }
 
-    // Prepend a "Rank" column.
+    // Special columns.
+    columns.unshift('favicon');
+    columns.unshift('screenshot');
     columns.unshift('rank');
 
     // Erase whatever is currently being displayed.
@@ -127,6 +129,17 @@ cr.define('suggestionsInternals', function() {
           }
         } else if (column_name == 'rank') {
           column.innerText = rank++;
+        } else if (column_name == 'screenshot') {
+          var thumbnailUrl = 'chrome://thumb/' + entry.url;
+          var img = document.createElement('img');
+          img.onload = function() { column.innerText = 'Y'; }
+          img.onerror = function() { column.innerText = 'N'; }
+          img.src = thumbnailUrl;
+        } else if (column_name == 'favicon') {
+          var faviconUrl = 'chrome://favicon/size/16/' + entry.url;
+          column.style.backgroundImage = url(faviconUrl);
+          column.style.backgroundRepeat = 'no-repeat';
+          column.style.backgroundPosition = 'center center';
         }
         row.appendChild(column);
       });
