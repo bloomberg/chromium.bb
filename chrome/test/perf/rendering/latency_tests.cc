@@ -112,7 +112,8 @@ class LatencyTest
       query_instant_(Query::EventPhase() ==
                      Query::Phase(TRACE_EVENT_PHASE_INSTANT)),
       // These queries are initialized in RunTest.
-      query_swaps_(Query::Bool(false)),
+      query_begin_swaps_(Query::Bool(false)),
+      query_end_swaps_(Query::Bool(false)),
       query_inputs_(Query::Bool(false)),
       query_blits_(Query::Bool(false)),
       query_clears_(Query::Bool(false)),
@@ -170,8 +171,13 @@ class LatencyTest
   // Query INSTANT events.
   Query query_instant_;
 
-  // Query "swaps" which is SwapBuffers for GL and UpdateRect for software.
-  Query query_swaps_;
+  // Query begin of "swaps" which is SwapBuffers for GL and UpdateRect for
+  // software.
+  Query query_begin_swaps_;
+
+  // Query end of "swaps" which is SwapBuffers for GL and UpdateRect for
+  // software.
+  Query query_end_swaps_;
 
   // Query mouse input entry events in browser process (ForwardMouseEvent).
   Query query_inputs_;
@@ -269,13 +275,18 @@ void LatencyTest::RunTest(LatencyTestMode mode,
 
   // Construct queries for searching trace events via TraceAnalyzer.
   if (mode_ == kWebGL) {
-    query_swaps_ = query_instant_ &&
+    query_begin_swaps_ = query_instant_ &&
         Query::EventName() == Query::String("SwapBuffers") &&
         Query::EventArg("width") != Query::Int(kWebGLCanvasWidth);
+    query_end_swaps_ = query_instant_ &&
+        Query::EventName() == Query::String("CompositorSwapBuffersComplete");
   } else if (mode_ == kSoftware) {
     // Software updates need to have x=0 and y=0 to contain the input color.
-    query_swaps_ = query_instant_ &&
+    query_begin_swaps_ = query_instant_ &&
         Query::EventName() == Query::String("UpdateRect") &&
+        Query::EventArg("x+y") == Query::Int(0);
+    query_end_swaps_ = query_instant_ &&
+        Query::EventName() == Query::String("UpdateRectComplete") &&
         Query::EventArg("x+y") == Query::Int(0);
   }
   query_inputs_ = query_instant_ &&
@@ -286,7 +297,7 @@ void LatencyTest::RunTest(LatencyTestMode mode,
   query_clears_ = query_instant_ &&
       Query::EventName() == Query::String("DoClear") &&
       Query::EventArg("green") == Query::Int(kClearColorGreen);
-  Query query_width_swaps = query_swaps_;
+  Query query_width_swaps = query_begin_swaps_;
   if (mode_ == kSoftware) {
     query_width_swaps = query_instant_ &&
         Query::EventName() == Query::String("UpdateRectWidth") &&
@@ -420,10 +431,12 @@ double LatencyTest::CalculateLatency() {
     //  - onscreen swaps.
     //  - DoClear calls that contain the mouse x coordinate.
     //  - mouse events.
-    analyzer_->FindEvents(query_swaps_ || query_inputs_ ||
-                          query_blits_ || query_clears_, &events);
+    analyzer_->FindEvents(query_begin_swaps_ || query_end_swaps_ ||
+                          query_inputs_ || query_blits_ || query_clears_,
+                          &events);
   } else if (mode_ == kSoftware) {
-    analyzer_->FindEvents(query_swaps_ || query_inputs_, &events);
+    analyzer_->FindEvents(query_begin_swaps_ || query_end_swaps_ ||
+                          query_inputs_, &events);
   } else {
     NOTREACHED() << "invalid mode";
   }
@@ -437,12 +450,19 @@ double LatencyTest::CalculateLatency() {
   std::vector<int> latencies;
   printf("Measured latency (in number of frames) for each frame:\n");
   for (size_t i = 0; i < events.size(); ++i) {
-    if (query_swaps_.Evaluate(*events[i])) {
+    if (query_end_swaps_.Evaluate(*events[i])) {
+      size_t end_swap_pos = i;
+
       // Compositor context swap buffers.
       ++swap_count;
       // Don't analyze first few swaps, because they are filling the rendering
       // pipeline and may be unstable.
       if (swap_count > kIgnoreBeginFrames) {
+        // First, find the beginning of this swap.
+        size_t begin_swap_pos = 0;
+        EXPECT_TRUE(FindLastOf(events, query_begin_swaps_, end_swap_pos,
+                               &begin_swap_pos));
+
         int mouse_x = 0;
         if (mode_ == kWebGL) {
           // Trace backwards through the events to find the input event that
@@ -450,7 +470,8 @@ double LatencyTest::CalculateLatency() {
 
           // Step 1: Find the last blit (which will be the WebGL blit).
           size_t blit_pos = 0;
-          EXPECT_TRUE(FindLastOf(events, query_blits_, i, &blit_pos));
+          EXPECT_TRUE(FindLastOf(events, query_blits_, begin_swap_pos,
+                                 &blit_pos));
           // Skip this SwapBuffers if the blit has already been consumed by a
           // previous SwapBuffers. This means the current frame did not receive
           // an update from WebGL.
@@ -471,21 +492,26 @@ double LatencyTest::CalculateLatency() {
           mouse_x = events[clear_pos]->GetKnownArgAsInt("red");
         } else if (mode_ == kSoftware) {
           // The software path gets the mouse_x directly from the DIB colors.
-          mouse_x = events[i]->GetKnownArgAsInt("color");
+          mouse_x = events[begin_swap_pos]->GetKnownArgAsInt("color");
         }
 
         // Find the corresponding mouse input.
         size_t input_pos = 0;
         Query query_mouse_event = query_inputs_ &&
             Query::EventArg("x") == Query::Int(mouse_x);
-        EXPECT_TRUE(FindLastOf(events, query_mouse_event, i, &input_pos));
+        EXPECT_TRUE(FindLastOf(events, query_mouse_event, begin_swap_pos,
+                               &input_pos));
 
         // Step 4: Find the nearest onscreen SwapBuffers to this input event.
-        size_t closest_swap = 0;
+        size_t closest_swap_to_input = 0;
         size_t second_closest_swap = 0;
-        EXPECT_TRUE(FindClosest(events, query_swaps_, input_pos,
-                                       &closest_swap, &second_closest_swap));
-        int latency = CountMatches(events, query_swaps_, closest_swap, i);
+        EXPECT_TRUE(FindClosest(events, query_end_swaps_, input_pos,
+                                &closest_swap_to_input, &second_closest_swap));
+
+        // Calculate latency by counting the number of swaps between the input
+        // event and the corresponding on-screen end-of-swap.
+        int latency = CountMatches(events, query_end_swaps_,
+                                   closest_swap_to_input, end_swap_pos);
         latencies.push_back(latency);
         if (verbose_)
           printf(" %03d: %d\n", swap_count, latency);
@@ -567,7 +593,7 @@ std::string LatencyTest::GetUrl(int flags) {
 void LatencyTest::GetMeanFrameTimeMicros(int* frame_time) const {
   TraceEventVector events;
   // Search for compositor swaps (or UpdateRects in the software path).
-  analyzer_->FindEvents(query_swaps_, &events);
+  analyzer_->FindEvents(query_end_swaps_, &events);
   RateStats stats;
   ASSERT_TRUE(GetRateStats(events, &stats, NULL));
 

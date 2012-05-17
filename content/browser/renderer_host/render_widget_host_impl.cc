@@ -1358,6 +1358,8 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   // On other platforms, this will be equivalent to MPArch.RWH_OnMsgUpdateRect.
   delta = now - paint_start;
   UMA_HISTOGRAM_TIMES("MPArch.RWH_TotalPaintTime", delta);
+  UNSHIPPED_TRACE_EVENT_INSTANT1("test_latency", "UpdateRectComplete",
+      "x+y", params.bitmap_rect.x() + params.bitmap_rect.y());
 }
 
 void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,

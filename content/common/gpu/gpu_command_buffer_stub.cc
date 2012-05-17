@@ -178,6 +178,8 @@ bool GpuCommandBufferStub::HasUnprocessedCommands() {
 }
 
 void GpuCommandBufferStub::OnEcho(const IPC::Message& message) {
+  // For latency_tests.cc:
+  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnEcho");
   Send(new IPC::Message(message));
 }
