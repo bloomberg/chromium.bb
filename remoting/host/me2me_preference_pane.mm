@@ -83,6 +83,8 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
   int hash_base64_size = static_cast<int>(hash_base64.size());
   std::string hash;
   hash.resize(modp_b64_decode_len(hash_base64_size));
+
+  // modp_b64_decode_len() returns at least 1, so hash[0] is safe here.
   int hash_size = modp_b64_decode(&(hash[0]), hash_base64.data(),
                                   hash_base64_size);
   if (hash_size < 0) {
@@ -99,6 +101,9 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
          pin.data(), pin.size(),
          &(computed_hash[0]));
 
+  // Normally, a constant-time comparison function would be used, but it is
+  // unnecessary here as the "secret" is already readable by the user
+  // supplying input to this routine.
   return computed_hash == hash;
 }
 
