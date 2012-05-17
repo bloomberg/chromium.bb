@@ -121,6 +121,14 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode)
   }
   SimpleAppCacheSystem::InitializeOnUIThread(appcache_dir_.path());
 
+  // Create a new temp directory for Indexed DB storage. If this
+  // fails, WebKit uses in-memory storage.
+  if (!indexed_db_dir_.CreateUniqueTempDir()) {
+    LOG(WARNING) << "Failed to create a temp dir for Indexed DB, "
+                    "using in-memory storage.";
+    DCHECK(indexed_db_dir_.path().empty());
+  }
+
   WebKit::WebDatabase::setObserver(&database_system_);
 
   blob_registry_ = new TestShellWebBlobRegistryImpl();
@@ -324,8 +332,48 @@ TestWebKitPlatformSupport::createLocalStorageNamespace(
   return dom_storage_system_.CreateLocalStorageNamespace();
 }
 
+// Wrap a WebKit::WebIDBFactory to rewrite the data directory to
+// a scoped temp directory. In multiprocess Chromium this is rewritten
+// to a real profile directory during IPC.
+class TestWebIDBFactory : public WebKit::WebIDBFactory {
+ public:
+  TestWebIDBFactory(WebString data_dir)
+      : data_dir_(data_dir)
+      , factory_(WebKit::WebIDBFactory::create()) { }
+
+  virtual void getDatabaseNames(WebKit::WebIDBCallbacks* callbacks,
+                                const WebKit::WebSecurityOrigin& origin,
+                                WebKit::WebFrame* frame,
+                                const WebString& dataDir) {
+    factory_->getDatabaseNames(callbacks, origin, frame,
+                               dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+
+  virtual void open(const WebString& name,
+                    WebKit::WebIDBCallbacks* callbacks,
+                    const WebKit::WebSecurityOrigin& origin,
+                    WebKit::WebFrame* frame,
+                    const WebString& dataDir) {
+    factory_->open(name, callbacks, origin, frame,
+                   dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+
+  virtual void deleteDatabase(const WebString& name,
+                              WebKit::WebIDBCallbacks* callbacks,
+                              const WebKit::WebSecurityOrigin& origin,
+                              WebKit::WebFrame* frame,
+                              const WebString& dataDir) {
+    factory_->deleteDatabase(name, callbacks, origin, frame,
+                             dataDir.isEmpty() ? data_dir_ : dataDir);
+  }
+ private:
+  WebString data_dir_;
+  scoped_ptr<WebIDBFactory> factory_;
+};
+
 WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {
-  return WebKit::WebIDBFactory::create();
+  WebString path = WebString::fromUTF8(indexed_db_dir_.path().AsUTF8Unsafe());
+  return new TestWebIDBFactory(path);
 }
 
 void TestWebKitPlatformSupport::createIDBKeysFromSerializedValuesAndKeyPath(
