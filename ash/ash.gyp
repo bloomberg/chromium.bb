@@ -132,6 +132,8 @@
         'system/ime/ime_observer.h',
         'system/ime/tray_ime.cc',
         'system/ime/tray_ime.h',
+        'system/locale/tray_locale.cc',
+        'system/locale/tray_locale.h',
         'system/network/network_observer.h',
         'system/network/tray_network.cc',
         'system/network/tray_network.h',

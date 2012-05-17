@@ -4,7 +4,11 @@
 
 #include "chrome/browser/chromeos/locale_change_guard.h"
 
+#include "ash/ash_switches.h"
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -60,7 +64,7 @@ void LocaleChangeGuard::OnLogin() {
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
+void LocaleChangeGuard::RevertLocaleChange() {
   if (note_ == NULL ||
       profile_ == NULL ||
       from_locale_.empty() ||
@@ -78,6 +82,10 @@ void LocaleChangeGuard::RevertLocaleChange(const ListValue* list) {
   Browser* browser = browser::FindTabbedBrowser(profile_, false);
   if (browser)
     browser->ExecuteCommand(IDC_EXIT);
+}
+
+void LocaleChangeGuard::RevertLocaleChangeCallback(const ListValue* list) {
+  RevertLocaleChange();
 }
 
 void LocaleChangeGuard::Observe(int type,
@@ -162,6 +170,13 @@ void LocaleChangeGuard::Check() {
         "Showing locale change notification in current (not previous) language";
     PrepareChangingLocale(from_locale, to_locale);
   }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(ash::switches::kAshNotify)) {
+    ash::Shell::GetInstance()->tray()->locale_observer()->OnLocaleChanged(
+        this, cur_locale, from_locale_, to_locale_);
+    return;
+  }
+
   note_.reset(new chromeos::SystemNotification(
       profile_,
       new Delegate(this),
@@ -169,7 +184,7 @@ void LocaleChangeGuard::Check() {
       title_text_));
   note_->Show(
       message_text_, revert_link_text_,
-      base::Bind(&LocaleChangeGuard::RevertLocaleChange,
+      base::Bind(&LocaleChangeGuard::RevertLocaleChangeCallback,
                  AsWeakPtr()),
                  true,  // urgent
                  false);  // non-sticky

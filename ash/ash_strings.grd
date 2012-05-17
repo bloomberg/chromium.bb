@@ -243,6 +243,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_SMS_NUMBER" desc="Sender for SMS messagees in the system tray.">
         SMS from <ph name="PHONE_NUMBER">$1<ex>08700 776655</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE" desc="The message used for locale change notifications in the system tray.">
+        The language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE" desc="Link to revert a change.">
+        Change back to "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" (requires restart)
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_AIRPLANE_MODE" desc="The label used in the network dialog to turn on airplane mode.">
         Airplane mode
       </message>

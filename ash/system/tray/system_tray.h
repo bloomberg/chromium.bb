@@ -29,6 +29,7 @@ class CapsLockObserver;
 class ClockObserver;
 class DriveObserver;
 class IMEObserver;
+class LocaleObserver;
 class NetworkObserver;
 class PowerStatusObserver;
 class UpdateObserver;
@@ -129,6 +130,9 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   IMEObserver* ime_observer() const {
     return ime_observer_;
   }
+  LocaleObserver* locale_observer() const {
+    return locale_observer_;
+  }
   NetworkObserver* network_observer() const {
     return network_observer_;
   }
@@ -215,6 +219,7 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   ClockObserver* clock_observer_;
   DriveObserver* drive_observer_;
   IMEObserver* ime_observer_;
+  LocaleObserver* locale_observer_;
   NetworkObserver* network_observer_;
   PowerStatusObserver* power_status_observer_;
   UpdateObserver* update_observer_;

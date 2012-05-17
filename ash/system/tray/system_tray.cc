@@ -13,6 +13,7 @@
 #include "ash/system/date/tray_date.h"
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
+#include "ash/system/locale/tray_locale.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/network/tray_sms.h"
 #include "ash/system/power/power_status_observer.h"
@@ -162,6 +163,7 @@ SystemTray::SystemTray()
       clock_observer_(NULL),
       drive_observer_(NULL),
       ime_observer_(NULL),
+      locale_observer_(NULL),
       network_observer_(NULL),
       power_status_observer_(NULL),
       update_observer_(NULL),
@@ -214,6 +216,7 @@ void SystemTray::CreateItems() {
   internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
   internal::TrayDrive* tray_drive = new internal::TrayDrive;
   internal::TrayIME* tray_ime = new internal::TrayIME;
+  internal::TrayLocale* tray_locale = new internal::TrayLocale;
   internal::TrayUpdate* tray_update = new internal::TrayUpdate;
 
   accessibility_observer_ = tray_accessibility;
@@ -224,6 +227,7 @@ void SystemTray::CreateItems() {
   clock_observer_ = tray_date;
   drive_observer_ = tray_drive;
   ime_observer_ = tray_ime;
+  locale_observer_ = tray_locale;
   network_observer_ = tray_network;
   power_status_observer_ = tray_power;
   update_observer_ = tray_update;
@@ -236,6 +240,7 @@ void SystemTray::CreateItems() {
   AddTrayItem(tray_sms);
   AddTrayItem(tray_drive);
   AddTrayItem(tray_ime);
+  AddTrayItem(tray_locale);
   AddTrayItem(tray_volume);
   AddTrayItem(tray_brightness);
   AddTrayItem(tray_update);

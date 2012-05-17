@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "ash/system/locale/locale_observer.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,10 +30,15 @@ namespace chromeos {
 // (based on synchronized user preference).  If so: shows notification that
 // allows user to revert change.
 class LocaleChangeGuard : public content::NotificationObserver,
+                          public ash::LocaleObserver::Delegate,
                           public base::SupportsWeakPtr<LocaleChangeGuard> {
  public:
   explicit LocaleChangeGuard(Profile* profile);
   virtual ~LocaleChangeGuard();
+
+  // ash::LocaleChangeDelegate implementation.
+  virtual void AcceptLocaleChange() OVERRIDE;
+  virtual void RevertLocaleChange() OVERRIDE;
 
   // Called just before changing locale.
   void PrepareChangingLocale(
@@ -44,8 +50,7 @@ class LocaleChangeGuard : public content::NotificationObserver,
  private:
   class Delegate;
 
-  void RevertLocaleChange(const base::ListValue* list);
-  void AcceptLocaleChange();
+  void RevertLocaleChangeCallback(const base::ListValue* list);
   void Check();
 
   // content::NotificationObserver implementation.
