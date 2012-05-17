@@ -11,6 +11,7 @@
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "grit/generated_resources.h"
@@ -50,7 +51,7 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
       return download_item_->CanShowInFolder() &&
           !download_item_->IsTemporary() &&
           (!Extension::IsExtension(download_item_->GetTargetName()) ||
-           download_crx_util::ShouldOpenExtensionDownload(*download_item_));
+           extensions::switch_utils::IsOffStoreInstallEnabled());
     case ALWAYS_OPEN_TYPE:
       // For temporary downloads, the target filename might be a temporary
       // filename. Don't base an "Always open" decision based on it. Also

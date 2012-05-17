@@ -32,6 +32,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/download_item.h"
@@ -92,12 +93,12 @@ bool ChromeDownloadManagerDelegate::IsExtensionDownload(
   if (item->PromptUserForSaveLocation())
     return false;
 
-  if ((item->GetMimeType() != Extension::kMimeType) &&
-      !UserScript::IsURLUserScript(item->GetURL(), item->GetMimeType())) {
+  if (item->GetMimeType() == Extension::kMimeType ||
+      UserScript::IsURLUserScript(item->GetURL(), item->GetMimeType())) {
+    return true;
+  } else {
     return false;
   }
-
-  return download_crx_util::ShouldOpenExtensionDownload(*item);
 }
 
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
@@ -253,22 +254,28 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
   if (IsExtensionDownload(item)) {
-    scoped_refptr<CrxInstaller> crx_installer =
-        download_crx_util::OpenChromeExtension(profile_, *item);
+    // We can open extensions if either they came from the store, or
+    // off-store-install is enabled.
+    if (extensions::switch_utils::IsOffStoreInstallEnabled() ||
+        WebstoreInstaller::GetAssociatedApproval(*item)) {
+      scoped_refptr<CrxInstaller> crx_installer =
+          download_crx_util::OpenChromeExtension(profile_, *item);
 
-    // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
-    // will call DelayedDownloadOpened() on this item.  If this DownloadItem is
-    // not around when CRX_INSTALLER_DONE fires, Complete() will not be called.
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_CRX_INSTALLER_DONE,
-                   content::Source<CrxInstaller>(crx_installer.get()));
+      // CRX_INSTALLER_DONE will fire when the install completes.  Observe()
+      // will call DelayedDownloadOpened() on this item.  If this DownloadItem
+      // is not around when CRX_INSTALLER_DONE fires, Complete() will not be
+      // called.
+      registrar_.Add(this,
+                     chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                     content::Source<CrxInstaller>(crx_installer.get()));
 
-    crx_installers_[crx_installer.get()] = item->GetId();
-    // The status text and percent complete indicator will change now
-    // that we are installing a CRX.  Update observers so that they pick
-    // up the change.
-    item->UpdateObservers();
-    return false;
+      crx_installers_[crx_installer.get()] = item->GetId();
+      // The status text and percent complete indicator will change now
+      // that we are installing a CRX.  Update observers so that they pick
+      // up the change.
+      item->UpdateObservers();
+      return false;
+    }
   }
 
   if (ShouldOpenWithWebIntents(item)) {
@@ -693,11 +700,12 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
     return false;
 
   // Extensions that are not from the gallery are considered dangerous.
-  if (IsExtensionDownload(&download)) {
-    ExtensionService* service = profile_->GetExtensionService();
-    if (!service || !service->IsDownloadFromGallery(download.GetURL(),
-                                                    download.GetReferrerUrl()))
-      return true;
+  // When off-store install is disabled we skip this, since in this case, we
+  // will not offer to install the extension.
+  if (extensions::switch_utils::IsOffStoreInstallEnabled() &&
+      IsExtensionDownload(&download) &&
+      !WebstoreInstaller::GetAssociatedApproval(download)) {
+    return true;
   }
 
   // Anything the user has marked auto-open is OK if it's user-initiated.

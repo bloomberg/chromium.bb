@@ -17,8 +17,8 @@ bool IsOffStoreInstallEnabled() {
 #if defined(USE_AURA)
   return true;
 #else
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableOffStoreExtensionInstall);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableOffStoreExtensionInstall);
 #endif
 }
 

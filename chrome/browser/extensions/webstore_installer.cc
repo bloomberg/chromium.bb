@@ -124,7 +124,28 @@ void GetDownloadFilePath(
 WebstoreInstaller::Approval::Approval()
     : profile(NULL),
       use_app_installed_bubble(false),
-      skip_post_install_ui(false) {
+      skip_post_install_ui(false),
+      skip_install_dialog(false) {
+}
+
+scoped_ptr<WebstoreInstaller::Approval>
+WebstoreInstaller::Approval::CreateWithInstallPrompt(Profile* profile) {
+  scoped_ptr<Approval> result(new Approval());
+  result->profile = profile;
+  return result.Pass();
+}
+
+scoped_ptr<WebstoreInstaller::Approval>
+WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
+    Profile* profile,
+    const std::string& extension_id,
+    scoped_ptr<base::DictionaryValue> parsed_manifest) {
+  scoped_ptr<Approval> result(new Approval());
+  result->extension_id = extension_id;
+  result->profile = profile;
+  result->parsed_manifest = parsed_manifest.Pass();
+  result->skip_install_dialog = true;
+  return result.Pass();
 }
 
 WebstoreInstaller::Approval::~Approval() {}
@@ -285,15 +306,6 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
     return;
   }
 
-  // TODO(mihaip): For inline installs, we pretend like the referrer is the
-  // gallery, even though this could be an inline install, in order to pass the
-  // checks in ExtensionService::IsDownloadFromGallery. We should instead pass
-  // the real referrer, track if this is an inline install in the whitelist
-  // entry and look that up when checking that this is a valid download.
-  GURL referrer = controller_->GetActiveEntry()->GetURL();
-  if (flags_ & FLAG_INLINE_INSTALL)
-    referrer = GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id_);
-
   content::DownloadSaveInfo save_info;
   save_info.file_path = file;
 
@@ -305,7 +317,7 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(
           controller_->GetWebContents(), download_url_, save_info));
-  params->set_referrer(referrer);
+  params->set_referrer(controller_->GetActiveEntry()->GetURL());
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted, this));
   profile_->GetDownloadManager()->DownloadUrl(params.Pass());
 }

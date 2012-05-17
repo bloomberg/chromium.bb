@@ -86,15 +86,16 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
     return;
 
   CHECK(profile_->IsSameProfile(approval->profile));
-
   client_->set_use_app_installed_bubble(approval->use_app_installed_bubble);
   client_->set_skip_post_install_ui(approval->skip_post_install_ui);
 
-  // Mark the extension as approved, but save the expected manifest and ID
-  // so we can check that they match the CRX's.
-  approved_ = true;
-  expected_manifest_.reset(approval->parsed_manifest->DeepCopy());
-  expected_id_ = approval->extension_id;
+  if (approval->skip_install_dialog) {
+    // Mark the extension as approved, but save the expected manifest and ID
+    // so we can check that they match the CRX's.
+    approved_ = true;
+    expected_manifest_.reset(approval->parsed_manifest->DeepCopy());
+    expected_id_ = approval->extension_id;
+  }
 }
 
 CrxInstaller::~CrxInstaller() {

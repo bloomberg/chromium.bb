@@ -308,10 +308,13 @@ void WebIntentPickerController::OnInlineDispositionWebContentsCreated(
 
 void WebIntentPickerController::OnExtensionInstallRequested(
     const std::string& id) {
+  scoped_ptr<WebstoreInstaller::Approval> approval(
+      WebstoreInstaller::Approval::CreateWithInstallPrompt(
+          wrapper_->profile()));
+
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       wrapper_->profile(), this, &wrapper_->web_contents()->GetController(), id,
-      scoped_ptr<WebstoreInstaller::Approval>(NULL),
-      WebstoreInstaller::FLAG_INLINE_INSTALL);
+      approval.Pass(), WebstoreInstaller::FLAG_INLINE_INSTALL);
 
   pending_async_count_++;
   installer->Start();

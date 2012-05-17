@@ -156,10 +156,11 @@ void BundleInstaller::CompleteInstall(NavigationController* controller,
     // Since we've already confirmed the permissions, create an approval that
     // lets CrxInstaller bypass the prompt.
     scoped_ptr<WebstoreInstaller::Approval> approval(
-        new WebstoreInstaller::Approval);
-    approval->extension_id = i->first;
-    approval->profile = profile_;
-    approval->parsed_manifest.reset(parsed_manifests_[i->first]->DeepCopy());
+        WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
+            profile_,
+            i->first,
+            scoped_ptr<base::DictionaryValue>(
+                parsed_manifests_[i->first]->DeepCopy())));
     approval->use_app_installed_bubble = false;
     approval->skip_post_install_ui = true;
 
