@@ -145,6 +145,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // preview is displayed.
   void HandleGetInitialSettings(const base::ListValue* args);
 
+  // Reports histogram data for the print destination UI.
+  void HandleReportDestinationEvent(const base::ListValue* args);
+
   void SendInitialSettings(
       const std::string& default_printer,
       const std::string& cloud_print_data);
@@ -195,6 +198,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // A count of how many requests received to show manage printers dialog.
   int manage_printers_dialog_request_count_;
+  int manage_cloud_printers_dialog_request_count_;
 
   // Whether we have already logged a failed print preview.
   bool reported_failed_preview_;

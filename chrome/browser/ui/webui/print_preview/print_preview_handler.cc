@@ -96,6 +96,15 @@ enum PrintSettingsBuckets {
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
+enum PrintDestinationBuckets {
+  DESTINATION_SHOWN,
+  DESTINATION_CLOSED_CHANGED,
+  DESTINATION_CLOSED_UNCHANGED,
+  SIGNIN_PROMPT,
+  SIGNIN_TRIGGERED,
+  PRINT_DESTINATION_BUCKET_BOUNDARY
+};
+
 void ReportUserActionHistogram(enum UserActionBuckets event) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.UserAction", event,
                             USERACTION_BUCKET_BOUNDARY);
@@ -104,6 +113,11 @@ void ReportUserActionHistogram(enum UserActionBuckets event) {
 void ReportPrintSettingHistogram(enum PrintSettingsBuckets setting) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.PrintSettings", setting,
                             PRINT_SETTINGS_BUCKET_BOUNDARY);
+}
+
+void ReportPrintDestinationHistogram(enum PrintDestinationBuckets event) {
+  UMA_HISTOGRAM_ENUMERATION("PrintPreview.DestinationAction", event,
+                            PRINT_DESTINATION_BUCKET_BOUNDARY);
 }
 
 // Name of a dictionary fielad holdong cloud print related data;
@@ -211,6 +225,7 @@ PrintPreviewHandler::PrintPreviewHandler()
     : print_backend_(printing::PrintBackend::CreateInstance(NULL)),
       regenerate_preview_request_count_(0),
       manage_printers_dialog_request_count_(0),
+      manage_cloud_printers_dialog_request_count_(0),
       reported_failed_preview_(false),
       has_logged_printers_count_(false) {
   ReportUserActionHistogram(PREVIEW_STARTED);
@@ -260,6 +275,9 @@ void PrintPreviewHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getInitialSettings",
       base::Bind(&PrintPreviewHandler::HandleGetInitialSettings,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("reportDestinationEvent",
+      base::Bind(&PrintPreviewHandler::HandleReportDestinationEvent,
                  base::Unretained(this)));
 }
 
@@ -537,7 +555,6 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint() {
   // Record the number of times the user asks to print via cloud print
   // instead of the print preview dialog.
   ReportStats();
-  ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
 
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       web_ui()->GetController());
@@ -563,6 +580,7 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint() {
 }
 
 void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
+  ++manage_cloud_printers_dialog_request_count_;
   Browser* browser = BrowserList::GetLastActive();
   if (browser != NULL)
     browser->OpenURL(OpenURLParams(
@@ -609,6 +627,8 @@ void PrintPreviewHandler::HandleClosePreviewTab(const ListValue* /*args*/) {
 void PrintPreviewHandler::ReportStats() {
   UMA_HISTOGRAM_COUNTS("PrintPreview.ManagePrinters",
                        manage_printers_dialog_request_count_);
+  UMA_HISTOGRAM_COUNTS("PrintPreview.ManageCloudPrinters",
+                       manage_cloud_printers_dialog_request_count_);
 }
 
 void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
@@ -635,6 +655,18 @@ void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&PrintSystemTaskProxy::GetDefaultPrinter, task.get()));
+}
+
+void PrintPreviewHandler::HandleReportDestinationEvent(const ListValue* args) {
+  int event_number;
+  bool ret = args->GetInteger(0, &event_number);
+  if (!ret)
+    return;
+  enum PrintDestinationBuckets event =
+      static_cast<enum PrintDestinationBuckets>(event_number);
+  if (event >= PRINT_DESTINATION_BUCKET_BOUNDARY)
+    return;
+  ReportPrintDestinationHistogram(event);
 }
 
 void PrintPreviewHandler::SendInitialSettings(
@@ -710,6 +742,7 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
 
 void PrintPreviewHandler::SendCloudPrintJob(const DictionaryValue& settings,
                                             std::string print_ticket) {
+  ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
   scoped_refptr<base::RefCountedBytes> data;
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       web_ui()->GetController());
