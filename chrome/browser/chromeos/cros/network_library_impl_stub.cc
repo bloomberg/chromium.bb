@@ -26,6 +26,7 @@ NetworkLibraryImplStub::NetworkLibraryImplStub()
 NetworkLibraryImplStub::~NetworkLibraryImplStub() {
   disabled_wifi_networks_.clear();
   disabled_cellular_networks_.clear();
+  disabled_wimax_networks_.clear();
 }
 
 void NetworkLibraryImplStub::Init() {
@@ -33,7 +34,8 @@ void NetworkLibraryImplStub::Init() {
 
   // Devices
   int devices =
-      (1 << TYPE_ETHERNET) | (1 << TYPE_WIFI) | (1 << TYPE_CELLULAR);
+      (1 << TYPE_ETHERNET) | (1 << TYPE_WIFI) | (1 << TYPE_CELLULAR) |
+      (1 << TYPE_WIMAX);
   available_devices_ = devices;
   enabled_devices_ = devices;
   connected_devices_ = devices;
@@ -233,6 +235,21 @@ void NetworkLibraryImplStub::Init() {
   CellularDataPlanVector* data_plan_vector2 = new CellularDataPlanVector;
   data_plan_vector2->push_back(low_data_plan);
   UpdateCellularDataPlan(cellular5->service_path(), data_plan_vector2);
+
+  WimaxNetwork* wimax1 = new WimaxNetwork("wimax1");
+  wimax1->set_name("Fake WiMAX Protected");
+  wimax1->set_strength(75);
+  wimax1->set_connectable(true);
+  wimax1->set_eap_identity("WiMAX User 1");
+  wimax1->set_passphrase_required(true);
+  AddStubNetwork(wimax1, PROFILE_NONE);
+
+  WimaxNetwork* wimax2 = new WimaxNetwork("wimax2");
+  wimax2->set_name("Fake WiMAX Open");
+  wimax2->set_strength(50);
+  wimax2->set_connected(true);
+  wimax2->set_passphrase_required(false);
+  AddStubNetwork(wimax2, PROFILE_NONE);
 
   VirtualNetwork* vpn1 = new VirtualNetwork("vpn1");
   vpn1->set_name("Fake VPN1");
@@ -503,6 +520,9 @@ void NetworkLibraryImplStub::CallEnableNetworkDeviceType(
     if (device == TYPE_WIFI && !wifi_enabled()) {
       wifi_networks_.swap(disabled_wifi_networks_);
       disabled_wifi_networks_.clear();
+    } else if (device == TYPE_WIMAX && !wimax_enabled()) {
+      wimax_networks_.swap(disabled_wimax_networks_);
+      disabled_wimax_networks_.clear();
     } else if (device == TYPE_CELLULAR && !cellular_enabled()) {
       cellular_networks_.swap(disabled_cellular_networks_);
       disabled_cellular_networks_.clear();
@@ -514,6 +534,11 @@ void NetworkLibraryImplStub::CallEnableNetworkDeviceType(
       wifi_networks_.clear();
       if (active_wifi_)
         DisconnectFromNetwork(active_wifi_);
+    } else if (device == TYPE_WIMAX && wifi_enabled()) {
+        wimax_networks_.swap(disabled_wimax_networks_);
+        wimax_networks_.clear();
+        if (active_wifi_)
+          DisconnectFromNetwork(active_wimax_);
     } else if (device == TYPE_CELLULAR && cellular_enabled()) {
       cellular_networks_.swap(disabled_cellular_networks_);
       cellular_networks_.clear();

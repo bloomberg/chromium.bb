@@ -280,6 +280,8 @@ void InternetOptionsHandler::GetLocalizedValues(
 
     { "ethernetTitle", IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET },
     { "wifiTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK },
+    // TODO(zelidrag): Change details title to Wimax once we get strings.
+    { "wimaxTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK },
     { "cellularTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK },
     { "vpnTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK },
     { "airplaneModeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_AIRPLANE_MODE },
@@ -335,6 +337,9 @@ void InternetOptionsHandler::GetLocalizedValues(
     { "connectButton", IDS_OPTIONS_SETTINGS_CONNECT },
     { "disconnectButton", IDS_OPTIONS_SETTINGS_DISCONNECT },
     { "viewAccountButton", IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT },
+
+    // TODO(zelidrag): Change details title to Wimax once we get strings.
+    { "wimaxConnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION },
 
     // Wifi Tab.
 
@@ -471,10 +476,10 @@ void InternetOptionsHandler::RegisterMessages() {
       base::Bind(&InternetOptionsHandler::DisableWifiCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("enableCellular",
-      base::Bind(&InternetOptionsHandler::EnableCellularCallback,
+      base::Bind(&InternetOptionsHandler::EnableMobileCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("disableCellular",
-      base::Bind(&InternetOptionsHandler::DisableCellularCallback,
+      base::Bind(&InternetOptionsHandler::DisableMobileCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("buyDataPlan",
       base::Bind(&InternetOptionsHandler::BuyDataPlanCallback,
@@ -504,14 +509,14 @@ void InternetOptionsHandler::DisableWifiCallback(const ListValue* args) {
   cros_->EnableWifiNetworkDevice(false);
 }
 
-void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
+void InternetOptionsHandler::EnableMobileCallback(const ListValue* args) {
   // TODO(nkostylev): Code duplication, see NetworkMenu::ToggleCellular().
-  const chromeos::NetworkDevice* cellular = cros_->FindCellularDevice();
-  if (!cellular) {
-    LOG(ERROR) << "Didn't find cellular device, it should have been available.";
-    cros_->EnableCellularNetworkDevice(true);
-  } else if (!cellular->is_sim_locked()) {
-    if (cellular->is_sim_absent()) {
+  const chromeos::NetworkDevice* mobile = cros_->FindMobileDevice();
+  if (!mobile) {
+    LOG(ERROR) << "Didn't find mobile device, it should have been available.";
+    cros_->EnableMobileNetworkDevice(true);
+  } else if (!mobile->is_sim_locked()) {
+    if (mobile->is_sim_absent()) {
       std::string setup_url;
       chromeos::MobileConfig* config = chromeos::MobileConfig::GetInstance();
       if (config->IsReady()) {
@@ -526,7 +531,7 @@ void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
         // TODO(nkostylev): Show generic error message. http://crosbug.com/15444
       }
     } else {
-      cros_->EnableCellularNetworkDevice(true);
+      cros_->EnableMobileNetworkDevice(true);
     }
   } else {
     chromeos::SimDialogDelegate::ShowDialog(GetNativeWindow(),
@@ -534,8 +539,8 @@ void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
   }
 }
 
-void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
-  cros_->EnableCellularNetworkDevice(false);
+void InternetOptionsHandler::DisableMobileCallback(const ListValue* args) {
+  cros_->EnableMobileNetworkDevice(false);
 }
 
 void InternetOptionsHandler::ShowMorePlanInfoCallback(const ListValue* args) {
@@ -647,9 +652,16 @@ void InternetOptionsHandler::MonitorNetworks() {
   const chromeos::WifiNetwork* wifi_network = cros_->wifi_network();
   if (wifi_network)
     cros_->AddNetworkObserver(wifi_network->service_path(), this);
-  // Always monitor the cellular networks, if any, so that changes
+
+  // Always monitor all mobile networks, if any, so that changes
   // in network technology, roaming status, and signal strength
   // will be shown.
+  const chromeos::WimaxNetworkVector& wimax_networks =
+      cros_->wimax_networks();
+  for (size_t i = 0; i < wimax_networks.size(); ++i) {
+    chromeos::WimaxNetwork* wimax_network = wimax_networks[i];
+    cros_->AddNetworkObserver(wimax_network->service_path(), this);
+  }
   const chromeos::CellularNetworkVector& cell_networks =
       cros_->cellular_networks();
   for (size_t i = 0; i < cell_networks.size(); ++i) {
@@ -870,12 +882,13 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
                        preferred_ui_data);
   }
   chromeos::NetworkPropertyUIData auto_connect_ui_data(ui_data);
-  if (type == chromeos::TYPE_WIFI)
+  if (type == chromeos::TYPE_WIFI) {
     auto_connect_ui_data.ParseOncProperty(
         ui_data, onc,
         base::StringPrintf("%s.%s",
                            chromeos::onc::kWiFi,
                            chromeos::onc::wifi::kAutoConnect));
+  }
   SetValueDictionary(&dictionary, "autoConnect",
                      Value::CreateBooleanValue(network->auto_connect()),
                      auto_connect_ui_data);
@@ -888,6 +901,15 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       LOG(WARNING) << "Cannot find network " << network->service_path();
     } else {
       PopulateWifiDetails(wifi, &dictionary);
+    }
+  } else if (type == chromeos::TYPE_WIMAX) {
+    dictionary.SetBoolean("deviceConnected", cros_->wimax_connected());
+    const chromeos::WimaxNetwork* wimax =
+        cros_->FindWimaxNetworkByPath(network->service_path());
+    if (!wimax) {
+      LOG(WARNING) << "Cannot find network " << network->service_path();
+    } else {
+      PopulateWimaxDetails(wimax, &dictionary);
     }
   } else if (type == chromeos::TYPE_CELLULAR) {
     dictionary.SetBoolean("deviceConnected", cros_->cellular_connected());
@@ -928,6 +950,19 @@ void InternetOptionsHandler::PopulateWifiDetails(
   dictionary->SetString("bssid", wifi->bssid());
   dictionary->SetInteger("frequency", wifi->frequency());
   dictionary->SetInteger("strength", wifi->strength());
+}
+
+void InternetOptionsHandler::PopulateWimaxDetails(
+    const chromeos::WimaxNetwork* wimax,
+    DictionaryValue* dictionary) {
+  bool remembered = (wimax->profile_type() != chromeos::PROFILE_NONE);
+  dictionary->SetBoolean("remembered", remembered);
+  bool shared = wimax->profile_type() == chromeos::PROFILE_SHARED;
+  dictionary->SetBoolean("shared", shared);
+  if (wimax->passphrase_required())
+    dictionary->SetString("identity", wimax->eap_identity());
+
+  dictionary->SetInteger("strength", wimax->strength());
 }
 
 DictionaryValue* InternetOptionsHandler::CreateDictionaryFromCellularApn(
@@ -1085,6 +1120,8 @@ void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
       PopulateDictionaryDetails(ether);
   } else if (type == chromeos::TYPE_WIFI) {
     HandleWifiButtonClick(service_path, command);
+  } else if (type == chromeos::TYPE_WIMAX) {
+    HandleWimaxButtonClick(service_path, command);
   } else if (type == chromeos::TYPE_CELLULAR) {
     HandleCellularButtonClick(service_path, command);
   } else if (type == chromeos::TYPE_VPN) {
@@ -1122,6 +1159,28 @@ void InternetOptionsHandler::HandleWifiButtonClick(
       cros_->DisconnectFromNetwork(wifi);
     } else if (command == "options") {
       PopulateDictionaryDetails(wifi);
+    }
+  }
+}
+
+void InternetOptionsHandler::HandleWimaxButtonClick(
+    const std::string& service_path,
+    const std::string& command) {
+  chromeos::WimaxNetwork* wimax = NULL;
+  if (command == "forget") {
+    cros_->ForgetNetwork(service_path);
+  } else if ((wimax = cros_->FindWimaxNetworkByPath(service_path))) {
+    if (command == "connect") {
+      wimax->SetEnrollmentDelegate(
+          chromeos::CreateEnrollmentDelegate(GetNativeWindow(), wimax->name(),
+              ProfileManager::GetLastUsedProfile()));
+      wimax->AttemptConnection(base::Bind(&InternetOptionsHandler::DoConnect,
+                                          weak_factory_.GetWeakPtr(),
+                                          wimax));
+    } else if (command == "disconnect") {
+      cros_->DisconnectFromNetwork(wimax);
+    } else if (command == "options") {
+      PopulateDictionaryDetails(wimax);
     }
   }
 }
@@ -1185,14 +1244,25 @@ void InternetOptionsHandler::DoConnect(chromeos::Network* network) {
       // Connection failures are responsible for updating the UI, including
       // reopening dialogs.
     }
-  }
-  if (network->type() == chromeos::TYPE_WIFI) {
+  } else if (network->type() == chromeos::TYPE_WIFI) {
     chromeos::WifiNetwork* wifi = static_cast<chromeos::WifiNetwork*>(network);
     if (wifi->IsPassphraseRequired()) {
       // Show the connection UI if we require a passphrase.
       chromeos::NetworkConfigView::Show(wifi, GetNativeWindow());
     } else {
       cros_->ConnectToWifiNetwork(wifi);
+      // Connection failures are responsible for updating the UI, including
+      // reopening dialogs.
+    }
+  } else if (network->type() == chromeos::TYPE_WIMAX) {
+    chromeos::WimaxNetwork* wimax =
+        static_cast<chromeos::WimaxNetwork*>(network);
+    if (wimax->passphrase_required()) {
+      // Show the connection UI if we require a passphrase.
+      // TODO(stavenjb): Implament WiMAX connection UI.
+      chromeos::NetworkConfigView::Show(wimax, GetNativeWindow());
+    } else {
+      cros_->ConnectToWimaxNetwork(wimax);
       // Connection failures are responsible for updating the UI, including
       // reopening dialogs.
     }
@@ -1236,6 +1306,14 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WifiNetworkVector& wifi_networks = cros_->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
+    NetworkInfoDictionary network_dict(*it);
+    network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
+    list->Append(network_dict.BuildDictionary());
+  }
+
+  const chromeos::WimaxNetworkVector& wimax_networks = cros_->wimax_networks();
+  for (chromeos::WimaxNetworkVector::const_iterator it =
+      wimax_networks.begin(); it != wimax_networks.end(); ++it) {
     NetworkInfoDictionary network_dict(*it);
     network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
     list->Append(network_dict.BuildDictionary());
@@ -1325,9 +1403,9 @@ void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
   dictionary->SetBoolean("wifiAvailable", cros_->wifi_available());
   dictionary->SetBoolean("wifiBusy", cros_->wifi_busy());
   dictionary->SetBoolean("wifiEnabled", cros_->wifi_enabled());
-  dictionary->SetBoolean("cellularAvailable", cros_->cellular_available());
-  dictionary->SetBoolean("cellularBusy", cros_->cellular_busy());
-  dictionary->SetBoolean("cellularEnabled", cros_->cellular_enabled());
+  dictionary->SetBoolean("cellularAvailable", cros_->mobile_available());
+  dictionary->SetBoolean("cellularBusy", cros_->mobile_busy());
+  dictionary->SetBoolean("cellularEnabled", cros_->mobile_enabled());
   // TODO(kevers): The use of 'offline_mode' is not quite correct.  Update once
   // we have proper back-end support.
   dictionary->SetBoolean("airplaneMode", cros_->offline_mode());

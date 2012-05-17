@@ -51,6 +51,7 @@ NetworkLibraryImplBase::NetworkLibraryImplBase()
     : ethernet_(NULL),
       active_wifi_(NULL),
       active_cellular_(NULL),
+      active_wimax_(NULL),
       active_virtual_(NULL),
       available_devices_(0),
       enabled_devices_(0),
@@ -261,6 +262,26 @@ bool NetworkLibraryImplBase::cellular_connecting() const {
 bool NetworkLibraryImplBase::cellular_connected() const {
   return active_cellular_ ? active_cellular_->connected() : false;
 }
+const WimaxNetwork* NetworkLibraryImplBase::wimax_network() const {
+  return active_wimax_;
+}
+bool NetworkLibraryImplBase::wimax_connecting() const {
+  return active_wimax_ ? active_wimax_->connecting() : false;
+}
+bool NetworkLibraryImplBase::wimax_connected() const {
+  return active_wimax_ ? active_wimax_->connected() : false;
+}
+const Network* NetworkLibraryImplBase::mobile_network() const {
+  return active_cellular_ ?
+      static_cast<Network*>(active_cellular_) :
+      static_cast<Network*>(active_wimax_);
+}
+bool NetworkLibraryImplBase::mobile_connecting() const {
+  return cellular_connecting() || wimax_connecting();
+}
+bool NetworkLibraryImplBase::mobile_connected() const {
+  return wimax_connecting() || wimax_connected();
+}
 const VirtualNetwork* NetworkLibraryImplBase::virtual_network() const {
   return active_virtual_;
 }
@@ -285,6 +306,9 @@ const WifiNetworkVector&
 }
 const CellularNetworkVector& NetworkLibraryImplBase::cellular_networks() const {
   return cellular_networks_;
+}
+const WimaxNetworkVector& NetworkLibraryImplBase::wimax_networks() const {
+  return wimax_networks_;
 }
 const VirtualNetworkVector& NetworkLibraryImplBase::virtual_networks() const {
   return virtual_networks_;
@@ -317,6 +341,8 @@ const Network* NetworkLibraryImplBase::active_network() const {
     result = highest_priority(result, active_wifi_);
   if (active_cellular_ && active_cellular_->is_active())
     result = highest_priority(result, active_cellular_);
+  if (active_wimax_ && active_wimax_->is_active())
+    result = highest_priority(result, active_wimax_);
   if (active_virtual_ && active_virtual_->is_active())
     result = highest_priority(result, active_virtual_);
   return result;
@@ -330,6 +356,8 @@ const Network* NetworkLibraryImplBase::connected_network() const {
     result = highest_priority(result, active_wifi_);
   if (active_cellular_ && active_cellular_->connected())
     result = highest_priority(result, active_cellular_);
+  if (active_wimax_ && active_wimax_->connected())
+    result = highest_priority(result, active_wimax_);
   return result;
 }
 
@@ -341,6 +369,8 @@ const Network* NetworkLibraryImplBase::connecting_network() const {
     return wifi_network();
   else if (cellular_connecting())
     return cellular_network();
+  else if (wimax_connecting())
+    return wimax_network();
   return NULL;
 }
 
@@ -352,8 +382,16 @@ bool NetworkLibraryImplBase::wifi_available() const {
   return available_devices_ & (1 << TYPE_WIFI);
 }
 
+bool NetworkLibraryImplBase::wimax_available() const {
+  return available_devices_ & (1 << TYPE_WIMAX);
+}
+
 bool NetworkLibraryImplBase::cellular_available() const {
   return available_devices_ & (1 << TYPE_CELLULAR);
+}
+
+bool NetworkLibraryImplBase::mobile_available() const {
+  return cellular_available() || wimax_available();
 }
 
 bool NetworkLibraryImplBase::ethernet_enabled() const {
@@ -364,8 +402,16 @@ bool NetworkLibraryImplBase::wifi_enabled() const {
   return enabled_devices_ & (1 << TYPE_WIFI);
 }
 
+bool NetworkLibraryImplBase::wimax_enabled() const {
+  return enabled_devices_ & (1 << TYPE_WIMAX);
+}
+
 bool NetworkLibraryImplBase::cellular_enabled() const {
   return enabled_devices_ & (1 << TYPE_CELLULAR);
+}
+
+bool NetworkLibraryImplBase::mobile_enabled() const {
+  return cellular_enabled() || wimax_enabled();
 }
 
 bool NetworkLibraryImplBase::ethernet_busy() const {
@@ -376,8 +422,16 @@ bool NetworkLibraryImplBase::wifi_busy() const {
   return busy_devices_ & (1 << TYPE_WIFI);
 }
 
+bool NetworkLibraryImplBase::wimax_busy() const {
+  return busy_devices_ & (1 << TYPE_WIMAX);
+}
+
 bool NetworkLibraryImplBase::cellular_busy() const {
   return busy_devices_ & (1 << TYPE_CELLULAR);
+}
+
+bool NetworkLibraryImplBase::mobile_busy() const {
+  return cellular_busy() || wimax_busy();
 }
 
 bool NetworkLibraryImplBase::wifi_scanning() const {
@@ -425,30 +479,27 @@ NetworkDevice* NetworkLibraryImplBase::FindNetworkDeviceByPath(
 }
 
 const NetworkDevice* NetworkLibraryImplBase::FindCellularDevice() const {
-  for (NetworkDeviceMap::const_iterator iter = device_map_.begin();
-       iter != device_map_.end(); ++iter) {
-    if (iter->second && iter->second->type() == TYPE_CELLULAR)
-      return iter->second;
-  }
-  return NULL;
+  return FindDeviceByType(TYPE_CELLULAR);
 }
 
 const NetworkDevice* NetworkLibraryImplBase::FindEthernetDevice() const {
-  for (NetworkDeviceMap::const_iterator iter = device_map_.begin();
-       iter != device_map_.end(); ++iter) {
-    if (iter->second->type() == TYPE_ETHERNET)
-      return iter->second;
-  }
-  return NULL;
+  return FindDeviceByType(TYPE_ETHERNET);
 }
 
 const NetworkDevice* NetworkLibraryImplBase::FindWifiDevice() const {
-  for (NetworkDeviceMap::const_iterator iter = device_map_.begin();
-       iter != device_map_.end(); ++iter) {
-    if (iter->second->type() == TYPE_WIFI)
-      return iter->second;
-  }
-  return NULL;
+  return FindDeviceByType(TYPE_WIFI);
+}
+
+const NetworkDevice* NetworkLibraryImplBase::FindWimaxDevice() const {
+  return FindDeviceByType(TYPE_WIMAX);
+}
+
+const NetworkDevice* NetworkLibraryImplBase::FindMobileDevice() const {
+  const NetworkDevice* device = FindDeviceByType(TYPE_CELLULAR);
+  if (device)
+    return device;
+
+  return FindDeviceByType(TYPE_WIMAX);
 }
 
 Network* NetworkLibraryImplBase::FindNetworkByPath(
@@ -471,7 +522,8 @@ WirelessNetwork* NetworkLibraryImplBase::FindWirelessNetworkByPath(
     const std::string& path) const {
   Network* network = FindNetworkByPath(path);
   if (network &&
-      (network->type() == TYPE_WIFI || network->type() == TYPE_CELLULAR))
+      (network->type() == TYPE_WIFI || network->type() == TYPE_WIMAX ||
+           network->type() == TYPE_CELLULAR))
     return static_cast<WirelessNetwork*>(network);
   return NULL;
 }
@@ -481,6 +533,14 @@ WifiNetwork* NetworkLibraryImplBase::FindWifiNetworkByPath(
   Network* network = FindNetworkByPath(path);
   if (network && network->type() == TYPE_WIFI)
     return static_cast<WifiNetwork*>(network);
+  return NULL;
+}
+
+WimaxNetwork* NetworkLibraryImplBase::FindWimaxNetworkByPath(
+    const std::string& path) const {
+  Network* network = FindNetworkByPath(path);
+  if (network && (network->type() == TYPE_WIMAX))
+    return static_cast<WimaxNetwork*>(network);
   return NULL;
 }
 
@@ -683,6 +743,16 @@ void NetworkLibraryImplBase::SetNetworkProfile(
   NotifyNetworkManagerChanged(false);
 }
 
+const NetworkDevice* NetworkLibraryImplBase::FindDeviceByType(
+    ConnectionType type) const {
+  for (NetworkDeviceMap::const_iterator iter = device_map_.begin();
+       iter != device_map_.end(); ++iter) {
+    if (iter->second && iter->second->type() == type)
+      return iter->second;
+  }
+  return NULL;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Connect to an existing network.
 
@@ -702,6 +772,18 @@ void NetworkLibraryImplBase::ConnectToWifiNetwork(
 // 1. Request a connection to an existing wifi network.
 void NetworkLibraryImplBase::ConnectToWifiNetwork(WifiNetwork* wifi) {
   NetworkConnectStartWifi(wifi, PROFILE_NONE);
+}
+
+// 1. Request a connection to an existing wimax network.
+// Use |shared| to pass along the desired profile type.
+void NetworkLibraryImplBase::ConnectToWimaxNetwork(
+    WimaxNetwork* wimax, bool shared) {
+  NetworkConnectStart(wimax, shared ? PROFILE_SHARED : PROFILE_USER);
+}
+
+// 1. Request a connection to an existing wimax network.
+void NetworkLibraryImplBase::ConnectToWimaxNetwork(WimaxNetwork* wimax) {
+  NetworkConnectStart(wimax, PROFILE_NONE);
 }
 
 // 1. Connect to a cellular network.
@@ -766,7 +848,7 @@ void NetworkLibraryImplBase::NetworkConnectStart(
   VLOG(1) << "Requesting connect to network: " << network->name()
           << " profile type: " << profile_type;
   // Specify the correct profile for wifi networks (if specified or unset).
-  if (network->type() == TYPE_WIFI &&
+  if ((network->type() == TYPE_WIFI || network->type() == TYPE_WIMAX) &&
       (profile_type != PROFILE_NONE ||
        network->profile_type() == PROFILE_NONE)) {
     if (network->RequiresUserProfile())
@@ -1007,6 +1089,17 @@ void NetworkLibraryImplBase::EnableWifiNetworkDevice(bool enable) {
   CallEnableNetworkDeviceType(TYPE_WIFI, enable);
 }
 
+void NetworkLibraryImplBase::EnableMobileNetworkDevice(bool enable) {
+  EnableWimaxNetworkDevice(enable);
+  EnableCellularNetworkDevice(enable);
+}
+
+void NetworkLibraryImplBase::EnableWimaxNetworkDevice(bool enable) {
+  if (is_locked_)
+    return;
+  CallEnableNetworkDeviceType(TYPE_WIMAX, enable);
+}
+
 void NetworkLibraryImplBase::EnableCellularNetworkDevice(bool enable) {
   if (is_locked_)
     return;
@@ -1239,6 +1332,14 @@ void NetworkLibraryImplBase::UpdateActiveNetwork(Network* network) {
         VLOG(2) << "Active cellular -> " << active_cellular_->name();
       }
     }
+  } else if (type == TYPE_WIMAX) {
+    if (wimax_enabled()) {
+      // Set active_wimax_ to first connected/connecting wimax service.
+      if (active_wimax_ == NULL && network->connecting_or_connected()) {
+        active_wimax_ = static_cast<WimaxNetwork*>(network);
+        VLOG(2) << "Active wimax -> " << active_wimax_->name();
+      }
+    }
   } else if (type == TYPE_VPN) {
     // Set active_virtual_ to the first connected or connecting vpn service. {
     if (active_virtual_ == NULL && network->connecting_or_connected()) {
@@ -1266,6 +1367,9 @@ void NetworkLibraryImplBase::ClearActiveNetwork(ConnectionType type) {
     case TYPE_CELLULAR:
       active_cellular_ = NULL;
       break;
+    case TYPE_WIMAX:
+      active_wimax_ = NULL;
+      break;
     case TYPE_VPN:
       active_virtual_ = NULL;
       break;
@@ -1287,6 +1391,9 @@ void NetworkLibraryImplBase::AddNetwork(Network* network) {
   } else if (type == TYPE_CELLULAR) {
     if (cellular_enabled())
       cellular_networks_.push_back(static_cast<CellularNetwork*>(network));
+  } else if (type == TYPE_WIMAX) {
+    if (wimax_enabled())
+      wimax_networks_.push_back(static_cast<WimaxNetwork*>(network));
   } else if (type == TYPE_VPN) {
     virtual_networks_.push_back(static_cast<VirtualNetwork*>(network));
   }
@@ -1448,9 +1555,11 @@ void NetworkLibraryImplBase::ClearNetworks() {
   ethernet_ = NULL;
   active_wifi_ = NULL;
   active_cellular_ = NULL;
+  active_wimax_ = NULL;
   active_virtual_ = NULL;
   wifi_networks_.clear();
   cellular_networks_.clear();
+  wimax_networks_.clear();
   virtual_networks_.clear();
 }
 

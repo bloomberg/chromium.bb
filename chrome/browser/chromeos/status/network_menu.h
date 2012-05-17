@@ -106,7 +106,7 @@ class NetworkMenu {
 
   // Enables/disables wifi/cellular network device.
   void ToggleWifi();
-  void ToggleCellular();
+  void ToggleMobile();
 
   // Shows UI to user to connect to an unlisted wifi network.
   void ShowOtherWifi();

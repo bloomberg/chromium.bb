@@ -71,10 +71,12 @@ class InternetOptionsHandler
   // 'forget'
   void NetworkCommandCallback(const base::ListValue* args);
 
-  // Handle{Wifi,Cellular,VPN}ButtonClick handles button click on a wireless,
-  // cellular or VPN network item, respectively.
+  // Handle{Wifi,Wimax,Cellular,VPN}ButtonClick handles button click on a
+  // wireless, wimax, cellular or VPN network item, respectively.
   void HandleWifiButtonClick(const std::string& service_path,
                              const std::string& command);
+  void HandleWimaxButtonClick(const std::string& service_path,
+                              const std::string& command);
   void HandleCellularButtonClick(const std::string& service_path,
                                  const std::string& command);
   void HandleVPNButtonClick(const std::string& service_path,
@@ -99,8 +101,8 @@ class InternetOptionsHandler
   void SetIPConfigCallback(const base::ListValue* args);
   void EnableWifiCallback(const base::ListValue* args);
   void DisableWifiCallback(const base::ListValue* args);
-  void EnableCellularCallback(const base::ListValue* args);
-  void DisableCellularCallback(const base::ListValue* args);
+  void EnableMobileCallback(const base::ListValue* args);
+  void DisableMobileCallback(const base::ListValue* args);
   void BuyDataPlanCallback(const base::ListValue* args);
   void SetApnCallback(const base::ListValue* args);
   void SetSimCardLockCallback(const base::ListValue* args);
@@ -121,6 +123,8 @@ class InternetOptionsHandler
   void PopulateDictionaryDetails(const chromeos::Network* network);
   void PopulateWifiDetails(const chromeos::WifiNetwork* wifi,
                            base::DictionaryValue* dictionary);
+  void PopulateWimaxDetails(const chromeos::WimaxNetwork* wimax,
+                            base::DictionaryValue* dictionary);
   void PopulateCellularDetails(const chromeos::CellularNetwork* cellular,
                                base::DictionaryValue* dictionary);
   void PopulateVPNDetails(const chromeos::VirtualNetwork* vpn,

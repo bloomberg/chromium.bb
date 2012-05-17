@@ -441,6 +441,10 @@ void NetworkLibraryImplCros::RequestNetworkScan() {
     wifi_scanning_ = true;  // Cleared when updates are received.
     CrosRequestNetworkScan(flimflam::kTypeWifi);
   }
+
+  if (wimax_enabled())
+    CrosRequestNetworkScan(flimflam::kTypeWimax);
+
   if (cellular_network())
     cellular_network()->RefreshDataPlansIfNeeded();
   // Make sure all Manager info is up to date. This will also update

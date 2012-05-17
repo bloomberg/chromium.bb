@@ -187,6 +187,10 @@ list:not([disabled]) > .network-group[selected] {
   background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_ARCS_DARK');
 }
 
+.network-wimax {
+  background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS_DARK');
+}
+
 .network-cellular {
   background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS_DARK');
 }

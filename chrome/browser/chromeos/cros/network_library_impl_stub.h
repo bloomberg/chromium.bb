@@ -92,6 +92,7 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   int network_priority_order_;
   WifiNetworkVector disabled_wifi_networks_;
   CellularNetworkVector disabled_cellular_networks_;
+  WimaxNetworkVector disabled_wimax_networks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplStub);
 };

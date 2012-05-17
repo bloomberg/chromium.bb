@@ -534,6 +534,22 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       }
     }
 
+    // Wimax.
+    if (crosnet->wimax_available() && crosnet->wimax_enabled()) {
+      const WimaxNetworkVector& wimax = crosnet->wimax_networks();
+      for (size_t i = 0; i < wimax.size(); ++i) {
+        ash::NetworkIconInfo info = CreateNetworkIconInfo(wimax[i],
+            network_icon_.get(), network_menu_.get());
+        if (wimax[i]->connecting()) {
+          info.description = l10n_util::GetStringFUTF16(
+            IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+            info.name,
+            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
+        }
+        list->push_back(info);
+      }
+    }
+
     ash::user::LoginStatus login_status = GetUserLoginStatus();
 
     // Cellular.
@@ -633,8 +649,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     network_menu_->ToggleWifi();
   }
 
-  virtual void ToggleCellular() OVERRIDE {
-    network_menu_->ToggleCellular();
+  virtual void ToggleMobile() OVERRIDE {
+    network_menu_->ToggleMobile();
   }
 
   virtual void ToggleBluetooth() OVERRIDE {
@@ -654,8 +670,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return CrosLibrary::Get()->GetNetworkLibrary()->wifi_available();
   }
 
-  virtual bool GetCellularAvailable() OVERRIDE {
-    return CrosLibrary::Get()->GetNetworkLibrary()->cellular_available();
+  virtual bool GetMobileAvailable() OVERRIDE {
+    return CrosLibrary::Get()->GetNetworkLibrary()->mobile_available();
   }
 
   virtual bool GetBluetoothAvailable() OVERRIDE {
@@ -666,18 +682,18 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return CrosLibrary::Get()->GetNetworkLibrary()->wifi_enabled();
   }
 
-  virtual bool GetCellularEnabled() OVERRIDE {
-    return CrosLibrary::Get()->GetNetworkLibrary()->cellular_enabled();
+  virtual bool GetMobileEnabled() OVERRIDE {
+    return CrosLibrary::Get()->GetNetworkLibrary()->mobile_enabled();
   }
 
   virtual bool GetBluetoothEnabled() OVERRIDE {
     return bluetooth_adapter_->IsPowered();
   }
 
-  virtual bool GetCellularScanSupported() OVERRIDE {
+  virtual bool GetMobileScanSupported() OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    const NetworkDevice* cellular = crosnet->FindCellularDevice();
-    return cellular ? cellular->support_network_scan() : false;
+    const NetworkDevice* mobile = crosnet->FindMobileDevice();
+    return mobile ? mobile->support_network_scan() : false;
   }
 
   virtual bool GetCellularCarrierInfo(std::string* carrier_id,

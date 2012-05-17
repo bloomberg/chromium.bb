@@ -162,6 +162,10 @@ Network* NetworkParser::CreateNewNetwork(
       WifiNetwork* wifi = new WifiNetwork(service_path);
       return wifi;
     }
+    case TYPE_WIMAX: {
+      WimaxNetwork* wifi = new WimaxNetwork(service_path);
+      return wifi;
+    }
     case TYPE_CELLULAR: {
       CellularNetwork* cellular = new CellularNetwork(service_path);
       return cellular;

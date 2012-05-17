@@ -122,6 +122,18 @@ class NativeWifiNetworkParser : public NativeWirelessNetworkParser {
   DISALLOW_COPY_AND_ASSIGN(NativeWifiNetworkParser);
 };
 
+class NativeWimaxNetworkParser : public NativeWifiNetworkParser {
+ public:
+  NativeWimaxNetworkParser();
+  virtual ~NativeWimaxNetworkParser();
+  virtual bool ParseValue(PropertyIndex index,
+                          const base::Value& value,
+                          Network* network) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NativeWimaxNetworkParser);
+};
+
 class NativeCellularNetworkParser : public NativeWirelessNetworkParser {
  public:
   NativeCellularNetworkParser();

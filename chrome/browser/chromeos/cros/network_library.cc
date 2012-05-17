@@ -1263,6 +1263,37 @@ void WifiNetwork::MatchCertificatePattern(bool allow_enroll,
   connect.Run();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// WimaxNetwork
+
+WimaxNetwork::WimaxNetwork(const std::string& service_path)
+    : WirelessNetwork(service_path, TYPE_WIMAX),
+      passphrase_required_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+}
+
+WimaxNetwork::~WimaxNetwork() {
+}
+
+void WimaxNetwork::EraseCredentials() {
+  WipeString(&eap_passphrase_);
+  WipeString(&eap_identity_);
+}
+
+void WimaxNetwork::SetEAPPassphrase(const std::string& passphrase) {
+  SetOrClearStringProperty(
+      flimflam::kEapPasswordProperty, passphrase, &eap_passphrase_);
+}
+
+void WimaxNetwork::SetEAPIdentity(const std::string& identity) {
+  SetOrClearStringProperty(
+      flimflam::kEapIdentityProperty, identity, &eap_identity_);
+}
+
+void WimaxNetwork::CalculateUniqueId() {
+  set_unique_id(name() + "|" + eap_identity());
+}
+
 // static
 NetworkLibrary* NetworkLibrary::GetImpl(bool stub) {
   NetworkLibrary* impl;

@@ -107,6 +107,12 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual const CellularNetwork* cellular_network() const OVERRIDE;
   virtual bool cellular_connecting() const OVERRIDE;
   virtual bool cellular_connected() const OVERRIDE;
+  virtual const WimaxNetwork* wimax_network() const OVERRIDE;
+  virtual bool wimax_connecting() const OVERRIDE;
+  virtual bool wimax_connected() const OVERRIDE;
+  virtual const Network* mobile_network() const OVERRIDE;
+  virtual bool mobile_connecting() const OVERRIDE;
+  virtual bool mobile_connected() const OVERRIDE;
   virtual const VirtualNetwork* virtual_network() const OVERRIDE;
   virtual bool virtual_network_connecting() const OVERRIDE;
   virtual bool virtual_network_connected() const OVERRIDE;
@@ -115,6 +121,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual const WifiNetworkVector& wifi_networks() const OVERRIDE;
   virtual const WifiNetworkVector& remembered_wifi_networks() const OVERRIDE;
   virtual const CellularNetworkVector& cellular_networks() const OVERRIDE;
+  virtual const WimaxNetworkVector& wimax_networks() const OVERRIDE;
   virtual const VirtualNetworkVector& virtual_networks() const OVERRIDE;
   virtual const VirtualNetworkVector&
       remembered_virtual_networks() const OVERRIDE;
@@ -123,13 +130,19 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual const Network* connecting_network() const OVERRIDE;
   virtual bool ethernet_available() const OVERRIDE;
   virtual bool wifi_available() const OVERRIDE;
+  virtual bool wimax_available() const OVERRIDE;
   virtual bool cellular_available() const OVERRIDE;
+  virtual bool mobile_available() const OVERRIDE;
   virtual bool ethernet_enabled() const OVERRIDE;
   virtual bool wifi_enabled() const OVERRIDE;
+  virtual bool wimax_enabled() const OVERRIDE;
   virtual bool cellular_enabled() const OVERRIDE;
+  virtual bool mobile_enabled() const OVERRIDE;
   virtual bool ethernet_busy() const OVERRIDE;
   virtual bool wifi_busy() const OVERRIDE;
+  virtual bool wimax_busy() const OVERRIDE;
   virtual bool cellular_busy() const OVERRIDE;
+  virtual bool mobile_busy() const OVERRIDE;
   virtual bool wifi_scanning() const OVERRIDE;
   virtual bool offline_mode() const OVERRIDE;
   virtual std::string GetCheckPortalList() const OVERRIDE;
@@ -140,6 +153,8 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual const NetworkDevice* FindNetworkDeviceByPath(
       const std::string& path) const OVERRIDE;
   NetworkDevice* FindNetworkDeviceByPath(const std::string& path);
+  virtual const NetworkDevice* FindMobileDevice() const OVERRIDE;
+  virtual const NetworkDevice* FindWimaxDevice() const OVERRIDE;
   virtual const NetworkDevice* FindCellularDevice() const OVERRIDE;
   virtual const NetworkDevice* FindEthernetDevice() const OVERRIDE;
   virtual const NetworkDevice* FindWifiDevice() const OVERRIDE;
@@ -148,6 +163,8 @@ class NetworkLibraryImplBase : public NetworkLibrary {
       const std::string& unique_id) const OVERRIDE;
   WirelessNetwork* FindWirelessNetworkByPath(const std::string& path) const;
   virtual WifiNetwork* FindWifiNetworkByPath(
+      const std::string& path) const OVERRIDE;
+  virtual WimaxNetwork* FindWimaxNetworkByPath(
       const std::string& path) const OVERRIDE;
   virtual CellularNetwork* FindCellularNetworkByPath(
       const std::string& path) const OVERRIDE;
@@ -190,6 +207,8 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   // Connect to an existing network.
   virtual void ConnectToWifiNetwork(WifiNetwork* wifi) OVERRIDE;
   virtual void ConnectToWifiNetwork(WifiNetwork* wifi, bool shared) OVERRIDE;
+  virtual void ConnectToWimaxNetwork(WimaxNetwork* wimax) OVERRIDE;
+  virtual void ConnectToWimaxNetwork(WimaxNetwork* wimax, bool shared) OVERRIDE;
   virtual void ConnectToCellularNetwork(CellularNetwork* cellular) OVERRIDE;
   virtual void ConnectToVirtualNetwork(VirtualNetwork* vpn) OVERRIDE;
 
@@ -212,6 +231,8 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual void ForgetNetwork(const std::string& service_path) OVERRIDE;
   virtual void EnableEthernetNetworkDevice(bool enable) OVERRIDE;
   virtual void EnableWifiNetworkDevice(bool enable) OVERRIDE;
+  virtual void EnableMobileNetworkDevice(bool enable) OVERRIDE;
+  virtual void EnableWimaxNetworkDevice(bool enable) OVERRIDE;
   virtual void EnableCellularNetworkDevice(bool enable) OVERRIDE;
   // virtual EnableOfflineMode implemented in derived classes.
   // virtual GetIPConfigs implemented in derived classes.
@@ -285,6 +306,8 @@ class NetworkLibraryImplBase : public NetworkLibrary {
     CONNECT_FAILED
   };
 
+  // Finds device by connection type.
+  const NetworkDevice* FindDeviceByType(ConnectionType type) const;
   // Called from ConnectTo*Network.
   void NetworkConnectStartWifi(
       WifiNetwork* network, NetworkProfileType profile_type);
@@ -412,8 +435,14 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   // The list of available cellular networks.
   CellularNetworkVector cellular_networks_;
 
+  // The list of available wimax networks.
+  WimaxNetworkVector wimax_networks_;
+
   // The current connected (or connecting) cellular network.
   CellularNetwork* active_cellular_;
+
+  // The current connected (or connecting) Wimax network.
+  WimaxNetwork* active_wimax_;
 
   // The list of available virtual networks.
   VirtualNetworkVector virtual_networks_;

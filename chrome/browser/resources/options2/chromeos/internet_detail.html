@@ -25,6 +25,13 @@
             i18n-content="vpnTabLabel"></span>
         <span class="active-tab-label" i18n-content="vpnTabLabel"></span>
       </span>
+      <span id="wimax-network-nav-tab" class="tab wimax-details"
+          tab-contents="wimax-network-tab">
+        <span class="tab-label"
+            i18n-content="wimaxConnTabLabel"></span>
+        <span class="active-tab-label"
+            i18n-content="wimaxConnTabLabel"></span>
+      </span>
       <span id="cellular-plan-nav-tab" class="tab cellular-details cdma-only"
           tab-contents="cellular-plan-tab">
         <span class="tab-label"
@@ -147,6 +154,49 @@
           </tr>
           <tr>
             <td id="shared-network" class="option-name"
+                i18n-content="inetNetworkShared">
+            </td>
+          </tr>
+        </table>
+      </section>
+    </div>
+    <div id="wimax-network-tab" class="subpages-tab-contents wimax-details">
+      <section>
+        <table class="option-control-table">
+          <tr class="auto-connect-network">
+            <td>
+              <div class="checkbox">
+                <label>
+                  <input id="auto-connect-network-wimax" type="checkbox">
+                  <span i18n-content="inetAutoConnectNetwork"></span>
+                </label>
+                <span class="controlled-setting-indicator" data="autoConnect"
+                    for="auto-connect-network-wimax"></span>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </section>
+      <section>
+        <table id="wimax-settings-table">
+          <tr>
+            <td class="option-name" i18n-content="connectionState"></td>
+            <td id="wimax-connection-state" class="option-value"></td>
+          </tr>
+          <tr id="wimax-eap-identity-entry">
+            <td class="option-name" i18n-content="inetUsername"></td>
+            <td id="wimax-eap-identity" class="option-value"></td>
+          </tr>
+          <tr>
+            <td class="options-name" i18n-content="inetSignalStrength"></td>
+            <td id="wimax-signal-strength" class="option-value"></td>
+          </tr>
+        </table>
+      </section>
+      <section>
+        <table class="option-control-table">
+          <tr>
+            <td id="wimax-shared-network" class="option-name"
                 i18n-content="inetNetworkShared">
             </td>
           </tr>

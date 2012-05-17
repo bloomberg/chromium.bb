@@ -495,6 +495,7 @@
         <include name="IDR_STATUSBAR_CAPS_LOCK" file="statusbar_caps_lock.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_EDIT" file="statusbar_edit.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_MENU" file="statusbar_menu.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_4G" file="statusbar_network_4g.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G" file="statusbar_network_3g.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G_WARN" file="statusbar_network_3g_warn.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G_ERROR" file="statusbar_network_3g_error.png" type="BINDATA" />

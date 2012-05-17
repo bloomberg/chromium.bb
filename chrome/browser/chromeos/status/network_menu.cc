@@ -190,19 +190,20 @@ class NetworkMenuModel : public ui::MenuModel {
     FLAG_DISABLED          = 1 << 0,
     FLAG_TOGGLE_ETHERNET   = 1 << 1,
     FLAG_TOGGLE_WIFI       = 1 << 2,
-    FLAG_TOGGLE_CELLULAR   = 1 << 3,
+    FLAG_TOGGLE_MOBILE     = 1 << 3,
     FLAG_TOGGLE_OFFLINE    = 1 << 4,
     FLAG_ASSOCIATED        = 1 << 5,
     FLAG_ETHERNET          = 1 << 6,
     FLAG_WIFI              = 1 << 7,
-    FLAG_CELLULAR          = 1 << 8,
-    FLAG_OPTIONS           = 1 << 9,
-    FLAG_ADD_WIFI          = 1 << 10,
-    FLAG_ADD_CELLULAR      = 1 << 11,
-    FLAG_VPN               = 1 << 12,
-    FLAG_ADD_VPN           = 1 << 13,
-    FLAG_DISCONNECT_VPN    = 1 << 14,
-    FLAG_VIEW_ACCOUNT      = 1 << 15,
+    FLAG_WIMAX             = 1 << 8,
+    FLAG_CELLULAR          = 1 << 9,
+    FLAG_OPTIONS           = 1 << 10,
+    FLAG_ADD_WIFI          = 1 << 11,
+    FLAG_ADD_CELLULAR      = 1 << 12,
+    FLAG_VPN               = 1 << 13,
+    FLAG_ADD_VPN           = 1 << 14,
+    FLAG_DISCONNECT_VPN    = 1 << 15,
+    FLAG_VIEW_ACCOUNT      = 1 << 16,
   };
 
   // Our menu items.
@@ -273,6 +274,10 @@ class MainMenuModel : public NetworkMenuModel {
   virtual int GetCommandIdAt(int index) const OVERRIDE;
 
  private:
+  void AddWirelessNetworkMenuItem(const WirelessNetwork* wifi_network,
+                                  int flag,
+                                  bool* separator_added);
+
   scoped_ptr<NetworkMenuModel> vpn_menu_model_;
   scoped_ptr<MoreMenuModel> more_menu_model_;
 
@@ -302,6 +307,16 @@ void NetworkMenuModel::ConnectToNetworkAt(int index,
       LOG(WARNING) << "Wi-fi network does not exist to connect to: "
                    << service_path;
       // TODO(stevenjb): Show notification.
+    }
+  } else if (flags & FLAG_WIMAX) {
+    WimaxNetwork* wimax = cros->FindWimaxNetworkByPath(service_path);
+    if (wimax) {
+      owner_->ConnectToNetwork(wimax);
+    } else {
+      // If we are attempting to connect to a network that no longer exists,
+      // display a notification.
+      LOG(WARNING) << "Wimax network does not exist to connect to: "
+                   << service_path;
     }
   } else if (flags & FLAG_CELLULAR) {
     CellularNetwork* cellular = cros->FindCellularNetworkByPath(
@@ -353,6 +368,18 @@ void NetworkMenu::ConnectToNetwork(Network* network) {
         wifi->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
                                            weak_pointer_factory_.GetWeakPtr(),
                                            wifi));
+      }
+      break;
+    }
+
+    case TYPE_WIMAX: {
+      WimaxNetwork* wimax = static_cast<WimaxNetwork*>(network);
+      if (wimax->connecting_or_connected()) {
+        ShowTabbedNetworkSettings(wimax);
+      } else {
+        wimax->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
+                                            weak_pointer_factory_.GetWeakPtr(),
+                                            wimax));
       }
       break;
     }
@@ -483,8 +510,8 @@ void NetworkMenuModel::ActivatedAt(int index) {
     cros->EnableEthernetNetworkDevice(!cros->ethernet_enabled());
   } else if (flags & FLAG_TOGGLE_WIFI) {
     owner_->ToggleWifi();
-  } else if (flags & FLAG_TOGGLE_CELLULAR) {
-    owner_->ToggleCellular();
+  } else if (flags & FLAG_TOGGLE_MOBILE) {
+    owner_->ToggleMobile();
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_ETHERNET) {
@@ -520,6 +547,43 @@ void NetworkMenuModel::ShowOther(ConnectionType type) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // MainMenuModel
+
+void MainMenuModel::AddWirelessNetworkMenuItem(
+    const WirelessNetwork* wifi_network, int flag, bool* separator_added) {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  string16 label;
+  // Ampersand is a valid character in an SSID, but menu2 uses it to mark
+  // "mnemonics" for keyboard shortcuts.
+  std::string wifi_name = EscapeAmpersands(wifi_network->name());
+  if (wifi_network->connecting()) {
+    label = l10n_util::GetStringFUTF16(
+        IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+        UTF8ToUTF16(wifi_name),
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
+  } else {
+    label = UTF8ToUTF16(wifi_name);
+  }
+
+  // First add a separator if necessary.
+  if (!(*separator_added)) {
+    *separator_added = true;
+    if (!menu_items_.empty()) {  // Don't add if first menu item.
+      menu_items_.push_back(MenuItem());  // Separator
+    }
+  }
+
+  // If a network is not connectable (e.g. it requires certificates and
+  // the user is not logged in), we disable it.
+  if (!cros->CanConnectToNetwork(wifi_network))
+    flag |= FLAG_DISABLED;
+  if (ShouldHighlightNetwork(wifi_network))
+    flag |= FLAG_ASSOCIATED;
+  const SkBitmap icon = NetworkMenuIcon::GetBitmap(wifi_network,
+      NetworkMenuIcon::COLOR_DARK);
+  menu_items_.push_back(
+      MenuItem(ui::MenuModel::TYPE_COMMAND,
+               label, icon, wifi_network->service_path(), flag));
+}
 
 void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   // This gets called on initialization, so any changes should be reflected
@@ -574,38 +638,8 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
     bool separator_added = false;
     // List Wifi networks.
     for (size_t i = 0; i < wifi_networks.size(); ++i) {
-      // Ampersand is a valid character in an SSID, but menu2 uses it to mark
-      // "mnemonics" for keyboard shortcuts.
-      std::string wifi_name = EscapeAmpersands(wifi_networks[i]->name());
-      if (wifi_networks[i]->connecting()) {
-        label = l10n_util::GetStringFUTF16(
-            IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            UTF8ToUTF16(wifi_name),
-            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
-      } else {
-        label = UTF8ToUTF16(wifi_name);
-      }
-
-      // First add a separator if necessary.
-      if (!separator_added) {
-        separator_added = true;
-        if (!menu_items_.empty()) {  // Don't add if first menu item.
-          menu_items_.push_back(MenuItem());  // Separator
-        }
-      }
-
-      int flag = FLAG_WIFI;
-      // If a network is not connectable (e.g. it requires certificates and
-      // the user is not logged in), we disable it.
-      if (!cros->CanConnectToNetwork(wifi_networks[i]))
-        flag |= FLAG_DISABLED;
-      if (ShouldHighlightNetwork(wifi_networks[i]))
-        flag |= FLAG_ASSOCIATED;
-      const SkBitmap icon = NetworkMenuIcon::GetBitmap(wifi_networks[i],
-          NetworkMenuIcon::COLOR_DARK);
-      menu_items_.push_back(
-          MenuItem(ui::MenuModel::TYPE_COMMAND,
-                   label, icon, wifi_networks[i]->service_path(), flag));
+      const WifiNetwork* wifi_network = wifi_networks[i];
+      AddWirelessNetworkMenuItem(wifi_network, FLAG_WIFI, &separator_added);
     }
     if (!separator_added && !menu_items_.empty())
       menu_items_.push_back(MenuItem());
@@ -615,6 +649,22 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
         NetworkMenuIcon::GetConnectedBitmap(NetworkMenuIcon::ARCS,
                                             NetworkMenuIcon::COLOR_DARK),
         std::string(), FLAG_ADD_WIFI));
+  }
+
+  // Wimax Networks
+  bool wimax_available = cros->wimax_available();
+  bool wimax_enabled = cros->wimax_enabled();
+  if (wimax_available && wimax_enabled) {
+    const WimaxNetworkVector& wimax_networks = cros->wimax_networks();
+    bool separator_added = false;
+    // List Wifi networks.
+    for (size_t i = 0; i < wimax_networks.size(); ++i) {
+      AddWirelessNetworkMenuItem(wimax_networks[i],
+                                 FLAG_WIMAX,
+                                 &separator_added);
+    }
+    if (!separator_added && !menu_items_.empty())
+      menu_items_.push_back(MenuItem());
   }
 
   // Cellular Networks
@@ -695,12 +745,12 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
         }
       }
     }
-    const NetworkDevice* cellular_device = cros->FindCellularDevice();
-    if (cellular_device) {
+    const NetworkDevice* mobile_device = cros->FindMobileDevice();
+    if (mobile_device) {
       // NOTE: This is currently only used in login/OOBE screen. So do not add
       // "View Account" with top up URL.
 
-      if (cellular_device->support_network_scan()) {
+      if (mobile_device->support_network_scan()) {
         // For GSM add mobile network scan.
         if (!separator_added && !menu_items_.empty())
           menu_items_.push_back(MenuItem());
@@ -729,10 +779,10 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   bool show_toggle_wifi = wifi_available &&
       (should_open_button_options || !wifi_enabled);
   // Do not show disable cellular during oobe
-  bool show_toggle_cellular = cellular_available &&
-      (should_open_button_options || !cellular_enabled);
+  bool show_toggle_mobile = cros->mobile_available() &&
+      (should_open_button_options || !cros->mobile_enabled());
 
-  if (show_wifi_scanning || show_toggle_wifi || show_toggle_cellular) {
+  if (show_wifi_scanning || show_toggle_wifi || show_toggle_mobile) {
     menu_items_.push_back(MenuItem());  // Separator
 
     if (show_wifi_scanning) {
@@ -754,18 +804,18 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
           SkBitmap(), std::string(), flag));
     }
 
-    if (show_toggle_cellular) {
-      const NetworkDevice* cellular = cros->FindCellularDevice();
+    if (show_toggle_mobile) {
+      const NetworkDevice* mobile = cros->FindMobileDevice();
       bool is_locked = false;
-      if (!cellular) {
-        LOG(ERROR) << "Didn't find cellular device.";
+      if (!mobile) {
+        LOG(ERROR) << "Didn't find mobile device.";
       } else {
         // If cellular is SIM locked then show "Enable" action.
-        is_locked = cellular->sim_lock_state() == SIM_LOCKED_PIN ||
-                    cellular->sim_lock_state() == SIM_LOCKED_PUK;
+        is_locked = mobile->sim_lock_state() == SIM_LOCKED_PIN ||
+                    mobile->sim_lock_state() == SIM_LOCKED_PUK;
       }
       int id;
-      if (cellular_enabled && !is_locked)
+      if (cros->mobile_enabled() && !is_locked)
         id = IDS_STATUSBAR_NETWORK_DEVICE_DISABLE;
       else
         id = IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
@@ -775,8 +825,8 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       if (is_locked) {
         icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE);
       }
-      int flag = FLAG_TOGGLE_CELLULAR;
-      if (cros->cellular_busy())
+      int flag = FLAG_TOGGLE_MOBILE;
+      if (cros->mobile_busy())
         flag |= FLAG_DISABLED;
       menu_items_.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND, label,
           icon, std::string(), flag));
@@ -1042,6 +1092,16 @@ void NetworkMenu::DoConnect(Network* network) {
       // Connection failures are responsible for updating the UI, including
       // reopening dialogs.
     }
+  } else if (network->type() == TYPE_WIMAX) {
+    WimaxNetwork* wimax = static_cast<WimaxNetwork*>(network);
+    if (wimax->passphrase_required()) {
+      // Show the connection UI if we require a passphrase.
+      NetworkConfigView::Show(wimax, delegate()->GetNativeWindow());
+    } else {
+      cros->ConnectToWimaxNetwork(wimax);
+      // Connection failures are responsible for updating the UI, including
+      // reopening dialogs.
+    }
   }
 }
 
@@ -1050,14 +1110,14 @@ void NetworkMenu::ToggleWifi() {
   cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
 }
 
-void NetworkMenu::ToggleCellular() {
+void NetworkMenu::ToggleMobile() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  const NetworkDevice* cellular = cros->FindCellularDevice();
-  if (!cellular) {
-    LOG(ERROR) << "No cellular device found, it should be available.";
-    cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
-  } else if (!cellular->is_sim_locked()) {
-    if (cellular->is_sim_absent()) {
+  const NetworkDevice* mobile = cros->FindMobileDevice();
+  if (!mobile) {
+    LOG(ERROR) << "No mobile device found, it should be available.";
+    cros->EnableMobileNetworkDevice(!cros->mobile_enabled());
+  } else if (!mobile->is_sim_locked()) {
+    if (mobile->is_sim_absent()) {
       if (!chromeos::UserManager::Get()->IsSessionStarted())
         return;
       std::string setup_url;
@@ -1074,7 +1134,7 @@ void NetworkMenu::ToggleCellular() {
         // TODO(nkostylev): Show generic error message. http://crosbug.com/15444
       }
     } else {
-      cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
+      cros->EnableMobileNetworkDevice(!cros->mobile_enabled());
     }
   } else {
     SimDialogDelegate::ShowDialog(delegate()->GetNativeWindow(),

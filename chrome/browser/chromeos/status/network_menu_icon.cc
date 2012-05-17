@@ -67,6 +67,10 @@ int WifiStrengthIndex(const WifiNetwork* wifi) {
   return StrengthIndex(wifi->strength(), kNumArcsImages - 1);
 }
 
+int WimaxStrengthIndex(const WimaxNetwork* wimax) {
+  return StrengthIndex(wimax->strength(), kNumBarsImages - 1);
+}
+
 int CellularStrengthIndex(const CellularNetwork* cellular) {
   if (cellular->data_left() == CellularNetwork::DATA_NONE)
     return 0;
@@ -254,7 +258,7 @@ class NetworkIcon {
     }
 
     ConnectionType type = network->type();
-    if (type == TYPE_WIFI || type == TYPE_CELLULAR) {
+    if (type == TYPE_WIFI || type == TYPE_WIMAX || type == TYPE_CELLULAR) {
       if (UpdateWirelessStrengthIndex(network))
         dirty = true;
     }
@@ -295,6 +299,15 @@ class NetworkIcon {
           strength_index_ = WifiStrengthIndex(wifi);
         icon_ = NetworkMenuIcon::GetBitmap(
             NetworkMenuIcon::ARCS, strength_index_, resource_color_theme_);
+        break;
+      }
+      case TYPE_WIMAX: {
+        const WimaxNetwork* wimax =
+            static_cast<const WimaxNetwork*>(network);
+        if (strength_index_ == -1)
+          strength_index_ =  WimaxStrengthIndex(wimax);
+        icon_ = NetworkMenuIcon::GetBitmap(
+            NetworkMenuIcon::BARS, strength_index_, resource_color_theme_);
         break;
       }
       case TYPE_CELLULAR: {
@@ -343,6 +356,10 @@ class NetworkIcon {
         if (wifi->encrypted() &&
             resource_color_theme_ == NetworkMenuIcon::COLOR_DARK)
           bottom_right_badge_ = rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE);
+        break;
+      }
+      case TYPE_WIMAX: {
+        bottom_right_badge_ = rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_4G);
         break;
       }
       case TYPE_CELLULAR: {
@@ -440,6 +457,9 @@ class NetworkIcon {
     if (type == TYPE_WIFI) {
       index = WifiStrengthIndex(
           static_cast<const WifiNetwork*>(network));
+    } else if (type == TYPE_WIMAX) {
+        index = WimaxStrengthIndex(
+            static_cast<const WimaxNetwork*>(network));
     } else if (type == TYPE_CELLULAR) {
       index = CellularStrengthIndex(
           static_cast<const CellularNetwork*>(network));
@@ -684,8 +704,7 @@ void NetworkMenuIcon::SetDisconnectedIconAndText() {
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
       break;
     case TYPE_WIFI:
-      icon_->set_icon(GetDisconnectedBitmap(ARCS, resource_color_theme_));
-      break;
+    case TYPE_WIMAX:
     case TYPE_CELLULAR:
     default:
       icon_->set_icon(GetDisconnectedBitmap(BARS, resource_color_theme_));

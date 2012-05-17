@@ -241,8 +241,8 @@ class SystemTrayDelegate {
   // Toggles wifi network.
   virtual void ToggleWifi() = 0;
 
-  // Toggles cellular network.
-  virtual void ToggleCellular() = 0;
+  // Toggles mobile network.
+  virtual void ToggleMobile() = 0;
 
   // Toggles bluetooth.
   virtual void ToggleBluetooth() = 0;
@@ -256,8 +256,8 @@ class SystemTrayDelegate {
   // Returns whether wifi is available.
   virtual bool GetWifiAvailable() = 0;
 
-  // Returns whether cellular networking is available.
-  virtual bool GetCellularAvailable() = 0;
+  // Returns whether mobile networking (cellular or wimax) is available.
+  virtual bool GetMobileAvailable() = 0;
 
   // Returns whether bluetooth capability is available.
   virtual bool GetBluetoothAvailable() = 0;
@@ -265,14 +265,14 @@ class SystemTrayDelegate {
   // Returns whether wifi is enabled.
   virtual bool GetWifiEnabled() = 0;
 
-  // Returns whether cellular networking is enabled.
-  virtual bool GetCellularEnabled() = 0;
+  // Returns whether mobile (cellular or wimax) networking is enabled.
+  virtual bool GetMobileEnabled() = 0;
 
   // Returns whether bluetooth is enabled.
   virtual bool GetBluetoothEnabled() = 0;
 
-  // Returns whether cellular scanning is supported.
-  virtual bool GetCellularScanSupported() = 0;
+  // Returns whether mobile scanning is supported.
+  virtual bool GetMobileScanSupported() = 0;
 
   // Retrieves information about the carrier and locale specific |setup_url|.
   // If none of the carrier info/setup URL cannot be retrieved, returns false.

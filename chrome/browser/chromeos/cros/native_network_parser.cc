@@ -650,6 +650,8 @@ Network* NativeNetworkParser::CreateNewNetwork(
       network->SetNetworkParser(new NativeEthernetNetworkParser());
     else if (type == TYPE_WIFI)
       network->SetNetworkParser(new NativeWifiNetworkParser());
+    else if (type == TYPE_WIMAX)
+      network->SetNetworkParser(new NativeWimaxNetworkParser());
     else if (type == TYPE_CELLULAR)
       network->SetNetworkParser(new NativeCellularNetworkParser());
     else if (type == TYPE_VPN)
@@ -1025,6 +1027,46 @@ NetworkRoamingState NativeCellularNetworkParser::ParseRoamingState(
   return parser.Get(roaming_state);
 }
 
+// -------------------- NativeWimaxNetworkParser --------------------
+
+NativeWimaxNetworkParser::NativeWimaxNetworkParser() {}
+NativeWimaxNetworkParser::~NativeWimaxNetworkParser() {}
+
+
+bool NativeWimaxNetworkParser::ParseValue(PropertyIndex index,
+                                          const base::Value& value,
+                                          Network* network) {
+  DCHECK(TYPE_WIMAX == network->type());
+  WimaxNetwork* wimax_network = static_cast<WimaxNetwork*>(network);
+  switch (index) {
+    case PROPERTY_INDEX_PASSPHRASE_REQUIRED: {
+      bool passphrase_required;
+      if (!value.GetAsBoolean(&passphrase_required))
+        break;
+      wimax_network->set_passphrase_required(passphrase_required);
+      return true;
+    }
+    case PROPERTY_INDEX_EAP_IDENTITY: {
+      std::string eap_identity;
+      if (!value.GetAsString(&eap_identity))
+        break;
+
+      wimax_network->set_eap_identity(eap_identity);
+    }
+    case PROPERTY_INDEX_EAP_PASSWORD: {
+      std::string passphrase;
+      if (!value.GetAsString(&passphrase))
+        break;
+
+      wimax_network->set_eap_passphrase(passphrase);
+      return true;
+    }
+    default:
+      return NativeWirelessNetworkParser::ParseValue(index, value, network);
+  }
+  return false;
+}
+
 // -------------------- NativeWifiNetworkParser --------------------
 
 NativeWifiNetworkParser::NativeWifiNetworkParser() {}
@@ -1033,7 +1075,7 @@ NativeWifiNetworkParser::~NativeWifiNetworkParser() {}
 bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
                                          const base::Value& value,
                                          Network* network) {
-  DCHECK_EQ(TYPE_WIFI, network->type());
+  DCHECK(TYPE_WIFI == network->type());
   WifiNetwork* wifi_network = static_cast<WifiNetwork*>(network);
   switch (index) {
     case PROPERTY_INDEX_WIFI_HEX_SSID: {
@@ -1089,8 +1131,7 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
       std::string passphrase;
       if (!value.GetAsString(&passphrase))
         break;
-      // Only store the passphrase if we are the owner.
-      // TODO(stevenjb): Remove this when chromium-os:12948 is resolved.
+
       if (chromeos::UserManager::Get()->IsCurrentUserOwner())
         wifi_network->set_passphrase(passphrase);
       return true;

@@ -38,6 +38,7 @@ cr.define('options.network', function() {
    */
   Constants.NETWORK_ORDER = ['ethernet',
                              'wifi',
+                             'wimax',
                              'cellular',
                              'vpn',
                              'airplaneMode',
@@ -49,6 +50,7 @@ cr.define('options.network', function() {
   var categoryMap = {
     'cellular': Constants.TYPE_CELLULAR,
     'ethernet': Constants.TYPE_ETHERNET,
+    'wimax': Constants.TYPE_WIMAX,
     'wifi': Constants.TYPE_WIFI,
     'vpn': Constants.TYPE_VPN
   };
@@ -502,12 +504,20 @@ cr.define('options.network', function() {
           }
         }
       }
-      if (this.data_.key == 'wifi' || this.data_.key == 'cellular') {
+      if (this.data_.key == 'wifi' || this.data_.key == 'wimax' ||
+              this.data_.key == 'cellular') {
         addendum.push({});
         if (this.data_.key == 'wifi') {
           addendum.push({label: loadTimeData.getString('turnOffWifi'),
                        command: function() {
                          chrome.send('disableWifi');
+                       },
+                       data: {}});
+        } else if (this.data_.key == 'wimax') {
+          // TODO(zelidrag): Add proper strings for wimax.
+          addendum.push({label: loadTimeData.getString('turnOffCellular'),
+                       command: function() {
+                         chrome.send('disableCellular');
                        },
                        data: {}});
         } else if (this.data_.key == 'cellular') {
@@ -864,6 +874,7 @@ cr.define('options.network', function() {
     if (data.cellularAvailable && !data.airplaneMode) {
       if (data.cellularEnabled) {
         loadData_('cellular', data.wirelessList, data.rememberedList);
+        loadData_('wimax', data.wirelessList, data.rememberedList);
       } else {
         var subtitle = loadTimeData.getString('networkDisabled');
         var enableCellular = function() {
