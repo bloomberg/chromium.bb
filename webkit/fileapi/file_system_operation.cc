@@ -482,7 +482,7 @@ void FileSystemOperation::GetUsageAndQuotaThenRunTask(
       origin,
       FileSystemTypeToQuotaStorageType(type),
       base::Bind(&FileSystemOperation::DidGetUsageAndQuotaAndRunTask,
-                 base::Unretained(this), params));
+                 weak_factory_.GetWeakPtr(), params));
 }
 
 void FileSystemOperation::DidGetUsageAndQuotaAndRunTask(
