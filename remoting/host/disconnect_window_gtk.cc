@@ -17,10 +17,10 @@
 
 namespace remoting {
 
-class DisconnectWindowLinux : public DisconnectWindow {
+class DisconnectWindowGtk : public DisconnectWindow {
  public:
-  DisconnectWindowLinux();
-  virtual ~DisconnectWindowLinux();
+  DisconnectWindowGtk();
+  virtual ~DisconnectWindowGtk();
 
   virtual void Show(ChromotingHost* host,
                     const DisconnectCallback& disconnect_callback,
@@ -28,11 +28,11 @@ class DisconnectWindowLinux : public DisconnectWindow {
   virtual void Hide() OVERRIDE;
 
  private:
-  CHROMEGTK_CALLBACK_1(DisconnectWindowLinux, gboolean, OnDelete, GdkEvent*);
-  CHROMEGTK_CALLBACK_0(DisconnectWindowLinux, void, OnClicked);
-  CHROMEGTK_CALLBACK_1(DisconnectWindowLinux, gboolean, OnConfigure,
+  CHROMEGTK_CALLBACK_1(DisconnectWindowGtk, gboolean, OnDelete, GdkEvent*);
+  CHROMEGTK_CALLBACK_0(DisconnectWindowGtk, void, OnClicked);
+  CHROMEGTK_CALLBACK_1(DisconnectWindowGtk, gboolean, OnConfigure,
                        GdkEventConfigure*);
-  CHROMEGTK_CALLBACK_1(DisconnectWindowLinux, gboolean, OnButtonPress,
+  CHROMEGTK_CALLBACK_1(DisconnectWindowGtk, gboolean, OnButtonPress,
                        GdkEventButton*);
 
   void CreateWindow(const UiStrings& ui_strings);
@@ -47,19 +47,19 @@ class DisconnectWindowLinux : public DisconnectWindow {
   int current_width_;
   int current_height_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisconnectWindowLinux);
+  DISALLOW_COPY_AND_ASSIGN(DisconnectWindowGtk);
 };
 
-DisconnectWindowLinux::DisconnectWindowLinux()
+DisconnectWindowGtk::DisconnectWindowGtk()
     : disconnect_window_(NULL),
       current_width_(0),
       current_height_(0) {
 }
 
-DisconnectWindowLinux::~DisconnectWindowLinux() {
+DisconnectWindowGtk::~DisconnectWindowGtk() {
 }
 
-void DisconnectWindowLinux::CreateWindow(const UiStrings& ui_strings) {
+void DisconnectWindowGtk::CreateWindow(const UiStrings& ui_strings) {
   if (disconnect_window_) return;
 
   disconnect_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -129,7 +129,7 @@ void DisconnectWindowLinux::CreateWindow(const UiStrings& ui_strings) {
   gtk_widget_show_all(disconnect_window_);
 }
 
-void DisconnectWindowLinux::Show(ChromotingHost* host,
+void DisconnectWindowGtk::Show(ChromotingHost* host,
                                  const DisconnectCallback& disconnect_callback,
                                  const std::string& username) {
   disconnect_callback_ = disconnect_callback;
@@ -141,21 +141,21 @@ void DisconnectWindowLinux::Show(ChromotingHost* host,
   gtk_window_present(GTK_WINDOW(disconnect_window_));
 }
 
-void DisconnectWindowLinux::Hide() {
+void DisconnectWindowGtk::Hide() {
   if (disconnect_window_) {
     gtk_widget_destroy(disconnect_window_);
     disconnect_window_ = NULL;
   }
 }
 
-void DisconnectWindowLinux::OnClicked(GtkWidget* button) {
+void DisconnectWindowGtk::OnClicked(GtkWidget* button) {
   CHECK(!disconnect_callback_.is_null());
 
   disconnect_callback_.Run();
   Hide();
 }
 
-gboolean DisconnectWindowLinux::OnDelete(GtkWidget* window, GdkEvent* event) {
+gboolean DisconnectWindowGtk::OnDelete(GtkWidget* window, GdkEvent* event) {
   CHECK(!disconnect_callback_.is_null());
 
   disconnect_callback_.Run();
@@ -180,7 +180,7 @@ void AddRoundRectPath(cairo_t* cairo_context, int width, int height,
 
 }  // namespace
 
-gboolean DisconnectWindowLinux::OnConfigure(GtkWidget* widget,
+gboolean DisconnectWindowGtk::OnConfigure(GtkWidget* widget,
                                             GdkEventConfigure* event) {
   // Only generate bitmaps if the size has actually changed.
   if (event->width == current_width_ && event->height == current_height_)
@@ -266,7 +266,7 @@ gboolean DisconnectWindowLinux::OnConfigure(GtkWidget* widget,
   return FALSE;
 }
 
-gboolean DisconnectWindowLinux::OnButtonPress(GtkWidget* widget,
+gboolean DisconnectWindowGtk::OnButtonPress(GtkWidget* widget,
                                               GdkEventButton* event) {
   gtk_window_begin_move_drag(GTK_WINDOW(disconnect_window_),
                              event->button,
@@ -277,7 +277,7 @@ gboolean DisconnectWindowLinux::OnButtonPress(GtkWidget* widget,
 }
 
 scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
-  return scoped_ptr<DisconnectWindow>(new DisconnectWindowLinux());
+  return scoped_ptr<DisconnectWindow>(new DisconnectWindowGtk());
 }
 
 }  // namespace remoting

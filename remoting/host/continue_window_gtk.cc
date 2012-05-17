@@ -15,17 +15,17 @@
 
 namespace remoting {
 
-class ContinueWindowLinux : public remoting::ContinueWindow {
+class ContinueWindowGtk : public remoting::ContinueWindow {
  public:
-  ContinueWindowLinux();
-  virtual ~ContinueWindowLinux();
+  ContinueWindowGtk();
+  virtual ~ContinueWindowGtk();
 
   virtual void Show(remoting::ChromotingHost* host,
                     const ContinueSessionCallback& callback) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:
-  CHROMEGTK_CALLBACK_1(ContinueWindowLinux, void, OnResponse, int);
+  CHROMEGTK_CALLBACK_1(ContinueWindowGtk, void, OnResponse, int);
 
   void CreateWindow(const UiStrings& ui_strings);
 
@@ -33,18 +33,18 @@ class ContinueWindowLinux : public remoting::ContinueWindow {
   ContinueSessionCallback callback_;
   GtkWidget* continue_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContinueWindowLinux);
+  DISALLOW_COPY_AND_ASSIGN(ContinueWindowGtk);
 };
 
-ContinueWindowLinux::ContinueWindowLinux()
+ContinueWindowGtk::ContinueWindowGtk()
     : host_(NULL),
       continue_window_(NULL) {
 }
 
-ContinueWindowLinux::~ContinueWindowLinux() {
+ContinueWindowGtk::~ContinueWindowGtk() {
 }
 
-void ContinueWindowLinux::CreateWindow(const UiStrings& ui_strings) {
+void ContinueWindowGtk::CreateWindow(const UiStrings& ui_strings) {
   if (continue_window_) return;
 
   continue_window_ = gtk_dialog_new_with_buttons(
@@ -81,7 +81,7 @@ void ContinueWindowLinux::CreateWindow(const UiStrings& ui_strings) {
   gtk_widget_show_all(content_area);
 }
 
-void ContinueWindowLinux::Show(remoting::ChromotingHost* host,
+void ContinueWindowGtk::Show(remoting::ChromotingHost* host,
                                const ContinueSessionCallback& callback) {
   host_ = host;
   callback_ = callback;
@@ -90,20 +90,20 @@ void ContinueWindowLinux::Show(remoting::ChromotingHost* host,
   gtk_window_present(GTK_WINDOW(continue_window_));
 }
 
-void ContinueWindowLinux::Hide() {
+void ContinueWindowGtk::Hide() {
   if (continue_window_) {
     gtk_widget_destroy(continue_window_);
     continue_window_ = NULL;
   }
 }
 
-void ContinueWindowLinux::OnResponse(GtkWidget* dialog, int response_id) {
+void ContinueWindowGtk::OnResponse(GtkWidget* dialog, int response_id) {
   callback_.Run(response_id == GTK_RESPONSE_OK);
   Hide();
 }
 
 scoped_ptr<ContinueWindow> ContinueWindow::Create() {
-  return scoped_ptr<ContinueWindow>(new ContinueWindowLinux());
+  return scoped_ptr<ContinueWindow>(new ContinueWindowGtk());
 }
 
 }  // namespace remoting

@@ -871,10 +871,6 @@
         'host/branding.cc',
         'host/branding.h',
         'host/host_ui_resource.h',
-        'host/host_user_interface.cc',
-        'host/host_user_interface.h',
-        'host/it2me_host_user_interface.cc',
-        'host/it2me_host_user_interface.h',
         'host/plugin/daemon_controller.h',
         'host/plugin/daemon_controller_linux.cc',
         'host/plugin/daemon_controller_mac.cc',
@@ -1131,8 +1127,8 @@
         'host/clipboard_win.cc',
         'host/constants.h',
         'host/continue_window.h',
+        'host/continue_window_gtk.cc',
         'host/continue_window_mac.mm',
-        'host/continue_window_linux.cc',
         'host/continue_window_win.cc',
         'host/curtain.h',
         'host/curtain_linux.cc',
@@ -1142,10 +1138,10 @@
         'host/desktop_environment.h',
         'host/desktop_win.cc',
         'host/desktop_win.h',
-        'host/differ.h',
         'host/differ.cc',
+        'host/differ.h',
         'host/disconnect_window.h',
-        'host/disconnect_window_linux.cc',
+        'host/disconnect_window_gtk.cc',
         'host/disconnect_window_mac.h',
         'host/disconnect_window_mac.mm',
         'host/disconnect_window_win.cc',
@@ -1166,8 +1162,12 @@
         'host/host_secret.cc',
         'host/host_secret.h',
         'host/host_status_observer.h',
+        'host/host_user_interface.cc',
+        'host/host_user_interface.h',
         'host/in_memory_host_config.cc',
         'host/in_memory_host_config.h',
+        'host/it2me_host_user_interface.cc',
+        'host/it2me_host_user_interface.h',
         'host/json_host_config.cc',
         'host/json_host_config.h',
         'host/local_input_monitor.h',
@@ -1215,16 +1215,11 @@
         'host/user_authenticator_win.cc',
         'host/vlog_net_log.cc',
         'host/vlog_net_log.h',
+        'host/x_server_pixel_buffer.cc',
+        'host/x_server_pixel_buffer.h',
       ],
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-          'sources': [
-            'host/x_server_pixel_buffer.cc',
-            'host/x_server_pixel_buffer.h',
-          ],
+        ['OS=="linux"', {
           'link_settings': {
             'libraries': [
               '-lX11',
@@ -1235,6 +1230,17 @@
               '-lXext'
             ],
           },
+        }],
+        ['toolkit_uses_gtk==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
+        }, {  # else toolkit_uses_gtk!=1
+          'sources!': [
+            '*_gtk.cc',
+            'host/x_server_pixel_buffer.cc',
+            'host/x_server_pixel_buffer.h',
+          ],
         }],
         ['OS=="mac"', {
           'sources': [
@@ -1309,18 +1315,6 @@
         '../media/media.gyp:media',
       ],
       'sources': [
-        'host/continue_window.h',
-        'host/continue_window_mac.mm',
-        'host/continue_window_linux.cc',
-        'host/continue_window_win.cc',
-        'host/disconnect_window_linux.cc',
-        'host/disconnect_window_mac.h',
-        'host/disconnect_window_mac.mm',
-        'host/disconnect_window_win.cc',
-        'host/host_user_interface.cc',
-        'host/host_user_interface.h',
-        'host/it2me_host_user_interface.cc',
-        'host/it2me_host_user_interface.h',
         'host/simple_host_process.cc',
       ],
       'conditions': [
@@ -1348,8 +1342,6 @@
         'host/branding.cc',
         'host/branding.h',
         'host/host_event_logger.h',
-        'host/host_user_interface.cc',
-        'host/host_user_interface.h',
         'host/sighup_listener_mac.cc',
         'host/sighup_listener_mac.h',
         'host/remoting_me2me_host.cc',
@@ -1699,10 +1691,6 @@
         'host/host_key_pair_unittest.cc',
         'host/host_mock_objects.cc',
         'host/host_mock_objects.h',
-        'host/host_user_interface.cc',
-        'host/host_user_interface.h',
-        'host/it2me_host_user_interface.cc',
-        'host/it2me_host_user_interface.h',
         'host/json_host_config_unittest.cc',
         'host/log_to_server_unittest.cc',
         'host/pin_hash_unittest.cc',
