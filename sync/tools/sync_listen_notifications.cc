@@ -19,7 +19,7 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_test_util.h"
-#include "sync/notifier/invalidation_version_tracker.h"
+#include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/notifier/sync_notifier_factory.h"
 #include "sync/notifier/sync_notifier_observer.h"
@@ -65,12 +65,12 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
   DISALLOW_COPY_AND_ASSIGN(NotificationPrinter);
 };
 
-class NullInvalidationVersionTracker
-    : public base::SupportsWeakPtr<NullInvalidationVersionTracker>,
-      public sync_notifier::InvalidationVersionTracker {
+class NullInvalidationStateTracker
+    : public base::SupportsWeakPtr<NullInvalidationStateTracker>,
+      public sync_notifier::InvalidationStateTracker {
  public:
-  NullInvalidationVersionTracker() {}
-  virtual ~NullInvalidationVersionTracker() {}
+  NullInvalidationStateTracker() {}
+  virtual ~NullInvalidationStateTracker() {}
 
   virtual sync_notifier::InvalidationVersionMap
       GetAllMaxVersions() const OVERRIDE {
@@ -171,10 +171,10 @@ int main(int argc, char* argv[]) {
           command_line,
           new TestURLRequestContextGetter(io_thread.message_loop_proxy()));
   const char kClientInfo[] = "sync_listen_notifications";
-  NullInvalidationVersionTracker null_invalidation_version_tracker;
+  NullInvalidationStateTracker null_invalidation_state_tracker;
   sync_notifier::SyncNotifierFactory sync_notifier_factory(
       notifier_options, kClientInfo,
-      null_invalidation_version_tracker.AsWeakPtr());
+      null_invalidation_state_tracker.AsWeakPtr());
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
       sync_notifier_factory.CreateSyncNotifier());
   NotificationPrinter notification_printer;

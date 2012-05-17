@@ -312,7 +312,7 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
           ParseNotifierOptions(*CommandLine::ForCurrentProcess(),
                                profile_->GetRequestContext()),
           content::GetUserAgent(GURL()),
-          base::WeakPtr<sync_notifier::InvalidationVersionTracker>()),
+          base::WeakPtr<sync_notifier::InvalidationStateTracker>()),
       frontend_(NULL) {
 }
 

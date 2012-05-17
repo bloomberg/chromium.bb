@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "jingle/notifier/base/notifier_options.h"
-#include "sync/notifier/invalidation_version_tracker.h"
+#include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/notifier/sync_notifier_observer.h"
 #include "sync/util/weak_handle.h"
@@ -32,12 +32,12 @@ class NonBlockingInvalidationNotifier
     : public SyncNotifier,
       public SyncNotifierObserver {
  public:
-  // |invalidation_version_tracker| must be initialized.
+  // |invalidation_state_tracker| must be initialized.
   NonBlockingInvalidationNotifier(
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
-      const browser_sync::WeakHandle<InvalidationVersionTracker>&
-          invalidation_version_tracker,
+      const browser_sync::WeakHandle<InvalidationStateTracker>&
+          invalidation_state_tracker,
       const std::string& client_info);
 
   virtual ~NonBlockingInvalidationNotifier();

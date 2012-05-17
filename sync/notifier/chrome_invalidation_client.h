@@ -18,7 +18,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 #include "sync/notifier/chrome_system_resources.h"
-#include "sync/notifier/invalidation_version_tracker.h"
+#include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/state_writer.h"
 #include "sync/syncable/model_type.h"
 #include "sync/syncable/model_type_payload_map.h"
@@ -57,14 +57,14 @@ class ChromeInvalidationClient
   virtual ~ChromeInvalidationClient();
 
   // Does not take ownership of |listener| or |state_writer|.
-  // |invalidation_version_tracker| must be initialized.
+  // |invalidation_state_tracker| must be initialized.
   // |base_task| must still be non-NULL.
   void Start(
       const std::string& client_id, const std::string& client_info,
       const std::string& state,
       const InvalidationVersionMap& initial_max_invalidation_versions,
-      const browser_sync::WeakHandle<InvalidationVersionTracker>&
-          invalidation_version_tracker,
+      const browser_sync::WeakHandle<InvalidationStateTracker>&
+          invalidation_state_tracker,
       Listener* listener,
       StateWriter* state_writer,
       base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
@@ -122,8 +122,8 @@ class ChromeInvalidationClient
   base::NonThreadSafe non_thread_safe_;
   ChromeSystemResources chrome_system_resources_;
   InvalidationVersionMap max_invalidation_versions_;
-  browser_sync::WeakHandle<InvalidationVersionTracker>
-      invalidation_version_tracker_;
+  browser_sync::WeakHandle<InvalidationStateTracker>
+      invalidation_state_tracker_;
   Listener* listener_;
   StateWriter* state_writer_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
