@@ -109,15 +109,28 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
           gfx::GLContext::GetCurrent()->GetExtensions().c_str() :
           reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)),
       desired_features);
-  const char* vendor_str = reinterpret_cast<const char*>(
-      glGetString(GL_VENDOR));
-  if (vendor_str) {
-    std::string str(StringToLowerASCII(std::string(vendor_str)));
-    feature_flags_.is_intel = str.find("intel") != std::string::npos;
-    feature_flags_.is_nvidia = str.find("nvidia") != std::string::npos;
-    feature_flags_.is_amd =
-        str.find("amd") != std::string::npos ||
-        str.find("ati") != std::string::npos;
+
+  // NOTE: We need to check both GL_VENDOR and GL_RENDERER because for example
+  // Sandy Bridge on Linux reports:
+  //   GL_VENDOR: Tungsten Graphics, Inc
+  //   GL_RENDERER:
+  //       Mesa DRI Intel(R) Sandybridge Desktop GEM 20100330 DEVELOPMENT
+
+  static GLenum string_ids[] = {
+    GL_VENDOR,
+    GL_RENDERER,
+  };
+  for (size_t ii = 0; ii < arraysize(string_ids); ++ii) {
+    const char* str = reinterpret_cast<const char*>(
+          glGetString(string_ids[ii]));
+    if (str) {
+      std::string lstr(StringToLowerASCII(std::string(str)));
+      feature_flags_.is_intel |= lstr.find("intel") != std::string::npos;
+      feature_flags_.is_nvidia |= lstr.find("nvidia") != std::string::npos;
+      feature_flags_.is_amd |=
+          lstr.find("amd") != std::string::npos ||
+          lstr.find("ati") != std::string::npos;
+    }
   }
 
   bool npot_ok = false;

@@ -62,7 +62,10 @@ class TestHelper {
   static void SetupFeatureInfoInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions);
   static void SetupFeatureInfoInitExpectationsWithVendor(
-      ::gfx::MockGLInterface* gl, const char* extensions, const char* vendor);
+      ::gfx::MockGLInterface* gl,
+      const char* extensions,
+      const char* vendor,
+      const char* renderer);
   static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl,
                                                   const char* extensions);
 

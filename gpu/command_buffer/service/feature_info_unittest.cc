@@ -33,13 +33,13 @@ class FeatureInfoTest : public testing::Test {
   }
 
   void SetupInitExpectations(const char* extensions) {
-    SetupInitExpectationsWithVendor(extensions, "");
+    SetupInitExpectationsWithVendor(extensions, "", "");
   }
 
   void SetupInitExpectationsWithVendor(
-      const char* extensions, const char* vendor) {
+      const char* extensions, const char* vendor, const char* renderer) {
     TestHelper::SetupFeatureInfoInitExpectationsWithVendor(
-        gl_.get(), extensions, vendor);
+        gl_.get(), extensions, vendor, renderer);
   }
 
  protected:
@@ -501,35 +501,63 @@ TEST_F(FeatureInfoTest, InitializeARB_occlusion_query2) {
 }
 
 TEST_F(FeatureInfoTest, IsIntel) {
-  SetupInitExpectationsWithVendor("", "iNTel");
+  SetupInitExpectationsWithVendor("", "iNTel", "");
   info_->Initialize(NULL);
   EXPECT_TRUE(info_->feature_flags().is_intel);
   EXPECT_FALSE(info_->feature_flags().is_nvidia);
   EXPECT_FALSE(info_->feature_flags().is_amd);
+
+  SetupInitExpectationsWithVendor("", "", "IntEl");
+  FeatureInfo::Ref feature_info(new FeatureInfo());
+  feature_info->Initialize(NULL);
+  EXPECT_TRUE(feature_info->feature_flags().is_intel);
+  EXPECT_FALSE(feature_info->feature_flags().is_nvidia);
+  EXPECT_FALSE(feature_info->feature_flags().is_amd);
 }
 
 TEST_F(FeatureInfoTest, IsNvidia) {
-  SetupInitExpectationsWithVendor("", "nvIdIa");
+  SetupInitExpectationsWithVendor("", "nvIdIa", "");
   info_->Initialize(NULL);
   EXPECT_FALSE(info_->feature_flags().is_intel);
   EXPECT_TRUE(info_->feature_flags().is_nvidia);
   EXPECT_FALSE(info_->feature_flags().is_amd);
+
+  SetupInitExpectationsWithVendor("", "", "NViDiA");
+  FeatureInfo::Ref feature_info(new FeatureInfo());
+  feature_info->Initialize(NULL);
+  EXPECT_FALSE(feature_info->feature_flags().is_intel);
+  EXPECT_TRUE(feature_info->feature_flags().is_nvidia);
+  EXPECT_FALSE(feature_info->feature_flags().is_amd);
 }
 
 TEST_F(FeatureInfoTest, IsAMD) {
-  SetupInitExpectationsWithVendor("", "aMd");
+  SetupInitExpectationsWithVendor("", "aMd", "");
   info_->Initialize(NULL);
   EXPECT_FALSE(info_->feature_flags().is_intel);
   EXPECT_FALSE(info_->feature_flags().is_nvidia);
   EXPECT_TRUE(info_->feature_flags().is_amd);
+
+  SetupInitExpectationsWithVendor("", "", "AmD");
+  FeatureInfo::Ref feature_info(new FeatureInfo());
+  feature_info->Initialize(NULL);
+  EXPECT_FALSE(feature_info->feature_flags().is_intel);
+  EXPECT_FALSE(feature_info->feature_flags().is_nvidia);
+  EXPECT_TRUE(feature_info->feature_flags().is_amd);
 }
 
 TEST_F(FeatureInfoTest, IsAMDATI) {
-  SetupInitExpectationsWithVendor("", "aTI");
+  SetupInitExpectationsWithVendor("", "aTI", "");
   info_->Initialize(NULL);
   EXPECT_FALSE(info_->feature_flags().is_intel);
   EXPECT_FALSE(info_->feature_flags().is_nvidia);
   EXPECT_TRUE(info_->feature_flags().is_amd);
+
+  SetupInitExpectationsWithVendor("", "", "AtI");
+  FeatureInfo::Ref feature_info(new FeatureInfo());
+  feature_info->Initialize(NULL);
+  EXPECT_FALSE(feature_info->feature_flags().is_intel);
+  EXPECT_FALSE(feature_info->feature_flags().is_nvidia);
+  EXPECT_TRUE(feature_info->feature_flags().is_amd);
 }
 
 }  // namespace gles2
