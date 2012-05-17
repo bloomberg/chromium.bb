@@ -109,6 +109,8 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   if (!gl_context_.get())
     return EGL_NO_SURFACE;
 
+  gl_context_->MakeCurrent(gl_surface_);
+
   std::vector<int32> attribs;
   if (!decoder_->Initialize(gl_surface_.get(),
                             gl_context_.get(),
@@ -147,7 +149,7 @@ void Display::DestroySurface(EGLSurface surface) {
   DCHECK(IsValidSurface(surface));
   gpu_scheduler_.reset();
   if (decoder_.get()) {
-    decoder_->Destroy();
+    decoder_->Destroy(true);
   }
   decoder_.reset();
   gl_surface_ = NULL;

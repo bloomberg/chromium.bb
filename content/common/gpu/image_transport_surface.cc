@@ -172,11 +172,11 @@ bool ImageTransportHelper::MakeCurrent() {
   return decoder->MakeCurrent();
 }
 
-void ImageTransportHelper::SetSwapInterval() {
+void ImageTransportHelper::SetSwapInterval(gfx::GLContext* context) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
-    Decoder()->GetGLContext()->SetSwapInterval(0);
+    context->SetSwapInterval(0);
   else
-    Decoder()->GetGLContext()->SetSwapInterval(1);
+    context->SetSwapInterval(1);
 }
 
 void ImageTransportHelper::Suspend() {
@@ -230,7 +230,7 @@ void ImageTransportHelper::Resize(gfx::Size size) {
 
 #if defined(OS_WIN)
   Decoder()->MakeCurrent();
-  SetSwapInterval();
+  SetSwapInterval(Decoder()->GetGLContext());
 #endif
 }
 
@@ -298,7 +298,7 @@ bool PassThroughImageTransportSurface::PostSubBuffer(
 
 bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
   if (!did_set_swap_interval_) {
-    helper_->SetSwapInterval();
+    ImageTransportHelper::SetSwapInterval(context);
     did_set_swap_interval_ = true;
   }
   return true;

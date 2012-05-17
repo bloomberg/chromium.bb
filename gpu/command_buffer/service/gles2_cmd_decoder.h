@@ -105,7 +105,10 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
                           const std::vector<int32>& attribs) = 0;
 
   // Destroys the graphics context.
-  virtual void Destroy() = 0;
+  virtual void Destroy(bool have_context) = 0;
+
+  // Set the surface associated with the default FBO.
+  virtual void SetSurface(const scoped_refptr<gfx::GLSurface>& surface) = 0;
 
   virtual bool SetParent(GLES2Decoder* parent_decoder,
                          uint32 parent_texture_id) = 0;
@@ -121,9 +124,6 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
 
   // Gets the GLES2 Util which holds info.
   virtual GLES2Util* GetGLES2Util() = 0;
-
-  // Gets the associated GLSurface.
-  virtual gfx::GLSurface* GetGLSurface() = 0;
 
   // Gets the associated GLContext.
   virtual gfx::GLContext* GetGLContext() = 0;

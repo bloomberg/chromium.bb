@@ -176,6 +176,8 @@
         'command_buffer/service/gles2_cmd_decoder_unittest_3_autogen.h',
         'command_buffer/service/gles2_cmd_decoder_unittest_base.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_base.h',
+        'command_buffer/service/gl_surface_mock.cc',
+        'command_buffer/service/gl_surface_mock.h',
         'command_buffer/service/gpu_scheduler_unittest.cc',
         'command_buffer/service/id_manager_unittest.cc',
         'command_buffer/service/mocks.cc',

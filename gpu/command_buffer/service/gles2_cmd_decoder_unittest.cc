@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gl_surface_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -20,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_stub.h"
+
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -7010,6 +7012,16 @@ TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
 
   // Service ID is restored.
   EXPECT_EQ(kServiceTextureId, info->service_id());
+}
+
+
+TEST_F(GLES2DecoderTest, CanChangeSurface) {
+  scoped_refptr<GLSurfaceMock> other_surface(new GLSurfaceMock);
+  EXPECT_CALL(*other_surface.get(), GetBackingFrameBufferObject()).
+      WillOnce(Return(7));
+  EXPECT_CALL(*gl_, BindFramebufferEXT(GL_FRAMEBUFFER_EXT, 7));
+
+  decoder_->SetSurface(other_surface);
 }
 
 TEST_F(GLES2DecoderTest, IsEnabledReturnsCachedValue) {

@@ -116,6 +116,8 @@ void GLManager::Setup(
                                              gpu_preference);
   ASSERT_TRUE(context_.get() != NULL) << "could not create GL context";
 
+  ASSERT_TRUE(context_->MakeCurrent(surface_.get()));
+
   ASSERT_TRUE(decoder_->Initialize(
       surface_.get(),
       context_.get(),
@@ -168,7 +170,8 @@ void GLManager::Destroy() {
   gles2_helper_.reset();
   command_buffer_.reset();
   if (decoder_.get()) {
-    decoder_->Destroy();
+    decoder_->MakeCurrent();
+    decoder_->Destroy(true);
   }
 }
 

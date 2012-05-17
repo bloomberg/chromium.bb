@@ -120,7 +120,7 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   bool MakeCurrent();
 
   // Set the default swap interval on the surface.
-  void SetSwapInterval();
+  static void SetSwapInterval(gfx::GLContext* context);
 
   void Suspend();
 

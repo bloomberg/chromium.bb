@@ -323,6 +323,8 @@ void GLES2DecoderTestBase::InitDecoder(
 
   context_ = new gfx::GLContextStub;
 
+  context_->MakeCurrent(surface_);
+
   // From <EGL/egl.h>.
   const int32 EGL_ALPHA_SIZE = 0x3021;
   const int32 EGL_DEPTH_SIZE = 0x3025;
@@ -340,6 +342,7 @@ void GLES2DecoderTestBase::InitDecoder(
   decoder_->Initialize(
       surface_, context_, false, surface_->GetSize(), DisallowedFeatures(),
       NULL, attribs);
+  decoder_->MakeCurrent();
   decoder_->set_engine(engine_.get());
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))
@@ -391,7 +394,7 @@ void GLES2DecoderTestBase::TearDown() {
       .Times(2)
       .RetiresOnSaturation();
 
-  decoder_->Destroy();
+  decoder_->Destroy(true);
   decoder_.reset();
   group_->Destroy(false);
   engine_.reset();

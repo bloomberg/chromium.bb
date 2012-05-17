@@ -424,10 +424,16 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
     return false;
   }
 
+  if (!context_->MakeCurrent(surface_.get())) {
+    LOG(ERROR) << "Could not make context current.";
+    Destroy();
+    return false;
+  }
+
   ::gpu::gles2::DisallowedFeatures disallowed_features;
   disallowed_features.swap_buffer_complete_callback = true;
-  if (!decoder_->Initialize(surface_.get(),
-                            context_.get(),
+  if (!decoder_->Initialize(surface_,
+                            context_,
                             true,
                             size,
                             disallowed_features,

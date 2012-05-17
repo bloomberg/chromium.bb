@@ -225,6 +225,9 @@
         'gpu_demo_framework_exe',
         '../../third_party/gles2_book/gles2_book.gyp:es_util',
       ],
+      'defines': [
+        'GL_GLEXT_PROTOTYPES',
+      ],
       'sources': [
         'occlusion_query/occlusion_query.cc',
       ],

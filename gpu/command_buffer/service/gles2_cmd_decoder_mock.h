@@ -40,7 +40,8 @@ class MockGLES2Decoder : public GLES2Decoder {
                     const DisallowedFeatures& disallowed_features,
                     const char* allowed_extensions,
                     const std::vector<int32>& attribs));
-  MOCK_METHOD0(Destroy, void());
+  MOCK_METHOD1(Destroy, void(bool have_context));
+  MOCK_METHOD1(SetSurface, void(const scoped_refptr<gfx::GLSurface>& surface));
   MOCK_METHOD2(SetParent, bool(GLES2Decoder* parent, uint32 parent_texture_id));
   MOCK_METHOD1(ResizeOffscreenFrameBuffer, bool(const gfx::Size& size));
   MOCK_METHOD0(MakeCurrent, bool());

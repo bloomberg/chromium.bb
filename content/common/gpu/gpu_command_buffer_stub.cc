@@ -216,7 +216,7 @@ void GpuCommandBufferStub::Destroy() {
                     OnWillDestroyStub(this));
 
   if (decoder_.get()) {
-    decoder_->Destroy();
+    decoder_->Destroy(true);
     decoder_.reset();
   }
 
@@ -298,9 +298,15 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
+  if (!context_->MakeCurrent(surface_.get())) {
+    LOG(ERROR) << "Failed to make context current.";
+    OnInitializeFailed(reply_message);
+    return;
+  }
+
   // Initialize the decoder with either the view or pbuffer GLContext.
-  if (!decoder_->Initialize(surface_.get(),
-                            context_.get(),
+  if (!decoder_->Initialize(surface_,
+                            context_,
                             !surface_id(),
                             initial_size_,
                             disallowed_features_,

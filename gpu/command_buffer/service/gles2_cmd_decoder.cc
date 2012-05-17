@@ -482,7 +482,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
                           const DisallowedFeatures& disallowed_features,
                           const char* allowed_extensions,
                           const std::vector<int32>& attribs);
-  virtual void Destroy();
+  virtual void Destroy(bool have_context);
+  virtual void SetSurface(
+      const scoped_refptr<gfx::GLSurface>& surface) OVERRIDE;
   virtual bool SetParent(GLES2Decoder* parent_decoder,
                          uint32 parent_texture_id);
   virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size);
@@ -491,7 +493,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual void ReleaseCurrent();
   virtual GLES2Util* GetGLES2Util() { return &util_; }
   virtual gfx::GLContext* GetGLContext() { return context_.get(); }
-  virtual gfx::GLSurface* GetGLSurface() { return surface_.get(); }
   virtual ContextGroup* GetContextGroup() { return group_.get(); }
   virtual QueryManager* GetQueryManager() { return query_manager_.get(); }
   virtual bool ProcessPendingQueries();
@@ -1984,7 +1985,7 @@ bool GLES2DecoderImpl::Initialize(
     const DisallowedFeatures& disallowed_features,
     const char* allowed_extensions,
     const std::vector<int32>& attribs) {
-  DCHECK(context);
+  DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -2000,29 +2001,17 @@ bool GLES2DecoderImpl::Initialize(
   compile_shader_always_succeeds_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kCompileShaderAlwaysSucceeds);
 
-  // Take ownership of the GLSurface. TODO(apatrick): once the parent / child
-  // context is retired, the decoder should not take an initial surface as
-  // an argument to this function.
-  // Maybe create a short lived offscreen GLSurface for the purpose of
-  // initializing the decoder's GLContext.
-  surface_ = surface;
 
-  // Take ownership of the GLContext.
+  // Take ownership of the context and surface. The surface can be replaced with
+  // SetSurface.
   context_ = context;
-
-  if (!MakeCurrent()) {
-    LOG(ERROR) << "GLES2DecoderImpl::Initialize failed because "
-               << "MakeCurrent failed.";
-    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
-    Destroy();
-    return false;
-  }
+  surface_ = surface;
 
   if (!group_->Initialize(disallowed_features, allowed_extensions)) {
     LOG(ERROR) << "GpuScheduler::InitializeCommon failed because group "
                << "failed to initialize.";
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
-    Destroy();
+    Destroy(true);
     return false;
   }
   CHECK_GL_ERROR();
@@ -2209,7 +2198,7 @@ bool GLES2DecoderImpl::Initialize(
     // of the frame buffers is okay.
     if (!ResizeOffscreenFrameBuffer(size)) {
       LOG(ERROR) << "Could not allocate offscreen buffer storage.";
-      Destroy();
+      Destroy(true);
       return false;
     }
 
@@ -2315,7 +2304,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
           SH_VERTEX_SHADER, shader_spec, &resources,
           implementation_type, function_behavior)) {
     LOG(ERROR) << "Could not initialize vertex shader translator.";
-    Destroy();
+    Destroy(true);
     return false;
   }
   fragment_translator_.reset(new ShaderTranslator);
@@ -2323,7 +2312,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
           SH_FRAGMENT_SHADER, shader_spec, &resources,
           implementation_type, function_behavior)) {
     LOG(ERROR) << "Could not initialize fragment shader translator.";
-    Destroy();
+    Destroy(true);
     return false;
   }
   return true;
@@ -2508,13 +2497,15 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
 // }  // anonymous namespace
 
 bool GLES2DecoderImpl::MakeCurrent() {
-  bool result = context_.get() ? context_->MakeCurrent(surface_.get()) : false;
-  if (result && WasContextLost()) {
+  if (!context_.get() || !context_->MakeCurrent(surface_.get()))
+    return false;
+
+  if (WasContextLost()) {
     LOG(ERROR) << "  GLES2DecoderImpl: Context lost during MakeCurrent.";
-    result = false;
+    return false;
   }
 
-  return result;
+  return true;
 }
 
 void GLES2DecoderImpl::ReleaseCurrent() {
@@ -2741,8 +2732,8 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
   return false;
 }
 
-void GLES2DecoderImpl::Destroy() {
-  bool have_context = context_.get() && MakeCurrent();
+void GLES2DecoderImpl::Destroy(bool have_context) {
+  DCHECK(!have_context || context_->IsCurrent(NULL));
 
   ChildList children = children_;
   for (ChildList::iterator it = children.begin(); it != children.end(); ++it)
@@ -2848,6 +2839,14 @@ void GLES2DecoderImpl::Destroy() {
   }
   texture_to_io_surface_map_.clear();
 #endif
+}
+
+void GLES2DecoderImpl::SetSurface(
+    const scoped_refptr<gfx::GLSurface>& surface) {
+  DCHECK(context_->IsCurrent(NULL));
+  DCHECK(surface_.get());
+  surface_ = surface;
+  RestoreCurrentFramebufferBindings();
 }
 
 bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
