@@ -34,8 +34,6 @@ const float kModelViewAnimationScaleFactor = 0.9f;
 const int kPreferredIconDimension = 48;
 const int kPreferredCols = 4;
 const int kPreferredRows = 4;
-// Padding space in pixels between model view and page switcher footer.
-const int kModelViewFooterPadding = 10;
 
 ui::Transform GetScaleTransform(AppListModelView* model_view) {
   gfx::Rect pixel_bounds = model_view->GetLayerBoundsInPixel();
@@ -97,8 +95,7 @@ void AppListView::InitAsBubble(gfx::NativeView parent, views::View* anchor) {
   bubble_style_ = true;
   set_background(NULL);
 
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0, kModelViewFooterPadding));
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
   model_view_ = new AppListModelView(this, pagination_model_.get());
   model_view_->SetLayout(kPreferredIconDimension,

@@ -12,27 +12,33 @@
 
 namespace {
 
+// Bubble border corner radius.
 const int kCornerRadius = 3;
 
+// Arrow width and height.
 const int kArrowHeight = 10;
 const int kArrowWidth = 20;
 
+// Bubble border color and width.
 const SkColor kBorderColor = SkColorSetARGB(0xFF, 0, 0, 0);
 const int kBorderSize = 1;
 
+// Bubble shadow color and radius.
 const SkColor kShadowColor = SkColorSetARGB(0xFF, 0, 0, 0);
 const int kShadowRadius = 4;
 
-const SkColor kModelViewGradientColor1 = SkColorSetARGB(0xFF, 0xFE, 0xFE, 0xFE);
-const SkColor kModelViewGradientColor2 = SkColorSetARGB(0xFF, 0xF8, 0xF8, 0xF8);
-const int kModelViewGradientSize = 10;
+// Colors and sizes of top separator between searchbox and grid view.
+const SkColor kTopSeparatorColor = SkColorSetRGB(0xDB, 0xDB, 0xDB);
+const int kTopSeparatorSize = 1;
+const SkColor kTopSeparatorGradientColor1 = SkColorSetRGB(0xEF, 0xEF, 0xEF);
+const SkColor kTopSeparatorGradientColor2 = SkColorSetRGB(0xF9, 0xF9, 0xF9);
+const int kTopSeparatorGradientSize = 9;
 
-const SkColor kFooterBorderGradientColor1 =
-    SkColorSetARGB(0xFF, 0xA0, 0xA0, 0xA0);
-const SkColor kFooterBorderGradientColor2 =
-    SkColorSetARGB(0xFF, 0xD4, 0xD4, 0xD4);
+// Colors and sizes of bottom separator bwtween grid view and page switcher.
+const SkColor kFooterBorderGradientColor1 = SkColorSetRGB(0x9F, 0x9F, 0x9F);
+const SkColor kFooterBorderGradientColor2 = SkColorSetRGB(0xD9, 0xD9, 0xD9);
 const int kFooterBorderSize = 3;
-const SkColor kFooterBackground = SkColorSetARGB(0xFF, 0xDC, 0xDC, 0xDC);
+const SkColor kFooterBackground = SkColorSetRGB(0xD9, 0xD9, 0xD9);
 
 // TODO(xiyuan): Merge this with the one in skia_util.
 SkShader* CreateVerticalGradientShader(int start_point,
@@ -108,13 +114,15 @@ void AppListBubbleBorder::PaintModelViewBackground(
                  bounds.width(),
                  page_switcher_bounds.y() - bounds.y());
 
+  // TODO(xiyuan): Draw 1px separator line after SearchBoxView is added.
+
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   SkSafeUnref(paint.setShader(CreateVerticalGradientShader(
       rect.y(),
-      rect.y() + kModelViewGradientSize,
-      kModelViewGradientColor1,
-      kModelViewGradientColor2,
+      rect.y() + kTopSeparatorGradientSize,
+      kTopSeparatorGradientColor1,
+      kTopSeparatorGradientColor2,
       SkShader::kClamp_TileMode)));
   canvas->DrawRect(rect, paint);
 }

@@ -19,14 +19,11 @@ const int kButtonHeight = 6;
 const int kButtonHeightPadding = 10;
 const int kButtonCornerRadius = 2;
 
-// 0.16 black
-const SkColor kHoverColor = SkColorSetARGB(0x2A, 0x00, 0x00, 0x00);
+const SkColor kHoverColor = SkColorSetRGB(0x6E, 0x6E, 0x6E);
 
-// 0.2 black
-const SkColor kNormalColor = SkColorSetARGB(0x33, 0x00, 0x00, 0x00);
+const SkColor kNormalColor = SkColorSetRGB(0xBB, 0xBB, 0xBB);
 
-// 0.33 black
-const SkColor kSelectedColor = SkColorSetARGB(0x55, 0x00, 0x00, 0x00);
+const SkColor kSelectedColor = kHoverColor;
 
 class PageSwitcherButton : public views::CustomButton {
  public:

@@ -54,23 +54,26 @@ const int kBoldFontSize = 14;
 
 const int kMinFontSize = 12;
 
+const int kFixedFontSize = 11;  // Font size for fixed layout.
+
 const int kMinTitleChars = 15;
 
 const int kLeftRightPaddingChars = 1;
 
-const gfx::Font& GetTitleFontForIconSize(const gfx::Size& size) {
+const gfx::Font& GetTitleFontForIconSize(const gfx::Size& size, bool fixed) {
   static int icon_height;
   static gfx::Font* font = NULL;
 
-  if (font && icon_height == size.height())
+  // Reuses current font for fixed layout or icon height is the same.
+  if (font && (fixed || icon_height == size.height()))
     return *font;
 
   delete font;
 
   icon_height = size.height();
-  int font_size = std::max(
-      static_cast<int>(icon_height * kFontSizeToIconSizeRatio),
-      kMinFontSize);
+  int font_size = fixed ? kFixedFontSize :
+      std::max(static_cast<int>(icon_height * kFontSizeToIconSizeRatio),
+               kMinFontSize);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Font title_font(rb.GetFont(ui::ResourceBundle::BaseFont).GetFontName(),
@@ -228,7 +231,10 @@ gfx::Size AppListItemView::GetPreferredSizeForIconSize(
   // AppList.ModelViewCalculateLayout.
   int left_right_padding = 20;
   if (min_title_width == 0) {
-    const gfx::Font& title_font = GetTitleFontForIconSize(icon_size);
+    // Assumes fixed layout is false since this function should only be called
+    // for dynamic layout.
+    const gfx::Font& title_font = GetTitleFontForIconSize(icon_size,
+                                                          false /* fixed */);
     // Use big char such as 'G' to calculate min title width.
     min_title_width = kMinTitleChars *
         title_font.GetStringWidth(ASCIIToUTF16("G"));
@@ -252,7 +258,8 @@ void AppListItemView::SetIconSize(const gfx::Size& size) {
     return;
 
   icon_size_ = size;
-  title_->SetFont(GetTitleFontForIconSize(size));
+  title_->SetFont(GetTitleFontForIconSize(size,
+                                          list_model_view_->fixed_layout()));
   UpdateIcon();
 }
 
@@ -345,7 +352,8 @@ void AppListItemView::Layout() {
   int y = rect.y() + (rect.height() - height) / 2;
 
   gfx::Rect icon_bounds(rect.x(), y, rect.width(), icon_size_.height());
-  icon_bounds.Inset(0, -IconOperation::kShadowPadding);
+  icon_bounds.Inset(-IconOperation::kShadowPadding,
+                    -IconOperation::kShadowPadding);
   icon_->SetBoundsRect(icon_bounds);
 
   title_->SetBounds(rect.x(),

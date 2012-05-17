@@ -9,6 +9,19 @@
 #include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"
+#include "ui/views/border.h"
+
+namespace {
+
+// Padding space in pixels for fixed layout.
+const int kTopLeftRightPadding = 15;
+const int kBottomPadding = 30;
+
+// Preferred tile size when showing in fixed layout.
+const int kPreferredTileWidth = 80;
+const int kPreferredTileHeight = 88;
+
+}  // namespace
 
 namespace app_list {
 
@@ -88,6 +101,11 @@ void AppListModelView::SetLayout(int icon_size, int cols, int rows_per_page) {
   icon_size_.SetSize(icon_size, icon_size);
   cols_ = cols;
   rows_per_page_ = rows_per_page;
+
+  set_border(views::Border::CreateEmptyBorder(kTopLeftRightPadding,
+                                              kTopLeftRightPadding,
+                                              kBottomPadding,
+                                              kTopLeftRightPadding));
 }
 
 void AppListModelView::SetModel(AppListModel* model) {
@@ -151,10 +169,10 @@ gfx::Size AppListModelView::GetPreferredSize() {
   if (!fixed_layout_)
     return gfx::Size();
 
-  gfx::Size tile_size = AppListItemView::GetPreferredSizeForIconSize(
-      icon_size_);
-  return gfx::Size(tile_size.width() * cols_,
-                   tile_size.height() * rows_per_page_);
+  gfx::Insets insets(GetInsets());
+  gfx::Size tile_size = gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
+  return gfx::Size(tile_size.width() * cols_ + insets.width(),
+                   tile_size.height() * rows_per_page_ + insets.height());
 }
 
 void AppListModelView::Layout() {
@@ -164,7 +182,7 @@ void AppListModelView::Layout() {
 
   gfx::Size tile_size;
   if (fixed_layout_) {
-    tile_size = AppListItemView::GetPreferredSizeForIconSize(icon_size_);
+    tile_size = gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
   } else {
     int rows = 0;
     CalculateLayout(rect.size(), child_count(), &icon_size_, &rows, &cols_);
