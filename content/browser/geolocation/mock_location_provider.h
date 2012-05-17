@@ -7,8 +7,8 @@
 #pragma once
 
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/public/common/geoposition.h"

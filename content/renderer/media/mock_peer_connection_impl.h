@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 
 class MockMediaStreamDependencyFactory;
@@ -19,7 +20,7 @@ class MockStreamCollection;
 
 class MockPeerConnectionImpl : public PeerConnectionInterface {
  public:
-  MockPeerConnectionImpl(MockMediaStreamDependencyFactory* factory);
+  explicit MockPeerConnectionImpl(MockMediaStreamDependencyFactory* factory);
 
   // PeerConnectionInterface implementation.
   virtual void ProcessSignalingMessage(const std::string& msg) OVERRIDE;

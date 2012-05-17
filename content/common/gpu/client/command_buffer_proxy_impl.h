@@ -15,8 +15,8 @@
 #include "gpu/ipc/command_buffer_proxy.h"
 
 #include "base/callback.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -34,10 +34,10 @@ class SharedMemory;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
-class CommandBufferProxyImpl :
-    public CommandBufferProxy,
-    public IPC::Channel::Listener,
-    public base::SupportsWeakPtr<CommandBufferProxyImpl> {
+class CommandBufferProxyImpl
+    : public CommandBufferProxy,
+      public IPC::Channel::Listener,
+      public base::SupportsWeakPtr<CommandBufferProxyImpl> {
  public:
   typedef base::Callback<void(
       const std::string& msg, int id)> GpuConsoleMessageCallback;

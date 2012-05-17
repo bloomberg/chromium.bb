@@ -7,7 +7,8 @@
 #pragma once
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"

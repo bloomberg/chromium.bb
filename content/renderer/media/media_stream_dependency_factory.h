@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 #include "webkit/glue/p2p_transport.h"
@@ -40,7 +39,7 @@ class VideoCaptureImplManager;
 // Object factory for MediaStreamImpl and PeerConnectionHandler.
 class CONTENT_EXPORT MediaStreamDependencyFactory {
  public:
-  MediaStreamDependencyFactory(VideoCaptureImplManager* vc_manager);
+  explicit MediaStreamDependencyFactory(VideoCaptureImplManager* vc_manager);
   virtual ~MediaStreamDependencyFactory();
 
   // Creates and deletes |pc_factory_|, which in turn is used for

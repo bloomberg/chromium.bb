@@ -8,7 +8,6 @@
 
 #include <set>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "content/common/mac/font_descriptor.h"

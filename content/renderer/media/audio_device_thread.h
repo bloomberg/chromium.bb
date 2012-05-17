@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"

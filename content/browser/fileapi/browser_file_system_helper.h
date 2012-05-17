@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_FILEAPI_BROWSER_FILE_SYSTEM_HELPER_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "webkit/fileapi/file_system_context.h"
 

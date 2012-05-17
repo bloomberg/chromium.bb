@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"

@@ -9,8 +9,9 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"

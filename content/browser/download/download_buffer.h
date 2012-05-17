@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 
@@ -38,8 +37,8 @@ CONTENT_EXPORT net::IOBuffer* AssembleData(const ContentVector& contents,
 // too many small write messages, each write is appended to the
 // |DownloadBuffer| while waiting for the task to run on the FILE
 // thread. Access to the write buffers is synchronized via the lock.
-class CONTENT_EXPORT DownloadBuffer :
-    public base::RefCountedThreadSafe<DownloadBuffer> {
+class CONTENT_EXPORT DownloadBuffer
+    : public base::RefCountedThreadSafe<DownloadBuffer> {
  public:
   DownloadBuffer();
 

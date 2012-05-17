@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_GEOLOCATION_ANDROID_LOCATION_API_ADAPTER_H_
-#define CONTENT_BROWSER_GEOLOCATION_ANDROID_LOCATION_API_ADAPTER_H_
+#ifndef CONTENT_BROWSER_GEOLOCATION_LOCATION_API_ADAPTER_ANDROID_H_
+#define CONTENT_BROWSER_GEOLOCATION_LOCATION_API_ADAPTER_ANDROID_H_
 #pragma once
 
+#include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/synchronization/lock.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop_proxy.h"
-#include "base/android/jni_helper.h"
+#include "base/synchronization/lock.h"
 
 namespace content {
 struct Geoposition;
@@ -80,4 +80,4 @@ class AndroidLocationApiAdapter {
   scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
 
-#endif  // CONTENT_BROWSER_GEOLOCATION_ANDROID_LOCATION_API_ADAPTER_H_
+#endif  // CONTENT_BROWSER_GEOLOCATION_LOCATION_API_ADAPTER_ANDROID_H_

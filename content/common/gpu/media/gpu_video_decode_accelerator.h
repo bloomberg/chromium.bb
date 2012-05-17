@@ -7,7 +7,8 @@
 
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/shared_memory.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -50,7 +51,6 @@ class GpuVideoDecodeAccelerator
                   IPC::Message* init_done_msg);
 
  private:
-
   // Handlers for IPC messages.
   void OnDecode(base::SharedMemoryHandle handle, int32 id, int32 size);
   void OnAssignPictureBuffers(

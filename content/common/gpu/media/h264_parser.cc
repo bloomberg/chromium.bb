@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
-#include "base/stl_util.h"
 #include "content/common/gpu/media/h264_parser.h"
+
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 
 namespace content {
 
@@ -151,7 +153,7 @@ do {                                                                          \
     return kInvalidStream;                                                    \
   }                                                                           \
   *out = _out;                                                                \
-} while(0)
+} while (0)
 
 #define READ_UE_OR_RETURN(out)                                               \
 do {                                                                         \
@@ -159,7 +161,7 @@ do {                                                                         \
     DVLOG(1) << "Error in stream: invalid value while trying to read " #out; \
     return kInvalidStream;                                                   \
   }                                                                          \
-} while(0)
+} while (0)
 
 #define READ_SE_OR_RETURN(out)                                               \
 do {                                                                         \
@@ -167,7 +169,7 @@ do {                                                                         \
     DVLOG(1) << "Error in stream: invalid value while trying to read " #out; \
     return kInvalidStream;                                                   \
   }                                                                          \
-} while(0)
+} while (0)
 
 #define IN_RANGE_OR_RETURN(val, min, max)                                 \
 do {                                                                      \
@@ -177,7 +179,7 @@ do {                                                                      \
              << " found " << (val) << " instead";                         \
     return kInvalidStream;                                                \
   }                                                                       \
-} while(0)
+} while (0)
 
 #define TRUE_OR_RETURN(a)                                          \
 do {                                                               \
@@ -185,7 +187,7 @@ do {                                                               \
     DVLOG(1) << "Error in stream: invalid value, expected " << #a; \
     return kInvalidStream;                                         \
   }                                                                \
-} while(0)
+} while (0)
 
 H264Parser::H264Parser() {
   Reset();
@@ -225,7 +227,7 @@ static inline bool IsStartCode(const uint8* data) {
 // and size of found start code (3 or 4 bytes).
 static bool FindStartCode(const uint8* data, off_t data_size,
                           off_t* offset,
-                          off_t *start_code_size) {
+                          off_t* start_code_size) {
   off_t bytes_left = data_size;
 
   while (bytes_left > 3) {
@@ -823,7 +825,7 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
 H264Parser::Result H264Parser::ParseRefPicListModification(
     int num_ref_idx_active_minus1,
     H264ModificationOfPicNum* ref_list_mods) {
-  H264ModificationOfPicNum *pic_num_mod;
+  H264ModificationOfPicNum* pic_num_mod;
 
   if (num_ref_idx_active_minus1 >= 32)
     return kInvalidStream;
@@ -966,7 +968,6 @@ H264Parser::Result H264Parser::ParsePredWeightTable(const H264SPS& sps,
 }
 
 H264Parser::Result H264Parser::ParseDecRefPicMarking(H264SliceHeader *shdr) {
-
   if (shdr->idr_pic_flag) {
     READ_BITS_OR_RETURN(1, &shdr->no_output_of_prior_pics_flag);
     READ_BITS_OR_RETURN(1, &shdr->long_term_reference_flag);
@@ -1195,5 +1196,4 @@ H264Parser::Result H264Parser::ParseSEI(H264SEIMessage* sei_msg) {
   return kOk;
 }
 
-} // namespace content
-
+}  // namespace content

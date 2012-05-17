@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_LOCATION_PROVIDER_ANDROID_H_
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_PROVIDER_ANDROID_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 #include "content/browser/geolocation/location_provider.h"
 #include "content/public/common/geoposition.h"
 

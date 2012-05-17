@@ -6,7 +6,6 @@
 #define CONTENT_GPU_GPU_WATCHDOG_THREAD_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"

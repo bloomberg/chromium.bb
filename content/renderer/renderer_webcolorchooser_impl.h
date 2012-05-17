@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_RENDERER_WEBCOLORCHOOSER_IMPL_H_
 #pragma once
 
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColorChooser.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColorChooserClient.h"

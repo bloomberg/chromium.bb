@@ -8,8 +8,8 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -25,7 +25,7 @@ class RenderViewHost;
 // objects, one per RenderViewHost.
 class JavaBridgeDispatcherHostManager : public content::WebContentsObserver {
  public:
-  JavaBridgeDispatcherHostManager(content::WebContents* web_contents);
+  explicit JavaBridgeDispatcherHostManager(content::WebContents* web_contents);
   virtual ~JavaBridgeDispatcherHostManager();
 
   // These methods add or remove the object to each JavaBridgeDispatcherHost.

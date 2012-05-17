@@ -7,10 +7,11 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_H264_PARSER_H_
 #define CONTENT_COMMON_GPU_MEDIA_H264_PARSER_H_
 
+#include <sys/types.h>
+
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace content {
 
@@ -400,7 +401,6 @@ class H264Parser {
   DISALLOW_COPY_AND_ASSIGN(H264Parser);
 };
 
-} // namespace content
+}  // namespace content
 
-#endif // CONTENT_COMMON_GPU_MEDIA_H264_PARSER_H_
-
+#endif  // CONTENT_COMMON_GPU_MEDIA_H264_PARSER_H_
