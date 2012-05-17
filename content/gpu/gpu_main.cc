@@ -11,6 +11,7 @@
 #include "base/environment.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_com_initializer.h"
@@ -72,31 +73,48 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   // GpuMsg_Initialize message from the browser.
   bool dead_on_arrival = false;
 
-  // Load and initialize the GL implementation and locate the GL entry points.
   content::GPUInfo gpu_info;
-  if (gfx::GLSurface::InitializeOneOff()) {
-    // Collect information about the GPU.
-    if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info)) {
-      LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo failed";
-    }
+  // Get vendor_id, device_id, driver_version from browser process through
+  // commandline switches.
+  DCHECK(command_line.HasSwitch(switches::kGpuVendorID) &&
+         command_line.HasSwitch(switches::kGpuDeviceID) &&
+         command_line.HasSwitch(switches::kGpuDriverVersion));
+  bool success = base::HexStringToInt(
+      command_line.GetSwitchValueASCII(switches::kGpuVendorID),
+      reinterpret_cast<int*>(&(gpu_info.gpu.vendor_id)));
+  DCHECK(success);
+  success = base::HexStringToInt(
+      command_line.GetSwitchValueASCII(switches::kGpuDeviceID),
+      reinterpret_cast<int*>(&(gpu_info.gpu.device_id)));
+  gpu_info.driver_version =
+      command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
+  content::GetContentClient()->SetGpuInfo(gpu_info);
 
+  // Load and initialize the GL implementation and locate the GL entry points.
+  if (gfx::GLSurface::InitializeOneOff()) {
 #if defined(OS_LINUX)
+    // We collect full GPU info on demand in Win/Mac, i.e., when about:gpu
+    // page opens.  This is because we can make blacklist decisions based on
+    // preliminary GPU info.
+    // However, on Linux, blacklist decisions are based on full GPU info.
+    if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info))
+      VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
+    content::GetContentClient()->SetGpuInfo(gpu_info);
+
     if (gpu_info.gpu.vendor_id == 0x10de &&  // NVIDIA
         gpu_info.driver_vendor == "NVIDIA") {
       base::ThreadRestrictions::AssertIOAllowed();
       if (access("/dev/nvidiactl", R_OK) != 0) {
-        LOG(INFO) << "NVIDIA device file /dev/nvidiactl access denied";
+        VLOG(1) << "NVIDIA device file /dev/nvidiactl access denied";
         gpu_info.gpu_accessible = false;
         dead_on_arrival = true;
       }
     }
 #endif
-
-    // Set the GPU info even if it failed.
-    content::GetContentClient()->SetGpuInfo(gpu_info);
   } else {
-    LOG(INFO) << "gfx::GLSurface::InitializeOneOff failed";
+    VLOG(1) << "gfx::GLSurface::InitializeOneOff failed";
     gpu_info.gpu_accessible = false;
+    gpu_info.finalized = true;
     dead_on_arrival = true;
   }
 

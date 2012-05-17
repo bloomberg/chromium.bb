@@ -368,6 +368,12 @@ const char kForceFieldTrials[]              = "force-fieldtrials";
 // overrides this if present.
 const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
 
+// Passes gpu device_id from browser process to GPU process.
+const char kGpuDeviceID[]                   = "gpu-device-id";
+
+// Passes gpu driver_version from browser process to GPU process.
+const char kGpuDriverVersion[]              = "gpu-driver-version";
+
 // Extra command line options for launching the GPU process (normally used
 // for debugging). Use like renderer-cmd-prefix.
 const char kGpuLauncher[]                   = "gpu-launcher";
@@ -377,6 +383,9 @@ const char kGpuProcess[]                    = "gpu-process";
 
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
+
+// Passes gpu vendor_id from browser process to GPU process.
+const char kGpuVendorID[]                   = "gpu-vendor-id";
 
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";

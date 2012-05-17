@@ -215,6 +215,15 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
       command_line->AppendSwitch(switches::kReduceGpuSandbox);
       command_line->AppendSwitch(switches::kDisableImageTransportSurface);
     }
+    // Pass GPU and driver information to GPU process. We try to avoid full GPU
+    // info collection at GPU process startup, but we need gpu vendor_id,
+    // device_id, driver_version for crash reporting purpose.
+    command_line->AppendSwitchASCII(switches::kGpuVendorID,
+        base::StringPrintf("0x%04x", gpu_info_.gpu.vendor_id));
+    command_line->AppendSwitchASCII(switches::kGpuDeviceID,
+        base::StringPrintf("0x%04x", gpu_info_.gpu.device_id));
+    command_line->AppendSwitchASCII(switches::kGpuDriverVersion,
+        gpu_info_.driver_version);
   }
 }
 

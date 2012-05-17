@@ -15,6 +15,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_watchdog_thread.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -64,9 +65,6 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
   target_services_ = NULL;
   collecting_dx_diagnostics_ = false;
 #endif
-  if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info_)) {
-    LOG(INFO) << "gpu_info_collector::CollectGraphicsInfo failed";
-  }
 }
 
 
@@ -107,7 +105,7 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
 
 void GpuChildThread::OnInitialize() {
   if (dead_on_arrival_) {
-    LOG(INFO) << "Exiting GPU process due to errors during initialization";
+    VLOG(1) << "Exiting GPU process due to errors during initialization";
     MessageLoop::current()->Quit();
     return;
   }
@@ -163,9 +161,11 @@ void GpuChildThread::OnInitialize() {
       ChildProcess::current()->io_message_loop_proxy(),
       ChildProcess::current()->GetShutDownEvent()));
 
+#if defined(OS_LINUX)
   // Ensure the browser process receives the GPU info before a reply to any
   // subsequent IPC it might send.
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
+#endif
 }
 
 void GpuChildThread::StopWatchdog() {
@@ -175,13 +175,20 @@ void GpuChildThread::StopWatchdog() {
 }
 
 void GpuChildThread::OnCollectGraphicsInfo() {
-#if defined(OS_WIN)
-  if (!gpu_info_.finalized && !collecting_dx_diagnostics_) {
-    // Prevent concurrent collection of DirectX diagnostics.
-    collecting_dx_diagnostics_ = true;
+  if (!gpu_info_.finalized &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuSandbox)) {
+    // GPU full info collection should only happen on un-sandboxed GPU process.
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableGpuSandbox)) {
+    if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info_))
+      VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
+    content::GetContentClient()->SetGpuInfo(gpu_info_);
+
+#if defined(OS_WIN)
+    if (!collecting_dx_diagnostics_) {
+      // Prevent concurrent collection of DirectX diagnostics.
+      collecting_dx_diagnostics_ = true;
+
       // Asynchronously collect the DirectX diagnostics because this can take a
       // couple of seconds.
       if (!base::WorkerPool::PostTask(
@@ -191,31 +198,28 @@ void GpuChildThread::OnCollectGraphicsInfo() {
         // collected.
         collecting_dx_diagnostics_ = false;
         gpu_info_.finalized = true;
-      } else {
-        // Do not send response if we are still completing the GPUInfo struct
-        return;
       }
     }
-  }
 #endif
+  }
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 }
 
 void GpuChildThread::OnClean() {
-  LOG(INFO) << "GPU: Removing all contexts";
+  VLOG(1) << "GPU: Removing all contexts";
   if (gpu_channel_manager_.get())
     gpu_channel_manager_->LoseAllContexts();
 }
 
 void GpuChildThread::OnCrash() {
-  LOG(INFO) << "GPU: Simulating GPU crash";
+  VLOG(1) << "GPU: Simulating GPU crash";
   // Good bye, cruel world.
   volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
   *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
 }
 
 void GpuChildThread::OnHang() {
-  LOG(INFO) << "GPU: Simulating GPU hang";
+  VLOG(1) << "GPU: Simulating GPU hang";
   for (;;) {
     // Do not sleep here. The GPU watchdog timer tracks the amount of user
     // time this thread is using and it doesn't use much while calling Sleep.
