@@ -21,7 +21,6 @@ ChromeWebUIDataSource* CreateAboutPageHTMLSource() {
       new ChromeWebUIDataSource(chrome::kChromeUIHelpFrameHost);
 
   source->set_json_path("strings.js");
-  source->set_use_json_js_format_v2();
   source->add_resource_path("help.js", IDR_HELP_JS);
   source->set_default_resource(IDR_HELP_HTML);
   return source;

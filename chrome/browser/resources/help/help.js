@@ -5,6 +5,8 @@
 <include src="../uber/uber_utils.js">
 
 cr.define('help', function() {
+  var localStrings = new LocalStrings();
+
   /**
    * Encapsulated handling of the help page.
    */
@@ -22,18 +24,17 @@ cr.define('help', function() {
       uber.onContentFrameLoaded();
 
       // Set the title.
-      var title = loadTimeData.getString('helpTitle');
+      var title = localStrings.getString('helpTitle');
       uber.invokeMethodOnParent('setTitle', {title: title});
 
-      $('product-license').innerHTML = loadTimeData.getString('productLicense');
-      if (cr.isChromeOS) {
+      $('product-license').innerHTML = localStrings.getString('productLicense');
+      if (cr.isChromeOS)
         $('product-os-license').innerHTML =
-            loadTimeData.getString('productOsLicense');
-      }
+            localStrings.getString('productOsLicense');
 
       var productTOS = $('product-tos');
       if (productTOS)
-        productTOS.innerHTML = loadTimeData.getString('productTOS');
+        productTOS.innerHTML = localStrings.getString('productTOS');
 
       $('get-help').onclick = chrome.send.bind(chrome, 'openHelpPage');
       $('report-issue').onclick =
@@ -70,8 +71,8 @@ cr.define('help', function() {
       moreInfo.style.height = visible ? '' : moreInfo.scrollHeight + 'px';
       moreInfo.addEventListener('webkitTransitionEnd', function(event) {
         $('more-info-expander').textContent = visible ?
-            loadTimeData.getString('showMoreInfo') :
-            loadTimeData.getString('hideMoreInfo');
+            localStrings.getString('showMoreInfo') :
+                localStrings.getString('hideMoreInfo');
       });
     },
 
@@ -98,17 +99,17 @@ cr.define('help', function() {
       if (status == 'checking') {
         this.setUpdateImage_('working');
         $('update-status').innerHTML =
-            loadTimeData.getString('updateCheckStarted');
+            localStrings.getString('updateCheckStarted');
       } else if (status == 'updating') {
         this.setUpdateImage_('working');
-        $('update-status').innerHTML = loadTimeData.getString('updating');
+        $('update-status').innerHTML = localStrings.getString('updating');
       } else if (status == 'nearly_updated') {
         this.setUpdateImage_('up-to-date');
         $('update-status').innerHTML =
-            loadTimeData.getString('updateAlmostDone');
+            localStrings.getString('updateAlmostDone');
       } else if (status == 'updated') {
         this.setUpdateImage_('up-to-date');
-        $('update-status').innerHTML = loadTimeData.getString('upToDate');
+        $('update-status').innerHTML = localStrings.getString('upToDate');
       } else if (status == 'failed') {
         this.setUpdateImage_('failed');
         $('update-status').innerHTML = message;
