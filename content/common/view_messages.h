@@ -1831,9 +1831,6 @@ IPC_SYNC_MESSAGE_ROUTED3_2(ViewHostMsg_RunBeforeUnloadConfirm,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DataReceived_ACK,
                     int /* request_id */)
 
-IPC_MESSAGE_CONTROL1(ViewHostMsg_RevealFolderInOS,
-                     FilePath /* path */)
-
 // Sent when a provisional load on the main frame redirects.
 IPC_MESSAGE_ROUTED4(ViewHostMsg_DidRedirectProvisionalLoad,
                     int /* page_id */,

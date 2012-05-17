@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,3 +31,5 @@ IPC_SYNC_MESSAGE_CONTROL2_1(FileUtilitiesMsg_OpenFile,
                             int /* mode */,
                             IPC::PlatformFileForTransit /* result */)
 
+IPC_MESSAGE_CONTROL1(FileUtilitiesMsg_RevealFolderInOS,
+                     FilePath /* path */)

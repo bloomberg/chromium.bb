@@ -425,7 +425,7 @@ void RendererWebKitPlatformSupportImpl::FileUtilities::revealFolderInOS(
   bool res = file_util::AbsolutePath(&file_path);
   DCHECK(res);
   RenderThreadImpl::current()->Send(
-      new ViewHostMsg_RevealFolderInOS(file_path));
+      new FileUtilitiesMsg_RevealFolderInOS(file_path));
 }
 
 bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileModificationTime(

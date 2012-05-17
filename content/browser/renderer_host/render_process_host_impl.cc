@@ -901,8 +901,10 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
                           SuddenTerminationChanged)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SavedPageAsMHTML, OnSavedPageAsMHTML)
+      // Adding single handlers for your service here is fine, but once your
+      // service needs more than one handler, please extract them into a new
+      // message filter and add that filter to CreateMessageFilters().
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP_EX()
 
@@ -1363,12 +1365,6 @@ void RenderProcessHostImpl::OnUserMetricsRecordAction(
   content::RecordComputedAction(action);
 }
 
-void RenderProcessHostImpl::OnRevealFolderInOS(const FilePath& path) {
-  // Only honor the request if appropriate persmissions are granted.
-  if (ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(GetID(),
-                                                                 path))
-    content::GetContentClient()->browser()->OpenItem(path);
-}
 
 void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
   MHTMLGenerationManager::GetInstance()->MHTMLGenerated(job_id, data_size);

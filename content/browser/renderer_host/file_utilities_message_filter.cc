@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/file_utilities_messages.h"
+#include "content/public/browser/content_browser_client.h"
 
 using content::BrowserThread;
 
@@ -20,7 +21,9 @@ FileUtilitiesMessageFilter::~FileUtilitiesMessageFilter() {
 void FileUtilitiesMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
-  if (IPC_MESSAGE_CLASS(message) == FileUtilitiesMsgStart)
+  if (message.type() == FileUtilitiesMsg_RevealFolderInOS::ID)
+    *thread = BrowserThread::UI;
+  else if (IPC_MESSAGE_CLASS(message) == FileUtilitiesMsgStart)
     *thread = BrowserThread::FILE;
 }
 
@@ -32,6 +35,7 @@ bool FileUtilitiesMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(FileUtilitiesMsg_GetFileModificationTime,
                         OnGetFileModificationTime)
     IPC_MESSAGE_HANDLER(FileUtilitiesMsg_OpenFile, OnOpenFile)
+    IPC_MESSAGE_HANDLER(FileUtilitiesMsg_RevealFolderInOS, OnRevealFolderInOS)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -106,4 +110,11 @@ void FileUtilitiesMessageFilter::OnOpenFile(
 #else
   *result = base::FileDescriptor(file_handle, true);
 #endif
+}
+
+void FileUtilitiesMessageFilter::OnRevealFolderInOS(const FilePath& path) {
+  // Only honor the request if appropriate permissions are granted.
+  if (ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(process_id_,
+                                                                 path))
+    content::GetContentClient()->browser()->OpenItem(path);
 }

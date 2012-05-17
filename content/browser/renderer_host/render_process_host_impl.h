@@ -159,7 +159,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnDumpHandlesDone();
   void SuddenTerminationChanged(bool enabled);
   void OnUserMetricsRecordAction(const std::string& action);
-  void OnRevealFolderInOS(const FilePath& path);
   void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);
 
   // CompositorSurfaceBuffersSwapped handler when there's no RWH.
