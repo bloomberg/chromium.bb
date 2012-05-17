@@ -250,7 +250,7 @@ ExtensionPrefs::ExtensionPrefs(
       extension_pref_value_map_(extension_pref_value_map),
       ALLOW_THIS_IN_INITIALIZER_LIST(extension_sorting_(
           new ExtensionSorting(this, prefs))),
-      content_settings_store_(new ExtensionContentSettingsStore()) {
+      content_settings_store_(new extensions::ContentSettingsStore()) {
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
@@ -1776,13 +1776,13 @@ void ExtensionPrefs::InitPrefStore(bool extensions_disabled) {
     ListValue* content_settings = NULL;
     if (extension_prefs->GetList(kPrefContentSettings,
                                  &content_settings)) {
-      content_settings_store_->SetExtensionContentSettingsFromList(
+      content_settings_store_->SetExtensionContentSettingFromList(
           *ext_id, content_settings,
           kExtensionPrefsScopeRegular);
     }
     if (extension_prefs->GetList(kPrefIncognitoContentSettings,
                                  &content_settings)) {
-      content_settings_store_->SetExtensionContentSettingsFromList(
+      content_settings_store_->SetExtensionContentSettingFromList(
           *ext_id, content_settings,
           kExtensionPrefsScopeIncognitoPersistent);
     }

@@ -1,12 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "chrome/browser/extensions/extension_content_settings_helpers.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
 
-namespace helpers = extension_content_settings_helpers;
+namespace extensions {
+namespace helpers = content_settings_helpers;
 
 TEST(ExtensionContentSettingsHelpersTest, ParseExtensionPattern) {
   const struct {
@@ -47,5 +48,6 @@ TEST(ExtensionContentSettingsHelpersTest, ParseExtensionPattern) {
         << "Unexpected error parsing "
         << kInvalidTestPatterns[i].extension_pattern;
   }
-
 }
+
+}  // namespace extensions

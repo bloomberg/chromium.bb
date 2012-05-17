@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTENT_SETTINGS_STORE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTENT_SETTINGS_STORE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_STORE_H_
+#define CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_STORE_H_
 
 #include <map>
 #include <string>
@@ -28,25 +28,27 @@ class OriginIdentifierValueMap;
 class RuleIterator;
 }
 
+namespace extensions {
+
 // This class is the backend for extension-defined content settings. It is used
 // by the content_settings::ExtensionProvider to integrate its settings into the
 // HostContentSettingsMap and by the content settings extension API to provide
 // extensions with access to content settings.
-class ExtensionContentSettingsStore
-    : public base::RefCountedThreadSafe<ExtensionContentSettingsStore> {
+class ContentSettingsStore
+    : public base::RefCountedThreadSafe<ContentSettingsStore> {
  public:
   class Observer {
    public:
     virtual ~Observer() {}
 
     // Called when a content setting changes in the
-    // ExtensionContentSettingsStore.
+    // ContentSettingsStore.
     virtual void OnContentSettingChanged(
         const std::string& extension_id,
         bool incognito) = 0;
   };
 
-  ExtensionContentSettingsStore();
+  ContentSettingsStore();
 
   // //////////////////////////////////////////////////////////////////////////
 
@@ -81,7 +83,7 @@ class ExtensionContentSettingsStore
 
   // Deserializes content settings rules from |list| and applies them as set by
   // the extension with ID |extension_id|.
-  void SetExtensionContentSettingsFromList(const std::string& extension_id,
+  void SetExtensionContentSettingFromList(const std::string& extension_id,
                                            const base::ListValue* list,
                                            ExtensionPrefsScope scope);
 
@@ -106,13 +108,13 @@ class ExtensionContentSettingsStore
   void RemoveObserver(Observer* observer);
 
  private:
-  friend class base::RefCountedThreadSafe<ExtensionContentSettingsStore>;
+  friend class base::RefCountedThreadSafe<ContentSettingsStore>;
 
   struct ExtensionEntry;
 
   typedef std::multimap<base::Time, ExtensionEntry*> ExtensionEntryMap;
 
-  virtual ~ExtensionContentSettingsStore();
+  virtual ~ContentSettingsStore();
 
   content_settings::OriginIdentifierValueMap* GetValueMap(
       const std::string& ext_id,
@@ -136,7 +138,9 @@ class ExtensionContentSettingsStore
 
   mutable base::Lock lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionContentSettingsStore);
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingsStore);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTENT_SETTINGS_STORE_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_STORE_H_

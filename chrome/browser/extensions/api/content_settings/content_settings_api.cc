@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_content_settings_api.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_api.h"
 
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/extensions/extension_content_settings_api_constants.h"
-#include "chrome/browser/extensions/extension_content_settings_helpers.h"
-#include "chrome/browser/extensions/extension_content_settings_store.h"
 #include "chrome/browser/extensions/extension_preference_api_constants.h"
 #include "chrome/browser/extensions/extension_preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -26,8 +26,6 @@
 using content::BrowserThread;
 using content::PluginService;
 
-namespace helpers = extension_content_settings_helpers;
-namespace keys = extension_content_settings_api_constants;
 namespace pref_helpers = extension_preference_helpers;
 namespace pref_keys = extension_preference_api_constants;
 
@@ -36,6 +34,11 @@ namespace {
 const std::vector<webkit::npapi::PluginGroup>* g_testing_plugin_groups_;
 
 }  // namespace
+
+namespace extensions {
+
+namespace helpers = content_settings_helpers;
+namespace keys = content_settings_api_constants;
 
 bool ClearContentSettingsFunction::RunImpl() {
   std::string content_type_str;
@@ -72,8 +75,8 @@ bool ClearContentSettingsFunction::RunImpl() {
     }
   }
 
-  ExtensionContentSettingsStore* store =
-      profile_->GetExtensionService()->GetExtensionContentSettingsStore();
+  ContentSettingsStore* store =
+      profile_->GetExtensionService()->GetContentSettingsStore();
   store->ClearContentSettingsForExtension(extension_id(), scope);
 
   return true;
@@ -255,8 +258,8 @@ bool SetContentSettingFunction::RunImpl() {
     return false;
   }
 
-  ExtensionContentSettingsStore* store =
-      profile_->GetExtensionService()->GetExtensionContentSettingsStore();
+  ContentSettingsStore* store =
+      profile_->GetExtensionService()->GetContentSettingsStore();
   store->SetExtensionContentSetting(extension_id(), primary_pattern,
                                     secondary_pattern, content_type,
                                     resource_identifier, setting, scope);
@@ -306,3 +309,5 @@ void GetResourceIdentifiersFunction::SetPluginGroupsForTesting(
     const std::vector<webkit::npapi::PluginGroup>* plugin_groups) {
   g_testing_plugin_groups_ = plugin_groups;
 }
+
+}  // namespace extensions

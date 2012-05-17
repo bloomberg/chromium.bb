@@ -1164,8 +1164,7 @@ extensions::SettingsFrontend* ExtensionService::settings_frontend() {
   return settings_frontend_.get();
 }
 
-ExtensionContentSettingsStore*
-    ExtensionService::GetExtensionContentSettingsStore() {
+extensions::ContentSettingsStore* ExtensionService::GetContentSettingsStore() {
   return extension_prefs()->content_settings_store();
 }
 

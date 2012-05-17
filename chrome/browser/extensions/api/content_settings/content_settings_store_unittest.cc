@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_content_settings_store.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
@@ -11,6 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Mock;
+
+namespace extensions {
 
 namespace {
 
@@ -36,15 +38,15 @@ class FakeTimer {
   int64 internal_;
 };
 
-class MockExtensionContentSettingsStoreObserver
-    : public ExtensionContentSettingsStore::Observer {
+class MockContentSettingsStoreObserver
+    : public ContentSettingsStore::Observer {
  public:
   MOCK_METHOD2(OnContentSettingChanged,
                void(const std::string& extension_id, bool incognito));
 };
 
 ContentSetting GetContentSettingFromStore(
-    const ExtensionContentSettingsStore* store,
+    const ContentSettingsStore* store,
     const GURL& primary_url, const GURL& secondary_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier,
@@ -58,7 +60,7 @@ ContentSetting GetContentSettingFromStore(
 }
 
 void GetSettingsForOneTypeFromStore(
-    const ExtensionContentSettingsStore* store,
+    const ContentSettingsStore* store,
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     bool incognito,
@@ -72,10 +74,10 @@ void GetSettingsForOneTypeFromStore(
 
 }  // namespace
 
-class ExtensionContentSettingsStoreTest : public ::testing::Test {
+class ContentSettingsStoreTest : public ::testing::Test {
  public:
-  ExtensionContentSettingsStoreTest() :
-      store_(new ExtensionContentSettingsStore()) {
+  ContentSettingsStoreTest() :
+      store_(new ContentSettingsStore()) {
   }
 
  protected:
@@ -83,17 +85,17 @@ class ExtensionContentSettingsStoreTest : public ::testing::Test {
     store_->RegisterExtension(ext_id, timer_.GetNext(), true);
   }
 
-  ExtensionContentSettingsStore* store() {
+  ContentSettingsStore* store() {
     return store_.get();
   }
 
  private:
   FakeTimer timer_;
-  scoped_refptr<ExtensionContentSettingsStore> store_;
+  scoped_refptr<ContentSettingsStore> store_;
 };
 
-TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
-  ::testing::StrictMock<MockExtensionContentSettingsStoreObserver> observer;
+TEST_F(ContentSettingsStoreTest, RegisterUnregister) {
+  ::testing::StrictMock<MockContentSettingsStoreObserver> observer;
   store()->AddObserver(&observer);
 
   GURL url("http://www.youtube.com");
@@ -184,7 +186,7 @@ TEST_F(ExtensionContentSettingsStoreTest, RegisterUnregister) {
   store()->RemoveObserver(&observer);
 }
 
-TEST_F(ExtensionContentSettingsStoreTest, GetAllSettings) {
+TEST_F(ContentSettingsStoreTest, GetAllSettings) {
   bool incognito = false;
   std::vector<content_settings::Rule> rules;
   GetSettingsForOneTypeFromStore(
@@ -249,3 +251,5 @@ TEST_F(ExtensionContentSettingsStoreTest, GetAllSettings) {
       store(), CONTENT_SETTINGS_TYPE_COOKIES, "", incognito, &rules);
   ASSERT_EQ(0u, rules.size());
 }
+
+}  // namespace extensions

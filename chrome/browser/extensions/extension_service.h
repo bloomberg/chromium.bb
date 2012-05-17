@@ -51,7 +51,6 @@ class AppNotificationManager;
 class BookmarkExtensionEventRouter;
 class CrxInstaller;
 class ExtensionBrowserEventRouter;
-class ExtensionContentSettingsStore;
 class ExtensionDownloadsEventRouter;
 class ExtensionFontSettingsEventRouter;
 class ExtensionGlobalError;
@@ -78,6 +77,7 @@ namespace extensions {
 class APIResourceController;
 class AppSyncData;
 class ComponentLoader;
+class ContentSettingsStore;
 class ExtensionCookiesEventRouter;
 class ExtensionSyncData;
 class ExtensionUpdater;
@@ -464,7 +464,7 @@ class ExtensionService
 
   extensions::SettingsFrontend* settings_frontend();
 
-  ExtensionContentSettingsStore* GetExtensionContentSettingsStore();
+  extensions::ContentSettingsStore* GetContentSettingsStore();
 
   // Whether the extension service is ready.
   virtual bool is_ready() OVERRIDE;

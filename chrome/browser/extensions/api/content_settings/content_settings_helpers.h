@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTENT_SETTINGS_HELPERS_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTENT_SETTINGS_HELPERS_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_HELPERS_H__
+#define CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_HELPERS_H__
 #pragma once
 
 #include <string>
@@ -11,7 +11,8 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 
-namespace extension_content_settings_helpers {
+namespace extensions {
+namespace content_settings_helpers {
 
 // Parses an extension match pattern and returns a corresponding
 // content settings pattern object.
@@ -37,6 +38,7 @@ bool StringToContentSetting(const std::string& setting_str,
 // Returns a string representation of a ContentSetting.
 const char* ContentSettingToString(ContentSetting setting);
 
-}  // namespace extension_content_settings_helpers
+}  // namespace content_settings_helpers
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_CONTENT_SETTINGS_HELPERS_H__
+#endif  // CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_HELPERS_H__

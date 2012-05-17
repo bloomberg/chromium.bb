@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_content_settings_api_constants.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
 
-namespace extension_content_settings_api_constants {
+namespace extensions {
+namespace content_settings_api_constants {
 
 // Keys.
 const char kContentSettingKey[] = "setting";
@@ -27,4 +28,5 @@ const char kIncognitoSessionOnlyError[] =
     "is open.";
 const char kInvalidUrlError[] = "The URL \"*\" is invalid.";
 
-}  // extension_content_settings_api_constants
+}  // namespace content_settings_api_constants
+}  // namespace extensions

@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_api.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_content_settings_api.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "webkit/plugins/npapi/mock_plugin_list.h"
+
+namespace extensions {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -129,3 +131,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
   GetResourceIdentifiersFunction::SetPluginGroupsForTesting(NULL);
 }
+
+}  // namespace extensions

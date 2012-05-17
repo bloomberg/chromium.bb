@@ -103,7 +103,7 @@ HostContentSettingsMap::HostContentSettingsMap(
     // |extension_service| can be NULL in unit tests.
     content_settings::ObservableProvider* extension_provider =
         new content_settings::ExtensionProvider(
-            extension_service->GetExtensionContentSettingsStore(),
+            extension_service->GetContentSettingsStore(),
             is_off_the_record_);
     extension_provider->AddObserver(this);
     content_settings_providers_[EXTENSION_PROVIDER] = extension_provider;

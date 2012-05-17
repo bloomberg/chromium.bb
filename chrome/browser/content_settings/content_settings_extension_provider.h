@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,15 +9,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/content_settings/content_settings_observable_provider.h"
-#include "chrome/browser/extensions/extension_content_settings_store.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 
 namespace content_settings {
 
 // A content settings provider which manages settings defined by extensions.
 class ExtensionProvider : public ObservableProvider,
-                          public ExtensionContentSettingsStore::Observer {
+                          public extensions::ContentSettingsStore::Observer {
  public:
-  ExtensionProvider(ExtensionContentSettingsStore* extensions_settings,
+  ExtensionProvider(extensions::ContentSettingsStore* extensions_settings,
                     bool incognito);
 
   virtual ~ExtensionProvider();
@@ -40,7 +40,7 @@ class ExtensionProvider : public ObservableProvider,
 
   virtual void ShutdownOnUIThread() OVERRIDE;
 
-  // ExtensionContentSettingsStore::Observer methods:
+  // extensions::ContentSettingsStore::Observer methods:
   virtual void OnContentSettingChanged(const std::string& extension_id,
                                        bool incognito) OVERRIDE;
 
@@ -50,7 +50,7 @@ class ExtensionProvider : public ObservableProvider,
   bool incognito_;
 
   // The backend storing content setting rules defined by extensions.
-  scoped_refptr<ExtensionContentSettingsStore> extensions_settings_;
+  scoped_refptr<extensions::ContentSettingsStore> extensions_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProvider);
 };

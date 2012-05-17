@@ -13,7 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_content_settings_store.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/common/extensions/extension.h"
@@ -44,7 +44,7 @@ struct ExtensionOmniboxSuggestion;
 //       preference. Extension-controlled preferences are stored in
 //       PrefValueStore::extension_prefs(), which this class populates and
 //       maintains as the underlying extensions change.
-class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
+class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
                        public ExtensionScopedPrefs {
  public:
   // Key name for a preference that keeps track of per-extension settings. This
@@ -404,7 +404,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  ExtensionContentSettingsStore* content_settings_store() {
+  extensions::ContentSettingsStore* content_settings_store() {
     return content_settings_store_.get();
   }
 
@@ -424,7 +424,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
  private:
   friend class ExtensionPrefsUninstallExtension;  // Unit test.
 
-  // ExtensionContentSettingsStore::Observer methods:
+  // extensions::ContentSettingsStore::Observer methods:
   virtual void OnContentSettingChanged(
       const std::string& extension_id,
       bool incognito) OVERRIDE;
@@ -537,7 +537,7 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
   // properties.
   scoped_ptr<ExtensionSorting> extension_sorting_;
 
-  scoped_refptr<ExtensionContentSettingsStore> content_settings_store_;
+  scoped_refptr<extensions::ContentSettingsStore> content_settings_store_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefs);
 };

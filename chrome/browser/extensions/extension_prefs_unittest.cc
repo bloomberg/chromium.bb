@@ -935,7 +935,7 @@ class ExtensionPrefsUninstallExtension : public ExtensionPrefsPrepopulatedTest {
   virtual void Initialize() {
     InstallExtControlledPref(ext1_, kPref1, Value::CreateStringValue("val1"));
     InstallExtControlledPref(ext1_, kPref2, Value::CreateStringValue("val2"));
-    ExtensionContentSettingsStore* store = prefs()->content_settings_store();
+    extensions::ContentSettingsStore* store = prefs()->content_settings_store();
     ContentSettingsPattern pattern =
         ContentSettingsPattern::FromString("http://[*.]example.com");
     store->SetExtensionContentSetting(ext1_->id(),
