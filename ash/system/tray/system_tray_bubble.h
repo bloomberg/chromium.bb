@@ -8,7 +8,6 @@
 
 #include "ash/system/user/login_status.h"
 #include "base/base_export.h"
-#include "base/message_pump_observer.h"
 #include "base/timer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -58,8 +57,7 @@ class SystemTrayBubbleView : public views::BubbleDelegateView {
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleView);
 };
 
-class SystemTrayBubble : public base::MessagePumpObserver,
-                         public views::Widget::Observer {
+class SystemTrayBubble : public views::Widget::Observer {
  public:
   enum BubbleType {
     BUBBLE_TYPE_DEFAULT,
@@ -109,14 +107,8 @@ class SystemTrayBubble : public base::MessagePumpObserver,
  private:
   void CreateItemViews(user::LoginStatus login_status);
 
-  // Overridden from base::MessagePumpObserver.
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) OVERRIDE;
 
   ash::SystemTray* tray_;
   SystemTrayBubbleView* bubble_view_;

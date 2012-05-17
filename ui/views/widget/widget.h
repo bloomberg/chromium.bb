@@ -11,6 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
@@ -163,6 +164,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     bool transparent;
     bool accept_events;
     bool can_activate;
+    bool close_on_deactivate;
     bool keep_on_top;
     Ownership ownership;
     bool mirror_origin_in_rtl;
@@ -693,6 +695,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // It's only for testing purpose.
   void ReplaceInputMethod(InputMethod* input_method);
 
+  base::WeakPtrFactory<Widget> set_capture_factory_;
+
   internal::NativeWidgetPrivate* native_widget_;
 
   ObserverList<Observer> observers_;
@@ -757,6 +761,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // when the widget is shown. Set this value to false to override
   // initial focus for the widget.
   bool focus_on_creation_;
+
+  // If true, the widget is closed when the user clicks outside the root view's
+  // bounds. This intentionally encompasses some situations where deactivation
+  // does not happen.
+  bool close_on_deactivate_;
 
   scoped_ptr<InputMethod> input_method_;
 
