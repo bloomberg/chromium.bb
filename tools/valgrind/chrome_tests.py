@@ -312,6 +312,13 @@ class ChromeTests:
   UI_TEST_ARGS = ["--ui-test-action-timeout=60000",
                   "--ui-test-action-max-timeout=150000"]
 
+  # TODO(thestig) fine-tune these values.
+  # Valgrind timeouts are in seconds.
+  BROWSER_VALGRIND_ARGS = ["--timeout=50000", "--trace_children", "--indirect"]
+  # Browser test timeouts are in milliseconds.
+  BROWSER_TEST_ARGS = ["--ui-test-action-timeout=200000",
+                       "--ui-test-action-max-timeout=400000"]
+
   def TestAutomatedUI(self):
     return self.SimpleTest("chrome", "automated_ui_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
@@ -319,8 +326,8 @@ class ChromeTests:
 
   def TestBrowser(self):
     return self.SimpleTest("chrome", "browser_tests",
-                           valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=self.UI_TEST_ARGS)
+                           valgrind_test_args=self.BROWSER_VALGRIND_ARGS,
+                           cmd_args=self.BROWSER_TEST_ARGS)
 
   def TestInteractiveUI(self):
     return self.SimpleTest("chrome", "interactive_ui_tests",
