@@ -8,9 +8,9 @@
 
 function RibbonClient() {}
 
-RibbonClient.prototype.prefetchImage = function(id, content, metadata) {};
+RibbonClient.prototype.prefetchImage = function(id, url) {};
 
-RibbonClient.prototype.openImage = function(id, content, metadata, direction) {
+RibbonClient.prototype.openImage = function(id, url, metadata, direction) {
 };
 
 RibbonClient.prototype.closeImage = function(item) {};
@@ -44,7 +44,6 @@ function Gallery(container, context) {
   this.onFadeTimeoutBound_ = this.onFadeTimeout_.bind(this);
   this.fadeTimeoutId_ = null;
   this.mouseOverTool_ = false;
-  this.imageChanges_ = 0;
 
   this.initDom_();
 }
@@ -75,39 +74,16 @@ Gallery.prototype.initDom_ = function() {
 
   doc.oncontextmenu = function(e) { e.preventDefault(); };
 
-  // Clean up after the previous instance of Gallery.
-  this.container_.removeAttribute('editing');
-  this.container_.removeAttribute('tools');
+  doc.body.addEventListener('keydown', this.onKeyDown_.bind(this));
 
-  // The removeEventListener calls below are required to prevent memory leaks in
-  // gallery_demo.html where the Gallery is re-created in the same iframe.
-  // It is safe to remove these calls once gallery_demo.html is retired.
-  if (window.galleryKeyDown) {
-    doc.body.removeEventListener('keydown', window.galleryKeyDown);
-  }
-  if (window.galleryMouseMove) {
-    doc.body.removeEventListener('mousemove', window.galleryMouseMove);
-  }
-  if (window.galleryUnload) {
-    window.removeEventListener('unload', window.galleryUnload);
-  }
-  if (window.top.galleryTopUnload) {
-    window.top.removeEventListener('unload', window.top.galleryTopUnload);
-  }
+  doc.body.addEventListener('mousemove', this.onMouseMove_.bind(this));
 
-  window.galleryKeyDown = this.onKeyDown_.bind(this);
-  doc.body.addEventListener('keydown', window.galleryKeyDown);
-
-  window.galleryMouseMove = this.onMouseMove_.bind(this);
-  doc.body.addEventListener('mousemove', window.galleryMouseMove);
-
-  window.galleryUnload = this.onUnload_.bind(this);
-  window.addEventListener('unload', window.galleryUnload);
+  window.addEventListener('unload', this.onUnload_.bind(this));
 
   // We need to listen to the top window 'unload' and 'beforeunload' because
   // the Gallery iframe does not get notified if the tab is closed.
-  window.top.galleryTopUnload = this.onTopUnload_.bind(this);
-  window.top.addEventListener('unload', window.top.galleryTopUnload);
+  this.onTopUnloadBound_ = this.onTopUnload_.bind(this);
+  window.top.addEventListener('unload', this.onTopUnloadBound_);
 
   this.onBeforeUnloadBound_ = this.onBeforeUnload_.bind(this);
   window.top.addEventListener('beforeunload', this.onBeforeUnloadBound_);
@@ -301,21 +277,9 @@ Gallery.prototype.initDom_ = function() {
   }.bind(this));
 };
 
-Gallery.blobToURL_ = function(blob) {
-  // Append a file name after an anchor so that the Gallery
-  // code can find the file extension at the end of the url.
-  // A File instance contains the real file name in the 'name' property.
-  // For a Blob instance we make up a fake file name out of the mime type
-  // (image/jpeg -> image.jpg).
-  return window.webkitURL.createObjectURL(blob) +
-      '#' + (blob.name || (blob.type.replace('/', '.')));
-};
-
 Gallery.prototype.onBeforeUnload_ = function(event) {
-  if (this.imageChanges_ > 0) {
-    setTimeout(this.saveChanges_.bind(this), 1000);
+  if (this.editor_.isBusy())
     return this.displayStringFunction_('unsaved_changes');
-  }
   return null;
 };
 
@@ -328,19 +292,11 @@ Gallery.prototype.load = function(items, selectedItem) {
     var item = items[i];
     var selected = (item == selectedItem);
 
-    if (item.constructor.name == 'HTMLCanvasElement') {
-      item = ImageEncoder.getBlob(item,
-          ImageEncoder.encodeMetadata({mimeType: 'image/jpeg'}, item), 1);
-    }
-    if (item.constructor.name == 'Blob' ||
-        item.constructor.name == 'File') {
-      item = Gallery.blobToURL_(item);
-    }
     if (typeof item == 'string') {
       if (selected) selectedIndex = urls.length;
       urls.push(item);
     } else {
-      console.error('Unsupported image type');
+      console.error('Unsupported item type', item);
     }
   }
 
@@ -387,10 +343,10 @@ Gallery.prototype.load = function(items, selectedItem) {
 };
 
 Gallery.prototype.onImageContentChanged_ = function() {
-  this.imageChanges_++;
-  if (this.imageChanges_ == 0) return;
+  var revision = this.imageView_.getContentRevision();
+  if (revision == 0) return;  // Just loaded.
 
-  if (this.imageChanges_ == 1) {
+  if (revision == 1) {
     // First edit.
     this.filenameSpacer_.setAttribute('saved', 'saved');
     this.filenameSpacer_.setAttribute('overwrite', 'overwrite');
@@ -409,7 +365,9 @@ Gallery.prototype.onImageContentChanged_ = function() {
 
     ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
   }
+};
 
+Gallery.prototype.flashSavedLabel_ = function() {
   var label = this.savedLabel_;
   setTimeout(function(){ label.setAttribute('highlighted', 'true'); }, 0);
   setTimeout(function(){ label.removeAttribute('highlighted'); }, 300);
@@ -418,10 +376,11 @@ Gallery.prototype.onImageContentChanged_ = function() {
 Gallery.prototype.applyOverwrite_ = function(overwrite) {
   if (overwrite) {
     this.ribbon_.getSelectedItem().setOriginalName(this.context_.saveDirEntry,
-      this.updateFilename_.bind(this));
+        this.updateFilename_.bind(this));
   } else {
     this.ribbon_.getSelectedItem().setCopyName(this.context_.saveDirEntry,
-      this.updateFilename_.bind(this));
+        this.selectedImageMetadata_,
+        this.updateFilename_.bind(this));
   }
 };
 
@@ -436,33 +395,36 @@ Gallery.prototype.onCloseBubble_ = function(event) {
   localStorage['gallery-overwrite-bubble'] = Gallery.OVERWRITE_BUBBLE_MAX_TIMES;
 };
 
-Gallery.prototype.saveItem_ = function(item, callback, canvas, modified) {
-  if (modified) {
-    item.save(this.context_.saveDirEntry, this.context_.metadataProvider,
-        canvas, callback);
-  } else {
-    if (callback) callback();
-  }
-};
+Gallery.prototype.saveCurrentImage_ = function(callback) {
+  var item = this.ribbon_.getSelectedItem();
+  var canvas = this.imageView_.getCanvas();
 
-Gallery.prototype.saveChanges_ = function(opt_callback) {
-  this.imageChanges_ = 0;
-  this.bubble_.setAttribute('hidden', 'hidden');
-  if (this.isShowingVideo_()) {
-    // This call ensures that editor leaves the mode and closes respective UI
-    // elements. Currently, the only mode for videos is sharing.
-    this.editor_.leaveModeGently();
-    if (opt_callback) opt_callback();
-    return;
-  }
-  this.editor_.requestImage(
-      this.saveItem_.bind(this, this.ribbon_.getSelectedItem(), opt_callback));
+  this.showSpinner_(true);
+  var metadataEncoder = ImageEncoder.encodeMetadata(
+      this.selectedImageMetadata_, canvas, 1 /* quality */);
+
+  this.selectedImageMetadata_ = metadataEncoder.getMetadata();
+  item.setThumbnail(this.selectedImageMetadata_);
+
+  item.saveToFile(
+      this.context_.saveDirEntry,
+      canvas,
+      metadataEncoder,
+      function(success) {
+        // TODO(kaznacheev): Implement write error handling.
+        // Until then pretend that the save succeeded.
+        this.showSpinner_(false);
+        this.flashSavedLabel_();
+        this.context_.metadataProvider.reset(item.getUrl());
+        callback();
+      }.bind(this));
 };
 
 Gallery.prototype.onActionExecute_ = function(action) {
-  var url = this.ribbon_.getSelectedItem().getUrl();
-  // saveChanges_ makes the editor leave the mode and close the sharing menu.
-  this.saveChanges_(action.execute.bind(action, [url]));
+  // |executeWhenReady| closes the sharing menu.
+  this.editor_.executeWhenReady(function() {
+    action.execute([this.ribbon_.getSelectedItem().getUrl()]);
+  }.bind(this));
 };
 
 Gallery.prototype.updateFilename_ = function(opt_url) {
@@ -595,21 +557,19 @@ Gallery.prototype.close_ = function() {
  */
 Gallery.prototype.onClose_ = function() {
   // TODO: handle write errors gracefully (suggest retry or saving elsewhere).
-  this.saveChanges_(this.close_.bind(this));
+  this.editor_.executeWhenReady(this.close_.bind(this));
 };
 
-Gallery.prototype.prefetchImage = function(id, content, metadata) {
-  this.editor_.prefetchImage(id, content, metadata);
+Gallery.prototype.prefetchImage = function(id, url) {
+  this.editor_.prefetchImage(id, url);
 };
 
-Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
-  // The first change is load, we should not count it.
-  this.imageChanges_ = -1;
+Gallery.prototype.openImage = function(id, url, metadata, slide, callback) {
   this.filenameSpacer_.removeAttribute('overwrite');
   this.filenameSpacer_.removeAttribute('saved');
 
-  var item = this.ribbon_.getSelectedItem();
-  this.updateFilename_(content);
+  this.selectedImageMetadata_ = metadata;
+  this.updateFilename_(url);
 
   this.showSpinner_(true);
 
@@ -642,7 +602,6 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
       ImageUtil.metrics.recordSmallCount(ImageUtil.getMetricName('Size.MPix'),
           toMillions(canvas.width * canvas.height));
 
-      var url = item ? item.getUrl() : content;
       var extIndex = url.lastIndexOf('.');
       var ext = extIndex < 0 ? '' : url.substr(extIndex + 1).toLowerCase();
       if (ext == 'jpeg') ext = 'jpg';
@@ -653,10 +612,11 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
     callback(loadType);
   }
 
-  this.editor_.openSession(id, content, metadata, slide, loadDone);
+  this.editor_.openSession(
+      id, url, metadata, slide, this.saveCurrentImage_.bind(this), loadDone);
 };
 
-Gallery.prototype.closeImage = function(item) {
+Gallery.prototype.closeImage = function(callback) {
   this.showSpinner_(false);
   this.showErrorBanner_(false);
   this.editor_.getPrompt().hide();
@@ -664,7 +624,7 @@ Gallery.prototype.closeImage = function(item) {
     this.mediaControls_.pause();
     this.mediaControls_.detachMedia();
   }
-  this.editor_.closeSession(this.saveItem_.bind(this, item, null));
+  this.editor_.closeSession(callback);
 };
 
 Gallery.prototype.showSpinner_ = function(on) {
@@ -681,7 +641,7 @@ Gallery.prototype.showSpinner_ = function(on) {
   } else {
     ImageUtil.setAttribute(this.container_, 'spinner', false);
   }
-}
+};
 
 Gallery.prototype.showErrorBanner_ = function(message) {
   if (message) {
@@ -703,8 +663,7 @@ Gallery.prototype.saveVideoPosition_ = function() {
 Gallery.prototype.onUnload_ = function() {
   this.saveVideoPosition_();
   window.top.removeEventListener('beforeunload', this.onBeforeUnloadBound_);
-  window.top.removeEventListener('unload', window.top.galleryTopUnload);
-  window.top.galleryTopUnload = null;
+  window.top.removeEventListener('unload', this.onTopUnloadBound_);
 };
 
 Gallery.prototype.onTopUnload_ = function() {
@@ -732,13 +691,8 @@ Gallery.prototype.onEdit_ = function() {
     this.cancelFading_();
   } else {
     this.editor_.getPrompt().hide();
-    if (!this.isShowingVideo_()) {
-      var item = this.ribbon_.getSelectedItem();
-      this.editor_.requestImage(item.updateThumbnail.bind(item));
-    }
     this.filenameSpacer_.removeAttribute('saved');
     this.filenameSpacer_.removeAttribute('overwrite');
-    this.saveChanges_();
     this.initiateFading_();
   }
 
@@ -907,7 +861,6 @@ Ribbon.prototype.add = function(url) {
   var selectClosure = this.select.bind(this, index, 0, null);
   var item = new Ribbon.Item(index, url, this.document_, selectClosure);
   this.items_.push(item);
-  this.metadataProvider_.fetch(url, item.setMetadata.bind(item));
 };
 
 Ribbon.prototype.load = function(urls, selectedIndex) {
@@ -934,9 +887,16 @@ Ribbon.prototype.select = function(index, opt_forceStep, opt_callback) {
   if (index == this.selectedIndex_)
     return;  // Do not reselect.
 
-  var oldSelectedItem = this.getSelectedItem();
-  oldSelectedItem.select(false);
-  this.client_.closeImage(oldSelectedItem);
+  this.client_.closeImage(
+      this.doSelect_.bind(this, index, opt_forceStep, opt_callback));
+};
+
+Ribbon.prototype.doSelect_ = function(index, opt_forceStep, opt_callback) {
+  if (index == this.selectedIndex_)
+    return;  // Do not reselect
+
+  var selectedItem = this.getSelectedItem();
+  selectedItem.select(false);
 
   var step = opt_forceStep || (index - this.selectedIndex_);
 
@@ -956,13 +916,12 @@ Ribbon.prototype.select = function(index, opt_forceStep, opt_callback) {
   if (this.sequenceLength_ <= 1) {
     // We have just broke the sequence. Touch the current image so that it stays
     // in the cache longer.
-    this.client_.prefetchImage(oldSelectedItem.getIndex(),
-        oldSelectedItem.getContent(), oldSelectedItem.getMetadata());
+    this.client_.prefetchImage(selectedItem.getIndex(), selectedItem.getUrl());
   }
 
   this.selectedIndex_ = index;
 
-  var selectedItem = this.getSelectedItem();
+  selectedItem = this.getSelectedItem();
   selectedItem.select(true);
   this.redraw();
 
@@ -985,10 +944,10 @@ Ribbon.prototype.select = function(index, opt_forceStep, opt_callback) {
   }
 
   var self = this;
-  selectedItem.fetchMetadata(this.metadataProvider_, function(metadata){
+  this.metadataProvider_.fetch(selectedItem.getUrl(), function(metadata){
      if (!selectedItem.isSelected()) return;
      self.client_.openImage(
-         selectedItem.getIndex(), selectedItem.getContent(), metadata, step,
+         selectedItem.getIndex(), selectedItem.getUrl(), metadata, step,
          function(loadType) {
            if (!selectedItem.isSelected()) return;
            if (shouldPrefetch(loadType, step, self.sequenceLength_)) {
@@ -1003,14 +962,13 @@ Ribbon.prototype.requestPrefetch = function(direction) {
   if (this.items_.length < 2) return;
 
   var index = this.getNextSelectedIndex_(direction);
+  var nextItemUrl = this.items_[index].getUrl();
 
   var selectedItem = this.getSelectedItem();
-  var self = this;
-  var item = this.items_[index];
-  item.fetchMetadata(this.metadataProvider_, function(metadata) {
+  this.metadataProvider_.fetch(nextItemUrl, function(metadata) {
     if (!selectedItem.isSelected()) return;
-    self.client_.prefetchImage(index, item.getContent(), metadata);
-  });
+    this.client_.prefetchImage(index, nextItemUrl, metadata);
+  }.bind(this));
 };
 
 Ribbon.ITEMS_COUNT = 5;
@@ -1019,6 +977,12 @@ Ribbon.prototype.redraw = function() {
   // Never show a single thumbnail.
   if (this.items_.length == 1)
     return;
+
+  var initThumbnail = function(index) {
+    var item = this.items_[index];
+    if (!item.hasThumbnail())
+      this.metadataProvider_.fetch(item.getUrl(), item.setThumbnail.bind(item));
+  }.bind(this);
 
   // TODO(dgozman): use margin instead of 2 here.
   var itemWidth = this.bar_.clientHeight - 2;
@@ -1051,6 +1015,7 @@ Ribbon.prototype.redraw = function() {
   for (var index = startIndex + 1;
        index <= Math.max(lastIndex, this.lastVisibleIndex_);
        ++index) {
+    initThumbnail(index);
     var box = this.items_[index].getBox();
     box.style.marginLeft = '0';
     this.bar_.appendChild(box);
@@ -1060,6 +1025,7 @@ Ribbon.prototype.redraw = function() {
   }
 
   var margin = itemWidth * Math.abs(firstIndex - this.firstVisibleIndex_);
+  initThumbnail(startIndex);
   var startBox = this.items_[startIndex].getBox();
   if (startIndex == firstIndex) {
     // Sliding to the right.
@@ -1193,32 +1159,11 @@ Ribbon.Item.prototype.select = function(on) {
   ImageUtil.setAttribute(this.box_, 'selected', on);
 };
 
-Ribbon.Item.prototype.updateThumbnail = function(canvas) {
-  if (this.canvas_)
-    return;  // The image is being saved, the thumbnail is already up-to-date.
-
-  var metadataEncoder =
-      ImageEncoder.encodeMetadata(this.getMetadata(), canvas, 1);
-  this.setMetadata(metadataEncoder.getMetadata());
-};
-
-Ribbon.Item.prototype.save = function(
-    dirEntry, metadataProvider, canvas, opt_callback) {
+Ribbon.Item.prototype.saveToFile = function(
+    dirEntry, canvas, metadataEncoder, opt_callback) {
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
-  var metadataEncoder =
-      ImageEncoder.encodeMetadata(this.getMetadata(), canvas, 1);
-
-  this.overrideContent(canvas, metadataEncoder.getMetadata());
-
   var self = this;
-
-  if (!dirEntry) {  // Happens only in gallery_demo.js
-    self.onSaveSuccess(
-        Gallery.blobToURL_(ImageEncoder.getBlob(canvas, metadataEncoder)));
-    if (opt_callback) opt_callback();
-    return;
-  }
 
   var name = this.getNameAfterSaving();
   this.original_ = false;
@@ -1226,16 +1171,16 @@ Ribbon.Item.prototype.save = function(
 
   function onSuccess(url) {
     console.log('Saved from gallery', name);
-    // Force the metadata provider to reread the metadata from the file.
-    metadataProvider.reset(url);
-    self.onSaveSuccess(url);
-    if (opt_callback) opt_callback();
+    ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
+    ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
+    self.setUrl(url);
+    if (opt_callback) opt_callback(true);
   }
 
   function onError(error) {
     console.log('Error saving from gallery', name, error);
-    self.onSaveError(error);
-    if (opt_callback) opt_callback();
+    ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
+    if (opt_callback) opt_callback(false);
   }
 
   function doSave(newFile, fileEntry) {
@@ -1244,7 +1189,12 @@ Ribbon.Item.prototype.save = function(
         fileWriter.onwriteend = onSuccess.bind(null, fileEntry.toURL());
         fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder));
       }
-      fileWriter.onerror = onError;
+      fileWriter.onerror = function(error) {
+        onError(error);
+        // Disable all callbacks on the first error.
+        fileWriter.onerror = null;
+        fileWriter.onwriteend = null;
+      };
       if (newFile) {
         writeContent();
       } else {
@@ -1273,7 +1223,7 @@ Ribbon.Item.REGEXP_COPY_N =
 Ribbon.Item.REGEXP_COPY_0 =
     new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + '( - .+)$');
 
-Ribbon.Item.prototype.createCopyName_ = function(dirEntry, callback) {
+Ribbon.Item.prototype.createCopyName_ = function(dirEntry, metadata, callback) {
   var name = ImageUtil.getFullNameFromUrl(this.url_);
 
   // If the item represents a file created during the current Gallery session
@@ -1288,7 +1238,7 @@ Ribbon.Item.prototype.createCopyName_ = function(dirEntry, callback) {
     name = name.substr(0, index);
   }
 
-  var mimeType = this.metadata_.mimeType.toLowerCase();
+  var mimeType = metadata.mimeType.toLowerCase();
   if (mimeType != 'image/jpeg') {
     // Chrome can natively encode only two formats: JPEG and PNG.
     // All non-JPEG images are saved in PNG, hence forcing the file extension.
@@ -1323,8 +1273,8 @@ Ribbon.Item.prototype.createCopyName_ = function(dirEntry, callback) {
   tryNext(10);
 };
 
-Ribbon.Item.prototype.setCopyName = function(dirEntry, opt_callback) {
-  this.createCopyName_(dirEntry, function(name) {
+Ribbon.Item.prototype.setCopyName = function(dirEntry, metadata, opt_callback) {
+  this.createCopyName_(dirEntry, metadata, function(name) {
     this.nameForSaving_ = name;
     if (opt_callback) opt_callback();
   }.bind(this));
@@ -1339,52 +1289,11 @@ Ribbon.Item.prototype.setNameForSaving = function(newName) {
   this.nameForSaving_ = newName;
 };
 
-// The url and metadata stored in the item are not valid while the modified
-// image is being saved. Use the results of the latest edit instead.
-
-Ribbon.Item.prototype.overrideContent = function(canvas, metadata) {
-  this.canvas_ = canvas;
-  this.backupMetadata_ = this.metadata_;
-  this.setMetadata(metadata);
+Ribbon.Item.prototype.hasThumbnail = function() {
+  return this.img_.hasAttribute('src');
 };
 
-Ribbon.Item.prototype.getContent = function () {
-  return this.canvas_ || this.url_;
-};
-
-Ribbon.Item.prototype.getMetadata = function () {
-  return this.metadata_;
-};
-
-Ribbon.Item.prototype.fetchMetadata = function (metadataProvider, callback) {
-  if (this.metadata_) {
-    callback(this.metadata_);  // Every millisecond counts, call directly
-  } else {
-    metadataProvider.fetch(this.getUrl(), callback);
-  }
-};
-
-Ribbon.Item.prototype.onSaveSuccess = function(url) {
-  this.url_ = url;
-  delete this.backupMetadata_;
-  delete this.canvas_;
-  ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 1, 2);
-  ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('SaveTime'));
-};
-
-Ribbon.Item.prototype.onSaveError = function(error) {
-  // TODO(kaznacheev): notify the user that the file write failed and
-  // suggest ways to rescue the modified image (retry/save elsewhere).
-  // For now - just drop the modified content and revert the thumbnail.
-  this.setMetadata(this.backupMetadata_);
-  delete this.backupMetadata_;
-  delete this.canvas_;
-  ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('SaveResult'), 0, 2);
-};
-
-Ribbon.Item.prototype.setMetadata = function(metadata) {
-  this.metadata_ = metadata;
-
+Ribbon.Item.prototype.setThumbnail = function(metadata) {
   var url;
   var transform;
 

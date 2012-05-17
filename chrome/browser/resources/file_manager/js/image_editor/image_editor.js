@@ -63,6 +63,10 @@ ImageEditor.prototype.isLocked = function() {
   return !this.commandQueue_ || this.commandQueue_.isBusy();
 };
 
+ImageEditor.prototype.isBusy = function() {
+  return this.commandQueue_ && this.commandQueue_.isBusy();
+};
+
 ImageEditor.prototype.lockUI = function(on) {
   ImageUtil.setAttribute(this.rootContainer_, 'locked', on);
 };
@@ -79,12 +83,12 @@ ImageEditor.prototype.onContentUpdate_ = function() {
   }
 };
 
-ImageEditor.prototype.prefetchImage = function(id, source, metadata) {
-  this.imageView_.prefetch(id, source, metadata);
+ImageEditor.prototype.prefetchImage = function(id, source) {
+  this.imageView_.prefetch(id, source);
 };
 
 ImageEditor.prototype.openSession = function(
-    id, source, metadata, slide, opt_callback) {
+    id, source, metadata, slide, saveFunction, callback) {
   if (this.commandQueue_)
     throw new Error('Session not closed');
 
@@ -94,51 +98,51 @@ ImageEditor.prototype.openSession = function(
   this.imageView_.load(id, source, metadata, slide, function(loadType) {
     self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
-        self.container_.ownerDocument, self.imageView_.getCanvas());
+        self.container_.ownerDocument,
+        self.imageView_.getCanvas(),
+        saveFunction);
     self.commandQueue_.attachUI(
         self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
     self.updateUndoRedo();
-    if (opt_callback) opt_callback(loadType);
+    callback(loadType);
   });
 };
 
 /**
- * @param {function(HTMLCanvasElement,boolean) opt_callback Accepts the current
- *    image and the modified flag.
+ * Close the current image editing session.
+ * @param {function} callback Callback.
  */
 ImageEditor.prototype.closeSession = function(callback) {
   this.getPrompt().hide();
   if (this.imageView_.isLoading()) {
+    if (this.commandQueue_)
+      console.warn('Inconsistent image editor state');
     this.imageView_.cancelLoad();
     this.lockUI(false);
+    callback();
     return;
   }
   if (!this.commandQueue_)
-    return;
+    return;  // Session is already closing, ignore the callback.
 
-  this.commandQueue_.detachUI();
-  this.requestImage(callback);
+  this.executeWhenReady(callback);
   this.commandQueue_ = null;
 };
 
 /**
- * Commit the current operation and return the resulting image.
+ * Commit the current operation and execute the action.
  *
- * @param {function(HTMLCanvasElement,boolean) callback Accepts the current
- *    image and the modified flag.
+ * @param {function} callback Callback.
  */
-ImageEditor.prototype.requestImage = function(callback) {
-  if (this.imageView_.isLoading()) {
-    callback(null, false);
-    return;
+ImageEditor.prototype.executeWhenReady = function(callback) {
+  if (this.commandQueue_) {
+    this.leaveModeGently();
+    this.commandQueue_.executeWhenReady(callback);
+  } else {
+    if (!this.imageView_.isLoading())
+      console.warn('Inconsistent image editor state');
+    callback();
   }
-  if (!this.commandQueue_)
-    throw new Error('Session not open');
-  var queue = this.commandQueue_;
-  this.leaveModeGently();
-  queue.requestCurrentImage(function(canvas) {
-    callback(canvas, queue.canUndo());
-  });
 };
 
 ImageEditor.prototype.undo = function() {
@@ -353,7 +357,7 @@ ImageEditor.prototype.enterMode = function(mode, event) {
   // The above call could have caused a commit which might have initiated
   // an asynchronous command execution. Wait for it to complete, then proceed
   // with the mode set up.
-  this.commandQueue_.requestCurrentImage(
+  this.commandQueue_.executeWhenReady(
       this.setUpMode_.bind(this, mode, event));
 };
 

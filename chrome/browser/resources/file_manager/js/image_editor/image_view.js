@@ -122,6 +122,10 @@ ImageView.prototype.getVideo = function() { return this.videoElement_ };
 
 ImageView.prototype.getThumbnail = function() { return this.thumbnailCanvas_ };
 
+ImageView.prototype.getContentRevision = function() {
+  return this.contentRevision_;
+};
+
 /**
  * Copy an image fragment from a full resolution canvas to a device resolution
  * canvas.
@@ -219,6 +223,7 @@ ImageView.prototype.load = function(
   var self = this;
 
   this.contentID_ = id;
+  this.contentRevision_ = -1;
 
   var loadingVideo = FileType.getMediaType(source) == 'video';
   if (loadingVideo) {
@@ -370,9 +375,8 @@ ImageView.prototype.getReadyContent = function(id, source) {
  *
  * @param {number} id Unique image id for caching purposes
  * @param {string|HTMLCanvasElement} source
- * @param {Object} metadata
  */
-ImageView.prototype.prefetch = function(id, source, metadata) {
+ImageView.prototype.prefetch = function(id, source) {
   var self = this;
   function prefetchDone(canvas) {
     if (canvas.width)
@@ -437,6 +441,7 @@ ImageView.prototype.replaceContent_ = function(
     // Once we implement zoom/pan we should pass contentCanvas_ instead.
     this.updateThumbnail_(this.screenImage_);
 
+    this.contentRevision_++;
     for (var i = 0; i != this.contentCallbacks_.length; i++) {
       try {
         this.contentCallbacks_[i]();

@@ -6,8 +6,12 @@
  * Command queue is the only way to modify images.
  * Supports undo/redo.
  * Command execution is asynchronous (callback-based).
+ *
+ * @param {Document} document Document to create canvases in.
+ * @param {HTMLCanvasElement} canvas The canvas with the original image.
+ * @param {function(callback)} saveFunction Function to save the image.
  */
-function CommandQueue(document, canvas) {
+function CommandQueue(document, canvas, saveFunction) {
   this.document_ = document;
   this.undo_ = [];
   this.redo_ = [];
@@ -16,6 +20,8 @@ function CommandQueue(document, canvas) {
   this.baselineImage_ = canvas;
   this.currentImage_ = canvas;
   this.previousImage_ = null;
+
+  this.saveFunction_ = saveFunction;
 
   this.busy_ = false;
 
@@ -39,57 +45,72 @@ CommandQueue.prototype.attachUI = function(imageView, prompt, lock) {
 };
 
 /**
- * Detach the UI. Further image modifications will not be displayed.
+ * Execute the action when the queue is not busy.
+ * @param {function} callback Callback.
  */
-CommandQueue.prototype.detachUI = function() {
-  // The current this.UIContext_ object might be used by the command currently
-  // being executed. Null out its fields so that the command continues silently.
-  this.UIContext_.imageView = null;
-  this.UIContext_.prompt = null;
-  this.UIContext_.lock = null;
-
-  // Now replace the object to guarantee that we do not interfere with the
-  // current command.
-  this.UIContext_ = {};
+CommandQueue.prototype.executeWhenReady = function(callback) {
+  if (this.isBusy())
+    this.subscribers_.push(callback);
+  else
+    setTimeout(callback, 0);
 };
 
 /**
- * Asynchronous getter. Does not return the image while the queue is busy.
+ * @return {boolean} True if the command queue is busy.
  */
-CommandQueue.prototype.requestCurrentImage = function(callback) {
-  if (this.isBusy()) {
-    this.subscribers_.push(callback);
-  } else {
-    var self = this;
-    setTimeout(function() { callback(self.currentImage_) }, 0);
-  }
-};
-
 CommandQueue.prototype.isBusy = function() { return this.busy_ };
 
-CommandQueue.prototype.setBusy_ = function(on) {
-  if (this.busy_ == on)
-    throw new Error('Inconsistent CommandQueue lock state');
+/**
+ * Set the queue state to busy. Lock the UI.
+ */
+CommandQueue.prototype.setBusy_ = function() {
+  if (this.busy_)
+    throw new Error('CommandQueue already busy');
 
-  this.busy_ = on;
-
-  if (!on) {
-    // Notify the subscribers that requested the image while the queue was busy.
-    while (this.subscribers_.length) {
-      this.subscribers_.pop()(this.currentImage_);
-    }
-  }
+  this.busy_ = true;
 
   if (this.UIContext_.lock)
-    this.UIContext_.lock(on);
+    this.UIContext_.lock(true);
 
-  if (on) {
-    ImageUtil.trace.resetTimer('command-busy');
-  } else {
-    ImageUtil.trace.reportTimer('command-busy');
-  }
+  ImageUtil.trace.resetTimer('command-busy');
 };
 
+/**
+ * Set the queue state to not busy. Unlock the UI and execute pending actions.
+ */
+CommandQueue.prototype.clearBusy_ = function() {
+  if (!this.busy_)
+    throw new Error('Inconsistent CommandQueue already not busy');
+
+  this.busy_ = false;
+
+  // Execute the actions requested while the queue was busy.
+  while (this.subscribers_.length)
+    this.subscribers_.shift()();
+
+  if (this.UIContext_.lock)
+    this.UIContext_.lock(false);
+
+  ImageUtil.trace.reportTimer('command-busy');
+};
+
+/**
+ * Commit the image change: save and unlock the UI.
+ */
+CommandQueue.prototype.commit_ = function() {
+  setTimeout(function() {
+        this.saveFunction_(this.clearBusy_.bind(this));
+      }.bind(this),
+      ImageView.ANIMATION_WAIT_INTERVAL);
+};
+
+/**
+ * Internal function to execute the command in a given context.
+ *
+ * @param {Command} command The command to execute.
+ * @param {object} uiContext The UI context.
+ * @param {function} callback Completion callback.
+ */
 CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
   if (!this.currentImage_)
     throw new Error('Cannot operate on null image');
@@ -114,25 +135,31 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
  * @param {boolean} opt_keep_redo true if redo stack should not be cleared.
  */
 CommandQueue.prototype.execute = function(command, opt_keep_redo) {
-  this.setBusy_(true);
+  this.setBusy_();
 
   if (!opt_keep_redo)
     this.redo_ = [];
 
   this.undo_.push(command);
 
-  this.doExecute_(command, this.UIContext_, this.setBusy_.bind(this, false));
+  this.doExecute_(command, this.UIContext_, this.commit_.bind(this));
 };
 
+/**
+ * @return {boolean} True if Undo is applicable.
+ */
 CommandQueue.prototype.canUndo = function() {
   return this.undo_.length != 0;
 };
 
+/**
+ * Undo the most recent command.
+ */
 CommandQueue.prototype.undo = function() {
   if (!this.canUndo())
     throw new Error('Cannot undo');
 
-  this.setBusy_(true);
+  this.setBusy_();
 
   var command = this.undo_.pop();
   this.redo_.push(command);
@@ -143,7 +170,7 @@ CommandQueue.prototype.undo = function() {
     if (self.UIContext_.imageView) {
       command.revertView(self.currentImage_, self.UIContext_.imageView);
     }
-    self.setBusy_(false);
+    self.commit_();
   }
 
   if (this.previousImage_) {
@@ -168,10 +195,16 @@ CommandQueue.prototype.undo = function() {
   }
 };
 
+/**
+ * @return {boolean} True if Redo is applicable.
+ */
 CommandQueue.prototype.canRedo = function() {
   return this.redo_.length != 0;
 };
 
+/**
+ * Repeat the command that was recently un-done.
+ */
 CommandQueue.prototype.redo = function() {
   if (!this.canRedo())
     throw new Error('Cannot redo');
@@ -187,6 +220,9 @@ function Command(name) {
   this.name_ = name;
 }
 
+/**
+ * @return {string} String representation of the command.
+ */
 Command.prototype.toString = function() {
   return 'Command ' + this.name_;
 };
