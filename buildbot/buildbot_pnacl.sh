@@ -250,7 +250,7 @@ mode-buildbot-x86() {
   scons-stage "x86-${bits}" "--mode=opt-host,nacl -j4 -k \
     use_sandboxed_translator=1" "small_tests medium_tests large_tests"
 
-  browser-tests "x86-${bits}" "--mode=opt-host,nacl -j8 -k"
+  browser-tests "x86-${bits}" "--mode=opt-host,nacl,nacl_irt_test -j8 -k"
 }
 
 # QEMU upload bot runs this function, and the hardware download bot runs
@@ -291,7 +291,7 @@ mode-buildbot-arm() {
     "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0" \
     "toolchain_tests"
 
-  browser-tests "arm" "${mode}"
+  browser-tests "arm" "${mode},nacl_irt_test"
   # Disabled for now as it broke when we switched to gold for final
   # linking. We may remove this permanently as it is not doing all that
   # much anyway.
@@ -301,16 +301,16 @@ mode-buildbot-arm() {
 mode-buildbot-arm-hw() {
   FAIL_FAST=false
   local mode=$1
-  local hwflags="${mode} -j2 -k naclsdk_validate=0 built_elsewhere=1"
+  local hwflags="-j2 -k naclsdk_validate=0 built_elsewhere=1"
 
-  scons-stage "arm" "${hwflags}" "small_tests medium_tests large_tests"
-  scons-stage "arm" "${hwflags} nacl_pic=1 pnacl_generate_pexe=0" \
+  scons-stage "arm" "${mode} ${hwflags}" "small_tests medium_tests large_tests"
+  scons-stage "arm" "${mode} ${hwflags} nacl_pic=1 pnacl_generate_pexe=0" \
     "small_tests medium_tests large_tests"
-  scons-stage "arm" "${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
+  scons-stage "arm" "${mode} ${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
   scons-stage "arm" \
-    "${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
+    "${mode} ${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
     "toolchain_tests"
-  browser-tests "arm" "${hwflags}"
+  browser-tests "arm" "${mode},nacl_irt_test ${hwflags}"
 }
 
 mode-trybot-qemu() {
@@ -394,9 +394,11 @@ test-all-newlib() {
   scons-stage "x86-32" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
   scons-stage "x86-64" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
   # browser tests.
-  browser-tests "arm" "--verbose --mode=opt-host,nacl -j${concur}"
-  browser-tests "x86-32" "--verbose --mode=opt-host,nacl -j${concur}"
-  browser-tests "x86-64" "--verbose --mode=opt-host,nacl -j${concur}"
+  browser-tests "arm" "--verbose --mode=opt-host,nacl,nacl_irt_test -j${concur}"
+  browser-tests "x86-32" \
+    "--verbose --mode=opt-host,nacl,nacl_irt_test -j${concur}"
+  browser-tests "x86-64" \
+    "--verbose --mode=opt-host,nacl,nacl_irt_test -j${concur}"
 }
 
 test-all-glibc() {

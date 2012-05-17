@@ -50,7 +50,7 @@ generated_crx = env.Command(
     # Command.
     ('${PYTHON} ${SOURCES[0]} ' +
      # Write the extension to the staging dir.
-     '--dest=${STAGING_DIR} ' +
+     '--dest=${CHROME_DOWNLOAD_DIR} ' +
      # Override the libraries from the tarball with those in scons-out/x/lib
      lib_override +
      # Build only the unpacked extension, not zipped up files, etc.

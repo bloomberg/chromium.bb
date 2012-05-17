@@ -1565,7 +1565,7 @@ def GetPnaclExtensionNode(env):
   """Get the scons node representing the pnacl support files.
   """
   # This is "built" by src/untrusted/pnacl_support_extension/nacl.scons.
-  return env.Dir('${STAGING_DIR}/pnacl_all')
+  return env.Dir(os.path.join('${CHROME_DOWNLOAD_DIR}','pnacl_all'))
 
 pre_base_env.AddMethod(GetPnaclExtensionNode)
 

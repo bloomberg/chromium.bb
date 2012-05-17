@@ -211,7 +211,8 @@ browser-tests() {
   # buildbot_toolchain_arm_untrusted.sh use the same tests directly.
   # TODO(jvoung): remove these when unified.
   Run ${OTHER_TEST_SCRIPT} browser-tests \
-    "${arch}" "--mode=opt-host,nacl ${extra} -j${PNACL_CONCURRENCY}"
+    "${arch}" \
+    "--mode=opt-host,nacl,nacl_irt_test ${extra} -j${PNACL_CONCURRENCY}"
 }
 
 test-arm()        { scons-tests arm newlib "$@" ; }
