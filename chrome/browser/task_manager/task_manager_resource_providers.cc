@@ -1112,6 +1112,11 @@ void TaskManagerChildProcessResourceProvider::ChildProcessDataRetreived(
     const std::vector<content::ChildProcessData>& child_processes) {
   for (size_t i = 0; i < child_processes.size(); ++i)
     Add(child_processes[i]);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
+      content::Source<TaskManagerChildProcessResourceProvider>(this),
+      content::NotificationService::NoDetails());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -200,6 +200,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Processes.
   RegisterFunction<GetProcessIdForTabFunction>();
+  RegisterFunction<TerminateFunction>();
+  RegisterFunction<GetProcessInfoFunction>();
 
   // Metrics.
   RegisterFunction<MetricsRecordUserActionFunction>();

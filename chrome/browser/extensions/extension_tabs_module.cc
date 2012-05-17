@@ -20,6 +20,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_function_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -198,29 +199,6 @@ bool GetTabById(int tab_id,
     *error_message = ExtensionErrorUtils::FormatErrorMessage(
         keys::kTabNotFoundError, base::IntToString(tab_id));
 
-  return false;
-}
-
-// Reads the |value| as either a single integer value or a list of integers.
-bool ReadOneOrMoreIntegers(
-    Value* value, std::vector<int>* result) {
-  if (value->IsType(Value::TYPE_INTEGER)) {
-    int tab_id = -1;
-    if (!value->GetAsInteger(&tab_id))
-      return false;
-    result->push_back(tab_id);
-    return true;
-
-  } else if (value->IsType(Value::TYPE_LIST)) {
-    ListValue* tabs = static_cast<ListValue*>(value);
-    for (size_t i = 0; i < tabs->GetSize(); ++i) {
-      int tab_id = -1;
-      if (!tabs->GetInteger(i, &tab_id))
-        return false;
-      result->push_back(tab_id);
-    }
-    return true;
-  }
   return false;
 }
 
@@ -1148,7 +1126,8 @@ bool HighlightTabsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(info->Get(keys::kTabsKey, &tab_value));
 
   std::vector<int> tab_indices;
-  EXTENSION_FUNCTION_VALIDATE(ReadOneOrMoreIntegers(tab_value, &tab_indices));
+  EXTENSION_FUNCTION_VALIDATE(extensions::ReadOneOrMoreIntegers(
+      tab_value, &tab_indices));
 
   // Create a new selection model as we read the list of tab indices.
   for (size_t i = 0; i < tab_indices.size(); ++i) {
@@ -1373,7 +1352,8 @@ bool MoveTabsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &tab_value));
 
   std::vector<int> tab_ids;
-  EXTENSION_FUNCTION_VALIDATE(ReadOneOrMoreIntegers(tab_value, &tab_ids));
+  EXTENSION_FUNCTION_VALIDATE(extensions::ReadOneOrMoreIntegers(
+      tab_value, &tab_ids));
 
   DictionaryValue* update_props = NULL;
   int new_index;
@@ -1543,7 +1523,8 @@ bool RemoveTabsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &tab_value));
 
   std::vector<int> tab_ids;
-  EXTENSION_FUNCTION_VALIDATE(ReadOneOrMoreIntegers(tab_value, &tab_ids));
+  EXTENSION_FUNCTION_VALIDATE(extensions::ReadOneOrMoreIntegers(
+      tab_value, &tab_ids));
 
   for (size_t i = 0; i < tab_ids.size(); ++i) {
     Browser* browser = NULL;

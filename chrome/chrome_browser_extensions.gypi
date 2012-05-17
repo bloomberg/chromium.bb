@@ -259,6 +259,8 @@
         'browser/extensions/extension_function_dispatcher.h',
         'browser/extensions/extension_function_registry.cc',
         'browser/extensions/extension_function_registry.h',
+        'browser/extensions/extension_function_util.cc',
+        'browser/extensions/extension_function_util.h',
         'browser/extensions/extension_global_error.cc',
         'browser/extensions/extension_global_error.h',
         'browser/extensions/extension_global_error_badge.cc',

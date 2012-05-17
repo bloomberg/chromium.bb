@@ -255,6 +255,11 @@ class TaskManagerModelObserver {
   // Invoked when a range of items has been removed.
   virtual void OnItemsRemoved(int start, int length) = 0;
 
+  // Invoked when a range of items is to be immediately removed. It differs
+  // from OnItemsRemoved by the fact that the item is still in the task manager,
+  // so it can be queried for and found.
+  virtual void OnItemsToBeRemoved(int start, int length) {}
+
   // Invoked when the initialization of the model has been finished and
   // periodical updates is started. The first periodical update will be done
   // in a few seconds. (depending on platform)
@@ -281,6 +286,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   int64 GetNetworkUsage(int index) const;
   double GetCPUUsage(int index) const;
   int GetProcessId(int index) const;
+  base::ProcessHandle GetProcess(int index) const;
   int GetResourceUniqueId(int index) const;
   // Returns the index of resource that has the given |unique_id|. Returns -1 if
   // no resouce has the |unique_id|.
@@ -333,6 +339,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Gets the amount of memory allocated for javascript. Returns false if the
   // resource for the given row isn't a renderer.
   bool GetV8Memory(int index, size_t* result) const;
+
+  // Gets the amount of memory used for javascript. Returns false if the
+  // resource for the given row isn't a renderer.
+  bool GetV8MemoryUsed(int index, size_t* result) const;
 
   // Returns true if resource for the given row can be activated.
   bool CanActivate(int index) const;
@@ -396,6 +406,14 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   void StartUpdating();
   void StopUpdating();
+
+  // Listening involves calling StartUpdating on all resource providers. This
+  // causes all of them to subscribe to notifications and enumerate current
+  // resources. It differs from StartUpdating that it doesn't start the
+  // Refresh timer. The end result is that we have a full view of resources, but
+  // don't spend unneeded time updating, unless we have a real need to.
+  void StartListening();
+  void StopListening();
 
   void Clear();  // Removes all items.
 
@@ -541,6 +559,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // How many calls to StartUpdating have been made without matching calls to
   // StopUpdating.
   int update_requests_;
+
+  // How many calls to StartListening have been made without matching calls to
+  // StopListening.
+  int listen_requests_;
 
   // Whether we are currently in the process of updating.
   UpdateState update_state_;

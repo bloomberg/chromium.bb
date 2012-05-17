@@ -184,6 +184,14 @@
     "chrome.experimental.offscreenTabs.sendMouseEvent": "experimental.offscreenTabs.html#method-sendMouseEvent",
     "chrome.experimental.offscreenTabs.toDataUrl": "experimental.offscreenTabs.html#method-toDataUrl",
     "chrome.experimental.offscreenTabs.update": "experimental.offscreenTabs.html#method-update",
+    "chrome.experimental.processes.getProcessIdForTab": "experimental.processes.html#method-getProcessIdForTab",
+    "chrome.experimental.processes.getProcessInfo": "experimental.processes.html#method-getProcessInfo",
+    "chrome.experimental.processes.onCreated": "experimental.processes.html#event-onCreated",
+    "chrome.experimental.processes.onExited": "experimental.processes.html#event-onExited",
+    "chrome.experimental.processes.onUnresponsive": "experimental.processes.html#event-onUnresponsive",
+    "chrome.experimental.processes.onUpdated": "experimental.processes.html#event-onUpdated",
+    "chrome.experimental.processes.onUpdatedWithMemory": "experimental.processes.html#event-onUpdatedWithMemory",
+    "chrome.experimental.processes.terminate": "experimental.processes.html#method-terminate",
     "chrome.experimental.record.captureURLs": "experimental.record.html#method-captureURLs",
     "chrome.experimental.record.replayURLs": "experimental.record.html#method-replayURLs",
     "chrome.experimental.serial.close": "experimental.serial.html#method-close",
@@ -2131,7 +2139,11 @@
       "zip_path": "examples/api/browserAction/print.zip"
     },
     {
-      "api_calls": [],
+      "api_calls": [
+        "chrome.experimental.processes.onUpdated",
+        "chrome.experimental.processes.onUpdatedWithMemory",
+        "chrome.experimental.processes.terminate"
+      ],
       "crx_path": null,
       "description": "Adds a browser action that monitors resource usage of all browser processes.",
       "features": [
@@ -2145,13 +2157,13 @@
       "packaged_app": false,
       "path": "examples/api/processes/process_monitor/",
       "protocols": [],
-      "search_string": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL TABS",
+      "search_string": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.PROCESSES.ONUPDATED CHROME.EXPERIMENTAL.PROCESSES.ONUPDATEDWITHMEMORY CHROME.EXPERIMENTAL.PROCESSES.TERMINATE",
       "source_files": [
         "manifest.json",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "0d3542c6bdc5b79f9c261ff69b701f43540cb657",
+      "source_hash": "76ebb097aee877b69bf918f94663a2d8cbd50704",
       "zip_path": "examples/api/processes/process_monitor.zip"
     },
     {
@@ -2265,6 +2277,7 @@
     },
     {
       "api_calls": [
+        "chrome.experimental.processes.getProcessIdForTab",
         "chrome.tabs.get",
         "chrome.tabs.update",
         "chrome.windows.get",
@@ -2287,7 +2300,7 @@
       "protocols": [
         "chrome://"
       ],
-      "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL TABS CHROME.TABS.GET CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
+      "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.PROCESSES.GETPROCESSIDFORTAB CHROME.TABS.GET CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
       "source_files": [
         "manifest.json",
         "popup.css",

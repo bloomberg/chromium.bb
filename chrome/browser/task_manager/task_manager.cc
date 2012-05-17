@@ -84,6 +84,7 @@ string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
 
 TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
     : update_requests_(0),
+      listen_requests_(0),
       update_state_(IDLE),
       goat_salt_(base::RandUint64()),
       last_unique_id_(0) {
@@ -207,6 +208,11 @@ string16 TaskManagerModel::GetResourcePhysicalMemory(int index) const {
 int TaskManagerModel::GetProcessId(int index) const {
   CHECK_LT(index, ResourceCount());
   return base::GetProcId(resources_[index]->GetProcess());
+}
+
+base::ProcessHandle TaskManagerModel::GetProcess(int index) const {
+  CHECK_LT(index, ResourceCount());
+  return resources_[index]->GetProcess();
 }
 
 string16 TaskManagerModel::GetResourceProcessId(int index) const {
@@ -587,6 +593,15 @@ bool TaskManagerModel::GetV8Memory(int index, size_t* result) const {
   return true;
 }
 
+bool TaskManagerModel::GetV8MemoryUsed(int index, size_t* result) const {
+  *result = 0;
+  if (!resources_[index]->ReportsV8MemoryStats())
+    return false;
+
+  *result = resources_[index]->GetV8MemoryUsed();
+  return true;
+}
+
 bool TaskManagerModel::CanActivate(int index) const {
   CHECK_LT(index, ResourceCount());
   return GetResourceTabContents(index) != NULL;
@@ -621,6 +636,40 @@ string16 TaskManagerModel::GetMemCellText(int64 number) const {
 #endif
 }
 
+void TaskManagerModel::StartListening() {
+  // Multiple StartListening requests may come in and we only need to take
+  // action the first time.
+  listen_requests_++;
+  if (listen_requests_ > 1)
+    return;
+  DCHECK_EQ(1, listen_requests_);
+
+  // Notify resource providers that we should start listening to events.
+  for (ResourceProviderList::iterator iter = providers_.begin();
+       iter != providers_.end(); ++iter) {
+    (*iter)->StartUpdating();
+  }
+}
+
+void TaskManagerModel::StopListening() {
+  // Don't actually stop listening until we have heard as many calls as those
+  // to StartListening.
+  listen_requests_--;
+  if (listen_requests_ > 0)
+    return;
+
+  DCHECK_EQ(0, listen_requests_);
+
+  // Notify resource providers that we are done listening.
+  for (ResourceProviderList::const_iterator iter = providers_.begin();
+       iter != providers_.end(); ++iter) {
+    (*iter)->StopUpdating();
+  }
+
+  // Must clear the resources before the next attempt to start listening.
+  Clear();
+}
+
 void TaskManagerModel::StartUpdating() {
   // Multiple StartUpdating requests may come in, and we only need to take
   // action the first time.
@@ -640,10 +689,7 @@ void TaskManagerModel::StartUpdating() {
   update_state_ = TASK_PENDING;
 
   // Notify resource providers that we are updating.
-  for (ResourceProviderList::iterator iter = providers_.begin();
-       iter != providers_.end(); ++iter) {
-    (*iter)->StartUpdating();
-  }
+  StartListening();
 
   if (!resources_.empty()) {
     FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
@@ -663,13 +709,7 @@ void TaskManagerModel::StopUpdating() {
   update_state_ = STOPPING;
 
   // Notify resource providers that we are done updating.
-  for (ResourceProviderList::const_iterator iter = providers_.begin();
-       iter != providers_.end(); ++iter) {
-    (*iter)->StopUpdating();
-  }
-
-  // Must clear the resources before the next attempt to start updating.
-  Clear();
+  StopListening();
 }
 
 void TaskManagerModel::AddResourceProvider(
@@ -759,10 +799,16 @@ void TaskManagerModel::RemoveResource(TaskManager::Resource* resource) {
       cpu_usage_map_.erase(cpu_iter);
   }
 
-  // Remove the entry from the model list.
+  // Prepare to remove the entry from the model list.
   iter = std::find(resources_.begin(), resources_.end(), resource);
   DCHECK(iter != resources_.end());
   int index = static_cast<int>(iter - resources_.begin());
+
+  // Notify the observers that the contents will change.
+  FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
+                    OnItemsToBeRemoved(index, 1));
+
+  // Now actually remove the entry from the model list.
   resources_.erase(iter);
 
   // Remove the entry from the network maps.
@@ -926,7 +972,7 @@ int64 TaskManagerModel::GetNetworkUsageForResource(
 }
 
 void TaskManagerModel::BytesRead(BytesReadParam param) {
-  if (update_state_ != TASK_PENDING) {
+  if (update_state_ != TASK_PENDING || listen_requests_ == 0) {
     // A notification sneaked in while we were stopping the updating, just
     // ignore it.
     return;

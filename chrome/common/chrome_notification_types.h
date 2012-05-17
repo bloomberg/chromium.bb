@@ -327,6 +327,12 @@ enum NotificationType {
   // Sent when WebUI TaskManager opens and is ready for showing tasks.
   NOTIFICATION_TASK_MANAGER_WINDOW_READY,
 
+  // The TaskManagerChildProcessResourceProvider collects the list of child
+  // processes when StartUpdating is called. This data is collected on the IO
+  // thread and passed back to the UI thread. Once all entries are added to the
+  // task manager, this notification is sent.
+  NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
+
   // Sent when a renderer process is notified of new v8 heap statistics. The
   // source is the ID of the renderer process, and the details are a
   // V8HeapStatsDetails object.
