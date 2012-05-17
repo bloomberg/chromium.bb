@@ -49,7 +49,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -328,7 +327,7 @@ void ExtensionHost::InsertInfobarCSS() {
 
   static const base::StringPiece css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_EXTENSIONS_INFOBAR_CSS, ui::SCALE_FACTOR_NONE));
+      IDR_EXTENSIONS_INFOBAR_CSS));
 
   render_view_host()->InsertCSS(string16(), css.as_string());
 }

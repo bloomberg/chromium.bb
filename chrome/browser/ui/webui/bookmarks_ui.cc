@@ -19,11 +19,10 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "googleurl/src/gurl.h"
 
 using content::WebContents;
 
@@ -71,6 +70,5 @@ BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 // static
 base::RefCountedMemory* BookmarksUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_BOOKMARKS_FAVICON,
-                            ui::SCALE_FACTOR_100P);
+      LoadDataResourceBytes(IDR_BOOKMARKS_FAVICON);
 }

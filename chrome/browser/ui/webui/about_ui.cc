@@ -65,7 +65,6 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/user_agent.h"
@@ -73,8 +72,8 @@
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
-#include "content/public/browser/zygote_host_linux.h"
 #include "content/public/common/sandbox_linux.h"
+#include "content/public/browser/zygote_host_linux.h"
 #endif
 
 #if defined(OS_WIN)
@@ -247,7 +246,7 @@ class ChromeOSTermsHandler
     // Do nothing if OEM EULA load failed.
     if (contents_.empty() && path_ != chrome::kOemEulaURLPath) {
       contents_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_TERMS_HTML, ui::SCALE_FACTOR_NONE).as_string();
+          IDR_TERMS_HTML).as_string();
     }
     source_->FinishDataRequest(contents_, request_id_);
   }
@@ -840,8 +839,7 @@ void FinishMemoryDataRequest(const std::string& path,
     source->FinishDataRequest(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             path == kMemoryJsPath ? IDR_ABOUT_MEMORY_JS :
-                IDR_ABOUT_MEMORY_HTML,
-            ui::SCALE_FACTOR_NONE).as_string(), request_id);
+                IDR_ABOUT_MEMORY_HTML).as_string(), request_id);
   }
 }
 
@@ -992,8 +990,8 @@ std::string AboutStats(const std::string& query) {
   } else {
     // Get about_stats.html/js from resource bundle.
     data = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        (query == kStatsJsPath ? IDR_ABOUT_STATS_JS : IDR_ABOUT_STATS_HTML),
-        ui::SCALE_FACTOR_NONE).as_string();
+        (query == kStatsJsPath ? IDR_ABOUT_STATS_JS : IDR_ABOUT_STATS_HTML)).
+        as_string();
 
     if (query != kStatsJsPath) {
       // Clear the timer list since we stored the data in the timers list
@@ -1088,7 +1086,7 @@ std::string AboutVersionStaticContent(const std::string& query) {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
       query ==  kVersionJsPath ?
       IDR_ABOUT_VERSION_JS :
-      IDR_ABOUT_VERSION_HTML, ui::SCALE_FACTOR_NONE).as_string();
+      IDR_ABOUT_VERSION_HTML).as_string();
 }
 
 std::string AboutVersionStrings(DictionaryValue* localized_strings,
@@ -1389,7 +1387,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
   } else if (host == chrome::kChromeUICreditsHost) {
     int idr = (path == kCreditsJsPath) ? IDR_CREDITS_JS : IDR_CREDITS_HTML;
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        idr, ui::SCALE_FACTOR_NONE).as_string();
+        idr).as_string();
 #if defined(OS_CHROMEOS)
   } else if (host == chrome::kChromeUICryptohomeHost) {
     FinishCryptohomeDataRequest(this, path, request_id);
@@ -1420,7 +1418,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
     response = AboutNetwork(path);
   } else if (host == chrome::kChromeUIOSCreditsHost) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_OS_CREDITS_HTML, ui::SCALE_FACTOR_NONE).as_string();
+        IDR_OS_CREDITS_HTML).as_string();
 #endif
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   } else if (host == chrome::kChromeUISandboxHost) {
@@ -1434,7 +1432,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
     return;
 #else
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_TERMS_HTML, ui::SCALE_FACTOR_NONE).as_string();
+        IDR_TERMS_HTML).as_string();
 #endif
   } else if (host == chrome::kChromeUIVersionHost) {
     if (path == kStringsJsPath) {

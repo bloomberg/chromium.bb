@@ -45,9 +45,13 @@ string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
   return ResourceBundle::GetSharedInstance().GetLocalizedString(message_id);
 }
 
-base::StringPiece TestWebKitPlatformSupport::GetDataResource(
+base::StringPiece TestWebKitPlatformSupport::GetDataResource(int resource_id) {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+}
+
+base::StringPiece TestWebKitPlatformSupport::GetImageResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) {
+    float scale_factor) {
   FilePath resources_path;
   PathService::Get(base::DIR_EXE, &resources_path);
   resources_path = resources_path.Append("DumpRenderTree_resources");
@@ -74,6 +78,6 @@ base::StringPiece TestWebKitPlatformSupport::GetDataResource(
     }
   }
 
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      resource_id, scale_factor);
+  // TODO(flackr): Pass scale_factor to ResourceBundle.
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }

@@ -103,7 +103,7 @@ void AfterInitialize(bool unit_test_mode) {
     return;  // We don't have a resource pack when running the unit-tests.
 
   // Load a data pack.
-  g_resource_data_pack = new ui::DataPack(ui::SCALE_FACTOR_100P);
+  g_resource_data_pack = new ui::DataPack(ui::ResourceHandle::kScaleFactor100x);
   NSString* resource_path =
       [base::mac::FrameworkBundle() pathForResource:@"DumpRenderTree"
                                              ofType:@"pak"];
@@ -216,9 +216,16 @@ static FilePath GetResourcesFilePath() {
   return path.AppendASCII("Resources");
 }
 
-base::StringPiece TestWebKitPlatformSupport::GetDataResource(
+base::StringPiece TestWebKitPlatformSupport::GetDataResource(int resource_id) {
+  base::StringPiece res;
+  if (g_resource_data_pack)
+    g_resource_data_pack->GetStringPiece(resource_id, &res);
+  return res;
+}
+
+base::StringPiece TestWebKitPlatformSupport::GetImageResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) {
+    float scale_factor) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)

@@ -38,7 +38,6 @@
 #include "net/server/http_server_request_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/layout.h"
 
 namespace content {
 
@@ -231,8 +230,7 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
       int resource_id = DevToolsHttpHandler::GetFrontendResourceId(filename);
       if (resource_id != -1) {
         base::StringPiece data =
-            content::GetContentClient()->GetDataResource(
-                resource_id, ui::SCALE_FACTOR_NONE);
+            content::GetContentClient()->GetDataResource(resource_id);
         server_->Send200(connection_id,
                          data.as_string(),
                          GetMimeType(filename));

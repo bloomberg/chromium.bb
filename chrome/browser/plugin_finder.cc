@@ -16,7 +16,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using base::DictionaryValue;
@@ -45,7 +44,7 @@ DictionaryValue* PluginFinder::LoadPluginList() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   base::StringPiece json_resource(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_PLUGIN_DB_JSON, ui::SCALE_FACTOR_NONE));
+          IDR_PLUGIN_DB_JSON));
   std::string error_str;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
       json_resource.as_string(),

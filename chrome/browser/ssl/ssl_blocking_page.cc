@@ -26,7 +26,6 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::InterstitialPage;
@@ -121,8 +120,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
   strings.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
 
   base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          resource_id, ui::SCALE_FACTOR_NONE));
+      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
 
   return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
 }

@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/resource_bundle_source_map.h"
 
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 ResourceBundleSourceMap::ResourceBundleSourceMap(
@@ -25,8 +24,7 @@ v8::Handle<v8::Value> ResourceBundleSourceMap::GetSource(
   if (!Contains(name))
     return v8::Undefined();
   int resource_id = resource_id_map_[name];
-  return ConvertString(resource_bundle_->GetRawDataResource(
-      resource_id, ui::SCALE_FACTOR_NONE));
+  return ConvertString(resource_bundle_->GetRawDataResource(resource_id));
 }
 
 bool ResourceBundleSourceMap::Contains(const std::string& name) {

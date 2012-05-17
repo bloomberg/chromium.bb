@@ -57,7 +57,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/escape.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -150,11 +149,11 @@ void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
   } else if (path == kOptionsBundleJsFile) {
     // Return (and cache) the options javascript code.
     response_bytes = ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-        IDR_OPTIONS2_BUNDLE_JS, ui::SCALE_FACTOR_NONE);
+        IDR_OPTIONS2_BUNDLE_JS);
   } else {
     // Return (and cache) the main options html page as the default.
     response_bytes = ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-        IDR_OPTIONS2_HTML, ui::SCALE_FACTOR_NONE);
+        IDR_OPTIONS2_HTML);
   }
 
   SendResponse(request_id, response_bytes);
@@ -356,8 +355,7 @@ void OptionsUI::ProcessAutocompleteSuggestions(
 // static
 base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_SETTINGS_FAVICON,
-                            ui::SCALE_FACTOR_100P);
+      LoadDataResourceBytes(IDR_SETTINGS_FAVICON);
 }
 
 void OptionsUI::InitializeHandlers() {

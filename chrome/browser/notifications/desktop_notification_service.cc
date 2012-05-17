@@ -41,7 +41,6 @@
 #include "net/base/escape.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -206,7 +205,7 @@ string16 DesktopNotificationService::CreateDataUrl(
     int resource, const std::vector<std::string>& subst) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          resource, ui::SCALE_FACTOR_NONE));
+          resource));
 
   if (template_html.empty()) {
     NOTREACHED() << "unable to load template. ID: " << resource;

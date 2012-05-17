@@ -23,10 +23,9 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/gtk/gtk_compat.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue.h"
@@ -560,8 +559,7 @@ void TestShell::ShowStartupDebuggingDialog() {
 
 // static
 base::StringPiece TestShell::ResourceProvider(int key) {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      key, ui::SCALE_FACTOR_NONE);
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(key);
 }
 
 //-----------------------------------------------------------------------------
@@ -570,9 +568,12 @@ string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
   return ResourceBundle::GetSharedInstance().GetLocalizedString(message_id);
 }
 
-base::StringPiece TestShellWebKitInit::GetDataResource(
-    int resource_id,
-    ui::ScaleFactor scale_factor) {
+base::StringPiece TestShellWebKitInit::GetDataResource(int resource_id) {
+  return TestShell::ResourceProvider(resource_id);
+}
+
+base::StringPiece TestShellWebKitInit::GetImageResource(int resource_id,
+                                                        float scale_factor) {
   switch (resource_id) {
     case IDR_BROKENIMAGE:
       resource_id = IDR_BROKENIMAGE_TESTSHELL;

@@ -33,7 +33,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::UserMetricsAction;
@@ -175,7 +174,7 @@ ConflictsUI::ConflictsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 base::RefCountedMemory* ConflictsUI::GetFaviconResourceBytes() {
   return static_cast<base::RefCountedMemory*>(
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          IDR_CONFLICT_FAVICON, ui::SCALE_FACTOR_NONE));
+          IDR_CONFLICT_FAVICON));
 }
 
 #endif

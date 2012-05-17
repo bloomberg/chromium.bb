@@ -30,7 +30,6 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -306,7 +305,7 @@ void SimUnlockUIHTMLSource::StartDataRequest(const std::string& path,
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SIM_UNLOCK_HTML, ui::SCALE_FACTOR_NONE));
+          IDR_SIM_UNLOCK_HTML));
 
   std::string full_html = jstemplate_builder::GetI18nTemplateHtml(html,
                                                                   &strings);

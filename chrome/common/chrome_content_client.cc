@@ -9,9 +9,9 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
@@ -25,7 +25,6 @@
 #include "grit/common_resources.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/plugins/npapi/plugin_list.h"
@@ -416,11 +415,16 @@ string16 ChromeContentClient::GetLocalizedString(int message_id) const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-base::StringPiece ChromeContentClient::GetDataResource(
+base::StringPiece ChromeContentClient::GetDataResource(int resource_id) const {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+}
+
+base::StringPiece ChromeContentClient::GetImageResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      resource_id, scale_factor);
+    float scale_factor) const {
+  // TODO(flackr): Pass scale_factor to ResourceBundle to get best matching
+  // image resource for the given scale factor.
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }
 
 #if defined(OS_WIN)

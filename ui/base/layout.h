@@ -27,16 +27,6 @@ enum DisplayLayout {
 // the .pak file of theme resources to load.
 UI_EXPORT DisplayLayout GetDisplayLayout();
 
-enum ScaleFactor {
-  SCALE_FACTOR_100P,
-
-  // The scale factor used for unscaled binary data, the 1x (default) scale
-  // factor data packs.
-  SCALE_FACTOR_NONE = SCALE_FACTOR_100P,
-
-  SCALE_FACTOR_200P,
-};
-
 }  // namespace ui
 
 #endif  // UI_BASE_LAYOUT_H_

@@ -12,7 +12,6 @@
 #include "grit/locale_settings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 FaviconSource::FaviconSource(Profile* profile, IconType type)
@@ -97,8 +96,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
         request_size_map_.erase(request_id);
         SendResponse(request_id,
             ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-                history::kPrepopulatedPages[i].favicon_id,
-                ui::SCALE_FACTOR_100P));
+                history::kPrepopulatedPages[i].favicon_id));
         return;
       }
     }
@@ -150,14 +148,14 @@ void FaviconSource::SendDefaultResponse(int request_id) {
     if (!default_favicon_large_.get()) {
       default_favicon_large_ =
           ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_DEFAULT_LARGE_FAVICON, ui::SCALE_FACTOR_100P);
+              IDR_DEFAULT_LARGE_FAVICON);
     }
     bytes = default_favicon_large_;
   } else {
     if (!default_favicon_.get()) {
       default_favicon_ =
           ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-              IDR_DEFAULT_FAVICON, ui::SCALE_FACTOR_100P);
+              IDR_DEFAULT_FAVICON);
     }
     bytes = default_favicon_;
   }

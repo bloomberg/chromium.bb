@@ -28,18 +28,18 @@ namespace ui {
 
 void ResourceBundle::LoadCommonResources() {
   AddDataPack(GetResourcesPakFilePath("chrome.pak"),
-              SCALE_FACTOR_100P);
+              ResourceHandle::kScaleFactor100x);
 
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     AddDataPack(GetResourcesPakFilePath("theme_resources_touch_1x.pak"),
-                SCALE_FACTOR_100P);
+                ResourceHandle::kScaleFactor100x);
     AddDataPack(GetResourcesPakFilePath("ui_resources_touch.pak"),
-                SCALE_FACTOR_100P);
+                ResourceHandle::kScaleFactor100x);
   } else {
     AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
-                SCALE_FACTOR_100P);
+                ResourceHandle::kScaleFactor100x);
     AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
-                SCALE_FACTOR_100P);
+                ResourceHandle::kScaleFactor100x);
   }
 }
 

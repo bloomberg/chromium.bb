@@ -31,7 +31,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::WebContents;
@@ -168,8 +167,7 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
 
   scoped_refptr<base::RefCountedMemory> html_bytes(
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          IDR_HOST_REGISTRATION_PAGE_HTML,
-          ui::SCALE_FACTOR_NONE));
+          IDR_HOST_REGISTRATION_PAGE_HTML));
 
   SendResponse(request_id, html_bytes);
 }

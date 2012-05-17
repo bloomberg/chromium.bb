@@ -12,8 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/prerender_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/custom_menu_commands.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
@@ -22,6 +22,9 @@
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
 #include "grit/webkit_strings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -33,11 +36,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCaseSensitivity.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/plugin_group.h"
@@ -102,7 +101,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
     const WebPluginParams& params) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_BLOCKED_PLUGIN_HTML, ui::SCALE_FACTOR_NONE));
+          IDR_BLOCKED_PLUGIN_HTML));
 
   DictionaryValue values;
   values.SetString("message", l10n_util::GetStringUTF8(IDS_PLUGIN_SEARCHING));
@@ -133,7 +132,7 @@ PluginPlaceholder* PluginPlaceholder::CreateErrorPlugin(
 
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_BLOCKED_PLUGIN_HTML, ui::SCALE_FACTOR_NONE));
+          IDR_BLOCKED_PLUGIN_HTML));
   std::string html_data =
       jstemplate_builder::GetI18nTemplateHtml(template_html, &values);
 
@@ -163,8 +162,7 @@ PluginPlaceholder* PluginPlaceholder::CreateBlockedPlugin(
   values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
 
   const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          template_id, ui::SCALE_FACTOR_NONE));
+      ResourceBundle::GetSharedInstance().GetRawDataResource(template_id));
 
   DCHECK(!template_html.empty()) << "unable to load template. ID: "
                                  << template_id;
@@ -187,7 +185,7 @@ PluginPlaceholder* PluginPlaceholder::CreateMobileYoutubePlugin(
     const WebPluginParams& params) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_YOUTUBE_PLUGIN_HTML, ui::SCALE_FACTOR_NONE));
+          IDR_YOUTUBE_PLUGIN_HTML));
 
   DictionaryValue values;
   values.SetString("video_id", GetYoutubeVideoId(params));

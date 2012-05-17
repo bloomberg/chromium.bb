@@ -39,7 +39,6 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_util.h"
 
@@ -255,8 +254,7 @@ bool TopSites::GetPageThumbnail(const GURL& url,
   for (size_t i = 0; i < arraysize(kPrepopulatedPages); i++) {
     if (url.spec() == l10n_util::GetStringUTF8(kPrepopulatedPages[i].url_id)) {
       *bytes = ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          kPrepopulatedPages[i].thumbnail_id,
-          ui::SCALE_FACTOR_100P);
+          kPrepopulatedPages[i].thumbnail_id);
       return true;
     }
   }

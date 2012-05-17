@@ -33,7 +33,6 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -113,7 +112,7 @@ std::string OfflineLoadPage::GetHTMLContents() {
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_OFFLINE_LOAD_HTML, ui::SCALE_FACTOR_NONE));
+          IDR_OFFLINE_LOAD_HTML));
   return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
 }
 

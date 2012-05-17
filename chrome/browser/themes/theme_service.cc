@@ -21,7 +21,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -325,7 +324,7 @@ base::RefCountedMemory* ThemeService::GetRawData(int id) const {
   if (theme_pack_.get())
     data = theme_pack_->GetRawData(id);
   if (!data)
-    data = rb_.LoadDataResourceBytes(id, ui::SCALE_FACTOR_100P);
+    data = rb_.LoadDataResourceBytes(id);
 
   return data;
 }

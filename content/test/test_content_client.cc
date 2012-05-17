@@ -11,7 +11,7 @@
 #include "base/string_piece.h"
 
 TestContentClient::TestContentClient()
-    : data_pack_(ui::SCALE_FACTOR_100P) {
+    : data_pack_(ui::ResourceHandle::kScaleFactor100x) {
   FilePath content_resources_pack_path;
   PathService::Get(base::DIR_MODULE, &content_resources_pack_path);
   content_resources_pack_path = content_resources_pack_path.Append(
@@ -58,9 +58,15 @@ string16 TestContentClient::GetLocalizedString(int message_id) const {
   return string16();
 }
 
-base::StringPiece TestContentClient::GetDataResource(
+base::StringPiece TestContentClient::GetDataResource(int resource_id) const {
+  base::StringPiece resource;
+  data_pack_.GetStringPiece(resource_id, &resource);
+  return resource;
+}
+
+base::StringPiece TestContentClient::GetImageResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
+    float scale_factor) const {
   base::StringPiece resource;
   data_pack_.GetStringPiece(resource_id, &resource);
   return resource;

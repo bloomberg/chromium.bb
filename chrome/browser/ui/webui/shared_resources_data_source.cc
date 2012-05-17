@@ -76,7 +76,7 @@ void SharedResourcesDataSource::StartDataRequest(const std::string& path,
   DCHECK_NE(-1, idr) << " path: " << path;
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_refptr<base::RefCountedStaticMemory> bytes(
-      rb.LoadDataResourceBytes(idr, ui::SCALE_FACTOR_NONE));
+      rb.LoadDataResourceBytes(idr));
 
   SendResponse(request_id, bytes);
 }

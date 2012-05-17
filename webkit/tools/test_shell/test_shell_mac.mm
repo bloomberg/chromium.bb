@@ -212,7 +212,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   // mmap the data pack which holds strings used by WebCore. This is only
   // a fatal error if we're bundled, which means we might be running layout
   // tests. This is a harmless failure for test_shell_tests.
-  g_resource_data_pack = new ui::DataPack(ui::SCALE_FACTOR_100P);
+  g_resource_data_pack = new ui::DataPack(ui::ResourceHandle::kScaleFactor100x);
   NSString *resource_path =
       [base::mac::FrameworkBundle() pathForResource:@"test_shell"
                                              ofType:@"pak"];
@@ -630,9 +630,12 @@ string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
   return msg;
 }
 
-base::StringPiece TestShellWebKitInit::GetDataResource(
-    int resource_id,
-    ui::ScaleFactor scale_factor) {
+base::StringPiece TestShellWebKitInit::GetDataResource(int resource_id) {
+  return base::StringPiece();
+}
+
+base::StringPiece TestShellWebKitInit::GetImageResource(int resource_id,
+                                                        float scale_factor) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)

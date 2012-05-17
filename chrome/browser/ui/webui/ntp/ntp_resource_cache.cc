@@ -45,7 +45,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
@@ -292,7 +291,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 
   static const base::StringPiece incognito_tab_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          new_tab_html_idr, ui::SCALE_FACTOR_NONE));
+          new_tab_html_idr));
 
   std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       incognito_tab_html, &localized_strings);
@@ -428,8 +427,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // Load the new tab page appropriate for this build
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_NEW_TAB_4_HTML,
-                         ui::SCALE_FACTOR_NONE));
+      GetRawDataResource(IDR_NEW_TAB_4_HTML));
   jstemplate_builder::UseVersion2 version2;
   std::string full_html =
       jstemplate_builder::GetI18nTemplateHtml(new_tab_html, &load_time_data);
@@ -460,7 +458,7 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_NEW_INCOGNITO_TAB_THEME_CSS, ui::SCALE_FACTOR_NONE));
+      IDR_NEW_INCOGNITO_TAB_THEME_CSS));
 
   // Create the string from our template and the replacements.
   std::string full_css = ReplaceStringPlaceholders(
@@ -555,7 +553,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_NEW_TAB_4_THEME_CSS, ui::SCALE_FACTOR_NONE));
+          IDR_NEW_TAB_4_THEME_CSS));
 
   // Create the string from our template and the replacements.
   std::string css_string;

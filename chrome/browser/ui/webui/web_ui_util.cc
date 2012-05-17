@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "chrome/browser/disposition_utils.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -31,8 +30,7 @@ std::string GetImageDataUrl(const SkBitmap& bitmap) {
 std::string GetImageDataUrlFromResource(int res) {
   // Load resource icon and covert to base64 encoded data url
   base::RefCountedStaticMemory* icon_data =
-      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(res,
-          ui::SCALE_FACTOR_100P);
+      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(res);
   if (!icon_data)
     return std::string();
   scoped_refptr<base::RefCountedMemory> raw_icon(icon_data);

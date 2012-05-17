@@ -77,9 +77,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "ui/base/layout.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
@@ -493,7 +492,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDomAutomationController)) {
     base::StringPiece extension = content::GetContentClient()->GetDataResource(
-        IDR_DOM_AUTOMATION_JS, ui::SCALE_FACTOR_NONE);
+        IDR_DOM_AUTOMATION_JS);
     RegisterExtension(new v8::Extension(
         "dom_automation.js", extension.data(), 0, NULL, extension.size()));
   }

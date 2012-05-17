@@ -10,7 +10,6 @@
 #include "grit/shell_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using WebKit::WebFrame;
@@ -21,8 +20,7 @@ namespace content {
 namespace {
 
 base::StringPiece GetStringResource(int resource_id) {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      resource_id, ui::SCALE_FACTOR_NONE);
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }
 
 RenderView* GetCurrentRenderView() {

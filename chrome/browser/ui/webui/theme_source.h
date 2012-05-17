@@ -9,7 +9,6 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "ui/base/layout.h"
 
 class Profile;
 
@@ -39,9 +38,7 @@ class ThemeSource : public ChromeURLDataManager::DataSource {
 
  private:
   // Fetch and send the theme bitmap.
-  void SendThemeBitmap(int request_id,
-                       int resource_id,
-                       ui::ScaleFactor scale_factor);
+  void SendThemeBitmap(int request_id, int resource_id);
 
   // The original profile (never an OTR profile).
   Profile* profile_;

@@ -14,7 +14,6 @@
 #include "base/string_piece.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "ui/base/layout.h"
 
 class CommandLine;
 class GURL;
@@ -116,9 +115,12 @@ class CONTENT_EXPORT ContentClient {
   virtual string16 GetLocalizedString(int message_id) const = 0;
 
   // Return the contents of a resource in a StringPiece given the resource id.
-  virtual base::StringPiece GetDataResource(
-      int resource_id,
-      ui::ScaleFactor scale_factor) const = 0;
+  virtual base::StringPiece GetDataResource(int resource_id) const = 0;
+
+  // Return the contents of an image resource in a StringPiece given the
+  // resource id.
+  virtual base::StringPiece GetImageResource(int resource_id,
+                                             float scale_factor) const = 0;
 
 #if defined(OS_WIN)
   // Allows the embedder to sandbox a plugin, and apply a custom policy.

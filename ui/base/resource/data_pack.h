@@ -15,9 +15,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
-#include "ui/base/layout.h"
-#include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_export.h"
+#include "ui/base/resource/resource_handle.h"
 
 class FilePath;
 
@@ -33,7 +32,7 @@ namespace ui {
 
 class UI_EXPORT DataPack : public ResourceHandle {
  public:
-  DataPack(ui::ScaleFactor scale_factor);
+  DataPack(float scale_factor);
   virtual ~DataPack();
 
   // Load a pack file from |path|, returning false on error.
@@ -48,13 +47,12 @@ class UI_EXPORT DataPack : public ResourceHandle {
                         TextEncodingType textEncodingType);
 
   // ResourceHandle implementation:
-  virtual bool HasResource(uint16 resource_id) const OVERRIDE;
   virtual bool GetStringPiece(uint16 resource_id,
                               base::StringPiece* data) const OVERRIDE;
   virtual base::RefCountedStaticMemory* GetStaticMemory(
       uint16 resource_id) const OVERRIDE;
   virtual TextEncodingType GetTextEncodingType() const OVERRIDE;
-  virtual ui::ScaleFactor GetScaleFactor() const OVERRIDE;
+  virtual float GetScaleFactor() const OVERRIDE;
 
  private:
   // The memory-mapped data.
@@ -68,7 +66,7 @@ class UI_EXPORT DataPack : public ResourceHandle {
 
   // The scale of the image in this resource pack relative to images in the 1x
   // resource pak.
-  ui::ScaleFactor scale_factor_;
+  float scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(DataPack);
 };

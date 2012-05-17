@@ -61,7 +61,7 @@ enum LoadErrors {
 
 namespace ui {
 
-DataPack::DataPack(ui::ScaleFactor scale_factor)
+DataPack::DataPack(float scale_factor)
     : resource_count_(0),
       text_encoding_type_(BINARY),
       scale_factor_(scale_factor) {
@@ -145,11 +145,6 @@ bool DataPack::Load(const FilePath& path) {
   return true;
 }
 
-bool DataPack::HasResource(uint16 resource_id) const {
-  return !!bsearch(&resource_id, mmap_->data() + kHeaderLength, resource_count_,
-                   sizeof(DataPackEntry), DataPackEntry::CompareById);
-}
-
 bool DataPack::GetStringPiece(uint16 resource_id,
                               base::StringPiece* data) const {
   // It won't be hard to make this endian-agnostic, but it's not worth
@@ -191,7 +186,7 @@ ResourceHandle::TextEncodingType DataPack::GetTextEncodingType() const {
   return text_encoding_type_;
 }
 
-ui::ScaleFactor DataPack::GetScaleFactor() const {
+float DataPack::GetScaleFactor() const {
   return scale_factor_;
 }
 

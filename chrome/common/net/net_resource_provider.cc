@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "grit/generated_resources.h"
 #include "grit/net_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -41,7 +40,7 @@ struct LazyDirectoryListerCacher {
             l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
     html_data = jstemplate_builder::GetI18nTemplateHtml(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_DIR_HEADER_HTML, ui::SCALE_FACTOR_NONE),
+            IDR_DIR_HEADER_HTML),
         &value);
   }
 
@@ -58,8 +57,7 @@ base::StringPiece NetResourceProvider(int key) {
   if (IDR_DIR_HEADER_HTML == key)
     return base::StringPiece(lazy_dir_lister.html_data);
 
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(
-      key, ui::SCALE_FACTOR_NONE);
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(key);
 }
 
 }  // namespace chrome_common_net

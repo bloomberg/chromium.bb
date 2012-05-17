@@ -31,7 +31,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
@@ -205,8 +204,7 @@ class PDFUnsupportedFeatureInterstitial
         l10n_util::GetStringUTF16(IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_CANCEL));
 
     base::StringPiece html(ResourceBundle::GetSharedInstance().
-        GetRawDataResource(IDR_READER_OUT_OF_DATE_HTML,
-                           ui::SCALE_FACTOR_NONE));
+        GetRawDataResource(IDR_READER_OUT_OF_DATE_HTML));
 
     return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
   }

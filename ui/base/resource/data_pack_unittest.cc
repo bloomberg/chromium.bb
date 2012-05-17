@@ -31,14 +31,12 @@ TEST(DataPackTest, Load) {
             static_cast<int>(kSamplePakSize));
 
   // Load the file through the data pack API.
-  DataPack pack(SCALE_FACTOR_100P);
+  DataPack pack(ResourceHandle::kScaleFactor100x);
   ASSERT_TRUE(pack.Load(data_path));
 
   base::StringPiece data;
-  ASSERT_TRUE(pack.HasResource(4));
   ASSERT_TRUE(pack.GetStringPiece(4, &data));
   EXPECT_EQ("this is id 4", data);
-  ASSERT_TRUE(pack.HasResource(6));
   ASSERT_TRUE(pack.GetStringPiece(6, &data));
   EXPECT_EQ("this is id 6", data);
 
@@ -49,7 +47,6 @@ TEST(DataPackTest, Load) {
   EXPECT_EQ(0U, data.length());
 
   // Try looking up an invalid key.
-  ASSERT_FALSE(pack.HasResource(140));
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
 }
 
@@ -66,7 +63,7 @@ TEST(DataPackTest, LoadFileWithTruncatedHeader) {
   data_path = data_path.Append(FILE_PATH_LITERAL(
       "ui/base/test/data/data_pack_unittest/truncated-header.pak"));
 
-  DataPack pack(SCALE_FACTOR_100P);
+  DataPack pack(ResourceHandle::kScaleFactor100x);
   ASSERT_FALSE(pack.Load(data_path));
 }
 
@@ -90,7 +87,7 @@ TEST_P(DataPackTest, Write) {
   ASSERT_TRUE(DataPack::WritePack(file, resources, GetParam()));
 
   // Now try to read the data back in.
-  DataPack pack(SCALE_FACTOR_100P);
+  DataPack pack(ResourceHandle::kScaleFactor100x);
   ASSERT_TRUE(pack.Load(file));
   EXPECT_EQ(pack.GetTextEncodingType(), GetParam());
 

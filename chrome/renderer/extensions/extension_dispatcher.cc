@@ -57,7 +57,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
@@ -413,8 +412,7 @@ void ExtensionDispatcher::OnLoaded(
     patterns.assign(platform_app_patterns);
     WebView::addUserStyleSheet(
         WebString::fromUTF8(ResourceBundle::GetSharedInstance().
-            GetRawDataResource(IDR_PLATFORM_APP_CSS,
-                               ui::SCALE_FACTOR_NONE)),
+                            GetRawDataResource(IDR_PLATFORM_APP_CSS)),
         patterns,
         WebView::UserContentInjectInAllFrames,
         WebView::UserStyleInjectInExistingDocuments);

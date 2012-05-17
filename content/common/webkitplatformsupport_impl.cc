@@ -24,10 +24,15 @@ string16 WebKitPlatformSupportImpl::GetLocalizedString(int message_id) {
 }
 
 base::StringPiece WebKitPlatformSupportImpl::GetDataResource(
+    int resource_id) {
+  return content::GetContentClient()->GetDataResource(resource_id);
+}
+
+base::StringPiece WebKitPlatformSupportImpl::GetImageResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) {
-  return content::GetContentClient()->GetDataResource(resource_id,
-                                                      scale_factor);
+    float scale_factor) {
+  return content::GetContentClient()->GetImageResource(resource_id,
+                                                       scale_factor);
 }
 
 void WebKitPlatformSupportImpl::GetPlugins(
