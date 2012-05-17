@@ -71,6 +71,11 @@ IPC::SyncMessageFilter* MockRenderThread::GetSyncMessageFilter() {
   return NULL;
 }
 
+scoped_refptr<base::MessageLoopProxy>
+    MockRenderThread::GetIOMessageLoopProxy() {
+  return scoped_refptr<base::MessageLoopProxy>();
+}
+
 void MockRenderThread::AddRoute(int32 routing_id,
                                 IPC::Channel::Listener* listener) {
   // We may hear this for views created from OnMsgCreateWindow as well,

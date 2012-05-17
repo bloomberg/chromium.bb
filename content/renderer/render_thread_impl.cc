@@ -384,6 +384,11 @@ IPC::SyncMessageFilter* RenderThreadImpl::GetSyncMessageFilter() {
   return sync_message_filter();
 }
 
+scoped_refptr<base::MessageLoopProxy>
+    RenderThreadImpl::GetIOMessageLoopProxy() {
+  return ChildProcess::current()->io_message_loop_proxy();
+}
+
 void RenderThreadImpl::AddRoute(int32 routing_id,
                                 IPC::Channel::Listener* listener) {
   widget_count_++;
