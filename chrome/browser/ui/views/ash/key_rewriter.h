@@ -41,10 +41,8 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   // Calls DeviceAddedInternal.
   DeviceType DeviceAddedForTesting(int device_id,
                                    const std::string& device_name);
-  // Calls RewriteCommandToControl.
-  void RewriteCommandToControlForTesting(aura::KeyEvent* event);
-  // Calls RewriteNumPadKeys.
-  void RewriteNumPadKeysForTesting(aura::KeyEvent* event);
+  // Calls Rewrite.
+  void RewriteForTesting(aura::KeyEvent* event);
 
   const std::map<int, DeviceType>& device_id_to_type_for_testing() const {
     return device_id_to_type_;
@@ -75,6 +73,9 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   void RefreshKeycodes();
 #endif
 
+  // Rewrites the |event| by applying all RewriteXXX functions as needed.
+  void Rewrite(aura::KeyEvent* event);
+
   // Rewrites Comment-L/R key presses on an Apple keyboard to Control-L/R. Only
   // OS_CHROMEOS implementation is available at this point. Returns true when
   // |event| is rewritten.
@@ -85,11 +86,11 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   bool RewriteNumPadKeys(aura::KeyEvent* event);
 
   // Overwrites |event| with the keycodes and flags.
-  void Rewrite(aura::KeyEvent* event,
-               unsigned int new_native_keycode,
-               unsigned int new_native_state,
-               ui::KeyboardCode new_keycode,
-               int new_flags);
+  void OverwriteEvent(aura::KeyEvent* event,
+                      unsigned int new_native_keycode,
+                      unsigned int new_native_state,
+                      ui::KeyboardCode new_keycode,
+                      int new_flags);
 
   // Checks the type of the |device_name|, and inserts a new entry to
   // |device_id_to_type_|.

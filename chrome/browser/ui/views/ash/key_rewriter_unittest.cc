@@ -106,7 +106,7 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     // XK_a, Alt modifier.
     InitXKeyEvent(ui::VKEY_A, ui::EF_ALT_DOWN, kKeycodeA, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_A, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -117,7 +117,7 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     // XK_a, Win modifier.
     InitXKeyEvent(ui::VKEY_A, 0, kKeycodeA, Mod4Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_A, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -129,7 +129,7 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     InitXKeyEvent(ui::VKEY_A, ui::EF_ALT_DOWN,
                   kKeycodeA, Mod1Mask | Mod4Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_A, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -141,7 +141,7 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     InitXKeyEvent(ui::VKEY_LWIN, ui::EF_ALT_DOWN,
                   kKeycodeSuperL, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_LWIN, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -153,7 +153,7 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     InitXKeyEvent(ui::VKEY_RWIN, ui::EF_ALT_DOWN,
                   kKeycodeSuperR, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_RWIN, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -168,7 +168,7 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     // XK_a, Alt modifier.
     InitXKeyEvent(ui::VKEY_A, ui::EF_ALT_DOWN, kKeycodeA, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_A, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -179,7 +179,7 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     // XK_a, Win modifier.
     InitXKeyEvent(ui::VKEY_A, 0, kKeycodeA, Mod4Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_A, keyevent.key_code());
     EXPECT_EQ(ui::EF_CONTROL_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -191,7 +191,7 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     InitXKeyEvent(ui::VKEY_A, ui::EF_ALT_DOWN,
                   kKeycodeA, Mod1Mask | Mod4Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_A, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -203,8 +203,8 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     InitXKeyEvent(ui::VKEY_LWIN, ui::EF_ALT_DOWN,
                   kKeycodeSuperL, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
-    EXPECT_EQ(ui::VKEY_LCONTROL, keyevent.key_code());
+    rewriter.RewriteForTesting(&keyevent);
+    EXPECT_EQ(ui::VKEY_CONTROL, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
     EXPECT_EQ(kKeycodeControlL, xkey.keycode);
@@ -215,8 +215,8 @@ TEST(KeyRewriterTest, TestRewriteCommandToControl) {
     InitXKeyEvent(ui::VKEY_RWIN, ui::EF_ALT_DOWN,
                   kKeycodeSuperR, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteCommandToControlForTesting(&keyevent);
-    EXPECT_EQ(ui::VKEY_RCONTROL, keyevent.key_code());
+    rewriter.RewriteForTesting(&keyevent);
+    EXPECT_EQ(ui::VKEY_CONTROL, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
     EXPECT_EQ(kKeycodeControlR, xkey.keycode);
@@ -263,7 +263,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_Insert (= NumPad 0 without Num Lock), no modifier.
     InitXKeyEvent(ui::VKEY_INSERT, 0, kKeycodeNumPadInsert, 0, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD0, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -276,7 +276,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_INSERT, ui::EF_ALT_DOWN,
                   kKeycodeNumPadInsert, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD0, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -288,7 +288,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_DELETE, ui::EF_ALT_DOWN,
                   kKeycodeNumPadDelete, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_DECIMAL, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -300,7 +300,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_END, ui::EF_ALT_DOWN,
                   kKeycodeNumPadEnd, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD1, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -312,7 +312,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_DOWN, ui::EF_ALT_DOWN,
                   kKeycodeNumPadDown, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD2, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -324,7 +324,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_NEXT, ui::EF_ALT_DOWN,
                   kKeycodeNumPadNext, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD3, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -336,7 +336,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_LEFT, ui::EF_ALT_DOWN,
                   kKeycodeNumPadLeft, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD4, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -348,7 +348,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_CLEAR, ui::EF_ALT_DOWN,
                   kKeycodeNumPadBegin, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD5, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -360,7 +360,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_RIGHT, ui::EF_ALT_DOWN,
                   kKeycodeNumPadRight, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD6, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -372,7 +372,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_HOME, ui::EF_ALT_DOWN,
                   kKeycodeNumPadHome, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD7, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -384,7 +384,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_UP, ui::EF_ALT_DOWN,
                   kKeycodeNumPadUp, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD8, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -396,7 +396,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     InitXKeyEvent(ui::VKEY_PRIOR, ui::EF_ALT_DOWN,
                   kKeycodeNumPadPrior, Mod1Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD9, keyevent.key_code());
     EXPECT_EQ(ui::EF_ALT_DOWN, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -407,7 +407,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_0 (= NumPad 0 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD0, 0, kKeycodeNumPad0, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD0, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -418,7 +418,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_DECIMAL (= NumPad . with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_DECIMAL, 0, kKeycodeNumPadDecimal, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_DECIMAL, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -429,7 +429,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_1 (= NumPad 1 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD1, 0, kKeycodeNumPad1, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD1, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -440,7 +440,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_2 (= NumPad 2 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD2, 0, kKeycodeNumPad2, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD2, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -451,7 +451,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_3 (= NumPad 3 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD3, 0, kKeycodeNumPad3, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD3, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -462,7 +462,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_4 (= NumPad 4 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD4, 0, kKeycodeNumPad4, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD4, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -473,7 +473,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_5 (= NumPad 5 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD5, 0, kKeycodeNumPad5, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD5, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -484,7 +484,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_6 (= NumPad 6 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD6, 0, kKeycodeNumPad6, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD6, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -495,7 +495,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_7 (= NumPad 7 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD7, 0, kKeycodeNumPad7, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD7, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -506,7 +506,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_8 (= NumPad 8 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD8, 0, kKeycodeNumPad8, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD8, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -517,7 +517,7 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     // XK_KP_9 (= NumPad 9 with Num Lock), Num Lock modifier.
     InitXKeyEvent(ui::VKEY_NUMPAD9, 0, kKeycodeNumPad9, Mod2Mask, &xev);
     aura::KeyEvent keyevent(&xev, false /* is_char */);
-    rewriter.RewriteNumPadKeysForTesting(&keyevent);
+    rewriter.RewriteForTesting(&keyevent);
     EXPECT_EQ(ui::VKEY_NUMPAD9, keyevent.key_code());
     EXPECT_EQ(0, keyevent.flags());
     const XKeyEvent& xkey = keyevent.native_event()->xkey;
@@ -525,4 +525,42 @@ TEST(KeyRewriterTest, TestRewriteNumPadKeys) {
     EXPECT_EQ(static_cast<unsigned int>(Mod2Mask), xkey.state);
   }
 }
+
+// Tests if the rewriter can handle a Command + Num Pad event.
+TEST(KeyRewriterTest, TestRewriteNumPadKeysOnAppleKeyboard) {
+  XEvent xev;
+  Display* display = ui::GetXDisplay();
+
+  const unsigned int kKeycodeNumPadEnd = XKeysymToKeycode(display, XK_KP_End);
+  const unsigned int kKeycodeNumPad1 = XKeysymToKeycode(display, XK_KP_1);
+
+  KeyRewriter rewriter;
+  rewriter.DeviceAddedForTesting(0, "Apple Keyboard");
+  rewriter.set_last_device_id_for_testing(0);
+  {
+    // XK_KP_End (= NumPad 1 without Num Lock), Win modifier.
+    InitXKeyEvent(ui::VKEY_END, 0, kKeycodeNumPadEnd, Mod4Mask, &xev);
+    aura::KeyEvent keyevent(&xev, false /* is_char */);
+    rewriter.RewriteForTesting(&keyevent);
+    // The result should be "Num Pad 1 with Control + Num Lock modifiers".
+    EXPECT_EQ(ui::VKEY_NUMPAD1, keyevent.key_code());
+    EXPECT_EQ(ui::EF_CONTROL_DOWN, keyevent.flags());
+    const XKeyEvent& xkey = keyevent.native_event()->xkey;
+    EXPECT_EQ(kKeycodeNumPad1, xkey.keycode);
+    EXPECT_EQ(static_cast<unsigned int>(ControlMask | Mod2Mask), xkey.state);
+  }
+  {
+    // XK_KP_1 (= NumPad 1 without Num Lock), Win modifier.
+    InitXKeyEvent(ui::VKEY_NUMPAD1, 0, kKeycodeNumPadEnd, Mod4Mask, &xev);
+    aura::KeyEvent keyevent(&xev, false /* is_char */);
+    rewriter.RewriteForTesting(&keyevent);
+    // The result should also be "Num Pad 1 with Control + Num Lock modifiers".
+    EXPECT_EQ(ui::VKEY_NUMPAD1, keyevent.key_code());
+    EXPECT_EQ(ui::EF_CONTROL_DOWN, keyevent.flags());
+    const XKeyEvent& xkey = keyevent.native_event()->xkey;
+    EXPECT_EQ(kKeycodeNumPad1, xkey.keycode);
+    EXPECT_EQ(static_cast<unsigned int>(ControlMask | Mod2Mask), xkey.state);
+  }
+}
+
 #endif  // OS_CHROMEOS
