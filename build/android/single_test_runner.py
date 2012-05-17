@@ -75,18 +75,14 @@ class SingleTestRunner(BaseTestRunner):
 
   def _GetFilterFileName(self):
     """Returns the filename of gtest filter."""
-    filter_dir = os.path.join(sys.path[0], 'gtest_filter')
-    filter_name = self.test_package.test_suite_basename + '_disabled'
-    disabled_filter = os.path.join(filter_dir, filter_name)
-    return disabled_filter
+    return os.path.join(sys.path[0], 'gtest_filter',
+        self.test_package.GetDisabledTestsBaseFileName() + '_disabled')
 
   def _GetAdditionalEmulatorFilterName(self):
     """Returns the filename of additional gtest filter for emulator."""
-    filter_dir = os.path.join(sys.path[0], 'gtest_filter')
-    filter_name = '%s%s' % (self.test_package.test_suite_basename,
+    return os.path.join(sys.path[0], 'gtest_filter',
+        self.test_package.GetDisabledTestsBaseFileName() +
         '_emulator_additional_disabled')
-    disabled_filter = os.path.join(filter_dir, filter_name)
-    return disabled_filter
 
   def GetDisabledTests(self):
     """Returns a list of disabled tests.

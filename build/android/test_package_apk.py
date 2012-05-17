@@ -88,3 +88,8 @@ class TestPackageApk(TestPackage):
     self.adb.Adb().SendCommand('install -r ' + self.test_suite_full,
                                timeout_time=60*5)
     logging.info('Install has completed.')
+
+  def GetDisabledTestsBaseFileName(self):
+    """Returns the  base filename of gtest filter."""
+    # APK test suite names end with '-debug.apk'
+    return self.test_suite_basename.rsplit('-debug', 1)[0]

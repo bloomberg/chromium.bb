@@ -157,3 +157,7 @@ class TestPackageExecutable(TestPackage):
                             '/data/local/tmp/paks/chrome.pak')
       self.adb.PushIfNeeded(self.test_suite_dirname + '/locales/en-US.pak',
                             '/data/local/tmp/paks/en-US.pak')
+
+  def GetDisabledTestsBaseFileName(self):
+    """Returns the base filename of gtest filter."""
+    return self.test_suite_basename
