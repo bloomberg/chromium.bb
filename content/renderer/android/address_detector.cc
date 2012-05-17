@@ -55,6 +55,7 @@ const char16 kNewlineDelimiters[] = {
   ',',
   '*',
   0x2022,  // Unicode bullet
+  0,
 };
 
 char16 SafePreviousChar(const string16::const_iterator& it,
