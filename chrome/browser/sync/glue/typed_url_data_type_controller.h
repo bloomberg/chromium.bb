@@ -45,15 +45,9 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // CancelableRequestConsumerBase implementation.
-  virtual void OnRequestAdded(CancelableRequestProvider* provider,
-                              CancelableRequestProvider::Handle handle) {}
-  virtual void OnRequestRemoved(CancelableRequestProvider* provider,
-                                CancelableRequestProvider::Handle handle) {}
-  virtual void WillExecute(CancelableRequestProvider* provider,
-                           CancelableRequestProvider::Handle handle) {}
-  virtual void DidExecute(CancelableRequestProvider* provider,
-                          CancelableRequestProvider::Handle handle) {}
+  // Invoked on the history thread to set our history backend - must be called
+  // before CreateSyncComponents() is invoked.
+  void SetBackend(history::HistoryBackend* backend);
 
  protected:
   // NonFrontendDataTypeController interface.
@@ -66,12 +60,7 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
  private:
   virtual ~TypedUrlDataTypeController();
 
-  // Used by PostTaskOnBackendThread().
-  void RunTaskOnBackendThread(const base::Closure& task,
-                              history::HistoryBackend* backend);
-
   history::HistoryBackend* backend_;
-  scoped_refptr<HistoryService> history_service_;
   content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_registrar_;
 

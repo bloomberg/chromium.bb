@@ -33,7 +33,6 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
       state_(NOT_RUNNING),
       abort_association_(false),
       abort_association_complete_(false, false),
-      datatype_stopped_(false, false),
       start_association_called_(true, false),
       start_models_failed_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -110,6 +109,14 @@ void NonFrontendDataTypeController::StopWhileAssociating() {
 
   StartDoneImpl(ABORTED, STOPPING, SyncError());
 }
+
+namespace {
+// Helper function that signals the UI thread once the StopAssociation task
+// has finished completing (this task is queued after the StopAssociation task).
+void SignalCallback(base::WaitableEvent* wait_event) {
+  wait_event->Signal();
+}
+}  // namespace
 
 void NonFrontendDataTypeController::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -208,9 +215,7 @@ void NonFrontendDataTypeController::Stop() {
   // for any more changes or process them from server.
   profile_sync_service_->DeactivateDataType(type());
 
-  if (StopAssociationAsync()) {
-    datatype_stopped_.Wait();
-  } else {
+  if (!StopAssociationAsync()) {
     // We do DFATAL here because this will eventually lead to a failed CHECK
     // when the change processor gets destroyed on the wrong thread.
     LOG(DFATAL) << "Failed to destroy datatype " << name();
@@ -258,7 +263,6 @@ NonFrontendDataTypeController::NonFrontendDataTypeController()
       state_(NOT_RUNNING),
       abort_association_(false),
       abort_association_complete_(false, false),
-      datatype_stopped_(false, false),
       start_association_called_(true, false) {
 }
 
@@ -466,13 +470,31 @@ void NonFrontendDataTypeController::StartAssociation() {
 bool NonFrontendDataTypeController::StopAssociationAsync() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), STOPPING);
-  return PostTaskOnBackendThread(
-      FROM_HERE,
-      base::Bind(
-          &NonFrontendDataTypeController::StopAssociation, this));
+  if (PostTaskOnBackendThread(
+          FROM_HERE,
+          base::Bind(
+              &NonFrontendDataTypeController::StopAssociation, this))) {
+    // The remote thread will hold on to a reference to this object until
+    // the StopAssociation task finishes running. We want to make sure that we
+    // do not return from this routine until there are no more references to
+    // this object on the remote thread, so we queue up the SignalCallback
+    // task below - this task does not maintain a reference to the DTC, so
+    // when it signals this thread, we know that the previous task has executed
+    // and there are no more lingering remote references to the DTC.
+    // This fixes the race described in http://crbug.com/127706.
+    base::WaitableEvent datatype_stopped(false, false);
+    if (PostTaskOnBackendThread(
+            FROM_HERE,
+            base::Bind(&SignalCallback, &datatype_stopped))) {
+      datatype_stopped.Wait();
+      return true;
+    }
+  }
+  return false;
 }
 
 void NonFrontendDataTypeController::StopAssociation() {
+  DCHECK(!HasOneRef());
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (model_associator_.get()) {
     SyncError error;  // Not used.
@@ -480,7 +502,6 @@ void NonFrontendDataTypeController::StopAssociation() {
   }
   model_associator_.reset();
   change_processor_.reset();
-  datatype_stopped_.Signal();
 }
 
 }  // namespace browser_sync

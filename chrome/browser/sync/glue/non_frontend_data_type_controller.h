@@ -78,6 +78,9 @@ class NonFrontendDataTypeController : public DataTypeController {
   // Posts the given task to the backend thread, i.e. the thread the
   // datatype lives on.  Return value: True if task posted successfully,
   // false otherwise.
+  // NOTE: The StopAssociationAsync() implementation relies on the fact that
+  // implementations of this API do not hold any references to the DTC while
+  // the task is executing. See http://crbug.com/127706.
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task) = 0;
@@ -175,10 +178,6 @@ class NonFrontendDataTypeController : public DataTypeController {
   base::Lock abort_association_lock_;
   bool abort_association_;
   base::WaitableEvent abort_association_complete_;
-
-  // Barrier to ensure that the datatype has been stopped on the DB thread
-  // from the UI thread.
-  base::WaitableEvent datatype_stopped_;
 
   // This is added for debugging purpose.
   // TODO(lipalani): Remove this after debugging.

@@ -23,25 +23,39 @@ using content::BrowserThread;
 
 namespace {
 
-typedef base::Callback<void(history::HistoryBackend*)> HistoryBackendTask;
-
-class RunHistoryBackendTask : public HistoryDBTask {
+// The history service exposes a special non-standard task API which calls back
+// once a task has been dispatched, so we have to build a special wrapper around
+// the tasks we want to run.
+class RunTaskOnHistoryThread : public HistoryDBTask {
  public:
-  explicit RunHistoryBackendTask(const HistoryBackendTask& task)
-      : task_(task) {}
+  explicit RunTaskOnHistoryThread(const base::Closure& task,
+                                  TypedUrlDataTypeController* dtc)
+      : task_(new base::Closure(task)),
+        dtc_(dtc) {
+  }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) {
-    task_.Run(backend);
+                             history::HistoryDatabase* db) OVERRIDE {
+    // Set the backend, then release our reference before executing the task.
+    dtc_->SetBackend(backend);
+    dtc_ = NULL;
+
+    // Invoke the task, then free it immediately so we don't keep a reference
+    // around all the way until DoneRunOnMainThread() is invoked back on the
+    // main thread - we want to release references as soon as possible to avoid
+    // keeping them around too long during shutdown.
+    task_->Run();
+    task_.reset();
     return true;
   }
 
-  virtual void DoneRunOnMainThread() {}
+  virtual void DoneRunOnMainThread() OVERRIDE {}
 
  protected:
-  virtual ~RunHistoryBackendTask() {}
+  virtual ~RunTaskOnHistoryThread() {}
 
-  HistoryBackendTask task_;
+  scoped_ptr<base::Closure> task_;
+  scoped_refptr<TypedUrlDataTypeController> dtc_;
 };
 
 }  // namespace
@@ -65,6 +79,11 @@ syncable::ModelType TypedUrlDataTypeController::type() const {
 browser_sync::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
     const {
   return browser_sync::GROUP_HISTORY;
+}
+
+void TypedUrlDataTypeController::SetBackend(history::HistoryBackend* backend) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  backend_ = backend;
 }
 
 void TypedUrlDataTypeController::Observe(
@@ -100,12 +119,8 @@ bool TypedUrlDataTypeController::PostTaskOnBackendThread(
   HistoryService* history = profile()->GetHistoryService(
       Profile::IMPLICIT_ACCESS);
   if (history) {
-    history_service_ = history;
-    history_service_->ScheduleDBTask(
-        new RunHistoryBackendTask(
-            base::Bind(&TypedUrlDataTypeController::RunTaskOnBackendThread,
-                       this, task)),
-        &cancelable_consumer_);
+    history->ScheduleDBTask(new RunTaskOnHistoryThread(task, this),
+                            &cancelable_consumer_);
     return true;
   } else {
     // History must be disabled - don't start.
@@ -135,13 +150,5 @@ void TypedUrlDataTypeController::StopModels() {
 }
 
 TypedUrlDataTypeController::~TypedUrlDataTypeController() {}
-
-void TypedUrlDataTypeController::RunTaskOnBackendThread(
-    const base::Closure& task,
-    history::HistoryBackend* backend) {
-  // Store |backend| so that |task| can use it.
-  backend_ = backend;
-  task.Run();
-}
 
 }  // namespace browser_sync
