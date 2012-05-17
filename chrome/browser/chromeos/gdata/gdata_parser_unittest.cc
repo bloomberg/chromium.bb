@@ -106,7 +106,7 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   EXPECT_EQ("application/atom+xml", resumable_link->mime_type());
 
   // Check entries.
-  ASSERT_EQ(3U, feed->entries().size());
+  ASSERT_EQ(4U, feed->entries().size());
 
   // Check a folder entry.
   const DocumentEntry* folder_entry = feed->entries()[0];
@@ -169,6 +169,17 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   const DocumentEntry* document_entry = feed->entries()[2];
   ASSERT_TRUE(document_entry);
   EXPECT_EQ(DocumentEntry::DOCUMENT, document_entry->kind());
+  EXPECT_TRUE(document_entry->is_hosted_document());
+  EXPECT_TRUE(document_entry->is_google_document());
+  EXPECT_FALSE(document_entry->is_external_document());
+
+  // Check an external document entry.
+  const DocumentEntry* app_entry = feed->entries()[3];
+  ASSERT_TRUE(app_entry);
+  EXPECT_EQ(DocumentEntry::EXTERNAL_APP, app_entry->kind());
+  EXPECT_TRUE(app_entry->is_hosted_document());
+  EXPECT_TRUE(app_entry->is_external_document());
+  EXPECT_FALSE(app_entry->is_google_document());
 }
 
 

@@ -137,6 +137,7 @@ const EntryKindMap kEntryKindMap[] = {
     { DocumentEntry::PRESENTATION, "presentation", ".gslides" },
     { DocumentEntry::DRAWING,      "drawing",      ".gdraw"},
     { DocumentEntry::TABLE,        "table",        ".gtable"},
+    { DocumentEntry::EXTERNAL_APP, "externalapp",  ".glink"},
     { DocumentEntry::SITE,         "site",         NULL},
     { DocumentEntry::FOLDER,       "folder",       NULL},
     { DocumentEntry::FILE,         "file",         NULL},

@@ -11005,6 +11005,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GTABLE_DOCUMENT_FILE_TYPE" desc="Google table file type">
         Google table
       </message>
+      <message name="IDS_FILE_BROWSER_GLINK_DOCUMENT_FILE_TYPE" desc="Google Drive link file type">
+        Google Drive link
+      </message>
 
       <message name="IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE" desc="Title of error message propmt when user attempts to open a non-supported file in file browser.">
         <ph name="FILENAME">$1</ph>

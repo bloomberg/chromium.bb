@@ -268,6 +268,90 @@
          "updated": {
             "$t": "2011-12-12T23:28:52.783Z"
          }
+      }, {
+         "app$edited": {
+            "$t": "2012-05-08T16:31:58.001Z",
+            "xmlns$app": "http://www.w3.org/2007/app"
+         },
+         "author": [ {
+            "email": {
+               "$t": "tester@test.com"
+            },
+            "name": {
+               "$t": "tester"
+            }
+         } ],
+         "category": [ {
+            "label": "viewed",
+            "scheme": "http://schemas.google.com/g/2005/labels",
+            "term": "http://schemas.google.com/g/2005/labels#viewed"
+         }, {
+            "label": "externalapp",
+            "scheme": "http://schemas.google.com/g/2005#kind",
+            "term": "http://schemas.google.com/docs/2007#externalapp"
+         } ],
+         "docs$writersCanInvite": {
+            "value": "true"
+         },
+         "gd$etag": "\"WFxVR0leAyt7ImBk\"",
+         "gd$feedLink": [ {
+            "href": "https://docs.google.com/feeds/default/private/full/externalapp%3ext_app_document_1/acl",
+            "rel": "http://schemas.google.com/acl/2007#accessControlList"
+         } ],
+         "gd$lastModifiedBy": {
+            "email": {
+               "$t": "tester@test.com"
+            },
+            "name": {
+               "$t": "tester"
+            }
+         },
+         "gd$lastViewed": {
+            "$t": "2012-05-08T16:31:57.997Z"
+         },
+         "gd$quotaBytesUsed": {
+            "$t": "0"
+         },
+         "gd$resourceId": {
+            "$t": "externalapp:ext_document_resource_id"
+         },
+         "id": {
+            "$t": "https://docs.google.com/feeds/id/externalapp%3ext_app_document_1"
+         },
+         "link": [ {
+            "href": "https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/drive.file+https://www.googleapis.com/auth/userinfo.email+https://www.googleapis.com/auth/userinfo.profile&client_id=682935854822.apps.googleusercontent.com&response_type=code&user_id=tester@test.com&access_type=offline&redirect_uri=http://externalapp.com/handler&state=%7B%22ids%22:%5B%22ext_document_resource_id%22%5D,%22action%22:%22open%22%7D",
+            "rel": "alternate",
+            "type": "text/html"
+         }, {
+            "href": "https://external_app_icon/icon.png",
+            "rel": "http://schemas.google.com/docs/2007#icon",
+            "type": "image/png"
+         }, {
+            "href": "https://docs.google.com/feeds/upload/create-session/default/private/full/externalapp%3ext_app_document_1",
+            "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://docs.google.com/feeds/upload/file/default/private/full/externalapp%3ext_app_document_1",
+            "rel": "http://schemas.google.com/docs/2007#alt-edit-media",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://docs.google.com/feeds/default/private/full/externalapp%3ext_app_document_1",
+            "rel": "self",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://docs.google.com/feeds/default/private/full/externalapp%3ext_app_document_1",
+            "rel": "edit",
+            "type": "application/atom+xml"
+         } ],
+         "published": {
+            "$t": "2012-05-08T16:31:50.193Z"
+         },
+         "title": {
+            "$t": "External App Document 1"
+         },
+         "updated": {
+            "$t": "2012-05-08T16:31:50.193Z"
+         }
       }],
       "gd$etag": "W/\"DkEEQH8-eSt7ImA9WhRQGE8.\"",
       "id": {

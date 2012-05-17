@@ -105,7 +105,7 @@ const char* kAVExtensions[] = {
 
 // Keep in sync with 'open-hosted' task handler in the File Browser manifest.
 const char* kGDocsExtensions[] = {
-    ".gdoc", ".gsheet", ".gslides", ".gdraw", ".gtable"
+    ".gdoc", ".gsheet", ".gslides", ".gdraw", ".gtable", ".glink"
 };
 
 // List of all extensions we want to be shown in histogram that keep track of

@@ -281,12 +281,14 @@ class DocumentEntry : public FeedEntry {
     // Special entries.
     ITEM          = 0x001001,
     SITE          = 0x001002,
-    // Hosted documents.
-    DOCUMENT      = 0x002001,
-    SPREADSHEET   = 0x002002,
-    PRESENTATION  = 0x002003,
-    DRAWING       = 0x002004,
-    TABLE         = 0x002005,
+    // Hosted Google document.
+    DOCUMENT      = 0x002101,
+    SPREADSHEET   = 0x002102,
+    PRESENTATION  = 0x002103,
+    DRAWING       = 0x002104,
+    TABLE         = 0x002105,
+    // Hosted external application document.
+    EXTERNAL_APP  = 0x002201,
     // Folders, collections.
     FOLDER        = 0x004001,
     // Regular files.
@@ -370,7 +372,11 @@ class DocumentEntry : public FeedEntry {
   std::string GetHostedDocumentExtension() const;
 
   // True if document entry is remotely hosted.
-  bool is_hosted_document() const { return (kind_ & 0x002000) != 0; }
+  bool is_hosted_document() const { return (kind_ & 0x002000) == 0x002000; }
+  // True if document entry hosted by Google Documents.
+  bool is_google_document() const { return (kind_ & 0x002100) == 0x002100; }
+  // True if document entry is hosted by an external application.
+  bool is_external_document() const { return (kind_ & 0x002200) == 0x002200; }
   // True if document entry is a folder (collection).
   bool is_folder() const { return (kind_ & 0x004000) != 0; }
   // True if document entry is regular file.

@@ -74,6 +74,7 @@
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_FOLDER" file="file_manager/images/filetype_folder.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_FORM" file="file_manager/images/filetype_form.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC" file="file_manager/images/filetype_generic.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_FILETYPE_GLINK" file="file_manager/images/filetype_glink.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_HTML" file="file_manager/images/filetype_html.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE" file="file_manager/images/filetype_image.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_FILETYPE_PDF" file="file_manager/images/filetype_pdf.png" type="BINDATA" />

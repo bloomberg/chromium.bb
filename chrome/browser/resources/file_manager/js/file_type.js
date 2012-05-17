@@ -85,6 +85,8 @@ FileType.types = [
    subtype: 'draw', pattern: /\.gdraw$/i},
   {type: 'hosted', icon: 'gtable', name: 'GTABLE_DOCUMENT_FILE_TYPE',
    subtype: 'table', pattern: /\.gtable$/i},
+  {type: 'hosted', icon: 'glink', name: 'GLINK_DOCUMENT_FILE_TYPE',
+   subtype: 'glink', pattern: /\.glink$/i},
 
   // Others
   {type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
