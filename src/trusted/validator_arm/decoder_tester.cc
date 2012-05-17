@@ -175,7 +175,7 @@ static inline char BoolToChar(bool value) {
 const char* Arm32DecoderTester::InstContents() const {
   static char buffer[kArm32InstSize + 1];
   for (int i = 1; i <= kArm32InstSize; ++i) {
-    buffer[kArm32InstSize - i] = BoolToChar(inst_.bit(i - 1));
+    buffer[kArm32InstSize - i] = BoolToChar(inst_.Bit(i - 1));
   }
   buffer[kArm32InstSize] = '\0';
   return buffer;
@@ -186,7 +186,7 @@ char Arm32DecoderTester::Pattern(int index) const {
 }
 
 void Arm32DecoderTester::InjectInstruction(nacl_arm_dec::Instruction inst) {
-  inst_ = inst;
+  inst_.Copy(inst);
 }
 
 void Arm32DecoderTester::ProcessMatch() {
@@ -201,7 +201,7 @@ void Arm32DecoderTester::SetBit(int index, bool value) {
       << "Arm32DecoderTester::SetBit(" << index << ", " << value << ")";
   ASSERT_GE(index , 0)
       << "Arm32DecoderTester::SetBit(" << index << ", " << value << ")";
-  inst_.set_bit(index, value);
+  inst_.SetBit(index, value);
 }
 
 void Arm32DecoderTester::SetBitRange(int index, int length, uint32_t value) {
@@ -211,7 +211,7 @@ void Arm32DecoderTester::SetBitRange(int index, int length, uint32_t value) {
   ASSERT_GE(index, 0)
       << "Arm32DecoderTester::SetBitRange(" << index << ", " << length
       << ", " << value << ")";
-  inst_.set_bits(index + (length - 1), index, value);
+  inst_.SetBits(index + (length - 1), index, value);
 }
 
 
@@ -259,7 +259,7 @@ void ThumbWord1DecoderTester::SetBit(int index, bool value) {
                                    << index << ", " << ")";
   ASSERT_GE(index, 0) << "ThumbWord1DecoderTester::SetBit("
                       << index << ", " << ")";
-  thumb_tester_->inst_.word1_set_bit(index, value);
+  thumb_tester_->inst_.Word1SetBit(index, value);
 }
 
 void ThumbWord1DecoderTester::SetBitRange(
@@ -270,8 +270,8 @@ void ThumbWord1DecoderTester::SetBitRange(
   ASSERT_GE(index, 0)
       << "ThumbWord1DecoderTester::SetBitRange(" << index << ", " << length
       << ", " << value << ")";
-  thumb_tester_->inst_.word1_set_bits(index + (length - 1), index,
-                                      (uint16_t) value);
+  thumb_tester_->inst_.Word1SetBits(index + (length - 1), index,
+                                    static_cast<uint16_t>(value));
 }
 
 ThumbWord2DecoderTester::ThumbWord2DecoderTester(
@@ -320,7 +320,7 @@ void ThumbWord2DecoderTester::SetBit(int index, bool value) {
                                    << index << ", " << ")";
   ASSERT_GE(index, 0) << "ThumbWord2DecoderTester::SetBit("
                       << index << ", " << ")";
-  thumb_tester_->inst_.word2_set_bit(index, value);
+  thumb_tester_->inst_.Word2SetBit(index, value);
 }
 
 void ThumbWord2DecoderTester::SetBitRange(
@@ -331,8 +331,8 @@ void ThumbWord2DecoderTester::SetBitRange(
   ASSERT_GE(index, 0)
       << "ThumbWord1DecoderTester::SetBitRange(" << index << ", " << length
       << ", " << value << ")";
-  thumb_tester_->inst_.word1_set_bits(index + (length - 1), index,
-                                      (uint16_t) value);
+  thumb_tester_->inst_.Word1SetBits(index + (length - 1), index,
+                                    static_cast<uint16_t>(value));
 }
 
 ThumbDecoderTester::ThumbDecoderTester(
@@ -371,11 +371,11 @@ const NamedClassDecoder& ThumbDecoderTester::ExpectedDecoder() const {
 const char* ThumbDecoderTester::InstContents() const {
   static char buffer[2 * kThumbWordSize + 2];
   for (int i = 1; i <= kThumbWordSize; ++i) {
-    buffer[kThumbWordSize - i] = BoolToChar(inst_.word1_bit(i - 1));
+    buffer[kThumbWordSize - i] = BoolToChar(inst_.Word1Bit(i - 1));
   }
   buffer[kThumbWordSize] = '|';
   for (int i = 0; i < kThumbWordSize; ++i) {
-    buffer[2 * kThumbWordSize - i] = BoolToChar(inst_.word2_bit(i));
+    buffer[2 * kThumbWordSize - i] = BoolToChar(inst_.Word2Bit(i));
   }
   buffer[2 * kThumbWordSize + 1] = '0';
   return buffer;
@@ -397,7 +397,7 @@ void ThumbDecoderTester::ProcessMatch() {
 }
 
 void ThumbDecoderTester::InjectInstruction(nacl_arm_dec::Instruction inst) {
-  inst_ = inst;
+  inst_.Copy(inst);
 }
 
 void ThumbDecoderTester::SetBit(int index, bool value) {

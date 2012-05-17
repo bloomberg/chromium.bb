@@ -178,7 +178,7 @@ METHOD_DISPATCH_SUBMETHOD="""
 METHOD_FOOTER="""
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: %(table_name)s could not parse %%08X",
-          insn.bits(31, 0));
+          insn.Bits());
   return Forbidden_instance_;
 }
 """
@@ -264,11 +264,10 @@ def _generate_methods(decoder, values, out):
       #
       #    ((insn & 0x0F000000) != 0x0C000000) &&
       #    ((insn & 0x0000000F) != 0x00000005)
-      values['tests'] = ' && '.join(["(%s)" % p.to_c_expr('insn')
-                                     for p in row.patterns])
-      out.write(METHOD_DISPATCH_BEGIN % row.patterns[0].to_c_expr('insn'))
+      out.write(METHOD_DISPATCH_BEGIN %
+                row.patterns[0].to_c_expr('insn.Bits()'))
       for p in row.patterns[1:]:
-        out.write(METHOD_DISPATCH_CONTINUE % p.to_c_expr('insn'))
+        out.write(METHOD_DISPATCH_CONTINUE % p.to_c_expr('insn.Bits()'))
       out.write(METHOD_DISPATCH_END)
       if row.action.__class__.__name__ == 'DecoderAction':
         values['decoder'] = row.action.actual

@@ -57,12 +57,13 @@ static PatternMatch check_loadstore_mask(const SfiValidator &sfi,
                                          const DecodedInstruction &first,
                                          const DecodedInstruction &second,
                                          ProblemSink *out) {
-  if (second.base_address_register() == kRegisterNone /* not a load/store */
+  if (second.base_address_register().
+      Equals(kRegisterNone) /* not a load/store */
       || sfi.is_data_address_register(second.base_address_register())) {
     return NO_MATCH;
   }
 
-  if (second.base_address_register() == kRegisterPc
+  if (second.base_address_register().Equals(kRegisterPc)
       && second.offset_is_immediate()) {
     /* PC + immediate addressing is always safe. */
     return PATTERN_SAFE;
@@ -70,7 +71,7 @@ static PatternMatch check_loadstore_mask(const SfiValidator &sfi,
 
   if (first.defines(second.base_address_register())
       && first.clears_bits(sfi.data_address_mask())
-      && !first.defs()[kConditions]
+      && !first.defs().Contains(kConditions)
       && first.always_precedes(second)) {
     return PATTERN_SAFE_2;
   }
@@ -94,7 +95,8 @@ static PatternMatch check_branch_mask(const SfiValidator &sfi,
                                       const DecodedInstruction &first,
                                       const DecodedInstruction &second,
                                       ProblemSink *out) {
-  if (second.branch_target_register() == kRegisterNone) return NO_MATCH;
+  if (second.branch_target_register().Equals(kRegisterNone))
+    return NO_MATCH;
 
   if (first.defines(second.branch_target_register())
       && first.clears_bits(sfi.code_address_mask())
@@ -120,9 +122,10 @@ static PatternMatch check_data_register_update(const SfiValidator &sfi,
   if (first.clears_bits(sfi.data_address_mask())) return NO_MATCH;
 
   // Exempt updates due to writeback
-  RegisterList data_addr_defs = first.defs() & sfi.data_address_registers();
-  if ((first.immediate_addressing_defs() & sfi.data_address_registers())
-      == data_addr_defs) {
+  RegisterList data_addr_defs(first.defs().
+                              Intersect(sfi.data_address_registers()));
+  if (first.immediate_addressing_defs().
+      Intersect(sfi.data_address_registers()).Equals(data_addr_defs)) {
     return NO_MATCH;
   }
 
@@ -147,7 +150,7 @@ static PatternMatch check_call_position(const SfiValidator &sfi,
                                         const DecodedInstruction &inst,
                                         ProblemSink *out) {
   // Identify linking branches through their definitions:
-  if (inst.defines_all(kRegisterPc + kRegisterLink)) {
+  if (inst.defines_all(RegisterList(kRegisterPc).Add(kRegisterLink))) {
     uint32_t last_slot = sfi.bundle_for_address(inst.addr()).end_addr() - 4;
     if (inst.addr() != last_slot) {
       out->report_problem(inst.addr(), inst.safety(), kProblemMisalignedCall);
@@ -178,12 +181,13 @@ static PatternMatch check_pc_writes(const SfiValidator &sfi,
                                     const DecodedInstruction &inst,
                                     ProblemSink *out) {
   if (inst.is_relative_branch()
-      || inst.branch_target_register() != kRegisterNone) {
+      || !inst.branch_target_register().Equals(kRegisterNone)) {
     // It's a branch.
     return NO_MATCH;
   }
 
-  if (!inst.defines(nacl_arm_dec::kRegisterPc)) return NO_MATCH;
+  if (!inst.defines(nacl_arm_dec::kRegisterPc))
+    return NO_MATCH;
 
   if (inst.clears_bits(sfi.code_address_mask())) {
     return PATTERN_SAFE;
@@ -226,8 +230,8 @@ SfiValidator& SfiValidator::operator=(const SfiValidator& v) {
   data_address_mask_ = v.data_address_mask_;
   code_address_mask_ = v.code_address_mask_;
   code_region_bytes_ = v.code_region_bytes_;
-  read_only_registers_ = v.read_only_registers_;
-  data_address_registers_ = v.data_address_registers_;
+  read_only_registers_.Copy(v.read_only_registers_);
+  data_address_registers_.Copy(v.data_address_registers_);
   return *this;
 }
 
@@ -302,7 +306,7 @@ bool SfiValidator::validate_fallthrough(const CodeSegment &segment,
       va -= 4;
     }
 
-    pred = inst;
+    pred.Copy(inst);
   }
 
   return complete_success;
@@ -451,7 +455,7 @@ bool SfiValidator::apply_patterns(const DecodedInstruction &first,
 }
 
 bool SfiValidator::is_data_address_register(Register r) const {
-  return data_address_registers_[r];
+  return data_address_registers_.Contains(r);
 }
 
 const Bundle SfiValidator::bundle_for_address(uint32_t address) const {

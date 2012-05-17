@@ -145,16 +145,16 @@ class OldClassDecoder : public ClassDecoder {
 
   // True if S (updates condition flags in APSR register) flag is defined.
   inline bool UpdatesConditions(const Instruction& i) const {
-    return i.bit(20);
+    return i.Bit(20);
   }
 
   // True if W (does write) flag is defined.
   inline bool WritesFlag(const Instruction& i) const {
-    return i.bit(21);
+    return i.Bit(21);
   }
   // True if P (pre-indexing) flag is defined.
   inline bool PreindexingFlag(const Instruction& i) const {
-    return i.bit(24);
+    return i.Bit(24);
   }
 
  private:
@@ -209,7 +209,7 @@ class EffectiveNoOp : public OldClassDecoder {
   }
   virtual RegisterList defs(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
+    return RegisterList();
   }
 
  private:
@@ -230,7 +230,7 @@ class Roadblock : public OldClassDecoder {
   }
   virtual RegisterList defs(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
+    return RegisterList();
   }
 
  private:
@@ -276,7 +276,7 @@ class DataProc : public OldClassDecoder {
   virtual RegisterList defs(Instruction i) const;
   // Defines the destination register of the data operation.
   inline Register Rd(const Instruction& i) const {
-    return i.reg(15, 12);
+    return i.Reg(15, 12);
   }
 
  private:
@@ -306,7 +306,7 @@ class PackSatRev : public OldClassDecoder {
   virtual RegisterList defs(Instruction i) const;
   // Defines the destination register.
   inline Register Rd(const Instruction& i) const {
-    return i.reg(15, 12);
+    return i.Reg(15, 12);
   }
 
  private:
@@ -336,7 +336,7 @@ class Multiply : public OldClassDecoder {
   virtual RegisterList defs(Instruction i) const;
   // Defines the destination register.
   inline Register Rd(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -364,11 +364,11 @@ class LongMultiply : public Multiply {
   virtual RegisterList defs(Instruction i) const;
   // Supplies the lower 32 bits for the destination result.
   inline Register RdLo(const Instruction& i) const {
-    return i.reg(15, 12);
+    return i.Reg(15, 12);
   }
   // Supplies the other 32 bits of the destination result.
   inline Register RdHi(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -432,7 +432,7 @@ class StoreImmediate : public OldClassDecoder {
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -455,7 +455,7 @@ class StoreRegister : public OldClassDecoder {
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -478,11 +478,11 @@ class StoreExclusive : public OldClassDecoder {
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
   // Defines the destination register.
   inline Register Rd(const Instruction& i) const {
-    return i.reg(15, 12);
+    return i.Reg(15, 12);
   }
 
  private:
@@ -505,7 +505,7 @@ class AbstractLoad : public OldClassDecoder {
   bool writeback(Instruction i) const;
   // Defines the destination register.
   inline Register Rt(const Instruction& i) const {
-    return i.reg(15, 12);
+    return i.Reg(15, 12);
   }
 
  private:
@@ -531,7 +531,7 @@ class LoadRegister : public AbstractLoad {
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -558,7 +558,7 @@ class LoadImmediate : public AbstractLoad {
   virtual bool offset_is_immediate(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -583,7 +583,7 @@ class LoadDoubleI : public LoadImmediate {
   }
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -622,7 +622,7 @@ class LoadExclusive : public AbstractLoad {
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -662,7 +662,7 @@ class LoadMultiple : public OldClassDecoder {
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -688,11 +688,11 @@ class VectorLoad : public OldClassDecoder {
   virtual Register base_address_register(Instruction i) const;
   // Defines the base address for the access.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
   // Contains an address offset applied after the access.
   inline Register Rm(const Instruction& i) const {
-    return i.reg(3, 0);
+    return i.Reg(3, 0);
   }
 
  private:
@@ -715,11 +715,11 @@ class VectorStore : public OldClassDecoder {
   virtual Register base_address_register(Instruction i) const;
   // Defines the base address for the access.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
   // Contains an address offset applied after the access.
   inline Register Rm(const Instruction& i) const {
-    return i.reg(3, 0);
+    return i.Reg(3, 0);
   }
 
  private:
@@ -743,11 +743,11 @@ class CoprocessorOp : public OldClassDecoder {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
+    return RegisterList();
   }
   // Returns the name (i.e. index) of the coprocessor referenced.
   inline uint32_t CoprocIndex(const Instruction& i) const {
-    return i.bits(11, 8);
+    return i.Bits(11, 8);
   }
 
  private:
@@ -771,7 +771,7 @@ class LoadCoprocessor : public CoprocessorOp {
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   // Contains the base address for the access.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -795,7 +795,7 @@ class StoreCoprocessor : public CoprocessorOp {
   virtual Register base_address_register(Instruction i) const;
   // Contains the base address for the access.
   inline Register Rn(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -811,8 +811,8 @@ class MoveFromCoprocessor : public CoprocessorOp {
   virtual RegisterList defs(Instruction i) const;
   // Defines the destination core register.
   inline Register Rt(const Instruction& i) const {
-    Register rt = i.reg(15, 12);
-    if (rt == kRegisterPc) {
+    Register rt(i.Reg(15, 12));
+    if (rt.Equals(kRegisterPc)) {
       // Per ARM ISA spec: r15 here is a synonym for the flags register!
       return kConditions;
     }
@@ -832,11 +832,11 @@ class MoveDoubleFromCoprocessor : public CoprocessorOp {
   virtual RegisterList defs(Instruction i) const;
   // Contains the first destination core register.
   inline Register Rt(const Instruction& i) const {
-    return i.reg(15, 12);
+    return i.Reg(15, 12);
   }
   // Contains the second destination core register.
   inline Register Rt2(const Instruction& i) const {
-    return i.reg(19, 16);
+    return i.Reg(19, 16);
   }
 
  private:
@@ -860,11 +860,11 @@ class BxBlx : public OldClassDecoder {
   virtual Register branch_target_register(Instruction i) const;
   // Defines flag that indicates that Link register is used as well.
   inline bool UsesLinkRegister(const Instruction& i) const {
-    return i.bit(5);
+    return i.Bit(5);
   }
   // Contains branch target address and instruction set selection bit.
   inline Register Rm(const Instruction& i) const {
-    return i.reg(3, 0);
+    return i.Reg(3, 0);
   }
 
  private:

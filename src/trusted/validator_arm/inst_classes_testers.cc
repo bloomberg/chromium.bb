@@ -31,7 +31,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Unary1RegisterImmediateOp expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -42,24 +42,26 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Check that immediate value is computed correctly.
-  EXPECT_EQ(expected_decoder.imm4.value(inst), inst.bits(19, 16));
-  EXPECT_EQ(expected_decoder.imm12.value(inst), inst.bits(11, 0));
+  EXPECT_EQ(expected_decoder.imm4.value(inst), inst.Bits(19, 16));
+  EXPECT_EQ(expected_decoder.imm12.value(inst), inst.Bits(11, 0));
   EXPECT_EQ(expected_decoder.ImmediateValue(inst),
-            (inst.bits(19, 16) << 12) | inst.bits(11, 0));
+            (inst.Bits(19, 16) << 12) | inst.Bits(11, 0));
   EXPECT_LT(expected_decoder.ImmediateValue(inst), (uint32_t) 0x10000);
 
   // Other NaCl constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected FORBIDDEN_OPERANDS for " << InstContents();
 
   return true;
@@ -79,7 +81,7 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder));
 
   // Other ARM constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
 
   return true;
@@ -97,7 +99,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Unary1RegisterImmediateOp expected_decoder;
 
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
+  if ((expected_decoder.d.reg(inst).Equals(kRegisterPc)) &&
       expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
@@ -116,7 +118,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Binary2RegisterImmediateOp expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -127,22 +129,24 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
-  EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Check that immediate value is computed correctly.
-  EXPECT_EQ(expected_decoder.imm.value(inst), inst.bits(11, 0));
+  EXPECT_EQ(expected_decoder.imm.value(inst), inst.Bits(11, 0));
 
   // Other NaCl constraints about this instruction.
   if (apply_rd_is_pc_check_) {
-    EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+    EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
         << "Expected FORBIDDEN_OPERANDS for " << InstContents();
   }
 
@@ -161,7 +165,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Binary2RegisterImmediateOp expected_decoder;
 
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
+  if ((expected_decoder.d.reg(inst).Equals(kRegisterPc)) &&
       expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
@@ -181,7 +185,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Binary2RegisterImmediateOp expected_decoder;
 
   // Check that we don't parse when Rn=15 and S=0.
-  if ((expected_decoder.n.reg(inst) == kRegisterPc) &&
+  if ((expected_decoder.n.reg(inst).Equals(kRegisterPc)) &&
       !expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
@@ -209,7 +213,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::BinaryRegisterImmediateTest expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -220,17 +224,19 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Check that immediate value is computed correctly.
-  EXPECT_EQ(expected_decoder.imm.value(inst), inst.bits(11, 0));
+  EXPECT_EQ(expected_decoder.imm.value(inst), inst.Bits(11, 0));
 
   return true;
 }
@@ -246,7 +252,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Unary2RegisterOp expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -257,18 +263,20 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(!Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Other NaCl constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected FORBIDDEN_OPERANDS for " << InstContents();
 
   return true;
@@ -286,7 +294,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Unary2RegisterOp expected_decoder;
 
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
+  if ((expected_decoder.d.reg(inst).Equals(kRegisterPc)) &&
       expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
@@ -305,7 +313,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Binary3RegisterOp expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -316,19 +324,21 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(11, 8));
-  EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(11, 8)));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Other NaCl constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected FORBIDDEN_OPERANDS for " << InstContents();
 
   return true;
@@ -347,11 +357,11 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Binary3RegisterOpTester::ApplySanityChecks(inst, decoder));
 
   // Other ARM constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
-  EXPECT_NE(expected_decoder.m.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
-  EXPECT_NE(expected_decoder.n.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
 
   return true;
@@ -368,7 +378,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Unary2RegisterImmedShiftedOp expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -379,22 +389,24 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Check that immediate value is computed correctly.
-  EXPECT_EQ(expected_decoder.imm.value(inst), inst.bits(11, 7));
-  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.bits(6, 5));
+  EXPECT_EQ(expected_decoder.imm.value(inst), inst.Bits(11, 7));
+  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.Bits(6, 5));
 
   // Other NaCl constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected FORBIDDEN_OPERANDS for " << InstContents();
 
   return true;
@@ -431,7 +443,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Unary2RegisterImmedShiftedOp expected_decoder;
 
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
+  if ((expected_decoder.d.reg(inst).Equals(kRegisterPc)) &&
       expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
@@ -450,7 +462,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Unary3RegisterShiftedOp expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -461,22 +473,24 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.s.number(inst), inst.bits(11, 8));
-  EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.s.reg(inst).Equals(inst.Reg(11, 8)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Check the shift type.
-  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.bits(6, 5));
+  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.Bits(6, 5));
 
   // Other NaCl constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected FORBIDDEN_OPERANDS for " << InstContents();
 
   return true;
@@ -495,11 +509,11 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Unary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   // Other ARM constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
-  EXPECT_NE(expected_decoder.s.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.s.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
-  EXPECT_NE(expected_decoder.m.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
 
   return true;
@@ -516,7 +530,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Binary3RegisterImmedShiftedOp expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -527,23 +541,25 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
-  EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Check that immediate value is computed correctly.
-  EXPECT_EQ(expected_decoder.imm.value(inst), inst.bits(11, 7));
-  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.bits(6, 5));
+  EXPECT_EQ(expected_decoder.imm.value(inst), inst.Bits(11, 7));
+  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.Bits(6, 5));
 
   // Other NaCl constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected FORBIDDEN_OPERANDS for " << InstContents();
 
   return true;
@@ -561,7 +577,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Binary3RegisterImmedShiftedOp expected_decoder;
 
   // Check that we don't parse when Rd=15 and S=1.
-  if ((expected_decoder.d.reg(inst) == kRegisterPc) &&
+  if ((expected_decoder.d.reg(inst).Equals(kRegisterPc)) &&
       expected_decoder.conditions.is_updated(inst)) {
     NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
   }
@@ -580,7 +596,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Binary4RegisterShiftedOp expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -591,20 +607,22 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
-  EXPECT_EQ(expected_decoder.d.number(inst), inst.bits(15, 12));
-  EXPECT_EQ(expected_decoder.s.number(inst), inst.bits(11, 8));
-  EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.s.reg(inst).Equals(inst.Reg(11, 8)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Other NaCl constraints about this instruction.
-  EXPECT_NE(expected_decoder.d.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected FORBIDDEN_OPERANDS for " << InstContents();
 
   return true;
@@ -624,13 +642,13 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   // Other ARM constraints about this instruction.
-  EXPECT_NE(expected_decoder.n.reg(inst), kRegisterPc)
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
-  EXPECT_NE(expected_decoder.d.reg(inst), kRegisterPc)
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
-  EXPECT_NE(expected_decoder.s.reg(inst), kRegisterPc)
+  EXPECT_FALSE(expected_decoder.s.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
-  EXPECT_NE(expected_decoder.m.reg(inst), kRegisterPc)
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
 
   return true;
@@ -647,7 +665,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Binary2RegisterImmedShiftedTest expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -658,19 +676,21 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
-  EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
 
   // Check that immediate value is computed correctly.
-  EXPECT_EQ(expected_decoder.imm.value(inst), inst.bits(11, 7));
-  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.bits(6, 5));
+  EXPECT_EQ(expected_decoder.imm.value(inst), inst.Bits(11, 7));
+  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.Bits(6, 5));
 
   return true;
 }
@@ -686,7 +706,7 @@ ApplySanityChecks(Instruction inst,
   nacl_arm_dec::Binary3RegisterShiftedTest expected_decoder;
 
   // Check that condition is defined correctly.
-  EXPECT_EQ(expected_decoder.cond.value(inst), inst.bits(31, 28));
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond.undefined(inst)) {
@@ -697,17 +717,19 @@ ApplySanityChecks(Instruction inst,
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
   // Check Registers and flags used in DataProc.
-  EXPECT_EQ(expected_decoder.n.number(inst), inst.bits(19, 16));
-  EXPECT_EQ(expected_decoder.s.number(inst), inst.bits(11, 8));
-  EXPECT_EQ(expected_decoder.m.number(inst), inst.bits(3, 0));
-  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.bit(20));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_TRUE(expected_decoder.s.reg(inst).Equals(inst.Reg(11, 8)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
   if (expected_decoder.conditions.is_updated(inst)) {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst), kConditions);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).Equals(kConditions));
   } else {
-    EXPECT_EQ(expected_decoder.conditions.conds_if_updated(inst),
-              kRegisterNone);
+    EXPECT_TRUE(
+        expected_decoder.conditions.conds_if_updated(inst).
+        Equals(kRegisterNone));
   }
-  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.bits(6, 5));
+  EXPECT_EQ(expected_decoder.shift_type.value(inst), inst.Bits(6, 5));
 
   return true;
 }
@@ -727,11 +749,11 @@ ApplySanityChecks(Instruction inst,
       inst, decoder));
 
   // Other ARM constraints about this instruction.
-  EXPECT_NE(expected_decoder.n.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
-  EXPECT_NE(expected_decoder.s.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.s.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
-  EXPECT_NE(expected_decoder.m.number(inst), (uint32_t) 15)
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
       << "Expected Unpredictable for " << InstContents();
 
   return true;

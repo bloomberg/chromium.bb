@@ -63,7 +63,7 @@ enum SafetyLevel {
 class ShiftTypeBits5To6Interface {
  public:
   static inline uint32_t value(const Instruction& i) {
-    return i.bits(6, 5);
+    return i.Bits(6, 5);
   }
   // Converts the given immediate value using the shift type specified
   // by this interface. Defined in A8.4.3, page A8-11.
@@ -81,7 +81,7 @@ class ShiftTypeBits5To6Interface {
 class ConditionBits28To31Interface {
  public:
   static inline uint32_t value(const Instruction& i) {
-    return i.bits(31, 28);
+    return i.Bits(31, 28);
   }
   static inline bool defined(const Instruction& i) {
     return value(i) != 0xF;
@@ -99,7 +99,7 @@ class ConditionBits28To31Interface {
 class RegDBits12To15Interface {
  public:
   static inline uint32_t number(const Instruction& i) {
-    return i.bits(15, 12);
+    return i.Bits(15, 12);
   }
   static inline Register reg(const Instruction& i) {
     return Register(number(i));
@@ -114,7 +114,7 @@ class RegDBits12To15Interface {
 class RegMBits0To3Interface {
  public:
   static inline uint32_t number(const Instruction& i) {
-    return i.bits(3, 0);
+    return i.Bits(3, 0);
   }
   static inline Register reg(const Instruction& i) {
     return Register(number(i));
@@ -129,7 +129,7 @@ class RegMBits0To3Interface {
 class RegMBits8To11Interface {
  public:
   static inline uint32_t number(const Instruction& i) {
-    return i.bits(11, 8);
+    return i.Bits(11, 8);
   }
   static inline Register reg(const Instruction& i) {
     return Register(number(i));
@@ -144,7 +144,7 @@ class RegMBits8To11Interface {
 class RegNBits0To3Interface {
  public:
   static inline uint32_t number(const Instruction& i) {
-    return i.bits(3, 0);
+    return i.Bits(3, 0);
   }
   static inline Register reg(const Instruction& i) {
     return Register(number(i));
@@ -159,7 +159,7 @@ class RegNBits0To3Interface {
 class RegNBits16To19Interface {
  public:
   static inline uint32_t number(const Instruction& i) {
-    return i.bits(19, 16);
+    return i.Bits(19, 16);
   }
   static inline Register reg(const Instruction& i) {
     return Register(number(i));
@@ -174,7 +174,7 @@ class RegNBits16To19Interface {
 class RegSBits8To11Interface {
  public:
   static inline uint32_t number(const Instruction& i) {
-    return i.bits(11, 8);
+    return i.Bits(11, 8);
   }
   static inline Register reg(const Instruction& i) {
     return Register(number(i));
@@ -189,7 +189,7 @@ class RegSBits8To11Interface {
 class Imm12Bits0To11Interface {
  public:
   static inline uint32_t value(const Instruction& i) {
-    return i.bits(11, 0);
+    return i.Bits(11, 0);
   }
   static uint32_t get_modified_immediate(Instruction i);
 
@@ -202,7 +202,7 @@ class Imm12Bits0To11Interface {
 class Imm5Bits7To11Interface {
  public:
   static inline uint32_t value(const Instruction& i) {
-    return i.bits(11, 7);
+    return i.Bits(11, 7);
   }
 
  private:
@@ -214,7 +214,7 @@ class Imm5Bits7To11Interface {
 class Imm4Bits16To19Interface {
  public:
   static inline uint32_t value(const Instruction& i) {
-    return i.bits(19, 16);
+    return i.Bits(19, 16);
   }
 
  private:
@@ -229,7 +229,7 @@ class UpdatesConditionsBit20Interface {
   // Returns true if bit is set that states that the condition bits
   // APSR is updated.
   static inline bool is_updated(const Instruction i) {
-    return i.bit(20);
+    return i.Bit(20);
   }
   // Returns the conditions register if it is used.
   static inline Register conds_if_updated(const Instruction i) {
@@ -309,7 +309,7 @@ class ClassDecoder {
   // Stubbed to indicate that no such addressing occurs.
   virtual RegisterList immediate_addressing_defs(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
+    return RegisterList();
   }
 
   // For instructions that can read or write memory, gets the register used as
@@ -422,7 +422,7 @@ class UnsafeClassDecoder : public ClassDecoder {
   // Switch off the def warnings -- it's already forbidden!
   virtual RegisterList defs(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
+    return RegisterList();
   }
 
  private:

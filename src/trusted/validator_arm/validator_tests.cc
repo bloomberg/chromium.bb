@@ -73,9 +73,9 @@ static const uint32_t kCodeRegionSize = 0x20000000;
 // Limit data to 1GiB.
 static const uint32_t kDataRegionSize = 0x40000000;
 // Untrusted code must not write to r9.
-static const RegisterList kAbiReadOnlyRegisters = Register(9);
+static const RegisterList kAbiReadOnlyRegisters(Register(9));
 // The stack pointer can be used for "free" loads and stores.
-static const RegisterList kAbiDataAddrRegisters = nacl_arm_dec::kRegisterStack;
+static const RegisterList kAbiDataAddrRegisters(nacl_arm_dec::kRegisterStack);
 
 
 /*
@@ -176,7 +176,7 @@ TEST_F(ValidatorTests, RecognizesDataAddressRegisters) {
    */
   for (int i = 0; i < 16; i++) {
     Register r(i);
-    if (r == nacl_arm_dec::kRegisterStack) {
+    if (r.Equals(nacl_arm_dec::kRegisterStack)) {
       EXPECT_TRUE(_validator.is_data_address_register(r))
           << "Stack pointer must be a data address register.";
     } else {

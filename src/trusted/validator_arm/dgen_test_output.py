@@ -462,7 +462,7 @@ PARSE_TABLE_METHOD_ROW="""
 PARSE_TABLE_METHOD_FOOTER="""
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: %(table_name)s could not parse %%08X",
-          insn.bits(31,0));
+          insn.Bits());
   return %(forbidden)s;
 }
 
@@ -551,9 +551,10 @@ def _generate_decoder_method_bodies(decoder, values, out):
       #
       #    ((insn & 0x0F000000) != 0x0C000000) &&
       #    ((insn & 0x0000000F) != 0x00000005)
-      out.write(METHOD_DISPATCH_BEGIN % row.patterns[0].to_c_expr('insn'))
+      out.write(METHOD_DISPATCH_BEGIN %
+                row.patterns[0].to_c_expr('insn.Bits()'))
       for p in row.patterns[1:]:
-        out.write(METHOD_DISPATCH_CONTINUE % p.to_c_expr('insn'))
+        out.write(METHOD_DISPATCH_CONTINUE % p.to_c_expr('insn.Bits()'))
       out.write(METHOD_DISPATCH_END)
       values['action'] = action
       out.write(PARSE_TABLE_METHOD_ROW % values)

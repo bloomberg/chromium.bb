@@ -32,8 +32,8 @@ uint32_t ShiftTypeBits5To6Interface::ComputeDecodeImmShift(
 
 // This encoding is described in Section A5.2.4.
 uint32_t Imm12Bits0To11Interface::get_modified_immediate(Instruction i) {
-  int rotation = i.bits(11, 8) * 2;
-  uint32_t value = i.bits(7, 0);
+  int rotation = i.Bits(11, 8) * 2;
+  uint32_t value = i.Bits(7, 0);
 
   if (rotation == 0) return value;
 

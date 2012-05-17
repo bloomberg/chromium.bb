@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -58,8 +58,8 @@ int validate(const ncfile *ncf, bool use_zero_masks) {
       //                verify that instructions are in right region
       kOneGig,  // code region size
       kOneGig,  // data region size
-      nacl_arm_dec::Register(9),  // read only register (used for threading)
-      nacl_arm_dec::Register(13));  // stack pointer
+      nacl_arm_dec::RegisterList(nacl_arm_dec::Register(9)),
+      nacl_arm_dec::RegisterList(nacl_arm_dec::kRegisterStack));
 
   if (use_zero_masks) {
     validator.change_masks(0, 0);

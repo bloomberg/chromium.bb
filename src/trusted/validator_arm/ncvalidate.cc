@@ -19,6 +19,7 @@
 using nacl_arm_val::SfiValidator;
 using nacl_arm_val::CodeSegment;
 using nacl_arm_dec::Register;
+using nacl_arm_dec::RegisterList;
 using nacl_arm_dec::kRegisterStack;
 using std::vector;
 
@@ -52,8 +53,8 @@ int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
       16,  // bytes per bundle
       1U * 1024 * 1024 * 1024,  // bytes of code space
       1U * 1024 * 1024 * 1024,  // bytes of data space
-      Register(9),  // read only register(s)
-      kRegisterStack);  // data addressing register(s)
+      RegisterList(Register(9)),
+      RegisterList(kRegisterStack));
 
   EarlyExitProblemSink sink;
 

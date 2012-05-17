@@ -223,7 +223,7 @@ class DecodedInstruction {
    * take it into account.  The SfiValidator reasons on this separately.
    */
   bool always_precedes(const DecodedInstruction &other) const {
-    return inst_.condition() == other.inst_.condition() &&
+    return inst_.GetCondition() == other.inst_.GetCondition() &&
         !defines(nacl_arm_dec::kConditions);
   }
 
@@ -248,8 +248,8 @@ class DecodedInstruction {
    * adjacent for this simple check to be meaningful.
    */
   bool is_conditional_on(const DecodedInstruction &other) const {
-    return inst_.condition() == nacl_arm_dec::Instruction::EQ
-        && other.inst_.condition() == nacl_arm_dec::Instruction::AL
+    return inst_.GetCondition() == nacl_arm_dec::Instruction::EQ
+        && other.inst_.GetCondition() == nacl_arm_dec::Instruction::AL
         && other.defines(nacl_arm_dec::kConditions);
   }
 
@@ -296,15 +296,24 @@ class DecodedInstruction {
 
   // Some convenience methods, defined in terms of ClassDecoder:
   bool defines(nacl_arm_dec::Register r) const {
-    return defs().contains_all(r);
+    return defs().Contains(r);
   }
 
   bool defines_any(nacl_arm_dec::RegisterList rl) const {
-    return defs().contains_any(rl);
+    return defs().ContainsAny(rl);
   }
 
   bool defines_all(nacl_arm_dec::RegisterList rl) const {
-    return defs().contains_all(rl);
+    return defs().ContainsAll(rl);
+  }
+
+  inline DecodedInstruction& Copy(const DecodedInstruction& other) {
+    vaddr_ = other.vaddr_;
+    inst_.Copy(other.inst_);
+    decoder_ = other.decoder_;
+    safety_ = other.safety_;
+    defs_.Copy(other.defs_);
+    return *this;
   }
 
  private:
@@ -314,6 +323,7 @@ class DecodedInstruction {
 
   nacl_arm_dec::SafetyLevel safety_;
   nacl_arm_dec::RegisterList defs_;
+  DecodedInstruction& operator=(const DecodedInstruction&);
 };
 
 

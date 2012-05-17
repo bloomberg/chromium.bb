@@ -69,18 +69,20 @@ void ActualVsBaselineTester::CheckSafety() {
 }
 
 void ActualVsBaselineTester::CheckDefs() {
-  EXPECT_EQ(baseline_decoder_.defs(inst_).number(),
-            actual_decoder_.defs(inst_).number());
+  EXPECT_TRUE(
+      baseline_decoder_.defs(inst_).Equals(actual_decoder_.defs(inst_)));
 }
 
 void ActualVsBaselineTester::CheckImmediateAddressingDefs() {
-  EXPECT_EQ(baseline_decoder_.immediate_addressing_defs(inst_).number(),
-            actual_decoder_.immediate_addressing_defs(inst_).number());
+  EXPECT_TRUE(
+      baseline_decoder_.immediate_addressing_defs(inst_).Equals(
+          actual_decoder_.immediate_addressing_defs(inst_)));
 }
 
 void ActualVsBaselineTester::CheckBaseAddressRegister() {
-  EXPECT_EQ(baseline_decoder_.base_address_register(inst_).number(),
-            actual_decoder_.base_address_register(inst_).number());
+  EXPECT_TRUE(
+      baseline_decoder_.base_address_register(inst_).Equals(
+          actual_decoder_.base_address_register(inst_)));
 }
 
 void ActualVsBaselineTester::CheckOffsetIsImmediate() {
@@ -89,8 +91,9 @@ void ActualVsBaselineTester::CheckOffsetIsImmediate() {
 }
 
 void ActualVsBaselineTester::CheckBranchTargetRegister() {
-  EXPECT_EQ(baseline_decoder_.branch_target_register(inst_).number(),
-            actual_decoder_.branch_target_register(inst_).number());
+  EXPECT_TRUE(
+      baseline_decoder_.branch_target_register(inst_).Equals(
+          actual_decoder_.branch_target_register(inst_)));
 }
 
 void ActualVsBaselineTester::CheckIsRelativeBranch() {
