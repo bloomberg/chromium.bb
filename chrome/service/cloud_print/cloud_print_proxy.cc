@@ -49,7 +49,11 @@ void ShowTokenExpiredNotificationInBrowser() {
 }
 
 void CheckCloudPrintProxyPolicyInBrowser() {
+  // crbug.com/128541, speculative temporary workaround for the crash.
+  // TODO(scottbyer): Find the real problem and put this back in.
+#if !defined(OS_WIN)
   LaunchBrowserProcessWithSwitch(switches::kCheckCloudPrintConnectorPolicy);
+#endif
 }
 
 }  // namespace
