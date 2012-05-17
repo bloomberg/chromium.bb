@@ -27,6 +27,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
   virtual WebKit::WebString name() const;
   virtual WebKit::WebIDBKeyPath keyPath() const;
   virtual WebKit::WebDOMStringList indexNames() const;
+  virtual bool autoIncrement() const;
 
   virtual void get(const WebKit::WebIDBKeyRange& key_range,
                    WebKit::WebIDBCallbacks* callbacks,

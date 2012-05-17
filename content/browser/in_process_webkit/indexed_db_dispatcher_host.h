@@ -197,6 +197,7 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
                    content::IndexedDBKeyPath* keyPath);
     void OnIndexNames(int32 idb_object_store_id,
                       std::vector<string16>* index_names);
+    void OnAutoIncrement(int32 idb_object_store_id, bool* auto_increment);
     void OnGet(int idb_object_store_id,
                int32 thread_id,
                int32 response_id,

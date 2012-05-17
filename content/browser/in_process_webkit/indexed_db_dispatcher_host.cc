@@ -685,6 +685,8 @@ bool IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreName, OnName)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreKeyPath, OnKeyPath)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreIndexNames, OnIndexNames)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreAutoIncrement,
+                        OnAutoIncrement)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreGet, OnGet)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStorePut, OnPut)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreDelete, OnDelete)
@@ -733,6 +735,12 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndexNames(
   index_names->reserve(web_index_names.length());
   for (unsigned i = 0; i < web_index_names.length(); ++i)
     index_names->push_back(web_index_names.item(i));
+}
+
+void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnAutoIncrement(
+    int32 idb_object_store_id, bool* auto_increment) {
+  parent_->SyncGetter<bool>(&map_, idb_object_store_id, auto_increment,
+                            &WebIDBObjectStore::autoIncrement);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnGet(

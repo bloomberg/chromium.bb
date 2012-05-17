@@ -73,6 +73,14 @@ WebDOMStringList RendererWebIDBObjectStoreImpl::indexNames() const {
   return web_result;
 }
 
+bool RendererWebIDBObjectStoreImpl::autoIncrement() const {
+  bool result;
+  IndexedDBDispatcher::Send(
+      new IndexedDBHostMsg_ObjectStoreAutoIncrement(
+          idb_object_store_id_, &result));
+  return result;
+}
+
 void RendererWebIDBObjectStoreImpl::get(
     const WebIDBKeyRange& key_range,
     WebIDBCallbacks* callbacks,
