@@ -42,6 +42,15 @@ from chromite.lib import sudo
 # would create their own namespace w/in and assign themselves to it.
 
 
+class _GroupWasRemoved(Exception):
+  """Exception representing when a group was unexpectedly removed.
+
+  Via design, this should only be possible when instantiating a new
+  pool, but the parent pool has been removed- this means effectively that
+  we're supposed to shutdown (either we've been sigterm'd and ignored it,
+  or it's imminent)."""
+
+
 def _FileContains(filename, strings):
   """Greps a group of expressions, returns whether all were found."""
   contents = osutils.ReadFile(filename)
@@ -379,7 +388,10 @@ class Cgroup(object):
 
   def _SudoSet(self, key, value):
     """Set a cgroup file in this namespace to a specific value"""
-    return sudo.SetFileContents(self._LimitName(key, True), value)
+    try:
+      return sudo.SetFileContents(self._LimitName(key, True), value)
+    except cros_build_lib.RunCommandError, e:
+      raise _GroupWasRemoved(self.namespace, e)
 
   def RemoveThisGroup(self, strict=False):
     """Remove this specific cgroup
@@ -493,16 +505,31 @@ class Cgroup(object):
     Finally, note that during cleanup this will suppress SIGINT and SIGTERM
     to ensure that it cleanses any children before returning.
     """
+
     if pool_name is None:
       pool_name = str(os.getpid())
-    node = self.AddGroup(pool_name, autoclean=True)
+
+    run_kill = False
     try:
-      node.TransferCurrentPid()
+      # Note; we use lazy init here so that we cannot trigger a
+      # _GroupWasRemoved; we want that contained.
+      node = self.AddGroup(pool_name, autoclean=True, lazy_init=True)
+      try:
+        node.TransferCurrentPid()
+      except _GroupWasRemoved:
+        raise SystemExit(
+            "Group %s was removed under our feet; pool shutdown is underway"
+            % node.namespace)
+      run_kill = True
       yield
     finally:
       with signals.DeferSignals():
         self.TransferCurrentPid()
-        node.KillProcesses(remove=True)
+        if run_kill:
+          node.KillProcesses(remove=True)
+        else:
+          # Non strict since the group may have failed to be created.
+          node.RemoveThisGroup(strict=False)
 
   def KillProcesses(self, poll_interval=0.05, remove=False):
     """Kill all processes in this namespace."""
