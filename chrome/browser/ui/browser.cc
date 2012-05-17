@@ -2622,31 +2622,24 @@ bool Browser::ExecuteCommandIfEnabled(int id) {
 
 bool Browser::IsReservedCommandOrKey(int command_id,
                                      const NativeWebKeyboardEvent& event) {
+  // In Apps mode, no keys are reserved.
+  if (is_app())
+    return false;
+
 #if defined(OS_CHROMEOS)
   // Chrome OS's top row of keys produces F1-10.  Make sure that web pages
-  // aren't able to block Chrome from performing the standard actions for F1-F4
-  // (F5-7 are grabbed by other X clients and hence don't need this protection,
-  // and F8-10 are handled separately in Chrome via a GDK event filter, but
-  // let's future-proof this).
+  // aren't able to block Chrome from performing the standard actions for F1-F4.
+  // We should not handle F5-10 here since they are processed by Ash. See also:
+  // crbug.com/127333#c8
   ui::KeyboardCode key_code =
       static_cast<ui::KeyboardCode>(event.windowsKeyCode);
   if (key_code == ui::VKEY_F1 ||
       key_code == ui::VKEY_F2 ||
       key_code == ui::VKEY_F3 ||
-      key_code == ui::VKEY_F4 ||
-      key_code == ui::VKEY_F5 ||
-      key_code == ui::VKEY_F6 ||
-      key_code == ui::VKEY_F7 ||
-      key_code == ui::VKEY_F8 ||
-      key_code == ui::VKEY_F9 ||
-      key_code == ui::VKEY_F10) {
+      key_code == ui::VKEY_F4) {
     return true;
   }
 #endif
-
-  // In Apps mode, no keys are reserved.
-  if (is_app())
-    return false;
 
   if (window_->IsFullscreen() && command_id == IDC_FULLSCREEN)
     return true;

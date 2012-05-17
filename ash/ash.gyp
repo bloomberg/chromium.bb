@@ -48,6 +48,8 @@
         'accelerators/accelerator_filter.h',
         'accelerators/accelerator_table.cc',
         'accelerators/accelerator_table.h',
+        'accelerators/focus_manager_factory.cc',
+        'accelerators/focus_manager_factory.h',
         'accelerators/nested_dispatcher_controller.cc',
         'accelerators/nested_dispatcher_controller.h',
         'ash_switches.cc',

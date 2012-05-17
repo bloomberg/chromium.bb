@@ -80,6 +80,7 @@ class AcceleratorManager;
 
 namespace views {
 
+class FocusManagerDelegate;
 class FocusSearch;
 class RootView;
 class View;
@@ -136,7 +137,7 @@ class VIEWS_EXPORT FocusManager {
     kReasonDirectFocusChange
   };
 
-  explicit FocusManager(Widget* widget);
+  FocusManager(Widget* widget, FocusManagerDelegate* delegate);
   virtual ~FocusManager();
 
   // Processes the passed key event for accelerators and tab traversal.
@@ -269,6 +270,10 @@ class VIEWS_EXPORT FocusManager {
 
   // The top-level Widget this FocusManager is associated with.
   Widget* widget_;
+
+  // The object which handles an accelerator when |accelerator_manager_| doesn't
+  // handle it.
+  scoped_ptr<FocusManagerDelegate> delegate_;
 
   // The view that currently is focused.
   View* focused_view_;

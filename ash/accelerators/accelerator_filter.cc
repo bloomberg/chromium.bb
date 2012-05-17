@@ -12,9 +12,22 @@
 #include "ui/base/accelerators/accelerator_manager.h"
 
 namespace {
+
 const int kModifierFlagMask = (ui::EF_SHIFT_DOWN |
                                ui::EF_CONTROL_DOWN |
                                ui::EF_ALT_DOWN);
+
+// Returns true if an Ash accelerator should be processed now.
+bool ShouldProcessAcceleratorsNow(aura::Window* target) {
+  if (!target)
+    return true;
+  if (target == ash::Shell::GetInstance()->GetRootWindow())
+    return true;
+  // Unless |target| is the root window, return false to let the custom focus
+  // manager (see ash/shell.cc) handle Ash accelerators.
+  return false;
+}
+
 }  // namespace
 
 namespace ash {
@@ -38,6 +51,8 @@ bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
   if (type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED)
     return false;
   if (event->is_char())
+    return false;
+  if (!ShouldProcessAcceleratorsNow(target))
     return false;
 
   ui::Accelerator accelerator(event->key_code(),

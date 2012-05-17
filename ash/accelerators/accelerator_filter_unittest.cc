@@ -75,7 +75,7 @@ TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
 }
 
-// Tests if AcceleratorFilter works with a focused window.
+// Tests if AcceleratorFilter works as expected with a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
@@ -92,11 +92,13 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
       scoped_ptr<ScreenshotDelegate>(delegate).Pass());
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
+  // AcceleratorFilter should ignore the key events since the root window is
+  // not focused.
   aura::test::EventGenerator generator(Shell::GetRootWindow());
   generator.PressKey(ui::VKEY_PRINT, 0);
-  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
   generator.ReleaseKey(ui::VKEY_PRINT, 0);
-  EXPECT_EQ(1, delegate->handle_take_screenshot_count());
+  EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
   // Reset window before |test_delegate| gets deleted.
   window.reset();
@@ -104,16 +106,6 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
 
 // Tests if AcceleratorFilter ignores the flag for Caps Lock.
 TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
-  aura::Window* default_container = Shell::GetInstance()->GetContainer(
-      internal::kShellWindowId_DefaultContainer);
-  aura::test::TestWindowDelegate test_delegate;
-  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
-      &test_delegate,
-      -1,
-      gfx::Rect(),
-      default_container));
-  wm::ActivateWindow(window.get());
-
   DummyScreenshotDelegate* delegate = new DummyScreenshotDelegate;
   GetController()->SetScreenshotDelegate(
       scoped_ptr<ScreenshotDelegate>(delegate).Pass());
@@ -131,9 +123,6 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
   generator.ReleaseKey(ui::VKEY_PRINT, ui::EF_CAPS_LOCK_DOWN);
   EXPECT_EQ(2, delegate->handle_take_screenshot_count());
-
-  // Reset window before |test_delegate| gets deleted.
-  window.reset();
 }
 
 }  // namespace test
