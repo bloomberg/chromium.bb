@@ -16,25 +16,7 @@ class Rect;
 }  // namespace gfx
 
 namespace ui {
-namespace test {
-
-// A scoped object allows you to temporarily enable DIP
-// in the unit tests.
-class COMPOSITOR_EXPORT ScopedDIPEnablerForTest {
- public:
-  ScopedDIPEnablerForTest();
-  ~ScopedDIPEnablerForTest();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedDIPEnablerForTest);
-};
-
-}  // namespace test
-
 class Layer;
-
-// True if DIP is enabled.
-COMPOSITOR_EXPORT bool IsDIPEnabled();
 
 COMPOSITOR_EXPORT float GetDeviceScaleFactor(const Layer* layer);
 

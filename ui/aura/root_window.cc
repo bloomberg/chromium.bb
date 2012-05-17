@@ -280,14 +280,10 @@ bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
 
 bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
   DispatchHeldMouseMove();
-  if (ui::IsDIPEnabled()) {
-    float scale = ui::GetDeviceScaleFactor(layer());
-    ui::Transform transform = layer()->transform();
-    transform.ConcatScale(scale, scale);
-    event->UpdateForRootTransform(transform);
-  } else {
-    event->UpdateForRootTransform(layer()->transform());
-  }
+  float scale = ui::GetDeviceScaleFactor(layer());
+  ui::Transform transform = layer()->transform();
+  transform.ConcatScale(scale, scale);
+  event->UpdateForRootTransform(transform);
 
   last_mouse_location_ = event->location();
   synthesize_mouse_move_ = false;
@@ -311,14 +307,10 @@ bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
 
 bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   DispatchHeldMouseMove();
-  if (ui::IsDIPEnabled()) {
-    float scale = ui::GetDeviceScaleFactor(layer());
-    ui::Transform transform = layer()->transform();
-    transform.ConcatScale(scale, scale);
-    event->UpdateForRootTransform(transform);
-  } else {
-    event->UpdateForRootTransform(layer()->transform());
-  }
+  float scale = ui::GetDeviceScaleFactor(layer());
+  ui::Transform transform = layer()->transform();
+  transform.ConcatScale(scale, scale);
+  event->UpdateForRootTransform(transform);
   bool handled = false;
   ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
   Window* target = capture_window_;
@@ -934,14 +926,10 @@ bool RootWindow::IsFocusedWindow(const Window* window) const {
 }
 
 bool RootWindow::DispatchMouseEventImpl(MouseEvent* event) {
-  if (ui::IsDIPEnabled()) {
-    float scale = ui::GetDeviceScaleFactor(layer());
-    ui::Transform transform = layer()->transform();
-    transform.ConcatScale(scale, scale);
-    event->UpdateForRootTransform(transform);
-  } else {
-    event->UpdateForRootTransform(layer()->transform());
-  }
+  float scale = ui::GetDeviceScaleFactor(layer());
+  ui::Transform transform = layer()->transform();
+  transform.ConcatScale(scale, scale);
+  event->UpdateForRootTransform(transform);
   Window* target =
       mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
   if (!target)

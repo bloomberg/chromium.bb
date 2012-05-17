@@ -242,7 +242,7 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
   host_.setViewportSize(size_in_pixel);
   root_web_layer_.setBounds(size_in_pixel);
 
-  if (device_scale_factor_ != scale && IsDIPEnabled()) {
+  if (device_scale_factor_ != scale) {
     device_scale_factor_ = scale;
     if (root_layer_)
       root_layer_->OnDeviceScaleFactorChanged(scale);

@@ -112,8 +112,7 @@ void MonitorChangeObserverX11::NotifyMonitorChange() {
         gfx::Rect(crtc_info->x, crtc_info->y, mode->width, mode->height)));
 
     float device_scale_factor = 1.0f;
-    if (ui::IsDIPEnabled() &&
-        output_info->mm_width > 0 &&
+    if (output_info->mm_width > 0 &&
         (kInchInMm * mode->width / output_info->mm_width) >
         kHighDensityDIPThreshold) {
       device_scale_factor = 2.0f;

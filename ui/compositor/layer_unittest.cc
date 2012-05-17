@@ -14,7 +14,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_setup.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/test/test_compositor_host.h"
@@ -1066,8 +1065,6 @@ TEST_F(LayerWithDelegateTest, SchedulePaintFromOnPaintLayer) {
 }
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
-  test::ScopedDIPEnablerForTest enable;
-
   scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
                                           gfx::Rect(10, 20, 200, 220)));
   TestLayerDelegate root_delegate;
@@ -1155,7 +1152,6 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
 }
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
-  test::ScopedDIPEnablerForTest enable;
   scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
                                           gfx::Rect(10, 20, 200, 220)));
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,
@@ -1201,7 +1197,6 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
 
 // Tests layer::set_scale_canvas(false).
 TEST_F(LayerWithRealCompositorTest, MAYBE_NoScaleCanvas) {
-  test::ScopedDIPEnablerForTest enable;
   scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
                                           gfx::Rect(10, 20, 200, 220)));
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,

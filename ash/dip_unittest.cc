@@ -17,7 +17,6 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/monitor.h"
@@ -37,7 +36,6 @@ typedef ash::test::AshTestBase DIPTest;
 
 // Test if the WM sets correct work area under different density.
 TEST_F(DIPTest, MAYBE_WorkArea) {
-  ui::test::ScopedDIPEnablerForTest enable;
   ChangeMonitorConfig(1.0f, gfx::Rect(0, 0, 1000, 900));
 
   aura::RootWindow* root = Shell::GetRootWindow();

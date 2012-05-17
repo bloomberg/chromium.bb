@@ -10,9 +10,6 @@ const char kDisableTestCompositor[] = "disable-test-compositor";
 
 const char kDisableUIVsync[] = "disable-ui-vsync";
 
-// Enable Density Independent Pixel coordinates.
-const char kUIEnableDIP[] = "ui-enable-dip";
-
 const char kUIEnablePartialSwap[] = "ui-enable-partial-swap";
 
 // Show FPS counter.

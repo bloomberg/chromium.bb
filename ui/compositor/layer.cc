@@ -97,7 +97,7 @@ void Layer::SetCompositor(Compositor* compositor) {
   DCHECK(!compositor || compositor->root_layer() == this);
   DCHECK(!parent_);
   compositor_ = compositor;
-  if (IsDIPEnabled() && compositor)
+  if (compositor)
     OnDeviceScaleFactorChanged(compositor->device_scale_factor());
 }
 
@@ -108,8 +108,7 @@ void Layer::Add(Layer* child) {
   child->parent_ = this;
   children_.push_back(child);
   web_layer_.addChild(child->web_layer_);
-  if (IsDIPEnabled())
-    child->OnDeviceScaleFactorChanged(device_scale_factor_);
+  child->OnDeviceScaleFactorChanged(device_scale_factor_);
 }
 
 void Layer::Remove(Layer* child) {
@@ -338,7 +337,7 @@ void Layer::SendDamagedRects() {
 
       // TODO(pkotwicz): Remove this once we are no longer linearly upscaling
       // web contents when DIP is enabled (crbug.com/127455).
-      if (IsDIPEnabled() && web_layer_is_accelerated_) {
+      if (web_layer_is_accelerated_) {
         damaged.Inset(-1, -1);
         damaged = damaged.Intersect(bounds_);
       }
@@ -370,7 +369,6 @@ void Layer::SuppressPaint() {
 }
 
 void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  CHECK(IsDIPEnabled());
   if (device_scale_factor_ == device_scale_factor)
     return;
   device_scale_factor_ = device_scale_factor;
@@ -387,7 +385,7 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
                           const WebKit::WebRect& clip) {
   TRACE_EVENT0("ui", "Layer::paintContents");
   gfx::Canvas canvas(web_canvas);
-  bool scale_canvas = IsDIPEnabled() && scale_canvas_;
+  bool scale_canvas = scale_canvas_;
   if (scale_canvas) {
     canvas.sk_canvas()->scale(SkFloatToScalar(device_scale_factor_),
                               SkFloatToScalar(device_scale_factor_));
@@ -560,25 +558,19 @@ void Layer::CreateWebLayer() {
 }
 
 void Layer::RecomputeTransform() {
-  if (IsDIPEnabled()) {
-    ui::Transform scale_translate;
-    scale_translate.matrix().set3x3(device_scale_factor_, 0, 0,
-                                    0, device_scale_factor_, 0,
-                                    0, 0, 1);
-    // Start with the inverse matrix of above.
-    Transform transform;
-    transform.matrix().set3x3(1.0f / device_scale_factor_, 0, 0,
-                              0, 1.0f / device_scale_factor_, 0,
-                              0, 0, 1);
-    transform.ConcatTransform(transform_);
-    transform.ConcatTranslate(bounds_.x(), bounds_.y());
-    transform.ConcatTransform(scale_translate);
-    web_layer_.setTransform(transform.matrix());
-  } else {
-    Transform t = transform_;
-    t.ConcatTranslate(bounds_.x(), bounds_.y());
-    web_layer_.setTransform(t.matrix());
-  }
+  ui::Transform scale_translate;
+  scale_translate.matrix().set3x3(device_scale_factor_, 0, 0,
+                                  0, device_scale_factor_, 0,
+                                  0, 0, 1);
+  // Start with the inverse matrix of above.
+  Transform transform;
+  transform.matrix().set3x3(1.0f / device_scale_factor_, 0, 0,
+                            0, 1.0f / device_scale_factor_, 0,
+                            0, 0, 1);
+  transform.ConcatTransform(transform_);
+  transform.ConcatTranslate(bounds_.x(), bounds_.y());
+  transform.ConcatTransform(scale_translate);
+  web_layer_.setTransform(transform.matrix());
 }
 
 void Layer::RecomputeDrawsContentAndUVRect() {
