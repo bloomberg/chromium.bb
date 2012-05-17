@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../uber/uber_shared.css">
   <link rel="stylesheet" href="help.css">
   <script src="chrome://resources/js/cr.js"></script>
-  <script src="chrome://resources/js/local_strings.js"></script>
+  <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://help-frame/help.js"></script>
 </head>
@@ -78,7 +78,9 @@
       </div>
       <div id="update-buttons-container">
         <div id="update-percentage" hidden></div>
+<if expr="is_macosx">
         <button id="promote" i18n-content="promote" hidden></button>
+</if>
         <button id="relaunch" i18n-content="relaunch" hidden></button>
       </div>
 </if>
@@ -97,6 +99,5 @@
   </div>
 </body>
 <script src="chrome://help-frame/strings.js"></script>
-<script src="chrome://resources/js/i18n_template.js"></script>
-<script src="chrome://resources/js/i18n_process.js"></script>
+<script src="chrome://resources/js/i18n_template2.js"></script>
 </html>

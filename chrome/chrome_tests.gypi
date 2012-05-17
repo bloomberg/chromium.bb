@@ -2853,6 +2853,7 @@
         'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
         'browser/ui/views/web_dialog_view_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
+        'browser/ui/webui/help/help_browsertest.js',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',
         'browser/ui/webui/test_chrome_web_ui_controller_factory_browsertest.cc',
         'browser/ui/webui/bidi_checker_web_ui_test.cc',
