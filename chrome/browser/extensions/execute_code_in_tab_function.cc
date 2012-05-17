@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/file_reader.h"
@@ -244,7 +245,7 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
     NOTREACHED();
   }
 
-  contents->extension_script_executor()->ExecuteScript(
+  contents->extension_tab_helper()->script_executor()->ExecuteScript(
       extension->id(),
       script_type,
       code_string,

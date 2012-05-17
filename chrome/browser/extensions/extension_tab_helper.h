@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -24,6 +25,11 @@ namespace content {
 struct LoadCommittedDetails;
 }
 
+namespace extensions {
+class ActionBoxController;
+class ScriptExecutor;
+}
+
 // Per-tab extension helper. Also handles non-extension apps.
 class ExtensionTabHelper
     : public content::WebContentsObserver,
@@ -33,6 +39,15 @@ class ExtensionTabHelper
       public AppNotifyChannelSetup::Delegate,
       public base::SupportsWeakPtr<ExtensionTabHelper> {
  public:
+  class Observer {
+   public:
+    // Called when the page action state (such as visibility, title) changes.
+    virtual void OnPageActionStateChanged() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   explicit ExtensionTabHelper(TabContentsWrapper* wrapper);
   virtual ~ExtensionTabHelper();
 
@@ -49,6 +64,10 @@ class ExtensionTabHelper
   // request. The delegate is notified by way of OnDidGetApplicationInfo when
   // the data is available.
   void GetApplicationInfo(int32 page_id);
+
+  // Observer management.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // App extensions ------------------------------------------------------------
 
@@ -88,6 +107,14 @@ class ExtensionTabHelper
 
   content::WebContents* web_contents() const {
     return content::WebContentsObserver::web_contents();
+  }
+
+  extensions::ScriptExecutor* script_executor() {
+    return script_executor_.get();
+  }
+
+  extensions::ActionBoxController* action_box_controller() {
+    return action_box_controller_.get();
   }
 
   // Sets a non-extension app icon associated with WebContents and fires an
@@ -150,6 +177,10 @@ class ExtensionTabHelper
 
   // Data for app extensions ---------------------------------------------------
 
+  // Our observers. Declare at top so that it will outlive all other members,
+  // since they might add themselves as observers.
+  ObserverList<Observer> observers_;
+
   // Delegate for notifying our owner about stuff. Not owned by us.
   ExtensionTabHelperDelegate* delegate_;
 
@@ -171,6 +202,10 @@ class ExtensionTabHelper
   WebApplicationInfo web_app_info_;
 
   TabContentsWrapper* wrapper_;
+
+  scoped_ptr<extensions::ScriptExecutor> script_executor_;
+
+  scoped_ptr<extensions::ActionBoxController> action_box_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTabHelper);
 };

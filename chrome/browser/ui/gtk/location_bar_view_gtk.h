@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -18,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/extensions/action_box_controller.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -78,10 +80,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Returns the current WebContents.
   content::WebContents* GetWebContents() const;
 
-  // Sets |preview_enabled| for the PageActionViewGtk associated with this
-  // |page_action|. If |preview_enabled| is true, the view will display the
-  // page action's icon even though it has not been activated by the extension.
+  // If |preview_enabled| is true, the view will display the
   // This is used by the ExtensionInstalledBubbleGtk to preview what the icon
+  // page action's icon even though it has not been activated by the extension.
   // will look like for the user upon installation of the extension.
   void SetPreviewEnabledPageAction(ExtensionAction *page_action,
                                    bool preview_enabled);
@@ -228,16 +229,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     ExtensionAction* page_action() { return page_action_; }
 
-    void set_preview_enabled(bool preview_enabled) {
-      preview_enabled_ = preview_enabled;
-    }
-
-    bool IsVisible();
-
-    // Called to notify the PageAction that it should determine whether to be
-    // visible or hidden. |contents| is the WebContents that is active, |url|
+    // Called to notify the PageAction that it should update based on the state
+    // of |page_action_|. |contents| is the WebContents that is active, |url|
     // is the current page URL.
-    void UpdateVisibility(content::WebContents* contents, const GURL& url);
+    void Update(content::WebContents* contents, const GURL& url);
 
     // A callback from ImageLoadingTracker for when the image has loaded.
     virtual void OnImageLoaded(const gfx::Image& image,
@@ -315,10 +310,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // The keybinding accelerator registered to show the page action popup.
     scoped_ptr<ui::AcceleratorGtk> keybinding_;
-
-    // This is used for post-install visual feedback. The page_action icon
-    // is briefly shown even if it hasn't been enabled by its extension.
-    bool preview_enabled_;
 
     // The context menu view and model for this extension action.
     scoped_ptr<MenuGtk> context_menu_;
@@ -492,6 +483,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Used to change the visibility of the star decoration.
   BooleanPrefMember edit_bookmarks_enabled_;
+
+  // The extension actions which have "preview enabled".
+  std::set<ExtensionAction*> preview_enabled_actions_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };
