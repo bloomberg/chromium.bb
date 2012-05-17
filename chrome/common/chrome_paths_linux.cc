@@ -7,13 +7,14 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/path_service.h"
 #include "base/nix/xdg_util.h"
+#include "base/path_service.h"
 
 namespace {
 
 const char kDotConfigDir[] = ".config";
 const char kDownloadsDir[] = "Downloads";
+const char kPicturesDir[] = "Pictures";
 const char kXdgConfigHomeEnvVar[] = "XDG_CONFIG_HOME";
 
 }  // namespace
@@ -94,6 +95,25 @@ bool GetUserDownloadsDirectory(FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   *result = base::nix::GetXDGUserDirectory(env.get(), "DOWNLOAD",
                                            kDownloadsDir);
+  return true;
+}
+
+// We respect the user's preferred pictures location, unless it is
+// ~ or their desktop directory, in which case we default to ~/Pictures.
+bool GetUserPicturesDirectory(FilePath* result) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  *result = base::nix::GetXDGUserDirectory(env.get(), "PICTURES", kPicturesDir);
+
+  FilePath home = file_util::GetHomeDir();
+  if (*result != home) {
+    FilePath desktop;
+    GetUserDesktop(&desktop);
+    if (*result != desktop) {
+      return true;
+    }
+  }
+
+  *result = home.Append(kPicturesDir);
   return true;
 }
 

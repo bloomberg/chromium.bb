@@ -33,6 +33,11 @@ bool GetUserDownloadsDirectory(FilePath* result) {
   return true;
 }
 
+bool GetUserPicturesDirectory(FilePath* result) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool GetUserDesktop(FilePath* result) {
   NOTIMPLEMENTED() << "Android doesn't support GetUserDesktop";
   return false;

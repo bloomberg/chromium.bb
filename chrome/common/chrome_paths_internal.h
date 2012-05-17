@@ -51,6 +51,9 @@ bool GetUserDownloadsDirectorySafe(FilePath* result);
 // Get the path to the user's downloads directory.
 bool GetUserDownloadsDirectory(FilePath* result);
 
+// Gets the path to the user's pictures directory.
+bool GetUserPicturesDirectory(FilePath* result);
+
 // The path to the user's desktop.
 bool GetUserDesktop(FilePath* result);
 

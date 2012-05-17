@@ -26,6 +26,7 @@ enum {
   DIR_INSPECTOR,                // Directory where web inspector is located.
   DIR_APP_DICTIONARIES,         // Directory where the global dictionaries are.
   DIR_USER_DOCUMENTS,           // Directory for a user's "My Documents".
+  DIR_USER_PICTURES,            // Directory for a user's pictures.
   DIR_DEFAULT_DOWNLOADS_SAFE,   // Directory for a user's
                                 // "My Documents/Downloads", (Windows) or
                                 // "Downloads". (Linux)

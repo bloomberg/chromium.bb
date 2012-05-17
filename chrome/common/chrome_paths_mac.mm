@@ -19,6 +19,12 @@
 
 namespace {
 
+// TODO(thestig) Remove this once we switch to the 10.6 SDK.
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+#define NSPicturesDirectory 19
+#endif
+
 const FilePath* g_override_versioned_directory = NULL;
 
 // Return a retained (NOT autoreleased) NSBundle* as the internal
@@ -133,6 +139,10 @@ void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
 
 bool GetUserDownloadsDirectory(FilePath* result) {
   return base::mac::GetUserDirectory(NSDownloadsDirectory, result);
+}
+
+bool GetUserPicturesDirectory(FilePath* result) {
+  return base::mac::GetUserDirectory(NSPicturesDirectory, result);
 }
 
 bool GetUserDesktop(FilePath* result) {

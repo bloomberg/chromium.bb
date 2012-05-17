@@ -11,8 +11,8 @@
 #include <shobjidl.h>
 
 #include "base/file_path.h"
-#include "base/win/metro.h"
 #include "base/path_service.h"
+#include "base/win/metro.h"
 #include "base/win/scoped_co_mem.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -83,6 +83,16 @@ bool GetUserDownloadsDirectory(FilePath* result) {
   return GetUserDownloadsDirectorySafe(result);
 }
 
+bool GetUserPicturesDirectory(FilePath* result) {
+  wchar_t path_buf[MAX_PATH];
+  if (FAILED(SHGetFolderPath(NULL, CSIDL_MYPICTURES, NULL,
+                             SHGFP_TYPE_CURRENT, path_buf))) {
+    return false;
+  }
+  *result = FilePath(path_buf);
+  return true;
+}
+
 bool GetUserDesktop(FilePath* result) {
   // We need to go compute the value. It would be nice to support paths
   // with names longer than MAX_PATH, but the system functions don't seem
@@ -92,8 +102,9 @@ bool GetUserDesktop(FilePath* result) {
   wchar_t system_buffer[MAX_PATH];
   system_buffer[0] = 0;
   if (FAILED(SHGetFolderPath(NULL, CSIDL_DESKTOPDIRECTORY, NULL,
-                             SHGFP_TYPE_CURRENT, system_buffer)))
+                             SHGFP_TYPE_CURRENT, system_buffer))) {
     return false;
+  }
   *result = FilePath(system_buffer);
   return true;
 }
