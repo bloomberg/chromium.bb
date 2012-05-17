@@ -25,7 +25,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 IPC_ENUM_TRAITS(AutomationMsg_NavigationResponseValues)
-IPC_ENUM_TRAITS(AutomationMsg_DEPRECATED_ExtensionProperty)
 IPC_ENUM_TRAITS(content::PageType)
 
 IPC_STRUCT_BEGIN(AutomationMsg_Find_Params)
