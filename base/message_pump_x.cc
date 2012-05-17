@@ -37,9 +37,6 @@ GSourceFuncs XSourceFuncs = {
   NULL
 };
 
-// The opcode used for checking events.
-int xiopcode = -1;
-
 // The message-pump opens a connection to the display and owns it.
 Display* g_xdisplay = NULL;
 
@@ -47,17 +44,17 @@ Display* g_xdisplay = NULL;
 // is specified.
 base::MessagePumpDispatcher* g_default_dispatcher = NULL;
 
-void InitializeXInput2(void) {
+bool InitializeXInput2Internal() {
   Display* display = base::MessagePumpX::GetDefaultXDisplay();
   if (!display)
-    return;
+    return false;
 
   int event, err;
 
+  int xiopcode;
   if (!XQueryExtension(display, "XInputExtension", &xiopcode, &event, &err)) {
     DVLOG(1) << "X Input extension not available.";
-    xiopcode = -1;
-    return;
+    return false;
   }
 
 #if defined(USE_XI2_MT)
@@ -68,17 +65,22 @@ void InitializeXInput2(void) {
 #endif
   if (XIQueryVersion(display, &major, &minor) == BadRequest) {
     DVLOG(1) << "XInput2 not supported in the server.";
-    xiopcode = -1;
-    return;
+    return false;
   }
 #if defined(USE_XI2_MT)
   if (major < 2 || (major == 2 && minor < USE_XI2_MT)) {
     DVLOG(1) << "XI version on server is " << major << "." << minor << ". "
             << "But 2." << USE_XI2_MT << " is required.";
-    xiopcode = -1;
-    return;
+    return false;
   }
 #endif
+
+  return true;
+}
+
+bool InitializeXInput2() {
+  static bool xinput2_supported = InitializeXInput2Internal();
+  return xinput2_supported;
 }
 
 }  // namespace
@@ -107,7 +109,7 @@ Display* MessagePumpX::GetDefaultXDisplay() {
 
 // static
 bool MessagePumpX::HasXInput2() {
-  return xiopcode != -1;
+  return InitializeXInput2();
 }
 
 // static
