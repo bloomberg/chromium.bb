@@ -630,11 +630,32 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 {
 	xcb_configure_notify_event_t *configure_notify = 
 		(xcb_configure_notify_event_t *) event;
+	struct weston_wm_window *window;
+	struct theme *t = wm->theme;
+	uint32_t values[2];
 
 	fprintf(stderr, "XCB_CONFIGURE_NOTIFY (window %d) %d,%d @ %dx%d\n",
 		configure_notify->window,
 		configure_notify->x, configure_notify->y,
 		configure_notify->width, configure_notify->height);
+
+	window = hash_table_lookup(wm->window_hash, configure_notify->window);
+
+	if (configure_notify->window != window->id)
+		return;
+
+	window->width = configure_notify->width;
+	window->height = configure_notify->height;
+
+	values[0] = window->width + (t->margin + t->width) * 2;
+	values[1] =
+		window->height + t->margin * 2 + t->width + t->titlebar_height;
+
+	xcb_configure_window(wm->conn,
+			     window->frame_id,
+			     XCB_CONFIG_WINDOW_WIDTH |
+			     XCB_CONFIG_WINDOW_HEIGHT,
+			     values);
 }
 
 static void
