@@ -60,20 +60,6 @@ class NativeWidgetCapture : public NativeWidgetPlatform {
 };
 #endif
 
-class NonActivatableDelegate : public WidgetDelegateView {
- public:
-  NonActivatableDelegate() {}
-  virtual ~NonActivatableDelegate() {}
-
-  // Overridden from WidgetDelegate.
-  virtual bool CanActivate() const OVERRIDE {
-    return false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NonActivatableDelegate);
-};
-
 // A typedef that inserts our mock-capture NativeWidget implementation for
 // relevant platforms.
 #if defined(USE_AURA)
@@ -336,27 +322,6 @@ TEST_F(WidgetTest, Visibility_ChildPopup) {
   // |child_popup| should be automatically destroyed with |toplevel|.
 }
 #endif
-
-TEST_F(WidgetTest, ActivationCapture) {
-  Widget* first = CreateTopLevelPlatformWidget();
-  first->Show();
-  first->SetMouseCapture(NULL);
-  RunPendingMessages();
-  EXPECT_TRUE(WidgetHasMouseCapture(first));
-
-  Widget* second = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_BUBBLE);
-  params.transparent = true;
-  params.close_on_deactivate = true;
-  params.delegate = new NonActivatableDelegate;
-  second->Init(params);
-  second->Show();
-  RunPendingMessages();
-  EXPECT_FALSE(WidgetHasMouseCapture(second));
-
-  second->CloseNow();
-  first->CloseNow();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget ownership tests.
