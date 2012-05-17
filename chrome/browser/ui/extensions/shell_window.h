@@ -66,21 +66,25 @@ class ShellWindow : public content::NotificationObserver,
                                  const Extension* extension,
                                  const GURL& url);
 
-  // content::WebContentsObserver
+  // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // content::WebContentsDelegate
+  // content::WebContentsDelegate implementation.
   virtual void CloseContents(content::WebContents* contents) OVERRIDE;
   virtual bool ShouldSuppressDialogs() OVERRIDE;
   virtual void WebIntentDispatch(
       content::WebContents* web_contents,
       content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
+  virtual void RunFileChooser(
+      content::WebContents* tab,
+      const content::FileChooserParams& params) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ExtensionFunctionDispatcher::Delegate implementation.
   virtual ExtensionWindowController* GetExtensionWindowController() const
       OVERRIDE;
 
@@ -92,6 +96,7 @@ class ShellWindow : public content::NotificationObserver,
 
   const SessionID session_id_;
   scoped_ptr<TabContentsWrapper> contents_wrapper_;
+  // web_contents_ is owned by contents_wrapper_.
   content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<ExtensionWindowController> extension_window_controller_;

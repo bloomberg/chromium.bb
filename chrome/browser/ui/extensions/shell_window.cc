@@ -12,6 +12,7 @@
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -152,9 +153,6 @@ void ShellWindow::CloseContents(WebContents* contents) {
   Close();
 }
 
-// TODO(benwells): Rearrange so users of this can call
-// WebContents::set_should_suppress_dialogs(bool) instead of overriding
-// this delegate function.
 bool ShellWindow::ShouldSuppressDialogs() {
   return true;
 }
@@ -170,6 +168,11 @@ void ShellWindow::WebIntentDispatch(
   contents_wrapper_->web_intent_picker_controller()->ShowDialog(
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
+}
+
+void ShellWindow::RunFileChooser(WebContents* tab,
+                                 const content::FileChooserParams& params) {
+  Browser::RunFileChooserHelper(tab, params);
 }
 
 void ShellWindow::Observe(int type,
