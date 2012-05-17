@@ -958,7 +958,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // directory.
   void OnUpdateChecked(ContentOrigin initial_origin,
                        base::PlatformFileError error,
-                       const FilePath& directory_path,
                        GDataEntry* entry);
 
   // Starts root feed load from the cache. If successful, it will try to find
@@ -1343,19 +1342,16 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Called when an entry is found for GetEntryInfoByPathAsync().
   void OnGetEntryInfo(const GetEntryInfoCallback& callback,
                       base::PlatformFileError error,
-                      const FilePath& entry_path,
                       GDataEntry* entry);
 
   // Called when an entry is found for GetFileInfoByPathAsync().
   void OnGetFileInfo(const GetFileInfoCallback& callback,
                      base::PlatformFileError error,
-                     const FilePath& directory_path,
                      GDataEntry* entry);
 
   // Called when an entry is found for ReadDirectoryByPathAsync().
   void OnReadDirectory(const ReadDirectoryCallback& callback,
                        base::PlatformFileError error,
-                       const FilePath& directory_path,
                        GDataEntry* entry);
 
   // Finds file info by using virtual |file_path|. This call will also
