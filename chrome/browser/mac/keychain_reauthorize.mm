@@ -26,8 +26,26 @@ namespace mac {
 
 namespace {
 
-// Returns the set of requirement strings that ought to be reauthorized.
-std::vector<std::string> RequirementMatches();
+// Returns the requirement string embedded within a SecTrustedApplicationRef,
+// or an empty string on error.
+std::string RequirementStringForApplication(
+    SecTrustedApplicationRef application);
+
+// Returns the set of requirement strings that ought to be reauthorized. In a
+// bundled application, the requirement string from |application| will also be
+// added to the hard-coded list. This allows an at-launch reauthorization to
+// re-reauthorize anything done by a previous at-update reauthorization.
+// Although items reauthorized during the at-update step will work properly in
+// every way, they contain a reference to the missing reauthorization stub
+// executable from the disk image in the Keychain, resulting in no icon and
+// a weird name like "com.google" (non-Canary) or "com.google.Chrome"
+// (Canary). Because reauthorization is controlled by a preference that limits
+// it to a single successful run at update and a single successful run at
+// launch, protection already exists against perpetually reauthorizing items.
+// This addition exists simply to make the Keychain Access UI match
+// expectations.
+std::vector<std::string> GetRequirementMatches(
+    SecTrustedApplicationRef application);
 
 // Reauthorizes an ACL by examining all of the applications it names, and upon
 // finding any whose requirement matches any element of requirement_matches,
@@ -107,11 +125,11 @@ void KeychainReauthorize() {
                                           CSSM_DL_DB_RECORD_ANY,
                                           NULL));
 
-  std::vector<std::string> requirement_matches =
-      RequirementMatches();
-
   base::mac::ScopedCFTypeRef<SecTrustedApplicationRef> this_application(
       CrSTrustedApplicationCreateFromPath(NULL));
+
+  std::vector<std::string> requirement_matches =
+      GetRequirementMatches(this_application);
 
   std::vector<CrSKeychainItemAndAccess> items_and_reauthorized_accesses =
       KCSearchToKCItemsAndReauthorizedAccesses(search,
@@ -160,7 +178,24 @@ void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
 
 namespace {
 
-std::vector<std::string> RequirementMatches() {
+std::string RequirementStringForApplication(
+    SecTrustedApplicationRef application) {
+  base::mac::ScopedCFTypeRef<SecRequirementRef> requirement(
+      CrSTrustedApplicationCopyRequirement(application));
+  base::mac::ScopedCFTypeRef<CFStringRef> requirement_string_cf(
+      CrSRequirementCopyString(requirement, kSecCSDefaultFlags));
+  if (!requirement_string_cf) {
+    return std::string();
+  }
+
+  std::string requirement_string =
+      base::SysCFStringRefToUTF8(requirement_string_cf);
+
+  return requirement_string;
+}
+
+std::vector<std::string> GetRequirementMatches(
+      SecTrustedApplicationRef application) {
   // See the designated requirement for a signed released build:
   // codesign -d -r- "Google Chrome.app"
   //
@@ -248,6 +283,12 @@ std::vector<std::string> RequirementMatches() {
           kIdentifierMatches[identifier_index],
           kLeafCertificateHashMatches[leaf_certificate_hash_index]));
     }
+  }
+
+  if (application && base::mac::AmIBundled()) {
+    std::string application_requirement =
+        RequirementStringForApplication(application);
+    requirement_matches.push_back(application_requirement);
   }
 
   return requirement_matches;
@@ -345,16 +386,12 @@ bool ReauthorizeACL(
         base::mac::CFCast<SecTrustedApplicationRef>(
             CFArrayGetValueAtIndex(acl_simple_contents->application_list,
                                    application_index));
-    base::mac::ScopedCFTypeRef<SecRequirementRef> requirement(
-        CrSTrustedApplicationCopyRequirement(application));
-    base::mac::ScopedCFTypeRef<CFStringRef> requirement_string_cf(
-        CrSRequirementCopyString(requirement, kSecCSDefaultFlags));
-    if (!requirement_string_cf) {
+    std::string requirement_string =
+        RequirementStringForApplication(application);
+    if (requirement_string.empty()) {
       continue;
     }
 
-    std::string requirement_string =
-        base::SysCFStringRefToUTF8(requirement_string_cf);
     if (std::find(requirement_matches.begin(),
                   requirement_matches.end(),
                   requirement_string) != requirement_matches.end()) {
