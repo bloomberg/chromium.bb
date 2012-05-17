@@ -18,6 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 #include "ui/gfx/size.h"
 
@@ -55,22 +56,22 @@ class PrepareFrameAndViewForPrint {
     return use_browser_overlays_;
   }
 
-  const gfx::Size& GetPrintCanvasSize() const {
-    return print_canvas_size_;
+  gfx::Size GetPrintCanvasSize() const {
+    return gfx::Size(web_print_params_.printContentArea.width,
+                     web_print_params_.printContentArea.height);
   }
 
   void FinishPrinting();
 
  private:
-  void StartPrinting(const gfx::Size& print_params);
+  void StartPrinting(const WebKit::WebPrintParams& webkit_print_params);
 
   WebKit::WebFrame* frame_;
   WebKit::WebNode node_to_print_;
   WebKit::WebView* web_view_;
-  gfx::Size print_canvas_size_;
+  WebKit::WebPrintParams web_print_params_;
   gfx::Size prev_view_size_;
   gfx::Size prev_scroll_offset_;
-  int dpi_;
   int expected_pages_count_;
   bool use_browser_overlays_;
   bool finished_;
@@ -160,16 +161,24 @@ class PrintWebViewHelper
   // Returns true if the current destination printer is PRINT_TO_PDF.
   bool IsPrintToPdfRequested(const base::DictionaryValue& settings);
 
-  // Returns false if
-  // (1) The current destination printer is SAVE_AS_PDF or
+  // Returns the print scaling option to retain/scale/crop the source page size
+  // to fit the printable area of the paper.
+  //
+  // We retain the source page size when the current destination printer is
+  // SAVE_AS_PDF.
+  //
+  // We crop the source page size to fit the printable area or we print only the
+  // left top page contents when
+  // (1) Source is PDF and the user has requested not to fit to printable area
+  // via |job_settings|.
   // (2) Source is PDF. This is the first preview request and print scaling
   // option is disabled for initiator renderer plugin.
-  // (3) Source is PDF and the user has requested not to fit to printable area
-  // via |job_settings|.
-  // In all other cases returns true to fit the print contents in paper size.
-  bool IsFitToPaperSizeRequested(bool source_is_html,
-                                 const base::DictionaryValue& job_settings,
-                                 const PrintMsg_Print_Params& params);
+  //
+  // In all other cases, we scale the source page to fit the printable area.
+  WebKit::WebPrintScalingOption GetPrintScalingOption(
+      bool source_is_html,
+      const base::DictionaryValue& job_settings,
+      const PrintMsg_Print_Params& params);
 
   // Initiate print preview.
   void OnInitiatePrintPreview();
@@ -211,7 +220,7 @@ class PrintWebViewHelper
 
   // Initialize print page settings with default settings.
   // Used only for native printing workflow.
-  bool InitPrintSettings();
+  bool InitPrintSettings(bool fit_to_paper_size);
 
   // Initialize print page settings with default settings and prepare the frame
   // for print. A new PrepareFrameAndViewForPrint is created to fulfill the
@@ -435,7 +444,7 @@ class PrintWebViewHelper
     bool generate_draft_pages() const;
     printing::PreviewMetafile* metafile();
     const PrintMsg_Print_Params& print_params() const;
-    const gfx::Size& GetPrintCanvasSize() const;
+    gfx::Size GetPrintCanvasSize() const;
     int last_error() const;
 
    private:

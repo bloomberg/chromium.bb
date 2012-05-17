@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "printing/image.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintScalingOption.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -143,8 +144,9 @@ class MockPrinter {
   bool print_to_pdf_;
   int preview_request_id_;
 
-  // True if we want to fit the html/pdf source to paper size.
-  bool fit_to_paper_size_;
+  // Specifies whether to retain/crop/scale source page size to fit the
+  // given printable area.
+  WebKit::WebPrintScalingOption print_scaling_option_;
 
   // Used for displaying headers and footers.
   bool display_header_footer_;

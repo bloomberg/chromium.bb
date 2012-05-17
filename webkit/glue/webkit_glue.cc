@@ -31,17 +31,19 @@
 #endif
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGlyphCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #if defined(OS_WIN)
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
@@ -58,6 +60,8 @@ using WebKit::WebFrame;
 using WebKit::WebGlyphCache;
 using WebKit::WebHistoryItem;
 using WebKit::WebImage;
+using WebKit::WebPrintParams;
+using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebVector;
@@ -157,7 +161,13 @@ int NumberOfPages(WebFrame* web_frame,
                   float page_height_in_pixels) {
   WebSize size(static_cast<int>(page_width_in_pixels),
                static_cast<int>(page_height_in_pixels));
-  int number_of_pages = web_frame->printBegin(size);
+
+  WebPrintParams print_params;
+  print_params.paperSize = size;
+  print_params.printContentArea = WebRect(0, 0, size.width, size.height);
+  print_params.printableArea = WebRect(0, 0, size.width, size.height);
+
+  int number_of_pages = web_frame->printBegin(print_params);
   web_frame->printEnd();
   return number_of_pages;
 }

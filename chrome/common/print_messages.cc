@@ -24,7 +24,7 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
     preview_ui_addr(),
     preview_request_id(0),
     is_first_request(false),
-    fit_to_paper_size(false),
+    print_scaling_option(WebKit::WebPrintScalingOptionSourceSize),
     print_to_pdf(false),
     display_header_footer(false),
     date(),
@@ -50,7 +50,7 @@ void PrintMsg_Print_Params::Reset() {
   preview_ui_addr = std::string();
   preview_request_id = 0;
   is_first_request = false;
-  fit_to_paper_size = false;
+  print_scaling_option = WebKit::WebPrintScalingOptionSourceSize;
   print_to_pdf = false;
   display_header_footer = false;
   date = string16();

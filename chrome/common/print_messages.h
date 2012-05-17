@@ -13,6 +13,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPrintScalingOption.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -41,7 +42,7 @@ struct PrintMsg_Print_Params {
   std::string preview_ui_addr;
   int preview_request_id;
   bool is_first_request;
-  bool fit_to_paper_size;
+  WebKit::WebPrintScalingOption print_scaling_option;
   bool print_to_pdf;
   bool display_header_footer;
   string16 date;
@@ -65,6 +66,7 @@ struct PrintMsg_PrintPages_Params {
 #define IPC_MESSAGE_START PrintMsgStart
 
 IPC_ENUM_TRAITS(printing::MarginType)
+IPC_ENUM_TRAITS(WebKit::WebPrintScalingOption)
 
 // Parameters for a render request.
 IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
@@ -115,6 +117,9 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // True if this is the first preview request.
   IPC_STRUCT_TRAITS_MEMBER(is_first_request)
+
+  // Specifies the page scaling option for preview printing.
+  IPC_STRUCT_TRAITS_MEMBER(print_scaling_option)
 
   // True if print to pdf is requested.
   IPC_STRUCT_TRAITS_MEMBER(print_to_pdf)
