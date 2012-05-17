@@ -174,7 +174,7 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
       UTF8ToUTF16(selected_file_path.AsUTF8Unsafe()), string16()));
 
   rvh()->DragTargetDragEnter(dropped_data, client_point, screen_point,
-                             WebKit::WebDragOperationNone);
+                             WebKit::WebDragOperationNone, 0);
 
   int id = process()->GetID();
   ChildProcessSecurityPolicyImpl* policy =

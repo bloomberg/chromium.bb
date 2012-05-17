@@ -509,7 +509,8 @@ void RenderViewHostImpl::DragTargetDragEnter(
     const WebDropData& drop_data,
     const gfx::Point& client_pt,
     const gfx::Point& screen_pt,
-    WebDragOperationsMask operations_allowed) {
+    WebDragOperationsMask operations_allowed,
+    int key_modifiers) {
   const int renderer_id = GetProcess()->GetID();
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
@@ -552,14 +553,17 @@ void RenderViewHostImpl::DragTargetDragEnter(
   filtered_data.filesystem_id = UTF8ToUTF16(filesystem_id);
 
   Send(new DragMsg_TargetDragEnter(GetRoutingID(), filtered_data, client_pt,
-                                   screen_pt, operations_allowed));
+                                   screen_pt, operations_allowed,
+                                   key_modifiers));
 }
 
 void RenderViewHostImpl::DragTargetDragOver(
-    const gfx::Point& client_pt, const gfx::Point& screen_pt,
-    WebDragOperationsMask operations_allowed) {
+    const gfx::Point& client_pt,
+    const gfx::Point& screen_pt,
+    WebDragOperationsMask operations_allowed,
+    int key_modifiers) {
   Send(new DragMsg_TargetDragOver(GetRoutingID(), client_pt, screen_pt,
-                                  operations_allowed));
+                                  operations_allowed, key_modifiers));
 }
 
 void RenderViewHostImpl::DragTargetDragLeave() {
@@ -567,8 +571,11 @@ void RenderViewHostImpl::DragTargetDragLeave() {
 }
 
 void RenderViewHostImpl::DragTargetDrop(
-    const gfx::Point& client_pt, const gfx::Point& screen_pt) {
-  Send(new DragMsg_TargetDrop(GetRoutingID(), client_pt, screen_pt));
+    const gfx::Point& client_pt,
+    const gfx::Point& screen_pt,
+    int key_modifiers) {
+  Send(new DragMsg_TargetDrop(GetRoutingID(), client_pt, screen_pt,
+                              key_modifiers));
 }
 
 void RenderViewHostImpl::DesktopNotificationPermissionRequestDone(

@@ -1016,9 +1016,9 @@ void TestingAutomationProvider::DragAndDropFilePaths(
 
   view->DragTargetDragEnter(
       drop_data, client, screen,
-      static_cast<WebKit::WebDragOperationsMask>(operations));
+      static_cast<WebKit::WebDragOperationsMask>(operations), 0);
   new DragTargetDropAckNotificationObserver(this, reply_message);
-  view->DragTargetDrop(client, screen);
+  view->DragTargetDrop(client, screen, 0);
 }
 
 void TestingAutomationProvider::GetTabCount(int handle, int* tab_count) {

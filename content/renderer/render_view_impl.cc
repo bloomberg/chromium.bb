@@ -4294,23 +4294,27 @@ void RenderViewImpl::OnSetWebUIProperty(const std::string& name,
 void RenderViewImpl::OnDragTargetDragEnter(const WebDropData& drop_data,
                                            const gfx::Point& client_point,
                                            const gfx::Point& screen_point,
-                                           WebDragOperationsMask ops) {
+                                           WebDragOperationsMask ops,
+                                           int key_modifiers) {
   WebDragOperation operation = webview()->dragTargetDragEnter(
       drop_data.ToDragData(),
       client_point,
       screen_point,
-      ops);
+      ops,
+      key_modifiers);
 
   Send(new DragHostMsg_UpdateDragCursor(routing_id_, operation));
 }
 
 void RenderViewImpl::OnDragTargetDragOver(const gfx::Point& client_point,
                                           const gfx::Point& screen_point,
-                                          WebDragOperationsMask ops) {
+                                          WebDragOperationsMask ops,
+                                          int key_modifiers) {
   WebDragOperation operation = webview()->dragTargetDragOver(
       client_point,
       screen_point,
-      ops);
+      ops,
+      key_modifiers);
 
   Send(new DragHostMsg_UpdateDragCursor(routing_id_, operation));
 }
@@ -4320,8 +4324,9 @@ void RenderViewImpl::OnDragTargetDragLeave() {
 }
 
 void RenderViewImpl::OnDragTargetDrop(const gfx::Point& client_point,
-                                      const gfx::Point& screen_point) {
-  webview()->dragTargetDrop(client_point, screen_point);
+                                      const gfx::Point& screen_point,
+                                      int key_modifiers) {
+  webview()->dragTargetDrop(client_point, screen_point, key_modifiers);
 
   Send(new DragHostMsg_TargetDrop_ACK(routing_id_));
 }

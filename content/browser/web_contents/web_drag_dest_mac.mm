@@ -4,10 +4,13 @@
 
 #import "content/browser/web_contents/web_drag_dest_mac.h"
 
+#import <Carbon/Carbon.h>
+
 #include "base/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
@@ -17,6 +20,20 @@
 using WebKit::WebDragOperationsMask;
 using content::OpenURLParams;
 using content::Referrer;
+
+int GetModifierFlags() {
+  int modifier_state = 0;
+  UInt32 currentModifiers = GetCurrentKeyModifiers();
+  if (currentModifiers & ::shiftKey)
+    modifier_state |= WebKit::WebInputEvent::ShiftKey;
+  if (currentModifiers & ::controlKey)
+    modifier_state |= WebKit::WebInputEvent::ControlKey;
+  if (currentModifiers & ::optionKey)
+    modifier_state |= WebKit::WebInputEvent::AltKey;
+  if (currentModifiers & ::cmdKey)
+      modifier_state |= WebKit::WebInputEvent::MetaKey;
+  return modifier_state;
+}
 
 @implementation WebDragDest
 
@@ -111,7 +128,8 @@ using content::Referrer;
       *dropData_,
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y),
-      static_cast<WebDragOperationsMask>(mask));
+      static_cast<WebDragOperationsMask>(mask),
+      GetModifierFlags());
 
   // We won't know the true operation (whether the drag is allowed) until we
   // hear back from the renderer. For now, be optimistic:
@@ -154,7 +172,8 @@ using content::Referrer;
   webContents_->GetRenderViewHost()->DragTargetDragOver(
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y),
-      static_cast<WebDragOperationsMask>(mask));
+      static_cast<WebDragOperationsMask>(mask),
+      GetModifierFlags());
 
   if (delegate_)
     delegate_->OnDragOver();
@@ -194,7 +213,8 @@ using content::Referrer;
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   webContents_->GetRenderViewHost()->DragTargetDrop(
       gfx::Point(viewPoint.x, viewPoint.y),
-      gfx::Point(screenPoint.x, screenPoint.y));
+      gfx::Point(screenPoint.x, screenPoint.y),
+      GetModifierFlags());
 
   dropData_.reset();
 

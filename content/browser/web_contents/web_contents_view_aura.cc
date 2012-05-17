@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/event.h"
@@ -163,6 +164,19 @@ WebKit::WebDragOperationsMask ConvertToWeb(int drag_op) {
   if (drag_op & ui::DragDropTypes::DRAG_LINK)
     web_drag_op |= WebKit::WebDragOperationLink;
   return (WebKit::WebDragOperationsMask) web_drag_op;
+}
+
+int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
+  int web_input_event_modifiers = 0;
+  if (aura_event_flags & ui::EF_SHIFT_DOWN)
+    web_input_event_modifiers |= WebKit::WebInputEvent::ShiftKey;
+  if (aura_event_flags & ui::EF_CONTROL_DOWN)
+    web_input_event_modifiers |= WebKit::WebInputEvent::ControlKey;
+  if (aura_event_flags & ui::EF_ALT_DOWN)
+    web_input_event_modifiers |= WebKit::WebInputEvent::AltKey;
+  if (aura_event_flags & ui::EF_COMMAND_DOWN)
+    web_input_event_modifiers |= WebKit::WebInputEvent::MetaKey;
+  return web_input_event_modifiers;
 }
 
 }  // namespace
@@ -588,7 +602,8 @@ void WebContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
       GetNativeView()->GetRootWindow()->last_mouse_location();
   current_rvh_for_drag_ = web_contents_->GetRenderViewHost();
   web_contents_->GetRenderViewHost()->DragTargetDragEnter(
-      drop_data, event.location(), screen_pt, op);
+      drop_data, event.location(), screen_pt, op,
+      ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
 
   if (drag_dest_delegate_) {
     drag_dest_delegate_->OnReceiveDragData(event.data());
@@ -605,7 +620,8 @@ int WebContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
   gfx::Point screen_pt =
       GetNativeView()->GetRootWindow()->last_mouse_location();
   web_contents_->GetRenderViewHost()->DragTargetDragOver(
-      event.location(), screen_pt, op);
+      event.location(), screen_pt, op,
+      ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
 
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDragOver();
@@ -630,7 +646,8 @@ int WebContentsViewAura::OnPerformDrop(const aura::DropTargetEvent& event) {
 
   web_contents_->GetRenderViewHost()->DragTargetDrop(
       event.location(),
-      GetNativeView()->GetRootWindow()->last_mouse_location());
+      GetNativeView()->GetRootWindow()->last_mouse_location(),
+      ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDrop();
   return current_drag_op_;

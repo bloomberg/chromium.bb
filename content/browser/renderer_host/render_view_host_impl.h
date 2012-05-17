@@ -169,14 +169,17 @@ class CONTENT_EXPORT RenderViewHostImpl
       const WebDropData& drop_data,
       const gfx::Point& client_pt,
       const gfx::Point& screen_pt,
-      WebKit::WebDragOperationsMask operations_allowed) OVERRIDE;
+      WebKit::WebDragOperationsMask operations_allowed,
+      int key_modifiers) OVERRIDE;
   virtual void DragTargetDragOver(
       const gfx::Point& client_pt,
       const gfx::Point& screen_pt,
-      WebKit::WebDragOperationsMask operations_allowed) OVERRIDE;
+      WebKit::WebDragOperationsMask operations_allowed,
+      int key_modifiers) OVERRIDE;
   virtual void DragTargetDragLeave() OVERRIDE;
   virtual void DragTargetDrop(const gfx::Point& client_pt,
-                              const gfx::Point& screen_pt) OVERRIDE;
+                              const gfx::Point& screen_pt,
+                              int key_modifiers) OVERRIDE;
   virtual void EnableAutoResize(const gfx::Size& min_size,
                                 const gfx::Size& max_size) OVERRIDE;
   virtual void DisableAutoResize(const gfx::Size& new_size) OVERRIDE;

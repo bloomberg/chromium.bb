@@ -842,15 +842,18 @@ class RenderViewImpl : public RenderWidget,
                                 WebKit::WebDragOperation drag_operation);
   void OnDragSourceSystemDragEnded();
   void OnDragTargetDrop(const gfx::Point& client_pt,
-                        const gfx::Point& screen_pt);
+                        const gfx::Point& screen_pt,
+                        int key_modifiers);
   void OnDragTargetDragEnter(const WebDropData& drop_data,
                              const gfx::Point& client_pt,
                              const gfx::Point& screen_pt,
-                             WebKit::WebDragOperationsMask operations_allowed);
+                             WebKit::WebDragOperationsMask operations_allowed,
+                             int key_modifiers);
   void OnDragTargetDragLeave();
   void OnDragTargetDragOver(const gfx::Point& client_pt,
                             const gfx::Point& screen_pt,
-                            WebKit::WebDragOperationsMask operations_allowed);
+                            WebKit::WebDragOperationsMask operations_allowed,
+                            int key_modifiers);
   void OnEnablePreferredSizeChangedMode();
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize(const gfx::Size& new_size);

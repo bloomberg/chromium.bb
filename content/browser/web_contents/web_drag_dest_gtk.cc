@@ -16,6 +16,7 @@
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_screen_util.h"
@@ -25,6 +26,26 @@ using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 
 namespace content {
+
+namespace {
+
+int GetModifierFlags(GtkWidget* widget) {
+  int modifier_state = 0;
+  GdkModifierType state;
+  gdk_window_get_pointer(gtk_widget_get_window(widget), NULL, NULL, &state);
+
+  if (state & GDK_SHIFT_MASK)
+    modifier_state |= WebKit::WebInputEvent::ShiftKey;
+  if (state & GDK_CONTROL_MASK)
+    modifier_state |= WebKit::WebInputEvent::ControlKey;
+  if (state & GDK_MOD1_MASK)
+    modifier_state |= WebKit::WebInputEvent::AltKey;
+  if (state & GDK_META_MASK)
+    modifier_state |= WebKit::WebInputEvent::MetaKey;
+  return modifier_state;
+}
+
+}  // namespace
 
 WebDragDestGtk::WebDragDestGtk(WebContents* web_contents, GtkWidget* widget)
     : web_contents_(web_contents),
@@ -121,7 +142,8 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
     GetRenderViewHost()->DragTargetDragOver(
         ui::ClientPoint(widget_),
         ui::ScreenPoint(widget_),
-        content::GdkDragActionToWebDragOp(context->actions));
+        content::GdkDragActionToWebDragOp(context->actions),
+        GetModifierFlags(widget_));
 
     if (delegate())
       delegate()->OnDragOver();
@@ -229,7 +251,8 @@ void WebDragDestGtk::OnDragDataReceived(
         *drop_data_.get(),
         ui::ClientPoint(widget_),
         ui::ScreenPoint(widget_),
-        content::GdkDragActionToWebDragOp(context->actions));
+        content::GdkDragActionToWebDragOp(context->actions),
+        GetModifierFlags(widget_));
 
     if (delegate())
       delegate()->OnDragEnter();
@@ -260,7 +283,8 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
   method_factory_.InvalidateWeakPtrs();
 
   GetRenderViewHost()->
-      DragTargetDrop(ui::ClientPoint(widget_), ui::ScreenPoint(widget_));
+      DragTargetDrop(ui::ClientPoint(widget_), ui::ScreenPoint(widget_),
+          GetModifierFlags(widget_));
 
   if (delegate())
     delegate()->OnDrop();

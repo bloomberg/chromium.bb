@@ -37,22 +37,25 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
-IPC_MESSAGE_ROUTED4(DragMsg_TargetDragEnter,
+IPC_MESSAGE_ROUTED5(DragMsg_TargetDragEnter,
                     WebDropData /* drop_data */,
                     gfx::Point /* client_pt */,
                     gfx::Point /* screen_pt */,
-                    WebKit::WebDragOperationsMask /* ops_allowed */)
+                    WebKit::WebDragOperationsMask /* ops_allowed */,
+                    int /* key_modifiers */)
 
-IPC_MESSAGE_ROUTED3(DragMsg_TargetDragOver,
+IPC_MESSAGE_ROUTED4(DragMsg_TargetDragOver,
                     gfx::Point /* client_pt */,
                     gfx::Point /* screen_pt */,
-                    WebKit::WebDragOperationsMask /* ops_allowed */)
+                    WebKit::WebDragOperationsMask /* ops_allowed */,
+                    int /* key_modifiers */)
 
 IPC_MESSAGE_ROUTED0(DragMsg_TargetDragLeave)
 
-IPC_MESSAGE_ROUTED2(DragMsg_TargetDrop,
+IPC_MESSAGE_ROUTED3(DragMsg_TargetDrop,
                     gfx::Point /* client_pt */,
-                    gfx::Point /* screen_pt */)
+                    gfx::Point /* screen_pt */,
+                    int /* key_modifiers */)
 
 // Notifies the renderer of updates in mouse position of an in-progress
 // drag.  if |ended| is true, then the user has ended the drag operation.
