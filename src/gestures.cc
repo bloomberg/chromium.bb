@@ -45,6 +45,32 @@ stime_t StimeFromTimespec(const struct timespec* ts) {
       static_cast<stime_t>(ts->tv_nsec) / 1000000000.0;
 }
 
+std::string HardwareProperties::String() const {
+  return StringPrintf("%f,  // left edge\n"
+                      "%f,  // top edge\n"
+                      "%f,  // right edge\n"
+                      "%f,  // bottom edge\n"
+                      "%f,  // x pixels/TP width\n"
+                      "%f,  // y pixels/TP height\n"
+                      "%f,  // x screen DPI\n"
+                      "%f,  // y screen DPI\n"
+                      "%u,  // max fingers\n"
+                      "%u,  // max touch\n"
+                      "%u,  // t5r2\n"
+                      "%u,  // semi-mt\n"
+                      "%u   // is button pad\n",
+                      left, top, right, bottom,
+                      res_x,
+                      res_y,
+                      screen_x_dpi,
+                      screen_y_dpi,
+                      max_finger_cnt,
+                      max_touch_cnt,
+                      supports_t5r2,
+                      support_semi_mt,
+                      is_button_pad);
+}
+
 FingerState* HardwareState::GetFingerState(short tracking_id) {
   return const_cast<FingerState*>(
       const_cast<const HardwareState*>(this)->GetFingerState(tracking_id));

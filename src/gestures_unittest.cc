@@ -10,6 +10,8 @@
 
 namespace gestures {
 
+using std::string;
+
 class GesturesTest : public ::testing::Test {};
 
 TEST(GesturesTest, SameFingersAsTest) {
@@ -237,6 +239,42 @@ TEST(GesturesTest, HardwareStateGetFingerStateTest) {
   EXPECT_EQ(&fs[1], const_hs.GetFingerState(2));
   EXPECT_EQ(&fs[2], const_hs.GetFingerState(7));
   EXPECT_EQ(reinterpret_cast<const FingerState*>(NULL), hs.GetFingerState(8));
+}
+
+TEST(GesturesTest, HardwarePropertiesToStringTest) {
+  HardwareProperties hp = {
+    1009.5, 1002.4, 1003.9, 1004.5,  // left, top, right, bottom
+    1005.4, 1006.9,  // res_x, res_y
+    1007.4, 1008.5, // x, y screen dpi
+    12,  // max fingers
+    11,  // max touches
+    0, 1, 1  // t5r2, semi-mt, is_button_pad
+  };
+  string str = hp.String();
+  LOG(INFO) << "str:" << str;
+  // expect all these numbers in order
+  const char* expected[] = {
+    "1009.5",
+    "1002.4",
+    "1003.9",
+    "1004.5",
+    "1005.4",
+    "1006.9",
+    "1007.4",
+    "1008.5",
+    "12,",
+    "11,",
+    "0,",
+    "1,",
+    "1 "
+  };
+  const char* last_found = str.c_str();
+  for (size_t i = 0; i < arraysize(expected); i++) {
+    ASSERT_NE(static_cast<const char*>(NULL), last_found);
+    const char* found = strstr(last_found, expected[i]);
+    EXPECT_GE(found, last_found) << "i=" << i;
+    last_found = found;
+  }
 }
 
 }  // namespace gestures
