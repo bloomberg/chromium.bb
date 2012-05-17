@@ -1230,6 +1230,10 @@ void View::OnPaintLayer(gfx::Canvas* canvas) {
   PaintCommon(canvas);
 }
 
+void View::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  // Repainting with new scale factor will paint the content at the right scale.
+}
+
 void View::ReorderLayers() {
   View* v = this;
   while (v && !v->layer())

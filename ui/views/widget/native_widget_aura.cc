@@ -784,6 +784,10 @@ void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
   delegate_->OnNativeWidgetPaint(canvas);
 }
 
+void NativeWidgetAura::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  // Repainting with new scale factor will paint the content at the right scale.
+}
+
 void NativeWidgetAura::OnWindowDestroying() {
   delegate_->OnNativeWidgetDestroying();
 

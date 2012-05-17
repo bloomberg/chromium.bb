@@ -69,6 +69,10 @@ void TestWindowDelegate::OnCaptureLost() {
 void TestWindowDelegate::OnPaint(gfx::Canvas* canvas) {
 }
 
+void TestWindowDelegate::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+}
+
 void TestWindowDelegate::OnWindowDestroying() {
 }
 

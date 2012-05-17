@@ -64,6 +64,9 @@ class AURA_EXPORT WindowDelegate {
   // Asks the delegate to paint window contents into the supplied canvas.
   virtual void OnPaint(gfx::Canvas* canvas) = 0;
 
+  // Called when the window's device scale factor has changed.
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) = 0;
+
   // Called from Window's destructor before OnWindowDestroyed and before the
   // children have been destroyed and the window has been removed from its
   // parent.

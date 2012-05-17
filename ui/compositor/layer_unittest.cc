@@ -132,6 +132,9 @@ class ColoredLayer : public Layer, public LayerDelegate {
     canvas->DrawColor(color_);
   }
 
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  }
+
  private:
   SkColor color_;
 };
@@ -212,7 +215,7 @@ class LayerWithRealCompositorTest : public testing::Test {
 // LayerDelegate that paints colors to the layer.
 class TestLayerDelegate : public LayerDelegate {
  public:
-  explicit TestLayerDelegate() : color_index_(0) {}
+  explicit TestLayerDelegate() { reset(); }
   virtual ~TestLayerDelegate() {}
 
   void AddColor(SkColor color) {
@@ -226,6 +229,10 @@ class TestLayerDelegate : public LayerDelegate {
     return StringPrintf("%.1f %.1f", scale_x_, scale_y_);
   }
 
+  float device_scale_factor() const {
+    return device_scale_factor_;
+  }
+
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     SkBitmap contents = canvas->ExtractBitmap();
@@ -237,10 +244,15 @@ class TestLayerDelegate : public LayerDelegate {
     scale_y_ = matrix.getScaleY();
   }
 
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+    device_scale_factor_ = device_scale_factor;
+  }
+
   void reset() {
     color_index_ = 0;
     paint_size_.SetSize(0, 0);
     scale_x_ = scale_y_ = 0.0f;
+    device_scale_factor_ = 0.0f;
   }
 
  private:
@@ -249,6 +261,7 @@ class TestLayerDelegate : public LayerDelegate {
   gfx::Size paint_size_;
   float scale_x_;
   float scale_y_;
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
 };
@@ -270,6 +283,8 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     painted_ = true;
   }
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  }
 
   bool painted_;
 
@@ -285,6 +300,8 @@ class NullLayerDelegate : public LayerDelegate {
  private:
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
+  }
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
 
   DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);
@@ -1000,6 +1017,9 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
       last_clip_rect_ = gfx::SkRectToRect(sk_clip_rect);
   }
 
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  }
+
   int paint_count_;
   Layer* layer_;
   gfx::Rect schedule_paint_rect_;
@@ -1071,6 +1091,9 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
   EXPECT_EQ("200x220", size_in_pixel.ToString());
   size_in_pixel = l1->web_layer().bounds();
   EXPECT_EQ("140x180", size_in_pixel.ToString());
+  // No scale change, so no scale notification.
+  EXPECT_EQ(0.0f, root_delegate.device_scale_factor());
+  EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
 
   RunPendingMessages();
   EXPECT_EQ("200x220", root_delegate.paint_size().ToString());
@@ -1085,6 +1108,9 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
   EXPECT_EQ("400x440", size_in_pixel.ToString());
   size_in_pixel = l1->web_layer().bounds();
   EXPECT_EQ("280x360", size_in_pixel.ToString());
+  // New scale factor must have been notified.
+  EXPECT_EQ(2.0f, root_delegate.device_scale_factor());
+  EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
 
   // Canvas size must have been scaled down up.
   RunPendingMessages();
@@ -1102,6 +1128,9 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
   EXPECT_EQ("200x220", size_in_pixel.ToString());
   size_in_pixel = l1->web_layer().bounds();
   EXPECT_EQ("140x180", size_in_pixel.ToString());
+  // New scale factor must have been notified.
+  EXPECT_EQ(1.0f, root_delegate.device_scale_factor());
+  EXPECT_EQ(1.0f, l1_delegate.device_scale_factor());
 
   // Canvas size must have been scaled down too.
   RunPendingMessages();
@@ -1112,8 +1141,12 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
 
   root_delegate.reset();
   l1_delegate.reset();
-  // Just changing the size shouldn't trigger repaint.
+  // Just changing the size shouldn't notify the scale change nor
+  // trigger repaint.
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(1000, 1000));
+  // No scale change, so no scale notification.
+  EXPECT_EQ(0.0f, root_delegate.device_scale_factor());
+  EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
   RunPendingMessages();
   EXPECT_EQ("0x0", root_delegate.paint_size().ToString());
   EXPECT_EQ("0.0 0.0", root_delegate.ToScaleString());
@@ -1139,6 +1172,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   gfx::Size size_in_pixel = l1->web_layer().bounds();
   EXPECT_EQ("140x180", size_in_pixel.ToString());
+  EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
 
   RunPendingMessages();
   EXPECT_EQ("140x180", l1_delegate.paint_size().ToString());
@@ -1159,6 +1193,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
   size_in_pixel = l1->web_layer().bounds();
   EXPECT_EQ("280x360", size_in_pixel.ToString());
+  EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
   RunPendingMessages();
   EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
   EXPECT_EQ("2.0 2.0", l1_delegate.ToScaleString());
@@ -1179,6 +1214,9 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_NoScaleCanvas) {
 
   GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
   GetCompositor()->SetRootLayer(root.get());
+  // Scale factor change is notified regardless of scale_canvas flag.
+  EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
+
   RunPendingMessages();
   EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
   EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());

@@ -377,6 +377,8 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
   RecomputeTransform();
   RecomputeDrawsContentAndUVRect();
   SchedulePaint(gfx::Rect(bounds_.size()));
+  if (delegate_)
+    delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
   for (size_t i = 0; i < children_.size(); ++i)
     children_[i]->OnDeviceScaleFactorChanged(device_scale_factor);
 }

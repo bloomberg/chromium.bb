@@ -559,6 +559,10 @@ void WebContentsViewAura::OnCaptureLost() {
 void WebContentsViewAura::OnPaint(gfx::Canvas* canvas) {
 }
 
+void WebContentsViewAura::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+}
+
 void WebContentsViewAura::OnWindowDestroying() {
 }
 

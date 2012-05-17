@@ -230,6 +230,11 @@ void ImageGrid::ImagePainter::OnPaintLayer(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(*(image_->ToSkBitmap()), 0, 0);
 }
 
+void ImageGrid::ImagePainter::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+  // Redrawing will take care of scale factor change.
+}
+
 // static
 gfx::Size ImageGrid::GetImageSize(const gfx::Image* image) {
   return image ?

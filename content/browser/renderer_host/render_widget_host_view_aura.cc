@@ -1103,6 +1103,12 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+  // TODO(fsamuel|rbyers): Notify renderer that the device scale factor has
+  // changed. crbug.com/128267.
+}
+
 void RenderWidgetHostViewAura::OnWindowDestroying() {
 }
 

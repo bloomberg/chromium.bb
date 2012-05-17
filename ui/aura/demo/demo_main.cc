@@ -64,6 +64,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawColor(color_, SkXfermode::kSrc_Mode);
   }
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
   virtual void OnWindowDestroying() OVERRIDE {}
   virtual void OnWindowDestroyed() OVERRIDE {}
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE {}

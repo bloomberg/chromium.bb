@@ -794,6 +794,11 @@ void Window::OnPaintLayer(gfx::Canvas* canvas) {
     delegate_->OnPaint(canvas);
 }
 
+void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  if (delegate_)
+    delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
+}
+
 void Window::UpdateLayerName(const std::string& name) {
 #if !defined(NDEBUG)
   DCHECK(layer());
