@@ -41,6 +41,43 @@ include_rules = [
 
   "-content/common",
 
+  "-chrome/browser/ui/views",
+  # TODO(tfarina): Remove all these. crbug.com/125846.
+  # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
+  "+chrome/browser/ui/views/ash/brightness_controller_chromeos.h",
+  "+chrome/browser/ui/views/ash/caps_lock_handler.h",
+  "+chrome/browser/ui/views/ash/chrome_shell_delegate.h",
+  "+chrome/browser/ui/views/ash/ime_controller_chromeos.h",
+  "+chrome/browser/ui/views/ash/key_rewriter.h",
+  "+chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h",
+  "+chrome/browser/ui/views/ash/panel_view_aura.h",
+  "+chrome/browser/ui/views/ash/screenshot_taker.h",
+  "+chrome/browser/ui/views/ash/user_gesture_handler.h",
+  "+chrome/browser/ui/views/ash/volume_controller_chromeos.h",
+  "+chrome/browser/ui/views/bookmarks/bookmark_bar_view.h",
+  "+chrome/browser/ui/views/browser_actions_container.h",
+  "+chrome/browser/ui/views/chrome_views_delegate.h",
+  "+chrome/browser/ui/views/constrained_window_views.h",
+  "+chrome/browser/ui/views/event_utils.h",
+  "+chrome/browser/ui/views/extensions/extension_dialog.h",
+  "+chrome/browser/ui/views/extensions/extension_dialog_observer.h",
+  "+chrome/browser/ui/views/extensions/extension_popup.h",
+  "+chrome/browser/ui/views/extensions/extension_view.h",
+  "+chrome/browser/ui/views/frame/browser_view.h",
+  "+chrome/browser/ui/views/infobars/infobar_container_view.h",
+  "+chrome/browser/ui/views/location_bar/location_bar_view.h",
+  "+chrome/browser/ui/views/location_bar/location_icon_view.h",
+  "+chrome/browser/ui/views/notifications/balloon_view.h",
+  "+chrome/browser/ui/views/notifications/balloon_view_host.h",
+  "+chrome/browser/ui/views/page_info_bubble_view.h",
+  "+chrome/browser/ui/views/reload_button.h",
+  "+chrome/browser/ui/views/select_file_dialog_extension.h",
+  "+chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h",
+  "+chrome/browser/ui/views/toolbar_view.h",
+  "+chrome/browser/ui/views/unhandled_keyboard_event_handler.h",
+  "+chrome/browser/ui/views/web_dialog_view.h",
+  # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
+
   # Other libraries.
   "+chrome/third_party/mozilla_security_manager",
   "+libxml",  # For search engine definition parsing.
