@@ -47,11 +47,14 @@ void CheckStyleRanges(const gfx::StyleRanges& style_ranges, size_t length) {
   for (gfx::StyleRanges::size_type i = 0; i < style_ranges.size() - 1; i++) {
     const ui::Range& former = style_ranges[i].range;
     const ui::Range& latter = style_ranges[i + 1].range;
-    DCHECK(!former.is_empty()) << "Empty range at " << i << ":" << former;
-    DCHECK(former.IsValid()) << "Invalid range at " << i << ":" << former;
-    DCHECK(!former.is_reversed()) << "Reversed range at " << i << ":" << former;
+    DCHECK(!former.is_empty()) << "Empty range at " << i << ":" <<
+        former.ToString();
+    DCHECK(former.IsValid()) << "Invalid range at " << i << ":" <<
+        former.ToString();
+    DCHECK(!former.is_reversed()) << "Reversed range at " << i << ":" <<
+        former.ToString();
     DCHECK(former.end() == latter.start()) << "Ranges gap/overlap/unsorted." <<
-        "former:" << former << ", latter:" << latter;
+        "former:" << former.ToString() << ", latter:" << latter.ToString();
   }
   const gfx::StyleRange& end_style = *style_ranges.rbegin();
   DCHECK(!end_style.range.is_empty()) << "Empty range at end.";

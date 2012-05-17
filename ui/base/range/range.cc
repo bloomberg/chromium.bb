@@ -1,13 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/base/range/range.h"
 
 #include <limits>
-#include <ostream>
 
+#include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 
 namespace ui {
 
@@ -75,8 +76,8 @@ Range Range::Intersect(const Range& range) const {
   return Range(min, max);
 }
 
-std::ostream& operator<<(std::ostream& out, const ui::Range& range) {
-  return out << "{" << range.start() << "," << range.end() << "}";
+std::string Range::ToString() const {
+  return base::StringPrintf("{%" PRIuS ",%" PRIuS "}", start(), end());
 }
 
 }  // namespace gfx

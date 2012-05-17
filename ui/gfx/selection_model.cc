@@ -4,7 +4,8 @@
 
 #include "ui/gfx/selection_model.h"
 
-#include <ostream>
+#include "base/format_macros.h"
+#include "base/stringprintf.h"
 
 namespace gfx {
 
@@ -23,14 +24,14 @@ bool SelectionModel::operator==(const SelectionModel& sel) const {
          caret_affinity_ == sel.caret_affinity();
 }
 
-std::ostream& operator<<(std::ostream& out, const SelectionModel& sel) {
-  out << '{';
-  if (sel.selection().is_empty())
-    out << sel.caret_pos();
+std::string SelectionModel::ToString() const {
+  std::string str = "{";
+  if (selection().is_empty())
+    base::StringAppendF(&str, "%" PRIuS, caret_pos());
   else
-    out << sel.selection();
-  bool backward = sel.caret_affinity() == CURSOR_BACKWARD;
-  return out << (backward ? ",BACKWARD}" : ",FORWARD}");
+    str += selection().ToString();
+  const bool backward = caret_affinity() == CURSOR_BACKWARD;
+  return str + (backward ? ",BACKWARD}" : ",FORWARD}");
 }
 
 }  // namespace gfx

@@ -6,7 +6,7 @@
 #define UI_BASE_RANGE_RANGE_H_
 #pragma once
 
-#include <iosfwd>
+#include <string>
 
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"
@@ -103,13 +103,13 @@ class UI_EXPORT Range {
 #endif
   // GTK+ has no concept of a range.
 
+  std::string ToString() const;
+
  private:
   size_t start_;
   size_t end_;
 };
 
-UI_EXPORT std::ostream& operator<<(std::ostream& out, const ui::Range& range);
-
-}  // namespace gfx
+}  // namespace ui
 
 #endif  // UI_BASE_RANGE_RANGE_H_
