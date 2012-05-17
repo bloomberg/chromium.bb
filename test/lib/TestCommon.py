@@ -189,19 +189,16 @@ def separate_files(flist):
             missing.append(f)
     return existing, missing
 
-if os.name == 'posix':
-    def _failed(self, status = 0):
-        if self.status is None or status is None:
-            return None
+def _failed(self, status = 0):
+    if self.status is None or status is None:
+        return None
+    try:
+        return _status(self) not in status
+    except TypeError:
+        # status wasn't an iterable
         return _status(self) != status
-    def _status(self):
-        return self.status
-elif os.name == 'nt':
-    def _failed(self, status = 0):
-        return not (self.status is None or status is None) and \
-               self.status != status
-    def _status(self):
-        return self.status
+def _status(self):
+    return self.status
 
 class TestCommon(TestCmd):
 

@@ -21,7 +21,7 @@ if sys.platform == 'darwin':
   test.run_gyp('test.gyp', chdir=CHDIR)
 
   build_error_code = {
-    'xcode': 1,  # Linker error code. 1 on Xcode 3, 65 on Xcode 4 :-/
+    'xcode': [1, 65],  # Linker error code. 1 on Xcode 3, 65 on Xcode 4
     'make': 2,
     'ninja': 1,
   }[test.format]
