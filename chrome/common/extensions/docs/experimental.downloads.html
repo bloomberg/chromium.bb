@@ -207,8 +207,6 @@
             <a href="#properties">Properties</a>
             <ol>
               <li>
-                <a href="#property-DANGER_UNCOMMON">DANGER_UNCOMMON</a>
-              </li><li>
                 <a href="#property-ERROR_GENERIC">ERROR_GENERIC</a>
               </li><li>
                 <a href="#property-ERROR_INVALID_URL">ERROR_INVALID_URL</a>
@@ -228,10 +226,6 @@
             <ol>
               <li>
                 <a href="#type-HttpHeaders">HttpHeaders</a>
-                <ol>
-                </ol>
-              </li><li>
-                <a href="#type-DownloadDangerType">DownloadDangerType</a>
                 <ol>
                 </ol>
               </li>
@@ -261,11 +255,11 @@ URLs to be downloaded. For example:</p>
     "experimental", "http://*/*", "https://*/*"
   ]
 }</pre>
-<p>If the URL’s hostname is not specified in the permissions, then the
-chrome.extensions.lastError object will indicate that the extension does not
-have permission to access that hostname.
-<a href="#properties">downloads.ERROR_*</a> are some of the errors that may be
-returned.</p>
+<p>If the URL’s hostname is not specified in the permissions, then
+<a href='extension.html#property-lastError'>chrome.extension.lastError</a>
+will indicate that the extension does not have permission to access that
+hostname.  <a href="#properties">downloads.ERROR_*</a> are some of the errors
+that may be returned.</p>
 <h2 id="examples"> Examples </h2>
 <p>You can find simple examples of using the downloads module in the
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/downloads/">examples/api/downloads</a>
@@ -281,33 +275,6 @@ directory. For other examples and for help in viewing the source code, see
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
             <div>
-              <a name="property-DANGER_UNCOMMON"></a>
-              <h4>DANGER_UNCOMMON</h4>
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.experimental.downloads.</span><span>DANGER_UNCOMMON</span>
-              </div>
-              <div>
-          <dt>
-            <var>DANGER_UNCOMMON</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <code>"uncommon"</code>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The download is not commonly downloaded and could be dangerous.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div><div>
               <a name="property-ERROR_GENERIC"></a>
               <h4>ERROR_GENERIC</h4>
               <div class="summary">
@@ -377,7 +344,23 @@ directory. For other examples and for help in viewing the source code, see
                       <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If the download started successfully, <code>callback</code> will be called with the new DownloadItem’s <code>downloadId</code>. If there was an error starting the download, then <code>callback</code> will be called with <code>downloadId=undefined</code> and <code>chrome.extension.lastError</code> will be set. If both <code>filename</code> and <code>saveAs</code> are specified, then the Save As dialog will be displayed, pre-populated with the specified <code>filename</code>.</p>
+                <p>Download a URL. If the URL uses the HTTP[S] protocol, then
+                the request will include all cookies currently set for its
+                hostname. If both <code>filename</code> and <code>saveAs</code>
+                are specified, then the Save As dialog will be displayed,
+                pre-populated with the specified <code>filename</code>. If the
+                download started successfully, <code>callback</code> will be
+                called with the new DownloadItem’s <code>downloadId</code>. If
+                there was an error starting the download, then
+                <code>callback</code> will be called with
+                <code>downloadId=undefined</code> and
+                <a href='extension.html#property-lastError'>chrome.extension.lastError</a>
+                will be set to either one of the <code>ERROR_*</code> constants
+                defined above or another descriptive string. The error strings
+                are not guaranteed to remain backwards compatible between
+                releases. You must not parse it, though you may compare it to
+                one of the ERROR_* constants defined above and conditionalize on
+                that comparison.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -445,7 +428,7 @@ directory. For other examples and for help in viewing the source code, see
                 </div>
               </em>
           </dt>
-          <dd>A file path relative to the Downloads directory to contain the downloaded file.</dd>
+          <dd>A file path relative to the Downloads directory to contain the downloaded file. For now, sub-directories are not allowed, so this string may not contain either forward slashes or back-slashes. Sub-directories will be implemented soon.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -744,32 +727,6 @@ directory. For other examples and for help in viewing the source code, see
               </div>
             </dl>
           </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div><div class="apiItem">
-              <a name="type-DownloadDangerType"></a>
-              <h4>DownloadDangerType</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                        <span>["safe", "file", "url", "content", "uncommon"]</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>String indicating whether a download is known to be safe or is considered dangerous. The values correspond to the <code>DANGER_SAFE</code>, <code>DANGER_FILE</code>, <code>DANGER_URL</code>, <code>DANGER_CONTENT</code>, and <code>DANGER_UNCOMMON</code> properties.</dd>
-          <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->

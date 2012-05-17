@@ -79,6 +79,7 @@
       },
       "DANGER_UNCOMMON": {
         "type": "string",
+        "nodoc": "true",
         "value": "uncommon",
         "description": "The download is not commonly downloaded and could be dangerous."
       },
@@ -120,6 +121,7 @@
       },
       {
         "id": "DownloadDangerType",
+        "nodoc": "true",
         "description": "String indicating whether a download is known to be safe or is considered dangerous. The values correspond to the <code>DANGER_SAFE</code>, <code>DANGER_FILE</code>, <code>DANGER_URL</code>, <code>DANGER_CONTENT</code>, and <code>DANGER_UNCOMMON</code> properties.",
         "type": "string",
         "enum": ["safe", "file", "url", "content", "uncommon"]
@@ -449,7 +451,7 @@
       {
         "name": "download",
         "type": "function",
-        "description": "Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If the download started successfully, <code>callback</code> will be called with the new DownloadItem’s <code>downloadId</code>. If there was an error starting the download, then <code>callback</code> will be called with <code>downloadId=undefined</code> and <code>chrome.extension.lastError</code> will be set. If both <code>filename</code> and <code>saveAs</code> are specified, then the Save As dialog will be displayed, pre-populated with the specified <code>filename</code>.",
+        "description": "Download a URL. If the URL uses the HTTP[S] protocol, then the request will include all cookies currently set for its hostname. If both <code>filename</code> and <code>saveAs</code> are specified, then the Save As dialog will be displayed, pre-populated with the specified <code>filename</code>. If the download started successfully, <code>callback</code> will be called with the new DownloadItem’s <code>downloadId</code>. If there was an error starting the download, then <code>callback</code> will be called with <code>downloadId=undefined</code> and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to either one of the <code>ERROR_*</code> constants defined above or another descriptive string. The error strings are not guaranteed to remain backwards compatible between releases. You must not parse it, though you may compare it to one of the ERROR_* constants defined above and conditionalize on that comparison.",
         "parameters": [
           {
             "type": "object",
@@ -462,7 +464,7 @@
               },
               "filename": {
                 "type": "string",
-                "description": "A file path relative to the Downloads directory to contain the downloaded file.",
+                "description": "A file path relative to the Downloads directory to contain the downloaded file. For now, sub-directories are not allowed, so this string may not contain either forward slashes or back-slashes. Sub-directories will be implemented soon.",
                 "optional": true
               },
               "saveAs": {
@@ -589,7 +591,7 @@
             "type": "function",
             "optional": true,
             "parameters": [],
-            "description": "Called when the pause request is completed. If the request was successful the download is in a paused state. Otherwise chrome.extension.lastError contains an error message. The request will fail if the download is not active."
+            "description": "Called when the pause request is completed. If the request was successful the download is in a paused state. Otherwise <a href='extension.html#property-lastError'>chrome.extension.lastError</a> contains an error message. The request will fail if the download is not active."
           }
         ]
       },
@@ -605,7 +607,7 @@
             "type": "function",
             "optional": true,
             "parameters": [],
-            "description": "Called when the resume request is completed. If the request was successful the download is in progress and unpaused. Otherwise chrome.extension.lastError contains an error message. The request will fail if the download is not active."
+            "description": "Called when the resume request is completed. If the request was successful the download is in progress and unpaused. Otherwise <a href='extension.html#property-lastError'>chrome.extension.lastError</a> contains an error message. The request will fail if the download is not active."
           }
         ]
       },
@@ -655,7 +657,7 @@
               {
                 "name": "iconURL",
                 "type": "string",
-                "description": "A URL to an image that represents the download. If a file icon cannot be determined, chrome.extension.lastError will contain an error message."
+                "description": "A URL to an image that represents the download. If a file icon cannot be determined, <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will contain an error message."
               }
             ]
           }
