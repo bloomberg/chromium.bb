@@ -28,9 +28,6 @@ class UI_EXPORT Screen {
   static void SetInstance(ScreenImpl* screen);
 #endif
 
-  // True if DIP is enabled.
-  static bool IsDIPEnabled();
-
   // Returns the current absolute position of the mouse pointer.
   static gfx::Point GetCursorScreenPoint();
 

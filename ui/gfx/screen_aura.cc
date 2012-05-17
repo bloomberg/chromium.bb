@@ -5,7 +5,6 @@
 #include "ui/gfx/screen.h"
 
 #include "base/logging.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen_impl.h"
@@ -26,11 +25,6 @@ void Screen::SetInstance(ScreenImpl* screen) {
 
 // TODO(oshima): Implement ScreenImpl for Linux/aura and remove this
 // ifdef.
-
-// static
-bool Screen::IsDIPEnabled() {
-  return ui::IsDIPEnabled();
-}
 
 // static
 Point Screen::GetCursorScreenPoint() {
