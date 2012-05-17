@@ -311,6 +311,9 @@ class LocationBarView : public LocationBar,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Calculates the height of the view.
+  int GetHeight();
+
   // Space between items in the location bar.
   static int GetItemPadding();
 

@@ -496,17 +496,18 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
   HGDIOBJ old_font = SelectObject(hdc, font_.GetNativeFont());
   TEXTMETRIC tm = {0};
   GetTextMetrics(hdc, &tm);
-  const float kXHeightRatio = 0.7f;  // The ratio of a font's x-height to its
-                                     // cap height.  Sadly, Windows doesn't
-                                     // provide a true value for a font's
-                                     // x-height in its text metrics, so we
-                                     // approximate.
-  font_x_height_ = static_cast<int>((static_cast<float>(font_.GetBaseline() -
-      tm.tmInternalLeading) * kXHeightRatio) + 0.5);
-  // The distance from the top of the field to the desired baseline of the
-  // rendered text.
-  const int kTextBaseline = popup_window_mode_ ? 15 : 18;
-  font_y_adjustment_ = kTextBaseline - font_.GetBaseline();
+  int cap_height = font_.GetBaseline() - tm.tmInternalLeading;
+  // The ratio of a font's x-height to its cap height.  Sadly, Windows
+  // doesn't provide a true value for a font's x-height in its text
+  // metrics, so we approximate.
+  const float kXHeightRatio = 0.7f;
+  font_x_height_ = static_cast<int>(
+      (static_cast<float>(cap_height) * kXHeightRatio) + 0.5);
+
+  // We set font_y_adjustment_ so that the ascender of the font gets
+  // centered on the available height of the view.
+  font_y_adjustment_ = (parent_view->GetHeight() - cap_height) / 2 -
+      tm.tmInternalLeading;
 
   // Get the number of twips per pixel, which we need below to offset our text
   // by the desired number of pixels.
