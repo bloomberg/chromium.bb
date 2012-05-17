@@ -336,6 +336,11 @@ const char kDisableLoginAnimations[]        = "disable-login-animations";
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
+// Disables the inline off-store extension installation UI. With this switch,
+// users must use a new out-of-band installation UI from chrome://extensions/.
+const char kDisableOffStoreExtensionInstall[] =
+    "disable-off-store-extension-install";
+
 // Disable speculative TCP/IP preconnection.
 const char kDisablePreconnect[]             = "disable-preconnect";
 
@@ -562,12 +567,6 @@ const char kEnableNpn[]                     = "enable-npn";
 // Enables NPN with HTTP. It means NPN is enabled but SPDY won't be used.
 // HTTP is still used for all requests.
 const char kEnableNpnHttpOnly[]             = "enable-npn-http";
-
-// Enables extensions to be easily installed from sites other than the web
-// store. Without this flag, they can still be installed, but must be manually
-// dragged onto chrome://extensions/.
-const char kEnableOffStoreExtensionInstall[] =
-    "enable-off-store-extension-install";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";

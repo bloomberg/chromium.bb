@@ -168,6 +168,12 @@ class ExtensionService
   // settings are stored.
   static const char* kSyncExtensionSettingsDirectoryName;
 
+  // Determine if a given extension download should be treated as if it came
+  // from the gallery. Note that this is requires *both* that the download_url
+  // match and that the download was referred from a gallery page.
+  bool IsDownloadFromGallery(const GURL& download_url,
+                             const GURL& referrer_url);
+
   // Returns the Extension of hosted or packaged apps, NULL otherwise.
   const Extension* GetInstalledApp(const GURL& url);
 
@@ -366,6 +372,9 @@ class ExtensionService
   // Notifies Sync (if needed) of a newly-installed extension or a change to
   // an existing extension.
   virtual void SyncExtensionChangeIfNeeded(const Extension& extension) OVERRIDE;
+
+  // The App that represents the web store.
+  const Extension* GetWebStoreApp();
 
   // Returns true if |url| should get extension api bindings and be permitted
   // to make api calls. Note that this is independent of what extension

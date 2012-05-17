@@ -380,10 +380,10 @@ void WebstoreInlineInstaller::InstallUIProceed() {
       web_contents()->GetBrowserContext());
 
   scoped_ptr<WebstoreInstaller::Approval> approval(
-      WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          profile,
-          id_,
-          scoped_ptr<base::DictionaryValue>(manifest_.get()->DeepCopy())));
+      new WebstoreInstaller::Approval);
+  approval->extension_id = id_;
+  approval->profile = profile;
+  approval->parsed_manifest.reset(manifest_.get()->DeepCopy());
   approval->use_app_installed_bubble = true;
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(

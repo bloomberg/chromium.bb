@@ -29,6 +29,11 @@ namespace download_crx_util {
 // install, and again after the first install and before the second.
 void SetMockInstallUIForTesting(ExtensionInstallUI* mock_ui);
 
+// Returns true if the specified download_item containing an extension should be
+// automatically installed. This is typically true in the case of webstore
+// installations.
+bool ShouldOpenExtensionDownload(const content::DownloadItem& download_item);
+
 // Start installing a downloaded item item as a CRX (extension, theme, app,
 // ...).  The installer does work on the file thread, so the installation
 // is not complete when this function returns.  Returns the object managing

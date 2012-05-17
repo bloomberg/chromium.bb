@@ -257,6 +257,68 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   return true;
 }
 
+// If a download url matches one of these patterns and has a referrer of the
+// webstore, then we're willing to treat that as a gallery download.
+static const char* kAllowedDownloadURLPatterns[] = {
+  "https://clients2.google.com/service/update2*",
+  "https://clients2.googleusercontent.com/crx/*"
+};
+
+bool ExtensionService::IsDownloadFromGallery(const GURL& download_url,
+                                             const GURL& referrer_url) {
+  const Extension* download_extension =
+      extensions_.GetHostedAppByURL(ExtensionURLInfo(download_url));
+  const Extension* referrer_extension =
+      extensions_.GetHostedAppByURL(ExtensionURLInfo(referrer_url));
+  const Extension* webstore_app = GetWebStoreApp();
+
+  bool referrer_valid = (referrer_extension == webstore_app);
+  bool download_valid = (download_extension == webstore_app);
+
+  // We also allow the download to be from a small set of trusted paths.
+  if (!download_valid) {
+    for (size_t i = 0; i < arraysize(kAllowedDownloadURLPatterns); i++) {
+      URLPattern pattern(URLPattern::SCHEME_HTTPS,
+                         kAllowedDownloadURLPatterns[i]);
+      if (pattern.MatchesURL(download_url)) {
+        download_valid = true;
+        break;
+      }
+    }
+  }
+
+  // If the command-line gallery URL is set, then be a bit more lenient.
+  GURL store_url =
+      GURL(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+           switches::kAppsGalleryURL));
+  if (!store_url.is_empty()) {
+    std::string store_tld =
+        net::RegistryControlledDomainService::GetDomainAndRegistry(store_url);
+    if (!referrer_valid) {
+      std::string referrer_tld =
+          net::RegistryControlledDomainService::GetDomainAndRegistry(
+              referrer_url);
+      // The referrer gets stripped when transitioning from https to http,
+      // or when hitting an unknown test cert and that commonly happens in
+      // testing environments.  Given this, we allow an empty referrer when
+      // the command-line flag is set.
+      // Otherwise, the TLD must match the TLD of the command-line url.
+      referrer_valid = referrer_url.is_empty() || (referrer_tld == store_tld);
+    }
+
+    if (!download_valid) {
+      std::string download_tld =
+          net::RegistryControlledDomainService::GetDomainAndRegistry(
+              download_url);
+
+      // Otherwise, the TLD must match the TLD of the command-line url.
+      download_valid = (download_tld == store_tld);
+    }
+  }
+
+  return (referrer_valid && download_valid);
+}
+
 const Extension* ExtensionService::GetInstalledApp(const GURL& url) {
   const Extension* extension = extensions_.GetExtensionOrAppByURL(
       ExtensionURLInfo(url));
@@ -2238,6 +2300,10 @@ const Extension* ExtensionService::GetTerminatedExtension(
 const Extension* ExtensionService::GetInstalledExtension(
     const std::string& id) const {
   return GetExtensionByIdInternal(id, true, true, true);
+}
+
+const Extension* ExtensionService::GetWebStoreApp() {
+  return GetExtensionById(extension_misc::kWebStoreAppId, false);
 }
 
 bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {

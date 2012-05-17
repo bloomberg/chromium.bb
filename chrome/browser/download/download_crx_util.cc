@@ -51,6 +51,15 @@ void SetMockInstallUIForTesting(ExtensionInstallUI* mock_ui) {
   mock_install_ui_for_testing = mock_ui;
 }
 
+bool ShouldOpenExtensionDownload(const DownloadItem& download_item) {
+  if (extensions::switch_utils::IsOffStoreInstallEnabled() ||
+      WebstoreInstaller::GetAssociatedApproval(download_item)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 scoped_refptr<CrxInstaller> OpenChromeExtension(
     Profile* profile,
     const DownloadItem& download_item) {
@@ -71,8 +80,8 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
     installer->InstallUserScript(download_item.GetFullPath(),
                                  download_item.GetURL());
   } else {
-    bool is_gallery_download =
-        WebstoreInstaller::GetAssociatedApproval(download_item) != NULL;
+    bool is_gallery_download = service->IsDownloadFromGallery(
+        download_item.GetURL(), download_item.GetReferrerUrl());
     installer->set_original_mime_type(download_item.GetOriginalMimeType());
     installer->set_apps_require_extension_mime_type(true);
     installer->set_download_url(download_item.GetURL());

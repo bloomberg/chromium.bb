@@ -403,8 +403,10 @@ void BeginInstallWithManifestFunction::InstallUIProceed() {
   // the future we may also want to add time-based expiration, where a whitelist
   // entry is only valid for some number of minutes.
   scoped_ptr<WebstoreInstaller::Approval> approval(
-      WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          profile(), id_, parsed_manifest_.Pass()));
+      new WebstoreInstaller::Approval);
+  approval->extension_id = id_;
+  approval->profile = profile();
+  approval->parsed_manifest.reset(parsed_manifest_.release());
   approval->use_app_installed_bubble = use_app_installed_bubble_;
   g_pending_approvals.Get().PushApproval(approval.Pass());
 
@@ -508,8 +510,11 @@ void SilentlyInstallFunction::OnWebstoreParseSuccess(
   // extension. The whitelist entry gets cleared in
   // CrxInstaller::ConfirmInstall.
   scoped_ptr<WebstoreInstaller::Approval> approval(
-      WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          profile(), id_, scoped_ptr<base::DictionaryValue>(parsed_manifest)));
+      new WebstoreInstaller::Approval);
+  approval->extension_id = id_;
+  approval->parsed_manifest.reset(parsed_manifest);
+  approval->profile = profile();
+  approval->use_app_installed_bubble = false;
   approval->skip_post_install_ui = true;
 
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
