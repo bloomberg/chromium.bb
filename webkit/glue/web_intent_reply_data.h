@@ -12,6 +12,9 @@ namespace webkit_glue {
 // Constant values use to indicate what type of reply the caller is getting from
 // the web intents service page.
 enum WebIntentReplyType {
+  // Invalid type. Use to initialize reply types.
+  WEB_INTENT_REPLY_INVALID,
+
   // Sent for a reply message (success).
   WEB_INTENT_REPLY_SUCCESS,
 
