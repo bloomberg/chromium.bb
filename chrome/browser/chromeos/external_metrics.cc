@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,8 +31,8 @@ using content::UserMetricsAction;
 
 namespace chromeos {
 
-// The interval between external metrics collections, in milliseconds.
-static const int kExternalMetricsCollectionIntervalMs = 30 * 1000;
+// The interval between external metrics collections in seconds
+static const int kExternalMetricsCollectionIntervalSeconds = 30;
 
 ExternalMetrics::ExternalMetrics()
     : test_recorder_(NULL) {
@@ -240,7 +240,7 @@ void ExternalMetrics::ScheduleCollector() {
   result = BrowserThread::PostDelayedTask(
     BrowserThread::FILE, FROM_HERE,
     base::Bind(&chromeos::ExternalMetrics::CollectEventsAndReschedule, this),
-    kExternalMetricsCollectionIntervalMs);
+    base::TimeDelta::FromSeconds(kExternalMetricsCollectionIntervalSeconds));
   DCHECK(result);
 }
 

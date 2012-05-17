@@ -169,7 +169,7 @@ KioskModeSettings::KioskModeSettings() : is_initialized_(false) {
           content::BrowserThread::UI, FROM_HERE,
           base::Bind(&KioskModeSettings::VerifyModeIsKnown,
                      base::Unretained(this)),
-          kDeviceModeFetchRetryDelayMs);
+          base::TimeDelta::FromMilliseconds(kDeviceModeFetchRetryDelayMs));
     }
   }
   is_kiosk_mode_ = false;
@@ -190,7 +190,7 @@ void KioskModeSettings::VerifyModeIsKnown() {
             content::BrowserThread::UI, FROM_HERE,
             base::Bind(&KioskModeSettings::VerifyModeIsKnown,
                        base::Unretained(this)),
-            kDeviceModeFetchRetryDelayMs);
+            base::TimeDelta::FromMilliseconds(kDeviceModeFetchRetryDelayMs));
         break;
       case policy::DEVICE_MODE_KIOSK:
         BrowserList::ExitCleanly();

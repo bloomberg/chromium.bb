@@ -35,7 +35,7 @@ NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
          BrowserThread::UI, FROM_HERE,
          base::Bind(
              &NetworkChangeNotifierChromeos::UpdateInitialState, this),
-         kInitialNotificationCheckDelayMS);
+         base::TimeDelta::FromMilliseconds(kInitialNotificationCheckDelayMS));
 }
 
 NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
@@ -196,7 +196,7 @@ void NetworkChangeNotifierChromeos::ReportOnlineStateChange(bool is_online) {
       base::Bind(
           &NetworkChangeNotifierChromeos::ReportOnlineStateChangeOnUIThread,
           weak_factory_.GetWeakPtr()),
-      kOnlineNotificationDelayMS);
+      base::TimeDelta::FromMilliseconds(kOnlineNotificationDelayMS));
 }
 
 void NetworkChangeNotifierChromeos::ReportOnlineStateChangeOnUIThread() {

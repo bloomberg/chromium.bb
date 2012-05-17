@@ -234,7 +234,7 @@ void BootTimesLoader::Backend::GetBootTimes(
         BrowserThread::FILE,
         FROM_HERE,
         base::Bind(&Backend::GetBootTimes, this, request),
-        kReadAttemptDelayMs);
+        base::TimeDelta::FromMilliseconds(kReadAttemptDelayMs));
     return;
   }
 
@@ -366,7 +366,7 @@ void BootTimesLoader::LoginDone() {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&WriteTimes, kLoginTimes, kUmaLogin, kUmaLoginPrefix,
                  login_time_markers_),
-      kLoginTimeWriteDelayMs);
+      base::TimeDelta::FromMilliseconds(kLoginTimeWriteDelayMs));
 }
 
 void BootTimesLoader::WriteLogoutTimes() {

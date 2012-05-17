@@ -164,8 +164,10 @@ void RecordLastRunAppBundlePath() {
       BaseBundleID_CFString());
 
   // Sync after a delay avoid I/O contention on startup; 1500 ms is plenty.
-  BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
-                                 base::Bind(&PrefsSyncCallback), 1500);
+  BrowserThread::PostDelayedTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&PrefsSyncCallback),
+      base::TimeDelta::FromMilliseconds(1500));
 }
 
 }  // anonymous namespace

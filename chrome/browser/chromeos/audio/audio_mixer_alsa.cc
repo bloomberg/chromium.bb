@@ -161,7 +161,7 @@ void AudioMixerAlsa::Connect() {
   if (!ConnectInternal()) {
     thread_->message_loop()->PostDelayedTask(FROM_HERE,
         base::Bind(&AudioMixerAlsa::Connect, base::Unretained(this)),
-        kConnectionRetrySleepSec * 1000);
+        base::TimeDelta::FromSeconds(kConnectionRetrySleepSec));
   }
 }
 

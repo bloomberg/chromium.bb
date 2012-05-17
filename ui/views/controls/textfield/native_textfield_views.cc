@@ -508,7 +508,7 @@ void NativeTextfieldViews::HandleFocus() {
       FROM_HERE,
       base::Bind(&NativeTextfieldViews::UpdateCursor,
                  cursor_timer_.GetWeakPtr()),
-      kCursorVisibleTimeMs);
+      base::TimeDelta::FromMilliseconds(kCursorVisibleTimeMs));
 }
 
 void NativeTextfieldViews::HandleBlur() {
@@ -808,7 +808,8 @@ void NativeTextfieldViews::UpdateCursor() {
       FROM_HERE,
       base::Bind(&NativeTextfieldViews::UpdateCursor,
                  cursor_timer_.GetWeakPtr()),
-      is_cursor_visible_ ? kCursorVisibleTimeMs : kCursorInvisibleTimeMs);
+      base::TimeDelta::FromMilliseconds(
+          is_cursor_visible_ ? kCursorVisibleTimeMs : kCursorInvisibleTimeMs));
 }
 
 void NativeTextfieldViews::RepaintCursor() {

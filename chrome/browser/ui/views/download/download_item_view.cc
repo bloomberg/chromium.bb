@@ -326,7 +326,7 @@ void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
       FROM_HERE,
       base::Bind(&DownloadItemView::Reenable,
                  weak_ptr_factory_.GetWeakPtr()),
-      kDisabledOnOpenDuration);
+      base::TimeDelta::FromMilliseconds(kDisabledOnOpenDuration));
 
   // Notify our parent.
   parent_->OpenedDownload(this);

@@ -374,7 +374,8 @@ void MultiWindowResizeController::ShowNow() {
   mouse_watcher_.reset(new views::MouseWatcher(
                            new ResizeMouseWatcherHost(this),
                            this));
-  mouse_watcher_->set_notify_on_exit_time_ms(kHideDelayMS);
+  mouse_watcher_->set_notify_on_exit_time(
+      base::TimeDelta::FromMilliseconds(kHideDelayMS));
   mouse_watcher_->Start();
 }
 

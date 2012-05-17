@@ -585,7 +585,7 @@ void FileBrowserEventRouter::OnDeviceAdded(
   notifications_->RegisterDevice(device_path);
   notifications_->ShowNotificationDelayed(FileBrowserNotifications::DEVICE,
                                           device_path,
-                                          5000);
+                                          base::TimeDelta::FromSeconds(5));
 }
 
 void FileBrowserEventRouter::OnDeviceRemoved(
@@ -630,7 +630,9 @@ void FileBrowserEventRouter::OnFormattingFinished(
                                      device_path);
     // Hide it after a couple of seconds.
     notifications_->HideNotificationDelayed(
-        FileBrowserNotifications::FORMAT_SUCCESS, device_path, 4000);
+        FileBrowserNotifications::FORMAT_SUCCESS,
+        device_path,
+        base::TimeDelta::FromSeconds(4));
     // MountPath auto-detects filesystem format if second argument is empty.
     // The third argument (mount label) is not used in a disk mount operation.
     DiskMountManager::GetInstance()->MountPath(device_path, std::string(),

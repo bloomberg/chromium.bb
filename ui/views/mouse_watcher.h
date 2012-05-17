@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/views_export.h"
 
@@ -58,7 +59,9 @@ class VIEWS_EXPORT MouseWatcher {
 
   // Sets the amount to delay before notifying the listener when the mouse exits
   // the host by way of going to another window.
-  void set_notify_on_exit_time_ms(int time) { notify_on_exit_time_ms_ = time; }
+  void set_notify_on_exit_time(base::TimeDelta time) {
+    notify_on_exit_time_ = time;
+  }
 
   // Starts watching mouse movements. When the mouse moves outside the bounds of
   // the host the listener is notified. |Start| may be invoked any number of
@@ -88,7 +91,7 @@ class VIEWS_EXPORT MouseWatcher {
   scoped_ptr<Observer> observer_;
 
   // See description above setter.
-  int notify_on_exit_time_ms_;
+  base::TimeDelta notify_on_exit_time_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseWatcher);
 };

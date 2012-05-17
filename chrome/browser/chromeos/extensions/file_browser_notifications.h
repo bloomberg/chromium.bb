@@ -52,7 +52,7 @@ class FileBrowserNotifications
   void ShowNotification(NotificationType type, const std::string& path);
   void ShowNotificationDelayed(NotificationType type,
                                const std::string& path,
-                               size_t delay_ms);
+                               base::TimeDelta delay);
   virtual void ShowNotificationWithMessage(NotificationType type,
                                            const std::string& path,
                                            const string16& message);
@@ -60,7 +60,7 @@ class FileBrowserNotifications
   virtual void HideNotification(NotificationType type, const std::string& path);
   void HideNotificationDelayed(NotificationType type,
                                const std::string& path,
-                               size_t delay_ms);
+                               base::TimeDelta delay);
 
   const NotificationMap& notifications() const { return notifications_; }
 
@@ -69,15 +69,14 @@ class FileBrowserNotifications
       const std::string& notification_id,
       NotificationType type,
       const string16&  message,
-      size_t delay_ms);
+      base::TimeDelta delay);
   static void ShowNotificationDelayedTask(const std::string& notification_id,
       NotificationType type,
       const string16& message,
       base::WeakPtr<FileBrowserNotifications> self);
 
-  virtual void PostDelayedHideNotificationTask(NotificationType type,
-                                               const std::string  path,
-                                               size_t delay_ms);
+  virtual void PostDelayedHideNotificationTask(
+      NotificationType type, const std::string path, base::TimeDelta delay);
   static void HideNotificationDelayedTask(NotificationType type,
       const std::string& path,
       base::WeakPtr<FileBrowserNotifications> self);

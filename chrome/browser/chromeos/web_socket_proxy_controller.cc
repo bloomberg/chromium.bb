@@ -101,12 +101,12 @@ class ProxyLifetime
         MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&ProxyLifetime::ProxyCallback, base::Unretained(this)),
-            delay_ms_);
+            base::TimeDelta::FromMilliseconds(delay_ms_));
       }
     }
   }
 
-  // Delay between next attempt to run proxy.
+  // Delay in milliseconds between next attempt to run proxy.
   int volatile delay_ms_;
 
   // Proxy listens for incoming websocket connections on this port.

@@ -372,7 +372,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
       base::Bind(&TooltipManagerWin::DestroyKeyboardTooltipWindow,
                  keyboard_tooltip_factory_.GetWeakPtr(),
                  keyboard_tooltip_hwnd_),
-      kDefaultTimeout);
+      base::TimeDelta::FromMilliseconds(kDefaultTimeout));
 }
 
 void TooltipManagerWin::HideKeyboardTooltip() {

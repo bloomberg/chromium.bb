@@ -95,9 +95,9 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
             FROM_HERE,
             base::Bind(&Observer::NotifyListener,
                        notify_listener_factory_.GetWeakPtr()),
-            event_type ==
-                MouseWatcherHost::MOUSE_MOVE ? kNotifyListenerTimeMs :
-                    mouse_watcher_->notify_on_exit_time_ms_);
+            event_type == MouseWatcherHost::MOUSE_MOVE ?
+                base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs) :
+                mouse_watcher_->notify_on_exit_time_);
       }
     } else {
       // Mouse moved quickly out of the host and then into it again, so cancel
@@ -130,7 +130,8 @@ MouseWatcher::MouseWatcher(MouseWatcherHost* host,
                            MouseWatcherListener* listener)
     : host_(host),
       listener_(listener),
-      notify_on_exit_time_ms_(kNotifyListenerTimeMs) {
+      notify_on_exit_time_(base::TimeDelta::FromMilliseconds(
+          kNotifyListenerTimeMs)) {
 }
 
 MouseWatcher::~MouseWatcher() {

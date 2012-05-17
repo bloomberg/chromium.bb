@@ -130,15 +130,15 @@ void FileBrowserNotifications::ShowNotificationWithMessage(
   }
 }
 
-void FileBrowserNotifications::ShowNotificationDelayed(NotificationType type,
-    const std::string& path, size_t delay_ms) {
+void FileBrowserNotifications::ShowNotificationDelayed(
+    NotificationType type, const std::string& path, base::TimeDelta delay) {
   std::string notification_id;
   CreateNotificationId(type, path, &notification_id);
   CreateNotification(notification_id, GetIconId(type), GetTitleId(type));
 
   PostDelayedShowNotificationTask(notification_id, type,
                                   l10n_util::GetStringUTF16(GetMessageId(type)),
-                                  delay_ms);
+                                  delay);
 }
 
 void FileBrowserNotifications::HideNotification(NotificationType type,
@@ -153,19 +153,18 @@ void FileBrowserNotifications::HideNotification(NotificationType type,
   }
 }
 
-void FileBrowserNotifications::HideNotificationDelayed(NotificationType type,
-                                                       const std::string& path,
-                                                       size_t delay_ms) {
-  PostDelayedHideNotificationTask(type, path, delay_ms);
+void FileBrowserNotifications::HideNotificationDelayed(
+    NotificationType type, const std::string& path, base::TimeDelta delay) {
+  PostDelayedHideNotificationTask(type, path, delay);
 }
 
 void FileBrowserNotifications::PostDelayedShowNotificationTask(
     const std::string& notification_id, NotificationType type,
-    const string16&  message, size_t delay_ms) {
+    const string16&  message, base::TimeDelta delay) {
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&ShowNotificationDelayedTask, notification_id, type,
                  message, AsWeakPtr()),
-      delay_ms);
+      delay);
 }
 
 // static
@@ -188,10 +187,10 @@ void FileBrowserNotifications::ShowNotificationDelayedTask(
 }
 
 void FileBrowserNotifications::PostDelayedHideNotificationTask(
-    NotificationType type, const std::string  path, size_t delay_ms) {
+    NotificationType type, const std::string  path, base::TimeDelta delay) {
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&HideNotificationDelayedTask, type, path, AsWeakPtr()),
-      delay_ms);
+      delay);
 }
 
 // static

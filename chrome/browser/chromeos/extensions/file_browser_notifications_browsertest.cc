@@ -30,7 +30,7 @@ class MockFileBrowserNotifications : public FileBrowserNotifications {
       const std::string& notification_id,
       NotificationType type,
       const string16&  message,
-      size_t delay_ms) OVERRIDE {
+      base::TimeDelta delay) OVERRIDE {
     show_callback_data_.id = notification_id;
     show_callback_data_.type = type;
     show_callback_data_.message = message;
@@ -39,7 +39,7 @@ class MockFileBrowserNotifications : public FileBrowserNotifications {
   // Records the notification so we can force it to hide later.
   virtual void PostDelayedHideNotificationTask(NotificationType type,
                                                const std::string  path,
-                                               size_t delay_ms) OVERRIDE {
+                                               base::TimeDelta delay) OVERRIDE {
     hide_callback_data_.type = type;
     hide_callback_data_.path = path;
   }
@@ -168,7 +168,8 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
   InitNotifications();
   // Adding a delayed notification does not show a balloon.
   notifications_->ShowNotificationDelayed(FileBrowserNotifications::DEVICE,
-                                          "path", 3000);
+                                          "path",
+                                          base::TimeDelta::FromSeconds(3));
   EXPECT_EQ(0u, collection_->GetActiveBalloons().size());
 
   // Forcing the show to happen makes the balloon appear.
@@ -180,7 +181,8 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
   // Showing a notification both immediately and delayed results in one
   // additional balloon.
   notifications_->ShowNotificationDelayed(FileBrowserNotifications::DEVICE_FAIL,
-                                          "path", 3000);
+                                          "path",
+                                          base::TimeDelta::FromSeconds(3));
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(2u, collection_->GetActiveBalloons().size());
@@ -197,8 +199,9 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
 
   // If we schedule a show for later, then hide before it becomes visible,
   // the balloon should not be added.
-  notifications_->ShowNotificationDelayed(
-      FileBrowserNotifications::FORMAT_FAIL, "path", 3000);
+  notifications_->ShowNotificationDelayed(FileBrowserNotifications::FORMAT_FAIL,
+                                          "path",
+                                          base::TimeDelta::FromSeconds(3));
   notifications_->HideNotification(FileBrowserNotifications::FORMAT_FAIL,
                                    "path");
   EXPECT_EQ(2u, collection_->GetActiveBalloons().size());
@@ -221,7 +224,8 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
   // Showing now, and scheduling a hide for later, results in one balloon.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
   notifications_->HideNotificationDelayed(FileBrowserNotifications::DEVICE,
-                                          "path", 3000);
+                                          "path",
+                                          base::TimeDelta::FromSeconds(3));
   EXPECT_EQ(1u, collection_->GetActiveBalloons().size());
   EXPECT_TRUE(FindBalloon("Dpath"));
 
@@ -240,7 +244,8 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
 
   // Delayed hide for a notification that doesn't exist does nothing.
   notifications_->HideNotificationDelayed(FileBrowserNotifications::DEVICE_FAIL,
-                                          "path", 3000);
+                                          "path",
+                                          base::TimeDelta::FromSeconds(3));
   notifications_->ExecuteHide();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(0u, collection_->GetActiveBalloons().size());

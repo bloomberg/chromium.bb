@@ -90,7 +90,7 @@ CompositorLock::CompositorLock(RootWindow* root_window)
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CompositorLock::CancelLock, AsWeakPtr()),
-      kCompositorLockTimeoutMs);
+      base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
 }
 
 CompositorLock::~CompositorLock() {

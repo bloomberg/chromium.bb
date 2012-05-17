@@ -1046,12 +1046,11 @@ void BrowserActionsContainer::StopShowFolderDropMenuTimer() {
 }
 
 void BrowserActionsContainer::StartShowFolderDropMenuTimer() {
-  int delay = views::GetMenuShowDelay();
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&BrowserActionsContainer::ShowDropFolder,
                  show_menu_task_factory_.GetWeakPtr()),
-      delay);
+      base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
 }
 
 void BrowserActionsContainer::ShowDropFolder() {

@@ -421,7 +421,7 @@ void ExtensionInstalledBubble::ShowInternal() {
           FROM_HERE,
           base::Bind(&ExtensionInstalledBubble::ShowInternal,
                      base::Unretained(this)),
-          kAnimationWaitTime);
+          base::TimeDelta::FromMilliseconds(kAnimationWaitTime));
       return;
     }
     reference_view = container->GetBrowserActionView(

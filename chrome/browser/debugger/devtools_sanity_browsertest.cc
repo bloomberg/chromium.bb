@@ -561,6 +561,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
 
 #if defined(OS_MACOSX)
 #define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
+#elif defined(OS_WIN)
+#define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
 #elif !defined(NDEBUG)
 // Now fails consistently on Windows and Linux debug, http://crbug.com/115192
 #define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker

@@ -138,10 +138,10 @@ class StatusBubbleViews::StatusView : public views::Label,
   class InitialTimer;
 
   // Manage the timers that control the delay before a fade begins or ends.
-  void StartTimer(int time);
+  void StartTimer(base::TimeDelta time);
   void OnTimer();
   void CancelTimer();
-  void RestartTimer(int delay);
+  void RestartTimer(base::TimeDelta delay);
 
   // Manage the fades and starting and stopping the animations correctly.
   void StartFade(double start, double end, int duration);
@@ -212,7 +212,7 @@ void StatusBubbleViews::StatusView::Hide() {
   stage_ = BUBBLE_HIDDEN;
 }
 
-void StatusBubbleViews::StatusView::StartTimer(int time) {
+void StatusBubbleViews::StatusView::StartTimer(base::TimeDelta time) {
   if (timer_factory_.HasWeakPtrs())
     timer_factory_.InvalidateWeakPtrs();
 
@@ -238,7 +238,7 @@ void StatusBubbleViews::StatusView::CancelTimer() {
     timer_factory_.InvalidateWeakPtrs();
 }
 
-void StatusBubbleViews::StatusView::RestartTimer(int delay) {
+void StatusBubbleViews::StatusView::RestartTimer(base::TimeDelta delay) {
   CancelTimer();
   StartTimer(delay);
 }
@@ -247,7 +247,7 @@ void StatusBubbleViews::StatusView::ResetTimer() {
   if (stage_ == BUBBLE_SHOWING_TIMER) {
     // We hadn't yet begun showing anything when we received a new request
     // for something to show, so we start from scratch.
-    RestartTimer(kShowDelay);
+    RestartTimer(base::TimeDelta::FromMilliseconds(kShowDelay));
   }
 }
 
@@ -265,7 +265,7 @@ void StatusBubbleViews::StatusView::StartFade(double start,
 void StatusBubbleViews::StatusView::StartHiding() {
   if (stage_ == BUBBLE_SHOWN) {
     stage_ = BUBBLE_HIDING_TIMER;
-    StartTimer(kHideDelay);
+    StartTimer(base::TimeDelta::FromMilliseconds(kHideDelay));
   } else if (stage_ == BUBBLE_SHOWING_TIMER) {
     stage_ = BUBBLE_HIDDEN;
     popup_->Hide();
@@ -285,7 +285,7 @@ void StatusBubbleViews::StatusView::StartShowing() {
   if (stage_ == BUBBLE_HIDDEN) {
     popup_->Show();
     stage_ = BUBBLE_SHOWING_TIMER;
-    StartTimer(kShowDelay);
+    StartTimer(base::TimeDelta::FromMilliseconds(kShowDelay));
   } else if (stage_ == BUBBLE_HIDING_TIMER) {
     stage_ = BUBBLE_SHOWN;
     CancelTimer();
@@ -679,7 +679,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
           FROM_HERE,
           base::Bind(&StatusBubbleViews::ExpandBubble,
                      expand_timer_factory_.GetWeakPtr()),
-          kExpandHoverDelay);
+          base::TimeDelta::FromMilliseconds(kExpandHoverDelay));
     }
   }
 }
