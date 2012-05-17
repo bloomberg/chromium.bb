@@ -170,7 +170,7 @@ x11_compositor_init_egl(struct x11_compositor *c)
 	c->dummy_pbuffer = eglCreatePbufferSurface(c->base.display,
 						   c->base.config,
 						   pbuffer_attribs);
-	if (c->base.context == NULL) {
+	if (c->dummy_pbuffer == NULL) {
 		fprintf(stderr, "failed to create dummy pbuffer\n");
 		return -1;
 	}
