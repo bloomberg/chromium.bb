@@ -30,6 +30,7 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/feature.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/manifest.h"
@@ -53,6 +54,7 @@ namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 namespace info_keys = extension_info_keys;
+namespace switch_utils = extensions::switch_utils;
 
 using extensions::csp_validator::ContentSecurityPolicyIsLegal;
 using extensions::csp_validator::ContentSecurityPolicyIsSecure;
@@ -2112,8 +2114,9 @@ bool Extension::LoadPageAction(string16* error) {
       return false;  // Failed to parse page action definition.
     declared_action_type_ = ExtensionAction::TYPE_PAGE;
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserActionsForAll)) {
+    // The action box changes the meaning of the page action area, so we need
+    // to convert page actions into browser actions.
+    if (switch_utils::IsActionBoxEnabled()) {
       browser_action_ = page_action_.Pass();
       // declared_action_type_ stays the same; that's the point.
     }
@@ -2136,22 +2139,6 @@ bool Extension::LoadBrowserAction(string16* error) {
     return false;  // Failed to parse browser action definition.
   declared_action_type_ = ExtensionAction::TYPE_BROWSER;
   return true;
-}
-
-void Extension::GenerateBrowserActionIfPossible() {
-  // It only makes sense to generate brower actions for extensions that are
-  // shown in chrome://extensions.
-  if (!ShouldDisplayInExtensionSettings())
-    return;
-
-  // Hosted and platform apps are shown in extension settings, but we don't
-  // want to generate browser actions for those either, since they can't define
-  // browser actions.
-  if (is_app())
-    return;
-
-  browser_action_.reset(new ExtensionAction(id()));
-  browser_action_->SetTitle(ExtensionAction::kDefaultTabId, name());
 }
 
 bool Extension::LoadFileBrowserHandlers(string16* error) {
@@ -2913,12 +2900,6 @@ bool Extension::InitFromValue(int flags, string16* error) {
 
   if (!LoadThemeFeatures(error))
     return false;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBrowserActionsForAll) &&
-      !browser_action()) {
-    GenerateBrowserActionIfPossible();
-  }
 
   if (HasMultipleUISurfaces()) {
     *error = ASCIIToUTF16(errors::kOneUISurfaceOnly);

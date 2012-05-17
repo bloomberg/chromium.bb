@@ -772,7 +772,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadContentScripts(string16* error);
   bool LoadPageAction(string16* error);
   bool LoadBrowserAction(string16* error);
-  void GenerateBrowserActionIfPossible();
   bool LoadFileBrowserHandlers(string16* error);
   // Helper method to load a FileBrowserHandlerList from the manifest.
   FileBrowserHandlerList* LoadFileBrowserHandlersHelper(

@@ -475,9 +475,6 @@ const char kEnableAutologin[]               = "enable-autologin";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
-// Enables making all extensions have a browser action.
-const char kEnableBrowserActionsForAll[]    = "enable-browser-actions-for-all";
-
 // Enables the bundled PPAPI version of Flash.
 const char kEnableBundledPpapiFlash[]       = "enable-bundled-ppapi-flash";
 

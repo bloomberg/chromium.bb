@@ -5252,12 +5252,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION" desc="Description of the 'Experimental Extension APIs' lab.">
         Enables experimental extension APIs. Note that the extension gallery doesn't allow you to upload extensions that use experimental APIs.
       </message>
-      <message name="IDS_FLAGS_BROWSER_ACTIONS_FOR_ALL_NAME" desc="Name of the 'Browser actions for all extensions' lab.">
-        Browser actions for all extensions
-      </message>
-      <message name="IDS_FLAGS_BROWSER_ACTIONS_FOR_ALL_DESCRIPTION" desc="Description of the 'Browser action for all extensions' lab.">
-        Enables browser actions for all extensions. This generates browser actions for any extensions that don't declare them.
-      </message>
       <message name="IDS_FLAGS_ACTION_BOX_NAME" desc="Name of the 'Action Box' lab.">
         Action box
       </message>

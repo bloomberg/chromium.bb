@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,7 +33,7 @@ class PageAsBrowserActionApiTest : public ExtensionApiTest {
 
   void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableBrowserActionsForAll);
+    command_line->AppendSwitch(switches::kEnableActionBox);
   }
 
  protected:
@@ -46,6 +47,16 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
   ASSERT_TRUE(RunExtensionTest("page_action/basics")) << message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
+
+  // The extension declares a page action, but it should have gotten a browser
+  // action instead.
+  ASSERT_TRUE(extension->browser_action());
+  ASSERT_FALSE(extension->page_action());
+
+  // With the "action box" there won't be browser actions unless they're pinned.
+  ExtensionPrefs* prefs =
+      browser()->profile()->GetExtensionService()->extension_prefs();
+  prefs->SetBrowserActionVisibility(extension, true);
 
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());

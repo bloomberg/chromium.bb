@@ -138,7 +138,6 @@ extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutofillFeedback[];
 extern const char kEnableAutologin[];
 extern const char kEnableBenchmarking[];
-extern const char kEnableBrowserActionsForAll[];
 extern const char kEnableBundledPpapiFlash[];
 extern const char kEnableClientOAuthSignin[];
 extern const char kEnableChromeToMobile[];
