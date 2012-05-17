@@ -167,6 +167,22 @@ def IsPackageDisabled(target, package):
   """Returns if the given package is not used for the target."""
   return GetDesiredPackageVersions(target, package) == [PACKAGE_NONE]
 
+
+def GetTuplesForOverlays(overlays):
+  """Returns a set of tuples for a given set of overlays."""
+  tuples = set()
+
+  for overlay in overlays:
+    config = os.path.join(overlay, 'toolchain.conf')
+    if os.path.exists(config):
+      for line in osutils.ReadFile(config).splitlines():
+        # Split by hash sign so that comments are ignored
+        line = line.split('#', 1)[0]
+        tuples.update(line.split())
+
+  return tuples
+
+
 # Tree interface functions. They help with retrieving data about the current
 # state of the tree:
 def GetAllTargets():
@@ -177,17 +193,24 @@ def GetAllTargets():
   cmd = [CROS_OVERLAY_LIST_CMD, '--all_boards']
   overlays = cros_build_lib.RunCommand(cmd, print_cmd=False,
                                        redirect_stdout=True).output.splitlines()
-  targets = set()
-  for overlay in overlays:
-    config = os.path.join(overlay, 'toolchain.conf')
-    if os.path.exists(config):
-      for line in osutils.ReadFile(config).splitlines():
-        line = line.split('#', 1)[0]
-        targets.update(line.split())
+
+  targets = GetTuplesForOverlays(overlays)
 
   # Remove the host target as that is not a cross-target. Replace with 'host'.
   targets.discard(GetHostTuple())
   return targets
+
+
+def GetToolchainsForBoard(board):
+  """Get a list of toolchain tuples for a given board name
+
+  returns the list of toolchain tuples for the given board
+  """
+  cmd = [CROS_OVERLAY_LIST_CMD, '--board=' + board]
+  overlays = cros_build_lib.RunCommand(
+      cmd, print_cmd=False, redirect_stdout=True).output.splitlines()
+
+  return GetTuplesForOverlays(overlays)
 
 
 def GetInstalledPackageVersions(target, package):
@@ -588,10 +611,13 @@ def main(argv):
                     dest='targets', default='all',
                     help=('Comma separated list of tuples. '
                           'Special keyword \'host\' is allowed. Default: all.'))
-  parser.add_option('', '--hostonly',
+  parser.add_option('--hostonly',
                     dest='hostonly', default=False, action='store_true',
                     help=('Only setup the host toolchain. '
                           'Useful for bootstrapping chroot.'))
+  parser.add_option('--show-board-cfg',
+                    dest='board_cfg', default=None,
+                    help=('Board to list toolchain tuples for'))
 
   (options, _remaining_arguments) = parser.parse_args(argv)
 
@@ -599,6 +625,10 @@ def main(argv):
   if not os.getuid() == 0:
     print "%s: This script must be run as root!" % sys.argv[0]
     sys.exit(1)
+
+  if options.board_cfg:
+    print ','.join(GetToolchainsForBoard(options.board_cfg))
+    return 0
 
   targets = set(options.targets.split(','))
   UpdateToolchains(options.usepkg, options.deleteold, options.hostonly, targets)
