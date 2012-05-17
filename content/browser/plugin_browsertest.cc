@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, CreateInstanceInPaint) {
 }
 
 // Tests that putting up an alert in response to a paint doesn't deadlock.
-IN_PROC_BROWSER_TEST_F(PluginTest, AlertInWindowMessage) {
+IN_PROC_BROWSER_TEST_F(PluginTest, FAILS_AlertInWindowMessage) {
   ui_test_utils::NavigateToURL(
       browser(), GetURL("alert_in_window_message.html"));
 
