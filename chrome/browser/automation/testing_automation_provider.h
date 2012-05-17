@@ -93,11 +93,8 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // IPC Message callbacks.
   void CloseBrowser(int handle, IPC::Message* reply_message);
-  void CloseBrowserAsync(int browser_handle);
   void ActivateTab(int handle, int at_index, int* status);
   void AppendTab(int handle, const GURL& url, IPC::Message* reply_message);
-  void AppendBackgroundTab(int handle, const GURL& url,
-                           IPC::Message* reply_message);
   void GetMachPortCount(int* port_count);
   void GetActiveTabIndex(int handle, int* active_tab_index);
   void CloseTab(int tab_handle, bool wait_until_closed,
@@ -108,16 +105,10 @@ class TestingAutomationProvider : public AutomationProvider,
                  const std::string& value,
                  int handle,
                  int* response_value);
-  void DeleteCookie(const GURL& url, const std::string& cookie_name,
-                    int handle, bool* success);
   void NavigateToURLBlockUntilNavigationsComplete(int handle, const GURL& url,
                                                   int number_of_navigations,
                                                   IPC::Message* reply_message);
   void NavigationAsync(int handle, const GURL& url, bool* status);
-  void NavigationAsyncWithDisposition(int handle,
-                                      const GURL& url,
-                                      WindowOpenDisposition disposition,
-                                      bool* status);
   void Reload(int handle, IPC::Message* reply_message);
   void GetRedirectsFrom(int tab_handle,
                         const GURL& source_url,
@@ -128,25 +119,15 @@ class TestingAutomationProvider : public AutomationProvider,
   // or in incognito mode.
   void GetBrowserWindow(int index, int* handle);
   void FindTabbedBrowserWindow(int* handle);
-  void GetLastActiveBrowserWindow(int* handle);
   void GetActiveWindow(int* handle);
   void ExecuteBrowserCommandAsync(int handle, int command, bool* success);
   void ExecuteBrowserCommand(int handle, int command,
                              IPC::Message* reply_message);
-  void GetBrowserLocale(string16* locale);
-  void IsWindowActive(int handle, bool* success, bool* is_active);
-  void ActivateWindow(int handle);
-  void IsWindowMaximized(int handle, bool* is_maximized, bool* success);
   void TerminateSession(int handle, bool* success);
   void WindowGetViewBounds(int handle, int view_id, bool screen_coordinates,
                            bool* success, gfx::Rect* bounds);
-  void GetWindowBounds(int handle, gfx::Rect* bounds, bool* result);
   void SetWindowBounds(int handle, const gfx::Rect& bounds, bool* result);
   void SetWindowVisible(int handle, bool visible, bool* result);
-  void WindowSimulateClick(const IPC::Message& message,
-                           int handle,
-                           const gfx::Point& click,
-                           int flags);
   void WindowSimulateMouseMove(const IPC::Message& message,
                                int handle,
                                const gfx::Point& location);
@@ -156,27 +137,15 @@ class TestingAutomationProvider : public AutomationProvider,
                               int flags);
   void GetTabCount(int handle, int* tab_count);
   void GetType(int handle, int* type_as_int);
-  void IsBrowserInApplicationMode(int handle,
-                                  bool* is_application,
-                                  bool* success);
   void GetTab(int win_handle, int tab_index, int* tab_handle);
-  void GetTabProcessID(int handle, int* process_id);
   void GetTabTitle(int handle, int* title_string_size, std::wstring* title);
   void GetTabIndex(int handle, int* tabstrip_index);
   void GetTabURL(int handle, bool* success, GURL* url);
   void GetShelfVisibility(int handle, bool* visible);
-  void IsFullscreen(int handle, bool* is_fullscreen);
-  void GetFullscreenBubbleVisibility(int handle, bool* is_visible);
-
   void ExecuteJavascript(int handle,
                          const std::wstring& frame_xpath,
                          const std::wstring& script,
                          IPC::Message* reply_message);
-
-  void HandleInspectElementRequest(int handle,
-                                   int x,
-                                   int y,
-                                   IPC::Message* reply_message);
 
   void GetDownloadDirectory(int handle, FilePath* download_directory);
 
@@ -187,13 +156,6 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Retrieves a Browser from a Window and vice-versa.
   void GetWindowForBrowser(int window_handle, bool* success, int* handle);
-  void GetBrowserForWindow(int window_handle, bool* success,
-                           int* browser_handle);
-
-  void ShowInterstitialPage(int tab_handle,
-                            const std::string& html_text,
-                            IPC::Message* reply_message);
-  void HideInterstitialPage(int tab_handle, bool* success);
 
   void WaitForTabToBeRestored(int tab_handle, IPC::Message* reply_message);
 
@@ -227,22 +189,12 @@ class TestingAutomationProvider : public AutomationProvider,
                             int message_num,
                             bool* menu_item_enabled);
 
-  // Save the current web page.
-  void SavePage(int tab_handle,
-                const FilePath& file_name,
-                const FilePath& dir_path,
-                int type,
-                bool* success);
-
   // Responds to requests to open the FindInPage window.
   void HandleOpenFindInPageRequest(const IPC::Message& message,
                                    int handle);
 
   // Get the visibility state of the Find window.
   void GetFindWindowVisibility(int handle, bool* visible);
-
-  // Responds to requests to find the location of the Find window.
-  void HandleFindWindowLocationRequest(int handle, int* x, int* y);
 
   // Get the visibility state of the Bookmark bar.
   void GetBookmarkBarVisibility(
@@ -280,57 +232,8 @@ class TestingAutomationProvider : public AutomationProvider,
                       int64 id,
                       bool* success);
 
-  // Retrieves the number of info-bars currently showing in |count|.
-  void GetInfoBarCount(int handle, size_t* count);
-
-  // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
-  // If |wait_for_navigation| is true, it sends the reply after a navigation has
-  // occurred.
-  void ClickInfoBarAccept(int handle,
-                          size_t info_bar_index,
-                          bool wait_for_navigation,
-                          IPC::Message* reply_message);
-
-  // Retrieves the last time a navigation occurred for the tab.
-  void GetLastNavigationTime(int handle, int64* last_navigation_time);
-
-  // Waits for a new navigation in the tab if none has happened since
-  // |last_navigation_time|.
-  void WaitForNavigation(int handle,
-                         int64 last_navigation_time,
-                         IPC::Message* reply_message);
-
-  // Sets the int value for preference with name |name|.
-  void SetIntPreference(int handle,
-                        const std::string& name,
-                        int value,
-                        bool* success);
-
-  // Sets the string value for preference with name |name|.
-  void SetStringPreference(int handle,
-                           const std::string& name,
-                           const std::string& value,
-                           bool* success);
-
-  // Gets the bool value for preference with name |name|.
-  void GetBooleanPreference(int handle,
-                            const std::string& name,
-                            bool* success,
-                            bool* value);
-
-  // Sets the bool value for preference with name |name|.
-  void SetBooleanPreference(int handle,
-                            const std::string& name,
-                            bool value,
-                            bool* success);
-
-  void GetShowingAppModalDialog(bool* showing_dialog, int* dialog_button);
-  void ClickAppModalDialogButton(int button, bool* success);
-
   void WaitForBrowserWindowCountToBecome(int target_count,
                                          IPC::Message* reply_message);
-
-  void WaitForAppModalDialogToBeShown(IPC::Message* reply_message);
 
   void GoBackBlockUntilNavigationsComplete(int handle,
                                            int number_of_navigations,
@@ -340,12 +243,7 @@ class TestingAutomationProvider : public AutomationProvider,
                                               int number_of_navigations,
                                               IPC::Message* reply_message);
 
-  void GetWindowTitle(int handle, string16* text);
-
   void SetShelfVisibility(int handle, bool visible);
-
-  // Returns the number of blocked popups in the tab |handle|.
-  void GetBlockedPopupCount(int handle, int* count);
 
   // Generic pattern for pyautolib
   // Uses the JSON interface for input/output.
@@ -1560,25 +1458,10 @@ class TestingAutomationProvider : public AutomationProvider,
                            size_t target_count,
                            IPC::Message* reply_message);
 
-  // Gets the current used encoding name of the page in the specified tab.
-  void GetPageCurrentEncoding(int tab_handle, std::string* current_encoding);
-
-  void ShutdownSessionService(int handle, bool* result);
-
-  void SetContentSetting(int handle,
-                         const std::string& host,
-                         ContentSettingsType content_type,
-                         ContentSetting setting,
-                         bool* success);
-
   // Resets to the default theme.
   void ResetToDefaultTheme();
 
   void WaitForProcessLauncherThreadToGoIdle(IPC::Message* reply_message);
-
-  // Gets the browser that contains the given tab.
-  void GetParentBrowserOfTab(
-      int tab_handle, int* browser_handle, bool* success);
 
   void OnRemoveProvider();  // Called via PostTask
 

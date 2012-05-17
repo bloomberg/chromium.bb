@@ -485,24 +485,6 @@ class BrowserCountChangeNotificationObserver
   DISALLOW_COPY_AND_ASSIGN(BrowserCountChangeNotificationObserver);
 };
 
-class AppModalDialogShownObserver : public content::NotificationObserver {
- public:
-  AppModalDialogShownObserver(AutomationProvider* automation,
-                              IPC::Message* reply_message);
-  virtual ~AppModalDialogShownObserver();
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
-
- private:
-  content::NotificationRegistrar registrar_;
-  base::WeakPtr<AutomationProvider> automation_;
-  scoped_ptr<IPC::Message> reply_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppModalDialogShownObserver);
-};
-
 class ExecuteBrowserCommandObserver : public content::NotificationObserver {
  public:
   virtual ~ExecuteBrowserCommandObserver();

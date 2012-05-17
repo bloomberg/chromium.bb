@@ -24,30 +24,6 @@ TabProxy::TabProxy(AutomationMessageSender* sender,
     : AutomationResourceProxy(tracker, sender, handle) {
 }
 
-scoped_refptr<BrowserProxy> TabProxy::GetParentBrowser() const {
-  if (!is_valid())
-    return NULL;
-
-  int browser_handle = 0;
-  bool success = false;
-  sender_->Send(new AutomationMsg_GetParentBrowserOfTab(
-      handle_, &browser_handle, &success));
-  if (!success)
-    return NULL;
-
-  BrowserProxy* browser = static_cast<BrowserProxy*>(
-      tracker_->GetResource(browser_handle));
-  if (!browser) {
-    browser = new BrowserProxy(sender_, tracker_, browser_handle);
-    browser->AddRef();
-  }
-
-  // Since there is no scoped_refptr::attach.
-  scoped_refptr<BrowserProxy> result;
-  result.swap(&browser);
-  return result;
-}
-
 bool TabProxy::GetTabTitle(std::wstring* title) const {
   if (!is_valid())
     return false;
@@ -191,32 +167,6 @@ bool TabProxy::NavigateToURLAsync(const GURL& url) {
   return status;
 }
 
-bool TabProxy::NavigateToURLAsyncWithDisposition(
-    const GURL& url,
-    WindowOpenDisposition disposition) {
-  if (!is_valid())
-    return false;
-
-  bool status = false;
-  sender_->Send(new AutomationMsg_NavigationAsyncWithDisposition(handle_,
-                                                                 url,
-                                                                 disposition,
-                                                                 &status));
-  return status;
-}
-
-bool TabProxy::GetProcessID(int* process_id) const {
-  if (!is_valid())
-    return false;
-
-  if (!process_id) {
-    NOTREACHED();
-    return false;
-  }
-
-  return sender_->Send(new AutomationMsg_TabProcessID(handle_, process_id));
-}
-
 bool TabProxy::ExecuteAndExtractString(const std::wstring& frame_xpath,
                                        const std::wstring& jscript,
                                        std::wstring* string_value) {
@@ -307,36 +257,6 @@ DOMElementProxyRef TabProxy::GetDOMDocument() {
   return GetObjectProxy<DOMElementProxy>(element_handle);
 }
 
-bool TabProxy::GetBlockedPopupCount(int* count) const {
-  if (!is_valid())
-    return false;
-
-  if (!count) {
-    NOTREACHED();
-    return false;
-  }
-
-  return sender_->Send(new AutomationMsg_BlockedPopupCount(
-      handle_, count));
-}
-
-bool TabProxy::WaitForBlockedPopupCountToChangeTo(int target_count,
-                                                  int wait_timeout) {
-  int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
-  for (int i = 0; i < intervals; ++i) {
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMilliseconds(automation::kSleepTime));
-    int new_count = -1;
-    bool succeeded = GetBlockedPopupCount(&new_count);
-    if (!succeeded)
-      return false;
-    if (target_count == new_count)
-      return true;
-  }
-  // Constrained Window count did not change, return false.
-  return false;
-}
-
 bool TabProxy::GetCookies(const GURL& url, std::string* cookies) {
   if (!is_valid())
     return false;
@@ -371,22 +291,6 @@ bool TabProxy::SetCookie(const GURL& url, const std::string& value) {
                                                    &response_value));
 }
 
-bool TabProxy::DeleteCookie(const GURL& url, const std::string& name) {
-  bool succeeded;
-  sender_->Send(new AutomationMsg_DeleteCookie(url, name, handle_,
-                                               &succeeded));
-  return succeeded;
-}
-
-int TabProxy::InspectElement(int x, int y) {
-  if (!is_valid())
-    return -1;
-
-  int ret = -1;
-  sender_->Send(new AutomationMsg_InspectElement(handle_, x, y, &ret));
-  return ret;
-}
-
 bool TabProxy::GetDownloadDirectory(FilePath* directory) {
   DCHECK(directory);
   if (!is_valid())
@@ -394,29 +298,6 @@ bool TabProxy::GetDownloadDirectory(FilePath* directory) {
 
   return sender_->Send(new AutomationMsg_DownloadDirectory(handle_,
                                                            directory));
-}
-
-bool TabProxy::ShowInterstitialPage(const std::string& html_text) {
-  if (!is_valid())
-    return false;
-
-  AutomationMsg_NavigationResponseValues result =
-      AUTOMATION_MSG_NAVIGATION_ERROR;
-  if (!sender_->Send(new AutomationMsg_ShowInterstitialPage(
-                         handle_, html_text, &result))) {
-    return false;
-  }
-
-  return result == AUTOMATION_MSG_NAVIGATION_SUCCESS;
-}
-
-bool TabProxy::HideInterstitialPage() {
-  if (!is_valid())
-    return false;
-
-  bool result = false;
-  sender_->Send(new AutomationMsg_HideInterstitialPage(handle_, &result));
-  return result;
 }
 
 bool TabProxy::Close() {
@@ -543,26 +424,6 @@ bool TabProxy::PrintAsync() {
   return sender_->Send(new AutomationMsg_PrintAsync(handle_));
 }
 
-bool TabProxy::SavePage(const FilePath& file_name,
-                        const FilePath& dir_path,
-                        content::SavePageType type) {
-  if (!is_valid())
-    return false;
-
-  bool succeeded = false;
-  sender_->Send(new AutomationMsg_SavePage(handle_, file_name, dir_path,
-                                           static_cast<int>(type),
-                                           &succeeded));
-  return succeeded;
-}
-
-bool TabProxy::GetInfoBarCount(size_t* count) {
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(new AutomationMsg_GetInfoBarCount(handle_, count));
-}
-
 bool TabProxy::WaitForInfoBarCount(size_t target_count) {
   if (!is_valid())
     return false;
@@ -570,51 +431,6 @@ bool TabProxy::WaitForInfoBarCount(size_t target_count) {
   bool success = false;
   return sender_->Send(new AutomationMsg_WaitForInfoBarCount(
       handle_, target_count, &success)) && success;
-}
-
-bool TabProxy::ClickInfoBarAccept(size_t info_bar_index,
-                                  bool wait_for_navigation) {
-  if (!is_valid())
-    return false;
-
-  AutomationMsg_NavigationResponseValues result =
-      AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_ClickInfoBarAccept(
-      handle_, info_bar_index, wait_for_navigation, &result));
-  return result == AUTOMATION_MSG_NAVIGATION_SUCCESS ||
-      result == AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED;
-}
-
-bool TabProxy::GetLastNavigationTime(int64* nav_time) {
-  if (!is_valid())
-    return false;
-
-  bool success = false;
-  success = sender_->Send(new AutomationMsg_GetLastNavigationTime(
-      handle_, nav_time));
-  return success;
-}
-
-bool TabProxy::WaitForNavigation(int64 last_navigation_time) {
-  if (!is_valid())
-    return false;
-
-  AutomationMsg_NavigationResponseValues result =
-      AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_WaitForNavigation(handle_,
-                                                    last_navigation_time,
-                                                    &result));
-  return result == AUTOMATION_MSG_NAVIGATION_SUCCESS ||
-      result == AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED;
-}
-
-bool TabProxy::GetPageCurrentEncoding(std::string* encoding) {
-  if (!is_valid())
-    return false;
-
-  bool succeeded = sender_->Send(
-      new AutomationMsg_GetPageCurrentEncoding(handle_, encoding));
-  return succeeded;
 }
 
 bool TabProxy::OverrideEncoding(const std::string& encoding) {

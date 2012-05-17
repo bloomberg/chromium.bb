@@ -51,9 +51,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // Returns true if successful.
   bool AppendTab(const GURL& tab_url) WARN_UNUSED_RESULT;
 
-  // Appends a new tab in the background (as if middle-clicking).
-  bool AppendBackgroundTab(const GURL& tab_url) WARN_UNUSED_RESULT;
-
   // Gets the (zero-based) index of the currently active tab. Returns true if
   // successful.
   bool GetActiveTabIndex(int* active_tab_index) const WARN_UNUSED_RESULT;
@@ -65,10 +62,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // Returns the type of the given window. Returns true if the call was
   // successful.
   bool GetType(Browser::Type* type) const WARN_UNUSED_RESULT;
-
-  // Sets |is_application| to whether the browser is currently in application
-  // mode.
-  bool IsApplication(bool* is_application) WARN_UNUSED_RESULT;
 
   // Returns the TabProxy for the tab at the given index, transferring
   // ownership of the pointer to the caller. On failure, returns NULL.
@@ -119,10 +112,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // Opens the FindInPage box. Note: If you just want to search within a tab
   // you don't need to call this function, just use FindInPage(...) directly.
   bool OpenFindInPage() WARN_UNUSED_RESULT;
-
-  // Get the x, y coordinates for the Find window. If animating, |x| and |y|
-  // will be -1, -1. Returns false on failure.
-  bool GetFindWindowLocation(int* x, int* y) WARN_UNUSED_RESULT;
 
   // Returns whether the Find window is fully visible If animating, |is_visible|
   // will be false. Returns false on failure.
@@ -177,44 +166,9 @@ class BrowserProxy : public AutomationResourceProxy {
   // Shows or hides the download shelf.
   bool SetShelfVisible(bool is_visible) WARN_UNUSED_RESULT;
 
-  // Sets the int value of the specified preference.
-  bool SetIntPreference(const std::string& name, int value) WARN_UNUSED_RESULT;
-
-  // Sets the string value of the specified preference.
-  bool SetStringPreference(const std::string& name,
-                           const std::string& value) WARN_UNUSED_RESULT;
-
-  // Gets the boolean value of the specified preference.
-  bool GetBooleanPreference(const std::string& name,
-                            bool* value) WARN_UNUSED_RESULT;
-
-  // Sets the boolean value of the specified preference.
-  bool SetBooleanPreference(const std::string& name,
-                            bool value) WARN_UNUSED_RESULT;
-
-  // Sets default content settings.
-  bool SetDefaultContentSetting(ContentSettingsType content_type,
-                                ContentSetting setting) WARN_UNUSED_RESULT;
-
-  // Sets content settings for a particular host (overriding the default).
-  bool SetContentSetting(const std::string& host,
-                         ContentSettingsType content_type,
-                         ContentSetting setting) WARN_UNUSED_RESULT;
-
   // Simulates a termination the browser session (as if the user logged off the
   // mahine).
   bool TerminateSession() WARN_UNUSED_RESULT;
-
-  // Sets |is_fullscreen| to whether the browser is currently in fullscreen
-  // mode.
-  bool IsFullscreen(bool* is_fullscreen) WARN_UNUSED_RESULT;
-
-  // Sets |is_visible| to whether the browser's fullscreen bubble is visible.
-  bool IsFullscreenBubbleVisible(bool* is_visible) WARN_UNUSED_RESULT;
-
-  // Shuts down the session service for the browser's profile. Returns true
-  // on success.
-  bool ShutdownSessionService() WARN_UNUSED_RESULT;
 
   // Generic pattern for sending automation requests.
   bool SendJSONRequest(const std::string& request,

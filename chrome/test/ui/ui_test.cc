@@ -419,11 +419,6 @@ const FilePath::CharType* UITestBase::GetExecutablePath() {
   return chrome::kBrowserProcessExecutablePath;
 }
 
-void UITestBase::CloseBrowserAsync(BrowserProxy* browser) const {
-  ASSERT_TRUE(automation()->Send(
-      new AutomationMsg_CloseBrowserRequestAsync(browser->handle())));
-}
-
 bool UITestBase::CloseBrowser(BrowserProxy* browser,
                               bool* application_closed) const {
   DCHECK(application_closed);
@@ -668,14 +663,6 @@ std::string UITest::WaitUntilCookieNonEmpty(TabProxy* tab,
   return std::string();
 }
 
-bool UITest::WaitForDownloadShelfVisible(BrowserProxy* browser) {
-  return WaitForDownloadShelfVisibilityChange(browser, true);
-}
-
-bool UITest::WaitForDownloadShelfInvisible(BrowserProxy* browser) {
-  return WaitForDownloadShelfVisibilityChange(browser, false);
-}
-
 bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
                                                bool wait_for_open) {
   const int kCycles = 10;
@@ -720,42 +707,3 @@ void UITest::TerminateBrowser() {
   ASSERT_TRUE(exited_cleanly);
 }
 
-void UITest::NavigateToURLAsync(const GURL& url) {
-  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-  ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->NavigateToURLAsync(url));
-}
-
-bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
-                                                  bool wait_for_open) {
-  const int kCycles = 10;
-  const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
-  int fail_count = 0;
-  int incorrect_state_count = 0;
-  base::Time start = base::Time::Now();
-  for (int i = 0; i < kCycles; i++) {
-    bool visible = !wait_for_open;
-    if (!browser->IsShelfVisible(&visible)) {
-      fail_count++;
-      continue;
-    }
-    if (visible == wait_for_open) {
-      LOG(INFO) << "Elapsed time: " << (base::Time::Now() - start).InSecondsF()
-                << " seconds"
-                << " call failed " << fail_count << " times"
-                << " state was incorrect " << incorrect_state_count << " times";
-      return true;  // Got the download shelf.
-    }
-    incorrect_state_count++;
-
-    // Give it a chance to catch up.
-    base::PlatformThread::Sleep(kDelay);
-  }
-
-  LOG(INFO) << "Elapsed time: " << (base::Time::Now() - start).InSecondsF()
-            << " seconds"
-            << " call failed " << fail_count << " times"
-            << " state was incorrect " << incorrect_state_count << " times";
-  ADD_FAILURE() << "Timeout reached in " << __FUNCTION__;
-  return false;
-}

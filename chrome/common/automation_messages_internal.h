@@ -209,7 +209,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_ShelfVisibility,
 // This message requests the number of constrained windows in the tab with
 // the given handle.  The return value contains the number of constrained
 // windows, or -1 if the request failed.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_ConstrainedWindowCount,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_ConstrainedWindowCount,
                             int /* tab_handle */,
                             int /* constrained_window_count */)
 
@@ -268,7 +268,7 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_InitialNewTabUILoadComplete,
 
 // This message sends a inspect element request for a given tab. The response
 // contains the number of resources loaded by the inspector controller.
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_InspectElement,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_InspectElement,
                             int, /* tab_handle */
                             int, /* x */
                             int  /* y */,
@@ -278,7 +278,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_InspectElement,
 // to the given automation handle.
 // The return value has an integer corresponding to the PID of the tab's
 // renderer, 0 if the tab currently has no renderer process, or -1 on error.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_TabProcessID,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_TabProcessID,
                             int /* tab_handle */,
                             int /* process ID */)
 
@@ -299,19 +299,19 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_GetFocusedViewID,
                             int /* focused_view_id */)
 
 // This message shows/hides the window.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_SetWindowVisible,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_SetWindowVisible,
                             int /* view_handle */,
                             bool /* visible */,
                             bool /* success */)
 
 // Gets the active status of a window.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_IsWindowActive,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_IsWindowActive,
                             int /* view_handle */,
                             bool /* success */,
                             bool /* active */)
 
 // Makes the specified window the active window.
-IPC_SYNC_MESSAGE_CONTROL1_0(AutomationMsg_ActivateWindow,
+IPC_SYNC_MESSAGE_CONTROL1_0(AutomationMsg_DEPRECATED_ActivateWindow,
                             int /* view_handle */)
 
 // Opens a new browser window.
@@ -328,7 +328,7 @@ IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_ActiveWindow,
 // This message requests the browser associated with the specified window
 // handle.
 // The return value contains a success flag and the handle of the browser.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_BrowserForWindow,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_BrowserForWindow,
                             int /* window handle */,
                             bool /* success flag */,
                             int /* browser handle */)
@@ -356,7 +356,7 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_AutocompleteEditForBrowser,
 //   gfx::Point - the point to click
 //   int - the flags which identify the mouse button(s) for the click, as
 //       defined in chrome/views/event.h
-IPC_MESSAGE_CONTROL3(AutomationMsg_WindowClick,
+IPC_MESSAGE_CONTROL3(AutomationMsg_DEPRECATED_WindowClick,
                      int,
                      gfx::Point,
                      int)
@@ -421,7 +421,7 @@ IPC_MESSAGE_ROUTED1(AutomationMsg_UpdateTargetUrl,
 // parameter is the handle to the tab resource. The second parameter is the
 // html text to be displayed.
 // The return value contains a success flag.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_ShowInterstitialPage,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_ShowInterstitialPage,
                             int,
                             std::string,
                             AutomationMsg_NavigationResponseValues)
@@ -430,7 +430,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_ShowInterstitialPage,
 // interstitial page in the tab with given handle. The parameter is the
 // handle to the tab resource.
 // The return value contains a success flag.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_HideInterstitialPage,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_HideInterstitialPage,
                             int,
                             bool)
 
@@ -456,7 +456,7 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_CloseBrowser,
                             bool,
                             bool)
 
-IPC_MESSAGE_CONTROL1(AutomationMsg_CloseBrowserRequestAsync,
+IPC_MESSAGE_CONTROL1(AutomationMsg_DEPRECATED_CloseBrowserRequestAsync,
                      int)
 
 #if defined(OS_WIN)
@@ -631,7 +631,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_Reload,
 // last active browser window, or the browser at index 0 if there is no last
 // active browser, or it no longer exists. Returns 0 if no browser windows
 // exist.
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_LastActiveBrowserWindow,
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DEPRECATED_LastActiveBrowserWindow,
                             int)
 
 // This message notifies the AutomationProvider to save the page with given
@@ -640,7 +640,7 @@ IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_LastActiveBrowserWindow,
 // for saving resources. The fourth parameter is the saving type: 0 for HTML
 // only; 1 for complete web page.
 // The return value contains a bool which is true on success.
-IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_SavePage,
+IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_DEPRECATED_SavePage,
                             int,
                             FilePath,
                             FilePath,
@@ -739,7 +739,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_FindWindowVisibility,
                             bool /* is_visible */)
 
 // Where is the Find window located. |x| and |y| will be -1, -1 on failure.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_FindWindowLocation,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_FindWindowLocation,
                             int /* tab_handle */,
                             int /* x */,
                             int /* y */)
@@ -753,14 +753,14 @@ IPC_SYNC_MESSAGE_CONTROL1_3(AutomationMsg_BookmarkBarVisibility,
 
 // This message requests the number of related info bars opened.  It
 // returns -1 if an error occurred.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_GetInfoBarCount,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_GetInfoBarCount,
                             int /* tab_handle */,
                             size_t /* info bar count */)
 
 // This message triggers the action associated with the "accept" button in
 // the info-bar at the specified index.  If |wait for navigation| is true, it
 // won't return until a navigation has occurred.
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_ClickInfoBarAccept,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_ClickInfoBarAccept,
                             int /* tab_handle */,
                             size_t /* info bar index */,
                             bool /* wait for navigation */,
@@ -770,13 +770,13 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_ClickInfoBarAccept,
 
 // This message retrieves the last time a navigation occurred in the specified
 // tab.  The value is intended to be used with WaitForNavigation.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_GetLastNavigationTime,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_GetLastNavigationTime,
                             int /* tab_handle */,
                             int64 /* last navigation time */)
 
 // This messages is used to block until a new navigation occurs (if there is
 // none more recent then the time specified).
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WaitForNavigation,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_WaitForNavigation,
                             int /* tab_handle */,
                             int64 /* last navigation time */,
 // (intentionally blank line), see comment atop file about __LINE__.
@@ -784,7 +784,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_WaitForNavigation,
                             AutomationMsg_NavigationResponseValues)
 
 // This messages sets an int-value preference.
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetIntPreference,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_SetIntPreference,
                             int /* browser handle */,
                             std::string /* pref name */,
                             int /* value */,
@@ -792,32 +792,32 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetIntPreference,
 
 // Queries whether an app modal dialog is currently being shown. (i.e. a
 // javascript alert) and which buttons it contains.
-IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_ShowingAppModalDialog,
+IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_DEPRECATED_ShowingAppModalDialog,
                             bool /* showing dialog */,
                             int /* view::DelegateDialog::DialogButton */)
 
 // This message triggers the specified button for the currently showing
 // modal dialog.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_ClickAppModalDialogButton,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_ClickAppModalDialogButton,
                             int /* view::DelegateDialog::DialogButton */,
                             bool /* success */)
 
 // This messages sets a string-value preference.
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetStringPreference,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_SetStringPreference,
                             int /* browser handle */,
                             std::string /* pref name */,
                             std::string /* pref value */,
                             bool)
 
 // This messages gets a boolean-value preference.
-IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_GetBooleanPreference,
+IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_DEPRECATED_GetBooleanPreference,
                            int /* browser handle */,
                            std::string /* pref name */,
                            bool /* success */,
                            bool /* pref value */)
 
 // This messages sets a boolean-value preference.
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetBooleanPreference,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_SetBooleanPreference,
                             int /* browser handle */,
                             std::string /* pref name */,
                             bool /* pref value */,
@@ -825,7 +825,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetBooleanPreference,
 
 // Queries the current used encoding name of the page in the specified
 // web content tab.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_GetPageCurrentEncoding,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_GetPageCurrentEncoding,
                             int /* tab handle */,
                             std::string /* current used encoding name */)
 
@@ -861,7 +861,7 @@ IPC_MESSAGE_CONTROL2(AutomationMsg_TabReposition,
 #endif  // defined(OS_WIN)
 
 // Gets the title of the top level browser window.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_WindowTitle,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_WindowTitle,
                             int /* automation handle */,
                             string16 /* title text */ )
 
@@ -892,7 +892,7 @@ IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_NormalBrowserWindowCount,
 // TODO(phajdan.jr): Remove when the reference build is updated (this and
 // all others marked "DEPRECATED MESSAGE").
 // (intentionally blank line)
-IPC_MESSAGE_CONTROL2(AutomationMsg_DeprecatedMessageOne,
+IPC_MESSAGE_CONTROL2(AutomationMsg_DEPRECATED_MessageOne,
                      // (intentionally blank line)
                      int,
                      // (intentionally blank line)
@@ -915,14 +915,14 @@ IPC_SYNC_MESSAGE_CONTROL2_0(AutomationMsg_SetShelfVisibility,
 // This message requests the number of blocked popups in a certain tab with
 // the given handle. The return value is the number of blocked popups, or -1
 // if this request failed.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_BlockedPopupCount,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_BlockedPopupCount,
                             int /* tab_handle */,
                             int /* blocked_popup_count */)
 
 // This message retrieves the locale of the browser process.  On success
 // |chrome_locale| will contain the locale as reported by ICU.  On failure
 // |chrome_locale| is the empty string.
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_GetBrowserLocale,
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DEPRECATED_GetBrowserLocale,
                             string16 /* chrome_locale */)
 
 #if defined(OS_WIN)
@@ -987,16 +987,16 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_StopAsync,
 
 // Returns the number of times a filter was used to service an URL request.
 // See AutomationMsg_SetFilteredInet.
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_GetFilteredInetHitCount,
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DEPRECATED_GetFilteredInetHitCount,
                             int /* hit_count */)
 
 // Is the browser in fullscreen mode?
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_IsFullscreen,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_IsFullscreen,
                             int /* browser_handle */,
                             bool /* is_fullscreen */)
 
 // Is the fullscreen bubble visible?
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_IsFullscreenBubbleVisible,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_IsFullscreenBubbleVisible,
                             int /* browser_handle */,
                             bool /* is_visible */)
 
@@ -1038,7 +1038,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_WaitForBrowserWindowCountToBecome,
 // dialog is shown.
 // Response:
 //  - bool: whether the operation was successful
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_WaitForAppModalDialogToBeShown,
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DEPRECATED_WaitForAppModalDialogToBeShown,
                             bool)
 
 // This message notifies the AutomationProvider to navigate back in session
@@ -1066,7 +1066,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(
 
 // This message is used by automation clients to upload histogram data to the
 // browser process.
-IPC_MESSAGE_CONTROL1(AutomationMsg_RecordHistograms,
+IPC_MESSAGE_CONTROL1(AutomationMsg_DEPRECATED_RecordHistograms,
                      std::vector<std::string> /* histogram_list */)
 
 IPC_MESSAGE_ROUTED1(AutomationMsg_AttachExternalTab,
@@ -1088,7 +1088,7 @@ IPC_SYNC_MESSAGE_CONTROL3_4(AutomationMsg_ConnectExternalTab,
 // Response:
 //   gfx::Rect - the bounds of the window
 //   bool - true if the query was successful
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetWindowBounds,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_GetWindowBounds,
                             int,
                             gfx::Rect,
                             bool)
@@ -1109,7 +1109,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_TerminateSession,
 // Response:
 //   bool - true if the window is maximized
 //   bool - true if query is successful
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_IsWindowMaximized,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_IsWindowMaximized,
                             int,
                             bool,
                             bool)
@@ -1135,7 +1135,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_InstallExtension,
 
 // DEPRECATED MESSAGE - But we must leave this comment and message so as
 // not to perturb line numbers (see comment at top of file re __LINE__).
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DeprecatedMessageTwo,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_MessageTwo,
                             int,
                             int)
 
@@ -1145,7 +1145,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DeprecatedMessageTwo,
 // (intentionally blank line)
 // (intentionally blank line)
 // (intentionally blank line)
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DeprecatedMessageThree,
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DEPRECATED_MessageThree,
                             int)
 
 // This message requests the type of the window with the given handle. The
@@ -1176,7 +1176,7 @@ IPC_MESSAGE_ROUTED1(AutomationMsg_DownloadRequestInHost,
 
 // Shuts down the session service for the browser identified by
 // |browser_handle|. On success |result| is set to true.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_ShutdownSessionService,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_ShutdownSessionService,
                             int   /* browser_handle */,
                             bool  /* result */)
 
@@ -1204,7 +1204,7 @@ IPC_MESSAGE_CONTROL5(AutomationMsg_GetCookiesHostResponse,
 
 // If the given host is empty, then the default content settings are
 // modified.
-IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_SetContentSetting,
+IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_DEPRECATED_SetContentSetting,
                             int /* browser handle */,
                             std::string /* host */,
                             ContentSettingsType /* content type */,
@@ -1213,7 +1213,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_SetContentSetting,
 
 #if defined(OS_CHROMEOS)
 // Logs in through the browser's login wizard if available.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_LoginWithUserAndPass,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_LoginWithUserAndPass,
                            std::string /* username*/,
                            std::string /* password*/,
                            bool /* Whether successful*/)
@@ -1358,7 +1358,7 @@ IPC_SYNC_MESSAGE_CONTROL0_0(AutomationMsg_ResetToDefaultTheme)
 
 // Navigates asynchronously to a URL with a certain disposition,
 // like in a new tab.
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_NavigationAsyncWithDisposition,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_NavigationAsyncWithDisposition,
                             int /* tab handle */,
                             GURL,
                             WindowOpenDisposition,
@@ -1368,7 +1368,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_NavigationAsyncWithDisposition,
 // This message requests the cookie be deleted for given url in the
 // profile of the tab identified by the first parameter.  The second
 // parameter is the cookie name.
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DeleteCookie,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_DeleteCookie,
                             GURL,
                             std::string,
                             int /* tab handle */,
@@ -1437,7 +1437,7 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_LoadBlockedPlugins,
 //   -FilePath: Path to save the captured image to
 // Response:
 //   -bool: Whether the method succeeded
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_CaptureEntirePageAsPNG_Deprecated,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_CaptureEntirePageAsPNG,
                             int,
                             FilePath,
                             bool)
@@ -1455,7 +1455,7 @@ IPC_MESSAGE_CONTROL3(AutomationMsg_JavaScriptStressTestControl,
 IPC_SYNC_MESSAGE_CONTROL0_0(AutomationMsg_WaitForProcessLauncherThreadToGoIdle)
 
 // Gets a handle of the browser that owns the given tab.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetParentBrowserOfTab,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_GetParentBrowserOfTab,
                             int /* tab handle */,
                             int /* browser handle */,
                             bool /* success */)
@@ -1471,7 +1471,7 @@ IPC_MESSAGE_ROUTED1(AutomationMsg_MoveWindow,
                     gfx::Rect /* window position and dimentions */)
 
 // Is the browser in application mode?
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_IsBrowserInApplicationMode,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_IsBrowserInApplicationMode,
                             int /* browser_handle */,
                             bool /* is_application */,
                             bool /* success */)
@@ -1501,7 +1501,7 @@ IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_GetTracingOutput,
 // like it was middle-clicked.  The return value contains the index of
 // the new tab, or -1 if the request failed.
 // The second parameter is the url to be loaded in the new tab.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_AppendBackgroundTab,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_AppendBackgroundTab,
                             int,
                             GURL,
                             int)

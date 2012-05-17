@@ -57,9 +57,6 @@ class TabProxy : public AutomationResourceProxy,
            AutomationHandleTracker* tracker,
            int handle);
 
-  // Gets the browser that holds this tab.
-  scoped_refptr<BrowserProxy> GetParentBrowser() const;
-
   // Gets the current url of the tab.
   bool GetCurrentURL(GURL* url) const WARN_UNUSED_RESULT;
 
@@ -114,12 +111,6 @@ class TabProxy : public AutomationResourceProxy,
   // TabProxy we attach won't know about it.  See bug 666730.
   bool NavigateToURLAsync(const GURL& url) WARN_UNUSED_RESULT;
 
-  // Asynchronously navigates to a url using a non-default disposition.
-  // This can be used for example to open a URL in a new tab.
-  bool NavigateToURLAsyncWithDisposition(
-      const GURL& url,
-      WindowOpenDisposition disposition) WARN_UNUSED_RESULT;
-
   // Equivalent to hitting the Back button. This is a synchronous call and
   // hence blocks until the navigation completes.
   AutomationMsg_NavigationResponseValues GoBack() WARN_UNUSED_RESULT;
@@ -161,12 +152,6 @@ class TabProxy : public AutomationResourceProxy,
   // the last tab.
   bool Close(bool wait_until_closed) WARN_UNUSED_RESULT;
 
-  // Gets the process ID that corresponds to the content area of this tab.
-  // Returns true if the call was successful.  If the specified tab has no
-  // separate process for rendering its content, the return value is true but
-  // the process_id is 0.
-  bool GetProcessID(int* process_id) const WARN_UNUSED_RESULT;
-
   // Starts a search within the current tab. The parameter |search_string|
   // specifies what string to search for, |forward| specifies whether to search
   // in forward direction, and |match_case| specifies case sensitivity
@@ -182,30 +167,8 @@ class TabProxy : public AutomationResourceProxy,
                        const std::string& name,
                        std::string* cookies) WARN_UNUSED_RESULT;
   bool SetCookie(const GURL& url, const std::string& value) WARN_UNUSED_RESULT;
-  bool DeleteCookie(const GURL& url,
-                    const std::string& name) WARN_UNUSED_RESULT;
-
-  // Sends a InspectElement message for the current tab. |x| and |y| are the
-  // coordinates that we want to simulate that the user is trying to inspect.
-  int InspectElement(int x, int y);
-
-  // Gets the number of popups blocked from this tab.
-  bool GetBlockedPopupCount(int* count) const WARN_UNUSED_RESULT;
-
-  // Blocks the thread until the number of blocked popup is equal to
-  // |target_count|.
-  bool WaitForBlockedPopupCountToChangeTo(int target_count,
-                                          int wait_timeout) WARN_UNUSED_RESULT;
 
   bool GetDownloadDirectory(FilePath* download_directory) WARN_UNUSED_RESULT;
-
-  // Shows an interstitial page.  Blocks until the interstitial page
-  // has been loaded. Return false if a failure happens.
-  bool ShowInterstitialPage(const std::string& html_text) WARN_UNUSED_RESULT;
-
-  // Hides the currently shown interstitial page. Blocks until the interstitial
-  // page has been hidden. Return false if a failure happens.
-  bool HideInterstitialPage() WARN_UNUSED_RESULT;
 
 #if defined(OS_WIN)
   // The functions in this block are for external tabs, hence Windows only.
@@ -259,41 +222,9 @@ class TabProxy : public AutomationResourceProxy,
   // Sends off an asynchronous request for printing.
   bool PrintAsync() WARN_UNUSED_RESULT;
 
-  // Save the current web page. |file_name| is the HTML file name, and
-  // |dir_path| is the directory for saving resource files. |type| indicates
-  // which type we're saving as: HTML only or the complete web page.
-  bool SavePage(const FilePath& file_name, const FilePath& dir_path,
-                content::SavePageType type) WARN_UNUSED_RESULT;
-
-  // Retrieves the number of info-bars currently showing in |count|.
-  bool GetInfoBarCount(size_t* count) WARN_UNUSED_RESULT;
-
   // Waits until the infobar count is |count|.
   // Returns true on success.
   bool WaitForInfoBarCount(size_t count) WARN_UNUSED_RESULT;
-
-  // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
-  // If |wait_for_navigation| is true, this call does not return until a
-  // navigation has occurred.
-  bool ClickInfoBarAccept(size_t info_bar_index,
-                          bool wait_for_navigation) WARN_UNUSED_RESULT;
-
-  // Retrieves the time at which the last navigation occurred.  This is intended
-  // to be used with WaitForNavigation (see below).
-  bool GetLastNavigationTime(int64* last_navigation_time) WARN_UNUSED_RESULT;
-
-  // Waits for a new navigation if none as occurred since |last_navigation_time|
-  // The purpose of this function is for operations that causes asynchronous
-  // navigation to happen.
-  // It is supposed to be used as follow:
-  // int64 last_nav_time;
-  // tab_proxy->GetLastNavigationTime(&last_nav_time);
-  // tab_proxy->SomeOperationThatTriggersAnAsynchronousNavigation();
-  // tab_proxy->WaitForNavigation(last_nav_time);
-  bool WaitForNavigation(int64 last_navigation_time) WARN_UNUSED_RESULT;
-
-  // Gets the current used encoding of the page in the tab.
-  bool GetPageCurrentEncoding(std::string* encoding) WARN_UNUSED_RESULT;
 
   // Uses the specified encoding to override encoding of the page in the tab.
   bool OverrideEncoding(const std::string& encoding) WARN_UNUSED_RESULT;

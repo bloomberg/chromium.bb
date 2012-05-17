@@ -149,8 +149,6 @@ class AutomationResourceMessageFilter
 
  private:
   void OnSetFilteredInet(bool enable);
-  void OnGetFilteredInetHitCount(int* hit_count);
-  void OnRecordHistograms(const std::vector<std::string>& histogram_list);
 
   // Resumes pending jobs from the old AutomationResourceMessageFilter instance
   // passed in.

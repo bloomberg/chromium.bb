@@ -904,30 +904,6 @@ void BrowserCountChangeNotificationObserver::Observe(
   }
 }
 
-AppModalDialogShownObserver::AppModalDialogShownObserver(
-    AutomationProvider* automation, IPC::Message* reply_message)
-    : automation_(automation->AsWeakPtr()),
-      reply_message_(reply_message) {
-  registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
-                 content::NotificationService::AllSources());
-}
-
-AppModalDialogShownObserver::~AppModalDialogShownObserver() {
-}
-
-void AppModalDialogShownObserver::Observe(
-    int type, const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN);
-
-  if (automation_) {
-    AutomationMsg_WaitForAppModalDialogToBeShown::WriteReplyParams(
-        reply_message_.get(), true);
-    automation_->Send(reply_message_.release());
-  }
-  delete this;
-}
-
 namespace {
 
 // Define mapping from command to notification

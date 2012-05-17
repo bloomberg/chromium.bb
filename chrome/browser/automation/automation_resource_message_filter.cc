@@ -147,10 +147,6 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
                            deserialize_success)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetFilteredInet,
                         OnSetFilteredInet)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetFilteredInetHitCount,
-                        OnGetFilteredInetHitCount)
-    IPC_MESSAGE_HANDLER(AutomationMsg_RecordHistograms,
-                        OnRecordHistograms)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookiesHostResponse,
                         OnGetCookiesHostResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -383,18 +379,6 @@ bool AutomationResourceMessageFilter::SendDownloadRequestToHost(
 
 void AutomationResourceMessageFilter::OnSetFilteredInet(bool enable) {
   chrome_browser_net::SetUrlRequestMocksEnabled(enable);
-}
-
-void AutomationResourceMessageFilter::OnGetFilteredInetHitCount(
-    int* hit_count) {
-  *hit_count = net::URLRequestFilter::GetInstance()->hit_count();
-}
-
-void AutomationResourceMessageFilter::OnRecordHistograms(
-    const std::vector<std::string>& histogram_list) {
-  for (size_t index = 0; index < histogram_list.size(); ++index) {
-    base::Histogram::DeserializeHistogramInfo(histogram_list[index]);
-  }
 }
 
 bool AutomationResourceMessageFilter::ShouldFilterCookieMessages(

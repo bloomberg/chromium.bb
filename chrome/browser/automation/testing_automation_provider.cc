@@ -345,76 +345,47 @@ bool TestingAutomationProvider::OnMessageReceived(
                            message,
                            deserialize_success)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseBrowser, CloseBrowser)
-    IPC_MESSAGE_HANDLER(AutomationMsg_CloseBrowserRequestAsync,
-                        CloseBrowserAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActivateTab, ActivateTab)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_AppendTab, AppendTab)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_AppendBackgroundTab,
-                                    AppendBackgroundTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetMachPortCount, GetMachPortCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActiveTabIndex, GetActiveTabIndex)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseTab, CloseTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookies, GetCookies)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetCookie, SetCookie)
-    IPC_MESSAGE_HANDLER(AutomationMsg_DeleteCookie, DeleteCookie)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_NavigateToURLBlockUntilNavigationsComplete,
         NavigateToURLBlockUntilNavigationsComplete)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsync, NavigationAsync)
-    IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsyncWithDisposition,
-                        NavigationAsyncWithDisposition)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Reload, Reload)
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserWindowCount, GetBrowserWindowCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_NormalBrowserWindowCount,
                         GetNormalBrowserWindowCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserWindow, GetBrowserWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetBrowserLocale, GetBrowserLocale)
-    IPC_MESSAGE_HANDLER(AutomationMsg_LastActiveBrowserWindow,
-                        GetLastActiveBrowserWindow)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActiveWindow, GetActiveWindow)
     IPC_MESSAGE_HANDLER(AutomationMsg_FindTabbedBrowserWindow,
                         FindTabbedBrowserWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowActive, IsWindowActive)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ActivateWindow, ActivateWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowMaximized, IsWindowMaximized)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowExecuteCommandAsync,
                         ExecuteBrowserCommandAsync)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowExecuteCommand,
                         ExecuteBrowserCommand)
     IPC_MESSAGE_HANDLER(AutomationMsg_TerminateSession, TerminateSession)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowViewBounds, WindowGetViewBounds)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetWindowBounds, GetWindowBounds)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowBounds, SetWindowBounds)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowVisible, SetWindowVisible)
-    IPC_MESSAGE_HANDLER(AutomationMsg_WindowClick, WindowSimulateClick)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowMouseMove, WindowSimulateMouseMove)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabCount, GetTabCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_Type, GetType)
-    IPC_MESSAGE_HANDLER(AutomationMsg_IsBrowserInApplicationMode,
-                        IsBrowserInApplicationMode)
     IPC_MESSAGE_HANDLER(AutomationMsg_Tab, GetTab)
-    IPC_MESSAGE_HANDLER(AutomationMsg_TabProcessID, GetTabProcessID)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabTitle, GetTabTitle)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabIndex, GetTabIndex)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabURL, GetTabURL)
     IPC_MESSAGE_HANDLER(AutomationMsg_ShelfVisibility, GetShelfVisibility)
-    IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreen, IsFullscreen)
-    IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreenBubbleVisible,
-                        GetFullscreenBubbleVisibility)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_DomOperation,
                                     ExecuteJavascript)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InspectElement,
-                                    HandleInspectElementRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_DownloadDirectory, GetDownloadDirectory)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_OpenNewBrowserWindowOfType,
                                     OpenNewBrowserWindowOfType)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowForBrowser, GetWindowForBrowser)
-    IPC_MESSAGE_HANDLER(AutomationMsg_BrowserForWindow, GetBrowserForWindow)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ShowInterstitialPage,
-                                    ShowInterstitialPage)
-    IPC_MESSAGE_HANDLER(AutomationMsg_HideInterstitialPage,
-                        HideInterstitialPage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForTabToBeRestored,
                                     WaitForTabToBeRestored)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetSecurityState, GetSecurityState)
@@ -426,13 +397,10 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_BringBrowserToFront, BringBrowserToFront)
     IPC_MESSAGE_HANDLER(AutomationMsg_IsMenuCommandEnabled,
                         IsMenuCommandEnabled)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SavePage, SavePage)
     IPC_MESSAGE_HANDLER(AutomationMsg_OpenFindInPage,
                         HandleOpenFindInPageRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_FindWindowVisibility,
                         GetFindWindowVisibility)
-    IPC_MESSAGE_HANDLER(AutomationMsg_FindWindowLocation,
-                        HandleFindWindowLocationRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_BookmarkBarVisibility,
                         GetBookmarkBarVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetBookmarksAsJSON,
@@ -451,55 +419,26 @@ bool TestingAutomationProvider::OnMessageReceived(
                         SetBookmarkURL)
     IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBookmark,
                         RemoveBookmark)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetInfoBarCount, GetInfoBarCount)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ClickInfoBarAccept,
-                                    ClickInfoBarAccept)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetLastNavigationTime,
-                        GetLastNavigationTime)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForNavigation,
-                                    WaitForNavigation)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetIntPreference, SetIntPreference)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ShowingAppModalDialog,
-                        GetShowingAppModalDialog)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ClickAppModalDialogButton,
-                        ClickAppModalDialogButton)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetStringPreference, SetStringPreference)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetBooleanPreference,
-                        GetBooleanPreference)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetBooleanPreference,
-                        SetBooleanPreference)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_WaitForBrowserWindowCountToBecome,
         WaitForBrowserWindowCountToBecome)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_WaitForAppModalDialogToBeShown,
-        WaitForAppModalDialogToBeShown)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_GoBackBlockUntilNavigationsComplete,
         GoBackBlockUntilNavigationsComplete)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_GoForwardBlockUntilNavigationsComplete,
         GoForwardBlockUntilNavigationsComplete)
-    IPC_MESSAGE_HANDLER(AutomationMsg_WindowTitle, GetWindowTitle)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
-    IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SendJSONRequest,
                                     SendJSONRequest)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForTabCountToBecome,
                                     WaitForTabCountToBecome)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForInfoBarCount,
                                     WaitForInfoBarCount)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetPageCurrentEncoding,
-                        GetPageCurrentEncoding)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
-                        ShutdownSessionService)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetContentSetting, SetContentSetting)
     IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_WaitForProcessLauncherThreadToGoIdle,
         WaitForProcessLauncherThreadToGoIdle)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetParentBrowserOfTab,
-                        GetParentBrowserOfTab)
 
     IPC_MESSAGE_UNHANDLED(
         handled = AutomationProvider::OnMessageReceived(message))
@@ -523,14 +462,6 @@ void TestingAutomationProvider::CloseBrowser(int browser_handle,
 
   Browser* browser = browser_tracker_->GetResource(browser_handle);
   new BrowserClosedNotificationObserver(browser, this, reply_message);
-  browser->window()->Close();
-}
-
-void TestingAutomationProvider::CloseBrowserAsync(int browser_handle) {
-  if (!browser_tracker_->ContainsHandle(browser_handle))
-    return;
-
-  Browser* browser = browser_tracker_->GetResource(browser_handle);
   browser->window()->Close();
 }
 
@@ -573,39 +504,6 @@ void TestingAutomationProvider::AppendTab(int handle,
 
     AutomationMsg_AppendTab::WriteReplyParams(reply_message,
                                               append_tab_response);
-    Send(reply_message);
-  }
-}
-
-void TestingAutomationProvider::AppendBackgroundTab(
-    int handle,
-    const GURL& url,
-    IPC::Message* reply_message) {
-  int append_tab_response = -1;  // -1 is the error code
-  content::NotificationObserver* observer = NULL;
-
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    observer = new TabAppendedNotificationObserver(browser, this,
-                                                   reply_message);
-
-    browser::NavigateParams params(browser, url, content::PAGE_TRANSITION_LINK);
-    params.disposition = NEW_BACKGROUND_TAB;
-    browser::Navigate(&params);
-    TabContentsWrapper* contents = params.target_contents;
-    if (contents) {
-      append_tab_response = GetIndexForNavigationController(
-          &contents->web_contents()->GetController(), browser);
-    }
-  }
-
-  if (append_tab_response < 0) {
-    // Appending tab failed. Clean up and send failure response.
-    if (observer)
-      delete observer;
-
-    AutomationMsg_AppendBackgroundTab::WriteReplyParams(reply_message,
-                                                        append_tab_response);
     Send(reply_message);
   }
 }
@@ -661,14 +559,6 @@ void TestingAutomationProvider::SetCookie(const GURL& url,
   automation_util::SetCookie(url, value, contents, response_value);
 }
 
-void TestingAutomationProvider::DeleteCookie(const GURL& url,
-                                             const std::string& cookie_name,
-                                             int handle, bool* success) {
-  WebContents* contents = tab_tracker_->ContainsHandle(handle) ?
-      tab_tracker_->GetResource(handle)->GetWebContents() : NULL;
-  automation_util::DeleteCookie(url, cookie_name, contents, success);
-}
-
 void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
     int handle, const GURL& url, int number_of_navigations,
     IPC::Message* reply_message) {
@@ -699,14 +589,6 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
 void TestingAutomationProvider::NavigationAsync(int handle,
                                                 const GURL& url,
                                                 bool* status) {
-  NavigationAsyncWithDisposition(handle, url, CURRENT_TAB, status);
-}
-
-void TestingAutomationProvider::NavigationAsyncWithDisposition(
-    int handle,
-    const GURL& url,
-    WindowOpenDisposition disposition,
-    bool* status) {
   *status = false;
 
   if (tab_tracker_->ContainsHandle(handle)) {
@@ -720,7 +602,7 @@ void TestingAutomationProvider::NavigationAsyncWithDisposition(
       // Don't add any listener unless a callback mechanism is desired.
       // TODO(vibhor): Do this if such a requirement arises in future.
       OpenURLParams params(
-          url, Referrer(), disposition, content::PAGE_TRANSITION_TYPED, false);
+          url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);
       browser->OpenURL(params);
       *status = true;
     }
@@ -763,13 +645,6 @@ void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {
 void TestingAutomationProvider::FindTabbedBrowserWindow(int* handle) {
   *handle = 0;
   Browser* browser = browser::FindTabbedBrowser(profile_, false);
-  if (browser)
-    *handle = browser_tracker_->Add(browser);
-}
-
-void TestingAutomationProvider::GetLastActiveBrowserWindow(int* handle) {
-  *handle = 0;
-  Browser* browser = BrowserList::GetLastActive();
   if (browser)
     *handle = browser_tracker_->Add(browser);
 }
@@ -839,34 +714,6 @@ void TestingAutomationProvider::ExecuteBrowserCommand(
   }
   AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message, false);
   Send(reply_message);
-}
-
-void TestingAutomationProvider::GetBrowserLocale(string16* locale) {
-  *locale = ASCIIToUTF16(g_browser_process->GetApplicationLocale());
-}
-
-void TestingAutomationProvider::IsWindowActive(int handle,
-                                               bool* success,
-                                               bool* is_active) {
-  if (window_tracker_->ContainsHandle(handle)) {
-    *is_active =
-        platform_util::IsWindowActive(window_tracker_->GetResource(handle));
-    *success = true;
-  } else {
-    *success = false;
-    *is_active = false;
-  }
-}
-
-void TestingAutomationProvider::WindowSimulateClick(const IPC::Message& message,
-                                                    int handle,
-                                                    const gfx::Point& click,
-                                                    int flags) {
-  if (window_tracker_->ContainsHandle(handle)) {
-    // TODO(phajdan.jr): This is flaky. We should wait for the final click.
-    ui_controls::SendMouseMoveNotifyWhenDone(
-        click.x(), click.y(), base::Bind(&SendMouseClick, flags));
-  }
 }
 
 void TestingAutomationProvider::WindowSimulateMouseMove(
@@ -1192,21 +1039,6 @@ void TestingAutomationProvider::GetType(int handle, int* type_as_int) {
   }
 }
 
-void TestingAutomationProvider::IsBrowserInApplicationMode(int handle,
-                                                           bool* is_application,
-                                                           bool* success) {
-  *is_application = false;
-  *success = false;
-
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      *success = true;
-      *is_application = browser->is_app();
-    }
-  }
-}
-
 void TestingAutomationProvider::GetTab(int win_handle,
                                        int tab_index,
                                        int* tab_handle) {
@@ -1217,19 +1049,6 @@ void TestingAutomationProvider::GetTab(int win_handle,
       WebContents* web_contents = browser->GetWebContentsAt(tab_index);
       *tab_handle = tab_tracker_->Add(&web_contents->GetController());
     }
-  }
-}
-
-void TestingAutomationProvider::GetTabProcessID(int handle, int* process_id) {
-  *process_id = -1;
-
-  if (tab_tracker_->ContainsHandle(handle)) {
-    *process_id = 0;
-    WebContents* web_contents =
-        tab_tracker_->GetResource(handle)->GetWebContents();
-    content::RenderProcessHost* rph = web_contents->GetRenderProcessHost();
-    if (rph)
-      *process_id = base::GetProcId(rph->GetHandle());
   }
 }
 
@@ -1282,27 +1101,6 @@ void TestingAutomationProvider::GetShelfVisibility(int handle, bool* visible) {
   }
 }
 
-void TestingAutomationProvider::IsFullscreen(int handle, bool* visible) {
-  *visible = false;
-
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser)
-      *visible = browser->window()->IsFullscreen();
-  }
-}
-
-void TestingAutomationProvider::GetFullscreenBubbleVisibility(int handle,
-                                                              bool* visible) {
-  *visible = false;
-
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser)
-      *visible = browser->window()->IsFullscreenBubbleVisible();
-  }
-}
-
 void TestingAutomationProvider::ExecuteJavascriptInRenderViewFrame(
     const string16& frame_xpath,
     const string16& script,
@@ -1335,20 +1133,6 @@ void TestingAutomationProvider::ExecuteJavascript(
   ExecuteJavascriptInRenderViewFrame(WideToUTF16Hack(frame_xpath),
                                      WideToUTF16Hack(script), reply_message,
                                      web_contents->GetRenderViewHost());
-}
-
-void TestingAutomationProvider::HandleInspectElementRequest(
-    int handle, int x, int y, IPC::Message* reply_message) {
-  WebContents* web_contents = GetWebContentsForHandle(handle, NULL);
-  if (web_contents) {
-    DCHECK(!reply_message_);
-    reply_message_ = reply_message;
-
-    DevToolsWindow::InspectElement(web_contents->GetRenderViewHost(), x, y);
-  } else {
-    AutomationMsg_InspectElement::WriteReplyParams(reply_message, -1);
-    Send(reply_message);
-  }
 }
 
 void TestingAutomationProvider::GetDownloadDirectory(
@@ -1417,59 +1201,6 @@ void TestingAutomationProvider::GetWindowForBrowser(int browser_handle,
     gfx::NativeWindow win = browser->window()->GetNativeHandle();
     // Add() returns the existing handle for the resource if any.
     *handle = window_tracker_->Add(win);
-    *success = true;
-  }
-}
-
-void TestingAutomationProvider::GetBrowserForWindow(int window_handle,
-                                                    bool* success,
-                                                    int* browser_handle) {
-  *success = false;
-  *browser_handle = 0;
-
-  gfx::NativeWindow window = window_tracker_->GetResource(window_handle);
-  if (!window)
-    return;
-
-  BrowserList::const_iterator iter = BrowserList::begin();
-  for (; iter != BrowserList::end(); ++iter) {
-    gfx::NativeWindow this_window = (*iter)->window()->GetNativeHandle();
-    if (window == this_window) {
-      // Add() returns the existing handle for the resource if any.
-      *browser_handle = browser_tracker_->Add(*iter);
-      *success = true;
-      return;
-    }
-  }
-}
-
-void TestingAutomationProvider::ShowInterstitialPage(
-    int tab_handle,
-    const std::string& html_text,
-    IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* controller = tab_tracker_->GetResource(tab_handle);
-    WebContents* web_contents = controller->GetWebContents();
-
-    new NavigationNotificationObserver(controller, this, reply_message, 1,
-                                       false, false);
-
-    new AutomationInterstitialPage(
-        web_contents, GURL("about:interstitial"), html_text);
-    return;
-  }
-
-  AutomationMsg_ShowInterstitialPage::WriteReplyParams(
-      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
-  Send(reply_message);
-}
-
-void TestingAutomationProvider::HideInterstitialPage(int tab_handle,
-                                                     bool* success) {
-  *success = false;
-  WebContents* web_contents = GetWebContentsForHandle(tab_handle, NULL);
-  if (web_contents && web_contents->GetInterstitialPage()) {
-    web_contents->GetInterstitialPage()->DontProceed();
     *success = true;
   }
 }
@@ -1589,35 +1320,6 @@ void TestingAutomationProvider::IsMenuCommandEnabled(int browser_handle,
   }
 }
 
-void TestingAutomationProvider::SavePage(int tab_handle,
-                                         const FilePath& file_name,
-                                         const FilePath& dir_path,
-                                         int type,
-                                         bool* success) {
-  content::SavePageType save_type =
-      static_cast<content::SavePageType>(type);
-  if (save_type < content::SAVE_PAGE_TYPE_AS_ONLY_HTML ||
-      save_type > content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
-    *success = false;
-    return;
-  }
-
-  if (!tab_tracker_->ContainsHandle(tab_handle)) {
-    *success = false;
-    return;
-  }
-
-  NavigationController* nav = tab_tracker_->GetResource(tab_handle);
-  Browser* browser = FindAndActivateTab(nav);
-  if (!browser->command_updater()->IsCommandEnabled(IDC_SAVE_PAGE)) {
-    *success = false;
-    return;
-  }
-
-  nav->GetWebContents()->SavePage(file_name, dir_path, save_type);
-  *success = true;
-}
-
 void TestingAutomationProvider::HandleOpenFindInPageRequest(
     const IPC::Message& message, int handle) {
   if (browser_tracker_->ContainsHandle(handle)) {
@@ -1635,22 +1337,6 @@ void TestingAutomationProvider::GetFindWindowVisibility(int handle,
         browser->GetFindBarController()->find_bar()->GetFindBarTesting();
     find_bar->GetFindBarWindowInfo(NULL, visible);
   }
-}
-
-void TestingAutomationProvider::HandleFindWindowLocationRequest(int handle,
-                                                                int* x,
-                                                                int* y) {
-  gfx::Point position(0, 0);
-  bool visible = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-     Browser* browser = browser_tracker_->GetResource(handle);
-     FindBarTesting* find_bar =
-       browser->GetFindBarController()->find_bar()->GetFindBarTesting();
-     find_bar->GetFindBarWindowInfo(&position, &visible);
-  }
-
-  *x = position.x();
-  *y = position.y();
 }
 
 // Bookmark bar visibility is based on the pref (e.g. is it in the toolbar).
@@ -1863,166 +1549,6 @@ void TestingAutomationProvider::RemoveBookmark(int handle,
   *success = false;
 }
 
-void TestingAutomationProvider::GetInfoBarCount(int handle, size_t* count) {
-  *count = static_cast<size_t>(-1);  // -1 means error.
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-    if (nav_controller) {
-      TabContentsWrapper* wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              nav_controller->GetWebContents());
-      *count = wrapper->infobar_tab_helper()->infobar_count();
-    }
-  }
-}
-
-void TestingAutomationProvider::ClickInfoBarAccept(
-    int handle,
-    size_t info_bar_index,
-    bool wait_for_navigation,
-    IPC::Message* reply_message) {
-  bool success = false;
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-    if (nav_controller) {
-      InfoBarTabHelper* infobar_helper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              nav_controller->GetWebContents())->infobar_tab_helper();
-      if (info_bar_index < infobar_helper->infobar_count()) {
-        if (wait_for_navigation) {
-          new NavigationNotificationObserver(nav_controller, this,
-                                             reply_message, 1, false, false);
-        }
-        InfoBarDelegate* delegate =
-            infobar_helper->GetInfoBarDelegateAt(info_bar_index);
-        if (delegate->AsConfirmInfoBarDelegate())
-          delegate->AsConfirmInfoBarDelegate()->Accept();
-        success = true;
-      }
-    }
-  }
-
-  // This "!wait_for_navigation || !success condition" logic looks suspicious.
-  // It will send a failure message when success is true but
-  // |wait_for_navigation| is false.
-  // TODO(phajdan.jr): investgate whether the reply param (currently
-  // AUTOMATION_MSG_NAVIGATION_ERROR) should depend on success.
-  if (!wait_for_navigation || !success)
-    AutomationMsg_ClickInfoBarAccept::WriteReplyParams(
-        reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
-}
-
-void TestingAutomationProvider::GetLastNavigationTime(
-    int handle,
-    int64* last_navigation_time) {
-  base::Time time(tab_tracker_->GetLastNavigationTime(handle));
-  *last_navigation_time = time.ToInternalValue();
-}
-
-void TestingAutomationProvider::WaitForNavigation(int handle,
-                                                  int64 last_navigation_time,
-                                                  IPC::Message* reply_message) {
-  NavigationController* controller = tab_tracker_->GetResource(handle);
-  base::Time time(tab_tracker_->GetLastNavigationTime(handle));
-
-  if (time.ToInternalValue() > last_navigation_time || !controller) {
-    AutomationMsg_WaitForNavigation::WriteReplyParams(reply_message,
-        controller == NULL ? AUTOMATION_MSG_NAVIGATION_ERROR :
-                             AUTOMATION_MSG_NAVIGATION_SUCCESS);
-    Send(reply_message);
-    return;
-  }
-
-  new NavigationNotificationObserver(
-      controller, this, reply_message, 1, true, false);
-}
-
-void TestingAutomationProvider::SetIntPreference(int handle,
-                                                 const std::string& name,
-                                                 int value,
-                                                 bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    browser->profile()->GetPrefs()->SetInteger(name.c_str(), value);
-    *success = true;
-  }
-}
-
-void TestingAutomationProvider::SetStringPreference(int handle,
-                                                    const std::string& name,
-                                                    const std::string& value,
-                                                    bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    browser->profile()->GetPrefs()->SetString(name.c_str(), value);
-    *success = true;
-  }
-}
-
-void TestingAutomationProvider::GetBooleanPreference(int handle,
-                                                     const std::string& name,
-                                                     bool* success,
-                                                     bool* value) {
-  *success = false;
-  *value = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    *value = browser->profile()->GetPrefs()->GetBoolean(name.c_str());
-    *success = true;
-  }
-}
-
-void TestingAutomationProvider::SetBooleanPreference(int handle,
-                                                     const std::string& name,
-                                                     bool value,
-                                                     bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    browser->profile()->GetPrefs()->SetBoolean(name.c_str(), value);
-    *success = true;
-  }
-}
-
-void TestingAutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
-                                                         int* dialog_button) {
-  AppModalDialog* active_dialog =
-      AppModalDialogQueue::GetInstance()->active_dialog();
-  if (!active_dialog) {
-    *showing_dialog = false;
-    *dialog_button = ui::DIALOG_BUTTON_NONE;
-    return;
-  }
-  NativeAppModalDialog* native_dialog = active_dialog->native_dialog();
-  *showing_dialog = (native_dialog != NULL);
-  if (*showing_dialog)
-    *dialog_button = native_dialog->GetAppModalDialogButtons();
-  else
-    *dialog_button = ui::DIALOG_BUTTON_NONE;
-}
-
-void TestingAutomationProvider::ClickAppModalDialogButton(int button,
-                                                          bool* success) {
-  *success = false;
-
-  NativeAppModalDialog* native_dialog =
-      AppModalDialogQueue::GetInstance()->active_dialog()->native_dialog();
-  if (native_dialog &&
-      (native_dialog->GetAppModalDialogButtons() & button) == button) {
-    if ((button & ui::DIALOG_BUTTON_OK) == ui::DIALOG_BUTTON_OK) {
-      native_dialog->AcceptAppModalDialog();
-      *success =  true;
-    }
-    if ((button & ui::DIALOG_BUTTON_CANCEL) == ui::DIALOG_BUTTON_CANCEL) {
-      DCHECK(!*success) << "invalid param, OK and CANCEL specified";
-      native_dialog->CancelAppModalDialog();
-      *success =  true;
-    }
-  }
-}
-
 void TestingAutomationProvider::WaitForBrowserWindowCountToBecome(
     int target_count,
     IPC::Message* reply_message) {
@@ -2035,19 +1561,6 @@ void TestingAutomationProvider::WaitForBrowserWindowCountToBecome(
 
   // Set up an observer (it will delete itself).
   new BrowserCountChangeNotificationObserver(target_count, this, reply_message);
-}
-
-void TestingAutomationProvider::WaitForAppModalDialogToBeShown(
-    IPC::Message* reply_message) {
-  if (AppModalDialogQueue::GetInstance()->HasActiveDialog()) {
-    AutomationMsg_WaitForAppModalDialogToBeShown::WriteReplyParams(
-        reply_message, true);
-    Send(reply_message);
-    return;
-  }
-
-  // Set up an observer (it will delete itself).
-  new AppModalDialogShownObserver(this, reply_message);
 }
 
 void TestingAutomationProvider::GoBackBlockUntilNavigationsComplete(
@@ -2095,21 +1608,6 @@ void TestingAutomationProvider::SetShelfVisibility(int handle, bool visible) {
       else
         browser->window()->GetDownloadShelf()->Close();
     }
-  }
-}
-
-void TestingAutomationProvider::GetBlockedPopupCount(int handle, int* count) {
-  *count = -1;  // -1 is the error code
-  if (tab_tracker_->ContainsHandle(handle)) {
-      NavigationController* nav_controller = tab_tracker_->GetResource(handle);
-      TabContentsWrapper* tab_contents =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              nav_controller->GetWebContents());
-      if (tab_contents) {
-        BlockedContentTabHelper* blocked_content =
-            tab_contents->blocked_content_tab_helper();
-        *count = static_cast<int>(blocked_content->GetBlockedContentsCount());
-      }
   }
 }
 
@@ -7046,52 +6544,6 @@ void TestingAutomationProvider::WaitForInfoBarCount(
           controller->GetWebContents()), target_count);
 }
 
-// Gets the current used encoding name of the page in the specified tab.
-void TestingAutomationProvider::GetPageCurrentEncoding(
-    int tab_handle, std::string* current_encoding) {
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* nav = tab_tracker_->GetResource(tab_handle);
-    Browser* browser = FindAndActivateTab(nav);
-    if (browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU))
-      *current_encoding = nav->GetWebContents()->GetEncoding();
-  }
-}
-
-void TestingAutomationProvider::ShutdownSessionService(int handle,
-                                                       bool* result) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    SessionServiceFactory::ShutdownForProfile(browser->profile());
-    *result = true;
-  } else {
-    *result = false;
-  }
-}
-
-void TestingAutomationProvider::SetContentSetting(
-    int handle,
-    const std::string& host,
-    ContentSettingsType content_type,
-    ContentSetting setting,
-    bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    HostContentSettingsMap* map =
-        browser->profile()->GetHostContentSettingsMap();
-    if (host.empty()) {
-      map->SetDefaultContentSetting(content_type, setting);
-    } else {
-      map->SetContentSetting(ContentSettingsPattern::FromString(host),
-                             ContentSettingsPattern::Wildcard(),
-                             content_type,
-                             std::string(),
-                             setting);
-    }
-    *success = true;
-  }
-}
-
 void TestingAutomationProvider::ResetToDefaultTheme() {
   ThemeServiceFactory::GetForProfile(profile_)->UseDefaultTheme();
 }
@@ -7099,21 +6551,6 @@ void TestingAutomationProvider::ResetToDefaultTheme() {
 void TestingAutomationProvider::WaitForProcessLauncherThreadToGoIdle(
     IPC::Message* reply_message) {
   new WaitForProcessLauncherThreadToGoIdleObserver(this, reply_message);
-}
-
-void TestingAutomationProvider::GetParentBrowserOfTab(int tab_handle,
-                                                      int* browser_handle,
-                                                      bool* success) {
-  *success = false;
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* controller = tab_tracker_->GetResource(tab_handle);
-    int index;
-    Browser* browser = browser::FindBrowserForController(controller, &index);
-    if (browser) {
-      *browser_handle = browser_tracker_->Add(browser);
-      *success = true;
-    }
-  }
 }
 
 void TestingAutomationProvider::OnRemoveProvider() {

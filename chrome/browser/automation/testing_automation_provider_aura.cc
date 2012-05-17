@@ -14,44 +14,8 @@
 #include "ash/wm/window_util.h"
 #endif
 
-void TestingAutomationProvider::ActivateWindow(int handle) {
-#if defined(USE_ASH)
-  aura::Window* window = window_tracker_->GetResource(handle);
-  if (window) {
-    ash::wm::ActivateWindow(window);
-  }
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
-void TestingAutomationProvider::IsWindowMaximized(int handle,
-                                                  bool* is_maximized,
-                                                  bool* success) {
-  aura::Window* window = window_tracker_->GetResource(handle);
-  if (window) {
-    *is_maximized = window->GetProperty(aura::client::kShowStateKey) ==
-        ui::SHOW_STATE_MAXIMIZED;
-    *success = true;
-  } else {
-    *success = false;
-  }
-}
-
 void TestingAutomationProvider::TerminateSession(int handle, bool* success) {
   *success = false;
-}
-
-void TestingAutomationProvider::GetWindowBounds(int handle,
-                                                gfx::Rect* bounds,
-                                                bool* success) {
-  const aura::Window* window = window_tracker_->GetResource(handle);
-  if (window) {
-    *bounds = window->bounds();
-    *success = true;
-  } else {
-    *success = false;
-  }
 }
 
 void TestingAutomationProvider::SetWindowBounds(int handle,
@@ -64,26 +28,4 @@ void TestingAutomationProvider::SetWindowBounds(int handle,
   } else {
     *success = false;
   }
-}
-
-void TestingAutomationProvider::SetWindowVisible(int handle,
-                                                 bool visible,
-                                                 bool* result) {
-  aura::Window* window = window_tracker_->GetResource(handle);
-  if (window) {
-    if (visible) {
-      window->Show();
-    } else {
-      window->Hide();
-    }
-    *result = true;
-  } else {
-    *result = false;
-  }
-}
-
-void TestingAutomationProvider::GetWindowTitle(int handle, string16* text) {
-  const aura::Window* window = window_tracker_->GetResource(handle);
-  DCHECK(window);
-  *text = window->title();
 }

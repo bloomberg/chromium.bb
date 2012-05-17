@@ -12,17 +12,6 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 
-void TestingAutomationProvider::ActivateWindow(int handle) {
-  NOTIMPLEMENTED();
-}
-
-void TestingAutomationProvider::IsWindowMaximized(int handle,
-                                                  bool* is_maximized,
-                                                  bool* success) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
 void TestingAutomationProvider::TerminateSession(int handle, bool* success) {
   *success = false;
   NOTIMPLEMENTED();
@@ -59,13 +48,6 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
   }
 }
 
-void TestingAutomationProvider::GetWindowBounds(int handle,
-                                                gfx::Rect* bounds,
-                                                bool* result) {
-  *result = false;
-  NOTIMPLEMENTED();
-}
-
 void TestingAutomationProvider::SetWindowBounds(int handle,
                                                 const gfx::Rect& bounds,
                                                 bool* success) {
@@ -76,25 +58,4 @@ void TestingAutomationProvider::SetWindowBounds(int handle,
     gtk_window_resize(window, bounds.width(), bounds.height());
     *success = true;
   }
-}
-
-void TestingAutomationProvider::SetWindowVisible(int handle,
-                                                 bool visible,
-                                                 bool* result) {
-  *result = false;
-  GtkWindow* window = window_tracker_->GetResource(handle);
-  if (window) {
-    if (visible) {
-      gtk_window_present(window);
-    } else {
-      gtk_widget_hide(GTK_WIDGET(window));
-    }
-    *result = true;
-  }
-}
-
-void TestingAutomationProvider::GetWindowTitle(int handle, string16* text) {
-  gfx::NativeWindow window = window_tracker_->GetResource(handle);
-  const gchar* title = gtk_window_get_title(window);
-  text->assign(UTF8ToUTF16(title));
 }

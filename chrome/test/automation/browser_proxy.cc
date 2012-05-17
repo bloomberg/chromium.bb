@@ -70,17 +70,6 @@ bool BrowserProxy::AppendTab(const GURL& tab_url) {
   return append_tab_response >= 0;
 }
 
-bool BrowserProxy::AppendBackgroundTab(const GURL& tab_url) {
-  if (!is_valid())
-    return false;
-
-  int append_tab_response = -1;
-
-  sender_->Send(new AutomationMsg_AppendBackgroundTab(handle_, tab_url,
-                                                      &append_tab_response));
-  return append_tab_response >= 0;
-}
-
 bool BrowserProxy::GetActiveTabIndex(int* active_tab_index) const {
   if (!is_valid())
     return false;
@@ -175,21 +164,6 @@ bool BrowserProxy::GetType(Browser::Type* type) const {
   return true;
 }
 
-bool BrowserProxy::IsApplication(bool* is_application) {
-  DCHECK(is_application);
-
-  if (!is_valid())
-    return false;
-
-  bool success = false;
-  if (!sender_->Send(new AutomationMsg_IsBrowserInApplicationMode(
-          handle_, is_application, &success))) {
-    return false;
-  }
-
-  return success;
-}
-
 bool BrowserProxy::ApplyAccelerator(int id) {
   return RunCommandAsync(id);
 }
@@ -246,13 +220,6 @@ bool BrowserProxy::OpenFindInPage() {
 
   return sender_->Send(new AutomationMsg_OpenFindInPage(handle_));
   // This message expects no response.
-}
-
-bool BrowserProxy::GetFindWindowLocation(int* x, int* y) {
-  if (!is_valid() || !x || !y)
-    return false;
-
-  return sender_->Send(new AutomationMsg_FindWindowLocation(handle_, x, y));
 }
 
 bool BrowserProxy::IsFindWindowFullyVisible(bool* is_visible) {
@@ -418,72 +385,6 @@ bool BrowserProxy::SetShelfVisible(bool is_visible) {
                                                             is_visible));
 }
 
-bool BrowserProxy::SetIntPreference(const std::string& name, int value) {
-  if (!is_valid())
-    return false;
-
-  bool result = false;
-
-  sender_->Send(new AutomationMsg_SetIntPreference(handle_, name, value,
-                                                   &result));
-  return result;
-}
-
-bool BrowserProxy::SetStringPreference(const std::string& name,
-                                       const std::string& value) {
-  if (!is_valid())
-    return false;
-
-  bool result = false;
-
-  sender_->Send(new AutomationMsg_SetStringPreference(handle_, name, value,
-                                                      &result));
-  return result;
-}
-
-bool BrowserProxy::GetBooleanPreference(const std::string& name,
-                                        bool* value) {
-  if (!is_valid())
-    return false;
-
-  bool result = false;
-
-  sender_->Send(new AutomationMsg_GetBooleanPreference(handle_, name, value,
-                                                       &result));
-  return result;
-}
-
-bool BrowserProxy::SetBooleanPreference(const std::string& name,
-                                        bool value) {
-  if (!is_valid())
-    return false;
-
-  bool result = false;
-
-  sender_->Send(new AutomationMsg_SetBooleanPreference(handle_, name,
-                                                       value, &result));
-  return result;
-}
-
-bool BrowserProxy::SetDefaultContentSetting(ContentSettingsType content_type,
-                                            ContentSetting setting) {
-  return SetContentSetting(std::string(), content_type, setting);
-}
-
-bool BrowserProxy::SetContentSetting(const std::string& host,
-                                     ContentSettingsType content_type,
-                                     ContentSetting setting) {
-  if (!is_valid())
-    return false;
-
-  bool result = false;
-
-  sender_->Send(new AutomationMsg_SetContentSetting(handle_, host,
-                                                    content_type, setting,
-                                                    &result));
-  return result;
-}
-
 bool BrowserProxy::TerminateSession() {
   if (!is_valid())
     return false;
@@ -518,39 +419,6 @@ scoped_refptr<WindowProxy> BrowserProxy::GetWindow() const {
   scoped_refptr<WindowProxy> result;
   result.swap(&window);
   return result;
-}
-
-bool BrowserProxy::IsFullscreen(bool* is_fullscreen) {
-  DCHECK(is_fullscreen);
-
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(new AutomationMsg_IsFullscreen(handle_, is_fullscreen));
-}
-
-bool BrowserProxy::IsFullscreenBubbleVisible(bool* is_visible) {
-  DCHECK(is_visible);
-
-  if (!is_valid())
-    return false;
-
-  return sender_->Send(new AutomationMsg_IsFullscreenBubbleVisible(handle_,
-                                                                   is_visible));
-}
-
-bool BrowserProxy::ShutdownSessionService() {
-  bool did_shutdown = false;
-  bool succeeded = sender_->Send(
-      new AutomationMsg_ShutdownSessionService(handle_, &did_shutdown));
-
-  if (!succeeded) {
-    DLOG(ERROR) <<
-        "ShutdownSessionService did not complete in a timely fashion";
-    return false;
-  }
-
-  return did_shutdown;
 }
 
 bool BrowserProxy::SendJSONRequest(const std::string& request,

@@ -118,23 +118,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   // False likely indicates an IPC error.
   bool GetNormalBrowserWindowCount(int* num_windows) WARN_UNUSED_RESULT;
 
-  // Gets the locale of the chrome browser, currently all browsers forked from
-  // the main chrome share the same UI locale, returning true on success.
-  // False likely indicates an IPC error.
-  bool GetBrowserLocale(string16* locale) WARN_UNUSED_RESULT;
-
-  // Returns whether an app modal dialog window is showing right now (i.e., a
-  // javascript alert), and what buttons it contains.
-  bool GetShowingAppModalDialog(bool* showing_app_modal_dialog,
-                                ui::DialogButton* button) WARN_UNUSED_RESULT;
-
-  // Simulates a click on a dialog button. Synchronous.
-  bool ClickAppModalDialogButton(ui::DialogButton button) WARN_UNUSED_RESULT;
-
-  // Block the thread until a modal dialog is displayed. Returns true on
-  // success.
-  bool WaitForAppModalDialog() WARN_UNUSED_RESULT;
-
   // Returns true if one of the tabs in any window displays given url.
   bool IsURLDisplayed(GURL url) WARN_UNUSED_RESULT;
 
@@ -157,14 +140,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   // On failure, returns NULL.
   scoped_refptr<BrowserProxy> FindTabbedBrowserWindow();
 
-  // Returns the BrowserProxy for the browser window which was last active,
-  // transferring ownership of the pointer to the caller.
-  // TODO: If there was no last active browser window, or the last active
-  // browser window no longer exists (for example, if it was closed),
-  // returns GetBrowserWindow(0). See crbug.com/10501. As for now this
-  // function is flakey.
-  scoped_refptr<BrowserProxy> GetLastActiveBrowserWindow();
-
   // Returns the WindowProxy for the currently active window, transferring
   // ownership of the pointer to the caller.
   // On failure, returns NULL.
@@ -173,10 +148,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Tells the browser to enable or disable network request filtering.  Returns
   // false if the message fails to send to the browser.
   bool SetFilteredInet(bool enabled) WARN_UNUSED_RESULT;
-
-  // Returns the number of times a network request filter was used to service a
-  // network request.  Returns -1 on error.
-  int GetFilteredInetHitCount();
 
   // Sends the browser a new proxy configuration to start using. Returns true
   // if the proxy config was successfully sent, false otherwise.
@@ -201,13 +172,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   bool SendJSONRequest(const std::string& request,
                        int timeout_ms,
                        std::string* response) WARN_UNUSED_RESULT;
-
-#if defined(OS_CHROMEOS)
-  // Logs in through the Chrome OS login wizard with given |username|
-  // and |password|.  Returns true on success.
-  bool LoginWithUserAndPass(const std::string& username,
-                            const std::string& password) WARN_UNUSED_RESULT;
-#endif
 
   // Begin tracing specified categories on the browser instance. Blocks until
   // browser acknowledges that tracing has begun (or failed if false is
