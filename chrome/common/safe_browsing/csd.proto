@@ -168,6 +168,8 @@ message ClientDownloadRequest {
     WIN_EXECUTABLE = 0;    // Currently all .exe, .cab and .msi files.
     CHROME_EXTENSION = 1;  // .crx files.
     ANDROID_APK = 2;       // .apk files.
+    // .zip files containing one of the above executable types.
+    ZIPPED_EXECUTABLE = 3;
   }
   optional DownloadType download_type = 10 [default = WIN_EXECUTABLE];
 }

@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/zip_reader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
@@ -47,6 +48,10 @@ const char DownloadProtectionService::kDownloadRequestUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/download";
 
 namespace {
+bool IsArchiveFile(const FilePath& file) {
+  return file.MatchesExtension(FILE_PATH_LITERAL(".zip"));
+}
+
 bool IsBinaryFile(const FilePath& file) {
   return (
       // Executable extensions for MS Windows.
@@ -65,7 +70,9 @@ bool IsBinaryFile(const FilePath& file) {
       file.MatchesExtension(FILE_PATH_LITERAL(".vbs")) ||
       // Chrome extensions and android APKs are also reported.
       file.MatchesExtension(FILE_PATH_LITERAL(".crx")) ||
-      file.MatchesExtension(FILE_PATH_LITERAL(".apk")));
+      file.MatchesExtension(FILE_PATH_LITERAL(".apk")) ||
+      // Archives _may_ contain binaries, we'll check in ExtractFileFeatures.
+      IsArchiveFile(file));
 }
 
 ClientDownloadRequest::DownloadType GetDownloadType(const FilePath& file) {
@@ -74,6 +81,10 @@ ClientDownloadRequest::DownloadType GetDownloadType(const FilePath& file) {
     return ClientDownloadRequest::ANDROID_APK;
   else if (file.MatchesExtension(FILE_PATH_LITERAL(".crx")))
     return ClientDownloadRequest::CHROME_EXTENSION;
+  // For zip files, we use the ZIPPED_EXECUTABLE type since we will only send
+  // the pingback if we find an executable inside the zip archive.
+  else if (file.MatchesExtension(FILE_PATH_LITERAL(".zip")))
+    return ClientDownloadRequest::ZIPPED_EXECUTABLE;
   return ClientDownloadRequest::WIN_EXECUTABLE;
 }
 
@@ -151,7 +162,7 @@ enum SBStatsType {
 }  // namespace
 
 DownloadProtectionService::DownloadInfo::DownloadInfo()
-    : total_bytes(0), user_initiated(false) {}
+    : total_bytes(0), user_initiated(false), zipped_executable(false) {}
 
 DownloadProtectionService::DownloadInfo::~DownloadInfo() {}
 
@@ -164,9 +175,10 @@ std::string DownloadProtectionService::DownloadInfo::DebugString() const {
     }
   }
   return base::StringPrintf(
-      "DownloadInfo {addr:0x%p, download_url_chain:[%s], local_file:%s, "
-      "target_file:%s, referrer_url:%s, sha256_hash:%s, total_bytes:%" PRId64
-      ", user_initiated: %s}",
+      "DownloadInfo {addr:0x%p, download_url_chain:[%s], local_file:%"
+      PRFilePath ", target_file:%" PRFilePath ", referrer_url:%s, "
+      "sha256_hash:%s, total_bytes:%" PRId64 ", user_initiated: %s, "
+      "zipped_executable: %s}",
       reinterpret_cast<const void*>(this),
       chain.c_str(),
       local_file.value().c_str(),
@@ -174,7 +186,8 @@ std::string DownloadProtectionService::DownloadInfo::DebugString() const {
       referrer_url.spec().c_str(),
       base::HexEncode(sha256_hash.data(), sha256_hash.size()).c_str(),
       total_bytes,
-      user_initiated ? "true" : "false");
+      user_initiated ? "true" : "false",
+      zipped_executable ? "true" : "false");
 }
 
 // static
@@ -489,6 +502,32 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void ExtractFileFeatures() {
+    // If we're checking an archive file, look to see if there are any
+    // executables inside.  If not, we will skip the pingback for this
+    // download.
+    if (info_.target_file.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
+      ExtractZipFeatures();
+      if (!info_.zipped_executable) {
+        RecordImprovedProtectionStats(REASON_ARCHIVE_WITHOUT_BINARIES);
+        PostFinishTask(SAFE);
+        return;
+      }
+    } else {
+      DCHECK(!IsArchiveFile(info_.target_file));
+      ExtractSignatureFeatures();
+    }
+
+    // TODO(noelutz): DownloadInfo should also contain the IP address of
+    // every URL in the redirect chain.  We also should check whether the
+    // download URL is hosted on the internal network.
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&CheckClientDownloadRequest::CheckWhitelists, this));
+  }
+
+  void ExtractSignatureFeatures() {
+    base::TimeTicks start_time = base::TimeTicks::Now();
     signature_util_->CheckSignature(info_.local_file, &signature_info_);
     bool is_signed = (signature_info_.certificate_chain_size() > 0);
     if (is_signed) {
@@ -497,14 +536,46 @@ class DownloadProtectionService::CheckClientDownloadRequest
       VLOG(2) << "Downloaded an unsigned binary: " << info_.local_file.value();
     }
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed);
+    UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractSignatureFeaturesTime",
+                        base::TimeTicks::Now() - start_time);
+  }
 
-    // TODO(noelutz): DownloadInfo should also contain the IP address of every
-    // URL in the redirect chain.  We also should check whether the download
-    // URL is hosted on the internal network.
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&CheckClientDownloadRequest::CheckWhitelists, this));
+  void ExtractZipFeatures() {
+    base::TimeTicks start_time = base::TimeTicks::Now();
+    zip::ZipReader reader;
+    bool zip_file_has_archive = false;
+    if (reader.Open(info_.local_file)) {
+      for (; reader.HasMore(); reader.AdvanceToNextEntry()) {
+        if (!reader.OpenCurrentEntryInZip()) {
+          VLOG(1) << "Failed to open current entry in zip file: "
+                  << info_.local_file.value();
+          continue;
+        }
+        const FilePath& file = reader.current_entry_info()->file_path();
+        if (IsBinaryFile(file)) {
+          // Don't consider an archived archive to be executable, but record
+          // a histogram.
+          if (IsArchiveFile(file)) {
+            zip_file_has_archive = true;
+          } else {
+            VLOG(2) << "Downloaded a zipped executable: "
+                    << info_.local_file.value();
+            info_.zipped_executable = true;
+            break;
+          }
+        } else {
+          VLOG(3) << "Ignoring non-binary file: " << file.value();
+        }
+      }
+    } else {
+      VLOG(1) << "Failed to open zip file: " << info_.local_file.value();
+    }
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
+                          info_.zipped_executable);
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasArchiveButNoExecutable",
+                          zip_file_has_archive && !info_.zipped_executable);
+    UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractZipFeaturesTime",
+                        base::TimeTicks::Now() - start_time);
   }
 
   void CheckWhitelists() {
@@ -764,7 +835,8 @@ bool DownloadProtectionService::IsSupportedDownload(
   return (CheckClientDownloadRequest::IsSupportedDownload(info,
                                                           &reason,
                                                           &type) &&
-          ClientDownloadRequest::WIN_EXECUTABLE == type);
+          (ClientDownloadRequest::WIN_EXECUTABLE == type ||
+           ClientDownloadRequest::ZIPPED_EXECUTABLE == type));
 #else
   return false;
 #endif

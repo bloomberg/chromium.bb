@@ -600,8 +600,8 @@ void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
   if (!file_util::PathIsWritable(dir)) {
     VLOG(1) << "Unable to write to directory \"" << dir.value() << "\"";
     state.prompt_user_for_save_location = true;
-    PathService::Get(chrome::DIR_USER_DOCUMENTS, &state.suggested_path);
-    state.suggested_path = state.suggested_path.Append(filename);
+    PathService::Get(chrome::DIR_USER_DOCUMENTS, &dir);
+    state.suggested_path = dir.Append(filename);
   }
 
   // If the download is possibly dangerous, we'll use a temporary name for it.

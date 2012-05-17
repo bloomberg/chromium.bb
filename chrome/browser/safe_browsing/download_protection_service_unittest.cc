@@ -16,11 +16,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/zip.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
@@ -430,6 +432,107 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
 #else
   ExpectResult(DownloadProtectionService::SAFE);
 #endif
+}
+
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
+  ClientDownloadResponse response;
+  response.set_verdict(ClientDownloadResponse::SAFE);
+  FakeURLFetcherFactory factory;
+  // Empty response means SAFE.
+  factory.SetFakeResponse(
+      DownloadProtectionService::kDownloadRequestUrl,
+      response.SerializeAsString(),
+      true);
+
+  ScopedTempDir download_dir;
+  ASSERT_TRUE(download_dir.CreateUniqueTempDir());
+
+  DownloadProtectionService::DownloadInfo info;
+  info.local_file = download_dir.path().Append(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.zip"));
+  info.download_url_chain.push_back(GURL("http://www.evil.com/a.zip"));
+  info.referrer_url = GURL("http://www.google.com/");
+
+  // Write out a zip archive to the temporary file.  In this case, it
+  // only contains a text file.
+  ScopedTempDir zip_source_dir;
+  ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
+  std::string file_contents = "dummy file";
+  ASSERT_EQ(static_cast<int>(file_contents.size()), file_util::WriteFile(
+      zip_source_dir.path().Append(FILE_PATH_LITERAL("file.txt")),
+      file_contents.data(), file_contents.size()));
+  ASSERT_TRUE(zip::Zip(zip_source_dir.path(), info.local_file, false));
+
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  ExpectResult(DownloadProtectionService::SAFE);
+  Mock::VerifyAndClearExpectations(sb_service_);
+  Mock::VerifyAndClearExpectations(signature_util_);
+
+  // Now check with an executable in the zip file as well.
+  ASSERT_EQ(static_cast<int>(file_contents.size()), file_util::WriteFile(
+      zip_source_dir.path().Append(FILE_PATH_LITERAL("file.exe")),
+      file_contents.data(), file_contents.size()));
+  ASSERT_TRUE(zip::Zip(zip_source_dir.path(), info.local_file, false));
+
+  EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  ExpectResult(DownloadProtectionService::SAFE);
+  Mock::VerifyAndClearExpectations(signature_util_);
+
+  // If the response is dangerous the result should also be marked as
+  // dangerous.
+  response.set_verdict(ClientDownloadResponse::DANGEROUS);
+  factory.SetFakeResponse(
+      DownloadProtectionService::kDownloadRequestUrl,
+      response.SerializeAsString(),
+      true);
+
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+#if defined(OS_WIN)
+  ExpectResult(DownloadProtectionService::DANGEROUS);
+#else
+  ExpectResult(DownloadProtectionService::SAFE);
+#endif
+  Mock::VerifyAndClearExpectations(signature_util_);
+}
+
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
+  ScopedTempDir download_dir;
+  ASSERT_TRUE(download_dir.CreateUniqueTempDir());
+
+  DownloadProtectionService::DownloadInfo info;
+  info.local_file = download_dir.path().Append(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.zip"));
+  info.download_url_chain.push_back(GURL("http://www.evil.com/a.zip"));
+  info.referrer_url = GURL("http://www.google.com/");
+
+  std::string file_contents = "corrupt zip file";
+  ASSERT_EQ(static_cast<int>(file_contents.size()), file_util::WriteFile(
+      download_dir.path().Append(FILE_PATH_LITERAL("a.tmp")),
+      file_contents.data(), file_contents.size()));
+
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  ExpectResult(DownloadProtectionService::SAFE);
+  Mock::VerifyAndClearExpectations(sb_service_);
+  Mock::VerifyAndClearExpectations(signature_util_);
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {

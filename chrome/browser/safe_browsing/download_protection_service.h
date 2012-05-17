@@ -49,6 +49,7 @@ class DownloadProtectionService {
     int64 total_bytes;
     bool user_initiated;
     std::string remote_address;
+    bool zipped_executable;
     DownloadInfo();
     ~DownloadInfo();
     std::string DebugString() const;
@@ -137,6 +138,7 @@ class DownloadProtectionService {
     REASON_DOWNLOAD_UNCOMMON,
     REASON_DOWNLOAD_NOT_SUPPORTED,
     REASON_INVALID_RESPONSE_VERDICT,
+    REASON_ARCHIVE_WITHOUT_BINARIES,
     REASON_MAX  // Always add new values before this one.
   };
 
@@ -147,6 +149,8 @@ class DownloadProtectionService {
                            CheckClientDownloadValidateRequest);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadSuccess);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           CheckClientDownloadZip);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadFetchFailed);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
