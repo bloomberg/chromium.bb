@@ -4,7 +4,7 @@
 
 {
   'variables': {
-    'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
+    'lastchange_path': '../build/util/LASTCHANGE',
     # 'branding_dir' is set in the 'conditions' section at the bottom.
   },
   'conditions': [
@@ -15,11 +15,11 @@
           'type': 'loadable_module',
           'dependencies': [
             'installer_util',
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/google_update/google_update.gyp:google_update',
+            '../base/base.gyp:base',
+            '../google_update/google_update.gyp:google_update',
           ],
           'include_dirs': [
-            '<(DEPTH)',
+            '..',
           ],
           'sources': [
             'installer/gcapi/gcapi.cc',
@@ -36,11 +36,11 @@
           'type': 'static_library',
           'dependencies': [
             'installer_util',
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/google_update/google_update.gyp:google_update',
+            '../base/base.gyp:base',
+            '../google_update/google_update.gyp:google_update',
           ],
           'include_dirs': [
-            '<(DEPTH)',
+            '..',
           ],
           'sources': [
             'installer/gcapi/gcapi.cc',
@@ -59,12 +59,12 @@
             'gcapi_dll',
             'gcapi_lib',
             'installer_util',
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/base/base.gyp:test_support_base',
-            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
-            '<(DEPTH)',
+            '..',
           ],
           'sources': [
             'installer/gcapi/gcapi_last_run_test.cc',
@@ -80,16 +80,16 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/base/base.gyp:base_i18n',
-            '<(DEPTH)/base/base.gyp:test_support_base',
-            '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
-            '<(DEPTH)/content/content.gyp:content_common',
-            '<(DEPTH)/testing/gmock.gyp:gmock',
-            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../base/base.gyp:test_support_base',
+            '../build/temp_gyp/googleurl.gyp:googleurl',
+            '../content/content.gyp:content_common',
+            '../testing/gmock.gyp:gmock',
+            '../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
-            '<(DEPTH)',
+            '..',
           ],
           'sources': [
             'installer/setup/compat_checks_unittest.cc',
@@ -183,14 +183,14 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/base/base.gyp:base_i18n',
-            '<(DEPTH)/base/base.gyp:test_support_base',
-            '<(DEPTH)/chrome/chrome.gyp:test_support_common',
-            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../base/base.gyp:test_support_base',
+            '../chrome/chrome.gyp:test_support_common',
+            '../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
-            '<(DEPTH)',
+            '..',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/installer_util_strings/installer_util_strings.rc',
@@ -219,18 +219,18 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
-            '<(DEPTH)/build/util/build_util.gyp:lastchange#target',
-            '<(DEPTH)/build/util/support/support.gyp:*',
-            '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
-            '<(DEPTH)/chrome_frame/chrome_frame.gyp:npchrome_frame',
-            '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
-            '<(DEPTH)/rlz/rlz.gyp:rlz_lib',
-            '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
+            '../base/base.gyp:base',
+            '../build/temp_gyp/googleurl.gyp:googleurl',
+            '../build/util/build_util.gyp:lastchange#target',
+            '../build/util/support/support.gyp:*',
+            '../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
+            '../chrome_frame/chrome_frame.gyp:npchrome_frame',
+            '../breakpad/breakpad.gyp:breakpad_handler',
+            '../rlz/rlz.gyp:rlz_lib',
+            '../third_party/zlib/zlib.gyp:zlib',
           ],
           'include_dirs': [
-            '<(DEPTH)',
+            '..',
             '<(INTERMEDIATE_DIR)',
             '<(SHARED_INTERMEDIATE_DIR)/setup',
           ],
@@ -274,7 +274,7 @@
               'rule_name': 'setup_version',
               'extension': 'version',
               'variables': {
-                'version_py_path': '<(DEPTH)/chrome/tools/build/version.py',
+                'version_py_path': '../chrome/tools/build/version.py',
                 'template_input_path': 'installer/setup/setup_exe_version.rc.version',
               },
               'inputs': [
@@ -355,16 +355,16 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/base/base.gyp:base_i18n',
-            '<(DEPTH)/base/base.gyp:test_support_base',
-            '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
-            '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
-            '<(DEPTH)/testing/gmock.gyp:gmock',
-            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../base/base.gyp:test_support_base',
+            '../build/temp_gyp/googleurl.gyp:googleurl',
+            '../chrome_frame/chrome_frame.gyp:chrome_tab_idl',
+            '../testing/gmock.gyp:gmock',
+            '../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
-            '<(DEPTH)',
+            '..',
             '<(INTERMEDIATE_DIR)',
           ],
           # TODO(robertshield): Move the items marked with "Move to lib"
@@ -431,8 +431,8 @@
       'variables': {
         # Always google_chrome since this only applies to branding==Chrome.
         'branding_dir': 'app/theme/google_chrome',
-        'version' : '<!(python <(version_py_path) -f <(DEPTH)/chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
-        'revision' : '<!(python <(DEPTH)/build/util/lastchange.py --revision-only)',
+        'version' : '<!(python <(version_py_path) -f ../chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
+        'revision' : '<!(python ../build/util/lastchange.py --revision-only)',
         'packaging_files_common': [
           'installer/linux/internal/common/apt.include',
           'installer/linux/internal/common/default-app.template',
@@ -984,6 +984,41 @@
             'installer/mac/keychain_reauthorize_main.cc',
           ],
         },  # target: keychain_reauthorize
+        {
+          'target_name': 'gcapi_lib',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'installer/gcapi_mac/gcapi.h',
+            'installer/gcapi_mac/gcapi.mm',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
+            ],
+          },
+          'xcode_settings': {
+            # TODO(thakis): Enable once http://crbug.com/90185 is done.
+            # 'ARCHS': [ 'i386', 'x86_64' ],
+            'MACOSX_DEPLOYMENT_TARGET': '10.4',
+            'GCC_ENABLE_OBJC_GC': 'supported',
+          },
+        },
+        {
+          'target_name': 'gcapi_example',
+          'type': 'executable',
+          'dependencies': [   
+            'gcapi_lib',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'installer/gcapi_mac/gcapi_example_client.mm',
+          ],
+        },
       ],  # targets
     }],  # OS=="mac"
     [ 'branding == "Chrome"', {

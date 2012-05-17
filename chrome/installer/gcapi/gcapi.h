@@ -8,25 +8,28 @@
 
 #include <windows.h>
 
-extern "C" {
 // Error conditions for GoogleChromeCompatibilityCheck().
-#define GCCC_ERROR_USERLEVELALREADYPRESENT       0x01
-#define GCCC_ERROR_SYSTEMLEVELALREADYPRESENT     0x02
-#define GCCC_ERROR_ACCESSDENIED                  0x04
-#define GCCC_ERROR_OSNOTSUPPORTED                0x08
-#define GCCC_ERROR_ALREADYOFFERED                0x10
-#define GCCC_ERROR_INTEGRITYLEVEL                0x20
+#define GCCC_ERROR_USERLEVELALREADYPRESENT       (1 << 0)
+#define GCCC_ERROR_SYSTEMLEVELALREADYPRESENT     (1 << 1)
+#define GCCC_ERROR_ACCESSDENIED                  (1 << 2)
+#define GCCC_ERROR_OSNOTSUPPORTED                (1 << 3)
+#define GCCC_ERROR_ALREADYOFFERED                (1 << 4)
+#define GCCC_ERROR_INTEGRITYLEVEL                (1 << 5)
 
 // Error conditions for CanReactivateChrome().
-#define REACTIVATE_ERROR_NOTINSTALLED            0x01
-#define REACTIVATE_ERROR_NOTDORMANT              0x02
-#define REACTIVATE_ERROR_ALREADY_REACTIVATED     0x04
-#define REACTIVATE_ERROR_INVALID_INPUT           0x08
-#define REACTIVATE_ERROR_REACTIVATION_FAILED     0x10
+#define REACTIVATE_ERROR_NOTINSTALLED            (1 << 0)
+#define REACTIVATE_ERROR_NOTDORMANT              (1 << 1)
+#define REACTIVATE_ERROR_ALREADY_REACTIVATED     (1 << 2)
+#define REACTIVATE_ERROR_INVALID_INPUT           (1 << 3)
+#define REACTIVATE_ERROR_REACTIVATION_FAILED     (1 << 4)
 
 // Flags to indicate how GCAPI is invoked
-#define GCAPI_INVOKED_STANDARD_SHELL             0x01
-#define GCAPI_INVOKED_UAC_ELEVATION              0x02
+#define GCAPI_INVOKED_STANDARD_SHELL             (1 << 0)
+#define GCAPI_INVOKED_UAC_ELEVATION              (1 << 1)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // The minimum number of days an installation can be dormant before reactivation
 // may be offered.
@@ -107,6 +110,8 @@ typedef BOOL (__stdcall *GCCC_ReactivateChrome)(const wchar_t*,
                                                 int,
                                                 DWORD*);
 
+#ifdef __cplusplus
 }  // extern "C"
+#endif
 
 #endif  // CHROME_INSTALLER_GCAPI_GCAPI_H_
