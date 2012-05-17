@@ -67,6 +67,7 @@
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:desc_wrapper',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/nacl_base/nacl_base.gyp:nacl_base',
+        '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service'
       ],
     },
   ],
