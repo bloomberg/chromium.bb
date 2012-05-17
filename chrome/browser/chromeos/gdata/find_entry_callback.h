@@ -17,12 +17,15 @@ class GDataEntry;
 // object provided to this callback under lock. It must not be used outside
 // of the callback method. This callback can be invoked on different thread
 // than one that started the request.
-typedef base::Callback<void(base::PlatformFileError error, GDataEntry* entry)>
+typedef base::Callback<void(base::PlatformFileError error,
+                            const FilePath& directory_path,
+                            GDataEntry* entry)>
     FindEntryCallback;
 
 // Callback used to find a directory element for file system updates.
 void ReadOnlyFindEntryCallback(GDataEntry** out,
                                base::PlatformFileError error,
+                               const FilePath& directory_path,
                                GDataEntry* entry);
 
 }  // namespace gdata

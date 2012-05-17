@@ -8,6 +8,7 @@ namespace gdata {
 
 void ReadOnlyFindEntryCallback(GDataEntry** out,
                                base::PlatformFileError error,
+                               const FilePath& directory_path,
                                GDataEntry* entry) {
   if (error == base::PLATFORM_FILE_OK)
     *out = entry;

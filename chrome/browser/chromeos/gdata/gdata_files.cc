@@ -519,7 +519,8 @@ void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
 
   if (path_type == util::GDATA_SEARCH_PATH_ROOT ||
       path_type == util::GDATA_SEARCH_PATH_QUERY) {
-    callback.Run(base::PLATFORM_FILE_OK, fake_search_directory_.get());
+    callback.Run(base::PLATFORM_FILE_OK, file_path.DirName(),
+                 fake_search_directory_.get());
     return;
   }
 
@@ -528,7 +529,7 @@ void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
   if (path_type != util::GDATA_SEARCH_PATH_INVALID) {
     if (!ModifyFindEntryParamsForSearchPath(file_path,
              &components, &current_dir, &directory_path)) {
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
+      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
       return;
     }
   }
@@ -539,16 +540,16 @@ void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
     // Last element must match, if not last then it must be a directory.
     if (i == components.size() - 1) {
       if (current_dir->file_name() == components[i])
-        callback.Run(base::PLATFORM_FILE_OK, current_dir);
+        callback.Run(base::PLATFORM_FILE_OK, directory_path, current_dir);
       else
-        callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
+        callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
       return;
     }
 
     // Not the last part of the path, search for the next segment.
     GDataEntry* entry = current_dir->FindChild(components[i + 1]);
     if (!entry) {
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
+      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
       return;
     }
 
@@ -558,14 +559,14 @@ void GDataRootDirectory::FindEntryByPath(const FilePath& file_path,
       current_dir = entry->AsGDataDirectory();
     } else {
       if ((i + 1) == (components.size() - 1))
-        callback.Run(base::PLATFORM_FILE_OK, entry);
+        callback.Run(base::PLATFORM_FILE_OK, directory_path, entry);
       else
-        callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
+        callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
 
       return;
     }
   }
-  callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
+  callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
 }
 
 GDataEntry* GDataRootDirectory::GetEntryByResourceId(

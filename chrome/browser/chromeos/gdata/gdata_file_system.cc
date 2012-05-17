@@ -785,7 +785,8 @@ void RelayFindEntryCallback(scoped_refptr<base::MessageLoopProxy> relay_proxy,
                             base::PlatformFileError error,
                             const FilePath& directory_path,
                             GDataEntry* entry) {
-  relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error, entry));
+  relay_proxy->PostTask(FROM_HERE,
+                        base::Bind(callback, error, directory_path, entry));
 }
 
 // Ditto for FileOperationCallback.
@@ -1021,6 +1022,7 @@ void GDataFileSystem::CheckForUpdates() {
 
 void GDataFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
                                       base::PlatformFileError error,
+                                      const FilePath& /* directory_path */,
                                       GDataEntry* /* entry */) {
   if (error != base::PLATFORM_FILE_OK) {
     base::AutoLock lock(lock_);
@@ -1115,9 +1117,9 @@ void GDataFileSystem::FindEntryByResourceIdSync(
     file = entry->AsGDataFile();
 
   if (file)
-    callback.Run(base::PLATFORM_FILE_OK, file);
+    callback.Run(base::PLATFORM_FILE_OK, file->parent()->GetFilePath(), file);
   else
-    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, NULL);
+    callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
 }
 
 void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
@@ -1299,8 +1301,10 @@ void GDataFileSystem::LoadFeedFromServer(
 void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
                                              base::PlatformFileError error) {
   if (error != base::PLATFORM_FILE_OK) {
-    if (!params->callback.is_null())
-      params->callback.Run(error, NULL);
+    if (!params->callback.is_null()) {
+      params->callback.Run(error, FilePath(),
+                           reinterpret_cast<GDataEntry*>(NULL));
+    }
     return;
   }
 
@@ -1310,8 +1314,10 @@ void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
                          params->root_feed_changestamp);
 
   if (error != base::PLATFORM_FILE_OK) {
-    if (!params->callback.is_null())
-      params->callback.Run(error, NULL);
+    if (!params->callback.is_null()) {
+      params->callback.Run(error, FilePath(),
+                           reinterpret_cast<GDataEntry*>(NULL));
+    }
 
     return;
   }
@@ -2389,6 +2395,7 @@ void GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread(
 
 void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
                                     base::PlatformFileError error,
+                                    const FilePath& directory_path,
                                     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2436,11 +2443,14 @@ void GDataFileSystem::GetFileInfoByPathAsyncOnUIThread(
 
   FindEntryByPathAsyncOnUIThread(
       file_path,
-      base::Bind(&GDataFileSystem::OnGetFileInfo, ui_weak_ptr_, callback));
+      base::Bind(&GDataFileSystem::OnGetFileInfo,
+                 ui_weak_ptr_,
+                 callback));
 }
 
 void GDataFileSystem::OnGetFileInfo(const GetFileInfoCallback& callback,
                                     base::PlatformFileError error,
+                                    const FilePath& directory_path,
                                     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2501,6 +2511,7 @@ void GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread(
 
 void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
                                       base::PlatformFileError error,
+                                      const FilePath& directory_path,
                                       GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
