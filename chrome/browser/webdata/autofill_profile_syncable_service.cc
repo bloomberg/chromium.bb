@@ -458,10 +458,11 @@ void AutofillProfileSyncableService::ActOnChange(
   }
   SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   if (error.IsSet()) {
-    DLOG(WARNING) << "[AUTOFILL SYNC]"
-                  << " Failed processing change:"
-                  << " Error:" << error.message()
-                  << " Guid:" << change.key();
+    // TODO(isherman): Investigating http://crbug.com/121592
+    VLOG(1) << "[AUTOFILL SYNC] "
+            << "Failed processing change:\n"
+            << "  Error: " << error.message() << "\n"
+            << "  Guid: " << change.key();
   }
 }
 

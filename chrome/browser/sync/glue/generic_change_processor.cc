@@ -128,26 +128,91 @@ SyncError GenericChangeProcessor::GetSyncDataForType(
 
 namespace {
 
-bool AttemptDelete(const SyncChange& change, sync_api::WriteNode* node) {
+// TODO(isherman): Investigating http://crbug.com/121592
+SyncError LogLookupFailure(sync_api::BaseNode::InitByLookupResult lookup_result,
+                           const tracked_objects::Location& from_here,
+                           const std::string& error_prefix,
+                           syncable::ModelType type,
+                           DataTypeErrorHandler* error_handler) {
+  SyncError error;
+  switch (lookup_result) {
+    case sync_api::BaseNode::INIT_FAILED_ENTRY_NOT_GOOD:
+      error.Reset(from_here,
+                  error_prefix +
+                      "could not find entry matching the lookup criteria.",
+                  type);
+      error_handler->OnSingleDatatypeUnrecoverableError(error.location(),
+                                                        error.message());
+      return error;
+
+    case sync_api::BaseNode::INIT_FAILED_ENTRY_IS_DEL:
+      error.Reset(from_here, error_prefix + "entry is already deleted.", type);
+      error_handler->OnSingleDatatypeUnrecoverableError(error.location(),
+                                                        error.message());
+      return error;
+
+    case sync_api::BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY:
+      error.Reset(from_here, error_prefix + "unable to decrypt", type);
+      error_handler->OnSingleDatatypeUnrecoverableError(error.location(),
+                                                        error.message());
+      return error;
+
+    case sync_api::BaseNode::INIT_FAILED_PRECONDITION:
+      error.Reset(from_here,
+                  error_prefix + "a precondition was not met for calling init.",
+                  type);
+      error_handler->OnSingleDatatypeUnrecoverableError(error.location(),
+                                                        error.message());
+      return error;
+
+    default:
+      // Should have listed all the possible error cases above.
+      NOTREACHED();
+      error.Reset(from_here, error_prefix + "unknown error", type);
+      error_handler->OnSingleDatatypeUnrecoverableError(error.location(),
+                                                        error.message());
+      return error;
+  }
+}
+
+SyncError AttemptDelete(const SyncChange& change,
+                        syncable::ModelType type,
+                        const std::string& type_str,
+                        sync_api::WriteNode* node,
+                        DataTypeErrorHandler* error_handler) {
   DCHECK_EQ(change.change_type(), SyncChange::ACTION_DELETE);
   if (change.sync_data().IsLocal()) {
     const std::string& tag = change.sync_data().GetTag();
     if (tag.empty()) {
-      return false;
+      SyncError error(
+          FROM_HERE,
+          "Failed to delete " + type_str + " node. Local data, empty tag.",
+          type);
+      error_handler->OnSingleDatatypeUnrecoverableError(error.location(),
+                                                        error.message());
+      return error;
     }
-    if (node->InitByClientTagLookup(
-            change.sync_data().GetDataType(), tag) !=
-            sync_api::BaseNode::INIT_OK) {
-      return false;
+
+    sync_api::BaseNode::InitByLookupResult result =
+        node->InitByClientTagLookup(change.sync_data().GetDataType(), tag);
+    if (result != sync_api::BaseNode::INIT_OK) {
+      return LogLookupFailure(
+          result, FROM_HERE,
+          "Failed to delete " + type_str + " node. Local data, ",
+          type, error_handler);
     }
   } else {
-    if (node->InitByIdLookup(change.sync_data().GetRemoteId()) !=
-            sync_api::BaseNode::INIT_OK) {
-      return false;
+    sync_api::BaseNode::InitByLookupResult result =
+        node->InitByIdLookup(change.sync_data().GetRemoteId());
+    if (result != sync_api::BaseNode::INIT_OK) {
+      return LogLookupFailure(
+          result, FROM_HERE,
+          "Failed to delete " + type_str + " node. Non-local data, ",
+          type, error_handler);
     }
   }
   node->Remove();
-  return true;
+  return SyncError();
 }
 
 }  // namespace
@@ -167,13 +232,10 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
     std::string type_str = syncable::ModelTypeToString(type);
     sync_api::WriteNode sync_node(&trans);
     if (change.change_type() == SyncChange::ACTION_DELETE) {
-      if (!AttemptDelete(change, &sync_node)) {
+      SyncError error = AttemptDelete(change, type, type_str, &sync_node,
+                                      error_handler());
+      if (error.IsSet()) {
         NOTREACHED();
-        SyncError error(FROM_HERE,
-                        "Failed to delete " + type_str + " node.",
-                        type);
-        error_handler()->OnSingleDatatypeUnrecoverableError(error.location(),
-                                                            error.message());
         return error;
       }
     } else if (change.change_type() == SyncChange::ACTION_ADD) {
