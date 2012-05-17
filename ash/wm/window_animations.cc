@@ -141,9 +141,6 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
  private:
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    // Restore the correct visibility value (overridden for the duration of the
-    // animation in AnimateHideWindow()).
-    layer()->SetVisible(false);
     // Window may have been destroyed by this point.
     if (window_)
       window_->RemoveObserver(this);
@@ -203,8 +200,9 @@ class WorkspaceHidingWindowAnimationObserver :
   DISALLOW_COPY_AND_ASSIGN(WorkspaceHidingWindowAnimationObserver);
 };
 
-// Shows a window using an animation, animating its opacity from 0.f to 1.f, and
-// its transform from |start_transform| to |end_transform|.
+// Shows a window using an animation, animating its opacity from 0.f to 1.f,
+// its visibility to true, and its transform from |start_transform| to
+// |end_transform|.
 void AnimateShowWindowCommon(aura::Window* window,
                              const ui::Transform& start_transform,
                              const ui::Transform& end_transform) {
@@ -219,13 +217,14 @@ void AnimateShowWindowCommon(aura::Window* window,
     if (duration.ToInternalValue() > 0)
       settings.SetTransitionDuration(duration);
 
+    window->layer()->SetVisible(true);
     window->layer()->SetTransform(end_transform);
     window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
   }
 }
 
-// Hides a window using an animation, animating its opacity from 1.f to 0.f, and
-// its transform to |end_transform|.
+// Hides a window using an animation, animating its opacity from 1.f to 0.f,
+// its visibility to false, and its transform to |end_transform|.
 void AnimateHideWindowCommon(aura::Window* window,
                              const ui::Transform& end_transform) {
   window->layer()->set_delegate(NULL);
@@ -240,6 +239,7 @@ void AnimateHideWindowCommon(aura::Window* window,
 
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(end_transform);
+  window->layer()->SetVisible(false);
 }
 
 // Show/Hide windows using a shrink animation.
@@ -441,6 +441,7 @@ void AnimateHideWindow_Minimize(aura::Window* window) {
   // Property sets within this scope will be implicitly animated.
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
   settings.AddObserver(new HidingWindowAnimationObserver(window));
+  window->layer()->SetVisible(false);
 
   AddLayerAnimationsForMinimize(window, false);
 }

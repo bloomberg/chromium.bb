@@ -32,6 +32,7 @@ TEST_F(WindowAnimationsWorkspaceTest, HideShow) {
   ash::internal::AnimateOnChildWindowVisibilityChanged(
       window.get(), false);
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());
   // Showing.
   SetWindowVisibilityAnimationType(
@@ -40,6 +41,7 @@ TEST_F(WindowAnimationsWorkspaceTest, HideShow) {
   ash::internal::AnimateOnChildWindowVisibilityChanged(
       window.get(), true);
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
   EXPECT_TRUE(window->layer()->visible());
   // Stays showing.
   ui::AnimationContainerElement* element =
@@ -48,6 +50,7 @@ TEST_F(WindowAnimationsWorkspaceTest, HideShow) {
   element->Step(base::TimeTicks::Now() +
                 base::TimeDelta::FromSeconds(5));
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
   EXPECT_TRUE(window->layer()->visible());
 }
 
@@ -66,6 +69,7 @@ TEST_F(WindowAnimationsWorkspaceTest, ShowHide) {
   ash::internal::AnimateOnChildWindowVisibilityChanged(
       window.get(), true);
   EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
   EXPECT_TRUE(window->layer()->visible());
   // Hiding.
   SetWindowVisibilityAnimationType(
@@ -74,6 +78,7 @@ TEST_F(WindowAnimationsWorkspaceTest, ShowHide) {
   ash::internal::AnimateOnChildWindowVisibilityChanged(
       window.get(), false);
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());
   // Stays hidden.
   ui::AnimationContainerElement* element =
@@ -82,7 +87,24 @@ TEST_F(WindowAnimationsWorkspaceTest, ShowHide) {
   element->Step(base::TimeTicks::Now() +
                 base::TimeDelta::FromSeconds(5));
   EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
   EXPECT_FALSE(window->layer()->visible());
+}
+
+TEST_F(WindowAnimationsWorkspaceTest, LayerTargetVisibility) {
+  aura::Window* default_container =
+      ash::Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, default_container));
+
+  // Layer target visibility changes according to Show/Hide.
+  window->Show();
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
+  window->Hide();
+  EXPECT_FALSE(window->layer()->GetTargetVisibility());
+  window->Show();
+  EXPECT_TRUE(window->layer()->GetTargetVisibility());
 }
 
 }  // namespace internal

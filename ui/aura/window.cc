@@ -596,17 +596,15 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
 }
 
 void Window::SetVisible(bool visible) {
-  if (visible == layer_->visible())
+  if (visible == layer_->GetTargetVisibility())
     return;  // No change.
 
-  if (visible != layer_->visible()) {
-    RootWindow* root_window = GetRootWindow();
-    if (client::GetVisibilityClient(root_window)) {
-      client::GetVisibilityClient(root_window)->UpdateLayerVisibility(
-          this, visible);
-    } else {
-      layer_->SetVisible(visible);
-    }
+  RootWindow* root_window = GetRootWindow();
+  if (client::GetVisibilityClient(root_window)) {
+    client::GetVisibilityClient(root_window)->UpdateLayerVisibility(
+        this, visible);
+  } else {
+    layer_->SetVisible(visible);
   }
   visible_ = visible;
   SchedulePaint();
@@ -618,7 +616,6 @@ void Window::SetVisible(bool visible) {
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowVisibilityChanged(this, visible));
 
-  RootWindow* root_window = GetRootWindow();
   if (root_window)
     root_window->OnWindowVisibilityChanged(this, visible);
 }
