@@ -87,7 +87,22 @@ class AutocompleteTextfield : public views::Textfield {
   }
 
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
-    return omnibox_view_->HandleMousePressEvent(event);
+    // Pass through the views::Textfield's return value; we don't need to
+    // override its behavior.
+    bool result = views::Textfield::OnMousePressed(event);
+    omnibox_view_->HandleMousePressEvent(event);
+    return result;
+  }
+
+  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE {
+    bool result = views::Textfield::OnMouseDragged(event);
+    omnibox_view_->HandleMouseDragEvent(event);
+    return result;
+  }
+
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE {
+    views::Textfield::OnMouseReleased(event);
+    omnibox_view_->HandleMouseReleaseEvent(event);
   }
 
  private:
@@ -180,7 +195,8 @@ OmniboxViewViews::OmniboxViewViews(AutocompleteEditController* controller,
       ime_composing_before_change_(false),
       delete_at_end_pressed_(false),
       location_bar_view_(location_bar),
-      ime_candidate_window_open_(false) {
+      ime_candidate_window_open_(false),
+      select_all_on_mouse_release_(false) {
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -305,14 +321,22 @@ bool OmniboxViewViews::HandleKeyReleaseEvent(const views::KeyEvent& event) {
   return false;
 }
 
-bool OmniboxViewViews::HandleMousePressEvent(const views::MouseEvent& event) {
-  if (!textfield_->HasFocus() && !textfield_->HasSelection()) {
-    textfield_->SelectAll();
-    textfield_->RequestFocus();
-    return true;
-  }
+void OmniboxViewViews::HandleMousePressEvent(const views::MouseEvent& event) {
+  select_all_on_mouse_release_ =
+      (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
+      !textfield_->HasFocus();
+}
 
-  return false;
+void OmniboxViewViews::HandleMouseDragEvent(const views::MouseEvent& event) {
+  select_all_on_mouse_release_ = false;
+}
+
+void OmniboxViewViews::HandleMouseReleaseEvent(const views::MouseEvent& event) {
+  if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
+      select_all_on_mouse_release_) {
+    textfield_->SelectAll();
+  }
+  select_all_on_mouse_release_ = false;
 }
 
 void OmniboxViewViews::HandleFocusIn() {

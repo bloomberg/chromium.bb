@@ -36,16 +36,15 @@
 #include "net/base/mock_host_resolver.h"
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/point.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/controls/textfield/native_textfield_views.h"
-#include "ui/views/events/event.h"
-#include "ui/views/widget/widget.h"
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #endif
 
 using base::Time;
@@ -1270,6 +1269,45 @@ class OmniboxViewTest : public InProcessBrowserTest,
     EXPECT_EQ(old_text, omnibox_view->GetText());
   }
 
+#if defined(USE_AURA)
+  const BrowserView* GetBrowserView() const {
+    return static_cast<BrowserView*>(browser()->window());
+  }
+
+  const views::View* GetFocusView() const {
+    return GetBrowserView()->GetViewByID(location_bar_focus_view_id_);
+  }
+
+  // Move the mouse to the center of the browser window and left-click.
+  void ClickBrowserWindowCenter() {
+    ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
+                    GetBrowserView()->GetScreenBounds().CenterPoint()));
+    ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
+                    ui_controls::LEFT, ui_controls::DOWN));
+    ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
+                    ui_controls::LEFT, ui_controls::UP));
+  }
+
+  // Press and release the mouse in the focus view at an offset from its origin.
+  // If |release_offset| differs from |press_offset|, the mouse will be moved
+  // between the press and release.
+  void ClickFocusViewOrigin(ui_controls::MouseButton button,
+                            const gfx::Point& press_offset,
+                            const gfx::Point& release_offset) {
+    gfx::Point focus_view_origin = GetFocusView()->GetScreenBounds().origin();
+    gfx::Point press_point = focus_view_origin;
+    press_point.Offset(press_offset.x(), press_offset.y());
+    ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(press_point));
+    ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(button, ui_controls::DOWN));
+
+    gfx::Point release_point = focus_view_origin;
+    release_point.Offset(release_offset.x(), release_offset.y());
+    if (release_point != press_point)
+      ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(release_point));
+    ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(button, ui_controls::UP));
+  }
+#endif  // defined(USE_AURA)
+
  private:
   ViewID location_bar_focus_view_id_;
 };
@@ -1481,4 +1519,67 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PasteReplacingAll) {
   // Inline autocomplete shouldn't be triggered.
   ASSERT_EQ(ASCIIToUTF16("abc"), omnibox_view->GetText());
 }
-#endif
+#endif  // defined(TOOLKIT_GTK)
+
+// TODO(derat): Enable on Windows: http://crbug.com/128556
+#if defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllOnClick) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  omnibox_view->SetUserText(ASCIIToUTF16("http://www.google.com/"));
+  const gfx::Point kClickOffset(2, 2);
+
+  // Take the focus away from the omnibox.
+  ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_FALSE(GetFocusView()->HasFocus());
+
+  // Click in the omnibox.  All of its text should be selected.
+  ASSERT_NO_FATAL_FAILURE(
+      ClickFocusViewOrigin(ui_controls::LEFT, kClickOffset, kClickOffset));
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(GetFocusView()->HasFocus());
+
+  // Ensure that all of the text is selected and then take the focus away.  The
+  // selection should persist.
+  omnibox_view->SelectAll(false);
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+  ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+  EXPECT_FALSE(GetFocusView()->HasFocus());
+
+  // Clicking in the omnibox while some of its text is already selected should
+  // have the effect of re-selecting the text.
+  ASSERT_NO_FATAL_FAILURE(
+      ClickFocusViewOrigin(ui_controls::LEFT, kClickOffset, kClickOffset));
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(GetFocusView()->HasFocus());
+
+  // Click in a different spot in the omnibox.  It should keep the focus but
+  // lose the selection.
+  omnibox_view->SelectAll(false);
+  const gfx::Point kSecondClickOffset(kClickOffset.x() + 10, kClickOffset.y());
+  ASSERT_NO_FATAL_FAILURE(
+      ClickFocusViewOrigin(
+          ui_controls::LEFT, kSecondClickOffset, kSecondClickOffset));
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(GetFocusView()->HasFocus());
+
+  // Take the focus away and click in the omnibox again, but drag a bit before
+  // releasing.  We should focus the omnibox but not select all of its text.
+  ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
+  const gfx::Point kReleaseOffset(kClickOffset.x() + 10, kClickOffset.y());
+  ASSERT_NO_FATAL_FAILURE(
+      ClickFocusViewOrigin(ui_controls::LEFT, kClickOffset, kReleaseOffset));
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(GetFocusView()->HasFocus());
+
+  // Middle-clicking shouldn't select all the text either.
+  ASSERT_NO_FATAL_FAILURE(
+      ClickFocusViewOrigin(ui_controls::LEFT, kClickOffset, kClickOffset));
+  ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
+  ASSERT_NO_FATAL_FAILURE(
+      ClickFocusViewOrigin(ui_controls::MIDDLE, kClickOffset, kClickOffset));
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
+}
+#endif  // defined(USE_AURA)

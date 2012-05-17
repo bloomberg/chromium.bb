@@ -105,13 +105,10 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 bool NativeTextfieldViews::OnMousePressed(const MouseEvent& event) {
   OnBeforeUserAction();
   TrackMouseClicks(event);
-
-  // Allow the textfield/omnibox to optionally handle the mouse pressed event.
-  // This should be removed once native textfield implementations are
-  // consolidated to textfield.
+  // TODO: Remove once NativeTextfield implementations are consolidated to
+  // Textfield.
   if (!textfield_->OnMousePressed(event))
     HandleMousePressEvent(event);
-
   OnAfterUserAction();
   return true;
 }
@@ -129,14 +126,21 @@ bool NativeTextfieldViews::OnMouseDragged(const MouseEvent& event) {
     return true;
 
   OnBeforeUserAction();
-  if (MoveCursorTo(event.location(), true))
-    SchedulePaint();
+  // TODO: Remove once NativeTextfield implementations are consolidated to
+  // Textfield.
+  if (!textfield_->OnMouseDragged(event)) {
+    if (MoveCursorTo(event.location(), true))
+      SchedulePaint();
+  }
   OnAfterUserAction();
   return true;
 }
 
 void NativeTextfieldViews::OnMouseReleased(const MouseEvent& event) {
   OnBeforeUserAction();
+  // TODO: Remove once NativeTextfield implementations are consolidated to
+  // Textfield.
+  textfield_->OnMouseReleased(event);
   // Cancel suspected drag initiations, the user was clicking in the selection.
   if (initiating_drag_ && MoveCursorTo(event.location(), false))
     SchedulePaint();
