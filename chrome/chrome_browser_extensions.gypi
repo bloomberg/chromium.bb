@@ -53,6 +53,7 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.
+        'browser/extensions/action_box_controller.cc',
         'browser/extensions/action_box_controller.h',
         'browser/extensions/api/api_function.cc',
         'browser/extensions/api/api_function.h',

@@ -41,7 +41,7 @@ class ExtensionAction {
   ~ExtensionAction();
 
   // extension id
-  std::string extension_id() const { return extension_id_; }
+  const std::string& extension_id() const { return extension_id_; }
 
   // action id -- only used with legacy page actions API
   std::string id() const { return id_; }

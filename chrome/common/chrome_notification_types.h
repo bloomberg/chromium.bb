@@ -430,6 +430,10 @@ enum NotificationType {
   // unloaded and reloaded. The source is a Profile.
   NOTIFICATION_EXTENSIONS_READY,
 
+  // Sent when the extension action box is updated for a tab. The source is the
+  // Profile and the details are the TabContentsWrapper for the tab.
+  NOTIFICATION_EXTENSION_ACTION_BOX_UPDATED,
+
   // Sent when a new extension is loaded. The details are an Extension, and
   // the source is a Profile.
   NOTIFICATION_EXTENSION_LOADED,
