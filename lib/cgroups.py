@@ -390,7 +390,7 @@ class Cgroup(object):
     """Set a cgroup file in this namespace to a specific value"""
     try:
       return sudo.SetFileContents(self._LimitName(key, True), value)
-    except cros_build_lib.RunCommandError, e:
+    except cros_lib.RunCommandError, e:
       raise _GroupWasRemoved(self.namespace, e)
 
   def RemoveThisGroup(self, strict=False):
@@ -449,9 +449,25 @@ class Cgroup(object):
       return True
     return False
 
-  def TransferCurrentPid(self):
-    """Move the current process into this cgroup"""
-    self.TransferPid(os.getpid())
+  def _GetCurrentProcessThreads(self):
+    """Lookup the given tasks (pids fundamentally) for our process."""
+    return map(int, os.listdir('/proc/self/task'))
+
+  def TransferCurrentProcess(self, threads=True):
+    """Move the current process into this cgroup.
+
+    If threads is True, we move our threads into the group in addition.
+    Note this must be called in a threadsafe manner; it primarily exists
+    as a helpful default since python stdlib generates some background
+    threads (even when the code is operated synchronously).
+    """
+    if threads:
+      # Task helpfully tracks all TIDs for a given process.
+      pids = self._GetCurrentProcessThreads()
+    else:
+      pids = [os.getpid()]
+
+    map(self.TransferPid, pids)
 
   @EnsureInitialized
   def TransferPid(self, pid):
@@ -478,11 +494,11 @@ class Cgroup(object):
     """Temporarily move this process into the given group, moving back after.
 
     Used in a context manager fashion (aka, the with statement)."""
-    group.TransferCurrentPid()
+    group.TransferCurrentProcess()
     try:
       yield
     finally:
-      self.TransferCurrentPid()
+      self.TransferCurrentProcess()
 
   @contextlib.contextmanager
   def ContainChildren(self, pool_name=None):
@@ -515,7 +531,7 @@ class Cgroup(object):
       # _GroupWasRemoved; we want that contained.
       node = self.AddGroup(pool_name, autoclean=True, lazy_init=True)
       try:
-        node.TransferCurrentPid()
+        node.TransferCurrentProcess()
       except _GroupWasRemoved:
         raise SystemExit(
             "Group %s was removed under our feet; pool shutdown is underway"
@@ -524,7 +540,7 @@ class Cgroup(object):
       yield
     finally:
       with signals.DeferSignals():
-        self.TransferCurrentPid()
+        self.TransferCurrentProcess()
         if run_kill:
           node.KillProcesses(remove=True)
         else:
@@ -534,7 +550,7 @@ class Cgroup(object):
   def KillProcesses(self, poll_interval=0.05, remove=False):
     """Kill all processes in this namespace."""
 
-    my_pid = str(os.getpid())
+    my_pids = set(map(str, self._GetCurrentProcessThreads()))
 
     def _SignalPids(pids, signum):
       cros_lib.SudoRunCommand(
@@ -551,11 +567,12 @@ class Cgroup(object):
       previous_pids = pids
       pids = self.tasks
 
-      if my_pid in pids:
+      self_kill = my_pids.intersection(pids)
+      if self_kill:
         raise Exception("Bad API usage: asked to kill cgroup %s, but "
                         "current pid %s is in that group.  Effectively "
                         "asked to kill ourselves."
-                        % (self.namespace, my_pid))
+                        % (self.namespace, self_kill))
 
       if not pids:
         if not saw_pids:
@@ -583,11 +600,12 @@ class Cgroup(object):
       pids = self.all_tasks
 
       if pids:
-        if my_pid in pids:
+        self_kill = my_pids.intersection(pids)
+        if self_kill:
           raise Exception("Bad API usage: asked to kill cgroup %s, but "
                           "current pid %i is in that group.  Effectively "
                           "asked to kill ourselves."
-                          % (self.namespace, my_pid))
+                          % (self.namespace, self_kill))
 
         _SignalPids(pids, signal.SIGKILL)
         saw_pids = True
