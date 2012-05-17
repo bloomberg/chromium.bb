@@ -236,7 +236,7 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     for (size_t i = 0; i < data_packs_.size(); ++i) {
       scoped_ptr<SkBitmap> bitmap(LoadBitmap(*data_packs_[i], resource_id));
       if (bitmap.get()) {
-#if defined(ENABLE_DIP)
+#if defined(USE_AURA)
         image_skia.AddBitmapForScale(*bitmap, data_packs_[i]->GetScaleFactor());
 #else
         image_skia.AddBitmapForScale(*bitmap, 1.0f);
