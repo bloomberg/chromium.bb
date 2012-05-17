@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_proxy.h"
@@ -363,14 +364,25 @@ std::string PyUITestBase::_SendJSONRequest(int window_index,
                                            const std::string& request,
                                            int timeout) {
   std::string response;
+  base::TimeTicks time;
   if (window_index < 0) {  // Do not need to target a browser window.
-    EXPECT_TRUE(automation()->SendJSONRequest(request, timeout, &response));
+    time = base::TimeTicks::Now();
+    if (!automation()->SendJSONRequest(request, timeout, &response)) {
+        LOG(WARNING) << "SendJSONRequest returned false after "
+                     << (base::TimeTicks::Now() - time).InSeconds()
+                     << " seconds: " << request;
+    }
   } else {
     scoped_refptr<BrowserProxy> browser_proxy =
         automation()->GetBrowserWindow(window_index);
     EXPECT_TRUE(browser_proxy.get());
     if (browser_proxy.get()) {
-      EXPECT_TRUE(browser_proxy->SendJSONRequest(request, timeout, &response));
+      time = base::TimeTicks::Now();
+      if (!browser_proxy->SendJSONRequest(request, timeout, &response)) {
+        LOG(WARNING) << "SendJSONRequest returned false after "
+                     << (base::TimeTicks::Now() - time).InSeconds()
+                     << " seconds: " << request;
+      }
     }
   }
   return response;
