@@ -539,5 +539,22 @@ TEST_F(PowerButtonControllerTest, ResizeBackgroundLayer) {
             test_api_->GetBackgroundLayerBounds().ToString());
 }
 
+// Test that we ignore power button presses when the screen is turned off.
+TEST_F(PowerButtonControllerTest, IgnorePowerButtonIfScreenIsOff) {
+  controller_->OnLoginStateChanged(user::LOGGED_IN_USER);
+
+  // When the screen brightness is at 0%, we shouldn't do anything in response
+  // to power button presses.
+  controller_->OnScreenBrightnessChanged(0.0);
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_FALSE(test_api_->lock_timer_is_running());
+
+  // After increasing the brightness to 10%, we should start the timer like
+  // usual.
+  controller_->OnScreenBrightnessChanged(10.0);
+  controller_->OnPowerButtonEvent(true, base::TimeTicks::Now());
+  EXPECT_TRUE(test_api_->lock_timer_is_running());
+}
+
 }  // namespace test
 }  // namespace ash

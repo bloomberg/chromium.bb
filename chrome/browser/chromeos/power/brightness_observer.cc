@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 
+#include "ash/shell.h"
+#include "ash/wm/power_button_controller.h"
 #include "chrome/browser/extensions/system/system_api.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -19,6 +21,8 @@ BrightnessObserver::~BrightnessObserver() {
 
 void BrightnessObserver::BrightnessChanged(int level, bool user_initiated) {
   extensions::DispatchBrightnessChangedEvent(level, user_initiated);
+  ash::Shell::GetInstance()->power_button_controller()->
+      OnScreenBrightnessChanged(static_cast<double>(level));
 }
 
 }  // namespace chromeos

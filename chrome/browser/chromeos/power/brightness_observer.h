@@ -12,8 +12,8 @@
 
 namespace chromeos {
 
-// This observer displays a bubble at the bottom of the screen showing the
-// current brightness level whenever the user changes it.
+// This observer listens for changes to the screen brightness and notifies
+// extensions and ash::PowerButtonController about them.
 class BrightnessObserver : public PowerManagerClient::Observer {
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.

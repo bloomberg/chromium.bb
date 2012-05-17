@@ -142,6 +142,9 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
     has_legacy_power_button_ = legacy;
   }
 
+  // Called when the current screen brightness changes.
+  void OnScreenBrightnessChanged(double percent);
+
   // Called when Chrome gets a request to display the lock screen.
   void OnStartingLock();
 
@@ -202,6 +205,9 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
   // Are the power or lock buttons currently held?
   bool power_button_down_;
   bool lock_button_down_;
+
+  // Is the screen currently turned off?
+  bool screen_is_off_;
 
   // Are we in the process of shutting the machine down?
   bool shutting_down_;

@@ -285,6 +285,7 @@ PowerButtonController::PowerButtonController()
       unlocked_login_status_(user::LOGGED_IN_NONE),
       power_button_down_(false),
       lock_button_down_(false),
+      screen_is_off_(false),
       shutting_down_(false),
       has_legacy_power_button_(
           CommandLine::ForCurrentProcess()->HasSwitch(
@@ -345,6 +346,10 @@ void PowerButtonController::OnLockStateChanged(bool locked) {
   }
 }
 
+void PowerButtonController::OnScreenBrightnessChanged(double percent) {
+  screen_is_off_ = percent <= 0.001;
+}
+
 void PowerButtonController::OnStartingLock() {
   if (shutting_down_ || login_status_ == user::LOGGED_IN_LOCKED)
     return;
@@ -366,6 +371,11 @@ void PowerButtonController::OnPowerButtonEvent(
   power_button_down_ = down;
 
   if (shutting_down_)
+    return;
+
+  // Avoid starting the lock/shutdown sequence if the power button is pressed
+  // while the screen is off (http://crbug.com/128451).
+  if (screen_is_off_)
     return;
 
   if (has_legacy_power_button_) {
