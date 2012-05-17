@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "net/base/cert_verifier.h"
@@ -32,7 +31,7 @@ class NET_EXPORT_PRIVATE SSLHostInfo {
  public:
   SSLHostInfo(const std::string& hostname,
               const SSLConfig& ssl_config,
-              CertVerifier *certVerifier);
+              CertVerifier* certVerifier);
   virtual ~SSLHostInfo();
 
   // Start will commence the lookup. This must be called before any other
