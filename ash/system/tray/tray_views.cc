@@ -36,7 +36,6 @@ views::View* CreatePopupHeaderButtonsContainer() {
   return view;
 }
 
-const int kNotificationCloseButtonWidth = 60;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -470,13 +469,10 @@ void TrayNotificationView::InitView(views::View* contents) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
-  AddChildView(contents);
-
   views::ImageButton* close_button = new views::ImageButton(this);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
                          ResourceBundle::GetSharedInstance().GetBitmapNamed(
                              IDR_AURA_WINDOW_CLOSE));
-  AddChildView(close_button);
 
   int contents_width = kTrayPopupWidth - kNotificationCloseButtonWidth;
   views::ColumnSet* columns = layout->AddColumnSet(0);

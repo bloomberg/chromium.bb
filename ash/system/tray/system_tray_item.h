@@ -55,8 +55,9 @@ class ASH_EXPORT SystemTrayItem {
 
   // Updates the tray view (if applicable) when the user's login status changes.
   // It is not necessary the update the default or detailed view, since the
-  // default/detailed popup is closed when login status changes.
-  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) = 0;
+  // default/detailed popup is closed when login status changes. The default
+  // implementation does nothing.
+  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status);
 
   // Shows the detailed view for this item. If the main popup for the tray is
   // currently visible, then making this call would use the existing window to
@@ -77,6 +78,9 @@ class ASH_EXPORT SystemTrayItem {
   // |for_seconds| seconds.  The caller is responsible for checking that the
   // currently-shown view is for this item.
   void SetDetailedViewCloseDelay(int for_seconds);
+
+  // Hides the detailed view for this item.
+  void HideDetailedView();
 
   // Shows a notification for this item.
   void ShowNotificationView();

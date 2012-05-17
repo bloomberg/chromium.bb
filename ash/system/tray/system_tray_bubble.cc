@@ -377,6 +377,9 @@ void SystemTrayBubble::UpdateView(
   bubble_type_ = bubble_type;
   CreateItemViews(Shell::GetInstance()->tray_delegate()->GetUserLoginStatus());
   bubble_widget_->GetContentsView()->Layout();
+  // Make sure that the bubble is large enough for the default view.
+  if (bubble_type_ == BUBBLE_TYPE_DEFAULT)
+    bubble_view_->SizeToContents();
 }
 
 void SystemTrayBubble::InitView(const InitParams& init_params) {

@@ -38,6 +38,8 @@ class SystemTrayBubbleView : public views::BubbleDelegateView {
   void reset_host() { host_ = NULL; }
 
  private:
+  friend class SystemTrayBubble;
+
   // Overridden from views::BubbleDelegateView.
   virtual void Init() OVERRIDE;
   virtual gfx::Rect GetAnchorRect() OVERRIDE;

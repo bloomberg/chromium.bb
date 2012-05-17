@@ -80,6 +80,9 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   // seconds.
   void SetDetailedViewCloseDelay(int close_delay);
 
+  // Hides the detailed view for |item|.
+  void HideDetailedView(SystemTrayItem* item);
+
   // Shows the notification view for |item|.
   void ShowNotificationView(SystemTrayItem* item);
 
@@ -190,8 +193,11 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   // Overridden from internal::BackgroundAnimatorDelegate.
   virtual void UpdateBackground(int alpha) OVERRIDE;
 
+  // Owned items.
   ScopedVector<SystemTrayItem> items_;
 
+  // Pointers to members of |items_|.
+  SystemTrayItem* detailed_item_;
   std::vector<SystemTrayItem*> notification_items_;
 
   // The container for all the tray views of the items.

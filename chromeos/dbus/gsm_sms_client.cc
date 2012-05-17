@@ -230,7 +230,7 @@ class GsmSMSClientImpl : public GsmSMSClient {
 // A stub implementaion of GsmSMSClient.
 class GsmSMSClientStubImpl : public GsmSMSClient {
  public:
-  GsmSMSClientStubImpl() : test_index_(0), weak_ptr_factory_(this) {
+  GsmSMSClientStubImpl() : test_index_(-1), weak_ptr_factory_(this) {
     test_messages_.push_back("Test Message 0");
     test_messages_.push_back("Test Message 1");
     test_messages_.push_back("Test a relatively long message 2");
@@ -291,7 +291,15 @@ class GsmSMSClientStubImpl : public GsmSMSClient {
   // GsmSMSClient override.
   virtual void RequestUpdate(const std::string& service_name,
                              const dbus::ObjectPath& object_path) {
-    PushTestMessageChain();
+    if (test_index_ >= 0)
+      return;
+    test_index_ = 0;
+    // Call PushTestMessageChain asynchronously so that the handler_ callback
+    // does not get called from the update request.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&GsmSMSClientStubImpl::PushTestMessageChain,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -310,7 +318,7 @@ class GsmSMSClientStubImpl : public GsmSMSClient {
   }
 
   bool PushTestMessage() {
-    if (test_index_ >= test_messages_.size())
+    if (test_index_ >= static_cast<int>(test_messages_.size()))
       return false;
     base::DictionaryValue* message = new base::DictionaryValue;
     message->SetString("number", "000-000-0000");
@@ -324,7 +332,7 @@ class GsmSMSClientStubImpl : public GsmSMSClient {
     return true;
   }
 
-  size_t test_index_;
+  int test_index_;
   std::vector<std::string> test_messages_;
   base::ListValue message_list_;
   SmsReceivedHandler handler_;

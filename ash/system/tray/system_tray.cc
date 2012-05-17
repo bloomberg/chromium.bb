@@ -14,6 +14,7 @@
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
 #include "ash/system/network/tray_network.h"
+#include "ash/system/network/tray_sms.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/power/tray_power.h"
@@ -206,6 +207,7 @@ void SystemTray::CreateItems() {
   internal::TrayDate* tray_date = new internal::TrayDate();
   internal::TrayPower* tray_power = new internal::TrayPower();
   internal::TrayNetwork* tray_network = new internal::TrayNetwork;
+  internal::TraySms* tray_sms = new internal::TraySms();
   internal::TrayUser* tray_user = new internal::TrayUser;
   internal::TrayAccessibility* tray_accessibility =
       new internal::TrayAccessibility;
@@ -231,6 +233,7 @@ void SystemTray::CreateItems() {
   AddTrayItem(tray_power);
   AddTrayItem(tray_network);
   AddTrayItem(tray_bluetooth);
+  AddTrayItem(tray_sms);
   AddTrayItem(tray_drive);
   AddTrayItem(tray_ime);
   AddTrayItem(tray_volume);
@@ -299,6 +302,19 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
   bubble_->StartAutoCloseTimer(close_delay);
 }
 
+void SystemTray::SetDetailedViewCloseDelay(int close_delay) {
+  if (bubble_.get() &&
+      bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DETAILED)
+    bubble_->StartAutoCloseTimer(close_delay);
+}
+
+void SystemTray::HideDetailedView(SystemTrayItem* item) {
+  if (item != detailed_item_)
+    return;
+  bubble_.reset();
+  UpdateNotificationBubble();
+}
+
 void SystemTray::ShowNotificationView(SystemTrayItem* item) {
   if (std::find(notification_items_.begin(), notification_items_.end(), item)
       != notification_items_.end())
@@ -313,13 +329,9 @@ void SystemTray::HideNotificationView(SystemTrayItem* item) {
   if (found_iter == notification_items_.end())
     return;
   notification_items_.erase(found_iter);
-  UpdateNotificationBubble();
-}
-
-void SystemTray::SetDetailedViewCloseDelay(int close_delay) {
-  if (bubble_.get() &&
-      bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DETAILED)
-    bubble_->StartAutoCloseTimer(close_delay);
+  // Only update the notification bubble if visible (i.e. don't create one).
+  if (notification_bubble_.get())
+    UpdateNotificationBubble();
 }
 
 void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
@@ -416,6 +428,11 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   SystemTrayBubble::BubbleType bubble_type = detailed ?
       SystemTrayBubble::BUBBLE_TYPE_DETAILED :
       SystemTrayBubble::BUBBLE_TYPE_DEFAULT;
+
+  // Destroy the notification bubble here so that it doesn't get rebuilt
+  // while we add items to the main bubble_ (e.g. in HideNotificationView).
+  notification_bubble_.reset();
+
   if (bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
     bubble_->UpdateView(items, bubble_type);
   } else {
@@ -432,10 +449,17 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       init_params.arrow_offset = arrow_offset;
     bubble_->InitView(init_params);
   }
+
+  if (detailed && items.size() > 0)
+    detailed_item_ = items[0];
+  else
+    detailed_item_ = NULL;
+
   // If we have focus the shelf should be visible and we need to continue
   // showing the shelf when the popup is shown.
   if (GetWidget()->IsActive())
     should_show_launcher_ = true;
+
   UpdateNotificationBubble();  // State changed, re-create notifications.
 }
 

@@ -49,6 +49,9 @@ void SystemTrayItem::TransitionDetailedView() {
       BUBBLE_USE_EXISTING);
 }
 
+void SystemTrayItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
 void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
   Shell::GetInstance()->tray()->ShowDetailedView(this, for_seconds, activate,
       BUBBLE_CREATE_NEW);
@@ -56,6 +59,10 @@ void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
 
 void SystemTrayItem::SetDetailedViewCloseDelay(int for_seconds) {
   Shell::GetInstance()->tray()->SetDetailedViewCloseDelay(for_seconds);
+}
+
+void SystemTrayItem::HideDetailedView() {
+  Shell::GetInstance()->tray()->HideDetailedView(this);
 }
 
 void SystemTrayItem::ShowNotificationView() {

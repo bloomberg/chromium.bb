@@ -138,14 +138,17 @@ class FixedSizedScrollView : public views::ScrollView {
 
   void set_fixed_size(gfx::Size size) { fixed_size_ = size; }
 
- private:
-  // Overridden from views::View.
+  // views::View public method overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+
+ protected:
+  // views::View protected method overrides.
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
+ private:
   gfx::Size fixed_size_;
 
   DISALLOW_COPY_AND_ASSIGN(FixedSizedScrollView);
