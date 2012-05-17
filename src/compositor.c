@@ -228,6 +228,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->alpha = 255;
 	surface->brightness = 255;
 	surface->saturation = 255;
+	surface->blend = 1;
 	surface->opaque_rect[0] = 0.0;
 	surface->opaque_rect[1] = 0.0;
 	surface->opaque_rect[2] = 0.0;
@@ -761,6 +762,10 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     es->pitch, es->buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
+		if (wl_shm_buffer_get_format(buffer) == WL_SHM_FORMAT_XRGB8888)
+			es->blend = 0;
+		else
+			es->blend = 1;
 	} else {
 		if (es->image != EGL_NO_IMAGE_KHR)
 			ec->destroy_image(ec->display, es->image);
@@ -849,7 +854,10 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 		goto out;
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
+	if (es->blend)
+		glEnable(GL_BLEND);
+	else
+		glDisable(GL_BLEND);
 
 	if (ec->current_shader != es->shader) {
 		glUseProgram(es->shader->program);

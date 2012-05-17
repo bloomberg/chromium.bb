@@ -331,6 +331,7 @@ struct weston_surface {
 	uint32_t alpha;
 	uint32_t brightness;
 	uint32_t saturation;
+	int blend;
 
 	/* Surface geometry state, mutable.
 	 * If you change anything, set dirty = 1.
