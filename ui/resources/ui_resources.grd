@@ -323,6 +323,7 @@
         <include name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="oak.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_HELP" file="aura/status_help.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="oak.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_LOCALE" file="aura/status_locale.png" type="BINDATA" />
 
         <include name="IDR_AURA_SWITCH_MONITOR" file="aura/switch_monitor.png" type="BINDATA" />
         <include name="IDR_OAK" file="oak.png" type="BINDATA"/>
