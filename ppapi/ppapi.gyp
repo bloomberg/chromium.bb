@@ -7,6 +7,11 @@
 # in the .gyp files (since ppapi_internal depends on parts of Chrome).
 
 {
+  'conditions': [
+    ['disable_nacl==0 and build_ppapi_ipc_proxy_untrusted==1', {
+      'includes': ['ppapi_proxy_untrusted.gypi'],
+    }],
+  ],
   'variables': {
     'chromium_code': 1,  # Use higher warning level.
   },
