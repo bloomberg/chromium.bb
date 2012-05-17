@@ -877,6 +877,12 @@ weston_wm_window_draw_decoration(void *data)
 		window->surface->opaque_rect[3] =
 			(double) (t->margin + t->titlebar_height +
 				  window->height + 1) / height;
+
+		pixman_region32_init_rect(&window->surface->input,
+					  t->margin, t->margin,
+					  t->width * 2 + window->width,
+					  t->titlebar_height +
+					  t->width + window->height);
 	}
 }
 
