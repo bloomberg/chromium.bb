@@ -112,9 +112,6 @@ sqrt
 sqrtf
 fabs
 
-# a weak symbol declared in: src/untrusted/pthread/nc_thread.c
-__thread_exit_hook
-
 # these need to be investigated:
 memmove
 llvm.sqrt.f64
