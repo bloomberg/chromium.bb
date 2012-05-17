@@ -35,7 +35,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -47,6 +46,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/iat_patch_function.h"
+#endif
+
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
 
 using WebKit::WebCache;
