@@ -345,7 +345,7 @@ function update(modifiers) {
     var shortcutText = $(shortcutTextId(identifier, i));
     if (shortcutId) {
       shortcutText.style.visibility = 'visible';
-      shortcutText.textContent = loadTimeData.getString('shortcutId');
+      shortcutText.textContent = loadTimeData.getString(shortcutId);
     } else {
       shortcutText.style.visibility = 'hidden';
     }
