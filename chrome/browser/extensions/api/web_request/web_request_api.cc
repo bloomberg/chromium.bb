@@ -975,7 +975,6 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
 
   if (listeners_[profile][event_name].count(listener) != 0u) {
     // This is likely an abuse of the API by a malicious extension.
-    NOTREACHED();
     return false;
   }
   listeners_[profile][event_name].insert(listener);
