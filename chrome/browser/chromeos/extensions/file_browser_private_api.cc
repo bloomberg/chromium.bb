@@ -1522,17 +1522,17 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, THUMBNAIL_VIEW_TOOLTIP);
 #undef SET_STRING
 
-  dict->SetString("PDF_VIEW_ENABLED",
-      file_manager_util::ShouldBeOpenedWithPdfPlugin(profile(), ".pdf") ?
-          "true" : "false");
+  dict->SetBoolean("PDF_VIEW_ENABLED",
+      file_manager_util::ShouldBeOpenedWithPdfPlugin(profile(), ".pdf"));
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
 
-  if (gdata::util::IsGDataAvailable(profile()))
-    dict->SetString("ENABLE_GDATA", "1");
+  dict->SetBoolean("ENABLE_GDATA", gdata::util::IsGDataAvailable(profile()));
 
 #if defined(USE_ASH)
-    dict->SetString("ASH", "1");
+  dict->SetBoolean("ASH", true);
+#else
+  dict->SetBoolean("ASH", false);
 #endif
 
   return true;
