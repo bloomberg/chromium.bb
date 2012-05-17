@@ -2056,6 +2056,7 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
         cr = wl_client_add_object(client, &wl_pointer_interface,
 				  &pointer_interface, id, seat);
 	wl_list_insert(&seat->seat.pointer->resource_list, &cr->link);
+	cr->destroy = unbind_resource;
 }
 
 static void
@@ -2071,6 +2072,7 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
         cr = wl_client_add_object(client, &wl_keyboard_interface, NULL, id,
 				  seat);
 	wl_list_insert(&seat->seat.keyboard->resource_list, &cr->link);
+	cr->destroy = unbind_resource;
 }
 
 static void
@@ -2085,6 +2087,7 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 
         cr = wl_client_add_object(client, &wl_touch_interface, NULL, id, seat);
 	wl_list_insert(&seat->seat.touch->resource_list, &cr->link);
+	cr->destroy = unbind_resource;
 }
 
 static const struct wl_seat_interface seat_interface = {
