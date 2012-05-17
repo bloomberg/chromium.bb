@@ -447,6 +447,10 @@ Gallery.prototype.updateFilename_ = function(opt_url) {
 };
 
 Gallery.prototype.onFilenameClick_ = function() {
+  // We can't rename files in readonly directory.
+  if (this.context_.readonlyDirName)
+    return;
+
   ImageUtil.setAttribute(this.filenameSpacer_, 'renaming', true);
   setTimeout(this.filenameEdit_.select.bind(this.filenameEdit_), 0);
   this.cancelFading_();
