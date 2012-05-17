@@ -6,28 +6,21 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
+#include "ash/wm/window_properties.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
 #include "ui/compositor/layer.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(bool)
-
 namespace ash {
-namespace internal {
-// Property set on all windows whose child windows' visibility changes are
-// animated.
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
-    bool, kChildWindowVisibilityChangesAnimatedKey, false);
-
 namespace {
-
 bool GetChildWindowVisibilityChangesAnimated(aura::Window* window) {
   if (!window)
     return false;
-  return window->GetProperty(kChildWindowVisibilityChangesAnimatedKey);
+  return window->GetProperty(
+      internal::kChildWindowVisibilityChangesAnimatedKey);
 }
-
 }  // namespace
+
+namespace internal {
 
 VisibilityController::VisibilityController() {
   aura::client::SetVisibilityClient(Shell::GetRootWindow(), this);

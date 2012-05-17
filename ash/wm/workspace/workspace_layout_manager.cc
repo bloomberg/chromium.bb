@@ -5,8 +5,8 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/screen_ash.h"
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
@@ -15,7 +15,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -88,7 +87,7 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                      const void* key,
                                                      intptr_t old) {
   BaseLayoutManager::OnWindowPropertyChanged(window, key, old);
-  if (key == ash::kWindowTrackedByWorkspacePropKey &&
+  if (key == ash::internal::kWindowTrackedByWorkspaceKey &&
       ash::GetTrackedByWorkspace(window)) {
     // We currently don't need to support transitioning from true to false, so
     // we ignore it.

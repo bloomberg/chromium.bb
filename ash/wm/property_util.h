@@ -10,8 +10,6 @@
 
 namespace aura {
 class Window;
-template<typename T>
-struct WindowProperty;
 }
 
 namespace gfx {
@@ -39,18 +37,11 @@ ASH_EXPORT void ClearRestoreBounds(aura::Window* window);
 // Toggles the maximized state of the specified window.
 ASH_EXPORT void ToggleMaximizedState(aura::Window* window);
 
-ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kWindowTrackedByWorkspacePropKey;
-
 enum WindowPersistsAcrossAllWorkspacesType {
   WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT,
   WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO,
   WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES,
 };
-
-ASH_EXPORT extern const
-    aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>* const
-    kWindowPersistsAcrossAllWorkspacesPropKey;
 
 // Sets whether the specified window is tracked by workspace code. Default is
 // true. If set to false the workspace does not switch the current workspace,

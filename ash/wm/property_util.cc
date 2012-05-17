@@ -4,28 +4,17 @@
 
 #include "ash/wm/property_util.h"
 
+#include "ash/ash_export.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(bool)
-DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowPersistsAcrossAllWorkspacesType)
-
 namespace ash {
-
 namespace {
-
-const aura::WindowProperty<bool> kWindowTrackedByWorkspaceProp = {true};
-
-const aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>
-    kWindowPersistsAcrossAllWorkspacesProp =
-    {WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT};
-
 bool g_default_windows_persist_across_all_workspaces = false;
-
 }  // namespace
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
@@ -51,29 +40,24 @@ void ToggleMaximizedState(aura::Window* window) {
                                                     : ui::SHOW_STATE_MAXIMIZED);
 }
 
-const aura::WindowProperty<bool>* const
-    kWindowTrackedByWorkspacePropKey = &kWindowTrackedByWorkspaceProp;
-
-const aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>* const
-    kWindowPersistsAcrossAllWorkspacesPropKey =
-    &kWindowPersistsAcrossAllWorkspacesProp;
-
 void SetTrackedByWorkspace(aura::Window* window, bool value) {
-  window->SetProperty(kWindowTrackedByWorkspacePropKey, value);
+  window->SetProperty(internal::kWindowTrackedByWorkspaceKey, value);
 }
 
 bool GetTrackedByWorkspace(aura::Window* window) {
-  return window->GetProperty(kWindowTrackedByWorkspacePropKey);
+  return window->GetProperty(internal::kWindowTrackedByWorkspaceKey);
 }
 
 void SetPersistsAcrossAllWorkspaces(
     aura::Window* window,
     WindowPersistsAcrossAllWorkspacesType type) {
-  window->SetProperty(kWindowPersistsAcrossAllWorkspacesPropKey, type);
+  window->SetProperty(
+      internal::kWindowPersistsAcrossAllWorkspacesKey, type);
 }
 
 bool GetPersistsAcrossAllWorkspaces(aura::Window* window) {
-  switch (window->GetProperty(kWindowPersistsAcrossAllWorkspacesPropKey)) {
+  switch (window->GetProperty(
+      internal::kWindowPersistsAcrossAllWorkspacesKey)) {
     case WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES:
       return true;
     case WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO:

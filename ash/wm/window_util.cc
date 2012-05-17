@@ -6,20 +6,16 @@
 
 #include "ash/shell.h"
 #include "ash/wm/activation_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(bool);
-
 namespace ash {
-DEFINE_WINDOW_PROPERTY_KEY(bool, kOpenWindowSplitKey, false);
-
 namespace wm {
 
 void ActivateWindow(aura::Window* window) {
