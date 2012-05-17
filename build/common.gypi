@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -43,6 +43,27 @@
     # 'Debug' configuration in the 'target_defaults' dict below,
     # but that doesn't work as we'd like.
     'msvs_debug_link_incremental%': '2',
+
+    # NOTE: adapted from them chrome common.gypi file for arm
+    'armv7%': 0,
+
+    # Set Neon compilation flags (only meaningful if armv7==1).
+    'arm_neon%': 1,
+
+    # Set Thumb compilation flags.
+    'arm_thumb%': 0,
+
+    # Set ARM fpu compilation flags (only meaningful if armv7==1 and
+    # arm_neon==0).
+    'arm_fpu%': 'vfpv3',
+
+    # Set ARM float abi compilation flag.
+    'arm_float_abi%': 'softfp',
+
+    # The system root for cross-compiles. Default: none.
+    'sysroot%': '',
+
+    # NOTE: end adapted from them chrome common.gypi file for arm
 
     # Doing this in a sub-dict so that it can be referred to below.
     'variables': {
@@ -96,16 +117,6 @@
           'target_arch%': 'ia32',
         }],
       ],
-      # NOTE: adapted from them chrome common.gypi file for arm
-      'armv7%': 0,
-
-      # Set Thumb compilation flags.
-      'arm_thumb%': 0,
-
-      # The system root for cross-compiles. Default: none.
-      'sysroot%': '',
-
-      # NOTE: end adapted from them chrome common.gypi file for arm
 
       'library%': '<(library)',
 
@@ -290,18 +301,38 @@
           }],
           [ 'target_arch=="arm"', {
               'cflags': [
-                '-Wno-abi',
-                '-march=armv7-a',
-                '-mtune=cortex-a8',
-                '-mfpu=neon',
-                '-mfloat-abi=softfp',
-                '-fno-exceptions',
-                '-Wall',
-                '-fPIC',
-                '--sysroot=<(sysroot)',
+                  '-Wno-abi',
+                  '-fno-exceptions',
+                  '-Wall',
+                  '-fPIC',
+                  '--sysroot=<(sysroot)',
               ],
               'ldflags': [
-                '--sysroot=<(sysroot)',
+                  '--sysroot=<(sysroot)',
+              ],
+              # TODO(mcgrathr): This is copied from the arm section of
+              # chromium/src/build/common.gypi, but these details really
+              # should be more fully harmonized and shared.
+              'conditions': [
+                  ['arm_thumb==1', {
+                      'cflags': [
+                          '-mthumb',
+                      ]
+                  }],
+                  ['armv7==1', {
+                      'cflags': [
+                          '-march=armv7-a',
+                          '-mtune=cortex-a8',
+                          '-mfloat-abi=<(arm_float_abi)',
+                      ],
+                      'conditions': [
+                          ['arm_neon==1', {
+                              'cflags': [ '-mfpu=neon', ],
+                          }, {
+                              'cflags': [ '-mfpu=<(arm_fpu)', ],
+                          }]
+                      ],
+                  }],
               ],
             }, { # else: target_arch != "arm"
               'conditions': [
