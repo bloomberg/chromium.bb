@@ -35,14 +35,15 @@ using content::SSLStatus;
 using content::WebContents;
 
 // static
-void SSLManager::OnSSLCertificateError(SSLErrorHandler::Delegate* delegate,
-                                       const content::GlobalRequestID& id,
-                                       const ResourceType::Type resource_type,
-                                       const GURL& url,
-                                       int render_process_id,
-                                       int render_view_id,
-                                       const net::SSLInfo& ssl_info,
-                                       bool fatal) {
+void SSLManager::OnSSLCertificateError(
+    base::WeakPtr<SSLErrorHandler::Delegate> delegate,
+    const content::GlobalRequestID& id,
+    const ResourceType::Type resource_type,
+    const GURL& url,
+    int render_process_id,
+    int render_view_id,
+    const net::SSLInfo& ssl_info,
+    bool fatal) {
   DCHECK(delegate);
   DVLOG(1) << "OnSSLCertificateError() cert_error: "
            << net::MapCertStatusToNetError(ssl_info.cert_status)

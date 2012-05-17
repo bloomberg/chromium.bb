@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -79,6 +80,9 @@ class SocketStreamDispatcherHost : public content::BrowserMessageFilter,
   void DeleteSocketStreamHost(int socket_id);
 
   net::URLRequestContext* GetURLRequestContext();
+
+  // For SSLErrorHandler::Delegate calls from SSLManager.
+  base::WeakPtrFactory<SSLErrorHandler::Delegate> ssl_delegate_weak_factory_;
 
   IDMap<SocketStreamHost> hosts_;
   int render_process_id_;

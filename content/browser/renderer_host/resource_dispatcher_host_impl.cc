@@ -320,6 +320,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
       save_file_manager_(new SaveFileManager()),
       request_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(ssl_delegate_weak_factory_(this)),
       is_shutdown_(false),
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
@@ -1535,9 +1536,9 @@ void ResourceDispatcherHostImpl::OnSSLCertificateError(
   int render_view_id;
   if(!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
     NOTREACHED();
-  SSLManager::OnSSLCertificateError(this, request_id, info->GetResourceType(),
-      request->url(), render_process_id, render_view_id, ssl_info,
-      is_hsts_host);
+  SSLManager::OnSSLCertificateError(ssl_delegate_weak_factory_.GetWeakPtr(),
+      request_id, info->GetResourceType(), request->url(), render_process_id,
+      render_view_id, ssl_info, is_hsts_host);
 }
 
 void ResourceDispatcherHostImpl::OnResponseStarted(net::URLRequest* request) {

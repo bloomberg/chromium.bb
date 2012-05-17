@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/ssl/ssl_policy_backend.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
@@ -50,14 +51,15 @@ class SSLManager : public content::NotificationObserver {
   // |ContinueSSLRequest| of |delegate| with |id| as the first argument.
   //
   // Called on the IO thread.
-  static void OnSSLCertificateError(SSLErrorHandler::Delegate* delegate,
-                                    const content::GlobalRequestID& id,
-                                    ResourceType::Type resource_type,
-                                    const GURL& url,
-                                    int render_process_id,
-                                    int render_view_id,
-                                    const net::SSLInfo& ssl_info,
-                                    bool fatal);
+  static void OnSSLCertificateError(
+      base::WeakPtr<SSLErrorHandler::Delegate> delegate,
+      const content::GlobalRequestID& id,
+      ResourceType::Type resource_type,
+      const GURL& url,
+      int render_process_id,
+      int render_view_id,
+      const net::SSLInfo& ssl_info,
+      bool fatal);
 
   // Called when SSL state for a host or tab changes.  Broadcasts the
   // SSL_INTERNAL_STATE_CHANGED notification.

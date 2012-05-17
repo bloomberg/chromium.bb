@@ -21,7 +21,8 @@ SocketStreamDispatcherHost::SocketStreamDispatcherHost(
     int render_process_id,
     ResourceMessageFilter::URLRequestContextSelector* selector,
     content::ResourceContext* resource_context)
-    : render_process_id_(render_process_id),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ssl_delegate_weak_factory_(this)),
+      render_process_id_(render_process_id),
       url_request_context_selector_(selector),
       resource_context_(resource_context) {
   DCHECK(selector);
@@ -110,9 +111,10 @@ void SocketStreamDispatcherHost::OnSSLCertificateError(
   SocketStreamHost* socket_stream_host = hosts_.Lookup(socket_id);
   DCHECK(socket_stream_host);
   content::GlobalRequestID request_id(-1, socket_id);
-  SSLManager::OnSSLCertificateError(this, request_id,
-      ResourceType::SUB_RESOURCE, socket->url(), render_process_id_,
-      socket_stream_host->render_view_id(), ssl_info, fatal);
+  SSLManager::OnSSLCertificateError(ssl_delegate_weak_factory_.GetWeakPtr(),
+      request_id, ResourceType::SUB_RESOURCE, socket->url(),
+      render_process_id_, socket_stream_host->render_view_id(), ssl_info,
+      fatal);
 }
 
 bool SocketStreamDispatcherHost::CanGetCookies(net::SocketStream* socket,

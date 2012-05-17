@@ -472,6 +472,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // For running tasks.
   base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_factory_;
 
+  // For SSLErrorHandler::Delegate calls from SSLManager.
+  base::WeakPtrFactory<SSLErrorHandler::Delegate> ssl_delegate_weak_factory_;
+
   // True if the resource dispatcher host has been shut down.
   bool is_shutdown_;
 

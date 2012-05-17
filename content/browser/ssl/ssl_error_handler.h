@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "googleurl/src/gurl.h"
@@ -105,7 +106,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   friend class base::RefCountedThreadSafe<SSLErrorHandler>;
 
   // Construct on the IO thread.
-  SSLErrorHandler(Delegate* delegate,
+  SSLErrorHandler(base::WeakPtr<Delegate> delegate,
                   const content::GlobalRequestID& id,
                   ResourceType::Type resource_type,
                   const GURL& url,
@@ -128,7 +129,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   content::GlobalRequestID request_id_;
 
   // The delegate we are associated with.
-  Delegate* delegate_;
+  base::WeakPtr<Delegate> delegate_;
 
  private:
   // Completes the CancelRequest operation on the IO thread.
