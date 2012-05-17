@@ -48,7 +48,9 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_x_(0),
         scroll_y_(0),
         velocity_x_(0),
-        velocity_y_(0) {
+        velocity_y_(0),
+        radius_x_(0),
+        radius_y_(0) {
   }
 
   virtual ~GestureEventConsumeDelegate() {}
@@ -68,11 +70,14 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     three_finger_swipe_ = false;
 
     scroll_begin_position_.SetPoint(0, 0);
+    tap_location_.SetPoint(0, 0);
 
     scroll_x_ = 0;
     scroll_y_ = 0;
     velocity_x_ = 0;
     velocity_y_ = 0;
+    radius_x_ = 0;
+    radius_y_ = 0;
   }
 
   bool tap() const { return tap_; }
@@ -92,15 +97,24 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     return scroll_begin_position_;
   }
 
+  const gfx::Point tap_location() const {
+    return tap_location_;
+  }
+
   float scroll_x() const { return scroll_x_; }
   float scroll_y() const { return scroll_y_; }
   int touch_id() const { return touch_id_; }
   float velocity_x() const { return velocity_x_; }
   float velocity_y() const { return velocity_y_; }
+  float radius_x() const { return radius_x_; }
+  float radius_y() const { return radius_y_; }
 
   virtual ui::GestureStatus OnGestureEvent(GestureEvent* gesture) OVERRIDE {
     switch (gesture->type()) {
       case ui::ET_GESTURE_TAP:
+        radius_x_ = gesture->delta_x();
+        radius_y_ = gesture->delta_y();
+        tap_location_ = gesture->location();
         tap_ = true;
         break;
       case ui::ET_GESTURE_TAP_DOWN:
@@ -167,11 +181,14 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool three_finger_swipe_;
 
   gfx::Point scroll_begin_position_;
+  gfx::Point tap_location_;
 
   float scroll_x_;
   float scroll_y_;
   float velocity_x_;
   float velocity_y_;
+  int radius_x_;
+  int radius_y_;
   int touch_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventConsumeDelegate);
@@ -401,6 +418,233 @@ TEST_F(GestureRecognizerTest, GestureEventTap) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
+}
+
+// Check that appropriate touch events generate tap gesture events
+// when information about the touch radii are provided.
+TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 800;
+  const int kWindowHeight = 600;
+  const int kTouchId = 2;
+  gfx::Rect bounds(0, 0, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  // Test with no ET_TOUCH_MOVED events.
+  {
+     delegate->Reset();
+     TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                      kTouchId, GetTime());
+     press.set_radius_x(5);
+     press.set_radius_y(12);
+     root_window()->DispatchTouchEvent(&press);
+     EXPECT_FALSE(delegate->tap());
+     EXPECT_TRUE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+     EXPECT_FALSE(delegate->long_press());
+
+     // Make sure there is enough delay before the touch is released so that it
+     // is recognized as a tap.
+     delegate->Reset();
+     TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                        kTouchId, press.time_stamp() +
+                        base::TimeDelta::FromMilliseconds(50));
+     release.set_radius_x(5);
+     release.set_radius_y(12);
+
+     root_window()->DispatchTouchEvent(&release);
+     EXPECT_TRUE(delegate->tap());
+     EXPECT_FALSE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+
+     gfx::Point actual_point(delegate->tap_location());
+     EXPECT_EQ(12, delegate->radius_x());
+     EXPECT_EQ(12, delegate->radius_y());
+     EXPECT_EQ(100, actual_point.x());
+     EXPECT_EQ(200, actual_point.y());
+  }
+
+  // Test with no ET_TOUCH_MOVED events but different touch points and radii.
+  {
+     delegate->Reset();
+     TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(365, 290),
+                      kTouchId, GetTime());
+     press.set_radius_x(8);
+     press.set_radius_y(14);
+     root_window()->DispatchTouchEvent(&press);
+     EXPECT_FALSE(delegate->tap());
+     EXPECT_TRUE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+     EXPECT_FALSE(delegate->long_press());
+
+     delegate->Reset();
+     TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(377, 291),
+                        kTouchId, press.time_stamp() +
+                        base::TimeDelta::FromMilliseconds(50));
+     release.set_radius_x(20);
+     release.set_radius_y(13);
+
+     root_window()->DispatchTouchEvent(&release);
+     EXPECT_TRUE(delegate->tap());
+     EXPECT_FALSE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+
+     gfx::Point actual_point(delegate->tap_location());
+     EXPECT_EQ(23, delegate->radius_x());
+     EXPECT_EQ(20, delegate->radius_y());
+     EXPECT_EQ(373, actual_point.x());
+     EXPECT_EQ(290, actual_point.y());
+  }
+
+  // Test with a single ET_TOUCH_MOVED event.
+  {
+     delegate->Reset();
+     TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(46, 205),
+                      kTouchId, GetTime());
+     press.set_radius_x(6);
+     press.set_radius_y(10);
+     root_window()->DispatchTouchEvent(&press);
+     EXPECT_FALSE(delegate->tap());
+     EXPECT_TRUE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+     EXPECT_FALSE(delegate->long_press());
+
+     delegate->Reset();
+     TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(52, 200),
+                     kTouchId, press.time_stamp() +
+                     base::TimeDelta::FromMilliseconds(50));
+     move.set_radius_x(8);
+     move.set_radius_y(12);
+     root_window()->DispatchTouchEvent(&move);
+     EXPECT_FALSE(delegate->tap());
+     EXPECT_FALSE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+     EXPECT_FALSE(delegate->long_press());
+
+     delegate->Reset();
+     TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(50, 195),
+                        kTouchId, press.time_stamp() +
+                        base::TimeDelta::FromMilliseconds(50));
+     release.set_radius_x(4);
+     release.set_radius_y(8);
+
+     root_window()->DispatchTouchEvent(&release);
+     EXPECT_TRUE(delegate->tap());
+     EXPECT_FALSE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+
+     gfx::Point actual_point(delegate->tap_location());
+     EXPECT_EQ(14, delegate->radius_x());
+     EXPECT_EQ(14, delegate->radius_y());
+     EXPECT_EQ(49, actual_point.x());
+     EXPECT_EQ(200, actual_point.y());
+  }
+
+  // Test with a few ET_TOUCH_MOVED events.
+  {
+     delegate->Reset();
+     TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(400, 150),
+                      kTouchId, GetTime());
+     press.set_radius_x(7);
+     press.set_radius_y(10);
+     root_window()->DispatchTouchEvent(&press);
+     EXPECT_FALSE(delegate->tap());
+     EXPECT_TRUE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+     EXPECT_FALSE(delegate->long_press());
+
+     delegate->Reset();
+     TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(397, 155),
+                     kTouchId, press.time_stamp() +
+                     base::TimeDelta::FromMilliseconds(50));
+     move.set_radius_x(13);
+     move.set_radius_y(12);
+     root_window()->DispatchTouchEvent(&move);
+     EXPECT_FALSE(delegate->tap());
+     EXPECT_FALSE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+     EXPECT_FALSE(delegate->long_press());
+
+     delegate->Reset();
+     TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(395, 148),
+                      kTouchId, move.time_stamp() +
+                      base::TimeDelta::FromMilliseconds(50));
+     move1.set_radius_x(16);
+     move1.set_radius_y(16);
+     root_window()->DispatchTouchEvent(&move1);
+     EXPECT_FALSE(delegate->tap());
+     EXPECT_FALSE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+     EXPECT_FALSE(delegate->long_press());
+
+     delegate->Reset();
+     TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(400, 150),
+                      kTouchId, move1.time_stamp() +
+                      base::TimeDelta::FromMilliseconds(50));
+     move2.set_radius_x(14);
+     move2.set_radius_y(10);
+     root_window()->DispatchTouchEvent(&move2);
+     EXPECT_FALSE(delegate->tap());
+     EXPECT_FALSE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+     EXPECT_FALSE(delegate->long_press());
+
+     delegate->Reset();
+     TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(401, 149),
+                        kTouchId, press.time_stamp() +
+                        base::TimeDelta::FromMilliseconds(50));
+     release.set_radius_x(8);
+     release.set_radius_y(9);
+
+     root_window()->DispatchTouchEvent(&release);
+     EXPECT_TRUE(delegate->tap());
+     EXPECT_FALSE(delegate->tap_down());
+     EXPECT_FALSE(delegate->double_tap());
+     EXPECT_FALSE(delegate->scroll_begin());
+     EXPECT_FALSE(delegate->scroll_update());
+     EXPECT_FALSE(delegate->scroll_end());
+
+     gfx::Point actual_point(delegate->tap_location());
+     EXPECT_EQ(17, delegate->radius_x());
+     EXPECT_EQ(18, delegate->radius_y());
+     EXPECT_EQ(396, actual_point.x());
+     EXPECT_EQ(149, actual_point.y());
+  }
 }
 
 // Check that appropriate touch events generate scroll gesture events.

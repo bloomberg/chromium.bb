@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "ui/base/events.h"
 #include "ui/base/gestures/gesture_configuration.h"
+#include "ui/gfx/rect.h"
 
 namespace ui {
 
@@ -361,12 +362,16 @@ void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
 
 void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
                                               Gestures* gestures) {
+  gfx::Rect er = point.enclosing_rectangle();
+  gfx::Point center = er.CenterPoint();
   gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_TAP,
-      point.first_touch_position(),
+      center,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      0.f, 0.f, 1 << point.touch_id()));
+      er.width() / 2,
+      er.height() / 2,
+      1 << point.touch_id()));
 }
 
 void GestureSequence::AppendDoubleClickGestureEvent(const GesturePoint& point,

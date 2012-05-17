@@ -317,6 +317,22 @@ TouchEvent* TouchEvent::Copy() const {
   return new TouchEvent(*this, NULL, NULL);
 }
 
+float TouchEvent::RadiusX() const {
+  return radius_x_;
+}
+
+float TouchEvent::RadiusY() const {
+  return radius_y_;
+}
+
+float TouchEvent::RotationAngle() const {
+  return rotation_angle_;
+}
+
+float TouchEvent::Force() const {
+  return force_;
+}
+
 KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
     : Event(native_event,
             ui::EventTypeFromNative(native_event),

@@ -66,6 +66,22 @@ class CancelledTouchEvent : public ui::TouchEvent {
     return NULL;
   }
 
+  virtual float RadiusX() const OVERRIDE {
+    return src_event_->RadiusX();
+  }
+
+  virtual float RadiusY() const OVERRIDE {
+    return src_event_->RadiusY();
+  }
+
+  virtual float RotationAngle() const OVERRIDE {
+    return src_event_->RotationAngle();
+  }
+
+  virtual float Force() const OVERRIDE {
+    return src_event_->Force();
+  }
+
   ui::TouchEvent* src_event_;
   DISALLOW_COPY_AND_ASSIGN(CancelledTouchEvent);
 };

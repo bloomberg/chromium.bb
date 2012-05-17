@@ -205,6 +205,10 @@ class AURA_EXPORT TouchEvent : public LocatedEvent,
   float rotation_angle() const { return rotation_angle_; }
   float force() const { return force_; }
 
+  // Used for unit tests.
+  void set_radius_x(const float r) { radius_x_ = r; }
+  void set_radius_y(const float r) { radius_y_ = r; }
+
   // Overridden from LocatedEvent.
   virtual void UpdateForRootTransform(
       const ui::Transform& root_transform) OVERRIDE;
@@ -216,6 +220,10 @@ class AURA_EXPORT TouchEvent : public LocatedEvent,
   virtual int GetEventFlags() const OVERRIDE;
   virtual base::TimeDelta GetTimestamp() const OVERRIDE;
   virtual TouchEvent* Copy() const OVERRIDE;
+  virtual float RadiusX() const OVERRIDE;
+  virtual float RadiusY() const OVERRIDE;
+  virtual float RotationAngle() const OVERRIDE;
+  virtual float Force() const OVERRIDE;
 
  private:
   // The identity (typically finger) of the touch starting at 0 and incrementing

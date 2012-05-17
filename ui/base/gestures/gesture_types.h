@@ -22,6 +22,10 @@ class UI_EXPORT TouchEvent {
   virtual int GetTouchId() const = 0;
   virtual int GetEventFlags() const = 0;
   virtual base::TimeDelta GetTimestamp() const = 0;
+  virtual float RadiusX() const = 0;
+  virtual float RadiusY() const = 0;
+  virtual float RotationAngle() const = 0;
+  virtual float Force() const = 0;
 
   // Returns a copy of this touch event. Used when queueing events for
   // asynchronous gesture recognition.

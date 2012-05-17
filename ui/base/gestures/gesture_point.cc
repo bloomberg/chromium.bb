@@ -28,6 +28,7 @@ void GesturePoint::Reset() {
   first_touch_time_ = last_touch_time_ = 0.0;
   velocity_calculator_.ClearHistory();
   point_id_ = -1;
+  clear_enclosing_rectangle();
 }
 
 void GesturePoint::ResetVelocity() {
@@ -53,7 +54,10 @@ void GesturePoint::UpdateValues(const TouchEvent& event) {
     velocity_calculator_.PointSeen(event.GetLocation().x(),
                                    event.GetLocation().y(),
                                    event_timestamp_microseconds);
+    clear_enclosing_rectangle();
   }
+
+  UpdateEnclosingRectangle(event);
 }
 
 void GesturePoint::UpdateForTap() {
@@ -169,6 +173,27 @@ bool GesturePoint::IsSecondClickInsideManhattanSquare(
 bool GesturePoint::IsOverMinFlickSpeed() {
   return velocity_calculator_.VelocitySquared() >
       GestureConfiguration::min_flick_speed_squared();
+}
+
+void GesturePoint::UpdateEnclosingRectangle(const TouchEvent& event) {
+  int radius;
+
+  // If the device provides at least one of the radius values, take the larger
+  // of the two and use this as both the x radius and the y radius of the
+  // touch region. Otherwise use the default radius value.
+  // TODO(tdanderson): Implement a more specific check for the exact
+  // information provided by the device (0-2 radii values, force, angle) and
+  // use this to compute a more representative rectangular touch region.
+  if (event.RadiusX() || event.RadiusY())
+    radius = std::max(event.RadiusX(), event.RadiusY());
+  else
+    radius = GestureConfiguration::default_radius();
+
+  gfx::Rect rect(event.GetLocation().x() - radius,
+                 event.GetLocation().y() - radius,
+                 radius * 2,
+                 radius * 2);
+  enclosing_rect_ = enclosing_rect_.Union(rect);
 }
 
 }  // namespace ui

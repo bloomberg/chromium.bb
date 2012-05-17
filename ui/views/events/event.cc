@@ -171,6 +171,22 @@ TouchEvent* TouchEvent::Copy() const {
       flags(), touch_id_, radius_x_, radius_y_, rotation_angle_, force_);
 }
 
+float TouchEvent::RadiusX() const {
+  return radius_x_;
+}
+
+float TouchEvent::RadiusY() const {
+  return radius_y_;
+}
+
+float TouchEvent::RotationAngle() const {
+  return rotation_angle_;
+}
+
+float TouchEvent::Force() const {
+  return force_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, private:
 

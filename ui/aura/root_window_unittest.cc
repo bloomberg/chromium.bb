@@ -488,8 +488,8 @@ TEST_F(RootWindowTest, GestureToMouseEventTest) {
     TouchEvent touch_event(ui::ET_TOUCH_MOVED, gfx::Point(200, 201), 1,
                            base::TimeDelta());
     root_window()->DispatchTouchEvent(&touch_event);
-    EXPECT_EQ("TOUCH_MOVED GESTURE_SCROLL_BEGIN MOUSE_PRESSED MOUSE_DRAGGED "
-              "GESTURE_SCROLL_UPDATE MOUSE_DRAGGED",
+    EXPECT_EQ("TOUCH_MOVED GESTURE_SCROLL_BEGIN MOUSE_MOVED MOUSE_PRESSED "
+               "MOUSE_DRAGGED GESTURE_SCROLL_UPDATE MOUSE_DRAGGED",
               EventTypesToString(filter->events()));
     filter->events().clear();
   }
