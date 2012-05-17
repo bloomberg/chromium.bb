@@ -98,16 +98,25 @@ def FetchRemoteTarballs(urls):
     cmd = ['curl']
     cmd.extend(args)
 
-    result = cros_build_lib.RunCommand(cmd, error_ok=True, **kwargs)
-    if result.returncode > 0:
-      # These are the return codes of failing certs as per 'man curl'.
-      if result.returncode in (51, 58, 60):
+    # These values were discerned via scraping the curl manpage; they're all
+    # retry related (dns failed, timeout occurred, etc, see  the manpage for
+    # exact specifics of each).
+    # Note we allow 22 to deal w/ 500's- they're thrown by google storage
+    # occasionally.
+    # Finally, we do not use curl's --retry option since it generally doesn't
+    # actually retry anything; code 18 for example, it will not retry on.
+    retriable_exits = frozenset([5, 6, 7, 15, 18, 22, 26, 28, 52])
+    try:
+      return cros_build_lib.RunCommandWithRetries(
+          5, cmd, sleep=3, retry_on=retriable_exits, **kwargs)
+    except cros_build_lib.RunCommandError, e:
+      code = e.result.returncode
+      if e.returncode in (51, 58, 60):
+        # These are the return codes of failing certs as per 'man curl'.
         print 'Download failed with certificate error? Try "sudo c_rehash".'
       else:
-        print 'Curl failed!'
+        print "Curl failed w/ exit code %i" % code
       sys.exit(1)
-
-    return result
 
   def RemoteTarballExists(url):
     """Tests if a remote tarball exists."""
@@ -130,6 +139,7 @@ def FetchRemoteTarballs(urls):
   else:
     raise Exception('No valid URLs found!')
 
+  # pylint: disable=E1101
   tarball_name = os.path.basename(urlparse.urlparse(url).path)
   tarball_dest = os.path.join(SDK_DIR, tarball_name)
 
@@ -143,8 +153,7 @@ def FetchRemoteTarballs(urls):
       if os.path.isfile(f_path) and os.stat(f_path).st_uid == os.getuid():
         os.remove(f_path)
 
-  curl_opts = ['-f', '--retry', '5', '-L', '-y', '30',
-               '--output', tarball_dest]
+  curl_opts = ['-f', '-L', '-y', '30', '--output', tarball_dest]
   if not url.startswith('file://') and os.path.exists(tarball_dest):
     # Only resume for remote URLs. If the file is local, there's no
     # real speedup, and using the same filename for different files
@@ -155,6 +164,7 @@ def FetchRemoteTarballs(urls):
     # told to resume a file that is fully downloaded, thus do a
     # check on our own.
     # see:
+    # pylint: disable=C0301
     # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
     result = RunCurl(['-I', url],
                      redirect_stdout=True,

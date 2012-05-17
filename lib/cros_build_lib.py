@@ -976,8 +976,13 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
     max_retry: A positive integer representing how many times to retry
       the command before giving up.  Worst case, the command is invoked
       (max_retry + 1) times before failing.
-    sleep: Multiplier for how long to sleep between retries; will delay
-           (1*sleep) the first time, then (2*sleep), then ...
+    sleep: Optional keyword.  Multiplier for how long to sleep between
+           retries; will delay (1*sleep) the first time, then (2*sleep),
+           continuing via attempt * sleep.
+    retry_on: If given, it must support containment (ie, lists, sets, etc),
+              and retry will only be continued for the given exit codes,
+              failing immediately if the exit code isn't one of the allowed
+              retry codes.
     args: Positional args passed to RunCommand; see RunCommand for specifics.
     kwds: Optional args passed to RunCommand; see RunCommand for specifics.
   Returns:
@@ -985,28 +990,31 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
   Raises:
     Exception:  Raises RunCommandError on error with optional error_message.
   """
+  if max_retry < 0:
+    raise ValueError("max_retry needs to be zero or more: %s" % max_retry)
   sleep = kwds.pop('sleep', 0)
-  try:
-    return RunCommand(*args, **kwds)
-  except TerminateRunCommandError:
-    raise
-  except RunCommandError:
-    # pylint: disable=W0612
-    for attempt in xrange(max_retry):
-      time.sleep(sleep * (attempt + 1))
-      try:
-        return RunCommand(*args, **kwds)
-      except TerminateRunCommandError:
-        # Unfortunately, there is no right answer for this case- do we expose
-        # the original error?  Or do we indicate we were told to die?
-        # Right now we expose that we were sigtermed, this is open for debate.
+  retry_on = kwds.pop('retry_on', set(xrange(255)))
+  exc_info = None
+  for attempt in xrange(max_retry + 1):
+    try:
+      return RunCommand(*args, **kwds)
+    except TerminateRunCommandError:
+      # Unfortunately, there is no right answer for this case- do we expose
+      # the original error?  Or do we indicate we were told to die?
+      # Right now we expose that we were sigtermed, this is open for debate.
+      raise
+    except RunCommandError, e:
+      if e.result.returncode not in retry_on:
         raise
-      except RunCommandError:
-        # We intentionally ignore any failures in later attempts since we'll
-        # throw the original failure if all retries fail.
-        pass
-    raise
+      # We intentionally ignore any failures in later attempts since we'll
+      # throw the original failure if all retries fail.
+      if exc_info is None:
+        exc_info = sys.exc_info()
 
+      time.sleep(sleep * (attempt + 1))
+
+  #pylint: disable=E0702
+  raise exc_info
 
 def RunCommandCaptureOutput(cmd, **kwds):
   """Wrapper for RunCommand that captures output.
