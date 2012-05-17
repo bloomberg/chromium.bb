@@ -69,6 +69,7 @@ class NonActivatableSettingsBubble : public views::BubbleDelegateView {
     set_use_focusless(true);
     set_parent_window(ash::Shell::GetInstance()->GetContainer(
         ash::internal::kShellWindowId_SettingBubbleContainer));
+    set_close_on_deactivate(false);
     SetLayoutManager(new views::FillLayout());
     AddChildView(content);
   }

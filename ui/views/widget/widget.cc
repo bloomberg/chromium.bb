@@ -518,7 +518,7 @@ void Widget::Show() {
     native_widget_->Show();
   }
 
-  if (close_on_deactivate_) {
+  if (CanActivate() && close_on_deactivate_) {
     // Set mouse capture on timeout in case this is called from a
     // mouse pressed handler.
     MessageLoopForUI::current()->PostTask(FROM_HERE, base::Bind(

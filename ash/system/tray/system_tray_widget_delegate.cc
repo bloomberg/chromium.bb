@@ -59,7 +59,7 @@ bool StatusAreaView::CanActivate() const {
   // activation when the user is using the keyboard (FocusCycler).
   const FocusCycler* focus_cycler = focus_cycler_for_testing_ ?
       focus_cycler_for_testing_ : Shell::GetInstance()->focus_cycler();
-  return focus_cycler->widget_activating() == GetWidget();
+  return focus_cycler && focus_cycler->widget_activating() == GetWidget();
 }
 
 void StatusAreaView::DeleteDelegate() {
