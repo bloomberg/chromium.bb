@@ -8,7 +8,7 @@ vars = {
   "webkit_revision": "117232",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "8592",
+  "nacl_revision": "8626",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "8228",  # native_client/DEPS: tools_rev
@@ -17,29 +17,29 @@ vars = {
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
   "nacl_toolchain_linux_x86_hash":
-      "bb547cdcb2f0ee05bcd89d69f6bb9f040dbb75b5",
+      "832431536b1245b49dae211851e9e8a23e06d5e8",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "3e4b68370db6959e2748b037318a384b65bbbb43",
+      "3dc2a7fa55900a0a4d3258eea6bdabf5ccce6bf8",
   "nacl_toolchain_mac_x86_hash":
-      "ccee424c5ccc3e373f67d6af5fb28c6550d97660",
+      "06d431637113afe0ba14f9eaaf8049022251bcf7",
   "nacl_toolchain_mac_x86_newlib_hash":
-      "37a896dc6d31e49f3612aead6cce878719586aa6",
+      "baa113d75a181ca88d4c3c33ccda7301ead0ae29",
   "nacl_toolchain_pnacl_linux_x86_32_hash":
-      "18cb4755f56ad7832dea0602fc3c8518f9544146",
+      "bf3be22a2b473aac3ee58e99a45254f385975467",
   "nacl_toolchain_pnacl_linux_x86_64_hash":
-      "d68750488fb2456d6cafd33ca00522ecf106d542",
+      "d75fc5f81c5ed039fde6b3f76a0425024c12e79f",
   "nacl_toolchain_pnacl_mac_x86_32_hash":
-      "9e2dc26e1cc5a3a3a6c877f16280a2f003ad6ba2",
+      "fefe688c8d39e4bd103c98fdda7e66d1988b2809",
   "nacl_toolchain_pnacl_translator_hash":
-      "7fe891cac2e9504fe5837cb8dae90629da12c3a1",
+      "fc1984dabfb21700feb2b29f17a14b15ab8f8a5b",
   "nacl_toolchain_pnacl_win_x86_32_hash":
-      "22e44ecbbdcd4577f6a5dea8fb819b61b338dd21",
+      "21efccfdd0c567b46ed568acbb931a686505f4dd",
   "nacl_toolchain_win_x86_hash":
-      "c62cc8258c9f618e9a4481b44fee9e1873469ad7",
+      "971ffcb4dd2985c85b3b49ede095d13754145798",
   "nacl_toolchain_win_x86_newlib_hash":
-      "7711dbc818e569834e6ebd19b1f8aa6e333062b5",
-  "nacl_toolchain_revision": "8607",
-  "pnacl_toolchain_revision": "8607",
+      "40165d4b6c1d4c6bfdaafdf74b98adf0de83060d",
+  "nacl_toolchain_revision": "8612",
+  "pnacl_toolchain_revision": "8612",
 
   "libjingle_revision": "136",
   "libphonenumber_revision": "425",
