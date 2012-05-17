@@ -487,6 +487,8 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
 }
 
 void GLInProcessContext::Destroy() {
+  bool context_lost = IsCommandBufferContextLost();
+
   if (parent_.get() && parent_texture_id_ != 0) {
     parent_->gles2_implementation_->FreeTextureId(parent_texture_id_);
     parent_texture_id_ = 0;
@@ -506,6 +508,10 @@ void GLInProcessContext::Destroy() {
   transfer_buffer_.reset();
   gles2_helper_.reset();
   command_buffer_.reset();
+
+  if (decoder_.get()) {
+    decoder_->Destroy(context_lost);
+  }
 }
 
 void GLInProcessContext::OnContextLost() {
