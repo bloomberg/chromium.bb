@@ -243,6 +243,24 @@ const int kSaveStateIntervalMinutes = 5;
 // e.g., the server is down.
 const int kNoResponseCode = content::URLFetcher::RESPONSE_CODE_INVALID - 1;
 
+enum ResponseStatus {
+  UNKNOWN_FAILURE,
+  SUCCESS,
+  BAD_REQUEST,  // Invalid syntax or log too large.
+  NUM_RESPONSE_STATUSES
+};
+
+ResponseStatus ResponseCodeToStatus(int response_code) {
+  switch (response_code) {
+    case 200:
+      return SUCCESS;
+    case 400:
+      return BAD_REQUEST;
+    default:
+      return UNKNOWN_FAILURE;
+  }
+}
+
 }
 
 // static
@@ -1242,6 +1260,8 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(waiting_for_asynchronus_reporting_step_);
 
   // We're not allowed to re-use the existing |URLFetcher|s, so free them here.
+  // Note however that |source| is aliased to one of these, so we should be
+  // careful not to delete it too early.
   scoped_ptr<content::URLFetcher> s;
   if (source == current_fetch_xml_.get()) {
     s.reset(current_fetch_xml_.release());
@@ -1251,8 +1271,18 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
     response_code_ = source->GetResponseCode();
     response_status_ = StatusToString(source->GetStatus());
     source->GetResponseAsString(&response_data_);
+
+    // Log a histogram to track response success vs. failure rates.
+    UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.XML",
+                              ResponseCodeToStatus(response_code_),
+                              NUM_RESPONSE_STATUSES);
   } else if (source == current_fetch_proto_.get()) {
     s.reset(current_fetch_proto_.release());
+
+    // Log a histogram to track response success vs. failure rates.
+    UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.Protobuf",
+                              ResponseCodeToStatus(source->GetResponseCode()),
+                              NUM_RESPONSE_STATUSES);
   } else {
     NOTREACHED();
     return;
@@ -1273,7 +1303,7 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   log_manager_.DiscardLastProvisionalStore();
 
   // Confirm send so that we can move on.
-  VLOG(1) << "METRICS RESPONSE CODE: " << response_code_
+  VLOG(1) << "Metrics response code: " << response_code_
           << " status=" << response_status_;
 
   bool upload_succeeded = response_code_ == 200;
@@ -1290,16 +1320,15 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
     discard_log = true;
   } else if (response_code_ == 400) {
     // Bad syntax.  Retransmission won't work.
-    UMA_HISTOGRAM_COUNTS("UMA.Unacceptable_Log_Discarded", state_);
     discard_log = true;
   }
 
   if (!upload_succeeded && !discard_log) {
-    VLOG(1) << "METRICS: transmission attempt returned a failure code: "
+    VLOG(1) << "Metrics: transmission attempt returned a failure code: "
             << response_code_ << ". Verify network connectivity";
     LogBadResponseCode();
   } else {  // Successful receipt (or we are discarding log).
-    VLOG(1) << "METRICS RESPONSE DATA: " << response_data_;
+    VLOG(1) << "Metrics response data: " << response_data_;
     switch (state_) {
       case INITIAL_LOG_READY:
         state_ = SENDING_OLD_LOGS;
