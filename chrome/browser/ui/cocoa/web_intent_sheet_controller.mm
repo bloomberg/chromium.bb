@@ -57,11 +57,15 @@ const CGFloat kHeaderFontSize = 14.5;
 const CGFloat kTextWidth = kWindowWidth -
     (kFramePadding * 2 + kCloseButtonSize);
 
-}  // namespace
+// Sets properties on the given |field| to act as title or description labels.
+void ConfigureTextFieldAsLabel(NSTextField* field) {
+  [field setEditable:NO];
+  [field setSelectable:YES];
+  [field setDrawsBackground:NO];
+  [field setBezeled:NO];
+}
 
-// Helper methods used for the creation of the picker sheet controls.
-@implementation WebIntentPickerSheetController (helpers)
-+ (NSButton*)createHyperlinkButton:(NSString*)title withFrame:(NSRect)frame {
+NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   NSButton* button = [[NSButton alloc] initWithFrame:frame];
   scoped_nsobject<HyperlinkButtonCell> cell(
       [[HyperlinkButtonCell alloc] initTextCell:title]);
@@ -72,7 +76,8 @@ const CGFloat kTextWidth = kWindowWidth -
 
   return button;
 }
-@end
+
+}  // namespace
 
 // This simple NSView subclass is used as the single subview of the page info
 // bubble's window's contentView. Drawing is flipped so that layout of the
@@ -206,9 +211,7 @@ const CGFloat kTextWidth = kWindowWidth -
     NSRect frame = NSMakeRect(kTitleX, 0, 0, 0);
 
     NSString* string = base::SysUTF16ToNSString(extension->title);
-    cwsButton_.reset(
-      [WebIntentPickerSheetController createHyperlinkButton:string
-                                                  withFrame:frame]);
+    cwsButton_.reset(CreateHyperlinkButton(string, frame));
     [cwsButton_ setAlignment:NSLeftTextAlignment];
     [cwsButton_ setTarget:controller];
     [cwsButton_ setAction:@selector(openExtensionLink:)];
@@ -326,6 +329,7 @@ const CGFloat kTextWidth = kWindowWidth -
  @private
   // Used to forward button clicks. Weak reference.
   WebIntentPickerSheetController* controller_;
+  scoped_nsobject<NSTextField> suggestionLabel_;
 }
 
 - (id)initWithModel:(WebIntentPickerModel*)model
@@ -344,6 +348,11 @@ const CGFloat kTextWidth = kWindowWidth -
 
   NSMutableArray* subviews = [NSMutableArray array];
 
+  NSRect textFrame = NSMakeRect(0, 0,
+                         kTextWidth, 1);
+  suggestionLabel_.reset([[NSTextField alloc] initWithFrame:textFrame]);
+  ConfigureTextFieldAsLabel(suggestionLabel_);
+
   CGFloat offset = kYMargin;
   for (size_t i = count; i > 0; --i) {
     const WebIntentPickerModel::SuggestedExtension& ext =
@@ -356,6 +365,12 @@ const CGFloat kTextWidth = kWindowWidth -
                         toSubviews:subviews
                           atOffset:offset];
   }
+
+  [self updateSuggestionLabelForModel:model];
+  offset += [self addStackedView:suggestionLabel_
+                      toSubviews:subviews
+                      atOffset:offset];
+
   offset += kYMargin;
 
   NSRect contentFrame = NSMakeRect(kFramePadding, 0, kWindowWidth, offset);
@@ -364,6 +379,33 @@ const CGFloat kTextWidth = kWindowWidth -
 
   controller_ = controller;
   return self;
+}
+
+- (void)updateSuggestionLabelForModel:(WebIntentPickerModel*)model {
+  DCHECK(suggestionLabel_.get());
+  string16 labelText;
+
+  if (model->GetSuggestedExtensionCount() > 0) {
+    if (model->GetInstalledServiceCount() == 0)
+      labelText = l10n_util::GetStringUTF16(
+          IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED);
+    else
+      labelText = l10n_util::GetStringUTF16(
+          IDS_INTENT_PICKER_GET_MORE_SERVICES);
+  }
+
+  if (labelText.empty()) {
+    [suggestionLabel_ setHidden:TRUE];
+  } else {
+    NSRect textFrame = [suggestionLabel_ frame];
+
+    [suggestionLabel_ setHidden:FALSE];
+    [suggestionLabel_ setStringValue:base::SysUTF16ToNSString(labelText)];
+     textFrame.size.height +=
+         [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
+               suggestionLabel_];
+     [suggestionLabel_ setFrame: textFrame];
+  }
 }
 
 - (void)startThrobberForRow:(NSInteger)index {
@@ -491,14 +533,6 @@ const CGFloat kTextWidth = kWindowWidth -
   }
 }
 
-// Sets properties on the given |field| to act as title or description labels.
-- (void)configureTextFieldAsLabel:(NSTextField*)field {
-  [field setEditable:NO];
-  [field setSelectable:YES];
-  [field setDrawsBackground:NO];
-  [field setBezeled:NO];
-}
-
 - (CGFloat)addStackedView:(NSView*)view
                toSubviews:(NSMutableArray*)subviews
                  atOffset:(CGFloat)offset {
@@ -520,9 +554,7 @@ const CGFloat kTextWidth = kWindowWidth -
   NSRect frame = NSMakeRect(kFramePadding, offset, 100, 10);
   NSString* string =
       l10n_util::GetNSStringWithFixup(IDS_FIND_MORE_INTENT_HANDLER_MESSAGE);
-  scoped_nsobject<NSButton> button(
-    [WebIntentPickerSheetController createHyperlinkButton:string
-                                                withFrame:frame]);
+  scoped_nsobject<NSButton> button(CreateHyperlinkButton(string,frame));
   [button setTarget:self];
   [button setAction:@selector(showChromeWebStore:)];
   [subviews addObject:button.get()];
@@ -693,7 +725,7 @@ const CGFloat kTextWidth = kWindowWidth -
                            kTextWidth, 1);
 
     actionTextField_.reset([[NSTextField alloc] initWithFrame:textFrame]);
-    [self configureTextFieldAsLabel:actionTextField_.get()];
+    ConfigureTextFieldAsLabel(actionTextField_);
     [actionTextField_ setFont:[NSFont systemFontOfSize:kHeaderFontSize]];
   } else {
     textFrame = [actionTextField_ frame];

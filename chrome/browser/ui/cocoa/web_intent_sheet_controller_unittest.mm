@@ -117,13 +117,15 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
   NSArray* flip_views = [[window_ contentView] subviews];
   NSArray* main_views = [[flip_views objectAtIndex:0] subviews];
 
-  // 4th object should be the suggestion view.
+  // 3rd object should be the suggestion view.
   ASSERT_TRUE([main_views count] > 2);
   ASSERT_TRUE([[main_views objectAtIndex:2] isKindOfClass:[NSView class]]);
   NSView* suggest_view = [main_views objectAtIndex:2];
 
-  // There is exactly one subview, which contains the suggested item.
-  ASSERT_EQ(1U, [[suggest_view subviews] count]);
+  // There are two subviews - label & suggested items.
+  ASSERT_EQ(2U, [[suggest_view subviews] count]);
+  ASSERT_TRUE([[[suggest_view subviews] objectAtIndex:1]
+      isKindOfClass:[NSTextField class]]);
   ASSERT_TRUE([[[suggest_view subviews] objectAtIndex:0]
       isKindOfClass:[NSView class]]);
   NSView* item_view = [[suggest_view subviews] objectAtIndex:0];
