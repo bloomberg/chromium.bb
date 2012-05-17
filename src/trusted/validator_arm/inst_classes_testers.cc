@@ -107,6 +107,37 @@ ApplySanityChecks(Instruction inst,
   return Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder);
 }
 
+// Unary1RegisterBitRangeTester
+Unary1RegisterBitRangeTester::Unary1RegisterBitRangeTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool Unary1RegisterBitRangeTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Unary1RegisterBitRange expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check registers and flags used.
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_EQ(expected_decoder.lsb.value(inst), inst.Bits(11, 7));
+  EXPECT_EQ(expected_decoder.msb.value(inst), inst.Bits(20, 16));
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+        << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+
+  return true;
+}
+
 // Binary2RegisterImmediateOpTester
 Binary2RegisterImmediateOpTester::Binary2RegisterImmediateOpTester(
     const NamedClassDecoder& decoder)
@@ -128,7 +159,7 @@ ApplySanityChecks(Instruction inst,
   // Check if expected class name found.
   NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
 
-  // Check Registers and flags used in DataProc.
+  // Check Registers and flags used.
   EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
   EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
   EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));

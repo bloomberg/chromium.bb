@@ -53,6 +53,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StoreImmediate_instance_()
   , StoreRegister_instance_()
   , TestIfAddressMasked_instance_()
+  , Unary1RegisterBitRange_instance_()
   , Unary1RegisterImmediateOp_instance_()
   , Unary2RegisterImmedShiftedOp_instance_()
   , Unary2RegisterOp_instance_()
@@ -534,30 +535,42 @@ const ClassDecoder& Arm32DecoderState::decode_media(
 {
 
   if ((insn.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20) == 11000 */ &&
-      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
+      true)
     return Multiply_instance_;
 
   if ((insn.Bits() & 0x01F00000) == 0x01F00000 /* op1(24:20) == 11111 */ &&
-      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
+      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */ &&
+      true)
     return Roadblock_instance_;
 
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
-      (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */)
+      (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
+      (insn.Bits() & 0x0000000F) != 0x0000000F)
     return DataProc_instance_;
 
+  if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
+      (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
+      (insn.Bits() & 0x0000000F) == 0x0000000F)
+    return Unary1RegisterBitRange_instance_;
+
   if ((insn.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20) == 11x1x */ &&
-      (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */)
+      (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */ &&
+      true)
     return DataProc_instance_;
 
   if ((insn.Bits() & 0x01800000) == 0x00000000 /* op1(24:20) == 00xxx */ &&
+      true &&
       true)
     return decode_parallel_add_sub(insn);
 
   if ((insn.Bits() & 0x01800000) == 0x00800000 /* op1(24:20) == 01xxx */ &&
+      true &&
       true)
     return decode_pack_sat_rev(insn);
 
   if ((insn.Bits() & 0x01800000) == 0x01000000 /* op1(24:20) == 10xxx */ &&
+      true &&
       true)
     return decode_signed_mult(insn);
 

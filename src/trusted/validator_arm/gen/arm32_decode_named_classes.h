@@ -467,6 +467,12 @@ class StoreRegister_None
   virtual ~StoreRegister_None() {}
 };
 
+class Unary1RegisterBitRange_Bfc_17_A1_P46
+   : public Unary1RegisterBitRange {
+ public:
+  virtual ~Unary1RegisterBitRange_Bfc_17_A1_P46() {}
+};
+
 class Unary1RegisterImmediateOp_Adr_Rule_10_A1_P32
    : public Unary1RegisterImmediateOp {
  public:
@@ -1658,6 +1664,19 @@ class NamedStoreRegister_None
  private:
   nacl_arm_dec::StoreRegister_None decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreRegister_None);
+};
+
+class NamedUnary1RegisterBitRange_Bfc_17_A1_P46
+    : public NamedClassDecoder {
+ public:
+  inline NamedUnary1RegisterBitRange_Bfc_17_A1_P46()
+    : NamedClassDecoder(decoder_, "Unary1RegisterBitRange Bfc_17_A1_P46")
+  {}
+  virtual ~NamedUnary1RegisterBitRange_Bfc_17_A1_P46() {}
+
+ private:
+  nacl_arm_dec::Unary1RegisterBitRange_Bfc_17_A1_P46 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnary1RegisterBitRange_Bfc_17_A1_P46);
 };
 
 class NamedUnary1RegisterImmediateOp_Adr_Rule_10_A1_P32

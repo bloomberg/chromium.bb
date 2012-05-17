@@ -502,7 +502,8 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
 | 11000      000      1111      -       =Multiply(v6)    # USAD8
 | "          000      ~1111     -       =Multiply(v6)    # USADA8
 | 1101x      x10      -         -       =DataProc(v6T2)  # SBFX
-| 1110x      x00      -         1111    =DataProc(v6T2)  # BFC
+| 1110x      x00      -         1111    = Unary1RegisterBitRange
+                                          Bfc_17_A1_P46 (v6T2)
 | "          x00      -         ~1111   =DataProc(v6T2)  # BFI
 | 1111x      x10      -         -       =DataProc(v6T2)  # UBFX
 | 11111      111      -         -       =Roadblock  # Permanently Undefined

@@ -167,13 +167,11 @@ class ValidatorTests : public ::testing::Test {
  */
 
 TEST_F(ValidatorTests, RecognizesDataAddressRegisters) {
-  /*
-   * Note that the logic below needs to be kept in sync with the definition
-   * of kAbiDataAddrRegisters at the top of this file.
-   *
-   * This test is pretty trivial -- we can exercise the data_address_register
-   * functionality more deeply with pattern tests below.
-   */
+  // Note that the logic below needs to be kept in sync with the definition
+  // of kAbiDataAddrRegisters at the top of this file.
+  //
+  // This test is pretty trivial -- we can exercise the data_address_register
+  // functionality more deeply with pattern tests below.
   for (int i = 0; i < 16; i++) {
     Register r(i);
     if (r.Equals(nacl_arm_dec::kRegisterStack)) {
@@ -202,20 +200,16 @@ TEST_F(ValidatorTests, GeneratesCorrectMasksFromSizes) {
       << "Changes in bundle size must affect the code mask.";
 }
 
-/*
- * Code validation tests
- */
+// Code validation tests
 
 // This is where untrusted code starts.  Most tests use this.
 static const uint32_t kDefaultBaseAddr = 0x20000;
 
-/*
- * Here are examples of every form of safe store permitted in a Native Client
- * program.  These stores have common properties:
- *  1. The high nibble is 0, to allow tests to write an arbitrary predicate.
- *  2. They address memory only through r1.
- *  3. They do not do anything dumb, like try to alter SP or PC.
- */
+// Here are examples of every form of safe store permitted in a Native Client
+// program.  These stores have common properties:
+//  1. The high nibble is 0, to allow tests to write an arbitrary predicate.
+//  2. They address memory only through r1.
+//  3. They do not do anything dumb, like try to alter SP or PC.
 struct AnnotatedInstruction {
   arm_inst inst;
   const char *about;
@@ -264,20 +258,14 @@ static const AnnotatedInstruction examples_of_safe_masks[] = {
   { 0x03C114FF, "bic r1, r1, #0xFF000000: overzealous but correct mask" },
 };
 
-
 TEST_F(ValidatorTests, SafeMaskedStores) {
-  /*
-   * Produces many examples of masked stores using the safe store table (above)
-   * and the list of possible masking instructions (below).
-   *
-   * Each mask instruction must leave a valid (data) address in r1.
-   */
-
+  // Produces many examples of masked stores using the safe store table (above)
+  // and the list of possible masking instructions (below).
+  //
+  // Each mask instruction must leave a valid (data) address in r1.
   for (unsigned p = 0; p < 15; p++) {
-    /*
-     * Conditionally executed instructions have a top nibble of 0..14.
-     * 15 is an escape sequence used to fit in additional encodings.
-     */
+    // Conditionally executed instructions have a top nibble of 0..14.
+    // 15 is an escape sequence used to fit in additional encodings.
     arm_inst predicate = p << 28;
 
     for (unsigned m = 0; m < NACL_ARRAY_SIZE(examples_of_safe_masks); m++) {
@@ -300,10 +288,8 @@ TEST_F(ValidatorTests, SafeMaskedStores) {
   }
 }
 
-/*
- * These stores can't be predicated, so we must use a different, simpler
- * fixture generator.
- */
+// These stores can't be predicated, so we must use a different, simpler
+// fixture generator.
 static const AnnotatedInstruction examples_of_safe_unconditional_stores[] = {
   // Vector stores
   { 0xF481A5AF, "vst2.16 {d10[2],d12[2]}, [r1]: simple vector store" },
@@ -312,13 +298,11 @@ static const AnnotatedInstruction examples_of_safe_unconditional_stores[] = {
 };
 
 TEST_F(ValidatorTests, SafeUnconditionalMaskedStores) {
-  /*
-   * Produces many examples of unconditional masked stores using the safe
-   * unconditional store table (above) and the list of possible masking
-   * instructions (below).
-   *
-   * Each mask instruction must leave a valid (data) address in r1.
-   */
+  // Produces many examples of unconditional masked stores using the safe
+  // unconditional store table (above) and the list of possible masking
+  // instructions (below).
+  //
+  // Each mask instruction must leave a valid (data) address in r1.
 
   // These instructions can't be predicated.
   arm_inst predicate = 0xE0000000;  // "always"
@@ -344,23 +328,18 @@ TEST_F(ValidatorTests, SafeUnconditionalMaskedStores) {
 }
 
 TEST_F(ValidatorTests, SafeConditionalStores) {
-  /*
-   * Produces many examples of conditional stores using the safe store table
-   * (above) and the list of possible conditional guards (below).
-   *
-   * Each conditional guard must set the Z flag iff r1 contains a valid address.
-   */
-
+  // Produces many examples of conditional stores using the safe store table
+  // (above) and the list of possible conditional guards (below).
+  //
+  // Each conditional guard must set the Z flag iff r1 contains a valid address.
   static const AnnotatedInstruction guards[] = {
     { 0x03110103, "tst r1, #0xC0000000: precise guard, GCC encoding" },
     { 0x031104C0, "tst r1, #0xC0000000: precise guard, alternative encoding" },
     { 0x031101C3, "tst r1, #0xF0000000: overzealous (but correct) guard" },
   };
 
-  /*
-   * Currently we only support *unconditional* conditional stores.
-   * Meaning the guard is unconditional and the store is if-equal.
-   */
+  // Currently we only support *unconditional* conditional stores.
+  // Meaning the guard is unconditional and the store is if-equal.
   arm_inst guard_predicate = 0xE0000000, store_predicate = 0x00000000;
   for (unsigned m = 0; m < NACL_ARRAY_SIZE(guards); m++) {
     for (unsigned s = 0; s < NACL_ARRAY_SIZE(examples_of_safe_stores); s++) {
@@ -391,10 +370,8 @@ TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
   };
 
   for (unsigned p = 0; p < 15; p++) {
-    /*
-     * Conditionally executed instructions have a top nibble of 0..14.
-     * 15 is an escape sequence used to fit in additional encodings.
-     */
+    // Conditionally executed instructions have a top nibble of 0..14.
+    // 15 is an escape sequence used to fit in additional encodings.
     arm_inst predicate = p << 28;
 
     for (unsigned m = 0; m < NACL_ARRAY_SIZE(examples_of_invalid_masks); m++) {
@@ -444,11 +421,9 @@ TEST_F(ValidatorTests, InvalidGuardsOnSafeStores) {
     { 0x03510103, "cmp r1, #0xC0000000: does the inverse of what we want" },
   };
 
-  /*
-   * We don't currently support conditional versions of the conditional guard.
-   *
-   * TODO(cbiffle): verify this in the test
-   */
+  // We don't currently support conditional versions of the conditional guard.
+  //
+  // TODO(cbiffle): verify this in the test
   static const arm_inst guard_predicate = 0xE0000000;  // unconditional
   static const arm_inst store_predicate = 0x00000000;  // if-equal
 
@@ -496,10 +471,8 @@ TEST_F(ValidatorTests, ValidMasksOnUnsafeStores) {
   };
 
   for (unsigned p = 0; p < 15; p++) {
-    /*
-     * Conditionally executed instructions have a top nibble of 0..14.
-     * 15 is an escape sequence used to fit in additional encodings.
-     */
+    // Conditionally executed instructions have a top nibble of 0..14.
+    // 15 is an escape sequence used to fit in additional encodings.
     arm_inst predicate = p << 28;
 
     for (unsigned m = 0; m < NACL_ARRAY_SIZE(examples_of_safe_masks); m++) {
@@ -532,13 +505,11 @@ TEST_F(ValidatorTests, ValidMasksOnUnsafeStores) {
             << "Store must be flagged by the decoder as unsafe: "
             << message.str();
 
-        /*
-         * Note that we expect kProblemUnsafe, *not* kProblemUnsafeLoadStore.
-         * This is because the load/store instructions themselves, in
-         * isolation, are unsafe to appear anywhere in a Native Client
-         * program -- whereas kProblemUnsafeLoadStore indicates a legitimate
-         * load/store used in an unsafe manner.
-         */
+        // Note that we expect kProblemUnsafe, *not* kProblemUnsafeLoadStore.
+        // This is because the load/store instructions themselves, in
+        // isolation, are unsafe to appear anywhere in a Native Client
+        // program -- whereas kProblemUnsafeLoadStore indicates a legitimate
+        // load/store used in an unsafe manner.
         EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafe),
                   first.problem_code)
             << message;
@@ -548,10 +519,8 @@ TEST_F(ValidatorTests, ValidMasksOnUnsafeStores) {
 }
 
 TEST_F(ValidatorTests, ScaryUndefinedInstructions) {
-  /*
-   * These instructions are undefined today (ARMv7-A) but may become defined
-   * tomorrow.  We ban them since we can't reason about their side effects.
-   */
+  // These instructions are undefined today (ARMv7-A) but may become defined
+  // tomorrow.  We ban them since we can't reason about their side effects.
   static const AnnotatedInstruction undefined_insts[] = {
     { 0xE05DEA9D, "An undefined instruction in the multiply space" },
   };
@@ -584,10 +553,8 @@ TEST_F(ValidatorTests, ScaryUndefinedInstructions) {
 }
 
 TEST_F(ValidatorTests, LessScaryUndefinedInstructions) {
-  /*
-   * These instructions are specified by ARM as *permanently* undefined, so we
-   * treat them as a reliable Illegal Instruction trap.
-   */
+  // These instructions are specified by ARM as *permanently* undefined, so we
+  // treat them as a reliable Illegal Instruction trap.
 
   static const AnnotatedInstruction perm_undefined[] = {
     { 0xE7FFDEFE, "permanently undefined instruction produced by LLVM" },
@@ -689,10 +656,48 @@ TEST_F(ValidatorTests, DifferentConditionsBicLdrTest) {
             problem.problem_code);
 }
 
-/*
- * Implementation of the ValidatorTests utility methods.  These are documented
- * toward the top of this file.
- */
+TEST_F(ValidatorTests, BfcLdrInstGoodTest) {
+  // Test if we can use bfc to clear mask bits.
+  static const arm_inst bfc_inst[] = {
+    0xe7df2f1f,  // bfc r2, #30, #2
+    0xe1920f9f,  // ldrex r0, [r2]
+  };
+  validation_should_pass(bfc_inst,
+                         NACL_ARRAY_SIZE(bfc_inst),
+                         kDefaultBaseAddr,
+                         "Bfc Lcr instruction mask good test");
+}
+
+TEST_F(ValidatorTests, BfcLdrInstMaskTooBigTest) {
+  // Run test where bfc mask is too big (acceptable to mask off more than
+  // needed).
+  static const arm_inst bfc_inst[] = {
+    0xe7df2e9f,  // bfc r2, #29, #3
+    0xe1920f9f,  // ldrex r0, [r2]
+  };
+  validation_should_pass(bfc_inst,
+                         NACL_ARRAY_SIZE(bfc_inst),
+                         kDefaultBaseAddr,
+                         "Bfc Ldr instruction mask too big test");
+}
+
+TEST_F(ValidatorTests, BfcLdrInstMaskWrongPlaceTest) {
+  // Run test where bfc mask is in the wrong place.
+  static const arm_inst bfc_inst[] = {
+    0xe7da2c9f,  // bfc r2, #25, #2
+    0xe1920f9f,  // ldrex r0, [r2]
+  };
+  validation_should_fail(bfc_inst,
+                         NACL_ARRAY_SIZE(bfc_inst),
+                         kDefaultBaseAddr,
+                         "Bfc Ldr instruction mask wrong place test");
+}
+
+// TODO(karl): Add pattern rules and test cases for using bfc to update SP.
+
+// Implementation of the ValidatorTests utility methods.  These are documented
+// toward the top of this file.
+
 ValidatorTests::ValidatorTests()
   : _validator(kBytesPerBundle,
                kCodeRegionSize,
@@ -771,11 +776,9 @@ vector<ProblemRecord> ValidatorTests::validation_should_fail(
     size_t inst_count,
     uint32_t base_addr,
     const string &msg) {
-  /*
-   * TODO(cbiffle): test at various overlapping and non-overlapping addresses,
-   * like above.  Not that this is a spectacularly likely failure case, but
-   * it's worth exercising.
-   */
+  // TODO(cbiffle): test at various overlapping and non-overlapping addresses,
+  // like above.  Not that this is a spectacularly likely failure case, but
+  // it's worth exercising.
   ProblemSpy spy;
   bool validation_result = validate(pattern, inst_count, base_addr, &spy);
   EXPECT_FALSE(validation_result) << "Expected to fail: " << msg;

@@ -69,6 +69,34 @@ class Unary1RegisterImmediateOpTesterNotRdIsPcAndS
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOpTesterNotRdIsPcAndS);
 };
 
+// Models a 1-register binary operation with two immediate 5 values.
+// Op<c> Rd, #lsb, #width
+// +--------+--------------+----------+--------+----------+--------------+
+// |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4 3 2 1 0|
+// +--------+--------------+----------+--------+----------+--------------+
+// |  cond  |              |    msb   |   Rd   |   lsb    |              |
+// +--------+--------------+----------+--------+----------+--------------+
+// Definitions
+//    Rd = The destination register.
+//    lsb = The least significant bit to be modified.
+//    msb = lsb + width - 1 - The most significant bit to be modified
+//    width = msb - lsb + 1 - The number of bits to be modified.
+//
+// If Rd is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+// Note: Currently, only implements bfc. (A8-46).
+class Unary1RegisterBitRangeTester : public Arm32DecoderTester {
+ public:
+  explicit Unary1RegisterBitRangeTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRangeTester);
+};
+
+
 // Implements a decoder tester for decoder BinaryRegisterImmediateTest
 // Op(S)<c> Rn, #<const>
 // +--------+--------------+--+--------+--------+------------------------+

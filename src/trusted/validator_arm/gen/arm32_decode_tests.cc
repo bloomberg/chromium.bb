@@ -438,6 +438,15 @@ class MaskedBinaryRegisterImmediateTestTester_Tst_Rule_230_A1_P454_
   {}
 };
 
+class Unary1RegisterBitRangeTester_Bfc_17_A1_P46_
+    : public Unary1RegisterBitRangeTester {
+ public:
+  Unary1RegisterBitRangeTester_Bfc_17_A1_P46_()
+    : Unary1RegisterBitRangeTester(
+      state_.Unary1RegisterBitRange_Bfc_17_A1_P46_instance_)
+  {}
+};
+
 class Unary1RegisterImmediateOpTester_Adr_Rule_10_A1_P32_
     : public Unary1RegisterImmediateOpTester {
  public:

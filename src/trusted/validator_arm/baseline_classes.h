@@ -69,6 +69,41 @@ class Unary1RegisterImmediateOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOp);
 };
 
+// Models a 1-register binary operation with two immediate 5 values.
+// Op<c> Rd, #lsb, #width
+// +--------+--------------+----------+--------+----------+--------------+
+// |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4 3 2 1 0|
+// +--------+--------------+----------+--------+----------+--------------+
+// |  cond  |              |    msb   |   Rd   |   lsb    |              |
+// +--------+--------------+----------+--------+----------+--------------+
+// Definitions
+//    Rd = The destination register.
+//    lsb = The least significant bit to be modified.
+//    msb = lsb + width - 1 - The most significant bit to be modified
+//    width = msb - lsb + 1 - The number of bits to be modified.
+//
+// If Rd is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+// Note: Currently, only implements bfc. (A8-46).
+class Unary1RegisterBitRange : public ClassDecoder {
+ public:
+  // Interface for components of the instruction.
+  static const Imm5Bits7To11Interface lsb;
+  static const RegDBits12To15Interface d;
+  static const Imm5Bits16To20Interface msb;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline Unary1RegisterBitRange() : ClassDecoder() {}
+  virtual ~Unary1RegisterBitRange() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual bool clears_bits(Instruction i, uint32_t mask) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRange);
+};
+
 // Models a 2-register binary operation with an immediate value.
 // Op(S)<c> <Rd>, <Rn>, #<const>
 // +--------+--------------+--+--------+--------+------------------------+

@@ -172,6 +172,7 @@ class Arm32DecoderState : DecoderState {
   const StoreImmediate StoreImmediate_instance_;
   const StoreRegister StoreRegister_instance_;
   const TestIfAddressMasked TestIfAddressMasked_instance_;
+  const Unary1RegisterBitRange Unary1RegisterBitRange_instance_;
   const Unary1RegisterImmediateOp Unary1RegisterImmediateOp_instance_;
   const Unary2RegisterImmedShiftedOp Unary2RegisterImmedShiftedOp_instance_;
   const Unary2RegisterOp Unary2RegisterOp_instance_;
