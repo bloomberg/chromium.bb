@@ -210,6 +210,10 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
     if (arrow_type_ == ARROW_TYPE_BOTTOM) {
       int tip_x = base::i18n::IsRTL() ? arrow_offset_ :
           owner_->width() - arrow_offset_;
+      if (tip_x < kArrowPaddingFromRight + kArrowWidth / 2)
+        tip_x = kArrowPaddingFromRight + kArrowWidth / 2;
+      if (tip_x > owner_->width() - kArrowPaddingFromRight - kArrowWidth / 2)
+        tip_x = owner_->width() - kArrowPaddingFromRight - kArrowWidth / 2;
       int left_base_x = tip_x - kArrowWidth / 2;
       int left_base_y = y;
       int tip_y = left_base_y + kArrowHeight;
