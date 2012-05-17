@@ -45,6 +45,11 @@ chrome::VersionInfo::Channel ConvertStudyChannelToVersionChannel(
   return chrome::VersionInfo::CHANNEL_UNKNOWN;
 }
 
+// Converts |date_time| in chrome_variations::Study date format to base::Time.
+base::Time ConvertStudyDateToBaseTime(int64 date_time) {
+  return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
+}
+
 }  // namespace
 
 VariationsService::VariationsService() {}
@@ -160,7 +165,7 @@ bool VariationsService::CheckStudyVersion(const chrome_variations::Study& study,
                                           const std::string& version_string) {
   const Version current_version(version_string);
   if (!current_version.IsValid()) {
-    DCHECK(false);
+    NOTREACHED();
     return false;
   }
 
@@ -186,18 +191,16 @@ bool VariationsService::CheckStudyVersion(const chrome_variations::Study& study,
 // static
 bool VariationsService::CheckStudyDate(const chrome_variations::Study& study,
                                        const base::Time& date_time) {
-  const base::Time epoch = base::Time::UnixEpoch();
-
   if (study.has_start_date()) {
     const base::Time start_date =
-        epoch + base::TimeDelta::FromSeconds(study.start_date());
+        ConvertStudyDateToBaseTime(study.start_date());
     if (date_time < start_date)
       return false;
   }
 
   if (study.has_expiry_date()) {
     const base::Time expiry_date =
-        epoch + base::TimeDelta::FromSeconds(study.expiry_date());
+        ConvertStudyDateToBaseTime(study.expiry_date());
     if (date_time >= expiry_date)
       return false;
   }
@@ -251,9 +254,8 @@ void VariationsService::CreateTrialFromStudy(
     return;
   }
 
-  const base::Time epoch = base::Time::UnixEpoch();
   const base::Time expiry_date =
-      epoch + base::TimeDelta::FromSeconds(study.expiry_date());
+      ConvertStudyDateToBaseTime(study.expiry_date());
   base::Time::Exploded exploded_end_date;
   expiry_date.UTCExplode(&exploded_end_date);
 
