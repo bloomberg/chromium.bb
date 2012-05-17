@@ -8,10 +8,10 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/perftimer.h"
 #include "base/pickle.h"
 #include "base/shared_memory.h"
-#include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -27,9 +27,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using WebKit::WebFrame;
@@ -118,7 +119,7 @@ UserScriptSlave::UserScriptSlave(const ExtensionSet* extensions)
       script_deleter_(&scripts_),
       extensions_(extensions) {
   api_js_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
-                IDR_GREASEMONKEY_API_JS);
+                IDR_GREASEMONKEY_API_JS, ui::SCALE_FACTOR_NONE);
 }
 
 UserScriptSlave::~UserScriptSlave() {}

@@ -14,6 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/layout.h"
 
 using ::testing::_;
 using ::testing::Between;
@@ -25,6 +26,10 @@ namespace ui {
 
 extern const char kSamplePakContents[];
 extern const size_t kSamplePakSize;
+extern const char kSamplePakContents2x[];
+extern const size_t kSamplePakSize2x;
+extern const char kEmptyPakContents[];
+extern const size_t kEmptyPakSize;
 
 namespace {
 
@@ -37,19 +42,23 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
   }
 
   MOCK_METHOD2(GetPathForResourcePack, FilePath(const FilePath& pack_path,
-                                                float scale_factor));
+                                                ui::ScaleFactor scale_factor));
   MOCK_METHOD2(GetPathForLocalePack, FilePath(const FilePath& pack_path,
                                               const std::string& locale));
   MOCK_METHOD1(GetImageNamed, gfx::Image(int resource_id));
   MOCK_METHOD2(GetNativeImageNamed,
       gfx::Image(int resource_id,
                  ui::ResourceBundle::ImageRTL rtl));
-  MOCK_METHOD1(LoadDataResourceBytes,
-      base::RefCountedStaticMemory*(int resource_id));
-  MOCK_METHOD1(GetRawDataResourceMock, base::StringPiece(int resource_id));
+  MOCK_METHOD2(LoadDataResourceBytes,
+      base::RefCountedStaticMemory*(int resource_id,
+                                    ui::ScaleFactor scale_factor));
+  MOCK_METHOD2(GetRawDataResourceMock, base::StringPiece(
+      int resource_id,
+      ui::ScaleFactor scale_factor));
   virtual bool GetRawDataResource(int resource_id,
+                                  ui::ScaleFactor scale_factor,
                                   base::StringPiece* value) OVERRIDE {
-    *value = GetRawDataResourceMock(resource_id);
+    *value = GetRawDataResourceMock(resource_id, scale_factor);
     return true;
   }
   MOCK_METHOD1(GetLocalizedStringMock, string16(int message_id));
@@ -71,7 +80,7 @@ TEST(ResourceBundle, DelegateGetPathForResourcePack) {
   ResourceBundle resource_bundle(&delegate);
 
   FilePath pack_path(FILE_PATH_LITERAL("/path/to/test_path.pak"));
-  double pack_scale_factor = 2.0;
+  ui::ScaleFactor pack_scale_factor = ui::SCALE_FACTOR_200P;
 
   EXPECT_CALL(delegate,
       GetPathForResourcePack(
@@ -152,13 +161,14 @@ TEST(ResourceBundle, DelegateLoadDataResourceBytes) {
       new base::RefCountedStaticMemory(data, sizeof(data)));
 
   int resource_id = 5;
+  ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE;
 
-  EXPECT_CALL(delegate, LoadDataResourceBytes(resource_id))
+  EXPECT_CALL(delegate, LoadDataResourceBytes(resource_id, scale_factor))
       .Times(1)
       .WillOnce(Return(static_memory));
 
   scoped_refptr<base::RefCountedStaticMemory> result =
-      resource_bundle.LoadDataResourceBytes(resource_id);
+      resource_bundle.LoadDataResourceBytes(resource_id, scale_factor);
   EXPECT_EQ(static_memory, result);
 }
 
@@ -172,11 +182,13 @@ TEST(ResourceBundle, DelegateGetRawDataResource) {
 
   int resource_id = 5;
 
-  EXPECT_CALL(delegate, GetRawDataResourceMock(resource_id))
+  EXPECT_CALL(delegate, GetRawDataResourceMock(
+          resource_id, ui::SCALE_FACTOR_NONE))
       .Times(1)
       .WillOnce(Return(string_piece));
 
-  base::StringPiece result = resource_bundle.GetRawDataResource(resource_id);
+  base::StringPiece result = resource_bundle.GetRawDataResource(
+      resource_id, ui::SCALE_FACTOR_NONE);
   EXPECT_EQ(string_piece.data(), result.data());
 }
 
@@ -232,16 +244,58 @@ TEST(ResourceBundle, LoadDataResourceBytes) {
               static_cast<int>(kSamplePakSize));
 
     // Create a resource bundle from the file.
-    resource_bundle.LoadTestResources(data_path);
+    resource_bundle.LoadTestResources(data_path, data_path);
 
     const int kUnfoundResourceId = 10000;
-    EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(kUnfoundResourceId));
+    EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(
+        kUnfoundResourceId, ui::SCALE_FACTOR_NONE));
 
     // Give a .pak file that doesn't exist so we will fail to load it.
     resource_bundle.AddDataPack(
         FilePath(FILE_PATH_LITERAL("non-existant-file.pak")),
-        1.0);
-    EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(kUnfoundResourceId));
+        ui::SCALE_FACTOR_NONE);
+    EXPECT_EQ(NULL, resource_bundle.LoadDataResourceBytes(
+        kUnfoundResourceId, ui::SCALE_FACTOR_NONE));
+  }
+}
+
+TEST(ResourceBundle, GetRawDataResource) {
+
+  // On Windows, the default data is compiled into the binary so this does
+  // nothing.
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath locale_path = dir.path().Append(FILE_PATH_LITERAL("empty.pak"));
+  FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+  FilePath data_2x_path = dir.path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
+
+  {
+    ResourceBundle resource_bundle(NULL);
+    // Dump contents into the pak files.
+    ASSERT_EQ(file_util::WriteFile(locale_path, kEmptyPakContents,
+        kEmptyPakSize), static_cast<int>(kEmptyPakSize));
+    ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents,
+        kSamplePakSize), static_cast<int>(kSamplePakSize));
+    ASSERT_EQ(file_util::WriteFile(data_2x_path, kSamplePakContents2x,
+        kSamplePakSize2x), static_cast<int>(kSamplePakSize2x));
+
+    // Load the regular and 2x pak files.
+    resource_bundle.LoadTestResources(data_path, locale_path);
+    resource_bundle.AddDataPack(data_2x_path, SCALE_FACTOR_200P);
+
+    // Resource ID 4 exists in both 1x and 2x paks, so we expect a different
+    // result when requesting the 2x scale.
+    EXPECT_EQ("this is id 4", resource_bundle.GetRawDataResource(4,
+        SCALE_FACTOR_100P));
+    EXPECT_EQ("this is id 4 2x", resource_bundle.GetRawDataResource(4,
+        SCALE_FACTOR_200P));
+
+    // Resource ID 6 only exists in the 1x pak so we expect the same resource
+    // for both scale factor requests.
+    EXPECT_EQ("this is id 6", resource_bundle.GetRawDataResource(6,
+        SCALE_FACTOR_100P));
+    EXPECT_EQ("this is id 6", resource_bundle.GetRawDataResource(6,
+        SCALE_FACTOR_200P));
   }
 }
 

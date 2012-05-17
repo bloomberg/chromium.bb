@@ -19,10 +19,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/component_extension_resources_map.h"
 #include "grit/theme_resources.h"
-#include "googleurl/src/gurl.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
@@ -90,7 +91,8 @@ GURL ExtensionIconSource::GetIconURL(const Extension* extension,
 // static
 SkBitmap* ExtensionIconSource::LoadImageByResourceId(int resource_id) {
   std::string contents = ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(resource_id).as_string();
+      .GetRawDataResource(resource_id,
+                          ui::SCALE_FACTOR_100P).as_string();
 
   // Convert and return it.
   const unsigned char* data =

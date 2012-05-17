@@ -384,7 +384,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
   pack->data_pack_.reset(
-      new ui::DataPack(ui::ResourceHandle::kScaleFactor100x));
+      new ui::DataPack(ui::SCALE_FACTOR_100P));
 
   if (!pack->data_pack_->Load(path)) {
     LOG(ERROR) << "Failed to load theme data pack.";

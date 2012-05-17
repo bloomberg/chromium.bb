@@ -100,12 +100,7 @@ class TestWebKitPlatformSupport
     return string16();
   }
 
-  virtual base::StringPiece GetDataResource(int) OVERRIDE {
-    return base::StringPiece();
-  }
-
-  virtual base::StringPiece GetImageResource(int resource_id,
-                                             float scale_factor) OVERRIDE {
+  virtual base::StringPiece GetDataResource(int, ui::ScaleFactor) OVERRIDE {
     return base::StringPiece();
   }
 

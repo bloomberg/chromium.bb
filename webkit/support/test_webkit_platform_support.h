@@ -111,9 +111,9 @@ class TestWebKitPlatformSupport :
   void setGamepadData(const WebKit::WebGamepads& data);
 
   virtual string16 GetLocalizedString(int message_id) OVERRIDE;
-  virtual base::StringPiece GetDataResource(int resource_id) OVERRIDE;
-  virtual base::StringPiece GetImageResource(int resource_id,
-                                             float scale_factor) OVERRIDE;
+  virtual base::StringPiece GetDataResource(
+      int resource_id,
+      ui::ScaleFactor scale_factor) OVERRIDE;
   virtual void GetPlugins(bool refresh,
                           std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
   virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(

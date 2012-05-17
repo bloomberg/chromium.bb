@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,5 +20,24 @@ extern const char kSamplePakContents[] = {
 };
 
 extern const size_t kSamplePakSize = sizeof(kSamplePakContents);
+
+extern const char kSamplePakContents2x[] = {
+    0x04, 0x00, 0x00, 0x00,               // header(version
+    0x01, 0x00, 0x00, 0x00,               //        no. entries
+    0x01,                                 //        encoding)
+    0x04, 0x00, 0x15, 0x00, 0x00, 0x00,   // index entry 4
+    0x00, 0x00, 0x24, 0x00, 0x00, 0x00,   // extra entry for the size of last
+    't', 'h', 'i', 's', ' ', 'i', 's', ' ', 'i', 'd', ' ', '4', ' ', '2', 'x'
+};
+
+extern const size_t kSamplePakSize2x = sizeof(kSamplePakContents2x);
+
+extern const char kEmptyPakContents[] = {
+    0x04, 0x00, 0x00, 0x00,               // header(version
+    0x00, 0x00, 0x00, 0x00,               //        no. entries
+    0x01
+};
+
+extern const size_t kEmptyPakSize = sizeof(kEmptyPakContents);
 
 }  // namespace ui

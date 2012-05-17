@@ -28,6 +28,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::WebContents;
@@ -270,5 +271,6 @@ SessionsUI::SessionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 // static
 base::RefCountedMemory* SessionsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_HISTORY_FAVICON);
+      LoadDataResourceBytes(IDR_HISTORY_FAVICON,
+                            ui::SCALE_FACTOR_100P);
 }

@@ -27,11 +27,12 @@
 #include "grit/component_extension_resources_map.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_response_info.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_simple_job.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::ResourceRequestInfo;
@@ -73,7 +74,8 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                        std::string* charset,
                        std::string* data) const OVERRIDE {
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    *data = rb.GetRawDataResource(resource_id_).as_string();
+    *data = rb.GetRawDataResource(
+        resource_id_, ui::SCALE_FACTOR_NONE).as_string();
 
     // Requests should not block on the disk!  On Windows this goes to the
     // registry.

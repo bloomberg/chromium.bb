@@ -20,6 +20,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::WebContents;
@@ -59,7 +60,7 @@ void ProxySettingsHTMLSource::StartDataRequest(const std::string& path,
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_PROXY_SETTINGS_HTML));
+          IDR_PROXY_SETTINGS_HTML, ui::SCALE_FACTOR_NONE));
   std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       html, localized_strings_.get());
 

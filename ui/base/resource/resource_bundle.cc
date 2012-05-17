@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -60,7 +61,7 @@ void ResourceBundle::InitSharedInstanceWithPakFile(const FilePath& path) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle(NULL);
 
-  g_shared_instance_->LoadTestResources(path);
+  g_shared_instance_->LoadTestResources(path, path);
 }
 
 // static
@@ -87,7 +88,8 @@ bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   return !GetLocaleFilePath(locale).empty();
 }
 
-void ResourceBundle::AddDataPack(const FilePath& path, float scale_factor) {
+void ResourceBundle::AddDataPack(const FilePath& path,
+                                 ScaleFactor scale_factor) {
   // Do not pass an empty |path| value to this method. If the absolute path is
   // unknown pass just the pack file name.
   DCHECK(!path.empty());
@@ -101,7 +103,7 @@ void ResourceBundle::AddDataPack(const FilePath& path, float scale_factor) {
     return;
 
   scoped_ptr<DataPack> data_pack(
-      new DataPack(ResourceHandle::kScaleFactor100x));
+      new DataPack(scale_factor));
   if (data_pack->Load(pack_path)) {
     data_packs_.push_back(data_pack.release());
   } else {
@@ -164,7 +166,7 @@ std::string ResourceBundle::LoadLocaleResources(
   }
 
   scoped_ptr<DataPack> data_pack(
-      new DataPack(ResourceHandle::kScaleFactor100x));
+      new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->Load(locale_file_path)) {
     UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                               logging::GetLastSystemErrorCode(), 16000);
@@ -176,16 +178,21 @@ std::string ResourceBundle::LoadLocaleResources(
   return app_locale;
 }
 
-void ResourceBundle::LoadTestResources(const FilePath& path) {
+void ResourceBundle::LoadTestResources(const FilePath& path,
+                                       const FilePath& locale_path) {
   // Use the given resource pak for both common and localized resources.
   scoped_ptr<DataPack> data_pack(
-      new DataPack(ResourceHandle::kScaleFactor100x));
-  if (data_pack->Load(path))
+      new DataPack(SCALE_FACTOR_100P));
+  if (!path.empty() && data_pack->Load(path))
     data_packs_.push_back(data_pack.release());
 
-  data_pack.reset(new DataPack(ResourceHandle::kScaleFactor100x));
-  if (data_pack->Load(path))
+  data_pack.reset(new DataPack(ui::SCALE_FACTOR_NONE));
+  if (!locale_path.empty() && data_pack->Load(locale_path)) {
     locale_resources_data_.reset(data_pack.release());
+  } else {
+    locale_resources_data_.reset(
+        new DataPack(ui::SCALE_FACTOR_NONE));
+  }
 }
 
 void ResourceBundle::UnloadLocaleResources() {
@@ -270,30 +277,45 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
 }
 
 base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
-    int resource_id) const {
+    int resource_id,
+    ScaleFactor scale_factor) const {
   base::RefCountedStaticMemory* bytes = NULL;
   if (delegate_)
-    bytes = delegate_->LoadDataResourceBytes(resource_id);
+    bytes = delegate_->LoadDataResourceBytes(resource_id, scale_factor);
 
   if (!bytes) {
-    for (size_t i = 0; i < data_packs_.size() && !bytes; ++i)
-      bytes = data_packs_[i]->GetStaticMemory(resource_id);
+    base::StringPiece data = GetRawDataResource(resource_id, scale_factor);
+    if (!data.empty()) {
+      bytes = new base::RefCountedStaticMemory(
+          reinterpret_cast<const unsigned char*>(data.data()), data.length());
+    }
   }
 
   return bytes;
 }
 
-base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
+base::StringPiece ResourceBundle::GetRawDataResource(
+    int resource_id,
+    ScaleFactor scale_factor) const {
   base::StringPiece data;
-  if (delegate_ && delegate_->GetRawDataResource(resource_id, &data))
+  if (delegate_ &&
+      delegate_->GetRawDataResource(resource_id, scale_factor, &data))
     return data;
 
   DCHECK(locale_resources_data_.get());
   if (locale_resources_data_->GetStringPiece(resource_id, &data))
     return data;
 
-  for (size_t i = 0; i < data_packs_.size(); ++i) {
-    if (data_packs_[i]->GetStringPiece(resource_id, &data))
+  if (scale_factor != ui::SCALE_FACTOR_100P) {
+    for (size_t i = 0; i < data_packs_.size(); i++) {
+      if (data_packs_[i]->GetScaleFactor() == scale_factor &&
+          data_packs_[i]->GetStringPiece(resource_id, &data))
+        return data;
+    }
+  }
+  for (size_t i = 0; i < data_packs_.size(); i++) {
+    if (data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_100P &&
+        data_packs_[i]->GetStringPiece(resource_id, &data))
       return data;
   }
 
@@ -320,7 +342,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   if (!locale_resources_data_->GetStringPiece(message_id, &data)) {
     // Fall back on the main data pack (shouldn't be any strings here except in
     // unittests).
-    data = GetRawDataResource(message_id);
+    data = GetRawDataResource(message_id, ui::SCALE_FACTOR_NONE);
     if (data.empty()) {
       NOTREACHED() << "unable to find resource: " << message_id;
       return string16();

@@ -10,6 +10,7 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/timer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
+#include "ui/base/layout.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue_export.h"
 
@@ -119,13 +120,8 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
 
   // Returns the raw data for a resource.  This resource must have been
   // specified as BINDATA in the relevant .rc file.
-  virtual base::StringPiece GetDataResource(int resource_id) = 0;
-
-  // Returns the raw data for an image resource with a scale factor as close as
-  // is available to |scale_factor|.  This resource must have been specified as
-  // BINDATA in the relevant .rc file.
-  virtual base::StringPiece GetImageResource(int resource_id,
-                                             float scale_factor) = 0;
+  virtual base::StringPiece GetDataResource(int resource_id,
+                                            ui::ScaleFactor scale_factor) = 0;
 
   // Returns the list of plugins.
   virtual void GetPlugins(bool refresh,

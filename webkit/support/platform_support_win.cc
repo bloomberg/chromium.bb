@@ -72,13 +72,9 @@ string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
   return string16(localized, length);
 }
 
-base::StringPiece TestWebKitPlatformSupport::GetDataResource(int resource_id) {
-  return ResourceProvider(resource_id);
-}
-
-base::StringPiece TestWebKitPlatformSupport::GetImageResource(
+base::StringPiece TestWebKitPlatformSupport::GetDataResource(
     int resource_id,
-    float scale_factor) {
+    ui::ScaleFactor scale_factor) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)

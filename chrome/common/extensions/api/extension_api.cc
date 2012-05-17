@@ -23,6 +23,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/common_resources.h"
 #include "grit/extensions_api_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using base::DictionaryValue;
@@ -61,7 +62,8 @@ bool HasUnprivilegedChild(const DictionaryValue* name_space_node,
 }
 
 base::StringPiece ReadFromResource(int resource_id) {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      resource_id, ui::SCALE_FACTOR_NONE);
 }
 
 scoped_ptr<ListValue> LoadSchemaList(const std::string& name,

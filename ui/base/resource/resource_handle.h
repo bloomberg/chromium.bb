@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_piece.h"
+#include "ui/base/layout.h"
 #include "ui/base/ui_export.h"
 
 namespace base {
@@ -25,11 +26,10 @@ class UI_EXPORT ResourceHandle {
     UTF16
   };
 
-  // The scale factors for image resources.
-  static const float kScaleFactor100x;
-  static const float kScaleFactor200x;
-
   virtual ~ResourceHandle() {}
+
+  // Returns true if the DataPack contains a resource with id |resource_id|.
+  virtual bool HasResource(uint16 resource_id) const = 0;
 
   // Get resource by id |resource_id|, filling in |data|.
   // The data is owned by the DataPack object and should not be modified.
@@ -47,7 +47,7 @@ class UI_EXPORT ResourceHandle {
 
   // The scale of images in this resource pack relative to images in the 1x
   // resource pak.
-  virtual float GetScaleFactor() const = 0;
+  virtual ScaleFactor GetScaleFactor() const = 0;
 };
 
 }  // namespace ui

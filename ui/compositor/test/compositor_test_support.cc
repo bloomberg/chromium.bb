@@ -17,12 +17,9 @@ class CompositorTestPlatformSupport:
     return string16();
   }
 
-  virtual base::StringPiece GetDataResource(int resource_id) OVERRIDE {
-    return base::StringPiece();
-  }
-
-  virtual base::StringPiece GetImageResource(int resource_id,
-                                             float scale_factor) OVERRIDE {
+  virtual base::StringPiece GetDataResource(
+      int resource_id,
+      ui::ScaleFactor scale_factor) OVERRIDE {
     return base::StringPiece();
   }
 

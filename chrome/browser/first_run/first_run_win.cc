@@ -48,6 +48,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -174,7 +175,8 @@ bool LaunchSetupWithParam(const std::string& param,
 // true if successful.
 bool WriteEULAtoTempFile(FilePath* eula_path) {
   base::StringPiece terms =
-      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_TERMS_HTML);
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_TERMS_HTML, ui::SCALE_FACTOR_NONE);
   if (terms.empty())
     return false;
   FILE *file = file_util::CreateAndOpenTemporaryFile(eula_path);

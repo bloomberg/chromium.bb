@@ -34,6 +34,7 @@
 #include "net/base/directory_lister.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::WebContents;
@@ -146,7 +147,7 @@ void SystemInfoUIHTMLSource::SyslogsComplete(
   }
   static const base::StringPiece systeminfo_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_ABOUT_SYS_HTML));
+          IDR_ABOUT_SYS_HTML, ui::SCALE_FACTOR_NONE));
   std::string full_html = jstemplate_builder::GetTemplatesHtml(
       systeminfo_html, &strings, "t" /* template root node id */);
 
