@@ -310,6 +310,13 @@
           i18n-content="managePasswords"
           pref="profile.password_manager_enabled"></button>
     </div>
+    <div class="checkbox" id="password-generation-checkbox">
+      <label>
+        <input id="password-generation-enabled" pref="password_generation.enabled"
+            metric="Options_PasswordGenerationCheckbox" type="checkbox">
+        <span i18n-content="passwordGenerationEnabledDescription"></span>
+      </label>
+    </div>
 <if expr="is_macosx">
     <div id="mac-passwords-warning" i18n-content="macPasswordsWarning" hidden>
     </div>

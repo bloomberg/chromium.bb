@@ -118,7 +118,7 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_SetNodeText,
 IPC_MESSAGE_ROUTED1(AutofillMsg_GeneratedPasswordAccepted,
                     string16 /* generated_password */)
 
-// Tells the renderer if password generation should be enabled.
+// Tells the renderer whether password generation is enabled.
 IPC_MESSAGE_ROUTED1(AutofillMsg_PasswordGenerationEnabled,
                     bool /* is_enabled */)
 

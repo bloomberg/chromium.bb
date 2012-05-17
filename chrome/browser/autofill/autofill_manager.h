@@ -23,7 +23,9 @@
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class AutofillExternalDelegate;
@@ -60,7 +62,8 @@ struct PasswordFormFillData;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
-class AutofillManager : public content::WebContentsObserver,
+class AutofillManager : public content::NotificationObserver,
+                        public content::WebContentsObserver,
                         public AutofillDownloadManager::Observer,
                         public ProfileSyncServiceObserver,
                         public base::RefCounted<AutofillManager> {
@@ -176,6 +179,11 @@ class AutofillManager : public content::WebContentsObserver,
 
   // Register as an observer with the sync service.
   void RegisterWithSyncService();
+
+  // content::NotificationObserver override
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Determines what the current state of password generation is, and if it has
   // changed from |password_generation_enabled_|. If it has changed or if
@@ -348,6 +356,8 @@ class AutofillManager : public content::WebContentsObserver,
   // The ProfileSyncService associated with this tab. This may be NULL in
   // testing.
   base::WeakPtr<ProfileSyncService> sync_service_;
+  // Listens for changes to the 'enabled' state for password generation.
+  PrefChangeRegistrar registrar_;
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;

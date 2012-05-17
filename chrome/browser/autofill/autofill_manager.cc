@@ -195,6 +195,8 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
       tab_contents->profile()->GetOriginalProfile());
   RegisterWithSyncService();
+  registrar_.Init(tab_contents->profile()->GetPrefs());
+  registrar_.Add(prefs::kPasswordGenerationEnabled, this);
 }
 
 AutofillManager::~AutofillManager() {
@@ -205,6 +207,9 @@ AutofillManager::~AutofillManager() {
 // static
 void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kAutofillEnabled,
+                             true,
+                             PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kPasswordGenerationEnabled,
                              true,
                              PrefService::SYNCABLE_PREF);
 #if defined(OS_MACOSX)
@@ -240,20 +245,34 @@ void AutofillManager::SendPasswordGenerationStateToRenderer(
                                                        enabled));
 }
 
+// In order for password generation to be enabled, we need to make sure:
+// (1) Password sync is enabled,
+// (2) Password manager is enabled, and
+// (3) Password generation preference check box is checked.
 void AutofillManager::UpdatePasswordGenerationState(
     content::RenderViewHost* host,
     bool new_renderer) {
   if (!sync_service_)
     return;
 
-  // Password generation requires sync for passwords and the password manager
-  // to both be enabled.
   syncable::ModelTypeSet sync_set = sync_service_->GetPreferredDataTypes();
-  bool password_sync_enabled = (sync_service_->HasSyncSetupCompleted() &&
-                                sync_set.Has(syncable::PASSWORDS));
+  bool password_sync_enabled =
+      sync_service_->HasSyncSetupCompleted() &&
+      sync_set.Has(syncable::PASSWORDS);
+
+  bool password_manager_enabled =
+      tab_contents_wrapper_->password_manager()->IsSavingEnabled();
+
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents()->GetBrowserContext());
+  bool preference_checked =
+      profile->GetPrefs()->GetBoolean(prefs::kPasswordGenerationEnabled);
+
   bool new_password_generation_enabled =
       password_sync_enabled &&
-      tab_contents_wrapper_->password_manager()->IsSavingEnabled();
+      password_manager_enabled &&
+      preference_checked;
+
   if (new_password_generation_enabled != password_generation_enabled_ ||
       new_renderer) {
     password_generation_enabled_ = new_password_generation_enabled;
@@ -262,7 +281,18 @@ void AutofillManager::UpdatePasswordGenerationState(
 }
 
 void AutofillManager::RenderViewCreated(content::RenderViewHost* host) {
-      UpdatePasswordGenerationState(host, true);
+  UpdatePasswordGenerationState(host, true);
+}
+
+void AutofillManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string* pref = content::Details<std::string>(details).ptr();
+  DCHECK(*pref == prefs::kPasswordGenerationEnabled);
+  UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
 }
 
 void AutofillManager::OnStateChanged() {
@@ -867,6 +897,7 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
       external_delegate_(NULL) {
   DCHECK(tab_contents);
   RegisterWithSyncService();
+  // Test code doesn't need registrar_.
 }
 
 void AutofillManager::set_metric_logger(const AutofillMetrics* metric_logger) {

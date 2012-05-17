@@ -2921,9 +2921,12 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   FormSubmitted(form);
 }
 
-TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
+TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   // Allow this test to control what should get synced.
   profile()->GetPrefs()->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
+  // Always set password generation enabled check box so we can test the
+  // behavior of password sync.
+  profile()->GetPrefs()->SetBoolean(prefs::kPasswordGenerationEnabled, true);
 
   // Sync some things, but not passwords. Shouldn't send anything since
   // password generation is disabled by default.
@@ -2964,6 +2967,48 @@ TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
   profile()->set_incognito(true);
   UpdatePasswordGenerationState(false);
   EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
+
+  // When a new render_view is created, we send the state even if it's the
+  // same.
+  UpdatePasswordGenerationState(true);
+  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
+  EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
+  autofill_manager_->ClearSentStates();
+}
+
+TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
+  // Always set password sync enabled so we can test the behavior of password
+  // generation.
+  profile()->GetPrefs()->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
+  ProfileSyncService* sync_service = GetProfileSyncService();
+  sync_service->SetSyncSetupCompleted();
+  syncable::ModelTypeSet preferred_set;
+  preferred_set.Put(syncable::PASSWORDS);
+  sync_service->ChangePreferredDataTypes(preferred_set);
+
+  // Enabled state remains false, should not sent.
+  profile()->GetPrefs()->SetBoolean(prefs::kPasswordGenerationEnabled, false);
+  UpdatePasswordGenerationState(false);
+  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
+
+  // Enabled state from false to true, should sent true.
+  profile()->GetPrefs()->SetBoolean(prefs::kPasswordGenerationEnabled, true);
+  UpdatePasswordGenerationState(false);
+  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
+  EXPECT_TRUE(autofill_manager_->GetSentStates()[0]);
+  autofill_manager_->ClearSentStates();
+
+  // Enabled states remains true, should not sent.
+  profile()->GetPrefs()->SetBoolean(prefs::kPasswordGenerationEnabled, true);
+  UpdatePasswordGenerationState(false);
+  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
+
+  // Enabled states from true to false, should sent false.
+  profile()->GetPrefs()->SetBoolean(prefs::kPasswordGenerationEnabled, false);
+  UpdatePasswordGenerationState(false);
+  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
+  EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
+  autofill_manager_->ClearSentStates();
 
   // When a new render_view is created, we send the state even if it's the
   // same.

@@ -57,7 +57,9 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
 class MockAutofillManager : public AutofillManager {
  public:
   explicit MockAutofillManager(TabContentsWrapper* tab_contents)
-      : AutofillManager(tab_contents) {}
+      // Force to use the constructor designated for unit test, but we don't
+      // really need personal_data in this test so we pass a NULL pointer.
+      : AutofillManager(tab_contents, NULL) {}
 
   MOCK_METHOD4(OnFillAutofillFormData,
                void(int query_id,

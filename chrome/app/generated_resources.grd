@@ -9210,6 +9210,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
         Enable phishing and malware protection
       </message>
+      <message name="IDS_OPTIONS_PASSWORD_GENERATION_ENABLED_LABEL" desc="The label of the 'Enable automatic password generation' checkbox">
+        Enable automatic password generation
+      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_OPTIONS_SSL_GROUP_DESCRIPTION" desc="Mobile: The description of the 'SSL Connections' group">
           Mobile device-wide SSL settings:

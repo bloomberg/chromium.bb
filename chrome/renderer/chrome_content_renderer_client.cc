@@ -255,6 +255,10 @@ void ChromeContentRendererClient::RenderViewCreated(
       new PasswordAutofillManager(render_view);
   AutofillAgent* autofill_agent = new AutofillAgent(render_view,
                                                     password_autofill_manager);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePasswordGeneration)) {
+    new PasswordGenerationManager(render_view);
+  }
   PageClickTracker* page_click_tracker = new PageClickTracker(render_view);
   // Note that the order of insertion of the listeners is important.
   // The password_autocomplete_manager takes the first shot at processing the
@@ -271,10 +275,6 @@ void ChromeContentRendererClient::RenderViewCreated(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDomAutomationController)) {
     new AutomationRendererHelper(render_view);
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePasswordGeneration)) {
-    new PasswordGenerationManager(render_view);
   }
 }
 

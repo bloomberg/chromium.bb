@@ -40,10 +40,10 @@ class PasswordGenerationManager : public content::RenderViewObserver {
 
   // Message handlers.
   void OnPasswordAccepted(const string16& password);
-  void OnPasswordSyncEnabled(bool enabled);
+  void OnPasswordGenerationEnabled(bool enabled);
 
-  // True if the browser believes that generating passwords is okay for this
-  // renderer.
+  // True if password generation is enabled for the profile associated
+  // with this renderer.
   bool enabled_;
 
   std::pair<WebKit::WebInputElement,

@@ -1050,6 +1050,17 @@ cr.define('options', function() {
     },
 
     /**
+     * Set the visibility of the password generation checkbox.
+     * @private
+     */
+    setPasswordGenerationSettingVisibility_: function(visible) {
+      if (visible)
+        $('password-generation-checkbox').style.display = 'block';
+      else
+        $('password-generation-checkbox').style.display = 'none';
+    },
+
+    /**
      * Set the font size selected item.
      * @private
      */
@@ -1349,6 +1360,7 @@ cr.define('options', function() {
     'setInstantFieldTrialStatus',
     'setMetricsReportingCheckboxState',
     'setMetricsReportingSettingVisibility',
+    'setPasswordGenerationSettingVisibility',
     'setProfilesInfo',
     'setScreenMagnifierCheckboxState',
     'setSpokenFeedbackCheckboxState',

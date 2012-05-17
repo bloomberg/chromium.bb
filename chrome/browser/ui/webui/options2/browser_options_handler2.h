@@ -251,6 +251,9 @@ class BrowserOptionsHandler
   // Setup the visibility for the metrics reporting setting.
   void SetupMetricsReportingSettingVisibility();
 
+  // Setup the visibility for the password generation setting.
+  void SetupPasswordGenerationSettingVisibility();
+
   // Setup the font size selector control.
   void SetupFontSizeSelector();
 

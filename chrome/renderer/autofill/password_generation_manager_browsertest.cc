@@ -112,7 +112,7 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
   SetFocused(first_password_element.to<WebNode>());
   EXPECT_EQ(0u, generation_manager_->messages().size());
 
-  // Pretend like sync was enabled.
+  // Pretend like password generation was enabled.
   AutofillMsg_PasswordGenerationEnabled msg(0, true);
   generation_manager_->OnMessageReceived(msg);
 

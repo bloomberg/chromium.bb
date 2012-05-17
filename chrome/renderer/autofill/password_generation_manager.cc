@@ -91,7 +91,7 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutofillMsg_GeneratedPasswordAccepted,
                         OnPasswordAccepted)
     IPC_MESSAGE_HANDLER(AutofillMsg_PasswordGenerationEnabled,
-                        OnPasswordSyncEnabled)
+                        OnPasswordGenerationEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -106,7 +106,7 @@ void PasswordGenerationManager::OnPasswordAccepted(const string16& password) {
   }
 }
 
-void PasswordGenerationManager::OnPasswordSyncEnabled(bool enabled) {
+void PasswordGenerationManager::OnPasswordGenerationEnabled(bool enabled) {
   enabled_ = enabled;
 }
 
