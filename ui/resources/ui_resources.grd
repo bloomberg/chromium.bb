@@ -289,6 +289,7 @@
         <include name="IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE" file="aura/status_network_airplane.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="aura/status_network_info.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="oak.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_SMS" file="aura/status_sms.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_MORE" file="aura/status_more.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_LESS" file="aura/status_less.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="aura/status_accessibility_mode.png" type="BINDATA" />
