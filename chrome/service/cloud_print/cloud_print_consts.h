@@ -36,7 +36,6 @@ extern const char kTagsHashTagName[];
 extern const char kTagDryRunFlag[];
 extern const char kDefaultCloudPrintServerUrl[];
 extern const char kCloudPrintGaiaServiceId[];
-extern const char kSyncGaiaServiceId[];
 extern const char kProxyAuthUserAgent[];
 extern const char kCloudPrintPushNotificationsSource[];
 extern const char kCloudPrintUserAgent[];

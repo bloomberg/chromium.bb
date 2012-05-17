@@ -13,8 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "jingle/notifier/listener/talk_mediator.h"
+#include "jingle/notifier/base/notifier_options.h"
+#include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/syncable/model_type.h"
 
@@ -22,6 +24,9 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace buzz {
+class XmppTaskParentInterface;
+}  // namespace buzz
 
 namespace sync_notifier {
 
@@ -81,17 +86,14 @@ class P2PNotificationData {
 
 class P2PNotifier
     : public SyncNotifier,
-      public notifier::TalkMediator::Delegate {
+      public notifier::PushClient::Observer {
  public:
-  // Takes ownership of |talk_mediator|, but it is guaranteed that
-  // |talk_mediator| is destroyed only when this object is destroyed.
-  //
   // The |send_notification_target| parameter was added to allow us to send
   // self-notifications in some cases, but not others.  The value should be
   // either NOTIFY_ALL to send notifications to all clients, or NOTIFY_OTHERS
-  // to send notificaitons to all clients except for the one that triggered the
+  // to send notifications to all clients except for the one that triggered the
   // notification.  See crbug.com/97780.
-  P2PNotifier(notifier::TalkMediator* talk_mediator,
+  P2PNotifier(const notifier::NotifierOptions& notifier_options,
               P2PNotificationTarget send_notification_target);
 
   virtual ~P2PNotifier();
@@ -108,13 +110,20 @@ class P2PNotifier
   virtual void SendNotification(
       syncable::ModelTypeSet changed_types) OVERRIDE;
 
-  // TalkMediator::Delegate implementation.
+  // PushClient::Delegate implementation.
   virtual void OnNotificationStateChange(bool notifications_enabled) OVERRIDE;
   virtual void OnIncomingNotification(
       const notifier::Notification& notification) OVERRIDE;
-  virtual void OnOutgoingNotification() OVERRIDE;
 
   // For testing.
+
+  void SimulateConnectForTest(
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
+
+  // Any notifications sent after this is called will be reflected,
+  // i.e. will be treated as an incoming notification also.
+  void ReflectSentNotificationsForTest();
+
   void SendNotificationDataForTest(
       const P2PNotificationData& notification_data);
 
@@ -123,13 +132,13 @@ class P2PNotifier
 
   ObserverList<SyncNotifierObserver> observer_list_;
 
-  // The actual notification listener.
-  scoped_ptr<notifier::TalkMediator> talk_mediator_;
+  // The XMPP push client.
+  notifier::PushClient push_client_;
   // Our unique ID.
   std::string unique_id_;
-  // Whether we called Login() on |talk_mediator_| yet.
+  // Whether we have called UpdateCredentials() yet.
   bool logged_in_;
-  // Whether |talk_mediator_| has notified us that notifications are
+  // Whether |push_client_| has notified us that notifications are
   // enabled.
   bool notifications_enabled_;
   // Which set of clients should be sent notifications.

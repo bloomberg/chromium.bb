@@ -14,7 +14,6 @@
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/protocol/nigori_specifics.pb.h"
-#include "sync/protocol/service_constants.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/syncable.h"
 #include "sync/util/cryptographer.h"

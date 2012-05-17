@@ -10,7 +10,6 @@
 #include "jingle/notifier/base/notifier_options_util.h"
 #include "net/url_request/url_request_context.h"
 #include "sync/notifier/sync_notifier_observer.h"
-#include "sync/protocol/service_constants.h"
 #include "sync/syncable/model_type_payload_map.h"
 #include "talk/xmpp/jid.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -69,8 +68,7 @@ void InvalidationNotifier::UpdateCredentials(
   CHECK(!invalidation_client_id_.empty());
   DVLOG(1) << "Updating credentials for " << email;
   buzz::XmppClientSettings xmpp_client_settings =
-      notifier::MakeXmppClientSettings(notifier_options_,
-                                       email, token, SYNC_SERVICE_NAME);
+      notifier::MakeXmppClientSettings(notifier_options_, email, token);
   if (state_ >= CONNECTING) {
     login_->UpdateXmppSettings(xmpp_client_settings);
   } else {

@@ -110,6 +110,7 @@ class InvalidationNotifier
   std::string invalidation_state_;
 
   // The XMPP connection manager.
+  // TODO(akalin): Use PushClient instead.
   scoped_ptr<notifier::Login> login_;
 
   // The invalidation client.

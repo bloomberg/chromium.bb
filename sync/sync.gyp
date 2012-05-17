@@ -109,7 +109,6 @@
         'protocol/proto_enum_conversions.h',
         'protocol/proto_value_conversions.cc',
         'protocol/proto_value_conversions.h',
-        'protocol/service_constants.h',
         'protocol/sync_protocol_error.cc',
         'protocol/sync_protocol_error.h',
         'sessions/debug_info_getter.h',

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
 
-#include "base/bind.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -29,15 +29,14 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "sync/protocol/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using l10n_util::GetStringFUTF16;
@@ -92,6 +91,8 @@ const syncable::ModelType kDataTypes[] = {
 static const size_t kNumDataTypes = arraysize(kDataTypes);
 COMPILE_ASSERT(arraysize(kDataTypeNames) == arraysize(kDataTypes),
                kDataTypes_does_not_match_kDataTypeNames);
+
+static const char kDefaultSigninDomain[] = "gmail.com";
 
 bool GetAuthData(const std::string& json,
                  std::string* username,
@@ -177,7 +178,7 @@ bool GetPassphrase(const std::string& json, std::string* passphrase) {
 string16 NormalizeUserName(const string16& user) {
   if (user.find_first_of(ASCIIToUTF16("@")) != string16::npos)
     return user;
-  return user + ASCIIToUTF16("@") + ASCIIToUTF16(DEFAULT_SIGNIN_DOMAIN);
+  return user + ASCIIToUTF16("@") + ASCIIToUTF16(kDefaultSigninDomain);
 }
 
 bool AreUserNamesEqual(const string16& user1, const string16& user2) {

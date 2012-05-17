@@ -7,8 +7,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "jingle/notifier/listener/mediator_thread_impl.h"
-#include "jingle/notifier/listener/talk_mediator_impl.h"
 #include "sync/notifier/non_blocking_invalidation_notifier.h"
 #include "sync/notifier/p2p_notifier.h"
 #include "sync/notifier/sync_notifier.h"
@@ -23,17 +21,11 @@ SyncNotifier* CreateDefaultSyncNotifier(
         invalidation_version_tracker,
     const std::string& client_info) {
   if (notifier_options.notification_method == notifier::NOTIFICATION_P2P) {
-    notifier::TalkMediator* const talk_mediator =
-        new notifier::TalkMediatorImpl(
-            new notifier::MediatorThreadImpl(notifier_options),
-            notifier_options);
     // TODO(rlarocque): Ideally, the notification target would be
     // NOTIFY_OTHERS.  There's no good reason to notify ourselves of our own
     // commits.  We self-notify for now only because the integration tests rely
     // on this behaviour.  See crbug.com/97780.
-    //
-    // Takes ownership of |talk_mediator|.
-    return new P2PNotifier(talk_mediator, NOTIFY_ALL);
+    return new P2PNotifier(notifier_options, NOTIFY_ALL);
   }
 
   return new NonBlockingInvalidationNotifier(

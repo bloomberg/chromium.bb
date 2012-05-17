@@ -22,7 +22,6 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
-#include "sync/protocol/service_constants.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable-inl.h"
 #include "sync/syncable/syncable_columns.h"

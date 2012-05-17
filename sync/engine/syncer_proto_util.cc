@@ -10,7 +10,6 @@
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/traffic_logger.h"
-#include "sync/protocol/service_constants.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/sync_enums.pb.h"
 #include "sync/protocol/sync_protocol_error.h"

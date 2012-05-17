@@ -9,6 +9,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "jingle/notifier/base/fake_base_task.h"
+#include "jingle/notifier/base/notifier_options.h"
+#include "jingle/notifier/listener/push_client.h"
+#include "net/url_request/url_request_test_util.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/syncable/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,57 +25,25 @@ using ::testing::_;
 using ::testing::Mock;
 using ::testing::StrictMock;
 
-class FakeTalkMediator : public notifier::TalkMediator {
- public:
-  FakeTalkMediator() : delegate_(NULL) {}
-  virtual ~FakeTalkMediator() {}
-
-  // notifier::TalkMediator implementation.
-  virtual void SetDelegate(Delegate* delegate) OVERRIDE {
-    delegate_ = delegate;
-  }
-  virtual void SetAuthToken(const std::string& email,
-                            const std::string& token,
-                            const std::string& token_service) OVERRIDE {}
-  virtual bool Login() OVERRIDE {
-    if (delegate_) {
-      delegate_->OnNotificationStateChange(true /* notifications_enabled */);
-    }
-    return true;
-  }
-  virtual bool Logout() OVERRIDE {
-    if (delegate_) {
-      delegate_->OnNotificationStateChange(false /* notifiations_enabled */);
-    }
-    return true;
-  }
-  virtual void SendNotification(const notifier::Notification& data) OVERRIDE {
-    if (delegate_) {
-      delegate_->OnOutgoingNotification();
-      delegate_->OnIncomingNotification(data);
-    }
-  }
-  virtual void AddSubscription(
-      const notifier::Subscription& subscription) OVERRIDE {}
-
- private:
-  Delegate* delegate_;
-};
-
 class P2PNotifierTest : public testing::Test {
  protected:
-  P2PNotifierTest() : talk_mediator_(NULL) {}
+  P2PNotifierTest() {
+    notifier_options_.request_context_getter =
+        new TestURLRequestContextGetter(message_loop_.message_loop_proxy());
+  }
 
-  virtual void SetUp() {
-    talk_mediator_ = new FakeTalkMediator();
-    p2p_notifier_.reset(new P2PNotifier(talk_mediator_, NOTIFY_OTHERS));
+  virtual ~P2PNotifierTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    p2p_notifier_.reset(new P2PNotifier(notifier_options_, NOTIFY_OTHERS));
     p2p_notifier_->AddObserver(&mock_observer_);
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
+    message_loop_.RunAllPending();
     p2p_notifier_->RemoveObserver(&mock_observer_);
     p2p_notifier_.reset();
-    talk_mediator_ = NULL;
+    message_loop_.RunAllPending();
   }
 
   syncable::ModelTypePayloadMap MakePayloadMap(
@@ -79,11 +51,12 @@ class P2PNotifierTest : public testing::Test {
     return syncable::ModelTypePayloadMapFromEnumSet(types, "");
   }
 
-  MessageLoop message_loop_;
-  // Owned by |p2p_notifier_|.
-  notifier::TalkMediator* talk_mediator_;
+  // The sockets created by the XMPP code expect an IO loop.
+  MessageLoopForIO message_loop_;
+  notifier::NotifierOptions notifier_options_;
   scoped_ptr<P2PNotifier> p2p_notifier_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;
+  notifier::FakeBaseTask fake_base_task_;
 };
 
 TEST_F(P2PNotifierTest, P2PNotificationTarget) {
@@ -166,9 +139,14 @@ TEST_F(P2PNotifierTest, NotificationsBasic) {
               OnIncomingNotification(MakePayloadMap(enabled_types),
                                      REMOTE_NOTIFICATION));
 
+  p2p_notifier_->ReflectSentNotificationsForTest();
+
   p2p_notifier_->SetUniqueId("sender");
   p2p_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
   p2p_notifier_->UpdateEnabledTypes(enabled_types);
+
+  p2p_notifier_->SimulateConnectForTest(fake_base_task_.AsWeakPtr());
+
   // Sent with target NOTIFY_OTHERS so should not be propagated to
   // |mock_observer_|.
   {
@@ -193,13 +171,21 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
               OnIncomingNotification(MakePayloadMap(enabled_types),
                                      REMOTE_NOTIFICATION));
 
+  p2p_notifier_->ReflectSentNotificationsForTest();
+
   p2p_notifier_->SetUniqueId("sender");
   p2p_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
   p2p_notifier_->UpdateEnabledTypes(enabled_types);
 
+  p2p_notifier_->SimulateConnectForTest(fake_base_task_.AsWeakPtr());
+
+  message_loop_.RunAllPending();
+
   // Should be dropped.
   Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_->SendNotificationDataForTest(P2PNotificationData());
+
+  message_loop_.RunAllPending();
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
@@ -208,19 +194,27 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_SELF, changed_types));
 
+  message_loop_.RunAllPending();
+
   // Should be dropped.
   Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_SELF, changed_types));
+
+  message_loop_.RunAllPending();
 
   // Should be dropped.
   Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_SELF, syncable::ModelTypeSet()));
 
+  message_loop_.RunAllPending();
+
   // Should be dropped.
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_OTHERS, changed_types));
+
+  message_loop_.RunAllPending();
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
@@ -229,10 +223,14 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_OTHERS, changed_types));
 
+  message_loop_.RunAllPending();
+
   // Should be dropped.
   Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_OTHERS, syncable::ModelTypeSet()));
+
+  message_loop_.RunAllPending();
 
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
@@ -241,6 +239,8 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender", NOTIFY_ALL, changed_types));
 
+  message_loop_.RunAllPending();
+
   // Should be propagated.
   Mock::VerifyAndClearExpectations(&mock_observer_);
   EXPECT_CALL(mock_observer_, OnIncomingNotification(changed_payload_map,
@@ -248,10 +248,14 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_ALL, changed_types));
 
+  message_loop_.RunAllPending();
+
   // Should be dropped.
   Mock::VerifyAndClearExpectations(&mock_observer_);
   p2p_notifier_->SendNotificationDataForTest(
       P2PNotificationData("sender2", NOTIFY_ALL, syncable::ModelTypeSet()));
+
+  message_loop_.RunAllPending();
 }
 
 }  // namespace

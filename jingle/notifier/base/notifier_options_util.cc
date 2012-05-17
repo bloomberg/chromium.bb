@@ -13,8 +13,7 @@ namespace notifier {
 
 buzz::XmppClientSettings MakeXmppClientSettings(
     const NotifierOptions& notifier_options,
-    const std::string& email, const std::string& token,
-    const std::string& token_service) {
+    const std::string& email, const std::string& token) {
   buzz::Jid jid = buzz::Jid(email);
   DCHECK(!jid.node().empty());
   DCHECK(jid.IsValid());
@@ -27,7 +26,7 @@ buzz::XmppClientSettings MakeXmppClientSettings(
   xmpp_client_settings.set_auth_cookie(
       notifier_options.invalidate_xmpp_login ?
       token + "bogus" : token);
-  xmpp_client_settings.set_token_service(token_service);
+  xmpp_client_settings.set_token_service("chromiumsync");
   if (notifier_options.allow_insecure_connection) {
     xmpp_client_settings.set_allow_plain(true);
     xmpp_client_settings.set_use_tls(buzz::TLS_DISABLED);

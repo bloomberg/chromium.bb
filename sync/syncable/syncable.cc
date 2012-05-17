@@ -30,7 +30,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "sync/protocol/proto_value_conversions.h"
-#include "sync/protocol/service_constants.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/directory_change_delegate.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"

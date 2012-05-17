@@ -12,7 +12,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/values.h"
 #include "sync/notifier/sync_notifier_observer.h"
-#include "sync/protocol/service_constants.h"
 #include "sync/syncable/model_type_payload_map.h"
 
 namespace sync_notifier {
@@ -141,21 +140,21 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
   return true;
 }
 
-P2PNotifier::P2PNotifier(notifier::TalkMediator* talk_mediator,
+P2PNotifier::P2PNotifier(const notifier::NotifierOptions& notifier_options,
                          P2PNotificationTarget send_notification_target)
-    : talk_mediator_(talk_mediator),
+    : push_client_(notifier_options),
       logged_in_(false),
       notifications_enabled_(false),
       send_notification_target_(send_notification_target),
-      parent_message_loop_proxy_(
-          base::MessageLoopProxy::current()) {
+      parent_message_loop_proxy_(base::MessageLoopProxy::current()) {
   DCHECK(send_notification_target_ == NOTIFY_OTHERS ||
          send_notification_target_ == NOTIFY_ALL);
-  talk_mediator_->SetDelegate(this);
+  push_client_.AddObserver(this);
 }
 
 P2PNotifier::~P2PNotifier() {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  push_client_.RemoveObserver(this);
 }
 
 void P2PNotifier::AddObserver(SyncNotifierObserver* observer) {
@@ -163,18 +162,9 @@ void P2PNotifier::AddObserver(SyncNotifierObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-// Note: Since we need to shutdown TalkMediator on the method_thread, we are
-// calling Logout on TalkMediator when the last observer is removed.
-// Users will need to call UpdateCredentials again to use the same object.
-// TODO(akalin): Think of a better solution to fix this.
 void P2PNotifier::RemoveObserver(SyncNotifierObserver* observer) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   observer_list_.RemoveObserver(observer);
-
-  // Logout after the last observer is removed.
-  if (observer_list_.size() == 0) {
-   talk_mediator_->Logout();
-  }
 }
 
 void P2PNotifier::SetUniqueId(const std::string& unique_id) {
@@ -189,25 +179,19 @@ void P2PNotifier::SetState(const std::string& state) {
 void P2PNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  notifier::Subscription subscription;
+  subscription.channel = kSyncP2PNotificationChannel;
+  // There may be some subtle issues around case sensitivity of the
+  // from field, but it doesn't matter too much since this is only
+  // used in p2p mode (which is only used in testing).
+  subscription.from = email;
+  push_client_.UpdateSubscriptions(
+      notifier::SubscriptionList(1, subscription));
+
   // If already logged in, the new credentials will take effect on the
   // next reconnection.
-  talk_mediator_->SetAuthToken(email, token, SYNC_SERVICE_NAME);
-  if (!logged_in_) {
-    if (!talk_mediator_->Login()) {
-      LOG(DFATAL) << "Could not login for " << email;
-      return;
-    }
-
-    notifier::Subscription subscription;
-    subscription.channel = kSyncP2PNotificationChannel;
-    // There may be some subtle issues around case sensitivity of the
-    // from field, but it doesn't matter too much since this is only
-    // used in p2p mode (which is only used in testing).
-    subscription.from = email;
-    talk_mediator_->AddSubscription(subscription);
-
-    logged_in_ = true;
-  }
+  push_client_.UpdateCredentials(email, token);
+  logged_in_ = true;
 }
 
 void P2PNotifier::UpdateEnabledTypes(
@@ -281,10 +265,20 @@ void P2PNotifier::OnIncomingNotification(
                     OnIncomingNotification(type_payloads, REMOTE_NOTIFICATION));
 }
 
-void P2PNotifier::OnOutgoingNotification() {}
+void P2PNotifier::SimulateConnectForTest(
+    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  push_client_.SimulateConnectAndSubscribeForTest(base_task);
+}
+
+void P2PNotifier::ReflectSentNotificationsForTest() {
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  push_client_.ReflectSentNotificationsForTest();
+}
 
 void P2PNotifier::SendNotificationDataForTest(
     const P2PNotificationData& notification_data) {
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   SendNotificationData(notification_data);
 }
 
@@ -295,7 +289,7 @@ void P2PNotifier::SendNotificationData(
   notification.channel = kSyncP2PNotificationChannel;
   notification.data = notification_data.ToString();
   DVLOG(1) << "Sending XMPP notification: " << notification.ToString();
-  talk_mediator_->SendNotification(notification);
+  push_client_.SendNotification(notification);
 }
 
 }  // namespace sync_notifier

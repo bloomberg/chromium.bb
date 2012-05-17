@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/port.h"
 #include "sync/engine/net/server_connection_manager.h"
-#include "sync/protocol/service_constants.h"
 #include "sync/sessions/session_state.h"
 #include "sync/syncable/model_type.h"
 
