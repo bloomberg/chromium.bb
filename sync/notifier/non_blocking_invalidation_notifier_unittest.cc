@@ -10,7 +10,7 @@
 #include "base/threading/thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "net/url_request/url_request_test_util.h"
-#include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/invalidation_version_tracker.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/syncable/model_type.h"
 #include "sync/syncable/model_type_payload_map.h"
@@ -43,7 +43,7 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
             notifier_options,
             InvalidationVersionMap(),
             browser_sync::MakeWeakHandle(
-                base::WeakPtr<sync_notifier::InvalidationStateTracker>()),
+                base::WeakPtr<sync_notifier::InvalidationVersionTracker>()),
             "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);
   }

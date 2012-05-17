@@ -48,8 +48,8 @@ void ChromeInvalidationClient::Start(
     const std::string& client_id, const std::string& client_info,
     const std::string& state,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const browser_sync::WeakHandle<InvalidationStateTracker>&
-        invalidation_state_tracker,
+    const browser_sync::WeakHandle<InvalidationVersionTracker>&
+        invalidation_version_tracker,
     Listener* listener,
     StateWriter* state_writer,
     base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
@@ -76,8 +76,8 @@ void ChromeInvalidationClient::Start(
                << it->second;
     }
   }
-  invalidation_state_tracker_ = invalidation_state_tracker;
-  DCHECK(invalidation_state_tracker_.IsInitialized());
+  invalidation_version_tracker_ = invalidation_version_tracker;
+  DCHECK(invalidation_version_tracker_.IsInitialized());
 
   DCHECK(!listener_);
   DCHECK(listener);
@@ -124,7 +124,7 @@ void ChromeInvalidationClient::Stop() {
   state_writer_ = NULL;
   listener_ = NULL;
 
-  invalidation_state_tracker_.Reset();
+  invalidation_version_tracker_.Reset();
   max_invalidation_versions_.clear();
 }
 
@@ -178,9 +178,9 @@ void ChromeInvalidationClient::Invalidate(
            << syncable::ModelTypeToString(model_type) << " to "
            << invalidation.version();
   max_invalidation_versions_[model_type] = invalidation.version();
-  invalidation_state_tracker_.Call(
+  invalidation_version_tracker_.Call(
       FROM_HERE,
-      &InvalidationStateTracker::SetMaxVersion,
+      &InvalidationVersionTracker::SetMaxVersion,
       model_type, invalidation.version());
 
   std::string payload;

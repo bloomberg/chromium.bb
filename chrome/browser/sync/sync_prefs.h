@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
-#include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/invalidation_version_tracker.h"
 #include "sync/syncable/model_type.h"
 
 class PrefService;
@@ -45,7 +45,7 @@ class SyncPrefObserver {
 //   sync_setup_wizard_unittest.cc
 //   two_client_preferences_sync_test.cc
 class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
-                  public sync_notifier::InvalidationStateTracker,
+                  public sync_notifier::InvalidationVersionTracker,
                   public content::NotificationObserver {
  public:
   // |pref_service| may be NULL (for unit tests), but in that case no
@@ -106,7 +106,7 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   void SetSpareBootstrapToken(const std::string& token);
 #endif
 
-  // InvalidationStateTracker implementation.
+  // InvalidationVersionTracker implementation.
   virtual sync_notifier::InvalidationVersionMap
       GetAllMaxVersions() const OVERRIDE;
   virtual void SetMaxVersion(syncable::ModelType model_type,

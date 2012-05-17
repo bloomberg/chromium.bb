@@ -5,8 +5,8 @@
 // An InvalidationVersionTracker is an interface that handles getting
 // and setting (persisting) max invalidation versions.
 
-#ifndef SYNC_NOTIFIER_INVALIDATION_STATE_TRACKER_H_
-#define SYNC_NOTIFIER_INVALIDATION_STATE_TRACKER_H_
+#ifndef SYNC_NOTIFIER_INVALIDATION_VERSION_TRACKER_H_
+#define SYNC_NOTIFIER_INVALIDATION_VERSION_TRACKER_H_
 
 #include <map>
 
@@ -17,9 +17,9 @@ namespace sync_notifier {
 
 typedef std::map<syncable::ModelType, int64> InvalidationVersionMap;
 
-class InvalidationStateTracker {
+class InvalidationVersionTracker {
  public:
-  InvalidationStateTracker() {}
+  InvalidationVersionTracker() {}
 
   virtual InvalidationVersionMap GetAllMaxVersions() const = 0;
 
@@ -29,9 +29,10 @@ class InvalidationStateTracker {
                              int64 max_version) = 0;
 
  protected:
-  virtual ~InvalidationStateTracker() {}
+  virtual ~InvalidationVersionTracker() {}
 };
 
 }  // namespace sync_notifier
 
-#endif  // SYNC_NOTIFIER_INVALIDATION_STATE_TRACKER_H_
+#endif  // SYNC_NOTIFIER_INVALIDATION_VERSION_TRACKER_H_
+

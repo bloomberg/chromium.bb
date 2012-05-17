@@ -19,13 +19,13 @@ namespace sync_notifier {
 InvalidationNotifier::InvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const browser_sync::WeakHandle<InvalidationStateTracker>&
-        invalidation_state_tracker,
+    const browser_sync::WeakHandle<InvalidationVersionTracker>&
+        invalidation_version_tracker,
     const std::string& client_info)
     : state_(STOPPED),
       notifier_options_(notifier_options),
       initial_max_invalidation_versions_(initial_max_invalidation_versions),
-      invalidation_state_tracker_(invalidation_state_tracker),
+      invalidation_version_tracker_(invalidation_version_tracker),
       client_info_(client_info) {
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
             notifier_options.notification_method);
@@ -111,7 +111,7 @@ void InvalidationNotifier::OnConnect(
     invalidation_client_.Start(
         invalidation_client_id_, client_info_, invalidation_state_,
         initial_max_invalidation_versions_,
-        invalidation_state_tracker_,
+        invalidation_version_tracker_,
         this, this, base_task);
     invalidation_state_.clear();
     state_ = STARTED;

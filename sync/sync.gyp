@@ -223,7 +223,7 @@
             'notifier/invalidation_notifier.cc',
             'notifier/invalidation_util.cc',
             'notifier/invalidation_util.h',
-            'notifier/invalidation_state_tracker.h',
+            'notifier/invalidation_version_tracker.h',
             'notifier/non_blocking_invalidation_notifier.h',
             'notifier/non_blocking_invalidation_notifier.cc',
             'notifier/p2p_notifier.h',

@@ -14,7 +14,7 @@
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/url_request/url_request_test_util.h"
-#include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/invalidation_version_tracker.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/syncable/model_type.h"
@@ -54,7 +54,7 @@ TEST_F(SyncNotifierFactoryTest, Basic) {
   SyncNotifierFactory factory(
       notifier_options_,
       "test client info",
-      base::WeakPtr<sync_notifier::InvalidationStateTracker>());
+      base::WeakPtr<sync_notifier::InvalidationVersionTracker>());
   scoped_ptr<SyncNotifier> notifier(factory.CreateSyncNotifier());
 #if defined(OS_ANDROID)
   ASSERT_FALSE(notifier.get());
@@ -71,7 +71,7 @@ TEST_F(SyncNotifierFactoryTest, Basic_P2P) {
   SyncNotifierFactory factory(
       notifier_options_,
       "test client info",
-      base::WeakPtr<sync_notifier::InvalidationStateTracker>());
+      base::WeakPtr<sync_notifier::InvalidationVersionTracker>());
   scoped_ptr<SyncNotifier> notifier(factory.CreateSyncNotifier());
 #if defined(OS_ANDROID)
   ASSERT_FALSE(notifier.get());

@@ -17,8 +17,8 @@ namespace {
 SyncNotifier* CreateDefaultSyncNotifier(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const browser_sync::WeakHandle<InvalidationStateTracker>&
-        invalidation_state_tracker,
+    const browser_sync::WeakHandle<InvalidationVersionTracker>&
+        invalidation_version_tracker,
     const std::string& client_info) {
   if (notifier_options.notification_method == notifier::NOTIFICATION_P2P) {
     // TODO(rlarocque): Ideally, the notification target would be
@@ -30,7 +30,7 @@ SyncNotifier* CreateDefaultSyncNotifier(
 
   return new NonBlockingInvalidationNotifier(
       notifier_options, initial_max_invalidation_versions,
-      invalidation_state_tracker, client_info);
+      invalidation_version_tracker, client_info);
 }
 
 }  // namespace
@@ -39,15 +39,15 @@ SyncNotifier* CreateDefaultSyncNotifier(
 SyncNotifierFactory::SyncNotifierFactory(
     const notifier::NotifierOptions& notifier_options,
     const std::string& client_info,
-    const base::WeakPtr<InvalidationStateTracker>&
-        invalidation_state_tracker)
+    const base::WeakPtr<InvalidationVersionTracker>&
+        invalidation_version_tracker)
     : notifier_options_(notifier_options),
       client_info_(client_info),
       initial_max_invalidation_versions_(
-          invalidation_state_tracker.get() ?
-          invalidation_state_tracker->GetAllMaxVersions() :
+          invalidation_version_tracker.get() ?
+          invalidation_version_tracker->GetAllMaxVersions() :
           InvalidationVersionMap()),
-      invalidation_state_tracker_(invalidation_state_tracker) {
+      invalidation_version_tracker_(invalidation_version_tracker) {
 }
 
 SyncNotifierFactory::~SyncNotifierFactory() {
@@ -60,7 +60,7 @@ SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {
 #else
   return CreateDefaultSyncNotifier(notifier_options_,
                                    initial_max_invalidation_versions_,
-                                   invalidation_state_tracker_,
+                                   invalidation_version_tracker_,
                                    client_info_);
 #endif
 }

@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "jingle/notifier/base/notifier_options.h"
-#include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/invalidation_version_tracker.h"
 #include "sync/util/weak_handle.h"
 
 namespace sync_notifier {
@@ -21,13 +21,13 @@ class SyncNotifier;
 class SyncNotifierFactory {
  public:
   // |client_info| is a string identifying the client, e.g. a user
-  // agent string.  |invalidation_state_tracker| may be NULL (for
+  // agent string.  |invalidation_version_tracker| may be NULL (for
   // tests).
   SyncNotifierFactory(
       const notifier::NotifierOptions& notifier_options,
       const std::string& client_info,
-      const base::WeakPtr<InvalidationStateTracker>&
-          invalidation_state_tracker);
+      const base::WeakPtr<InvalidationVersionTracker>&
+          invalidation_version_tracker);
   ~SyncNotifierFactory();
 
   // Creates a sync notifier. Caller takes ownership of the returned
@@ -39,8 +39,8 @@ class SyncNotifierFactory {
   const notifier::NotifierOptions notifier_options_;
   const std::string client_info_;
   const InvalidationVersionMap initial_max_invalidation_versions_;
-  const browser_sync::WeakHandle<InvalidationStateTracker>
-      invalidation_state_tracker_;
+  const browser_sync::WeakHandle<InvalidationVersionTracker>
+      invalidation_version_tracker_;
 };
 
 }  // namespace sync_notifier
