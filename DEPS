@@ -398,7 +398,7 @@ deps_os = {
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
-      "/trunk/deps/reference_builds/chrome_mac@89574",
+      "/trunk/deps/reference_builds/chrome_mac@137727",
 
     "src/third_party/GTM":
       (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@516",
