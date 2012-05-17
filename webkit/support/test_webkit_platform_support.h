@@ -129,7 +129,6 @@ class TestWebKitPlatformSupport :
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
   ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
-  ScopedTempDir indexed_db_dir_;
   SimpleDatabaseSystem database_system_;
   SimpleDomStorageSystem dom_storage_system_;
   SimpleWebCookieJarImpl cookie_jar_;
