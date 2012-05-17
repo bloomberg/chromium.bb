@@ -37,7 +37,7 @@ class TestPackage(object):
     self.device = device
     self.test_suite_full = test_suite
     self.test_suite = os.path.splitext(test_suite)[0]
-    self.test_suite_basename = os.path.basename(self.test_suite)
+    self.test_suite_basename = self._GetTestSuiteBaseName()
     self.test_suite_dirname = os.path.dirname(self.test_suite)
     self.rebaseline = rebaseline
     self.performance_test = performance_test
