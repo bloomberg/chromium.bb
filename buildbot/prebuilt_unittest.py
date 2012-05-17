@@ -100,7 +100,7 @@ class TestUpdateFile(unittest.TestCase):
     try:
       prebuilt.UpdateLocalFile(non_existent_file, value)
       file_contents = self._read_version_file(non_existent_file)
-      self.assertEqual(file_contents, ['%s=%s' % (key, value)])
+      self.assertEqual(file_contents, ['%s="%s"' % (key, value)])
     finally:
       if os.path.exists(non_existent_file):
         os.remove(non_existent_file)
