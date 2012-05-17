@@ -172,9 +172,9 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
     sync_api::WriteNode node(&trans);
     std::string tag = url.url().spec();
-    ASSERT_TRUE(node.InitUniqueByCreation(syncable::TYPED_URLS,
-                                          typed_url_root,
-                                          tag));
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        node.InitUniqueByCreation(syncable::TYPED_URLS, typed_url_root, tag);
+    ASSERT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
     TypedUrlModelAssociator::WriteToSyncNode(url, visits, &node);
   }
 

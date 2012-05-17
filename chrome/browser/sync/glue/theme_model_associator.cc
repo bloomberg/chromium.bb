@@ -68,8 +68,10 @@ SyncError ThemeModelAssociator::AssociateModels() {
   } else {
     // Set the sync data from the current theme.
     sync_api::WriteNode node(&trans);
-    if (!node.InitUniqueByCreation(syncable::THEMES, root,
-                                   kCurrentThemeClientTag)) {
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        node.InitUniqueByCreation(syncable::THEMES, root,
+                                  kCurrentThemeClientTag);
+    if (result != sync_api::WriteNode::INIT_SUCCESS) {
       return error_handler_->CreateAndUploadError(
           FROM_HERE,
           "Could not create current theme node.",

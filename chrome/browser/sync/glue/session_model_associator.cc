@@ -765,9 +765,9 @@ SyncError SessionModelAssociator::AssociateModels() {
     if (local_session_syncid_ == sync_api::kInvalidId) {
       // The sync db didn't have a header node for us, we need to create one.
       sync_api::WriteNode write_node(&trans);
-      if (!write_node.InitUniqueByCreation(SESSIONS,
-                                           root,
-                                           current_machine_tag_)) {
+      sync_api::WriteNode::InitUniqueByCreationResult result =
+          write_node.InitUniqueByCreation(SESSIONS, root, current_machine_tag_);
+      if (result != sync_api::WriteNode::INIT_SUCCESS) {
         // If we can't look it up, and we can't create it, chances are there's
         // a pre-existing node that has encryption issues. But, since we can't
         // load the item, we can't remove it, and error out at this point.
@@ -1354,7 +1354,9 @@ int64 SessionModelAssociator::TabNodePool::GetFreeTabNode() {
     size_t tab_node_id = tab_syncid_pool_.size();
     std::string tab_node_tag = TabIdToTag(machine_tag_, tab_node_id);
     sync_api::WriteNode tab_node(&trans);
-    if (!tab_node.InitUniqueByCreation(SESSIONS, root, tab_node_tag)) {
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        tab_node.InitUniqueByCreation(SESSIONS, root, tab_node_tag);
+    if (result != sync_api::WriteNode::INIT_SUCCESS) {
       LOG(ERROR) << "Could not create new node with tag "
                  << tab_node_tag << "!";
       return sync_api::kInvalidId;

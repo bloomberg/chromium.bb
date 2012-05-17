@@ -82,8 +82,10 @@ void PasswordChangeProcessor::Observe(
     switch (change->type()) {
       case PasswordStoreChange::ADD: {
         sync_api::WriteNode sync_node(&trans);
-        if (sync_node.InitUniqueByCreation(syncable::PASSWORDS,
-                                           password_root, tag)) {
+        sync_api::WriteNode::InitUniqueByCreationResult result =
+            sync_node.InitUniqueByCreation(syncable::PASSWORDS, password_root,
+                                           tag);
+        if (result == sync_api::WriteNode::INIT_SUCCESS) {
           PasswordModelAssociator::WriteToSyncNode(change->form(), &sync_node);
           model_associator_->Associate(&tag, sync_node.GetId());
           break;

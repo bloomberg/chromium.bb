@@ -364,13 +364,15 @@ bool WriteNode::InitByCreation(syncable::ModelType model_type,
 // we will attempt to undelete the node.
 // TODO(chron): Code datatype into hash tag.
 // TODO(chron): Is model type ever lost?
-bool WriteNode::InitUniqueByCreation(syncable::ModelType model_type,
-                                     const BaseNode& parent,
-                                     const std::string& tag) {
-  DCHECK(!entry_) << "Init called twice";
+WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
+    syncable::ModelType model_type,
+    const BaseNode& parent,
+    const std::string& tag) {
+  // This DCHECK will only fail if init is called twice.
+  DCHECK(!entry_);
   if (tag.empty()) {
     LOG(WARNING) << "InitUniqueByCreation failed due to empty tag.";
-    return false;
+    return INIT_FAILED_EMPTY_TAG;
   }
 
   const std::string hash = GenerateSyncableHash(model_type, tag);
@@ -415,14 +417,13 @@ bool WriteNode::InitUniqueByCreation(syncable::ModelType model_type,
       existing_entry->Put(syncable::PARENT_ID, parent_id);
       entry_ = existing_entry.release();
     } else {
-      return false;
+      return INIT_FAILED_ENTRY_ALREADY_EXISTS;
     }
   } else {
     entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                         syncable::CREATE, parent_id, dummy);
-    if (!entry_->good()) {
-      return false;
-    }
+    if (!entry_->good())
+      return INIT_FAILED_COULD_NOT_CREATE_ENTRY;
 
     // Only set IS_DIR for new entries. Don't bitflip undeleted ones.
     entry_->Put(syncable::UNIQUE_CLIENT_TAG, hash);
@@ -435,7 +436,11 @@ bool WriteNode::InitUniqueByCreation(syncable::ModelType model_type,
   PutModelType(model_type);
 
   // Now set the predecessor, which sets IS_UNSYNCED as necessary.
-  return PutPredecessor(NULL);
+  bool success = PutPredecessor(NULL);
+  if (!success)
+    return INIT_FAILED_SET_PREDECESSOR;
+
+  return INIT_SUCCESS;
 }
 
 bool WriteNode::SetPosition(const BaseNode& new_parent,

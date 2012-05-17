@@ -253,16 +253,43 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
                                                             error.message());
         return error;
       }
-      if (!sync_node.InitUniqueByCreation(change.sync_data().GetDataType(),
+      sync_api::WriteNode::InitUniqueByCreationResult result =
+          sync_node.InitUniqueByCreation(change.sync_data().GetDataType(),
                                           root_node,
-                                          change.sync_data().GetTag())) {
+                                          change.sync_data().GetTag());
+      if (result != sync_api::WriteNode::INIT_SUCCESS) {
         NOTREACHED();
-        SyncError error(FROM_HERE,
-                        "Failed to create " + type_str + " node.",
+        std::string error_prefix = "Failed to create " + type_str + " node: ";
+        SyncError error;
+        switch (result) {
+          case sync_api::WriteNode::INIT_FAILED_EMPTY_TAG:
+            error.Reset(FROM_HERE, error_prefix + "empty tag", type);
+            error_handler()->OnSingleDatatypeUnrecoverableError(
+                error.location(), error.message());
+            return error;
+          case sync_api::WriteNode::INIT_FAILED_ENTRY_ALREADY_EXISTS:
+            error.Reset(FROM_HERE, error_prefix + "entry already exists", type);
+            error_handler()->OnSingleDatatypeUnrecoverableError(
+                error.location(), error.message());
+            return error;
+          case sync_api::WriteNode::INIT_FAILED_COULD_NOT_CREATE_ENTRY:
+            error.Reset(FROM_HERE, error_prefix + "failed to create entry",
                         type);
-        error_handler()->OnSingleDatatypeUnrecoverableError(error.location(),
-                                                            error.message());
-        return error;
+            error_handler()->OnSingleDatatypeUnrecoverableError(
+                error.location(), error.message());
+            return error;
+          case sync_api::WriteNode::INIT_FAILED_SET_PREDECESSOR:
+            error.Reset(FROM_HERE, error_prefix + "failed to set predecessor",
+                        type);
+            error_handler()->OnSingleDatatypeUnrecoverableError(
+                error.location(), error.message());
+            return error;
+          default:
+            error.Reset(FROM_HERE, error_prefix + "unknown error", type);
+            error_handler()->OnSingleDatatypeUnrecoverableError(
+                error.location(), error.message());
+            return error;
+        }
       }
       sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());

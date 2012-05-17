@@ -273,8 +273,10 @@ SyncError TypedUrlModelAssociator::DoAssociateModels() {
       } else {
         // Sync has never seen this URL before.
         sync_api::WriteNode node(&trans);
-        if (!node.InitUniqueByCreation(syncable::TYPED_URLS,
-                                       typed_url_root, tag)) {
+        sync_api::WriteNode::InitUniqueByCreationResult result =
+            node.InitUniqueByCreation(syncable::TYPED_URLS,
+                                      typed_url_root, tag);
+        if (result != sync_api::WriteNode::INIT_SUCCESS) {
           return error_handler_->CreateAndUploadError(
               FROM_HERE,
               "Failed to create typed_url sync node: " + tag,

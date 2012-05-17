@@ -162,8 +162,10 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     }
   } else {
     sync_api::WriteNode create_node(trans);
-    if (!create_node.InitUniqueByCreation(syncable::TYPED_URLS,
-                                          typed_url_root, tag)) {
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        create_node.InitUniqueByCreation(syncable::TYPED_URLS,
+                                         typed_url_root, tag);
+    if (result != sync_api::WriteNode::INIT_SUCCESS) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Failed to create typed_url sync node.");
       return false;

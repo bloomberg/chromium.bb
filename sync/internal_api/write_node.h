@@ -46,6 +46,18 @@ class WriteTransaction;
 // syncable::MutableEntry. A WriteTransaction is needed to create a WriteNode.
 class WriteNode : public BaseNode {
  public:
+  enum InitUniqueByCreationResult {
+    INIT_SUCCESS,
+    // The tag passed into this method was empty.
+    INIT_FAILED_EMPTY_TAG,
+    // An entry with this tag already exists.
+    INIT_FAILED_ENTRY_ALREADY_EXISTS,
+    // The constructor for a new MutableEntry with the specified data failed.
+    INIT_FAILED_COULD_NOT_CREATE_ENTRY,
+    // Setting the predecessor failed
+    INIT_FAILED_SET_PREDECESSOR,
+  };
+
   // Create a WriteNode using the given transaction.
   explicit WriteNode(WriteTransaction* transaction);
   virtual ~WriteNode();
@@ -75,9 +87,10 @@ class WriteNode : public BaseNode {
   // Most importantly, if it exists locally, this function will
   // actually undelete it
   // Client unique tagged nodes must NOT be folders.
-  bool InitUniqueByCreation(syncable::ModelType model_type,
-                            const BaseNode& parent,
-                            const std::string& client_tag);
+  InitUniqueByCreationResult InitUniqueByCreation(
+      syncable::ModelType model_type,
+      const BaseNode& parent,
+      const std::string& client_tag);
 
   // Each server-created permanent node is tagged with a unique string.
   // Look up the node with the particular tag.  If it does not exist,

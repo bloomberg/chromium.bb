@@ -460,7 +460,9 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     sync_api::WriteNode node(&trans);
     std::string tag = AutocompleteSyncableService::KeyToTag(
         UTF16ToUTF8(entry.key().name()), UTF16ToUTF8(entry.key().value()));
-    if (!node.InitUniqueByCreation(syncable::AUTOFILL, autofill_root, tag))
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        node.InitUniqueByCreation(syncable::AUTOFILL, autofill_root, tag);
+    if (result != sync_api::WriteNode::INIT_SUCCESS)
       return false;
 
     sync_pb::EntitySpecifics specifics;
@@ -480,9 +482,12 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     }
     sync_api::WriteNode node(&trans);
     std::string tag = profile.guid();
-    if (!node.InitUniqueByCreation(syncable::AUTOFILL_PROFILE,
-                                   autofill_root, tag))
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        node.InitUniqueByCreation(syncable::AUTOFILL_PROFILE,
+                                  autofill_root, tag);
+    if (result != sync_api::WriteNode::INIT_SUCCESS)
       return false;
+
     sync_pb::EntitySpecifics specifics;
     AutofillProfileSyncableService::WriteAutofillProfile(profile, &specifics);
     sync_pb::AutofillProfileSpecifics* profile_specifics =

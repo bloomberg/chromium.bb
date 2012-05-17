@@ -75,7 +75,10 @@ class ProfileSyncServicePreferenceTest
             sync_api::BaseNode::INIT_OK) {
       return WriteSyncedValue(name, value, &tag_node);
     }
-    if (node.InitUniqueByCreation(syncable::PREFERENCES, root, name))
+
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        node.InitUniqueByCreation(syncable::PREFERENCES, root, name);
+    if (result == sync_api::WriteNode::INIT_SUCCESS)
       return WriteSyncedValue(name, value, &node);
 
     return sync_api::kInvalidId;

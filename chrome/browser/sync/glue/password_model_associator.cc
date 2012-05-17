@@ -117,8 +117,9 @@ SyncError PasswordModelAssociator::AssociateModels() {
         Associate(&tag, node.GetId());
       } else {
         sync_api::WriteNode node(&trans);
-        if (!node.InitUniqueByCreation(syncable::PASSWORDS,
-                                       password_root, tag)) {
+        sync_api::WriteNode::InitUniqueByCreationResult result =
+            node.InitUniqueByCreation(syncable::PASSWORDS, password_root, tag);
+        if (result != sync_api::WriteNode::INIT_SUCCESS) {
           STLDeleteElements(&passwords);
           return error_handler_->CreateAndUploadError(
               FROM_HERE,

@@ -1025,8 +1025,9 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
     sync_api::ReadNode root(&trans);
     root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
     sync_api::WriteNode extra_header(&trans);
-    ASSERT_TRUE(extra_header.InitUniqueByCreation(syncable::SESSIONS,
-                                                  root, "new_tag"));
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        extra_header.InitUniqueByCreation(syncable::SESSIONS, root, "new_tag");
+    ASSERT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
     sync_pb::SessionSpecifics specifics;
     specifics.set_session_tag(local_tag);
     extra_header.SetSessionSpecifics(specifics);
@@ -1055,8 +1056,10 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
     sync_api::ReadNode root(&trans);
     root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
     sync_api::WriteNode extra_header(&trans);
-    ASSERT_TRUE(extra_header.InitUniqueByCreation(syncable::SESSIONS,
-                                                  root, local_tag + "_"));
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        extra_header.InitUniqueByCreation(syncable::SESSIONS,
+                                          root, local_tag + "_");
+    ASSERT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
     sync_pb::SessionSpecifics specifics;
     specifics.set_session_tag(local_tag);
     specifics.mutable_header();
@@ -1086,8 +1089,10 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
     sync_api::ReadNode root(&trans);
     root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
     sync_api::WriteNode extra_header(&trans);
-    ASSERT_TRUE(extra_header.InitUniqueByCreation(syncable::SESSIONS,
-                                                  root, foreign_tag));
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        extra_header.InitUniqueByCreation(syncable::SESSIONS,
+                                          root, foreign_tag);
+    ASSERT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
     sync_pb::SessionSpecifics specifics;
     specifics.set_session_tag(foreign_tag);
     extra_header.SetSessionSpecifics(specifics);

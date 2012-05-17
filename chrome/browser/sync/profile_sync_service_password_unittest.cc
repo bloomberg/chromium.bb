@@ -146,9 +146,9 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
 
     sync_api::WriteNode node(&trans);
     std::string tag = PasswordModelAssociator::MakeTag(entry);
-    ASSERT_TRUE(node.InitUniqueByCreation(syncable::PASSWORDS,
-                                          password_root,
-                                          tag));
+    sync_api::WriteNode::InitUniqueByCreationResult result =
+        node.InitUniqueByCreation(syncable::PASSWORDS, password_root, tag);
+    ASSERT_EQ(sync_api::WriteNode::INIT_SUCCESS, result);
     PasswordModelAssociator::WriteToSyncNode(entry, &node);
   }
 
