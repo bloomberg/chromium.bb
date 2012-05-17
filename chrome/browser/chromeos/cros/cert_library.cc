@@ -95,97 +95,6 @@ string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
   }
 }
 
-class RealTPMTokenInfoDelegate : public crypto::TPMTokenInfoDelegate {
- public:
-  RealTPMTokenInfoDelegate();
-  virtual ~RealTPMTokenInfoDelegate();
-
-  // TPMTokenInfoDeleagte overrides:
-  virtual void RequestIsTokenReady(
-      base::Callback<void(bool result)> callback) const OVERRIDE;
-  virtual void GetTokenInfo(std::string* token_name,
-                            std::string* user_pin) const OVERRIDE;
-
- private:
-  // This method is used to implement RequestIsTokenReady.
-  void OnPkcs11IsTpmTokenReady(base::Callback<void(bool result)> callback,
-                               DBusMethodCallStatus call_status,
-                               bool is_tpm_token_ready) const;
-
-  // This method is used to implement RequestIsTokenReady.
-  void OnPkcs11GetTpmTokenInfo(base::Callback<void(bool result)> callback,
-                               DBusMethodCallStatus call_status,
-                               const std::string& token_name,
-                               const std::string& user_pin) const;
-
-  // These are mutable since we need to cache them in IsTokenReady().
-  mutable bool token_ready_;
-  mutable std::string token_name_;
-  mutable std::string user_pin_;
-  mutable base::WeakPtrFactory<RealTPMTokenInfoDelegate> weak_ptr_factory_;
-};
-
-RealTPMTokenInfoDelegate::RealTPMTokenInfoDelegate() : token_ready_(false),
-                                                       weak_ptr_factory_(this) {
-}
-
-RealTPMTokenInfoDelegate::~RealTPMTokenInfoDelegate() {}
-
-void RealTPMTokenInfoDelegate::RequestIsTokenReady(
-    base::Callback<void(bool result)> callback) const {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (token_ready_) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, true));
-    return;
-  }
-  DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11IsTpmTokenReady(
-      base::Bind(&RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void RealTPMTokenInfoDelegate::GetTokenInfo(std::string* token_name,
-                                            std::string* user_pin) const {
-  // May be called from a non UI thread, but must only be called after
-  // IsTokenReady() returns true.
-  CHECK(token_ready_);
-  if (token_name)
-    *token_name = token_name_;
-  if (user_pin)
-    *user_pin = user_pin_;
-}
-
-void RealTPMTokenInfoDelegate::OnPkcs11IsTpmTokenReady(
-    base::Callback<void(bool result)> callback,
-    DBusMethodCallStatus call_status,
-    bool is_tpm_token_ready) const {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS || !is_tpm_token_ready) {
-    callback.Run(false);
-    return;
-  }
-
-  // Retrieve token_name_ and user_pin_ here since they will never change
-  // and CryptohomeClient calls are not thread safe.
-  DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
-      base::Bind(&RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void RealTPMTokenInfoDelegate::OnPkcs11GetTpmTokenInfo(
-    base::Callback<void(bool result)> callback,
-    DBusMethodCallStatus call_status,
-    const std::string& token_name,
-    const std::string& user_pin) const {
-  if (call_status == DBUS_METHOD_CALL_SUCCESS) {
-    token_name_ = token_name;
-    user_pin_ = user_pin;
-    token_ready_ = true;
-  }
-  callback.Run(token_ready_);
-}
-
 }  // namespace
 
 //////////////////////////////////////////////////////////////////////////////
@@ -201,6 +110,7 @@ class CertLibraryImpl
 
   CertLibraryImpl() :
       observer_list_(new CertLibraryObserverList),
+      tpm_token_ready_(false),
       user_logged_in_(false),
       certificates_requested_(false),
       certificates_loaded_(false),
@@ -210,8 +120,7 @@ class CertLibraryImpl
       ALLOW_THIS_IN_INITIALIZER_LIST(server_certs_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(server_ca_certs_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     net::CertDatabase::AddObserver(this);
   }
 
@@ -246,7 +155,7 @@ class CertLibraryImpl
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kLoadOpencryptoki) ||
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kStubCros)) {
-      crypto::EnableTPMTokenForNSS(new RealTPMTokenInfoDelegate());
+      crypto::EnableTPMTokenForNSS();
       // Note: this calls crypto::EnsureTPMTokenReady()
       RequestCertificates();
     }
@@ -266,26 +175,22 @@ class CertLibraryImpl
   }
 
   virtual const CertList& GetCertificates() const OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return certs_;
   }
 
   virtual const CertList& GetUserCertificates() const OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return user_certs_;
   }
 
   virtual const CertList& GetServerCertificates() const OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return server_certs_;
   }
 
   virtual const CertList& GetCACertificates() const OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return server_ca_certs_;
   }
 
@@ -320,13 +225,11 @@ class CertLibraryImpl
 
   // net::CertDatabase::Observer implementation. Observer added on UI thread.
   virtual void OnCertTrustChanged(const net::X509Certificate* cert) OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   virtual void OnUserCertAdded(const net::X509Certificate* cert) OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // Only load certificates if we have completed an initial request.
     if (certificates_loaded_) {
       BrowserThread::PostTask(
@@ -337,8 +240,7 @@ class CertLibraryImpl
   }
 
   virtual void OnUserCertRemoved(const net::X509Certificate* cert) OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // Only load certificates if we have completed an initial request.
     if (certificates_loaded_) {
       BrowserThread::PostTask(
@@ -356,8 +258,7 @@ class CertLibraryImpl
   void LoadCertificates() {
     VLOG(1) << " Loading Certificates.";
     // Certificate fetch occurs on the DB thread.
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB))
-        << __FUNCTION__ << " should be called on DB thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     net::CertDatabase cert_db;
     net::CertificateList* cert_list = new net::CertificateList();
     cert_db.ListCerts(cert_list);
@@ -387,14 +288,6 @@ class CertLibraryImpl
     icu::Collator* collator_;
   };
 
-  void RequestCertificatesTask() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
-    // Reset the task to the initial state so is_null() returns true.
-    request_task_ = base::Closure();
-    RequestCertificates();
-  }
-
   void NotifyCertificatesLoaded(bool initial_load) {
     observer_list_->Notify(
         &CertLibrary::Observer::OnCertificatesLoaded, initial_load);
@@ -402,8 +295,7 @@ class CertLibraryImpl
 
   // |cert_list| is allocated in LoadCertificates() and must be deleted here.
   void UpdateCertificates(net::CertificateList* cert_list) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(cert_list);
 
     // Clear any existing certificates.
@@ -484,8 +376,7 @@ class CertLibraryImpl
   // Call this to start the certificate list initialization process.
   // Must be called from the UI thread.
   void RequestCertificates() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     certificates_requested_ = true;
 
@@ -506,15 +397,13 @@ class CertLibraryImpl
 
     VLOG(1) << "Requesting Certificates.";
     DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(
-        base::Bind(&CertLibraryImpl::RequestCertificatesInternal,
+        base::Bind(&CertLibraryImpl::OnTpmIsEnabled,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   // This method is used to implement RequestCertificates.
-  void RequestCertificatesInternal(DBusMethodCallStatus call_status,
-                                   bool tpm_is_enabled) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
+  void OnTpmIsEnabled(DBusMethodCallStatus call_status, bool tpm_is_enabled) {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (call_status != DBUS_METHOD_CALL_SUCCESS || !tpm_is_enabled) {
       // TPM is not enabled, so proceed with empty tpm token name.
       VLOG(1) << "TPM not available.";
@@ -522,35 +411,50 @@ class CertLibraryImpl
           BrowserThread::DB, FROM_HERE,
           base::Bind(&CertLibraryImpl::LoadCertificates,
                      base::Unretained(this)));
-    } else if (crypto::IsTPMTokenReady()) {
-      // Need TPM token name to filter user certificates.
-      const bool tpm_token_ready = true;
-      GetTPMTokenName(tpm_token_ready);
+    } else if (tpm_token_ready_) {
+      InitializeTPMToken();
     } else {
-      crypto::InitializeTPMToken(
-          base::Bind(&CertLibraryImpl::GetTPMTokenName,
+      DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11IsTpmTokenReady(
+          base::Bind(&CertLibraryImpl::OnPkcs11IsTpmTokenReady,
                      weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
   // This method is used to implement RequestCertificates.
-  void GetTPMTokenName(bool tpm_token_ready) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-        << __FUNCTION__ << " should be called on UI thread.";
-    if (tpm_token_ready) {
-      std::string unused_pin;
-      crypto::GetTPMTokenInfo(&tpm_token_name_, &unused_pin);
-    } else {
-      VLOG(1) << "TPM token not ready.";
-      if (request_task_.is_null()) {
-        // Cryptohome does not notify us when the token is ready, so call
-        // this again after a delay.
-        request_task_ = base::Bind(&CertLibraryImpl::RequestCertificatesTask,
-                                   weak_ptr_factory_.GetWeakPtr());
-        BrowserThread::PostDelayedTask(
-            BrowserThread::UI, FROM_HERE, request_task_,
-            base::TimeDelta::FromMilliseconds(kRequestDelayMs));
-      }
+  void OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
+                               bool is_tpm_token_ready) {
+    if (call_status != DBUS_METHOD_CALL_SUCCESS || !is_tpm_token_ready) {
+      MaybeRetryRequestCertificates();
+      return;
+    }
+
+    // Retrieve token_name_ and user_pin_ here since they will never change
+    // and CryptohomeClient calls are not thread safe.
+    DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
+        base::Bind(&CertLibraryImpl::OnPkcs11GetTpmTokenInfo,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // This method is used to implement RequestCertificates.
+  void OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
+                               const std::string& token_name,
+                               const std::string& user_pin) {
+    if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+      MaybeRetryRequestCertificates();
+      return;
+    }
+    tpm_token_name_ = token_name;
+    tpm_user_pin_ = user_pin;
+    tpm_token_ready_ = true;
+
+    InitializeTPMToken();
+  }
+
+  // This method is used to implement RequestCertificates.
+  void InitializeTPMToken() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!crypto::InitializeTPMToken(tpm_token_name_, tpm_user_pin_)) {
+      MaybeRetryRequestCertificates();
       return;
     }
 
@@ -560,14 +464,38 @@ class CertLibraryImpl
         base::Bind(&CertLibraryImpl::LoadCertificates, base::Unretained(this)));
   }
 
+  void MaybeRetryRequestCertificates() {
+    if (!request_task_.is_null())
+      return;
+    // Cryptohome does not notify us when the token is ready, so call
+    // this again after a delay.
+    request_task_ = base::Bind(&CertLibraryImpl::RequestCertificatesTask,
+                               weak_ptr_factory_.GetWeakPtr());
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE, request_task_,
+        base::TimeDelta::FromMilliseconds(kRequestDelayMs));
+  }
+
+  void RequestCertificatesTask() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // Reset the task to the initial state so is_null() returns true.
+    request_task_ = base::Closure();
+    RequestCertificates();
+  }
+
   // Observers.
   const scoped_refptr<CertLibraryObserverList> observer_list_;
 
   // Active request task for re-requests while waiting for TPM init.
   base::Closure request_task_;
 
+  bool tpm_token_ready_;
+
   // Cached TPM token name.
   std::string tpm_token_name_;
+
+  // Cached TPM user pin.
+  std::string tpm_user_pin_;
 
   // Supplemental user key.
   scoped_ptr<crypto::SymmetricKey> supplemental_user_key_;
@@ -606,8 +534,7 @@ CertLibrary* CertLibrary::GetImpl(bool stub) {
 //////////////////////////////////////////////////////////////////////////////
 
 net::X509Certificate* CertLibrary::CertList::GetCertificateAt(int index) const {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-      << __FUNCTION__ << " should be called on UI thread.";
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int>(list_.size()));
   return list_[index].get();
