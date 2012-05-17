@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -128,13 +128,10 @@ static nc_basic_thread_data_t *nc_find_tdb_mu(uint32_t id) {
                       hash_entry);
 }
 
-void nc_thread_starter(nc_thread_function func,
-                       void *state) {
-  nc_thread_descriptor_t *tdb =  NULL;
-  void *retval;
-  tdb = nc_get_tdb();
+static void nc_thread_starter(void) {
+  nc_thread_descriptor_t *tdb = nc_get_tdb();
   __newlib_thread_init();
-  retval = tdb->start_func(tdb->state);
+  void *retval = tdb->start_func(tdb->state);
   /* if the function returns, terminate the thread */
   pthread_exit(retval);
   /* NOTREACHED */
