@@ -82,8 +82,8 @@
         'nlib_target': 'libnacl.a',
         'build_glibc': 1,
         'build_newlib': 0,
-        'sources': ['<@(sources_for_nacl_extensions)']
       },
+      'sources': ['<@(sources_for_nacl_extensions)'],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
@@ -95,11 +95,11 @@
         'nlib_target': 'libnacl.a',
         'build_glibc': 0,
         'build_newlib': 1,
-        'sources': [
-          '<@(sources_for_nacl_extensions)',
-          '<@(sources_for_standard_interfaces)',
-        ]
       },
+      'sources': [
+        '<@(sources_for_nacl_extensions)',
+        '<@(sources_for_standard_interfaces)',
+      ],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
@@ -111,8 +111,8 @@
         'nlib_target': 'libnacl_dyncode.a',
         'build_glibc': 1,
         'build_newlib': 1,
-        'sources': ['dyncode.c']
       },
+      'sources': ['dyncode.c'],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
@@ -124,8 +124,8 @@
         'nlib_target': 'libnacl_dyncode_private.a',
         'build_glibc': 0,
         'build_newlib': 1,
-        'sources': ['dyncode_private.c']
       },
+      'sources': ['dyncode_private.c'],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
@@ -137,8 +137,8 @@
         'nlib_target': 'libimc_syscalls.a',
         'build_glibc': 1,
         'build_newlib': 1,
-        'sources': ['<@(imc_syscalls)']
       },
+      'sources': ['<@(imc_syscalls)'],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],

@@ -54,34 +54,36 @@
         'nexe_target': 'irt_core',
         'build_glibc': 0,
         'build_newlib': 1,
-        'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
-        'conditions': [
-          # See comment in native_client/src/untrusted/irt/nacl.scons
-          # regarding -Ttext-segment. Also see
-          # http://code.google.com/p/nativeclient/issues/detail?id=2691.
-          ['target_arch!="arm"',
-           {
-             'link_flags': [
-               '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
-               '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
-             ]
-           }, { # target_arch == "arm"
-             'sources': ['<@(irt_sources)',
-                         'aeabi_read_tp.S'],
-             'cflags': ['--pnacl-allow-translate',
-                        '-arch', 'arm'],
-             'asflags': ['-arch', 'arm'],
-             'link_flags': [
-               '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
-               '-Wl,-Ttext=<(NACL_IRT_TEXT_START)',
-               '--pnacl-allow-native',
-               '-arch', 'arm',
-               '-Wt,-mtls-use-call',
-             ],
-           },
-         ],
-        ],
       },
+      'sources': ['<@(irt_sources)', '<@(irt_nonbrowser)'],
+      'conditions': [
+        # See comment in native_client/src/untrusted/irt/nacl.scons
+        # regarding -Ttext-segment. Also see
+        # http://code.google.com/p/nativeclient/issues/detail?id=2691.
+        ['target_arch!="arm"',
+         {
+           'link_flags': [
+             '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
+             '-Wl,-Ttext-segment=<(NACL_IRT_TEXT_START)',
+           ]
+         }, { # target_arch == "arm"
+           'sources': ['<@(irt_sources)',
+                       'aeabi_read_tp.S'],
+           'cflags': ['--pnacl-allow-translate',
+                      '-arch', 'arm'],
+           'asflags': ['-arch', 'arm'],
+           'link_flags': [
+             '-Wl,--section-start,.rodata=<(NACL_IRT_DATA_START)',
+             '-Wl,-Ttext=<(NACL_IRT_TEXT_START)',
+             '--pnacl-allow-native',
+             '-arch', 'arm',
+             '-Wt,-mtls-use-call',
+             # TODO(olonho): rethink
+             '-L<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
+           ],
+         },
+       ],
+      ],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
@@ -94,16 +96,16 @@
         'nlib_target': 'libirt_browser.a',
         'build_glibc': 0,
         'build_newlib': 1,
-        'sources': ['<@(irt_sources)', '<@(irt_browser)'],
-        'conditions': [
-          ['target_arch == "x64" or target_arch == "ia32"', {
-            'link_flags': [
-             '-r',
-             '-nostartfiles',
-            ],
-          }],
-        ],
       },
+      'sources': ['<@(irt_sources)', '<@(irt_browser)'],
+      'conditions': [
+        ['target_arch == "x64" or target_arch == "ia32"', {
+          'link_flags': [
+           '-r',
+           '-nostartfiles',
+          ],
+        }],
+      ],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
