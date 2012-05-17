@@ -75,6 +75,11 @@ gfx::Monitor GetMonitorForScreen(NSScreen* screen, bool is_primary) {
 namespace gfx {
 
 // static
+bool Screen::IsDIPEnabled() {
+  return false;
+}
+
+// static
 gfx::Point Screen::GetCursorScreenPoint() {
   NSPoint mouseLocation  = [NSEvent mouseLocation];
   // Flip coordinates to gfx (0,0 in top-left corner) using primary screen.

@@ -30,6 +30,11 @@ gfx::Monitor GetMonitor(MONITORINFO& monitor_info) {
 namespace gfx {
 
 // static
+bool Screen::IsDIPEnabled() {
+  return false;
+}
+
+// static
 gfx::Point Screen::GetCursorScreenPoint() {
   POINT pt;
   GetCursorPos(&pt);

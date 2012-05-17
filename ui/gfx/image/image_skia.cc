@@ -91,15 +91,10 @@ void ImageSkia::AddBitmapForScale(const SkBitmap& bitmap,
   if (isNull()) {
     Init(bitmap, dip_scale_factor);
   } else {
-    // We currently assume that the bitmap size = 1x size * |dip_scale_factor|.
-    // TODO(pkotwicz): Do something better because of rounding errors when
-    // |dip_scale_factor| is not an int.
-    // TODO(pkotwicz): Remove DCHECK for dip_scale_factor == 1.0f once
-    // image_loading_tracker correctly handles multiple sized images.
-    DCHECK(dip_scale_factor == 1.0f ||
-              static_cast<int>(width() * dip_scale_factor) == bitmap.width());
-    DCHECK(dip_scale_factor == 1.0f ||
-              static_cast<int>(height() * dip_scale_factor) == bitmap.height());
+    // Currently data packs include 1x scale images whenever a different scale
+    // image is unavailable. As |dip_scale_factor| is derived from the data
+    // pack, sometimes |dip_scale_factor| is incorrect.
+    // TODO(pkotwicz): Fix this and add DCHECK.
     storage_->AddBitmap(bitmap);
   }
 }
