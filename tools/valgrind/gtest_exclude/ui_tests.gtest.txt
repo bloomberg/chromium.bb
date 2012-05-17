@@ -106,9 +106,6 @@ OutOfProcessPPAPITest.PostMessage*
 # Failing, may not be related to the tests above. http://crbug.com/109336
 OutOfProcessPPAPITest.View_PageHideShow
 
-# NaCl ui_tests fail on buildbots http://crbug.com/104517
-PPAPINaClTest*
-
 # Flakily times out, http://crbug.com/92527
 NamedInterfaceTest.BasicNamedInterface
 
