@@ -11,6 +11,7 @@
 #include <atlcrack.h>
 #include <atlmisc.h>
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -319,6 +320,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
     MESSAGE_HANDLER_EX(WM_DEADCHAR, OnImeMessages)
     MESSAGE_HANDLER_EX(WM_SYSDEADCHAR, OnImeMessages)
 
+    // Touch Events.
+    MESSAGE_HANDLER_EX(WM_TOUCH, OnTouchEvent)
+
     // This list is in _ALPHABETICAL_ order! OR I WILL HURT YOU.
     MSG_WM_ACTIVATE(OnActivate)
     MSG_WM_ACTIVATEAPP(OnActivateApp)
@@ -422,6 +426,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void OnSize(UINT param, const CSize& size);
   virtual void OnSysCommand(UINT notification_code, CPoint click);
   virtual void OnThemeChanged();
+  virtual LRESULT OnTouchEvent(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnVScroll(int scroll_type, short position, HWND scrollbar);
   virtual void OnWindowPosChanging(WINDOWPOS* window_pos);
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
@@ -468,6 +473,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
  private:
   typedef ScopedVector<ui::ViewProp> ViewProps;
+  typedef std::set<DWORD> TouchIDs;
 
   // Called after the WM_ACTIVATE message has been processed by the default
   // windows procedure.
@@ -653,6 +659,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   bool has_non_client_view_;
 
   bool remove_standard_frame_;
+
+  // The set of touch devices currently down.
+  TouchIDs touch_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };

@@ -22,23 +22,23 @@
 namespace {
 // Helper function that determines whether we want to optimize the UI for touch.
 bool UseTouchOptimizedUI() {
-   // If --touch-optimized-ui is specified and not set to "auto", then override
-   // the hardware-determined setting (eg. for testing purposes).
-   if (CommandLine::ForCurrentProcess()->HasSwitch(
-       switches::kTouchOptimizedUI)) {
-     const std::string switch_value = CommandLine::ForCurrentProcess()->
-         GetSwitchValueASCII(switches::kTouchOptimizedUI);
+  // If --touch-optimized-ui is specified and not set to "auto", then override
+  // the hardware-determined setting (eg. for testing purposes).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTouchOptimizedUI)) {
+    const std::string switch_value = CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kTouchOptimizedUI);
 
-     // Note that simply specifying the switch is the same as enabled.
-     if (switch_value.empty() ||
-         switch_value == switches::kTouchOptimizedUIEnabled) {
-       return true;
-     } else if (switch_value == switches::kTouchOptimizedUIDisabled) {
-       return false;
-     } else if (switch_value != switches::kTouchOptimizedUIAuto) {
-       LOG(ERROR) << "Invalid --touch-optimized-ui option: " << switch_value;
-     }
-   }
+    // Note that simply specifying the switch is the same as enabled.
+    if (switch_value.empty() ||
+        switch_value == switches::kTouchOptimizedUIEnabled) {
+      return true;
+    } else if (switch_value == switches::kTouchOptimizedUIDisabled) {
+      return false;
+    } else if (switch_value != switches::kTouchOptimizedUIAuto) {
+      LOG(ERROR) << "Invalid --touch-optimized-ui option: " << switch_value;
+    }
+  }
 
 #if defined(ENABLE_METRO)
   return base::win::GetMetroModule() != NULL;

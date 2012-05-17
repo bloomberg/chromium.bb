@@ -170,7 +170,7 @@ class TabStrip : public views::View,
   virtual bool IsTabCloseable(const BaseTab* tab) const OVERRIDE;
   virtual void MaybeStartDrag(
       BaseTab* tab,
-      const views::LocatedEvent& event,
+      const views::MouseEvent& event,
       const TabStripSelectionModel& original_selection) OVERRIDE;
   virtual void ContinueDrag(const views::MouseEvent& event) OVERRIDE;
   virtual bool EndDrag(bool canceled) OVERRIDE;

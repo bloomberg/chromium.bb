@@ -49,6 +49,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN)
+#include "base/win/metro.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/views/widget/monitor_win.h"
 #endif
@@ -854,7 +855,7 @@ bool TabStrip::IsTabCloseable(const BaseTab* tab) const {
 
 void TabStrip::MaybeStartDrag(
     BaseTab* tab,
-    const views::LocatedEvent& event,
+    const views::MouseEvent& event,
     const TabStripSelectionModel& original_selection) {
   // Don't accidentally start any drag operations during animations if the
   // mouse is down... during an animation tabs are being resized automatically,
@@ -894,15 +895,28 @@ void TabStrip::MaybeStartDrag(
   // creating the DragController remembers the WebContents delegates and we need
   // to make sure the existing DragController isn't still a delegate.
   drag_controller_.reset();
-  // TODO(sky): verify ET_TOUCH_PRESSED is right.
-  bool move_only = touch_layout_.get() &&
-      (event.type() == ui::ET_TOUCH_PRESSED ||
-       (event.type() == ui::ET_MOUSE_PRESSED &&
-        event.flags() & ui::EF_CONTROL_DOWN));
+  TabDragController::DetachBehavior detach_behavior =
+      TabDragController::DETACHABLE;
+  TabDragController::MoveBehavior move_behavior =
+      TabDragController::REORDER;
+  // Use MOVE_VISIBILE_TABS in the following two conditions:
+  // . Mouse event generated from touch and the left button is down (the right
+  //   button corresponds to a long press, which we want to reorder).
+  // . Real mouse event and control is down. This is mostly for testing.
+  if (touch_layout_.get() &&
+      (((event.flags() & ui::EF_FROM_TOUCH) && event.IsLeftMouseButton()) ||
+       (!(event.flags() & ui::EF_FROM_TOUCH) && event.IsControlDown()))) {
+    move_behavior = TabDragController::MOVE_VISIBILE_TABS;
+  }
+#if defined(OS_WIN)
+  // It doesn't make sense to drag tabs out on metro.
+  if (base::win::GetMetroModule())
+    detach_behavior = TabDragController::NOT_DETACHABLE;
+#endif
   drag_controller_.reset(new TabDragController);
   drag_controller_->Init(
       this, tab, tabs, gfx::Point(x, y), tab->GetMirroredXInView(event.x()),
-      selection_model, move_only);
+      selection_model, detach_behavior, move_behavior);
 }
 
 void TabStrip::ContinueDrag(const views::MouseEvent& event) {

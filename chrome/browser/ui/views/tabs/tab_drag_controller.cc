@@ -335,7 +335,8 @@ TabDragController::TabDragController()
       active_(true),
       source_tab_index_(std::numeric_limits<size_t>::max()),
       initial_move_(true),
-      move_only_(false),
+      detach_behavior_(DETACHABLE),
+      move_behavior_(REORDER),
       mouse_move_direction_(0),
       is_dragging_window_(false),
       end_run_loop_behavior_(END_RUN_LOOP_STOP_DRAGGING),
@@ -382,16 +383,18 @@ void TabDragController::Init(
     const gfx::Point& mouse_offset,
     int source_tab_offset,
     const TabStripSelectionModel& initial_selection_model,
-    bool move_only) {
+    DetachBehavior detach_behavior,
+    MoveBehavior move_behavior) {
   DCHECK(!tabs.empty());
   DCHECK(std::find(tabs.begin(), tabs.end(), source_tab) != tabs.end());
   source_tabstrip_ = source_tabstrip;
   source_tab_offset_ = source_tab_offset;
   start_screen_point_ = GetCursorScreenPoint();
   mouse_offset_ = mouse_offset;
-  move_only_ = move_only;
+  detach_behavior_ = detach_behavior;
+  move_behavior_ = move_behavior;
   last_screen_point_ = start_screen_point_;
-  if (move_only_) {
+  if (move_only()) {
     last_move_screen_loc_ = start_screen_point_.x();
     initial_tab_positions_ = source_tabstrip->GetTabXCoordinates();
   }
@@ -710,8 +713,8 @@ void TabDragController::ContinueDragging() {
   // guaranteed to be correct regardless of monitor config.
   gfx::Point screen_point = GetCursorScreenPoint();
 
-  TabStrip* target_tabstrip = move_only_ ?
-      source_tabstrip_ : GetTabStripForPoint(screen_point);
+  TabStrip* target_tabstrip = detach_behavior_ == DETACHABLE ?
+      GetTabStripForPoint(screen_point) : source_tabstrip_;
   bool tab_strip_changed = (target_tabstrip != attached_tabstrip_);
 
   if (tab_strip_changed) {
@@ -736,7 +739,7 @@ void TabDragController::ContinueDragging() {
 
   if (!is_dragging_window_) {
     if (attached_tabstrip_) {
-      if (move_only_) {
+      if (move_only()) {
         DragActiveTabStacked(screen_point);
       } else {
         MoveAttached(screen_point);

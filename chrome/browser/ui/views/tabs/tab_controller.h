@@ -58,7 +58,7 @@ class TabController {
   // Potentially starts a drag for the specified Tab.
   virtual void MaybeStartDrag(
       BaseTab* tab,
-      const views::LocatedEvent& event,
+      const views::MouseEvent& event,
       const TabStripSelectionModel& original_selection) = 0;
 
   // Continues dragging a Tab.

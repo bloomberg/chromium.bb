@@ -287,7 +287,9 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
   if (!controller())
     return false;
 
-  if (event.IsOnlyLeftMouseButton()) {
+  // Allow a right click from touch to drag, which corresponds to a long click.
+  if (event.IsOnlyLeftMouseButton() ||
+      (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
     TabStripSelectionModel original_selection;
     original_selection.Copy(controller()->GetSelectionModel());
     if (controller()->SupportsMultipleSelection()) {

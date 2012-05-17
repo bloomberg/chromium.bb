@@ -1181,7 +1181,8 @@ HICON NativeWidgetWin::GetDefaultWindowIcon() const {
   return NULL;
 }
 
-LRESULT NativeWidgetWin::OnWndProc(UINT message, WPARAM w_param,
+LRESULT NativeWidgetWin::OnWndProc(UINT message,
+                                   WPARAM w_param,
                                    LPARAM l_param) {
   HWND window = hwnd();
   LRESULT result = 0;
@@ -1333,6 +1334,9 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 
   // Get access to a modifiable copy of the system menu.
   GetSystemMenu(hwnd(), false);
+
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+    RegisterTouchWindow(hwnd(), 0);
 
   return 0;
 }
@@ -1584,6 +1588,8 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
   MSG msg = { hwnd(), message, w_param, l_param, 0,
               { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
   MouseEvent event(msg);
+  if (!touch_ids_.empty())
+    event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
 
   if (!(event.flags() & ui::EF_IS_NON_CLIENT))
     if (tooltip_manager_.get())
@@ -2039,6 +2045,25 @@ void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
 void NativeWidgetWin::OnThemeChanged() {
   // Notify NativeThemeWin.
   ui::NativeThemeWin::instance()->CloseHandles();
+}
+
+LRESULT NativeWidgetWin::OnTouchEvent(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param) {
+  int num_points = LOWORD(w_param);
+  scoped_array<TOUCHINPUT> input(new TOUCHINPUT[num_points]);
+  if (GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(l_param),
+                        num_points, input.get(), sizeof(TOUCHINPUT))) {
+    for (int i = 0; i < num_points; ++i) {
+      if (input[i].dwFlags & TOUCHEVENTF_DOWN)
+        touch_ids_.insert(input[i].dwID);
+      if (input[i].dwFlags & TOUCHEVENTF_UP)
+        touch_ids_.erase(input[i].dwID);
+    }
+  }
+  CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(l_param));
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 void NativeWidgetWin::OnVScroll(int scroll_type,

@@ -83,6 +83,8 @@ enum MouseEventFlags {
   EF_IS_TRIPLE_CLICK    = 1 << 17,
   EF_IS_NON_CLIENT      = 1 << 18,
   EF_IS_SYNTHESIZED     = 1 << 19,  // Only for Aura.  See ui/aura/root_window.h
+  EF_FROM_TOUCH         = 1 << 20,  // Indicates this mouse event is generated
+                                    // from an unconsumed touch/gesture event.
 };
 
 enum TouchStatus {

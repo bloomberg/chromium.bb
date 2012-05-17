@@ -54,6 +54,21 @@ class TabDragController : public content::WebContentsDelegate,
                           public views::Widget::Observer,
                           public TabStripModelObserver {
  public:
+  enum DetachBehavior {
+    DETACHABLE,
+    NOT_DETACHABLE
+  };
+
+  // What should happen as the mouse is dragged within the tabstrip.
+  enum MoveBehavior {
+    // Only the set of visible tabs should change. This is only applicable when
+    // using touch layout.
+    MOVE_VISIBILE_TABS,
+
+    // Typical behavior where tabs are dragged around.
+    REORDER
+  };
+
   TabDragController();
   virtual ~TabDragController();
 
@@ -65,14 +80,14 @@ class TabDragController : public content::WebContentsDelegate,
   // for a horizontal tab strip, and the vertical distance for a vertical tab
   // strip. |initial_selection_model| is the selection model before the drag
   // started and is only non-empty if |source_tab| was not initially selected.
-  // TODO(sky): clean up move_only.
   void Init(TabStrip* source_tabstrip,
             BaseTab* source_tab,
             const std::vector<BaseTab*>& tabs,
             const gfx::Point& mouse_offset,
             int source_tab_offset,
             const TabStripSelectionModel& initial_selection_model,
-            bool move_only);
+            DetachBehavior detach_behavior,
+            MoveBehavior move_behavior);
 
   // Returns true if there is a drag underway and the drag is attached to
   // |tab_strip|.
@@ -408,6 +423,11 @@ class TabDragController : public content::WebContentsDelegate,
   // Returns the TabStripModel for the specified tabstrip.
   TabStripModel* GetModel(TabStrip* tabstrip) const;
 
+  // Returns true if moving the mouse only changes the visible tabs.
+  bool move_only() const {
+    return (move_behavior_ == MOVE_VISIBILE_TABS) != 0;
+  }
+
   // If true Detaching creates a new browser and enters a nested message loop.
   const bool detach_into_browser_;
 
@@ -508,8 +528,8 @@ class TabDragController : public content::WebContentsDelegate,
   // touch mode.
   std::vector<int> initial_tab_positions_;
 
-  // TODO(sky): clean up.
-  bool move_only_;
+  DetachBehavior detach_behavior_;
+  MoveBehavior move_behavior_;
 
   // Updated as the mouse is moved when attached. Indicates whether the mouse
   // has ever moved to the left or right. If the tabs are ever detached this
