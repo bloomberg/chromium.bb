@@ -14,6 +14,8 @@ weston_LDADD = $(COMPOSITOR_LIBS) $(DLOPEN_LIBS) -lm ../shared/libshared.la
 weston_SOURCES =				\
 	compositor.c				\
 	compositor.h				\
+	filter.c				\
+	filter.h				\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
@@ -84,6 +86,7 @@ drm_backend_la_SOURCES =			\
 	evdev.c					\
 	evdev.h					\
 	evdev-private.h				\
+	evdev-touchpad.c			\
 	launcher-util.c				\
 	launcher-util.h				\
 	libbacklight.c				\

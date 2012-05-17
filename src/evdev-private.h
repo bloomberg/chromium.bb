@@ -46,7 +46,6 @@ struct evdev_input_device {
 	int fd;
 	struct {
 		int min_x, max_x, min_y, max_y;
-		int old_x, old_y, reset_x, reset_y;
 		int32_t x, y;
 	} abs;
 
@@ -63,7 +62,7 @@ struct evdev_input_device {
 
 	int type; /* event type flags */
 
-	int is_touchpad, is_mt;
+	int is_mt;
 };
 
 /* event type flags */
@@ -99,5 +98,8 @@ struct evdev_dispatch_interface {
 struct evdev_dispatch {
 	struct evdev_dispatch_interface *interface;
 };
+
+struct evdev_dispatch *
+evdev_touchpad_create(struct evdev_input_device *device);
 
 #endif /* EVDEV_PRIVATE_H */

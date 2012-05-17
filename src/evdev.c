@@ -41,32 +41,6 @@ evdev_process_key(struct evdev_input_device *device,
 		return;
 
 	switch (e->code) {
-	case BTN_TOOL_PEN:
-	case BTN_TOOL_RUBBER:
-	case BTN_TOOL_BRUSH:
-	case BTN_TOOL_PENCIL:
-	case BTN_TOOL_AIRBRUSH:
-	case BTN_TOOL_FINGER:
-	case BTN_TOOL_MOUSE:
-	case BTN_TOOL_LENS:
-		if (device->is_touchpad)
-		{
-			device->abs.reset_x = 1;
-			device->abs.reset_y = 1;
-		}
-		break;
-	case BTN_TOUCH:
-		/* Multitouch touchscreen devices might not send individually
-		 * button events each time a new finger is down. So we don't
-		 * send notification for such devices and we solve the button
-		 * case emulating on compositor side. */
-		if (device->is_mt)
-			break;
-
-		/* Treat BTN_TOUCH from devices that only have BTN_TOUCH as
-		 * BTN_LEFT */
-		e->code = BTN_LEFT;
-		/* Intentional fallthrough! */
 	case BTN_LEFT:
 	case BTN_RIGHT:
 	case BTN_MIDDLE:
@@ -146,49 +120,8 @@ evdev_process_absolute_motion(struct evdev_input_device *device,
 }
 
 static inline void
-evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
-				       struct input_event *e)
-{
-	/* FIXME: Make this configurable somehow. */
-	const int touchpad_speed = 700;
-	int dx, dy;
-
-	switch (e->code) {
-	case ABS_X:
-		e->value -= device->abs.min_x;
-		if (device->abs.reset_x)
-			device->abs.reset_x = 0;
-		else {
-			dx =
-				(e->value - device->abs.old_x) *
-				touchpad_speed /
-				(device->abs.max_x - device->abs.min_x);
-			device->rel.dx = wl_fixed_from_int(dx);
-		}
-		device->abs.old_x = e->value;
-		device->type |= EVDEV_RELATIVE_MOTION;
-		break;
-	case ABS_Y:
-		e->value -= device->abs.min_y;
-		if (device->abs.reset_y)
-			device->abs.reset_y = 0;
-		else {
-			dy =
-				(e->value - device->abs.old_y) *
-				touchpad_speed /
-				/* maybe use x size here to have the same scale? */
-				(device->abs.max_y - device->abs.min_y);
-			device->rel.dy = wl_fixed_from_int(dy);
-		}
-		device->abs.old_y = e->value;
-		device->type |= EVDEV_RELATIVE_MOTION;
-		break;
-	}
-}
-
-static inline void
 evdev_process_relative(struct evdev_input_device *device,
-			      struct input_event *e, uint32_t time)
+		       struct input_event *e, uint32_t time)
 {
 	switch (e->code) {
 	case REL_X:
@@ -216,9 +149,7 @@ static inline void
 evdev_process_absolute(struct evdev_input_device *device,
 		       struct input_event *e)
 {
-	if (device->is_touchpad) {
-		evdev_process_absolute_motion_touchpad(device, e);
-	} else if (device->is_mt) {
+	if (device->is_mt) {
 		evdev_process_touch(device, e);
 	} else {
 		evdev_process_absolute_motion(device, e);
@@ -437,8 +368,9 @@ evdev_configure_device(struct evdev_input_device *device)
 		ioctl(device->fd, EVIOCGBIT(EV_KEY, sizeof(key_bits)),
 		      key_bits);
 		if (TEST_BIT(key_bits, BTN_TOOL_FINGER) &&
-		             !TEST_BIT(key_bits, BTN_TOOL_PEN))
-			device->is_touchpad = 1;
+		    !TEST_BIT(key_bits, BTN_TOOL_PEN) &&
+		    has_abs)
+			device->dispatch = evdev_touchpad_create(device);
 	}
 
 	/* This rule tries to catch accelerometer devices and opt out. We may
@@ -466,7 +398,6 @@ evdev_input_device_create(struct evdev_seat *master,
 		container_of(ec->output_list.next, struct weston_output, link);
 
 	device->master = master;
-	device->is_touchpad = 0;
 	device->is_mt = 0;
 	device->mtdev = NULL;
 	device->devnode = strdup(path);
