@@ -36,10 +36,12 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/i18n/time_formatting.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -631,8 +633,16 @@ class PageLoadTest : public UITest {
     UITest::SetUp();
     g_browser_existing = true;
 
-    // Initialize crash_dumps_dir_path_.
-    PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dumps_dir_path_);
+    // If 'BREAKPAD_DUMP_LOCATION' environment variable is set, use it instead.
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::string alternate_minidump_location;
+    if (env->GetVar("BREAKPAD_DUMP_LOCATION", &alternate_minidump_location)) {
+      crash_dumps_dir_path_ = FilePath::FromUTF8Unsafe(
+          alternate_minidump_location);
+    } else {
+      PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dumps_dir_path_);
+    }
+
     file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
                                          false,  // not recursive
                                          file_util::FileEnumerator::FILES);
