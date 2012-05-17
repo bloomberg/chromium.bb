@@ -398,6 +398,80 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// LoadStore3RegisterOpTester
+LoadStore3RegisterOpTester::LoadStore3RegisterOpTester(
+    const NamedClassDecoder& decoder) : Arm32DecoderTester(decoder) {}
+
+bool LoadStore3RegisterOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::LoadStore3RegisterOp expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Should not parse if P=0 && W=1.
+  if (expected_decoder.indexing.IsPostIndexing(inst) &&
+      expected_decoder.writes.IsDefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_TRUE(expected_decoder.t.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder.writes.IsDefined(inst), inst.Bit(21));
+  EXPECT_EQ(expected_decoder.direction.IsAdd(inst), inst.Bit(23));
+  EXPECT_EQ(expected_decoder.indexing.IsPreIndexing(inst), inst.Bit(24));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder.t.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
+  // Other NaCl constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.indexing.IsPreIndexing(inst))
+      << "Expected FORBIDDEN for " << InstContents();
+
+  EXPECT_FALSE(ExpectedDecoder().defs(inst).Contains(kRegisterPc))
+      << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+
+  return true;
+}
+
+// LoadStore3RegisterDoubleOpTester
+LoadStore3RegisterDoubleOpTester::
+LoadStore3RegisterDoubleOpTester(const NamedClassDecoder& decoder)
+    : LoadStore3RegisterOpTester(decoder) {
+}
+
+bool LoadStore3RegisterDoubleOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadStore3RegisterOpTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  nacl_arm_dec::LoadStore3RegisterDoubleOp expected_decoder;
+  EXPECT_EQ(expected_decoder.t.number(inst) + 1,
+            expected_decoder.t2.number(inst));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_TRUE(expected_decoder.t.IsEven(inst));
+  EXPECT_NE(expected_decoder.t2.number(inst), static_cast<uint32_t>(15))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
+}
+
 // Unary2RegisterImmedShiftedOpTester
 Unary2RegisterImmedShiftedOpTester::Unary2RegisterImmedShiftedOpTester(
     const NamedClassDecoder& decoder)

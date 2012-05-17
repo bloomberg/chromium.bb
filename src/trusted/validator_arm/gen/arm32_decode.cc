@@ -30,6 +30,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Deprecated_instance_()
   , EffectiveNoOp_instance_()
   , Forbidden_instance_()
+  , LdrRegister_instance_()
   , LoadCoprocessor_instance_()
   , LoadDoubleExclusive_instance_()
   , LoadDoubleI_instance_()
@@ -49,9 +50,11 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Roadblock_instance_()
   , SatAddSub_instance_()
   , StoreCoprocessor_instance_()
+  , StoreDoubleR_instance_()
   , StoreExclusive_instance_()
   , StoreImmediate_instance_()
   , StoreRegister_instance_()
+  , StrRegister_instance_()
   , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRange_instance_()
   , Unary1RegisterImmediateOp_instance_()
@@ -402,13 +405,21 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x00000060) == 0x00000020 /* op2(6:5) == 01 */ &&
+      (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */)
+    return StrRegister_instance_;
+
+  if ((insn.Bits() & 0x00000060) == 0x00000020 /* op2(6:5) == 01 */ &&
+      (insn.Bits() & 0x00500000) == 0x00100000 /* op1(24:20) == xx0x1 */)
+    return LdrRegister_instance_;
+
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */)
     return LoadDoubleR_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00100000 /* op1(24:20) == xx0x1 */)
-    return LoadRegister_instance_;
+    return LdrRegister_instance_;
 
   if ((insn.Bits() & 0x00000060) == 0x00000040 /* op2(6:5) == 10 */ &&
       (insn.Bits() & 0x00500000) == 0x00400000 /* op1(24:20) == xx1x0 */)
@@ -418,11 +429,11 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store(
       (insn.Bits() & 0x00500000) == 0x00500000 /* op1(24:20) == xx1x1 */)
     return LoadImmediate_instance_;
 
-  if ((insn.Bits() & 0x00000020) == 0x00000020 /* op2(6:5) == x1 */ &&
+  if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */)
-    return StoreRegister_instance_;
+    return StoreDoubleR_instance_;
 
-  if ((insn.Bits() & 0x00000020) == 0x00000020 /* op2(6:5) == x1 */ &&
+  if ((insn.Bits() & 0x00000060) == 0x00000060 /* op2(6:5) == 11 */ &&
       (insn.Bits() & 0x00500000) == 0x00100000 /* op1(24:20) == xx0x1 */)
     return LoadRegister_instance_;
 

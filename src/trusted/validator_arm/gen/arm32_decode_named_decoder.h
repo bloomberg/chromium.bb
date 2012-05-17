@@ -94,10 +94,12 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   const NamedDeprecated_None Deprecated_None_instance_;
   const NamedEffectiveNoOp_None EffectiveNoOp_None_instance_;
   const NamedForbidden_None Forbidden_None_instance_;
+  const NamedLoad3RegisterDoubleOp_Ldrd_Rule_68_A1_P140 Load3RegisterDoubleOp_Ldrd_Rule_68_A1_P140_instance_;
+  const NamedLoad3RegisterOp_Ldrh_Rule_76_A1_P156 Load3RegisterOp_Ldrh_Rule_76_A1_P156_instance_;
+  const NamedLoad3RegisterOp_Ldrsb_Rule_80_A1_P164 Load3RegisterOp_Ldrsb_Rule_80_A1_P164_instance_;
   const NamedLoadCoprocessor_None LoadCoprocessor_None_instance_;
   const NamedLoadDoubleExclusive_None LoadDoubleExclusive_None_instance_;
   const NamedLoadDoubleI_None LoadDoubleI_None_instance_;
-  const NamedLoadDoubleR_None LoadDoubleR_None_instance_;
   const NamedLoadExclusive_None LoadExclusive_None_instance_;
   const NamedLoadImmediate_None LoadImmediate_None_instance_;
   const NamedLoadMultiple_None LoadMultiple_None_instance_;
@@ -112,6 +114,8 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   const NamedPackSatRev_None PackSatRev_None_instance_;
   const NamedRoadblock_None Roadblock_None_instance_;
   const NamedSatAddSub_None SatAddSub_None_instance_;
+  const NamedStore3RegisterDoubleOp_Strd_Rule_201_A1_P398 Store3RegisterDoubleOp_Strd_Rule_201_A1_P398_instance_;
+  const NamedStore3RegisterOp_Strh_Rule_208_A1_P412 Store3RegisterOp_Strh_Rule_208_A1_P412_instance_;
   const NamedStoreCoprocessor_None StoreCoprocessor_None_instance_;
   const NamedStoreExclusive_None StoreExclusive_None_instance_;
   const NamedStoreImmediate_None StoreImmediate_None_instance_;
@@ -147,11 +151,16 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   const NamedDefs12To15_SubRule_213_A1_P422 Defs12To15_SubRule_213_A1_P422_instance_;
   const NamedDefs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26 Defs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26_instance_;
   const NamedDefs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288 Defs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288_instance_;
+  const NamedLdrRegister_Ldrh_Rule_76_A1_P156 LdrRegister_Ldrh_Rule_76_A1_P156_instance_;
+  const NamedLdrRegister_Ldrsb_Rule_80_A1_P164 LdrRegister_Ldrsb_Rule_80_A1_P164_instance_;
+  const NamedLoadDoubleR_Ldrd_Rule_68_A1_P140 LoadDoubleR_Ldrd_Rule_68_A1_P140_instance_;
   const NamedMaskAddress_Bic_Rule_19_A1_P50 MaskAddress_Bic_Rule_19_A1_P50_instance_;
   const NamedMaybeSetsConds_Cmn_Rule_33_A1_P76 MaybeSetsConds_Cmn_Rule_33_A1_P76_instance_;
   const NamedMaybeSetsConds_Cmp_Rule_36_A1_P82 MaybeSetsConds_Cmp_Rule_36_A1_P82_instance_;
   const NamedMaybeSetsConds_Teq_Rule_228_A1_P450 MaybeSetsConds_Teq_Rule_228_A1_P450_instance_;
   const NamedMaybeSetsConds_Tst_Rule_231_A1_P456 MaybeSetsConds_Tst_Rule_231_A1_P456_instance_;
+  const NamedStoreDoubleR_Strd_Rule_201_A1_P398 StoreDoubleR_Strd_Rule_201_A1_P398_instance_;
+  const NamedStrRegister_Strh_Rule_208_A1_P412 StrRegister_Strh_Rule_208_A1_P412_instance_;
   const NamedTestIfAddressMasked_Tst_Rule_230_A1_P454 TestIfAddressMasked_Tst_Rule_230_A1_P454_instance_;
  private:
 

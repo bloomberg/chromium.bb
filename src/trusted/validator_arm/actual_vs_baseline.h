@@ -40,8 +40,10 @@ class ActualVsBaselineTester : public Arm32DecoderTester {
       const NamedClassDecoder& decoder);
 
  protected:
+  // Note: we quit early if the safety values are not MAY_BE_SAFE
+  bool MayBeSafe();
+
   // Checks that each corresponding ClassDecoder virtual matches.
-  void CheckSafety();
   void CheckDefs();
   void CheckImmediateAddressingDefs();
   void CheckBaseAddressRegister();

@@ -30,7 +30,7 @@ void ActualVsBaselineTester::ProcessMatch() {
   baseline_tester_.ProcessMatch();
 
   // Check virtuals.
-  CheckSafety();
+  if (!MayBeSafe()) return;
   CheckDefs();
   CheckImmediateAddressingDefs();
   CheckBaseAddressRegister();
@@ -56,15 +56,19 @@ const NamedClassDecoder& ActualVsBaselineTester::ExpectedDecoder() const {
   return baseline_;
 }
 
-void ActualVsBaselineTester::CheckSafety() {
+bool ActualVsBaselineTester::MayBeSafe() {
   // Note: We don't actually check if safety is identical. All we worry
   // about is that the validator (in sel_ldr) accepts/rejects the same
   // way in terms of safety. We don't worry if the reasons for safety
   // failing is the same.
   if (actual_decoder_.safety(inst_) == nacl_arm_dec::MAY_BE_SAFE) {
-    EXPECT_EQ(baseline_decoder_.safety(inst_), nacl_arm_dec::MAY_BE_SAFE);
+    NC_EXPECT_EQ_PRECOND(nacl_arm_dec::MAY_BE_SAFE,
+                         baseline_decoder_.safety(inst_));
+    return true;
   } else {
-    EXPECT_NE(baseline_decoder_.safety(inst_), nacl_arm_dec::MAY_BE_SAFE);
+    NC_EXPECT_NE_PRECOND(nacl_arm_dec::MAY_BE_SAFE,
+                         baseline_decoder_.safety(inst_));
+    return false;
   }
 }
 

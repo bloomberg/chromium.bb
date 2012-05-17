@@ -129,7 +129,27 @@ class DecoderTester {
 // if a == b, generate a gtest error and then stop the application
 // from doing further checks for the given instruction.
 #define NC_EXPECT_NE_PRECOND(a, b) \
-  { EXPECT_NE(a, b) << InstContents(); NC_PRECOND((a) == (b)); }
+  { EXPECT_NE(a, b) << InstContents(); \
+    NC_PRECOND((a) == (b)); \
+  }
+
+// Helper macro for testing if an (error) precondition a == b is met
+// within the ApplySanityChecks method of a DecoderTester. That is,
+// if a != b, generate a gtest error and then stop the application
+// from doing further checks for the given instruction.
+#define NC_EXPECT_EQ_PRECOND(a, b) \
+  { EXPECT_EQ(a, b) << InstContents(); \
+    NC_PRECOND((a) != (b)); \
+  }
+
+// Helper macro for testing if an (error) precondition c is false
+// withing the ApplySanityChecks method of a DecoderTester. That is,
+// if !c, generate a gtest error and then stop the application from
+// doing further checks for the given instruction.
+#define NC_EXPECT_FALSE_PRECOND(a) \
+  { EXPECT_FALSE(a) << InstContents(); \
+    NC_PRECOND(!(a)); \
+  }
 
 // Defines a decoder tester that enumerates an Arm32 instruction pattern,
 // and tests that all of the decoded patterns match the expected class

@@ -264,7 +264,7 @@ namespace nacl_arm_dec {
 """
 
 RULE_CLASS="""class %(DECODER_class)s
-   : public %(DECODER)s {
+    : public %(DECODER)s {
  public:
   virtual ~%(DECODER_class)s() {}
 };
@@ -456,7 +456,7 @@ METHOD_DISPATCH_CONTINUE=""" &&
 METHOD_DISPATCH_END=")"""
 
 PARSE_TABLE_METHOD_ROW="""
-   return %(action)s;
+    return %(action)s;
 """
 
 PARSE_TABLE_METHOD_FOOTER="""

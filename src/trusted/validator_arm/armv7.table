@@ -54,8 +54,12 @@
 #   'mmmm' - Bits defining register Rm.
 #   'nnnn' - Bits defining register Rn.
 #   'ssss' - Bits defining register Rs.
+#   'tttt' - Bits defining register Rt.
 #   'tt'   - Bits defining the shift type (for register operations).
-#   'u'    - Bit defining whether register flags is updated.
+#   'u'    - Bit(20) defining whether register flags is updated.
+#   'w'    - Bit(21) defining writes flag.
+#   'd'    - Bit(23) Direction (add vs subtract) of offset.
+#   'p'    - Bit(24) defining if pre-indexing should be used.
 #
 # Constraints identifiers used are:
 #    Imm5NotZero - The immediate (5-bit) value must not be zero.
@@ -81,6 +85,10 @@
 
 class MaskedBinary2RegisterImmediateOp : Binary2RegisterImmediateOp
 class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
+class Load3RegisterOp : LoadStore3RegisterOp
+class Store3RegisterOp : LoadStore3RegisterOp
+class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
+class Store3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 
 ##############################################################
 # The following define decoder tables.
@@ -383,18 +391,28 @@ class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
 
 +-- extra_load_store (See Section A5.2.8)
 | op2(6:5) op1(24:20) Rn(19:16)
-| 01       xx0x0      -         =StoreRegister      # STRH(register)  A8-412
-| "        xx0x1      -         =LoadRegister       # LDRH(register)  A8-156
+| 01       xx0x0      -         = Store3RegisterOp => StrRegister
+                                  Strh_Rule_208_A1_P412
+                                  cccc000pd0w0nnnntttt00001011mmmm
+| "        xx0x1      -         = Load3RegisterOp => LdrRegister
+                                  Ldrh_Rule_76_A1_P156
+                                  cccc000pd0w1nnnntttt00001011mmmm
 | "        xx1x0      -         =StoreImmediate     # STRH(immediate) A8-410
-| "        xx1x1      ~1111     =LoadImmediate      # LDRH(immediate) A8-152
+| "        xx1x1      ~1111     =LoadImmediate      # LDRH(immediate) A8=152
 | "        "          1111      =LoadImmediate      # LDRH(literal)   A8-154
-| 10       xx0x0      -         =LoadDoubleR(v5TE)  # LDRD(register)  A8-140
-| "        xx0x1      -         =LoadRegister       # LDRSB(register) A8-164
+| 10       xx0x0      -         = Load3RegisterDoubleOp => LoadDoubleR
+                                  Ldrd_Rule_68_A1_P140
+                                  cccc000pd0w0nnnntttt00001101mmmm (v5TE)
+| "        xx0x1      -         = Load3RegisterOp => LdrRegister 
+                                  Ldrsb_Rule_80_A1_P164
+                                  cccc000pd0w1nnnntttt00001101mmmm
 | "        xx1x0      ~1111     =LoadDoubleI(v5TE)  # LDRD(immediate) A8-136
 | "        "          1111      =LoadDoubleI(v5TE)  # LDRD(literal)   A8-138
 | "        xx1x1      ~1111     =LoadImmediate      # LDRSB(immediate)A8-160
 | "        "          1111      =LoadImmediate      # LDRSB(literal)  A8-162
-| 11       xx0x0      -         =StoreRegister      # STRD(register)  A8-398
+| 11       xx0x0      -         = Store3RegisterDoubleOp => StoreDoubleR
+                                  Strd_Rule_201_A1_P398
+                                  cccc000pd0w0nnnntttt00001111mmmm
 | "        xx0x1      -         =LoadRegister       # LDRSH(register) A8-172
 | "        xx1x0      -         =StoreImmediate     # STRD(immediate) A8-396
 | "        xx1x1      ~1111     =LoadImmediate      # LDRSH(immediate)A8-168

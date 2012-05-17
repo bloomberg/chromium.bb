@@ -274,6 +274,104 @@ class Binary3RegisterOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOp);
 };
 
+
+// Models a 3-register load/store operation of the forms:
+// Op<c> <Rt>, [<Rn>, +/-<Rm>]{!}
+// Op<c> <Rt>, [<Rn>], +/-<Rm>
+// +--------+------+--+--+--+--+--+--------+--------+----------------+--------+
+// |31302918|272625|24|23|22|21|20|19181716|15141312|1110 9 8 7 6 5 4| 3 2 1 0|
+// +--------+------+--+--+--+--+--+--------+--------+----------------+--------+
+// |  cond  |      | P| U|  | W|  |   Rn   |   Rt   |                |   Rm   |
+// +--------+------+--+--+--+--+--+--------+--------+----------------+--------+
+// wback = (P=0 || W=1)
+//
+// If P=0 and W=1, should not parse as this instruction.
+// If Rt=15 || Rm=15 then unpredictable.
+// If wback && (Rn=15 or Rn=Rt) then unpredictable.
+// if ArchVersion() < 6 && wback && Rm=Rn then unpredictable.
+// NaCl Disallows writing to PC.
+class LoadStore3RegisterOp : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegMBits0To3Interface m;
+  static const RegTBits12To15Interface t;
+  static const RegNBits16To19Interface n;
+  static const WritesBit21Interface writes;
+  static const AddOffsetBit23Interface direction;
+  static const PrePostIndexingBit24Interface indexing;
+  static const ConditionBits28To31Interface cond;
+
+  inline LoadStore3RegisterOp() : ClassDecoder() {}
+  virtual ~LoadStore3RegisterOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual Register base_address_register(const Instruction i) const;
+  inline bool HasWriteBack(const Instruction i) const {
+    return indexing.IsPostIndexing(i) || writes.IsDefined(i);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterOp);
+};
+
+// Defines the virtuals for a load register instruction.
+class Load3RegisterOp : public LoadStore3RegisterOp {
+ public:
+  inline Load3RegisterOp() : LoadStore3RegisterOp() {}
+  virtual ~Load3RegisterOp() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Load3RegisterOp);
+};
+
+// Defines the virtuals for a store register instruction.
+class Store3RegisterOp : public LoadStore3RegisterOp {
+ public:
+  inline Store3RegisterOp() : LoadStore3RegisterOp() {}
+  virtual ~Store3RegisterOp() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store3RegisterOp);
+};
+
+// Models a 3-register load/store operation where the source/target is double
+//  wide (i.e. Rt and Rt2).
+class LoadStore3RegisterDoubleOp : public LoadStore3RegisterOp {
+ public:
+  // Interface for components in the instruction (and not inherited).
+  static const RegT2Bits12To15Interface t2;
+
+  LoadStore3RegisterDoubleOp() : LoadStore3RegisterOp() {}
+  virtual ~LoadStore3RegisterDoubleOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterDoubleOp);
+};
+
+// Defines the virtuals for a load double register instruction
+class Load3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
+ public:
+  Load3RegisterDoubleOp() : LoadStore3RegisterDoubleOp() {}
+  virtual ~Load3RegisterDoubleOp() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Load3RegisterDoubleOp);
+};
+
+// Defines the virtuals for s store double register instruction.
+class Store3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
+ public:
+  Store3RegisterDoubleOp() : LoadStore3RegisterDoubleOp() {}
+  virtual ~Store3RegisterDoubleOp() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store3RegisterDoubleOp);
+};
+
 // Models a 2-register immediate-shifted unary operation of the form:
 // Op(S)<c> <Rd>, <Rm> {,<shift>}
 // +--------+--------------+--+--------+--------+----------+----+--+--------+

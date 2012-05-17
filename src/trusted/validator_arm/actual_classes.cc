@@ -178,6 +178,30 @@ Register StoreRegister::base_address_register(const Instruction i) const {
   return Rn(i);
 }
 
+SafetyLevel StrRegister::safety(const Instruction i) const {
+  if (indexing.IsPreIndexing(i)) {
+    // If pre-indexing is set, the address of the load is computed as the sum
+    // of the two register parameters.  We have checked that the first register
+    // is within the sandbox, but this would allow adding an arbitrary value
+    // to it, so it is not safe. (NaCl constraint).
+    return FORBIDDEN;
+  }
+
+  // Arm restrictions for this instruction.
+  if (RegisterList(t.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't let addressing writeback alter PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
 
 SafetyLevel StoreExclusive::safety(const Instruction i) const {
   // Don't let addressing writeback alter PC.
@@ -239,6 +263,30 @@ Register LoadRegister::base_address_register(const Instruction i) const {
   return Rn(i);
 }
 
+SafetyLevel LdrRegister::safety(const Instruction i) const {
+  if (indexing.IsPreIndexing(i)) {
+    // If pre-indexing is set, the address of the load is computed as the sum
+    // of the two register parameters.  We have checked that the first register
+    // is within the sandbox, but this would allow adding an arbitrary value
+    // to it, so it is not safe. (NaCl constraint).
+    return FORBIDDEN;
+  }
+
+  // Arm restrictions for this instruction.
+  if (RegisterList(t.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't let addressing writeback alter PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
 
 RegisterList LoadImmediate::immediate_addressing_defs(const Instruction i)
     const {
@@ -268,7 +316,6 @@ bool LoadDoubleI::offset_is_immediate(Instruction i) const {
   return true;
 }
 
-
 SafetyLevel LoadDoubleR::safety(const Instruction i) const {
   if (PreindexingFlag(i)) {
     // If pre_index is set, the address of the load is computed as the sum
@@ -276,6 +323,21 @@ SafetyLevel LoadDoubleR::safety(const Instruction i) const {
     // is within the sandbox, but this would allow adding an arbitrary value
     // to it, so it is not safe.
     return FORBIDDEN;
+  }
+
+  // Arm restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)) ||
+       n.reg(i).Equals(t2.reg(i)))) {
+    return UNPREDICTABLE;
   }
 
   // Don't let addressing writeback alter PC.
@@ -289,7 +351,38 @@ RegisterList LoadDoubleR::defs(const Instruction i) const {
 }
 
 Register LoadDoubleR::base_address_register(const Instruction i) const {
+  // TODO(karl) Decide if this is already covered through inheritance.
   return Rn(i);
+}
+
+SafetyLevel StoreDoubleR::safety(const Instruction i) const {
+  if (PreindexingFlag(i)) {
+    // If pre_index is set, the address of the load is computed as the sum
+    // of the two register parameters.  We have checked that the first register
+    // is within the sandbox, but this would allow adding an arbitrary value
+    // to it, so it is not safe.
+    return FORBIDDEN;
+  }
+
+  // Arm restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)) ||
+       n.reg(i).Equals(t2.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't let addressing writeback alter PC.
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
 }
 
 Register LoadExclusive::base_address_register(const Instruction i) const {

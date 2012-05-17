@@ -24,667 +24,721 @@
 namespace nacl_arm_dec {
 
 class Binary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76
-   : public Binary2RegisterImmedShiftedTest {
+    : public Binary2RegisterImmedShiftedTest {
  public:
   virtual ~Binary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76() {}
 };
 
 class Binary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82
-   : public Binary2RegisterImmedShiftedTest {
+    : public Binary2RegisterImmedShiftedTest {
  public:
   virtual ~Binary2RegisterImmedShiftedTest_Cmp_Rule_36_A1_P82() {}
 };
 
 class Binary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450
-   : public Binary2RegisterImmedShiftedTest {
+    : public Binary2RegisterImmedShiftedTest {
  public:
   virtual ~Binary2RegisterImmedShiftedTest_Teq_Rule_228_A1_P450() {}
 };
 
 class Binary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456
-   : public Binary2RegisterImmedShiftedTest {
+    : public Binary2RegisterImmedShiftedTest {
  public:
   virtual ~Binary2RegisterImmedShiftedTest_Tst_Rule_231_A1_P456() {}
 };
 
 class Binary2RegisterImmediateOp_Adc_Rule_6_A1_P14
-   : public Binary2RegisterImmediateOp {
+    : public Binary2RegisterImmediateOp {
  public:
   virtual ~Binary2RegisterImmediateOp_Adc_Rule_6_A1_P14() {}
 };
 
 class Binary2RegisterImmediateOp_Add_Rule_5_A1_P22
-   : public Binary2RegisterImmediateOp {
+    : public Binary2RegisterImmediateOp {
  public:
   virtual ~Binary2RegisterImmediateOp_Add_Rule_5_A1_P22() {}
 };
 
 class Binary2RegisterImmediateOp_And_Rule_11_A1_P34
-   : public Binary2RegisterImmediateOp {
+    : public Binary2RegisterImmediateOp {
  public:
   virtual ~Binary2RegisterImmediateOp_And_Rule_11_A1_P34() {}
 };
 
 class Binary2RegisterImmediateOp_Eor_Rule_44_A1_P94
-   : public Binary2RegisterImmediateOp {
+    : public Binary2RegisterImmediateOp {
  public:
   virtual ~Binary2RegisterImmediateOp_Eor_Rule_44_A1_P94() {}
 };
 
 class Binary2RegisterImmediateOp_Orr_Rule_113_A1_P228
-   : public Binary2RegisterImmediateOp {
+    : public Binary2RegisterImmediateOp {
  public:
   virtual ~Binary2RegisterImmediateOp_Orr_Rule_113_A1_P228() {}
 };
 
 class Binary2RegisterImmediateOp_Rsb_Rule_142_A1_P284
-   : public Binary2RegisterImmediateOp {
+    : public Binary2RegisterImmediateOp {
  public:
   virtual ~Binary2RegisterImmediateOp_Rsb_Rule_142_A1_P284() {}
 };
 
 class Binary2RegisterImmediateOp_Rsc_Rule_145_A1_P290
-   : public Binary2RegisterImmediateOp {
+    : public Binary2RegisterImmediateOp {
  public:
   virtual ~Binary2RegisterImmediateOp_Rsc_Rule_145_A1_P290() {}
 };
 
 class Binary2RegisterImmediateOp_Sbc_Rule_151_A1_P302
-   : public Binary2RegisterImmediateOp {
+    : public Binary2RegisterImmediateOp {
  public:
   virtual ~Binary2RegisterImmediateOp_Sbc_Rule_151_A1_P302() {}
 };
 
 class Binary2RegisterImmediateOp_Sub_Rule_212_A1_P420
-   : public Binary2RegisterImmediateOp {
+    : public Binary2RegisterImmediateOp {
  public:
   virtual ~Binary2RegisterImmediateOp_Sub_Rule_212_A1_P420() {}
 };
 
 class Binary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_Adc_Rule_2_A1_P16() {}
 };
 
 class Binary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_Add_Rule_6_A1_P24() {}
 };
 
 class Binary3RegisterImmedShiftedOp_And_Rule_7_A1_P36
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_And_Rule_7_A1_P36() {}
 };
 
 class Binary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_Bic_Rule_20_A1_P52() {}
 };
 
 class Binary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_Eor_Rule_45_A1_P96() {}
 };
 
 class Binary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_Orr_Rule_114_A1_P230() {}
 };
 
 class Binary3RegisterImmedShiftedOp_Rsb_Rule_143_P286
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_Rsb_Rule_143_P286() {}
 };
 
 class Binary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_Rsc_Rule_146_A1_P292() {}
 };
 
 class Binary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_Sbc_Rule_152_A1_P304() {}
 };
 
 class Binary3RegisterImmedShiftedOp_SubRule_213_A1_P422
-   : public Binary3RegisterImmedShiftedOp {
+    : public Binary3RegisterImmedShiftedOp {
  public:
   virtual ~Binary3RegisterImmedShiftedOp_SubRule_213_A1_P422() {}
 };
 
 class Binary3RegisterOp_Asr_Rule_15_A1_P42
-   : public Binary3RegisterOp {
+    : public Binary3RegisterOp {
  public:
   virtual ~Binary3RegisterOp_Asr_Rule_15_A1_P42() {}
 };
 
 class Binary3RegisterOp_Lsl_Rule_89_A1_P180
-   : public Binary3RegisterOp {
+    : public Binary3RegisterOp {
  public:
   virtual ~Binary3RegisterOp_Lsl_Rule_89_A1_P180() {}
 };
 
 class Binary3RegisterOp_Lsr_Rule_91_A1_P184
-   : public Binary3RegisterOp {
+    : public Binary3RegisterOp {
  public:
   virtual ~Binary3RegisterOp_Lsr_Rule_91_A1_P184() {}
 };
 
 class Binary3RegisterOp_Ror_Rule_140_A1_P280
-   : public Binary3RegisterOp {
+    : public Binary3RegisterOp {
  public:
   virtual ~Binary3RegisterOp_Ror_Rule_140_A1_P280() {}
 };
 
 class Binary3RegisterShiftedTest_Cmn_Rule_34_A1_P78
-   : public Binary3RegisterShiftedTest {
+    : public Binary3RegisterShiftedTest {
  public:
   virtual ~Binary3RegisterShiftedTest_Cmn_Rule_34_A1_P78() {}
 };
 
 class Binary3RegisterShiftedTest_Cmp_Rule_37_A1_P84
-   : public Binary3RegisterShiftedTest {
+    : public Binary3RegisterShiftedTest {
  public:
   virtual ~Binary3RegisterShiftedTest_Cmp_Rule_37_A1_P84() {}
 };
 
 class Binary3RegisterShiftedTest_Teq_Rule_229_A1_P452
-   : public Binary3RegisterShiftedTest {
+    : public Binary3RegisterShiftedTest {
  public:
   virtual ~Binary3RegisterShiftedTest_Teq_Rule_229_A1_P452() {}
 };
 
 class Binary3RegisterShiftedTest_Tst_Rule_232_A1_P458
-   : public Binary3RegisterShiftedTest {
+    : public Binary3RegisterShiftedTest {
  public:
   virtual ~Binary3RegisterShiftedTest_Tst_Rule_232_A1_P458() {}
 };
 
 class Binary4RegisterShiftedOp_Adc_Rule_3_A1_P18
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_Adc_Rule_3_A1_P18() {}
 };
 
 class Binary4RegisterShiftedOp_Add_Rule_7_A1_P26
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_Add_Rule_7_A1_P26() {}
 };
 
 class Binary4RegisterShiftedOp_And_Rule_13_A1_P38
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_And_Rule_13_A1_P38() {}
 };
 
 class Binary4RegisterShiftedOp_Bic_Rule_21_A1_P54
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_Bic_Rule_21_A1_P54() {}
 };
 
 class Binary4RegisterShiftedOp_Eor_Rule_46_A1_P98
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_Eor_Rule_46_A1_P98() {}
 };
 
 class Binary4RegisterShiftedOp_Orr_Rule_115_A1_P212
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_Orr_Rule_115_A1_P212() {}
 };
 
 class Binary4RegisterShiftedOp_Rsb_Rule_144_A1_P288
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_Rsb_Rule_144_A1_P288() {}
 };
 
 class Binary4RegisterShiftedOp_Rsc_Rule_147_A1_P294
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_Rsc_Rule_147_A1_P294() {}
 };
 
 class Binary4RegisterShiftedOp_Sbc_Rule_153_A1_P306
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_Sbc_Rule_153_A1_P306() {}
 };
 
 class Binary4RegisterShiftedOp_Sub_Rule_214_A1_P424
-   : public Binary4RegisterShiftedOp {
+    : public Binary4RegisterShiftedOp {
  public:
   virtual ~Binary4RegisterShiftedOp_Sub_Rule_214_A1_P424() {}
 };
 
 class BinaryRegisterImmediateTest_Cmn_Rule_32_A1_P74
-   : public BinaryRegisterImmediateTest {
+    : public BinaryRegisterImmediateTest {
  public:
   virtual ~BinaryRegisterImmediateTest_Cmn_Rule_32_A1_P74() {}
 };
 
 class BinaryRegisterImmediateTest_Cmp_Rule_35_A1_P80
-   : public BinaryRegisterImmediateTest {
+    : public BinaryRegisterImmediateTest {
  public:
   virtual ~BinaryRegisterImmediateTest_Cmp_Rule_35_A1_P80() {}
 };
 
 class BinaryRegisterImmediateTest_Teq_Rule_227_A1_P448
-   : public BinaryRegisterImmediateTest {
+    : public BinaryRegisterImmediateTest {
  public:
   virtual ~BinaryRegisterImmediateTest_Teq_Rule_227_A1_P448() {}
 };
 
 class Branch_None
-   : public Branch {
+    : public Branch {
  public:
   virtual ~Branch_None() {}
 };
 
 class Breakpoint_None
-   : public Breakpoint {
+    : public Breakpoint {
  public:
   virtual ~Breakpoint_None() {}
 };
 
 class BxBlx_None
-   : public BxBlx {
+    : public BxBlx {
  public:
   virtual ~BxBlx_None() {}
 };
 
 class CoprocessorOp_None
-   : public CoprocessorOp {
+    : public CoprocessorOp {
  public:
   virtual ~CoprocessorOp_None() {}
 };
 
 class DataProc_None
-   : public DataProc {
+    : public DataProc {
  public:
   virtual ~DataProc_None() {}
 };
 
 class Deprecated_None
-   : public Deprecated {
+    : public Deprecated {
  public:
   virtual ~Deprecated_None() {}
 };
 
 class EffectiveNoOp_None
-   : public EffectiveNoOp {
+    : public EffectiveNoOp {
  public:
   virtual ~EffectiveNoOp_None() {}
 };
 
 class Forbidden_None
-   : public Forbidden {
+    : public Forbidden {
  public:
   virtual ~Forbidden_None() {}
 };
 
+class Load3RegisterDoubleOp_Ldrd_Rule_68_A1_P140
+    : public Load3RegisterDoubleOp {
+ public:
+  virtual ~Load3RegisterDoubleOp_Ldrd_Rule_68_A1_P140() {}
+};
+
+class Load3RegisterOp_Ldrh_Rule_76_A1_P156
+    : public Load3RegisterOp {
+ public:
+  virtual ~Load3RegisterOp_Ldrh_Rule_76_A1_P156() {}
+};
+
+class Load3RegisterOp_Ldrsb_Rule_80_A1_P164
+    : public Load3RegisterOp {
+ public:
+  virtual ~Load3RegisterOp_Ldrsb_Rule_80_A1_P164() {}
+};
+
 class LoadCoprocessor_None
-   : public LoadCoprocessor {
+    : public LoadCoprocessor {
  public:
   virtual ~LoadCoprocessor_None() {}
 };
 
 class LoadDoubleExclusive_None
-   : public LoadDoubleExclusive {
+    : public LoadDoubleExclusive {
  public:
   virtual ~LoadDoubleExclusive_None() {}
 };
 
 class LoadDoubleI_None
-   : public LoadDoubleI {
+    : public LoadDoubleI {
  public:
   virtual ~LoadDoubleI_None() {}
 };
 
-class LoadDoubleR_None
-   : public LoadDoubleR {
- public:
-  virtual ~LoadDoubleR_None() {}
-};
-
 class LoadExclusive_None
-   : public LoadExclusive {
+    : public LoadExclusive {
  public:
   virtual ~LoadExclusive_None() {}
 };
 
 class LoadImmediate_None
-   : public LoadImmediate {
+    : public LoadImmediate {
  public:
   virtual ~LoadImmediate_None() {}
 };
 
 class LoadMultiple_None
-   : public LoadMultiple {
+    : public LoadMultiple {
  public:
   virtual ~LoadMultiple_None() {}
 };
 
 class LoadRegister_None
-   : public LoadRegister {
+    : public LoadRegister {
  public:
   virtual ~LoadRegister_None() {}
 };
 
 class LongMultiply_None
-   : public LongMultiply {
+    : public LongMultiply {
  public:
   virtual ~LongMultiply_None() {}
 };
 
 class MaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50
-   : public MaskedBinary2RegisterImmediateOp {
+    : public MaskedBinary2RegisterImmediateOp {
  public:
   virtual ~MaskedBinary2RegisterImmediateOp_Bic_Rule_19_A1_P50() {}
 };
 
 class MaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454
-   : public MaskedBinaryRegisterImmediateTest {
+    : public MaskedBinaryRegisterImmediateTest {
  public:
   virtual ~MaskedBinaryRegisterImmediateTest_Tst_Rule_230_A1_P454() {}
 };
 
 class MoveDoubleFromCoprocessor_None
-   : public MoveDoubleFromCoprocessor {
+    : public MoveDoubleFromCoprocessor {
  public:
   virtual ~MoveDoubleFromCoprocessor_None() {}
 };
 
 class MoveFromCoprocessor_None
-   : public MoveFromCoprocessor {
+    : public MoveFromCoprocessor {
  public:
   virtual ~MoveFromCoprocessor_None() {}
 };
 
 class MoveToStatusRegister_None
-   : public MoveToStatusRegister {
+    : public MoveToStatusRegister {
  public:
   virtual ~MoveToStatusRegister_None() {}
 };
 
 class Multiply_None
-   : public Multiply {
+    : public Multiply {
  public:
   virtual ~Multiply_None() {}
 };
 
 class PackSatRev_None
-   : public PackSatRev {
+    : public PackSatRev {
  public:
   virtual ~PackSatRev_None() {}
 };
 
 class Roadblock_None
-   : public Roadblock {
+    : public Roadblock {
  public:
   virtual ~Roadblock_None() {}
 };
 
 class SatAddSub_None
-   : public SatAddSub {
+    : public SatAddSub {
  public:
   virtual ~SatAddSub_None() {}
 };
 
+class Store3RegisterDoubleOp_Strd_Rule_201_A1_P398
+    : public Store3RegisterDoubleOp {
+ public:
+  virtual ~Store3RegisterDoubleOp_Strd_Rule_201_A1_P398() {}
+};
+
+class Store3RegisterOp_Strh_Rule_208_A1_P412
+    : public Store3RegisterOp {
+ public:
+  virtual ~Store3RegisterOp_Strh_Rule_208_A1_P412() {}
+};
+
 class StoreCoprocessor_None
-   : public StoreCoprocessor {
+    : public StoreCoprocessor {
  public:
   virtual ~StoreCoprocessor_None() {}
 };
 
 class StoreExclusive_None
-   : public StoreExclusive {
+    : public StoreExclusive {
  public:
   virtual ~StoreExclusive_None() {}
 };
 
 class StoreImmediate_None
-   : public StoreImmediate {
+    : public StoreImmediate {
  public:
   virtual ~StoreImmediate_None() {}
 };
 
 class StoreRegister_None
-   : public StoreRegister {
+    : public StoreRegister {
  public:
   virtual ~StoreRegister_None() {}
 };
 
 class Unary1RegisterBitRange_Bfc_17_A1_P46
-   : public Unary1RegisterBitRange {
+    : public Unary1RegisterBitRange {
  public:
   virtual ~Unary1RegisterBitRange_Bfc_17_A1_P46() {}
 };
 
 class Unary1RegisterImmediateOp_Adr_Rule_10_A1_P32
-   : public Unary1RegisterImmediateOp {
+    : public Unary1RegisterImmediateOp {
  public:
   virtual ~Unary1RegisterImmediateOp_Adr_Rule_10_A1_P32() {}
 };
 
 class Unary1RegisterImmediateOp_Adr_Rule_10_A2_P32
-   : public Unary1RegisterImmediateOp {
+    : public Unary1RegisterImmediateOp {
  public:
   virtual ~Unary1RegisterImmediateOp_Adr_Rule_10_A2_P32() {}
 };
 
 class Unary1RegisterImmediateOp_Mov_Rule_96_A1_P194
-   : public Unary1RegisterImmediateOp {
+    : public Unary1RegisterImmediateOp {
  public:
   virtual ~Unary1RegisterImmediateOp_Mov_Rule_96_A1_P194() {}
 };
 
 class Unary1RegisterImmediateOp_Mov_Rule_96_A2_P_194
-   : public Unary1RegisterImmediateOp {
+    : public Unary1RegisterImmediateOp {
  public:
   virtual ~Unary1RegisterImmediateOp_Mov_Rule_96_A2_P_194() {}
 };
 
 class Unary1RegisterImmediateOp_Mvn_Rule_106_A1_P214
-   : public Unary1RegisterImmediateOp {
+    : public Unary1RegisterImmediateOp {
  public:
   virtual ~Unary1RegisterImmediateOp_Mvn_Rule_106_A1_P214() {}
 };
 
 class Unary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40
-   : public Unary2RegisterImmedShiftedOp {
+    : public Unary2RegisterImmedShiftedOp {
  public:
   virtual ~Unary2RegisterImmedShiftedOp_Asr_Rule_14_A1_P40() {}
 };
 
 class Unary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178
-   : public Unary2RegisterImmedShiftedOp {
+    : public Unary2RegisterImmedShiftedOp {
  public:
   virtual ~Unary2RegisterImmedShiftedOp_Lsl_Rule_88_A1_P178() {}
 };
 
 class Unary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182
-   : public Unary2RegisterImmedShiftedOp {
+    : public Unary2RegisterImmedShiftedOp {
  public:
   virtual ~Unary2RegisterImmedShiftedOp_Lsr_Rule_90_A1_P182() {}
 };
 
 class Unary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216
-   : public Unary2RegisterImmedShiftedOp {
+    : public Unary2RegisterImmedShiftedOp {
  public:
   virtual ~Unary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216() {}
 };
 
 class Unary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278
-   : public Unary2RegisterImmedShiftedOp {
+    : public Unary2RegisterImmedShiftedOp {
  public:
   virtual ~Unary2RegisterImmedShiftedOp_Ror_Rule_139_A1_P278() {}
 };
 
 class Unary2RegisterOp_Mov_Rule_97_A1_P196
-   : public Unary2RegisterOp {
+    : public Unary2RegisterOp {
  public:
   virtual ~Unary2RegisterOp_Mov_Rule_97_A1_P196() {}
 };
 
 class Unary2RegisterOp_Rrx_Rule_141_A1_P282
-   : public Unary2RegisterOp {
+    : public Unary2RegisterOp {
  public:
   virtual ~Unary2RegisterOp_Rrx_Rule_141_A1_P282() {}
 };
 
 class Unary3RegisterShiftedOp_Mvn_Rule_108_A1_P218
-   : public Unary3RegisterShiftedOp {
+    : public Unary3RegisterShiftedOp {
  public:
   virtual ~Unary3RegisterShiftedOp_Mvn_Rule_108_A1_P218() {}
 };
 
 class Undefined_None
-   : public Undefined {
+    : public Undefined {
  public:
   virtual ~Undefined_None() {}
 };
 
 class Unpredictable_None
-   : public Unpredictable {
+    : public Unpredictable {
  public:
   virtual ~Unpredictable_None() {}
 };
 
 class VectorLoad_None
-   : public VectorLoad {
+    : public VectorLoad {
  public:
   virtual ~VectorLoad_None() {}
 };
 
 class VectorStore_None
-   : public VectorStore {
+    : public VectorStore {
  public:
   virtual ~VectorStore_None() {}
 };
 
 class Defs12To15_Adc_Rule_2_A1_P16
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_Adc_Rule_2_A1_P16() {}
 };
 
 class Defs12To15_Add_Rule_6_A1_P24
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_Add_Rule_6_A1_P24() {}
 };
 
 class Defs12To15_And_Rule_7_A1_P36
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_And_Rule_7_A1_P36() {}
 };
 
 class Defs12To15_Bic_Rule_20_A1_P52
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_Bic_Rule_20_A1_P52() {}
 };
 
 class Defs12To15_Eor_Rule_45_A1_P96
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_Eor_Rule_45_A1_P96() {}
 };
 
 class Defs12To15_Mov_Rule_96_A2_P_194
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_Mov_Rule_96_A2_P_194() {}
 };
 
 class Defs12To15_Orr_Rule_114_A1_P230
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_Orr_Rule_114_A1_P230() {}
 };
 
 class Defs12To15_Rsb_Rule_143_P286
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_Rsb_Rule_143_P286() {}
 };
 
 class Defs12To15_Rsc_Rule_146_A1_P292
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_Rsc_Rule_146_A1_P292() {}
 };
 
 class Defs12To15_Sbc_Rule_152_A1_P304
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_Sbc_Rule_152_A1_P304() {}
 };
 
 class Defs12To15_SubRule_213_A1_P422
-   : public Defs12To15 {
+    : public Defs12To15 {
  public:
   virtual ~Defs12To15_SubRule_213_A1_P422() {}
 };
 
 class Defs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26
-   : public Defs12To15RdRnRsRmNotPc {
+    : public Defs12To15RdRnRsRmNotPc {
  public:
   virtual ~Defs12To15RdRnRsRmNotPc_Add_Rule_7_A1_P26() {}
 };
 
 class Defs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288
-   : public Defs12To15RdRnRsRmNotPc {
+    : public Defs12To15RdRnRsRmNotPc {
  public:
   virtual ~Defs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288() {}
 };
 
+class LdrRegister_Ldrh_Rule_76_A1_P156
+    : public LdrRegister {
+ public:
+  virtual ~LdrRegister_Ldrh_Rule_76_A1_P156() {}
+};
+
+class LdrRegister_Ldrsb_Rule_80_A1_P164
+    : public LdrRegister {
+ public:
+  virtual ~LdrRegister_Ldrsb_Rule_80_A1_P164() {}
+};
+
+class LoadDoubleR_Ldrd_Rule_68_A1_P140
+    : public LoadDoubleR {
+ public:
+  virtual ~LoadDoubleR_Ldrd_Rule_68_A1_P140() {}
+};
+
 class MaskAddress_Bic_Rule_19_A1_P50
-   : public MaskAddress {
+    : public MaskAddress {
  public:
   virtual ~MaskAddress_Bic_Rule_19_A1_P50() {}
 };
 
 class MaybeSetsConds_Cmn_Rule_33_A1_P76
-   : public MaybeSetsConds {
+    : public MaybeSetsConds {
  public:
   virtual ~MaybeSetsConds_Cmn_Rule_33_A1_P76() {}
 };
 
 class MaybeSetsConds_Cmp_Rule_36_A1_P82
-   : public MaybeSetsConds {
+    : public MaybeSetsConds {
  public:
   virtual ~MaybeSetsConds_Cmp_Rule_36_A1_P82() {}
 };
 
 class MaybeSetsConds_Teq_Rule_228_A1_P450
-   : public MaybeSetsConds {
+    : public MaybeSetsConds {
  public:
   virtual ~MaybeSetsConds_Teq_Rule_228_A1_P450() {}
 };
 
 class MaybeSetsConds_Tst_Rule_231_A1_P456
-   : public MaybeSetsConds {
+    : public MaybeSetsConds {
  public:
   virtual ~MaybeSetsConds_Tst_Rule_231_A1_P456() {}
 };
 
+class StoreDoubleR_Strd_Rule_201_A1_P398
+    : public StoreDoubleR {
+ public:
+  virtual ~StoreDoubleR_Strd_Rule_201_A1_P398() {}
+};
+
+class StrRegister_Strh_Rule_208_A1_P412
+    : public StrRegister {
+ public:
+  virtual ~StrRegister_Strh_Rule_208_A1_P412() {}
+};
+
 class TestIfAddressMasked_Tst_Rule_230_A1_P454
-   : public TestIfAddressMasked {
+    : public TestIfAddressMasked {
  public:
   virtual ~TestIfAddressMasked_Tst_Rule_230_A1_P454() {}
 };
@@ -1380,6 +1434,45 @@ class NamedForbidden_None
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_None);
 };
 
+class NamedLoad3RegisterDoubleOp_Ldrd_Rule_68_A1_P140
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoad3RegisterDoubleOp_Ldrd_Rule_68_A1_P140()
+    : NamedClassDecoder(decoder_, "Load3RegisterDoubleOp Ldrd_Rule_68_A1_P140")
+  {}
+  virtual ~NamedLoad3RegisterDoubleOp_Ldrd_Rule_68_A1_P140() {}
+
+ private:
+  nacl_arm_dec::Load3RegisterDoubleOp_Ldrd_Rule_68_A1_P140 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoad3RegisterDoubleOp_Ldrd_Rule_68_A1_P140);
+};
+
+class NamedLoad3RegisterOp_Ldrh_Rule_76_A1_P156
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoad3RegisterOp_Ldrh_Rule_76_A1_P156()
+    : NamedClassDecoder(decoder_, "Load3RegisterOp Ldrh_Rule_76_A1_P156")
+  {}
+  virtual ~NamedLoad3RegisterOp_Ldrh_Rule_76_A1_P156() {}
+
+ private:
+  nacl_arm_dec::Load3RegisterOp_Ldrh_Rule_76_A1_P156 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoad3RegisterOp_Ldrh_Rule_76_A1_P156);
+};
+
+class NamedLoad3RegisterOp_Ldrsb_Rule_80_A1_P164
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoad3RegisterOp_Ldrsb_Rule_80_A1_P164()
+    : NamedClassDecoder(decoder_, "Load3RegisterOp Ldrsb_Rule_80_A1_P164")
+  {}
+  virtual ~NamedLoad3RegisterOp_Ldrsb_Rule_80_A1_P164() {}
+
+ private:
+  nacl_arm_dec::Load3RegisterOp_Ldrsb_Rule_80_A1_P164 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoad3RegisterOp_Ldrsb_Rule_80_A1_P164);
+};
+
 class NamedLoadCoprocessor_None
     : public NamedClassDecoder {
  public:
@@ -1417,19 +1510,6 @@ class NamedLoadDoubleI_None
  private:
   nacl_arm_dec::LoadDoubleI_None decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleI_None);
-};
-
-class NamedLoadDoubleR_None
-    : public NamedClassDecoder {
- public:
-  inline NamedLoadDoubleR_None()
-    : NamedClassDecoder(decoder_, "LoadDoubleR None")
-  {}
-  virtual ~NamedLoadDoubleR_None() {}
-
- private:
-  nacl_arm_dec::LoadDoubleR_None decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleR_None);
 };
 
 class NamedLoadExclusive_None
@@ -1612,6 +1692,32 @@ class NamedSatAddSub_None
  private:
   nacl_arm_dec::SatAddSub_None decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedSatAddSub_None);
+};
+
+class NamedStore3RegisterDoubleOp_Strd_Rule_201_A1_P398
+    : public NamedClassDecoder {
+ public:
+  inline NamedStore3RegisterDoubleOp_Strd_Rule_201_A1_P398()
+    : NamedClassDecoder(decoder_, "Store3RegisterDoubleOp Strd_Rule_201_A1_P398")
+  {}
+  virtual ~NamedStore3RegisterDoubleOp_Strd_Rule_201_A1_P398() {}
+
+ private:
+  nacl_arm_dec::Store3RegisterDoubleOp_Strd_Rule_201_A1_P398 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStore3RegisterDoubleOp_Strd_Rule_201_A1_P398);
+};
+
+class NamedStore3RegisterOp_Strh_Rule_208_A1_P412
+    : public NamedClassDecoder {
+ public:
+  inline NamedStore3RegisterOp_Strh_Rule_208_A1_P412()
+    : NamedClassDecoder(decoder_, "Store3RegisterOp Strh_Rule_208_A1_P412")
+  {}
+  virtual ~NamedStore3RegisterOp_Strh_Rule_208_A1_P412() {}
+
+ private:
+  nacl_arm_dec::Store3RegisterOp_Strh_Rule_208_A1_P412 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStore3RegisterOp_Strh_Rule_208_A1_P412);
 };
 
 class NamedStoreCoprocessor_None
@@ -2069,6 +2175,45 @@ class NamedDefs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288);
 };
 
+class NamedLdrRegister_Ldrh_Rule_76_A1_P156
+    : public NamedClassDecoder {
+ public:
+  inline NamedLdrRegister_Ldrh_Rule_76_A1_P156()
+    : NamedClassDecoder(decoder_, "LdrRegister Ldrh_Rule_76_A1_P156")
+  {}
+  virtual ~NamedLdrRegister_Ldrh_Rule_76_A1_P156() {}
+
+ private:
+  nacl_arm_dec::LdrRegister_Ldrh_Rule_76_A1_P156 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrRegister_Ldrh_Rule_76_A1_P156);
+};
+
+class NamedLdrRegister_Ldrsb_Rule_80_A1_P164
+    : public NamedClassDecoder {
+ public:
+  inline NamedLdrRegister_Ldrsb_Rule_80_A1_P164()
+    : NamedClassDecoder(decoder_, "LdrRegister Ldrsb_Rule_80_A1_P164")
+  {}
+  virtual ~NamedLdrRegister_Ldrsb_Rule_80_A1_P164() {}
+
+ private:
+  nacl_arm_dec::LdrRegister_Ldrsb_Rule_80_A1_P164 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrRegister_Ldrsb_Rule_80_A1_P164);
+};
+
+class NamedLoadDoubleR_Ldrd_Rule_68_A1_P140
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadDoubleR_Ldrd_Rule_68_A1_P140()
+    : NamedClassDecoder(decoder_, "LoadDoubleR Ldrd_Rule_68_A1_P140")
+  {}
+  virtual ~NamedLoadDoubleR_Ldrd_Rule_68_A1_P140() {}
+
+ private:
+  nacl_arm_dec::LoadDoubleR_Ldrd_Rule_68_A1_P140 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleR_Ldrd_Rule_68_A1_P140);
+};
+
 class NamedMaskAddress_Bic_Rule_19_A1_P50
     : public NamedClassDecoder {
  public:
@@ -2132,6 +2277,32 @@ class NamedMaybeSetsConds_Tst_Rule_231_A1_P456
  private:
   nacl_arm_dec::MaybeSetsConds_Tst_Rule_231_A1_P456 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMaybeSetsConds_Tst_Rule_231_A1_P456);
+};
+
+class NamedStoreDoubleR_Strd_Rule_201_A1_P398
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreDoubleR_Strd_Rule_201_A1_P398()
+    : NamedClassDecoder(decoder_, "StoreDoubleR Strd_Rule_201_A1_P398")
+  {}
+  virtual ~NamedStoreDoubleR_Strd_Rule_201_A1_P398() {}
+
+ private:
+  nacl_arm_dec::StoreDoubleR_Strd_Rule_201_A1_P398 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreDoubleR_Strd_Rule_201_A1_P398);
+};
+
+class NamedStrRegister_Strh_Rule_208_A1_P412
+    : public NamedClassDecoder {
+ public:
+  inline NamedStrRegister_Strh_Rule_208_A1_P412()
+    : NamedClassDecoder(decoder_, "StrRegister Strh_Rule_208_A1_P412")
+  {}
+  virtual ~NamedStrRegister_Strh_Rule_208_A1_P412() {}
+
+ private:
+  nacl_arm_dec::StrRegister_Strh_Rule_208_A1_P412 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStrRegister_Strh_Rule_208_A1_P412);
 };
 
 class NamedTestIfAddressMasked_Tst_Rule_230_A1_P454

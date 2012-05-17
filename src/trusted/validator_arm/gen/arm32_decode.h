@@ -149,6 +149,7 @@ class Arm32DecoderState : DecoderState {
   const Deprecated Deprecated_instance_;
   const EffectiveNoOp EffectiveNoOp_instance_;
   const Forbidden Forbidden_instance_;
+  const LdrRegister LdrRegister_instance_;
   const LoadCoprocessor LoadCoprocessor_instance_;
   const LoadDoubleExclusive LoadDoubleExclusive_instance_;
   const LoadDoubleI LoadDoubleI_instance_;
@@ -168,9 +169,11 @@ class Arm32DecoderState : DecoderState {
   const Roadblock Roadblock_instance_;
   const SatAddSub SatAddSub_instance_;
   const StoreCoprocessor StoreCoprocessor_instance_;
+  const StoreDoubleR StoreDoubleR_instance_;
   const StoreExclusive StoreExclusive_instance_;
   const StoreImmediate StoreImmediate_instance_;
   const StoreRegister StoreRegister_instance_;
+  const StrRegister StrRegister_instance_;
   const TestIfAddressMasked TestIfAddressMasked_instance_;
   const Unary1RegisterBitRange Unary1RegisterBitRange_instance_;
   const Unary1RegisterImmediateOp Unary1RegisterImmediateOp_instance_;

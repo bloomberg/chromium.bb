@@ -185,6 +185,40 @@ class RegSBits8To11Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(RegSBits8To11Interface);
 };
 
+// Interface class to pull out Register T from bits 12 through 15.
+class RegTBits12To15Interface {
+ public:
+  static inline uint32_t number(const Instruction& i) {
+    return i.Bits(15, 12);
+  }
+  static inline Register reg(const Instruction& i) {
+    return Register(number(i));
+  }
+  // Only used when Rt2 is defined. Makes sure register
+  // index is even (and hence, Rt2 is odd).
+  static inline bool IsEven(const Instruction& i) {
+    return (number(i) & 0x1) == 0;
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegTBits12To15Interface);
+};
+
+// Interface to pull out Register T2 from Register T is defined from
+// bits 12 through 15.
+class RegT2Bits12To15Interface {
+ public:
+  static inline uint32_t number(const Instruction& i) {
+    return i.Bits(15, 12) + 1;
+  }
+  static inline Register reg(const Instruction& i) {
+    return Register(number(i));
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegT2Bits12To15Interface);
+};
+
 // Interface class to pull out an immediate value in bits 0 through 11.
 class Imm12Bits0To11Interface {
  public:
@@ -233,7 +267,7 @@ class Imm4Bits16To19Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits16To19Interface);
 };
 
-// Interface class to pull out S (update) bit from bit 20, which
+// Interface class to pull out S (update) bit 20, which
 // defines if the condition bits in APSR are updated by the instruction.
 class UpdatesConditionsBit20Interface {
  public:
@@ -250,6 +284,46 @@ class UpdatesConditionsBit20Interface {
  private:
   UpdatesConditionsBit20Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesConditionsBit20Interface);
+};
+
+// Interface class to pull out W (writes) bit 21, which
+// defines if the istruction writes a value into the base address
+// register (Rn).
+class WritesBit21Interface {
+ public:
+  static inline bool IsDefined(const Instruction& i) {
+    return i.Bit(21);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(WritesBit21Interface);
+};
+
+// Interface to pull out U (direction) bit 23, which defines if
+// we should add (rather than subtract) the offset to the base address.
+class AddOffsetBit23Interface {
+ public:
+  static inline bool IsAdd(const Instruction& i) {
+    return i.Bit(23);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(AddOffsetBit23Interface);
+};
+
+// Interace to pull out P (pre/post) increment bit 24 flag, used
+// for indexing.
+class PrePostIndexingBit24Interface {
+ public:
+  static inline bool IsPreIndexing(const Instruction& i) {
+    return i.Bit(24);
+  }
+  static inline bool IsPostIndexing(const Instruction& i) {
+    return !i.Bit(24);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PrePostIndexingBit24Interface);
 };
 
 // A class decoder is designed to decode a set of instructions that

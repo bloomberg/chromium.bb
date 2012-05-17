@@ -266,6 +266,47 @@ class Binary3RegisterOpTesterRegsNotPc
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpTesterRegsNotPc);
 };
 
+// Models a 3-register load/store operation of the forms:
+// Op<c> <Rt>, [<Rn>, +/-<Rm>]{!}
+// Op<c> <Rt>, [<Rn>], +/-<Rm>
+// +--------+------+--+--+--+--+--+--------+--------+----------------+--------+
+// |31302918|272625|24|23|22|21|20|19181716|15141312|1110 9 8 7 6 5 4| 3 2 1 0|
+// +--------+------+--+--+--+--+--+--------+--------+----------------+--------+
+// |  cond  |      | P| U|  | W|  |   Rn   |   Rt   |                |   Rm   |
+// +--------+------+--+--+--+--+--+--------+--------+----------------+--------+
+// wback = (P=0 || W=1)
+//
+// If P=0 and W=1, should not parse as this instruction.
+// If Rt=15 || Rm=15 then unpredictable.
+// If wback && (Rn=15 or Rn=Rt) then unpredictable.
+// if ArchVersion() < 6 && wback && Rm=Rn then unpredictable.
+// NaCl Disallows writing to PC.
+class LoadStore3RegisterOpTester : public Arm32DecoderTester {
+ public:
+  explicit LoadStore3RegisterOpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterOpTester);
+};
+
+// Models a 3-register load/store operation where the source/target is double
+// wide (i.e. Rt and Rt2).
+class LoadStore3RegisterDoubleOpTester : public LoadStore3RegisterOpTester {
+ public:
+  explicit LoadStore3RegisterDoubleOpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterDoubleOpTester);
+};
+
 // Implements a decoder tester for decoder Unary2RegisterImmedShiftedOp.
 // Op(S)<c> <Rd>, <Rm> {,<shift>}
 // +--------+--------------+--+--------+--------+----------+----+--+--------+

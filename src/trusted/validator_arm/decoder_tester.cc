@@ -52,11 +52,13 @@ void DecoderTester::TestAtIndex(int index) {
     if (selector == '0') {
       SetBit(index, false);
       --index;
+      continue;
     }
 
     if (selector == '1') {
       SetBit(index, true);
       --index;
+      continue;
     }
 
     if (islower(selector)) {
@@ -81,6 +83,7 @@ void DecoderTester::TestAtIndex(int index) {
       }
       return;
     }
+    GTEST_FAIL() << "Don't understand pattern character '" << selector << "'";
   }
 }
 

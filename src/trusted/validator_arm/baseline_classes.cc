@@ -121,6 +121,100 @@ RegisterList Binary3RegisterOp::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+// LoadStore3RegisterOp
+SafetyLevel LoadStore3RegisterOp::safety(const Instruction i) const {
+  if (indexing.IsPreIndexing(i)) {
+    // If pre-indexing is set, the address of the load is computed as the sum
+    // of the two register parameters.  We have checked that the first register
+    // is within the sandbox, but this would allow adding an arbitrary value
+    // to it, so it is not safe. (NaCl constraint).
+    return FORBIDDEN;
+  }
+
+  // Arm restrictions for this instruction.
+  if (RegisterList(t.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't let addressing writeback alter PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+Register LoadStore3RegisterOp::base_address_register(
+    const Instruction i) const {
+  return n.reg(i);
+}
+
+// Load3RegisterOp
+RegisterList Load3RegisterOp::defs(const Instruction i) const {
+  // Since we don't allow preindexing, only one form is allowed:
+  //   ldr Rt, [Rn], +/-Rm
+  // This form implies that HasWriteBack(i) is true.
+  return RegisterList(t.reg(i)).Add( base_address_register(i));
+}
+
+// Store3RegisterOp
+RegisterList Store3RegisterOp::defs(Instruction i) const {
+  // Since we don't allow preindexing, only one form is allowed:
+  //   str Rt, [Rn], +/-Rm
+  // This form implies that HasWriteBack(i) is true
+  return RegisterList(base_address_register(i));
+}
+
+// LoadStore3RegisterDoubleOp
+SafetyLevel LoadStore3RegisterDoubleOp::safety(const Instruction i) const {
+  if (indexing.IsPreIndexing(i)) {
+    // If pre-indexing is set, the address of the load is computed as the sum
+    // of the two register parameters.  We have checked that the first register
+    // is within the sandbox, but this would allow adding an arbitrary value
+    // to it, so it is not safe. (NaCl constraint).
+    return FORBIDDEN;
+  }
+
+  // Arm restrictions for this instruction.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (RegisterList(t2.reg(i)).Add(m.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (HasWriteBack(i) &&
+      (n.reg(i).Equals(kRegisterPc) || n.reg(i).Equals(t.reg(i)) ||
+       n.reg(i).Equals(t2.reg(i)))) {
+    return UNPREDICTABLE;
+  }
+
+  // Don't let addressing writeback alter PC (NaCl constraint).
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+// Load3RegisterDoubleOp
+RegisterList Load3RegisterDoubleOp::defs(const Instruction i) const {
+  // Since we don't allow preindexing, only one form is allowed:
+  //   ldr Rt, Rt2, [Rn], +/-Rm
+  // This form implies that HasWriteBack(i) is true.
+  return RegisterList(t.reg(i)).Add(t2.reg(i)).Add(base_address_register(i));
+}
+
+// Store3RegisterDoubleOp
+RegisterList Store3RegisterDoubleOp::defs(Instruction i) const {
+  // Since we don't allow preindexing, only one form is allowed:
+  //   str Rt, [Rn], +/-Rm
+  // This form implies that HasWriteBack(i) is true.
+  return RegisterList(base_address_register(i));
+}
+
 // Unary2RegisterImmedShiftedOp
 SafetyLevel Unary2RegisterImmedShiftedOp::safety(const Instruction i) const {
   // NaCl Constraint.
