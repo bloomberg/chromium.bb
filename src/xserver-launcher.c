@@ -875,7 +875,6 @@ static void
 weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_map_notify_event_t *map_notify = (xcb_map_notify_event_t *) event;
-	struct weston_wm_window *window;
 
 	if (our_resource(wm, map_notify->window)) {
 			fprintf(stderr, "XCB_MAP_NOTIFY (window %d, ours)\n",
@@ -884,9 +883,6 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	}
 
 	fprintf(stderr, "XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
-
-	window = hash_table_lookup(wm->window_hash, map_notify->window);
-	weston_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
 }
 
 static xcb_render_pictforminfo_t *
