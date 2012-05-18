@@ -163,7 +163,12 @@ class AppApiTest : public ExtensionApiTest {
 
 // Tests that hosted apps with the background permission get a process-per-app
 // model, since all pages need to be able to script the background page.
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
+#if defined(OS_WIN)
+#define MAYBE_AppProcess FLAKY_AppProcess
+#else
+#define MAYBE_AppProcess AppProcess
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   LOG(INFO) << "Start of test.";
 
   extensions::ProcessMap* process_map =
@@ -272,20 +277,35 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
 
 // Test that hosted apps without the background permission use a process per app
 // instance model, such that separate instances are in separate processes.
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
+#if defined(OS_WIN)
+#define MAYBE_AppProcessInstances FLAKY_AppProcessInstances
+#else
+#define MAYBE_AppProcessInstances AppProcessInstances
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessInstances) {
   TestAppInstancesHelper("app_process_instances");
 }
 
 // Test that hosted apps with the background permission but that set
 // allow_js_access to false also use a process per app instance model.
 // Separate instances should be in separate processes.
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessBackgroundInstances) {
+#if defined(OS_WIN)
+#define MAYBE_AppProcessBackgroundInstances FLAKY_AppProcessBackgroundInstances
+#else
+#define MAYBE_AppProcessBackgroundInstances AppProcessBackgroundInstances
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessBackgroundInstances) {
   TestAppInstancesHelper("app_process_background_instances");
 }
 
 // Tests that bookmark apps do not use the app process model and are treated
 // like normal web pages instead.  http://crbug.com/104636.
-IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
+#if defined(OS_WIN)
+#define MAYBE_BookmarkAppGetsNormalProcess FLAKY_BookmarkAppGetsNormalProcess
+#else
+#define MAYBE_BookmarkAppGetsNormalProcess BookmarkAppGetsNormalProcess
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   extensions::ProcessMap* process_map = service->process_map();
 
@@ -499,7 +519,12 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadIntoAppProcess) {
 // link from that iframe to a new window to a URL in the app's extent (path1/
 // empty.html) results in the new window being in an app process. See
 // http://crbug.com/89272 for more details.
-IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
+#if defined(OS_WIN)
+#define MAYBE_OpenAppFromIframe FLAKY_OpenAppFromIframe
+#else
+#define MAYBE_OpenAppFromIframe OpenAppFromIframe
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_OpenAppFromIframe) {
   extensions::ProcessMap* process_map =
       browser()->profile()->GetExtensionService()->process_map();
 
@@ -594,7 +619,12 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromExtension) {
 // This is in contrast to OpenAppFromIframe, since here the popup will not be
 // missing special permissions and should be scriptable from the iframe.
 // See http://crbug.com/92669 for more details.
-IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
+#if defined(OS_WIN)
+#define MAYBE_OpenWebPopupFromWebIframe FLAKY_OpenWebPopupFromWebIframe
+#else
+#define MAYBE_OpenWebPopupFromWebIframe OpenWebPopupFromWebIframe
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_OpenWebPopupFromWebIframe) {
   extensions::ProcessMap* process_map =
       browser()->profile()->GetExtensionService()->process_map();
 
