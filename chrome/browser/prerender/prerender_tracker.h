@@ -56,9 +56,6 @@ class PrerenderTracker {
   bool TryCancelOnIOThread(int child_id, int route_id,
                            FinalStatus final_status);
 
-  void AddPrerenderURLOnUIThread(const GURL& url);
-  void RemovePrerenderURLsOnUIThread(const std::vector<GURL>& urls);
-
   // Gets the FinalStatus of the specified prerendered RenderView.  Returns
   // |true| and sets |final_status| to the status of the RenderView if it
   // is found, returns false otherwise.
