@@ -236,19 +236,16 @@ bool SpellCheck::SpellCheckParagraph(
   int misspelling_start = 0;
   int misspelling_length = 0;
   while (offset <= length) {
-    std::vector<string16> suggestions;
     if (SpellCheckWord(&text[offset],
                        length - offset,
                        0,
                        &misspelling_start,
                        &misspelling_length,
-                       &suggestions)) {
+                       NULL)) {
       return true;
     }
 
     string16 replacement;
-    if (!suggestions.empty())
-      replacement = JoinString(suggestions, '\n');
     results->push_back(SpellCheckResult(
         SpellCheckResult::SPELLING,
         misspelling_start + offset,
