@@ -56,6 +56,14 @@ enum GDataFileType {
   HOSTED_DOCUMENT,
 };
 
+// The root directory name used for the Google Drive file system tree. The
+// name is used in URLs for the file manager, hence user-visible.
+const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("drive");
+
+// The resource ID for the root directory is defined in the spec:
+// https://developers.google.com/google-apps/documents-list/
+const char kGDataRootDirectoryResourceId[] = "folder:root";
+
 // Base class for representing files and directories in gdata virtual file
 // system.
 class GDataEntry {

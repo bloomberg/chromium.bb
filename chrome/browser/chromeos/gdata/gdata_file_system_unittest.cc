@@ -1000,6 +1000,7 @@ class GDataFileSystemTest : public testing::Test {
     GDataEntryProto* file_base = root_dir->mutable_gdata_entry();
     PlatformFileInfoProto* platform_info = file_base->mutable_file_info();
     file_base->set_title("drive");
+    file_base->set_resource_id(kGDataRootDirectoryResourceId);
     platform_info->set_is_directory(true);
 
     // drive/File1

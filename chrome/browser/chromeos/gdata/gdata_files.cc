@@ -18,7 +18,6 @@ namespace {
 
 const char kSlash[] = "/";
 const char kEscapedSlash[] = "\xE2\x88\x95";
-const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("drive");
 
 std::string CacheSubDirectoryTypeToString(
     GDataRootDirectory::CacheSubDirectoryType subdir) {
@@ -431,6 +430,10 @@ GDataRootDirectory::GDataRootDirectory()
       largest_changestamp_(0), serialized_size_(0) {
   title_ = kGDataRootDirectory;
   SetFileNameFromTitle();
+  resource_id_ = kGDataRootDirectoryResourceId;
+  // Add self to the map so the root directory can be looked up by the
+  // resource ID.
+  AddEntryToResourceMap(this);
 }
 
 GDataRootDirectory::~GDataRootDirectory() {
@@ -866,12 +869,21 @@ bool GDataRootDirectory::ParseFromString(const std::string& serialized_proto) {
       new GDataRootDirectoryProto());
   bool ok = proto->ParseFromString(serialized_proto);
   if (ok) {
+    const GDataEntryProto& entry_proto =
+        proto->gdata_directory().gdata_entry();
     // The title field for the root directory was originally empty, then
     // changed to "gdata", then changed to "drive". Discard the proto data if
     // the older formats are detected. See crbug.com/128133 for details.
-    const std::string& title = proto->gdata_directory().gdata_entry().title();
-    if (title != "drive") {
-      LOG(ERROR) << "Incompatible proto detected: " << title;
+    if (entry_proto.title() != "drive") {
+      LOG(ERROR) << "Incompatible proto detected (bad title): "
+                 << entry_proto.title();
+      return false;
+    }
+    // The title field for the root directory was originally empty. Discard
+    // the proto data if the older format is detected.
+    if (entry_proto.resource_id() != kGDataRootDirectoryResourceId) {
+      LOG(ERROR) << "Incompatible proto detected (bad resource ID): "
+                 << entry_proto.resource_id();
       return false;
     }
 
