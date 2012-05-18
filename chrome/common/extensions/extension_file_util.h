@@ -100,10 +100,6 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
 // Get a relative file path from a chrome-extension:// URL.
 FilePath ExtensionURLToRelativeFilePath(const GURL& url);
 
-// Get a full file path from a chrome-extension-resource:// URL, If the URL
-// points a file outside of root, this function will return empty FilePath.
-FilePath ExtensionResourceURLToFilePath(const GURL& url, const FilePath& root);
-
 // Get a path to a temp directory for unpacking an extension.
 // This is essentially PathService::Get(chrome::DIR_USER_DATA_TEMP, ...),
 // with a histogram that allows us to understand why it is failing.

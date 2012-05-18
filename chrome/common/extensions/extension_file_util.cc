@@ -635,25 +635,6 @@ FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
   return path;
 }
 
-FilePath ExtensionResourceURLToFilePath(const GURL& url, const FilePath& root) {
-  std::string host = net::UnescapeURLComponent(url.host(),
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
-  if (host.empty())
-    return FilePath();
-
-  FilePath relative_path = ExtensionURLToRelativeFilePath(url);
-  if (relative_path.empty())
-    return FilePath();
-
-  FilePath path = root.AppendASCII(host).Append(relative_path);
-  if (!file_util::PathExists(path) ||
-      !file_util::AbsolutePath(&path) ||
-      !root.IsParent(path)) {
-    return FilePath();
-  }
-  return path;
-}
-
 FilePath GetUserDataTempDir() {
   // We do file IO in this function, but only when the current profile's
   // Temp directory has never been used before, or in a rare error case.

@@ -60,8 +60,6 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' chrome://resources"));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' chrome-extension://aabbcc"));
-  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
-      "default-src 'self' chrome-extension-resource://aabbcc"));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https:"));
   EXPECT_FALSE(ContentSecurityPolicyIsSecure(

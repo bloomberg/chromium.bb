@@ -96,7 +96,6 @@ enum {
   FILE_RESOURCES_PACK,          // Full path to the .pak file containing
                                 // binary data (e.g., html files and images
                                 // used by interal pages).
-  DIR_RESOURCES_EXTENSION,      // Full path to extension resources.
 #if defined(OS_CHROMEOS)
   FILE_CHROMEOS_API,            // Full path to chrome os api shared object.
 #endif

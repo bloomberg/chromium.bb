@@ -426,6 +426,5 @@ const char* const kChromeDebugURLs[] = {
 int kNumberOfChromeDebugURLs = static_cast<int>(arraysize(kChromeDebugURLs));
 
 const char kExtensionScheme[] = "chrome-extension";
-const char kExtensionResourceScheme[] = "chrome-extension-resource";
 
 }  // namespace chrome

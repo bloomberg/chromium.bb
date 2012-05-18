@@ -215,8 +215,9 @@ TEST(ExtensionFileUtil, FailLoadingNonUTF8Scripts) {
                "It isn't UTF-8 encoded.", error.c_str());
 }
 
-TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
 #define URL_PREFIX "chrome-extension://extension-id/"
+
+TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
   struct TestCase {
     const char* url;
     const char* expected_relative_path;
@@ -242,7 +243,6 @@ TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
     { URL_PREFIX "\\\\foo\\simple.html",
       "foo/simple.html" },
   };
-#undef URL_PREFIX
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     GURL url(test_cases[i].url);
@@ -259,72 +259,6 @@ TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
     EXPECT_EQ(expected_path.value(), actual_path.value()) <<
       " For the path " << url;
   }
-}
-
-TEST(ExtensionFileUtil, ExtensionResourceURLToFilePath) {
-  // Setup filesystem for testing.
-  FilePath root_path;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory(
-        FILE_PATH_LITERAL(""), &root_path));
-  ASSERT_TRUE(file_util::AbsolutePath(&root_path));
-
-  FilePath api_path = root_path.Append(FILE_PATH_LITERAL("apiname"));
-  ASSERT_TRUE(file_util::CreateDirectory(api_path));
-
-  const char data[] = "Test Data";
-  FilePath resource_path = api_path.Append(FILE_PATH_LITERAL("test.js"));
-  ASSERT_TRUE(file_util::WriteFile(resource_path, data, sizeof(data)));
-  resource_path = api_path.Append(FILE_PATH_LITERAL("escape spaces.js"));
-  ASSERT_TRUE(file_util::WriteFile(resource_path, data, sizeof(data)));
-
-#ifdef FILE_PATH_USES_WIN_SEPARATORS
-#define SEP "\\"
-#else
-#define SEP "/"
-#endif
-#define URL_PREFIX "chrome-extension-resource://"
-  struct TestCase {
-    const char* url;
-    const FilePath::CharType* expected_path;
-  } test_cases[] = {
-    { URL_PREFIX "apiname/test.js",
-      FILE_PATH_LITERAL("test.js") },
-    { URL_PREFIX "/apiname/test.js",
-      FILE_PATH_LITERAL("test.js") },
-    // Test % escape
-    { URL_PREFIX "apiname/%74%65st.js",
-      FILE_PATH_LITERAL("test.js") },
-    { URL_PREFIX "apiname/escape%20spaces.js",
-      FILE_PATH_LITERAL("escape spaces.js") },
-    // Test file does not exist.
-    { URL_PREFIX "apiname/directory/to/file.js",
-      NULL },
-    // Test apiname/../../test.js
-    { URL_PREFIX "apiname/../../test.js",
-      FILE_PATH_LITERAL("test.js") },
-    { URL_PREFIX "apiname/..%2F../test.js",
-      NULL },
-    { URL_PREFIX "apiname/f/../../../test.js",
-      FILE_PATH_LITERAL("test.js") },
-    { URL_PREFIX "apiname/f%2F..%2F..%2F../test.js",
-      NULL },
-  };
-#undef SEP
-#undef URL_PREFIX
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
-    GURL url(test_cases[i].url);
-    FilePath expected_path;
-    if (test_cases[i].expected_path)
-      expected_path = root_path.Append(FILE_PATH_LITERAL("apiname")).Append(
-          test_cases[i].expected_path);
-    FilePath actual_path =
-        extension_file_util::ExtensionResourceURLToFilePath(url, root_path);
-    EXPECT_EQ(expected_path.value(), actual_path.value()) <<
-      " For the path " << url;
-  }
-  // Remove temp files.
-  ASSERT_TRUE(file_util::Delete(root_path, true));
 }
 
 static scoped_refptr<Extension> LoadExtensionManifest(

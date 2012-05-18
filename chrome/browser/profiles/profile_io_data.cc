@@ -24,7 +24,6 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
-#include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
@@ -303,7 +302,6 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
 #endif  // defined(OS_CHROMEOS)
     chrome::kBlobScheme,
     chrome::kFileSystemScheme,
-    chrome::kExtensionResourceScheme,
   };
   for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
     if (scheme == kProtocolList[i])
@@ -515,10 +513,6 @@ void ProfileIOData::LazyInitialize() const {
       chrome::kExtensionScheme,
       CreateExtensionProtocolHandler(is_incognito(),
                                      profile_params_->extension_info_map));
-  DCHECK(set_protocol);
-  set_protocol = job_factory_->SetProtocolHandler(
-      chrome::kExtensionResourceScheme,
-      CreateExtensionResourceProtocolHandler());
   DCHECK(set_protocol);
   set_protocol = job_factory_->SetProtocolHandler(
       chrome::kChromeUIScheme,

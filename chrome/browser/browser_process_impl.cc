@@ -149,8 +149,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
 
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kExtensionScheme);
-  ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-      chrome::kExtensionResourceScheme);
 
   extension_event_router_forwarder_ = new ExtensionEventRouterForwarder;
 

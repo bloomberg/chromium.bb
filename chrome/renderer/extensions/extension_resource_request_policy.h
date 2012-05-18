@@ -12,20 +12,13 @@ namespace WebKit {
 class WebFrame;
 }
 
-// Encapsulates the policy for when chrome-extension:// and
-// chrome-extension-resource:// URLs can be requested.
+// Encapsulates the policy for when chrome-extension:// URLs can be requested.
 class ExtensionResourceRequestPolicy {
  public:
-  // Returns true if the chrome-extension:// |resource_url| can be requested
-  // from |frame_url|.
+  // Returns true if the |resource_url| can be requested from |frame_url|.
   static bool CanRequestResource(const GURL& resource_url,
                                  WebKit::WebFrame* frame,
                                  const ExtensionSet* loaded_extensions);
-  // Returns true if the chrome-extension-resource:// |resource_url| can be
-  // requested from |frame_url|.
-  static bool CanRequestExtensionResourceScheme(
-      const GURL& resource_url,
-      WebKit::WebFrame* frame);
 
  private:
   ExtensionResourceRequestPolicy();

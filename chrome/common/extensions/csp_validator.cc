@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,8 +43,7 @@ bool HasOnlySecureTokens(StringTokenizer& tokenizer) {
         source == "'none'" ||
         StartsWithASCII(source, "https://", true) ||
         StartsWithASCII(source, "chrome://", true) ||
-        StartsWithASCII(source, "chrome-extension://", true) ||
-        StartsWithASCII(source, "chrome-extension-resource:", true)) {
+        StartsWithASCII(source, "chrome-extension://", true)) {
       continue;
     }
 
