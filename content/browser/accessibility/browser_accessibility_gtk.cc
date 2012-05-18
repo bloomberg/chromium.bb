@@ -43,9 +43,7 @@ static const gchar* browser_accessibility_get_name(AtkObject* atk_object) {
 static const gchar* browser_accessibility_get_description(
     AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
-  string16 description;
-  obj->GetStringAttribute(WebAccessibility::ATTR_DESCRIPTION, &description);
-  return UTF16ToUTF8(description).c_str();
+  return obj->atk_acc_description().c_str();
 }
 
 static AtkObject* browser_accessibility_get_parent(AtkObject* atk_object) {
@@ -313,7 +311,11 @@ bool BrowserAccessibilityGtk::IsNative() const {
 }
 
 void BrowserAccessibilityGtk::InitRoleAndState() {
-  atk_acc_name_ = UTF16ToUTF8(name()).c_str();
+  atk_acc_name_ = UTF16ToUTF8(name());
+
+  string16 description;
+  GetStringAttribute(WebAccessibility::ATTR_DESCRIPTION, &description);
+  atk_acc_description_ = UTF16ToUTF8(description);
 
   switch(role_) {
     case WebAccessibility::ROLE_BUTTON:
