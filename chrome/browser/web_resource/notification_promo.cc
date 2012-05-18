@@ -43,7 +43,7 @@ const char kTextProperty[] = "tooltip";
 const char kTimeProperty[] = "inproduct";
 const char kParamsProperty[] = "question";
 
-const char promo_server_url[] = "http://clients3.google.com/crsignal/client";
+const char promo_server_url[] = "https://clients3.google.com/crsignal/client";
 
 // Time getters.
 double GetTimeFromDict(const DictionaryValue* dict) {
