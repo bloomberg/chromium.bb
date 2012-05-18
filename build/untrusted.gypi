@@ -67,7 +67,7 @@
           'sources': [],
           'link_flags': [],
           'get_sources': [
-            '>(python_exe)', '<(DEPTH)/native_client/build/scan_sources.py',
+            'scan_sources',
             # This is needed to open the .c filenames, which are given
             # relative to the .gyp file.
             '-I.',
@@ -104,7 +104,7 @@
            'sources': [],
            'link_flags': [],
            'get_sources': [
-             '>(python_exe)', '<(DEPTH)/native_client/build/scan_sources.py',
+             'scan_sources',
              # This is needed to open the .c filenames, which are given
              # relative to the .gyp file.
              '-I.',
@@ -133,7 +133,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
@@ -178,7 +178,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
@@ -223,7 +223,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],
@@ -268,7 +268,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],
@@ -313,7 +313,7 @@
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
                   '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                  '>!@(>(get_sources) >(sources) >(_sources))',
+                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                   '>@(extra_deps_arm)',
                 ],
                 'outputs': ['>(out_arm)'],
@@ -358,7 +358,7 @@
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
                   '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                  '>!@(>(get_sources) >(sources) >(_sources))',
+                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                   '>@(extra_deps_arm)',
                 ],
                 'outputs': ['>(out_arm)'],
@@ -403,7 +403,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
@@ -448,7 +448,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps64)',
                  ],
                  'outputs': ['>(out64)'],
@@ -493,7 +493,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],
@@ -538,7 +538,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@(>(get_sources) >(sources) >(_sources))',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps32)',
                  ],
                  'outputs': ['>(out32)'],

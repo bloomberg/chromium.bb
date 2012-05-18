@@ -204,14 +204,15 @@ class WorkQueue(object):
     return sorted(self.added_set)
 
 
-def Main(argv):
+def DoMain(argv):
+  """Entry point used by gyp's pymod_do_main feature."""
   global debug
   parser = OptionParser()
   parser.add_option('-I', dest='includes', action='append',
                     help='Set include path.')
   parser.add_option('-D', dest='debug', action='store_true',
                     help='Enable debugging output.', default=False)
-  (options, files) = parser.parse_args(argv[1:])
+  (options, files) = parser.parse_args(argv)
 
   if options.debug:
     debug = True
@@ -219,19 +220,24 @@ def Main(argv):
   resolver = Resolver()
   if options.includes:
     if not resolver.AddDirectories(options.includes):
-      return -1
+      return (-1, None)
 
   workQ = WorkQueue(resolver)
   for filename in files:
     workQ.PushIfNew(filename)
 
   sorted_list = workQ.Run()
-  for pathname in sorted_list:
-    sys.stdout.write(pathname + '\n')
+  return '\n'.join(sorted_list) + '\n'
 
   return 0
 
 
-if __name__ == '__main__':
-  sys.exit(Main(sys.argv))
+def Main():
+  retcode, result = DoMain(sys.argv[1:])
+  if retcode:
+    sys.exit(retcode)
+  sys.stdout.write(result)
 
+
+if __name__ == '__main__':
+  Main()
