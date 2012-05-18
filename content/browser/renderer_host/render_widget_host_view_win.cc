@@ -81,7 +81,6 @@ using webkit::npapi::WebPluginGeometry;
 const wchar_t kRenderWidgetHostHWNDClass[] = L"Chrome_RenderWidgetHostHWND";
 
 namespace {
-
 // Tooltips will wrap after this width. Yes, wrap. Imagine that!
 const int kTooltipMaxWidthPixels = 300;
 
@@ -305,7 +304,253 @@ inline void SetTouchType(TOUCHINPUT* point, int type) {
   point->dwFlags = (point->dwFlags & kTouchMask) | type;
 }
 
+template <class IINTERFACE, class PAYLOAD>
+class WrappedObject : public IINTERFACE {
+ public:
+  WrappedObject() {
+  }
+  WrappedObject(const PAYLOAD &copy)
+      : data_(copy) {
+  }
+  const PAYLOAD& data() const {
+    return data_;
+  }
+  PAYLOAD& data() {
+    return data_;
+  }
+
+ private:
+  PAYLOAD data_;
+
+  typedef WrappedObject<IINTERFACE,PAYLOAD> Type;
+  DISALLOW_COPY_AND_ASSIGN(Type);
+};
+
+ui::EventType ConvertToUIEvent(WebKit::WebTouchPoint::State t) {
+  switch (t) {
+    case WebKit::WebTouchPoint::StatePressed:
+      return ui::ET_TOUCH_PRESSED;
+    case WebKit::WebTouchPoint::StateMoved:
+      return ui::ET_TOUCH_MOVED;
+    case WebKit::WebTouchPoint::StateStationary:
+      return ui::ET_TOUCH_STATIONARY;
+    case WebKit::WebTouchPoint::StateReleased:
+      return ui::ET_TOUCH_RELEASED;
+    case WebKit::WebTouchPoint::StateCancelled:
+      return ui::ET_TOUCH_CANCELLED;
+    default:
+      DCHECK(false) << "Unexpected ui type. " << t;
+      return ui::ET_UNKNOWN;
+  }
+}
+
+WebKit::WebInputEvent::Type ConvertToWebInputEvent(ui::EventType t) {
+  switch (t) {
+    case ui::ET_UNKNOWN:
+      return WebKit::WebInputEvent::Undefined;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      return WebKit::WebGestureEvent::GestureScrollBegin;
+    case ui::ET_GESTURE_SCROLL_END:
+      return WebKit::WebGestureEvent::GestureScrollEnd;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      return WebKit::WebGestureEvent::GestureScrollUpdate;
+    case ui::ET_SCROLL_FLING_START:
+      // TODO: Confirm that ui and webkit agree on fling api.
+      return WebKit::WebGestureEvent::GestureFlingStart;
+    case ui::ET_SCROLL_FLING_CANCEL:
+      // TODO: Confirm that ui and webkit agree on fling api.
+      return WebKit::WebGestureEvent::GestureFlingCancel;
+    case ui::ET_GESTURE_TAP:
+      return WebKit::WebGestureEvent::GestureTap;
+    case ui::ET_GESTURE_TAP_DOWN:
+      return WebKit::WebGestureEvent::GestureTapDown;
+    case ui::ET_GESTURE_DOUBLE_TAP:
+      return WebKit::WebGestureEvent::GestureDoubleTap;
+    case ui::ET_GESTURE_LONG_PRESS:
+      return WebKit::WebGestureEvent::GestureLongPress;
+    case ui::ET_GESTURE_PINCH_BEGIN:
+      return WebKit::WebGestureEvent::GesturePinchBegin;
+    case ui::ET_GESTURE_PINCH_END:
+      return WebKit::WebGestureEvent::GesturePinchEnd;
+    case ui::ET_GESTURE_PINCH_UPDATE:
+      return WebKit::WebGestureEvent::GesturePinchUpdate;
+    case ui::ET_TOUCH_PRESSED:
+      return WebKit::WebInputEvent::TouchStart;
+    case ui::ET_TOUCH_MOVED:
+    case ui::ET_TOUCH_STATIONARY:
+      return WebKit::WebInputEvent::TouchMove;
+    case ui::ET_TOUCH_RELEASED:
+      return WebKit::WebInputEvent::TouchEnd;
+    case ui::ET_TOUCH_CANCELLED:
+      return WebKit::WebInputEvent::TouchCancel;
+    default:
+      DCHECK(false) << "Unexpected ui type. " << t;
+      return WebKit::WebInputEvent::Undefined;
+  }
+}
+
+class LocalGestureEvent :
+    public WrappedObject<ui::GestureEvent, WebKit::WebGestureEvent> {
+ public:
+  LocalGestureEvent(
+      ui::EventType type,
+      const gfx::Point& location,
+      int flags,
+      base::Time time,
+      float param_first,
+      float param_second,
+      unsigned int touch_id_bitfield)
+      : touch_ids_bitfield_(touch_id_bitfield),
+        type_(type) {
+    data().x = location.x();
+    data().y = location.y();
+    data().deltaX = param_first;
+    data().deltaY = param_second;
+    data().type = ConvertToWebInputEvent(type);
+  }
+
+  virtual int GetLowestTouchId() const OVERRIDE {
+    return LowestBit(touch_ids_bitfield_);
+  }
+
+  ui::EventType type() {
+    return type_;
+  }
+
+ private:
+  // The set of indices of ones in the binary representation of
+  // |touch_ids_bitfield_| is the set of touch_ids associate with this gesture.
+  // This value is stored as a bitfield because the number of touch ids varies,
+  // but we currently don't need more than 32 touches at a time.
+  const unsigned int touch_ids_bitfield_;
+
+  ui::EventType type_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalGestureEvent);
+};
+
+class LocalTouchEvent :
+    public WrappedObject<ui::TouchEvent, WebKit::WebTouchEvent> {
+ public:
+  LocalTouchEvent() : index_(0) {}
+  LocalTouchEvent(
+      ui::EventType type,
+      const gfx::Point& location,
+      int touch_id,
+      base::TimeDelta time_stamp) :
+      index_(0) {
+    data().type = ConvertToWebInputEvent(type);
+    data().timeStampSeconds = time_stamp.InSecondsF();
+  }
+
+  LocalTouchEvent(const WebKit::WebTouchEvent& copy,
+      ui::EventType type,
+      base::TimeDelta time_stamp,
+      size_t index = 0) :
+      WrappedObject<ui::TouchEvent, WebKit::WebTouchEvent>(copy),
+      index_(index) {
+    data().type = ConvertToWebInputEvent(type);
+    DCHECK(copy.touchesLength > index) << "Undefined touch point.";
+    data().timeStampSeconds = time_stamp.InSecondsF();
+  }
+
+  // TODO: make these functions non-virtual post http://crbug.com/125937
+  virtual ui::EventType GetEventType() const OVERRIDE {
+    return ConvertToUIEvent(data().touches[index_].state);
+  }
+  virtual gfx::Point GetLocation() const OVERRIDE {
+    return data().touches[index_].position;
+  }
+  virtual int GetTouchId() const OVERRIDE {
+    return data().touches[index_].id;
+  }
+  virtual int GetEventFlags() const OVERRIDE {
+    return 0;
+  }
+  virtual base::TimeDelta GetTimestamp() const OVERRIDE {
+    return base::TimeDelta::FromMilliseconds( 1000 * data().timeStampSeconds);
+  }
+  void SetTimestamp(base::TimeDelta t) {
+    data().timeStampSeconds = t.InSecondsF();
+  }
+  virtual float RadiusX() const OVERRIDE {
+    return data().touches[index_].radiusX;
+  }
+  virtual float RadiusY() const OVERRIDE {
+    return data().touches[index_].radiusY;
+  }
+  virtual float RotationAngle() const OVERRIDE {
+    return data().touches[index_].rotationAngle;
+  }
+  virtual float Force() const OVERRIDE {
+    return data().touches[index_].force;
+  }
+
+  // Returns a copy of this touch event. Used when queueing events for
+  // asynchronous gesture recognition.
+  virtual TouchEvent* Copy() const OVERRIDE {
+    return new LocalTouchEvent(data(), GetEventType(), GetTimestamp());
+  }
+
+  // Returns a copy of the touch event at the specified index.
+  const LocalTouchEvent& Index( size_t index) {
+    const int touch_history_size = 40;
+    static LocalTouchEvent touch_history[touch_history_size];
+    static int touch_history_index;
+    int current = (touch_history_index++ % touch_history_size);
+    touch_history[current].data() = data();
+    touch_history[current].index_ = index;
+    return touch_history[current];
+  }
+
+ private:
+  size_t index_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalTouchEvent);
+};
+
 }  // namespace
+
+// Wrapper for maintaining touchstate associated with a WebTouchEvent.
+class WebTouchState {
+ public:
+  explicit WebTouchState(const RenderWidgetHostViewWin* window);
+
+  // Updates the current touchpoint state with the supplied touches.
+  // Touches will be consumed only if they are of the same type (e.g. down,
+  // up, move). Returns the number of consumed touches.
+  size_t UpdateTouchPoints(TOUCHINPUT* points, size_t count);
+
+  // Marks all active touchpoints as released.
+  bool ReleaseTouchPoints();
+
+  // The contained WebTouchEvent.
+  const WebKit::WebTouchEvent& touch_event() { return touch_event_.data(); }
+  const LocalTouchEvent* ui_touch_event() { return &touch_event_; }
+
+  // Returns if any touches are modified in the event.
+  bool is_changed() { return touch_event_.data().changedTouchesLength != 0; }
+
+  void QueueEvents(ui::GestureConsumer* consumer, ui::GestureRecognizer* gr) {
+    for (size_t i = 0; i < touch_event_.data().touchesLength; ++i) {
+        gr->QueueTouchEventForGesture(consumer, touch_event_.Index(i));
+    }
+  }
+
+ private:
+  // Adds a touch point or returns NULL if there's not enough space.
+  WebKit::WebTouchPoint* AddTouchPoint(TOUCHINPUT* touch_input);
+
+  // Copy details from a TOUCHINPUT to an existing WebTouchPoint, returning
+  // true if the resulting point is a stationary move.
+  bool UpdateTouchPoint(WebKit::WebTouchPoint* touch_point,
+                        TOUCHINPUT* touch_input);
+
+  LocalTouchEvent touch_event_;
+  const RenderWidgetHostViewWin* const window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebTouchState);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, public:
@@ -330,11 +575,14 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       is_fullscreen_(false),
       ignore_mouse_movement_(true),
       composition_range_(ui::Range::InvalidRange()),
-      touch_state_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          touch_state_(new WebTouchState(this))),
       pointer_down_context_(false),
       focus_on_editable_field_(false),
       received_focus_change_after_pointer_down_(false),
-      touch_events_enabled_(false) {
+      touch_events_enabled_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          gesture_recognizer_(ui::GestureRecognizer::Create(this))) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -928,6 +1176,10 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
 
 void RenderWidgetHostViewWin::ProcessTouchAck(
     WebKit::WebInputEvent::Type type, bool processed) {
+  scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+  gestures.reset(gesture_recognizer_->AdvanceTouchQueue(this, processed));
+  ProcessGestures(gestures.get());
+
   if (type == WebKit::WebInputEvent::TouchStart)
     UpdateDesiredTouchMode(processed);
 }
@@ -981,6 +1233,44 @@ void RenderWidgetHostViewWin::UpdateDesiredTouchMode(bool touch_mode) {
   if (!touch_mode) {
     SetToGestureMode();
   }
+}
+
+ui::GestureEvent* RenderWidgetHostViewWin::CreateGestureEvent(
+    ui::EventType type,
+    const gfx::Point& location,
+    int flags,
+    base::Time time,
+    float param_first,
+    float param_second,
+    unsigned int touch_id_bitfield) {
+
+  return new LocalGestureEvent(type, location, flags, time,
+      param_first, param_second, touch_id_bitfield);
+}
+
+ui::TouchEvent* RenderWidgetHostViewWin::CreateTouchEvent(
+    ui::EventType type,
+    const gfx::Point& location,
+    int touch_id,
+    base::TimeDelta time_stamp) {
+  return new LocalTouchEvent( type, location, touch_id, time_stamp);
+}
+
+bool RenderWidgetHostViewWin::DispatchLongPressGestureEvent(
+    ui::GestureEvent* event) {
+  return ForwardGestureEventToRenderer(event);
+}
+
+bool RenderWidgetHostViewWin::DispatchCancelTouchEvent(
+    ui::TouchEvent* event) {
+  if (!render_widget_host_)
+    return false;
+
+  DCHECK(event->GetEventType() == WebKit::WebInputEvent::TouchCancel);
+  LocalTouchEvent touchEvent(event->GetEventType(),
+    event->GetLocation(), event->GetTouchId(), event->GetTimestamp());
+  render_widget_host_->ForwardTouchEvent(touchEvent.data());
+  return true;
 }
 
 void RenderWidgetHostViewWin::SetHasHorizontalScrollbar(
@@ -1249,8 +1539,8 @@ void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
   render_widget_host_->GotFocus();
   render_widget_host_->SetActive(true);
 
-  if (touch_state_.ReleaseTouchPoints())
-    render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
+  if (touch_state_->ReleaseTouchPoints())
+    render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
@@ -1260,8 +1550,8 @@ void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
   render_widget_host_->SetActive(false);
   render_widget_host_->Blur();
 
-  if (touch_state_.ReleaseTouchPoints())
-    render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
+  if (touch_state_->ReleaseTouchPoints())
+    render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
 }
 
 void RenderWidgetHostViewWin::OnCaptureChanged(HWND window) {
@@ -1714,28 +2004,28 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
   return 0;
 }
 
-RenderWidgetHostViewWin::WebTouchState::WebTouchState(const CWindowImpl* window)
+WebTouchState::WebTouchState(const RenderWidgetHostViewWin* window)
     : window_(window) { }
 
-size_t RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoints(
+size_t WebTouchState::UpdateTouchPoints(
     TOUCHINPUT* points, size_t count) {
   // First we reset all touch event state. This involves removing any released
   // touchpoints and marking the rest as stationary. After that we go through
   // and alter/add any touchpoints (from the touch input buffer) that we can
   // coalesce into a single message. The return value is the number of consumed
   // input message.
-  WebKit::WebTouchPoint* point = touch_event_.touches;
-  WebKit::WebTouchPoint* end = point + touch_event_.touchesLength;
+  WebKit::WebTouchPoint* point = touch_event_.data().touches;
+  WebKit::WebTouchPoint* end = point + touch_event_.data().touchesLength;
   while (point < end) {
     if (point->state == WebKit::WebTouchPoint::StateReleased) {
       *point = *(--end);
-      --touch_event_.touchesLength;
+      --touch_event_.data().touchesLength;
     } else {
       point->state = WebKit::WebTouchPoint::StateStationary;
       point++;
     }
   }
-  touch_event_.changedTouchesLength = 0;
+  touch_event_.data().changedTouchesLength = 0;
 
   // Consume all events of the same type and add them to the changed list.
   int last_type = 0;
@@ -1744,9 +2034,10 @@ size_t RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoints(
       continue;
 
     WebKit::WebTouchPoint* point = NULL;
-    for (unsigned j = 0; j < touch_event_.touchesLength; ++j) {
-      if (static_cast<DWORD>(touch_event_.touches[j].id) == points[i].dwID) {
-        point =  &touch_event_.touches[j];
+    for (unsigned j = 0; j < touch_event_.data().touchesLength; ++j) {
+      if (static_cast<DWORD>(touch_event_.data().touches[j].id) ==
+          points[i].dwID) {
+        point =  &touch_event_.data().touches[j];
         break;
       }
     }
@@ -1757,15 +2048,18 @@ size_t RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoints(
       SetTouchType(&points[i], TOUCHEVENTF_MOVE);
 
     // Stop processing when the event type changes.
-    if (touch_event_.changedTouchesLength && type != last_type)
+    if (touch_event_.data().changedTouchesLength && type != last_type)
       return i;
+
+    touch_event_.SetTimestamp(
+        base::TimeDelta::FromMilliseconds(points[i].dwTime));
 
     last_type = type;
     switch (type) {
       case TOUCHEVENTF_DOWN: {
         if (!(point = AddTouchPoint(&points[i])))
           continue;
-        touch_event_.type = WebKit::WebInputEvent::TouchStart;
+        touch_event_.data().type = WebKit::WebInputEvent::TouchStart;
         break;
       }
 
@@ -1774,7 +2068,7 @@ size_t RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoints(
           continue;
         point->state = WebKit::WebTouchPoint::StateReleased;
         UpdateTouchPoint(point, &points[i]);
-        touch_event_.type = WebKit::WebInputEvent::TouchEnd;
+        touch_event_.data().type = WebKit::WebInputEvent::TouchEnd;
         break;
       }
 
@@ -1784,8 +2078,8 @@ size_t RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoints(
           // Don't update the message if the point didn't really move.
           if (UpdateTouchPoint(point, &points[i]))
             continue;
-          touch_event_.type = WebKit::WebInputEvent::TouchMove;
-        } else if (touch_event_.changedTouchesLength) {
+          touch_event_.data().type = WebKit::WebInputEvent::TouchMove;
+        } else if (touch_event_.data().changedTouchesLength) {
           // Can't add a point if we're already handling move events.
           return i;
         } else {
@@ -1794,7 +2088,7 @@ size_t RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoints(
             continue;
           last_type = TOUCHEVENTF_DOWN;
           SetTouchType(&points[i], TOUCHEVENTF_DOWN);
-          touch_event_.type = WebKit::WebInputEvent::TouchStart;
+          touch_event_.data().type = WebKit::WebInputEvent::TouchStart;
         }
         break;
       }
@@ -1803,40 +2097,42 @@ size_t RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoints(
         NOTREACHED();
         continue;
     }
-    touch_event_.changedTouches[touch_event_.changedTouchesLength++] = *point;
+    touch_event_.data().changedTouches[
+        touch_event_.data().changedTouchesLength++] = *point;
   }
 
   return count;
 }
 
-bool RenderWidgetHostViewWin::WebTouchState::ReleaseTouchPoints() {
-  if (touch_event_.touchesLength == 0)
+bool WebTouchState::ReleaseTouchPoints() {
+  if (touch_event_.data().touchesLength == 0)
     return false;
   // Mark every active touchpoint as released.
-  touch_event_.type = WebKit::WebInputEvent::TouchEnd;
-  touch_event_.changedTouchesLength = touch_event_.touchesLength;
-  for (unsigned int i = 0; i < touch_event_.touchesLength; ++i) {
-    touch_event_.touches[i].state = WebKit::WebTouchPoint::StateReleased;
-    touch_event_.changedTouches[i].state =
+  touch_event_.data().type = WebKit::WebInputEvent::TouchEnd;
+  touch_event_.data().changedTouchesLength = touch_event_.data().touchesLength;
+  for (unsigned int i = 0; i < touch_event_.data().touchesLength; ++i) {
+    touch_event_.data().touches[i].state = WebKit::WebTouchPoint::StateReleased;
+    touch_event_.data().changedTouches[i].state =
         WebKit::WebTouchPoint::StateReleased;
   }
 
   return true;
 }
 
-WebKit::WebTouchPoint* RenderWidgetHostViewWin::WebTouchState::AddTouchPoint(
+WebKit::WebTouchPoint* WebTouchState::AddTouchPoint(
     TOUCHINPUT* touch_input) {
-  if (touch_event_.touchesLength >= WebKit::WebTouchEvent::touchesLengthCap)
+  if (touch_event_.data().touchesLength >=
+      WebKit::WebTouchEvent::touchesLengthCap)
     return NULL;
   WebKit::WebTouchPoint* point =
-      &touch_event_.touches[touch_event_.touchesLength++];
+      &touch_event_.data().touches[touch_event_.data().touchesLength++];
   point->state = WebKit::WebTouchPoint::StatePressed;
   point->id = touch_input->dwID;
   UpdateTouchPoint(point, touch_input);
   return point;
 }
 
-bool RenderWidgetHostViewWin::WebTouchState::UpdateTouchPoint(
+bool WebTouchState::UpdateTouchPoint(
     WebKit::WebTouchPoint* touch_point,
     TOUCHINPUT* touch_input) {
   CPoint coordinates(TOUCH_COORD_TO_PIXEL(touch_input->x),
@@ -1882,15 +2178,38 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
     return 0;
   }
 
+  bool has_touch_handler = render_widget_host_->has_touch_handler();
+
+  // Send a copy of the touch events on to the gesture recognizer.
   for (size_t start = 0; start < total;) {
-    start += touch_state_.UpdateTouchPoints(points + start, total - start);
-    if (touch_state_.is_changed())
-      render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
+    start += touch_state_->UpdateTouchPoints(points + start, total - start);
+    if (has_touch_handler) {
+      if  (touch_state_->is_changed())
+        render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
+      touch_state_->QueueEvents(this,gesture_recognizer_.get());
+    } else {
+      // TODO: This probably needs to be updated to call Next()
+      scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+      gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
+          *touch_state_->ui_touch_event(), ui::TOUCH_STATUS_UNKNOWN, this));
+      ProcessGestures(gestures.get());
+    }
   }
 
   CloseTouchInputHandle((HTOUCHINPUT)lparam);
 
   return 0;
+}
+
+void RenderWidgetHostViewWin::ProcessGestures(
+    ui::GestureRecognizer::Gestures* gestures) {
+  if ((gestures == NULL) || gestures->empty())
+    return;
+  for (ui::GestureRecognizer::Gestures::iterator g_it = gestures->begin();
+      g_it != gestures->end();
+      ++g_it) {
+    ForwardGestureEventToRenderer(*g_it);
+  }
 }
 
 LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
@@ -1973,12 +2292,12 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
     fake_touch.dwMask = 0;
     fake_touch.dwFlags = TOUCHEVENTF_DOWN | TOUCHEVENTF_PRIMARY;
     fake_touch.dwID = gi.dwInstanceID;
-    touch_state_.UpdateTouchPoints(&fake_touch, 1);
-    if (touch_state_.is_changed())
-      render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
+    touch_state_->UpdateTouchPoints(&fake_touch, 1);
+    if (touch_state_->is_changed())
+      render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
   } else if (gi.dwID == GID_END) {
-    if (touch_state_.ReleaseTouchPoints())
-      render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
+    if (touch_state_->ReleaseTouchPoints())
+      render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
   }
   ::CloseGestureInfoHandle(gi_handle);
   return 0;
@@ -2428,6 +2747,17 @@ void RenderWidgetHostViewWin::ResetTooltip() {
   if (::IsWindow(tooltip_hwnd_))
     ::DestroyWindow(tooltip_hwnd_);
   tooltip_hwnd_ = NULL;
+}
+
+bool RenderWidgetHostViewWin::ForwardGestureEventToRenderer(
+    ui::GestureEvent* gesture) {
+  if (!render_widget_host_)
+    return false;
+
+  LocalGestureEvent* local = static_cast<LocalGestureEvent*>(gesture);
+  const WebKit::WebGestureEvent& generatedEvent = local->data();
+  render_widget_host_->ForwardGestureEvent(generatedEvent);
+  return true;
 }
 
 void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,

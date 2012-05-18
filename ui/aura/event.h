@@ -371,7 +371,7 @@ class AURA_EXPORT GestureEvent : public LocatedEvent,
                float delta_y,
                unsigned int touch_ids_bitfield);
 
-  // Create a new TouchEvent which is identical to the provided model.
+  // Create a new GestureEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
   // converted from |source| coordinate system to |target| coordinate system.
   GestureEvent(const GestureEvent& model, Window* source, Window* target);

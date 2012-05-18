@@ -40,6 +40,15 @@ class UI_EXPORT GestureEvent {
   // A gesture event can have multiple touches. This function should return the
   // lowest ID of the touches in this gesture.
   virtual int GetLowestTouchId() const = 0;
+
+  // A helper function used in several (all) derived classes.
+  // Returns lowest set bit, or -1 if no bits are set.
+  static int LowestBit(unsigned int bitfield) {
+    int i = -1;
+    // Find the index of the least significant 1 bit
+    while (bitfield && (!((1 << ++i) & bitfield)));
+    return i;
+  }
 };
 
 // An abstract type for consumers of gesture-events created by the
@@ -76,7 +85,7 @@ class UI_EXPORT GestureEventHelper {
   virtual GestureEvent* CreateGestureEvent(EventType type,
                                            const gfx::Point& location,
                                            int flags,
-                                           const base::Time time,
+                                           base::Time time,
                                            float param_first,
                                            float param_second,
                                            unsigned int touch_id_bitfield) = 0;
