@@ -23,7 +23,6 @@ namespace base {
 class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
  public:
   MessagePumpX();
-  virtual ~MessagePumpX();
 
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
@@ -37,6 +36,9 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   // Internal function. Called by the glib source dispatch function. Processes
   // all available X events.
   gboolean DispatchXEvents();
+
+ protected:
+  virtual ~MessagePumpX();
 
  private:
   // Initializes the glib event source for X.

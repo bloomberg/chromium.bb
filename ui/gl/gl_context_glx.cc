@@ -38,10 +38,6 @@ GLContextGLX::GLContextGLX(GLShareGroup* share_group)
     display_(NULL) {
 }
 
-GLContextGLX::~GLContextGLX() {
-  Destroy();
-}
-
 Display* GLContextGLX::display() {
   return display_;
 }
@@ -248,6 +244,10 @@ std::string GLContextGLX::GetExtensions() {
 
 bool GLContextGLX::WasAllocatedUsingARBRobustness() {
   return GLSurfaceGLX::IsCreateContextRobustnessSupported();
+}
+
+GLContextGLX::~GLContextGLX() {
+  Destroy();
 }
 
 }  // namespace gfx

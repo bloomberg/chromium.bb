@@ -26,7 +26,6 @@ Display* g_osmesa_display;
 class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
  public:
   explicit NativeViewGLSurfaceOSMesa(gfx::AcceleratedWidget window);
-  virtual ~NativeViewGLSurfaceOSMesa();
 
   static bool InitializeOneOff();
 
@@ -38,6 +37,9 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   virtual bool SwapBuffers() OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+
+ protected:
+  virtual ~NativeViewGLSurfaceOSMesa();
 
  private:
   GC window_graphics_context_;
@@ -83,10 +85,6 @@ NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     pixmap_graphics_context_(0),
     pixmap_(0) {
   DCHECK(window);
-}
-
-NativeViewGLSurfaceOSMesa::~NativeViewGLSurfaceOSMesa() {
-  Destroy();
 }
 
 bool NativeViewGLSurfaceOSMesa::InitializeOneOff() {
@@ -258,6 +256,10 @@ bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
             x, y);
 
   return true;
+}
+
+NativeViewGLSurfaceOSMesa::~NativeViewGLSurfaceOSMesa() {
+  Destroy();
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(

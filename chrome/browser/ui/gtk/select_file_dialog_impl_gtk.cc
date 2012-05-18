@@ -30,6 +30,8 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl {
   explicit SelectFileDialogImplGTK(Listener* listener);
 
  protected:
+  virtual ~SelectFileDialogImplGTK();
+
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
   virtual void SelectFileImpl(Type type,
@@ -42,8 +44,6 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl {
                               void* params) OVERRIDE;
 
  private:
-  virtual ~SelectFileDialogImplGTK();
-
   virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
   // Add the filters from |file_types_| to |chooser|.

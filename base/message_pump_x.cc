@@ -93,13 +93,6 @@ MessagePumpX::MessagePumpX() : MessagePumpGlib(),
   InitXSource();
 }
 
-MessagePumpX::~MessagePumpX() {
-  g_source_destroy(x_source_);
-  g_source_unref(x_source_);
-  XCloseDisplay(g_xdisplay);
-  g_xdisplay = NULL;
-}
-
 // static
 Display* MessagePumpX::GetDefaultXDisplay() {
   if (!g_xdisplay)
@@ -116,6 +109,30 @@ bool MessagePumpX::HasXInput2() {
 void MessagePumpX::SetDefaultDispatcher(MessagePumpDispatcher* dispatcher) {
   DCHECK(!g_default_dispatcher || !dispatcher);
   g_default_dispatcher = dispatcher;
+}
+
+gboolean MessagePumpX::DispatchXEvents() {
+  Display* display = GetDefaultXDisplay();
+  DCHECK(display);
+  MessagePumpDispatcher* dispatcher =
+      GetDispatcher() ? GetDispatcher() : g_default_dispatcher;
+
+  // In the general case, we want to handle all pending events before running
+  // the tasks. This is what happens in the message_pump_glib case.
+  while (XPending(display)) {
+    XEvent xev;
+    XNextEvent(display, &xev);
+    if (dispatcher && ProcessXEvent(dispatcher, &xev))
+      return TRUE;
+  }
+  return TRUE;
+}
+
+MessagePumpX::~MessagePumpX() {
+  g_source_destroy(x_source_);
+  g_source_unref(x_source_);
+  XCloseDisplay(g_xdisplay);
+  g_xdisplay = NULL;
 }
 
 void MessagePumpX::InitXSource() {
@@ -158,23 +175,6 @@ bool MessagePumpX::ProcessXEvent(MessagePumpDispatcher* dispatcher,
   }
 
   return should_quit;
-}
-
-gboolean MessagePumpX::DispatchXEvents() {
-  Display* display = GetDefaultXDisplay();
-  DCHECK(display);
-  MessagePumpDispatcher* dispatcher =
-      GetDispatcher() ? GetDispatcher() : g_default_dispatcher;
-
-  // In the general case, we want to handle all pending events before running
-  // the tasks. This is what happens in the message_pump_glib case.
-  while (XPending(display)) {
-    XEvent xev;
-    XNextEvent(display, &xev);
-    if (dispatcher && ProcessXEvent(dispatcher, &xev))
-      return TRUE;
-  }
-  return TRUE;
 }
 
 bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {

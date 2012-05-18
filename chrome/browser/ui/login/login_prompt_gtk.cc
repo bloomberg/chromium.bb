@@ -45,10 +45,6 @@ class LoginHandlerGtk : public LoginHandler,
         ok_(NULL) {
   }
 
-  virtual ~LoginHandlerGtk() {
-    root_.Destroy();
-  }
-
   // LoginModelObserver implementation.
   virtual void OnAutofillDataAvailable(const string16& username,
                                        const string16& password) {
@@ -140,6 +136,11 @@ class LoginHandlerGtk : public LoginHandler,
     SetModel(NULL);
 
     ReleaseSoon();
+  }
+
+ protected:
+  virtual ~LoginHandlerGtk() {
+    root_.Destroy();
   }
 
  private:

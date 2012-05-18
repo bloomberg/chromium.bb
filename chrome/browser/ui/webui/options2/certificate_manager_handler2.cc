@@ -174,6 +174,9 @@ class FileAccessProvider
                     const WriteCallback& callback);
 
  private:
+  friend class base::RefCountedThreadSafe<FileAccessProvider>;
+  virtual ~FileAccessProvider() {}
+
   void DoRead(scoped_refptr<CancelableRequest<ReadCallback> > request,
               FilePath path);
   void DoWrite(scoped_refptr<CancelableRequest<WriteCallback> > request,

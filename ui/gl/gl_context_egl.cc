@@ -24,24 +24,11 @@ extern "C" {
 
 namespace gfx {
 
-std::string GLContextEGL::GetExtensions() {
-  const char* extensions = eglQueryString(display_,
-                                          EGL_EXTENSIONS);
-  if (!extensions)
-    return GLContext::GetExtensions();
-
-  return GLContext::GetExtensions() + " " + extensions;
-}
-
 GLContextEGL::GLContextEGL(GLShareGroup* share_group)
     : GLContext(share_group),
       context_(NULL),
       display_(NULL),
       config_(NULL) {
-}
-
-GLContextEGL::~GLContextEGL() {
-  Destroy();
 }
 
 bool GLContextEGL::Initialize(
@@ -155,6 +142,19 @@ void GLContextEGL::SetSwapInterval(int interval) {
     LOG(ERROR) << "eglSwapInterval failed with error "
                << GetLastEGLErrorString();
   }
+}
+
+std::string GLContextEGL::GetExtensions() {
+  const char* extensions = eglQueryString(display_,
+                                          EGL_EXTENSIONS);
+  if (!extensions)
+    return GLContext::GetExtensions();
+
+  return GLContext::GetExtensions() + " " + extensions;
+}
+
+GLContextEGL::~GLContextEGL() {
+  Destroy();
 }
 
 }  // namespace gfx

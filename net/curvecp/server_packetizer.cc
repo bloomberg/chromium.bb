@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,9 +16,6 @@ ServerPacketizer::ServerPacketizer()
       state_(NONE),
       listener_(NULL),
       read_buffer_(new IOBuffer(kMaxPacketLength)) {
-}
-
-ServerPacketizer::~ServerPacketizer() {
 }
 
 int ServerPacketizer::Listen(const IPEndPoint& endpoint,
@@ -230,6 +227,8 @@ int ServerPacketizer::ReadPackets() {
 
   return rv;
 }
+
+ServerPacketizer::~ServerPacketizer() {}
 
 void ServerPacketizer::OnReadComplete(int result) {
   if (result > 0)

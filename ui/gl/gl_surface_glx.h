@@ -19,7 +19,6 @@ namespace gfx {
 class GL_EXPORT GLSurfaceGLX : public GLSurface {
  public:
   GLSurfaceGLX();
-  virtual ~GLSurfaceGLX();
 
   static bool InitializeOneOff();
 
@@ -36,6 +35,9 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
   // a GLX drawable.
   virtual void* GetConfig() = 0;
 
+ protected:
+  virtual ~GLSurfaceGLX();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLX);
 };
@@ -44,7 +46,6 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
 class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
  public:
   explicit NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window);
-  virtual ~NativeViewGLSurfaceGLX();
 
   // Implement GLSurfaceGLX.
   virtual bool Initialize() OVERRIDE;
@@ -60,6 +61,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
 
  protected:
   NativeViewGLSurfaceGLX();
+  virtual ~NativeViewGLSurfaceGLX();
 
   gfx::AcceleratedWidget window_;
 
@@ -74,7 +76,6 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
 class GL_EXPORT PbufferGLSurfaceGLX : public GLSurfaceGLX {
  public:
   explicit PbufferGLSurfaceGLX(const gfx::Size& size);
-  virtual ~PbufferGLSurfaceGLX();
 
   // Implement GLSurfaceGLX.
   virtual bool Initialize() OVERRIDE;
@@ -84,6 +85,9 @@ class GL_EXPORT PbufferGLSurfaceGLX : public GLSurfaceGLX {
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void* GetHandle() OVERRIDE;
   virtual void* GetConfig() OVERRIDE;
+
+ protected:
+  virtual ~PbufferGLSurfaceGLX();
 
  private:
   gfx::Size size_;

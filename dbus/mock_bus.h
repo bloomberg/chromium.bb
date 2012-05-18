@@ -18,7 +18,6 @@ namespace dbus {
 class MockBus : public Bus {
  public:
   MockBus(Bus::Options& options);
-  virtual ~MockBus();
 
   MOCK_METHOD2(GetObjectProxy, ObjectProxy*(const std::string& service_name,
                                             const ObjectPath& object_path));
@@ -71,6 +70,9 @@ class MockBus : public Bus {
   MOCK_METHOD0(HasDBusThread, bool());
   MOCK_METHOD0(AssertOnOriginThread, void());
   MOCK_METHOD0(AssertOnDBusThread, void());
+
+ protected:
+  virtual ~MockBus();
 };
 
 }  // namespace dbus

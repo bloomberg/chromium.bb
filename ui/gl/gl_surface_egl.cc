@@ -40,11 +40,7 @@ EGLDisplay g_software_display;
 EGLNativeDisplayType g_software_native_display;
 }
 
-GLSurfaceEGL::GLSurfaceEGL() : software_(false) {
-}
-
-GLSurfaceEGL::~GLSurfaceEGL() {
-}
+GLSurfaceEGL::GLSurfaceEGL() : software_(false) {}
 
 bool GLSurfaceEGL::InitializeOneOff() {
   static bool initialized = false;
@@ -164,6 +160,8 @@ EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
   return g_native_display;
 }
 
+GLSurfaceEGL::~GLSurfaceEGL() {}
+
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
                                                gfx::AcceleratedWidget window)
     : window_(window),
@@ -171,10 +169,6 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(bool software,
       supports_post_sub_buffer_(false),
       config_(NULL) {
   software_ = software;
-}
-
-NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
-  Destroy();
 }
 
 bool NativeViewGLSurfaceEGL::Initialize() {
@@ -358,6 +352,10 @@ bool NativeViewGLSurfaceEGL::PostSubBuffer(
   return true;
 }
 
+NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
+  Destroy();
+}
+
 void NativeViewGLSurfaceEGL::SetHandle(EGLSurface surface) {
   surface_ = surface;
 }
@@ -366,10 +364,6 @@ PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(bool software, const gfx::Size& size)
     : size_(size),
       surface_(NULL) {
   software_ = software;
-}
-
-PbufferGLSurfaceEGL::~PbufferGLSurfaceEGL() {
-  Destroy();
 }
 
 bool PbufferGLSurfaceEGL::Initialize() {
@@ -471,6 +465,10 @@ void* PbufferGLSurfaceEGL::GetShareHandle() {
 
   return handle;
 #endif
+}
+
+PbufferGLSurfaceEGL::~PbufferGLSurfaceEGL() {
+  Destroy();
 }
 
 }  // namespace gfx

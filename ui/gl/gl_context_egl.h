@@ -23,7 +23,6 @@ class GLSurface;
 class GLContextEGL : public GLContext {
  public:
   explicit GLContextEGL(GLShareGroup* share_group);
-  virtual ~GLContextEGL();
 
   // Implement GLContext.
   virtual bool Initialize(
@@ -35,6 +34,9 @@ class GLContextEGL : public GLContext {
   virtual void* GetHandle() OVERRIDE;
   virtual void SetSwapInterval(int interval) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
+
+ protected:
+  virtual ~GLContextEGL();
 
  private:
   EGLContext context_;

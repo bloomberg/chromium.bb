@@ -119,6 +119,9 @@ class NatPolicyLinux : public NatPolicy {
       }
     }
 
+   protected:
+    virtual ~FilePathWatcherDelegate() {}
+
    private:
     base::WeakPtr<NatPolicyLinux> policy_watcher_;
   };

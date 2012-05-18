@@ -20,7 +20,6 @@ class GLSurface;
 class GLContextGLX : public GLContext {
  public:
   explicit GLContextGLX(GLShareGroup* share_group);
-  virtual ~GLContextGLX();
 
   Display* display();
 
@@ -35,6 +34,9 @@ class GLContextGLX : public GLContext {
   virtual void SetSwapInterval(int interval) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
   virtual bool WasAllocatedUsingARBRobustness() OVERRIDE;
+
+ protected:
+  virtual ~GLContextGLX();
 
  private:
   void* context_;

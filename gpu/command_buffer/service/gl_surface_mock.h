@@ -14,7 +14,6 @@ namespace gpu {
 class GLSurfaceMock : public gfx::GLSurface {
  public:
   GLSurfaceMock();
-  virtual ~GLSurfaceMock();
 
   MOCK_METHOD0(Initialize, bool());
   MOCK_METHOD0(Destroy, void());
@@ -33,6 +32,9 @@ class GLSurfaceMock : public gfx::GLSurface {
   MOCK_METHOD0(GetDisplay, void*());
   MOCK_METHOD0(GetConfig, void*());
   MOCK_METHOD0(GetFormat, unsigned());
+
+ protected:
+  virtual ~GLSurfaceMock();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceMock);

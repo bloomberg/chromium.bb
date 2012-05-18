@@ -38,11 +38,7 @@ bool g_glx_create_context_robustness_supported = false;
 
 }  // namespace anonymous
 
-GLSurfaceGLX::GLSurfaceGLX() {
-}
-
-GLSurfaceGLX::~GLSurfaceGLX() {
-}
+GLSurfaceGLX::GLSurfaceGLX() {}
 
 bool GLSurfaceGLX::InitializeOneOff() {
   static bool initialized = false;
@@ -103,18 +99,11 @@ void* GLSurfaceGLX::GetDisplay() {
   return g_display;
 }
 
+GLSurfaceGLX::~GLSurfaceGLX() {}
+
 NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window)
   : window_(window),
     config_(NULL) {
-}
-
-NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX()
-  : window_(0),
-    config_(NULL) {
-}
-
-NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
-  Destroy();
 }
 
 bool NativeViewGLSurfaceGLX::Initialize() {
@@ -234,14 +223,19 @@ bool NativeViewGLSurfaceGLX::PostSubBuffer(
   return true;
 }
 
+NativeViewGLSurfaceGLX::NativeViewGLSurfaceGLX()
+  : window_(0),
+    config_(NULL) {
+}
+
+NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
+  Destroy();
+}
+
 PbufferGLSurfaceGLX::PbufferGLSurfaceGLX(const gfx::Size& size)
   : size_(size),
     config_(NULL),
     pbuffer_(0) {
-}
-
-PbufferGLSurfaceGLX::~PbufferGLSurfaceGLX() {
-  Destroy();
 }
 
 bool PbufferGLSurfaceGLX::Initialize() {
@@ -321,6 +315,10 @@ void* PbufferGLSurfaceGLX::GetHandle() {
 
 void* PbufferGLSurfaceGLX::GetConfig() {
   return config_;
+}
+
+PbufferGLSurfaceGLX::~PbufferGLSurfaceGLX() {
+  Destroy();
 }
 
 }  // namespace gfx

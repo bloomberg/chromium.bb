@@ -24,10 +24,11 @@ class BundleInstalledBubbleGtk
   // Displays an installed bubble in the |browser| for the |bundle|.
   BundleInstalledBubbleGtk(const extensions::BundleInstaller* bundle,
                            Browser* browser);
-  virtual ~BundleInstalledBubbleGtk();
 
  private:
   friend class base::RefCounted<BundleInstalledBubbleGtk>;
+
+  virtual ~BundleInstalledBubbleGtk();
 
   // Assembles the content area of the bubble.
   void ShowInternal(const extensions::BundleInstaller* bundle);

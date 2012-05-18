@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -221,8 +221,6 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
                  bool watchdog_enable)
       : helper_(thread_name, excessive_duration, watchdog_enable) {}
 
-  ~IOJankObserver() {}
-
   // Attaches the observer to the current thread's message loop. You can only
   // attach to the current thread, so this function can be invoked on another
   // thread to attach it.
@@ -261,6 +259,8 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
 
  private:
   friend class base::RefCountedThreadSafe<IOJankObserver>;
+
+  ~IOJankObserver() {}
 
   JankObserverHelper helper_;
 

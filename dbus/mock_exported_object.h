@@ -19,7 +19,6 @@ class MockExportedObject : public ExportedObject {
  public:
   MockExportedObject(Bus* bus,
                      const ObjectPath& object_path);
-  virtual ~MockExportedObject();
 
   MOCK_METHOD3(ExportMethodAndBlock,
                bool(const std::string& interface_name,
@@ -32,6 +31,9 @@ class MockExportedObject : public ExportedObject {
                     OnExportedCallback on_exported_callback));
   MOCK_METHOD1(SendSignal, void(Signal* signal));
   MOCK_METHOD0(Unregister, void());
+
+ protected:
+  virtual ~MockExportedObject();
 };
 
 }  // namespace dbus

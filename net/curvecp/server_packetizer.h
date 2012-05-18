@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@ class ServerPacketizer : public base::RefCounted<ServerPacketizer>,
                          public Packetizer {
  public:
   ServerPacketizer();
-  virtual ~ServerPacketizer();
 
   // Listen for new connections from the Packetizer.
   int Listen(const IPEndPoint& endpoint, Packetizer::Listener* listener);
@@ -44,6 +43,8 @@ class ServerPacketizer : public base::RefCounted<ServerPacketizer>,
   virtual int max_message_payload() const OVERRIDE;
 
  private:
+  friend class base::RefCounted<ServerPacketizer>;
+
   enum State {
     NONE,       // The initial state, before listen.
     LISTENING,  // Listening for packets.
@@ -51,6 +52,8 @@ class ServerPacketizer : public base::RefCounted<ServerPacketizer>,
 
   typedef std::map<ConnectionKey, Packetizer::Listener*> ListenerMap;
   typedef std::map<ConnectionKey, IPEndPoint> ConnectionMap;
+
+  virtual ~ServerPacketizer();
 
   // Callbacks when an internal IO is completed.
   void OnReadComplete(int result);

@@ -50,8 +50,6 @@ class PrivateFontFile : public ppapi::Resource {
       : Resource(ppapi::OBJECT_IS_IMPL, instance),
         fd_(fd) {
   }
-  virtual ~PrivateFontFile() {
-  }
 
   bool GetFontTable(uint32_t table,
                     void* output,
@@ -62,6 +60,9 @@ class PrivateFontFile : public ppapi::Resource {
     *output_length = static_cast<uint32_t>(temp_size);
     return rv;
   }
+
+ protected:
+  virtual ~PrivateFontFile() {}
 
  private:
   int fd_;

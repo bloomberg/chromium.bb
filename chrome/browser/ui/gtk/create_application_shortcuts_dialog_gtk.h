@@ -85,12 +85,13 @@ class CreateWebApplicationShortcutsDialogGtk
 
   CreateWebApplicationShortcutsDialogGtk(GtkWindow* parent,
                                          TabContentsWrapper* tab_contents);
-  virtual ~CreateWebApplicationShortcutsDialogGtk() {}
 
   virtual void OnCreatedShortcut(void) OVERRIDE;
 
- private:
+ protected:
+  virtual ~CreateWebApplicationShortcutsDialogGtk() {}
 
+ private:
   // TabContentsWrapper for which the shortcut will be created.
   TabContentsWrapper* tab_contents_;
 
@@ -107,7 +108,6 @@ class CreateChromeApplicationShortcutsDialogGtk
   CreateChromeApplicationShortcutsDialogGtk(GtkWindow* parent,
                                             Profile* profile,
                                             const Extension* app);
-  virtual ~CreateChromeApplicationShortcutsDialogGtk() {}
 
   // Implement ImageLoadingTracker::Observer.  |tracker_| is used to
   // load the app's icon.  This method recieves the icon, and adds
@@ -117,6 +117,8 @@ class CreateChromeApplicationShortcutsDialogGtk
                              int index) OVERRIDE;
 
  protected:
+  virtual ~CreateChromeApplicationShortcutsDialogGtk() {}
+
   virtual void CreateDesktopShortcut(
       const ShellIntegration::ShortcutInfo& shortcut_info) OVERRIDE;
 

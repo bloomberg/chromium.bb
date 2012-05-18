@@ -71,9 +71,14 @@ class DBusPowerSaveBlocker {
   class Delegate : public base::RefCountedThreadSafe<Delegate> {
    public:
     Delegate() {}
-    virtual ~Delegate() {}
     virtual void ApplyBlock(PowerSaveBlocker::PowerSaveBlockerType type) = 0;
+
+   protected:
+    virtual ~Delegate() {}
+
    private:
+    friend class base::RefCountedThreadSafe<Delegate>;
+
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
@@ -120,7 +125,6 @@ class KDEPowerSaveBlocker : public DBusPowerSaveBlocker::Delegate {
         pending_inhibit_call_(false),
         postponed_uninhibit_call_(false) {
   }
-  ~KDEPowerSaveBlocker() {}
 
   virtual void ApplyBlock(
       PowerSaveBlocker::PowerSaveBlockerType type) OVERRIDE {
@@ -195,6 +199,9 @@ class KDEPowerSaveBlocker : public DBusPowerSaveBlocker::Delegate {
                              bus_callback);
   }
 
+ protected:
+  virtual ~KDEPowerSaveBlocker() {}
+
  private:
   // Inhibit() response callback.
   // Stores the cookie so we can use it later when calling UnInhibit().
@@ -258,7 +265,6 @@ class GnomePowerSaveBlocker : public DBusPowerSaveBlocker::Delegate {
       : inhibit_cookie_(0),
         pending_inhibit_calls_(0),
         postponed_uninhibit_calls_(0) {}
-  ~GnomePowerSaveBlocker() {}
 
   virtual void ApplyBlock(
       PowerSaveBlocker::PowerSaveBlockerType type) OVERRIDE {
@@ -367,6 +373,9 @@ class GnomePowerSaveBlocker : public DBusPowerSaveBlocker::Delegate {
                              dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                              bus_callback);
   }
+
+ protected:
+  virtual ~GnomePowerSaveBlocker() {}
 
  private:
   // Inhibit() response callback.

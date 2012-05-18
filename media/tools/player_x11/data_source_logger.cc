@@ -25,8 +25,6 @@ DataSourceLogger::DataSourceLogger(
       streaming_(streaming) {
 }
 
-DataSourceLogger::~DataSourceLogger() {}
-
 void DataSourceLogger::set_host(media::DataSourceHost* host) {
   VLOG(1) << "set_host(" << host << ")";
   data_source_->set_host(host);
@@ -67,3 +65,5 @@ void DataSourceLogger::SetBitrate(int bitrate) {
   VLOG(1) << "SetBitrate(" << bitrate << ")";
   data_source_->SetBitrate(bitrate);
 }
+
+DataSourceLogger::~DataSourceLogger() {}

@@ -33,7 +33,6 @@ namespace gfx {
 class GL_EXPORT GLSurfaceEGL : public GLSurface {
  public:
   GLSurfaceEGL();
-  virtual ~GLSurfaceEGL();
 
   // Implement GLSurface.
   virtual EGLDisplay GetDisplay() OVERRIDE;
@@ -44,6 +43,8 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static EGLNativeDisplayType GetNativeDisplay();
 
  protected:
+  virtual ~GLSurfaceEGL();
+
   bool software_;
 
  private:
@@ -54,7 +55,6 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
  public:
   NativeViewGLSurfaceEGL(bool software, gfx::AcceleratedWidget window);
-  virtual ~NativeViewGLSurfaceEGL();
 
   // Implement GLSurface.
   virtual EGLConfig GetConfig() OVERRIDE;
@@ -68,6 +68,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
 
  protected:
+  virtual ~NativeViewGLSurfaceEGL();
   void SetHandle(EGLSurface surface);
 
  private:
@@ -83,7 +84,6 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
  public:
   PbufferGLSurfaceEGL(bool software, const gfx::Size& size);
-  virtual ~PbufferGLSurfaceEGL();
 
   // Implement GLSurface.
   virtual EGLConfig GetConfig() OVERRIDE;
@@ -95,6 +95,9 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   virtual bool Resize(const gfx::Size& size) OVERRIDE;
   virtual EGLSurface GetHandle() OVERRIDE;
   virtual void* GetShareHandle() OVERRIDE;
+
+ protected:
+  virtual ~PbufferGLSurfaceEGL();
 
  private:
   gfx::Size size_;

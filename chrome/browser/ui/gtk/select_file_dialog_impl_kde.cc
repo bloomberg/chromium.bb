@@ -42,9 +42,10 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
  public:
   SelectFileDialogImplKDE(Listener* listener,
                           base::nix::DesktopEnvironment desktop);
-  virtual ~SelectFileDialogImplKDE();
 
  protected:
+  virtual ~SelectFileDialogImplKDE();
+
   // SelectFileDialog implementation.
   // |params| is user data we pass back via the Listener interface.
   virtual void SelectFileImpl(Type type,
