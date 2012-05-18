@@ -13,10 +13,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/system_menu_model.h"
@@ -167,7 +167,7 @@ void BrowserFrameWin::UpdateFrameAfterFrameChange() {
 }
 
 void BrowserFrameWin::OnEndSession(BOOL ending, UINT logoff) {
-  BrowserList::SessionEnding();
+  browser::SessionEnding();
 }
 
 void BrowserFrameWin::OnInitMenuPopup(HMENU menu, UINT position,

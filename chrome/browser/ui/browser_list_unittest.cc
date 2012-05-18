@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -262,9 +263,9 @@ TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
   ProfileManager* profile_manager = new ProfileManager(FilePath());
   testing_browser_process->SetProfileManager(profile_manager);
 
-  BrowserList::AttemptRestart();
-  // Cancel the effects of us calling BrowserList::AttemptRestart. Otherwise
-  // tests ran after this one will fail.
+  browser::AttemptRestart();
+  // Cancel the effects of us calling browser::AttemptRestart. Otherwise tests
+  // ran after this one will fail.
   browser_shutdown::SetTryingToQuit(false);
 
   EXPECT_TRUE(testing_pref_service.GetBoolean(prefs::kWasRestarted));

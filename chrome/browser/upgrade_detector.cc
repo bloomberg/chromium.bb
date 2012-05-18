@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -107,7 +107,7 @@ void UpgradeDetector::IdleCallback(IdleState state) {
     case IDLE_STATE_LOCKED:
       // Computer is locked, auto-restart.
       idle_check_timer_.Stop();
-      BrowserList::AttemptRestart();
+      browser::AttemptRestart();
       break;
     case IDLE_STATE_IDLE:
       // Computer has been idle for long enough, show warning.

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 
 #include <gtk/gtk.h>
 
-// static
-void BrowserList::HandleAppExitingForPlatform() {
+namespace browser {
+
+void HandleAppExitingForPlatform() {
   // Close non-browser windows.
   GList* window_list = gtk_window_list_toplevels();
   g_list_foreach(window_list, (GFunc)g_object_ref, NULL);
@@ -25,3 +26,5 @@ void BrowserList::HandleAppExitingForPlatform() {
   g_list_foreach(window_list, (GFunc)g_object_unref, NULL);
   g_list_free(window_list);
 }
+
+}  // namespace browser

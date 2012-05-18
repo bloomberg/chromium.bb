@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #import "chrome/browser/mac/keystone_glue.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -127,7 +127,7 @@ void VersionUpdaterMac::PromoteUpdater() const {
 
 void VersionUpdaterMac::RelaunchBrowser() const {
   // Tell the Broweser to restart if possible.
-  BrowserList::AttemptRestart();
+  browser::AttemptRestart();
 }
 
 void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {

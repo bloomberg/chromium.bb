@@ -7,8 +7,8 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
@@ -97,7 +97,7 @@ void CriticalNotificationBubbleView::OnCountdown() {
     content::RecordAction(
         UserMetricsAction("CriticalNotification_AutoRestart"));
     refresh_timer_.Stop();
-    BrowserList::AttemptRestart();
+    browser::AttemptRestart();
   }
 
   // Update the counter. It may seem counter-intuitive to update the message
@@ -116,7 +116,7 @@ void CriticalNotificationBubbleView::ButtonPressed(
   if (sender == restart_button_) {
     content::RecordAction(
         UserMetricsAction("CriticalNotification_Restart"));
-    BrowserList::AttemptRestart();
+    browser::AttemptRestart();
   } else if (sender == dismiss_button_) {
     content::RecordAction(UserMetricsAction("CriticalNotification_Ignore"));
     // If the counter reaches 0, we set a restart flag that must be cleared if

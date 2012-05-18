@@ -18,7 +18,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -144,9 +144,9 @@ void ShutdownDetector::ThreadMain() {
   VLOG(1) << "Handling shutdown for signal " << signal << ".";
 #if defined(OS_CHROMEOS)
   // On ChromeOS, exiting on signal should be always clean.
-  base::Closure task = base::Bind(&BrowserList::ExitCleanly);
+  base::Closure task = base::Bind(&browser::ExitCleanly);
 #else
-  base::Closure task = base::Bind(&BrowserList::AttemptExit);
+  base::Closure task = base::Bind(&browser::AttemptExit);
 #endif
 
   if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task)) {

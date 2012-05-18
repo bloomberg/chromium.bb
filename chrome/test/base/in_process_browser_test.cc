@@ -15,6 +15,7 @@
 #include "base/test/test_file_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -345,7 +346,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   autorelease_pool_->Recycle();
 #endif
 
-  if (BrowserList::size()) {
+  if (!BrowserList::empty()) {
     browser_ = *BrowserList::begin();
     ui_test_utils::WaitForLoadStop(browser_->GetSelectedWebContents());
   }
@@ -376,14 +377,14 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 }
 
 void InProcessBrowserTest::QuitBrowsers() {
-  if (BrowserList::size() == 0)
+  if (BrowserList::empty())
     return;
 
   // Invoke CloseAllBrowsersAndMayExit on a running message loop.
   // CloseAllBrowsersAndMayExit exits the message loop after everything has been
   // shut down properly.
   MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                        base::Bind(&BrowserList::AttemptExit));
+                                        base::Bind(&browser::AttemptExit));
   ui_test_utils::RunMessageLoop();
 
 #if defined(OS_MACOSX)

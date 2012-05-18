@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -540,7 +541,7 @@ void CloudPrintWebDialogDelegate::Init(int width, int height,
   // If we're not modal we can show the dialog with no browser.
   // We need this to keep Chrome alive while our dialog is up.
   if (!modal_)
-    BrowserList::StartKeepAlive();
+    browser::StartKeepAlive();
 }
 
 CloudPrintWebDialogDelegate::~CloudPrintWebDialogDelegate() {
@@ -597,7 +598,7 @@ void CloudPrintWebDialogDelegate::OnDialogClosed(
   // If we're modal we can show the dialog with no browser.
   // End the keep-alive so that Chrome can exit.
   if (!modal_)
-    BrowserList::EndKeepAlive();
+    browser::EndKeepAlive();
   delete this;
 }
 

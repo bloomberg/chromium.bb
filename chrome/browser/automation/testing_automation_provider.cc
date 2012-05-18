@@ -62,6 +62,7 @@
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
@@ -451,8 +452,9 @@ bool TestingAutomationProvider::OnMessageReceived(
 
 void TestingAutomationProvider::OnChannelError() {
   if (!reinitialize_on_channel_error_ &&
-      browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID)
-    BrowserList::AttemptExit();
+      browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID) {
+    browser::AttemptExit();
+  }
   AutomationProvider::OnChannelError();
 }
 

@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/virtual_driver_install_helper.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
@@ -318,14 +319,14 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   if (!browser_shutdown::IsTryingToQuit())
     g_browser_process->print_job_manager()->StopJobs(true);
 
-  // Initiate a shutdown (via BrowserList::CloseAllBrowsers()) if we aren't
+  // Initiate a shutdown (via browser::CloseAllBrowsers()) if we aren't
   // already shutting down.
   if (!browser_shutdown::IsTryingToQuit()) {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_APP_EXITING,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
-    BrowserList::CloseAllBrowsers();
+    browser::CloseAllBrowsers();
   }
 
   return num_browsers == 0 ? YES : NO;
@@ -369,7 +370,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
   // Tell BrowserList not to keep the browser process alive. Once all the
   // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
-  BrowserList::EndKeepAlive();
+  browser::EndKeepAlive();
 
   [self unregisterEventHandlers];
 }
@@ -574,7 +575,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 - (void)applicationDidFinishLaunching:(NSNotification*)notify {
   // Notify BrowserList to keep the application running so it doesn't go away
   // when all the browser windows get closed.
-  BrowserList::StartKeepAlive();
+  browser::StartKeepAlive();
 
   [self setUpdateCheckInterval];
 

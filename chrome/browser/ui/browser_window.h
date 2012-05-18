@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/callback_forward.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
@@ -359,7 +360,7 @@ class BrowserWindow : public BaseWindow {
   virtual void ShowPasswordGenerationBubble(const gfx::Rect& rect) {}
 
  protected:
-  friend class BrowserList;
+  friend void browser::CloseAllBrowsers();
   friend class BrowserView;
   virtual void DestroyBrowser() = 0;
 };

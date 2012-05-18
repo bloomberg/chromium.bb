@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -52,7 +52,7 @@ bool UpdateRecommendedMessageBox::Accept() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
   // If running the Chrome OS build, but we're not on the device, fall through
 #endif
-  BrowserList::AttemptRestart();
+  browser::AttemptRestart();
   return true;
 }
 

@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -349,7 +350,7 @@ bool SyncTest::SetupSync() {
 
 void SyncTest::CleanUpOnMainThread() {
   // Close all browser windows.
-  BrowserList::CloseAllBrowsers();
+  browser::CloseAllBrowsers();
   ui_test_utils::RunAllPendingInMessageLoop();
 
   // All browsers should be closed at this point, or else we could see memory

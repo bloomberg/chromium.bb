@@ -10,7 +10,7 @@
 #include "ash/wm/key_rewriter_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "base/command_line.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/views/ash/caps_lock_handler.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/ash/key_rewriter.h"
@@ -77,8 +77,9 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       scoped_ptr<ash::VolumeControlDelegate>(new VolumeController).Pass());
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableZeroBrowsersOpenForTests))
-    BrowserList::StartKeepAlive();
+      switches::kDisableZeroBrowsersOpenForTests)) {
+    browser::StartKeepAlive();
+  }
 #endif
   gesture_handler_.reset(new UserGestureHandler);
   aura::client::SetUserGestureClient(

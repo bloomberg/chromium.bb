@@ -34,6 +34,7 @@
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/variations_service.h"
@@ -883,7 +884,7 @@ void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
 bool BrowserProcessImpl::CanAutorestartForUpdate() const {
   // Check if browser is in the background and if it needs to be restarted to
   // apply a pending update.
-  return BrowserList::size() == 0 && BrowserList::WillKeepAlive() &&
+  return BrowserList::size() == 0 && browser::WillKeepAlive() &&
          upgrade_util::IsUpdatePendingRestart();
 }
 
@@ -920,7 +921,7 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
   }
 
   DLOG(WARNING) << "Shutting down current instance of the browser.";
-  BrowserList::AttemptExit();
+  browser::AttemptExit();
 
   // Transfer ownership to Upgrade.
   upgrade_util::SetNewCommandLine(new_cl.release());

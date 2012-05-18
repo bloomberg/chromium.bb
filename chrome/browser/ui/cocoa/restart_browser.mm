@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/restart_browser.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
@@ -41,7 +41,7 @@
   if (returnCode == NSAlertFirstButtonReturn) {
     // Nothing to do. User will restart later.
   } else if (returnCode == NSAlertSecondButtonReturn) {
-    BrowserList::AttemptRestart();
+    browser::AttemptRestart();
   } else {
     NOTREACHED();
   }

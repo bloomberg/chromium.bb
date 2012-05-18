@@ -13,9 +13,9 @@
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/pref_names.h"
@@ -147,7 +147,7 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
 }
 
 void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
-  BrowserList::AttemptRestart();
+  browser::AttemptRestart();
 }
 
 }  // namespace

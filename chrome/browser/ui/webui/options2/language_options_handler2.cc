@@ -16,8 +16,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
@@ -126,7 +126,7 @@ void LanguageOptionsHandler::SetApplicationLocale(
 
 void LanguageOptionsHandler::RestartCallback(const ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_Restart"));
-  BrowserList::AttemptRestart();
+  browser::AttemptRestart();
 }
 
 }  // namespace options2

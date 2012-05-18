@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/extensions/shell_window.h"
 
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/intents/web_intents_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
@@ -120,7 +120,7 @@ ShellWindow::ShellWindow(Profile* profile,
                  content::NotificationService::AllSources());
 
   // Prevent the browser process from shutting down while this window is open.
-  BrowserList::StartKeepAlive();
+  browser::StartKeepAlive();
 
   // Make this window available to the extension API.
   extension_window_controller_.reset(
@@ -137,7 +137,7 @@ ShellWindow::~ShellWindow() {
   ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
 
   // Remove shutdown prevention.
-  BrowserList::EndKeepAlive();
+  browser::EndKeepAlive();
 }
 
 bool ShellWindow::OnMessageReceived(const IPC::Message& message) {

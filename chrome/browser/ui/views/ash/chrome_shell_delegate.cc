@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -111,7 +112,7 @@ void ChromeShellDelegate::Shutdown() {
 }
 
 void ChromeShellDelegate::Exit() {
-  BrowserList::AttemptUserExit();
+  browser::AttemptUserExit();
 }
 
 void ChromeShellDelegate::NewWindow(bool is_incognito) {

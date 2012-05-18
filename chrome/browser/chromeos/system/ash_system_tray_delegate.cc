@@ -49,11 +49,11 @@
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -366,7 +366,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void SignOut() OVERRIDE {
-    BrowserList::AttemptUserExit();
+    browser::AttemptUserExit();
   }
 
   virtual void RequestLockScreen() OVERRIDE {

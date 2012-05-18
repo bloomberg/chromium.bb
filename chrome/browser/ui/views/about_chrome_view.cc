@@ -18,10 +18,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -600,7 +600,7 @@ ui::ModalType AboutChromeView::GetModalType() const {
 }
 
 bool AboutChromeView::Accept() {
-  BrowserList::AttemptRestart();
+  browser::AttemptRestart();
   return true;
 }
 

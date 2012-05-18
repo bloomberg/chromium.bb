@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -175,7 +175,7 @@ BackgroundModeManager::BackgroundModeManager(
   // there are background apps) or exit if there are none.
   if (command_line->HasSwitch(switches::kNoStartupWindow)) {
     keep_alive_for_startup_ = true;
-    BrowserList::StartKeepAlive();
+    browser::StartKeepAlive();
   }
 
   // If the -keep-alive-for-test flag is passed, then always keep chrome running
@@ -494,13 +494,13 @@ void BackgroundModeManager::ExecuteCommand(int command_id) {
       break;
     case IDC_EXIT:
       content::RecordAction(UserMetricsAction("Exit"));
-      BrowserList::AttemptExit();
+      browser::AttemptExit();
       break;
     case IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND: {
       // Background mode must already be enabled (as otherwise this menu would
       // not be visible).
       DCHECK(IsBackgroundModePrefEnabled());
-      DCHECK(BrowserList::WillKeepAlive());
+      DCHECK(browser::WillKeepAlive());
 
       // Set the background mode pref to "disabled" - the resulting notification
       // will result in a call to DisableBackgroundMode().
@@ -525,7 +525,7 @@ void BackgroundModeManager::EndKeepAliveForStartup() {
     // keep-alive (which can shutdown Chrome) before the message loop has
     // started.
     MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&BrowserList::EndKeepAlive));
+        FROM_HERE, base::Bind(&browser::EndKeepAlive));
   }
 }
 
@@ -540,7 +540,7 @@ void BackgroundModeManager::StartBackgroundMode() {
   in_background_mode_ = true;
 
   // Put ourselves in KeepAlive mode and create a status tray icon.
-  BrowserList::StartKeepAlive();
+  browser::StartKeepAlive();
 
   // Display a status icon to exit Chrome.
   InitStatusTrayIcon();
@@ -565,7 +565,7 @@ void BackgroundModeManager::EndBackgroundMode() {
   in_background_mode_ = false;
 
   // End KeepAlive mode and blow away our status tray icon.
-  BrowserList::EndKeepAlive();
+  browser::EndKeepAlive();
 
   RemoveStatusTrayIcon();
   content::NotificationService::current()->Notify(

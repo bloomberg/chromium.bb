@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/service/service_process_control.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "chrome/common/pref_names.h"
@@ -145,7 +145,7 @@ bool CloudPrintProxyService::ShowTokenExpiredNotification() {
                             token_expired_delegate_.get());
   g_browser_process->notification_ui_manager()->Add(notification, profile_);
   // Keep the browser alive while we are showing the notification.
-  BrowserList::StartKeepAlive();
+  browser::StartKeepAlive();
   return true;
 }
 
@@ -173,7 +173,7 @@ void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
         token_expired_delegate_->id());
     token_expired_delegate_ = NULL;
     if (!keep_alive)
-      BrowserList::EndKeepAlive();
+      browser::EndKeepAlive();
   }
 }
 
@@ -200,7 +200,7 @@ bool CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
 
 void CloudPrintProxyService::OnCloudPrintSetupClosed() {
   MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&BrowserList::EndKeepAlive));
+      FROM_HERE, base::Bind(&browser::EndKeepAlive));
 }
 
 void CloudPrintProxyService::Observe(

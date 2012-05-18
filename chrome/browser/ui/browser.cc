@@ -65,6 +65,7 @@
 #include "chrome/browser/instant/instant_unload_handler.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/platform_util.h"
@@ -1203,7 +1204,7 @@ void Browser::OnWindowClosing() {
   // AppController on the Mac, or BackgroundContentsService for background
   // pages).
   bool should_quit_if_last_browser =
-      browser_shutdown::IsTryingToQuit() || !BrowserList::WillKeepAlive();
+      browser_shutdown::IsTryingToQuit() || !browser::WillKeepAlive();
 
   if (should_quit_if_last_browser && BrowserList::size() == 1) {
     browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
@@ -1789,7 +1790,7 @@ void Browser::TogglePresentationMode() {
 
 void Browser::Exit() {
   content::RecordAction(UserMetricsAction("Exit"));
-  BrowserList::AttemptUserExit();
+  browser::AttemptUserExit();
 }
 
 void Browser::BookmarkCurrentPage() {
@@ -3321,8 +3322,6 @@ void Browser::TabStripEmpty() {
   // Note: This will be called several times if TabStripEmpty is called several
   //       times. This is because it does not close the window if tabs are
   //       still present.
-  // NOTE: If you change to be immediate (no invokeLater) then you'll need to
-  //       update BrowserList::CloseAllBrowsers.
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
   // Set is_attempting_to_close_browser_ here, so that extensions, etc, do not
