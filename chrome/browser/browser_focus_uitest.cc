@@ -221,9 +221,9 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
 
 // Flaky on mac. http://crbug.com/67301.
 #if defined(OS_MACOSX)
-#define MAYBE_FindFocusTest DISABLED_FindFocusTest
+#define MAYBE_ClickingMovesFocus DISABLED_ClickingMovesFocus
 #else
-#define MAYBE_FindFocusTest FindFocusTest
+#define MAYBE_ClickingMovesFocus ClickingMovesFocus
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
