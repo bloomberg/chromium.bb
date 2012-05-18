@@ -55,7 +55,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   GpuVideoDecoder(MessageLoop* message_loop,
                   MessageLoop* vda_loop,
                   const scoped_refptr<Factories>& factories);
-  virtual ~GpuVideoDecoder();
 
   // VideoDecoder implementation.
   virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
@@ -78,6 +77,9 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
   virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
+
+ protected:
+  virtual ~GpuVideoDecoder();
 
  private:
   enum State {

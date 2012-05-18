@@ -62,7 +62,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   };
 
   FeatureInfo();
-  ~FeatureInfo();
 
   // If allowed features = NULL or "*", all features are allowed. Otherwise
   // only features that match the strings in allowed_features are allowed.
@@ -87,6 +86,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   }
 
  private:
+  friend class base::RefCounted<FeatureInfo>;
+  ~FeatureInfo();
+
   void AddExtensionString(const std::string& str);
 
   Validators validators_;

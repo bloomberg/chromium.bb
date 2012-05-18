@@ -21,9 +21,6 @@ namespace gles2 {
 FeatureInfo::FeatureInfo() {
 }
 
-FeatureInfo::~FeatureInfo() {
-}
-
 // Helps query for extensions.
 class ExtensionHelper {
  public:
@@ -508,6 +505,9 @@ void FeatureInfo::AddExtensionString(const std::string& str) {
   if (extensions_.find(str) == std::string::npos) {
     extensions_ += (extensions_.empty() ? "" : " ") + str;
   }
+}
+
+FeatureInfo::~FeatureInfo() {
 }
 
 }  // namespace gles2

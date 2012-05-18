@@ -47,49 +47,10 @@ ContextGroup::ContextGroup(MailboxManager* mailbox_manager,
   id_namespaces_[id_namespaces::kQueries].reset(new IdAllocator);
 }
 
-ContextGroup::~ContextGroup() {
-  CHECK(num_contexts_ == 0);
-}
-
 static void GetIntegerv(GLenum pname, uint32* var) {
   GLint value = 0;
   glGetIntegerv(pname, &value);
   *var = value;
-}
-
-bool ContextGroup::CheckGLFeature(GLint min_required, GLint* v) {
-  GLint value = *v;
-  if (enforce_gl_minimums_) {
-    value = std::min(min_required, value);
-  }
-  *v = value;
-  return value >= min_required;
-}
-
-bool ContextGroup::CheckGLFeatureU(GLint min_required, uint32* v) {
-  GLint value = *v;
-  if (enforce_gl_minimums_) {
-    value = std::min(min_required, value);
-  }
-  *v = value;
-  return value >= min_required;
-}
-
-bool ContextGroup::QueryGLFeature(
-    GLenum pname, GLint min_required, GLint* v) {
-  GLint value = 0;
-  glGetIntegerv(pname, &value);
-  *v = value;
-  return CheckGLFeature(min_required, v);
-}
-
-bool ContextGroup::QueryGLFeatureU(
-    GLenum pname, GLint min_required, uint32* v) {
-  uint32 value = 0;
-  GetIntegerv(pname, &value);
-  bool result = CheckGLFeatureU(min_required, &value);
-  *v = value;
-  return result;
 }
 
 bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
@@ -268,6 +229,45 @@ IdAllocatorInterface* ContextGroup::GetIdAllocator(unsigned namespace_id) {
     return NULL;
 
   return id_namespaces_[namespace_id].get();
+}
+
+ContextGroup::~ContextGroup() {
+  CHECK(num_contexts_ == 0);
+}
+
+bool ContextGroup::CheckGLFeature(GLint min_required, GLint* v) {
+  GLint value = *v;
+  if (enforce_gl_minimums_) {
+    value = std::min(min_required, value);
+  }
+  *v = value;
+  return value >= min_required;
+}
+
+bool ContextGroup::CheckGLFeatureU(GLint min_required, uint32* v) {
+  GLint value = *v;
+  if (enforce_gl_minimums_) {
+    value = std::min(min_required, value);
+  }
+  *v = value;
+  return value >= min_required;
+}
+
+bool ContextGroup::QueryGLFeature(
+    GLenum pname, GLint min_required, GLint* v) {
+  GLint value = 0;
+  glGetIntegerv(pname, &value);
+  *v = value;
+  return CheckGLFeature(min_required, v);
+}
+
+bool ContextGroup::QueryGLFeatureU(
+    GLenum pname, GLint min_required, uint32* v) {
+  uint32 value = 0;
+  GetIntegerv(pname, &value);
+  bool result = CheckGLFeatureU(min_required, &value);
+  *v = value;
+  return result;
 }
 
 }  // namespace gles2

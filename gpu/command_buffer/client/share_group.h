@@ -49,7 +49,6 @@ class GLES2_IMPL_EXPORT ShareGroup
   typedef scoped_refptr<ShareGroup> Ref;
 
   ShareGroup(bool share_resources, bool bind_generates_resource);
-  ~ShareGroup();
 
   void SetGLES2ImplementationForDestruction(GLES2Implementation* gl_impl);
 
@@ -72,6 +71,9 @@ class GLES2_IMPL_EXPORT ShareGroup
   }
 
  private:
+  friend class gpu::RefCountedThreadSafe<ShareGroup>;
+  ~ShareGroup();
+
   scoped_ptr<IdHandlerInterface> id_handlers_[id_namespaces::kNumIdNamespaces];
   scoped_ptr<ProgramInfoManager> program_info_manager_;
 

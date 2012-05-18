@@ -32,8 +32,7 @@ class GPU_EXPORT QueryManager {
     typedef scoped_refptr<Query> Ref;
 
     Query(
-       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
-    virtual ~Query();
+        QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
 
     GLenum target() const {
       return target_;
@@ -71,6 +70,8 @@ class GPU_EXPORT QueryManager {
     virtual void Destroy(bool have_context) = 0;
 
    protected:
+    virtual ~Query();
+
     QueryManager* manager() const {
       return manager_;
     }

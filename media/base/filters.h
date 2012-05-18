@@ -121,6 +121,9 @@ class MEDIA_EXPORT VideoRenderer : public Filter {
   // Returns true if this filter has received and processed an end-of-stream
   // buffer.
   virtual bool HasEnded() = 0;
+
+ protected:
+  virtual ~VideoRenderer() {}
 };
 
 class MEDIA_EXPORT AudioRenderer : public Filter {
@@ -152,6 +155,9 @@ class MEDIA_EXPORT AudioRenderer : public Filter {
   // |buffer_more_audio| is set to true if you want to increase the size of the
   // decoded audio buffer.
   virtual void ResumeAfterUnderflow(bool buffer_more_audio) = 0;
+
+ protected:
+  virtual ~AudioRenderer() {}
 };
 
 }  // namespace media

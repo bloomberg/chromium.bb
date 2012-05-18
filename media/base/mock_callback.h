@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,12 @@ namespace media {
 class MockClosure : public base::RefCountedThreadSafe<MockClosure> {
  public:
   MockClosure();
-  virtual ~MockClosure();
   MOCK_METHOD0(Run, void());
+
+ protected:
+  friend class base::RefCountedThreadSafe<MockClosure>;
+  virtual ~MockClosure();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClosure);
 };

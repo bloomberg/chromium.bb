@@ -223,18 +223,17 @@ ShareGroup::ShareGroup(bool share_resources, bool bind_generates_resource)
   program_info_manager_.reset(ProgramInfoManager::Create(false));
 }
 
+void ShareGroup::SetGLES2ImplementationForDestruction(
+    GLES2Implementation* gl_impl) {
+  gles2_ = gl_impl;
+}
+
 ShareGroup::~ShareGroup() {
   for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
     id_handlers_[i]->Destroy(gles2_);
     id_handlers_[i].reset();
   }
 }
-
-void ShareGroup::SetGLES2ImplementationForDestruction(
-    GLES2Implementation* gl_impl) {
-  gles2_ = gl_impl;
-}
-
 
 }  // namespace gles2
 }  // namespace gpu

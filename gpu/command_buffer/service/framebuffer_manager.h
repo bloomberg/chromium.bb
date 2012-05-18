@@ -30,7 +30,6 @@ class GPU_EXPORT FramebufferManager {
      public:
       typedef scoped_refptr<Attachment> Ref;
 
-      virtual ~Attachment() { }
       virtual GLsizei width() const = 0;
       virtual GLsizei height() const = 0;
       virtual GLenum internal_format() const = 0;
@@ -45,6 +44,10 @@ class GPU_EXPORT FramebufferManager {
       virtual bool CanRenderTo() const = 0;
       virtual void DetachFromFramebuffer() = 0;
       virtual bool ValidForAttachmentType(GLenum attachment_type) = 0;
+
+     protected:
+      friend class base::RefCounted<Attachment>;
+      virtual ~Attachment() {}
     };
 
     FramebufferInfo(FramebufferManager* manager, GLuint service_id);

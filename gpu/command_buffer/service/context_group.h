@@ -40,7 +40,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   explicit ContextGroup(MailboxManager* mailbox_manager,
                         bool bind_generates_resource);
-  ~ContextGroup();
 
   // This should only be called by GLES2Decoder. This must be paired with a
   // call to destroy if it succeeds.
@@ -118,6 +117,9 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   IdAllocatorInterface* GetIdAllocator(unsigned namespace_id);
 
  private:
+  friend class base::RefCounted<ContextGroup>;
+  ~ContextGroup();
+
   bool CheckGLFeature(GLint min_required, GLint* v);
   bool CheckGLFeatureU(GLint min_required, uint32* v);
   bool QueryGLFeature(GLenum pname, GLint min_required, GLint* v);

@@ -18,11 +18,13 @@ class AllSamplesPassedQuery : public QueryManager::Query {
   AllSamplesPassedQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset,
       GLuint service_id);
-  virtual ~AllSamplesPassedQuery();
   virtual bool Begin() OVERRIDE;
   virtual bool End(uint32 submit_count) OVERRIDE;
   virtual bool Process() OVERRIDE;
   virtual void Destroy(bool have_context) OVERRIDE;
+
+ protected:
+  virtual ~AllSamplesPassedQuery();
 
  private:
   // Service side query id.
@@ -34,16 +36,6 @@ AllSamplesPassedQuery::AllSamplesPassedQuery(
     GLuint service_id)
     : Query(manager, target, shm_id, shm_offset),
       service_id_(service_id) {
-}
-
-AllSamplesPassedQuery::~AllSamplesPassedQuery() {
-}
-
-void AllSamplesPassedQuery::Destroy(bool have_context) {
-  if (have_context && !IsDeleted()) {
-    glDeleteQueriesARB(1, &service_id_);
-    MarkAsDeleted();
-  }
 }
 
 bool AllSamplesPassedQuery::Begin() {
@@ -70,16 +62,28 @@ bool AllSamplesPassedQuery::Process() {
   return MarkAsCompleted(result != 0);
 }
 
+void AllSamplesPassedQuery::Destroy(bool have_context) {
+  if (have_context && !IsDeleted()) {
+    glDeleteQueriesARB(1, &service_id_);
+    MarkAsDeleted();
+  }
+}
+
+AllSamplesPassedQuery::~AllSamplesPassedQuery() {
+}
+
 class CommandsIssuedQuery : public QueryManager::Query {
  public:
   CommandsIssuedQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
-  virtual ~CommandsIssuedQuery();
 
   virtual bool Begin() OVERRIDE;
   virtual bool End(uint32 submit_count) OVERRIDE;
   virtual bool Process() OVERRIDE;
   virtual void Destroy(bool have_context) OVERRIDE;
+
+ protected:
+  virtual ~CommandsIssuedQuery();
 
  private:
   base::TimeTicks begin_time_;
@@ -88,14 +92,6 @@ class CommandsIssuedQuery : public QueryManager::Query {
 CommandsIssuedQuery::CommandsIssuedQuery(
       QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
     : Query(manager, target, shm_id, shm_offset) {
-}
-
-CommandsIssuedQuery::~CommandsIssuedQuery() {
-}
-
-bool CommandsIssuedQuery::Process() {
-  NOTREACHED();
-  return true;
 }
 
 bool CommandsIssuedQuery::Begin() {
@@ -110,10 +106,18 @@ bool CommandsIssuedQuery::End(uint32 submit_count) {
       std::min(elapsed.InMicroseconds(), static_cast<int64>(0xFFFFFFFFL)));
 }
 
+bool CommandsIssuedQuery::Process() {
+  NOTREACHED();
+  return true;
+}
+
 void CommandsIssuedQuery::Destroy(bool /* have_context */) {
   if (!IsDeleted()) {
     MarkAsDeleted();
   }
+}
+
+CommandsIssuedQuery::~CommandsIssuedQuery() {
 }
 
 QueryManager::QueryManager(

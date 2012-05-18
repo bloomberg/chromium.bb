@@ -58,22 +58,6 @@ GpuVideoDecoder::GpuVideoDecoder(
   DCHECK(gvd_loop_proxy_ && factories_);
 }
 
-GpuVideoDecoder::~GpuVideoDecoder() {
-  DCHECK(!vda_);  // Stop should have been already called.
-  DCHECK(pending_read_cb_.is_null());
-  for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
-    available_shm_segments_[i]->shm->Close();
-    delete available_shm_segments_[i];
-  }
-  available_shm_segments_.clear();
-  for (std::map<int32, BufferPair>::iterator it =
-           bitstream_buffers_in_decoder_.begin();
-       it != bitstream_buffers_in_decoder_.end(); ++it) {
-    it->second.shm_buffer->shm->Close();
-  }
-  bitstream_buffers_in_decoder_.clear();
-}
-
 void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   if (!gvd_loop_proxy_->BelongsToCurrentThread() ||
       state_ == kDrainingDecoder) {
@@ -470,6 +454,22 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
     DCHECK(ready_video_frames_.empty());
     EnsureDemuxOrDecode();
   }
+}
+
+GpuVideoDecoder::~GpuVideoDecoder() {
+  DCHECK(!vda_);  // Stop should have been already called.
+  DCHECK(pending_read_cb_.is_null());
+  for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
+    available_shm_segments_[i]->shm->Close();
+    delete available_shm_segments_[i];
+  }
+  available_shm_segments_.clear();
+  for (std::map<int32, BufferPair>::iterator it =
+           bitstream_buffers_in_decoder_.begin();
+       it != bitstream_buffers_in_decoder_.end(); ++it) {
+    it->second.shm_buffer->shm->Close();
+  }
+  bitstream_buffers_in_decoder_.clear();
 }
 
 void GpuVideoDecoder::EnsureDemuxOrDecode() {

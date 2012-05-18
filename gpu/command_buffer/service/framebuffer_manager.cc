@@ -17,8 +17,6 @@ class RenderbufferAttachment
       : renderbuffer_(renderbuffer) {
   }
 
-  virtual ~RenderbufferAttachment() { }
-
   virtual GLsizei width() const {
     return renderbuffer_->width();
   }
@@ -73,6 +71,9 @@ class RenderbufferAttachment
     return renderbuffer_.get();
   }
 
+ protected:
+  virtual ~RenderbufferAttachment() { }
+
  private:
   RenderbufferManager::RenderbufferInfo::Ref renderbuffer_;
 
@@ -88,8 +89,6 @@ class TextureAttachment
         target_(target),
         level_(level) {
   }
-
-  virtual ~TextureAttachment() { }
 
   virtual GLsizei width() const {
     GLsizei temp_width = 0;
@@ -158,6 +157,9 @@ class TextureAttachment
     uint32 have = GLES2Util::GetChannelsForFormat(internal_format);
     return (need & have) != 0;
   }
+
+ protected:
+  virtual ~TextureAttachment() { }
 
  private:
   TextureManager::TextureInfo::Ref texture_;
