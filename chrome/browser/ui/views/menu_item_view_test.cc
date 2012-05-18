@@ -260,12 +260,27 @@ typedef MenuItemViewTestInsert<1,0> MenuItemViewTestInsert10;
 typedef MenuItemViewTestInsert<1,2> MenuItemViewTestInsert12;
 typedef MenuItemViewTestInsert<2,0> MenuItemViewTestInsert20;
 typedef MenuItemViewTestInsert<2,2> MenuItemViewTestInsert22;
-VIEW_TEST(MenuItemViewTestInsert00, InsertItem00)
-VIEW_TEST(MenuItemViewTestInsert02, InsertItem02)
-VIEW_TEST(MenuItemViewTestInsert10, InsertItem10)
-VIEW_TEST(MenuItemViewTestInsert12, InsertItem12)
-VIEW_TEST(MenuItemViewTestInsert20, InsertItem20)
-VIEW_TEST(MenuItemViewTestInsert22, InsertItem22)
+#if defined(OS_WIN)
+#define MAYBE_InsertItem00 DISABLED_InsertItem00
+#define MAYBE_InsertItem02 DISABLED_InsertItem02
+#define MAYBE_InsertItem10 DISABLED_InsertItem10
+#define MAYBE_InsertItem12 DISABLED_InsertItem12
+#define MAYBE_InsertItem20 DISABLED_InsertItem20
+#define MAYBE_InsertItem22 DISABLED_InsertItem22
+#else
+#define MAYBE_InsertItem00 InsertItem00
+#define MAYBE_InsertItem02 InsertItem02
+#define MAYBE_InsertItem10 InsertItem10
+#define MAYBE_InsertItem12 InsertItem12
+#define MAYBE_InsertItem20 InsertItem20
+#define MAYBE_InsertItem22 InsertItem22
+#endif
+VIEW_TEST(MenuItemViewTestInsert00, MAYBE_InsertItem00)
+VIEW_TEST(MenuItemViewTestInsert02, MAYBE_InsertItem02)
+VIEW_TEST(MenuItemViewTestInsert10, MAYBE_InsertItem10)
+VIEW_TEST(MenuItemViewTestInsert12, MAYBE_InsertItem12)
+VIEW_TEST(MenuItemViewTestInsert20, MAYBE_InsertItem20)
+VIEW_TEST(MenuItemViewTestInsert22, MAYBE_InsertItem22)
 
 // Test class for inserting a menu item while a submenu is open.
 template<int INSERT_INDEX>
