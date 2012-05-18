@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -127,25 +127,6 @@ static FILE *NaClLogFileIoBufferFromFile(char const *log_file) {
  * from the write of the actual log message.
  */
 static FILE *NaClLogDupFileIo(FILE *orig) {
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  /*
-   * TODO(cbiffle,bsy): memory allocation early in the startup can
-   * result in the system returning memory from the first gigabyte,
-   * where the nexe should run.  We need to allocate/squat on this
-   * first gig early in the startup code, prior to *any* allocation.
-   * Ideally, this is done by linker directives to hold it as BSS,
-   * since static Ctors etc might still bite us if we tried to do it
-   * as explicit code in main, which runs after the static Ctors run.
-   * Similarly, if we had our own static Ctor, we're still at the
-   * mercy of static Ctor initialization order, which isn't
-   * guaranteed.  Unofficially, static ctors are run in linkage order,
-   * so if kernels don't grok elf binaries with a bss in the first
-   * gig, we could do it that way.
-   *
-   * We cannot setvbuf, since that would trigger the allocation.
-   */
-  return orig;
-#else
   int  d;
   FILE *copy;
 
@@ -167,7 +148,6 @@ static FILE *NaClLogDupFileIo(FILE *orig) {
   }
   (void) setvbuf(copy, (char *) NULL, _IOFBF, 1024);
   return copy;
-#endif
 }
 
 static struct Gio *NaClLogGioFromFileIoBuffer(FILE *log_iob) {
