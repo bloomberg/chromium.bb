@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
+#include "base/string_split.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/autofill_messages.h"
@@ -59,9 +61,18 @@ void AppendDataListSuggestions(const WebKit::WebInputElement& element,
   if (options.isNull())
     return;
 
+  string16 prefix = element.editingValue();
+  if (element.isMultiple() &&
+      element.formControlType() == WebString::fromUTF8("email")) {
+    std::vector<string16> parts;
+    base::SplitStringDontTrim(prefix, ',', &parts);
+    if (parts.size() > 0)
+      TrimWhitespace(parts[parts.size() - 1], TRIM_LEADING, &prefix);
+  }
   for (WebOptionElement option = options.firstItem().to<WebOptionElement>();
-      !option.isNull(); option = options.nextItem().to<WebOptionElement>()) {
-    if (!StartsWith(option.value(), element.value(), false) ||
+       !option.isNull(); option = options.nextItem().to<WebOptionElement>()) {
+    if (!StartsWith(option.value(), prefix, false) ||
+        option.value() == prefix ||
         !element.isValidValue(option.value()))
       continue;
 
@@ -210,10 +221,11 @@ void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
       break;
     case WebAutofillClient::MenuItemIDAutocompleteEntry:
     case WebAutofillClient::MenuItemIDPasswordEntry:
-    case WebAutofillClient::MenuItemIDDataListEntry:
-      // User selected an Autocomplete or password or datalist entry, so we
-      // fill directly.
+      // User selected an Autocomplete or password entry, so we fill directly.
       SetNodeText(value, &element_);
+      break;
+    case WebAutofillClient::MenuItemIDDataListEntry:
+      AcceptDataListSuggestion(value);
       break;
     default:
       // A positive item_id is a unique id for an autofill (vs. autocomplete)
@@ -427,6 +439,34 @@ void AutofillAgent::CombineDataListEntriesAndShow(
   has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
 }
 
+void AutofillAgent::AcceptDataListSuggestion(const string16& suggested_value) {
+  string16 new_value = suggested_value;
+  // If this element takes multiple values then replace the last part with
+  // the suggestion.
+  if (element_.isMultiple() &&
+      element_.formControlType() == WebString::fromUTF8("email")) {
+    std::vector<string16> parts;
+
+    base::SplitStringDontTrim(element_.editingValue(), ',', &parts);
+    if (parts.size() == 0)
+      parts.push_back(string16());
+
+    string16 last_part = parts.back();
+    // We want to keep just the leading whitespace.
+    for (size_t i = 0; i < last_part.size(); ++i) {
+      if (!IsWhitespace(last_part[i])) {
+        last_part = last_part.substr(0, i);
+        break;
+      }
+    }
+    last_part.append(suggested_value);
+    parts[parts.size() - 1] = last_part;
+
+    new_value = JoinString(parts, ',');
+  }
+  SetNodeText(new_value, &element_);
+}
+
 void AutofillAgent::OnFormDataFilled(int query_id,
                                      const webkit::forms::FormData& form) {
   if (!render_view()->GetWebView() || query_id != autofill_query_id_)
@@ -503,7 +543,7 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
 
   // Don't attempt to autofill with values that are too large or if filling
   // criteria are not met.
-  WebString value = element.value();
+  WebString value = element.editingValue();
   if (value.length() > kMaximumTextSizeForAutofill ||
       (!autofill_on_empty_values && value.isEmpty()) ||
       (requires_caret_at_end &&
@@ -587,7 +627,7 @@ void AutofillAgent::SetNodeText(const string16& value,
   string16 substring = value;
   substring = substring.substr(0, node->maxLength());
 
-  node->setValue(substring, true);
+  node->setEditingValue(substring);
 }
 
 }  // namespace autofill
