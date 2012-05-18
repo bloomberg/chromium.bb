@@ -24,7 +24,11 @@ remoting.HostController = function() {
       console.log('Host version:', version);
     }
   };
-  this.plugin_.getDaemonVersion(printVersion);
+  try {
+    this.plugin_.getDaemonVersion(printVersion);
+  } catch (err) {
+    console.log('Host version not available.');
+  }
 };
 
 // Note that the values in the enums below are copied from
