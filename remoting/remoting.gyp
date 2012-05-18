@@ -408,7 +408,7 @@
           'xcode_settings': {
             'INFOPLIST_FILE': 'host/me2me_preference_pane-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_BY="<(copyright_by)"',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_BY="<(copyright_by)" PREF_PANE_ICON_LABEL="<(pref_pane_icon_label)"',
           },
           'mac_bundle_resources': [
             'host/me2me_preference_pane.xib',
@@ -429,11 +429,19 @@
               'variables': {
                 'bundle_id': 'com.google.chromeremotedesktop.preferences',
                 'bundle_name': 'Chrome Remote Desktop Host Preferences',
+
+                # The XML new-line entity splits the label into two lines,
+                # which is the maximum number of lines allowed by the System
+                # Preferences applet.
+                # TODO(lambroslambrou): When these strings are localized, use
+                # "\n" instead.
+                'pref_pane_icon_label': 'Chrome Remote&#x0a;Desktop Host',
               },
             }, { # else branding!="Chrome"
               'variables': {
                 'bundle_id': 'org.chromium.remoting.preferences',
                 'bundle_name': 'Chromoting Host Preferences',
+                'pref_pane_icon_label': 'Chromoting&#x0a;Host',
               },
             }],
           ],  # conditions

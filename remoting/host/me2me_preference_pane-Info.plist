@@ -29,7 +29,7 @@
 	<key>NSPrefPaneIconFile</key>
 	<string>chromoting128.png</string>
 	<key>NSPrefPaneIconLabel</key>
-	<string>Me2Me</string>
+	<string>PREF_PANE_ICON_LABEL</string>
 	<key>NSPrincipalClass</key>
 	<string>Me2MePreferencePane</string>
 </dict>
