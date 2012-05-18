@@ -256,9 +256,7 @@ class UITestBase {
   // Closes the browser window.
   virtual void TearDown();
 
-  AutomationProxy* automation() const {
-    return launcher_->automation();
-  }
+  virtual AutomationProxy* automation() const;
 
   ProxyLauncher::LaunchState DefaultLaunchState();
 

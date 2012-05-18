@@ -158,6 +158,10 @@ void UITestBase::TearDown() {
   EXPECT_EQ(expected_crashes_, actual_crashes) << error_msg;
 }
 
+AutomationProxy* UITestBase::automation() const {
+  return launcher_->automation();
+}
+
 int UITestBase::action_timeout_ms() {
   return automation()->action_timeout_ms();
 }
@@ -706,4 +710,3 @@ void UITest::TerminateBrowser() {
                                         &exited_cleanly));
   ASSERT_TRUE(exited_cleanly);
 }
-

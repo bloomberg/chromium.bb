@@ -19,6 +19,8 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+class AutomationProxy;
+
 // The C++ style guide forbids using default arguments but I'm taking the
 // liberty of allowing it in this file. The sole purpose of this (and the
 // .cc) is to support the python interface, and default args are allowed in
@@ -199,6 +201,9 @@ class PyUITestBase : public UITestBase {
   }
 
  protected:
+  // Gets the automation proxy and checks that it exists.
+  virtual AutomationProxy* automation() const OVERRIDE;
+
   virtual void SetLaunchSwitches() OVERRIDE;
 
  private:
