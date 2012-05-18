@@ -108,6 +108,9 @@ void TouchTabStripLayout::AddTab(int index,
   LayoutByTabOffsetAfter(active_index());
   LayoutByTabOffsetBefore(active_index());
   AdjustStackedTabs();
+
+  if ((add_types & kAddTypeActive) == 0)
+    MakeVisible(index);
 }
 
 void TouchTabStripLayout::RemoveTab(int index, int start_x, int old_x) {
@@ -225,6 +228,39 @@ void TouchTabStripLayout::ResetToIdealState() {
     } while (index >= mini_tab_count_ && ideal_x(mini_tab_count_) != x_ &&
              ideal_x(tab_count() - 1) != width_ - size_.width());
   }
+  AdjustStackedTabs();
+}
+
+void TouchTabStripLayout::MakeVisible(int index) {
+  // Currently no need to support tabs openning before |index| visible.
+  if (index <= active_index() || !requires_stacking() || !IsStacked(index))
+    return;
+
+  int ideal_delta = width_for_count(index - active_index()) + padding_;
+  if (ideal_x(index) - ideal_x(active_index()) == ideal_delta)
+    return;
+
+  // First push active index as far to the left as it'll go.
+  int active_x = std::max(GetMinX(active_index()),
+                          std::min(ideal_x(index) - ideal_delta,
+                                   ideal_x(active_index())));
+  SetIdealBoundsAt(active_index(), active_x);
+  LayoutUsingCurrentBefore(active_index());
+  LayoutUsingCurrentAfter(active_index());
+  AdjustStackedTabs();
+  if (ideal_x(index) - ideal_x(active_index()) == ideal_delta)
+    return;
+
+  // If we get here active_index() is left aligned. Push |index| as far to
+  // the right as possible.
+  int x = std::min(GetMaxX(index), active_x + ideal_delta);
+  SetIdealBoundsAt(index, x);
+  LayoutByTabOffsetAfter(index);
+  for (int next_x = x, i = index - 1; i > active_index(); --i) {
+    next_x = std::max(GetMinXCompressed(i), next_x - tab_offset());
+    SetIdealBoundsAt(i, next_x);
+  }
+  LayoutUsingCurrentAfter(active_index());
   AdjustStackedTabs();
 }
 
