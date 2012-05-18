@@ -747,7 +747,6 @@
           '../ppapi/lib/gl/include/KHR/',
           '../third_party/python_26/Lib/xml/parsers/',
           '../ui/base/glib/',
-          '<(PRODUCT_DIR)/extensions/',
           'test/data/components/flapper/windows/',
         ],
       },
