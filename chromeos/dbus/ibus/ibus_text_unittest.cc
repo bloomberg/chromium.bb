@@ -58,5 +58,37 @@ TEST(IBusTextTest, WriteReadTest) {
   EXPECT_EQ(1U, expected_text.selection_attributes().size());
 }
 
+TEST(IBusTextTest, StringAsIBusTextTest) {
+  const char kSampleText[] = "Sample Text";
+
+  // Write to Response object.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  AppendStringAsIBusText(kSampleText, &writer);
+
+  // Read from Response object.
+  dbus::MessageReader reader(response.get());
+  IBusText ibus_text;
+  ASSERT_TRUE(PopIBusText(&reader, &ibus_text));
+  EXPECT_EQ(kSampleText, ibus_text.text());
+  EXPECT_TRUE(ibus_text.underline_attributes().empty());
+  EXPECT_TRUE(ibus_text.selection_attributes().empty());
+}
+
+TEST(IBusTextTest, PopStringFromIBusTextTest) {
+  const char kSampleText[] = "Sample Text";
+
+  // Write to Response object.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  AppendStringAsIBusText(kSampleText, &writer);
+
+  // Read from Response object.
+  dbus::MessageReader reader(response.get());
+  std::string result;
+  ASSERT_TRUE(PopStringFromIBusText(&reader, &result));
+  EXPECT_EQ(kSampleText, result);
+}
+
 }  // namespace ibus
 }  // namespace chromeos

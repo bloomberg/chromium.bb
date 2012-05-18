@@ -93,6 +93,13 @@ void AppendIBusText(const IBusText& ibus_text, dbus::MessageWriter* writer) {
   ibus_text_writer.CloseAll();
 }
 
+void CHROMEOS_EXPORT AppendStringAsIBusText(const std::string& text,
+                                            dbus::MessageWriter* writer) {
+  IBusText ibus_text;
+  ibus_text.set_text(text);
+  AppendIBusText(ibus_text, writer);
+}
+
 bool PopIBusText(dbus::MessageReader* reader, IBusText* ibus_text) {
   IBusObjectReader ibus_text_reader("IBusText", reader);
   if (!ibus_text_reader.Init())
@@ -150,6 +157,15 @@ bool PopIBusText(dbus::MessageReader* reader, IBusText* ibus_text) {
     }
   }
 
+  return true;
+}
+
+bool CHROMEOS_EXPORT PopStringFromIBusText(dbus::MessageReader* reader,
+                                           std::string* text) {
+  IBusText ibus_text;
+  if(!PopIBusText(reader, &ibus_text))
+    return false;
+  *text = ibus_text.text();
   return true;
 }
 

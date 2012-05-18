@@ -82,9 +82,19 @@ class IBusText;
 // Returns false if an error occures.
 bool CHROMEOS_EXPORT PopIBusText(dbus::MessageReader* reader,
                                  IBusText* ibus_text);
+// Pops a IBusText from |reader| and stores it's text field into text. Use
+// PopIBusText instead in the case of using any attribute entries in IBusText.
+// Returns true on success.
+bool CHROMEOS_EXPORT PopStringFromIBusText(dbus::MessageReader* reader,
+                                           std::string* text);
 // Appends a IBusText to |writer|.
 void CHROMEOS_EXPORT AppendIBusText(const IBusText& ibus_text,
                                     dbus::MessageWriter* writer);
+
+// Appends a string to |writer| as IBusText without any attributes. Use
+// AppendIBusText instead in the case of using any attribute entries.
+void CHROMEOS_EXPORT AppendStringAsIBusText(const std::string& text,
+                                            dbus::MessageWriter* writer);
 
 // Handles IBusText object which is used in dbus communication with ibus-daemon.
 // The IBusAttribute has four uint32 variables and the IBusAttributes represents
