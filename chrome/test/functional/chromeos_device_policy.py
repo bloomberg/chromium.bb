@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+
 import pyauto_functional  # Must come before pyauto (and thus, policy_base).
 import policy_base
 
@@ -68,7 +70,7 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
         """window.domAutomationController.send(
                !document.getElementById('guestSignin').hidden);""")
 
-  def _CheckGuestModeVailableInAccountPicker(self):
+  def _CheckGuestModeAvailableInAccountPicker(self):
     return self.ExecuteJavascriptInOOBEWebUI(
         """window.domAutomationController.send(
                !!document.getElementById('pod-row').getPodWithUsername_(''));
@@ -98,13 +100,13 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.Logout()
 
     self._SetDevicePolicyAndOwner({'guest_mode_enabled': True})
-    self.assertTrue(self._CheckGuestModeVailableInAccountPicker(),
+    self.assertTrue(self._CheckGuestModeAvailableInAccountPicker(),
                     msg='Expected guest mode to be available.')
     self.Login(as_guest=True)
     self.Logout()
 
     self._SetDevicePolicyAndOwner({'guest_mode_enabled': False})
-    self.assertFalse(self._CheckGuestModeVailableInAccountPicker(),
+    self.assertFalse(self._CheckGuestModeAvailableInAccountPicker(),
                      msg='Expected guest mode to not be available.')
 
 
