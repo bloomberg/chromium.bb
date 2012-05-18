@@ -10,4 +10,6 @@ int main() {
   unsigned reasons;
   int b = GoogleChromeCompatibilityCheck(&reasons);
   NSLog(@"%d: %x", b, reasons);
+
+  LaunchGoogleChrome();
 }

@@ -122,3 +122,10 @@ int GoogleChromeCompatibilityCheck(unsigned* reasons) {
 
   return local_reasons == 0;
 }
+
+int LaunchGoogleChrome() {
+  @autoreleasepool {
+    return [[NSWorkspace sharedWorkspace]
+        launchApplication:@"/Applications/Google Chrome.app"];
+  }
+}

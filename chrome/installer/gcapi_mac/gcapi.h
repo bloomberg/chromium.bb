@@ -31,6 +31,9 @@ extern "C" {
 // sense on mac, change comment.
 int GoogleChromeCompatibilityCheck(unsigned* reasons);
 
+// This function launches Google Chrome after a successful install.
+int LaunchGoogleChrome();
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
