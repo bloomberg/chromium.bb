@@ -113,6 +113,11 @@ FileManager.prototype = {
   var MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
 
   /**
+   * Translated strings.
+   */
+  var localStrings;
+
+  /**
    * Item for the Grid View.
    * @constructor
    */
@@ -143,27 +148,27 @@ FileManager.prototype = {
    * Return a translated string.
    *
    * Wrapper function to make dealing with translated strings more concise.
-   * Equivalent to loadTimeData.getString(id).
+   * Equivilant to localStrings.getString(id).
    *
    * @param {string} id The id of the string to return.
    * @return {string} The translated string.
    */
   function str(id) {
-    return loadTimeData.getString(id);
+    return localStrings.getString(id) || ('UNLOCALIZED STRING ' + id);
   }
 
   /**
    * Return a translated string with arguments replaced.
    *
    * Wrapper function to make dealing with translated strings more concise.
-   * Equivilant to loadTimeData.getStringF(id, ...).
+   * Equivilant to localStrings.getStringF(id, ...).
    *
    * @param {string} id The id of the string to return.
    * @param {...string} The values to replace into the string.
    * @return {string} The translated string with replaced values.
    */
   function strf(id, var_args) {
-    return loadTimeData.getStringF.apply(loadTimeData, arguments);
+    return localStrings.getStringF.apply(localStrings, arguments);
   }
 
   /**
@@ -179,8 +184,8 @@ FileManager.prototype = {
         break;
       }
     }
-    return loadTimeData.getString('FILE_ERROR_' + code) ||
-        loadTimeData.getStringF('FILE_ERROR_GENERIC', code);
+    return localStrings.getString('FILE_ERROR_' + code) ||
+        localStrings.getStringF('FILE_ERROR_GENERIC', code);
   }
 
   /**
@@ -254,7 +259,7 @@ FileManager.prototype = {
    */
   FileManager.initStrings = function(callback) {
     chrome.fileBrowserPrivate.getStrings(function(strings) {
-      loadTimeData.data = strings;
+      localStrings = new LocalStrings(strings);
       if (callback)
         callback();
     });
@@ -591,7 +596,7 @@ FileManager.prototype = {
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
-    if (loadTimeData.getBoolean('ASH'))
+    if (str('ASH') == '1')
       this.dialogDom_.setAttribute('ash', 'true');
 
     this.filePopup_ = null;
@@ -600,7 +605,7 @@ FileManager.prototype = {
         'input', this.onSearchBoxUpdate_.bind(this));
 
     // Populate the static localized strings.
-    i18nTemplate.process(this.document_, loadTimeData);
+    i18nTemplate.process(this.document_, localStrings.templateData);
   };
 
   /**
@@ -2433,9 +2438,7 @@ FileManager.prototype = {
           task.title = str('ACTION_OPEN');
         } else if (task_parts[1] == 'view-pdf') {
           // Do not render this task if disabled.
-          if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED'))
-            continue;
-
+          if (str('PDF_VIEW_ENABLED') == 'false') continue;
           task.iconUrl =
               chrome.extension.getURL('images/filetype_pdf.png');
           task.title = str('ACTION_VIEW');
@@ -2609,7 +2612,7 @@ FileManager.prototype = {
 
   FileManager.prototype.getGDataPreferences_ = function() {
     return this.gdataPreferences_ ||
-      { driveEnabled: loadTimeData.getBoolean('ENABLE_GDATA') };
+      { driveEnabled: str('ENABLE_GDATA') == '1' };
   };
 
   FileManager.prototype.getNetworkConnectionState_ = function() {

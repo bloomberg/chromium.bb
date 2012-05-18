@@ -409,8 +409,8 @@ chrome.fileBrowserPrivate = {
       FILE_IS_DIRECTORY: 'Folder',
 
       GDATA_DIRECTORY_LABEL: 'Google Drive',
-      ENABLE_GDATA: true,
-      PDF_VIEW_ENABLED: true,
+      ENABLE_GDATA: '1',
+      PDF_VIEW_ENABLED: 'true',
 
       ROOT_DIRECTORY_LABEL: 'Files',
       DOWNLOADS_DIRECTORY_LABEL: 'Downloads',

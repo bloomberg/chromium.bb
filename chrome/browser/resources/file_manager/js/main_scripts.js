@@ -12,9 +12,9 @@
 // //so we want to parse it as early as possible.
 //<include src="metrics.js"/>
 //
-//<include src="../../shared/js/load_time_data.js"/>
+//<include src="../../shared/js/local_strings.js"/>
 //<include src="../../shared/js/util.js"/>
-//<include src="../../shared/js/i18n_template_no_process.js"/>
+//<include src="../../shared/js/i18n_template.js"/>
 //
 //<include src="../../shared/js/cr.js"/>
 //<include src="../../shared/js/event_tracker.js"/>
