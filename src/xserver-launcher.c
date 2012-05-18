@@ -305,6 +305,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		int offset;
 	} props[] = {
 		{ XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, F(class) },
+		{ XCB_ATOM_WM_NAME, XCB_ATOM_STRING, F(name) },
 		{ XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, F(transient_for) },
 		{ wm->atom.wm_protocols, TYPE_WM_PROTOCOLS, F(protocols) },
 		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM, F(type) },
@@ -352,6 +353,9 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		case XCB_ATOM_STRING:
 			/* FIXME: We're using this for both string and
 			   utf8_string */
+			if (*(char **) p)
+				free(*(char **) p);
+
 			*(char **) p =
 				strndup(xcb_get_property_value(reply),
 					xcb_get_property_value_length(reply));
