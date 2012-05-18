@@ -233,7 +233,12 @@ net::URLRequestJob* PrintDialogCloudTest::Factory(net::URLRequest* request,
                                     "", true);
 }
 
-IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, HandlersRegistered) {
+#if defined(OS_WIN)
+#define MAYBE_HandlersRegistered FLAKY_HandlersRegistered
+#else
+#define MAYBE_HandlersRegistered HandlersRegistered
+#endif
+IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, MAYBE_HandlersRegistered) {
   BrowserList::SetLastActive(browser());
   ASSERT_TRUE(BrowserList::GetLastActive());
 

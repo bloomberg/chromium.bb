@@ -130,4 +130,9 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
   bool menu_closed_;
 };
 
-VIEW_TEST(ButtonDropDownDragTest, DragActivation)
+#if defined(OS_WIN)
+#define MAYBE_DragActivation DISABLED_DragActivation
+#else
+#define MAYBE_DragActivation DragActivation
+#endif
+VIEW_TEST(ButtonDropDownDragTest, MAYBE_DragActivation)

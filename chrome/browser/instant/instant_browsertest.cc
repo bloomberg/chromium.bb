@@ -41,6 +41,8 @@ using content::WebContents;
 // Tests are flaky on Linux because of http://crbug.com/80118.
 #if defined(OS_LINUX) && !defined(USE_ASH)
 #define MAYBE(TestName) DISABLED_ ## TestName
+#elif defined(OS_WIN)
+#define MAYBE(TestName) FLAKY ## TestName
 #else
 #define MAYBE(TestName) TestName
 #endif

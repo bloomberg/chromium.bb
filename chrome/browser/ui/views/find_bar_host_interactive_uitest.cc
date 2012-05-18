@@ -70,7 +70,12 @@ class FindInPageTest : public InProcessBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
+#if defined(OS_WIN)
+#define MAYBE_FocusRestoreOnTabSwitch DISABLED_FocusRestoreOnTabSwitch
+#else
+#define MAYBE_FocusRestoreOnTabSwitch FocusRestoreOnTabSwitch
+#endif
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CrashEscHandlers) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page (tab A).
@@ -154,7 +159,12 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
                                            location_bar_focus_view_id_));
 }
 
-IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
+#if defined(OS_WIN)
+#define MAYBE_FocusRestoreOnTabSwitch FLAKY_FocusRestoreOnTabSwitch
+#else
+#define MAYBE_FocusRestoreOnTabSwitch FocusRestoreOnTabSwitch
+#endif
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
   ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page (tab A).

@@ -162,9 +162,18 @@ class MenuItemViewTestBasic : public MenuItemViewTestBase {
 typedef MenuItemViewTestBasic<0> MenuItemViewTestBasic0;
 typedef MenuItemViewTestBasic<1> MenuItemViewTestBasic1;
 typedef MenuItemViewTestBasic<2> MenuItemViewTestBasic2;
-VIEW_TEST(MenuItemViewTestBasic0, SelectItem0)
-VIEW_TEST(MenuItemViewTestBasic1, SelectItem1)
-VIEW_TEST(MenuItemViewTestBasic2, SelectItem2)
+#if defined(OS_WIN)
+#define MAYBE_SelectItem0 DISABLED_SelectItem0
+#define MAYBE_SelectItem1 DISABLED_SelectItem1
+#define MAYBE_SelectItem2 DISABLED_SelectItem2
+#else
+#define MAYBE_SelectItem0 SelectItem0
+#define MAYBE_SelectItem1 SelectItem1
+#define MAYBE_SelectItem2 SelectItem2
+#endif
+VIEW_TEST(MenuItemViewTestBasic0, MAYBE_SelectItem0)
+VIEW_TEST(MenuItemViewTestBasic1, MAYBE_SelectItem1)
+VIEW_TEST(MenuItemViewTestBasic2, MAYBE_SelectItem2)
 
 // Test class for inserting a menu item while the menu is open.
 template<int INSERT_INDEX, int SELECT_INDEX>
