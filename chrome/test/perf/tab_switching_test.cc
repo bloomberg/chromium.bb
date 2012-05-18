@@ -191,14 +191,8 @@ TEST_F(TabSwitchingUITest, FAILS_TabSwitch) {
   RunTabSwitchingUITest("t", true);
 }
 
-#if defined(OS_WIN)
 // Started failing with a webkit roll in r49936. See http://crbug.com/46751
-#define MAYBE_TabSwitchRef FAILS_TabSwitchRef
-#else
-#define MAYBE_TabSwitchRef TabSwitchRef
-#endif
-
-TEST_F(TabSwitchingUITest, MAYBE_TabSwitchRef) {
+TEST_F(TabSwitchingUITest, FAILS_TabSwitchRef) {
   UseReferenceBuild();
   RunTabSwitchingUITest("t_ref", true);
 }
