@@ -65,6 +65,42 @@ struct weston_xserver {
 	struct wl_listener destroy_listener;
 };
 
+struct motif_wm_hints {
+	uint32_t flags;
+	uint32_t functions;
+	uint32_t decorations;
+	int32_t input_mode;
+	uint32_t status;
+};
+
+#define MWM_HINTS_FUNCTIONS     (1L << 0)
+#define MWM_HINTS_DECORATIONS   (1L << 1)
+#define MWM_HINTS_INPUT_MODE    (1L << 2)
+#define MWM_HINTS_STATUS        (1L << 3)
+
+#define MWM_FUNC_ALL            (1L << 0)
+#define MWM_FUNC_RESIZE         (1L << 1)
+#define MWM_FUNC_MOVE           (1L << 2)
+#define MWM_FUNC_MINIMIZE       (1L << 3)
+#define MWM_FUNC_MAXIMIZE       (1L << 4)
+#define MWM_FUNC_CLOSE          (1L << 5)
+
+#define MWM_DECOR_ALL           (1L << 0)
+#define MWM_DECOR_BORDER        (1L << 1)
+#define MWM_DECOR_RESIZEH       (1L << 2)
+#define MWM_DECOR_TITLE         (1L << 3)
+#define MWM_DECOR_MENU          (1L << 4)
+#define MWM_DECOR_MINIMIZE      (1L << 5)
+#define MWM_DECOR_MAXIMIZE      (1L << 6)
+
+#define MWM_INPUT_MODELESS 0
+#define MWM_INPUT_PRIMARY_APPLICATION_MODAL 1
+#define MWM_INPUT_SYSTEM_MODAL 2
+#define MWM_INPUT_FULL_APPLICATION_MODAL 3
+#define MWM_INPUT_APPLICATION_MODAL MWM_INPUT_PRIMARY_APPLICATION_MODAL
+
+#define MWM_TEAROFF_WINDOW      (1L<<0)
+
 struct weston_wm {
 	xcb_connection_t *conn;
 	const xcb_query_extension_reply_t *xfixes;
@@ -104,6 +140,7 @@ struct weston_wm {
 		xcb_atom_t		 net_wm_moveresize;
 		xcb_atom_t		 net_supporting_wm_check;
 		xcb_atom_t		 net_supported;
+		xcb_atom_t		 motif_wm_hints;
 		xcb_atom_t		 clipboard;
 		xcb_atom_t		 targets;
 		xcb_atom_t		 utf8_string;
@@ -134,6 +171,7 @@ struct weston_wm_window {
 	uint32_t protocols;
 	xcb_atom_t type;
 	int width, height;
+	int decorate;
 };
 
 static struct weston_wm_window *
@@ -252,7 +290,8 @@ dump_window_properties(struct weston_wm *wm, xcb_window_t window)
 }
 
 /* We reuse some predefined, but otherwise useles atoms */
-#define TYPE_WM_PROTOCOLS XCB_ATOM_CUT_BUFFER0
+#define TYPE_WM_PROTOCOLS	XCB_ATOM_CUT_BUFFER0
+#define TYPE_MOTIF_WM_HINTS	XCB_ATOM_CUT_BUFFER1
 
 static void
 weston_wm_window_read_properties(struct weston_wm_window *window)
@@ -270,6 +309,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		{ wm->atom.wm_protocols, TYPE_WM_PROTOCOLS, F(protocols) },
 		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM, F(type) },
 		{ wm->atom.net_wm_name, XCB_ATOM_STRING, F(name) },
+		{ wm->atom.motif_wm_hints, TYPE_MOTIF_WM_HINTS, 0 },
 	};
 #undef F
 
@@ -279,6 +319,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 	uint32_t *xid;
 	xcb_atom_t *atom;
 	uint32_t i;
+	struct motif_wm_hints *hints;
 
 	if (!window->properties_dirty)
 		return;
@@ -293,6 +334,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 					     props[i].atom,
 					     XCB_ATOM_ANY, 0, 2048);
 
+	window->decorate = 1;
 	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
 		reply = xcb_get_property_reply(wm->conn, cookie[i], NULL);
 		if (!reply)
@@ -324,6 +366,11 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 			*(xcb_atom_t *) p = *atom;
 			break;
 		case TYPE_WM_PROTOCOLS:
+			break;
+		case TYPE_MOTIF_WM_HINTS:
+			hints = xcb_get_property_value(reply);
+			if (hints->flags & MWM_HINTS_DECORATIONS)
+				window->decorate = hints->decorations > 0;
 			break;
 		default:
 			break;
@@ -626,13 +673,43 @@ weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *ev
 }
 
 static void
+weston_wm_window_get_frame_size(struct weston_wm_window *window,
+				int *width, int *height)
+{
+	struct theme *t = window->wm->theme;
+
+	if (window->decorate) {
+		*width = window->width + (t->margin + t->width) * 2;
+		*height = window->height +
+			t->margin * 2 + t->width + t->titlebar_height;
+	} else {
+		*width = window->width + t->margin * 2;
+		*height = window->height + t->margin * 2;
+	}
+}
+
+static void
+weston_wm_window_get_child_position(struct weston_wm_window *window,
+				    int *x, int *y)
+{
+	struct theme *t = window->wm->theme;
+
+	if (window->decorate) {
+		*x = t->margin + t->width;
+		*y = t->margin + t->titlebar_height;
+	} else {
+		*x = t->margin;
+		*y = t->margin;
+	}
+}
+static void
 weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_configure_notify_event_t *configure_notify = 
 		(xcb_configure_notify_event_t *) event;
 	struct weston_wm_window *window;
-	struct theme *t = wm->theme;
 	uint32_t values[2];
+	int width, height;
 
 	fprintf(stderr, "XCB_CONFIGURE_NOTIFY (window %d) %d,%d @ %dx%d\n",
 		configure_notify->window,
@@ -647,9 +724,9 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	window->width = configure_notify->width;
 	window->height = configure_notify->height;
 
-	values[0] = window->width + (t->margin + t->width) * 2;
-	values[1] =
-		window->height + t->margin * 2 + t->width + t->titlebar_height;
+	weston_wm_window_get_frame_size(window, &width, &height);
+	values[0] = width;
+	values[1] = height;
 
 	xcb_configure_window(wm->conn,
 			     window->frame_id,
@@ -725,8 +802,8 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_map_request_event_t *map_request =
 		(xcb_map_request_event_t *) event;
 	struct weston_wm_window *window;
-	struct theme *t = wm->theme;
 	uint32_t values[1];
+	int x, y, width, height;
 
 	if (our_resource(wm, map_request->window)) {
 		fprintf(stderr, "XCB_MAP_REQUEST (window %d, ours)\n",
@@ -735,6 +812,11 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	}
 
 	window = hash_table_lookup(wm->window_hash, map_request->window);
+
+	weston_wm_window_read_properties(window);
+
+	weston_wm_window_get_frame_size(window, &width, &height);
+	weston_wm_window_get_child_position(window, &x, &y);
 
 	values[0] =
 		XCB_EVENT_MASK_KEY_PRESS |
@@ -750,15 +832,12 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 			  window->frame_id,
 			  wm->screen->root,
 			  0, 0,
-			  window->width + (t->margin + t->width) * 2,
-			  window->height + t->margin * 2 + t->width + t->titlebar_height,
+			  width, height,
 			  0,
 			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			  wm->screen->root_visual,
 			  XCB_CW_EVENT_MASK, values);
-	xcb_reparent_window(wm->conn, window->id, window->frame_id,
-			    t->margin + t->width,
-			    t->margin + t->titlebar_height);
+	xcb_reparent_window(wm->conn, window->id, window->frame_id, x, y);
 
 	fprintf(stderr, "XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
 		window->id, window, window->frame_id);
@@ -830,16 +909,16 @@ weston_wm_window_draw_decoration(void *data)
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	xcb_render_pictforminfo_t *render_format;
-	int width, height;
+	int x, y, width, height;
 	const char *title;
 	uint32_t flags = 0;
 
 	weston_wm_window_read_properties(window);
 
 	window->repaint_source = NULL;
-	width = window->width + (t->margin + t->width) * 2;
-	height = window->height +
-		t->margin * 2 + t->titlebar_height + t->width;
+
+	weston_wm_window_get_frame_size(window, &width, &height);
+	weston_wm_window_get_child_position(window, &x, &y);
 
 	render_format = find_depth(wm->conn, 24);
 	surface = cairo_xcb_surface_create_with_xrender_format(wm->conn,
@@ -850,15 +929,25 @@ weston_wm_window_draw_decoration(void *data)
 							       height);
 	cr = cairo_create(surface);
 
-	if (wm->focus_window == window)
-		flags |= THEME_FRAME_ACTIVE;
+	if (window->decorate) {
+		if (wm->focus_window == window)
+			flags |= THEME_FRAME_ACTIVE;
 
-	if (window->name)
-		title = window->name;
-	else
-		title = "untitled";
+		if (window->name)
+			title = window->name;
+		else
+			title = "untitled";
 
-	theme_render_frame(t, cr, width, height, title, flags);
+		theme_render_frame(t, cr, width, height, title, flags);
+	} else {
+		cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+		cairo_set_source_rgba(cr, 0, 0, 0, 0);
+		cairo_paint(cr);
+
+		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+		cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
+		tile_mask(cr, t->shadow, 2, 2, width + 8, height + 8, 64, 64);
+	}
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
@@ -868,21 +957,18 @@ weston_wm_window_draw_decoration(void *data)
 		 * make sure we don't sample from the undefined alpha
 		 * channel when filtering. */
 		window->surface->opaque_rect[0] =
-			(double) (t->margin + t->width - 1) / width;
+			(double) (x - 1) / width;
 		window->surface->opaque_rect[1] =
-			(double) (t->margin + t->width + 
-				  window->width + 1) / width;
+			(double) (x + window->width + 1) / width;
 		window->surface->opaque_rect[2] =
-			(double) (t->margin + t->titlebar_height - 1) / height;
+			(double) (y - 1) / height;
 		window->surface->opaque_rect[3] =
-			(double) (t->margin + t->titlebar_height +
-				  window->height + 1) / height;
+			(double) (y + window->height + 1) / height;
 
 		pixman_region32_init_rect(&window->surface->input,
 					  t->margin, t->margin,
-					  t->width * 2 + window->width,
-					  t->titlebar_height +
-					  t->width + window->height);
+					  width - 2 * t->margin,
+					  height - 2 * t->margin);
 	}
 }
 
@@ -1431,6 +1517,7 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		{ "_NET_SUPPORTING_WM_CHECK",
 					F(atom.net_supporting_wm_check) },
 		{ "_NET_SUPPORTED",     F(atom.net_supported) },
+		{ "_MOTIF_WM_HINTS",	F(atom.motif_wm_hints) },
 		{ "CLIPBOARD",		F(atom.clipboard) },
 		{ "TARGETS",		F(atom.targets) },
 		{ "UTF8_STRING",	F(atom.utf8_string) },
