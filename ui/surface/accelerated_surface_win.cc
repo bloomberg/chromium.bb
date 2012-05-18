@@ -161,13 +161,13 @@ void PresentThread::InitDevice() {
   if (device_)
     return;
 
-  TRACE_EVENT0("surface", "PresentThread::Init");
+  TRACE_EVENT0("gpu", "PresentThread::Init");
   d3d_module_.Reset(base::LoadNativeLibrary(FilePath(kD3D9ModuleName), NULL));
   ResetDevice();
 }
 
 void PresentThread::ResetDevice() {
-  TRACE_EVENT0("surface", "PresentThread::ResetDevice");
+  TRACE_EVENT0("gpu", "PresentThread::ResetDevice");
 
   // This will crash some Intel drivers but we can't render anything without
   // reseting the device, which would be disappointing.
@@ -312,7 +312,7 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
 }
 
 bool AcceleratedPresenter::Present() {
-  TRACE_EVENT0("surface", "Present");
+  TRACE_EVENT0("gpu", "Present");
 
   bool result;
 
@@ -335,7 +335,7 @@ void AcceleratedPresenter::DoPresent(bool* result)
 
 bool AcceleratedPresenter::DoRealPresent()
 {
-  TRACE_EVENT0("surface", "DoRealPresent");
+  TRACE_EVENT0("gpu", "DoRealPresent");
   HRESULT hr;
 
   base::AutoLock locked(lock_);
@@ -355,7 +355,7 @@ bool AcceleratedPresenter::DoRealPresent()
   };
 
   {
-    TRACE_EVENT0("surface", "PresentEx");
+    TRACE_EVENT0("gpu", "PresentEx");
     hr = swap_chain_->Present(&rect,
                               &rect,
                               window_,
@@ -509,7 +509,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     int64 surface_handle,
     const base::Callback<void(bool)>& completion_task) {
   TRACE_EVENT1(
-      "surface", "DoPresentAndAcknowledge", "surface_handle", surface_handle);
+      "gpu", "DoPresentAndAcknowledge", "surface_handle", surface_handle);
 
   HRESULT hr;
 
@@ -542,7 +542,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   // Ensure the swap chain exists and is the same size (rounded up) as the
   // surface to be presented.
   if (!swap_chain_ || size_ != quantized_size) {
-    TRACE_EVENT0("surface", "CreateAdditionalSwapChain");
+    TRACE_EVENT0("gpu", "CreateAdditionalSwapChain");
     size_ = quantized_size;
 
     D3DPRESENT_PARAMETERS parameters = { 0 };
@@ -565,7 +565,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   }
 
   if (!source_texture_.get()) {
-    TRACE_EVENT0("surface", "CreateTexture");
+    TRACE_EVENT0("gpu", "CreateTexture");
     HANDLE handle = reinterpret_cast<HANDLE>(surface_handle);
     hr = present_thread_->device()->CreateTexture(size.width(),
                                                   size.height(),
@@ -597,7 +597,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   };
 
   {
-    TRACE_EVENT0("surface", "StretchRect");
+    TRACE_EVENT0("gpu", "StretchRect");
     hr = present_thread_->device()->StretchRect(source_surface,
                                                 &rect,
                                                 dest_surface,
@@ -627,7 +627,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   // Wait for the StretchRect to complete before notifying the GPU process
   // that it is safe to write to its backing store again.
   {
-    TRACE_EVENT0("surface", "spin");
+    TRACE_EVENT0("gpu", "spin");
     do {
       hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
 
@@ -641,7 +641,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     base::PlatformThread::Sleep(swap_delay);
 
   {
-    TRACE_EVENT0("surface", "Present");
+    TRACE_EVENT0("gpu", "Present");
     hr = swap_chain_->Present(&rect, &rect, window_, NULL, 0);
     if (FAILED(hr) &&
         FAILED(present_thread_->device()->CheckDeviceState(window_))) {

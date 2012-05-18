@@ -358,6 +358,8 @@ GpuProcessHost::~GpuProcessHost() {
 bool GpuProcessHost::Init() {
   init_start_time_ = base::TimeTicks::Now();
 
+  TRACE_EVENT_INSTANT0("gpu", "LaunchGpuProcess");
+
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())
     return false;
@@ -433,6 +435,8 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
+  TRACE_EVENT0("gpu", "GpuProcessHostUIShim::OnChannelConnected");
+
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());
     queued_messages_.pop();
@@ -469,6 +473,8 @@ void GpuProcessHost::CreateViewCommandBuffer(
     int client_id,
     const GPUCreateCommandBufferConfig& init_params,
     const CreateCommandBufferCallback& callback) {
+  TRACE_EVENT0("gpu", "GpuProcessHostUIShim::CreateViewCommandBuffer");
+
   DCHECK(CalledOnValidThread());
 
 #if defined(TOOLKIT_GTK)
@@ -498,6 +504,8 @@ void GpuProcessHost::CreateViewCommandBuffer(
 
 void GpuProcessHost::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle) {
+  TRACE_EVENT0("gpu", "GpuProcessHostUIShim::OnChannelEstablished");
+
   EstablishChannelCallback callback = channel_requests_.front();
   channel_requests_.pop();
 
@@ -522,6 +530,8 @@ void GpuProcessHost::OnChannelEstablished(
 }
 
 void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
+  TRACE_EVENT0("gpu", "GpuProcessHostUIShim::OnCommandBufferCreated");
+
   if (!create_command_buffer_requests_.empty()) {
     CreateCommandBufferCallback callback =
         create_command_buffer_requests_.front();
@@ -534,6 +544,8 @@ void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
 }
 
 void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
+  TRACE_EVENT0("gpu", "GpuProcessHostUIShim::OnDestroyCommandBuffer");
+
 #if defined(TOOLKIT_GTK)
   SurfaceRefMap::iterator it = surface_refs_.find(surface_id);
   if (it != surface_refs_.end())
@@ -544,8 +556,7 @@ void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
 #if defined(OS_MACOSX)
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
-  TRACE_EVENT0("renderer",
-      "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
+  TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
 
   gfx::PluginWindowHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);
@@ -590,8 +601,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
-  TRACE_EVENT0("renderer",
-      "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
+  TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
 
   base::ScopedClosureRunner scoped_completion_runner(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
@@ -620,15 +630,13 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
 void GpuProcessHost::OnAcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params) {
-  TRACE_EVENT0("renderer",
-      "GpuProcessHost::OnAcceleratedSurfacePostSubBuffer");
+  TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfacePostSubBuffer");
 
   NOTIMPLEMENTED();
 }
 
 void GpuProcessHost::OnAcceleratedSurfaceSuspend(int32 surface_id) {
-  TRACE_EVENT0("renderer",
-      "GpuProcessHost::OnAcceleratedSurfaceSuspend");
+  TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfaceSuspend");
 
   gfx::PluginWindowHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(surface_id);
@@ -645,8 +653,7 @@ void GpuProcessHost::OnAcceleratedSurfaceSuspend(int32 surface_id) {
 
 void GpuProcessHost::OnAcceleratedSurfaceRelease(
     const GpuHostMsg_AcceleratedSurfaceRelease_Params& params) {
-  TRACE_EVENT0("renderer",
-      "GpuProcessHost::OnAcceleratedSurfaceRelease");
+  TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfaceRelease");
 
   gfx::PluginWindowHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);

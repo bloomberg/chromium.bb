@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -174,6 +175,8 @@ namespace gpu_info_collector {
 
 bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+
+  TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kGpuNoContextLost)) {

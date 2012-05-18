@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
@@ -156,6 +157,8 @@ namespace gpu_info_collector {
 
 bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+
+  TRACE_EVENT0("gpu", "gpu_info_collector::CollectGraphicsInfo");
 
   gpu_info->can_lose_context =
       (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);

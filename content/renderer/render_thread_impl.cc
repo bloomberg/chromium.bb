@@ -766,6 +766,11 @@ scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
 
 int32 RenderThreadImpl::CreateViewCommandBuffer(
       int32 surface_id, const GPUCreateCommandBufferConfig& init_params) {
+  TRACE_EVENT1("gpu",
+               "RenderThreadImpl::CreateViewCommandBuffer",
+               "surface_id",
+               surface_id);
+
   int32 route_id = MSG_ROUTING_NONE;
   IPC::Message* message = new GpuHostMsg_CreateViewCommandBuffer(
       surface_id,
@@ -884,6 +889,8 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
 
 GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
     content::CauseForGpuLaunch cause_for_gpu_launch) {
+  TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
+
   if (gpu_channel_.get()) {
     // Do nothing if we already have a GPU channel or are already
     // establishing one.

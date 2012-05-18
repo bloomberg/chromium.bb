@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_local.h"
@@ -26,6 +27,8 @@ bool GLSurface::InitializeOneOff() {
   static bool initialized = false;
   if (initialized)
     return true;
+
+  TRACE_EVENT0("gpu", "GLSurface::InitializeOneOff");
 
   std::vector<GLImplementation> allowed_impls;
   GetAllowedGLImplementations(&allowed_impls);

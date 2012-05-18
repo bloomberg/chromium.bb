@@ -9,6 +9,7 @@
 #include <setupapi.h>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -50,6 +51,8 @@ float ReadXMLFloatValue(XmlReader* reader) {
 }
 
 content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
+  TRACE_EVENT0("gpu", "RetrieveGpuPerformanceStats");
+
   // If the user re-runs the assessment without restarting, the COM API
   // returns WINSAT_ASSESSMENT_STATE_NOT_AVAILABLE. Because of that and
   // http://crbug.com/124325, read the assessment result files directly.
@@ -151,6 +154,8 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
 namespace gpu_info_collector {
 
 bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectGraphicsInfo");
+
   DCHECK(gpu_info);
 
   content::GpuPerformanceStats stats = RetrieveGpuPerformanceStats();
@@ -204,6 +209,8 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
 }
 
 bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectPreliminaryGraphicsInfo");
+
   DCHECK(gpu_info);
 
   bool rt = true;
@@ -216,6 +223,8 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
 }
 
 bool CollectGraphicsInfoD3D(IDirect3D9* d3d, content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectGraphicsInfoD3D");
+
   DCHECK(d3d);
   DCHECK(gpu_info);
 
@@ -246,6 +255,8 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, content::GPUInfo* gpu_info) {
 }
 
 bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectVideoCardInfo");
+
   DCHECK(gpu_info);
 
   // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
@@ -280,6 +291,8 @@ bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
 
 bool CollectDriverInfoD3D(const std::wstring& device_id,
                           content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
+
   // create device info for the display device
   HDEVINFO device_info = SetupDiGetClassDevsW(
       NULL, device_id.c_str(), NULL,
@@ -353,6 +366,8 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
 }
 
 bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
+  TRACE_EVENT0("gpu", "CollectDriverInfoGL");
+
   DCHECK(gpu_info);
 
   std::string gl_version_string = gpu_info->gl_version_string;

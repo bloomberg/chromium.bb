@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread_restrictions.h"
@@ -112,6 +113,11 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
+  TRACE_EVENT1("gpu",
+               "GpuChannelHost::CreateViewCommandBuffer",
+               "surface_id",
+               surface_id);
+
 #if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
@@ -146,6 +152,8 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
     const std::vector<int32>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {
+  TRACE_EVENT0("gpu", "GpuChannelHost::CreateOffscreenCommandBuffer");
+
 #if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   // An error occurred. Need to get the host again to reinitialize it.
@@ -192,6 +200,8 @@ GpuVideoDecodeAcceleratorHost* GpuChannelHost::CreateVideoDecoder(
 
 void GpuChannelHost::DestroyCommandBuffer(
     CommandBufferProxy* command_buffer) {
+  TRACE_EVENT0("gpu", "GpuChannelHost::DestroyCommandBuffer");
+
 #if defined(ENABLE_GPU)
   AutoLock lock(context_lock_);
   int route_id = command_buffer->GetRouteID();

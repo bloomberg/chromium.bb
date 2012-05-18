@@ -8,6 +8,7 @@
 #include <windows.h>
 #endif
 
+#include "base/debug/trace_event.h"
 #include "base/environment.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
@@ -42,6 +43,8 @@
 
 // Main function for starting the Gpu process.
 int GpuMain(const content::MainFunctionParams& parameters) {
+  TRACE_EVENT0("gpu", "GpuMain");
+
   base::Time start_time = base::Time::Now();
 
   const CommandLine& command_line = parameters.command_line;
@@ -118,36 +121,57 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     dead_on_arrival = true;
   }
 
-  // Warm up the random subsystem, which needs to be done pre-sandbox on all
-  // platforms.
-  (void) base::RandUint64();
-
-  // Warm up the crypto subsystem, which needs to done pre-sandbox on all
-  // platforms.
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  unsigned char key = '\0';
-  bool ret = hmac.Init(&key, sizeof(key));
-  (void) ret;
+  {
+    TRACE_EVENT0("gpu", "Warm up rand");
+    // Warm up the random subsystem, which needs to be done pre-sandbox on all
+    // platforms.
+    (void) base::RandUint64();
+  }
+  {
+    TRACE_EVENT0("gpu", "Warm up HMAC");
+    // Warm up the crypto subsystem, which needs to done pre-sandbox on all
+    // platforms.
+    crypto::HMAC hmac(crypto::HMAC::SHA256);
+    unsigned char key = '\0';
+    bool ret = hmac.Init(&key, sizeof(key));
+    (void) ret;
+  }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  content::InitializeSandbox();
+  {
+    TRACE_EVENT0("gpu", "Initialize sandbox");
+    content::InitializeSandbox();
+  }
 #endif
 
-  base::win::ScopedCOMInitializer com_initializer;
+  {
+    TRACE_EVENT0("gpu", "Initialize COM");
+    base::win::ScopedCOMInitializer com_initializer;
+  }
 
 #if defined(OS_WIN)
-  // Preload this DLL because the sandbox prevents it from loading.
-  LoadLibrary(L"setupapi.dll");
+  {
+    TRACE_EVENT0("gpu", "Preload setupapi.dll");
+    // Preload this DLL because the sandbox prevents it from loading.
+    LoadLibrary(L"setupapi.dll");
+  }
 
-  sandbox::TargetServices* target_services =
-      parameters.sandbox_info->target_services;
-  // Initialize H/W video decoding stuff which fails in the sandbox.
-  DXVAVideoDecodeAccelerator::PreSandboxInitialization();
-  // For windows, if the target_services interface is not zero, the process
-  // is sandboxed and we must call LowerToken() before rendering untrusted
-  // content.
-  if (target_services)
-    target_services->LowerToken();
+  {
+    TRACE_EVENT0("gpu", "Initialize DXVA");
+    // Initialize H/W video decoding stuff which fails in the sandbox.
+    DXVAVideoDecodeAccelerator::PreSandboxInitialization();
+  }
+
+  {
+    TRACE_EVENT0("gpu", "Lower token");
+    // For windows, if the target_services interface is not zero, the process
+    // is sandboxed and we must call LowerToken() before rendering untrusted
+    // content.
+    sandbox::TargetServices* target_services =
+        parameters.sandbox_info->target_services;
+    if (target_services)
+      target_services->LowerToken();
+  }
 #endif
 
   MessageLoop::Type message_loop_type = MessageLoop::TYPE_UI;
@@ -176,7 +200,10 @@ int GpuMain(const content::MainFunctionParams& parameters) {
 
   gpu_process.set_main_thread(child_thread);
 
-  main_message_loop.Run();
+  {
+    TRACE_EVENT0("gpu", "Run Message Loop");
+    main_message_loop.Run();
+  }
 
   child_thread->StopWatchdog();
 
