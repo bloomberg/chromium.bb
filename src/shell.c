@@ -138,6 +138,7 @@ struct shell_surface {
 
 	struct {
 		int32_t x, y;
+		uint32_t flags;
 	} transient;
 
 	struct {
@@ -823,18 +824,27 @@ shell_surface_set_toplevel(struct wl_client *client,
 }
 
 static void
+set_transient(struct shell_surface *shsurf,
+	      struct shell_surface *pshsurf, int x, int y, uint32_t flags)
+{
+	/* assign to parents output */
+	shsurf->parent = pshsurf;
+	shsurf->transient.x = x;
+	shsurf->transient.y = y;
+	shsurf->transient.flags = flags;
+	shsurf->next_type = SHELL_SURFACE_TRANSIENT;
+}
+
+static void
 shell_surface_set_transient(struct wl_client *client,
 			    struct wl_resource *resource,
 			    struct wl_resource *parent_resource,
 			    int x, int y, uint32_t flags)
 {
 	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *pshsurf = parent_resource->data;
 
-	/* assign to parents output */
-	shsurf->parent = parent_resource->data;
-	shsurf->transient.x = x;
-	shsurf->transient.y = y;
-	shsurf->next_type = SHELL_SURFACE_TRANSIENT;
+	set_transient(shsurf, pshsurf, x, y, flags);
 }
 
 static struct desktop_shell *
@@ -2608,6 +2618,7 @@ shell_init(struct weston_compositor *ec)
 	ec->ping_handler = ping_handler;
 	ec->shell_interface.create_shell_surface = create_shell_surface;
 	ec->shell_interface.set_toplevel = set_toplevel;
+	ec->shell_interface.set_transient = set_transient;
 	ec->shell_interface.move = surface_move;
 
 	wl_list_init(&shell->backgrounds);
