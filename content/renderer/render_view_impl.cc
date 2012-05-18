@@ -1961,7 +1961,8 @@ void RenderViewImpl::setKeyboardFocusURL(const WebURL& url) {
   UpdateTargetURL(focus_url_, mouse_over_url_);
 }
 
-void RenderViewImpl::startDragging(const WebDragData& data,
+void RenderViewImpl::startDragging(WebFrame* frame,
+                                   const WebDragData& data,
                                    WebDragOperationsMask mask,
                                    const WebImage& image,
                                    const WebPoint& imageOffset) {

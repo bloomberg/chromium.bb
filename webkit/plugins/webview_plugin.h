@@ -112,7 +112,8 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   virtual void setToolTipText(const WebKit::WebString&,
                               WebKit::WebTextDirection);
 
-  virtual void startDragging(const WebKit::WebDragData& drag_data,
+  virtual void startDragging(WebKit::WebFrame* frame,
+                             const WebKit::WebDragData& drag_data,
                              WebKit::WebDragOperationsMask mask,
                              const WebKit::WebImage& image,
                              const WebKit::WebPoint& point);

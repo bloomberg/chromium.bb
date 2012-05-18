@@ -503,6 +503,7 @@ void TestWebViewDelegate::setStatusText(const WebString& text) {
 }
 
 void TestWebViewDelegate::startDragging(
+    WebFrame* frame,
     const WebDragData& data,
     WebDragOperationsMask mask,
     const WebImage& image,

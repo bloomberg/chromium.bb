@@ -194,7 +194,8 @@ void WebViewPlugin::setToolTipText(const WebKit::WebString& text,
     container_->element().setAttribute("title", text);
 }
 
-void WebViewPlugin::startDragging(const WebDragData&,
+void WebViewPlugin::startDragging(WebFrame*,
+                                  const WebDragData&,
                                   WebDragOperationsMask,
                                   const WebImage&,
                                   const WebPoint&) {

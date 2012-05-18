@@ -413,7 +413,8 @@ class RenderViewImpl : public RenderWidget,
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void setMouseOverURL(const WebKit::WebURL& url);
   virtual void setKeyboardFocusURL(const WebKit::WebURL& url);
-  virtual void startDragging(const WebKit::WebDragData& data,
+  virtual void startDragging(WebKit::WebFrame* frame,
+                             const WebKit::WebDragData& data,
                              WebKit::WebDragOperationsMask mask,
                              const WebKit::WebImage& image,
                              const WebKit::WebPoint& imageOffset);
