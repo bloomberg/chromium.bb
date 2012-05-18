@@ -715,13 +715,13 @@ input.rename {
   -webkit-transition-delay: 300ms;
 }
 
-.preview-thumbnails:hover > .popup {
+.preview-thumbnails.has-zoom:hover > .popup {
   -webkit-transform: translate(0, 0) scale(1.0);
   opacity: 1;
   pointer-events: auto;
 }
 
-.preview-thumbnails:hover > .thumbnail {
+.preview-thumbnails.has-zoom:hover > .thumbnail {
   opacity: 0;
 }
 

@@ -55,6 +55,14 @@ function FileManager(dialogDom) {
   this.dialogDom_.style.opacity = '1';
 }
 
+/**
+ * Maximum delay in milliseconds for updating thumbnails in the bottom panel
+ * to mitigate flickering. If images load faster then the delay they replace
+ * old images smoothly. On the other hand we don't want to keep old images
+ * too long.
+ */
+FileManager.THUMBNAIL_SHOW_DELAY = 100;
+
 FileManager.prototype = {
   __proto__: cr.EventTarget.prototype
 };
@@ -222,6 +230,13 @@ FileManager.prototype = {
 
   function removeChildren(element) {
     element.textContent = '';
+  }
+
+  function setClassIf(element, className, condition) {
+    if (condition)
+      element.classList.add(className);
+    else
+      element.classList.remove(className);
   }
 
   // Public statics.
@@ -2095,15 +2110,21 @@ FileManager.prototype = {
     }
 
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
-    var thumbnails = this.document_.createDocumentFragment();
+    var thumbnails = [];
 
     var pendingFiles = [];
     var thumbnailCount = 0;
     var thumbnailLoaded = -1;
     var forcedShowTimeout = null;
+    var thumbnailsHaveZoom = false;
     var self = this;
 
     function showThumbnails() {
+      // have-zoom class may be updated twice: then timeout exceeds and then
+      // then all images loaded.
+      if (self.selection == selection)
+        setClassIf(self.previewThumbnails_, 'has-zoom', thumbnailsHaveZoom);
+
       if (forcedShowTimeout === null)
         return;
       clearTimeout(forcedShowTimeout);
@@ -2112,7 +2133,8 @@ FileManager.prototype = {
       // Selection could change while images are loading.
       if (self.selection == selection) {
         removeChildren(self.previewThumbnails_);
-        self.previewThumbnails_.appendChild(thumbnails);
+        for (var i = 0; i < thumbnails.length; i++)
+          self.previewThumbnails_.appendChild(thumbnails[i]);
       }
     }
 
@@ -2133,21 +2155,30 @@ FileManager.prototype = {
       if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT) {
         var box = this.document_.createElement('div');
         box.className = 'thumbnail';
-        function imageLoadCalback(index, box, img, transform) {
-          if (index == 0)
-            thumbnails.insertBefore(self.renderThumbnailZoom_(img, transform),
-                                    thumbnails.firstChild);
-          onThumbnailLoaded();
+        if (thumbnailCount == 0) {
+          var zoomed = this.document_.createElement('div');
+          zoomed.hidden = true;
+          thumbnails.push(zoomed);
+          function onFirstThumbnailLoaded(img, transform) {
+            if (self.decorateThumbnailZoom_(zoomed, img, transform)) {
+              zoomed.hidden = false;
+              thumbnailsHaveZoom = true;
+            }
+            onThumbnailLoaded();
+          }
+          var thumbnail = this.renderThumbnailBox_(entry, true,
+                                                   onFirstThumbnailLoaded);
+        } else {
+          var thumbnail = this.renderThumbnailBox_(entry, true,
+                                                   onThumbnailLoaded);
         }
-        var thumbnail = this.renderThumbnailBox_(entry, true,
-            imageLoadCalback.bind(null, thumbnailCount, box));
         thumbnailCount++;
         box.appendChild(thumbnail);
         box.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
         box.addEventListener('click',
             this.dispatchDefaultTask_.bind(this, selection));
 
-        thumbnails.appendChild(box);
+        thumbnails.push(box);
       }
 
       if (selection.iconType == null) {
@@ -2170,7 +2201,8 @@ FileManager.prototype = {
     // Now this.selection is complete. Update buttons.
     this.updateCommonActionButtons_();
     this.updatePreviewPanelVisibility_();
-    forcedShowTimeout = setTimeout(showThumbnails, 100);
+    forcedShowTimeout = setTimeout(showThumbnails,
+        FileManager.THUMBNAIL_SHOW_DELAY);
     onThumbnailLoaded();
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
@@ -2225,17 +2257,18 @@ FileManager.prototype = {
    * Creates enlarged image for a bottom pannel thumbnail.
    * Image's assumed to be just loaded and not inserted into the DOM.
    *
+   * @param {HTMLElement} largeImageBox DIV element to decorate.
    * @param {HTMLElement} img Loaded image.
    * @param {Object} transform Image transformation description.
-   * @return {Element} Created element.
+   * @return {boolean} True if zoomed image is present.
    */
-  FileManager.prototype.renderThumbnailZoom_ = function(img, transform) {
+  FileManager.prototype.decorateThumbnailZoom_ = function(largeImageBox,
+                                                          img, transform) {
     var width = img.width;
     var height = img.height;
     var THUMBNAIL_SIZE = 45;
-
     if (width < THUMBNAIL_SIZE * 2 && height < THUMBNAIL_SIZE * 2)
-      return;
+      return false;
 
     var scale = Math.min(1,
         IMAGE_HOVER_PREVIEW_SIZE / Math.max(width, height));
@@ -2262,7 +2295,6 @@ FileManager.prototype = {
     } else {
       largeImage.src = img.src;
     }
-    var largeImageBox = this.document_.createElement('div');
     largeImageBox.className = 'popup';
 
     var boxWidth = Math.max(THUMBNAIL_SIZE, imageWidth);
@@ -2290,7 +2322,7 @@ FileManager.prototype = {
 
     largeImageBox.appendChild(largeImage);
     largeImageBox.style.zIndex = 1000;
-    return largeImageBox;
+    return true;
   };
 
   FileManager.prototype.updatePreviewPanelVisibility_ = function() {
