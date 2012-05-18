@@ -71,9 +71,9 @@ class APP_LIST_EXPORT AppListModelView : public views::View,
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from ListModelObserver:
-  virtual void ListItemsAdded(int start, int count) OVERRIDE;
-  virtual void ListItemsRemoved(int start, int count) OVERRIDE;
-  virtual void ListItemsChanged(int start, int count) OVERRIDE;
+  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;
+  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE;
+  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE;
 
   // Overridden from PaginationModelObserver:
   virtual void TotalPagesChanged() OVERRIDE;

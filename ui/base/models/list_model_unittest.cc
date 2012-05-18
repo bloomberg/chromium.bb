@@ -31,9 +31,9 @@ class ListModelTest : public testing::Test,
         changed_count_(0) {
   }
 
-  void ExpectCountsEqual(int added_count,
-                         int removed_count,
-                         int changed_count) {
+  void ExpectCountsEqual(size_t added_count,
+                         size_t removed_count,
+                         size_t changed_count) {
     EXPECT_EQ(added_count, added_count_);
     EXPECT_EQ(removed_count, removed_count_);
     EXPECT_EQ(changed_count, changed_count_);
@@ -44,20 +44,20 @@ class ListModelTest : public testing::Test,
   }
 
   // ListModelObserver implementation:
-  virtual void ListItemsAdded(int start, int count) OVERRIDE {
+  virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE {
     added_count_ += count;
   }
-  virtual void ListItemsRemoved(int start, int count) OVERRIDE {
+  virtual void ListItemsRemoved(size_t start, size_t count) OVERRIDE {
     removed_count_ += count;
   }
-  virtual void ListItemsChanged(int start, int count) OVERRIDE {
+  virtual void ListItemsChanged(size_t start, size_t count) OVERRIDE {
     changed_count_ += count;
   }
 
  private:
-  int added_count_;
-  int removed_count_;
-  int changed_count_;
+  size_t added_count_;
+  size_t removed_count_;
+  size_t changed_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ListModelTest);
 };
@@ -79,7 +79,7 @@ TEST_F(ListModelTest, Add) {
   ExpectCountsEqual(3, 0, 0);
 
   // Total 3 items in mode.
-  EXPECT_EQ(3, model.item_count());
+  EXPECT_EQ(3U, model.item_count());
 
   // First one should be FooItem(2), followed by FooItem(0) and FooItem(1)
   EXPECT_EQ(2, model.GetItemAt(0)->id());
@@ -101,7 +101,7 @@ TEST_F(ListModelTest, Remove) {
   model.DeleteAt(1);
   ExpectCountsEqual(0, 1, 0);
 
-  EXPECT_EQ(2, model.item_count());
+  EXPECT_EQ(2U, model.item_count());
   EXPECT_EQ(0, model.GetItemAt(0)->id());
   EXPECT_EQ(2, model.GetItemAt(1)->id());
 

@@ -16,15 +16,15 @@ void AppListModel::AddItem(AppListItemModel* item) {
   items_.Add(item);
 }
 
-void AppListModel::AddItemAt(int index, AppListItemModel* item) {
+void AppListModel::AddItemAt(size_t index, AppListItemModel* item) {
   items_.AddAt(index, item);
 }
 
-void AppListModel::DeleteItemAt(int index) {
+void AppListModel::DeleteItemAt(size_t index) {
   items_.DeleteAt(index);
 }
 
-AppListItemModel* AppListModel::GetItemAt(int index) {
+AppListItemModel* AppListModel::GetItemAt(size_t index) {
   return items_.GetItemAt(index);
 }
 

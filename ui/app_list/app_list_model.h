@@ -21,16 +21,16 @@ class APP_LIST_EXPORT AppListModel {
 
   // Adds an item to the model. The model takes ownership of |item|.
   void AddItem(AppListItemModel* item);
-  void AddItemAt(int index, AppListItemModel* item);
+  void AddItemAt(size_t index, AppListItemModel* item);
 
-  void DeleteItemAt(int index);
+  void DeleteItemAt(size_t index);
 
-  AppListItemModel* GetItemAt(int index);
+  AppListItemModel* GetItemAt(size_t index);
 
   void AddObserver(ui::ListModelObserver* observer);
   void RemoveObserver(ui::ListModelObserver* observer);
 
-  int item_count() const { return items_.item_count(); }
+  size_t item_count() const { return items_.item_count(); }
 
  private:
   typedef ui::ListModel<AppListItemModel> Items;

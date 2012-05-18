@@ -151,7 +151,7 @@ void AppListModelBuilder::InsertItemByTitle(app_list::AppListItemModel* item) {
 
   l10n_util::StringComparator<string16> c(collator.get());
   ModelItemSortData data(item);
-  for (int i = special_items_count_; i < model_->item_count(); ++i) {
+  for (size_t i = special_items_count_; i < model_->item_count(); ++i) {
     ModelItemSortData current(model_->GetItemAt(i));
     if (!c(current.key, data.key)) {
       model_->AddItemAt(i, item);
@@ -204,7 +204,7 @@ void AppListModelBuilder::CreateSpecialItems() {
 
 int AppListModelBuilder::FindApp(const std::string& app_id) {
   DCHECK(model_);
-  for (int i = special_items_count_; i < model_->item_count(); ++i) {
+  for (size_t i = special_items_count_; i < model_->item_count(); ++i) {
     ChromeAppListItem* item =
         static_cast<ChromeAppListItem*>(model_->GetItemAt(i));
     if (item->type() != ChromeAppListItem::TYPE_APP)

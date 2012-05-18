@@ -24,16 +24,16 @@ class ListModel {
   virtual ~ListModel() {}
 
   // Adds |item| to the model at given |index|.
-  virtual void AddAt(int index, ItemType* item) {
-    DCHECK(index >= 0 && index <= item_count());
+  virtual void AddAt(size_t index, ItemType* item) {
+    DCHECK_LE(index, item_count());
     items_->insert(items_.begin() + index, item);
     NotifyItemsAdded(index, 1);
   }
 
   // Removes an item at given |index| from the model. Note the removed item
   // is NOT deleted and it's up to the caller to delete it.
-  virtual ItemType* RemoveAt(int index) {
-    DCHECK(index >= 0 && index < item_count());
+  virtual ItemType* RemoveAt(size_t index) {
+    DCHECK_LT(index, item_count());
     ItemType* item = items_[index];
     items_->erase(items_.begin() + index);
     NotifyItemsRemoved(index, 1);
@@ -42,19 +42,19 @@ class ListModel {
 
   // Removes all items from the model. This does NOT delete the items.
   virtual void RemoveAll() {
-    int count = item_count();
+    size_t count = item_count();
     items_->clear();
     NotifyItemsRemoved(0, count);
   }
 
   // Removes an item at given |index| from the model and deletes it.
-  virtual void DeleteAt(int index) {
+  virtual void DeleteAt(size_t index) {
     delete RemoveAt(index);
   }
 
   // Removes and deletes all items from the model.
   virtual void DeleteAll() {
-    int count = item_count();
+    size_t count = item_count();
     items_.reset();
     NotifyItemsRemoved(0, count);
   }
@@ -72,31 +72,31 @@ class ListModel {
     observers_.RemoveObserver(observer);
   }
 
-  void NotifyItemsAdded(int start, int count) {
+  void NotifyItemsAdded(size_t start, size_t count) {
     FOR_EACH_OBSERVER(ListModelObserver,
                       observers_,
                       ListItemsAdded(start, count));
   }
 
-  void NotifyItemsRemoved(int start, int count) {
+  void NotifyItemsRemoved(size_t start, size_t count) {
     FOR_EACH_OBSERVER(ListModelObserver,
                       observers_,
                       ListItemsRemoved(start, count));
   }
 
-  void NotifyItemsChanged(int start, int count) {
+  void NotifyItemsChanged(size_t start, size_t count) {
     FOR_EACH_OBSERVER(ListModelObserver,
                       observers_,
                       ListItemsChanged(start, count));
   }
 
-  int item_count() const { return static_cast<int>(items_.size()); }
+  size_t item_count() const { return items_.size(); }
 
-  const ItemType* GetItemAt(int index) const {
-    DCHECK(index >= 0 && index < item_count());
+  const ItemType* GetItemAt(size_t index) const {
+    DCHECK_LT(index, item_count());
     return items_[index];
   }
-  ItemType* GetItemAt(int index) {
+  ItemType* GetItemAt(size_t index) {
     return const_cast<ItemType*>(
         const_cast<const ListModel<ItemType>*>(this)->GetItemAt(index));
   }

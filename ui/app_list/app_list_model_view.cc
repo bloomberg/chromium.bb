@@ -136,7 +136,7 @@ void AppListModelView::Update() {
   if (!model_ || model_->item_count() == 0)
     return;
 
-  for (int i = 0; i < model_->item_count(); ++i)
+  for (size_t i = 0; i < model_->item_count(); ++i)
     AddChildView(new AppListItemView(this, model_->GetItemAt(i), listener_));
 
   Layout();
@@ -296,8 +296,8 @@ void AppListModelView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Override to not paint focus frame.
 }
 
-void AppListModelView::ListItemsAdded(int start, int count) {
-  for (int i = start; i < start + count; ++i) {
+void AppListModelView::ListItemsAdded(size_t start, size_t count) {
+  for (size_t i = start; i < start + count; ++i) {
     AddChildViewAt(new AppListItemView(this, model_->GetItemAt(i), listener_),
                    i);
   }
@@ -305,15 +305,15 @@ void AppListModelView::ListItemsAdded(int start, int count) {
   SchedulePaint();
 }
 
-void AppListModelView::ListItemsRemoved(int start, int count) {
-  for (int i = 0; i < count; ++i)
+void AppListModelView::ListItemsRemoved(size_t start, size_t count) {
+  for (size_t i = 0; i < count; ++i)
     delete child_at(start);
 
   Layout();
   SchedulePaint();
 }
 
-void AppListModelView::ListItemsChanged(int start, int count) {
+void AppListModelView::ListItemsChanged(size_t start, size_t count) {
   NOTREACHED();
 }
 

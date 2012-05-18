@@ -64,7 +64,7 @@ class AppListModelBuilder : public content::NotificationObserver {
 
   // Number of special items in the model. Special items index should be ranged
   // from [0, special_items_count_ - 1].
-  int special_items_count_;
+  size_t special_items_count_;
 
   std::string highlight_app_id_;
 

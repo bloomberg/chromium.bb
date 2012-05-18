@@ -29,7 +29,7 @@ class TestAppListItemModel : public app_list::AppListItemModel {
 // Get a string of all items in |model| joined with ','.
 std::string GetModelContent(app_list::AppListModel* model) {
   std::string content;
-  for (int i = 0; i < model->item_count(); ++i) {
+  for (size_t i = 0; i < model->item_count(); ++i) {
     if (i > 0)
       content += ',';
     content += model->GetItemAt(i)->title();
