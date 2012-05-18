@@ -414,16 +414,16 @@
       {
         "name": "getStrings",
         "type": "function",
-        "description": "Gets Strings.",
+        "description": "Gets localized strings and initialization data.",
         "parameters": [
           {
             "type": "function",
-             "name": "callback",
-             "parameters": [
+            "name": "callback",
+            "parameters": [
               {
                 "name": "result",
                 "type": "object",
-                "additionalProperties": {"type": "string"}
+                "additionalProperties": { "type": "any" }
               }
             ]
           }
