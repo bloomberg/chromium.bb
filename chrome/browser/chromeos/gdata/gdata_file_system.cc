@@ -910,6 +910,7 @@ GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
     bool should_fetch_multiple_feeds,
     const FilePath& search_file_path,
     const std::string& search_query,
+    const std::string& directory_resource_id,
     const FindEntryCallback& callback)
     : start_changestamp(start_changestamp),
       root_feed_changestamp(root_feed_changestamp),
@@ -917,6 +918,7 @@ GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
       should_fetch_multiple_feeds(should_fetch_multiple_feeds),
       search_file_path(search_file_path),
       search_query(search_query),
+      directory_resource_id(directory_resource_id),
       callback(callback) {
 }
 
@@ -1204,6 +1206,7 @@ void GDataFileSystem::OnGetAccountMetadata(
                        true,  /* should_fetch_multiple_feeds */
                        search_file_path,
                        std::string() /* no search query */,
+                       std::string() /* no directory resource ID */,
                        callback,
                        base::Bind(&GDataFileSystem::OnFeedFromServerLoaded,
                                   ui_weak_ptr_));
@@ -1220,6 +1223,7 @@ void GDataFileSystem::OnGetAccountMetadata(
                        true,  /* should_fetch_multiple_feeds */
                        search_file_path,
                        std::string() /* no search query */,
+                       std::string() /* no directory resource ID */,
                        callback,
                        base::Bind(&GDataFileSystem::OnFeedFromServerLoaded,
                                   ui_weak_ptr_));
@@ -1264,6 +1268,7 @@ void GDataFileSystem::OnGetAccountMetadata(
                      true,  /* should_fetch_multiple_feeds */
                      search_file_path,
                      std::string() /* no search query */,
+                     std::string() /* no directory resource ID */,
                      callback,
                      base::Bind(&GDataFileSystem::OnFeedFromServerLoaded,
                                 ui_weak_ptr_));
@@ -1276,6 +1281,7 @@ void GDataFileSystem::LoadFeedFromServer(
     bool should_fetch_multiple_feeds,
     const FilePath& search_file_path,
     const std::string& search_query,
+    const std::string& directory_resource_id,
     const FindEntryCallback& entry_found_callback,
     const LoadDocumentFeedCallback& feed_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1291,6 +1297,7 @@ void GDataFileSystem::LoadFeedFromServer(
       GURL(),   // root feed start.
       start_changestamp,
       search_query,
+      directory_resource_id,
       base::Bind(&GDataFileSystem::OnGetDocuments,
                  ui_weak_ptr_,
                  initial_origin,
@@ -1301,6 +1308,7 @@ void GDataFileSystem::LoadFeedFromServer(
                                                     should_fetch_multiple_feeds,
                                                     search_file_path,
                                                     search_query,
+                                                    directory_resource_id,
                                                     entry_found_callback))));
 }
 
@@ -2996,6 +3004,7 @@ void GDataFileSystem::SearchAsyncOnUIThread(
                              // results (especially since we don't cache them).
                      FilePath(),  // Not used.
                      search_query,
+                     std::string(),  // No directory resource ID.
                      FindEntryCallback(),  // Not used.
                      base::Bind(&GDataFileSystem::OnSearch,
                                 ui_weak_ptr_, callback));
@@ -3065,6 +3074,7 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
         next_feed_url,
         params->start_changestamp,
         params->search_query,
+        params->directory_resource_id,
         base::Bind(&GDataFileSystem::OnGetDocuments,
                    ui_weak_ptr_,
                    initial_origin,
@@ -3077,6 +3087,7 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
                            params->should_fetch_multiple_feeds,
                            params->search_file_path,
                            params->search_query,
+                           params->directory_resource_id,
                            params->callback))));
     return;
   }

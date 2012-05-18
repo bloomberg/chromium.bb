@@ -209,6 +209,7 @@ class GetDocumentsOperation : public GetDataOperation {
                         Profile* profile,
                         int start_changestamp,
                         const std::string& search_string,
+                        const std::string& directory_resource_id,
                         const GetDataCallback& callback);
   virtual ~GetDocumentsOperation();
 
@@ -224,6 +225,7 @@ class GetDocumentsOperation : public GetDataOperation {
   GURL override_url_;
   int start_changestamp_;
   std::string search_string_;
+  std::string directory_resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GetDocumentsOperation);
 };

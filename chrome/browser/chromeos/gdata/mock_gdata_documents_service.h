@@ -31,9 +31,10 @@ class MockDocumentsService : public DocumentsServiceInterface {
   MOCK_CONST_METHOD0(operation_registry, GDataOperationRegistry*());
   MOCK_METHOD0(CancelAll, void(void));
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
-  MOCK_METHOD4(GetDocuments, void(const GURL& feed_url,
+  MOCK_METHOD5(GetDocuments, void(const GURL& feed_url,
                                   int start_changestamp,
                                   const std::string& search_string,
+                                  const std::string& directory_resource_id,
                                   const GetDataCallback& callback));
   MOCK_METHOD1(GetAccountMetadata, void(const GetDataCallback& callback));
   MOCK_METHOD2(DeleteDocument, void(const GURL& document_url,
@@ -86,6 +87,7 @@ class MockDocumentsService : public DocumentsServiceInterface {
   void GetDocumentsStub(const GURL& feed_url,
                         int start_changestamp,
                         const std::string& search_string,
+                        const std::string& directory_resource_id,
                         const GetDataCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and a StringValue with the current

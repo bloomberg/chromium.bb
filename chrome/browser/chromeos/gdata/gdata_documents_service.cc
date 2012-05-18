@@ -103,6 +103,7 @@ void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
 void DocumentsService::GetDocuments(const GURL& url,
                                     int start_changestamp,
                                     const std::string& search_query,
+                                    const std::string& directory_resource_id,
                                     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -111,6 +112,7 @@ void DocumentsService::GetDocuments(const GURL& url,
                                 profile_,
                                 start_changestamp,
                                 search_query,
+                                directory_resource_id,
                                 callback);
   if (!url.is_empty())
     operation->SetUrl(url);

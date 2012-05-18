@@ -41,9 +41,13 @@ const char kIfMatchAllHeader[] = "If-Match: *";
 const char kIfMatchHeaderFormat[] = "If-Match: %s";
 
 // URL requesting documents list that belong to the authenticated user only
-// (handled with '-/mine' part).
-const char kGetDocumentListURL[] =
+// (handled with '/mine' part).
+const char kGetDocumentListURLForAllDocuments[] =
     "https://docs.google.com/feeds/default/private/full/-/mine";
+// URL requesting documents list in a particular directory specified by "%s"
+// that belong to the authenticated user only (handled with '/mine' part).
+const char kGetDocumentListURLForDirectoryFormat[] =
+    "https://docs.google.com/feeds/default/private/full/%s/contents/mine";
 
 // URL requesting documents list of changes to documents collections.
 const char kGetChangesListURL[] =
@@ -135,6 +139,18 @@ GURL AddFeedUrlParams(const GURL& url,
         result, "q", search_string);
   }
   return result;
+}
+
+// Formats a URL for getting document list. If |directory_resource_id| is
+// empty, returns a URL for fetching all documents. If it's given, returns a
+// URL for fetching documents in a particular directory.
+GURL FormatDocumentListURL(const std::string& directory_resource_id) {
+  if (directory_resource_id.empty())
+    return GURL(kGetDocumentListURLForAllDocuments);
+
+  return GURL(base::StringPrintf(kGetDocumentListURLForDirectoryFormat,
+                                 net::EscapePath(
+                                     directory_resource_id).c_str()));
 }
 
 }  // namespace
@@ -466,14 +482,18 @@ base::Value* GetDataOperation::ParseResponse(const std::string& data) {
 
 //============================ GetDocumentsOperation ===========================
 
-GetDocumentsOperation::GetDocumentsOperation(GDataOperationRegistry* registry,
-                                             Profile* profile,
-                                             int start_changestamp,
-                                             const std::string& search_string,
-                                             const GetDataCallback& callback)
+GetDocumentsOperation::GetDocumentsOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    int start_changestamp,
+    const std::string& search_string,
+    const std::string& directory_resource_id,
+
+    const GetDataCallback& callback)
     : GetDataOperation(registry, profile, callback),
       start_changestamp_(start_changestamp),
-      search_string_(search_string) {
+      search_string_(search_string),
+      directory_resource_id_(directory_resource_id) {
 }
 
 GetDocumentsOperation::~GetDocumentsOperation() {}
@@ -490,7 +510,7 @@ GURL GetDocumentsOperation::GetURL() const {
                             std::string());
 
   if (start_changestamp_ == 0) {
-    return AddFeedUrlParams(GURL(kGetDocumentListURL),
+    return AddFeedUrlParams(FormatDocumentListURL(directory_resource_id_),
                             kMaxDocumentsPerFeed,
                             0,
                             search_string_);

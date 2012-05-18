@@ -1198,7 +1198,8 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
       &message_loop_);
 
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, _, _)).Times(1);
+  EXPECT_CALL(*mock_doc_service_,
+              GetDocuments(Eq(GURL()), _, _, _, _)).Times(1);
 
   file_system_->ReadDirectoryByPathAsync(
       FilePath(FILE_PATH_LITERAL("drive")), callback);
@@ -3205,7 +3206,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
 TEST_F(GDataFileSystemTest, ContentSearch) {
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _))
+  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
   ReadDirectoryCallback callback = base::Bind(
