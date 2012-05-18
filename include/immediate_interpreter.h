@@ -41,6 +41,10 @@ class TapRecord {
 
   // if any gesturing fingers are moving
   bool Moving(const HardwareState& hwstate, const float dist_max) const;
+  bool Motionless(const HardwareState& hwstate,
+                  const HardwareState& prev_hwstate,
+                  const float max_speed) const;
+
   bool TapBegan() const;  // if a tap has begun
   bool TapComplete() const;  // is a completed tap
   // return GESTURES_BUTTON_* value or 0, if tap was too light
@@ -371,6 +375,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   TapRecord tap_record_;
 
+  // Record time when the finger showed motion (uses different motion detection
+  // than last_movement_timestamp_)
+  stime_t tap_drag_last_motion_time_;
+
+  // True when the finger was stationary for a while during tap to drag
+  bool tap_drag_finger_was_stationary_;
+
   // Time when the last motion (scroll, movement) occurred
   stime_t last_movement_timestamp_;
 
@@ -415,10 +426,15 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty tap_drag_timeout_;
   // True if drag lock is enabled
   BoolProperty drag_lock_enable_;
+  // Time [s] the finger has to be stationary to be considered dragging
+  DoubleProperty tap_drag_stationary_time_;
   // Distance [mm] a finger can move and still register a tap
   DoubleProperty tap_move_dist_;
   // Minimum pressure a finger must have for it to click when tap to click is on
   DoubleProperty tap_min_pressure_;
+  // Maximum distance [mm] per frame that a finger can move and still be
+  // considered stationary.
+  DoubleProperty tap_max_movement_;
   // If three finger click should be enabled. This is a temporary flag so that
   // we can deploy this feature behind a file while we work out the bugs.
   BoolProperty three_finger_click_enable_;

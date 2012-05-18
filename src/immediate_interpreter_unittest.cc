@@ -2216,6 +2216,14 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 1.02, 0, 0, 2, NULL   },  -1, MkSet(),       0, 0, kIdl, false },
     {C,{ 1.03, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98), 0, 0, kIdl, false },
     {C,{ 1.04, 0, 0, 0, NULL   },  -1, MkSet(),       0, 0, kIdl, false },
+    // tap then move. no drag expected
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),     0,   0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),       0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),     0,   0, kSTB, false },
+    {C,{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),   kBL, kBL, kIdl, false },
+    {C,{ 0.05, 0, 1, 1, &fs[6] }, -1,  MkSet(95),     0,   0, kIdl, false },
+    {C,{ 0.06, 0, 0, 0, NULL   }, -1,  MkSet(),       0,   0, kIdl, false },
+    {C,{ 0.99, 0, 0, 0, NULL   }, .99, MkSet(),       0,   0, kIdl, false },
   };
   const size_t kT5R2TestFirstIndex = NonT5R2States(hwsgs, arraysize(hwsgs));
 

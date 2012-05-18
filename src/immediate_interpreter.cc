@@ -170,6 +170,27 @@ bool TapRecord::Moving(const HardwareState& hwstate,
   return false;
 }
 
+bool TapRecord::Motionless(const HardwareState& hwstate, const HardwareState&
+        prev_hwstate, const float max_speed) const {
+  const float cotap_min_pressure = CotapMinPressure();
+  for (map<short, FingerState, kMaxTapFingers>::const_iterator it =
+           touched_.begin(), e = touched_.end(); it != e; ++it) {
+    const FingerState* fs = hwstate.GetFingerState((*it).first);
+    const FingerState* prev_fs = prev_hwstate.GetFingerState((*it).first);
+    if (!fs || !prev_fs)
+      continue;
+    // Only look for moving when current frame meets cotap pressure and
+    // our history contains a contact that's met cotap pressure.
+    if (fs->pressure < cotap_min_pressure ||
+        prev_fs->pressure < cotap_min_pressure)
+      continue;
+    // Compute distance moved
+    if (DistSq(*fs, *prev_fs) > max_speed * max_speed)
+      return false;
+  }
+  return true;
+}
+
 bool TapRecord::TapBegan() const {
   if (t5r2_)
     return t5r2_touched_size_ > 0;
@@ -263,10 +284,12 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
       inter_tap_timeout_(prop_reg, "Inter-Tap Timeout", 0.15),
       tap_drag_delay_(prop_reg, "Tap Drag Delay", 0.1),
-      tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
+      tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.3),
       drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),
+      tap_drag_stationary_time_(prop_reg, "Tap Drag Stationary Time", 0.05),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
       tap_min_pressure_(prop_reg, "Tap Minimum Pressure", 25.0),
+      tap_max_movement_(prop_reg, "Tap Maximum Movement", 0.0001),
       three_finger_click_enable_(prop_reg, "Three Finger Click Enable", 0),
       t5r2_three_finger_click_enable_(prop_reg,
                                       "T5R2 Three Finger Click Enable",
@@ -1297,6 +1320,8 @@ void ImmediateInterpreter::UpdateTapState(
           *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
           SetTapToClickState(kTtcFirstTapBegan, now);
         } else {
+          tap_drag_last_motion_time_ = now;
+          tap_drag_finger_was_stationary_ = false;
           SetTapToClickState(kTtcSubsequentTapBegan, now);
         }
       } else if (is_timeout) {
@@ -1311,9 +1336,18 @@ void ImmediateInterpreter::UpdateTapState(
         break;
       }
       if (hwstate)
-        tap_record_.Update(
-            *hwstate, prev_state_, added_fingers, removed_fingers,
-            dead_fingers);
+        tap_record_.Update(*hwstate, prev_state_, added_fingers,
+                           removed_fingers, dead_fingers);
+
+      if (!tap_record_.Motionless(*hwstate, prev_state_,
+          tap_max_movement_.val_)) {
+        tap_drag_last_motion_time_ = now;
+      }
+      if (tap_record_.TapType() == GESTURES_BUTTON_LEFT &&
+          now - tap_drag_last_motion_time_ > tap_drag_stationary_time_.val_) {
+        tap_drag_finger_was_stationary_ = true;
+      }
+
       if (is_timeout || tap_record_.Moving(*hwstate, tap_move_dist_.val_)) {
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
           if (is_timeout) {
@@ -1323,7 +1357,7 @@ void ImmediateInterpreter::UpdateTapState(
           } else {
             bool drag_delay_met = (now - tap_to_click_state_entered_
                                    > tap_drag_delay_.val_);
-            if (drag_delay_met) {
+            if (drag_delay_met && tap_drag_finger_was_stationary_) {
               *buttons_down = GESTURES_BUTTON_LEFT;
               SetTapToClickState(kTtcDrag, now);
             } else {
