@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,11 @@ class NPObjectBase;
 // On the plugin side there's a corresponding PluginChannel.
 class PluginChannelHost : public NPChannelBase {
  public:
+#if defined(OS_MACOSX)
+  // TODO(shess): Debugging for http://crbug.com/97285 .  See comment
+  // in plugin_channel_host.cc.
+  static bool* GetRemoveTrackingFlag();
+#endif
   static PluginChannelHost* GetPluginChannelHost(
       const IPC::ChannelHandle& channel_handle,
       base::MessageLoopProxy* ipc_message_loop);

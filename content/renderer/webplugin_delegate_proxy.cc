@@ -12,6 +12,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -276,6 +277,13 @@ bool WebPluginDelegateProxy::Initialize(
     const std::vector<std::string>& arg_values,
     webkit::npapi::WebPlugin* plugin,
     bool load_manually) {
+#if defined(OS_MACOSX)
+  // TODO(shess): Debugging for http://crbug.com/97285 .  See comment
+  // in plugin_channel_host.cc.
+  scoped_ptr<AutoReset<bool> > track_nested_removes(new AutoReset<bool>(
+      PluginChannelHost::GetRemoveTrackingFlag(), true));
+#endif
+
   IPC::ChannelHandle channel_handle;
   if (!RenderThreadImpl::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
           render_view_->routing_id(), url, page_url_, mime_type_,
@@ -306,6 +314,9 @@ bool WebPluginDelegateProxy::Initialize(
     LOG(ERROR) << "Couldn't get PluginChannelHost";
     return false;
   }
+#if defined(OS_MACOSX)
+  track_nested_removes.reset();
+#endif
 
   int instance_id;
   bool result = channel_host->Send(new PluginMsg_CreateInstance(

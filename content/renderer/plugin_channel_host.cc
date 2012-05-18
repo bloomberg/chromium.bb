@@ -16,6 +16,35 @@
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
+// TODO(shess): Debugging for http://crbug.com/97285
+//
+// The hypothesis at #55 requires that RemoveRoute() be called between
+// sending ViewHostMsg_OpenChannelToPlugin to the browser, and calling
+// GetPluginChannelHost() on the result.  This code detects that case
+// and stores the backtrace of the RemoveRoute() in a breakpad key.
+// The specific RemoveRoute() is not tracked (there could be multiple,
+// and which is the one can't be known until the open completes), but
+// the backtrace from any such nested call should be sufficient to
+// drive a repro.
+#if defined(OS_MACOSX)
+#include "base/debug/stack_trace.h"
+#include "base/mac/crash_logging.h"
+#include "base/sys_string_conversions.h"
+
+namespace {
+
+// Breakpad key for the RemoveRoute() backtrace.
+const char* kRemoveRouteTraceKey = "remove_route_bt";
+
+// GetRemoveTrackingFlag() exposes this so that
+// WebPluginDelegateProxy::Initialize() can do scoped set/reset.  When
+// true, RemoveRoute() knows WBDP::Initialize() is on the stack, and
+// records the backtrace.
+bool remove_tracking = false;
+
+}  // namespace
+#endif
+
 // A simple MessageFilter that will ignore all messages and respond to sync
 // messages with an error when is_listening_ is false.
 class IsListeningFilter : public IPC::ChannelProxy::MessageFilter {
@@ -73,6 +102,14 @@ void PluginChannelHost::SetListening(bool flag) {
   IsListeningFilter::is_listening_ = flag;
 }
 
+#if defined(OS_MACOSX)
+// static
+bool* PluginChannelHost::GetRemoveTrackingFlag() {
+  return &remove_tracking;
+}
+#endif
+
+// static
 PluginChannelHost* PluginChannelHost::GetPluginChannelHost(
     const IPC::ChannelHandle& channel_handle,
     base::MessageLoopProxy* ipc_message_loop) {
@@ -120,6 +157,16 @@ void PluginChannelHost::AddRoute(int route_id,
 }
 
 void PluginChannelHost::RemoveRoute(int route_id) {
+#if defined(OS_MACOSX)
+  if (remove_tracking) {
+    base::debug::StackTrace trace;
+    size_t count = 0;
+    const void* const* addresses = trace.Addresses(&count);
+    base::mac::SetCrashKeyFromAddresses(
+        base::SysUTF8ToNSString(kRemoveRouteTraceKey), addresses, count);
+  }
+#endif
+
   proxies_.erase(route_id);
   NPChannelBase::RemoveRoute(route_id);
 }

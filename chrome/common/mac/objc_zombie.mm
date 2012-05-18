@@ -290,21 +290,11 @@ void ZombieObjectCrash(id object, SEL aSelector, SEL viaSelector) {
   // Set a value for breakpad to report.
   base::mac::SetCrashKeyValue(@"zombie", aString);
 
-  // Hex-encode the backtrace and tuck it into a breakpad key.
-  NSString* deallocTrace = @"<unknown>";
-  if (found && record.traceDepth) {
-    NSMutableArray* hexBacktrace =
-        [NSMutableArray arrayWithCapacity:record.traceDepth];
-    for (size_t i = 0; i < record.traceDepth; ++i) {
-      NSString* s = [NSString stringWithFormat:@"%p", record.trace[i]];
-      [hexBacktrace addObject:s];
-    }
-    deallocTrace = [hexBacktrace componentsJoinedByString:@" "];
-
-    // Warn someone if this exceeds the breakpad limits.
-    DCHECK_LE(strlen([deallocTrace UTF8String]), 255U);
+  // Encode trace into a breakpad key.
+  if (found) {
+    base::mac::SetCrashKeyFromAddresses(
+        @"zombie_dealloc_bt", record.trace, record.traceDepth);
   }
-  base::mac::SetCrashKeyValue(@"zombie_dealloc_bt", deallocTrace);
 
   // Log -dealloc backtrace in debug builds then crash with a useful
   // stack trace.
