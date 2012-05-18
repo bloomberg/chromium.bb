@@ -175,6 +175,11 @@ class Cache(object):
 
   def trim(self):
     """Trims anything we don't know, make sure enough free space exists."""
+    # Ensure that all files listed in the state still exist.
+    for f in self.state:
+      if not os.path.exists(os.path.join(self.cache_dir, f)):
+        self.state.remove(f)
+
     for f in os.listdir(self.cache_dir):
       if f == self.STATE_FILE or f in self.state:
         continue
