@@ -350,6 +350,25 @@ def DoComponentBuildTasks(staging_dir, build_dir, current_version):
   if not os.path.exists(installer_dir):
     os.mkdir(installer_dir)
 
+  # Copy the relevant CRT DLLs to |build_dir|. We copy DLLs from all versions
+  # of VS installed to make sure we have the correct CRT version, unused DLLs
+  # should not conflict with the others anyways.
+  crt_dlls = []
+  if build_dir.endswith('Debug/'):
+    crt_dlls = glob.glob(
+        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/"
+        "Debug_NonRedist/x86/Microsoft.*.DebugCRT/*.dll")
+  elif build_dir.endswith('Release/'):
+    crt_dlls = glob.glob(
+        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/x86/"
+        "Microsoft.*.CRT/*.dll")
+  else:
+    print ("Warning: CRT DLLs not copied, could not determine build "
+           "configuration from output directory.")
+
+  for dll in crt_dlls:
+    shutil.copy(dll, build_dir)
+
   # Copy all the DLLs in |build_dir| to the version directory. Simultaneously
   # build a list of their names to mark them as dependencies of chrome.exe and
   # setup.exe later.
@@ -517,6 +536,8 @@ def _ParseOptions():
   options, args = parser.parse_args()
   if not options.build_dir:
     parser.error('You must provide a build dir.')
+  elif not options.build_dir.endswith('/'):
+    options.build_dir += '/'
 
   if not options.staging_dir:
     parser.error('You must provide a staging dir.')
