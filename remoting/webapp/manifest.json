@@ -22,8 +22,7 @@
     }
   ],
   "permissions": [
-    "https://accounts.google.com/o/oauth2/*",
-    "https://www.google.com/accounts/*",
+    "https://accounts.google.com/*",
     "https://www.googleapis.com/chromoting/*",
     "https://talkgadget.google.com/talkgadget/*",
     "https://relay.google.com/*",

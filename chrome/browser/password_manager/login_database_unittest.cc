@@ -47,8 +47,8 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // Example password form.
   PasswordForm form;
-  form.origin = GURL("http://www.google.com/accounts/LoginAuth");
-  form.action = GURL("http://www.google.com/accounts/Login");
+  form.origin = GURL("http://accounts.google.com/LoginAuth");
+  form.action = GURL("http://accounts.google.com/Login");
   form.username_element = ASCIIToUTF16("Email");
   form.username_value = ASCIIToUTF16("test@gmail.com");
   form.password_element = ASCIIToUTF16("Passwd");
@@ -255,8 +255,8 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
 
   // Save a form as blacklisted.
   PasswordForm form;
-  form.origin = GURL("http://www.google.com/accounts/LoginAuth");
-  form.action = GURL("http://www.google.com/accounts/Login");
+  form.origin = GURL("http://accounts.google.com/LoginAuth");
+  form.action = GURL("http://accounts.google.com/Login");
   form.username_element = ASCIIToUTF16("Email");
   form.password_element = ASCIIToUTF16("Passwd");
   form.submit_element = ASCIIToUTF16("signIn");

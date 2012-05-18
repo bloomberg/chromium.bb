@@ -80,4 +80,23 @@ TEST(UrlUtilTest, AppendOrReplaceQueryParameter) {
           "name", "new").spec());
 }
 
+TEST(BrowserUrlUtilTest, GetValueForKeyInQuery) {
+  GURL url("http://example.com/path?name=value&boolParam&"
+           "url=http://test.com/q?n1%3Dv1%26n2");
+  std::string value;
+
+  // False when getting a non-existent query param.
+  EXPECT_FALSE(GetValueForKeyInQuery(url, "non-exist", &value));
+
+  // True when query param exist.
+  EXPECT_TRUE(GetValueForKeyInQuery(url, "name", &value));
+  EXPECT_EQ("value", value);
+
+  EXPECT_TRUE(GetValueForKeyInQuery(url, "boolParam", &value));
+  EXPECT_EQ("", value);
+
+  EXPECT_TRUE(GetValueForKeyInQuery(url, "url", &value));
+  EXPECT_EQ("http://test.com/q?n1=v1&n2", value);
+}
+
 }  // namespace chrome_common_net.

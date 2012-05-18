@@ -81,7 +81,7 @@ def GoogleAccountsLogin(test, username, password, tab_index=0, windex=0):
     tab_index: The tab index, default is 0.
     windex: The window index, default is 0.
   """
-  test.NavigateToURL('https://www.google.com/accounts/', windex, tab_index)
+  test.NavigateToURL('https://accounts.google.com/', windex, tab_index)
   email_id = 'document.getElementById("Email").value = "%s"; ' \
              'window.domAutomationController.send("done")' % username
   password = 'document.getElementById("Passwd").value = "%s"; ' \

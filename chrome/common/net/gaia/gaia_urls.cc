@@ -9,20 +9,25 @@
 
 namespace {
 
-const char kDefaultGaiaBaseUrl[] = "www.google.com";
+// Gaia service constants
+const char kDefaultGaiaBaseUrl[] = "accounts.google.com";
 
-const char kCaptchaUrlPrefixSuffix[] = "/accounts/";
-const char kClientLoginUrlSuffix[] = "/accounts/ClientLogin";
-const char kIssueAuthTokenUrlSuffix[] = "/accounts/IssueAuthToken";
-const char kGetUserInfoUrlSuffix[] = "/accounts/GetUserInfo";
-const char kTokenAuthUrlSuffix[] = "/accounts/TokenAuth";
-const char kMergeSessionUrlSuffix[] = "/accounts/MergeSession";
+const char kCaptchaUrlPrefixSuffix[] = "/";
+const char kClientLoginUrlSuffix[] = "/ClientLogin";
+const char kServiceLoginUrlSuffix[] = "/ServiceLogin";
+const char kIssueAuthTokenUrlSuffix[] = "/IssueAuthToken";
+const char kGetUserInfoUrlSuffix[] = "/GetUserInfo";
+const char kTokenAuthUrlSuffix[] = "/TokenAuth";
+const char kMergeSessionUrlSuffix[] = "/MergeSession";
 
-const char kGetOAuthTokenUrlSuffix[] = "/accounts/o8/GetOAuthToken";
-const char kOAuthGetAccessTokenUrlSuffix[] = "/accounts/OAuthGetAccessToken";
-const char kOAuthWrapBridgeUrlSuffix[] = "/accounts/OAuthWrapBridge";
-const char kOAuth1LoginUrlSuffix[] = "/accounts/OAuthLogin";
-const char kOAuthRevokeTokenUrlSuffix[] = "/accounts/AuthSubRevokeToken";
+const char kOAuthGetAccessTokenUrlSuffix[] = "/OAuthGetAccessToken";
+const char kOAuthWrapBridgeUrlSuffix[] = "/OAuthWrapBridge";
+const char kOAuth1LoginUrlSuffix[] = "/OAuthLogin";
+const char kOAuthRevokeTokenUrlSuffix[] = "/AuthSubRevokeToken";
+
+// Federated login constants
+const char kDefaultFederatedLoginBaseUrl[] = "https://www.google.com/accounts";
+const char kGetOAuthTokenUrlSuffix[] = "/o8/GetOAuthToken";
 
 // OAuth2 client id for Google Chrome which is registered as an
 // installed application.
@@ -40,6 +45,7 @@ const char kOAuth2TokenUrl[] =
     "https://accounts.google.com/o/oauth2/token";
 const char kOAuth2IssueTokenUrl[] =
     "https://www.googleapis.com/oauth2/v2/IssueToken";
+
 }  // namespacce
 
 GaiaUrls* GaiaUrls::GetInstance() {
@@ -58,12 +64,16 @@ GaiaUrls::GaiaUrls() {
   captcha_url_prefix_ = "http://" + host_base + kCaptchaUrlPrefixSuffix;
   gaia_origin_url_ = "https://" + host_base;
   client_login_url_ = gaia_origin_url_ + kClientLoginUrlSuffix;
+  service_login_url_ = gaia_origin_url_ + kServiceLoginUrlSuffix;
   issue_auth_token_url_ = gaia_origin_url_ + kIssueAuthTokenUrlSuffix;
   get_user_info_url_ = gaia_origin_url_ + kGetUserInfoUrlSuffix;
   token_auth_url_ = gaia_origin_url_ + kTokenAuthUrlSuffix;
   merge_session_url_ = gaia_origin_url_ + kMergeSessionUrlSuffix;
 
-  get_oauth_token_url_ = gaia_origin_url_ + kGetOAuthTokenUrlSuffix;
+  // Federated login is not part of Gaia and has its own endpoints.
+  get_oauth_token_url_ = std::string(kDefaultFederatedLoginBaseUrl) +
+                         kGetOAuthTokenUrlSuffix;
+
   oauth_get_access_token_url_ = gaia_origin_url_ +
                                 kOAuthGetAccessTokenUrlSuffix;
   oauth_wrap_bridge_url_ = gaia_origin_url_ + kOAuthWrapBridgeUrlSuffix;
@@ -102,6 +112,10 @@ const std::string& GaiaUrls::gaia_origin_url() {
 
 const std::string& GaiaUrls::client_login_url() {
   return client_login_url_;
+}
+
+const std::string& GaiaUrls::service_login_url() {
+  return service_login_url_;
 }
 
 const std::string& GaiaUrls::issue_auth_token_url() {
