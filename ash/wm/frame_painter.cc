@@ -19,6 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -35,10 +36,11 @@ const int kBorderThickness = 0;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
-// Ash windows do not have a traditional visible window frame.  Window content
-// extends to the edge of the window.  We consider a small region outside the
+// Ash windows do not have a traditional visible window frame. Window content
+// extends to the edge of the window. We consider a small region outside the
 // window bounds and an even smaller region overlapping the window to be the
 // "non-client" area and use it for resizing.
+const int kResizeOutsideBoundsSizeTouch = 30;
 const int kResizeOutsideBoundsSize = 6;
 const int kResizeInsideBoundsSize = 1;
 // Space between left edge of window and popup window icon.
@@ -201,9 +203,12 @@ void FramePainter::Init(views::Widget* frame,
 
   window_ = frame->GetNativeWindow();
   // Ensure we get resize cursors for a few pixels outside our bounds.
+  int outside_bounds = ui::DisplayLayout() == ui::LAYOUT_TOUCH ?
+      kResizeOutsideBoundsSizeTouch :
+      kResizeOutsideBoundsSize;
   window_->set_hit_test_bounds_override_outer(
-      gfx::Insets(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
-                  -kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize));
+      gfx::Insets(-outside_bounds, -outside_bounds,
+                  -outside_bounds, -outside_bounds));
   // Ensure we get resize cursors just inside our bounds as well.
   window_->set_hit_test_bounds_override_inner(
       gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
@@ -237,7 +242,10 @@ gfx::Rect FramePainter::GetWindowBoundsForClientBounds(
 int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
                                    const gfx::Point& point) {
   gfx::Rect expanded_bounds = view->bounds();
-  expanded_bounds.Inset(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize);
+  int outside_bounds = ui::DisplayLayout() == ui::LAYOUT_TOUCH ?
+      kResizeOutsideBoundsSizeTouch :
+      kResizeOutsideBoundsSize;
+  expanded_bounds.Inset(-outside_bounds, -outside_bounds);
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;
 
