@@ -12,12 +12,19 @@
 #include <stack>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/environment.h"
+#include "base/files/file_path_watcher.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
+#include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/string_split.h"
 #include "chrome/browser/chromeos/input_method/input_method_config.h"
 #include "chrome/browser/chromeos/input_method/input_method_property.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 // TODO(nona): Remove libibus dependency from this file. Then, write unit tests
 // for all functions in this file. crbug.com/26334
@@ -357,13 +364,107 @@ std::string PrintPropList(IBusPropList *prop_list, int tree_level) {
   return stream.str();
 }
 
+class IBusAddressWatcher {
+ public:
+  class IBusAddressFileWatcherDelegate
+      : public base::files::FilePathWatcher::Delegate {
+   public:
+    IBusAddressFileWatcherDelegate(
+        const std::string& ibus_address,
+        IBusControllerImpl* controller,
+        IBusAddressWatcher* watcher)
+        : ibus_address_(ibus_address),
+          controller_(controller),
+          watcher_(watcher) {
+      DCHECK(watcher);
+      DCHECK(!ibus_address.empty());
+    }
+
+    virtual ~IBusAddressFileWatcherDelegate() {}
+
+    virtual void OnFilePathChanged(const FilePath& file_path) OVERRIDE {
+      if (!watcher_->IsWatching())
+        return;
+      bool success = content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(
+              &IBusControllerImpl::IBusDaemonInitializationDone,
+              controller_,
+              ibus_address_));
+      DCHECK(success);
+      watcher_->StopSoon();
+    }
+
+   private:
+    // The ibus-daemon address.
+    const std::string ibus_address_;
+    IBusControllerImpl* controller_;
+    IBusAddressWatcher* watcher_;
+
+    DISALLOW_COPY_AND_ASSIGN(IBusAddressFileWatcherDelegate);
+  };
+
+  static void Start(const std::string& ibus_address,
+                    IBusControllerImpl* controller) {
+    IBusAddressWatcher* instance = IBusAddressWatcher::Get();
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    std::string address_file_path;
+    // TODO(nona): move reading environment variables to UI thread.
+    env->GetVar("IBUS_ADDRESS_FILE", &address_file_path);
+    DCHECK(!address_file_path.empty());
+
+    if (instance->IsWatching())
+      instance->StopNow();
+    instance->watcher_ = new base::files::FilePathWatcher;
+
+    // The |delegate| is owned by watcher.
+    IBusAddressFileWatcherDelegate* delegate =
+        new IBusAddressFileWatcherDelegate(ibus_address, controller, instance);
+    bool result = instance->watcher_->Watch(FilePath(address_file_path),
+                                            delegate);
+    DCHECK(result);
+  }
+
+  void StopNow() {
+    delete watcher_;
+    watcher_ = NULL;
+  }
+
+  void StopSoon() {
+    if (!watcher_)
+      return;
+    MessageLoop::current()->DeleteSoon(FROM_HERE, watcher_);
+    watcher_ = NULL;
+  }
+
+  bool IsWatching() const {
+    return watcher_ != NULL;
+  }
+
+ private:
+  static IBusAddressWatcher* Get() {
+    static IBusAddressWatcher* instance = new IBusAddressWatcher;
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+    return instance;
+  }
+
+  // Singleton
+  IBusAddressWatcher()
+      :  watcher_(NULL) {}
+  base::files::FilePathWatcher* watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(IBusAddressWatcher);
+};
+
 }  // namespace
 
 IBusControllerImpl::IBusControllerImpl()
     : ibus_(NULL),
       ibus_config_(NULL),
-      should_launch_daemon_(false),
-      process_handle_(base::kNullProcessHandle) {
+      process_handle_(base::kNullProcessHandle),
+      ibus_daemon_status_(IBUS_DAEMON_STOP),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 IBusControllerImpl::~IBusControllerImpl() {
@@ -405,10 +506,13 @@ IBusControllerImpl::~IBusControllerImpl() {
 
 bool IBusControllerImpl::Start() {
   MaybeInitializeIBusBus();
-  should_launch_daemon_ = true;
   if (IBusConnectionsAreAlive())
     return true;
-  return MaybeLaunchIBusDaemon();
+  if (ibus_daemon_status_ == IBUS_DAEMON_STOP ||
+      ibus_daemon_status_ == IBUS_DAEMON_SHUTTING_DOWN) {
+    return StartIBusDaemon();
+  }
+  return true;
 }
 
 void IBusControllerImpl::Reset() {
@@ -422,6 +526,13 @@ void IBusControllerImpl::Reset() {
 }
 
 bool IBusControllerImpl::Stop() {
+  if (ibus_daemon_status_ == IBUS_DAEMON_SHUTTING_DOWN ||
+      ibus_daemon_status_ == IBUS_DAEMON_STOP) {
+    return true;
+  }
+
+  ibus_daemon_status_ = IBUS_DAEMON_SHUTTING_DOWN;
+  // TODO(nona): Shutdown ibus-bus connection.
   if (IBusConnectionsAreAlive()) {
     // Ask IBus to exit *asynchronously*.
     ibus_bus_exit_async(ibus_,
@@ -436,21 +547,20 @@ bool IBusControllerImpl::Stop() {
       g_object_unref(ibus_config_);
       ibus_config_ = NULL;
     }
-  } else if (process_handle_ != base::kNullProcessHandle) {
+  } else {
     base::KillProcess(process_handle_, -1, false /* wait */);
     DVLOG(1) << "Killing ibus-daemon. PID="
              << base::GetProcId(process_handle_);
-  } else {
-    // The daemon hasn't been started yet.
   }
-
   process_handle_ = base::kNullProcessHandle;
-  should_launch_daemon_ = false;
   return true;
 }
 
 bool IBusControllerImpl::ChangeInputMethod(const std::string& id) {
-  DCHECK(should_launch_daemon_);
+  if (ibus_daemon_status_ == IBUS_DAEMON_SHUTTING_DOWN ||
+      ibus_daemon_status_ == IBUS_DAEMON_STOP) {
+    return false;
+  }
 
   // Sanity checks.
   DCHECK(!InputMethodUtil::IsKeyboardLayout(id));
@@ -572,7 +682,7 @@ void IBusControllerImpl::CancelHandwriting(int n_strokes) {
 #endif
 
 bool IBusControllerImpl::IBusConnectionsAreAlive() {
-  return (process_handle_ != base::kNullProcessHandle) &&
+  return (ibus_daemon_status_ == IBUS_DAEMON_RUNNING) &&
       ibus_ && ibus_bus_is_connected(ibus_) && ibus_config_;
 }
 
@@ -892,27 +1002,48 @@ void IBusControllerImpl::UpdateProperty(IBusPanelService* panel,
   }
 }
 
-bool IBusControllerImpl::MaybeLaunchIBusDaemon() {
-  static const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
-
-  if (process_handle_ != base::kNullProcessHandle) {
+bool IBusControllerImpl::StartIBusDaemon() {
+  if (ibus_daemon_status_ == IBUS_DAEMON_INITIALIZING ||
+      ibus_daemon_status_ == IBUS_DAEMON_RUNNING) {
     DVLOG(1) << "MaybeLaunchIBusDaemon: ibus-daemon is already running.";
     return false;
   }
-  if (!should_launch_daemon_)
-    return false;
 
+  ibus_daemon_status_ = IBUS_DAEMON_INITIALIZING;
+  ibus_daemon_address_ = base::StringPrintf(
+      "unix:abstract=ibus-%d",
+      base::RandInt(0, std::numeric_limits<int>::max()));
+
+  // Set up ibus-daemon address file watcher before launching ibus-daemon,
+  // because if watcher starts after ibus-daemon, we may miss the ibus
+  // connection initialization.
+  bool success = content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&IBusAddressWatcher::Start,
+                 ibus_daemon_address_,
+                 base::Unretained(this)),
+      base::Bind(&IBusControllerImpl::LaunchIBusDaemon,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 ibus_daemon_address_));
+  DCHECK(success);
+  return true;
+}
+
+void IBusControllerImpl::LaunchIBusDaemon(const std::string& ibus_address) {
+  DCHECK_EQ(base::kNullProcessHandle, process_handle_);
+  static const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
   // TODO(zork): Send output to /var/log/ibus.log
   const std::string ibus_daemon_command_line =
-      base::StringPrintf("%s --panel=disable --cache=none --restart --replace",
-                         kIBusDaemonPath);
+      base::StringPrintf("%s --panel=disable --cache=none --restart --replace"
+                         " --address=%s",
+                         kIBusDaemonPath,
+                         ibus_address.c_str());
   if (!LaunchProcess(ibus_daemon_command_line,
                      &process_handle_,
                      reinterpret_cast<GChildWatchFunc>(OnIBusDaemonExit))) {
     DVLOG(1) << "Failed to launch " << ibus_daemon_command_line;
-    return false;
   }
-  return true;
 }
 
 bool IBusControllerImpl::LaunchProcess(const std::string& command_line,
@@ -937,6 +1068,22 @@ bool IBusControllerImpl::LaunchProcess(const std::string& command_line,
   *process_handle = handle;
   DVLOG(1) << command_line << "is started. PID=" << pid;
   return true;
+}
+
+// static
+void IBusControllerImpl::IBusDaemonInitializationDone(
+    IBusControllerImpl* controller,
+    const std::string& ibus_address) {
+  if (controller->ibus_daemon_address_ != ibus_address)
+    return;
+
+  if (controller->ibus_daemon_status_ != IBUS_DAEMON_INITIALIZING) {
+    // Stop() or OnIBusDaemonExit() has already been called.
+    return;
+  }
+  chromeos::DBusThreadManager::Get()->InitIBusBus(ibus_address);
+  controller->ibus_daemon_status_ = IBUS_DAEMON_RUNNING;
+  VLOG(1) << "The ibus-daemon initialization is done.";
 }
 
 // static
@@ -967,12 +1114,31 @@ void IBusControllerImpl::SetInputMethodConfigCallback(GObject* source_object,
 void IBusControllerImpl::OnIBusDaemonExit(GPid pid,
                                           gint status,
                                           IBusControllerImpl* controller) {
-  if (controller->process_handle_ != base::kNullProcessHandle &&
-      base::GetProcId(controller->process_handle_) == pid) {
-    controller->process_handle_ = base::kNullProcessHandle;
+  if (controller->process_handle_ != base::kNullProcessHandle) {
+    if (base::GetProcId(controller->process_handle_) == pid) {
+      // ibus-daemon crashed.
+      // TODO(nona): Shutdown ibus-bus connection.
+      controller->process_handle_ = base::kNullProcessHandle;
+    } else {
+      // This condition is as follows.
+      // 1. Called Stop (process_handle_ becomes null)
+      // 2. Called LaunchProcess (process_handle_ becomes new instance)
+      // 3. Callbacked OnIBusDaemonExit for old instance and reach here.
+      // In this case, we should not reset process_handle_ as null, and do not
+      // re-launch ibus-daemon.
+      return;
+    }
   }
-  // Restart the daemon if needed.
-  controller->MaybeLaunchIBusDaemon();
+
+  const IBusDaemonStatus on_exit_state = controller->ibus_daemon_status_;
+  controller->ibus_daemon_status_ = IBUS_DAEMON_STOP;
+  if (on_exit_state == IBUS_DAEMON_SHUTTING_DOWN) {
+    // Normal exitting, so do nothing.
+    return;
+  }
+
+  LOG(ERROR) << "The ibus-daemon crashed. Re-launching...";
+  controller->StartIBusDaemon();
 }
 #endif  // defined(HAVE_IBUS)
 

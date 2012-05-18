@@ -129,14 +129,35 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Shut down the bus. During the browser shutdown, it's ok to shut down
     // the bus synchronously.
     system_bus_->ShutdownOnDBusThreadAndBlock();
+    if (ibus_bus_.get())
+      ibus_bus_->ShutdownOnDBusThreadAndBlock();
 
     // Stop the D-Bus thread.
     dbus_thread_->Stop();
   }
 
   // DBusThreadManager override.
+  virtual void InitIBusBus(const std::string &ibus_address) OVERRIDE {
+    DCHECK(!ibus_bus_);
+    dbus::Bus::Options ibus_bus_options;
+    ibus_bus_options.bus_type = dbus::Bus::CUSTOM_ADDRESS;
+    ibus_bus_options.address = ibus_address;
+    ibus_bus_options.connection_type = dbus::Bus::PRIVATE;
+    ibus_bus_options.dbus_thread_message_loop_proxy =
+        dbus_thread_->message_loop_proxy();
+    ibus_bus_ = new dbus::Bus(ibus_bus_options);
+    ibus_address_ = ibus_address;
+    VLOG(1) << "Connected to ibus-daemon: " << ibus_address;
+  }
+
+  // DBusThreadManager override.
   virtual dbus::Bus* GetSystemBus() OVERRIDE {
     return system_bus_.get();
+  }
+
+  // DBusThreadManager override.
+  virtual dbus::Bus* GetIBusBus() OVERRIDE {
+    return ibus_bus_.get();
   }
 
   // DBusThreadManager override.
@@ -251,6 +272,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
+  scoped_refptr<dbus::Bus> ibus_bus_;
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
   scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
@@ -273,6 +295,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;
+
+  std::string ibus_address_;
 };
 
 // static

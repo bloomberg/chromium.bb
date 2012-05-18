@@ -49,7 +49,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockDBusThreadManager();
   virtual ~MockDBusThreadManager();
 
+  MOCK_METHOD1(InitIBusBus, void(const std::string& ibus_address));
   MOCK_METHOD0(GetSystemBus, dbus::Bus*(void));
+  MOCK_METHOD0(GetIBusBus, dbus::Bus*(void));
   MOCK_METHOD0(GetBluetoothAdapterClient, BluetoothAdapterClient*(void));
   MOCK_METHOD0(GetBluetoothDeviceClient, BluetoothDeviceClient*(void));
   MOCK_METHOD0(GetBluetoothInputClient, BluetoothInputClient*(void));

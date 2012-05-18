@@ -60,7 +60,17 @@ class IBusControllerImpl : public IBusControllerBase {
       const InputMethodProperty& new_prop,
       InputMethodPropertyList* prop_list);
 
+  static void IBusDaemonInitializationDone(IBusControllerImpl* controller,
+                                           const std::string& ibus_address);
+
  private:
+  enum IBusDaemonStatus{
+    IBUS_DAEMON_INITIALIZING,
+    IBUS_DAEMON_RUNNING,
+    IBUS_DAEMON_SHUTTING_DOWN,
+    IBUS_DAEMON_STOP,
+  };
+
   // Functions that end with Thunk are used to deal with glib callbacks.
   CHROMEG_CALLBACK_0(IBusControllerImpl, void, BusConnected, IBusBus*);
   CHROMEG_CALLBACK_0(IBusControllerImpl, void, BusDisconnected, IBusBus*);
@@ -111,9 +121,11 @@ class IBusControllerImpl : public IBusControllerBase {
   // "update-property" D-Bus signals from ibus-daemon.
   void ConnectPanelServiceSignals();
 
-  // Starts ibus-daemon if it's not yet started and |should_launch_daemon_| is
-  // true.
-  bool MaybeLaunchIBusDaemon();
+  // Adds address file watcher in FILE thread and then calls LaunchIBusDaemon.
+  bool StartIBusDaemon();
+
+  // Starts ibus-daemon.
+  void LaunchIBusDaemon(const std::string& ibus_address);
 
   // Launches an input method procsess specified by the given command
   // line. On success, returns true and stores the process handle in
@@ -140,8 +152,9 @@ class IBusControllerImpl : public IBusControllerBase {
   IBusBus* ibus_;
   IBusConfig* ibus_config_;
 
-  // true when ibus-daemon should be running.
-  bool should_launch_daemon_;
+  // The current ibus_daemon address. This value is assigned at the launching
+  // ibus-daemon and used in bus connection initialization.
+  std::string ibus_daemon_address_;
 
   // The process handle of the IBus daemon. kNullProcessHandle if it's not
   // running.
@@ -156,6 +169,12 @@ class IBusControllerImpl : public IBusControllerBase {
 
   // An object which knows all valid input methods and layout IDs.
   InputMethodWhitelist whitelist_;
+
+  // Represents ibus-daemon's status.
+  IBusDaemonStatus ibus_daemon_status_;
+
+  // Used for making callbacks for PostTask.
+  base::WeakPtrFactory<IBusControllerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusControllerImpl);
 };

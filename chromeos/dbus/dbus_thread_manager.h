@@ -6,6 +6,8 @@
 #define CHROMEOS_DBUS_DBUS_THREAD_MANAGER_H_
 #pragma once
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
@@ -84,8 +86,16 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
 
+  // Creates new IBusBus instance to communicate with ibus-daemon with specified
+  // ibus address. Must be called before using ibus related clients.
+  // TODO(nona): Support shutdown to enable dynamical ibus-daemon shutdown.
+  virtual void InitIBusBus(const std::string &ibus_address) = 0;
+
   // Returns the D-Bus system bus instance, owned by DBusThreadManager.
   virtual dbus::Bus* GetSystemBus() = 0;
+
+  // Returns the IBus bus instance, owned by DBusThreadManager.
+  virtual dbus::Bus* GetIBusBus() = 0;
 
   // Returns the bluetooth adapter client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
