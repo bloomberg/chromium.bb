@@ -101,6 +101,19 @@ struct motif_wm_hints {
 
 #define MWM_TEAROFF_WINDOW      (1L<<0)
 
+#define _NET_WM_MOVERESIZE_SIZE_TOPLEFT      0
+#define _NET_WM_MOVERESIZE_SIZE_TOP          1
+#define _NET_WM_MOVERESIZE_SIZE_TOPRIGHT     2
+#define _NET_WM_MOVERESIZE_SIZE_RIGHT        3
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT  4
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOM       5
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT   6
+#define _NET_WM_MOVERESIZE_SIZE_LEFT         7
+#define _NET_WM_MOVERESIZE_MOVE              8   /* movement only */
+#define _NET_WM_MOVERESIZE_SIZE_KEYBOARD     9   /* size via keyboard */
+#define _NET_WM_MOVERESIZE_MOVE_KEYBOARD    10   /* move via keyboard */
+#define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
+
 struct weston_wm {
 	xcb_connection_t *conn;
 	const xcb_query_extension_reply_t *xfixes;
@@ -1426,9 +1439,27 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 {
 	xcb_client_message_event_t *client_message =
 		(xcb_client_message_event_t *) event;
+	struct weston_shell_interface *shell_interface =
+		&wm->server->compositor->shell_interface;
+	struct weston_wm_window *window;
+	struct weston_seat *seat;
 
-	fprintf(stderr, "got client message, type: %s\n",
-		get_atom_name(wm->conn, client_message->type));
+	window = hash_table_lookup(wm->window_hash, client_message->window);
+
+	fprintf(stderr, "XCB_CLIENT_MESSAGE (%s %d %d %d %d %d)\n",
+		get_atom_name(wm->conn, client_message->type),
+		client_message->data.data32[0],
+		client_message->data.data32[1],
+		client_message->data.data32[2],
+		client_message->data.data32[3],
+		client_message->data.data32[4]);
+
+	seat = wm->server->compositor->seat;
+	if (client_message->type == wm->atom.net_wm_moveresize &&
+	    client_message->data.data32[2] == _NET_WM_MOVERESIZE_MOVE &&
+	    seat->seat.pointer->button_count == 1 &&
+	    seat->seat.pointer->focus == &window->surface->surface)
+			shell_interface->move(window->shsurf, seat);
 }
 
 static void
