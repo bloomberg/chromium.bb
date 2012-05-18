@@ -89,7 +89,7 @@ class RendererCrashTest : public InProcessBrowserTest,
   content::NotificationRegistrar registrar_;
 };
 
-IN_PROC_BROWSER_TEST_F(RendererCrashTest, Crash) {
+IN_PROC_BROWSER_TEST_F(RendererCrashTest, FLAKY_Crash) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllSources());
   ui_test_utils::NavigateToURLWithDisposition(
