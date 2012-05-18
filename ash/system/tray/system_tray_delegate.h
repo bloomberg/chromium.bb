@@ -253,6 +253,9 @@ class SystemTrayDelegate {
   // Shows UI to search for cellular networks.
   virtual void ShowOtherCellular() = 0;
 
+  // Returns whether the system is connected to any network.
+  virtual bool IsNetworkConnected() = 0;
+
   // Returns whether wifi is available.
   virtual bool GetWifiAvailable() = 0;
 

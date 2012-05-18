@@ -666,6 +666,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     network_menu_->ShowOtherCellular();
   }
 
+  virtual bool IsNetworkConnected() OVERRIDE {
+    return CrosLibrary::Get()->GetNetworkLibrary()->Connected();
+  }
+
   virtual bool GetWifiAvailable() OVERRIDE {
     return CrosLibrary::Get()->GetNetworkLibrary()->wifi_available();
   }

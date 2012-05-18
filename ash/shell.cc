@@ -451,6 +451,10 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowOtherCellular() OVERRIDE {
   }
 
+  virtual bool IsNetworkConnected() OVERRIDE {
+    return true;
+  }
+
   virtual bool GetWifiAvailable() OVERRIDE {
     return true;
   }

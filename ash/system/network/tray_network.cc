@@ -242,6 +242,7 @@ class NetworkDetailedView : public TrayDetailsView,
     button_wifi_->SetToggled(!delegate->GetWifiEnabled());
     button_mobile_->SetToggled(!delegate->GetMobileEnabled());
     button_mobile_->SetVisible(delegate->GetMobileAvailable());
+    proxy_settings_->SetEnabled(delegate->IsNetworkConnected());
   }
 
   void AppendNetworkEntries() {
