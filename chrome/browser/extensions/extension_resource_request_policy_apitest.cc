@@ -193,6 +193,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ("Image failed to load", result);
+
+  GURL nonaccessible_cer_resource(
+      test_server()->GetURL(
+          "files/extensions/api_test/extension_resource_request_policy/"
+          "web_accessible/nonaccessible_chrome_resource_scheme.html"));
+  ui_test_utils::NavigateToURL(browser(), nonaccessible_cer_resource);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(document.title)",
+    &result));
+  EXPECT_EQ("Loading CER:// failed.", result);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Iframe) {
@@ -204,4 +215,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Iframe) {
   EXPECT_TRUE(RunExtensionSubtest(
       "extension_resource_request_policy/web_accessible",
       "iframe.html"));
+}
+
+#if defined(OS_MACOSX)
+#define MAYBE_ExtensionAccessibleResources FLAKY_ExtensionAccessibleResources
+#else
+#define MAYBE_ExtensionAccessibleResources ExtensionAccessibleResources
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
+                       MAYBE_ExtensionAccessibleResources) {
+  ASSERT_TRUE(RunExtensionSubtest("accessible_cer", "main.html")) << message_;
 }

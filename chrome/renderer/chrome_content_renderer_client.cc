@@ -231,6 +231,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   // chrome-extension: resources should be allowed to receive CORS requests.
   WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_scheme);
+
+  WebString extension_resource_scheme(
+      ASCIIToUTF16(chrome::kExtensionResourceScheme));
+  WebSecurityPolicy::registerURLSchemeAsSecure(extension_resource_scheme);
+
+  // chrome-extension-resource: resources should be allowed to receive CORS
+  // requests.
+  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_resource_scheme);
 }
 
 void ChromeContentRendererClient::RenderViewCreated(
@@ -744,15 +752,23 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
 bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
                                                   const GURL& url,
                                                   GURL* new_url) {
-  // If the request is for an extension resource, check whether it should be
-  // allowed. If not allowed, we reset the URL to something invalid to prevent
-  // the request and cause an error.
+  // Check whether the request should be allowed. If not allowed, we reset the
+  // URL to something invalid to prevent the request and cause an error.
   if (url.SchemeIs(chrome::kExtensionScheme) &&
       !ExtensionResourceRequestPolicy::CanRequestResource(
           url,
           frame,
           extension_dispatcher_->extensions())) {
     *new_url = GURL("chrome-extension://invalid/");
+    return true;
+
+  }
+
+  if (url.SchemeIs(chrome::kExtensionResourceScheme) &&
+      !ExtensionResourceRequestPolicy::CanRequestExtensionResourceScheme(
+          url,
+          frame)) {
+    *new_url = GURL("chrome-extension-resource://invalid/");
     return true;
   }
 

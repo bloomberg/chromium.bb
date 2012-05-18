@@ -69,6 +69,14 @@
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/resources/extension/demo',
+          'files': [
+            'browser/resources/extension_resource/demo/library.js',
+          ],
+        },
+      ]
     },
     {
       # TODO(mark): It would be better if each static library that needed

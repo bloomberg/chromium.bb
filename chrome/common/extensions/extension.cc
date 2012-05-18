@@ -76,7 +76,7 @@ const char kPrivate[] = "PRIVATE";
 const int kRSAKeySize = 1024;
 
 const char kDefaultContentSecurityPolicy[] =
-    "script-src 'self'; object-src 'self'";
+    "script-src 'self' chrome-extension-resource:; object-src 'self'";
 
 // Converts a normal hexadecimal string into the alphabet used by extensions.
 // We use the characters 'a'-'p' instead of '0'-'f' to avoid ever having a
