@@ -1431,6 +1431,25 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 		get_atom_name(wm->conn, client_message->type));
 }
 
+static void
+weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_button_press_event_t *button = (xcb_button_press_event_t *) event;
+	struct weston_shell_interface *shell_interface =
+		&wm->server->compositor->shell_interface;
+	struct weston_wm_window *window;
+
+	fprintf(stderr, "XCB_BUTTON_%s (detail %d)\n",
+		button->response_type == XCB_BUTTON_PRESS ?
+		"PRESS" : "RELEASE", button->detail);
+
+	window = hash_table_lookup(wm->window_hash, button->event);
+	if (button->response_type == XCB_BUTTON_PRESS &&
+	    button->detail == 1)
+		shell_interface->move(window->shsurf,
+				      wm->server->compositor->seat);
+}
+
 static int
 weston_wm_handle_event(int fd, uint32_t mask, void *data)
 {
@@ -1442,7 +1461,7 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 		switch (event->response_type & ~0x80) {
 		case XCB_BUTTON_PRESS:
 		case XCB_BUTTON_RELEASE:
-			fprintf(stderr, "button %d\n", event->response_type);
+			weston_wm_handle_button(wm, event);
 			break;
 		case XCB_EXPOSE:
 			weston_wm_handle_expose(wm, event);
