@@ -25,6 +25,9 @@ class UI_EXPORT GestureConfiguration {
   static double long_press_time_in_seconds() {
     return long_press_time_in_seconds_;
   }
+  static int max_radius() {
+    return max_radius_;
+  }
   static void set_long_press_time_in_seconds(double val) {
     long_press_time_in_seconds_ = val;
   }
@@ -127,6 +130,10 @@ class UI_EXPORT GestureConfiguration {
   // The default touch radius length used when the only information given
   // by the device is the touch center.
   static int default_radius_;
+
+  // The maximum allowed size for the radius of a touch region used in
+  // forming an ET_GESTURE_TAP event.
+  static int max_radius_;
 
   static double long_press_time_in_seconds_;
   static double max_seconds_between_double_click_;

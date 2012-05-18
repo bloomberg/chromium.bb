@@ -178,6 +178,12 @@ bool GesturePoint::IsOverMinFlickSpeed() {
 void GesturePoint::UpdateEnclosingRectangle(const TouchEvent& event) {
   int radius;
 
+  // Ignore this TouchEvent if it has a radius larger than the maximum
+  // allowed radius size.
+  if (event.RadiusX() > GestureConfiguration::max_radius() ||
+      event.RadiusY() > GestureConfiguration::max_radius())
+    return;
+
   // If the device provides at least one of the radius values, take the larger
   // of the two and use this as both the x radius and the y radius of the
   // touch region. Otherwise use the default radius value.
