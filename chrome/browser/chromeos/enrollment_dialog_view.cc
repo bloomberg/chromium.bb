@@ -9,28 +9,16 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/views/extensions/extension_dialog.h"
-#include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
-
-using views::Border;
-using views::ColumnSet;
-using views::GridLayout;
-using views::Label;
-using views::LayoutManager;
-using views::View;
 
 namespace chromeos {
 
@@ -158,16 +146,16 @@ views::View* EnrollmentDialogView::GetContentsView() {
 void EnrollmentDialogView::InitDialog() {
   added_cert_ = false;
   // Create the views and layout manager and set them up.
-  Label* label = new Label(
+  views::Label* label = new views::Label(
       l10n_util::GetStringFUTF16(IDS_NETWORK_ENROLLMENT_HANDLER_INSTRUCTIONS,
                                  UTF8ToUTF16(network_name_)));
-  label->SetFont(
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont));
-  label->SetHorizontalAlignment(Label::ALIGN_LEFT);
+  label->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont));
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label->SetMultiLine(true);
   label->SetAllowCharacterBreak(true);
 
-  GridLayout* grid_layout = GridLayout::CreatePanel(this);
+  views::GridLayout* grid_layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(grid_layout);
 
   views::ColumnSet* columns = grid_layout->AddColumnSet(0);
