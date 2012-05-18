@@ -71,9 +71,9 @@ class FindInPageTest : public InProcessBrowserTest {
 }  // namespace
 
 #if defined(OS_WIN)
-#define MAYBE_FocusRestoreOnTabSwitch DISABLED_FocusRestoreOnTabSwitch
+#define MAYBE_CrashEscHandlers DISABLED_CrashEscHandlers
 #else
-#define MAYBE_FocusRestoreOnTabSwitch FocusRestoreOnTabSwitch
+#define MAYBE_CrashEscHandlers CrashEscHandlers
 #endif
 IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CrashEscHandlers) {
   ASSERT_TRUE(test_server()->Start());
