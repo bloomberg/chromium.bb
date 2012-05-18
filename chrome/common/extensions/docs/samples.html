@@ -247,7 +247,7 @@
   "579b7b1b54553eb5f2e8e7d2bf21bd61c855952e": "PAGE CYCLER PAGE CYCLER UI EXPERIMENTAL CHROME.EXPERIMENTAL.RECORD.CAPTUREURLS CHROME.EXPERIMENTAL.RECORD.REPLAYURLS",
   "ab4b9e00a673701b355db9eb8f9ebf2c850cd784": "PER-PLUGIN CONTENT SETTINGS CUSTOMIZE YOUR CONTENT SETTING FOR DIFFERENT PLUG-INS. CONTENTSETTINGS OPTIONS_PAGE CHROME.I18N.GETMESSAGE",
   "e6ae17ab4ccfd7e059c8c01f25760ca5d894c7fd": "PRINT THIS PAGE ADDS A PRINT BUTTON TO THE BROWSER. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.TABS.UPDATE",
-  "beff6ecd9677dea0a7c648c5042165b48bb66f09": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.PROCESSES.ONUPDATED",
+  "beff6ecd9677dea0a7c648c5042165b48bb66f09": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXPERIMENTAL.PROCESSES.ONUPDATED CHROME.EXPERIMENTAL.PROCESSES.ONUPDATEDWITHMEMORY CHROME.EXPERIMENTAL.PROCESSES.TERMINATE",
   "3e8e226d87e431296bb110b4f6eb7eec2ca7a826": "PROXY EXTENSION API SAMPLE SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API BACKGROUND_PAGE BROWSER_ACTION PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS CHROME.I18N.GETMESSAGE CHROME.PROXY.ONPROXYERROR",
   "56a8d2ac24ca7bba78fd88ad57f43fc13c784497": "SAMPLE - OAUTH CONTACTS USES OAUTH TO CONNECT TO GOOGLES CONTACTS SERVICE AND DISPLAY A LIST OF YOUR CONTACTS. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE",
   "38f6e1e17756ede38b1364c7114a738ca717dcbb": "SANDWICHBAR SHOWS AN INFOBAR ON PAGES WHICH CONTAIN THE WORD SANDWICH BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.INFOBARS.SHOW",
@@ -867,6 +867,9 @@
   <div>
     <a href="examples/extensions/catblock.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/catblock.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="924f75a201bb0ec8d6c0b1c9c88c679ea211c93d">
   <img class="icon" src="images/sample-default-icon.png">
@@ -1015,6 +1018,9 @@
   <div>
     <a href="examples/extensions/buildbot.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/buildbot.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="ac31228200b41a87982e386cc90d3a6eee4ad885">
   <img class="icon" src="images/sample-default-icon.png">
@@ -1758,6 +1764,9 @@
   <div>
     <a href="examples/extensions/gdocs.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/gdocs.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="bb57f7a0132cbeb36ad7e7bb0ab75c21704234ca">
   <img class="icon" src="examples/extensions/gmail/icon_128.png">
@@ -2056,6 +2065,9 @@
   <div>
     <a href="examples/extensions/imageinfo.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/imageinfo.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="8f52a8a59c6fc16cb0d1ed0680b7f005be033d58">
   <img class="icon" src="images/sample-default-icon.png">
@@ -2264,6 +2276,9 @@
   <div>
     <a href="examples/extensions/mappy.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/mappy.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="b2f5f8a790e16f091a7e4e0a39b2d0a6d32e3a6d">
   <img class="icon" src="examples/api/windows/merge_windows/merge_windows_128.png">
@@ -2484,6 +2499,9 @@
   <div>
     <a href="examples/extensions/news_i18n.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/news_i18n.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="3aea027164cb9b732ba4a8c51cb93708891726ef">
   <img class="icon" src="examples/extensions/news/images/news_icon.png">
@@ -2822,6 +2840,9 @@
   <div>
     <a href="examples/extensions/benchmark.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/benchmark.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="579b7b1b54553eb5f2e8e7d2bf21bd61c855952e">
   <img class="icon" src="examples/api/record/page_cycler/page_cycler_icon.png">
@@ -3009,6 +3030,10 @@
     <ul>
       <li>
         <code><a href="experimental.processes.html#event-onUpdated">chrome.experimental.processes.onUpdated</a></code>
+      </li><li>
+        <code><a href="experimental.processes.html#event-onUpdatedWithMemory">chrome.experimental.processes.onUpdatedWithMemory</a></code>
+      </li><li>
+        <code><a href="experimental.processes.html#method-terminate">chrome.experimental.processes.terminate</a></code>
       </li>
     </ul>
   </div>
@@ -3314,6 +3339,9 @@
   <div>
     <a href="examples/extensions/speak_selection.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/speak_selection.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="a942b7626644674b7a56678930d054497b244ee7">
   <img class="icon" src="images/sample-default-icon.png">
@@ -3552,6 +3580,9 @@
   <div>
     <a href="examples/extensions/talking_alarm_clock.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/talking_alarm_clock.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="e1697cacebad05218798bf3e8a0f724517f0e8c3">
   <img class="icon" src="images/sample-default-icon.png">
@@ -3697,6 +3728,9 @@
   <div>
     <a href="examples/extensions/ttsdebug.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span>
+    - <a href="examples/extensions/ttsdebug.crx">Install extension</a>
+    </span>
   </div>
 </div><div class="sample" id="3a1baf15462bdae4d886c2da4ff8f35f4e8ce02f">
   <img class="icon" src="examples/extensions/ttsdemo/128.png">
