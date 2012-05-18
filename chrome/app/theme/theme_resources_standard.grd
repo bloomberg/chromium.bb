@@ -170,6 +170,9 @@
       <include name="IDR_SAD_FAVICON" file="sadfavicon.png" type="BINDATA" />
       <include name="IDR_STAR" file="star.png" type="BINDATA" />
       <include name="IDR_STAR_LIT" file="star_lit.png" type="BINDATA" />
+      <include name="IDR_ACTION_BOX_BUTTON" file="action_box_button.png" type="BINDATA" />
+      <include name="IDR_ACTION_BOX_BUTTON_H" file="action_box_button_h.png" type="BINDATA" />
+      <include name="IDR_ACTION_BOX_BUTTON_P" file="action_box_button_p.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_STOP" file="default_100/ash/browser_stop_normal.png" type="BINDATA" />
         <include name="IDR_STOP_D" file="default_100/ash/browser_stop_disabled.png" type="BINDATA" />

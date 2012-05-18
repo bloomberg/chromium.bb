@@ -6160,6 +6160,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_NEW_TAB" desc="The tooltip for the new tab button">
         New tab
       </message>
+      <message name="IDS_TOOLTIP_ACTION_BOX_BUTTON" desc="The tooltip for action box button">
+        Actions
+      </message>
 
       <!--Accessible name/action strings-->
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an incognito window">
@@ -6236,6 +6239,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_WEB_CONTENTS" desc="The accessible name for the web contents.">
         Web Contents
+      </message>
+      <message name="IDS_ACCNAME_ACTION_BOX_BUTTON" desc="The accessible name for the action box button.">
+        Actions
       </message>
 
       <!-- Browser Hung Plugin Detector -->

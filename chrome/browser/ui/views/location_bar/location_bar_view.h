@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #endif
 
+class ActionBoxButtonView;
 class ChromeToMobileView;
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
@@ -454,6 +455,9 @@ class LocationBarView : public LocationBar,
 
   // The star.
   StarView* star_view_;
+
+  // The action box button (plus).
+  ActionBoxButtonView* action_box_button_view_;
 
   // The Chrome To Mobile page action icon view.
   ChromeToMobileView* chrome_to_mobile_view_;

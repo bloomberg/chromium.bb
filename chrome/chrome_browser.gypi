@@ -3491,6 +3491,8 @@
         'browser/ui/views/local_storage_info_view.h',
         'browser/ui/views/local_storage_set_item_info_view.cc',
         'browser/ui/views/local_storage_set_item_info_view.h',
+        'browser/ui/views/location_bar/action_box_button_view.cc',
+        'browser/ui/views/location_bar/action_box_button_view.h',
         'browser/ui/views/location_bar/chrome_to_mobile_view.cc',
         'browser/ui/views/location_bar/chrome_to_mobile_view.h',
         'browser/ui/views/location_bar/click_handler.cc',

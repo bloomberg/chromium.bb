@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/location_bar/action_box_button_view.h"
 #include "chrome/browser/ui/views/location_bar/chrome_to_mobile_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -143,6 +145,7 @@ LocationBarView::LocationBarView(Profile* profile,
 #endif
       keyword_hint_view_(NULL),
       star_view_(NULL),
+      action_box_button_view_(NULL),
       chrome_to_mobile_view_(NULL),
       mode_(mode),
       show_focus_rect_(false),
@@ -229,8 +232,11 @@ void LocationBarView::Init() {
     content_blocked_view->SetVisible(false);
   }
 
-  // Hide the star and Chrome To Mobile icons in popups and in the app launcher.
-  if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
+  if (extensions::switch_utils::IsActionBoxEnabled()) {
+    action_box_button_view_ = new ActionBoxButtonView();
+    AddChildView(action_box_button_view_);
+  } else if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
+    // Hide the star and ChromeToMobile icons in popups and in the app launcher.
     star_view_ = new StarView(command_updater_);
     AddChildView(star_view_);
     star_view_->SetVisible(true);
@@ -567,6 +573,9 @@ void LocationBarView::Layout() {
   if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible())
     entry_width -= chrome_to_mobile_view_->GetPreferredSize().width() +
         GetItemPadding();
+  if (action_box_button_view_)
+    entry_width -= action_box_button_view_->GetPreferredSize().width() +
+        GetItemPadding();
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->visible())
@@ -640,6 +649,14 @@ void LocationBarView::Layout() {
     offset -= icon_width;
     chrome_to_mobile_view_->SetBounds(offset, location_y,
                                       icon_width, location_height);
+    offset -= GetItemPadding();
+  }
+
+  if (action_box_button_view_) {
+    int button_width = action_box_button_view_->GetPreferredSize().width();
+    offset -= button_width;
+    action_box_button_view_->SetBounds(offset, location_y, button_width,
+                                       location_height);
     offset -= GetItemPadding();
   }
 

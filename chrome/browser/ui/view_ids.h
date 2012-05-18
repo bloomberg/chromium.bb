@@ -75,7 +75,10 @@ enum ViewID {
 
   // Used in chrome/browser/ui/gtk/view_id_util_browsertests.cc
   // If you add new ids, make sure the above test passes.
-  VIEW_ID_PREDEFINED_COUNT
+  VIEW_ID_PREDEFINED_COUNT,
+
+  // Plus button on location bar.
+  VIEW_ID_ACTION_BOX_BUTTON
 };
 
 #endif  // CHROME_BROWSER_UI_VIEW_IDS_H_
