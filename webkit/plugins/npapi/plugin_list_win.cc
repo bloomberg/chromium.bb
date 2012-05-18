@@ -16,6 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/win/metro.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
@@ -344,7 +345,6 @@ bool PluginList::ShouldLoadPlugin(const webkit::WebPluginInfo& info,
           (plugin1 == kJavaDeploy2 && plugin2 == kJavaDeploy1)) {
         if (!IsNewerVersion(plugins[j].version, info.version))
           return false;  // We have loaded a plugin whose version is newer.
-
         (*plugin_groups)[i]->RemovePlugin(plugins[j].path);
         break;
       }
@@ -384,6 +384,15 @@ bool PluginList::ShouldLoadPlugin(const webkit::WebPluginInfo& info,
       if (major == 6 && minor == 0 && update < 120)
         return false;  // Java SE6 Update 11 or older.
     }
+  }
+
+  if (base::win::GetMetroModule()) {
+    // In metro mode we only allow internal (pepper) plugins except flash.
+    // TODO(cpu):remove this hack at some point in the future.
+    if (info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI)
+      return false;
+    if (filename == L"pepflashplayer.dll")
+      return false;
   }
 
   // Special WMP handling
