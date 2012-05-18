@@ -788,8 +788,6 @@
         'browser/chromeos/options/vpn_config_view.h',
         'browser/chromeos/options/wifi_config_view.cc',
         'browser/chromeos/options/wifi_config_view.h',
-        'browser/chromeos/options/wimax_config_view.cc',
-        'browser/chromeos/options/wimax_config_view.h',
         'browser/chromeos/power/brightness_observer.cc',
         'browser/chromeos/power/brightness_observer.h',
         'browser/chromeos/power/low_battery_observer.cc',

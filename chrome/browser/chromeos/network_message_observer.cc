@@ -172,17 +172,6 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
   }
 
   if (!new_failed_network) {
-    for (WimaxNetworkVector::const_iterator it = cros->wimax_networks().begin();
-         it != cros->wimax_networks().end(); ++it) {
-      const WimaxNetwork* net = *it;
-      if (net->notify_failure()) {
-        new_failed_network = net;
-        break;  // There should only be one failed network.
-      }
-    }
-  }
-
-  if (!new_failed_network) {
     for (CellularNetworkVector::const_iterator it =
              cros->cellular_networks().begin();
          it != cros->cellular_networks().end(); it++) {
