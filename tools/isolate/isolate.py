@@ -298,8 +298,8 @@ class Flattenable(object):
       with open(filename, 'r') as f:
         out = cls.load(json.load(f))
       logging.debug('Loaded %s(%s)' % (cls.__name__, filename))
-    except IOError:
-      pass
+    except (IOError, ValueError):
+      logging.warn('Failed to load %s' % filename)
     return out
 
 

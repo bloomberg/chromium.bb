@@ -478,7 +478,11 @@ class Isolate_trace(IsolateBase):
       # Includes spew from tracerpt.exe.
       self.assertTrue(out.startswith(expected))
     else:
-      self.assertEquals(expected, out.rstrip())
+      lines = out.strip().splitlines()
+      self.assertEquals(3, len(lines))
+      self.assertTrue(lines[0].startswith('WARNING'))
+      self.assertTrue(lines[1].startswith('WARNING'))
+      self.assertEquals(expected, lines[2])
 
   def test_missing_trailing_slash(self):
     try:
