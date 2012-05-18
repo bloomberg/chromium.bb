@@ -219,7 +219,13 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
   InterstitialPage* interstitial_page_;  // Owns us.
 };
 
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
+// Flaky on mac. http://crbug.com/67301.
+#if defined(OS_MACOSX)
+#define MAYBE_FindFocusTest DISABLED_FindFocusTest
+#else
+#define MAYBE_FindFocusTest FindFocusTest
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 #if defined(OS_POSIX)
   // It seems we have to wait a little bit for the widgets to spin up before
@@ -773,7 +779,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 #else
 #define MAYBE_FindFocusTest FindFocusTest
 #endif
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FindFocusTest) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
