@@ -252,7 +252,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
       "filebrowser_component", "write.html", kComponentFlags)) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
+// Failing on Linux ChromeOS builds.
+// http://crbug.com/128757
+IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
+                       DISABLED_RemoteMountPoint) {
   SetupGDataFileSystemForTest();
 
   EXPECT_CALL(*mock_documents_service_, GetAccountMetadata(_)).Times(1);
