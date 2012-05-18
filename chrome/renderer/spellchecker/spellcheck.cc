@@ -76,6 +76,10 @@ class SpellCheck::SpellCheckRequestParam
   }
 
  private:
+  friend class base::RefCountedThreadSafe<SpellCheckRequestParam>;
+
+  ~SpellCheckRequestParam() {}
+
   // Text to be checked in this task.
   string16 text_;
 

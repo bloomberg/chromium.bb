@@ -55,6 +55,9 @@ class TcmallocInternalsRequestJob : public net::URLRequestSimpleJob {
                        std::string* charset,
                        std::string* data) const OVERRIDE;
 
+ protected:
+  virtual ~TcmallocInternalsRequestJob() {}
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(TcmallocInternalsRequestJob);
 };

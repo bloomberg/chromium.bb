@@ -68,6 +68,9 @@ class TestingAccessTokenStore : public content::AccessTokenStore {
   virtual void SaveAccessToken(const GURL& server_url,
                                const string16& access_token) OVERRIDE {}
 
+ protected:
+  virtual ~TestingAccessTokenStore() {}
+
  private:
   base::WaitableEvent* event_;
 };
@@ -92,6 +95,9 @@ class TestingDependencyFactory
   virtual LocationProviderBase* NewSystemLocationProvider() OVERRIDE  {
     return NULL;
   }
+
+ protected:
+  virtual ~TestingDependencyFactory() {}
 
  private:
   base::WaitableEvent* event_;

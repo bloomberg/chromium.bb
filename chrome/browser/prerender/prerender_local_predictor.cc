@@ -26,19 +26,24 @@ class GetURLForURLIDTask : public HistoryDBTask {
         url_id_(url_id),
         success_(false) {
   }
+
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) {
+                             history::HistoryDatabase* db) OVERRIDE {
     history::URLRow url_row;
     success_ = db->GetURLRow(url_id_, &url_row);
     if (success_)
       url_ = url_row.url();
     return true;
   }
-  virtual void DoneRunOnMainThread() {
+
+  virtual void DoneRunOnMainThread() OVERRIDE {
     if (success_)
       local_predictor_->OnLookupURL(url_id_, url_);
   }
+
  private:
+  virtual ~GetURLForURLIDTask() {}
+
   PrerenderLocalPredictor* local_predictor_;
   history::URLID url_id_;
   bool success_;
@@ -55,15 +60,20 @@ class GetVisitHistoryTask : public HistoryDBTask {
         max_visits_(max_visits),
         visit_history_(new std::vector<history::BriefVisitInfo>) {
   }
+
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
-                             history::HistoryDatabase* db) {
+                             history::HistoryDatabase* db) OVERRIDE {
     db->GetBriefVisitInfoOfMostRecentVisits(max_visits_, visit_history_.get());
     return true;
   }
-  virtual void DoneRunOnMainThread() {
+
+  virtual void DoneRunOnMainThread() OVERRIDE {
     local_predictor_->OnGetInitialVisitHistory(visit_history_.Pass());
   }
+
  private:
+  virtual ~GetVisitHistoryTask() {}
+
   PrerenderLocalPredictor* local_predictor_;
   int max_visits_;
   scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history_;

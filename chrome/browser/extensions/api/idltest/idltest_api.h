@@ -10,23 +10,29 @@
 
 class IdltestSendArrayBufferFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.idltest.sendArrayBuffer")
+
+ protected:
+  virtual ~IdltestSendArrayBufferFunction() {}
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class IdltestSendArrayBufferViewFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.idltest.sendArrayBufferView")
+
+ protected:
+  virtual ~IdltestSendArrayBufferViewFunction() {}
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class IdltestGetArrayBufferFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.idltest.getArrayBuffer")
+
+ protected:
+  virtual ~IdltestGetArrayBufferFunction() {}
+  virtual bool RunImpl() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_IDLTEST_IDLTEST_API_H_

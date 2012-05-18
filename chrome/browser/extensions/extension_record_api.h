@@ -51,13 +51,7 @@ class ProductionProcessStrategy : public ProcessStrategy {
 // file.  This base class encapslates those common elements.
 class RunPageCyclerFunction : public AsyncExtensionFunction {
  public:
-
   explicit RunPageCyclerFunction(ProcessStrategy* strategy);
-  virtual ~RunPageCyclerFunction();
-
-  // Gather common page cycler parameters and store them, then do blocking
-  // thread invocation of RunTestBrowser.
-  virtual bool RunImpl() OVERRIDE;
 
   // Make a CommandLine copy of |original|, removing all switches in
   // |to_remove|.
@@ -68,6 +62,12 @@ class RunPageCyclerFunction : public AsyncExtensionFunction {
   virtual const ProcessStrategy &GetProcessStrategy();
 
  protected:
+  virtual ~RunPageCyclerFunction();
+
+  // Gather common page cycler parameters and store them, then do blocking
+  // thread invocation of RunTestBrowser.
+  virtual bool RunImpl() OVERRIDE;
+
   // Parse the JS parameters, and store them as member data.
   virtual bool ParseJSParameters() = 0;
 
@@ -101,6 +101,8 @@ class RunPageCyclerFunction : public AsyncExtensionFunction {
 
 class CaptureURLsFunction : public RunPageCyclerFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.record.captureURLs");
+
   CaptureURLsFunction();
   explicit CaptureURLsFunction(ProcessStrategy* strategy);
 
@@ -115,12 +117,12 @@ class CaptureURLsFunction : public RunPageCyclerFunction {
 
   // Return error list.
   virtual void Finish() OVERRIDE;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.record.captureURLs");
 };
 
 class ReplayURLsFunction : public RunPageCyclerFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.record.replayURLs");
+
   ReplayURLsFunction();
   explicit ReplayURLsFunction(ProcessStrategy* strategy);
 
@@ -138,8 +140,6 @@ class ReplayURLsFunction : public RunPageCyclerFunction {
 
   // Return error list, statistical results, and runtime.
   virtual void Finish() OVERRIDE;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.record.replayURLs");
 
   // These three data are additional information added to the sub-browser
   // commandline.

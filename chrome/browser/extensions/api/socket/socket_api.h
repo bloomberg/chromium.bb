@@ -23,7 +23,10 @@ extern const char kSocketIdKey[];
 extern const char kUdpSocketType[];
 
 class SocketExtensionFunction : public AsyncAPIFunction {
- public:
+ protected:
+  virtual ~SocketExtensionFunction() {}
+
+  // AsyncAPIFunction:
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 };
@@ -108,7 +111,13 @@ class SocketDisconnectFunction : public SocketExtensionFunction {
 };
 
 class SocketBindFunction : public SocketExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.bind")
+
  protected:
+  virtual ~SocketBindFunction() {}
+
+  // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
 
@@ -116,8 +125,6 @@ class SocketBindFunction : public SocketExtensionFunction {
   int socket_id_;
   std::string address_;
   int port_;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.bind")
 };
 
 class SocketReadFunction : public SocketExtensionFunction {

@@ -22,9 +22,13 @@ class RuntimeEventRouter {
 };
 
 class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {
- protected:
-  virtual bool RunImpl() OVERRIDE;
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("runtime.getBackgroundPage");
+
+ protected:
+  virtual ~RuntimeGetBackgroundPageFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+
  private:
   void OnPageLoaded(ExtensionHost*);
 };

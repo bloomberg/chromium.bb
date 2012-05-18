@@ -37,7 +37,6 @@ class PepperHungPluginFilter
   PepperHungPluginFilter(const FilePath& plugin_path,
                          int view_routing_id,
                          int plugin_child_id);
-  virtual ~PepperHungPluginFilter();
 
   // SyncMessageStatusReceiver implementation.
   virtual void BeginBlockOnSyncMessage() OVERRIDE;
@@ -48,6 +47,9 @@ class PepperHungPluginFilter
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+ protected:
+  virtual ~PepperHungPluginFilter();
 
  private:
   // Makes sure that the hung timer is scheduled.

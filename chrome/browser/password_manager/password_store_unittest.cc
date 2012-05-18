@@ -56,17 +56,15 @@ class DBThreadObserverHelper
     done_event_.Wait();
   }
 
-  virtual ~DBThreadObserverHelper() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    registrar_.RemoveAll();
-  }
-
   content::NotificationObserverMock& observer() {
     return observer_;
   }
 
  protected:
-  friend class base::RefCountedThreadSafe<DBThreadObserverHelper>;
+  virtual ~DBThreadObserverHelper() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    registrar_.RemoveAll();
+  }
 
   void AddObserverTask(PasswordStore* password_store) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
@@ -79,6 +77,10 @@ class DBThreadObserverHelper
   WaitableEvent done_event_;
   content::NotificationRegistrar registrar_;
   content::NotificationObserverMock observer_;
+
+ private:
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::DB>;
+  friend class base::DeleteHelper<DBThreadObserverHelper>;
 };
 
 }  // anonymous namespace

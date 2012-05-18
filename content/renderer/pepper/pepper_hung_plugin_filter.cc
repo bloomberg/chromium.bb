@@ -36,9 +36,6 @@ PepperHungPluginFilter::PepperHungPluginFilter(const FilePath& plugin_path,
       timer_task_pending_(false) {
 }
 
-PepperHungPluginFilter::~PepperHungPluginFilter() {
-}
-
 void PepperHungPluginFilter::BeginBlockOnSyncMessage() {
   base::AutoLock lock(lock_);
   if (pending_sync_message_count_ == 0)
@@ -76,6 +73,8 @@ bool PepperHungPluginFilter::OnMessageReceived(const IPC::Message& message) {
   MayHaveBecomeUnhung();
   return false;
 }
+
+PepperHungPluginFilter::~PepperHungPluginFilter() {}
 
 void PepperHungPluginFilter::EnsureTimerScheduled() {
   lock_.AssertAcquired();

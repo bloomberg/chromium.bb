@@ -95,8 +95,12 @@ class BluetoothGetDevicesWithServiceNameFunction
 
 class BluetoothConnectFunction : public AsyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.connect")
+
+ protected:
+  virtual ~BluetoothConnectFunction() {}
+
+  virtual bool RunImpl() OVERRIDE;
 
  private:
 #if defined(OS_CHROMEOS)

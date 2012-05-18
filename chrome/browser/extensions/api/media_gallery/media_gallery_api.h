@@ -15,26 +15,32 @@ namespace extensions {
 
 class GetMediaFileSystemsFunction : public SyncExtensionFunction {
  public:
-  virtual ~GetMediaFileSystemsFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.mediaGalleries.getMediaFileSystems")
+
+ protected:
+  virtual ~GetMediaFileSystemsFunction();
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class OpenMediaGalleryManagerFunction : public SyncExtensionFunction {
  public:
-  virtual ~OpenMediaGalleryManagerFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.mediaGalleries.openMediaGalleryManager")
+
+ protected:
+  virtual ~OpenMediaGalleryManagerFunction();
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class AssembleMediaFileFunction : public SyncExtensionFunction {
  public:
-  virtual ~AssembleMediaFileFunction();
-  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.mediaGalleries.assembleMediaFile")
+
+ protected:
+  virtual ~AssembleMediaFileFunction();
+  virtual bool RunImpl() OVERRIDE;
 };
 
 }  // namespace extensions

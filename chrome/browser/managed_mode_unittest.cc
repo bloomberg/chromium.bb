@@ -94,7 +94,6 @@ class MockCallback : public base::RefCountedThreadSafe<MockCallback> {
   explicit MockCallback(FakeManagedMode* managed_mode)
       : managed_mode_(managed_mode) {
   }
-  virtual ~MockCallback() {}
 
   void CheckManagedMode(bool success) {
     EXPECT_EQ(managed_mode_->IsInManagedModeImpl(), success);
@@ -103,7 +102,12 @@ class MockCallback : public base::RefCountedThreadSafe<MockCallback> {
 
   MOCK_METHOD1(DidEnterManagedMode, void(bool));
 
+ protected:
+  virtual ~MockCallback() {}
+
  private:
+  friend class base::RefCountedThreadSafe<MockCallback>;
+
   FakeManagedMode* managed_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCallback);
