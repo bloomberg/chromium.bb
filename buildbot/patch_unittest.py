@@ -372,7 +372,7 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     return self.patch_kls(source, self.PROJECT, ref,
                           'origin/master', self.ORIGINAL_BRANCH,
-                          self.ORIGINAL_SHA1, sha1, **kwds)
+                          self.ORIGINAL_SHA1, carbon_copy_sha1=sha1, **kwds)
 
   def testStringRepresentation(self):
     git1, git2, patch = self._CommonGitSetup()

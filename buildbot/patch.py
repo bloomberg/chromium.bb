@@ -522,7 +522,7 @@ class LocalPatch(GitRepoPatch):
 class UploadedLocalPatch(GitRepoPatch):
   """Represents an uploaded local patch passed in using --remote-patch."""
   def __init__(self, project_url, project, ref, tracking_branch,
-               original_branch, original_sha1, carbon_copy_sha1):
+               original_branch, original_sha1, carbon_copy_sha1=None):
     GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
                           sha1=carbon_copy_sha1)
     self.original_branch = original_branch
