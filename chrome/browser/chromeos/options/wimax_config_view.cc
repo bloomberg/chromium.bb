@@ -62,12 +62,10 @@ views::View* WimaxConfigView::GetInitiallyFocusedView() {
 }
 
 bool WimaxConfigView::CanLogin() {
-  // TODO(benchan): Update this with the correct minimum length.
-  static const size_t kMinWimaxPasswordLen = 0;
-
+  // TODO(benchan): Update this with the correct minimum length (don't just
+  // check if empty).
   // If the network requires a passphrase, make sure it is the right length.
-  return passphrase_textfield_ && passphrase_textfield_->text().length() >=
-      kMinWimaxPasswordLen;
+  return passphrase_textfield_ && !passphrase_textfield_->text().empty();
 }
 
 void WimaxConfigView::UpdateDialogButtons() {
