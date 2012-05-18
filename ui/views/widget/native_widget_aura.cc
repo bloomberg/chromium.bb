@@ -10,6 +10,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_move_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
@@ -169,7 +170,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
 
   if (desktop_helper_.get())
-    desktop_helper_->PreInitialize(params);
+    desktop_helper_->PreInitialize(window_, params);
 
   window_->set_user_data(this);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
@@ -419,8 +420,15 @@ void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
 
 gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
   gfx::Rect bounds = window_->GetBoundsInRootWindow();
-  if (desktop_helper_.get())
-    bounds = desktop_helper_->ChangeRootWindowBoundsToScreenBounds(bounds);
+
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(window_->GetRootWindow());
+  if (screen_position_client) {
+    gfx::Point origin = bounds.origin();
+    screen_position_client->ConvertToScreenPoint(&origin);
+    bounds.set_origin(origin);
+  }
+
   return bounds;
 }
 
@@ -428,8 +436,15 @@ gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
   // View-to-screen coordinate system transformations depend on this returning
   // the full window bounds, for example View::ConvertPointToScreen().
   gfx::Rect bounds = window_->GetBoundsInRootWindow();
-  if (desktop_helper_.get())
-    bounds = desktop_helper_->ChangeRootWindowBoundsToScreenBounds(bounds);
+
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(window_->GetRootWindow());
+  if (screen_position_client) {
+    gfx::Point origin = bounds.origin();
+    screen_position_client->ConvertToScreenPoint(&origin);
+    bounds.set_origin(origin);
+  }
+
   return bounds;
 }
 

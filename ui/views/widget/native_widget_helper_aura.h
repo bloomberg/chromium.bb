@@ -18,8 +18,9 @@ class VIEWS_EXPORT NativeWidgetHelperAura {
   virtual ~NativeWidgetHelperAura() {}
 
   // Called at the start of InitNativeWidget; determines whether we should
-  // set up a root_window_ for this widget.
-  virtual void PreInitialize(const Widget::InitParams& params) = 0;
+  // set up a root_window_ for this widget/window pair.
+  virtual void PreInitialize(aura::Window* window,
+                             const Widget::InitParams& params) = 0;
 
   // Called at the end of InitNativeWidget; i.e. after the NativeWidgetAura's
   // aura::Window has been initialized.
@@ -35,11 +36,6 @@ class VIEWS_EXPORT NativeWidgetHelperAura {
   // |root_window_|, and returns modified bounds to set the origin to
   // zero. Otherwise, pass through in_bounds.
   virtual gfx::Rect ModifyAndSetBounds(const gfx::Rect& bounds) = 0;
-
-  // Takes bounds relative to the RootWindow and changes them to be relative to
-  // the screen.
-  virtual gfx::Rect ChangeRootWindowBoundsToScreenBounds(
-      const gfx::Rect& bounds) = 0;
 };
 
 }  // namespace views

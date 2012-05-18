@@ -42,6 +42,8 @@
         'client/drag_drop_delegate.h',
         'client/event_client.cc',
         'client/event_client.h',
+        'client/screen_position_client.cc',
+        'client/screen_position_client.h',
         'client/stacking_client.cc',
         'client/stacking_client.h',
         'client/tooltip_client.cc',

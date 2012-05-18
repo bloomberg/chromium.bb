@@ -21,6 +21,8 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_aura.h"
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #else
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
@@ -41,7 +43,6 @@ ChromeWebContentsViewDelegateViews::~ChromeWebContentsViewDelegateViews() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
-
 }
 
 content::WebDragDestDelegate*
@@ -133,9 +134,21 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
   gfx::Point screen_point(params.x, params.y);
 
 #if defined(USE_AURA)
-  gfx::Point view_origin = web_contents_->GetView()->GetNativeView()->
-      GetBoundsInRootWindow().origin();
-  screen_point.Offset(view_origin.x(), view_origin.y());
+  // Convert from content coordinates to window coordinates.
+  aura::Window* web_contents_window =
+      web_contents_->GetView()->GetNativeView();
+  aura::RootWindow* root_window = web_contents_window->GetRootWindow();
+  aura::Window::ConvertPointToWindow(web_contents_window, root_window,
+                                     &screen_point);
+
+  // If we are on the desktop, transform the data from our toplevel window
+  // coordinates to screen coordinates.
+  aura::Window* toplevel_window =
+      web_contents_->GetView()->GetTopLevelNativeWindow();
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(toplevel_window);
+  if (screen_position_client)
+    screen_position_client->ConvertToScreenPoint(&screen_point);
 #else
   POINT temp = screen_point.ToPOINT();
   ClientToScreen(web_contents_->GetView()->GetNativeView(), &temp);

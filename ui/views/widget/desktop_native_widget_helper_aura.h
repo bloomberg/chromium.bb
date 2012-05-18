@@ -14,6 +14,9 @@
 
 namespace aura {
 class RootWindow;
+namespace client {
+class ScreenPositionClient;
+}
 namespace shared {
 class InputMethodEventFilter;
 class RootWindowEventFilter;
@@ -43,13 +46,12 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   virtual ~DesktopNativeWidgetHelperAura();
 
   // Overridden from aura::NativeWidgetHelperAura:
-  virtual void PreInitialize(const Widget::InitParams& params) OVERRIDE;
+  virtual void PreInitialize(aura::Window* window,
+                             const Widget::InitParams& params) OVERRIDE;
   virtual void PostInitialize() OVERRIDE;
   virtual void ShowRootWindow() OVERRIDE;
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::Rect ModifyAndSetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual gfx::Rect ChangeRootWindowBoundsToScreenBounds(
-      const gfx::Rect& bounds) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
@@ -73,6 +75,10 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   // NativeWidgetAura, but still act as if they're screen bounded toplevel
   // windows.
   bool is_embedded_window_;
+
+  // In some cases, we set a screen position client on |root_window_|. If we
+  // do, we're responsible for the lifetime.
+  scoped_ptr<aura::client::ScreenPositionClient> position_client_;
 
 #if defined(OS_WIN)
   scoped_ptr<ui::HWNDSubclass> subclass_;

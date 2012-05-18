@@ -8,6 +8,7 @@
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
 #include "ui/aura/client/dispatcher_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/shared/root_window_event_filter.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -20,6 +21,49 @@
 #endif
 
 namespace views {
+
+namespace {
+
+// Client that always offsets the passed in point by the RootHost's origin.
+class RootWindowScreenPositionClient
+    : public aura::client::ScreenPositionClient {
+ public:
+  explicit RootWindowScreenPositionClient(aura::RootWindow* root_window)
+      : root_window_(root_window) {}
+  virtual ~RootWindowScreenPositionClient() {}
+
+  // aura::client::ScreenPositionClient:
+  virtual void ConvertToScreenPoint(gfx::Point* screen_point) OVERRIDE {
+    gfx::Point origin = root_window_->GetHostOrigin();
+    screen_point->Offset(origin.x(), origin.y());
+  }
+
+ private:
+  aura::RootWindow* root_window_;
+};
+
+// Client that always offsets by the toplevel RootWindow of the passed in child
+// NativeWidgetAura.
+class EmbeddedWindowScreenPositionClient
+    : public aura::client::ScreenPositionClient {
+ public:
+  explicit EmbeddedWindowScreenPositionClient(NativeWidgetAura* widget)
+      : widget_(widget) {}
+  virtual ~EmbeddedWindowScreenPositionClient() {}
+
+  // aura::client::ScreenPositionClient:
+  virtual void ConvertToScreenPoint(gfx::Point* screen_point) OVERRIDE {
+    aura::RootWindow* root =
+        widget_->GetNativeWindow()->GetRootWindow()->GetRootWindow();
+    gfx::Point origin = root->GetHostOrigin();
+    screen_point->Offset(origin.x(), origin.y());
+  }
+
+ private:
+  NativeWidgetAura* widget_;
+};
+
+}  // namespace
 
 DesktopNativeWidgetHelperAura::DesktopNativeWidgetHelperAura(
     NativeWidgetAura* widget)
@@ -39,6 +83,7 @@ DesktopNativeWidgetHelperAura::~DesktopNativeWidgetHelperAura() {
 }
 
 void DesktopNativeWidgetHelperAura::PreInitialize(
+    aura::Window* window,
     const Widget::InitParams& params) {
 #if !defined(OS_WIN)
   // We don't want the status bubble or the omnibox to get their own root
@@ -49,6 +94,8 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   // for the status bubble and the omnibox.
   if (params.type == Widget::InitParams::TYPE_POPUP) {
     is_embedded_window_ = true;
+    position_client_.reset(new EmbeddedWindowScreenPositionClient(widget_));
+    aura::client::SetScreenPositionClient(window, position_client_.get());
     return;
   } else if (params.type == Widget::InitParams::TYPE_CONTROL) {
     return;
@@ -85,6 +132,10 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
       new aura::DesktopActivationClient(root_window_.get()));
   aura::client::SetDispatcherClient(root_window_.get(),
                                     new aura::DesktopDispatcherClient);
+
+  position_client_.reset(
+      new RootWindowScreenPositionClient(root_window_.get()));
+  aura::client::SetScreenPositionClient(window, position_client_.get());
 }
 
 void DesktopNativeWidgetHelperAura::PostInitialize() {
@@ -122,19 +173,6 @@ gfx::Rect DesktopNativeWidgetHelperAura::ModifyAndSetBounds(
     out_bounds.set_y(out_bounds.y() - point.y());
   }
 
-  return out_bounds;
-}
-
-gfx::Rect DesktopNativeWidgetHelperAura::ChangeRootWindowBoundsToScreenBounds(
-    const gfx::Rect& bounds) {
-  gfx::Rect out_bounds = bounds;
-  if (root_window_.get()) {
-    out_bounds.Offset(root_window_->GetHostOrigin());
-  } else if (is_embedded_window_) {
-    aura::RootWindow* root =
-        widget_->GetNativeWindow()->GetRootWindow()->GetRootWindow();
-    out_bounds.Offset(root->GetHostOrigin());
-  }
   return out_bounds;
 }
 
