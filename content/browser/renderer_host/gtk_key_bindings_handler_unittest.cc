@@ -19,6 +19,8 @@
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::NativeWebKeyboardEvent;
+
 class GtkKeyBindingsHandlerTest : public testing::Test {
  protected:
   struct EditCommand {

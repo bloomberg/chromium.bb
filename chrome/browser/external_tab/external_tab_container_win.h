@@ -146,10 +146,11 @@ class ExternalTabContainer : public content::WebContentsDelegate,
                                   int64 source_frame_id,
                                   const GURL& target_url,
                                   content::WebContents* new_contents) OVERRIDE;
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual bool PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
   virtual bool CanDownload(content::RenderViewHost* render_view_host,
                            int request_id,

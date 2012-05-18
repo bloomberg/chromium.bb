@@ -22,7 +22,10 @@ class WebCursor;
 struct AccessibilityHostMsg_NotificationParams;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
+
+namespace content {
 struct NativeWebKeyboardEvent;
+}
 
 namespace webkit {
 namespace npapi {
@@ -194,7 +197,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // not enabled, this is a no-op, so it is always safe to call.
   // Returns true if the event was handled by IME.
   virtual bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event) = 0;
+      const content::NativeWebKeyboardEvent& event) = 0;
 
   // Methods associated with GPU-accelerated plug-in instances.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(

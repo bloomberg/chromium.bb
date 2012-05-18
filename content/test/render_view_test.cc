@@ -44,6 +44,7 @@ using WebKit::WebScriptController;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
+using content::NativeWebKeyboardEvent;
 
 namespace {
 const int32 kOpenerId = -2;

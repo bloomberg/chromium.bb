@@ -177,6 +177,7 @@ using content::ChildProcessHost;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::InterstitialPage;
+using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::PluginService;

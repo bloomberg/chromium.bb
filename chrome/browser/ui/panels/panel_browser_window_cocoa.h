@@ -54,10 +54,10 @@ class PanelBrowserWindowCocoa : public NativePanel,
   virtual void DrawAttention(bool draw_attention) OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
   virtual bool PreHandlePanelKeyboardEvent(
-      const NativeWebKeyboardEvent& event,
+      const content::NativeWebKeyboardEvent& event,
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandlePanelKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void FullScreenModeChanged(bool is_full_screen) OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
   virtual void DestroyPanelBrowser() OVERRIDE;

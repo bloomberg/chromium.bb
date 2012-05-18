@@ -12,6 +12,7 @@
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>  // for the kVK_* constants.
 
+using content::NativeWebKeyboardEvent;
 using content::RenderViewTest;
 
 NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {

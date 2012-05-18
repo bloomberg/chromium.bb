@@ -10,6 +10,8 @@
 
 using WebKit::WebInputEventFactory;
 
+namespace content {
+
 NativeWebKeyboardEvent::NativeWebKeyboardEvent()
     : os_event(NULL),
       skip_in_browser(false) {
@@ -54,3 +56,5 @@ NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
 NativeWebKeyboardEvent::~NativeWebKeyboardEvent() {
   [os_event release];
 }
+
+}  // namespace content

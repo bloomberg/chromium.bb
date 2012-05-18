@@ -8,9 +8,9 @@
 
 #include "content/common/content_export.h"
 
-struct NativeWebKeyboardEvent;
-
 namespace content {
+
+struct NativeWebKeyboardEvent;
 
 //
 // RenderWidgetHostDelegate

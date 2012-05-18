@@ -6,6 +6,8 @@
 
 #include "ui/gfx/rect.h"
 
+using content::NativeWebKeyboardEvent;
+
 TestBrowserWindow::TestBrowserWindow(Browser* browser) {}
 
 TestBrowserWindow::~TestBrowserWindow() {}

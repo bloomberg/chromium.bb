@@ -35,7 +35,6 @@ class PowerManagerClientObserverForTesting;
 class AutofillProfile;
 class CreditCard;
 class ImporterList;
-struct NativeWebKeyboardEvent;
 
 namespace base {
 class DictionaryValue;
@@ -43,6 +42,7 @@ class DictionaryValue;
 
 namespace content {
 class RenderViewHost;
+struct NativeWebKeyboardEvent;
 }
 
 namespace gfx {
@@ -755,13 +755,13 @@ class TestingAutomationProvider : public AutomationProvider,
   // the error parameter, otherwise returns true.
   bool BuildWebKeyEventFromArgs(base::DictionaryValue* args,
                                 std::string* error,
-                                NativeWebKeyboardEvent* event);
+                                content::NativeWebKeyboardEvent* event);
 
   // Populates the fields of the event parameter with default data, except for
   // the specified key type and key code.
   void BuildSimpleWebKeyEvent(WebKit::WebInputEvent::Type type,
                               int windows_key_code,
-                              NativeWebKeyboardEvent* event);
+                              content::NativeWebKeyboardEvent* event);
 
   // Sends a key press event using the given key code to the specified tab.
   // A key press is a combination of a "key down" event and a "key up" event.

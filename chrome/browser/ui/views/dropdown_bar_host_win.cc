@@ -12,6 +12,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 
+using content::NativeWebKeyboardEvent;
 using content::WebContents;
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(

@@ -9,6 +9,8 @@
 using WebKit::WebInputEventFactory;
 using WebKit::WebKeyboardEvent;
 
+namespace content {
+
 NativeWebKeyboardEvent::NativeWebKeyboardEvent()
     : skip_in_browser(false) {
   memset(&os_event, 0, sizeof(os_event));
@@ -44,3 +46,5 @@ NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
 NativeWebKeyboardEvent::~NativeWebKeyboardEvent() {
   // Noop under windows
 }
+
+}  // namespace content

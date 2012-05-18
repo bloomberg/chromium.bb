@@ -22,7 +22,6 @@
 class FilePath;
 class GURL;
 class WebContentsImpl;
-struct NativeWebKeyboardEvent;
 
 namespace base {
 class ListValue;
@@ -38,6 +37,7 @@ class WebContents;
 class WebIntentsDispatcher;
 struct ContextMenuParams;
 struct FileChooserParams;
+struct NativeWebKeyboardEvent;
 struct SSLStatus;
 }
 

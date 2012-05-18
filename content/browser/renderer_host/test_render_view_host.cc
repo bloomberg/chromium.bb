@@ -16,6 +16,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 
+using content::NativeWebKeyboardEvent;
 using webkit::forms::PasswordForm;
 
 namespace content {

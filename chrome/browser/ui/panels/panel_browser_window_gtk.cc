@@ -27,6 +27,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
 
+using content::NativeWebKeyboardEvent;
 using content::WebContents;
 
 namespace {

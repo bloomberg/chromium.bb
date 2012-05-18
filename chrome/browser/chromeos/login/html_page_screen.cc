@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "ui/views/events/event.h"
 
+using content::NativeWebKeyboardEvent;
 using content::SiteInstance;
 using content::WebContents;
 

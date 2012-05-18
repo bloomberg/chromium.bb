@@ -125,6 +125,7 @@
 #endif
 
 using base::TimeDelta;
+using content::NativeWebKeyboardEvent;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;

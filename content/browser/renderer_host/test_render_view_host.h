@@ -115,7 +115,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
   virtual void StartPluginIme() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
       bool opaque,
       bool root) OVERRIDE;

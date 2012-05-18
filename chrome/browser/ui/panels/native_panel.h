@@ -60,9 +60,10 @@ class NativePanel {
   virtual void DrawAttention(bool draw_attention) = 0;
   virtual bool IsDrawingAttention() const = 0;
   virtual bool PreHandlePanelKeyboardEvent(
-      const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) = 0;
+      const content::NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) = 0;
   virtual void HandlePanelKeyboardEvent(
-      const NativeWebKeyboardEvent& event) = 0;
+      const content::NativeWebKeyboardEvent& event) = 0;
   virtual void FullScreenModeChanged(bool is_full_screen) = 0;
 
   virtual Browser* GetPanelBrowser() const = 0;

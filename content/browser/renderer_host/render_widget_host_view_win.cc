@@ -67,6 +67,7 @@
 using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
+using content::NativeWebKeyboardEvent;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;

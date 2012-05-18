@@ -15,6 +15,8 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
+using content::NativeWebKeyboardEvent;
+
 @interface MenuWalker : NSObject
 + (NSMenuItem*)itemForKeyEquivalent:(NSEvent*)key
                                menu:(NSMenu*)menu;

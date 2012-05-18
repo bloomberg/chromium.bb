@@ -109,11 +109,11 @@ class PanelBrowserView : public BrowserView,
   virtual void DrawAttention(bool draw_attention) OVERRIDE;
   virtual bool IsDrawingAttention() const OVERRIDE;
   virtual bool PreHandlePanelKeyboardEvent(
-      const NativeWebKeyboardEvent& event,
+      const content::NativeWebKeyboardEvent& event,
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void FullScreenModeChanged(bool is_full_screen) OVERRIDE;
   virtual void HandlePanelKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual gfx::Size WindowSizeFromContentSize(
       const gfx::Size& content_size) const OVERRIDE;
   virtual gfx::Size ContentSizeFromWindowSize(

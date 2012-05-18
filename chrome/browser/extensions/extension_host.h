@@ -142,14 +142,15 @@ class ExtensionHost : public content::WebContentsDelegate,
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) OVERRIDE;
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
-      OVERRIDE;
+  virtual bool PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void ResizeDueToAutoResize(content::WebContents* source,
                                      const gfx::Size& new_size) OVERRIDE;
-  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
-      OVERRIDE;
+  virtual content::JavaScriptDialogCreator*
+      GetJavaScriptDialogCreator() OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* tab,
       const content::FileChooserParams& params) OVERRIDE;
@@ -178,8 +179,8 @@ class ExtensionHost : public content::WebContentsDelegate,
   void Close();
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual ExtensionWindowController* GetExtensionWindowController()
-      const OVERRIDE;
+  virtual ExtensionWindowController*
+      GetExtensionWindowController() const OVERRIDE;
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
@@ -190,7 +191,8 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the
   // event in platform specific way.
-  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {}
+  virtual void UnhandledKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) {}
 
   // Returns true if we're hosting a background page.
   // This isn't valid until CreateRenderView is called.

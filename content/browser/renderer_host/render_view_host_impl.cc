@@ -68,6 +68,7 @@
 #include "webkit/glue/webdropdata.h"
 
 using base::TimeDelta;
+using content::NativeWebKeyboardEvent;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;

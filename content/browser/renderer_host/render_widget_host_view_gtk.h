@@ -28,11 +28,11 @@
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 
 class GtkIMContextWrapper;
-struct NativeWebKeyboardEvent;
 
 namespace content {
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
+struct NativeWebKeyboardEvent;
 }
 
 class GtkKeyBindingsHandler;
@@ -145,7 +145,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   // calls GtkKeyBindingsHandler::Match() against the event and send matched
   // edit commands to renderer by calling
   // RenderWidgetHost::ForwardEditCommandsForNextKeyEvent().
-  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
+  void ForwardKeyboardEvent(const content::NativeWebKeyboardEvent& event);
 
   bool RetrieveSurrounding(std::string* text, size_t* cursor_index);
 

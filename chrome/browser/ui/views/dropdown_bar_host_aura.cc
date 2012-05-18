@@ -8,6 +8,7 @@
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
+using content::NativeWebKeyboardEvent;
 using content::WebContents;
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(

@@ -38,6 +38,7 @@
 using content::BrowserThread;
 using content::DomOperationNotificationDetails;
 using content::InterstitialPageDelegate;
+using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;

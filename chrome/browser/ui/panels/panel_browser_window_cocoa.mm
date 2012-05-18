@@ -23,6 +23,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_source.h"
 
+using content::NativeWebKeyboardEvent;
 using content::WebContents;
 
 namespace {

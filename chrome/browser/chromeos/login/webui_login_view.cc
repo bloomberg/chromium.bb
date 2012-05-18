@@ -37,7 +37,7 @@
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 #endif
 
-
+using content::NativeWebKeyboardEvent;
 using content::RenderViewHost;
 using content::WebContents;
 

@@ -20,7 +20,7 @@ class UnhandledKeyboardEventHandler {
   UnhandledKeyboardEventHandler();
   ~UnhandledKeyboardEventHandler();
 
-  void HandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+  void HandleKeyboardEvent(const content::NativeWebKeyboardEvent& event,
                            views::FocusManager* focus_manager);
 
  private:

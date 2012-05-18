@@ -80,6 +80,7 @@
 #endif
 
 using content::DomOperationNotificationDetails;
+using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;

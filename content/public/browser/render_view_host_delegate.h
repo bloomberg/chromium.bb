@@ -26,7 +26,6 @@ class GURL;
 class SkBitmap;
 class WebContentsImpl;
 class WebKeyboardEvent;
-struct NativeWebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_FrameNavigate_Params;
@@ -57,6 +56,7 @@ class WebContents;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct GlobalRequestID;
+struct NativeWebKeyboardEvent;
 struct Referrer;
 struct RendererPreferences;
 

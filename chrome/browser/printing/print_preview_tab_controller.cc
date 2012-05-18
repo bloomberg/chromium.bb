@@ -40,6 +40,7 @@
 #include "content/public/browser/web_contents.h"
 #include "webkit/plugins/webplugininfo.h"
 
+using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::WebContents;
 using content::WebUIMessageHandler;

@@ -57,6 +57,7 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
+using content::NativeWebKeyboardEvent;
 using content::OpenURLParams;
 using content::RenderViewHost;
 using content::SiteInstance;

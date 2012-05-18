@@ -24,6 +24,8 @@ void DeleteGlobalRefForKeyEvent(jobject key_event) {
 
 }
 
+namespace content {
+
 NativeWebKeyboardEvent::NativeWebKeyboardEvent()
     : os_event(NULL),
       skip_in_browser(false) {
@@ -71,3 +73,5 @@ NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
 NativeWebKeyboardEvent::~NativeWebKeyboardEvent() {
   DeleteGlobalRefForKeyEvent(os_event);
 }
+
+}  // namespace content

@@ -23,6 +23,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/size.h"
 
+using content::NativeWebKeyboardEvent;
 using content::WebContents;
 using content::WebUIMessageHandler;
 

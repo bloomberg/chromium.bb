@@ -24,6 +24,8 @@
 #import "ui/base/cocoa/find_pasteboard.h"
 #import "ui/base/cocoa/focus_tracker.h"
 
+using content::NativeWebKeyboardEvent;
+
 const float kFindBarOpenDuration = 0.2;
 const float kFindBarCloseDuration = 0.15;
 const float kFindBarMoveDuration = 0.15;

@@ -31,6 +31,7 @@ using base::TimeDelta;
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 using content::MockRenderProcessHost;
+using content::NativeWebKeyboardEvent;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using WebKit::WebInputEvent;

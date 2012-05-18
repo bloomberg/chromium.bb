@@ -68,6 +68,7 @@
 
 using content::BrowserThread;
 using content::LoadNotificationDetails;
+using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;

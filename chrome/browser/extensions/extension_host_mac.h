@@ -17,9 +17,10 @@ class ExtensionHostMac : public ExtensionHost {
                    const GURL& url, content::ViewType host_type) :
       ExtensionHost(extension, site_instance, url, host_type) {}
   virtual ~ExtensionHostMac();
+
  private:
   virtual void UnhandledKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHostMac);
 };

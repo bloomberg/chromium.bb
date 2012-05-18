@@ -21,6 +21,8 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
+using content::NativeWebKeyboardEvent;
+
 namespace browser {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.

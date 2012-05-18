@@ -51,6 +51,7 @@
 #import "chrome/browser/ui/cocoa/one_click_signin_bubble_controller.h"
 #endif
 
+using content::NativeWebKeyboardEvent;
 using content::SSLStatus;
 using content::WebContents;
 

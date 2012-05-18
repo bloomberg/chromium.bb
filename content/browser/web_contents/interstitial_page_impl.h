@@ -102,10 +102,11 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
 
   // RenderWidgetHostDelegate implementation:
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual bool PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   bool enabled() const { return enabled_; }
   content::WebContents* web_contents() const;

@@ -246,7 +246,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
   virtual void StartPluginIme() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Methods associated with GPU-accelerated plug-in instances and the
   // accelerated compositor.

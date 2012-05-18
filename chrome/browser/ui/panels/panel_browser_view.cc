@@ -22,6 +22,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
+using content::NativeWebKeyboardEvent;
 using content::WebContents;
 
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,

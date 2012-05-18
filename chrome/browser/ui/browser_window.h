@@ -27,10 +27,10 @@ class TemplateURL;
 #if !defined(OS_MACOSX)
 class ToolbarView;
 #endif
-struct NativeWebKeyboardEvent;
 
 namespace content {
 class WebContents;
+struct NativeWebKeyboardEvent;
 struct SSLStatus;
 }
 
@@ -277,12 +277,14 @@ class BrowserWindow : public BaseWindow {
   // Returns true if the |event| was handled. Otherwise, if the |event| would
   // be handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
   // |*is_keyboard_shortcut| should be set to true.
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) = 0;
+  virtual bool PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) = 0;
 
   // Allows the BrowserWindow object to handle the specified keyboard event,
   // if the renderer did not process it.
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) = 0;
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) = 0;
 
   // Shows the create web app shortcut dialog box.
   virtual void ShowCreateWebAppShortcutsDialog(

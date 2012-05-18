@@ -20,6 +20,7 @@
 #include "net/url_request/url_request_filter.h"
 
 using content::ChildProcessSecurityPolicy;
+using content::NativeWebKeyboardEvent;
 using content::OpenURLParams;
 using content::SiteInstance;
 using content::WebContents;

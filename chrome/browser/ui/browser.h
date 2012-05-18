@@ -728,7 +728,7 @@ class Browser : public TabStripModelDelegate,
   // should not be sent to the renderer or |event| was triggered by a key that
   // we never want to send to the renderer.
   bool IsReservedCommandOrKey(int command_id,
-                              const NativeWebKeyboardEvent& event);
+                              const content::NativeWebKeyboardEvent& event);
 
   // Sets if command execution shall be blocked. If |block| is true then
   // following calls to ExecuteCommand() or ExecuteCommandWithDisposition()
@@ -963,10 +963,11 @@ class Browser : public TabStripModelDelegate,
       content::WebContents* source,
       const GURL& frame_url,
       const std::string& frame_content_state) OVERRIDE;
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual bool PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void ShowRepostFormWarningDialog(
       content::WebContents* source) OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(

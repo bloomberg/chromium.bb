@@ -30,6 +30,8 @@ int EventFlagsToWebInputEventModifiers(int flags) {
 
 using WebKit::WebKeyboardEvent;
 
+namespace content {
+
 NativeWebKeyboardEvent::NativeWebKeyboardEvent()
     : os_event(NULL),
       skip_in_browser(false) {
@@ -91,3 +93,5 @@ NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
 NativeWebKeyboardEvent::~NativeWebKeyboardEvent() {
   delete os_event;
 }
+
+}  // namespace content

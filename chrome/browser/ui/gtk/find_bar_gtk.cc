@@ -47,6 +47,8 @@
 #include "ui/gfx/image/cairo_cached_surface.h"
 #include "ui/gfx/image/image.h"
 
+using content::NativeWebKeyboardEvent;
+
 namespace {
 
 // Used as the color of the text in the entry box and the text for the results

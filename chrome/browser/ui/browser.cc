@@ -215,6 +215,7 @@
 #endif
 
 using base::TimeDelta;
+using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;

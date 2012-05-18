@@ -69,7 +69,7 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
       const content::OpenURLParams& params) OVERRIDE;
 
   virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   // WebPageScreen implementation:
   virtual void CloseScreen(ScreenObserver::ExitCodes code) OVERRIDE;

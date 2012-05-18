@@ -12,6 +12,8 @@
 #include "base/string_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
+using content::NativeWebKeyboardEvent;
+
 GtkKeyBindingsHandler::GtkKeyBindingsHandler(GtkWidget* parent_widget)
     : handler_(CreateNewHandler()) {
   DCHECK(GTK_IS_FIXED(parent_widget));

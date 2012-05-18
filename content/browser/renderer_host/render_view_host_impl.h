@@ -371,7 +371,7 @@ class CONTENT_EXPORT RenderViewHostImpl
       const WebKit::WebMouseEvent& mouse_event) OVERRIDE;
   virtual void OnMouseActivate() OVERRIDE;
   virtual void ForwardKeyboardEvent(
-      const NativeWebKeyboardEvent& key_event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& key_event) OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
 
   // Creates a new RenderView with the given route id.

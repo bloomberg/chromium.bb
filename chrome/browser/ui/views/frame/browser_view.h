@@ -294,12 +294,13 @@ class BrowserView : public BrowserWindow,
                                    const content::SSLStatus& ssl,
                                    bool show_history) OVERRIDE;
   virtual void ShowAppMenu() OVERRIDE;
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) OVERRIDE;
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
-      OVERRIDE;
-  virtual void ShowCreateWebAppShortcutsDialog(TabContentsWrapper* tab_contents)
-      OVERRIDE;
+  virtual bool PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void ShowCreateWebAppShortcutsDialog(
+      TabContentsWrapper* tab_contents) OVERRIDE;
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile*, const Extension* app) OVERRIDE;
   virtual void Cut() OVERRIDE;

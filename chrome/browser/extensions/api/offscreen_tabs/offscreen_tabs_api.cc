@@ -41,6 +41,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
+using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NotificationDetails;
 using content::NotificationSource;

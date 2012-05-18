@@ -52,7 +52,7 @@ class HTMLPageScreen : public ViewScreen<HTMLPageView>,
   virtual HTMLPageView* AllocateView() OVERRIDE;
 
   virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   // WebPageScreen implementation:
   virtual void CloseScreen(ScreenObserver::ExitCodes code) OVERRIDE;

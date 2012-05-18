@@ -106,7 +106,7 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
-      const NativeWebKeyboardEvent& event) OVERRIDE;
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;

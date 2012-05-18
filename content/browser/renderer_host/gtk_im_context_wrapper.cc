@@ -21,6 +21,7 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/rect.h"
 
+using content::NativeWebKeyboardEvent;
 using content::RenderWidgetHostImpl;
 
 namespace {

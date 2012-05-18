@@ -107,6 +107,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
+using content::NativeWebKeyboardEvent;
 using content::SSLStatus;
 using content::WebContents;
 

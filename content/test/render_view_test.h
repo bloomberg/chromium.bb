@@ -80,7 +80,7 @@ class RenderViewTest : public testing::Test {
                    string16* output);
 
   // Sends one native key event over IPC.
-  void SendNativeKeyEvent(const NativeWebKeyboardEvent& key_event);
+  void SendNativeKeyEvent(const content::NativeWebKeyboardEvent& key_event);
 
   // Send a raw keyboard event to the renderer.
   void SendWebKeyboardEvent(const WebKit::WebKeyboardEvent& key_event);

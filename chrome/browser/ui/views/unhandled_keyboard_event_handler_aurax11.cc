@@ -8,6 +8,8 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/views/focus/focus_manager.h"
 
+using content::NativeWebKeyboardEvent;
+
 UnhandledKeyboardEventHandler::UnhandledKeyboardEventHandler() {
 }
 

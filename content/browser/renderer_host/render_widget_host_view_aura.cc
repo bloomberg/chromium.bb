@@ -41,6 +41,7 @@
 #include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
+using content::NativeWebKeyboardEvent;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;

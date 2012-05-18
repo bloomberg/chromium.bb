@@ -55,6 +55,7 @@
 #include "webkit/plugins/npapi/webplugin.h"
 
 using content::BrowserThread;
+using content::NativeWebKeyboardEvent;
 using content::RenderViewHostImpl;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;

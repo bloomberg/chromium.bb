@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
 
+using content::NativeWebKeyboardEvent;
 using content::WebContents;
 
 ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(

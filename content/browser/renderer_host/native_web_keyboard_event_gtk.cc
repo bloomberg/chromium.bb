@@ -23,6 +23,7 @@ void FreeEvent(gfx::NativeEvent event) {
 
 }  // namespace
 
+namespace content {
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent()
     : os_event(NULL),
@@ -72,3 +73,5 @@ NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
 NativeWebKeyboardEvent::~NativeWebKeyboardEvent() {
   FreeEvent(os_event);
 }
+
+}  // namespace content

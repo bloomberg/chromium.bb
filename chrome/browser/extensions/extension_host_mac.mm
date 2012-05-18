@@ -10,6 +10,8 @@
 #include "chrome/common/chrome_view_type.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
+using content::NativeWebKeyboardEvent;
+
 ExtensionHostMac::~ExtensionHostMac() {
   // If there is a popup open for this host's extension, close it.
   ExtensionPopupController* popup = [ExtensionPopupController popup];

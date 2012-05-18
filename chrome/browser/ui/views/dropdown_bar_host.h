@@ -147,7 +147,7 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   void SetWidgetPositionNative(const gfx::Rect& new_pos, bool no_redraw);
 
   // Returns a keyboard event suitable for forwarding.
-  NativeWebKeyboardEvent GetKeyboardEvent(
+  content::NativeWebKeyboardEvent GetKeyboardEvent(
       const content::WebContents* contents,
       const views::KeyEvent& key_event);
 

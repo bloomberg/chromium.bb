@@ -21,6 +21,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 
+using content::NativeWebKeyboardEvent;
 using content::WebContents;
 using content::WebUIMessageHandler;
 

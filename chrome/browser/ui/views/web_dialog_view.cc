@@ -28,6 +28,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
+using content::NativeWebKeyboardEvent;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
