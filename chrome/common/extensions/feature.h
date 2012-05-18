@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"

@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 

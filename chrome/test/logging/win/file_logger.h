@@ -9,7 +9,6 @@
 #include <guiddef.h>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/win/event_trace_controller.h"
 
