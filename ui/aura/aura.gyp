@@ -244,6 +244,7 @@
         'test/test_suite.h',
         'root_window_unittest.cc',
         'shared/input_method_event_filter_unittest.cc',
+        'shared/root_window_event_filter_unittest.cc',
         'event_filter_unittest.cc',
         'event_unittest.cc',
         'window_unittest.cc',

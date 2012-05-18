@@ -744,13 +744,15 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
       // Move the mouse to the new location.
       if (generate_move && point_in_root != last_mouse_location_) {
         MouseEvent synth(ui::ET_MOUSE_MOVED, point_in_root,
-                         event->root_location(), event->flags());
+                         event->root_location(),
+                         event->flags() | ui::EF_IS_SYNTHESIZED |
+                         ui::EF_FROM_TOUCH);
         if (DispatchMouseEventToTarget(&synth, target))
           status = ui::GESTURE_STATUS_SYNTH_MOUSE;
       }
       for (const ui::EventType* type = types; *type != ui::ET_UNKNOWN;
            ++type) {
-        int flags = event->flags();
+        int flags = event->flags() | ui::EF_IS_SYNTHESIZED | ui::EF_FROM_TOUCH;
         if (event->type() == ui::ET_GESTURE_DOUBLE_TAP &&
             *type == ui::ET_MOUSE_PRESSED)
           flags |= ui::EF_IS_DOUBLE_CLICK;
