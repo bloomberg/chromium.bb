@@ -416,8 +416,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
 
 // Tests scripts panel showing.
-// Disabled - see http://crbug.com/124300
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
@@ -426,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
 // @see http://crbug.com/26312
 IN_PROC_BROWSER_TEST_F(
     DevToolsSanityTest,
-    DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+    TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
   content::GetContentClient()->browser()->ClearInspectorSettings(
@@ -461,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
 // Tests that a content script is in the scripts list.
 // http://crbug.com/114104
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       DISABLED_TestContentScriptIsPresent) {
+                       TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
@@ -477,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 // frontend is being loaded.
 // http://crbug.com/106114
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestPauseWhenLoadingDevTools) {
+                       TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
@@ -523,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 // http://crbug.com/103539
 #define TestReattachAfterCrash DISABLED_TestReattachAfterCrash
 #endif
@@ -561,11 +560,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
 
 #if defined(OS_MACOSX)
 #define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
-#elif defined(OS_WIN)
-#define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
-#elif !defined(NDEBUG)
-// Now fails consistently on Windows and Linux debug, http://crbug.com/115192
-#define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
 #else
 #define MAYBE_InspectSharedWorker InspectSharedWorker
 #endif
@@ -585,7 +579,7 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
 // MAYBE_PauseInSharedWorkerInitialization into
 // DISABLED_PauseInSharedWorkerInitialization
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
-                       DISABLED_PauseInSharedWorkerInitialization) {
+                       MAYBE_PauseInSharedWorkerInitialization) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kReloadSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
