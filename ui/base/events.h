@@ -206,7 +206,7 @@ UI_EXPORT bool IsNoopEvent(const base::NativeEvent& event);
 UI_EXPORT base::NativeEvent CreateNoopEvent();
 
 #if defined(OS_WIN)
-int GetModifiersFromACCEL(const ACCEL& accel);
+UI_EXPORT int GetModifiersFromACCEL(const ACCEL& accel);
 #endif
 
 }  // namespace ui
