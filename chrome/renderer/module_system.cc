@@ -14,14 +14,6 @@ const char* kModuleName = "module_name";
 const char* kModuleField = "module_field";
 const char* kModulesField = "modules";
 
-void DumpException(v8::Handle<v8::Message> message) {
-  LOG(ERROR) << "["
-             << *v8::String::Utf8Value(
-                 message->GetScriptResourceName()->ToString())
-             << "(" << message->GetLineNumber() << ")] "
-             << *v8::String::Utf8Value(message->Get());
-}
-
 } // namespace
 
 ModuleSystem::ModuleSystem(v8::Handle<v8::Context> context,
@@ -63,6 +55,15 @@ ModuleSystem::NativesEnabledScope::~NativesEnabledScope() {
 bool ModuleSystem::IsPresentInCurrentContext() {
   v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
   return !global->GetHiddenValue(v8::String::New(kModuleSystem))->IsUndefined();
+}
+
+// static
+void ModuleSystem::DumpException(v8::Handle<v8::Message> message) {
+  LOG(ERROR) << "["
+             << *v8::String::Utf8Value(
+                 message->GetScriptResourceName()->ToString())
+             << "(" << message->GetLineNumber() << ")] "
+             << *v8::String::Utf8Value(message->Get());
 }
 
 void ModuleSystem::Require(const std::string& module_name) {
