@@ -339,16 +339,15 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   SuggestResults* suggest_results =
       is_keyword ? &keyword_suggest_results_ : &default_suggest_results_;
 
-  std::string histogram_name =
-      "Omnibox.SuggestRequest.Failure.GoogleResponseTime";
-  if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
+  const bool request_succeeded =
+      source->GetStatus().is_success() && source->GetResponseCode() == 200;
+  if (request_succeeded) {
     JSONStringValueSerializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
     scoped_ptr<Value> root_val(deserializer.Deserialize(NULL, NULL));
     const string16& input = is_keyword ? keyword_input_text_ : input_.text();
     have_suggest_results_ = root_val.get() &&
         ParseSuggestResults(root_val.get(), is_keyword, input, suggest_results);
-    histogram_name = "Omnibox.SuggestRequest.Success.GoogleResponseTime";
   }
 
   // Record response time for suggest requests sent to Google.  We care
@@ -357,8 +356,15 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (!is_keyword && default_url &&
       (default_url->prepopulate_id() == SEARCH_ENGINE_GOOGLE)) {
-    UMA_HISTOGRAM_TIMES(histogram_name,
-                        base::TimeTicks::Now() - time_suggest_request_sent_);
+    const base::TimeDelta elapsed_time =
+        base::TimeTicks::Now() - time_suggest_request_sent_;
+    if (request_succeeded) {
+      UMA_HISTOGRAM_TIMES("Omnibox.SuggestRequest.Success.GoogleResponseTime",
+                          elapsed_time);
+    } else {
+      UMA_HISTOGRAM_TIMES("Omnibox.SuggestRequest.Failure.GoogleResponseTime",
+                          elapsed_time);
+    }
   }
 
   ConvertResultsToAutocompleteMatches();
