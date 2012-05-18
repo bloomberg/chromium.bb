@@ -62,6 +62,8 @@ struct weston_shell_interface {
 				     struct weston_surface *surface,
 				     struct shell_surface **ret);
 	void (*set_toplevel)(struct shell_surface *shsurf);
+
+	int (*move)(struct shell_surface *shsurf, struct weston_seat *ws);
 };
 
 struct weston_border {

@@ -501,11 +501,9 @@ shell_surface_set_class(struct wl_client *client,
 }
 
 static int
-weston_surface_move(struct weston_surface *es,
-		    struct weston_seat *ws)
+surface_move(struct shell_surface *shsurf, struct weston_seat *ws)
 {
 	struct weston_move_grab *move;
-	struct shell_surface *shsurf = get_shell_surface(es);
 
 	if (!shsurf)
 		return -1;
@@ -516,9 +514,9 @@ weston_surface_move(struct weston_surface *es,
 
 	shell_grab_init(&move->base, &move_grab_interface, shsurf);
 
-	move->dx = wl_fixed_from_double(es->geometry.x) -
+	move->dx = wl_fixed_from_double(shsurf->surface->geometry.x) -
 			ws->seat.pointer->grab_x;
-	move->dy = wl_fixed_from_double(es->geometry.y) -
+	move->dy = wl_fixed_from_double(shsurf->surface->geometry.y) -
 			ws->seat.pointer->grab_y;
 
 	wl_pointer_start_grab(ws->seat.pointer, &move->base.grab);
@@ -542,7 +540,7 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 	    ws->seat.pointer->focus != &shsurf->surface->surface)
 		return;
 
-	if (weston_surface_move(shsurf->surface, ws) < 0)
+	if (surface_move(shsurf, ws) < 0)
 		wl_resource_post_no_memory(resource);
 }
 
@@ -1511,11 +1509,16 @@ move_binding(struct wl_seat *seat, uint32_t time,
 {
 	struct weston_surface *surface =
 		(struct weston_surface *) seat->pointer->focus;
+	struct shell_surface *shsurf;
 
 	if (surface == NULL)
 		return;
 
-	switch (get_shell_surface_type(surface)) {
+	shsurf = get_shell_surface(surface);
+	if (shsurf == NULL)
+		return;
+
+	switch (shsurf->type) {
 		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_BACKGROUND:
 		case SHELL_SURFACE_FULLSCREEN:
@@ -1525,7 +1528,7 @@ move_binding(struct wl_seat *seat, uint32_t time,
 			break;
 	}
 
-	weston_surface_move(surface, (struct weston_seat *) seat);
+	surface_move(shsurf, (struct weston_seat *) seat);
 }
 
 static void
@@ -2605,6 +2608,7 @@ shell_init(struct weston_compositor *ec)
 	ec->ping_handler = ping_handler;
 	ec->shell_interface.create_shell_surface = create_shell_surface;
 	ec->shell_interface.set_toplevel = set_toplevel;
+	ec->shell_interface.move = surface_move;
 
 	wl_list_init(&shell->backgrounds);
 	wl_list_init(&shell->panels);
