@@ -856,6 +856,10 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 			  XCB_CW_EVENT_MASK, values);
 	xcb_reparent_window(wm->conn, window->id, window->frame_id, x, y);
 
+	values[0] = 0;
+	xcb_configure_window(wm->conn, window->id,
+			     XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
+
 	fprintf(stderr, "XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
 		window->id, window, window->frame_id);
 
@@ -1540,7 +1544,6 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 			weston_wm_handle_xfixes_selection_notify(wm, event);
 			break;
 		}
-
 
 		free(event);
 		count++;
