@@ -307,6 +307,12 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("resources.pak"));
       break;
+    case chrome::DIR_RESOURCES_EXTENSION:
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("resources"))
+               .Append(FILE_PATH_LITERAL("extension"));
+      break;
 #if defined(OS_CHROMEOS)
     case chrome::FILE_CHROMEOS_API:
       if (!PathService::Get(base::DIR_MODULE, &cur))

@@ -334,6 +334,8 @@
         'browser/extensions/extension_protocols.h',
         'browser/extensions/extension_record_api.cc',
         'browser/extensions/extension_record_api.h',
+        'browser/extensions/extension_resource_protocols.cc',
+        'browser/extensions/extension_resource_protocols.h',
         'browser/extensions/extension_scoped_prefs.h',
         'browser/extensions/extension_service.cc',
         'browser/extensions/extension_service.h',

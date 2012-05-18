@@ -81,5 +81,27 @@ bool ExtensionResourceRequestPolicy::CanRequestResource(
   return true;
 }
 
+// static
+bool ExtensionResourceRequestPolicy::CanRequestExtensionResourceScheme(
+    const GURL& resource_url,
+    WebKit::WebFrame* frame) {
+  CHECK(resource_url.SchemeIs(chrome::kExtensionResourceScheme));
+
+  GURL frame_url = frame->document().url();
+  if (!frame_url.is_empty() &&
+      !frame_url.SchemeIs(chrome::kExtensionScheme)) {
+    std::string message = base::StringPrintf(
+        "Denying load of %s. chrome-extension-resources:// can only be "
+        "loaded from extensions.",
+      resource_url.spec().c_str());
+    frame->addMessageToConsole(
+        WebKit::WebConsoleMessage(WebKit::WebConsoleMessage::LevelError,
+                                  WebKit::WebString::fromUTF8(message)));
+    return false;
+  }
+
+  return true;
+}
+
 ExtensionResourceRequestPolicy::ExtensionResourceRequestPolicy() {
 }
