@@ -583,7 +583,9 @@ def EscapeCppDefine(s):
   """Escapes a CPP define so that it will reach the compiler unaltered."""
   s = EscapeShellArgument(s)
   s = EscapeMakeVariableExpansion(s)
-  return s
+  # '#' characters must be escaped even embedded in a string, else Make will
+  # treat it as the start of a comment.
+  return s.replace('#', r'\#')
 
 
 def QuoteIfNecessary(string):
