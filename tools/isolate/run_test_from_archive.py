@@ -217,7 +217,7 @@ class Cache(object):
       return False
     except ValueError:
       out = self.path(item)
-      download_or_copy(os.path.join(self.remote, item), out)
+      download_or_copy(self.remote.rstrip('/') + '/' + item, out)
       if os.path.exists(out):
         self.state.append(item)
       else:
