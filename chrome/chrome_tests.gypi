@@ -2383,7 +2383,6 @@
         }, { # else: toolkit_views == 0
           'sources/': [
             ['exclude', '^browser/ui/views/'],
-            ['exclude', '^../views/'],
             ['exclude', '^../ui/views/'],
             ['exclude', '^browser/extensions/key_identifier_conversion_views_unittest.cc'],
           ],
@@ -3261,16 +3260,13 @@
             'browser/ui/webui/constrained_web_dialog_ui_browsertest.cc',
           ],
         }, { # else: toolkit_views == 0
-          'sources!': [
-            'browser/extensions/browser_action_test_util_views.cc',
-            'browser/extensions/extension_input_apitest.cc',
-            'browser/tab_render_watcher_browsertest.cc',
-            'browser/ui/panels/panel_browser_view_browsertest.cc',
-            'browser/ui/views/browser_actions_container_browsertest.cc',
-            'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
-            'browser/ui/views/frame/browser_view_browsertest.cc',
-            'browser/ui/views/sync/one_click_signin_bubble_view_browsertest.cc',
-            'browser/ui/views/web_dialog_view_browsertest.cc',
+          'sources/': [
+            ['exclude', '^browser/ui/views/'],
+            ['exclude', '^../ui/views/'],
+            ['exclude', '^browser/extensions/browser_action_test_util_views.cc'],
+            ['exclude', '^browser/extensions/extension_input_apitest.cc'],
+            ['exclude', '^browser/tab_render_watcher_browsertest.cc'],
+            ['exclude', '^browser/ui/panels/panel_browser_view_browsertest.cc'],
           ],
         }],
         ['target_arch!="arm"', {
