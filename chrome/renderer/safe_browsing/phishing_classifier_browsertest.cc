@@ -132,7 +132,7 @@ class PhishingClassifierTest : public RenderViewFakeResourcesTest {
   ClientPhishingRequest verdict_;
 };
 
-TEST_F(PhishingClassifierTest, TestClassification) {
+TEST_F(PhishingClassifierTest, DISABLED_TestClassification) {
   // No scorer yet, so the classifier is not ready.
   EXPECT_FALSE(classifier_->is_ready());
 
