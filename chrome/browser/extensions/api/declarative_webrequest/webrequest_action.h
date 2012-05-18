@@ -43,7 +43,9 @@ class WebRequestAction {
   // Type identifiers for concrete WebRequestActions.
   enum Type {
     ACTION_CANCEL_REQUEST,
-    ACTION_REDIRECT_REQUEST
+    ACTION_REDIRECT_REQUEST,
+    ACTION_REDIRECT_TO_TRANSPARENT_IMAGE,
+    ACTION_REDIRECT_TO_EMPTY_DOCUMENT,
   };
 
   WebRequestAction();
@@ -149,6 +151,45 @@ class WebRequestRedirectAction : public WebRequestAction {
   GURL redirect_url_;  // Target to which the request shall be redirected.
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectAction);
+};
+
+// Action that instructs to redirect a network request to a transparent image.
+class WebRequestRedirectToTransparentImageAction : public WebRequestAction {
+ public:
+  explicit WebRequestRedirectToTransparentImageAction();
+  virtual ~WebRequestRedirectToTransparentImageAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectToTransparentImageAction);
+};
+
+
+// Action that instructs to redirect a network request to an empty document.
+class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
+ public:
+  explicit WebRequestRedirectToEmptyDocumentAction();
+  virtual ~WebRequestRedirectToEmptyDocumentAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectToEmptyDocumentAction);
 };
 
 // TODO(battre) Implement further actions:

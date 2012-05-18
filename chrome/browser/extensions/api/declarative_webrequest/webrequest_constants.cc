@@ -19,6 +19,10 @@ const char kUrlKey[] = "url";
 // Values of dictionaries, in particular instance types
 const char kCancelRequestType[] = "declarativeWebRequest.CancelRequest";
 const char kRedirectRequestType[] = "declarativeWebRequest.RedirectRequest";
+const char kRedirectToEmptyDocumentType[] =
+    "declarativeWebRequest.RedirectToEmptyDocument";
+const char kRedirectToTransparentImageType[] =
+    "declarativeWebRequest.RedirectToTransparentImage";
 const char kRequestMatcherType[] = "declarativeWebRequest.RequestMatcher";
 
 }  // namespace declarative_webrequest_constants

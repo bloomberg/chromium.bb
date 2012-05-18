@@ -363,7 +363,8 @@ event definitions:<br>
 </dl>
 The web request API guarantees that for each request either
 <code>onCompleted</code> or <code>onErrorOccurred</code> is fired as the final
-event.
+event with one exception: If a request is redirected to a <code>data://</code>
+URL, <code>onBeforeRedirect</code> is the last reported event.
 <p></p>
 <p id="life_cycle_footnote">(*) Note that the web request API presents an
 abstraction of the network stack to the extension. Internally, one URL request

@@ -22,6 +22,10 @@ const char kExpectedDictionary[] = "Expected a dictionary as action.";
 const char kInvalidInstanceTypeError[] =
     "An action has an invalid instanceType: %s";
 const char kMissingRedirectUrl[] = "No redirection target specified.";
+
+const char kTransparentImageUrl[] = "data:image/png;base64,iVBORw0KGgoAAAANSUh"
+    "EUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==";
+const char kEmptyDocumentUrl[] = "data:text/html,";
 }  // namespace
 
 //
@@ -50,8 +54,8 @@ scoped_ptr<WebRequestAction> WebRequestAction::Create(
   }
 
   // TODO(battre): Change this into a proper factory.
+  *error = "";
   if (instance_type == keys::kCancelRequestType) {
-    *error = "";
     return scoped_ptr<WebRequestAction>(new WebRequestCancelAction);
   } else if (instance_type == keys::kRedirectRequestType) {
     std::string redirect_url_string;
@@ -59,10 +63,15 @@ scoped_ptr<WebRequestAction> WebRequestAction::Create(
       *error = kMissingRedirectUrl;
       return scoped_ptr<WebRequestAction>(NULL);
     }
-    *error = "";
     GURL redirect_url(redirect_url_string);
     return scoped_ptr<WebRequestAction>(
         new WebRequestRedirectAction(redirect_url));
+  } else if (instance_type == keys::kRedirectToTransparentImageType) {
+    return scoped_ptr<WebRequestAction>(
+        new WebRequestRedirectToTransparentImageAction);
+  } else if (instance_type == keys::kRedirectToEmptyDocumentType) {
+    return scoped_ptr<WebRequestAction>(
+        new WebRequestRedirectToEmptyDocumentAction);
   }
 
   *error = base::StringPrintf(kInvalidInstanceTypeError, instance_type.c_str());
@@ -137,8 +146,7 @@ LinkedPtrEventResponseDelta WebRequestCancelAction::CreateDelta(
     RequestStages request_stage,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
-  if (!(request_stage & GetStages()))
-    return LinkedPtrEventResponseDelta(NULL);
+  CHECK(request_stage & GetStages());
   LinkedPtrEventResponseDelta result(
       new extension_web_request_api_helpers::EventResponseDelta(
           extension_id, extension_install_time));
@@ -168,14 +176,79 @@ LinkedPtrEventResponseDelta WebRequestRedirectAction::CreateDelta(
     RequestStages request_stage,
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
-  if (!(request_stage & GetStages()))
-    return LinkedPtrEventResponseDelta(NULL);
+  CHECK(request_stage & GetStages());
   if (request->url() == redirect_url_)
     return LinkedPtrEventResponseDelta(NULL);
   LinkedPtrEventResponseDelta result(
       new extension_web_request_api_helpers::EventResponseDelta(
           extension_id, extension_install_time));
   result->new_url = redirect_url_;
+  return result;
+}
+
+//
+// WebRequestRedirectToTransparentImageAction
+//
+
+WebRequestRedirectToTransparentImageAction::
+WebRequestRedirectToTransparentImageAction() {}
+
+WebRequestRedirectToTransparentImageAction::
+~WebRequestRedirectToTransparentImageAction() {}
+
+int WebRequestRedirectToTransparentImageAction::GetStages() const {
+  return ON_BEFORE_REQUEST;
+}
+
+WebRequestAction::Type
+WebRequestRedirectToTransparentImageAction::GetType() const {
+  return WebRequestAction::ACTION_REDIRECT_TO_TRANSPARENT_IMAGE;
+}
+
+LinkedPtrEventResponseDelta
+WebRequestRedirectToTransparentImageAction::CreateDelta(
+    net::URLRequest* request,
+    RequestStages request_stage,
+    const std::string& extension_id,
+    const base::Time& extension_install_time) const {
+  CHECK(request_stage & GetStages());
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
+  result->new_url = GURL(kTransparentImageUrl);
+  return result;
+}
+
+//
+// WebRequestRedirectToEmptyDocumentAction
+//
+
+WebRequestRedirectToEmptyDocumentAction::
+WebRequestRedirectToEmptyDocumentAction() {}
+
+WebRequestRedirectToEmptyDocumentAction::
+~WebRequestRedirectToEmptyDocumentAction() {}
+
+int WebRequestRedirectToEmptyDocumentAction::GetStages() const {
+  return ON_BEFORE_REQUEST;
+}
+
+WebRequestAction::Type
+WebRequestRedirectToEmptyDocumentAction::GetType() const {
+  return WebRequestAction::ACTION_REDIRECT_TO_EMPTY_DOCUMENT;
+}
+
+LinkedPtrEventResponseDelta
+WebRequestRedirectToEmptyDocumentAction::CreateDelta(
+    net::URLRequest* request,
+    RequestStages request_stage,
+    const std::string& extension_id,
+    const base::Time& extension_install_time) const {
+  CHECK(request_stage & GetStages());
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
+  result->new_url = GURL(kEmptyDocumentUrl);
   return result;
 }
 

@@ -42,4 +42,11 @@ chromeHidden.registerCustomHook('declarativeWebRequest', function(api) {
   chrome.declarativeWebRequest.RedirectRequest = function(parameters) {
     setupInstance(this, parameters, 'RedirectRequest');
   };
+  chrome.declarativeWebRequest.RedirectToTransparentImage =
+      function(parameters) {
+    setupInstance(this, parameters, 'RedirectToTransparentImage');
+  };
+  chrome.declarativeWebRequest.RedirectToEmptyDocument = function(parameters) {
+    setupInstance(this, parameters, 'RedirectToEmptyDocument');
+  };
 });

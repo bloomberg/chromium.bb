@@ -23,6 +23,8 @@ extern const char kUrlKey[];
 // Values of dictionaries, in particular instance types
 extern const char kCancelRequestType[];
 extern const char kRedirectRequestType[];
+extern const char kRedirectToEmptyDocumentType[];
+extern const char kRedirectToTransparentImageType[];
 extern const char kRequestMatcherType[];
 
 }  // namespace declarative_webrequest_constants

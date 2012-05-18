@@ -42,6 +42,28 @@
           "instanceType": { "type": "string", "enum": ["declarativeWebRequest.RedirectRequest"] },
           "redirectUrl": { "type": "string", "description": "Destination to where the request is redirected."}
         }
+      },
+      {
+        "id": "declarativeWebRequest.RedirectToTransparentImage",
+        "description": "Declarative event action that redirects a network request to a transparent image.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.RedirectToTransparentImage"],
+            "nodoc": true
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.RedirectToEmptyDocument",
+        "description": "Declarative event action that redirects a network request to an empty document.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.RedirectToEmptyDocument"],
+            "nodoc": true
+          }
+        }
       }
     ],
     "functions": [
@@ -55,7 +77,9 @@
           "conditions": ["declarativeWebRequest.RequestMatcher"],
           "actions": [
             "declarativeWebRequest.CancelRequest",
-            "declarativeWebRequest.RedirectRequest"
+            "declarativeWebRequest.RedirectRequest",
+            "declarativeWebRequest.RedirectToTransparentImage",
+            "declarativeWebRequest.RedirectToEmptyDocument"
           ]
         }
       }
