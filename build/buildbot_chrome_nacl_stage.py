@@ -214,6 +214,8 @@ def BuildAndTest(options):
   if not options.integration_bot:
     cmd.append('disable_flaky_tests=1')
   cmd.append('chrome_browser_tests')
+  # TODO(dschuff): remove this when we pass pyauto tests
+  pnacl_cmd = cmd[:]
   if options.integration_bot:
     cmd.append('pyauto_tests')
 
@@ -250,13 +252,14 @@ def BuildAndTest(options):
 
   # The chromium bots don't get the pnacl compiler, but the integration
   # bots do. So, only run pnacl tests on the integration bot.
-  if not options.disable_pnacl and options.integration_bot:
-    # TODO(dschuff) Remove this when we pass pyauto tests
-    cmd = [opt for opt in cmd if opt != 'pyauto_tests']
+  if (not options.disable_pnacl and options.integration_bot and
+      sys.platform == 'linux2'):
+    # TODO(dschuff): add back win32/mac when it's fixed
     sys.stdout.write('\n\nBuilding files needed for pnacl testing...\n\n')
-    RunCommand(cmd + ['bitcode=1', 'do_not_run_tests=1', '-j8'], nacl_dir, env)
+    RunCommand(pnacl_cmd + ['bitcode=1', 'do_not_run_tests=1', '-j8'],
+               nacl_dir, env)
     sys.stdout.write('\n\nRunning pnacl tests...\n\n')
-    RunCommand(cmd + ['bitcode=1'], nacl_dir, env)
+    RunCommand(pnacl_cmd + ['bitcode=1'], nacl_dir, env)
 
 
 def MakeCommandLineParser():
