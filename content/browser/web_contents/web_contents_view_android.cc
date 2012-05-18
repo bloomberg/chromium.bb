@@ -6,6 +6,14 @@
 
 #include "base/logging.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+
+namespace content {
+WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
+                                       WebContentsViewDelegate* delegate) {
+  return new WebContentsViewAndroid(web_contents);
+}
+}
 
 WebContentsViewAndroid::WebContentsViewAndroid(
     content::WebContents* web_contents)

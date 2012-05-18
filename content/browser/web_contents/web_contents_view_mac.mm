@@ -57,10 +57,9 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
 @end
 
-namespace web_contents_view_mac {
-content::WebContentsView* CreateWebContentsView(
-    WebContentsImpl* web_contents,
-    content::WebContentsViewDelegate* delegate) {
+namespace content {
+WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
+                                       WebContentsViewDelegate* delegate) {
   return new WebContentsViewMac(web_contents, delegate);
 }
 }

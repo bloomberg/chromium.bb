@@ -21,6 +21,13 @@ using content::RenderWidgetHostView;
 using content::WebContents;
 using content::WebContentsViewDelegate;
 
+namespace content {
+WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
+                                       WebContentsViewDelegate* delegate) {
+  return new WebContentsViewWin(web_contents, delegate);
+}
+}
+
 namespace {
 
 // We need to have a parent window for the compositing code to work correctly.

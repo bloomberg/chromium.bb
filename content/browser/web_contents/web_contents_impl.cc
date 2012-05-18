@@ -69,17 +69,8 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/webpreferences.h"
 
-#if defined(USE_AURA)
-#include "content/browser/web_contents/web_contents_view_aura.h"
-#elif defined(OS_WIN)
-#include "content/browser/web_contents/web_contents_view_win.h"
-#elif defined(TOOLKIT_GTK)
-#include "content/browser/web_contents/web_contents_view_gtk.h"
-#elif defined(OS_MACOSX)
-#include "content/browser/web_contents/web_contents_view_mac.h"
+#if defined(OS_MACOSX)
 #include "ui/surface/io_surface_support_mac.h"
-#elif defined(OS_ANDROID)
-#include "content/browser/web_contents/web_contents_view_android.h"
 #endif
 
 // Cross-Site Navigations
@@ -297,18 +288,7 @@ WebContentsImpl::WebContentsImpl(
     content::WebContentsViewDelegate* delegate =
         content::GetContentClient()->browser()->GetWebContentsViewDelegate(
             this);
-#if defined(USE_AURA)
-    view_.reset(new WebContentsViewAura(this, delegate));
-#elif defined(OS_WIN)
-    view_.reset(new WebContentsViewWin(this, delegate));
-#elif defined(TOOLKIT_GTK)
-    view_.reset(new content::WebContentsViewGtk(this, delegate));
-#elif defined(OS_MACOSX)
-    view_.reset(web_contents_view_mac::CreateWebContentsView(this, delegate));
-#elif defined(OS_ANDROID)
-    view_.reset(new WebContentsViewAndroid(this));
-#endif
-    (void)delegate;
+    view_.reset(CreateWebContentsView(this, delegate));
   }
   CHECK(view_.get());
 

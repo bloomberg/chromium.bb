@@ -78,6 +78,11 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
 
 namespace content {
 
+WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
+                                       WebContentsViewDelegate* delegate) {
+  return new WebContentsViewGtk(web_contents, delegate);
+}
+
 WebContentsViewGtk::WebContentsViewGtk(
     WebContentsImpl* web_contents,
     content::WebContentsViewDelegate* delegate)

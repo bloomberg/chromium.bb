@@ -6,8 +6,6 @@
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_MAC_H_
 #pragma once
 
-#if defined(__OBJC__)
-
 #import <Cocoa/Cocoa.h>
 
 #include <string>
@@ -138,21 +136,5 @@ class WebContentsViewMac : public content::WebContentsView {
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };
-
-#endif  // __OBJC__
-
-// Functions that may be accessed from non-Objective-C C/C++ code.
-namespace content {
-class WebContents;
-class WebContentsView;
-class WebContentsViewDelegate;
-}
-
-namespace web_contents_view_mac {
-// Creates a WebContentsViewMac. Takes ownership of |delegate|.
-CONTENT_EXPORT content::WebContentsView* CreateWebContentsView(
-    WebContentsImpl* web_contents,
-    content::WebContentsViewDelegate* delegate);
-}
 
 #endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_MAC_H_

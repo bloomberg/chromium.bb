@@ -29,6 +29,13 @@
 #include "ui/gfx/screen.h"
 #include "webkit/glue/webdropdata.h"
 
+namespace content {
+WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
+                                       WebContentsViewDelegate* delegate) {
+  return new WebContentsViewAura(web_contents, delegate);
+}
+}
+
 namespace {
 
 // Listens to all mouse drag events during a drag and drop and sends them to

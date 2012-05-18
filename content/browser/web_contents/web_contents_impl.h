@@ -35,6 +35,7 @@
 class InterstitialPageImpl;
 class SavePackage;
 class SessionStorageNamespaceImpl;
+class WebContentsImpl;
 struct ViewMsg_PostMessage_Params;
 
 namespace content {
@@ -48,7 +49,13 @@ class TestWebContents;
 class WebContentsDelegate;
 class WebContentsObserver;
 class WebContentsView;
+class WebContentsViewDelegate;
 struct LoadNotificationDetails;
+
+// Factory function for the implementations that content knows about. Takes
+// ownership of |delegate|.
+WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
+                                       WebContentsViewDelegate* delegate);
 }
 
 namespace webkit_glue {
