@@ -1757,6 +1757,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::OverrideGeoposition;
   handler_map["AppendSwitchASCIIToCommandLine"] =
       &TestingAutomationProvider::AppendSwitchASCIIToCommandLine;
+  handler_map["SimulateAsanMemoryBug"] =
+      &TestingAutomationProvider::SimulateAsanMemoryBug;
 
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
@@ -5880,6 +5882,17 @@ void TestingAutomationProvider::RefreshPolicies(
               base::Bind(PostTask, BrowserThread::IO,
                   base::Bind(PostTask, BrowserThread::UI, reply)))));
 #endif
+}
+
+static int AccessArray(const int arr[], int index) {
+  return arr[index];
+}
+
+void TestingAutomationProvider::SimulateAsanMemoryBug(
+    base::DictionaryValue* args, IPC::Message* reply_message) {
+  int testarray[41];
+  AccessArray(testarray, 42);
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::GetIndicesFromTab(

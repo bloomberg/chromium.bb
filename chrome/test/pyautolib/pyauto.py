@@ -4026,6 +4026,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                                  tab_index, windex, frame_xpath),
         expect_retval='complete')
 
+  def SimulateAsanMemoryBug(self):
+   """Simulates a memory bug for Address Sanitizer to catch.
+
+   Address Sanitizer (if it was built it) will catch the bug and abort
+   the process.
+   """
+    cmd_dict = { 'command': 'SimulateAsanMemoryBug' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
   ## ChromeOS section
 
   def GetLoginInfo(self):

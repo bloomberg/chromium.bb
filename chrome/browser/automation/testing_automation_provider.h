@@ -1322,6 +1322,14 @@ class TestingAutomationProvider : public AutomationProvider,
   void RefreshPolicies(base::DictionaryValue* args,
                        IPC::Message* reply_message);
 
+  // Simulates a memory bug (reference an array out of bounds) to cause Address
+  // Sanitizer (if it was built it) to catch the bug and abort the process.
+  // Example:
+  //   input: none
+  //   output: none
+  void SimulateAsanMemoryBug(base::DictionaryValue* args,
+                             IPC::Message* reply_message);
+
 #if defined(OS_CHROMEOS)
   // Login / Logout.
   void GetLoginInfo(base::DictionaryValue* args, IPC::Message* reply_message);
@@ -1448,6 +1456,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void AddChromeosObservers();
   void RemoveChromeosObservers();
+
 #endif  // defined(OS_CHROMEOS)
 
   void WaitForTabCountToBecome(int browser_handle,
