@@ -41,7 +41,7 @@ var historyView;
 var pageState;
 var deleteQueue = [];
 var selectionAnchor = -1;
-var activePage = null;
+var activeVisit = null;
 
 /** @const */ var Command = cr.ui.Command;
 /** @const */ var Menu = cr.ui.Menu;
@@ -50,22 +50,21 @@ var activePage = null;
 MenuButton.createDropDownArrows();
 
 ///////////////////////////////////////////////////////////////////////////////
-// Page:
+// Visit:
 
 /**
  * Class to hold all the information about an entry in our model.
- * @param {Object} result An object containing the page's data.
- * @param {boolean} continued Whether this page is on the same day as the
- *     page before it
+ * @param {Object} result An object containing the visit's data.
+ * @param {boolean} continued Whether this visit is on the same day as the
+ *     visit before it.
  * @param {HistoryModel} model The model object this entry belongs to.
  * @param {Number} id The identifier for the entry.
  * @constructor
  */
-function Page(result, continued, model, id) {
+function Visit(result, continued, model, id) {
   this.model_ = model;
   this.title_ = result.title;
   this.url_ = result.url;
-  this.domain_ = this.getDomainFromURL_(this.url_);
   this.starred_ = result.starred;
   this.snippet_ = result.snippet || '';
   this.id_ = id;
@@ -90,7 +89,7 @@ function Page(result, continued, model, id) {
   this.continued = continued;
 }
 
-// Page, Public: --------------------------------------------------------------
+// Visit, public: -------------------------------------------------------------
 
 /**
  * Returns a dom structure for a browse page result or a search page result.
@@ -98,7 +97,7 @@ function Page(result, continued, model, id) {
  *     result or not.
  * @return {Node} A DOM node to represent the history entry or search result.
  */
-Page.prototype.getResultDOM = function(searchResultFlag) {
+Visit.prototype.getResultDOM = function(searchResultFlag) {
   var node = createElementWithClassName('li', 'entry');
   var time = createElementWithClassName('div', 'time');
   var entryBox = createElementWithClassName('label', 'entry-box');
@@ -122,13 +121,13 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
   // which element to apply the command to.
   // TODO(dubroy): Ideally we'd use 'activate', but MenuButton swallows it.
   var self = this;
-  var setActivePage = function(e) {
-    activePage = self;
+  var setActiveVisit = function(e) {
+    activeVisit = self;
   };
-  dropDown.addEventListener('mousedown', setActivePage);
-  dropDown.addEventListener('focus', setActivePage);
+  dropDown.addEventListener('mousedown', setActiveVisit);
+  dropDown.addEventListener('focus', setActiveVisit);
 
-  domain.textContent = this.domain_;
+  domain.textContent = this.getDomainFromURL_(this.url_);
 
   // Clicking anywhere in the entryBox will check/uncheck the checkbox.
   entryBox.setAttribute('for', checkbox.id);
@@ -164,15 +163,12 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
     time.appendChild(document.createTextNode(this.dateTimeOfDay));
   }
 
-  if (typeof this.domNode_ != 'undefined') {
-      console.error('Already generated node for page.');
-  }
   this.domNode_ = node;
 
   return node;
 };
 
-// Page, private: -------------------------------------------------------------
+// Visit, private: ------------------------------------------------------------
 
 /**
  * Extracts and returns the domain (and subdomains) from a URL.
@@ -181,7 +177,7 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
  *     be found.
  * @private
  */
-Page.prototype.getDomainFromURL_ = function(url) {
+Visit.prototype.getDomainFromURL_ = function(url) {
   var domain = url.replace(/^.+:\/\//, '').match(/[^/]+/);
   return domain ? domain[0] : '';
 };
@@ -197,10 +193,10 @@ Page.prototype.getDomainFromURL_ = function(url) {
  *     be highlighted.
  * @private
  */
-Page.prototype.addHighlightedText_ = function(node, content, highlightText) {
+Visit.prototype.addHighlightedText_ = function(node, content, highlightText) {
   var i = 0;
   if (highlightText) {
-    var re = new RegExp(Page.pregQuote_(highlightText), 'gim');
+    var re = new RegExp(Visit.pregQuote_(highlightText), 'gim');
     var match;
     while (match = re.exec(content)) {
       if (match.index > i)
@@ -221,7 +217,7 @@ Page.prototype.addHighlightedText_ = function(node, content, highlightText) {
  * @return {DOMObject} DOM representation for the title block.
  * @private
  */
-Page.prototype.getTitleDOM_ = function() {
+Visit.prototype.getTitleDOM_ = function() {
   var node = createElementWithClassName('div', 'title');
   node.style.backgroundImage =
       'url(chrome://favicon/' + encodeURIForCSS(this.url_) + ')';
@@ -251,15 +247,15 @@ Page.prototype.getTitleDOM_ = function() {
  * Launch a search for more history entries from the same domain.
  * @private
  */
-Page.prototype.showMoreFromSite_ = function() {
-  setSearch(this.domain_);
+Visit.prototype.showMoreFromSite_ = function() {
+  setSearch(this.getDomainFromURL_(this.url_));
 };
 
 /**
  * Remove a single entry from the history.
  * @private
  */
-Page.prototype.removeFromHistory_ = function() {
+Visit.prototype.removeFromHistory_ = function() {
   var self = this;
   var onSuccessCallback = function() {
     removeEntryFromView(self.domNode_);
@@ -274,13 +270,13 @@ Page.prototype.removeFromHistory_ = function() {
  * @param {Event} event The click event.
  * @private
  */
-Page.prototype.starClicked_ = function(event) {
+Visit.prototype.starClicked_ = function(event) {
   chrome.send('removeBookmark', [this.url_]);
   event.currentTarget.hidden = true;
   event.preventDefault();
 };
 
-// Page, private, static: -----------------------------------------------------
+// Visit, private, static: ----------------------------------------------------
 
 /**
  * Quote a string so it can be used in a regular expression.
@@ -288,7 +284,7 @@ Page.prototype.starClicked_ = function(event) {
  * @return {string} The escaped string
  * @private
  */
-Page.pregQuote_ = function(str) {
+Visit.pregQuote_ = function(str) {
   return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
 };
 
@@ -380,11 +376,11 @@ HistoryModel.prototype.addResults = function(info, results) {
   // be updated if that ever changes.
   if (results) {
     var lastURL, lastDay;
-    var oldLength = this.pages_.length;
+    var oldLength = this.visits_.length;
     if (oldLength) {
-      var oldPage = this.pages_[oldLength - 1];
-      lastURL = oldPage.url;
-      lastDay = oldPage.dateRelativeDay;
+      var oldVisit = this.visits_[oldLength - 1];
+      lastURL = oldVisit.url;
+      lastDay = oldVisit.dateRelativeDay;
     }
 
     for (var i = 0, thisResult; thisResult = results[i]; i++) {
@@ -393,10 +389,10 @@ HistoryModel.prototype.addResults = function(info, results) {
 
       // Remove adjacent duplicates.
       if (!lastURL || lastURL != thisURL) {
-        // Figure out if this page is in the same day as the previous page,
-        // this is used to determine how day headers should be drawn.
-        this.pages_.push(new Page(thisResult, thisDay == lastDay, this,
-            this.last_id_++));
+        // Figure out if this visit is in the same day as the previous visit.
+        // This is used to determine how day headers should be drawn.
+        this.visits_.push(
+            new Visit(thisResult, thisDay == lastDay, this, this.last_id_++));
         lastDay = thisDay;
         lastURL = thisURL;
       }
@@ -409,32 +405,24 @@ HistoryModel.prototype.addResults = function(info, results) {
 };
 
 /**
- * @return {Number} The number of pages in the model.
+ * @return {Number} The number of visits in the model.
  */
 HistoryModel.prototype.getSize = function() {
-  return this.pages_.length;
+  return this.visits_.length;
 };
 
 /**
- * @return {boolean} Whether our history query has covered all of
- *     the user's history
- */
-HistoryModel.prototype.isComplete = function() {
-  return this.complete_;
-};
-
-/**
- * Get a list of pages between specified index positions.
+ * Get a list of visits between specified index positions.
  * @param {Number} start The start index
  * @param {Number} end The end index
- * @return {Array} A list of pages
+ * @return {Array.<Visit>} A list of visits
  */
 HistoryModel.prototype.getNumberedRange = function(start, end) {
   if (start >= this.getSize())
     return [];
 
   var end = end > this.getSize() ? this.getSize() : end;
-  return this.pages_.slice(start, end);
+  return this.visits_.slice(start, end);
 };
 
 // HistoryModel, Private: -----------------------------------------------------
@@ -447,7 +435,7 @@ HistoryModel.prototype.clearModel_ = function() {
   this.inFlight_ = false; // Whether a query is inflight.
   this.searchText_ = '';
   this.searchDepth_ = 0;
-  this.pages_ = []; // Date-sorted list of pages.
+  this.visits_ = []; // Date-sorted list of visits.
   this.last_id_ = 0;
   selectionAnchor = -1;
 
@@ -456,11 +444,8 @@ HistoryModel.prototype.clearModel_ = function() {
   // to fetch it and call back when we're done.
   this.requestedPage_ = 0;
 
-  this.complete_ = false;
-
-  if (this.view_) {
+  if (this.view_)
     this.view_.clear_();
-  }
 };
 
 /**
@@ -507,12 +492,12 @@ HistoryModel.prototype.updateSearch_ = function(finished) {
 HistoryModel.prototype.getSearchResults_ = function(depth) {
   this.searchDepth_ = depth || 0;
 
-  if (this.searchText_ == '') {
-    chrome.send('getHistory',
-        [String(this.searchDepth_)]);
-  } else {
+  if (this.searchText_) {
     chrome.send('searchHistory',
         [this.searchText_, String(this.searchDepth_)]);
+  } else {
+    chrome.send('getHistory',
+        [String(this.searchDepth_)]);
   }
 
   this.inFlight_ = true;
@@ -559,7 +544,7 @@ function HistoryView(model) {
 
   this.model_.setView(this);
 
-  this.currentPages_ = [];
+  this.currentVisits_ = [];
 
   var self = this;
   window.onresize = function() {
@@ -637,21 +622,20 @@ HistoryView.prototype.updateRemoveButton = function() {
 HistoryView.prototype.clear_ = function() {
   this.resultDiv_.textContent = '';
 
-  var pages = this.currentPages_;
-  for (var i = 0; i < pages.length; i++) {
-    pages[i].isRendered = false;
-  }
-  this.currentPages_ = [];
+  this.currentVisits_.forEach(function(visit) {
+    visit.isRendered = false;
+  });
+  this.currentVisits_ = [];
 };
 
 /**
- * Record that the given page has been rendered.
- * @param {Page} page The page that was rendered.
+ * Record that the given visit has been rendered.
+ * @param {Visit} visit The visit that was rendered.
  * @private
  */
-HistoryView.prototype.setPageRendered_ = function(page) {
-  page.isRendered = true;
-  this.currentPages_.push(page);
+HistoryView.prototype.setVisitRendered_ = function(visit) {
+  visit.isRendered = true;
+  this.currentVisits_.push(visit);
 };
 
 /**
@@ -674,10 +658,10 @@ HistoryView.prototype.displayResults_ = function() {
     }
 
     var searchResults = createElementWithClassName('ol', 'search-results');
-    for (var i = 0, page; page = results[i]; i++) {
-      if (!page.isRendered) {
-        searchResults.appendChild(page.getResultDOM(true));
-        this.setPageRendered_(page);
+    for (var i = 0, visit; visit = results[i]; i++) {
+      if (!visit.isRendered) {
+        searchResults.appendChild(visit.getResultDOM(true));
+        this.setVisitRendered_(visit);
       }
     }
     this.resultDiv_.appendChild(searchResults);
@@ -685,18 +669,18 @@ HistoryView.prototype.displayResults_ = function() {
     var resultsFragment = document.createDocumentFragment();
     var lastTime = Math.infinity;
     var dayResults;
-    for (var i = 0, page; page = results[i]; i++) {
-      if (page.isRendered) {
+    for (var i = 0, visit; visit = results[i]; i++) {
+      if (visit.isRendered) {
         continue;
       }
       // Break across day boundaries and insert gaps for browsing pauses.
       // Create a dayResults element to contain results for each day
-      var thisTime = page.time.getTime();
+      var thisTime = visit.time.getTime();
 
-      if ((i == 0 && page.continued) || !page.continued) {
+      if ((i == 0 && visit.continued) || !visit.continued) {
         var day = createElementWithClassName('h3', 'day');
-        day.appendChild(document.createTextNode(page.dateRelativeDay));
-        if (i == 0 && page.continued) {
+        day.appendChild(document.createTextNode(visit.dateRelativeDay));
+        if (i == 0 && visit.continued) {
           day.appendChild(document.createTextNode(' ' +
               loadTimeData.getString('cont')));
         }
@@ -715,8 +699,8 @@ HistoryView.prototype.displayResults_ = function() {
       lastTime = thisTime;
       // Add entry.
       if (dayResults) {
-        dayResults.appendChild(page.getResultDOM(false));
-        this.setPageRendered_(page);
+        dayResults.appendChild(visit.getResultDOM(false));
+        this.setVisitRendered_(visit);
       }
     }
     // Add final dayResults element.
@@ -922,13 +906,13 @@ function load() {
     return false;
   };
 
-  $('remove-page').addEventListener('activate', function(e) {
-    activePage.removeFromHistory_();
-    activePage = null;
+  $('remove-visit').addEventListener('activate', function(e) {
+    activeVisit.removeFromHistory_();
+    activeVisit = null;
   });
   $('more-from-site').addEventListener('activate', function(e) {
-    activePage.showMoreFromSite_();
-    activePage = null;
+    activeVisit.showMoreFromSite_();
+    activeVisit = null;
   });
 
   var title = loadTimeData.getString('title');
