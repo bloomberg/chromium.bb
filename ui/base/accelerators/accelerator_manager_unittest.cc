@@ -47,7 +47,7 @@ bool TestTarget::CanHandleAccelerators() const {
 }
 
 Accelerator GetAccelerator(KeyboardCode code, int mask) {
-  return Accelerator(code, mask & (1 << 0), mask & (1 << 1), mask & (1 << 2));
+  return Accelerator(code, mask);
 }
 
 }  // namespace
@@ -61,7 +61,7 @@ class AcceleratorManagerTest : public testing::Test {
 };
 
 TEST_F(AcceleratorManagerTest, Register) {
-  const Accelerator accelerator_a(VKEY_A, false, false, false);
+  const Accelerator accelerator_a(VKEY_A, EF_NONE);
   TestTarget target;
   manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
                     &target);
@@ -72,7 +72,7 @@ TEST_F(AcceleratorManagerTest, Register) {
 }
 
 TEST_F(AcceleratorManagerTest, RegisterMultipleTarget) {
-  const Accelerator accelerator_a(VKEY_A, false, false, false);
+  const Accelerator accelerator_a(VKEY_A, EF_NONE);
   TestTarget target1;
   manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
                     &target1);
@@ -88,11 +88,11 @@ TEST_F(AcceleratorManagerTest, RegisterMultipleTarget) {
 }
 
 TEST_F(AcceleratorManagerTest, Unregister) {
-  const Accelerator accelerator_a(VKEY_A, false, false, false);
+  const Accelerator accelerator_a(VKEY_A, EF_NONE);
   TestTarget target;
   manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
                     &target);
-  const Accelerator accelerator_b(VKEY_B, false, false, false);
+  const Accelerator accelerator_b(VKEY_B, EF_NONE);
   manager_.Register(accelerator_b, AcceleratorManager::kNormalPriority,
                     &target);
 
@@ -110,14 +110,14 @@ TEST_F(AcceleratorManagerTest, Unregister) {
 }
 
 TEST_F(AcceleratorManagerTest, UnregisterAll) {
-  const Accelerator accelerator_a(VKEY_A, false, false, false);
+  const Accelerator accelerator_a(VKEY_A, EF_NONE);
   TestTarget target1;
   manager_.Register(accelerator_a, AcceleratorManager::kNormalPriority,
                     &target1);
-  const Accelerator accelerator_b(VKEY_B, false, false, false);
+  const Accelerator accelerator_b(VKEY_B, EF_NONE);
   manager_.Register(accelerator_b, AcceleratorManager::kNormalPriority,
                     &target1);
-  const Accelerator accelerator_c(VKEY_C, false, false, false);
+  const Accelerator accelerator_c(VKEY_C, EF_NONE);
   TestTarget target2;
   manager_.Register(accelerator_c, AcceleratorManager::kNormalPriority,
                     &target2);

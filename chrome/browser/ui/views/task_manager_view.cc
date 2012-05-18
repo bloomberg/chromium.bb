@@ -464,8 +464,7 @@ void TaskManagerView::Init() {
   }
   kill_button_ = new views::NativeTextButton(
       this, l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
-  kill_button_->AddAccelerator(ui::Accelerator(ui::VKEY_E, false, false,
-                                               false));
+  kill_button_->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_NONE));
   kill_button_->SetAccessibleKeyboardShortcut(L"E");
   kill_button_->set_prefix_type(views::TextButtonBase::PREFIX_SHOW);
   about_memory_link_ = new views::Link(

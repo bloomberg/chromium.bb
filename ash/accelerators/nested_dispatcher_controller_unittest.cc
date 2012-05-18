@@ -150,7 +150,7 @@ TEST_F(NestedDispatcherTest, AcceleratorsHandled) {
   MockDispatcher inner_dispatcher;
   aura::RootWindow* root_window = ash::Shell::GetInstance()->GetRootWindow();
 
-  ui::Accelerator accelerator(ui::VKEY_A, false, false, false);
+  ui::Accelerator accelerator(ui::VKEY_A, ui::EF_NONE);
   accelerator.set_type(ui::ET_KEY_RELEASED);
   TestTarget target;
   Shell::GetInstance()->accelerator_controller()->Register(accelerator,

@@ -135,15 +135,20 @@ TEST(ExtensionCommandsTest, ExtensionCommandParsingFallback) {
   EXPECT_STREQ(command_name.c_str(), command.command_name().c_str());
 
 #if defined(OS_WIN)
-  ui::Accelerator accelerator(ui::VKEY_W, true, true, false);
+  ui::Accelerator accelerator(ui::VKEY_W,
+                              ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
 #elif defined(OS_MACOSX)
-  ui::Accelerator accelerator(ui::VKEY_M, true, true, false);
+  ui::Accelerator accelerator(ui::VKEY_M,
+                              ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
 #elif defined(OS_CHROMEOS)
-  ui::Accelerator accelerator(ui::VKEY_C, true, true, false);
+  ui::Accelerator accelerator(ui::VKEY_C,
+                              ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
 #elif defined(OS_LINUX)
-  ui::Accelerator accelerator(ui::VKEY_L, true, true, false);
+  ui::Accelerator accelerator(ui::VKEY_L,
+                              ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
 #else
-  ui::Accelerator accelerator(ui::VKEY_D, true, true, false);
+  ui::Accelerator accelerator(ui::VKEY_D,
+                              ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
 #endif
   EXPECT_EQ(accelerator, command.accelerator());
 

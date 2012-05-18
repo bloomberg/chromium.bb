@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,65 @@
 #endif
 
 namespace ui {
+
+Accelerator::Accelerator()
+    : key_code_(ui::VKEY_UNKNOWN),
+      type_(ui::ET_KEY_PRESSED),
+      modifiers_(0) {
+}
+
+Accelerator::Accelerator(KeyboardCode keycode, int modifiers)
+    : key_code_(keycode),
+      type_(ui::ET_KEY_PRESSED),
+      modifiers_(modifiers) {
+}
+
+Accelerator::Accelerator(const Accelerator& accelerator) {
+  key_code_ = accelerator.key_code_;
+  type_ = accelerator.type_;
+  modifiers_ = accelerator.modifiers_;
+}
+
+Accelerator::~Accelerator() {
+}
+
+Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
+  if (this != &accelerator) {
+    key_code_ = accelerator.key_code_;
+    type_ = accelerator.type_;
+    modifiers_ = accelerator.modifiers_;
+  }
+  return *this;
+}
+
+bool Accelerator::operator <(const Accelerator& rhs) const {
+  if (key_code_ != rhs.key_code_)
+    return key_code_ < rhs.key_code_;
+  if (type_ != rhs.type_)
+    return type_ < rhs.type_;
+  return modifiers_ < rhs.modifiers_;
+}
+
+bool Accelerator::operator ==(const Accelerator& rhs) const {
+  return (key_code_ == rhs.key_code_) && (type_ == rhs.type_) &&
+      (modifiers_ == rhs.modifiers_);
+}
+
+bool Accelerator::operator !=(const Accelerator& rhs) const {
+  return !(*this == rhs);
+}
+
+bool Accelerator::IsShiftDown() const {
+  return (modifiers_ & EF_SHIFT_DOWN) == EF_SHIFT_DOWN;
+}
+
+bool Accelerator::IsCtrlDown() const {
+  return (modifiers_ & EF_CONTROL_DOWN) == EF_CONTROL_DOWN;
+}
+
+bool Accelerator::IsAltDown() const {
+  return (modifiers_ & EF_ALT_DOWN) == EF_ALT_DOWN;
+}
 
 string16 Accelerator::GetShortcutText() const {
   int string_id = 0;

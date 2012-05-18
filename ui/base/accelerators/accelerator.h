@@ -23,94 +23,43 @@ namespace ui {
 // meant to be subclassed for concrete toolkit implementations.
 class UI_EXPORT Accelerator {
  public:
-  Accelerator()
-      : key_code_(ui::VKEY_UNKNOWN), type_(ui::ET_KEY_PRESSED), modifiers_(0) {}
+  Accelerator();
+  Accelerator(ui::KeyboardCode keycode, int modifiers);
+  Accelerator(const Accelerator& accelerator);
+  ~Accelerator();
 
-  Accelerator(ui::KeyboardCode keycode, int modifiers)
-      : key_code_(keycode),
-        type_(ui::ET_KEY_PRESSED),
-        modifiers_(modifiers) {}
-
-  Accelerator(const Accelerator& accelerator) {
-    key_code_ = accelerator.key_code_;
-    type_ = accelerator.type_;
-    modifiers_ = accelerator.modifiers_;
-  }
-
-  Accelerator(ui::KeyboardCode keycode,
-              bool shift_pressed, bool ctrl_pressed, bool alt_pressed)
-      : key_code_(keycode),
-        type_(ui::ET_KEY_PRESSED),
-        modifiers_(0) {
-    if (shift_pressed)
-      modifiers_ |= ui::EF_SHIFT_DOWN;
-    if (ctrl_pressed)
-      modifiers_ |= ui::EF_CONTROL_DOWN;
-    if (alt_pressed)
-      modifiers_ |= ui::EF_ALT_DOWN;
-  }
-
-  virtual ~Accelerator() {}
-
-  Accelerator& operator=(const Accelerator& accelerator) {
-    if (this != &accelerator) {
-      key_code_ = accelerator.key_code_;
-      type_ = accelerator.type_;
-      modifiers_ = accelerator.modifiers_;
-    }
-    return *this;
-  }
+  Accelerator& operator=(const Accelerator& accelerator);
 
   // We define the < operator so that the KeyboardShortcut can be used as a key
   // in a std::map.
-  bool operator <(const Accelerator& rhs) const {
-    if (key_code_ != rhs.key_code_)
-      return key_code_ < rhs.key_code_;
-    if (type_ != rhs.type_)
-      return type_ < rhs.type_;
-    return modifiers_ < rhs.modifiers_;
-  }
+  bool operator <(const Accelerator& rhs) const;
 
-  bool operator ==(const Accelerator& rhs) const {
-    return (key_code_ == rhs.key_code_) &&
-        (type_ == rhs.type_) && (modifiers_ == rhs.modifiers_);
-  }
+  bool operator ==(const Accelerator& rhs) const;
 
-  bool operator !=(const Accelerator& rhs) const {
-    return !(*this == rhs);
-  }
+  bool operator !=(const Accelerator& rhs) const;
 
   ui::KeyboardCode key_code() const { return key_code_; }
-
-  ui::EventType type() const { return type_; }
 
   // Sets the event type if the accelerator should be processed on an event
   // other than ui::ET_KEY_PRESSED.
   void set_type(ui::EventType type) { type_ = type; }
+  ui::EventType type() const { return type_; }
 
   int modifiers() const { return modifiers_; }
 
-  bool IsShiftDown() const {
-    return (modifiers_ & ui::EF_SHIFT_DOWN) == ui::EF_SHIFT_DOWN;
-  }
-
-  bool IsCtrlDown() const {
-    return (modifiers_ & ui::EF_CONTROL_DOWN) == ui::EF_CONTROL_DOWN;
-  }
-
-  bool IsAltDown() const {
-    return (modifiers_ & ui::EF_ALT_DOWN) == ui::EF_ALT_DOWN;
-  }
+  bool IsShiftDown() const;
+  bool IsCtrlDown() const;
+  bool IsAltDown() const;
 
   // Returns a string with the localized shortcut if any.
   string16 GetShortcutText() const;
 
  protected:
   // The keycode (VK_...).
-  ui::KeyboardCode key_code_;
+  KeyboardCode key_code_;
 
   // The event type (usually ui::ET_KEY_PRESSED).
-  ui::EventType type_;
+  EventType type_;
 
   // The state of the Shift/Ctrl/Alt keys (platform-dependent).
   int modifiers_;
