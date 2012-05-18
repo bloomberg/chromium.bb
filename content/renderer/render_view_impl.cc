@@ -3149,8 +3149,7 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
   // TODO(gavinp): separate out prefetching and prerender field trials
   // if the rel=prerender rel type is sticking around.
   if (top_document_state &&
-      (request.targetType() == WebURLRequest::TargetIsPrefetch ||
-       request.targetType() == WebURLRequest::TargetIsPrerender))
+      request.targetType() == WebURLRequest::TargetIsPrefetch)
     top_document_state->set_was_prefetcher(true);
 
   request.setRequestorID(routing_id_);
