@@ -156,6 +156,7 @@ FakeHostAuthenticatorFactory::~FakeHostAuthenticatorFactory() {
 }
 
 scoped_ptr<Authenticator> FakeHostAuthenticatorFactory::CreateAuthenticator(
+    const std::string& local_jid,
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
   return scoped_ptr<Authenticator>(new FakeAuthenticator(

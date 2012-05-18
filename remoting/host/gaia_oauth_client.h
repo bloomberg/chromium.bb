@@ -21,13 +21,16 @@ class URLRequestContextGetter;
 // this duplication.
 namespace remoting {
 
-// TODO(jamiewalch): Make this configurable if we ever support other providers.
-static const char kGaiaOAuth2Url[] =
-    "https://accounts.google.com/o/oauth2/token";
-
 struct OAuthClientInfo {
   std::string client_id;
   std::string client_secret;
+};
+
+struct OAuthProviderInfo {
+  static OAuthProviderInfo GetDefault();
+
+  std::string access_token_url;
+  std::string user_info_url;
 };
 
 class GaiaOAuthClient {
@@ -37,7 +40,8 @@ class GaiaOAuthClient {
     virtual ~Delegate() { }
 
     // Invoked on a successful response to the RefreshToken request.
-    virtual void OnRefreshTokenResponse(const std::string& access_token,
+    virtual void OnRefreshTokenResponse(const std::string& user_email,
+                                        const std::string& access_token,
                                         int expires_in_seconds) = 0;
     // Invoked when there is an OAuth error with one of the requests.
     virtual void OnOAuthError() = 0;
@@ -45,7 +49,8 @@ class GaiaOAuthClient {
     // invalid response.
     virtual void OnNetworkError(int response_code) = 0;
   };
-  GaiaOAuthClient(const std::string& gaia_url,
+
+  GaiaOAuthClient(const OAuthProviderInfo& provider_info,
                   net::URLRequestContextGetter* context_getter);
   ~GaiaOAuthClient();
 

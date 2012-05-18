@@ -17,20 +17,38 @@
 #include "remoting/host/url_fetcher.h"
 
 namespace {
+
+const char kDefaultOAuth2TokenUrl[] =
+    "https://accounts.google.com/o/oauth2/token";
+const char kDefaultOAuth2UserInfoUrl[] =
+    "https://www.googleapis.com/oauth2/v1/userinfo";
+
+// Values used to parse token response.
 const char kAccessTokenValue[] = "access_token";
 const char kRefreshTokenValue[] = "refresh_token";
 const char kExpiresInValue[] = "expires_in";
+
+// Values used when parsing userinfo response.
+const char kEmailValue[] = "email";
+
 }  // namespace
 
 namespace remoting {
 
+// static
+OAuthProviderInfo OAuthProviderInfo::GetDefault() {
+  OAuthProviderInfo result;
+  result.access_token_url = kDefaultOAuth2TokenUrl;
+  result.user_info_url = kDefaultOAuth2UserInfoUrl;
+  return result;
+}
+
 class GaiaOAuthClient::Core
     : public base::RefCountedThreadSafe<GaiaOAuthClient::Core> {
  public:
-  Core(const std::string& gaia_url,
+  Core(const OAuthProviderInfo& info,
        net::URLRequestContextGetter* request_context_getter)
-      : gaia_url_(gaia_url),
-        request_context_getter_(request_context_getter),
+      : request_context_getter_(request_context_getter),
         delegate_(NULL) {
   }
 
@@ -42,14 +60,22 @@ class GaiaOAuthClient::Core
   friend class base::RefCountedThreadSafe<Core>;
   virtual ~Core() {}
 
-  void OnUrlFetchComplete(const net::URLRequestStatus& status,
-                          int response_code,
-                          const std::string& response);
+  void OnAuthTokenFetchComplete(const net::URLRequestStatus& status,
+                                int response_code,
+                                const std::string& response);
+  void FetchUserInfoAndInvokeCallback();
+  void OnUserInfoFetchComplete(const net::URLRequestStatus& status,
+                               int response_code,
+                               const std::string& response);
 
-  GURL gaia_url_;
+  OAuthProviderInfo provider_info_;
+
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   GaiaOAuthClient::Delegate* delegate_;
   scoped_ptr<UrlFetcher> request_;
+
+  std::string access_token_;
+  int expires_in_seconds_;
 };
 
 void GaiaOAuthClient::Core::RefreshToken(
@@ -58,6 +84,11 @@ void GaiaOAuthClient::Core::RefreshToken(
     GaiaOAuthClient::Delegate* delegate) {
   DCHECK(!request_.get()) << "Tried to fetch two things at once!";
 
+  delegate_ = delegate;
+
+  access_token_.clear();
+  expires_in_seconds_ = 0;
+
   std::string post_body =
       "refresh_token=" + net::EscapeUrlEncodedData(refresh_token, true) +
       "&client_id=" + net::EscapeUrlEncodedData(oauth_client_info.client_id,
@@ -65,14 +96,15 @@ void GaiaOAuthClient::Core::RefreshToken(
       "&client_secret=" +
       net::EscapeUrlEncodedData(oauth_client_info.client_secret, true) +
       "&grant_type=refresh_token";
-  delegate_ = delegate;
-  request_.reset(new UrlFetcher(gaia_url_, UrlFetcher::POST));
+  request_.reset(new UrlFetcher(GURL(provider_info_.access_token_url),
+                                UrlFetcher::POST));
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
-  request_->Start(base::Bind(&GaiaOAuthClient::Core::OnUrlFetchComplete, this));
+  request_->Start(
+      base::Bind(&GaiaOAuthClient::Core::OnAuthTokenFetchComplete, this));
 }
 
-void GaiaOAuthClient::Core::OnUrlFetchComplete(
+void GaiaOAuthClient::Core::OnAuthTokenFetchComplete(
     const net::URLRequestStatus& status,
     int response_code,
     const std::string& response) {
@@ -90,37 +122,63 @@ void GaiaOAuthClient::Core::OnUrlFetchComplete(
     return;
   }
 
-  std::string access_token;
-  std::string refresh_token;
-  int expires_in_seconds = 0;
   if (response_code == net::HTTP_OK) {
     scoped_ptr<Value> message_value(base::JSONReader::Read(response));
     if (message_value.get() &&
         message_value->IsType(Value::TYPE_DICTIONARY)) {
       scoped_ptr<DictionaryValue> response_dict(
           static_cast<DictionaryValue*>(message_value.release()));
-      response_dict->GetString(kAccessTokenValue, &access_token);
-      response_dict->GetString(kRefreshTokenValue, &refresh_token);
-      response_dict->GetInteger(kExpiresInValue, &expires_in_seconds);
+      response_dict->GetString(kAccessTokenValue, &access_token_);
+      response_dict->GetInteger(kExpiresInValue, &expires_in_seconds_);
     }
-    VLOG(1) << "Gaia response: acess_token='" << access_token
-            << "', refresh_token='" << refresh_token
-            << "', expires in " << expires_in_seconds << " second(s)";
+    VLOG(1) << "Gaia response: acess_token='" << access_token_
+            << "', expires in " << expires_in_seconds_ << " second(s)";
   } else {
     LOG(ERROR) << "Gaia response: response code=" << response_code;
   }
 
-  if (access_token.empty()) {
+  if (access_token_.empty()) {
     delegate_->OnNetworkError(response_code);
-  } else if (refresh_token.empty()) {
-    // If we only have an access token, then this was a refresh request.
-    delegate_->OnRefreshTokenResponse(access_token, expires_in_seconds);
+  } else {
+    FetchUserInfoAndInvokeCallback();
   }
 }
 
-GaiaOAuthClient::GaiaOAuthClient(const std::string& gaia_url,
+void GaiaOAuthClient::Core::FetchUserInfoAndInvokeCallback() {
+  request_.reset(new UrlFetcher(
+      GURL(provider_info_.user_info_url), UrlFetcher::GET));
+  request_->SetRequestContext(request_context_getter_);
+  request_->SetHeader("Authorization", "Bearer " + access_token_);
+  request_->Start(
+      base::Bind(&GaiaOAuthClient::Core::OnUserInfoFetchComplete, this));
+}
+
+void GaiaOAuthClient::Core::OnUserInfoFetchComplete(
+    const net::URLRequestStatus& status,
+    int response_code,
+    const std::string& response) {
+  std::string email;
+  if (response_code == net::HTTP_OK) {
+    scoped_ptr<Value> message_value(base::JSONReader::Read(response));
+    if (message_value.get() &&
+        message_value->IsType(Value::TYPE_DICTIONARY)) {
+      scoped_ptr<DictionaryValue> response_dict(
+          static_cast<DictionaryValue*>(message_value.release()));
+      response_dict->GetString(kEmailValue, &email);
+    }
+  }
+
+  if (email.empty()) {
+    delegate_->OnNetworkError(response_code);
+  } else {
+    delegate_->OnRefreshTokenResponse(
+        email, access_token_, expires_in_seconds_);
+  }
+}
+
+GaiaOAuthClient::GaiaOAuthClient(const OAuthProviderInfo& provider_info,
                                  net::URLRequestContextGetter* context_getter) {
-  core_ = new Core(gaia_url, context_getter);
+  core_ = new Core(provider_info, context_getter);
 }
 
 GaiaOAuthClient::~GaiaOAuthClient() {

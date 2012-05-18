@@ -25,6 +25,7 @@ It2MeHostAuthenticatorFactory::~It2MeHostAuthenticatorFactory() {
 }
 
 scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
+    const std::string& local_jid,
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
   if (NegotiatingAuthenticator::IsNegotiableMessage(first_message)) {

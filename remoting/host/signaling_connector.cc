@@ -55,7 +55,8 @@ void SignalingConnector::EnableOAuth(
     scoped_ptr<OAuthCredentials> oauth_credentials,
     net::URLRequestContextGetter* url_context) {
   oauth_credentials_ = oauth_credentials.Pass();
-  gaia_oauth_client_.reset(new GaiaOAuthClient(kGaiaOAuth2Url, url_context));
+  gaia_oauth_client_.reset(new GaiaOAuthClient(
+      OAuthProviderInfo::GetDefault(), url_context));
 }
 
 void SignalingConnector::OnSignalStrategyStateChange(
@@ -93,11 +94,20 @@ void SignalingConnector::OnOnlineStateChanged(bool online) {
   }
 }
 
-void SignalingConnector::OnRefreshTokenResponse(const std::string& access_token,
+void SignalingConnector::OnRefreshTokenResponse(const std::string& user_email,
+                                                const std::string& access_token,
                                                 int expires_seconds) {
   DCHECK(CalledOnValidThread());
   DCHECK(oauth_credentials_.get());
   LOG(INFO) << "Received OAuth token.";
+
+  if (user_email != oauth_credentials_->login) {
+    LOG(ERROR) << "OAuth token and email address do not refer to "
+        "the same account.";
+    auth_failed_callback_.Run();
+    return;
+  }
+
   refreshing_oauth_token_ = false;
   auth_token_expiry_time_ = base::Time::Now() +
       base::TimeDelta::FromSeconds(expires_seconds) -
