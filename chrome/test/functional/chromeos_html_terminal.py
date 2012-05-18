@@ -21,7 +21,7 @@ class ChromeosHTMLTerminalTest(pyauto.PyUITest):
         return x
     return None
 
-  def testInstallHTMLTerminal(self):
+  def testInstallAndUninstallSecureShellExt(self):
     """Basic installation test for HTML Terminal on ChromeOS."""
     crx_file_path = os.path.abspath(
         os.path.join(self.DataDir(), 'pyauto_private', 'apps',
@@ -33,6 +33,9 @@ class ChromeosHTMLTerminalTest(pyauto.PyUITest):
                     msg='Extension was not enabled on installation.')
     self.assertFalse(extension['allowed_in_incognito'],
                      msg='Extension was allowed in incognito on installation.')
+    # Uninstall HTML Terminal extension
+    self.assertTrue(self.UninstallExtensionById(ext_id),
+                    msg='Failed to uninstall extension.')
 
 
 if __name__ == '__main__':
