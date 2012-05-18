@@ -123,7 +123,7 @@ TestRunner.prototype.verifyHandlerRequest =
 };
 
 
-TestRunner.prototype.errorCallback_ = function(error, messagePrefix) {
+TestRunner.prototype.errorCallback_ = function(messagePrefix, error) {
   var msg = '';
   if (!error.code) {
     msg = error.message;

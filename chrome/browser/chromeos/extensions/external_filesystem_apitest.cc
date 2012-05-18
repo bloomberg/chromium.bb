@@ -38,6 +38,8 @@ using content::BrowserContext;
 namespace {
 
 // These should match the counterparts in remote.js.
+// Also, the size of the file in |kTestRootFeed| has to be set to
+// |size(kTestFileContents)|.
 const char kTestFileContents[] = "hello, world";
 
 // Contains a folder entry for the folder 'Folder' that will be 'created'.
@@ -253,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
 }
 
 // Failing on Linux ChromeOS builds.
-// http://crbug.com/128757
+// http://crbug.com/128759
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
                        DISABLED_RemoteMountPoint) {
   SetupGDataFileSystemForTest();
