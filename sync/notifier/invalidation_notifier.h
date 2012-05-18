@@ -23,7 +23,7 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
 #include "sync/notifier/chrome_invalidation_client.h"
-#include "sync/notifier/invalidation_version_tracker.h"
+#include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/state_writer.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/syncable/model_type.h"
@@ -38,12 +38,12 @@ class InvalidationNotifier
       public ChromeInvalidationClient::Listener,
       public StateWriter {
  public:
-  // |invalidation_version_tracker| must be initialized.
+  // |invalidation_state_tracker| must be initialized.
   InvalidationNotifier(
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
-      const browser_sync::WeakHandle<InvalidationVersionTracker>&
-          invalidation_version_tracker,
+      const browser_sync::WeakHandle<InvalidationStateTracker>&
+          invalidation_state_tracker,
       const std::string& client_info);
 
   virtual ~InvalidationNotifier();
@@ -94,8 +94,8 @@ class InvalidationNotifier
   const InvalidationVersionMap initial_max_invalidation_versions_;
 
   // Passed to |invalidation_client_|.
-  const browser_sync::WeakHandle<InvalidationVersionTracker>
-      invalidation_version_tracker_;
+  const browser_sync::WeakHandle<InvalidationStateTracker>
+      invalidation_state_tracker_;
 
   // Passed to |invalidation_client_|.
   const std::string client_info_;

@@ -26,8 +26,8 @@ class NonBlockingInvalidationNotifier::Core
   void Initialize(
       const notifier::NotifierOptions& notifier_options,
       const InvalidationVersionMap& initial_max_invalidation_versions,
-      const browser_sync::WeakHandle<InvalidationVersionTracker>&
-          invalidation_version_tracker,
+      const browser_sync::WeakHandle<InvalidationStateTracker>&
+          invalidation_state_tracker,
       const std::string& client_info);
   void Teardown();
   void SetUniqueId(const std::string& unique_id);
@@ -69,8 +69,8 @@ NonBlockingInvalidationNotifier::Core::~Core() {
 void NonBlockingInvalidationNotifier::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const browser_sync::WeakHandle<InvalidationVersionTracker>&
-        invalidation_version_tracker,
+    const browser_sync::WeakHandle<InvalidationStateTracker>&
+        invalidation_state_tracker,
     const std::string& client_info) {
   DCHECK(notifier_options.request_context_getter);
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
@@ -82,7 +82,7 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
       new InvalidationNotifier(
           notifier_options,
           initial_max_invalidation_versions,
-          invalidation_version_tracker,
+          invalidation_state_tracker,
           client_info));
   invalidation_notifier_->AddObserver(this);
 }
@@ -147,8 +147,8 @@ void NonBlockingInvalidationNotifier::Core::StoreState(
 NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
     const notifier::NotifierOptions& notifier_options,
     const InvalidationVersionMap& initial_max_invalidation_versions,
-    const browser_sync::WeakHandle<InvalidationVersionTracker>&
-        invalidation_version_tracker,
+    const browser_sync::WeakHandle<InvalidationStateTracker>&
+        invalidation_state_tracker,
     const std::string& client_info)
         : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
           core_(
@@ -165,7 +165,7 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
               core_.get(),
               notifier_options,
               initial_max_invalidation_versions,
-              invalidation_version_tracker,
+              invalidation_state_tracker,
               client_info))) {
     NOTREACHED();
   }

@@ -5,7 +5,7 @@ include_rules = [
   "+sync/engine/polling_constants.h",
   "+sync/internal_api",
   "+sync/js",
-  "+sync/notifier/invalidation_version_tracker.h",
+  "+sync/notifier/invalidation_state_tracker.h",
   "+sync/sessions/session_state.h",
   "+sync/syncable/model_type.h",
   "+sync/syncable/model_type_payload_map.h",
