@@ -172,8 +172,6 @@ void* TlsThread(void* state) {
 
 
 void TestTlsAndSync() {
-  int err;
-  void* thread_rv;
   pthread_t thread_id;
   pthread_attr_t attr;
   struct SYNC_DATA sync_data;
@@ -194,13 +192,6 @@ void TestTlsAndSync() {
   while (!g_ready) {
     CHECK_OK(pthread_cond_wait(&sync_data.cv, &sync_data.mutex));
   }
-  /* pthread_join() should return an error because the thread was
-     created detached.  (Note that this check is not strictly legal,
-     because the thread could have exited at this point, in which case
-     thread_id is undefined because the data structure could have been
-     reclaimed.  That means this test could fail in the future.) */
-  err = pthread_join(thread_id, &thread_rv);
-  EXPECT_NE(0, err);
 
   EXPECT_EQ(5, tls_var);
 

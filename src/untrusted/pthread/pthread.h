@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -36,6 +36,7 @@ extern "C" {
 #endif
 
 struct timespec;
+struct __nc_basic_thread_data;
 
 /** Mutex type attributes */
 enum {
@@ -74,7 +75,7 @@ typedef struct {
   int mutex_type;
 
   /** ID of the thread that owns the mutex */
-  uint32_t owner_thread_id;
+  struct __nc_basic_thread_data *owner_thread_id;
 
   /** Recursion depth counter for recursive mutexes */
   uint32_t recursion_counter;
@@ -123,7 +124,7 @@ typedef struct {
 #define MAX_THREAD_ID (0xfffffffe)
 
 /** Illegal thread ID value. */
-#define NACL_PTHREAD_ILLEGAL_THREAD_ID (0xffffffff)
+#define NACL_PTHREAD_ILLEGAL_THREAD_ID ((pthread_t) 0)
 
 /** Statically initializes a pthread_mutex_t representing a recursive mutex. */
 #define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \
@@ -372,7 +373,7 @@ int pthread_cond_timedwait_rel(pthread_cond_t *cond,
 /** Thread entry function type. */
 typedef void *(*nc_thread_function)(void *p);
 /** Thread identifier type. */
-typedef uint32_t pthread_t;
+typedef struct __nc_basic_thread_data *pthread_t;
 
 /** A structure representing thread attributes. */
 typedef struct {

@@ -23,7 +23,6 @@
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/tls_params.h"
 
-#include "native_client/src/untrusted/pthread/nc_hash.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
@@ -49,11 +48,7 @@ static inline char* align(uint32_t offset, uint32_t alignment) {
 /* Thread management global variables */
 const int __nc_kMaxCachedMemoryBlocks = 50;
 
-/* array of TDB pointers */
-struct NaClHashTable __nc_thread_threads;
-
-int32_t __nc_thread_id_counter;
-int32_t __nc_thread_counter_reached_32_bit;
+static int __nc_thread_initialized;
 
 /* mutex used to synchronize thread management code */
 pthread_mutex_t  __nc_thread_management_lock;
@@ -61,7 +56,8 @@ pthread_mutex_t  __nc_thread_management_lock;
 /* condition variable that gets signaled when all the threads
  * except the main thread have terminated
  */
-pthread_cond_t __nc_last_thread_cond;
+static pthread_cond_t __nc_last_thread_cond;
+static pthread_t __nc_initial_thread_id;
 
 /* number of threads currently running in this NaCl module */
 int __nc_running_threads_counter;
@@ -83,49 +79,6 @@ static inline nc_thread_descriptor_t *nc_get_tdb(void) {
    * that here so that the IRT build can override the definition.
    */
   return (void *) ((char *) __nacl_read_tp() + __nacl_tp_tdb_offset(TDB_SIZE));
-}
-
-static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {
-  /* assuming the global lock is locked */
-  uint32_t i = 0;
-  if (!__nc_thread_counter_reached_32_bit) {
-    /* just allocate the next id */
-    basic_data->thread_id = __nc_thread_id_counter;
-    if (MAX_THREAD_ID == __nc_thread_id_counter) {
-      /* no more higher ids, next threads will have to search for a free id */
-      __nc_thread_counter_reached_32_bit = 1;
-    } else {
-      ++__nc_thread_id_counter;
-    }
-  } else {
-    /*
-     * the counter is useless at this point, because some older threads
-     * may be still running
-     */
-    int found = 0;
-    for (i = 0; i <= MAX_THREAD_ID; ++i) {
-      if (!HASH_ID_EXISTS(&__nc_thread_threads, i)) {
-        basic_data->thread_id = i;
-        found = 1;
-        break;
-      }
-    }
-    if (!found) {
-      /* all the IDs are in use?! */
-      return EAGAIN;
-    }
-  }
-
-  HASH_TABLE_INSERT(&__nc_thread_threads, basic_data, hash_entry);
-  return 0;
-}
-
-static nc_basic_thread_data_t *nc_find_tdb_mu(uint32_t id) {
-  /* assuming the global lock is locked */
-  return HASH_FIND_ID(&__nc_thread_threads,
-                      id,
-                      nc_basic_thread_data,
-                      hash_entry);
 }
 
 static void nc_thread_starter(void) {
@@ -231,12 +184,6 @@ static void nc_free_memory_block_mu(nc_thread_memory_block_type_t type,
 }
 
 static void nc_release_basic_data_mu(nc_basic_thread_data_t *basic_data) {
-  if (NACL_PTHREAD_ILLEGAL_THREAD_ID != basic_data->thread_id) {
-    (void)HASH_REMOVE(&__nc_thread_threads,
-                      basic_data->thread_id,
-                      nc_basic_thread_data,
-                      hash_entry);
-  }
   /* join_condvar can be initialized only if tls_node exists */
   pthread_cond_destroy(&basic_data->join_condvar);
   free(basic_data);
@@ -253,12 +200,6 @@ static void nc_release_tls_node(nc_thread_memory_block_t *block,
   }
 }
 
-uint32_t __nacl_tdb_id_function(nc_hash_entry_t *entry) {
-  nc_basic_thread_data_t *basic_data =
-      HASH_ENTRY_TO_ENTRY_TYPE(entry, nc_basic_thread_data, hash_entry);
-  return basic_data->thread_id;
-}
-
 /* Initialize a newly allocated TDB to some default values */
 static int nc_tdb_init(nc_thread_descriptor_t *tdb,
                        nc_basic_thread_data_t * basic_data) {
@@ -266,10 +207,8 @@ static int nc_tdb_init(nc_thread_descriptor_t *tdb,
   tdb->basic_data = basic_data;
   basic_data->tdb = tdb;
   /* Put an illegal value, should be set when the ID is allocated */
-  tdb->basic_data->thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   tdb->basic_data->retval = 0;
   tdb->basic_data->status = THREAD_RUNNING;
-  tdb->basic_data->hash_entry.id_function = __nacl_tdb_id_function;
 
   tdb->joinable = PTHREAD_CREATE_JOINABLE;
   tdb->join_waiting = 0;
@@ -306,8 +245,7 @@ int __pthread_initialize(void) {
   /* At this point GS is already initialized */
   tdb = nc_get_tdb();
   basic_data = (nc_basic_thread_data_t *)(tdb + 1);
-
-  HASH_INIT(&__nc_thread_threads);
+  __nc_initial_thread_id = basic_data;
 
   retval = pthread_mutex_init(&__nc_thread_management_lock, NULL);
   if (retval) {
@@ -337,10 +275,7 @@ int __pthread_initialize(void) {
 
   /* Initialize the main thread TDB */
   nc_tdb_init(tdb, basic_data);
-  /* ID 0 is reserved for the main thread */
-  basic_data->thread_id = 0;
-  __nc_thread_id_counter = 1;
-  HASH_TABLE_INSERT(&__nc_thread_threads, basic_data, hash_entry);
+  __nc_thread_initialized = 1;
   return retval;
 }
 
@@ -396,11 +331,6 @@ int pthread_create(pthread_t *thread_id,
     nc_tdb_init(new_tdb, new_basic_data);
     new_tdb->tls_node = tls_node;
 
-    retval = nc_allocate_thread_id_mu(new_basic_data);
-    if (0 != retval) {
-      break;
-    }
-
     /* all the required members of the tdb must be initialized before
      * the thread is started and actually before the global lock is released,
      * since another thread can call pthread_join() or pthread_detach()
@@ -422,6 +352,7 @@ int pthread_create(pthread_t *thread_id,
                          kStackAlignment);
     new_tdb->stack_node = stack_node;
 
+    retval = 0;
   } while (0);
 
   if (0 != retval) {
@@ -438,7 +369,7 @@ int pthread_create(pthread_t *thread_id,
   /* Save the new thread id. This can not be done after the syscall,
   because the child thread could have already finished by that
   time. If thread creation fails, it will be overriden with -1 later.*/
-  *thread_id = new_basic_data->thread_id;
+  *thread_id = new_basic_data;
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
 
@@ -482,7 +413,7 @@ ret:
     }
 
     pthread_mutex_unlock(&__nc_thread_management_lock);
-    *thread_id = -1;
+    *thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
   }
 
   return retval;
@@ -507,7 +438,6 @@ void pthread_exit (void* retval) {
   nc_thread_memory_block_t  *stack_node = tdb->stack_node;
   int32_t                   *is_used = &stack_node->is_used;
   nc_basic_thread_data_t    *basic_data = tdb->basic_data;
-  pthread_t                 thread_id = basic_data->thread_id;
   int                       joinable = tdb->joinable;
 
   /* call the destruction functions for TSD */
@@ -515,13 +445,11 @@ void pthread_exit (void* retval) {
 
   __newlib_thread_exit();
 
-  if (0 != thread_id) {
+  if (__nc_initial_thread_id != basic_data) {
     pthread_mutex_lock(&__nc_thread_management_lock);
     --__nc_running_threads_counter;
     pthread_mutex_unlock(&__nc_thread_management_lock);
-  }
-
-  if (0 == thread_id) {
+  } else {
     /* This is the main thread - wait for other threads to complete */
     wait_for_threads();
     exit(0);
@@ -560,17 +488,12 @@ void pthread_exit (void* retval) {
 
 int pthread_join(pthread_t thread_id, void **thread_return) {
   int retval = 0;
-  nc_basic_thread_data_t *basic_data;
+  nc_basic_thread_data_t *basic_data = thread_id;
   if (pthread_self() == thread_id) {
     return EDEADLK;
   }
 
   pthread_mutex_lock(&__nc_thread_management_lock);
-  basic_data = nc_find_tdb_mu(thread_id);
-  if (NULL == basic_data) {
-    retval = ESRCH;
-    goto ret;
-  }
 
   if (basic_data->tdb != NULL) {
     /* The thread is still running */
@@ -608,17 +531,11 @@ ret:
 
 int pthread_detach(pthread_t thread_id) {
   int retval = 0;
-  nc_basic_thread_data_t *basic_data;
+  nc_basic_thread_data_t *basic_data = thread_id;
   nc_thread_descriptor_t *detached_tdb;
   /* TODO(gregoryd) - can be optimized using InterlockedExchange
    * once it's available */
   pthread_mutex_lock(&__nc_thread_management_lock);
-  basic_data = nc_find_tdb_mu(thread_id);
-  if (NULL == basic_data) {
-    /* no such thread */
-    retval = ESRCH;
-    goto ret;
-  }
   detached_tdb = basic_data->tdb;
 
   if (NULL == detached_tdb) {
@@ -636,7 +553,6 @@ int pthread_detach(pthread_t thread_id) {
       /* another thread is already waiting to join - do nothing */
     }
   }
-ret:
   pthread_mutex_unlock(&__nc_thread_management_lock);
   return retval;
 }
@@ -650,7 +566,7 @@ int pthread_kill(pthread_t thread_id,
 pthread_t pthread_self(void) {
   /* get the tdb pointer from gs and use it to return the thread handle*/
   nc_thread_descriptor_t *tdb = nc_get_tdb();
-  return tdb->basic_data->thread_id;
+  return tdb->basic_data;
 }
 
 int pthread_equal (pthread_t thread1, pthread_t thread2) {
@@ -763,7 +679,7 @@ void __local_lock_close_recursive(_LOCK_T* lock) {
 }
 
 void __local_lock_acquire(_LOCK_T* lock) {
-  if (0 == __nc_thread_id_counter) {
+  if (!__nc_thread_initialized) {
     /*
      * pthread library is not initialized yet - there is only one thread.
      * Calling pthread_mutex_lock will cause an access violation because it
@@ -781,7 +697,7 @@ void __local_lock_acquire_recursive(_LOCK_T* lock) {
 }
 
 int __local_lock_try_acquire(_LOCK_T* lock) {
-  if (0 == __nc_thread_id_counter) {
+  if (!__nc_thread_initialized) {
     /*
     * pthread library is not initialized yet - there is only one thread.
     * Calling pthread_mutex_lock will cause an access violation because it
@@ -802,7 +718,7 @@ int __local_lock_try_acquire_recursive(_LOCK_T* lock) {
 }
 
 void __local_lock_release(_LOCK_T* lock) {
-  if (0 == __nc_thread_id_counter) {
+  if (!__nc_thread_initialized) {
     /*
     * pthread library is not initialized yet - there is only one thread.
     * Calling pthread_mutex_lock will cause an access violation because it

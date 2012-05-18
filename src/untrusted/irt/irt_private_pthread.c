@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16,7 +16,7 @@
  * the thread.  So using our TLS pointer works just fine.
  */
 pthread_t pthread_self(void) {
-  return (uintptr_t) __nacl_read_tp();
+  return __nacl_read_tp();
 }
 
 /*

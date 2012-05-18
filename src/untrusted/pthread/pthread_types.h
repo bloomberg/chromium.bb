@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -11,7 +11,6 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_PTHREAD_NC_PTHREAD_TYPES_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_PTHREAD_NC_PTHREAD_TYPES_H_ 1
 
-#include "native_client/src/untrusted/pthread/nc_hash.h"
 #include "native_client/src/untrusted/pthread/pthread.h"
 
 
@@ -44,7 +43,7 @@ typedef enum {
   MAX_MEMORY_TYPE
 } nc_thread_memory_block_type_t;
 
-struct nc_basic_thread_data;
+struct __nc_basic_thread_data;
 
 /* This struct defines the layout of the TDB */
 /*
@@ -63,13 +62,11 @@ typedef struct {
   nc_thread_memory_block_t *tls_node;
   nc_thread_function  start_func;
   void* state;
-  struct nc_basic_thread_data *basic_data;
+  struct __nc_basic_thread_data *basic_data;
 } nc_thread_descriptor_t;
 
-typedef struct nc_basic_thread_data {
-  pthread_t thread_id;  /* thread id */
+typedef struct __nc_basic_thread_data {
   void *retval;
-  nc_hash_entry_t hash_entry;
   nc_thread_status_t status;
   pthread_cond_t join_condvar;
   /* pointer to the tdb, will be null after the thread terminates */
