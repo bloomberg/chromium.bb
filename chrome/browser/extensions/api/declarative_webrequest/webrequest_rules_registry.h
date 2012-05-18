@@ -11,11 +11,16 @@
 #include <set>
 #include <vector>
 
+#include "base/time.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/matcher/url_matcher.h"
+
+class Profile;
 
 namespace extension_web_request_api_helpers {
 struct EventResponseDelta;
@@ -60,7 +65,7 @@ class WebRequestRule;
 // example 'scheme': 'http') are fulfilled.
 class WebRequestRulesRegistry : public RulesRegistryWithCache {
  public:
-  WebRequestRulesRegistry();
+  explicit WebRequestRulesRegistry(Profile* profile);
 
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.
@@ -87,12 +92,15 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;
 
+ protected:
+  virtual ~WebRequestRulesRegistry();
+  virtual base::Time GetExtensionInstallationTime(
+      const std::string& extension_id) const;
+
  private:
   typedef std::map<URLMatcherConditionSet::ID, WebRequestRule*> RuleTriggers;
   typedef std::map<WebRequestRule::GlobalRuleId, linked_ptr<WebRequestRule> >
       RulesMap;
-
-  virtual ~WebRequestRulesRegistry();
 
   // Map that tells us which WebRequestRule may match under the condition that
   // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
@@ -101,6 +109,8 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   RulesMap webrequest_rules_;
 
   URLMatcher url_matcher_;
+
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 };
 
 }  // namespace extensions

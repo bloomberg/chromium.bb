@@ -70,6 +70,8 @@ class RulesRegistryService : public content::NotificationObserver  {
 
   content::NotificationRegistrar registrar_;
 
+  Profile* profile_;
+
   DISALLOW_COPY_AND_ASSIGN(RulesRegistryService);
 };
 

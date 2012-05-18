@@ -6,11 +6,15 @@
 
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "net/url_request/url_request.h"
 
 namespace extensions {
 
-WebRequestRulesRegistry::WebRequestRulesRegistry() {}
+WebRequestRulesRegistry::WebRequestRulesRegistry(Profile* profile) {
+  if (profile)
+    extension_info_map_ = ExtensionSystem::Get(profile)->info_map();
+}
 
 std::set<WebRequestRule::GlobalRuleId>
 WebRequestRulesRegistry::GetMatches(net::URLRequest* request,
@@ -59,8 +63,8 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
 std::string WebRequestRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
     const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) {
-  // TODO(battre): Retrieve this from somewhere
-  base::Time extension_installation_time;
+  base::Time extension_installation_time =
+      GetExtensionInstallationTime(extension_id);
 
   std::string error;
   RulesMap new_webrequest_rules;
@@ -174,5 +178,13 @@ bool WebRequestRulesRegistry::IsEmpty() const {
 }
 
 WebRequestRulesRegistry::~WebRequestRulesRegistry() {}
+
+base::Time WebRequestRulesRegistry::GetExtensionInstallationTime(
+    const std::string& extension_id) const {
+  if (!extension_info_map_.get())  // May be NULL during testing.
+    return base::Time();
+
+  return extension_info_map_->GetInstallTime(extension_id);
+}
 
 }  // namespace extensions

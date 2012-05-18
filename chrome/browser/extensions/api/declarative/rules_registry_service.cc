@@ -29,7 +29,8 @@ void RegisterToExtensionWebRequestEventRouterOnIO(
 
 }  // namespace
 
-RulesRegistryService::RulesRegistryService(Profile* profile) {
+RulesRegistryService::RulesRegistryService(Profile* profile)
+    : profile_(profile) {
   if (profile) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                    content::Source<Profile>(profile));
@@ -40,7 +41,7 @@ RulesRegistryService::~RulesRegistryService() {}
 
 void RulesRegistryService::RegisterDefaultRulesRegistries() {
   scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
-      new WebRequestRulesRegistry);
+      new WebRequestRulesRegistry(profile_));
   RegisterRulesRegistry(declarative_webrequest_constants::kOnRequest,
                         web_request_rules_registry);
   content::BrowserThread::PostTask(
