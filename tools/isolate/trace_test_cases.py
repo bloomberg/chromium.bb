@@ -148,7 +148,12 @@ def trace_test_cases(
     raise
   finally:
     with open('%s.test_cases' % executable, 'w') as f:
-      json.dump(out, f, indent=2, sort_keys=True)
+      if len(out) > 20:
+        # Pack it dense since the file is going to be pretty large.
+        json.dump(out, f, separators=(',',':'))
+      else:
+        # Keep it human readable.
+        json.dump(out, f, indent=2, sort_keys=True)
     pool.close()
     pool.join()
 
