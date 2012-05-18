@@ -29,7 +29,7 @@ namespace {
 
 void SetIdKeyValue(base::DictionaryValue* properties,
                    const char* key,
-                   ExtensionMenuItem::Id id) {
+                   const ExtensionMenuItem::Id& id) {
   if (id.uid == 0)
     properties->SetString(key, id.string_uid);
   else
