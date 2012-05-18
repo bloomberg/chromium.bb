@@ -28,6 +28,7 @@ class TestLauncherDelegate : public LauncherDelegate,
   virtual ~TestLauncherDelegate();
 
   void AddLauncherItem(aura::Window* window);
+  void AddLauncherItem(aura::Window* window, LauncherItemStatus status);
 
   static TestLauncherDelegate* instance() { return instance_; }
 

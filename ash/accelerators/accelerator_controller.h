@@ -77,6 +77,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
     return brightness_control_delegate_.get();
   }
 
+  VolumeControlDelegate* volume_control_delegate() const {
+    return volume_control_delegate_.get();
+  }
+
  private:
   // Initializes the accelerators this class handles as a target.
   void Init();
