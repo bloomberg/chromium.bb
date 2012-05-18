@@ -10,23 +10,9 @@
   <link rel="stylesheet" href="subscribe.css" type="text/css" />
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="subscribe.js"></script>
-  <script>
-    function init() {
-      document.title =
-          chrome.i18n.getMessage("rss_subscription_default_title");
-      i18nReplace('rss_subscription_subscribe_using');
-      i18nReplace('rss_subscription_subscribe_button');
-      i18nReplace('rss_subscription_always_use');
-      i18nReplace('rss_subscription_feed_preview');
-      i18nReplaceImpl('feedUrl', 'rss_subscription_feed_link', '');
-      
-      main();
-    }
-  </script>
 </head>
 
-<body onload="init();">
-
+<body>
   <table border="0" cellpadding="0" cellspacing="0" width="100%">
   <tr>
     <td width="80" rowspan="2">
@@ -46,9 +32,8 @@
           </td>
           <td valign="top">
             <div style="margin-left:2px">
-              <select id="readerDropdown" onChange="onSelectChanged()"></select>
-              <button onclick="navigate();"
-                      id="rss_subscription_subscribe_button"></button><br />
+              <select id="readerDropdown"></select>
+              <button id="rss_subscription_subscribe_button"></button><br />
             </div>
           </td>
         </tr>

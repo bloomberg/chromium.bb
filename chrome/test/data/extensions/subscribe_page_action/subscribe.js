@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -144,9 +144,11 @@ function handleFeedParsingFailed(error) {
 }
 
 function createFrame(frame_id, html) {
+  var csp = '<meta http-equiv="content-security-policy" ' +
+            'value="script-src \'self\'; object-src \'none\'">';
   frame = document.createElement('iframe');
   frame.id = frame_id;
-  frame.src = "data:text/html;charset=utf-8,<html>" + styleSheet + html +
+  frame.src = "data:text/html;charset=utf-8,<html>" + csp + styleSheet + html +
                 "</html>";
   frame.scrolling = "auto";
   frame.frameBorder = "0";
@@ -222,3 +224,20 @@ function onSelectChanged() {
   if (readerDropdown.selectedIndex == readerDropdown.length - 1)
     window.location = "options.html";
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+  document.title =
+      chrome.i18n.getMessage("rss_subscription_default_title");
+  i18nReplace('rss_subscription_subscribe_using');
+  i18nReplace('rss_subscription_subscribe_button');
+  i18nReplace('rss_subscription_always_use');
+  i18nReplace('rss_subscription_feed_preview');
+  i18nReplaceImpl('feedUrl', 'rss_subscription_feed_link', '');
+
+  var dropdown = document.getElementById('readerDropdown');
+  dropdown.addEventListener('change', onSelectChanged);
+  var button = document.getElementById('rss_subscription_subscribe_button');
+  button.addEventListener('click', navigate);
+
+  main();
+});
