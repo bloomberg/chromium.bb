@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2011 by Peter Engström <peter.engstrom@indexbraille.com>
+#  Copyright (C) 2011 by Peter EngstrÃ¶m <peter.engstrom@indexbraille.com>
 #
 #  This file is part of liblouis.
 #
@@ -21,17 +21,17 @@
 #
 # 	SORANI (KURDISH)
 #	================
-# 	Author:		Peter Engström
+# 	Author:		Peter EngstrÃ¶m
 # 	Company:	Index Braille
 #
 # 	Date: 		Note:
 #	2011-02-08	Renamed _translation_ar-g1.ctb and changed first line to access this file.
-#				Peter Engström, Index Braille.
-#	2011-03-15	Updated by Peter Engström
+#				Peter EngstrÃ¶m, Index Braille.
+#	2011-03-15	Updated by Peter EngstrÃ¶m
 #
 # ---------------------------------------------------------------------------------------
 
-always \x0644\x0627 123-1					#[Peter Engström 2011-02-08]
+always \x0644\x0627 123-1					#[Peter EngstrÃ¶m 2011-02-08]
 always \x0640\x0640\x0640\x064F 136
 always \x0640\x0640\x0640\x064B 23
 always \x0640\x0640\x0640\x064C 26
@@ -71,15 +71,15 @@ litdigit 0 245
 prepunc ) 356
 postpunc ( 236
 
-prepunc " 236	#[Peter Engström 2011-03-15]
-postpunc " 236	#[Peter Engström 2011-03-15]
+prepunc " 236	#[Peter EngstrÃ¶m 2011-03-15]
+postpunc " 236	#[Peter EngstrÃ¶m 2011-03-15]
 
-prepunc ' 3		#[Peter Engström 2011-03-15]
-postpunc ' 3	#[Peter Engström 2011-03-15]
+prepunc ' 3		#[Peter EngstrÃ¶m 2011-03-15]
+postpunc ' 3	#[Peter EngstrÃ¶m 2011-03-15]
 word 'em = 
 word 'tis =
 word 'twas =
-begnum # 3456 print number sign before number #[Peter Engström 2011-03-15]
+begnum # 3456 print number sign before number #[Peter EngstrÃ¶m 2011-03-15]
 midnum , 46
 postpunc , 46
 decpoint . 46
@@ -87,35 +87,35 @@ midnum - 36
 hyphen - 36
 #capsnocont
 postpunc . 256
-postpunc ; 5		#[Peter Engström 2011-03-15]
-midnum : 5-2		#[Peter Engström 2011-03-15]
-postpunc : 5-2		#[Peter Engström 2011-03-15]
+postpunc ; 5		#[Peter EngstrÃ¶m 2011-03-15]
+midnum : 5-2		#[Peter EngstrÃ¶m 2011-03-15]
+postpunc : 5-2		#[Peter EngstrÃ¶m 2011-03-15]
 postpunc ! 235
 midnum / 34
 always / 34
-#always < 0-135-0	#[Peter Engström 2011-03-15]
+#always < 0-135-0	#[Peter EngstrÃ¶m 2011-03-15]
 # always > 0-246-0
-postpunc ? 1456		#[Peter Engström 2011-03-15]
-endnum % 1234		#[Peter Engström 2011-03-15]
-midnum ^ 346		#[Peter Engström 2011-03-15]
-always ^ 45			#[Peter Engström 2011-03-15]
+postpunc ? 1456		#[Peter EngstrÃ¶m 2011-03-15]
+endnum % 1234		#[Peter EngstrÃ¶m 2011-03-15]
+midnum ^ 346		#[Peter EngstrÃ¶m 2011-03-15]
+always ^ 45			#[Peter EngstrÃ¶m 2011-03-15]
 always ~ 45
-always & 12346		#[Peter Engström 2011-03-15]
-midnum * 16			#[Peter Engström 2011-03-15]
-always * 16			#[Peter Engström 2011-03-15]
-always [ 13456		#[Peter Engström 2011-03-15]
-always ] 12346		#[Peter Engström 2011-03-15]
-always { 135		#[Peter Engström 2011-03-15]
-always } 246		#[Peter Engström 2011-03-15]
+always & 12346		#[Peter EngstrÃ¶m 2011-03-15]
+midnum * 16			#[Peter EngstrÃ¶m 2011-03-15]
+always * 16			#[Peter EngstrÃ¶m 2011-03-15]
+always [ 13456		#[Peter EngstrÃ¶m 2011-03-15]
+always ] 12346		#[Peter EngstrÃ¶m 2011-03-15]
+always { 135		#[Peter EngstrÃ¶m 2011-03-15]
+always } 246		#[Peter EngstrÃ¶m 2011-03-15]
 prepunc ` 6-236
 always @ 4
-always \\ 1256		#[Peter Engström 2011-03-15]
+always \\ 1256		#[Peter EngstrÃ¶m 2011-03-15]
 always | 1245
 repeated \s 0
 repeated \t 0
 always ... 3-3-3
 always .\s.\s. 3-3-3 . . .
-always $ 1246		#[Peter Engström 2011-03-15]
+always $ 1246		#[Peter EngstrÃ¶m 2011-03-15]
 
 # special character sequences
 compbrl :// URLs
