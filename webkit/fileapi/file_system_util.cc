@@ -149,11 +149,12 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
   case kFileSystemTypeExternal:
     url += (kExternalDir + 1);  // We don't want the leading slash.
     return GURL(url + "/");
+  case kFileSystemTypeIsolated:
+    url += (kIsolatedDir + 1);  // We don't want the leading slash.
+    return GURL(url + "/");
   case kFileSystemTypeTest:
     url += (kTestDir + 1);  // We don't want the leading slash.
     return GURL(url + "/");
-  case kFileSystemTypeIsolated:
-    // Falling through; we won't call this for isolated filesystems.
   case kFileSystemTypeUnknown:
     NOTREACHED();
   }

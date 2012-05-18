@@ -61,6 +61,9 @@ class VirtualPath {
 // |origin_url| and |type|.  The returned URI can be used as a root path
 // of the filesystem (e.g. <returned_URI> + "/relative/path" will compose
 // a path pointing to the entry "/relative/path" in the filesystem).
+//
+// For Isolated filesystem this returns the 'common' root part, e.g.
+// returns URL without the filesystem ID.
 GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type);
 
 // Returns the name for the filesystem that is specified by a pair of
