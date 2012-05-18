@@ -42,6 +42,40 @@ const int kAnchorVerticalInset = 5;
 const int kInset = 2;
 const int kNotificationBubbleWidth = 250;
 
+// The name of the UMA histogram collecting our stats.
+const char kMetricNetworkedProfileCheck[] = "NetworkedProfile.Check";
+
+enum MetricNetworkedProfileCheck {
+  // Check was suppressed by command line flag.
+  METRIC_CHECK_SUPPRESSED,
+  // WTSQuerySessionInformation call failed.
+  METRIC_CHECK_FAILED,
+  // File access in profile dir failed.
+  METRIC_CHECK_IO_FAILED,
+
+  // Profile on a network share detected.
+  METRIC_PROFILE_ON_NETWORK,
+  // Profile not on a network share detected.
+  METRIC_PROFILE_NOT_ON_NETWORK,
+
+  // Check was suppressed because of remote session.
+  METRIC_REMOTE_SESSION,
+
+  // User has clicked learn more on the notification bubble.
+  METRIC_LEARN_MORE_CLICKED,
+  // User has clicked OK on the notification bubble.
+  METRIC_ACKNOWLEDGED,
+
+  METRIC_NETWORKED_PROFILE_CHECK_SIZE  // Must be the last.
+};
+
+// Helper function wrapping the UMA_HISTOGRAM_ENUMERATION macro.
+void RecordUmaEvent(MetricNetworkedProfileCheck event) {
+  UMA_HISTOGRAM_ENUMERATION(kMetricNetworkedProfileCheck,
+                            event,
+                            METRIC_NETWORKED_PROFILE_CHECK_SIZE);
+}
+
 // Implementation of BrowserList::Observer used to wait for a browser window.
 class BrowserListObserver : public BrowserList::Observer {
  private:
@@ -91,7 +125,7 @@ void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_path) {
   // wild often enough.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNoNetworkProfileWarning)) {
-    UMA_HISTOGRAM_COUNTS("NetworkedProfile.CheckSuppressed", 1);
+    RecordUmaEvent(METRIC_CHECK_SUPPRESSED);
     return;
   }
 
@@ -102,7 +136,7 @@ void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_path) {
   if (!WTSQuerySessionInformation(WTS_CURRENT_SERVER, WTS_CURRENT_SESSION,
                                   WTSClientProtocolType,
                                   &buffer, &buffer_length)) {
-    UMA_HISTOGRAM_COUNTS("NetworkedProfile.CheckFailed", 1);
+    RecordUmaEvent(METRIC_CHECK_FAILED);
     return;
   }
 
@@ -121,20 +155,20 @@ void NetworkProfileBubble::CheckNetworkProfile(const FilePath& profile_path) {
         if (!file_util::NormalizeFilePath(temp_file, &normalized_temp_file))
           profile_on_network = true;
       } else {
-        UMA_HISTOGRAM_COUNTS("NetworkedProfile.CheckIOFailed", 1);
+        RecordUmaEvent(METRIC_CHECK_IO_FAILED);
       }
       file_util::Delete(temp_file, false);
     }
     if (profile_on_network) {
-      UMA_HISTOGRAM_COUNTS("NetworkedProfile.ProfileOnNetwork", 1);
+      RecordUmaEvent(METRIC_PROFILE_ON_NETWORK);
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
           base::Bind(&NetworkProfileBubble::NotifyNetworkProfileDetected));
     } else {
-      UMA_HISTOGRAM_COUNTS("NetworkedProfile.ProfileNotOnNetwork", 1);
+      RecordUmaEvent(METRIC_PROFILE_NOT_ON_NETWORK);
     }
   } else {
-    UMA_HISTOGRAM_COUNTS("NetworkedProfile.RemoteSession", 1);
+    RecordUmaEvent(METRIC_REMOTE_SESSION);
   }
 
   WTSFreeMemory(buffer);
@@ -233,7 +267,7 @@ gfx::Rect NetworkProfileBubble::GetAnchorRect() {
 }
 
 void NetworkProfileBubble::LinkClicked(views::Link* source, int event_flags) {
-  UMA_HISTOGRAM_COUNTS("NetworkedProfile.LearnMoreClicked", 1);
+  RecordUmaEvent(METRIC_LEARN_MORE_CLICKED);
   Browser* browser = BrowserList::GetLastActive();
   if (browser) {
     WindowOpenDisposition disposition =
@@ -256,7 +290,7 @@ void NetworkProfileBubble::LinkClicked(views::Link* source, int event_flags) {
 
 void NetworkProfileBubble::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
-  UMA_HISTOGRAM_COUNTS("NetworkedProfile.Acknowledged", 1);
+  RecordUmaEvent(METRIC_ACKNOWLEDGED);
 
   GetWidget()->Close();
 }
