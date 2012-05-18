@@ -1191,7 +1191,7 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	uint32_t entered = mask & different;
 	uint32_t left = es->output_mask & different;
 	struct weston_output *output;
-	struct wl_resource *resource;
+	struct wl_resource *resource = NULL;
 	struct wl_client *client = es->surface.resource.client;
 
 	if (es->surface.resource.client == NULL)
