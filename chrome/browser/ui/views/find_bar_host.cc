@@ -312,14 +312,14 @@ void FindBarHost::RegisterAccelerators() {
   DropdownBarHost::RegisterAccelerators();
 
   // Register for Ctrl+Return.
-  ui::Accelerator escape(ui::VKEY_RETURN, false, true, false);
+  ui::Accelerator escape(ui::VKEY_RETURN, ui::EF_CONTROL_DOWN);
   focus_manager()->RegisterAccelerator(
       escape, ui::AcceleratorManager::kNormalPriority, this);
 }
 
 void FindBarHost::UnregisterAccelerators() {
   // Unregister Ctrl+Return.
-  ui::Accelerator escape(ui::VKEY_RETURN, false, true, false);
+  ui::Accelerator escape(ui::VKEY_RETURN, ui::EF_CONTROL_DOWN);
   focus_manager()->UnregisterAccelerator(escape, this);
 
   DropdownBarHost::UnregisterAccelerators();

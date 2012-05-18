@@ -1129,7 +1129,7 @@ bool TestView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 #if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, ActivateAccelerator) {
   // Register a keyboard accelerator before the view is added to a window.
-  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   TestView* view = new TestView();
   view->Reset();
   view->AddAccelerator(return_accelerator);
@@ -1154,7 +1154,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 1);
 
   // Hit the escape key. Nothing should happen.
-  ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, false, false, false);
+  ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, ui::EF_NONE);
   EXPECT_FALSE(focus_manager->ProcessAccelerator(escape_accelerator));
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 1);
   EXPECT_EQ(view->accelerator_count_map_[escape_accelerator], 0);
@@ -1195,7 +1195,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, HiddenViewWithAccelerator) {
-  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   TestView* view = new TestView();
   view->Reset();
   view->AddAccelerator(return_accelerator);
@@ -1225,7 +1225,7 @@ TEST_F(ViewTest, HiddenViewWithAccelerator) {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
-  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   TestView* view = new TestView();
   view->Reset();
   view->AddAccelerator(return_accelerator);

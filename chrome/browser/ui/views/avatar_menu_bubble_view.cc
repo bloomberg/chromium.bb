@@ -474,8 +474,8 @@ gfx::Rect AvatarMenuBubbleView::GetAnchorRect() {
 void AvatarMenuBubbleView::Init() {
   // Build the menu for the first time.
   OnAvatarMenuModelChanged(avatar_menu_model_.get());
-  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, 0));
-  AddAccelerator(ui::Accelerator(ui::VKEY_UP, 0));
+  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
 }
 
 void AvatarMenuBubbleView::OnAvatarMenuModelChanged(

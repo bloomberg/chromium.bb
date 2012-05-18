@@ -29,7 +29,7 @@ JSModalDialogViews::JSModalDialogViews(JavaScriptAppModalDialog* parent)
   DCHECK(message_box_view_);
 
   message_box_view_->AddAccelerator(
-      ui::Accelerator(ui::VKEY_C, false, true, false));
+      ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN));
   if (parent->display_suppress_checkbox()) {
     message_box_view_->SetCheckBoxLabel(
         l10n_util::GetStringUTF16(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION));

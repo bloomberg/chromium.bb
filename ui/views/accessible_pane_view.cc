@@ -16,11 +16,11 @@ AccessiblePaneView::AccessiblePaneView()
     : pane_has_focus_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       focus_manager_(NULL),
-      home_key_(ui::VKEY_HOME, false, false, false),
-      end_key_(ui::VKEY_END, false, false, false),
-      escape_key_(ui::VKEY_ESCAPE, false, false, false),
-      left_key_(ui::VKEY_LEFT, false, false, false),
-      right_key_(ui::VKEY_RIGHT, false, false, false) {
+      home_key_(ui::VKEY_HOME, ui::EF_NONE),
+      end_key_(ui::VKEY_END, ui::EF_NONE),
+      escape_key_(ui::VKEY_ESCAPE, ui::EF_NONE),
+      left_key_(ui::VKEY_LEFT, ui::EF_NONE),
+      right_key_(ui::VKEY_RIGHT, ui::EF_NONE) {
   focus_search_.reset(new views::FocusSearch(this, true, true));
 }
 

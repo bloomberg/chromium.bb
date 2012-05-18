@@ -691,7 +691,7 @@ void NativeMenuWin::UpdateMenuItemInfoForString(MENUITEMINFO* mii,
   ReplaceSubstringsAfterOffset(&formatted, 0, L"\t", L" ");
   if (type != ui::MenuModel::TYPE_SUBMENU) {
     // Add accelerator details to the label if provided.
-    ui::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
+    ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
     if (model_->GetAcceleratorAt(model_index, &accelerator)) {
       formatted += L"\t";
       formatted += accelerator.GetShortcutText();

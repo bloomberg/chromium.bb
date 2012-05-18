@@ -214,8 +214,8 @@ class TestAcceleratorTarget : public ui::AcceleratorTarget {
 
 TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   FocusManager* focus_manager = GetFocusManager();
-  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
-  ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
+  ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, ui::EF_NONE);
 
   TestAcceleratorTarget return_target(true);
   TestAcceleratorTarget escape_target(true);
@@ -314,7 +314,7 @@ TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
 
 TEST_F(FocusManagerTest, HighPriorityHandlers) {
   FocusManager* focus_manager = GetFocusManager();
-  ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, false, false, false);
+  ui::Accelerator escape_accelerator(ui::VKEY_ESCAPE, ui::EF_NONE);
 
   TestAcceleratorTarget escape_target_high(true);
   TestAcceleratorTarget escape_target_normal(true);
@@ -403,7 +403,7 @@ TEST_F(FocusManagerTest, HighPriorityHandlers) {
 
 TEST_F(FocusManagerTest, CallsEnabledAcceleratorTargetsOnly) {
   FocusManager* focus_manager = GetFocusManager();
-  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
 
   TestAcceleratorTarget return_target1(true);
   TestAcceleratorTarget return_target2(true);
@@ -471,7 +471,7 @@ class SelfUnregisteringAcceleratorTarget : public ui::AcceleratorTarget {
 
 TEST_F(FocusManagerTest, CallsSelfDeletingAcceleratorTarget) {
   FocusManager* focus_manager = GetFocusManager();
-  ui::Accelerator return_accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   SelfUnregisteringAcceleratorTarget target(return_accelerator, focus_manager);
   EXPECT_EQ(target.accelerator_count(), 0);
   EXPECT_EQ(NULL,

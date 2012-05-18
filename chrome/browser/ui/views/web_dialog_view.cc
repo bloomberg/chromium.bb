@@ -61,7 +61,7 @@ WebDialogView::WebDialogView(Profile* profile,
   AddChildView(web_view_);
   SetLayoutManager(new views::FillLayout);
   // Pressing the ESC key will close the dialog.
-  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, false, false, false));
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 WebDialogView::~WebDialogView() {

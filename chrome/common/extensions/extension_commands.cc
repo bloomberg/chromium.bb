@@ -50,17 +50,15 @@ ui::Accelerator Command::ParseImpl(
   }
 
   // Now, parse it into an accelerator.
-  bool ctrl = false;
-  bool alt = false;
-  bool shift = false;
+  int modifiers = ui::EF_NONE;
   ui::KeyboardCode key = ui::VKEY_UNKNOWN;
   for (size_t i = 0; i < tokens.size(); i++) {
     if (tokens[i] == "Ctrl") {
-      ctrl = true;
+      modifiers |= ui::EF_CONTROL_DOWN;
     } else if (tokens[i] == "Alt") {
-      alt = true;
+      modifiers |= ui::EF_ALT_DOWN;
     } else if (tokens[i] == "Shift") {
-      shift = true;
+      modifiers |= ui::EF_SHIFT_DOWN;
     } else if (tokens[i] == "Command" && platform_key == "mac") {
       // TODO(finnur): Implement for Mac.
     } else if (tokens[i] == "Option" && platform_key == "mac") {
@@ -83,7 +81,8 @@ ui::Accelerator Command::ParseImpl(
       return ui::Accelerator();
     }
   }
-
+  bool ctrl = (modifiers & ui::EF_CONTROL_DOWN) != 0;
+  bool alt = (modifiers & ui::EF_ALT_DOWN) != 0;
   // We support Ctrl+foo, Alt+foo, Ctrl+Shift+foo, Alt+Shift+foo, but not
   // Ctrl+Alt+foo. For a more detailed reason why we don't support Ctrl+Alt+foo:
   // http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx.
@@ -96,7 +95,7 @@ ui::Accelerator Command::ParseImpl(
     return ui::Accelerator();
   }
 
-  return ui::Accelerator(key, shift, ctrl, alt);
+  return ui::Accelerator(key, modifiers);
 }
 
 // static

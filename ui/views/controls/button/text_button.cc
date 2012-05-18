@@ -285,9 +285,9 @@ void TextButtonBase::SetIsDefault(bool is_default) {
     return;
   is_default_ = is_default;
   if (is_default_)
-    AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, false, false, false));
+    AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
   else
-    RemoveAccelerator(ui::Accelerator(ui::VKEY_RETURN, false, false, false));
+    RemoveAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
   SchedulePaint();
 }
 

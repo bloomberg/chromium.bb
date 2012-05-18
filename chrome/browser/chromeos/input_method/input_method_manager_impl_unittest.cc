@@ -640,24 +640,24 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithUsLayouts) {
   // Henkan, Muhenkan, ZenkakuHankaku should be ignored when no Japanese IMEs
   // and keyboards are enabled.
   EXPECT_FALSE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_CONVERT, false, false, false)));
+      ui::Accelerator(ui::VKEY_CONVERT, ui::EF_NONE)));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_NONCONVERT, false, false, false)));
+      ui::Accelerator(ui::VKEY_NONCONVERT, ui::EF_NONE)));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, false, false, false)));
+      ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE)));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, false, false, false)));
+      ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE)));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
 
   // Do the same tests for Korean.
   EXPECT_FALSE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_HANGUL, false, false, false)));
+      ui::Accelerator(ui::VKEY_HANGUL, ui::EF_NONE)));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_SPACE, true, false, false)));
+      ui::Accelerator(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN)));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
 }
 
@@ -667,17 +667,17 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_NONCONVERT, false, false, false)));
+      ui::Accelerator(ui::VKEY_NONCONVERT, ui::EF_NONE)));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, false, false, false)));
+      ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE)));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, false, false, false)));
+      ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE)));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
 }
 
@@ -687,12 +687,12 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoLayout) {
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_HANGUL, false, false, false)));
+      ui::Accelerator(ui::VKEY_HANGUL, ui::EF_NONE)));
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
   manager_->SwitchToPreviousInputMethod();
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_SPACE, true, false, false)));
+      ui::Accelerator(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN)));
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
 }
 
@@ -704,22 +704,22 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpIme) {
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, false, false, false)));
+      ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE)));
   EXPECT_EQ("mozc-jp", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, false, false, false)));
+      ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE)));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_CONVERT, false, false, false)));
+      ui::Accelerator(ui::VKEY_CONVERT, ui::EF_NONE)));
   EXPECT_EQ("mozc-jp", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_CONVERT, false, false, false)));
+      ui::Accelerator(ui::VKEY_CONVERT, ui::EF_NONE)));
   EXPECT_EQ("mozc-jp", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_NONCONVERT, false, false, false)));
+      ui::Accelerator(ui::VKEY_NONCONVERT, ui::EF_NONE)));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_NONCONVERT, false, false, false)));
+      ui::Accelerator(ui::VKEY_NONCONVERT, ui::EF_NONE)));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
 
   // Add Dvorak.
@@ -727,10 +727,10 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpIme) {
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, false, false, false)));
+      ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE)));
   EXPECT_EQ("mozc-jp", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, false, false, false)));
+      ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE)));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
 }
 
@@ -742,10 +742,10 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoIme) {
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_HANGUL, false, false, false)));
+      ui::Accelerator(ui::VKEY_HANGUL, ui::EF_NONE)));
   EXPECT_EQ("mozc-hangul", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_HANGUL, false, false, false)));
+      ui::Accelerator(ui::VKEY_HANGUL, ui::EF_NONE)));
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
 
   // Add Dvorak.
@@ -753,10 +753,10 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithKoIme) {
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_SPACE, true, false, false)));
+      ui::Accelerator(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN)));
   EXPECT_EQ("mozc-hangul", manager_->GetCurrentInputMethod().id());
   EXPECT_TRUE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_SPACE, true, false, false)));
+      ui::Accelerator(ui::VKEY_SPACE, ui::EF_SHIFT_DOWN)));
   EXPECT_EQ("xkb:kr:kr104:kor", manager_->GetCurrentInputMethod().id());
 }
 
@@ -770,7 +770,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableDisableHotkeys) {
   EXPECT_FALSE(manager_->SwitchToPreviousInputMethod());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_FALSE(manager_->SwitchInputMethod(
-      ui::Accelerator(ui::VKEY_NONCONVERT, false, false, false)));
+      ui::Accelerator(ui::VKEY_NONCONVERT, ui::EF_NONE)));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   manager_->EnableHotkeys();
   EXPECT_TRUE(manager_->SwitchToNextInputMethod());

@@ -68,6 +68,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -469,13 +470,13 @@ bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
   // anywhere so we need to check for them explicitly here.
   switch (cmd_id) {
     case IDC_CUT:
-      *accelerator = ui::Accelerator(ui::VKEY_X, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_X, ui::EF_CONTROL_DOWN);
       return true;
     case IDC_COPY:
-      *accelerator = ui::Accelerator(ui::VKEY_C, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
       return true;
     case IDC_PASTE:
-      *accelerator = ui::Accelerator(ui::VKEY_V, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
       return true;
   }
   // Else, we retrieve the accelerator information from the accelerator table.
@@ -1169,12 +1170,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 
   ui::Accelerator accelerator(
       static_cast<ui::KeyboardCode>(event.windowsKeyCode),
-      (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
-          NativeWebKeyboardEvent::ShiftKey,
-      (event.modifiers & NativeWebKeyboardEvent::ControlKey) ==
-          NativeWebKeyboardEvent::ControlKey,
-      (event.modifiers & NativeWebKeyboardEvent::AltKey) ==
-          NativeWebKeyboardEvent::AltKey);
+      content::GetModifiersFromNativeWebKeyboardEvent(event));
   if (event.type == WebKit::WebInputEvent::KeyUp)
     accelerator.set_type(ui::ET_KEY_RELEASED);
 
@@ -2148,12 +2144,9 @@ void BrowserView::LoadAccelerators() {
 
   // Let's fill our own accelerator table.
   for (int i = 0; i < count; ++i) {
-    bool alt_down = (accelerators[i].fVirt & FALT) == FALT;
-    bool ctrl_down = (accelerators[i].fVirt & FCONTROL) == FCONTROL;
-    bool shift_down = (accelerators[i].fVirt & FSHIFT) == FSHIFT;
     ui::Accelerator accelerator(
         static_cast<ui::KeyboardCode>(accelerators[i].key),
-        shift_down, ctrl_down, alt_down);
+        ui::GetModifiersFromACCEL(accelerators[i]));
     accelerator_table_[accelerator] = accelerators[i].cmd;
 
     // Also register with the focus manager.

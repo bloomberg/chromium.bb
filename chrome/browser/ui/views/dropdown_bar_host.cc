@@ -334,7 +334,7 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
 
 void DropdownBarHost::RegisterAccelerators() {
   DCHECK(!esc_accel_target_registered_);
-  ui::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
+  ui::Accelerator escape(ui::VKEY_ESCAPE, ui::EF_NONE);
   focus_manager_->RegisterAccelerator(
       escape, ui::AcceleratorManager::kNormalPriority, this);
   esc_accel_target_registered_ = true;
@@ -342,7 +342,7 @@ void DropdownBarHost::RegisterAccelerators() {
 
 void DropdownBarHost::UnregisterAccelerators() {
   DCHECK(esc_accel_target_registered_);
-  ui::Accelerator escape(ui::VKEY_ESCAPE, false, false, false);
+  ui::Accelerator escape(ui::VKEY_ESCAPE, ui::EF_NONE);
   focus_manager_->UnregisterAccelerator(escape, this);
   esc_accel_target_registered_ = false;
 }

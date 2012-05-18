@@ -492,23 +492,24 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
   // TODO(cpu) Bug 1109102. Query WebKit land for the actual bindings.
   switch (command_id) {
     case IDC_CUT:
-      *accelerator = ui::Accelerator(ui::VKEY_X, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_X, ui::EF_CONTROL_DOWN);
       return true;
     case IDC_COPY:
-      *accelerator = ui::Accelerator(ui::VKEY_C, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
       return true;
     case IDC_PASTE:
-      *accelerator = ui::Accelerator(ui::VKEY_V, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
       return true;
 #if defined(USE_ASH)
     // When USE_ASH is defined, IDC_NEW_WINDOW and IDC_NEW_INCOGNITO_WINDOW are
     // handled outside Chrome, in ash/accelerators/accelerator_table.cc.
     // crbug.com/120196
     case IDC_NEW_WINDOW:
-      *accelerator = ui::Accelerator(ui::VKEY_N, false, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_N, ui::EF_CONTROL_DOWN);
       return true;
     case IDC_NEW_INCOGNITO_WINDOW:
-      *accelerator = ui::Accelerator(ui::VKEY_N, true, true, false);
+      *accelerator = ui::Accelerator(ui::VKEY_N,
+                                     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
       return true;
 #endif
   }

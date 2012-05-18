@@ -135,16 +135,19 @@ WebUILoginView::WebUILoginView()
   // Make sure the singleton VirtualKeyboardManager object is created.
   VirtualKeyboardManager::GetInstance();
 #endif
-  accel_map_[ui::Accelerator(ui::VKEY_Z, false, true, true)] =
+  accel_map_[ui::Accelerator(ui::VKEY_Z,
+                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameAccessibility;
-  accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, false, false, false)] =
+  accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)] =
       kAccelNameCancel;
-  accel_map_[ui::Accelerator(ui::VKEY_E, false, true, true)] =
+  accel_map_[ui::Accelerator(ui::VKEY_E,
+                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameEnrollment;
   // This should be kept in sync with the IDC_EXIT accelerator.
-  accel_map_[ui::Accelerator(ui::VKEY_Q, true, true, false)] =
+  accel_map_[ui::Accelerator(ui::VKEY_Q,
+                             ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)] =
       kAccelNameExit;
-  accel_map_[ui::Accelerator(ui::VKEY_V, false, false, true)] =
+  accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
       kAccelNameVersion;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)

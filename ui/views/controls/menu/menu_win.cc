@@ -440,7 +440,7 @@ void MenuWin::AddMenuItemInternal(int index,
   string16 actual_label(label.empty() ? delegate()->GetLabel(item_id) : label);
 
   // Find out if there is a shortcut we need to append to the label.
-  ui::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
+  ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
   if (delegate() && delegate()->GetAcceleratorInfo(item_id, &accelerator)) {
     actual_label += L'\t';
     actual_label += accelerator.GetShortcutText();

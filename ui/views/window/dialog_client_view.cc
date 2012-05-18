@@ -132,8 +132,7 @@ void DialogClientView::ShowDialogButtons() {
     if (is_default_button)
       default_button_ = ok_button_;
     if (!(buttons & ui::DIALOG_BUTTON_CANCEL))
-      ok_button_->AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE,
-                                                 false, false, false));
+      ok_button_->AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
     AddChildView(ok_button_);
   }
   if (buttons & ui::DIALOG_BUTTON_CANCEL && !cancel_button_) {
@@ -156,7 +155,7 @@ void DialogClientView::ShowDialogButtons() {
                                       is_default_button);
     cancel_button_->SetGroup(kButtonGroup);
     cancel_button_->AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE,
-                                                   false, false, false));
+                                                   ui::EF_NONE));
     if (is_default_button)
       default_button_ = ok_button_;
     AddChildView(cancel_button_);
@@ -164,7 +163,7 @@ void DialogClientView::ShowDialogButtons() {
   if (!buttons) {
     // Register the escape key as an accelerator which will close the window
     // if there are no dialog buttons.
-    AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, false, false, false));
+    AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   }
 }
 

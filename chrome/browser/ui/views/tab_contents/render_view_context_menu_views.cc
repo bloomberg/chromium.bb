@@ -73,32 +73,34 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
   // that Ctrl+C, Ctrl+V, Ctrl+X, Ctrl-A, etc do what they normally do.
   switch (command_id) {
     case IDC_CONTENT_CONTEXT_UNDO:
-      *accel = ui::Accelerator(ui::VKEY_Z, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_Z, ui::EF_CONTROL_DOWN);
       return true;
 
     case IDC_CONTENT_CONTEXT_REDO:
       // TODO(jcampan): should it be Ctrl-Y?
-      *accel = ui::Accelerator(ui::VKEY_Z, true, true, false);
+      *accel = ui::Accelerator(ui::VKEY_Z,
+                               ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
       return true;
 
     case IDC_CONTENT_CONTEXT_CUT:
-      *accel = ui::Accelerator(ui::VKEY_X, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_X, ui::EF_CONTROL_DOWN);
       return true;
 
     case IDC_CONTENT_CONTEXT_COPY:
-      *accel = ui::Accelerator(ui::VKEY_C, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
       return true;
 
     case IDC_CONTENT_CONTEXT_PASTE:
-      *accel = ui::Accelerator(ui::VKEY_V, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
       return true;
 
     case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE:
-      *accel = ui::Accelerator(ui::VKEY_V, true, true, false);
+      *accel = ui::Accelerator(ui::VKEY_V,
+                               ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
       return true;
 
     case IDC_CONTENT_CONTEXT_SELECTALL:
-      *accel = ui::Accelerator(ui::VKEY_A, false, true, false);
+      *accel = ui::Accelerator(ui::VKEY_A, ui::EF_CONTROL_DOWN);
       return true;
 
     default:

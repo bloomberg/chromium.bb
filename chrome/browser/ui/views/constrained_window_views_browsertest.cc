@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // Now send a VKEY_RETURN to the browser.  This should result in closing
   // test_dialog1.
   EXPECT_TRUE(focus_manager->ProcessAccelerator(
-      ui::Accelerator(ui::VKEY_RETURN, false, false, false)));
+      ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)));
   ui_test_utils::RunAllPendingInMessageLoop();
 
   EXPECT_TRUE(test_dialog1->done());
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
 
   // Send another VKEY_RETURN, closing test_dialog2
   EXPECT_TRUE(focus_manager->ProcessAccelerator(
-      ui::Accelerator(ui::VKEY_RETURN, false, false, false)));
+      ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)));
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_dialog2->done());
   EXPECT_EQ(0u, constrained_window_helper->constrained_window_count());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -206,8 +206,8 @@ TEST_F(FocusManagerTest, CreationForNativeRoot) {
 TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   FocusManager* focus_manager = GetFocusManager();
   MessageTrackingView* mtv = new MessageTrackingView();
-  mtv->AddAccelerator(ui::Accelerator(ui::VKEY_0, false, false, false));
-  mtv->AddAccelerator(ui::Accelerator(ui::VKEY_1, false, false, false));
+  mtv->AddAccelerator(ui::Accelerator(ui::VKEY_0, ui::EF_NONE));
+  mtv->AddAccelerator(ui::Accelerator(ui::VKEY_1, ui::EF_NONE));
   GetContentsView()->AddChildView(mtv);
   focus_manager->SetFocusedView(mtv);
 

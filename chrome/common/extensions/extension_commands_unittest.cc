@@ -13,17 +13,16 @@ class ExtensionCommandsTest : public testing::Test {
 };
 
 TEST(ExtensionCommandsTest, ExtensionCommandParsing) {
-  const ui::Accelerator None = ui::Accelerator();
-  const ui::Accelerator ShiftF =
-      ui::Accelerator(ui::VKEY_F, true, false, false);
-  const ui::Accelerator CtrlF =
-      ui::Accelerator(ui::VKEY_F, false, true, false);
-  const ui::Accelerator AltF =
-      ui::Accelerator(ui::VKEY_F, false, false, true);
-  const ui::Accelerator CtrlShiftF =
-      ui::Accelerator(ui::VKEY_F, true, true, false);
-  const ui::Accelerator AltShiftF =
-      ui::Accelerator(ui::VKEY_F, true, false, true);
+  const ui::Accelerator none = ui::Accelerator();
+  const ui::Accelerator shift_f = ui::Accelerator(ui::VKEY_F,
+                                                  ui::EF_SHIFT_DOWN);
+  const ui::Accelerator ctrl_f = ui::Accelerator(ui::VKEY_F,
+                                                ui::EF_CONTROL_DOWN);
+  const ui::Accelerator alt_f = ui::Accelerator(ui::VKEY_F, ui::EF_ALT_DOWN);
+  const ui::Accelerator ctrl_shift_f =
+      ui::Accelerator(ui::VKEY_F, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  const ui::Accelerator alt_shift_f =
+      ui::Accelerator(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
 
   const struct {
     bool expected_result;
@@ -35,37 +34,37 @@ TEST(ExtensionCommandsTest, ExtensionCommandParsing) {
     // Negative test (one or more missing required fields). We don't need to
     // test |command_name| being blank as it is used as a key in the manifest,
     // so it can't be blank (and we CHECK() when it is).
-    { false, None, "command", "",       "" },
-    { false, None, "command", "Ctrl+f", "" },
-    { false, None, "command", "",       "description" },
+    { false, none, "command", "",       "" },
+    { false, none, "command", "Ctrl+f", "" },
+    { false, none, "command", "",       "description" },
     // Ctrl+Alt is not permitted, see MSDN link in comments in Parse function.
-    { false, None, "command", "Ctrl+Alt+F", "description" },
+    { false, none, "command", "Ctrl+Alt+F", "description" },
     // Unsupported shortcuts/too many, or missing modifier.
-    { false, None, "command", "A",                "description" },
-    { false, None, "command", "F10",              "description" },
-    { false, None, "command", "Ctrl+1",           "description" },
-    { false, None, "command", "Ctrl+F+G",         "description" },
-    { false, None, "command", "Ctrl+Alt+Shift+G", "description" },
+    { false, none, "command", "A",                "description" },
+    { false, none, "command", "F10",              "description" },
+    { false, none, "command", "Ctrl+1",           "description" },
+    { false, none, "command", "Ctrl+F+G",         "description" },
+    { false, none, "command", "Ctrl+Alt+Shift+G", "description" },
     // Basic tests.
-    { true, CtrlF,      "command", "Ctrl+F",       "description" },
-    { true, ShiftF,     "command", "Shift+F",      "description" },
-    { true, AltF,       "command", "Alt+F",        "description" },
-    { true, CtrlShiftF, "command", "Ctrl+Shift+F", "description" },
-    { true, AltShiftF,  "command", "Alt+Shift+F",  "description" },
+    { true, ctrl_f,      "command", "Ctrl+F",       "description" },
+    { true, shift_f,     "command", "Shift+F",      "description" },
+    { true, alt_f,       "command", "Alt+F",        "description" },
+    { true, ctrl_shift_f, "command", "Ctrl+Shift+F", "description" },
+    { true, alt_shift_f,  "command", "Alt+Shift+F",  "description" },
     // Order tests.
-    { true, CtrlF,      "command", "F+Ctrl",       "description" },
-    { true, ShiftF,     "command", "F+Shift",      "description" },
-    { true, AltF,       "command", "F+Alt",        "description" },
-    { true, CtrlShiftF, "command", "F+Ctrl+Shift", "description" },
-    { true, CtrlShiftF, "command", "F+Shift+Ctrl", "description" },
-    { true, AltShiftF,  "command", "F+Alt+Shift",  "description" },
-    { true, AltShiftF,  "command", "F+Shift+Alt",  "description" },
+    { true, ctrl_f,      "command", "F+Ctrl",       "description" },
+    { true, shift_f,     "command", "F+Shift",      "description" },
+    { true, alt_f,       "command", "F+Alt",        "description" },
+    { true, ctrl_shift_f, "command", "F+Ctrl+Shift", "description" },
+    { true, ctrl_shift_f, "command", "F+Shift+Ctrl", "description" },
+    { true, alt_shift_f,  "command", "F+Alt+Shift",  "description" },
+    { true, alt_shift_f,  "command", "F+Shift+Alt",  "description" },
     // Case insensitivity is not OK.
-    { false, CtrlF, "command", "Ctrl+f", "description" },
-    { false, CtrlF, "command", "cTrL+F", "description" },
+    { false, ctrl_f, "command", "Ctrl+f", "description" },
+    { false, ctrl_f, "command", "cTrL+F", "description" },
     // Skipping description is OK for browser- and pageActions.
-    { true, CtrlF, "_execute_browser_action", "Ctrl+F", "" },
-    { true, CtrlF, "_execute_page_action",    "Ctrl+F", "" },
+    { true, ctrl_f, "_execute_browser_action", "Ctrl+F", "" },
+    { true, ctrl_f, "_execute_page_action",    "Ctrl+F", "" },
   };
 
   // TODO(finnur): test Command/Options on Mac when implemented.

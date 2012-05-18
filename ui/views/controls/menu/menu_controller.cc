@@ -1061,7 +1061,7 @@ MenuController::SendAcceleratorResultType
   if (!hot_view)
     return ACCELERATOR_NOT_PROCESSED;
 
-  ui::Accelerator accelerator(ui::VKEY_RETURN, false, false, false);
+  ui::Accelerator accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   hot_view->AcceleratorPressed(accelerator);
   if (hot_view->GetClassName() == CustomButton::kViewClassName) {
     CustomButton* button = static_cast<CustomButton*>(hot_view);

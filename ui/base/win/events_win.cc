@@ -300,4 +300,15 @@ base::NativeEvent CreateNoopEvent() {
   return event;
 }
 
+int GetModifiersFromACCEL(const ACCEL& accel) {
+  int modifiers = ui::EF_NONE;
+  if (accel.fVirt & FSHIFT)
+    modifiers |= ui::EF_SHIFT_DOWN;
+  if (accel.fVirt & FCONTROL)
+    modifiers |= ui::EF_CONTROL_DOWN;
+  if (accel.fVirt & FALT)
+    modifiers |= ui::EF_ALT_DOWN;
+  return modifiers;
+}
+
 }  // namespace ui

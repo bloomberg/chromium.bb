@@ -27,11 +27,11 @@ void FocusCycler::AddWidget(views::Widget* widget) {
   widgets_.push_back(widget);
 
   widget->GetFocusManager()->RegisterAccelerator(
-      ui::Accelerator(ui::VKEY_F2, false, true, false),
+      ui::Accelerator(ui::VKEY_F2, ui::EF_CONTROL_DOWN),
       ui::AcceleratorManager::kNormalPriority,
       this);
   widget->GetFocusManager()->RegisterAccelerator(
-      ui::Accelerator(ui::VKEY_F1, false, true, false),
+      ui::Accelerator(ui::VKEY_F1, ui::EF_CONTROL_DOWN),
       ui::AcceleratorManager::kNormalPriority,
       this);
 }

@@ -116,7 +116,7 @@ BubbleDelegateView::BubbleDelegateView()
       use_focusless_(false),
       parent_window_(NULL) {
   set_background(views::Background::CreateSolidBackground(color_));
-  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, 0));
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 BubbleDelegateView::BubbleDelegateView(
@@ -135,7 +135,7 @@ BubbleDelegateView::BubbleDelegateView(
       use_focusless_(false),
       parent_window_(NULL) {
   set_background(views::Background::CreateSolidBackground(color_));
-  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, 0));
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 BubbleDelegateView::~BubbleDelegateView() {}

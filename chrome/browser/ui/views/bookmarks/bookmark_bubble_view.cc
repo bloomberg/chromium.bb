@@ -236,7 +236,7 @@ void BookmarkBubbleView::Init() {
   layout->AddView(edit_button_);
   layout->AddView(close_button_);
 
-  AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, 0));
+  AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
 }
 
 BookmarkBubbleView::BookmarkBubbleView(views::View* anchor_view,

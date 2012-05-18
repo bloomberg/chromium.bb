@@ -2025,12 +2025,15 @@ void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
   // Handle SC_KEYMENU, which means that the user has pressed the ALT
   // key and released it, so we should focus the menu bar.
   if ((notification_code & sc_mask) == SC_KEYMENU && click.x == 0) {
+    int modifiers = ui::EF_NONE;
+    if (!!(GetKeyState(VK_SHIFT) & 0x8000))
+      modifiers |= ui::EF_SHIFT_DOWN;
+    if (!!(GetKeyState(VK_CONTROL) & 0x8000))
+      modifiers |= ui::EF_CONTROL_DOWN;
     // Retrieve the status of shift and control keys to prevent consuming
     // shift+alt keys, which are used by Windows to change input languages.
     ui::Accelerator accelerator(ui::KeyboardCodeForWindowsKeyCode(VK_MENU),
-                                !!(GetKeyState(VK_SHIFT) & 0x8000),
-                                !!(GetKeyState(VK_CONTROL) & 0x8000),
-                                false);
+                                modifiers);
     GetWidget()->GetFocusManager()->ProcessAccelerator(accelerator);
     return;
   }

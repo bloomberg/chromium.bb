@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,9 +71,10 @@ gfx::Size TabbedPane::GetPreferredSize() {
 
 void TabbedPane::LoadAccelerators() {
   // Ctrl+Shift+Tab
-  AddAccelerator(ui::Accelerator(ui::VKEY_TAB, true, true, false));
+  AddAccelerator(ui::Accelerator(ui::VKEY_TAB,
+                                 ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
   // Ctrl+Tab
-  AddAccelerator(ui::Accelerator(ui::VKEY_TAB, false, true, false));
+  AddAccelerator(ui::Accelerator(ui::VKEY_TAB, ui::EF_CONTROL_DOWN));
 }
 
 void TabbedPane::Layout() {

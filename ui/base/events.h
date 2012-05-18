@@ -10,6 +10,10 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace gfx {
 class Point;
 }
@@ -200,6 +204,10 @@ UI_EXPORT bool IsNoopEvent(const base::NativeEvent& event);
 
 // Creates and returns no-op event.
 UI_EXPORT base::NativeEvent CreateNoopEvent();
+
+#if defined(OS_WIN)
+int GetModifiersFromACCEL(const ACCEL& accel);
+#endif
 
 }  // namespace ui
 

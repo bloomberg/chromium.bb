@@ -255,7 +255,7 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
   size_animation_->Reset(1);
 
   // Create the contents view.
-  ui::Accelerator accelerator(ui::VKEY_UNKNOWN, false, false, false);
+  ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
   bool got_accelerator = frame->GetAccelerator(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
   view_ = new FullscreenExitView(

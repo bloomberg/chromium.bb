@@ -74,4 +74,12 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
 #endif
 };
 
+namespace content {
+
+// Returns a bitmak of values from ui/base/events.h.
+CONTENT_EXPORT int GetModifiersFromNativeWebKeyboardEvent(
+    const NativeWebKeyboardEvent& event);
+
+}  // namespace content
+
 #endif  // CONTENT_PUBLIC_BROWSER_NATIVE_WEB_KEYBOARD_EVENT_H_

@@ -66,7 +66,7 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
              (event.flags() & ~ui::EF_ALT_DOWN) == 0) {
     // Trigger VKEY_MENU when only this key is pressed and released, and both
     // press and release events are not handled by others.
-    ui::Accelerator accelerator(ui::VKEY_MENU, false, false, false);
+    ui::Accelerator accelerator(ui::VKEY_MENU, ui::EF_NONE);
     return ProcessAccelerator(accelerator);
   } else if (event.type() != ui::ET_KEY_RELEASED) {
     return false;
@@ -76,10 +76,14 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
     return false;
 #endif
 
-  ui::Accelerator accelerator(event.key_code(),
-                              event.IsShiftDown(),
-                              event.IsControlDown(),
-                              event.IsAltDown());
+  int modifiers = ui::EF_NONE;
+  if (event.IsShiftDown())
+    modifiers |= ui::EF_SHIFT_DOWN;
+  if (event.IsControlDown())
+    modifiers |= ui::EF_CONTROL_DOWN;
+  if (event.IsAltDown())
+    modifiers |= ui::EF_ALT_DOWN;
+  ui::Accelerator accelerator(event.key_code(), modifiers);
   accelerator.set_type(event.type());
 
   if (event.type() == ui::ET_KEY_PRESSED) {

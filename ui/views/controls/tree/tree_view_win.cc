@@ -472,10 +472,7 @@ bool TreeView::OnKeyDown(ui::KeyboardCode virtual_key_code) {
   } else if (virtual_key_code == ui::VKEY_RETURN && !process_enter_) {
     Widget* widget = GetWidget();
     DCHECK(widget);
-    ui::Accelerator accelerator(ui::Accelerator(virtual_key_code,
-                                                base::win::IsShiftPressed(),
-                                                base::win::IsCtrlPressed(),
-                                                base::win::IsAltPressed()));
+    ui::Accelerator accelerator(virtual_key_code, GetModifiersFromKeyState());
     GetFocusManager()->ProcessAccelerator(accelerator);
     return true;
   }

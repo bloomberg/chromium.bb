@@ -447,6 +447,10 @@ class VIEWS_EXPORT GestureEventForTest : public GestureEvent {
   DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
 };
 
+#if defined(OS_WIN)
+int GetModifiersFromKeyState();
+#endif
+
 }  // namespace views
 
 #endif  // UI_VIEWS_EVENTS_EVENT_H_

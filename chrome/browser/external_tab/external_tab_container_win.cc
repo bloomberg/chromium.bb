@@ -1107,12 +1107,9 @@ void ExternalTabContainer::LoadAccelerators() {
 
   // Let's fill our own accelerator table.
   for (int i = 0; i < count; ++i) {
-    bool alt_down = (accelerators[i].fVirt & FALT) == FALT;
-    bool ctrl_down = (accelerators[i].fVirt & FCONTROL) == FCONTROL;
-    bool shift_down = (accelerators[i].fVirt & FSHIFT) == FSHIFT;
     ui::Accelerator accelerator(
         static_cast<ui::KeyboardCode>(accelerators[i].key),
-        shift_down, ctrl_down, alt_down);
+        ui::GetModifiersFromACCEL(accelerators[i]));
     accelerator_table_[accelerator] = accelerators[i].cmd;
 
     // Also register with the focus manager.
