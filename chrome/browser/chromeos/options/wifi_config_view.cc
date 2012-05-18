@@ -1237,6 +1237,7 @@ void WifiConfigView::InitFocus() {
     view_to_focus->RequestFocus();
 }
 
+// static
 void WifiConfigView::ParseWiFiUIProperty(
     NetworkPropertyUIData* property_ui_data,
     Network* network,
@@ -1248,6 +1249,7 @@ void WifiConfigView::ParseWiFiUIProperty(
       base::StringPrintf("%s.%s", onc::kWiFi, key.c_str()));
 }
 
+// static
 void WifiConfigView::ParseWiFiEAPUIProperty(
     NetworkPropertyUIData* property_ui_data,
     Network* network,

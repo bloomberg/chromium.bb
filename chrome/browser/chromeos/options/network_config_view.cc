@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/options/vpn_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
+#include "chrome/browser/chromeos/options/wimax_config_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -74,6 +75,9 @@ NetworkConfigView::NetworkConfigView(Network* network)
   if (network->type() == TYPE_WIFI) {
     child_config_view_ =
         new WifiConfigView(this, static_cast<WifiNetwork*>(network));
+  } else if (network->type() == TYPE_WIMAX) {
+    child_config_view_ =
+        new WimaxConfigView(this, static_cast<WimaxNetwork*>(network));
   } else if (network->type() == TYPE_VPN) {
     child_config_view_ =
         new VPNConfigView(this, static_cast<VirtualNetwork*>(network));
