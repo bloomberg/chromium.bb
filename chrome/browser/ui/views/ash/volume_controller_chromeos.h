@@ -21,7 +21,6 @@ class VolumeController : public ash::VolumeControlDelegate {
   virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual void SetVolumePercent(double percent) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VolumeController);

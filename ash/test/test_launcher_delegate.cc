@@ -26,19 +26,12 @@ TestLauncherDelegate::~TestLauncherDelegate() {
 }
 
 void TestLauncherDelegate::AddLauncherItem(aura::Window* window) {
-  AddLauncherItem(window, STATUS_CLOSED);
-}
-
-void TestLauncherDelegate::AddLauncherItem(
-    aura::Window* window,
-    LauncherItemStatus status) {
   ash::LauncherItem item;
   item.type = ash::TYPE_TABBED;
   DCHECK(window_to_id_.find(window) == window_to_id_.end());
   window_to_id_[window] = model_->next_id();
   item.image.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
   item.image.allocPixels();
-  item.status = status;
   model_->Add(item);
   if (observed_windows_.find(window->parent()) == observed_windows_.end()) {
     window->parent()->AddObserver(this);

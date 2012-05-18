@@ -68,13 +68,3 @@ bool VolumeController::HandleVolumeUp(const ui::Accelerator& accelerator) {
                                          audio_handler->IsMuted());
   return true;
 }
-
-void VolumeController::SetVolumePercent(double percent) {
-  chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
-  if (audio_handler->IsMuted()) {
-    audio_handler->SetMuted(false);
-  }
-  audio_handler->SetVolumePercent(percent);
-  extensions::DispatchVolumeChangedEvent(audio_handler->GetVolumePercent(),
-                                         audio_handler->IsMuted());
-}

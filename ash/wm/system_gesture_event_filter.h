@@ -18,20 +18,6 @@ class Window;
 namespace ash {
 namespace internal {
 
-enum BezelStart {
-  BEZEL_START_UNSET = 0,
-  BEZEL_START_TOP,
-  BEZEL_START_LEFT,
-  BEZEL_START_RIGHT,
-  BEZEL_START_BOTTOM
-};
-
-enum ScrollOrientation {
-  SCROLL_ORIENTATION_UNSET = 0,
-  SCROLL_ORIENTATION_HORIZONTAL,
-  SCROLL_ORIENTATION_VERTICAL
-};
-
 // An event filter which handles system level gesture events.
 class SystemGestureEventFilter : public aura::EventFilter {
  public:
@@ -50,31 +36,6 @@ class SystemGestureEventFilter : public aura::EventFilter {
       aura::GestureEvent* event) OVERRIDE;
 
  private:
-  // Handle events meant for volume / brightness. Returns true when no further
-  // events from this gesture should be sent.
-  bool HandleDeviceControl(aura::GestureEvent* event);
-
-  // Handle events meant for showing the launcher. Returns true when no further
-  // events from this gesture should be sent.
-  bool HandleLauncherControl(aura::GestureEvent* event);
-
-  // Handle events meant to switch through applications. Returns true when no
-  // further events from this gesture should be sent.
-  bool HandleApplicationControl(aura::GestureEvent* event);
-
-  // The percentage of the screen to the left and right which belongs to
-  // device gestures.
-  const int overlap_percent_;
-
-  // Which bezel corner are we on.
-  BezelStart start_location_;
-
-  // Which orientation are we moving.
-  ScrollOrientation orientation_;
-
-  // A device swipe gesture is in progress.
-  bool is_scrubbing_;
-
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilter);
 };
 

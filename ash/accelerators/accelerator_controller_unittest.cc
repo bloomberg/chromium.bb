@@ -142,8 +142,6 @@ class DummyVolumeControlDelegate : public VolumeControlDelegate {
     last_accelerator_ = accelerator;
     return consume_;
   }
-  virtual void SetVolumePercent(double percent) OVERRIDE {
-  }
 
   int handle_volume_mute_count() const {
     return handle_volume_mute_count_;
