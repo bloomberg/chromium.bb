@@ -54,8 +54,6 @@ LoginWebuiReadyObserver::LoginWebuiReadyObserver(AutomationProvider* automation)
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
                  content::NotificationService::AllSources());
 }
@@ -66,7 +64,6 @@ void LoginWebuiReadyObserver::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_READY ||
          type == chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED ||
-         type == chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN ||
          type == chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN);
   if (automation_)
     automation_->OnLoginWebuiReady();
