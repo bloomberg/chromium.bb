@@ -1334,6 +1334,7 @@ weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	memset(window, 0, sizeof *window);
 	window->wm = wm;
 	window->id = create_notify->window;
+	window->properties_dirty = 1;
 
 	window->width = create_notify->width;
 	window->height = create_notify->height;
