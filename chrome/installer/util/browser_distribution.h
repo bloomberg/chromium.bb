@@ -122,9 +122,6 @@ class BrowserDistribution {
   // |type_lib_uuid| and |type_lib_version| identify its type library.
   // |interface_uuid| is the ICommandExecuteImpl interface UUID.
   // Only non-null parameters will be set, others will be ignored.
-  // Implementations that only provide a DelegateExecute handler for use on
-  // certain OS versions must only return true when run on those supported
-  // systems.
   virtual bool GetDelegateExecuteHandlerData(string16* handler_class_uuid,
                                              string16* type_lib_uuid,
                                              string16* type_lib_version,

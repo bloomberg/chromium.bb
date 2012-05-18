@@ -92,6 +92,7 @@ class RegistryEntry {
     // TODO(grt): remove HasDelegateExecuteHandler when the exe is ever-present;
     // see also install_worker.cc's AddDelegateExecuteWorkItems.
     bool set_delegate_execute =
+        base::win::GetVersion() >= base::win::VERSION_WIN8 &&
         dist->GetDelegateExecuteHandlerData(&delegate_guid, NULL, NULL, NULL) &&
         InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe);
 
