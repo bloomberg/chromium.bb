@@ -71,6 +71,16 @@ def QuoteShellArgument(arg, flavor):
   return "'" + arg.replace("'", "'" + '"\'"' + "'")  + "'"
 
 
+def Define(d, flavor):
+  """Takes a preprocessor define and returns a -D parameter that's ninja- and
+  shell-escaped."""
+  if flavor == 'win':
+    # cl.exe replaces literal # characters with = in preprocesor definitions for
+    # some reason. Octal-encode to work around that.
+    d = d.replace('#', '\\%03o' % ord('#'))
+  return QuoteShellArgument(ninja_syntax.escape('-D' + d), flavor)
+
+
 def InvertRelativePath(path):
   """Given a relative path like foo/bar, return the inverse relative path:
   the path from the relative path back to the origin dir.
@@ -635,9 +645,7 @@ class NinjaWriter:
       # Create an intermediate file to store preprocessed results.
       intermediate_plist = self.GypPathToUniqueOutput(
           os.path.basename(info_plist))
-      defines = ' '.join(
-          [QuoteShellArgument(ninja_syntax.escape('-D' + d), self.flavor)
-           for d in defines])
+      defines = ' '.join([Define(d, self.flavor) for d in defines])
       info_plist = self.ninja.build(intermediate_plist, 'infoplist', info_plist,
                                     variables=[('defines',defines)])
 
@@ -679,9 +687,7 @@ class NinjaWriter:
       cflags_cc = config.get('cflags_cc', [])
 
     defines = config.get('defines', []) + extra_defines
-    self.WriteVariableList('defines',
-        [QuoteShellArgument(ninja_syntax.escape('-D' + d), self.flavor)
-         for d in defines])
+    self.WriteVariableList('defines', [Define(d, self.flavor) for d in defines])
     if self.flavor == 'win':
       self.WriteVariableList('rcflags',
           [QuoteShellArgument(self.ExpandSpecial(f), self.flavor)

@@ -694,6 +694,9 @@ def _EscapeCppDefineForMSVS(s):
   s = _EscapeEnvironmentVariableExpansion(s)
   s = _EscapeCommandLineArgumentForMSVS(s)
   s = _EscapeVCProjCommandLineArgListItem(s)
+  # cl.exe replaces literal # characters with = in preprocesor definitions for
+  # some reason. Octal-encode to work around that.
+  s = s.replace('#', '\\%03o' % ord('#'))
   return s
 
 
