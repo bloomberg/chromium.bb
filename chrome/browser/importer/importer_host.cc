@@ -161,7 +161,7 @@ void ImporterHost::OnGoogleGAIACookieChecked(bool result) {
         l10n_util::GetStringUTF16(IDS_IMPORTER_GOOGLE_LOGIN_TEXT), string16(),
         browser::MESSAGE_BOX_TYPE_INFORMATION);
 
-    GURL url("https://accounts.google.com/ServiceLogin");
+    GURL url("https://www.google.com/accounts/ServiceLogin");
     DCHECK(profile_);
     Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (browser)

@@ -413,7 +413,7 @@ TEST_F(GaiaAuthFetcherTest, CaptchaParse) {
       GaiaAuthFetcher::GenerateAuthError(data, status);
 
   std::string token = "CCTOKEN";
-  GURL image_url("http://accounts.google.com/Captcha?ctoken=CCTOKEN");
+  GURL image_url("http://www.google.com/accounts/Captcha?ctoken=CCTOKEN");
   GURL unlock_url("http://www.google.com/login/captcha");
 
   EXPECT_EQ(error.state(), GoogleServiceAuthError::CAPTCHA_REQUIRED);

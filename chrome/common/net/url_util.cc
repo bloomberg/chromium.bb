@@ -47,6 +47,7 @@ GURL AppendQueryParameter(const GURL& url,
   return url.ReplaceComponents(replacements);
 }
 
+
 GURL AppendOrReplaceQueryParameter(const GURL& url,
                                    const std::string& name,
                                    const std::string& value) {
@@ -88,32 +89,6 @@ GURL AppendOrReplaceQueryParameter(const GURL& url,
   GURL::Replacements replacements;
   replacements.SetQueryStr(output);
   return url.ReplaceComponents(replacements);
-}
-
-bool GetValueForKeyInQuery(const GURL& url,
-                           const std::string& search_key,
-                           std::string* out_value) {
-  url_parse::Component query = url.parsed_for_possibly_invalid_spec().query;
-  url_parse::Component key, value;
-  while (url_parse::ExtractQueryKeyValue(
-      url.spec().c_str(), &query, &key, &value)) {
-    if (key.is_nonempty()) {
-      std::string key_string = url.spec().substr(key.begin, key.len);
-      if (key_string == search_key) {
-        if (value.is_nonempty()) {
-          *out_value = net::UnescapeURLComponent(
-              url.spec().substr(value.begin, value.len),
-              net::UnescapeRule::SPACES |
-                  net::UnescapeRule::URL_SPECIAL_CHARS |
-                  net::UnescapeRule::REPLACE_PLUS_WITH_SPACE);
-        } else {
-          *out_value = "";
-        }
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 }  // namespace chrome_common_net

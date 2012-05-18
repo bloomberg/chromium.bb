@@ -33,7 +33,6 @@
   "permissions": [
       "https://insecure.com/*",
       "https://www.google.com/accounts/*",
-      "https://accounts.google.com/*",
       "https://gaiastaging.corp.google.com/*",
       "chrome://oobe/"
   ]

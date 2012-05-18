@@ -4,7 +4,7 @@
   "name": "GaiaAuthExtension",
   "version": "0.0.1",
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; script-src 'self'; frame-src 'self' https://accounts.google.com",
+  "content_security_policy": "default-src 'self'; script-src 'self'; frame-src 'self' https://www.google.com/ https://www.google.com/accounts/",
   "description": "GAIA Component Extension",
   "web_accessible_resources": [
     "main.css",

@@ -68,7 +68,7 @@ class GaiaAuthenticator {
   // must include a user-agent and a service-id when creating one. The
   // user_agent is a short string used for simple log analysis. gaia_url is used
   // to choose the server to authenticate with (e.g.
-  // http://accounts.google.com/ClientLogin).
+  // http://www.google.com/accounts/ClientLogin).
   GaiaAuthenticator(const std::string& user_agent,
                     const std::string& service_id,
                     const std::string& gaia_url);

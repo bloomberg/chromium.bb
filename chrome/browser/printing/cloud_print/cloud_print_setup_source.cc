@@ -25,7 +25,7 @@ const char CloudPrintSetupSource::kInvalidPasswordHelpUrl[] =
 const char CloudPrintSetupSource::kCanNotAccessAccountUrl[] =
   "https://www.google.com/support/accounts/bin/answer.py?answer=48598";
 const char CloudPrintSetupSource::kCreateNewAccountUrl[] =
-  "https://accounts.google.com/NewAccount?service=chromiumsync";
+  "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 
 namespace {
 

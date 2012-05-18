@@ -100,7 +100,7 @@ void FailFetcher::Start() {
 // static
 const char CaptchaFetcher::kCaptchaToken[] = "token";
 // static
-const char CaptchaFetcher::kCaptchaUrlBase[] = "http://accounts.google.com/";
+const char CaptchaFetcher::kCaptchaUrlBase[] = "http://www.google.com/accounts/";
 // static
 const char CaptchaFetcher::kCaptchaUrlFragment[] = "fragment";
 // static

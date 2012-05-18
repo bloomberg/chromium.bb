@@ -52,13 +52,6 @@ GURL AppendOrReplaceQueryParameter(const GURL& url,
                                    const std::string& name,
                                    const std::string& value);
 
-// Looks for |search_key| in the query portion of |url|. Returns true if the
-// key is found and sets |out_value| to the unescaped value for the key.
-// Returns false if the key is not found.
-bool GetValueForKeyInQuery(const GURL& url,
-                           const std::string& search_key,
-                           std::string* out_value);
-
 }  // namespace chrome_common_net
 
 #endif  // CHROME_COMMON_NET_URL_UTIL_H_

@@ -15,9 +15,9 @@ class PasswordTest(pyauto.PyUITest):
   """Tests that passwords work correctly."""
 
   INFOBAR_TYPE = 'password_infobar'
-  URL = 'https://accounts.google.com/ServiceLogin'
-  URL_HTTPS = 'https://accounts.google.com/Login'
-  URL_LOGOUT = 'https://accounts.google.com/Logout'
+  URL = 'https://www.google.com/accounts/ServiceLogin'
+  URL_HTTPS = 'https://www.google.com/accounts/Login'
+  URL_LOGOUT = 'https://www.google.com/accounts/Logout'
 
   def Debug(self):
     """Test method for experimentation.

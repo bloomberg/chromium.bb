@@ -84,7 +84,7 @@ const char kGetStartedInitialLocaleParam[] = "initial_locale";
 
 // URL for account creation.
 const char kCreateAccountURL[] =
-    "https://accounts.google.com/NewAccount?service=mail";
+    "https://www.google.com/accounts/NewAccount?service=mail";
 
 // ChromeVox tutorial URL (used in place of "getting started" url when
 // accessibility is enabled).
