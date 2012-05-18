@@ -644,8 +644,7 @@ ret:
 int pthread_kill(pthread_t thread_id,
                  int sig) {
   /* This function is currently unimplemented. */
-  errno = EINVAL;
-  return -1;
+  return ENOSYS;
 }
 
 pthread_t pthread_self(void) {
