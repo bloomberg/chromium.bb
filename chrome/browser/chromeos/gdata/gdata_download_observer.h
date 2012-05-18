@@ -44,8 +44,15 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // Checks if |download| is ready to complete. Returns true if |download| has
   // no GData upload associated with it or if the GData upload has already
   // completed. This method is called by the ChromeDownloadManagerDelegate to
-  // check if the download is ready to complete.
-  static bool IsReadyToComplete(content::DownloadItem* download);
+  // check if the download is ready to complete.  If the download is not yet
+  // ready to complete and |complete_callback| is not null, then
+  // |complete_callback| will be called on the UI thread when the download
+  // becomes ready to complete.  If this method is called multiple times with
+  // the download not ready to complete, only the last |complete_callback|
+  // passed to this method for |download| will be called.
+  static bool IsReadyToComplete(
+      content::DownloadItem* download,
+      const base::Closure& complete_callback);
 
   // Returns the count of bytes confirmed as uploaded so far for |download|.
   static int64 GetUploadedBytes(content::DownloadItem* download);

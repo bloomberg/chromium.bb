@@ -5,9 +5,10 @@
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 
 #include "base/file_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
+#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/download/download_completion_blocker.h"
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
@@ -25,25 +26,22 @@ const char kUploadingKey[] = "Uploading";
 const char kGDataPathKey[] = "GDataPath";
 
 // External Data stored in DownloadItem for ongoing uploads.
-class UploadingExternalData : public DownloadItem::ExternalData {
+class UploadingExternalData : public DownloadCompletionBlocker {
  public:
   UploadingExternalData(GDataUploader* uploader, int upload_id)
       : uploader_(uploader),
-        upload_id_(upload_id),
-        is_complete_(false) {
+        upload_id_(upload_id) {
   }
   virtual ~UploadingExternalData() {}
 
-  void MarkAsComplete() { is_complete_ = true; }
-
   int upload_id() const { return upload_id_; }
-  bool is_complete() const { return is_complete_; }
   GDataUploader* uploader() { return uploader_; }
 
  private:
   GDataUploader* uploader_;
   int upload_id_;
-  bool is_complete_;
+
+  DISALLOW_COPY_AND_ASSIGN(UploadingExternalData);
 };
 
 // External Data stored in DownloadItem for gdata path.
@@ -126,14 +124,21 @@ bool GDataDownloadObserver::IsGDataDownload(DownloadItem* download) {
 }
 
 // static
-bool GDataDownloadObserver::IsReadyToComplete(DownloadItem* download) {
+bool GDataDownloadObserver::IsReadyToComplete(
+    DownloadItem* download,
+    const base::Closure& complete_callback) {
   // |download| is ready for completion (as far as GData is concerned) if:
   // 1. It's not a GData download.
   //  - or -
   // 2. The upload has completed.
+  if (!IsGDataDownload(download))
+    return true;
   UploadingExternalData* upload_data = GetUploadingExternalData(download);
-  return !IsGDataDownload(download) ||
-         (upload_data && upload_data->is_complete());
+  DCHECK(upload_data);
+  if (upload_data->is_complete())
+    return true;
+  upload_data->set_callback(complete_callback);
+  return false;
 }
 
 // static
@@ -335,19 +340,10 @@ void GDataDownloadObserver::OnUploadComplete(int32 download_id,
     return;
   }
   DVLOG(1) << "Completing upload for download ID " << download_id;
-  DownloadItem* download = iter->second;
-  UploadingExternalData* upload_data = GetUploadingExternalData(download);
+  DownloadItem* download_item = iter->second;
+  UploadingExternalData* upload_data = GetUploadingExternalData(download_item);
   DCHECK(upload_data);
-  upload_data->MarkAsComplete();
-  download->MaybeCompleteDownload();
-  // MaybeCompleteDownload() only works for non-SavePackage downloads.
-  // SavePackage::Finish() is the SavePackage equivalent of
-  // MaybeCompleteDownload(). MHTML SavePackages may upload to GData (see
-  // SavePackageFilePickerChromeOS), so MHTML SavePackages use
-  // OnDownloadUpdated() to wait for the upload to complete before calling
-  // Finish(). Call UpdateObservers() manually now in case this download is an
-  // MHTML SavePackage.
-  download->UpdateObservers();
+  upload_data->CompleteDownload();
 }
 
 }  // namespace gdata

@@ -954,6 +954,8 @@
         'browser/disposition_utils.h',
         'browser/download/chrome_download_manager_delegate.cc',
         'browser/download/chrome_download_manager_delegate.h',
+        'browser/download/download_completion_blocker.cc',
+        'browser/download/download_completion_blocker.h',
         'browser/download/download_crx_util.cc',
         'browser/download/download_crx_util.h',
         'browser/download/download_extensions.cc',

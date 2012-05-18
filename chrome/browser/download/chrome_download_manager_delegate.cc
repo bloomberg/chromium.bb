@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_file_picker.h"
@@ -70,12 +71,32 @@ namespace {
 static const char safe_browsing_id[] = "Safe Browsing ID";
 
 // The state of a safebrowsing check.
-struct SafeBrowsingState : public DownloadItem::ExternalData {
-  // If true the SafeBrowsing check is not done yet.
-  bool pending;
-  // The verdict that we got from calling CheckClientDownload.
-  safe_browsing::DownloadProtectionService::DownloadCheckResult verdict;
+class SafeBrowsingState : public DownloadCompletionBlocker {
+ public:
+  SafeBrowsingState()
+    : verdict_(DownloadProtectionService::SAFE) {
+  }
+
+  virtual ~SafeBrowsingState();
+
+  // The verdict that we got from calling CheckClientDownload. Only valid to
+  // call if |is_complete()|.
+  DownloadProtectionService::DownloadCheckResult verdict() const {
+    return verdict_;
+  }
+
+  void SetVerdict(DownloadProtectionService::DownloadCheckResult result) {
+    verdict_ = result;
+    CompleteDownload();
+  }
+
+ private:
+  DownloadProtectionService::DownloadCheckResult verdict_;
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingState);
 };
+
+SafeBrowsingState::~SafeBrowsingState() {}
 
 }  // namespace
 
@@ -203,34 +224,28 @@ void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
 #if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetExternalData(&safe_browsing_id));
-  DCHECK(state == NULL);
-  if (state == NULL) {
+  DCHECK(!state);
+  if (!state)
     state = new SafeBrowsingState();
-    item->SetExternalData(&safe_browsing_id, state);
-  }
-  state->pending = false;
-  state->verdict = DownloadProtectionService::SAFE;
+  state->SetVerdict(DownloadProtectionService::SAFE);
+  item->SetExternalData(&safe_browsing_id, state);
 #endif
 }
 
-bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
+bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
+    DownloadItem* item,
+    const base::Closure& internal_complete_callback) {
 #if defined(ENABLE_SAFE_BROWSING)
-  // See if there is already a pending SafeBrowsing check for that download.
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetExternalData(&safe_browsing_id));
-  // Don't complete the download until we have an answer.
-  if (state && state->pending)
-    return false;
-
-  if (state == NULL) {
+  if (!state) {
     // Begin the safe browsing download protection check.
     DownloadProtectionService* service = GetDownloadProtectionService();
     if (service) {
       VLOG(2) << __FUNCTION__ << "() Start SB download check for download = "
               << item->DebugString(false);
       state = new SafeBrowsingState();
-      state->pending = true;
-      state->verdict = DownloadProtectionService::SAFE;
+      state->set_callback(internal_complete_callback);
       item->SetExternalData(&safe_browsing_id, state);
       service->CheckClientDownload(
           DownloadProtectionService::DownloadInfo::FromDownloadItem(*item),
@@ -240,16 +255,48 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
               item->GetId()));
       return false;
     }
+  } else if (!state->is_complete()) {
+    // Don't complete the download until we have an answer.
+    state->set_callback(internal_complete_callback);
+    return false;
   }
 #endif
 
 #if defined(OS_CHROMEOS)
   // If there's a GData upload associated with this download, we wait until that
   // is complete before allowing the download item to complete.
-  if (!gdata::GDataDownloadObserver::IsReadyToComplete(item))
+  if (!gdata::GDataDownloadObserver::IsReadyToComplete(
+        item, internal_complete_callback))
     return false;
 #endif
   return true;
+}
+
+// ShouldCompleteDownloadInternal() will never be called directly by a user, it
+// will only be called asynchronously, so it should run
+// |user_complete_callback|. ShouldCompleteDownload() will only be called
+// directly by a user, so it does not need to run |user_complete_callback|
+// because it can return true synchronously. The two methods look very similar,
+// but their semantics are very different.
+
+void ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal(
+    int download_id,
+    const base::Closure& user_complete_callback) {
+  DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
+  if (!item)
+    return;
+  if (IsDownloadReadyForCompletion(item, base::Bind(
+        &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal, this,
+        download_id, user_complete_callback)))
+    user_complete_callback.Run();
+}
+
+bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
+    DownloadItem* item,
+    const base::Closure& user_complete_callback) {
+  return IsDownloadReadyForCompletion(item, base::Bind(
+      &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal, this,
+      item->GetId(), user_complete_callback));
 }
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {
@@ -473,12 +520,7 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
 
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetExternalData(&safe_browsing_id));
-  DCHECK(state);
-  if (state) {
-    state->pending = false;
-    state->verdict = result;
-  }
-  item->MaybeCompleteDownload();
+  state->SetVerdict(result);
 }
 
 // content::NotificationObserver implementation.

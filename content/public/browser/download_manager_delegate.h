@@ -68,14 +68,17 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
 
-  // Allows the delegate to override completion of the download.  If this
-  // function returns false, the download completion is delayed and the
-  // delegate is responsible for making sure that
-  // DownloadItem::MaybeCompleteDownload is called at some point in the
-  // future.  Note that at that point this function will be called again,
-  // and is responsible for returning true when it really is ok for the
-  // download to complete.
-  virtual bool ShouldCompleteDownload(DownloadItem* item);
+  // Allows the delegate to delay completion of the download.  This function
+  // will either return true (in which case the download is ready to complete)
+  // or arrange for complete_callback to be called at some point in the future
+  // when the download is ready to complete.
+  //
+  // ShouldCompleteDownload() may be called multiple times; if it is, only the
+  // last callback specified (while the delegate is delaying completion) will be
+  // run.  Calls made after the callback is run are guaranteed to return true.
+  virtual bool ShouldCompleteDownload(
+      DownloadItem* item,
+      const base::Closure& complete_callback);
 
   // Allows the delegate to override opening the download. If this function
   // returns false, the delegate needs to call

@@ -65,7 +65,9 @@ class ChromeDownloadManagerDelegate
   virtual content::WebContents*
       GetAlternativeWebContentsToNotifyForDownload() OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
-  virtual bool ShouldCompleteDownload(content::DownloadItem* item) OVERRIDE;
+  virtual bool ShouldCompleteDownload(
+      content::DownloadItem* item,
+      const base::Closure& complete_callback) OVERRIDE;
   virtual bool ShouldOpenDownload(content::DownloadItem* item) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
   virtual void AddItemToPersistentStore(content::DownloadItem* item) OVERRIDE;
@@ -156,6 +158,14 @@ class ChromeDownloadManagerDelegate
 
   // Open the given item with a web intent dispatch.
   void OpenWithWebIntent(const content::DownloadItem* item);
+
+  // Internal gateways for ShouldCompleteDownload().
+  bool IsDownloadReadyForCompletion(
+      content::DownloadItem* item,
+      const base::Closure& internal_complete_callback);
+  void ShouldCompleteDownloadInternal(
+    int download_id,
+    const base::Closure& user_complete_callback);
 
   Profile* profile_;
   int next_download_id_;

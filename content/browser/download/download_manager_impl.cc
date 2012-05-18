@@ -542,8 +542,7 @@ void DownloadManagerImpl::OnResponseCompleted(int32 download_id,
 
   DownloadItem* download = active_downloads_[download_id];
   download->OnAllDataSaved(size, hash);
-
-  download->MaybeCompleteDownload();
+  MaybeCompleteDownload(download);
 }
 
 void DownloadManagerImpl::AssertStateConsistent(DownloadItem* download) const {
@@ -634,8 +633,14 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
   DCHECK(download->IsPersisted());
   DCHECK_EQ(1u, history_downloads_.count(download->GetDbHandle()));
 
-  // Give the delegate a chance to override.
-  if (!delegate_->ShouldCompleteDownload(download))
+  // Give the delegate a chance to override.  It's ok to keep re-setting the
+  // delegate's |complete_callback| cb as long as there isn't another call-point
+  // trying to set it to a different cb.  TODO(benjhayden): Change the callback
+  // to point directly to the item instead of |this| when DownloadItem supports
+  // weak-ptrs.
+  if (!delegate_->ShouldCompleteDownload(download, base::Bind(
+          &DownloadManagerImpl::MaybeCompleteDownloadById,
+          this, download->GetId())))
     return;
 
   VLOG(20) << __FUNCTION__ << "()" << " executing: download = "
@@ -645,6 +650,12 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
 
   // Finish the download.
   download->OnDownloadCompleting(file_manager_);
+}
+
+void DownloadManagerImpl::MaybeCompleteDownloadById(int download_id) {
+  DownloadItem* download_item = GetActiveDownload(download_id);
+  if (download_item != NULL)
+    MaybeCompleteDownload(download_item);
 }
 
 void DownloadManagerImpl::DownloadCompleted(DownloadItem* download) {

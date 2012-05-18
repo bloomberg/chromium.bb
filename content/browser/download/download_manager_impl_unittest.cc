@@ -177,12 +177,15 @@ class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
     mark_content_dangerous_ = dangerous;
   }
 
-  virtual bool ShouldCompleteDownload(DownloadItem* item) {
+  virtual bool ShouldCompleteDownload(
+      DownloadItem* item,
+      const base::Closure& complete_callback) {
     if (mark_content_dangerous_) {
+      CHECK(!complete_callback.is_null());
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&TestDownloadManagerDelegate::MarkContentDangerous,
-                     base::Unretained(this), item->GetId()));
+                     base::Unretained(this), item->GetId(), complete_callback));
       mark_content_dangerous_ = false;
       return false;
     } else {
@@ -191,12 +194,14 @@ class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
   }
 
  private:
-  void MarkContentDangerous(int32 download_id) {
+  void MarkContentDangerous(
+      int32 download_id,
+      const base::Closure& complete_callback) {
     DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
     if (!item)
       return;
     item->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
-    item->MaybeCompleteDownload();
+    complete_callback.Run();
   }
 
   FilePath expected_suggested_path_;
@@ -204,6 +209,8 @@ class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
   bool mark_content_dangerous_;
   bool prompt_user_for_save_location_;
   DownloadManager* download_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDownloadManagerDelegate);
 };
 
 } // namespace

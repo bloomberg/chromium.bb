@@ -125,6 +125,9 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   virtual ~DownloadManagerImpl();
 
+  // Does nothing if |download_id| is not an active download.
+  void MaybeCompleteDownloadById(int download_id);
+
   // Determine if the download is ready for completion, i.e. has had
   // all data saved, and completed the filename determination and
   // history insertion.

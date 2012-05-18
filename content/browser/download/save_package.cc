@@ -337,11 +337,9 @@ void SavePackage::OnMHTMLGenerated(const FilePath& path, int64 size) {
   // GDataDownloadObserver::ShouldUpload() to return true.
   // ShouldCompleteDownload() may depend on the gdata uploader to finish.
   download_->OnAllDataSaved(size, DownloadItem::kEmptyFileHash);
-  // GDataDownloadObserver is waiting for the upload to complete. When that
-  // happens, it will call download_->MaybeCompleteDownload(), which will call
-  // through our OnDownloadUpdated() allowing us to Finish().
-  // OnDownloadUpdated() may have been called in OnAllDataSaved(), so |this| may
-  // be deleted at this point.
+  if (download_manager_->delegate()->ShouldCompleteDownload(
+        download_, base::Bind(&SavePackage::Finish, this)))
+    Finish();
 }
 
 // On POSIX, the length of |pure_file_name| + |file_name_ext| is further
@@ -1357,20 +1355,6 @@ void SavePackage::OnDownloadUpdated(DownloadItem* download) {
   // Check for removal.
   if (download_->GetState() == DownloadItem::REMOVING) {
     StopObservation();
-  }
-
-  // MHTML saves may need to wait for GData to finish uploading.
-  if ((save_type_ == content::SAVE_PAGE_TYPE_AS_MHTML) &&
-      download_->AllDataSaved() &&
-      !download_->IsComplete() &&
-      !mhtml_finishing_ &&
-      download_manager_->delegate()->ShouldCompleteDownload(download_)) {
-    // Post a task to avoid re-entering OnDownloadUpdated. Set a flag to
-    // prevent double-calling Finish() in case another OnDownloadUpdated happens
-    // before Finish() runs.
-    mhtml_finishing_ = true;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&SavePackage::Finish, this));
   }
 }
 

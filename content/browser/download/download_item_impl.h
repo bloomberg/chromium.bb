@@ -129,7 +129,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual void OnAllDataSaved(
       int64 size, const std::string& final_hash) OVERRIDE;
   virtual void OnDownloadedFileRemoved() OVERRIDE;
-  virtual void MaybeCompleteDownload() OVERRIDE;
   virtual void Interrupted(int64 size,
                            const std::string& hash_state,
                            content::DownloadInterruptReason reason) OVERRIDE;
@@ -224,6 +223,11 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // Internal helper for maintaining consistent received and total sizes, and
   // hash state.
   void UpdateProgress(int64 bytes_so_far, const std::string& hash_state);
+
+  // If all pre-requisites have been met, complete download processing, i.e.  do
+  // internal cleanup, file rename, and potentially auto-open.  (Dangerous
+  // downloads still may block on user acceptance after this point.)
+  void MaybeCompleteDownload();
 
   // Internal helper for maintaining consistent received and total sizes, and
   // setting the final hash.
