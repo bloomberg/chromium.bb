@@ -52,7 +52,7 @@ std::string GetScreenshotFileName(bool use_24hour_clock) {
   // for non-English locales.
   // TODO(mukai): integrate this logic somewhere time_formatting.h
   std::string file_name = base::StringPrintf(
-      "Screenshot_%d-%02d-%02d_", now.year, now.month, now.day_of_month);
+      "Screenshot %d-%02d-%02d ", now.year, now.month, now.day_of_month);
 
   if (use_24hour_clock) {
     file_name.append(base::StringPrintf(
@@ -65,7 +65,7 @@ std::string GetScreenshotFileName(bool use_24hour_clock) {
       hour = 12;
     }
     file_name.append(base::StringPrintf(
-        "%02d:%02d:%02d_", hour, now.minute, now.second));
+        "%d:%02d:%02d ", hour, now.minute, now.second));
     file_name.append((now.hour >= 12) ? "PM" : "AM");
     file_name.append(".png");
   }
