@@ -9,6 +9,8 @@
 #include "ash/launcher/launcher_button_host.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -27,14 +29,7 @@ const int kActiveBarColor = 0xe6ffffff;
 const int kInactiveBarColor = 0x80ffffff;
 const int kHopUpMS = 200;
 const int kHopDownMS = 200;
-
-// Used to allow Mouse...() messages to go to the parent view.
-class MouseIgnoredImageView : public views::ImageView {
- public:
-  bool HitTest(const gfx::Point& l) const OVERRIDE {
-    return false;
-  }
-};
+const int kAttentionThrobDurationMS = 2000;
 
 bool ShouldHop(int state) {
   return state & ash::internal::LauncherButton::STATE_HOVERED ||
@@ -46,6 +41,49 @@ bool ShouldHop(int state) {
 namespace ash {
 
 namespace internal {
+
+class LauncherButton::BarView : public views::ImageView,
+                                public ui::AnimationDelegate {
+ public:
+  BarView() : ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
+    animation_.SetThrobDuration(kAttentionThrobDurationMS);
+    animation_.SetTweenType(ui::Tween::SMOOTH_IN_OUT);
+  }
+
+  // View overrides.
+  bool HitTest(const gfx::Point& l) const OVERRIDE {
+    // Allow Mouse...() messages to go to the parent view.
+    return false;
+  }
+
+  void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    if (animation_.is_animating()) {
+      int alpha = animation_.CurrentValueBetween(0, 255);
+      canvas->SaveLayerAlpha(alpha);
+      views::ImageView::OnPaint(canvas);
+      canvas->Restore();
+    } else {
+      views::ImageView::OnPaint(canvas);
+    }
+  }
+
+  // ui::AnimationDelegate overrides.
+  void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    SchedulePaint();
+  }
+
+  void ShowAttention(bool show) {
+    if (show)
+      animation_.StartThrobbing(-1);
+    else
+      animation_.Reset();
+  }
+
+ private:
+  ui::ThrobAnimation animation_;
+
+  DISALLOW_COPY_AND_ASSIGN(BarView);
+};
 
 LauncherButton::IconView::IconView() : icon_size_(kIconHeight) {
 }
@@ -69,7 +107,7 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
     : CustomButton(listener),
       host_(host),
       icon_view_(NULL),
-      bar_(new MouseIgnoredImageView),
+      bar_(new BarView),
       state_(STATE_NORMAL) {
   set_accessibility_focusable(true);
   bar_->SetHorizontalAlignment(views::ImageView::CENTER);
@@ -152,6 +190,8 @@ void LauncherButton::AddState(State state) {
       state_ |= state;
       UpdateState();
     }
+    if (state & STATE_ATTENTION)
+      bar_->ShowAttention(true);
   }
 }
 
@@ -169,6 +209,8 @@ void LauncherButton::ClearState(State state) {
       state_ &= ~state;
       UpdateState();
     }
+    if (state & STATE_ATTENTION)
+      bar_->ShowAttention(false);
   }
 }
 
@@ -257,10 +299,10 @@ void LauncherButton::UpdateState() {
     int bar_id;
     bar_->SetVisible(true);
 
-    if (state_ & STATE_HOVERED)
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
-    else if (state_ & STATE_ACTIVE)
+    if (state_ & STATE_ACTIVE || state_ & STATE_ATTENTION)
       bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
+    else if (state_ & STATE_HOVERED)
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
     else
       bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
 

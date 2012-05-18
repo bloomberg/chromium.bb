@@ -203,6 +203,11 @@ class LauncherViewTest : public aura::test::AuraTestBase {
     return test_api_->GetButton(index);
   }
 
+  LauncherItem GetItemByID(LauncherID id) {
+    LauncherItems::const_iterator items = model_->ItemByID(id);
+    return *items;
+  }
+
   void CheckModelIDs(
       const std::vector<std::pair<LauncherID, views::View*> >& id_map) {
     ASSERT_EQ(static_cast<int>(id_map.size()), test_api_->GetButtonCount());
@@ -404,6 +409,25 @@ TEST_F(LauncherViewTest, ModelChangesWhileDragging) {
                 std::make_pair(new_id, test_api_->GetButton(5)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   button_host->MouseReleasedOnButton(dragged_button, false);
+}
+
+// Confirm that item status changes are reflected in the buttons.
+TEST_F(LauncherViewTest, LauncherItemStatus) {
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Add tabbed browser.
+  LauncherID last_added = AddTabbedBrowser();
+  LauncherItem item = GetItemByID(last_added);
+  int index = model_->ItemIndexByID(last_added);
+  internal::LauncherButton* button = GetButtonByID(last_added);
+  ASSERT_EQ(internal::LauncherButton::STATE_RUNNING, button->state());
+  item.status = ash::STATUS_ACTIVE;
+  model_->Set(index, item);
+  ASSERT_EQ(internal::LauncherButton::STATE_ACTIVE, button->state());
+  item.status = ash::STATUS_ATTENTION;
+  model_->Set(index, item);
+  ASSERT_EQ(internal::LauncherButton::STATE_ATTENTION, button->state());
 }
 
 }  // namespace test

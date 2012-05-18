@@ -45,7 +45,8 @@ enum ASH_EXPORT LauncherItemType {
 enum ASH_EXPORT LauncherItemStatus {
   STATUS_CLOSED,
   STATUS_RUNNING,
-  STATUS_ACTIVE
+  STATUS_ACTIVE,
+  STATUS_ATTENTION
 };
 
 struct ASH_EXPORT LauncherItem {

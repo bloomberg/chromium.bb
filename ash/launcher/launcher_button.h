@@ -19,10 +19,11 @@ class LauncherButton : public views::CustomButton {
  public:
   // Used to indicate the current state of the button.
   enum State {
-    STATE_NORMAL  = 0,
-    STATE_HOVERED = 1 << 0,
-    STATE_RUNNING = 1 << 1,
-    STATE_ACTIVE  = 1 << 2
+    STATE_NORMAL    = 0,
+    STATE_HOVERED   = 1 << 0,
+    STATE_RUNNING   = 1 << 1,
+    STATE_ACTIVE    = 1 << 2,
+    STATE_ATTENTION = 1 << 3,
   };
 
   virtual ~LauncherButton();
@@ -86,6 +87,7 @@ class LauncherButton : public views::CustomButton {
   LauncherButtonHost* host() const { return host_; }
 
  private:
+  class BarView;
   // Updates the parts of the button to reflect the current state_. This may
   // add or remove views, layout and paint.
   void UpdateState();
@@ -93,7 +95,7 @@ class LauncherButton : public views::CustomButton {
   LauncherButtonHost* host_;
   IconView* icon_view_;
   // Draws a bar underneath the image to represent the state of the application.
-  views::ImageView* bar_;
+  BarView* bar_;
   // The current state of the application, multiple values of AppState are or'd
   // together.
   int state_;
