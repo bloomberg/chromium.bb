@@ -1810,6 +1810,7 @@
         'common/content_settings_pattern_parser_unittest.cc',
         'common/content_settings_pattern_unittest.cc',
         'common/extensions/csp_validator_unittest.cc',
+        'common/extensions/event_filter_unittest.cc',
         'common/extensions/extension_action_unittest.cc',
         'common/extensions/extension_commands_unittest.cc',
         'common/extensions/extension_constants_unittest.cc',
