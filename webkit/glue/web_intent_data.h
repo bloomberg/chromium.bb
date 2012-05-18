@@ -57,6 +57,9 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   DataType data_type;
 
   WebIntentData();
+
+  // NOTE! Constructors do not initialize message_port_ids. Caller must do this.
+
   WebIntentData(const WebKit::WebIntent& intent);
   WebIntentData(const string16& action_in,
                 const string16& type_in,

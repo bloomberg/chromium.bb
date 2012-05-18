@@ -41,6 +41,7 @@
 #include "content/common/request_extra_data.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/view_messages.h"
+#include "content/common/webmessageportchannel_impl.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -118,6 +119,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
@@ -3528,6 +3530,20 @@ void RenderViewImpl::registerIntentService(
 void RenderViewImpl::dispatchIntent(
     WebFrame* frame, const WebIntentRequest& intentRequest) {
   webkit_glue::WebIntentData intent_data(intentRequest.intent());
+
+  // See WebMessagePortChannelImpl::postMessage() and ::OnMessagedQueued()
+  WebKit::WebMessagePortChannelArray* channels =
+      intentRequest.intent().messagePortChannelsRelease();
+  if (channels) {
+    for (size_t i = 0; i < channels->size(); ++i) {
+      WebMessagePortChannelImpl* webchannel =
+          static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
+      intent_data.message_port_ids.push_back(webchannel->message_port_id());
+      DCHECK(intent_data.message_port_ids[i] != MSG_ROUTING_NONE);
+    }
+    delete channels;
+  }
+
   int id = intents_host_->RegisterWebIntent(intentRequest);
   Send(new IntentsHostMsg_WebIntentDispatch(
       routing_id_, intent_data, id));
