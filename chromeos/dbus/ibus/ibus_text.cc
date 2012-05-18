@@ -9,6 +9,8 @@
 #include "dbus/message.h"
 
 namespace chromeos {
+// TODO(nona): Remove ibus namespace after complete libibus removal.
+namespace ibus {
 
 namespace {
 const uint32 kAttributeUnderline = 1;  // Indicates underline attribute.
@@ -188,4 +190,5 @@ const std::vector<IBusText::SelectionAttribute>&
   return selection_attributes_;
 }
 
+}  // namespace ibus
 }  // namespace chromeos
