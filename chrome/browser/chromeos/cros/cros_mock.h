@@ -71,6 +71,7 @@ class CrosMock {
   MockNetworkLibrary* mock_network_library_;
 
   WifiNetworkVector wifi_networks_;
+  WimaxNetworkVector wimax_networks_;
   CellularNetworkVector cellular_networks_;
   VirtualNetworkVector virtual_networks_;
   std::string empty_string_;

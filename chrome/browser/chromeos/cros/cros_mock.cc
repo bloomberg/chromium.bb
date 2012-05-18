@@ -115,6 +115,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, wifi_available())
       .Times(AnyNumber())
       .WillRepeatedly((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wimax_available())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return(false)));
   EXPECT_CALL(*mock_network_library_, cellular_available())
       .Times(AnyNumber())
       .WillRepeatedly((Return(false)));
@@ -122,6 +125,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .Times(AnyNumber())
       .WillRepeatedly((Return(true)));
   EXPECT_CALL(*mock_network_library_, wifi_enabled())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wimax_enabled())
       .Times(AnyNumber())
       .WillRepeatedly((Return(false)));
   EXPECT_CALL(*mock_network_library_, cellular_enabled())
@@ -136,6 +142,12 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, wifi_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const WifiNetwork*)(NULL))));
+  EXPECT_CALL(*mock_network_library_, wimax_network())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return((const WimaxNetwork*)(NULL))));
+  EXPECT_CALL(*mock_network_library_, mobile_network())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return((const Network*)(NULL))));
   EXPECT_CALL(*mock_network_library_, cellular_network())
       .Times(AnyNumber())
       .WillRepeatedly((Return((const CellularNetwork*)(NULL))));
@@ -145,6 +157,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, wifi_networks())
       .Times(AnyNumber())
       .WillRepeatedly((ReturnRef(wifi_networks_)));
+  EXPECT_CALL(*mock_network_library_, wimax_networks())
+      .Times(AnyNumber())
+      .WillRepeatedly((ReturnRef(wimax_networks_)));
   EXPECT_CALL(*mock_network_library_, cellular_networks())
       .Times(AnyNumber())
       .WillRepeatedly((ReturnRef(cellular_networks_)));

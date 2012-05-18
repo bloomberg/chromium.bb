@@ -385,16 +385,23 @@ void NetworkLibraryImplStub::AddStubRememberedNetwork(Network* network) {
 }
 
 void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
+  std::string passphrase;
   if (network->type() == TYPE_WIFI) {
     WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
-    if (wifi->encryption() != SECURITY_NONE) {
-      if (wifi->passphrase().find("bad") == 0) {
-        NetworkConnectCompleted(network, CONNECT_BAD_PASSPHRASE);
-        return;
-      } else if (wifi->passphrase().find("error") == 0) {
-        NetworkConnectCompleted(network, CONNECT_FAILED);
-        return;
-      }
+    if (wifi->passphrase_required())
+      passphrase = wifi->passphrase();
+  } else if (network->type() == TYPE_WIMAX) {
+    WimaxNetwork* wimax = static_cast<WimaxNetwork*>(network);
+    if (wimax->passphrase_required())
+      passphrase = wimax->eap_passphrase();
+  }
+  if (!passphrase.empty()) {
+    if (passphrase.find("bad") == 0) {
+      NetworkConnectCompleted(network, CONNECT_BAD_PASSPHRASE);
+      return;
+    } else if (passphrase.find("error") == 0) {
+      NetworkConnectCompleted(network, CONNECT_FAILED);
+      return;
     }
   }
 

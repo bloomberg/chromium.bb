@@ -74,6 +74,18 @@ class WifiConfigView : public ChildNetworkConfigView,
   virtual void Cancel() OVERRIDE;
   virtual void InitFocus() OVERRIDE;
 
+  // Parses a WiFi UI |property| from the ONC associated with |network|. |key|
+  // is the property name within the ONC WiFi dictionary.
+  static void ParseWiFiUIProperty(NetworkPropertyUIData* property_ui_data,
+                                  Network* network,
+                                  const std::string& key);
+
+  // Parses a WiFi EAP UI |property| from the ONC associated with |network|.
+  // |key| is the property name within the ONC WiFi.EAP dictionary.
+  static void ParseWiFiEAPUIProperty(NetworkPropertyUIData* property_ui_data,
+                                     Network* network,
+                                     const std::string& key);
+
  private:
   // Initializes UI.  If |show_8021x| includes 802.1x config options.
   void Init(WifiNetwork* wifi, bool show_8021x);
@@ -125,18 +137,6 @@ class WifiConfigView : public ChildNetworkConfigView,
 
   // Updates the error text label.
   void UpdateErrorLabel();
-
-  // Parses a WiFi UI |property| from the ONC associated with |network|. |key|
-  // is the property name within the ONC WiFi dictionary.
-  void ParseWiFiUIProperty(NetworkPropertyUIData* property_ui_data,
-                           Network* network,
-                           const std::string& key);
-
-  // Parses a WiFi EAP UI |property| from the ONC associated with |network|.
-  // |key| is the property name within the ONC WiFi.EAP dictionary.
-  void ParseWiFiEAPUIProperty(NetworkPropertyUIData* property_ui_data,
-                              Network* network,
-                              const std::string& key);
 
   CertLibrary* cert_library_;
 
