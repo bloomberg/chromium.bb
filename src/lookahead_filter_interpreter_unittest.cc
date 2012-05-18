@@ -12,6 +12,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/lookahead_filter_interpreter.h"
+#include "gestures/include/util.h"
 
 using std::deque;
 using std::pair;
@@ -25,9 +26,21 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
  public:
   LookaheadFilterInterpreterTestInterpreter()
       : timer_return_(-1.0), set_hwprops_called_(false),
-        clear_incoming_hwstates_(false) {}
+        clear_incoming_hwstates_(false), expected_id_(-1),
+        expected_flags_(0), expected_flags_at_(-1),
+        expected_flags_at_occurred_(false) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+    if (expected_id_ >= 0) {
+      EXPECT_EQ(1, hwstate->finger_cnt);
+      EXPECT_EQ(expected_id_, hwstate->fingers[0].tracking_id);
+    }
+    if (expected_flags_at_ >= 0 &&
+        DoubleEq(expected_flags_at_, hwstate->timestamp) &&
+                 hwstate->finger_cnt > 0) {
+      EXPECT_EQ(expected_flags_, hwstate->fingers[0].flags);
+      expected_flags_at_occurred_ = true;
+    }
     if (clear_incoming_hwstates_)
       hwstate->finger_cnt = 0;
     if (timer_return_ >= 0.0) {
@@ -57,6 +70,14 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
   stime_t timer_return_;
   bool set_hwprops_called_;
   bool clear_incoming_hwstates_;
+  // if expected_id_ >= 0, we expect that there is one finger with
+  // the expected id.
+  short expected_id_;
+  // If we get a hardware state at time expected_flags_at_, it should have
+  // the following flags set.
+  unsigned expected_flags_;
+  stime_t expected_flags_at_;
+  bool expected_flags_at_occurred_;
 };
 
 TEST(LookaheadFilterInterpreterTest, SimpleTest) {
@@ -745,6 +766,206 @@ TEST(LookaheadFilterInterpreterTest, QuickMoveTest) {
   EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 4);
   EXPECT_EQ(queue->Tail()->prev_->fs_[0].tracking_id, 4);
   EXPECT_EQ(queue->Tail()->prev_->prev_->fs_[0].tracking_id, 4);
+}
+
+struct CyapaDrumrollTestInputs {
+  bool reset_;
+  stime_t now_;
+  float x_, y_, pressure_, flags_;
+  bool jump_here_;
+};
+
+// Replays a couple instances of drumroll from a Cyapa system as reported by
+// Doug Anderson.
+TEST(LookaheadFilterInterpreterTest, CyapaDrumrollTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
+  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+
+  HardwareProperties initial_hwprops = {
+    0.000000,  // left edge
+    0.000000,  // top edge
+    106.666672,  // right edge
+    68.000000,  // bottom edge
+    1.000000,  // x pixels/TP width
+    1.000000,  // y pixels/TP height
+    25.400000,  // x screen DPI
+    25.400000,  // y screen DPI
+    15,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    0  // is button pad
+  };
+
+  CyapaDrumrollTestInputs inputs[] = {
+    // First run:
+    { true,  3.39245, 67.83, 34.10,  3.71, 0, false },
+    { false, 3.40097, 67.83, 34.10, 30.88, 0, false },
+    { false, 3.40970, 67.83, 34.10, 42.52, 0, false },
+    { false, 3.44442, 67.83, 34.40, 44.46, 0, false },
+    { false, 3.45307, 67.83, 34.60, 44.46, 0, false },
+    { false, 3.46176, 67.83, 34.79, 44.46, 0, false },
+    { false, 3.47041, 68.16, 35.20, 46.40, 0, false },
+    { false, 3.47929, 68.83, 35.60, 50.28, 0, false },
+    { false, 3.48806, 69.25, 35.90, 50.28, 0, false },
+    { false, 3.49700, 69.75, 36.10, 52.22, 0, false },
+    { false, 3.50590, 70.08, 36.50, 50.28, 0, false },
+    { false, 3.51464, 70.41, 36.60, 52.22, 0, false },
+    { false, 3.52355, 70.75, 36.79, 52.22, 0, false },
+    { false, 3.53230, 71.00, 36.90, 52.22, 0, false },
+    { false, 3.54118, 71.16, 36.90, 50.28, 0, false },
+    { false, 3.55004, 71.33, 36.90, 52.22, 0, false },
+    { false, 3.55900, 71.58, 37.10, 54.16, 0, false },
+    { false, 3.56801, 71.66, 37.10, 52.22, 0, false },
+    { false, 3.57690, 71.83, 37.10, 54.16, 0, false },
+    { false, 3.59494, 71.91, 37.10, 52.22, 0, false },
+    { false, 3.63092, 72.00, 37.10, 54.16, 0, false },
+    { false, 3.68472, 72.00, 37.10, 56.10, 0, false },
+    { false, 3.70275, 72.00, 37.10, 54.16, 0, false },
+    { false, 3.71167, 72.00, 37.10, 52.22, 0, false },
+    { false, 3.72067, 72.00, 37.10, 50.28, 0, false },
+    { false, 3.72959, 72.00, 37.10, 42.52, 0, false },
+    { false, 3.73863, 72.00, 37.10, 27.00, 0, false },
+    // jump occurs here:
+    { false, 3.74794, 14.58, 67.70, 17.30, 2, true },
+    { false, 3.75703, 13.91, 66.59, 48.34, 2, false },
+    { false, 3.76619, 13.91, 66.59, 50.28, 0, false },
+    { false, 3.77531, 13.91, 66.20, 58.04, 0, false },
+    { false, 3.78440, 13.91, 66.20, 58.04, 0, false },
+    { false, 3.80272, 13.91, 66.00, 59.99, 0, false },
+    { false, 3.81203, 13.91, 66.00, 61.93, 0, false },
+    { false, 3.83017, 13.91, 66.00, 61.93, 0, false },
+    { false, 3.83929, 13.91, 65.80, 61.93, 0, false },
+    { false, 3.84849, 13.91, 65.70, 61.93, 0, false },
+    { false, 3.90325, 13.91, 65.70, 59.99, 0, false },
+    { false, 3.91247, 13.91, 65.70, 56.10, 0, false },
+    { false, 3.92156, 13.91, 65.70, 42.52, 0, false },
+    // Second run:
+    { true,  39.25706, 91.08, 26.70, 25.06, 0, false },
+    { false, 39.26551, 91.08, 26.70, 32.82, 0, false },
+    { false, 39.27421, 89.66, 26.70, 34.76, 1, false },
+    { false, 39.28285, 88.50, 26.70, 38.64, 1, false },
+    { false, 39.29190, 87.75, 26.70, 42.52, 0, false },
+    { false, 39.30075, 86.66, 26.70, 44.46, 0, false },
+    { false, 39.30940, 85.66, 26.70, 44.46, 0, false },
+    { false, 39.31812, 83.91, 26.70, 44.46, 0, false },
+    { false, 39.32671, 82.25, 26.40, 48.34, 0, false },
+    { false, 39.33564, 80.66, 26.30, 48.34, 0, false },
+    { false, 39.34467, 79.25, 26.10, 50.28, 0, false },
+    { false, 39.35335, 77.41, 26.00, 48.34, 0, false },
+    { false, 39.36222, 75.50, 25.80, 52.22, 0, false },
+    { false, 39.37135, 74.25, 25.80, 54.16, 0, false },
+    { false, 39.38032, 73.25, 25.80, 56.10, 0, false },
+    { false, 39.38921, 71.91, 25.80, 52.22, 0, false },
+    { false, 39.39810, 70.25, 25.80, 56.10, 0, false },
+    { false, 39.40708, 68.75, 25.80, 58.04, 0, false },
+    { false, 39.41612, 67.75, 25.80, 59.99, 0, false },
+    { false, 39.42528, 66.83, 25.70, 61.93, 0, false },
+    { false, 39.43439, 66.25, 25.70, 58.04, 0, false },
+    { false, 39.44308, 65.33, 25.70, 58.04, 0, false },
+    { false, 39.45196, 64.41, 25.70, 59.99, 0, false },
+    { false, 39.46083, 63.75, 25.70, 59.99, 0, false },
+    { false, 39.46966, 63.25, 25.70, 61.93, 0, false },
+    { false, 39.47855, 62.83, 25.70, 65.81, 0, false },
+    { false, 39.48741, 62.50, 25.70, 63.87, 0, false },
+    { false, 39.49632, 62.00, 25.70, 63.87, 0, false },
+    { false, 39.50527, 61.66, 25.70, 61.93, 0, false },
+    { false, 39.51422, 61.41, 25.70, 61.93, 0, false },
+    { false, 39.52323, 61.08, 25.70, 63.87, 0, false },
+    { false, 39.54126, 61.00, 25.70, 65.81, 0, false },
+    { false, 39.55042, 60.83, 25.70, 65.81, 0, false },
+    { false, 39.55951, 60.75, 25.70, 65.81, 0, false },
+    { false, 39.56852, 60.33, 25.70, 63.87, 0, false },
+    { false, 39.57756, 60.00, 25.70, 63.87, 0, false },
+    { false, 39.58664, 59.58, 25.70, 63.87, 0, false },
+    { false, 39.59553, 59.08, 25.70, 63.87, 0, false },
+    { false, 39.60432, 58.50, 25.70, 67.75, 0, false },
+    { false, 39.61319, 57.75, 25.70, 67.75, 0, false },
+    { false, 39.62219, 57.33, 25.70, 67.75, 0, false },
+    { false, 39.63088, 56.83, 25.70, 67.75, 0, false },
+    { false, 39.63976, 56.33, 25.70, 67.75, 0, false },
+    { false, 39.64860, 55.83, 25.70, 67.75, 0, false },
+    { false, 39.65758, 55.33, 25.70, 65.81, 0, false },
+    { false, 39.66647, 54.83, 25.70, 65.81, 0, false },
+    { false, 39.67554, 54.33, 26.00, 69.69, 0, false },
+    { false, 39.68430, 53.75, 26.10, 67.75, 0, false },
+    { false, 39.69313, 53.33, 26.40, 67.75, 0, false },
+    { false, 39.70200, 52.91, 26.40, 67.75, 0, false },
+    { false, 39.71106, 52.33, 26.60, 67.75, 0, false },
+    { false, 39.71953, 51.83, 26.80, 69.69, 0, false },
+    { false, 39.72814, 51.41, 26.80, 71.63, 0, false },
+    { false, 39.73681, 50.75, 26.80, 71.63, 0, false },
+    { false, 39.74569, 50.33, 26.80, 71.63, 0, false },
+    { false, 39.75422, 49.83, 26.80, 73.57, 0, false },
+    { false, 39.76303, 49.33, 26.80, 75.51, 0, false },
+    { false, 39.77166, 49.00, 26.80, 73.57, 0, false },
+    { false, 39.78054, 48.41, 26.80, 75.51, 0, false },
+    { false, 39.78950, 48.16, 26.80, 75.51, 0, false },
+    { false, 39.79827, 47.83, 26.80, 75.51, 0, false },
+    { false, 39.80708, 47.58, 26.80, 77.45, 0, false },
+    { false, 39.81598, 47.41, 26.80, 77.45, 0, false },
+    { false, 39.82469, 47.33, 26.80, 75.51, 0, false },
+    { false, 39.83359, 47.25, 26.80, 75.51, 0, false },
+    { false, 39.84252, 47.25, 26.80, 77.45, 0, false },
+    { false, 39.87797, 47.25, 26.80, 75.51, 0, false },
+    { false, 39.88674, 47.25, 26.80, 71.63, 0, false },
+    { false, 39.89573, 47.25, 26.80, 67.75, 0, false },
+    { false, 39.90444, 47.25, 26.80, 52.22, 0, false },
+    { false, 39.91334, 47.25, 26.80, 27.00, 0, false },
+    { false, 39.92267, 21.00, 62.29, 34.76, 1, true },
+    { false, 39.93177, 21.00, 62.50, 46.40, 0, false },
+    { false, 39.94127, 21.00, 62.79, 56.10, 2, false },
+    { false, 39.95053, 21.00, 62.79, 61.93, 0, false },
+    { false, 39.96006, 21.00, 62.79, 63.87, 0, false },
+    { false, 39.96919, 21.00, 62.79, 65.81, 0, false },
+    { false, 39.97865, 21.00, 62.79, 67.75, 0, false },
+    { false, 39.99727, 21.00, 62.79, 67.75, 0, false },
+    { false, 40.00660, 21.00, 62.79, 67.75, 0, false },
+    { false, 40.02541, 21.00, 62.60, 67.75, 0, false },
+    { false, 40.04417, 21.00, 62.60, 65.81, 0, false },
+    { false, 40.05345, 21.00, 62.60, 63.87, 0, false },
+    { false, 40.06241, 21.00, 62.60, 58.04, 0, false },
+    { false, 40.07105, 21.00, 60.90, 34.76, 2, false },
+    { false, 40.07990, 21.16, 59.10,  5.65, 2, false },
+  };
+
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    const CyapaDrumrollTestInputs& input = inputs[i];
+    FingerState fs = {
+      // TM, Tm, WM, Wm, pr, orient, x, y, id, flags
+      0, 0, 0, 0, input.pressure_, 0, input.x_, input.y_, 1, input.flags_
+    };
+    HardwareState hs = { input.now_, 0, 1, 1, &fs };
+    if (input.reset_) {
+      if (base_interpreter) {
+        EXPECT_TRUE(base_interpreter->expected_flags_at_occurred_);
+      }
+      base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
+      base_interpreter->expected_id_ = 1;
+      interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+      interpreter->SetHardwareProperties(initial_hwprops);
+    }
+    if (input.jump_here_) {
+      base_interpreter->expected_flags_ =
+          GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
+      base_interpreter->expected_flags_at_ = input.now_;
+    }
+    stime_t timeout = -1;
+    interpreter->SyncInterpret(&hs, &timeout);
+    if (timeout >= 0) {
+      stime_t next_timestamp = INFINITY;
+      if (i < arraysize(inputs) - 1)
+        next_timestamp = inputs[i + 1].now_;
+      stime_t now = input.now_;
+      while (timeout >= 0 && (now + timeout) < next_timestamp) {
+        now += timeout;
+        timeout = -1;
+        interpreter->HandleTimer(now, &timeout);
+      }
+    }
+  }
+  ASSERT_TRUE(base_interpreter);
+  EXPECT_TRUE(base_interpreter->expected_flags_at_occurred_);
 }
 
 }  // namespace gestures

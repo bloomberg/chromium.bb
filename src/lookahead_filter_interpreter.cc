@@ -221,7 +221,10 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
         }
       }
       if (fs->flags & (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y)) {
-        // Finger is warping. Don't reassign tracking ID
+        // Finger is warping. Don't reassign tracking ID.
+        // Because we would have reassigned the ID, we make sure we're warping
+        // both axes
+        fs->flags |= (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y);
         continue;
       }
       did_separate = true;
