@@ -41,6 +41,7 @@
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "remoting/host/sighup_listener_mac.h"
 #endif
 // N.B. OS_WIN is defined by including src/base headers.
@@ -511,6 +512,11 @@ class HostProcess
 }  // namespace remoting
 
 int main(int argc, char** argv) {
+#if defined(OS_MACOSX)
+  // Needed so we don't leak objects when threads are created.
+  base::mac::ScopedNSAutoreleasePool pool;
+#endif
+
   CommandLine::Init(argc, argv);
 
   // This object instance is required by Chrome code (for example,
