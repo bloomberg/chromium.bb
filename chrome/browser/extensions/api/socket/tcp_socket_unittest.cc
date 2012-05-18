@@ -92,8 +92,11 @@ TEST(SocketTest, TestTCPSocketWrite) {
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
       tcp_client_socket, notifier));
 
+  net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
-      .Times(1);
+      .Times(2)
+      .WillRepeatedly(testing::DoAll(SaveArg<2>(&callback),
+                                     Return(128)));
   EXPECT_CALL(handler, OnComplete(_))
       .Times(1);
 
@@ -114,11 +117,10 @@ TEST(SocketTest, TestTCPSocketBlockedWrite) {
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
-      .Times(1)
-      .WillOnce(testing::DoAll(SaveArg<2>(&callback),
-                               Return(net::ERR_IO_PENDING)));
-  scoped_refptr<net::IOBufferWithSize> io_buffer(new net::IOBufferWithSize(
-      1));
+      .Times(2)
+      .WillRepeatedly(testing::DoAll(SaveArg<2>(&callback),
+                                     Return(net::ERR_IO_PENDING)));
+  scoped_refptr<net::IOBufferWithSize> io_buffer(new net::IOBufferWithSize(42));
   socket->Write(io_buffer.get(), io_buffer->size(),
       base::Bind(&CompleteHandler::OnComplete, base::Unretained(&handler)));
 
@@ -126,7 +128,41 @@ TEST(SocketTest, TestTCPSocketBlockedWrite) {
   // finished, and confirm that we passed the error back.
   EXPECT_CALL(handler, OnComplete(42))
       .Times(1);
-  callback.Run(42);
+  callback.Run(40);
+  callback.Run(2);
+}
+
+TEST(SocketTest, TestTCPSocketBlockedWriteReentry) {
+  net::AddressList address_list;
+  MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
+  MockAPIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
+  CompleteHandler handlers[5];
+
+  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
+      tcp_client_socket, notifier));
+
+  net::CompletionCallback callback;
+  EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
+      .Times(5)
+      .WillRepeatedly(testing::DoAll(SaveArg<2>(&callback),
+                                     Return(net::ERR_IO_PENDING)));
+  scoped_refptr<net::IOBufferWithSize> io_buffers[5];
+  int i;
+  for (i = 0; i < 5; i++) {
+    io_buffers[i] = new net::IOBufferWithSize(128 + i * 50);
+    scoped_refptr<net::IOBufferWithSize> io_buffer1(
+        new net::IOBufferWithSize(42));
+    socket->Write(io_buffers[i].get(), io_buffers[i]->size(),
+        base::Bind(&CompleteHandler::OnComplete,
+            base::Unretained(&handlers[i])));
+
+    EXPECT_CALL(handlers[i], OnComplete(io_buffers[i]->size()))
+        .Times(1);
+  }
+
+  for (i = 0; i < 5; i++) {
+    callback.Run(128 + i * 50);
+  }
 }
 
 }  // namespace extensions

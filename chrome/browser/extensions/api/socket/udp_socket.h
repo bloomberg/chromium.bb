@@ -27,9 +27,6 @@ class UDPSocket : public Socket {
   virtual int Bind(const std::string& address, int port) OVERRIDE;
   virtual void Read(int count,
                     const ReadCompletionCallback& callback) OVERRIDE;
-  virtual void Write(scoped_refptr<net::IOBuffer> io_buffer,
-                     int bytes,
-                     const CompletionCallback& callback) OVERRIDE;
   virtual void RecvFrom(int count,
                         const RecvFromCompletionCallback& callback) OVERRIDE;
   virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
@@ -38,23 +35,25 @@ class UDPSocket : public Socket {
                       int port,
                       const CompletionCallback& callback) OVERRIDE;
 
+ protected:
+  virtual int WriteImpl(net::IOBuffer* io_buffer,
+                        int io_buffer_size,
+                        const net::CompletionCallback& callback) OVERRIDE;
+
  private:
   // Make net::IPEndPoint can be refcounted
   typedef base::RefCountedData<net::IPEndPoint> IPEndPoint;
 
-  virtual void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
-                              int result);
-  virtual void OnWriteComplete(int result);
-  virtual void OnRecvFromComplete(scoped_refptr<net::IOBuffer> io_buffer,
-                                  scoped_refptr<IPEndPoint> address,
-                                  int result);
-  virtual void OnSendToComplete(int result);
+  void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
+                      int result);
+  void OnRecvFromComplete(scoped_refptr<net::IOBuffer> io_buffer,
+                          scoped_refptr<IPEndPoint> address,
+                          int result);
+  void OnSendToComplete(int result);
 
   net::UDPSocket socket_;
 
   ReadCompletionCallback read_callback_;
-
-  CompletionCallback write_callback_;
 
   RecvFromCompletionCallback recv_from_callback_;
 

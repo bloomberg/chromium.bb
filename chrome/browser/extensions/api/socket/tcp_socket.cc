@@ -115,36 +115,6 @@ void TCPSocket::Read(int count,
     OnReadComplete(io_buffer, result);
 }
 
-void TCPSocket::Write(scoped_refptr<net::IOBuffer> io_buffer,
-                      int byte_count,
-                      const CompletionCallback& callback) {
-  DCHECK(!callback.is_null());
-
-  if (!write_callback_.is_null()) {
-    // TODO(penghuang): Put requests in a pending queue to support multiple
-    // write calls.
-    callback.Run(net::ERR_IO_PENDING);
-    return;
-  } else {
-    write_callback_ = callback;
-  }
-
-  int result = net::ERR_FAILED;
-  do {
-    if (!socket_.get() || !socket_->IsConnected()) {
-      result = net::ERR_SOCKET_NOT_CONNECTED;
-      break;
-    }
-
-    result = socket_->Write(
-        io_buffer.get(), byte_count,
-        base::Bind(&TCPSocket::OnWriteComplete, base::Unretained(this)));
-  } while (false);
-
-  if (result != net::ERR_IO_PENDING)
-    OnWriteComplete(result);
-}
-
 void TCPSocket::RecvFrom(int count,
                          const RecvFromCompletionCallback& callback) {
   callback.Run(net::ERR_FAILED, NULL, NULL, 0);
@@ -156,6 +126,15 @@ void TCPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
                        int port,
                        const CompletionCallback& callback) {
   callback.Run(net::ERR_FAILED);
+}
+
+int TCPSocket::WriteImpl(net::IOBuffer* io_buffer,
+                         int io_buffer_size,
+                         const net::CompletionCallback& callback) {
+  if (!socket_.get() || !socket_->IsConnected())
+    return net::ERR_SOCKET_NOT_CONNECTED;
+  else
+    return socket_->Write(io_buffer, io_buffer_size, callback);
 }
 
 void TCPSocket::OnConnectComplete(int result) {
@@ -171,12 +150,6 @@ void TCPSocket::OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
   DCHECK(!read_callback_.is_null());
   read_callback_.Run(result, io_buffer);
   read_callback_.Reset();
-}
-
-void TCPSocket::OnWriteComplete(int result) {
-  DCHECK(!write_callback_.is_null());
-  write_callback_.Run(result);
-  write_callback_.Reset();
 }
 
 }  // namespace extensions

@@ -95,34 +95,13 @@ void UDPSocket::Read(int count,
     OnReadComplete(io_buffer, result);
 }
 
-void UDPSocket::Write(scoped_refptr<net::IOBuffer> io_buffer,
-                      int byte_count,
-                      const CompletionCallback& callback) {
-  DCHECK(!callback.is_null());
-
-  if (!write_callback_.is_null()) {
-    // TODO(penghuang): Put requests in a pending queue to support multiple
-    // write calls.
-    callback.Run(net::ERR_IO_PENDING);
-    return;
-  } else {
-    write_callback_ = callback;
-  }
-
-  int result = net::ERR_FAILED;
-  do {
-    if (!socket_.is_connected()) {
-      result = net::ERR_SOCKET_NOT_CONNECTED;
-      break;
-    }
-
-    result = socket_.Write(
-        io_buffer.get(), byte_count,
-        base::Bind(&UDPSocket::OnWriteComplete, base::Unretained(this)));
-  } while (false);
-
-  if (result != net::ERR_IO_PENDING)
-    OnWriteComplete(result);
+int UDPSocket::WriteImpl(net::IOBuffer* io_buffer,
+                         int io_buffer_size,
+                         const net::CompletionCallback& callback) {
+  if (!socket_.is_connected())
+    return net::ERR_SOCKET_NOT_CONNECTED;
+  else
+    return socket_.Write(io_buffer, io_buffer_size, callback);
 }
 
 void UDPSocket::RecvFrom(int count,
@@ -211,12 +190,6 @@ void UDPSocket::OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
   DCHECK(!read_callback_.is_null());
   read_callback_.Run(result, io_buffer);
   read_callback_.Reset();
-}
-
-void UDPSocket::OnWriteComplete(int result) {
-  DCHECK(!write_callback_.is_null());
-  write_callback_.Run(result);
-  write_callback_.Reset();
 }
 
 void UDPSocket::OnRecvFromComplete(scoped_refptr<net::IOBuffer> io_buffer,

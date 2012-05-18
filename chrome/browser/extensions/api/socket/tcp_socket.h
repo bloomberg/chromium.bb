@@ -34,9 +34,6 @@ class TCPSocket : public Socket {
   virtual int Bind(const std::string& address, int port) OVERRIDE;
   virtual void Read(int count,
                     const ReadCompletionCallback& callback) OVERRIDE;
-  virtual void Write(scoped_refptr<net::IOBuffer> io_buffer,
-                     int bytes,
-                     const CompletionCallback& callback) OVERRIDE;
   virtual void RecvFrom(int count,
                         const RecvFromCompletionCallback& callback) OVERRIDE;
   virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
@@ -49,11 +46,15 @@ class TCPSocket : public Socket {
       net::TCPClientSocket* tcp_client_socket,
       APIResourceEventNotifier* event_notifier);
 
+ protected:
+  virtual int WriteImpl(net::IOBuffer* io_buffer,
+                        int io_buffer_size,
+                        const net::CompletionCallback& callback) OVERRIDE;
+
  private:
-  virtual void OnConnectComplete(int result);
-  virtual void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
-                              int result);
-  virtual void OnWriteComplete(int result);
+  void OnConnectComplete(int result);
+  void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
+                      int result);
 
   TCPSocket(net::TCPClientSocket* tcp_client_socket,
             APIResourceEventNotifier* event_notifier);
@@ -63,8 +64,6 @@ class TCPSocket : public Socket {
   CompletionCallback connect_callback_;
 
   ReadCompletionCallback read_callback_;
-
-  CompletionCallback write_callback_;
 };
 
 }  //  namespace extensions
