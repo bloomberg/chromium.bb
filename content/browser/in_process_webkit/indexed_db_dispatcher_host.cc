@@ -503,7 +503,6 @@ bool IndexedDBDispatcherHost::IndexDispatcherHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::IndexDispatcherHost,
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexName, OnName)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexStoreName, OnStoreName)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexKeyPath, OnKeyPath)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexUnique, OnUnique)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexMultiEntry, OnMultiEntry)
@@ -527,12 +526,6 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::Send(
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnName(
     int32 object_id, string16* name) {
   parent_->SyncGetter<string16>(&map_, object_id, name, &WebIDBIndex::name);
-}
-
-void IndexedDBDispatcherHost::IndexDispatcherHost::OnStoreName(
-    int32 object_id, string16* store_name) {
-  parent_->SyncGetter<string16>(
-      &map_, object_id, store_name, &WebIDBIndex::storeName);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnKeyPath(

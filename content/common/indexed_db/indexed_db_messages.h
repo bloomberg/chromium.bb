@@ -377,11 +377,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexName,
                             int32, /* idb_index_id */
                             string16 /* name */)
 
-// WebIDBIndex::storeName() message.
-IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexStoreName,
-                            int32, /* idb_index_id */
-                            string16 /* store_name */)
-
 // WebIDBIndex::keyPath() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_IndexKeyPath,
                             int32, /* idb_index_id */

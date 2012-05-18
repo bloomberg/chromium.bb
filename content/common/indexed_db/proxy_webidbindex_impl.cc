@@ -40,13 +40,6 @@ WebString RendererWebIDBIndexImpl::name() const {
   return result;
 }
 
-WebString RendererWebIDBIndexImpl::storeName() const {
-  string16 result;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_IndexStoreName(idb_index_id_, &result));
-  return result;
-}
-
 WebIDBKeyPath RendererWebIDBIndexImpl::keyPath() const {
   IndexedDBKeyPath result;
   IndexedDBDispatcher::Send(
