@@ -2055,12 +2055,6 @@
             ['exclude', '^browser/notifications/'],
           ],
         }],
-        ['enable_web_intents==0', {
-          'sources/': [
-            ['exclude', '^browser/intents'],
-            ['exclude', '^browser/ui/intents'],
-          ],
-        }],
         ['safe_browsing==1', {
           'defines': [
             'ENABLE_SAFE_BROWSING',

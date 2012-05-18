@@ -4492,12 +4492,6 @@
             ['exclude', '^browser/notifications/'],
           ],
         }],
-        ['enable_web_intents==0', {
-          'sources/': [
-            ['exclude', '^browser/intents'],
-            ['exclude', '^browser/ui/intents'],
-          ],
-        }],
         ['enable_themes==0', {
           'sources!': [
             'browser/sync/glue/theme_change_processor.cc',
