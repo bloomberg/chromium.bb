@@ -67,7 +67,6 @@ class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
     self.options.prebuilts = False
 
     self.mox.StubOutWithMock(cbuildbot, '_GetChromiteTrackingBranch')
-    cbuildbot._GetChromiteTrackingBranch().MultipleTimes().AndReturn('master')
     self.mox.StubOutWithMock(stages.SyncStage, 'HandleSkip')
     stages.SyncStage.HandleSkip()
 
@@ -92,7 +91,7 @@ class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
-    cbuildbot.SimpleBuilder(self.options, self.build_config).Run()
+    cbuildbot.SimpleBuilder(self.options, self.build_config, 'master').Run()
 
     self.assertTrue('CHROMEOS_OFFICIAL' in os.environ)
 
@@ -122,7 +121,7 @@ class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
-    cbuildbot.SimpleBuilder(self.options, self.build_config).Run()
+    cbuildbot.SimpleBuilder(self.options, self.build_config, 'master').Run()
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 

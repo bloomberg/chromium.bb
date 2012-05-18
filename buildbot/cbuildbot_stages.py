@@ -26,6 +26,7 @@ from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import osutils
 
 _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
@@ -141,17 +142,85 @@ class PatchChangesStage(bs.BuilderStage):
     bs.BuilderStage.__init__(self, options, build_config)
     self.patch_pool = patch_pool
 
-  def _PerformStage(self):
+  def _ApplyPatches(self, apply_func):
+    """Apply patches using apply_func.
+
+    Args:
+      apply_func: Called for every patch to apply it.  Takes in one argument,
+                  which is the patch object to apply.
+    """
     for patch in self.patch_pool.local_patches:
-      patch.Apply(self._build_root)
+      apply_func(patch)
 
     for patch in self.patch_pool.remote_patches:
       cros_lib.PrintBuildbotStepText(str(patch))
-      patch.Apply(self._build_root)
+      apply_func(patch)
 
     for patch in self.patch_pool.gerrit_patches:
       cros_lib.PrintBuildbotLink(str(patch), patch.url)
+      apply_func(patch)
+
+  def _PerformStage(self):
+    def apply_func(patch):
       patch.Apply(self._build_root)
+
+    self._ApplyPatches(apply_func)
+
+
+class BootstrapStage(PatchChangesStage):
+  """Stage that patches a chromite repo and re-executes inside it.
+
+  Attributes:
+    returncode - the returncode of the cbuildbot re-execution.  Valid after
+                 calling stage.Run().
+  """
+  option_name = 'bootstrap'
+
+  def __init__(self, *args, **kwargs):
+    super(BootstrapStage, self).__init__(*args, **kwargs)
+    self.returncode = None
+
+  #pylint: disable=E1101
+  @osutils.TempDirDecorator
+  def _PerformStage(self):
+    def apply_func(patch):
+      patch.ApplyIntoGitRepo(chromite_dir, self._target_manifest_branch)
+
+    # The plan for the builders is to use master branch to bootstrap other
+    # branches. Now, if we wanted to test patches for both the bootstrap code
+    # (on master) and the branched chromite (say, R20), we need to filter the
+    # patches by branch.
+    filter_branch = self._target_manifest_branch
+    if self._options.test_bootstrap:
+      filter_branch = 'master'
+
+    self.patch_pool = self.patch_pool.Filter(tracking_branch=filter_branch)
+
+    chromite_dir = os.path.join(self.tempdir, 'chromite')
+    reference_repo = os.path.join(constants.SOURCE_ROOT, 'chromite', '.git')
+    repository.CloneGitRepo(chromite_dir, constants.CHROMITE_URL,
+                            reference=reference_repo)
+    cros_lib.RunCommand(['git', 'checkout', filter_branch], cwd=chromite_dir)
+    self._ApplyPatches(apply_func)
+
+    extra_params = ['--sourceroot=%s' % self._options.sourceroot]
+    argv = sys.argv[1:]
+    if '--test-bootstrap' in argv:
+      # We don't want re-executed instance to see this.
+      argv = [a for a in argv if a != '--test-bootstrap']
+    else:
+      # If we've already done the desired number of bootstraps, disable
+      # bootstrapping for the next execution.
+      extra_params.append('--nobootstrap')
+
+    cbuildbot_path = constants.PATH_TO_CBUILDBOT
+    if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):
+      cbuildbot_path = 'chromite/buildbot/cbuildbot'
+
+    cmd = [cbuildbot_path] + argv + extra_params
+    result_obj = cros_lib.RunCommand(cmd, cwd=self.tempdir, kill_timeout=30,
+                                     error_code_ok=True)
+    self.returncode = result_obj.returncode
 
 
 class SyncStage(bs.BuilderStage):

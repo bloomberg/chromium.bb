@@ -6,8 +6,32 @@
 
 import datetime
 import math
+import os
 
 from chromite.lib import cros_build_lib as cros_lib
+
+
+def _GetCheckpointFile(buildroot):
+  return os.path.join(buildroot, '.completed_stages')
+
+
+def WriteCheckpoint(buildroot):
+  """Drops a completed stages file with current state."""
+  completed_stages_file = _GetCheckpointFile(buildroot)
+  with open(completed_stages_file, 'w+') as save_file:
+    Results.SaveCompletedStages(save_file)
+
+
+def LoadCheckpoint(buildroot):
+  """Restore completed stage info from checkpoint file."""
+  completed_stages_file = _GetCheckpointFile(buildroot)
+  if not os.path.exists(completed_stages_file):
+    cros_lib.Warning('Checkpoint file not found in buildroot %s' % buildroot)
+    return
+
+  with open(completed_stages_file, 'r') as load_file:
+    Results.RestoreCompletedStages(load_file)
+
 
 class _Results(object):
   """Static class that collects the results of our BuildStages as they run."""
