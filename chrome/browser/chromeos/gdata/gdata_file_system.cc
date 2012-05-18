@@ -595,6 +595,7 @@ void LoadProtoOnIOThreadPool(const FilePath& path,
   if (!file_util::ReadFileToString(path, &params->proto)) {
     LOG(WARNING) << "Proto file not found at " << path.value();
     params->load_error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return;
   }
   params->load_error = base::PLATFORM_FILE_OK;
 }
@@ -1007,9 +1008,9 @@ void GDataFileSystem::Initialize() {
 
 void GDataFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::AutoLock lock(lock_);
   ContentOrigin initial_origin = root_->origin();
   if (initial_origin == FROM_SERVER) {
-    base::AutoLock lock(lock_);
     root_->set_origin(REFRESHING);
     ReloadFeedFromServerIfNeeded(initial_origin,
                                  root_->largest_changestamp(),
@@ -1198,7 +1199,8 @@ void GDataFileSystem::OnGetAccountMetadata(
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error != base::PLATFORM_FILE_OK) {
     // Get changes starting from the next changestamp from what we have locally.
-    LoadFeedFromServer(local_changestamp + 1, 0,
+    LoadFeedFromServer(initial_origin,
+                       local_changestamp + 1, 0,
                        true,  /* should_fetch_multiple_feeds */
                        search_file_path,
                        std::string() /* no search query */,
@@ -1213,7 +1215,8 @@ void GDataFileSystem::OnGetAccountMetadata(
     account_metadata = AccountMetadataFeed::CreateFrom(*feed_data);
 
   if (!account_metadata.get()) {
-    LoadFeedFromServer(local_changestamp + 1, 0,
+    LoadFeedFromServer(initial_origin,
+                       local_changestamp + 1, 0,
                        true,  /* should_fetch_multiple_feeds */
                        search_file_path,
                        std::string() /* no search query */,
@@ -1255,7 +1258,8 @@ void GDataFileSystem::OnGetAccountMetadata(
   SaveFeed(feed_data.Pass(), FilePath(kAccountMetadataFile));
 
   // Load changes from the server.
-  LoadFeedFromServer(local_changestamp > 0 ? local_changestamp + 1 : 0,
+  LoadFeedFromServer(initial_origin,
+                     local_changestamp > 0 ? local_changestamp + 1 : 0,
                      account_metadata->largest_changestamp(),
                      true,  /* should_fetch_multiple_feeds */
                      search_file_path,
@@ -1266,6 +1270,7 @@ void GDataFileSystem::OnGetAccountMetadata(
 }
 
 void GDataFileSystem::LoadFeedFromServer(
+    ContentOrigin initial_origin,
     int start_changestamp,
     int root_feed_changestamp,
     bool should_fetch_multiple_feeds,
@@ -1288,6 +1293,7 @@ void GDataFileSystem::LoadFeedFromServer(
       search_query,
       base::Bind(&GDataFileSystem::OnGetDocuments,
                  ui_weak_ptr_,
+                 initial_origin,
                  feed_load_callback,
                  base::Owned(new GetDocumentsParams(start_changestamp,
                                                     root_feed_changestamp,
@@ -2980,7 +2986,10 @@ void GDataFileSystem::SearchAsyncOnUIThread(
   scoped_ptr<std::vector<DocumentFeed*> > feed_list(
       new std::vector<DocumentFeed*>);
 
-  LoadFeedFromServer(0, 0,  // We don't use change stamps when fetching search
+  base::AutoLock lock(lock_);
+  ContentOrigin initial_origin = root_->origin();
+  LoadFeedFromServer(initial_origin,
+                     0, 0,  // We don't use change stamps when fetching search
                             // data; we always fetch the whole result feed.
                      false,  // Stop fetching search results after first feed
                              // chunk to avoid displaying huge number of search
@@ -2992,7 +3001,8 @@ void GDataFileSystem::SearchAsyncOnUIThread(
                                 ui_weak_ptr_, callback));
 }
 
-void GDataFileSystem::OnGetDocuments(const LoadDocumentFeedCallback& callback,
+void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
+                                     const LoadDocumentFeedCallback& callback,
                                      GetDocumentsParams* params,
                                      GDataErrorCode status,
                                      scoped_ptr<base::Value> data) {
@@ -3005,6 +3015,11 @@ void GDataFileSystem::OnGetDocuments(const LoadDocumentFeedCallback& callback,
   }
 
   if (error != base::PLATFORM_FILE_OK) {
+    {
+      base::AutoLock lock(lock_);
+      root_->set_origin(initial_origin);
+    }
+
     if (!callback.is_null()) {
       callback.Run(params, error);
     }
@@ -3052,6 +3067,7 @@ void GDataFileSystem::OnGetDocuments(const LoadDocumentFeedCallback& callback,
         params->search_query,
         base::Bind(&GDataFileSystem::OnGetDocuments,
                    ui_weak_ptr_,
+                   initial_origin,
                    callback,
                    base::Owned(
                        new GetDocumentsParams(
@@ -3127,16 +3143,26 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   if (!params->should_load_from_server)
     return;
 
+  // Decide the |initial_origin| to pass to ReloadFeedFromServerIfNeeded().
+  // This is used to restore directory content origin to its initial value when
+  // we fail to retrieve the feed from server.
+  // By default, if directory content is not yet initialized, restore content
+  // origin to UNINITIALIZED in case of failure.
+  ContentOrigin initial_origin = UNINITIALIZED;
   {
     base::AutoLock lock(lock_);
-    if (root_->origin() != INITIALIZING)
+    if (root_->origin() != INITIALIZING) {
+      // If directory content is already initialized, restore content origin
+      // to FROM_CACHE in case of failure.
+      initial_origin = FROM_CACHE;
       root_->set_origin(REFRESHING);
+    }
   }
 
   // Kick of the retrieval of the feed from server. If we have previously
   // |reported| to the original callback, then we just need to refresh the
   // content without continuing search upon operation completion.
-  ReloadFeedFromServerIfNeeded(FROM_CACHE,
+  ReloadFeedFromServerIfNeeded(initial_origin,
                                local_changestamp,
                                params->search_file_path,
                                callback);

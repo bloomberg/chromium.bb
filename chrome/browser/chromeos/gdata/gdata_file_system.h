@@ -758,7 +758,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Callback for handling response from |GDataDocumentsService::GetDocuments|.
   // Invokes |callback| when done.
-  void OnGetDocuments(const LoadDocumentFeedCallback& callback,
+  void OnGetDocuments(ContentOrigin initial_origin,
+                      const LoadDocumentFeedCallback& callback,
                       GetDocumentsParams* params,
                       GDataErrorCode status,
                       scoped_ptr<base::Value> data);
@@ -936,7 +937,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // after we retrieve first feed chunk.
   // If invoked as a part of content search, query will be set in
   // |search_query|.
-  void LoadFeedFromServer(int start_changestamp,
+  void LoadFeedFromServer(ContentOrigin initial_origin,
+                          int start_changestamp,
                           int root_feed_changestamp,
                           bool should_fetch_multiple_feeds,
                           const FilePath& search_file_path,
