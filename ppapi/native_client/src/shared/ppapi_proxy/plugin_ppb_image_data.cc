@@ -141,14 +141,6 @@ PluginImageData::PluginImageData()
   memset(&desc_, 0, sizeof(desc_));
 }
 
-PluginImageData::~PluginImageData() {
-  Unmap();
-  if (shm_fd_ != -1) {
-    close(shm_fd_);
-    shm_fd_ = -1;
-  }
-}
-
 bool PluginImageData::InitFromBrowserResource(PP_Resource resource) {
   nacl_abi_size_t desc_size = static_cast<nacl_abi_size_t>(sizeof(desc_));
   int32_t success = PP_FALSE;
@@ -182,6 +174,14 @@ void PluginImageData::Unmap() {
   if (addr_) {
     munmap(addr_, ceil64k(shm_size_));
     addr_ = NULL;
+  }
+}
+
+PluginImageData::~PluginImageData() {
+  Unmap();
+  if (shm_fd_ != -1) {
+    close(shm_fd_);
+    shm_fd_ = -1;
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ namespace ppapi_proxy {
 //
 // Note: this class is intended to be sub-classed to handle specific content
 // types such as strings, dictionaries, or arrays.
-class ProxyVar : public nacl::RefCounted<ProxyVar> {
+class ProxyVar : public nacl::RefCountedThreadSafe<ProxyVar> {
  public:
   // The type of this cached object.  Simple types (int, bool, etc.) are not
   // cached.
@@ -38,15 +38,16 @@ class ProxyVar : public nacl::RefCounted<ProxyVar> {
   virtual ~ProxyVar() {}
 
  private:
-  friend class nacl::RefCounted<ProxyVar>;
+  friend class nacl::RefCountedThreadSafe<ProxyVar>;
+
   PP_VarType pp_var_type_;
   int64_t id_;
 
-  ProxyVar();  // Not implemented - do not use.
-  NACL_DISALLOW_COPY_AND_ASSIGN(ProxyVar);
-
   // A counter for unique ids.
   static int64_t unique_var_id;
+
+  ProxyVar();  // Not implemented - do not use.
+  NACL_DISALLOW_COPY_AND_ASSIGN(ProxyVar);
 };
 
 typedef scoped_refptr<ProxyVar> SharedProxyVar;

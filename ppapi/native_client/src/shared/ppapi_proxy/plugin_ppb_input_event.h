@@ -20,7 +20,6 @@ class PluginInputEvent : public PluginResource {
   // Init the PluginInputEvent resource with the given data. Assumes
   // character_text has been AddRefed if it's a string, and takes ownership.
   void Init(const InputEventData& input_event_data, PP_Var character_text);
-  virtual ~PluginInputEvent();
 
   // PluginResource implementation.
   virtual bool InitFromBrowserResource(PP_Resource /*resource*/) {
@@ -53,12 +52,15 @@ class PluginInputEvent : public PluginResource {
   PP_Bool SetUsbKeyCode(uint32_t usb_key_code);
   uint32_t GetUsbKeyCode() const;
 
- private:
-  IMPLEMENT_RESOURCE(PluginInputEvent);
-  NACL_DISALLOW_COPY_AND_ASSIGN(PluginInputEvent);
+ protected:
+  virtual ~PluginInputEvent();
 
+ private:
   InputEventData input_event_data_;
   PP_Var character_text_;  // Undefined if this is not a character event.
+
+  IMPLEMENT_RESOURCE(PluginInputEvent);
+  NACL_DISALLOW_COPY_AND_ASSIGN(PluginInputEvent);
 };
 
 }  // namespace ppapi_proxy

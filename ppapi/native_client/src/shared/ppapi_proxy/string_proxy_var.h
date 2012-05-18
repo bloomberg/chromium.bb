@@ -35,6 +35,9 @@ class StringProxyVar : public ProxyVar {
         static_cast<StringProxyVar*>(proxy_var.get()));
   }
 
+ protected:
+  virtual ~StringProxyVar() {}
+
  private:
   std::string contents_;
 };

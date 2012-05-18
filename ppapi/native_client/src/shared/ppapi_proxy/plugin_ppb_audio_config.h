@@ -18,6 +18,9 @@ class PluginAudioConfig : public PluginResource {
   // Returns the 1.0 interface to support backwards-compatibility.
   static const PPB_AudioConfig_1_0* GetInterface1_0();
 
+ protected:
+  virtual ~PluginAudioConfig() {}
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginAudioConfig);
 };

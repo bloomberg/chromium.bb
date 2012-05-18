@@ -29,7 +29,6 @@ namespace ppapi_proxy {
 class PluginGraphics3D : public PluginResource {
  public:
   PluginGraphics3D();
-  virtual ~PluginGraphics3D();
 
   static const PPB_Graphics3D* GetInterface();
   static const PPB_OpenGLES2* GetOpenGLESInterface();
@@ -66,8 +65,13 @@ class PluginGraphics3D : public PluginResource {
     return implFromResourceSlow(graphics3d_id);
   }
 
+ protected:
+  virtual ~PluginGraphics3D();
 
  private:
+  static gpu::gles2::GLES2Implementation* implFromResourceSlow(
+      PP_Resource context);
+
   // TODO(nfullagar): make cached_* variables TLS once 64bit NaCl is faster,
   // and the proxy has support for being called off the main thread.
   // see: http://code.google.com/p/chromium/issues/detail?id=99217
@@ -80,9 +84,6 @@ class PluginGraphics3D : public PluginResource {
   scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   PP_Instance instance_id_;
-
-  static gpu::gles2::GLES2Implementation* implFromResourceSlow(
-      PP_Resource context);
 
   IMPLEMENT_RESOURCE(PluginGraphics3D);
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginGraphics3D);

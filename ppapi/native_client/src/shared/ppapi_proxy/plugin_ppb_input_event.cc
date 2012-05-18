@@ -411,11 +411,6 @@ void PluginInputEvent::Init(const InputEventData& input_event_data,
   character_text_ = character_text;
 }
 
-PluginInputEvent::~PluginInputEvent() {
-  // Release the character text.  This is a no-op if it's not a string.
-  PPBVarInterface()->Release(character_text_);
-}
-
 PP_InputEvent_Type PluginInputEvent::GetType() const {
   return input_event_data_.event_type;
 }
@@ -472,6 +467,11 @@ PP_Bool PluginInputEvent::SetUsbKeyCode(uint32_t usb_key_code) {
 
 uint32_t PluginInputEvent::GetUsbKeyCode() const {
   return input_event_data_.usb_key_code;
+}
+
+PluginInputEvent::~PluginInputEvent() {
+  // Release the character text.  This is a no-op if it's not a string.
+  PPBVarInterface()->Release(character_text_);
 }
 
 }  // namespace ppapi_proxy

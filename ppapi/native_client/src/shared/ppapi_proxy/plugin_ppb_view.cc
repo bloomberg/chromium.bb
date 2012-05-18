@@ -82,11 +82,7 @@ PP_Bool GetClipRect(PP_Resource resource, PP_Rect* clip) {
 
 }  // namespace
 
-PluginView::PluginView() {
-}
-
-PluginView::~PluginView() {
-}
+PluginView::PluginView() {}
 
 void PluginView::Init(const ViewData& view_data) {
   view_data_ = view_data;
@@ -103,5 +99,7 @@ const PPB_View* PluginView::GetInterface() {
   };
   return &view_interface;
 }
+
+PluginView::~PluginView() {}
 
 }  // namespace ppapi_proxy

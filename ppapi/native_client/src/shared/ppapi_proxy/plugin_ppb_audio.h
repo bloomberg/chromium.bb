@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,6 @@ enum PluginAudioState {
 class PluginAudio : public PluginResource {
  public:
   PluginAudio();
-  virtual ~PluginAudio();
   void StreamCreated(NaClSrpcImcDescType socket,
       NaClSrpcImcDescType shm, size_t shm_size);
   void set_state(PluginAudioState state) { state_ = state; }
@@ -45,6 +44,10 @@ class PluginAudio : public PluginResource {
   static void AudioThread(void* self);
   static const PPB_Audio* GetInterface();
   virtual bool InitFromBrowserResource(PP_Resource resource);
+
+ protected:
+  virtual ~PluginAudio();
+
  private:
   PP_Resource resource_;
   NaClSrpcImcDescType socket_;
@@ -56,6 +59,7 @@ class PluginAudio : public PluginResource {
   bool thread_active_;
   PPB_Audio_Callback user_callback_;
   void* user_data_;
+
   IMPLEMENT_RESOURCE(PluginAudio);
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginAudio);
 };

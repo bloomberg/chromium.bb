@@ -34,6 +34,9 @@ class ArrayBufferProxyVar : public ProxyVar {
         static_cast<ArrayBufferProxyVar*>(proxy_var.get()));
   }
 
+ protected:
+  virtual ~ArrayBufferProxyVar() {}
+
  private:
   std::vector<uint8_t> buffer_;
 };

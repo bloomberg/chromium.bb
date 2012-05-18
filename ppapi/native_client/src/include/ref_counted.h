@@ -65,10 +65,9 @@ class RefCountedBase {
 // You should always make your destructor private, to avoid any code deleting
 // the object accidently while there are references to it.
 template <class T>
-class RefCounted : public subtle::RefCountedBase {
+class RefCountedThreadSafe : public subtle::RefCountedBase {
  public:
-  RefCounted() { }
-  ~RefCounted() { }
+  RefCountedThreadSafe() {}
 
   void AddRef() const {
     subtle::RefCountedBase::AddRef();
@@ -80,9 +79,12 @@ class RefCounted : public subtle::RefCountedBase {
     }
   }
 
+ protected:
+  ~RefCountedThreadSafe() {}
+
  private:
-  RefCounted(const RefCounted<T>&);
-  void operator=(const RefCounted<T>&);
+  RefCountedThreadSafe(const RefCountedThreadSafe<T>&);
+  void operator=(const RefCountedThreadSafe<T>&);
 };
 
 //
@@ -90,7 +92,8 @@ class RefCounted : public subtle::RefCountedBase {
 // scoped_refptrs<>.
 //
 template<typename T>
-class RefCountedData : public nacl::RefCounted< nacl::RefCountedData<T> > {
+class RefCountedData
+    : public RefCountedThreadSafe<RefCountedData<T> > {
  public:
   RefCountedData() : data() {}
   RefCountedData(const T& in_value) : data(in_value) {}
@@ -151,8 +154,7 @@ class RefCountedData : public nacl::RefCounted< nacl::RefCountedData<T> > {
 template <class T>
 class scoped_refptr {
  public:
-  scoped_refptr() : ptr_((T*)0) {
-  }
+  scoped_refptr() : ptr_((T*)0) {}
 
   scoped_refptr(T* p) : ptr_(p) {
     if (ptr_)

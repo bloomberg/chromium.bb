@@ -8,16 +8,12 @@
 #if defined(__native_client__)
 #include "native_client/src/include/ref_counted.h"
 namespace gpu {
-template <class T>
-struct RefCountedThreadSafe : public nacl::RefCounted<T> {
-};
+using nacl::RefCountedThreadSafe;
 }
 #else
 #include "base/memory/ref_counted.h"
 namespace gpu {
-template <class T>
-struct RefCountedThreadSafe : public base::RefCountedThreadSafe<T> {
-};
+using base::RefCountedThreadSafe;
 }
 #endif
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,10 +29,9 @@ namespace ppapi_proxy {
 FOR_ALL_RESOURCES(DECLARE_RESOURCE_CLASS)
 #undef DECLARE_RESOURCE_CLASS
 
-class PluginResource : public nacl::RefCounted<PluginResource> {
+class PluginResource : public nacl::RefCountedThreadSafe<PluginResource> {
  public:
   PluginResource();
-  virtual ~PluginResource();
 
   // Returns NULL if the resource is invalid or is a different type.
   template<typename T>
@@ -69,9 +68,13 @@ class PluginResource : public nacl::RefCounted<PluginResource> {
   template <typename T> T* Cast() { return NULL; }
 
  protected:
+  virtual ~PluginResource();
+
   virtual bool InitFromBrowserResource(PP_Resource resource) = 0;
 
  private:
+  friend class nacl::RefCountedThreadSafe<PluginResource>;
+
   // Type-specific getters for individual resource types. These will return
   // NULL if the resource does not match the specified type. Used by the Cast()
   // function.

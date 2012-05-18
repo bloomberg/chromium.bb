@@ -1,6 +1,6 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can
-// be found in the LICENSE file.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_IMAGE_DATA_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_IMAGE_DATA_H_
@@ -15,7 +15,6 @@ namespace ppapi_proxy {
 class PluginImageData : public PluginResource {
  public:
   PluginImageData();
-  virtual ~PluginImageData();
 
   static const PPB_ImageData* GetInterface();
 
@@ -24,13 +23,18 @@ class PluginImageData : public PluginResource {
   void Unmap();
 
   const PP_ImageDataDesc& desc() const { return desc_; }
+
+ protected:
+  virtual ~PluginImageData();
+
  private:
-  IMPLEMENT_RESOURCE(PluginImageData);
-  NACL_DISALLOW_COPY_AND_ASSIGN(PluginImageData);
   PP_ImageDataDesc desc_;
   int shm_fd_;
   int32_t shm_size_;
   void* addr_;
+
+  IMPLEMENT_RESOURCE(PluginImageData);
+  NACL_DISALLOW_COPY_AND_ASSIGN(PluginImageData);
 };
 
 }  // namespace ppapi_proxy
