@@ -44,9 +44,40 @@ var testGetPorts = function() {
   chrome.experimental.serial.getPorts(onGetPorts);
 };
 
+var testMaybeOpenPort = function() {
+  var onGetPorts = function(ports) {
+    // We're testing as much as we can here without actually assuming the
+    // existence of attached hardware.
+    //
+    // TODO(miket): is there any chance that just opening a serial port but not
+    // doing anything could be harmful to devices attached to a developer's
+    // machine?
+    if (ports.length > 0) {
+      var closedCount = ports.length;
+      var onClose = function(r) {
+        if (--closedCount == 0) {
+          chrome.test.succeed();
+        }
+      };
+      var onOpen = function(connectionInfo) {
+        chrome.experimental.serial.close(connectionInfo.connectionId,
+                                         onClose);
+      };
+      for (var i = 0; i < ports.length; i++) {
+        chrome.experimental.serial.open(ports[i], onOpen);
+      }
+    } else {
+      // There aren't any valid ports on this machine. That's OK.
+      chrome.test.succeed();
+    }
+  }
+
+  chrome.experimental.serial.getPorts(onGetPorts);
+};
+
 var onMessageReply = function(message) {
   serialPort = message;
-  var generalTests = [ testGetPorts ];
+  var generalTests = [ testGetPorts, testMaybeOpenPort ];
 
   chrome.test.runTests(generalTests);
   if (message != 'none') {

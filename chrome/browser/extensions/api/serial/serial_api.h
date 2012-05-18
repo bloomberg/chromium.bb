@@ -14,6 +14,8 @@
 
 namespace extensions {
 
+class APIResourceEventNotifier;
+
 extern const char kConnectionIdKey[];
 
 class SerialGetPortsFunction : public AsyncAPIFunction {
@@ -42,12 +44,18 @@ class SerialOpenFunction : public AsyncAPIFunction {
 
   // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
   virtual void Work() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 
  private:
+  void OpenPortOnIOThread();
+
   int src_id_;
   std::string port_;
+
+  // SerialConnection will take ownership.
+  APIResourceEventNotifier* event_notifier_;
 };
 
 class SerialCloseFunction : public AsyncAPIFunction {

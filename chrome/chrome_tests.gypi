@@ -1177,7 +1177,7 @@
         'browser/extensions/api/omnibox/omnibox_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
         'browser/extensions/api/proxy/proxy_api_helpers_unittest.cc',
-        'browser/extensions/api/serial/serial_connection_unittest.cc',
+        'browser/extensions/api/serial/serial_port_enumerator_unittest.cc',
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
         'browser/extensions/api/web_navigation/web_navigation_unittest.cc',
         'browser/extensions/api/web_request/web_request_api_unittest.cc',

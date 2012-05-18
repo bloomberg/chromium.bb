@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/api_resource_controller.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
+#include "chrome/browser/extensions/api/serial/serial_port_enumerator.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -24,7 +25,7 @@ const char kBytesWrittenKey[] = "bytesWritten";
 SerialGetPortsFunction::SerialGetPortsFunction() {}
 
 bool SerialGetPortsFunction::Prepare() {
-  work_thread_id_ = BrowserThread::FILE;
+  set_work_thread_id(BrowserThread::FILE);
   return true;
 }
 
@@ -32,9 +33,9 @@ void SerialGetPortsFunction::Work() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   ListValue* ports = new ListValue();
-  SerialConnection::StringSet port_names =
-      SerialConnection::GenerateValidSerialPortNames();
-  SerialConnection::StringSet::const_iterator i = port_names.begin();
+  SerialPortEnumerator::StringSet port_names =
+      SerialPortEnumerator::GenerateValidSerialPortNames();
+  SerialPortEnumerator::StringSet::const_iterator i = port_names.begin();
   while (i != port_names.end()) {
     ports->Append(Value::CreateStringValue(*i++));
   }
@@ -46,19 +47,46 @@ bool SerialGetPortsFunction::Respond() {
   return true;
 }
 
-SerialOpenFunction::SerialOpenFunction() : src_id_(-1) {}
+SerialOpenFunction::SerialOpenFunction()
+    : src_id_(-1) {}
 
 bool SerialOpenFunction::Prepare() {
+  set_work_thread_id(BrowserThread::FILE);
+
   size_t argument_position = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(argument_position++, &port_));
   src_id_ = ExtractSrcId(argument_position);
+  event_notifier_ = CreateEventNotifier(src_id_);
+
   return true;
 }
 
+void SerialOpenFunction::AsyncWorkStart() {
+  Work();
+}
+
 void SerialOpenFunction::Work() {
-  APIResourceEventNotifier* event_notifier = CreateEventNotifier(src_id_);
-  SerialConnection* serial_connection = new SerialConnection(port_,
-                                                             event_notifier);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  const SerialPortEnumerator::StringSet name_set(
+      SerialPortEnumerator::GenerateValidSerialPortNames());
+  if (SerialPortEnumerator::DoesPortExist(name_set, port_)) {
+    bool rv = BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&SerialOpenFunction::OpenPortOnIOThread, this));
+    DCHECK(rv);
+  } else {
+    DictionaryValue* result = new DictionaryValue();
+    result->SetInteger(kConnectionIdKey, -1);
+    result_.reset(result);
+    AsyncWorkCompleted();
+  }
+}
+
+void SerialOpenFunction::OpenPortOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  SerialConnection* serial_connection = new SerialConnection(
+      port_,
+      event_notifier_);
   CHECK(serial_connection);
   int id = controller()->AddAPIResource(serial_connection);
   CHECK(id);
@@ -73,6 +101,7 @@ void SerialOpenFunction::Work() {
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kConnectionIdKey, id);
   result_.reset(result);
+  AsyncWorkCompleted();
 }
 
 bool SerialOpenFunction::Respond() {

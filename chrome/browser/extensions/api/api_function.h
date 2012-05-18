@@ -18,7 +18,7 @@ class APIResourceController;
 class APIResourceEventNotifier;
 
 // AsyncAPIFunction provides convenient thread management for APIs that need to
-// do essentially all their work on the IO or FILE thread.
+// do essentially all their work on a thread other than the UI thread.
 class AsyncAPIFunction : public AsyncExtensionFunction {
  protected:
   AsyncAPIFunction();
@@ -28,10 +28,11 @@ class AsyncAPIFunction : public AsyncExtensionFunction {
   // thread.
   virtual bool Prepare() = 0;
 
-  // Do actual work. Guaranteed to happen on IO thread.
+  // Do actual work. Guaranteed to happen on the thread specified in
+  // work_thread_id_.
   virtual void Work();
 
-  // Start the asynchronous work. Guraranteed to happen on IO thread.
+  // Start the asynchronous work. Guraranteed to happen on requested thread.
   virtual void AsyncWorkStart();
 
   // Notify AsyncIOAPIFunction that the work is completed
@@ -54,13 +55,17 @@ class AsyncAPIFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  protected:
-  // If you don't want your Work() method to happen on the IO thread, then set
-  // this to the thread that you do want, preferably in Prepare().
-  content::BrowserThread::ID work_thread_id_;
+  void set_work_thread_id(content::BrowserThread::ID work_thread_id) {
+    work_thread_id_ = work_thread_id;
+  }
 
  private:
   void WorkOnWorkThread();
   void RespondOnUIThread();
+
+  // If you don't want your Work() method to happen on the IO thread, then set
+  // this to the thread that you do want, preferably in Prepare().
+  content::BrowserThread::ID work_thread_id_;
 
   ExtensionService* extension_service_;
 };

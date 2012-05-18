@@ -37,18 +37,4 @@ int SerialConnection::Write(scoped_refptr<net::IOBuffer> io_buffer,
   return -1;
 }
 
-// static
-SerialConnection::StringSet SerialConnection::GenerateValidPatterns() {
-  // TODO(miket): implement
-  StringSet valid_patterns;
-  return valid_patterns;
-}
-
-// static
-SerialConnection::StringSet SerialConnection::GenerateValidSerialPortNames() {
-  // TODO(miket): implement
-  StringSet valid_names;
-  return valid_names;
-}
-
 }  // namespace extensions

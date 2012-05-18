@@ -10,10 +10,4 @@ namespace extensions {
 
 const char kSerialConnectionNotFoundError[] = "Serial connection not found";
 
-// static
-bool SerialConnection::DoesPortExist(const StringSet& name_set,
-                                     const std::string& port_name) {
-  return name_set.count(port_name) == 1;
-}
-
 }  // namespace extensions

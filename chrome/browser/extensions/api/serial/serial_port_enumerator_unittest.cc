@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
-#include "chrome/browser/extensions/api/serial/serial_connection.h"
+#include "chrome/browser/extensions/api/serial/serial_port_enumerator.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(SerialConnectionTest, ValidPortNamePatterns) {
+TEST(SerialPortEnumeratorTest, ValidPortNamePatterns) {
 #if defined(OS_WIN)
     // TODO(miket): implement
 #else
-  const extensions::SerialConnection::StringSet port_patterns(
-      extensions::SerialConnection::GenerateValidPatterns());
+  const extensions::SerialPortEnumerator::StringSet port_patterns(
+      extensions::SerialPortEnumerator::GenerateValidPatterns());
 
   const char *kValidNames[] = {
     "/dev/867serial5309",
@@ -34,9 +34,9 @@ TEST(SerialConnectionTest, ValidPortNamePatterns) {
 #endif
 }
 
-TEST(SerialConnectionTest, InvalidPortNamePatterns) {
-  const extensions::SerialConnection::StringSet port_patterns(
-      extensions::SerialConnection::GenerateValidPatterns());
+TEST(SerialPortEnumeratorTest, InvalidPortNamePatterns) {
+  const extensions::SerialPortEnumerator::StringSet port_patterns(
+      extensions::SerialPortEnumerator::GenerateValidPatterns());
 
   const char *kInvalidNames[] = {
 #if defined(OS_WIN)
