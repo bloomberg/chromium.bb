@@ -722,14 +722,17 @@ def main():
     logging.debug('%s' % sys.argv)
     parser.error('Use only one argument which should be a .isolate file')
 
-  if options.mode == 'noop':
-    # This undocumented mode is to help transition since some builders do not
-    # have all the test data files checked out. Exit silently.
-    return 0
-
   # Make sure the paths make sense. On Windows, / and \ are often mixed together
   # in a path.
   result_file = os.path.abspath(options.result.replace('/', os.path.sep))
+
+  if options.mode == 'noop':
+    # This undocumented mode is to help transition since some builders do not
+    # have all the test data files checked out. Touch result_file and exit
+    # silently.
+    open(result_file, 'a').close()
+    return 0
+
   # input_file may be None.
   input_file = (
       os.path.abspath(args[0].replace('/', os.path.sep)) if args else None)

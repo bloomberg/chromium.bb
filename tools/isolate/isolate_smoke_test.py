@@ -73,6 +73,11 @@ def list_files_tree(directory):
   return sorted(actual)
 
 
+def calc_sha1(filepath):
+  """Calculates the SHA-1 hash for a file."""
+  return hashlib.sha1(open(filepath, 'rb').read()).hexdigest()
+
+
 class IsolateBase(unittest.TestCase):
   # To be defined by the subclass, it defines the amount of meta data saved by
   # isolate.py for each file. Should be one of (NO_INFO, STATS_ONLY, WITH_HASH).
@@ -125,10 +130,8 @@ class IsolateBase(unittest.TestCase):
 
     if self.LEVEL >= isolate.WITH_HASH:
       for filename in files:
-        # Calculate our hash.
-        h = hashlib.sha1()
-        h.update(open(os.path.join(root_dir, filename), 'rb').read())
-        files[filename][u'sha-1'] = unicode(h.hexdigest())
+        files[filename][u'sha-1'] = unicode(
+            calc_sha1(os.path.join(root_dir, filename)))
     return files
 
   def _expected_result(self, args, read_only):
@@ -648,8 +651,12 @@ class IsolateNoOutdir(IsolateBase):
   def test_hashtable(self):
     self._execute('hashtable', 'touch_root.isolate', [], False)
     files = [
-      os.path.join('hashtable', '99a015fd7df97416caf25576df502a70a3f32078'),
-      os.path.join('hashtable', 'ddcd30d62a6df9964a43541b14536ddaeafc8598'),
+      os.path.join(
+          'hashtable', calc_sha1(os.path.join(ROOT_DIR, 'isolate.py'))),
+      os.path.join(
+          'hashtable',
+          calc_sha1(
+              os.path.join(ROOT_DIR, 'data', 'isolate', 'touch_root.py'))),
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
       os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
