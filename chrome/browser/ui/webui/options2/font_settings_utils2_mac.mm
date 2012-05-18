@@ -34,9 +34,9 @@ static void ValidateFontFamily(PrefService* prefs,
 
 // static
 void FontSettingsUtilities::ValidateSavedFonts(PrefService* prefs) {
-  ValidateFontFamily(prefs, prefs::kWebKitGlobalSerifFontFamily);
-  ValidateFontFamily(prefs, prefs::kWebKitGlobalSansSerifFontFamily);
-  ValidateFontFamily(prefs, prefs::kWebKitGlobalFixedFontFamily);
+  ValidateFontFamily(prefs, prefs::kWebKitSerifFontFamily);
+  ValidateFontFamily(prefs, prefs::kWebKitSansSerifFontFamily);
+  ValidateFontFamily(prefs, prefs::kWebKitFixedFontFamily);
 }
 
 }  // namespace options2

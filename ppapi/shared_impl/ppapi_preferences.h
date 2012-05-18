@@ -5,8 +5,8 @@
 #ifndef PPAPI_SHARED_IMPL_PPAPI_PREFERENCES_H_
 #define PPAPI_SHARED_IMPL_PPAPI_PREFERENCES_H_
 
-#include "base/string16.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
+#include "webkit/glue/webpreferences.h"
 
 namespace webkit_glue {
 struct WebPreferences;
@@ -20,10 +20,10 @@ struct PPAPI_SHARED_EXPORT Preferences {
   explicit Preferences(const webkit_glue::WebPreferences& prefs);
   ~Preferences();
 
-  string16 standard_font_family;
-  string16 fixed_font_family;
-  string16 serif_font_family;
-  string16 sans_serif_font_family;
+  webkit_glue::WebPreferences::ScriptFontFamilyMap standard_font_family_map;
+  webkit_glue::WebPreferences::ScriptFontFamilyMap fixed_font_family_map;
+  webkit_glue::WebPreferences::ScriptFontFamilyMap serif_font_family_map;
+  webkit_glue::WebPreferences::ScriptFontFamilyMap sans_serif_font_family_map;
   int default_font_size;
   int default_fixed_font_size;
 

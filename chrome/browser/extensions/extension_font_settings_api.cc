@@ -50,20 +50,9 @@ const char kOnFontChanged[] = "experimental.fontSettings.onFontChanged";
 const char kOnMinimumFontSizeChanged[] =
     "experimental.fontSettings.onMinimumFontSizeChanged";
 
-// Format for per-script font preference keys.
-// E.g., "webkit.webprefs.fonts.standard.Hrkt"
-const char kWebKitPerScriptFontPrefFormat[] = "webkit.webprefs.fonts.%s.%s";
-const char kWebKitPerScriptFontPrefPrefix[] = "webkit.webprefs.fonts.";
-
-// Format for global (non per-script) font preference keys.
-// E.g., "webkit.webprefs.global.fixed_font_family"
-// Note: there are two meanings of "global" here. The "Global" in the const name
-// means "not per-script". The "global" in the key itself means "not per-tab"
-// (per-profile).
-const char kWebKitGlobalFontPrefFormat[] =
-    "webkit.webprefs.global.%s_font_family";
-const char kWebKitGlobalFontPrefPrefix[] = "webkit.webprefs.global.";
-const char kWebKitGlobalFontPrefSuffix[] = "_font_family";
+// Format for font preference keys.
+const char kWebKitFontPrefFormat[] = "webkit.webprefs.fonts.%s.%s";
+const char kWebKitFontPrefPrefix[] = "webkit.webprefs.fonts.";
 
 // Gets the font name preference path from |details| which contains key
 // |kGenericFamilyKey| and optionally |kScriptKey|.
@@ -72,18 +61,14 @@ bool GetFontNamePrefPath(DictionaryValue* details, std::string* pref_path) {
   if (!details->GetString(kGenericFamilyKey, &generic_family))
     return false;
 
-  if (details->HasKey(kScriptKey)) {
-    std::string script;
-    if (!details->GetString(kScriptKey, &script))
-      return false;
-    *pref_path = StringPrintf(kWebKitPerScriptFontPrefFormat,
-                                   generic_family.c_str(),
-                                   script.c_str());
-  } else {
-    *pref_path = StringPrintf(kWebKitGlobalFontPrefFormat,
-                                   generic_family.c_str());
-  }
-
+  std::string script;
+  if (!details->HasKey(kScriptKey))
+    script = prefs::kWebKitCommonScript;
+  else if (!details->GetString(kScriptKey, &script))
+    return false;
+  *pref_path = StringPrintf(kWebKitFontPrefFormat,
+                            generic_family.c_str(),
+                            script.c_str());
   return true;
 }
 
@@ -91,25 +76,16 @@ bool GetFontNamePrefPath(DictionaryValue* details, std::string* pref_path) {
 bool ParseFontNamePrefPath(std::string pref_path,
                            std::string* generic_family,
                            std::string* script) {
-  if (StartsWithASCII(pref_path, kWebKitPerScriptFontPrefPrefix, true)) {
-    size_t start = strlen(kWebKitPerScriptFontPrefPrefix);
-    size_t pos = pref_path.find('.', start);
-    if (pos == std::string::npos || pos + 1 == pref_path.length())
-      return false;
-    *generic_family = pref_path.substr(start, pos - start);
-    *script = pref_path.substr(pos + 1);
-    return true;
-  } else if (StartsWithASCII(pref_path, kWebKitGlobalFontPrefPrefix, true) &&
-             EndsWith(pref_path, kWebKitGlobalFontPrefSuffix, true)) {
-    size_t start = strlen(kWebKitGlobalFontPrefPrefix);
-    size_t pos = pref_path.find('_', start);
-    if (pos == std::string::npos || pos + 1 == pref_path.length())
-      return false;
-    *generic_family = pref_path.substr(start, pos - start);
-    *script = "";
-    return true;
-  }
-  return false;
+  if (!StartsWithASCII(pref_path, kWebKitFontPrefPrefix, true))
+    return false;
+
+  size_t start = strlen(kWebKitFontPrefPrefix);
+  size_t pos = pref_path.find('.', start);
+  if (pos == std::string::npos || pos + 1 == pref_path.length())
+    return false;
+  *generic_family = pref_path.substr(start, pos - start);
+  *script = pref_path.substr(pos + 1);
+  return true;
 }
 
 // Returns the localized name of a font so that it can be matched within the
@@ -160,12 +136,6 @@ void ExtensionFontSettingsEventRouter::Init() {
                    kOnDefaultCharacterSetChanged,
                    kCharsetKey);
 
-  registrar_.Add(prefs::kWebKitGlobalStandardFontFamily, this);
-  registrar_.Add(prefs::kWebKitGlobalSerifFontFamily, this);
-  registrar_.Add(prefs::kWebKitGlobalSansSerifFontFamily, this);
-  registrar_.Add(prefs::kWebKitGlobalFixedFontFamily, this);
-  registrar_.Add(prefs::kWebKitGlobalCursiveFontFamily, this);
-  registrar_.Add(prefs::kWebKitGlobalFantasyFontFamily, this);
   RegisterFontFamilyMapObserver(&registrar_,
                                 prefs::kWebKitStandardFontFamilyMap, this);
   RegisterFontFamilyMapObserver(&registrar_,
@@ -244,8 +214,7 @@ void ExtensionFontSettingsEventRouter::OnFontNamePrefChanged(
   args.Append(dict);
   dict->SetString(kFontNameKey, font_name);
   dict->SetString(kGenericFamilyKey, generic_family);
-  if (!script.empty())
-    dict->SetString(kScriptKey, script);
+  dict->SetString(kScriptKey, script);
 
   extension_preference_helpers::DispatchEventToExtensions(
       profile_,
@@ -350,7 +319,7 @@ bool SetFontFunction::RunImpl() {
   std::string font_name;
   EXTENSION_FUNCTION_VALIDATE(details->GetString(kFontNameKey, &font_name));
 
-  // Ensure |pref_path| really is for a registered per-script font pref.
+  // Ensure |pref_path| really is for a registered font pref.
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 

@@ -49,6 +49,7 @@ chrome.test.runTests([
       chrome.test.assertEq({
         genericFamily: genericFamily,
         fontName: fontName,
+        script: 'Zyyy',
         levelOfControl: CONTROLLED_BY_THIS_EXTENSION
       }, details);
     });
@@ -120,7 +121,7 @@ chrome.test.runTests([
         'fontName and localizedName properties.';
     fs.getFontList(chrome.test.callbackPass(function(value) {
       chrome.test.assertTrue(value.length > 0,
-                             "Font list is not expected to be empty.");
+                             'Font list is not expected to be empty.');
       chrome.test.assertEq('string', typeof(value[0].fontName), message);
       chrome.test.assertEq('string', typeof(value[0].localizedName), message);
     }));
@@ -205,11 +206,13 @@ chrome.test.runTests([
   // This test may fail on Windows if the font is not installed on the
   // system. See crbug.com/122303
   function clearGlobalFont() {
+    var script = 'Zyyy';
     var genericFamily = 'sansserif';
     var fontName = 'Arial';
 
     chrome.test.listenOnce(fs.onFontChanged, function(details) {
       chrome.test.assertEq({
+        script: script,
         genericFamily: genericFamily,
         fontName: fontName,
         levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION

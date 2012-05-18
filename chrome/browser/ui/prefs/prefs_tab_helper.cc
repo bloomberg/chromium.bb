@@ -36,24 +36,6 @@ static void RegisterFontsAndCharsetPrefs(PrefService* prefs) {
   prefs->RegisterLocalizedStringPref(prefs::kDefaultCharset,
                                      IDS_DEFAULT_ENCODING,
                                      PrefService::SYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamily,
-                                     IDS_STANDARD_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamily,
-                                     IDS_FIXED_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamily,
-                                     IDS_SERIF_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamily,
-                                     IDS_SANS_SERIF_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitCursiveFontFamily,
-                                     IDS_CURSIVE_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitFantasyFontFamily,
-                                     IDS_FANTASY_FONT_FAMILY,
-                                     PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
                                       IDS_DEFAULT_FONT_SIZE,
                                       PrefService::UNSYNCABLE_PREF);
@@ -66,6 +48,44 @@ static void RegisterFontsAndCharsetPrefs(PrefService* prefs) {
   prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumLogicalFontSize,
                                       IDS_MINIMUM_LOGICAL_FONT_SIZE,
                                       PrefService::UNSYNCABLE_PREF);
+
+  // These are only registered to be used in migration.
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitOldStandardFontFamily,
+                                     IDS_STANDARD_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitOldFixedFontFamily,
+                                     IDS_FIXED_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitOldSerifFontFamily,
+                                     IDS_SERIF_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitOldSansSerifFontFamily,
+                                     IDS_SANS_SERIF_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitOldCursiveFontFamily,
+                                     IDS_CURSIVE_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitOldFantasyFontFamily,
+                                     IDS_FANTASY_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalStandardFontFamily,
+                                     IDS_STANDARD_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalFixedFontFamily,
+                                     IDS_FIXED_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalSerifFontFamily,
+                                     IDS_SERIF_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalSansSerifFontFamily,
+                                     IDS_SANS_SERIF_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalCursiveFontFamily,
+                                     IDS_CURSIVE_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalFantasyFontFamily,
+                                     IDS_FANTASY_FONT_FAMILY,
+                                     PrefService::UNSYNCABLE_PREF);
 }
 
 // The list of prefs we want to observe.
@@ -75,20 +95,14 @@ const char* kPrefsToObserve[] = {
   prefs::kEnableReferrers,
   prefs::kWebKitAllowDisplayingInsecureContent,
   prefs::kWebKitAllowRunningInsecureContent,
-  prefs::kWebKitGlobalCursiveFontFamily,
   prefs::kWebKitGlobalDefaultFixedFontSize,
   prefs::kWebKitGlobalDefaultFontSize,
-  prefs::kWebKitGlobalFantasyFontFamily,
-  prefs::kWebKitGlobalFixedFontFamily,
   prefs::kWebKitGlobalJavascriptEnabled,
   prefs::kWebKitJavaEnabled,
   prefs::kWebKitGlobalLoadsImagesAutomatically,
   prefs::kWebKitGlobalMinimumFontSize,
   prefs::kWebKitGlobalMinimumLogicalFontSize,
   prefs::kWebKitGlobalPluginsEnabled,
-  prefs::kWebKitGlobalSansSerifFontFamily,
-  prefs::kWebKitGlobalSerifFontFamily,
-  prefs::kWebKitGlobalStandardFontFamily,
   prefs::kWebkitTabsToLinks,
   prefs::kWebKitUsesUniversalDetector
 };
@@ -243,26 +257,51 @@ const struct {
 } kPrefNamesToMigrate[] = {
   { prefs::kDefaultCharset,
     prefs::kGlobalDefaultCharset },
-  { prefs::kWebKitCursiveFontFamily,
-    prefs::kWebKitGlobalCursiveFontFamily },
   { prefs::kWebKitDefaultFixedFontSize,
     prefs::kWebKitGlobalDefaultFixedFontSize },
   { prefs::kWebKitDefaultFontSize,
     prefs::kWebKitGlobalDefaultFontSize },
-  { prefs::kWebKitFantasyFontFamily,
-    prefs::kWebKitGlobalFantasyFontFamily },
-  { prefs::kWebKitFixedFontFamily,
-    prefs::kWebKitGlobalFixedFontFamily },
   { prefs::kWebKitMinimumFontSize,
     prefs::kWebKitGlobalMinimumFontSize },
   { prefs::kWebKitMinimumLogicalFontSize,
     prefs::kWebKitGlobalMinimumLogicalFontSize },
-  { prefs::kWebKitSansSerifFontFamily,
-    prefs::kWebKitGlobalSansSerifFontFamily },
-  { prefs::kWebKitSerifFontFamily,
-    prefs::kWebKitGlobalSerifFontFamily },
-  { prefs::kWebKitStandardFontFamily,
-    prefs::kWebKitGlobalStandardFontFamily },
+
+  // Migrate prefs like "webkit.webprefs.standard_font_family" to
+  // "webkit.webprefs.fonts.standard.Zyyy". This moves the formerly
+  // "non-per-script" font prefs into the per-script font pref maps, as the
+  // entry for the "Common" script (Zyyy is the ISO 15924 script code for the
+  // Common script). The |from| prefs will exist if the migration to global
+  // prefs (for the per-tab pref mechanism, which has since been removed) never
+  // occurred.
+  { prefs::kWebKitOldCursiveFontFamily,
+    prefs::kWebKitCursiveFontFamily },
+  { prefs::kWebKitOldFantasyFontFamily,
+    prefs::kWebKitFantasyFontFamily },
+  { prefs::kWebKitOldFixedFontFamily,
+    prefs::kWebKitFixedFontFamily },
+  { prefs::kWebKitOldSansSerifFontFamily,
+    prefs::kWebKitSansSerifFontFamily },
+  { prefs::kWebKitOldSerifFontFamily,
+    prefs::kWebKitSerifFontFamily },
+  { prefs::kWebKitOldStandardFontFamily,
+    prefs::kWebKitStandardFontFamily },
+
+  // Migrate "global" prefs. These will exist if the migration to global prefs
+  // (for the per-tab pref mechanism, which has since been removed) occurred.
+  // In addition, this moves the formerly "non-per-script" font prefs into the
+  // per-script font pref maps, as above.
+  { prefs::kWebKitGlobalCursiveFontFamily,
+    prefs::kWebKitCursiveFontFamily },
+  { prefs::kWebKitGlobalFantasyFontFamily,
+    prefs::kWebKitFantasyFontFamily },
+  { prefs::kWebKitGlobalFixedFontFamily,
+    prefs::kWebKitFixedFontFamily },
+  { prefs::kWebKitGlobalSansSerifFontFamily,
+    prefs::kWebKitSansSerifFontFamily },
+  { prefs::kWebKitGlobalSerifFontFamily,
+    prefs::kWebKitSerifFontFamily },
+  { prefs::kWebKitGlobalStandardFontFamily,
+    prefs::kWebKitStandardFontFamily }
 };
 
 const int kPrefsToMigrateLength = ARRAYSIZE_UNSAFE(kPrefNamesToMigrate);
@@ -385,22 +424,22 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterLocalizedStringPref(prefs::kGlobalDefaultCharset,
                                      IDS_DEFAULT_ENCODING,
                                      PrefService::SYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalStandardFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamily,
                                      IDS_STANDARD_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalFixedFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitFixedFontFamily,
                                      IDS_FIXED_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalSerifFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSerifFontFamily,
                                      IDS_SERIF_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalSansSerifFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitSansSerifFontFamily,
                                      IDS_SANS_SERIF_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalCursiveFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitCursiveFontFamily,
                                      IDS_CURSIVE_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalFantasyFontFamily,
+  prefs->RegisterLocalizedStringPref(prefs::kWebKitFantasyFontFamily,
                                      IDS_FANTASY_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
 
@@ -413,8 +452,11 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
     const PerScriptFontDefault& pref = kPerScriptFontDefaults[i];
     // Suppress default per-script font when the script matches the browser's
     // locale.  Otherwise, the default would override the user's preferences
-    // when viewing pages in their native language.  This can be removed when
-    // per-script fonts are added to Preferences UI.
+    // when viewing pages in their native language.  This would be bad
+    // particularly because there is not yet a way for users to customize
+    // their per-script font prefs.  This code can possibly be removed later if
+    // users can easily access per-script font prefs (e.g., via the extensions
+    // workflow), or the problem turns out to not be really critical after all.
     if (!StartsWithASCII(locale, pref.native_locale, false)) {
       prefs->RegisterLocalizedStringPref(pref.pref_name,
                                          pref.resource_id,

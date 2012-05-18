@@ -305,7 +305,7 @@ void FillFontFamilyMap(const PrefService* prefs,
     std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
     std::string font_family = prefs->GetString(pref_name.c_str());
     if (!font_family.empty())
-      map->push_back(std::make_pair(script, UTF8ToUTF16(font_family)));
+      (*map)[script] = UTF8ToUTF16(font_family);
   }
 }
 
@@ -1333,19 +1333,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   Profile* profile = Profile::FromBrowserContext(
       rvh->GetProcess()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
-
-  web_prefs->standard_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalStandardFontFamily));
-  web_prefs->fixed_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalFixedFontFamily));
-  web_prefs->serif_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalSerifFontFamily));
-  web_prefs->sans_serif_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalSansSerifFontFamily));
-  web_prefs->cursive_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalCursiveFontFamily));
-  web_prefs->fantasy_font_family =
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitGlobalFantasyFontFamily));
 
   FillFontFamilyMap(prefs, prefs::kWebKitStandardFontFamilyMap,
                     &web_prefs->standard_font_family_map);

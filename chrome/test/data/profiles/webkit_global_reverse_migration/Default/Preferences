@@ -1,0 +1,14 @@
+{
+    "webkit": {
+        "webprefs": {
+            "global": {
+                "standard_font_family": "StandardFontFamily",
+                "fixed_font_family": "FixedFontFamily",
+                "serif_font_family": "SerifFontFamily",
+                "sansserif_font_family": "SansSerifFontFamily",
+                "cursive_font_family": "CursiveFontFamily",
+                "fantasy_font_family": "FantasyFontFamily"
+            }
+        }
+    }
+}

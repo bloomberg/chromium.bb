@@ -129,6 +129,16 @@ const char kWebKitGlobalCursiveFontFamily[] =
     "webkit.webprefs.global.cursive_font_family";
 const char kWebKitGlobalFantasyFontFamily[] =
     "webkit.webprefs.global.fantasy_font_family";
+const char kWebKitOldStandardFontFamily[] =
+    "webkit.webprefs.standard_font_family";
+const char kWebKitOldFixedFontFamily[] = "webkit.webprefs.fixed_font_family";
+const char kWebKitOldSerifFontFamily[] = "webkit.webprefs.serif_font_family";
+const char kWebKitOldSansSerifFontFamily[] =
+    "webkit.webprefs.sansserif_font_family";
+const char kWebKitOldCursiveFontFamily[] =
+    "webkit.webprefs.cursive_font_family";
+const char kWebKitOldFantasyFontFamily[] =
+    "webkit.webprefs.fantasy_font_family";
 const char kWebKitStandardFontFamilyMap[] =
     "webkit.webprefs.fonts.standard";
 const char kWebKitFixedFontFamilyMap[] =
@@ -148,7 +158,7 @@ const char* const kWebKitScriptsForFontFamilyMaps[] = {
     "Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor",
     "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda",
     "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu",
-    "Thaa", "Thai", "Tibt", "Yiii"
+    "Thaa", "Thai", "Tibt", "Yiii", "Zyyy"
 };
 
 const size_t kWebKitScriptsForFontFamilyMapsLength =
@@ -229,15 +239,15 @@ const char kWebKitAllowDisplayingInsecureContent[] =
 const char kWebKitAllowRunningInsecureContent[] =
     "webkit.webprefs.allow_running_insecure_content";
 
-// Settings below can be overridden for each tab individually.
 const char kDefaultCharset[] = "intl.charset_default";
-const char kWebKitStandardFontFamily[] = "webkit.webprefs.standard_font_family";
-const char kWebKitFixedFontFamily[] = "webkit.webprefs.fixed_font_family";
-const char kWebKitSerifFontFamily[] = "webkit.webprefs.serif_font_family";
+const char kWebKitCommonScript[] = "Zyyy";
+const char kWebKitStandardFontFamily[] = "webkit.webprefs.fonts.standard.Zyyy";
+const char kWebKitFixedFontFamily[] = "webkit.webprefs.fonts.fixed.Zyyy";
+const char kWebKitSerifFontFamily[] = "webkit.webprefs.fonts.serif.Zyyy";
 const char kWebKitSansSerifFontFamily[] =
-    "webkit.webprefs.sansserif_font_family";
-const char kWebKitCursiveFontFamily[] = "webkit.webprefs.cursive_font_family";
-const char kWebKitFantasyFontFamily[] = "webkit.webprefs.fantasy_font_family";
+    "webkit.webprefs.fonts.sansserif.Zyyy";
+const char kWebKitCursiveFontFamily[] = "webkit.webprefs.fonts.cursive.Zyyy";
+const char kWebKitFantasyFontFamily[] = "webkit.webprefs.fonts.fantasy.Zyyy";
 const char kWebKitDefaultFontSize[] = "webkit.webprefs.default_font_size";
 const char kWebKitDefaultFixedFontSize[] =
     "webkit.webprefs.default_fixed_font_size";

@@ -106,12 +106,12 @@ void FontSettingsHandler::RegisterMessages() {
   FontSettingsUtilities::ValidateSavedFonts(pref_service);
 
   // Register for preferences that we need to observe manually.
-  standard_font_.Init(prefs::kWebKitGlobalStandardFontFamily,
+  standard_font_.Init(prefs::kWebKitStandardFontFamily,
                       pref_service, this);
-  serif_font_.Init(prefs::kWebKitGlobalSerifFontFamily, pref_service, this);
-  sans_serif_font_.Init(prefs::kWebKitGlobalSansSerifFontFamily,
+  serif_font_.Init(prefs::kWebKitSerifFontFamily, pref_service, this);
+  sans_serif_font_.Init(prefs::kWebKitSansSerifFontFamily,
                         pref_service, this);
-  fixed_font_.Init(prefs::kWebKitGlobalFixedFontFamily, pref_service, this);
+  fixed_font_.Init(prefs::kWebKitFixedFontFamily, pref_service, this);
   font_encoding_.Init(prefs::kGlobalDefaultCharset, pref_service, this);
   default_font_size_.Init(prefs::kWebKitGlobalDefaultFontSize,
                           pref_service, this);
@@ -196,14 +196,14 @@ void FontSettingsHandler::Observe(int type,
                                   const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     std::string* pref_name = content::Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kWebKitGlobalStandardFontFamily) {
+    if (*pref_name == prefs::kWebKitStandardFontFamily) {
       SetUpStandardFontSample();
-    } else if (*pref_name == prefs::kWebKitGlobalSerifFontFamily) {
+    } else if (*pref_name == prefs::kWebKitSerifFontFamily) {
       SetUpSerifFontSample();
-    } else if (*pref_name == prefs::kWebKitGlobalSansSerifFontFamily) {
+    } else if (*pref_name == prefs::kWebKitSansSerifFontFamily) {
       SetUpSansSerifFontSample();
-    } else if (*pref_name == prefs::kWebKitGlobalFixedFontFamily ||
-               *pref_name == prefs::kWebKitGlobalDefaultFixedFontSize) {
+    } else if (*pref_name == prefs::kWebKitFixedFontFamily ||
+               *pref_name == prefs::kWebKitDefaultFixedFontSize) {
       SetUpFixedFontSample();
     } else if (*pref_name == prefs::kWebKitGlobalDefaultFontSize) {
       SetUpStandardFontSample();

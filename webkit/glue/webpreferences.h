@@ -11,6 +11,7 @@
 #ifndef WEBKIT_GLUE_WEBPREFERENCES_H__
 #define WEBKIT_GLUE_WEBPREFERENCES_H__
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -27,14 +28,13 @@ namespace webkit_glue {
 struct WEBKIT_GLUE_EXPORT WebPreferences {
   // Map of ISO 15924 four-letter script code to font family.  For example,
   // "Arab" to "My Arabic Font".
-  typedef std::vector<std::pair<std::string, string16> > ScriptFontFamilyMap;
+  typedef std::map<std::string, string16> ScriptFontFamilyMap;
 
-  string16 standard_font_family;
-  string16 fixed_font_family;
-  string16 serif_font_family;
-  string16 sans_serif_font_family;
-  string16 cursive_font_family;
-  string16 fantasy_font_family;
+  // The ISO 15924 script code for undetermined script aka Common. It's the
+  // default used on WebKit's side to get/set a font setting when no script is
+  // specified.
+  static const char kCommonScript[];
+
   ScriptFontFamilyMap standard_font_family_map;
   ScriptFontFamilyMap fixed_font_family_map;
   ScriptFontFamilyMap serif_font_family_map;

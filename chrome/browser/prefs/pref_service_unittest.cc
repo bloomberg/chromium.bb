@@ -404,6 +404,7 @@ TEST_F(PrefServiceWebKitPrefs, PrefsCopied) {
 #else
   const char kDefaultFont[] = "Times New Roman";
 #endif
-  EXPECT_EQ(ASCIIToUTF16(kDefaultFont), webkit_prefs.standard_font_family);
+  EXPECT_EQ(ASCIIToUTF16(kDefaultFont),
+            webkit_prefs.standard_font_family_map[prefs::kWebKitCommonScript]);
   EXPECT_TRUE(webkit_prefs.javascript_enabled);
 }

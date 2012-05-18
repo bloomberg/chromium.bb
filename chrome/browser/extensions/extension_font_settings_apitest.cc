@@ -15,7 +15,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettings) {
 
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetString(prefs::kWebKitStandardFontFamilyKorean, "Tahoma");
-  prefs->SetString(prefs::kWebKitGlobalSansSerifFontFamily, "Arial");
+  prefs->SetString(prefs::kWebKitSansSerifFontFamily, "Arial");
   prefs->SetInteger(prefs::kWebKitGlobalDefaultFontSize, 16);
   prefs->SetInteger(prefs::kWebKitGlobalDefaultFixedFontSize, 14);
   prefs->SetInteger(prefs::kWebKitGlobalMinimumFontSize, 8);
@@ -30,7 +30,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettingsIncognito) {
 
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetString(prefs::kWebKitStandardFontFamilyKorean, "Tahoma");
-  prefs->SetString(prefs::kWebKitGlobalSansSerifFontFamily, "Arial");
+  prefs->SetString(prefs::kWebKitSansSerifFontFamily, "Arial");
   prefs->SetInteger(prefs::kWebKitGlobalDefaultFontSize, 16);
 
   int flags = ExtensionApiTest::kFlagEnableIncognito |

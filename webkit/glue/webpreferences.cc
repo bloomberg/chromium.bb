@@ -4,8 +4,6 @@
 
 #include "webkit/glue/webpreferences.h"
 
-#include <unicode/uchar.h>
-
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
@@ -16,6 +14,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "unicode/uchar.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebNetworkStateNotifier;
@@ -27,14 +26,11 @@ using WebKit::WebView;
 
 namespace webkit_glue {
 
+// "Zyyy" is the ISO 15924 script code for undetermined script aka Common.
+const char WebPreferences::kCommonScript[] = "Zyyy";
+
 WebPreferences::WebPreferences()
-    : standard_font_family(ASCIIToUTF16("Times New Roman")),
-      fixed_font_family(ASCIIToUTF16("Courier New")),
-      serif_font_family(ASCIIToUTF16("Times New Roman")),
-      sans_serif_font_family(ASCIIToUTF16("Arial")),
-      cursive_font_family(ASCIIToUTF16("Script")),
-      fantasy_font_family(),  // Not sure what to use on Windows.
-      default_font_size(16),
+    : default_font_size(16),
       default_fixed_font_size(13),
       minimum_font_size(0),
       minimum_logical_font_size(6),
@@ -107,6 +103,18 @@ WebPreferences::WebPreferences()
       per_tile_painting_enabled(false),
       css_regions_enabled(false),
       css_shaders_enabled(false) {
+  standard_font_family_map[kCommonScript] =
+      ASCIIToUTF16("Times New Roman");
+  fixed_font_family_map[kCommonScript] =
+      ASCIIToUTF16("Courier New");
+  serif_font_family_map[kCommonScript] =
+      ASCIIToUTF16("Times New Roman");
+  sans_serif_font_family_map[kCommonScript] =
+      ASCIIToUTF16("Arial");
+  cursive_font_family_map[kCommonScript] =
+      ASCIIToUTF16("Script");
+  fantasy_font_family_map[kCommonScript] =
+      ASCIIToUTF16("Impact");
 }
 
 WebPreferences::~WebPreferences() {
@@ -168,12 +176,6 @@ void ApplyFontsFromMap(const WebPreferences::ScriptFontFamilyMap& map,
 
 void WebPreferences::Apply(WebView* web_view) const {
   WebSettings* settings = web_view->settings();
-  settings->setStandardFontFamily(standard_font_family);
-  settings->setFixedFontFamily(fixed_font_family);
-  settings->setSerifFontFamily(serif_font_family);
-  settings->setSansSerifFontFamily(sans_serif_font_family);
-  settings->setCursiveFontFamily(cursive_font_family);
-  settings->setFantasyFontFamily(fantasy_font_family);
   ApplyFontsFromMap(standard_font_family_map, setStandardFontFamilyWrapper,
                     settings);
   ApplyFontsFromMap(fixed_font_family_map, setFixedFontFamilyWrapper, settings);

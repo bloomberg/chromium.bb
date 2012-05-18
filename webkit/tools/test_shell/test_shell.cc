@@ -301,13 +301,17 @@ void TestShell::ResetWebPreferences() {
         *web_prefs_ = WebPreferences();
 
 #if defined(OS_MACOSX)
-        web_prefs_->serif_font_family = ASCIIToUTF16("Times");
-        web_prefs_->cursive_font_family = ASCIIToUTF16("Apple Chancery");
-        web_prefs_->fantasy_font_family = ASCIIToUTF16("Papyrus");
+        web_prefs_->serif_font_family_map[WebPreferences::kCommonScript] =
+            ASCIIToUTF16("Times");
+        web_prefs_->cursive_font_family_map[WebPreferences::kCommonScript] =
+            ASCIIToUTF16("Apple Chancery");
+        web_prefs_->fantasy_font_family_map[WebPreferences::kCommonScript] =
+            ASCIIToUTF16("Papyrus");
 #else
         // NOTE: case matters here, this must be 'times new roman', else
         // some layout tests fail.
-        web_prefs_->serif_font_family = ASCIIToUTF16("times new roman");
+        web_prefs_->serif_font_family_map[WebPreferences::kCommonScript] =
+            ASCIIToUTF16("times new roman");
 
         // These two fonts are picked from the intersection of
         // Win XP font list and Vista font list :
@@ -319,12 +323,17 @@ void TestShell::ResetWebPreferences() {
         // They (especially Impact for fantasy) are not typical cursive
         // and fantasy fonts, but it should not matter for layout tests
         // as long as they're available.
-        web_prefs_->cursive_font_family = ASCIIToUTF16("Comic Sans MS");
-        web_prefs_->fantasy_font_family = ASCIIToUTF16("Impact");
+        web_prefs_->cursive_font_family_map[WebPreferences::kCommonScript] =
+            ASCIIToUTF16("Comic Sans MS");
+        web_prefs_->fantasy_font_family_map[WebPreferences::kCommonScript] =
+            ASCIIToUTF16("Impact");
 #endif
-        web_prefs_->standard_font_family = web_prefs_->serif_font_family;
-        web_prefs_->fixed_font_family = ASCIIToUTF16("Courier");
-        web_prefs_->sans_serif_font_family = ASCIIToUTF16("Helvetica");
+        web_prefs_->standard_font_family_map[WebPreferences::kCommonScript] =
+            web_prefs_->serif_font_family_map[WebPreferences::kCommonScript];
+        web_prefs_->fixed_font_family_map[WebPreferences::kCommonScript] =
+            ASCIIToUTF16("Courier");
+        web_prefs_->sans_serif_font_family_map[WebPreferences::kCommonScript] =
+            ASCIIToUTF16("Helvetica");
 
         web_prefs_->default_encoding = "ISO-8859-1";
         web_prefs_->default_font_size = 16;

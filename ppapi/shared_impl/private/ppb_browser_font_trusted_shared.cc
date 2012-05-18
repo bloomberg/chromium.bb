@@ -37,6 +37,20 @@ namespace ppapi {
 
 namespace {
 
+// Same as WebPreferences::kCommonScript. I'd use that directly here, but get an
+// undefined reference linker error.
+const char kCommonScript[] = "Zyyy";
+
+string16 GetFontFromMap(
+    const webkit_glue::WebPreferences::ScriptFontFamilyMap& map,
+    const std::string& script) {
+  webkit_glue::WebPreferences::ScriptFontFamilyMap::const_iterator it =
+      map.find(script);
+  if (it != map.end())
+    return it->second;
+  return string16();
+}
+
 bool PPTextRunToWebTextRun(const PP_BrowserFont_Trusted_TextRun& text,
                            WebTextRun* run) {
   StringVar* text_string = StringVar::FromPPVar(text.text);
@@ -88,17 +102,21 @@ WebFontDescription PPFontDescToWebFontDesc(
     // Resolve the generic family.
     switch (font.family) {
       case PP_BROWSERFONT_TRUSTED_FAMILY_SERIF:
-        resolved_family = prefs.serif_font_family;
+        resolved_family = GetFontFromMap(prefs.serif_font_family_map,
+                                         kCommonScript);
         break;
       case PP_BROWSERFONT_TRUSTED_FAMILY_SANSSERIF:
-        resolved_family = prefs.sans_serif_font_family;
+        resolved_family = GetFontFromMap(prefs.sans_serif_font_family_map,
+                                         kCommonScript);
         break;
       case PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE:
-        resolved_family = prefs.fixed_font_family;
+        resolved_family = GetFontFromMap(prefs.fixed_font_family_map,
+                                         kCommonScript);
         break;
       case PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT:
       default:
-        resolved_family = prefs.standard_font_family;
+        resolved_family = GetFontFromMap(prefs.standard_font_family_map,
+                                         kCommonScript);
         break;
     }
   } else {
@@ -115,7 +133,8 @@ WebFontDescription PPFontDescToWebFontDesc(
     // level to detect if the requested font is fixed width, so we only apply
     // the alternate font size to the default fixed font family.
     if (StringToLowerASCII(resolved_family) ==
-        StringToLowerASCII(prefs.fixed_font_family))
+        StringToLowerASCII(GetFontFromMap(prefs.fixed_font_family_map,
+                                          kCommonScript)))
       result.size = static_cast<float>(prefs.default_fixed_font_size);
     else
       result.size = static_cast<float>(prefs.default_font_size);
@@ -314,4 +333,3 @@ void PPB_BrowserFont_Trusted_Shared::DrawTextToCanvas(
 }
 
 }  // namespace ppapi
-
