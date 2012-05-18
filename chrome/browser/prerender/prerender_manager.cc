@@ -521,7 +521,9 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
                                                 FinalStatus final_status) {
   DCHECK(CalledOnValidThread());
   DCHECK(entry);
-  DCHECK(!IsPendingDelete(entry));
+  // Confirm this entry has not already been moved to the pending delete list.
+  DCHECK_EQ(0, std::count(pending_delete_list_.begin(),
+                          pending_delete_list_.end(), entry));
 
   for (PrerenderContentsDataList::iterator it = prerender_list_.begin();
        it != prerender_list_.end();
@@ -1064,19 +1066,6 @@ PrerenderContents* PrerenderManager::CreatePrerenderContents(
   return prerender_contents_factory_->CreatePrerenderContents(
       this, prerender_tracker_, profile_, url,
       referrer, origin, experiment_id);
-}
-
-bool PrerenderManager::IsPendingDelete(PrerenderContents* entry) const {
-  DCHECK(CalledOnValidThread());
-  for (std::list<PrerenderContents*>::const_iterator it =
-          pending_delete_list_.begin();
-       it != pending_delete_list_.end();
-       ++it) {
-    if (*it == entry)
-      return true;
-  }
-
-  return false;
 }
 
 void PrerenderManager::DeletePendingDeleteEntries() {

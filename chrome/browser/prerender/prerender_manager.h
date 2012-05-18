@@ -361,9 +361,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       Origin origin,
       uint8 experiment_id);
 
-  // Checks if the PrerenderContents has been added to the pending delete list.
-  bool IsPendingDelete(PrerenderContents* entry) const;
-
   // Deletes any PrerenderContents that have been added to the pending delete
   // list.
   void DeletePendingDeleteEntries();
