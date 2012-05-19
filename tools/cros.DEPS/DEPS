@@ -1,3 +1,6 @@
+# When adding a new dependency, please update the top-level .gitignore file
+# to list the dependency's destination directory.
+
 vars = {
   "chromiumos_git": "http://git.chromium.org/chromiumos",
 }
