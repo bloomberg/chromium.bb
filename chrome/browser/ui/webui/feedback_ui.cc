@@ -230,6 +230,7 @@ class FeedbackHandler : public WebUIMessageHandler,
 ChromeWebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIFeedbackHost);
+  source->set_use_json_js_format_v2();
 
   source->AddLocalizedString("title", IDS_FEEDBACK_TITLE);
   source->AddLocalizedString("page-title", IDS_FEEDBACK_REPORT_PAGE_TITLE);
@@ -439,7 +440,6 @@ void FeedbackHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
   StringValue screenshot(current_screenshot);
   web_ui()->CallJavascriptFunction("setupCurrentScreenshot", screenshot);
 }
-
 
 #if defined(OS_CHROMEOS)
 void FeedbackHandler::HandleRefreshSavedScreenshots(const ListValue*) {

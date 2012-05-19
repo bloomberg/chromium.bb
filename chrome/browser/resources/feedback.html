@@ -3,172 +3,83 @@
 <head>
 <meta charset="utf-8"/>
 <title i18n-content="page-title"></title>
-<!-- We want to keep our style in sync with the options page. -->
-<link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
 <link rel="stylesheet" href="chrome://resources/css/widgets.css">
 <link rel="stylesheet" href="chrome://resources/css/chrome_shared2.css">
 <link rel="stylesheet" href="feedback.css">
 
-<script src="chrome://resources/js/local_strings.js"></script>
+<script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="chrome://feedback/feedback.js"></script>
 <script src="chrome://feedback/strings.js"></script>
 </head>
-<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-<div id="main-content">
-  <div id="navbar-container">
-    <h1 id="navbar-content-title" i18n-content="page-title">
-    </h1>
-  </div>
-  <div id="mainview" class>
-    <!-- Even though we really don't need these many nested DIV's, we're staying
-    as close to the settings page layout as possible, re-using all our styles
-    from options_page.css -->
-    <div id="mainview-content">
-      <div id="page-container">
-        <div id="feedback-page" class="page">
-          <h1 i18n-content="title"></h1>
-          <table id="main-table">
-             <!--  Description -->
-              <tr>
-                <th id="description" colspan="2" class="feedback-label"
-                    i18n-content="description"></th>
-              </tr>
-              <tr>
-                <td colspan="2">
-                  <textarea id="description-text" rows="10"
-                      class="feedback-text"></textarea>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <table style="-webkit-border-vertical-spacing: 0px;">
-                    <!--  Page URL -->
-                    <tr>
-                      <td>
-                        <table class="feedback-table">
-                          <tr>
-                            <td class="feedback-fieldlabel checkbox">
-                              <label>
-                                <input id="page-url-checkbox" type="checkbox"
-                                    value="pageurl" checked>
-                                <span id="page-url-label"
-                                    i18n-content="page-url"></span>
-                              </label>
-                            </td>
-                            <td>
-                              <input id="page-url-text" class="feedback-field"
-                                  maxlength="200">
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
+<body id="feedback-page"
+    i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <h1 i18n-content="title"></h1>
+  <div id="content">
+    <span id="description" colspan="2" i18n-content="description"></span>
+    <textarea id="description-text" rows="10"></textarea>
+    <div id="page-url" class="checkbox">
+      <label>
+        <input id="page-url-checkbox" type="checkbox"
+            value="pageurl" checked>
+        <span id="page-url-label" i18n-content="page-url"></span>
+      </label>
+      <input id="page-url-text">
+    </div>
 <if expr="pp_ifdef('chromeos')">
-                    <!--  User e-mail -->
-                    <tr>
-                      <td>
-                        <table id="user-email-table" class="feedback-table">
-                          <tr>
-                            <td class="feedback-fieldlabel checkbox">
-                              <label>
-                                <input id="user-email-checkbox" type="checkbox"
-                                    checked>
-                                <span id="user-email-label"
-                                    i18n-content="user-email"></span>
-                              </label>
-                            </td>
-                            <td>
-                              <label id="user-email-text"
-                                  class="feedback-field"></label>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                    <!--  System Information -->
-                    <tr>
-                      <td>
-                        <table class="feedback-table">
-                          <tr>
-                            <td class="feedback-fieldlabel checkbox">
-                              <label>
-                                <input id="sys-info-checkbox" type="checkbox"
-                                    checked>
-                                <span id="sysinfo-label">
-                                  <a id="sysinfo-url" href="#"
-                                      i18n-content="sysinfo"></a>
-                                </span>
-                              </label>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-</if>
-                    <!--  Screenshot -->
-                    <tr id="screenshot-row">
-                      <td>
-                        <table class="feedback-table">
-                          <tr>
-                            <td class="feedback-fieldlabel checkbox">
-                              <label>
-                                <input id="screenshot-checkbox" type="checkbox">
-                                <span id="screenshot-label-current"
-                                    i18n-content="current-screenshot"></span>
-                              </label>
-<if expr="pp_ifdef('chromeos')">
-                              <span id="screenshot-label-saved"
-                                  i18n-content="saved-screenshot" hidden>
-                              </span>
-                              <a id="screenshot-link-tosaved" href="#"
-                                  i18n-content="choose-different-screenshot">
-                              </a>
-                              <a id="screenshot-link-tocurrent" href="#"
-                                i18n-content="choose-original-screenshot"
-                                hidden>
-                              </a>
-</if>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-<if expr="pp_ifdef('chromeos')">
-                        <div id="saved-screenshots" class="thumbnail-list"
-                            hidden></div>
-</if>
-                        <div id="current-screenshots" class="thumbnail-list">
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div id="privacy-note" i18n-values=".innerHTML:privacy-note">
-                  </div>
-                  <div id="buttons-pane">
-                    <!--  Buttons -->
-                    <input id="send-report-button" type="submit"
-                        class="feedback-button"
-                        i18n-values="value:send-report">
-                    <input id="cancel-button" type="submit"
-                        class="feedback-button" i18n-values="value:cancel">
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <!-- User e-mail -->
+    <div id="user-email-table">
+      <div class="checkbox">
+        <label>
+          <input id="user-email-checkbox" type="checkbox" checked>
+          <span id="user-email-label" i18n-content="user-email"></span>
+        </label>
+        <span id="user-email-text"></span>
       </div>
     </div>
+    <!-- System Information -->
+    <div class="feedback-fieldlabel checkbox">
+      <label>
+        <input id="sys-info-checkbox" type="checkbox" checked>
+        <span id="sysinfo-label">
+          <a id="sysinfo-url" href="#" i18n-content="sysinfo"></a>
+        </span>
+      </label>
+    </div>
+</if>
+    <!-- Screenshot -->
+    <div id="screenshot-row">
+      <div class="feedback-fieldlabel checkbox">
+        <label>
+          <input id="screenshot-checkbox" type="checkbox">
+          <span id="screenshot-label-current"
+              i18n-content="current-screenshot"></span>
+<if expr="pp_ifdef('chromeos')">
+          <span id="screenshot-label-saved"
+              i18n-content="saved-screenshot" hidden></span>
+        </label>
+        <a id="screenshot-link-tosaved" href="#"
+            i18n-content="choose-different-screenshot">
+        </a>
+        <a id="screenshot-link-tocurrent" href="#"
+            i18n-content="choose-original-screenshot" hidden>
+        </a>
+</if>
+      </div>
+<if expr="pp_ifdef('chromeos')">
+      <div id="saved-screenshots" class="thumbnail-list" hidden></div>
+</if>
+      <div id="current-screenshots" class="thumbnail-list">
+    </div>
+    <div id="privacy-note" i18n-values=".innerHTML:privacy-note"></div>
+    <div id="buttons-pane">
+      <!-- Buttons -->
+      <input id="send-report-button" type="submit"
+          class="feedback-button" i18n-values="value:send-report">
+      <input id="cancel-button" type="submit"
+          class="feedback-button" i18n-values="value:cancel">
+    </div>
   </div>
-</div>
-<script src="chrome://resources/js/i18n_template.js"></script>
-<script src="chrome://resources/js/i18n_process.js"></script>
+  <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>

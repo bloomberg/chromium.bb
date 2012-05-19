@@ -2,159 +2,77 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.feedback-label {
+#feedback-page {
+  -webkit-margin-start: 80px;
+  color: rgb(48, 57, 66);
+}
+
+#feedback-page > h1 {
+  border-bottom: 1px solid #eee;
+  font-size: 2em;
+  padding-bottom: 6px;
+  width: 718px;
+}
+
+#content {
+  width: 600px;
+}
+
+#description {
+  display: block;
   font-weight: 300;
   text-align: start;
   vertical-align: text-top;
 }
 
-.feedback-text {
-  width: 40em;
+#description-text {
+  box-sizing: border-box;
+  margin-top: 1em;
+  width: 100%;
 }
 
-.feedback-table {
-  border-spacing: 0;
-  width: 40em;
+#page-url {
+  -webkit-box-align: baseline;
+  display: -webkit-box;
 }
 
-.feedback-field {
-  border-style: solid;
-  border-width: 1px;
-  width: 22em;
+#page-url > label {
+  -webkit-margin-end: 1em;
 }
 
-.feedback-fieldlabel {
-  font-weight: 300;
-  width: 13em;
-}
-
-hr {
-  background: #ccc;
-  border: none;
-  height: 1px;
-  margin-bottom: 10px;
-  margin-top: 10px;
-  width: 40em;
+#page-url-text {
+  -webkit-box-flex: 1;
+  display: block;
 }
 
 .thumbnail-list {
-  -webkit-margin-start: 1em;
   margin-bottom: 1em;
   margin-top: 0.5em;
-  width: 33.5em;
+  min-height: 151px;
 }
 
 .image-thumbnail-container {
-  border: 2px solid white;
+  border: 2px solid #ccc;
   border-radius: 3px;
   display: inline-block;
-  z-index: 0;
 }
 
-.image-thumbnail-container-selected {
-  border: 2px solid green;
-  border-radius: 3px;
-  display: inline-block;
-  z-index: 0;
+.image-thumbnail-container-selected:not(:only-of-type) {
+  border-color: green;
 }
 
-.image-thumbnail-container:hover {
-  border: 2px solid rgb(184, 218, 176);
-  z-index: 0;
-}
-
-.image-popup {
-  width: 50%;
+.image-thumbnail-container:not(:only-of-type):not(
+    .image-thumbnail-container-selected):hover {
+  border-color: rgb(184, 218, 176);
 }
 
 .image-thumbnail {
   border: 2px solid white;
-  display: inline-block;
-  padding: 0;
-  position: relative;
-  z-index: 1;
-}
-
-.image-thumbnail:hover {
-  z-index: 2;
-}
-
-.image-thumbnail div {
-  display: none;
 }
 
 .image-thumbnail img {
   display: block;
-  width: 200px;
-}
-
-.image-thumbnail:hover div {
-  background-color: transparent;
-  border: 1px dashed blue;
-  display: block;
-  left: 0;
-  padding: 1px;
-  position: absolute;
-}
-
-.image-thumbnail:hover div img {
-  position: absolute;
-  width: 400px;
-}
-
-.image-thumbnail-current {
-  border: 2px solid white;
-  display: inline-block;
-  padding: 0;
-  position: relative;
-  z-index: 1;
-}
-
-.image-thumbnail-current:hover {
-  z-index: 2;
-}
-
-.image-thumbnail-current div {
-  display: none;
-}
-
-.image-thumbnail-current img {
-  display: block;
-  width: 200px;
-}
-
-.image-thumbnail-current:hover div {
-  background-color: transparent;
-  border: 1px dashed blue;
-  display: block;
-  left: 0;
-  padding: 1px;
-  position: absolute;
-}
-
-.image-thumbnail-current:hover div img {
-  border: 1px dashed blue;
-  padding: 2px;
-  position: absolute;
-  width: 400px;
-}
-
-th {
-  font-weight: normal;
-  padding-top: 10px;
-}
-
-.formpane {
-  margin-right: 20px;
-}
-
-.feedback-input {
-  border-style: solid;
-  border-width: 1px;
-}
-
-#user-email-text {
-  border: none;
+  height: 140px;
 }
 
 #buttons-pane {
@@ -166,17 +84,7 @@ th {
   padding: 0;
 }
 
-#send-report-button,
-#cancel-button {
-  display: block;
-}
-
 #privacy-note {
-  font-size: 90%;
-  font-weight: normal;
-  margin: 0;
   padding-bottom: 10px;
-  padding-top: 24px;
-  text-align: start;
   width: 44em;
 }
