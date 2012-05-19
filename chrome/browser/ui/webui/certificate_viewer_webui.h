@@ -10,11 +10,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/base/x509_certificate.h"
 #include "ui/gfx/native_widget_types.h"
+
+class WebDialogObserver;
 
 // Displays the native or WebUI certificate viewer dialog for the given
 // certificate.
@@ -27,20 +30,22 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
 // or "View" from the Certificate Manager.
 class CertificateViewerDialog : private WebDialogDelegate {
  public:
-  // Shows the certificate viewer dialog for the passed in certificate.
-  static void ShowDialog(gfx::NativeWindow parent,
-                         net::X509Certificate* cert);
-  virtual ~CertificateViewerDialog();
-
- private:
   // Construct a certificate viewer for the passed in certificate. A reference
   // to the certificate pointer is added for the lifetime of the certificate
   // viewer.
   explicit CertificateViewerDialog(net::X509Certificate* cert);
+  virtual ~CertificateViewerDialog();
 
   // Show the dialog using the given parent window.
   void Show(gfx::NativeWindow parent);
 
+  // Add WebDialogObserver for this dialog.
+  void AddObserver(WebDialogObserver* observer);
+
+  // Remove WebDialogObserver for this dialog.
+  void RemoveObserver(WebDialogObserver* observer);
+
+ private:
   // Overridden from WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
@@ -49,6 +54,9 @@ class CertificateViewerDialog : private WebDialogDelegate {
       std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
+  virtual void OnDialogShown(
+      content::WebUI* webui,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(
       content::WebContents* source, bool* out_close_dialog) OVERRIDE;
@@ -62,6 +70,8 @@ class CertificateViewerDialog : private WebDialogDelegate {
 
   // The title of the certificate viewer dialog, Certificate Viewer: CN.
   string16 title_;
+
+  ObserverList<WebDialogObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerDialog);
 };

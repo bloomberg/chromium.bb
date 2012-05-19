@@ -5,6 +5,7 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/certificate_viewer_webui.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_web_dialog_observer.h"
@@ -34,7 +35,11 @@ void CertificateViewerUITest::ShowCertificateViewer() {
   ASSERT_TRUE(browser()->window());
 
   TestWebDialogObserver dialog_observer(this);
-  ::ShowCertificateViewer(browser()->window()->GetNativeHandle(), google_cert);
+  CertificateViewerDialog* dialog = new CertificateViewerDialog(
+      google_cert);
+  dialog->AddObserver(&dialog_observer);
+  dialog->Show(browser()->window()->GetNativeHandle());
+  dialog->RemoveObserver(&dialog_observer);
   content::WebUI* webui = dialog_observer.GetWebUI();
   webui->GetWebContents()->GetRenderViewHost()->SetWebUIProperty(
       "expectedUrl", chrome::kChromeUICertificateViewerURL);

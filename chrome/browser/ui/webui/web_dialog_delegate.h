@@ -16,8 +16,10 @@
 class GURL;
 
 namespace content {
-class WebUIMessageHandler;
+class RenderViewHost;
 class WebContents;
+class WebUI;
+class WebUIMessageHandler;
 struct ContextMenuParams;
 struct OpenURLParams;
 }
@@ -62,6 +64,12 @@ class WebDialogDelegate {
   // A callback to notify the delegate that |source|'s loading state has
   // changed.
   virtual void OnLoadingStateChanged(content::WebContents* source) {}
+
+  // A callback to notify the delegate that a web dialog has been shown.
+  // |webui| is the WebUI with which the dialog is associated.
+  // |render_view_host| is the RenderViewHost for the shown dialog.
+  virtual void OnDialogShown(content::WebUI* webui,
+                             content::RenderViewHost* render_view_host) {}
 
   // A callback to notify the delegate that the dialog closed.
   // IMPORTANT: Implementations should delete |this| here (unless they've

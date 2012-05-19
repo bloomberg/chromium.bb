@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_observer.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -38,16 +39,19 @@ const int kDefaultHeight = 600;
 // Shows a certificate using the WebUI certificate viewer.
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-  CertificateViewerDialog::ShowDialog(parent, cert);
+  CertificateViewerDialog* dialog = new CertificateViewerDialog(cert);
+  dialog->Show(parent);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // CertificateViewerDialog
 
-void CertificateViewerDialog::ShowDialog(gfx::NativeWindow parent,
-                                         net::X509Certificate* cert) {
-  CertificateViewerDialog* dialog = new CertificateViewerDialog(cert);
-  dialog->Show(parent);
+void CertificateViewerDialog::AddObserver(WebDialogObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CertificateViewerDialog::RemoveObserver(WebDialogObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 CertificateViewerDialog::CertificateViewerDialog(net::X509Certificate* cert)
@@ -197,6 +201,14 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
           &data);
 
   return data;
+}
+
+void CertificateViewerDialog::OnDialogShown(
+    content::WebUI* webui,
+    content::RenderViewHost* render_view_host) {
+  FOR_EACH_OBSERVER(WebDialogObserver,
+                    observers_,
+                    OnDialogShown(webui, render_view_host));
 }
 
 void CertificateViewerDialog::OnDialogClosed(const std::string& json_retval) {

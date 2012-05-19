@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_ui.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -55,10 +54,7 @@ void ConstrainedWebDialogUI::RenderViewCreated(
       base::Bind(&ConstrainedWebDialogUI::OnDialogCloseMessage,
                  base::Unretained(this)));
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_DIALOG_SHOWN,
-      content::Source<content::WebUI>(web_ui()),
-      content::Details<RenderViewHost>(render_view_host));
+  dialog_delegate->OnDialogShown(web_ui(), render_view_host);
 }
 
 void ConstrainedWebDialogUI::OnDialogCloseMessage(const ListValue* args) {

@@ -3943,6 +3943,7 @@
         'browser/ui/webui/web_dialog_controller.cc',
         'browser/ui/webui/web_dialog_controller.h',
         'browser/ui/webui/web_dialog_delegate.h',
+        'browser/ui/webui/web_dialog_observer.h',
         'browser/ui/webui/web_dialog_web_contents_delegate.cc',
         'browser/ui/webui/web_dialog_web_contents_delegate.h',
         'browser/ui/webui/web_dialog_ui.cc',

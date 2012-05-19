@@ -8,19 +8,22 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/webui/web_dialog_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class JsInjectionReadyObserver;
 
 namespace content {
+class RenderViewHost;
 class WebUI;
 }
 
 // For browser_tests, which run on the UI thread, run a second message
 // MessageLoop to detect WebDialog creation and quit when the constructed
 // WebUI instance is captured and ready.
-class TestWebDialogObserver : public content::NotificationObserver {
+class TestWebDialogObserver : public content::NotificationObserver,
+                              public WebDialogObserver {
  public:
   // Create and register a new TestWebDialogObserver. If
   // |js_injection_ready_observer| is non-NULL, notify it as soon as the RVH is
@@ -28,6 +31,11 @@ class TestWebDialogObserver : public content::NotificationObserver {
   explicit TestWebDialogObserver(
       JsInjectionReadyObserver* js_injection_ready_observer);
   virtual ~TestWebDialogObserver();
+
+  // Overridden from WebDialogObserver:
+  virtual void OnDialogShown(
+      content::WebUI* webui,
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Waits for an WebDialog to be created. The WebUI instance is captured
   // and the method returns it when the navigation on the dialog is complete.
