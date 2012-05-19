@@ -251,6 +251,8 @@ cr.define('options', function() {
     // Update tab title.
     this.setTitle_(overlay.title);
 
+    $('searchBox').setAttribute('aria-hidden', true);
+
     return true;
   };
 
@@ -303,6 +305,8 @@ cr.define('options', function() {
     this.updateHistoryState_(false, {ignoreHash: true});
 
     this.restoreLastFocusedElement_();
+    if (!this.isOverlayVisible_())
+      $('searchBox').removeAttribute('aria-hidden');
   };
 
   /**
@@ -319,7 +323,7 @@ cr.define('options', function() {
     } else {
       this.closeOverlay();
     }
-  }
+  };
 
   /**
    * Hides the visible overlay. Does not affect the history state.
@@ -730,6 +734,7 @@ cr.define('options', function() {
       }
       return !this.pageDiv.hidden;
     },
+
     /**
      * Sets page visibility.
      * @type {boolean}
@@ -761,8 +766,13 @@ cr.define('options', function() {
       var pageDiv = this.pageDiv;
       var container = this.container;
 
-      if (visible)
+      if (visible) {
         uber.invokeMethodOnParent('beginInterceptingEvents');
+        this.pageDiv.removeAttribute('aria-hidden');
+        this.parentPage.pageDiv.setAttribute('aria-hidden', true);
+      } else {
+        this.parentPage.pageDiv.removeAttribute('aria-hidden');
+      }
 
       if (container.hidden != visible) {
         if (visible) {
