@@ -59,7 +59,7 @@ vars = {
   "v8_revision": "11594",
   "webrtc_revision": "2180",
   "jsoncpp_revision": "248",
-  "nss_revision": "137925",
+  "nss_revision": "137999",
   "rlz_revision": "128",
 }
 
