@@ -17,31 +17,17 @@ cr.define('cert_viewer', function() {
     var args = JSON.parse(chrome.dialogArguments);
     getCertificateInfo(args);
 
-    /**
-     * Initialize the second tab's contents.
-     * This is a 'oneShot' function, meaning it will only be invoked once,
-     * no matter how many times it is called.  This is done for unit-testing
-     * purposes in case a test needs to initialize the tab before the timer
-     * fires.
-     */
-    var initializeDetailTab = oneShot(function() {
-      initializeTree($('hierarchy'), showCertificateFields);
-      initializeTree($('cert-fields'), showCertificateFieldValue);
-      createCertificateHierarchy(args.hierarchy);
-    });
-
     // The second tab's contents aren't visible on startup, so we can
     // shorten startup by not populating those controls until after we
     // have had a chance to draw the visible controls the first time.
     // The value of 200ms is quick enough that the user couldn't open the
     // tab in that time but long enough to allow the first tab to draw on
     // even the slowest machine.
-    setTimeout(initializeDetailTab, 200);
-
-    $('tabbox').addEventListener('selectedChange', function f(e) {
-      $('tabbox').removeEventListener('selectedChange', f);
-      initializeDetailTab();
-    });
+    setTimeout(function() {
+      initializeTree($('hierarchy'), showCertificateFields);
+      initializeTree($('cert-fields'), showCertificateFieldValue);
+      createCertificateHierarchy(args.hierarchy);
+    }, 200);
 
     stripGtkAccessorKeys();
 
@@ -52,18 +38,6 @@ cr.define('cert_viewer', function() {
       if (e.keyCode == 27)  // ESC
         chrome.send('DialogClose');
     });
-  }
-
-  /**
-   * Decorate a function so that it can only be invoked once.
-   */
-  function oneShot(fn) {
-    var fired = false;
-    return function() {
-       if (fired) return;
-       fn();
-       fired = true;
-    };
   }
 
   /**
