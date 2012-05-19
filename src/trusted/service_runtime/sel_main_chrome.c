@@ -17,6 +17,7 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
+#include "native_client/src/shared/platform/nacl_secure_random.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
@@ -49,6 +50,9 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
 #if NACL_WINDOWS
   args->broker_duplicate_handle_func = NULL;
   args->attach_debug_exception_handler_func = NULL;
+#endif
+#if NACL_LINUX || NACL_OSX
+  args->urandom_fd = -1;
 #endif
   return args;
 }
@@ -106,6 +110,12 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
   extern char **environ;
   envp = (const char **) environ;
+#endif
+
+#if NACL_LINUX || NACL_OSX
+  /* This needs to happen before NaClAllModulesInit(). */
+  if (args->urandom_fd != -1)
+    NaClSecureRngModuleSetUrandomFd(args->urandom_fd);
 #endif
 
   NaClAllModulesInit();

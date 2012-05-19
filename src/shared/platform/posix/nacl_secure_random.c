@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -8,6 +8,7 @@
  * NaCl Service Runtime.  Secure RNG implementation.
  */
 
+#include <errno.h>
 #include <string.h>
 
 #include <unistd.h>
@@ -28,31 +29,59 @@ static struct NaClSecureRngIfVtbl const kNaClSecureRngVtbl;
 /* use -1 to ensure a fast failure if module initializer is not called */
 static int  urandom_d = -1;
 
-#define SANDBOXED_INITIALIZATION (!defined(NACL_STANDALONE))
-
-#if SANDBOXED_INITIALIZATION
-
+/*
+ * TODO(mseaborn): Remove the "#if !defined(NACL_STANDALONE)" cases
+ * once Chromium has been switched over to using
+ * NaClSecureRngModuleSetUrandomFd() via sel_main_chrome.h.
+ */
+#if !defined(NACL_STANDALONE)
 # include "base/rand_util_c.h"
+#endif
 
-void NaClSecureRngModuleInit(void) {
-  urandom_d = dup(GetUrandomFD());
+/*
+ * This sets a /dev/urandom file descriptor for this module to use.
+ * This is for use inside outer sandboxes where opening /dev/urandom
+ * with open() does not work.
+ *
+ * This function should be called before NaClSecureRngModuleInit() so
+ * that we do not attempt to use open() inside the outer sandbox.
+ *
+ * This takes ownership of the file descriptor.
+ */
+void NaClSecureRngModuleSetUrandomFd(int fd) {
+  CHECK(urandom_d == -1);
+  urandom_d = fd;
 }
 
-#else
-
 void NaClSecureRngModuleInit(void) {
+  /*
+   * Check whether we have already been initialised via
+   * NaClSecureRngModuleSetUrandomFd().
+   */
+  if (urandom_d != -1) {
+    return;
+  }
+
+#if defined(NACL_STANDALONE)
   urandom_d = open(NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE, O_RDONLY, 0);
   if (-1 == urandom_d) {
     NaClLog(LOG_FATAL, "Cannot open system random source %s\n",
             NACL_SECURE_RANDOM_SYSTEM_RANDOM_SOURCE);
   }
+#else
+  urandom_d = dup(GetUrandomFD());
+#endif
 }
 
-#endif  /* !SANDBOXED_INITIALIZATION */
-
 void NaClSecureRngModuleFini(void) {
-  (void) close(urandom_d);
-  urandom_d = -1;
+  if (urandom_d != -1) {
+    if (close(urandom_d) != 0) {
+      NaClLog(LOG_FATAL,
+              "NaClSecureRngModuleFini: close() failed with errno %d\n",
+              errno);
+    }
+    urandom_d = -1;
+  }
 }
 
 #if USE_CRYPTO

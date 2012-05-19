@@ -76,6 +76,16 @@ struct NaClChromeMainArgs {
   int (*attach_debug_exception_handler_func)(const void *info,
                                              size_t info_size);
 #endif
+
+#if NACL_LINUX || NACL_OSX
+  /*
+   * File descriptor for /dev/urandom for reading random data.  This
+   * takes ownership of the file descriptor.  In principle this is
+   * optional and may be -1, although startup may fail if this is not
+   * provided.
+   */
+  int urandom_fd;
+#endif
 };
 
 /* Create a new args struct containing default values. */

@@ -28,6 +28,10 @@ EXTERN_C_BEGIN
 
 struct NaClSecureRngIf;  /* fwd */
 
+#if NACL_LINUX || NACL_OSX
+void NaClSecureRngModuleSetUrandomFd(int fd);
+#endif
+
 void NaClSecureRngModuleInit(void);
 
 void NaClSecureRngModuleFini(void);
