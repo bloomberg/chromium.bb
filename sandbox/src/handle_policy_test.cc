@@ -87,5 +87,28 @@ TEST(HandlePolicyTest, DuplicatePeerHandle) {
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(cmd_line.c_str()));
 }
 
+// Tests that duplicating an object works only when the policy allows it.
+TEST(HandlePolicyTest, DuplicateBrokerHandle) {
+  TestRunner runner;
+
+  // First test that we fail to open the event.
+  std::wstring cmd_line = base::StringPrintf(L"Handle_DuplicateEvent %d",
+                                             ::GetCurrentProcessId());
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(cmd_line.c_str()));
+
+  // Add the peer rule and make sure we fail again.
+  EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_HANDLES,
+                             TargetPolicy::HANDLES_DUP_ANY,
+                             L"Event"));
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(cmd_line.c_str()));
+
+
+  // Now successfully open the event after adding a broker handle rule.
+  EXPECT_TRUE(runner.AddRule(TargetPolicy::SUBSYS_HANDLES,
+                             TargetPolicy::HANDLES_DUP_BROKER,
+                             L"Event"));
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(cmd_line.c_str()));
+}
+
 }  // namespace sandbox
 

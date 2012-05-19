@@ -52,6 +52,13 @@ POLPARAMS_BEGIN(OpenKey)
   POLPARAM(ACCESS)
 POLPARAMS_END(OpenKey)
 
+// Policy parameter for name-based policies.
+POLPARAMS_BEGIN(HandleTarget)
+  POLPARAM(NAME)
+  POLPARAM(TARGET)
+POLPARAMS_END(HandleTarget)
+
+
 }  // namespace sandbox
 
 #endif  // SANDBOX_SRC_POLICY_PARAMS_H__

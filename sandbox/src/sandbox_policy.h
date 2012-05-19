@@ -142,6 +142,7 @@ class TargetPolicy {
                            // only.
     HANDLES_DUP_ANY,       // Allows duplicating handles opened with any
                            // access permissions.
+    HANDLES_DUP_BROKER,    // Allows duplicating handles to the broker process.
     NAMEDPIPES_ALLOW_ANY,  // Allows creation of a named pipe.
     PROCESS_MIN_EXEC,      // Allows to create a process with minimal rights
                            // over the resulting process and thread handles.

@@ -70,8 +70,9 @@ bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
   }
   type_info->Name.Buffer[type_info->Name.Length / sizeof(wchar_t)] = L'\0';
 
-  CountedParameterSet<NameBased> params;
-  params[NameBased::NAME] = ParamPickerMake(type_info->Name.Buffer);
+  CountedParameterSet<HandleTarget> params;
+  params[HandleTarget::NAME] = ParamPickerMake(type_info->Name.Buffer);
+  params[HandleTarget::TARGET] = ParamPickerMake(target_process_id);
 
   EvalResult eval = policy_base_->EvalPolicy(IPC_DUPLICATEHANDLEPROXY_TAG,
                                              params.GetBase());

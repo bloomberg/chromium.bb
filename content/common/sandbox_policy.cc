@@ -389,6 +389,16 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
+#ifdef USE_AURA
+  // GPU also needs to add sections to the browser for aura
+  // TODO(jschuh): refactor the GPU channel to remove this. crbug.com/128786
+  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
+                           sandbox::TargetPolicy::HANDLES_DUP_BROKER,
+                           L"Section");
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+#endif
+
   AddGenericDllEvictionPolicy(policy);
 #endif
   return true;

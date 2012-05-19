@@ -19,12 +19,29 @@ namespace sandbox {
 bool HandlePolicy::GenerateRules(const wchar_t* type_name,
                                  TargetPolicy::Semantics semantics,
                                  LowLevelPolicy* policy) {
-  // We don't support any other semantics for handles yet.
-  if (TargetPolicy::HANDLES_DUP_ANY != semantics) {
-    return false;
-  }
   PolicyRule duplicate_rule(ASK_BROKER);
-  if (!duplicate_rule.AddStringMatch(IF, NameBased::NAME, type_name,
+
+  switch (semantics) {
+    case TargetPolicy::HANDLES_DUP_ANY: {
+      if (!duplicate_rule.AddNumberMatch(IF_NOT, HandleTarget::TARGET,
+                                         ::GetCurrentProcessId(), EQUAL)) {
+        return false;
+      }
+      break;
+    }
+
+    case TargetPolicy::HANDLES_DUP_BROKER: {
+      if (!duplicate_rule.AddNumberMatch(IF, HandleTarget::TARGET,
+                                         ::GetCurrentProcessId(), EQUAL)) {
+        return false;
+      }
+      break;
+    }
+
+    default:
+     return false;
+  }
+  if (!duplicate_rule.AddStringMatch(IF, HandleTarget::NAME, type_name,
                                      CASE_INSENSITIVE)) {
     return false;
   }
@@ -46,17 +63,23 @@ DWORD HandlePolicy::DuplicateHandleProxyAction(EvalResult eval_result,
     return ERROR_ACCESS_DENIED;
   }
 
-  // Make sure the target is one of our sandboxed children.
-  if (!BrokerServicesBase::GetInstance()->IsActiveTarget(target_process_id)) {
-    return ERROR_ACCESS_DENIED;
+  base::win::ScopedHandle remote_target_process;
+  if (target_process_id != ::GetCurrentProcessId()) {
+    // Sandboxed children are dynamic, so we check that manually.
+    if (!BrokerServicesBase::GetInstance()->IsActiveTarget(target_process_id)) {
+      return ERROR_ACCESS_DENIED;
+    }
+
+    remote_target_process.Set(::OpenProcess(PROCESS_DUP_HANDLE, FALSE,
+                                            target_process_id));
+    if (!remote_target_process.IsValid())
+      return ::GetLastError();
   }
 
-  base::win::ScopedHandle target_process(::OpenProcess(PROCESS_DUP_HANDLE,
-                                                       FALSE,
-                                                       target_process_id));
-  if (NULL == target_process)
-    return ::GetLastError();
-
+  // If the policy didn't block us and we have no valid target, then the broker
+  // (this process) is the valid target.
+  HANDLE target_process = remote_target_process.IsValid() ?
+                          remote_target_process : ::GetCurrentProcess();
   DWORD result = ERROR_SUCCESS;
   if (!::DuplicateHandle(client_info.process, source_handle, target_process,
                          target_handle, desired_access, FALSE,
