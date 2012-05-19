@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ui_resources.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -37,10 +38,12 @@ BrowserLauncherItemController::BrowserLauncherItemController(
       is_incognito_(tab_model->profile()->GetOriginalProfile() !=
                     tab_model->profile() && !Profile::IsGuestSession()),
       item_id_(-1) {
+  window_->AddObserver(this);
 }
 
 BrowserLauncherItemController::~BrowserLauncherItemController() {
   tab_model_->RemoveObserver(this);
+  window_->RemoveObserver(this);
   if (item_id_ != -1)
     launcher_controller_->LauncherItemClosed(item_id_);
 }
@@ -95,10 +98,7 @@ BrowserLauncherItemController* BrowserLauncherItemController::Create(
 }
 
 void BrowserLauncherItemController::BrowserActivationStateChanged() {
-  launcher_controller_->SetItemStatus(
-      item_id_,
-      ash::wm::IsActiveWindow(window_) ?
-          ash::STATUS_ACTIVE : ash::STATUS_RUNNING);
+  UpdateItemStatus();
 }
 
 void BrowserLauncherItemController::ActiveTabChanged(
@@ -136,6 +136,29 @@ void BrowserLauncherItemController::TabChangedAt(
 
 void BrowserLauncherItemController::FaviconUpdated() {
   UpdateLauncher(tab_model_->GetActiveTabContents());
+}
+
+void BrowserLauncherItemController::OnWindowPropertyChanged(
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (key == aura::client::kDrawAttentionKey)
+    UpdateItemStatus();
+}
+
+void BrowserLauncherItemController::UpdateItemStatus() {
+  ash::LauncherItemStatus status;
+  if (ash::wm::IsActiveWindow(window_)) {
+    // Clear attention state if active.
+    if (window_->GetProperty(aura::client::kDrawAttentionKey))
+      window_->SetProperty(aura::client::kDrawAttentionKey, false);
+    status = ash::STATUS_ACTIVE;
+  } else if (window_->GetProperty(aura::client::kDrawAttentionKey)) {
+    status = ash::STATUS_ATTENTION;
+  } else {
+    status = ash::STATUS_RUNNING;
+  }
+  launcher_controller_->SetItemStatus(item_id_, status);
 }
 
 void BrowserLauncherItemController::UpdateLauncher(TabContentsWrapper* tab) {

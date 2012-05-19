@@ -26,6 +26,10 @@ AURA_EXPORT extern const WindowProperty<bool>* const kAlwaysOnTopKey;
 // of value is an int.
 AURA_EXPORT extern const WindowProperty<bool>* const kAnimationsDisabledKey;
 
+// A property key to indicate that a window should show that it deserves
+// attention.
+AURA_EXPORT extern const aura::WindowProperty<bool>* const kDrawAttentionKey;
+
 // A property key to store the window modality.
 AURA_EXPORT extern const WindowProperty<ui::ModalType>* const kModalKey;
 

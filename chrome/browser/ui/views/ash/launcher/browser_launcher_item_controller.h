@@ -15,6 +15,7 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
+#include "ui/aura/window_observer.h"
 
 class Browser;
 class ChromeLauncherController;
@@ -32,7 +33,8 @@ class Window;
 // BrowserLauncherItemController is responsible for keeping the launcher
 // representation of a window up to date as the active tab changes.
 class BrowserLauncherItemController : public TabStripModelObserver,
-                                      public LauncherFaviconLoader::Delegate {
+                                      public LauncherFaviconLoader::Delegate,
+                                      public aura::WindowObserver {
  public:
   // This API is to be used as part of testing only.
   class TestApi {
@@ -96,6 +98,11 @@ class BrowserLauncherItemController : public TabStripModelObserver,
   // LauncherFaviconLoader::Delegate overrides:
   virtual void FaviconUpdated() OVERRIDE;
 
+  // aura::WindowObserver overrides:
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const void* key,
+                                       intptr_t old) OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserLauncherItemControllerTest, PanelItem);
 
@@ -105,6 +112,10 @@ class BrowserLauncherItemController : public TabStripModelObserver,
     UPDATE_TAB_CHANGED,
     UPDATE_TAB_INSERTED,
   };
+
+  // Updates the launcher item status base on the activation and attention
+  // state of the window.
+  void UpdateItemStatus();
 
   // Updates the launcher from |tab|.
   void UpdateLauncher(TabContentsWrapper* tab);

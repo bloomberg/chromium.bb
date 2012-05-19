@@ -618,7 +618,7 @@ void NativeWidgetAura::SetUseDragFrame(bool use_drag_frame) {
 }
 
 void NativeWidgetAura::FlashFrame(bool flash) {
-  NOTIMPLEMENTED();
+  window_->SetProperty(aura::client::kDrawAttentionKey, flash);
 }
 
 bool NativeWidgetAura::IsAccessibleWidget() const {

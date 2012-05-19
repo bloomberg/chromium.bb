@@ -73,10 +73,13 @@ class LauncherButton::BarView : public views::ImageView,
   }
 
   void ShowAttention(bool show) {
-    if (show)
+    if (show) {
+      // It's less disruptive if we don't start the pulsing at 0.
+      animation_.Reset(0.375);
       animation_.StartThrobbing(-1);
-    else
-      animation_.Reset();
+    } else {
+      animation_.Reset(0.0);
+    }
   }
 
  private:

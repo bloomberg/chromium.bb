@@ -18,6 +18,7 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_activation_client.h"
@@ -361,4 +362,30 @@ TEST_F(BrowserLauncherItemControllerTest, SwitchDirectlyToApp) {
   EXPECT_EQ(ash::STATUS_RUNNING, launcher_model_->items()[index1].status);
   EXPECT_EQ(ash::STATUS_ACTIVE, launcher_model_->items()[index2].status);
   EXPECT_EQ(&state2.window, activation_client_->GetActiveWindow());
+}
+
+// Test attention states of windows.
+TEST_F(BrowserLauncherItemControllerTest, FlashWindow) {
+  // App panel first
+  State app_state(this, "1", BrowserLauncherItemController::TYPE_APP_PANEL);
+  EXPECT_EQ(ash::STATUS_ACTIVE, app_state.GetUpdaterItem().status);
+
+  // Active windows don't show attention.
+  app_state.window.SetProperty(aura::client::kDrawAttentionKey, true);
+  EXPECT_EQ(ash::STATUS_ACTIVE, app_state.GetUpdaterItem().status);
+
+  // Then browser window
+  State browser_state(
+      this, std::string(), BrowserLauncherItemController::TYPE_TABBED);
+  // First browser is active.
+  EXPECT_EQ(ash::STATUS_ACTIVE, browser_state.GetUpdaterItem().status);
+  EXPECT_EQ(ash::STATUS_RUNNING, app_state.GetUpdaterItem().status);
+
+  // App window should go to attention state.
+  app_state.window.SetProperty(aura::client::kDrawAttentionKey, true);
+  EXPECT_EQ(ash::STATUS_ATTENTION, app_state.GetUpdaterItem().status);
+
+  // Activating app window should clear attention state.
+  activation_client_->ActivateWindow(&app_state.window);
+  EXPECT_EQ(ash::STATUS_ACTIVE, app_state.GetUpdaterItem().status);
 }
