@@ -34,7 +34,8 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback) {
   if (!WizardController::default_controller() ||
       WizardController::IsDeviceRegistered()) {
     update_engine_client->RequestUpdateCheck(
-        base::Bind(&VersionUpdaterCros::OnUpdateCheck, base::Unretained(this)));
+        base::Bind(&VersionUpdaterCros::OnUpdateCheck,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -60,10 +61,10 @@ void VersionUpdaterCros::GetReleaseChannel(const ChannelCallback& cb) {
   // handler and ensure it does not get deleted before the callback.
   update_engine_client->GetReleaseTrack(
       base::Bind(&VersionUpdaterCros::UpdateSelectedChannel,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-VersionUpdaterCros::VersionUpdaterCros() {}
+VersionUpdaterCros::VersionUpdaterCros() : weak_ptr_factory_(this) {}
 
 VersionUpdaterCros::~VersionUpdaterCros() {
   UpdateEngineClient* update_engine_client =

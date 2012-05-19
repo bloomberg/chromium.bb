@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chromeos/dbus/update_engine_client.h"
 
@@ -42,6 +43,8 @@ class VersionUpdaterCros : public VersionUpdater,
 
   // Callback used to communicate current channel to the client.
   ChannelCallback channel_callback_;
+
+  base::WeakPtrFactory<VersionUpdaterCros> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterCros);
 };
