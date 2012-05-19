@@ -133,3 +133,26 @@ index 847ac52..6f9a55b 100644
  
  static const HB_OpenTypeFeature tibetan_features[] = {
      { HB_MAKE_TAG('c', 'c', 'm', 'p'), CcmpProperty },
+diff --git a/src/harfbuzz-shaper.cpp b/src/harfbuzz-shaper.cpp
+index ce4d4ac..6b4d6d2 100644
+--- a/src/harfbuzz-shaper.cpp
++++ b/src/harfbuzz-shaper.cpp
+@@ -1263,16 +1263,13 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
+ //                    (int)(positions[i].x_pos >> 6), (int)(positions[i].y_pos >> 6),
+ //                    positions[i].back, positions[i].new_advance);
+ 
+-            HB_Fixed adjustment = (item->item.bidiLevel % 2) ? -positions[i].x_advance : positions[i].x_advance;
++            HB_Fixed adjustment = positions[i].x_advance;
+ 
+             if (!(face->current_flags & HB_ShaperFlag_UseDesignMetrics))
+                 adjustment = HB_FIXED_ROUND(adjustment);
+ 
+-            if (positions[i].new_advance) {
+-                advances[i] = adjustment;
+-            } else {
++            if (positions[i].new_advance == 0)
+                 advances[i] += adjustment;
+-            }
+ 
+             int back = 0;
+             HB_FixedPoint *offsets = item->offsets;

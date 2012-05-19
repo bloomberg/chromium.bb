@@ -18,3 +18,5 @@ changes against upstream; you must also apply any changes that you make to
 the checked-in copy of the source.)
 
 Added support for building on Android.
+
+The patch for Arabic alignment bug was added (bug 105685).

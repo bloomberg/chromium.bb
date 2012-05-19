@@ -1282,16 +1282,13 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
 //                    (int)(positions[i].x_pos >> 6), (int)(positions[i].y_pos >> 6),
 //                    positions[i].back, positions[i].new_advance);
 
-            HB_Fixed adjustment = (item->item.bidiLevel % 2) ? -positions[i].x_advance : positions[i].x_advance;
+            HB_Fixed adjustment = positions[i].x_advance;
 
             if (!(face->current_flags & HB_ShaperFlag_UseDesignMetrics))
                 adjustment = HB_FIXED_ROUND(adjustment);
 
-            if (positions[i].new_advance) {
-                advances[i] = adjustment;
-            } else {
+            if (positions[i].new_advance == 0)
                 advances[i] += adjustment;
-            }
 
             int back = 0;
             HB_FixedPoint *offsets = item->offsets;
@@ -1354,4 +1351,3 @@ HB_Bool HB_ShapeItem(HB_ShaperItem *shaper_item)
     shaper_item->glyphIndicesPresent = false;
     return result;
 }
-
