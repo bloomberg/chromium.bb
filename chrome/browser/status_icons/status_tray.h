@@ -6,10 +6,9 @@
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_vector.h"
 
 class StatusIcon;
 
@@ -32,7 +31,7 @@ class StatusTray {
   void RemoveStatusIcon(StatusIcon* icon);
 
  protected:
-  typedef std::vector<StatusIcon*> StatusIconList;
+  typedef ScopedVector<StatusIcon> StatusIcons;
 
   StatusTray();
 
@@ -40,13 +39,14 @@ class StatusTray {
   virtual StatusIcon* CreatePlatformStatusIcon() = 0;
 
   // Returns the list of active status icons so subclasses can operate on them.
-  const StatusIconList& status_icons() { return status_icons_; }
+  const StatusIcons& status_icons() const { return status_icons_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(StatusTrayTest, CreateRemove);
 
-  // List containing all active StatusIcons.
-  StatusIconList status_icons_;
+  // List containing all active StatusIcons. The icons are owned by this
+  // StatusTray.
+  StatusIcons status_icons_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusTray);
 };

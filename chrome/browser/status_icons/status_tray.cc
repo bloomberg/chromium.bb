@@ -6,14 +6,9 @@
 
 #include <algorithm>
 
-#include "base/stl_util.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
-StatusTray::StatusTray() {
-}
-
 StatusTray::~StatusTray() {
-  STLDeleteElements(&status_icons_);
 }
 
 StatusIcon* StatusTray::CreateStatusIcon() {
@@ -24,13 +19,16 @@ StatusIcon* StatusTray::CreateStatusIcon() {
 }
 
 void StatusTray::RemoveStatusIcon(StatusIcon* icon) {
-  StatusIconList::iterator i(std::find(status_icons_.begin(),
-                                       status_icons_.end(), icon));
+  StatusIcons::iterator i(
+      std::find(status_icons_.begin(), status_icons_.end(), icon));
+
   if (i == status_icons_.end()) {
     NOTREACHED();
     return;
   }
 
-  delete *i;
   status_icons_.erase(i);
+}
+
+StatusTray::StatusTray() {
 }
