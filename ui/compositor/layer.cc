@@ -602,7 +602,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
         static_cast<float>(size.height())/texture_size.height());
     texture_layer.setUVRect(rect);
 
-    gfx::Size size_in_pixel = ConvertSizeToPixel(this, bounds().size());
+    gfx::Size size_in_pixel = ConvertSizeToPixel(this, size);
     web_layer_.setBounds(size_in_pixel);
   }
 }
