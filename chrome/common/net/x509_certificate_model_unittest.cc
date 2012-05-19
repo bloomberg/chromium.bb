@@ -71,3 +71,14 @@ TEST(X509CertificateModelTest, GetTypeServer) {
             x509_certificate_model::GetType(cert->os_cert_handle()));
 #endif
 }
+
+// An X.509 v1 certificate with the version field omitted should get
+// the default value v1.
+TEST(X509CertificateModelTest, GetVersionOmitted) {
+  scoped_refptr<net::X509Certificate> cert(
+      net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                              "ndn.ca.crt"));
+  ASSERT_TRUE(cert.get());
+
+  EXPECT_EQ("1", x509_certificate_model::GetVersion(cert->os_cert_handle()));
+}

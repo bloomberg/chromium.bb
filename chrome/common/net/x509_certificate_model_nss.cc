@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -125,10 +125,13 @@ string GetTokenName(X509Certificate::OSCertHandle cert_handle) {
 }
 
 string GetVersion(X509Certificate::OSCertHandle cert_handle) {
-  unsigned long version = ULONG_MAX;
-  if (SEC_ASN1DecodeInteger(&cert_handle->version, &version) == SECSuccess &&
-      version != ULONG_MAX)
+  // If the version field is omitted from the certificate, the default
+  // value is v1(0).
+  unsigned long version = 0;
+  if (cert_handle->version.len == 0 ||
+      SEC_ASN1DecodeInteger(&cert_handle->version, &version) == SECSuccess) {
     return base::UintToString(version + 1);
+  }
   return "";
 }
 
