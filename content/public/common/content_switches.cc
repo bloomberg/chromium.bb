@@ -632,4 +632,12 @@ extern const char kFlingTapSuppressMaxGap[] = "fling-tap-suppress-max-gap";
 extern const char kTestCompositor[]         = "test-compositor";
 #endif
 
+// Sets the tile size used by composited layers.
+const char kDefaultTileWidth[]              = "default-tile-width";
+const char kDefaultTileHeight[]             = "default-tile-height";
+
+// Sets the width and height above which a composited layer will get tiled.
+const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
+const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";
+
 }  // namespace switches

@@ -182,6 +182,10 @@ CONTENT_EXPORT extern const char kWorkerProcess[];
 CONTENT_EXPORT extern const char kZygoteCmdPrefix[];
 CONTENT_EXPORT extern const char kZygoteProcess[];
 CONTENT_EXPORT extern const char kDisableSoftwareRasterizer[];
+extern const char kDefaultTileWidth[];
+extern const char kDefaultTileHeight[];
+extern const char kMaxUntiledLayerWidth[];
+extern const char kMaxUntiledLayerHeight[];
 
 extern const char kEnableVisualWordMovement[];
 

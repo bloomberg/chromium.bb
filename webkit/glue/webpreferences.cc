@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSettings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -20,6 +21,7 @@
 using WebKit::WebNetworkStateNotifier;
 using WebKit::WebRuntimeFeatures;
 using WebKit::WebSettings;
+using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebView;
@@ -102,7 +104,11 @@ WebPreferences::WebPreferences()
       visual_word_movement_enabled(false),
       per_tile_painting_enabled(false),
       css_regions_enabled(false),
-      css_shaders_enabled(false) {
+      css_shaders_enabled(false),
+      default_tile_width(256),
+      default_tile_height(256),
+      max_untiled_layer_width(512),
+      max_untiled_layer_height(512) {
   standard_font_family_map[kCommonScript] =
       ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] =
@@ -353,6 +359,11 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setExperimentalCSSRegionsEnabled(css_regions_enabled);
   settings->setExperimentalCSSCustomFilterEnabled(css_shaders_enabled);
+
+  settings->setDefaultTileSize(
+      WebSize(default_tile_width, default_tile_height));
+  settings->setMaxUntiledLayerSize(
+      WebSize(max_untiled_layer_width, max_untiled_layer_height));
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }

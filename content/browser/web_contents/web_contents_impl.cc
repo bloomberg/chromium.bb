@@ -220,6 +220,18 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
     delegate->AddNavigationHeaders(params->url, &params->extra_headers);
 }
 
+int GetSwitchValueAsInt(
+    const CommandLine& command_line,
+    const std::string& switch_string,
+    int min_value) {
+  std::string string_value = command_line.GetSwitchValueASCII(switch_string);
+  int int_value;
+  if (base::StringToInt(string_value, &int_value))
+    return std::max(min_value, int_value);
+  else
+    return min_value;
+}
+
 }  // namespace
 
 namespace content {
@@ -514,6 +526,19 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
         gfx::Monitor::GetDefaultDeviceScaleFactor();;
   }
 #endif
+
+  if (command_line.HasSwitch(switches::kDefaultTileWidth))
+    prefs.default_tile_width =
+        GetSwitchValueAsInt(command_line, switches::kDefaultTileWidth, 1);
+  if (command_line.HasSwitch(switches::kDefaultTileHeight))
+    prefs.default_tile_height =
+        GetSwitchValueAsInt(command_line, switches::kDefaultTileHeight, 1);
+  if (command_line.HasSwitch(switches::kMaxUntiledLayerWidth))
+    prefs.max_untiled_layer_width =
+        GetSwitchValueAsInt(command_line, switches::kMaxUntiledLayerWidth, 1);
+  if (command_line.HasSwitch(switches::kMaxUntiledLayerHeight))
+    prefs.max_untiled_layer_height =
+        GetSwitchValueAsInt(command_line, switches::kMaxUntiledLayerHeight, 1);
 
   content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 
