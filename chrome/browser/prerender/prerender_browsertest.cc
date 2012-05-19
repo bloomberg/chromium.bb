@@ -985,10 +985,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-// TODO(gavinp): After https://bugs.webkit.org/show_bug.cgi?id=85005 lands,
-// enable this test.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderPageRemovingLink) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovingLink) {
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
   set_loader_query_and_fragment("?links_to_insert=1&links_to_remove=1");
   PrerenderTestURL("files/prerender/prerender_page.html",
@@ -997,10 +994,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-// TODO(gavinp): After https://bugs.webkit.org/show_bug.cgi?id=85005 lands,
-// enable this test.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderPageRemovingLinkWithTwoLinks) {
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest, PrerenderPageRemovingLinkWithTwoLinks) {
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
   set_loader_query_and_fragment("?links_to_insert=2&links_to_remove=2");
   PrerenderTestURL("files/prerender/prerender_page.html",
@@ -1009,15 +1004,21 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
-// TODO(gavinp): After https://bugs.webkit.org/show_bug.cgi?id=85005 lands,
-// enable this test.
 IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest,
-    DISABLED_PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
+    PrerenderBrowserTest, PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
   set_loader_query_and_fragment("?links_to_insert=2&links_to_remove=1");
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_USED, 1);
+  RemoveLinkElementsAndNavigate();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest, PrerenderPageRemovingLinkWithOneLinkRemovingTwo) {
+  set_loader_path("files/prerender/prerender_loader_removing_links.html");
+  set_loader_query_and_fragment("?links_to_insert=1&links_to_remove=2");
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_CANCELLED, 1);
   RemoveLinkElementsAndNavigate();
 }
 
