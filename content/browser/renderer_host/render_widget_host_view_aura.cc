@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -18,6 +19,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
@@ -120,6 +122,13 @@ void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
   int default_dpi = monitor.device_scale_factor() * 160;
   results->verticalDPI = default_dpi;
   results->horizontalDPI = default_dpi;
+}
+
+bool ShouldSendPinchGesture() {
+  static bool pinch_allowed =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViewport) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);
+  return pinch_allowed;
 }
 
 }  // namespace
@@ -1065,6 +1074,13 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
 
 ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     aura::GestureEvent* event) {
+  // Pinch gestures are currently disabled by default. See crbug.com/128477.
+  if ((event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
+      event->type() == ui::ET_GESTURE_PINCH_UPDATE ||
+      event->type() == ui::ET_GESTURE_PINCH_END) && !ShouldSendPinchGesture()) {
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+
   WebKit::WebGestureEvent gesture = content::MakeWebGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
     // Webkit does not stop a fling-scroll on tap-down. So explicitly send an

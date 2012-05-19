@@ -1055,6 +1055,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kEnableGView,
       ::switches::kEnableLogging,
       ::switches::kEnablePartialSwap,
+      ::switches::kEnablePinch,
       ::switches::kEnableSmoothScrolling,
       ::switches::kEnableThreadedCompositing,
       ::switches::kEnableTouchEvents,

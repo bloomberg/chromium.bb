@@ -277,6 +277,9 @@ const char kEnableOriginBoundCerts[]  = "enable-origin-bound-certs";
 // Enables partial swaps in the WK compositor on platforms that support it.
 const char kEnablePartialSwap[]             = "enable-partial-swap";
 
+// Enables touch-screen pinch gestures.
+const char kEnablePinch[]                   = "enable-pinch";
+
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 
@@ -340,7 +343,8 @@ const char kEnableVaapi[]                   = "enable-vaapi";
 const char kEnableVideoTrack[]              = "enable-video-track";
 
 // Enables the use of the viewport meta tag, which allows
-// pages to control aspects of their own layout.
+// pages to control aspects of their own layout. This also turns on touch-screen
+// pinch gestures.
 const char kEnableViewport[]                = "enable-viewport";
 
 // Enables experimental features for the geolocation API.
