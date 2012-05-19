@@ -1004,8 +1004,17 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
 }
 
+#if defined(OS_WIN)
+// TODO(gavinp): Fails on XP Rel - http://crbug.com/128841
+#define MAYBE_PrerenderPageRemovingLinkWithTwoLinksRemovingOne \
+    DISABLED_PrerenderPageRemovingLinkWithTwoLinksRemovingOne
+#else
+#define MAYBE_PrerenderPageRemovingLinkWithTwoLinksRemovingOne \
+    PrerenderPageRemovingLinkWithTwoLinksRemovingOne
+#endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(
-    PrerenderBrowserTest, PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
+    PrerenderBrowserTest,
+    MAYBE_PrerenderPageRemovingLinkWithTwoLinksRemovingOne) {
   set_loader_path("files/prerender/prerender_loader_removing_links.html");
   set_loader_query_and_fragment("?links_to_insert=2&links_to_remove=1");
   PrerenderTestURL("files/prerender/prerender_page.html",
