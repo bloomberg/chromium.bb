@@ -26,6 +26,10 @@ class UI_EXPORT SizeF : public SizeBase<SizeF, float> {
   std::string ToString() const;
 };
 
+#if !defined(COMPILER_MSVC)
+extern template class SizeBase<SizeF, float>;
+#endif
+
 }  // namespace gfx
 
 #endif  // UI_GFX_SIZE_F_H_

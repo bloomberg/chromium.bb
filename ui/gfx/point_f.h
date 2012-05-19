@@ -28,6 +28,10 @@ class UI_EXPORT PointF : public PointBase<PointF, float> {
   std::string ToString() const;
 };
 
+#if !defined(COMPILER_MSVC)
+extern template class PointBase<PointF, float>;
+#endif
+
 }  // namespace gfx
 
 #endif  // UI_GFX_POINT_F_H_

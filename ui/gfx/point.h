@@ -46,6 +46,10 @@ class UI_EXPORT Point : public PointBase<Point, int> {
   std::string ToString() const;
 };
 
+#if !defined(COMPILER_MSVC)
+extern template class PointBase<Point, int>;
+#endif
+
 }  // namespace gfx
 
 #endif  // UI_GFX_POINT_H_
