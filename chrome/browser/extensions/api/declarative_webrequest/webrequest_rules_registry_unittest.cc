@@ -33,9 +33,10 @@ namespace keys2 = url_matcher_constants;
 class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
  public:
   TestWebRequestRulesRegistry() : WebRequestRulesRegistry(NULL) {}
-  virtual ~TestWebRequestRulesRegistry() {}
 
  protected:
+  virtual ~TestWebRequestRulesRegistry() {}
+
   virtual base::Time GetExtensionInstallationTime(
       const std::string& extension_id) const {
     if (extension_id == kExtensionId)
