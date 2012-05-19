@@ -315,7 +315,8 @@ bool TextfieldViewsModel::SetText(const string16& text) {
     if (changed)  // No need to remember composition.
       Undo();
     size_t old_cursor = GetCursorPosition();
-    size_t new_cursor = old_cursor > text.length() ? text.length() : old_cursor;
+    // SetText moves the cursor to the end.
+    size_t new_cursor = text.length();
     SelectAll();
     // If there is a composition text, don't merge with previous edit.
     // Otherwise, force merge the edits.

@@ -531,8 +531,15 @@ void OmniboxViewViews::GetSelectionBounds(string16::size_type* start,
                                           string16::size_type* end) const {
   ui::Range range;
   textfield_->GetSelectedRange(&range);
-  *start = static_cast<size_t>(range.end());
-  *end = static_cast<size_t>(range.start());
+  if (range.is_empty()) {
+    // Omnibox API expects that selection bounds is at cursor position
+    // if there is no selection.
+    *start = textfield_->GetCursorPosition();
+    *end = textfield_->GetCursorPosition();
+  } else {
+    *start = static_cast<size_t>(range.end());
+    *end = static_cast<size_t>(range.start());
+  }
 }
 
 void OmniboxViewViews::SelectAll(bool reversed) {

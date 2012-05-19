@@ -860,14 +860,16 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
     OnBeforeUserAction();
     bool editable = !textfield_->read_only();
     bool readable = !textfield_->IsObscured();
-    bool selection = key_event.IsShiftDown();
+    bool shift = key_event.IsShiftDown();
     bool control = key_event.IsControlDown();
     bool text_changed = false;
     bool cursor_changed = false;
     switch (key_code) {
       case ui::VKEY_Z:
-        if (control && editable)
+        if (control && !shift && editable)
           cursor_changed = text_changed = model_->Undo();
+        else if (control && shift && editable)
+          cursor_changed = text_changed = model_->Redo();
         break;
       case ui::VKEY_Y:
         if (control && editable)
@@ -896,16 +898,16 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         model_->MoveCursor(
             control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK,
             (key_code == ui::VKEY_RIGHT) ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT,
-            selection);
+            shift);
         cursor_changed = true;
         break;
       case ui::VKEY_END:
       case ui::VKEY_HOME:
         if ((key_code == ui::VKEY_HOME) ==
             (GetRenderText()->GetTextDirection() == base::i18n::RIGHT_TO_LEFT))
-          model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, selection);
+          model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, shift);
         else
-          model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, selection);
+          model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, shift);
         cursor_changed = true;
         break;
       case ui::VKEY_BACK:
@@ -915,7 +917,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         if (!model_->HasSelection()) {
           gfx::VisualCursorDirection direction = (key_code == ui::VKEY_DELETE) ?
               gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT;
-          if (selection && control) {
+          if (shift && control) {
             // If both shift and control are pressed, then erase up to the
             // beginning/end of the buffer in ChromeOS. In windows, do nothing.
 #if defined(OS_WIN)

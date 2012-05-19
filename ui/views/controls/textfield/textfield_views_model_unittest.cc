@@ -470,8 +470,8 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   model.SetText(ASCIIToUTF16("GOODBYE"));
   EXPECT_STR_EQ("GOODBYE", model.GetText());
-  // SetText won't reset the cursor posistion.
-  EXPECT_EQ(5U, model.GetCursorPosition());
+  // SetText move the cursor to the end of the new text.
+  EXPECT_EQ(7U, model.GetCursorPosition());
   model.SelectAll();
   EXPECT_STR_EQ("GOODBYE", model.GetSelectedText());
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
@@ -1104,7 +1104,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_SetText) {
   EXPECT_STR_EQ("w", model.GetText());
   EXPECT_EQ(1U, model.GetCursorPosition());
   model.SetText(ASCIIToUTF16("www.google.com"));
-  EXPECT_EQ(1U, model.GetCursorPosition());
+  EXPECT_EQ(14U, model.GetCursorPosition());
   EXPECT_STR_EQ("www.google.com", model.GetText());
   model.SelectRange(ui::Range(14, 1));
   model.InsertChar('w');
@@ -1123,7 +1123,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_SetText) {
   EXPECT_STR_EQ("www.y", model.GetText());
   model.SetText(ASCIIToUTF16("www.youtube.com"));
   EXPECT_STR_EQ("www.youtube.com", model.GetText());
-  EXPECT_EQ(5U, model.GetCursorPosition());
+  EXPECT_EQ(15U, model.GetCursorPosition());
 
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("www.google.com", model.GetText());
@@ -1166,7 +1166,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_BackspaceThenSetText) {
   EXPECT_STR_EQ("w", model.GetText());
   EXPECT_EQ(1U, model.GetCursorPosition());
   model.SetText(ASCIIToUTF16("www.google.com"));
-  EXPECT_EQ(1U, model.GetCursorPosition());
+  EXPECT_EQ(14U, model.GetCursorPosition());
   EXPECT_STR_EQ("www.google.com", model.GetText());
   model.SetText(ASCIIToUTF16("www.google.com"));  // Confirm the text.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
@@ -1202,7 +1202,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_STR_EQ("", model.GetText());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ABCDE", model.GetText());
-  EXPECT_EQ(0U, model.GetCursorPosition());
+  EXPECT_EQ(5U, model.GetCursorPosition());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ADE", model.GetText());
   EXPECT_EQ(1U, model.GetCursorPosition());
@@ -1233,7 +1233,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_STR_EQ("", model.GetText());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ABCDE", model.GetText());  // Redoing SetText
-  EXPECT_EQ(0U, model.GetCursorPosition());
+  EXPECT_EQ(5U, model.GetCursorPosition());
 
   // Redo
   EXPECT_TRUE(model.Redo());
@@ -1273,7 +1273,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   ResetModel(&model);
   model.SetText(ASCIIToUTF16("12345"));
   EXPECT_STR_EQ("12345", model.GetText());
-  EXPECT_EQ(0U, model.GetCursorPosition());
+  EXPECT_EQ(5U, model.GetCursorPosition());
   model.SelectRange(ui::Range(1, 3));
   model.Copy();  // Copy "23"
   EXPECT_STR_EQ("12345", model.GetText());
@@ -1297,7 +1297,7 @@ TEST_F(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest) {
   // Redo
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("12345", model.GetText());
-  EXPECT_EQ(0U, model.GetCursorPosition());
+  EXPECT_EQ(5U, model.GetCursorPosition());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("12345", model.GetText());  // For 1st paste
   EXPECT_EQ(3U, model.GetCursorPosition());
@@ -1358,7 +1358,7 @@ void RunInsertReplaceTest(TextfieldViewsModel& model) {
   EXPECT_FALSE(model.Undo());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("abcd", model.GetText());
-  EXPECT_EQ(0U, model.GetCursorPosition());  // By SetText
+  EXPECT_EQ(4U, model.GetCursorPosition());  // By SetText
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("a123d", model.GetText());
   EXPECT_EQ(4U, model.GetCursorPosition());
@@ -1385,7 +1385,7 @@ void RunOverwriteReplaceTest(TextfieldViewsModel& model) {
   EXPECT_FALSE(model.Undo());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("abcd", model.GetText());
-  EXPECT_EQ(0U, model.GetCursorPosition());
+  EXPECT_EQ(4U, model.GetCursorPosition());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("a1234", model.GetText());
   EXPECT_EQ(5U, model.GetCursorPosition());

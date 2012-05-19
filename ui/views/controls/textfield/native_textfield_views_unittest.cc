@@ -366,14 +366,14 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTestLowerCase) {
 
   last_contents_.clear();
   textfield_->SetText(ASCIIToUTF16("THIS IS"));
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+  EXPECT_EQ(7U, textfield_->GetCursorPosition());
 
   EXPECT_STR_EQ("this is", model_->GetText());
   EXPECT_STR_EQ("THIS IS", textfield_->text());
   EXPECT_TRUE(last_contents_.empty());
 
   textfield_->AppendText(ASCIIToUTF16(" A TEST"));
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+  EXPECT_EQ(7U, textfield_->GetCursorPosition());
   EXPECT_STR_EQ("this is a test", model_->GetText());
   EXPECT_STR_EQ("THIS IS A TEST", textfield_->text());
 
@@ -388,7 +388,7 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTestLowerCaseI18n) {
   last_contents_.clear();
   // Zenkaku Japanese "ABCabc"
   textfield_->SetText(WideToUTF16(L"\xFF21\xFF22\xFF23\xFF41\xFF42\xFF43"));
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+  EXPECT_EQ(6U, textfield_->GetCursorPosition());
   // Zenkaku Japanese "abcabc"
   EXPECT_EQ(WideToUTF16(L"\xFF41\xFF42\xFF43\xFF41\xFF42\xFF43"),
             model_->GetText());
@@ -399,7 +399,7 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTestLowerCaseI18n) {
 
   // Zenkaku Japanese "XYZxyz"
   textfield_->AppendText(WideToUTF16(L"\xFF38\xFF39\xFF3A\xFF58\xFF59\xFF5A"));
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+  EXPECT_EQ(6U, textfield_->GetCursorPosition());
   // Zenkaku Japanese "abcabcxyzxyz"
   EXPECT_EQ(WideToUTF16(L"\xFF41\xFF42\xFF43\xFF41\xFF42\xFF43"
                         L"\xFF58\xFF59\xFF5A\xFF58\xFF59\xFF5A"),
@@ -422,7 +422,7 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTestLowerCaseWithLocale) {
   last_contents_.clear();
   // Turkish 'I' should be converted to dotless 'i' (U+0131).
   textfield_->SetText(WideToUTF16(L"I"));
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+  EXPECT_EQ(1U, textfield_->GetCursorPosition());
   EXPECT_EQ(WideToUTF16(L"\x0131"), model_->GetText());
   EXPECT_EQ(WideToUTF16(L"I"), textfield_->text());
   EXPECT_TRUE(last_contents_.empty());
@@ -431,7 +431,7 @@ TEST_F(NativeTextfieldViewsTest, ModelChangesTestLowerCaseWithLocale) {
 
   // On default (en) locale, 'I' should be converted to 'i'.
   textfield_->SetText(WideToUTF16(L"I"));
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
+  EXPECT_EQ(1U, textfield_->GetCursorPosition());
   EXPECT_EQ(WideToUTF16(L"i"), model_->GetText());
   EXPECT_EQ(WideToUTF16(L"I"), textfield_->text());
   EXPECT_TRUE(last_contents_.empty());
@@ -462,8 +462,8 @@ TEST_F(NativeTextfieldViewsTest, ControlAndSelectTest) {
   // Insert a test string in a textfield.
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("one two three"));
-  SendKeyEvent(ui::VKEY_RIGHT,
-                              true /* shift */, false /* control */);
+  SendKeyEvent(ui::VKEY_HOME,  false /* shift */, false /* control */);
+  SendKeyEvent(ui::VKEY_RIGHT, true, false);
   SendKeyEvent(ui::VKEY_RIGHT, true, false);
   SendKeyEvent(ui::VKEY_RIGHT, true, false);
 

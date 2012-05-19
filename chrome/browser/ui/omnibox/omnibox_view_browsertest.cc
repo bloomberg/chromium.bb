@@ -1392,11 +1392,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   CtrlKeyPressedWithInlineAutocompleteTest();
 }
 
-#if defined(TOOLKIT_GTK)
-// TODO(oshima): enable these tests for views-implmentation when
-// these featuers are supported. http://crbug.com/121558.
-
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedoLinux) {
+#if defined(TOOLKIT_GTK) || defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   browser()->FocusLocationBar();
 
@@ -1461,6 +1458,25 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedoLinux) {
   EXPECT_TRUE(omnibox_view->GetText().empty());
 }
 
+// See http://crosbug.com/10306
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
+                       BackspaceDeleteHalfWidthKatakana) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  // Insert text: ﾀﾞ
+  omnibox_view->SetUserText(UTF8ToUTF16("\357\276\200\357\276\236"));
+
+  // Move the cursor to the end.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
+
+  // Backspace should delete one character.
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
+  EXPECT_EQ(UTF8ToUTF16("\357\276\200"), omnibox_view->GetText());
+}
+
+#endif  // defined(TOOLKIT_GTK) || defined(USE_AURA)
+
+#if defined(TOOLKIT_GTK)
 // See http://crbug.com/63860
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PrimarySelection) {
   OmniboxView* omnibox_view = NULL;
@@ -1484,22 +1500,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PrimarySelection) {
 
   // The content in the PRIMARY clipboard should not be cleared.
   EXPECT_EQ("Hello world", GetPrimarySelectionText());
-}
-
-// See http://crosbug.com/10306
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
-                       BackspaceDeleteHalfWidthKatakana) {
-  OmniboxView* omnibox_view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  // Insert text: ﾀﾞ
-  omnibox_view->SetUserText(UTF8ToUTF16("\357\276\200\357\276\236"));
-
-  // Move the cursor to the end.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
-
-  // Backspace should delete one character.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
-  EXPECT_EQ(UTF8ToUTF16("\357\276\200"), omnibox_view->GetText());
 }
 
 // http://crbug.com/12316
