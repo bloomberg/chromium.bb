@@ -3492,6 +3492,15 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
   return true;
 }
 
+bool Extension::HasContentScriptAtURL(const GURL& url) const {
+  for (UserScriptList::const_iterator it = content_scripts_.begin();
+      it != content_scripts_.end(); ++it) {
+    if (it->MatchesURL(url))
+      return true;
+  }
+  return false;
+}
+
 bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) {
   if (!is_platform_app())
     return true;

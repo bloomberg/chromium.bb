@@ -27,6 +27,7 @@ struct LoadCommittedDetails;
 
 namespace extensions {
 class ActionBoxController;
+class ScriptBadgeController;
 class ScriptExecutor;
 }
 
@@ -109,13 +110,9 @@ class ExtensionTabHelper
     return content::WebContentsObserver::web_contents();
   }
 
-  extensions::ScriptExecutor* script_executor() {
-    return script_executor_.get();
-  }
+  extensions::ScriptExecutor* script_executor();
 
-  extensions::ActionBoxController* action_box_controller() {
-    return action_box_controller_.get();
-  }
+  extensions::ActionBoxController* action_box_controller();
 
   // Sets a non-extension app icon associated with WebContents and fires an
   // INVALIDATE_TYPE_TITLE navigation state change to trigger repaint of title.
@@ -203,9 +200,12 @@ class ExtensionTabHelper
 
   TabContentsWrapper* wrapper_;
 
+  // Either script_executor/action_box_controller will have values, or
+  // script_badge_controller will have a value, depending on whether the action
+  // box is turned on.
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
-
   scoped_ptr<extensions::ActionBoxController> action_box_controller_;
+  scoped_ptr<extensions::ScriptBadgeController> script_badge_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTabHelper);
 };

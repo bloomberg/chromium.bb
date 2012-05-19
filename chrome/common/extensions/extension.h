@@ -534,6 +534,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // settings page (i.e. chrome://extensions).
   bool ShouldDisplayInExtensionSettings() const;
 
+  // Returns true if the extension has a content script declared at |url|.
+  bool HasContentScriptAtURL(const GURL& url) const;
+
   // Accessors:
 
   const FilePath& path() const { return path_; }

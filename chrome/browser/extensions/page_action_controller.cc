@@ -53,8 +53,8 @@ ActionBoxController::Action PageActionController::OnClicked(
   int tab_id = ExtensionTabUtil::GetTabId(tab_contents_->web_contents());
 
   switch (mouse_button) {
-    case 1:
-    case 2:
+    case 1:  // left
+    case 2:  // middle
       if (page_action->HasPopup(tab_id))
         return ACTION_SHOW_POPUP;
 
@@ -67,7 +67,7 @@ ActionBoxController::Action PageActionController::OnClicked(
           mouse_button);
       return ACTION_NONE;
 
-    case 3:
+    case 3:  // right
       return extension->ShowConfigureContextMenus() ?
           ACTION_SHOW_CONTEXT_MENU : ACTION_NONE;
   }

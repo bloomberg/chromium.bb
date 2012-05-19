@@ -414,6 +414,8 @@
         'browser/extensions/process_map.h',
         'browser/extensions/sandboxed_extension_unpacker.cc',
         'browser/extensions/sandboxed_extension_unpacker.h',
+        'browser/extensions/script_badge_controller.cc',
+        'browser/extensions/script_badge_controller.h',
         'browser/extensions/script_executor.h',
         'browser/extensions/script_executor_impl.cc',
         'browser/extensions/script_executor_impl.h',

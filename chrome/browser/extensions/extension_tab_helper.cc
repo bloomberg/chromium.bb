@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/page_action_controller.h"
+#include "chrome/browser/extensions/script_badge_controller.h"
 #include "chrome/browser/extensions/script_executor_impl.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
@@ -29,6 +31,7 @@
 #include "ui/gfx/image/image.h"
 
 using content::WebContents;
+using extensions::ScriptBadgeController;
 using extensions::ScriptExecutorImpl;
 using extensions::PageActionController;
 
@@ -45,8 +48,12 @@ ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(wrapper->profile(), this)),
       wrapper_(wrapper) {
-  script_executor_.reset(new ScriptExecutorImpl(wrapper->web_contents()));
-  action_box_controller_.reset(new PageActionController(wrapper, this));
+  if (extensions::switch_utils::IsActionBoxEnabled()) {
+    script_badge_controller_.reset(new ScriptBadgeController(wrapper));
+  } else {
+    script_executor_.reset(new ScriptExecutorImpl(wrapper->web_contents()));
+    action_box_controller_.reset(new PageActionController(wrapper, this));
+  }
 }
 
 ExtensionTabHelper::~ExtensionTabHelper() {
@@ -109,6 +116,18 @@ SkBitmap* ExtensionTabHelper::GetExtensionAppIcon() {
     return NULL;
 
   return &extension_app_icon_;
+}
+
+extensions::ScriptExecutor* ExtensionTabHelper::script_executor() {
+  if (script_badge_controller_.get())
+    return script_badge_controller_.get();
+  return script_executor_.get();
+}
+
+extensions::ActionBoxController* ExtensionTabHelper::action_box_controller() {
+  if (script_badge_controller_.get())
+    return script_badge_controller_.get();
+  return action_box_controller_.get();
 }
 
 void ExtensionTabHelper::DidNavigateMainFrame(
