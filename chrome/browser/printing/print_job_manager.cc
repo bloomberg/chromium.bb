@@ -35,15 +35,7 @@ void PrintJobManager::InitOnUIThread(PrefService* prefs) {
 }
 
 void PrintJobManager::OnQuit() {
-#if defined(OS_MACOSX)
-  // OnQuit is too late to try to wait for jobs on the Mac, since the runloop
-  // has already been torn down; instead, StopJobs(true) is called earlier in
-  // the shutdown process, and this is just here in case something sneaks
-  // in after that.
-  StopJobs(false);
-#else
   StopJobs(true);
-#endif
   registrar_.RemoveAll();
 }
 

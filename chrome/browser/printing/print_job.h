@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
 #include "content/public/browser/notification_observer.h"
@@ -108,6 +109,9 @@ class PrintJob : public PrintJobWorkerOwner,
   // eventual deadlock.
   void ControlledWorkerShutdown();
 
+  // Called at shutdown when running a nested message loop.
+  void Quit();
+
   content::NotificationRegistrar registrar_;
 
   // Main message loop reference. Used to send notifications in the right
@@ -135,6 +139,9 @@ class PrintJob : public PrintJobWorkerOwner,
   // Is Canceling? If so, try to not cause recursion if on FAILED notification,
   // the notified calls Cancel() again.
   bool is_canceling_;
+
+  // Used at shutdown so that we can quit a nested message loop.
+  base::WeakPtrFactory<PrintJob> quit_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintJob);
 };

@@ -159,12 +159,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
-#if !defined(OS_ANDROID)
-  // Wait for the pending print jobs to finish.
-  print_job_manager_->OnQuit();
-  print_job_manager_.reset();
-#endif
-
   tracked_objects::ThreadData::EnsureCleanupWasCalled(4);
 
   g_browser_process = NULL;
@@ -283,6 +277,14 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
   module_ref_count_--;
   if (0 == module_ref_count_) {
     release_last_reference_callstack_ = base::debug::StackTrace();
+
+#if !defined(OS_ANDROID)
+    // Wait for the pending print jobs to finish. Don't do this later, since
+    // this might cause a nested message loop to run, and we don't want pending
+    // tasks to run once teardown has started.
+    print_job_manager_->OnQuit();
+    print_job_manager_.reset();
+#endif
 
     CHECK(MessageLoop::current()->is_running());
     // Allow UI and IO threads to do blocking IO on shutdown, since we do a lot

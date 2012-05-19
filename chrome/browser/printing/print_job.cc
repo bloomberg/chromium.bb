@@ -35,7 +35,8 @@ PrintJob::PrintJob()
       worker_(),
       settings_(),
       is_job_pending_(false),
-      is_canceling_(false) {
+      is_canceling_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(quit_factory_(this)) {
   DCHECK(ui_message_loop_);
   // This is normally a UI message loop, but in unit tests, the message loop is
   // of the 'default' type.
@@ -148,6 +149,13 @@ void PrintJob::StartPrinting() {
 void PrintJob::Stop() {
   DCHECK_EQ(ui_message_loop_, MessageLoop::current());
 
+  if (quit_factory_.HasWeakPtrs()) {
+    // In case we're running a nested message loop to wait for a job to finish,
+    // and we finished before the timeout, quit the nested loop right away.
+    Quit();
+    quit_factory_.InvalidateWeakPtrs();
+  }
+
   // Be sure to live long enough.
   scoped_refptr<PrintJob> handle(this);
 
@@ -193,14 +201,8 @@ bool PrintJob::FlushJob(int timeout_ms) {
   // Make sure the object outlive this message loop.
   scoped_refptr<PrintJob> handle(this);
 
-  // Stop() will eventually be called, which will get out of the inner message
-  // loop. But, don't take it for granted and set a timer in case something goes
-  // wrong.
-  base::OneShotTimer<MessageLoop> quit_task;
-  if (timeout_ms) {
-    quit_task.Start(FROM_HERE, TimeDelta::FromMilliseconds(timeout_ms),
-                    MessageLoop::current(), &MessageLoop::Quit);
-  }
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::Bind(&PrintJob::Quit, quit_factory_.GetWeakPtr()), timeout_ms);
 
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
   MessageLoop::current()->Run();
@@ -346,6 +348,10 @@ void PrintJob::ControlledWorkerShutdown() {
 
   // Now make sure the thread object is cleaned up.
   worker_->Stop();
+}
+
+void PrintJob::Quit() {
+  MessageLoop::current()->Quit();
 }
 
 // Takes settings_ ownership and will be deleted in the receiving thread.
