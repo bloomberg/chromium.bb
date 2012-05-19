@@ -180,4 +180,19 @@ node = env.CommandTest('nacl_clock_test.out',
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_clock_test')
 
 
+nacl_sync_test_exe = env.ComponentProgram('nacl_sync_test',
+                                          ['nacl_sync_test.c'],
+                                          EXTRA_LIBS=['platform'])
+
+# TODO(bsy): enable on windows once the bug is fixed.
+# http://code.google.com/p/nativeclient/issues/detail?id=2790
+if not env.Bit('windows'):
+  for flavor in ['lock_lock', 'lock_trylock',
+                 'trylock_lock', 'trylock_trylock']:
+    name = 'nacl_sync_' + flavor + '_test'
+    node = env.CommandTest(name + '.out',
+                           [nacl_sync_test_exe, '-T', flavor])
+
+    env.AddNodeToTestSuite(node, ['small_tests'], 'run_' + name)
+
 env.EnsureRequiredBuildWarnings()
