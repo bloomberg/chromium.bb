@@ -5,6 +5,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -45,7 +46,7 @@ BrowserWithTestWindowTest::BrowserWithTestWindowTest()
 void BrowserWithTestWindowTest::SetUp() {
   testing::Test::SetUp();
 
-  profile_.reset(CreateProfile());
+  set_profile(CreateProfile());
   browser_.reset(new Browser(Browser::TYPE_TABBED, profile()));
   window_.reset(new TestBrowserWindow(browser()));
   browser_->SetWindowForTesting(window_.get());
@@ -84,6 +85,13 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
   db_thread_.Stop();
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   MessageLoop::current()->Run();
+}
+
+void BrowserWithTestWindowTest::set_profile(TestingProfile* profile) {
+  if (profile_.get() != NULL)
+    ProfileDestroyer::DestroyProfileWhenAppropriate(profile_.release());
+
+  profile_.reset(profile);
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {

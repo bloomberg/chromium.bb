@@ -6,5 +6,5 @@
   "background": {
     "scripts": ["test.js"]
   },
-  "permissions": ["experimental", "tabs"]
+  "permissions": ["tabs"]
 }

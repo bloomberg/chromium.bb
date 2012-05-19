@@ -5,36 +5,6 @@
 #include "chrome/browser/ui/browser.h"
 
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/site_instance.h"
-
-class TestingOffTheRecordDestructionProfile : public TestingProfile {
- public:
-  TestingOffTheRecordDestructionProfile() : destroyed_profile_(false) {
-    set_incognito(true);
-  }
-  virtual void DestroyOffTheRecordProfile() OVERRIDE {
-    destroyed_profile_ = true;
-  }
-  bool destroyed_profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingOffTheRecordDestructionProfile);
-};
-
-class BrowserTestOffTheRecord : public BrowserWithTestWindowTest {
- public:
-  BrowserTestOffTheRecord() : off_the_record_profile_(NULL) {}
-
- protected:
-  virtual TestingProfile* CreateProfile() OVERRIDE {
-    if (off_the_record_profile_ == NULL)
-      off_the_record_profile_ = new TestingOffTheRecordDestructionProfile();
-    return off_the_record_profile_;
-  }
-  TestingOffTheRecordDestructionProfile* off_the_record_profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserTestOffTheRecord);
-};
 
 // Various assertions around setting show state.
 TEST_F(BrowserWithTestWindowTest, GetSavedWindowShowState) {
@@ -50,36 +20,4 @@ TEST_F(BrowserWithTestWindowTest, GetSavedWindowShowState) {
   EXPECT_EQ(ui::SHOW_STATE_MINIMIZED, browser()->GetSavedWindowShowState());
   browser()->set_show_state(ui::SHOW_STATE_FULLSCREEN);
   EXPECT_EQ(ui::SHOW_STATE_FULLSCREEN, browser()->GetSavedWindowShowState());
-}
-
-TEST_F(BrowserTestOffTheRecord, DelayProfileDestruction) {
-  scoped_refptr<content::SiteInstance> instance1(
-      static_cast<content::SiteInstance*>(
-          content::SiteInstance::Create(off_the_record_profile_)));
-  scoped_ptr<content::RenderProcessHost> render_process_host1;
-  render_process_host1.reset(instance1->GetProcess());
-  ASSERT_TRUE(render_process_host1.get() != NULL);
-
-  scoped_refptr<content::SiteInstance> instance2(
-      static_cast<content::SiteInstance*>(
-          content::SiteInstance::Create(off_the_record_profile_)));
-  scoped_ptr<content::RenderProcessHost> render_process_host2;
-  render_process_host2.reset(instance2->GetProcess());
-  ASSERT_TRUE(render_process_host2.get() != NULL);
-
-  // destroying the browser should not destroy the off the record profile...
-  set_browser(NULL);
-  EXPECT_FALSE(off_the_record_profile_->destroyed_profile_);
-
-  // until we destroy the render process host holding on to it...
-  render_process_host1.release()->Cleanup();
-
-  // And asynchronicity kicked in properly.
-  MessageLoop::current()->RunAllPending();
-  EXPECT_FALSE(off_the_record_profile_->destroyed_profile_);
-
-  // I meant, ALL the render process hosts... :-)
-  render_process_host2.release()->Cleanup();
-  MessageLoop::current()->RunAllPending();
-  EXPECT_TRUE(off_the_record_profile_->destroyed_profile_);
 }

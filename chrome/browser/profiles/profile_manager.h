@@ -224,7 +224,7 @@ class ProfileManager : public base::NonThreadSafe,
         : profile(profile), created(created) {
     }
 
-    ~ProfileInfo() {}
+    ~ProfileInfo();
 
     scoped_ptr<Profile> profile;
     // Whether profile has been fully loaded (created and initialized).

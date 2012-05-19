@@ -77,9 +77,7 @@ class BrowserWithTestWindowTest : public testing::Test {
   }
 
   TestingProfile* profile() const { return profile_.get(); }
-  void set_profile(TestingProfile* profile) {
-    profile_.reset(profile);
-  }
+  void set_profile(TestingProfile* profile);
 
   MessageLoop* message_loop() { return &ui_loop_; }
 

@@ -13,16 +13,26 @@
 #include "content/public/browser/render_process_host.h"
 
 // static
-void ProfileDestroyer::DestroyOffTheRecordProfile(Profile* const profile) {
+void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   std::vector<content::RenderProcessHost*> hosts;
-  if (GetHostsForProfile(profile, &hosts)) {
+  // Testing profiles can simply be deleted directly. Some tests don't setup
+  // RenderProcessHost correctly and don't necessary run on the UI thread
+  // anyway, so we can't use the AllHostIterator.
+  if (profile->AsTestingProfile() == NULL) {
+    GetHostsForProfile(profile, &hosts);
+    if (!profile->IsOffTheRecord() && profile->HasOffTheRecordProfile())
+      GetHostsForProfile(profile->GetOffTheRecordProfile(), &hosts);
+  }
+  if (hosts.empty()) {
+    if (profile->IsOffTheRecord())
+      profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
+    else
+      delete profile;
+  } else {
     // The instance will destroy itself once all render process hosts referring
-    // to it are properly terminated.
+    // to it and/or it's off the record profile are properly terminated.
     scoped_refptr<ProfileDestroyer> profile_destroyer(
         new ProfileDestroyer(profile, hosts));
-  } else {
-    // Safe to destroy now... We're done...
-    profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
   }
 }
 
@@ -41,7 +51,7 @@ ProfileDestroyer::ProfileDestroyer(
 ProfileDestroyer::~ProfileDestroyer() {
   // Check again, in case other render hosts were added while we were
   // waiting for the previous ones to go away...
-  DestroyOffTheRecordProfile(profile_);
+  DestroyProfileWhenAppropriate(profile_);
 }
 
 void ProfileDestroyer::Observe(int type,
