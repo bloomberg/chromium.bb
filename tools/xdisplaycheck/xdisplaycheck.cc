@@ -12,6 +12,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <X11/Xlib.h>
 
@@ -34,8 +35,19 @@ void Sleep(int duration_ms) {
 }
 
 int main(int argc, char* argv[]) {
-  int kNumTries = 78;  // 78*77/2 * 10 = 30s of waiting
   Display* display = NULL;
+  if (argv[1] && strcmp(argv[1], "--noserver") == 0) {
+    display = XOpenDisplay(NULL);
+    if (display) {
+      fprintf(stderr, "Found unexpected connectable display %s\n",
+              XDisplayName(NULL));
+    }
+    // Return success when we got an unexpected display so that the code
+    // without the --noserver is the same, but slow, rather than inverted.
+    return !display;
+  }
+
+  int kNumTries = 78;  // 78*77/2 * 10 = 30s of waiting
   int tries;
   for (tries = 0; tries < kNumTries; ++tries) {
     display = XOpenDisplay(NULL);
