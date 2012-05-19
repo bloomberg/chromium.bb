@@ -194,10 +194,19 @@ var SourceEntry = (function() {
           return e;
       }
       if (this.entries_.length >= 2) {
-        if (this.entries_[0].type == LogEventType.REQUEST_ALIVE ||
-            this.entries_[0].type == LogEventType.SOCKET_POOL_CONNECT_JOB ||
+        if (this.entries_[0].type == LogEventType.SOCKET_POOL_CONNECT_JOB ||
             this.entries_[1].type == LogEventType.UDP_CONNECT) {
           return this.entries_[1];
+        }
+        if (this.entries_[0].type == LogEventType.REQUEST_ALIVE) {
+          var start_index = 1;
+          // Skip over URL_REQUEST_BLOCKED_ON_DELEGATE events for URL_REQUESTs.
+          while (start_index + 1 < this.entries_.length &&
+                 this.entries_[start_index].type ==
+                     LogEventType.URL_REQUEST_BLOCKED_ON_DELEGATE) {
+            ++start_index;
+          }
+          return this.entries_[start_index];
         }
       }
       return this.entries_[0];
