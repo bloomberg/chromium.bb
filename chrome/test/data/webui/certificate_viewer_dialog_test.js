@@ -6,7 +6,7 @@
  * Test fixture for generated tests.
  * @extends {testing.Test}
  */
-function CertificateViewerUITest() {};
+function CertificateViewerUITest() {}
 
 CertificateViewerUITest.prototype = {
   __proto__: testing.Test.prototype,
@@ -31,7 +31,7 @@ CertificateViewerUITest.prototype = {
  * Test fixture for asynchronous tests.
  * @extends {CertificateViewerUITest}
  */
-function CertificateViewerUITestAsync() {};
+function CertificateViewerUITestAsync() {}
 
 CertificateViewerUITestAsync.prototype = {
   __proto__: CertificateViewerUITest.prototype,
@@ -44,7 +44,7 @@ CertificateViewerUITestAsync.prototype = {
 // Certificate viewer UI tests are disabled on platforms with native certificate
 // viewers.
 GEN('#include "chrome/test/data/webui/certificate_viewer_ui_test-inl.h"');
-GEN('')
+GEN('');
 
 // Constructors and destructors must be provided in .cc to prevent clang errors.
 GEN('CertificateViewerUITest::CertificateViewerUITest() {}');
@@ -68,9 +68,8 @@ TEST_F('CertificateViewerUITest', 'testCN', function() {
  * Test the details pane of the certificate viewer. This verifies that a
  * certificate in the chain can be selected to view the fields. And that fields
  * can be selected to view their values.
- * TODO(flackr,kgr): Re-enable this (http://crbug.com/127732).
  */
-TEST_F('CertificateViewerUITestAsync', 'DISABLED_testDetails', function() {
+TEST_F('CertificateViewerUITestAsync', 'testDetails', function() {
   var certHierarchy = $('hierarchy');
   var certFields = $('cert-fields');
   var certFieldVal = $('cert-field-value');
@@ -78,9 +77,13 @@ TEST_F('CertificateViewerUITestAsync', 'DISABLED_testDetails', function() {
   // There must be at least one certificate in the hierarchy.
   assertLT(0, certHierarchy.childNodes.length);
 
+  // Select the second tab, causing its data to be loaded if needed.
+  $('tabbox').selectedIndex = 1;
+
   // Select the first certificate on the chain and ensure the details show up.
   // Override the receive certificate function to catch when fields are
   // loaded.
+  certHierarchy.selectedItem = null;
   var getCertificateFields = cert_viewer.getCertificateFields;
   cert_viewer.getCertificateFields = this.continueTest(WhenTestDone.ALWAYS,
       function(certFieldDetails) {
