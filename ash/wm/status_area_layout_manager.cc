@@ -56,7 +56,7 @@ void StatusAreaLayoutManager::SetChildBounds(
 
   // If the size matches, no need to do anything. We don't check the location as
   // that is managed by the shelf.
-  if (requested_bounds.size() == child->bounds().size())
+  if (requested_bounds == child->bounds())
     return;
 
   SetChildBoundsDirect(child, requested_bounds);

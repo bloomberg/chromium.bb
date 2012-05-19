@@ -193,6 +193,8 @@ void ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
   if (launcher_)
     launcher_->SetAlignment(alignment);
+  if (Shell::GetInstance()->tray())
+    Shell::GetInstance()->tray()->SetShelfAlignment(alignment);
   LayoutShelf();
 }
 
@@ -395,12 +397,10 @@ void ShelfLayoutManager::GetShelfSize(int* width, int* height) {
   gfx::Rect status_bounds(status_->GetWindowScreenBounds());
   gfx::Size launcher_size = launcher_ ?
       launcher_widget()->GetContentsView()->GetPreferredSize() : gfx::Size();
-  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM)
     *height = std::max(launcher_size.height(), status_bounds.height());
-  } else {
-    // TODO: include status when supports alignment.
-    *width = launcher_size.width();
-  }
+  else
+    *width = std::max(launcher_size.width(), status_bounds.width());
 }
 
 void ShelfLayoutManager::AdjustBoundsBasedOnAlignment(int inset,

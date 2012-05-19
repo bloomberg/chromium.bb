@@ -94,6 +94,11 @@ class SystemTrayContainer : public views::View {
   SystemTrayContainer() {}
   virtual ~SystemTrayContainer() {}
 
+  void SetLayoutManager(views::LayoutManager* layout_manager) {
+    views::View::SetLayoutManager(layout_manager);
+    UpdateWidgetSize();
+  }
+
  private:
   void UpdateWidgetSize() {
     if (GetWidget())
@@ -171,6 +176,7 @@ SystemTray::SystemTray()
       widget_(NULL),
       background_(new internal::SystemTrayBackground),
       should_show_launcher_(false),
+      shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(this,
           0, kTrayBackgroundAlpha)),
       ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(this,
@@ -182,7 +188,8 @@ SystemTray::SystemTray()
   tray_container_->set_border(
       views::Border::CreateEmptyBorder(1, 1, 1, 1));
   set_border(views::Border::CreateEmptyBorder(0, 0,
-        kPaddingFromBottomOfScreen, kPaddingFromRightEdgeOfScreen));
+        kPaddingFromBottomOfScreenBottomAlignment,
+        kPaddingFromRightEdgeOfScreenBottomAlignment));
   set_notify_enter_exit_on_child(true);
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(tray_container_);
@@ -507,6 +514,17 @@ void SystemTray::UpdateNotificationAnchor() {
   notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
 }
 
+void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
+  if (alignment == shelf_alignment_)
+    return;
+
+  tray_container_->SetLayoutManager(new views::BoxLayout(
+      alignment == SHELF_ALIGNMENT_BOTTOM ?
+          views::BoxLayout::kHorizontal : views::BoxLayout::kVertical,
+      0, 0, 0));
+  shelf_alignment_ = alignment;
+}
+
 bool SystemTray::PerformAction(const views::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it
   // (and hide any popup that's currently shown).
@@ -518,8 +536,11 @@ bool SystemTray::PerformAction(const views::Event& event) {
     if (event.IsMouseEvent() || event.IsTouchEvent()) {
       const views::LocatedEvent& located_event =
           static_cast<const views::LocatedEvent&>(event);
-      arrow_offset = base::i18n::IsRTL() ?
-          located_event.x() : tray_container_->width() - located_event.x();
+      if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM)
+        arrow_offset = base::i18n::IsRTL() ?
+            located_event.x() : tray_container_->width() - located_event.x();
+      else
+        arrow_offset = tray_container_->height() - located_event.y();
     }
     ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset);
   }

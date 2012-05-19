@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_views.h"
 #include "ash/system/user/login_status.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -40,6 +41,7 @@ class SystemTrayItem;
 namespace internal {
 class SystemTrayBackground;
 class SystemTrayBubble;
+class SystemTrayContainer;
 class SystemTrayLayerAnimationObserver;
 }
 
@@ -151,6 +153,9 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   // Returns true if the bubble exists.
   bool CloseBubbleForTest() const;
 
+  void SetShelfAlignment(ShelfAlignment alignment);
+  ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
+
  private:
   friend class internal::SystemTrayLayerAnimationObserver;
   friend class internal::SystemTrayBubble;
@@ -205,7 +210,7 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   std::vector<SystemTrayItem*> notification_items_;
 
   // The container for all the tray views of the items.
-  views::View* tray_container_;
+  internal::SystemTrayContainer* tray_container_;
 
   // Mappings of system tray item and it's view in the tray.
   std::map<SystemTrayItem*, views::View*> tray_item_map_;
@@ -239,6 +244,9 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
 
   // See description agove getter.
   bool should_show_launcher_;
+
+  // Shelf alignment.
+  ShelfAlignment shelf_alignment_;
 
   internal::BackgroundAnimator hide_background_animator_;
   internal::BackgroundAnimator hover_background_animator_;

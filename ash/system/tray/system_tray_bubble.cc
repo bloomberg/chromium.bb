@@ -35,12 +35,15 @@ namespace {
 
 const int kShadowThickness = 4;
 
-const int kLeftPadding = 4;
 const int kBottomLineHeight = 1;
+
+const int kSystemTrayBubbleHorizontalInset = 1;
+const int kSystemTrayBubbleVerticalInset = 1;
 
 const int kArrowHeight = 10;
 const int kArrowWidth = 20;
 const int kArrowPaddingFromRight = 20;
+const int kMinArrowOffset = 12;
 
 const int kAnimationDurationForPopupMS = 200;
 
@@ -129,20 +132,31 @@ class TrayPopupItemContainer : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TrayPopupItemContainer);
 };
 
-class SystemTrayBubbleBackground : public views::Background {
+class SystemTrayBubbleBorder : public views::BubbleBorder {
  public:
-  explicit SystemTrayBubbleBackground(views::View* owner)
-      : owner_(owner) {
+  SystemTrayBubbleBorder(views::View* owner,
+                         views::BubbleBorder::ArrowLocation arrow_location,
+                         int arrow_offset)
+      : views::BubbleBorder(arrow_location,
+                            views::BubbleBorder::NO_SHADOW),
+        owner_(owner),
+        arrow_offset_(std::max(arrow_offset, kMinArrowOffset)) {
+    set_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   }
 
-  virtual ~SystemTrayBubbleBackground() {}
+  virtual ~SystemTrayBubbleBorder() {}
 
  private:
-  // Overridden from views::Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+  void PaintChildBorder(gfx::Canvas* canvas) const {
+    gfx::Insets insets;
+    GetInsets(&insets);
+    canvas->Save();
+    canvas->Translate(gfx::Point(insets.left(), insets.top()));
     views::View* last_view = NULL;
     for (int i = 0; i < owner_->child_count(); i++) {
       views::View* v = owner_->child_at(i);
+      if (!v->visible())
+        continue;
 
       if (!v->border()) {
         canvas->DrawLine(gfx::Point(v->x(), v->y() - 1),
@@ -163,34 +177,9 @@ class SystemTrayBubbleBackground : public views::Background {
           kBorderDarkColor);
       last_view = v;
     }
+    canvas->Restore();
   }
 
-  views::View* owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBackground);
-};
-
-class SystemTrayBubbleBorder : public views::BubbleBorder {
- public:
-  enum ArrowType {
-    ARROW_TYPE_NONE,
-    ARROW_TYPE_BOTTOM,
-  };
-
-  SystemTrayBubbleBorder(views::View* owner,
-                         ArrowType arrow_type,
-                         int arrow_offset)
-      : views::BubbleBorder(views::BubbleBorder::BOTTOM_RIGHT,
-                            views::BubbleBorder::NO_SHADOW),
-        owner_(owner),
-        arrow_type_(arrow_type),
-        arrow_offset_(arrow_offset) {
-    set_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
-  }
-
-  virtual ~SystemTrayBubbleBorder() {}
-
- private:
   // Overridden from views::Border.
   virtual void Paint(const views::View& view,
                      gfx::Canvas* canvas) const OVERRIDE {
@@ -199,16 +188,22 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
     DrawBlurredShadowAroundView(canvas, 0, owner_->height(), owner_->width(),
         inset);
 
+    PaintChildBorder(canvas);
+
     // Draw the bottom line.
     int y = owner_->height() + 1;
-    canvas->FillRect(gfx::Rect(kLeftPadding, y, owner_->width(),
+    canvas->FillRect(gfx::Rect(inset.left(), y, owner_->width(),
                                kBottomLineHeight), kBorderDarkColor);
 
-    if (!Shell::GetInstance()->shelf()->IsVisible())
+    if (!Shell::GetInstance()->shelf()->IsVisible() ||
+        arrow_location() == views::BubbleBorder::NONE)
       return;
 
-    // Draw the arrow.
-    if (arrow_type_ == ARROW_TYPE_BOTTOM) {
+    // Draw the arrow after drawing child borders, so that the arrow can cover
+    // the its overlap section with child border.
+    SkPath path;
+    path.incReserve(4);
+    if (arrow_location() == views::BubbleBorder::BOTTOM_RIGHT) {
       int tip_x = base::i18n::IsRTL() ? arrow_offset_ :
           owner_->width() - arrow_offset_;
       if (tip_x < kArrowPaddingFromRight + kArrowWidth / 2)
@@ -218,28 +213,44 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
       int left_base_x = tip_x - kArrowWidth / 2;
       int left_base_y = y;
       int tip_y = left_base_y + kArrowHeight;
-
-      SkPath path;
-      path.incReserve(4);
       path.moveTo(SkIntToScalar(left_base_x), SkIntToScalar(left_base_y));
       path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
       path.lineTo(SkIntToScalar(left_base_x + kArrowWidth),
                   SkIntToScalar(left_base_y));
-
-      SkPaint paint;
-      paint.setStyle(SkPaint::kFill_Style);
-      paint.setColor(kHeaderBackgroundColorDark);
-      canvas->DrawPath(path, paint);
-
-      // Now draw the arrow border.
-      paint.setStyle(SkPaint::kStroke_Style);
-      paint.setColor(kBorderDarkColor);
-      canvas->DrawPath(path, paint);
+    } else if (arrow_location() == views::BubbleBorder::LEFT_BOTTOM) {
+      int tip_y = y - arrow_offset_;
+      int top_base_y = tip_y - kArrowWidth / 2;
+      int top_base_x = inset.left() + kSystemTrayBubbleHorizontalInset;
+      int tip_x = top_base_x - kArrowHeight;
+      path.moveTo(SkIntToScalar(top_base_x), SkIntToScalar(top_base_y));
+      path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
+      path.lineTo(SkIntToScalar(top_base_x),
+                  SkIntToScalar(top_base_y + kArrowWidth));
+    } else if (arrow_location() == views::BubbleBorder::RIGHT_BOTTOM){
+      int tip_y = y - arrow_offset_;
+      int top_base_y = tip_y - kArrowWidth / 2;
+      int top_base_x = inset.left() + owner_->width() -
+                       kSystemTrayBubbleHorizontalInset;
+      int tip_x = top_base_x + kArrowHeight;
+      path.moveTo(SkIntToScalar(top_base_x), SkIntToScalar(top_base_y));
+      path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
+      path.lineTo(SkIntToScalar(top_base_x),
+                  SkIntToScalar(top_base_y + kArrowWidth));
     }
+
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(kHeaderBackgroundColorDark);
+    canvas->DrawPath(path, paint);
+
+    // Now draw the arrow border.
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setColor(kBorderDarkColor);
+    canvas->DrawPath(path, paint);
+
   }
 
   views::View* owner_;
-  ArrowType arrow_type_;
   const int arrow_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBorder);
@@ -252,9 +263,10 @@ namespace internal {
 // SystemTrayBubbleView
 
 SystemTrayBubbleView::SystemTrayBubbleView(views::View* anchor,
-                                           SystemTrayBubble* host,
-                                           bool can_activate)
-    : views::BubbleDelegateView(anchor, views::BubbleBorder::BOTTOM_RIGHT),
+    views::BubbleBorder::ArrowLocation arrow_location,
+    SystemTrayBubble* host,
+    bool can_activate)
+    : views::BubbleDelegateView(anchor, arrow_location),
       host_(host),
       can_activate_(can_activate) {
   set_margin(0);
@@ -280,22 +292,27 @@ void SystemTrayBubbleView::UpdateAnchor() {
 
 void SystemTrayBubbleView::Init() {
   views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 1, 1, 1);
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           kSystemTrayBubbleHorizontalInset,
+                           kSystemTrayBubbleVerticalInset,
+                           1);
   layout->set_spread_blank_space(true);
   SetLayoutManager(layout);
-  set_background(new SystemTrayBubbleBackground(this));
+  set_background(NULL);
 }
 
 gfx::Rect SystemTrayBubbleView::GetAnchorRect() {
   gfx::Rect rect;
   if (host_)
     rect = host_->GetAnchorRect();
+  // TODO(jennyz): May need to add left/right alignment in the following code.
   if (rect.IsEmpty()) {
     rect = gfx::Screen::GetPrimaryMonitor().bounds();
-    rect = gfx::Rect(base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreen :
-                     rect.width() - kPaddingFromRightEdgeOfScreen,
-                     rect.height() - kPaddingFromBottomOfScreen,
-                     0, 0);
+    rect = gfx::Rect(
+        base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreenBottomAlignment :
+            rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
+        rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
+        0, 0);
   }
   return rect;
 }
@@ -390,8 +407,20 @@ void SystemTrayBubble::UpdateView(
 void SystemTrayBubble::InitView(const InitParams& init_params) {
   DCHECK(bubble_view_ == NULL);
   anchor_type_ = init_params.anchor_type;
+  views::BubbleBorder::ArrowLocation arrow_location;
+  if (anchor_type_ == ANCHOR_TYPE_TRAY) {
+    if (tray_->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+      arrow_location = views::BubbleBorder::BOTTOM_RIGHT;
+    } else if (tray_->shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
+      arrow_location = views::BubbleBorder::LEFT_BOTTOM;
+    } else {
+      arrow_location = views::BubbleBorder::RIGHT_BOTTOM;
+    }
+  } else {
+    arrow_location = views::BubbleBorder::NONE;
+  }
   bubble_view_ = new SystemTrayBubbleView(
-      init_params.anchor, this, init_params.can_activate);
+      init_params.anchor, arrow_location, this, init_params.can_activate);
   if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION)
     bubble_view_->set_close_on_deactivate(false);
 
@@ -403,14 +432,8 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
   // Must occur after call to CreateBubble()
   bubble_view_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_widget_->non_client_view()->frame_view()->set_background(NULL);
-  SystemTrayBubbleBorder::ArrowType arrow_type;
-  if (anchor_type_ == ANCHOR_TYPE_TRAY)
-    arrow_type = SystemTrayBubbleBorder::ARROW_TYPE_BOTTOM;
-  else
-    arrow_type = SystemTrayBubbleBorder::ARROW_TYPE_NONE;
-
   SystemTrayBubbleBorder* bubble_border = new SystemTrayBubbleBorder(
-      bubble_view_, arrow_type, init_params.arrow_offset);
+      bubble_view_, arrow_location, init_params.arrow_offset);
   bubble_view_->SetBubbleBorder(bubble_border);
 
   bubble_widget_->AddObserver(this);
@@ -435,12 +458,23 @@ gfx::Rect SystemTrayBubble::GetAnchorRect() const {
   if (widget->IsVisible()) {
     rect = widget->GetWindowScreenBounds();
     if (anchor_type_ == ANCHOR_TYPE_TRAY) {
-      rect.Inset(
-          base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreen : 0,
-          0,
-          base::i18n::IsRTL() ? 0 : kPaddingFromRightEdgeOfScreen,
-          kPaddingFromBottomOfScreen);
+      if (tray_->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+        rect.Inset(
+            base::i18n::IsRTL() ?
+                kPaddingFromRightEdgeOfScreenBottomAlignment : 0,
+            0,
+            base::i18n::IsRTL() ?
+                0 : kPaddingFromRightEdgeOfScreenBottomAlignment,
+            kPaddingFromBottomOfScreenBottomAlignment);
+      } else if (tray_->shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
+        rect.Inset(0, 0, kPaddingFromLeftEdgeOfScreenLeftAlignment,
+                   kPaddingFromBottomOfScreenVerticalAlignment);
+      } else {
+        rect.Inset(-kPaddingFromRightEdgeOfScreenRightAlignment,
+                   0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
+      }
     } else if (anchor_type_ == ANCHOR_TYPE_BUBBLE) {
+      // TODO(jennyz): add left/right launcher support for notification bubble.
       rect.Inset(
           base::i18n::IsRTL() ? kShadowThickness - 1 : 0,
           0,

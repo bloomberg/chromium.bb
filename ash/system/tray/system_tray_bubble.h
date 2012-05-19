@@ -27,6 +27,7 @@ class SystemTrayBubble;
 class SystemTrayBubbleView : public views::BubbleDelegateView {
  public:
   SystemTrayBubbleView(views::View* anchor,
+                       views::BubbleBorder::ArrowLocation arrow_location,
                        SystemTrayBubble* host,
                        bool can_activate);
   virtual ~SystemTrayBubbleView();

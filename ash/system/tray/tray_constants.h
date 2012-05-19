@@ -10,8 +10,11 @@ typedef unsigned int SkColor;
 
 namespace ash {
 
-extern const int kPaddingFromRightEdgeOfScreen;
-extern const int kPaddingFromBottomOfScreen;
+extern const int kPaddingFromRightEdgeOfScreenBottomAlignment;
+extern const int kPaddingFromBottomOfScreenBottomAlignment;
+extern const int kPaddingFromLeftEdgeOfScreenLeftAlignment;
+extern const int kPaddingFromRightEdgeOfScreenRightAlignment;
+extern const int kPaddingFromBottomOfScreenVerticalAlignment;
 
 extern const int kTrayPopupAutoCloseDelayInSeconds;
 extern const int kTrayPopupAutoCloseDelayForTextInSeconds;

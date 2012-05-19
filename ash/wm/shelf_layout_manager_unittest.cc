@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -507,6 +508,11 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_GE(
       launcher_bounds.width(),
       shelf->launcher_widget()->GetContentsView()->GetPreferredSize().width());
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT,
+            Shell::GetInstance()->tray()->shelf_alignment());
+  gfx::Rect status_bounds(shelf->status()->GetWindowScreenBounds());
+  EXPECT_GE(status_bounds.width(),
+            shelf->status()->GetContentsView()->GetPreferredSize().width());
   EXPECT_EQ(shelf->GetIdealBounds().width(),
             monitor.GetWorkAreaInsets().left());
   EXPECT_EQ(0, monitor.GetWorkAreaInsets().top());
@@ -515,7 +521,6 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_EQ(monitor.bounds().x(), launcher_bounds.x());
   EXPECT_EQ(monitor.bounds().y(), launcher_bounds.y());
   EXPECT_EQ(monitor.bounds().height(), launcher_bounds.height());
-
 
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   launcher_bounds = shelf->launcher_widget()->GetWindowScreenBounds();
@@ -526,6 +531,11 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   EXPECT_GE(
       launcher_bounds.width(),
       shelf->launcher_widget()->GetContentsView()->GetPreferredSize().width());
+  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT,
+            Shell::GetInstance()->tray()->shelf_alignment());
+  status_bounds = gfx::Rect(shelf->status()->GetWindowScreenBounds());
+  EXPECT_GE(status_bounds.width(),
+            shelf->status()->GetContentsView()->GetPreferredSize().width());
   EXPECT_EQ(shelf->GetIdealBounds().width(),
             monitor.GetWorkAreaInsets().right());
   EXPECT_EQ(0, monitor.GetWorkAreaInsets().top());
