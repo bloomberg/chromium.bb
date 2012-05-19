@@ -36,6 +36,7 @@ using testing::_;
 using testing::Return;
 
 namespace {
+
 static const char kValidTokenResponse[] =
     "{"
     "  \"token\": \"at1\","
@@ -45,7 +46,6 @@ static const char kTokenResponseNoAccessToken[] =
     "{"
     "  \"issueAdvice\": \"Auto\""
     "}";
-}
 
 class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                               public URLFetcherFactory {
@@ -72,6 +72,8 @@ class MockOAuth2MintTokenConsumer : public OAuth2MintTokenConsumer {
   MOCK_METHOD1(OnMintTokenFailure,
                void(const GoogleServiceAuthError& error));
 };
+
+}  // namespace
 
 class OAuth2MintTokenFetcherTest : public testing::Test {
  public:

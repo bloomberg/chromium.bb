@@ -62,7 +62,7 @@ class MockOAuth2RevocationConsumer : public OAuth2RevocationConsumer {
                void(const GoogleServiceAuthError& error));
 };
 
-}
+}  // namespace
 
 class OAuth2RevocationFetcherTest : public testing::Test {
  public:

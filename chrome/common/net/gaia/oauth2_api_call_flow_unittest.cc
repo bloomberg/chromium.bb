@@ -34,6 +34,7 @@ using testing::_;
 using testing::Return;
 
 namespace {
+
 static std::string CreateBody() {
   return "some body";
 }
@@ -48,8 +49,6 @@ static std::vector<std::string> CreateTestScopes() {
   scopes.push_back("scope2");
   return scopes;
 }
-
-}  // namespace
 
 class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                               public URLFetcherFactory {
@@ -102,6 +101,8 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
       void (const GoogleServiceAuthError& error));
   MOCK_METHOD0(CreateAccessTokenFetcher, OAuth2AccessTokenFetcher* ());
 };
+
+}  // namespace
 
 class OAuth2ApiCallFlowTest : public testing::Test {
  public:

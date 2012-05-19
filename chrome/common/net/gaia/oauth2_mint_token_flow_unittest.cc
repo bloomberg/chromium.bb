@@ -119,8 +119,6 @@ static IssueAdviceInfo CreateIssueAdvice() {
   return ia;
 }
 
-}  // namespace
-
 class MockDelegate : public OAuth2MintTokenFlow::Delegate {
  public:
   MockDelegate() {}
@@ -143,6 +141,8 @@ class MockMintTokenFlow : public OAuth2MintTokenFlow {
   MOCK_METHOD0(CreateAccessTokenFetcher, OAuth2AccessTokenFetcher*());
   MOCK_METHOD0(CreateMintTokenFetcher, OAuth2MintTokenFetcher*());
 };
+
+}  // namespace
 
 class OAuth2MintTokenFlowTest : public testing::Test {
  public:

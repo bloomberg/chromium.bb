@@ -35,6 +35,7 @@ using testing::_;
 using testing::Return;
 
 namespace {
+
 typedef std::vector<std::string> ScopeList;
 
 static const char kValidTokenResponse[] =
@@ -48,7 +49,6 @@ static const char kTokenResponseNoAccessToken[] =
     "  \"expires_in\": 3600,"
     "  \"token_type\": \"Bearer\""
     "}";
-}
 
 class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                               public URLFetcherFactory {
@@ -75,6 +75,8 @@ class MockOAuth2AccessTokenConsumer : public OAuth2AccessTokenConsumer {
   MOCK_METHOD1(OnGetTokenFailure,
                void(const GoogleServiceAuthError& error));
 };
+
+}  // namespace
 
 class OAuth2AccessTokenFetcherTest : public testing::Test {
  public:
