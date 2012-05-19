@@ -124,8 +124,10 @@ lou_translate (const char *tableList, const widechar
     return 0;
   if (!(srcMapping = liblouis_allocMem (alloc_srcMapping, srcmax, destmax)))
     return 0;
-  if (!(prevSrcMapping = liblouis_allocMem (alloc_prevSrcMapping, srcmax, destmax)))
-      return 0;
+  if (!
+      (prevSrcMapping =
+       liblouis_allocMem (alloc_prevSrcMapping, srcmax, destmax)))
+    return 0;
   for (k = 0; k <= srcmax; k++)
     srcMapping[k] = k;
   srcMapping[srcmax] = srcmax;
@@ -151,7 +153,7 @@ lou_translate (const char *tableList, const widechar
     }
   while (currentPass <= table->numPasses && goodTrans)
     {
-	  memcpy(prevSrcMapping, srcMapping, destmax * sizeof(int));
+      memcpy (prevSrcMapping, srcMapping, destmax * sizeof (int));
       switch (currentPass)
 	{
 	case 0:
@@ -214,7 +216,7 @@ lou_translate (const char *tableList, const widechar
       *inlen = srcMapping[realInlen];
       *outlen = dest;
       if (inputPositions != NULL)
-          memcpy(inputPositions, srcMapping, destmax * sizeof(int));
+	memcpy (inputPositions, srcMapping, destmax * sizeof (int));
       if (outputPos != NULL)
 	{
 	  int lastpos = 0;

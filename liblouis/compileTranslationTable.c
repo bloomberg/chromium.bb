@@ -3047,7 +3047,7 @@ compilePassOpcode (FileInfo * nested, TranslationTableOpcode opcode)
       /* Compile action part */
       while (passLinepos < passLine.length &&
 	     passLine.chars[passLinepos] <= 32)
-	     passLinepos++;
+	passLinepos++;
       while (passLinepos < passLine.length &&
 	     passLine.chars[passLinepos] > 32)
 	{
@@ -4924,8 +4924,7 @@ getLastTableList ()
 {
   if (lastTrans == NULL)
     return NULL;
-  strncpy (scratchBuf, lastTrans->tableList, 
-    lastTrans->tableListLength);
+  strncpy (scratchBuf, lastTrans->tableList, lastTrans->tableListLength);
   scratchBuf[lastTrans->tableListLength] = 0;
   return scratchBuf;
 }
@@ -5106,7 +5105,7 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
       }
       return srcMapping;
     case alloc_prevSrcMapping:
-	  {
+      {
 	int mapSize;
 	if (srcmax >= destmax)
 	  mapSize = srcmax;
@@ -5114,13 +5113,13 @@ liblouis_allocMem (AllocBuf buffer, int srcmax, int destmax)
 	  mapSize = destmax;
 	if (mapSize > sizePrevSrcMapping)
 	  {
-		if (prevSrcMapping != NULL)
-		  free (prevSrcMapping);
-		prevSrcMapping = malloc ((mapSize + 4) * sizeof (int));
-		sizePrevSrcMapping = mapSize;
+	    if (prevSrcMapping != NULL)
+	      free (prevSrcMapping);
+	    prevSrcMapping = malloc ((mapSize + 4) * sizeof (int));
+	    sizePrevSrcMapping = mapSize;
 	  }
-	  }
-	  return prevSrcMapping;
+      }
+      return prevSrcMapping;
     default:
       return NULL;
     }
@@ -5133,18 +5132,19 @@ lou_free (void)
   ChainEntry *previousEntry;
   if (logFile != NULL)
     fclose (logFile);
-  if (tableChain == NULL)
-    return;
-  currentEntry = tableChain;
-  while (currentEntry)
+  if (tableChain != NULL)
     {
-      free (currentEntry->table);
-      previousEntry = currentEntry;
-      currentEntry = currentEntry->next;
-      free (previousEntry);
+      currentEntry = tableChain;
+      while (currentEntry)
+	{
+	  free (currentEntry->table);
+	  previousEntry = currentEntry;
+	  currentEntry = currentEntry->next;
+	  free (previousEntry);
+	}
+      tableChain = NULL;
+      lastTrans = NULL;
     }
-  tableChain = NULL;
-  lastTrans = NULL;
   if (typebuf != NULL)
     free (typebuf);
   typebuf = NULL;
@@ -5164,10 +5164,10 @@ lou_free (void)
   if (srcMapping != NULL)
     free (srcMapping);
   srcMapping = NULL;
+  sizeSrcMapping = 0;
   if (prevSrcMapping != NULL)
     free (prevSrcMapping);
   prevSrcMapping = NULL;
-  sizeSrcMapping = 0;
   sizePrevSrcMapping = 0;
   opcodeLengths[0] = 0;
 }
