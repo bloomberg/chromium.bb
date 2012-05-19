@@ -172,7 +172,6 @@ PP_Resource ResourceCreationProxy::CreateWheelInputEvent(
                                     instance, data))->GetReference();
 }
 
-#if !defined(OS_NACL)
 PP_Resource ResourceCreationProxy::CreateAudio(
     PP_Instance instance,
     PP_Resource config_id,
@@ -190,8 +189,9 @@ PP_Resource ResourceCreationProxy::CreateAudioConfig(
       OBJECT_IS_PROXY, instance, sample_rate, sample_frame_count);
 }
 
+#if !defined(OS_NACL)
 PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
-  // Proxied plugins can't created trusted audio devices.
+  // Proxied plugins can't create trusted audio devices.
   return 0;
 }
 
