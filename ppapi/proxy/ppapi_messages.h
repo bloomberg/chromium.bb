@@ -786,14 +786,16 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBGraphics3D_InitCommandBuffer,
 IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_SetGetBuffer,
                            ppapi::HostResource /* context */,
                            int32 /* transfer_buffer_id */)
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBGraphics3D_GetState,
+IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBGraphics3D_GetState,
                            ppapi::HostResource /* context */,
-                           gpu::CommandBuffer::State /* state */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Flush,
+                           gpu::CommandBuffer::State /* state */,
+                           bool /* success */)
+IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBGraphics3D_Flush,
                            ppapi::HostResource /* context */,
                            int32 /* put_offset */,
                            int32 /* last_known_get */,
-                           gpu::CommandBuffer::State /* state */)
+                           gpu::CommandBuffer::State /* state */,
+                           bool /* success */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics3D_AsyncFlush,
                     ppapi::HostResource /* context */,
                     int32 /* put_offset */)

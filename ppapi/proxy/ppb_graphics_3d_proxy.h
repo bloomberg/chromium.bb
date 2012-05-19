@@ -78,11 +78,13 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   void OnMsgSetGetBuffer(const HostResource& context,
                          int32 id);
   void OnMsgGetState(const HostResource& context,
-                     gpu::CommandBuffer::State* state);
+                     gpu::CommandBuffer::State* state,
+                     bool* success);
   void OnMsgFlush(const HostResource& context,
                   int32 put_offset,
                   int32 last_known_get,
-                  gpu::CommandBuffer::State* state);
+                  gpu::CommandBuffer::State* state,
+                  bool* success);
   void OnMsgAsyncFlush(const HostResource& context,
                        int32 put_offset);
   void OnMsgCreateTransferBuffer(const HostResource& context,

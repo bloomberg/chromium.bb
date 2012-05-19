@@ -66,7 +66,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public CommandBufferProxy {
 
  private:
   bool Send(IPC::Message* msg);
-  void UpdateState(const gpu::CommandBuffer::State& state);
+  void UpdateState(const gpu::CommandBuffer::State& state, bool success);
 
   typedef base::hash_map<int32, gpu::Buffer> TransferBufferMap;
   TransferBufferMap transfer_buffers_;

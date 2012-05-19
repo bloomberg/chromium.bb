@@ -246,24 +246,32 @@ void PPB_Graphics3D_Proxy::OnMsgSetGetBuffer(
 }
 
 void PPB_Graphics3D_Proxy::OnMsgGetState(const HostResource& context,
-                                         gpu::CommandBuffer::State* state) {
+                                         gpu::CommandBuffer::State* state,
+                                         bool* success) {
   EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
-  if (enter.failed())
+  if (enter.failed()) {
+    *success = false;
     return;
+  }
   PP_Graphics3DTrustedState pp_state = enter.object()->GetState();
   *state = GPUStateFromPPState(pp_state);
+  *success = true;
 }
 
 void PPB_Graphics3D_Proxy::OnMsgFlush(const HostResource& context,
                                       int32 put_offset,
                                       int32 last_known_get,
-                                      gpu::CommandBuffer::State* state) {
+                                      gpu::CommandBuffer::State* state,
+                                      bool* success) {
   EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
-  if (enter.failed())
+  if (enter.failed()) {
+    *success = false;
     return;
+  }
   PP_Graphics3DTrustedState pp_state = enter.object()->FlushSyncFast(
       put_offset, last_known_get);
   *state = GPUStateFromPPState(pp_state);
+  *success = true;
 }
 
 void PPB_Graphics3D_Proxy::OnMsgAsyncFlush(const HostResource& context,
