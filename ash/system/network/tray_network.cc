@@ -242,7 +242,8 @@ class NetworkDetailedView : public TrayDetailsView,
     button_wifi_->SetToggled(!delegate->GetWifiEnabled());
     button_mobile_->SetToggled(!delegate->GetMobileEnabled());
     button_mobile_->SetVisible(delegate->GetMobileAvailable());
-    proxy_settings_->SetEnabled(delegate->IsNetworkConnected());
+    if (proxy_settings_)
+      proxy_settings_->SetEnabled(delegate->IsNetworkConnected());
   }
 
   void AppendNetworkEntries() {
@@ -335,6 +336,7 @@ class NetworkDetailedView : public TrayDetailsView,
     bottom_row->AddTextButton(other_mobile_);
 
     CreateSettingsEntry();
+    DCHECK(settings_ || proxy_settings_);
     bottom_row->AddTextButton(settings_ ? settings_ : proxy_settings_);
 
     AddChildView(bottom_row);
