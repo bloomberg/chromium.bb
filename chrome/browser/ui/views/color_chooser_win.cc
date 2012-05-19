@@ -6,8 +6,8 @@
 
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/color_chooser_dialog.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/color_chooser.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
