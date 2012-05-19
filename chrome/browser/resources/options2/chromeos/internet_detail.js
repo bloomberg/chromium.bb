@@ -373,12 +373,17 @@ cr.define('options.internet', function() {
                    !this.cellular || !this.gsm);
       updateHidden('#details-internet-page .apn-details-view', true);
 
-      // Password and shared.
+      // Wifi - Password and shared.
       updateHidden('#details-internet-page #password-details',
                    !this.wireless || !this.password);
-      updateHidden('#details-internet-page #shared-network', !this.shared);
+      updateHidden('#details-internet-page #wifi-shared-network',
+          !this.shared);
       updateHidden('#details-internet-page #prefer-network',
                    !this.showPreferred);
+
+      // WiMAX.
+      updateHidden('#details-internet-page #wimax-shared-network',
+        !this.shared);
 
       // Proxy
       this.updateProxyBannerVisibility_();
@@ -575,6 +580,10 @@ cr.define('options.internet', function() {
       chrome.send('setAutoConnect',
                   [String(servicePath),
                    $('auto-connect-network-wifi').checked ? 'true' : 'false']);
+    } else if (data.type == Constants.TYPE_WIMAX) {
+      chrome.send('setAutoConnect',
+          [String(servicePath),
+          $('auto-connect-network-wimax').checked ? 'true' : 'false']);
     } else if (data.type == Constants.TYPE_CELLULAR) {
       chrome.send('setAutoConnect',
                   [String(servicePath),
@@ -789,8 +798,7 @@ cr.define('options.internet', function() {
       detailsPage.gsm = false;
       detailsPage.shared = data.shared;
       detailsPage.showPreferred = data.showPreferred;
-      $('prefer-network-wimax').checked = data.preferred.value;
-      $('prefer-network-wimax').disabled = !data.remembered;
+      $('wimax-connection-state').textContent = data.connectionState;
       $('auto-connect-network-wimax').checked = data.autoConnect.value;
       $('auto-connect-network-wimax').disabled = !data.remembered;
       if (data.identity) {
