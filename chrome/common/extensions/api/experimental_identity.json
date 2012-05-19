@@ -26,6 +26,34 @@
             ]
           }
         ]
+      },
+      {
+        "name": "launchWebAuthFlow",
+        "type": "function",
+        "description": "Starts an auth flow at the specified URL.",
+        "parameters": [
+          {
+            "name": "launchInfo",
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "The URL that initiates the auth flow"
+              }
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "reponseUrl",
+                "type": "string",
+                "description": "The URL redirected back to your application"
+              }
+            ]
+          }
+        ]
       }
     ]
   }

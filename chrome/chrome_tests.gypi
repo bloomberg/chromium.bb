@@ -1174,6 +1174,7 @@
         'browser/extensions/api/declarative_webrequest/webrequest_condition_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_rules_registry_unittest.cc',
         'browser/extensions/api/extension_action/extension_browser_actions_api_unittest.cc',
+        'browser/extensions/api/identity/web_auth_flow_unittest.cc',
         'browser/extensions/api/omnibox/omnibox_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
         'browser/extensions/api/proxy/proxy_api_helpers_unittest.cc',

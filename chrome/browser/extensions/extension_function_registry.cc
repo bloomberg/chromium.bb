@@ -515,6 +515,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Identity
   RegisterFunction<extensions::GetAuthTokenFunction>();
+  RegisterFunction<extensions::LaunchWebAuthFlowFunction>();
 
   // Runtime
   RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();

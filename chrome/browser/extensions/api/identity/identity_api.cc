@@ -19,6 +19,8 @@ namespace {
 
 const char kInvalidClientId[] = "Invalid OAuth2 Client ID.";
 const char kInvalidScopes[] = "Invalid OAuth2 scopes.";
+const char kUrlFieldRequired[] = "Missing required field: url";
+const char kInvalidRedirect[] = "Did not redirect to the right URL.";
 
 }  // namespace
 
@@ -66,6 +68,41 @@ void GetAuthTokenFunction::OnMintTokenSuccess(const std::string& access_token) {
 void GetAuthTokenFunction::OnMintTokenFailure(
     const GoogleServiceAuthError& error) {
   error_ = error.ToString();
+  SendResponse(false);
+  Release();  // Balanced in RunImpl.
+}
+
+LaunchWebAuthFlowFunction::LaunchWebAuthFlowFunction() {}
+LaunchWebAuthFlowFunction::~LaunchWebAuthFlowFunction() {}
+
+bool LaunchWebAuthFlowFunction::RunImpl() {
+  DictionaryValue* arg1 = NULL;
+  std::string url;
+
+  if (!args_.get() ||
+      !args_->GetDictionary(0, &arg1) ||
+      !arg1->GetString("url", &url)) {
+    error_ = kUrlFieldRequired;
+    return false;
+  }
+
+  AddRef();  // Balanced in OnAuthFlowSuccess/Failure.
+  GURL auth_url(url);
+  auth_flow_.reset(new WebAuthFlow(
+      this, profile(), GetExtension()->id(), auth_url));
+  auth_flow_->Start();
+  return true;
+}
+
+void LaunchWebAuthFlowFunction::OnAuthFlowSuccess(
+    const std::string& redirect_url) {
+  result_.reset(Value::CreateStringValue(redirect_url));
+  SendResponse(true);
+  Release();  // Balanced in RunImpl.
+}
+
+void LaunchWebAuthFlowFunction::OnAuthFlowFailure() {
+  error_ = kInvalidRedirect;
   SendResponse(false);
   Release();  // Balanced in RunImpl.
 }
