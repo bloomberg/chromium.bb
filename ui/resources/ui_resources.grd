@@ -9,186 +9,186 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_APP_TOP_CENTER" file="app_top_center.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION_BADGE_LEFT" file="browser_action_badge_left.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="browser_action_badge_right.png" type="BINDATA" />
-      <include name="IDR_CHECKMARK" file="checkmark.png" type="BINDATA" />
+      <include name="IDR_APP_TOP_CENTER" file="default_100_percent/app_top_center.png" type="BINDATA" />
+      <include name="IDR_BROWSER_ACTION_BADGE_CENTER" file="default_100_percent/browser_action_badge_center.png" type="BINDATA" />
+      <include name="IDR_BROWSER_ACTION_BADGE_LEFT" file="default_100_percent/browser_action_badge_left.png" type="BINDATA" />
+      <include name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="default_100_percent/browser_action_badge_right.png" type="BINDATA" />
+      <include name="IDR_CHECKMARK" file="default_100_percent/checkmark.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_CLOSE" file="close.png" type="BINDATA" />
-        <include name="IDR_CLOSE_H" file="close_h.png" type="BINDATA" />
-        <include name="IDR_CLOSE_P" file="close_p.png" type="BINDATA" />
+        <include name="IDR_CLOSE" file="default_100_percent/close.png" type="BINDATA" />
+        <include name="IDR_CLOSE_H" file="default_100_percent/close_hover.png" type="BINDATA" />
+        <include name="IDR_CLOSE_P" file="default_100_percent/close_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-        <include name="IDR_CLOSE" file="linux_close.png" type="BINDATA" />
-        <include name="IDR_CLOSE_H" file="linux_close_h.png" type="BINDATA" />
-        <include name="IDR_CLOSE_P" file="linux_close_p.png" type="BINDATA" />
+        <include name="IDR_CLOSE" file="default_100_percent/linux_close.png" type="BINDATA" />
+        <include name="IDR_CLOSE_H" file="default_100_percent/linux_close_hover.png" type="BINDATA" />
+        <include name="IDR_CLOSE_P" file="default_100_percent/linux_close_pressed.png" type="BINDATA" />
       </if>
-      <include name="IDR_CONTENT_BOTTOM_CENTER" file="content_bottom_center.png" type="BINDATA" />
-      <include name="IDR_CONTENT_BOTTOM_LEFT_CORNER" file="content_bottom_left_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_BOTTOM_RIGHT_CORNER" file="content_bottom_right_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_LEFT_SIDE" file="content_left_side.png" type="BINDATA" />
-      <include name="IDR_CONTENT_RIGHT_SIDE" file="content_right_side.png" type="BINDATA" />
-      <include name="IDR_DEFAULT_FAVICON" file="default_favicon.png" type="BINDATA" />
-      <include name="IDR_DEFAULT_LARGE_FAVICON" file="default_large_favicon.png" type="BINDATA" />
+      <include name="IDR_CONTENT_BOTTOM_CENTER" file="default_100_percent/content_bottom_center.png" type="BINDATA" />
+      <include name="IDR_CONTENT_BOTTOM_LEFT_CORNER" file="default_100_percent/content_bottom_left_corner.png" type="BINDATA" />
+      <include name="IDR_CONTENT_BOTTOM_RIGHT_CORNER" file="default_100_percent/content_bottom_right_corner.png" type="BINDATA" />
+      <include name="IDR_CONTENT_LEFT_SIDE" file="default_100_percent/content_left_side.png" type="BINDATA" />
+      <include name="IDR_CONTENT_RIGHT_SIDE" file="default_100_percent/content_right_side.png" type="BINDATA" />
+      <include name="IDR_DEFAULT_FAVICON" file="default_100_percent/default_favicon.png" type="BINDATA" />
+      <include name="IDR_DEFAULT_LARGE_FAVICON" file="default_100_percent/default_large_favicon.png" type="BINDATA" />
       <include name="IDR_FOLDER_CLOSED" file="folder_closed.png" type="BINDATA" />
       <include name="IDR_FOLDER_CLOSED_RTL" file="folder_closed_rtl.png" type="BINDATA" />
       <include name="IDR_FOLDER_OPEN" file="folder_open.png" type="BINDATA" />
       <include name="IDR_FOLDER_OPEN_RTL" file="folder_open_rtl.png" type="BINDATA" />
-      <include name="IDR_FRAME" file="frame_default.png" type="BINDATA" />
-      <include name="IDR_FRAME_APP_PANEL" file="frame_app_panel_default.png" type="BINDATA" />
-      <include name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" type="BINDATA" />
+      <include name="IDR_FRAME" file="default_100_percent/frame_default.png" type="BINDATA" />
+      <include name="IDR_FRAME_APP_PANEL" file="default_100_percent/frame_app_panel_default.png" type="BINDATA" />
+      <include name="IDR_FRAME_INACTIVE" file="default_100_percent/frame_default_inactive.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_MAXIMIZE" file="maximize.png" type="BINDATA" />
-        <include name="IDR_MAXIMIZE_H" file="maximize_h.png" type="BINDATA" />
-        <include name="IDR_MAXIMIZE_P" file="maximize_p.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE" file="default_100_percent/maximize.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE_H" file="default_100_percent/maximize_hover.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE_P" file="default_100_percent/maximize_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-        <include name="IDR_MAXIMIZE" file="linux_maximize.png" type="BINDATA" />
-        <include name="IDR_MAXIMIZE_H" file="linux_maximize_h.png" type="BINDATA" />
-        <include name="IDR_MAXIMIZE_P" file="linux_maximize_p.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE" file="default_100_percent/linux_maximize.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE_H" file="default_100_percent/linux_maximize_hover.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE_P" file="default_100_percent/linux_maximize_pressed.png" type="BINDATA" />
       </if>
-      <include name="IDR_MENU_DROPARROW" file="menu_droparrow.png" type="BINDATA" />
-      <include name="IDR_MENU_DROPARROW_SHARP" file="menu_droparrow_sharp.png" type="BINDATA" />
+      <include name="IDR_MENU_DROPARROW" file="default_100_percent/menu_droparrow.png" type="BINDATA" />
+      <include name="IDR_MENU_DROPARROW_SHARP" file="default_100_percent/menu_droparrow_sharp.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_MINIMIZE" file="minimize.png" type="BINDATA" />
-        <include name="IDR_MINIMIZE_H" file="minimize_h.png" type="BINDATA" />
-        <include name="IDR_MINIMIZE_P" file="minimize_p.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE" file="default_100_percent/minimize.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE_H" file="default_100_percent/minimize_hover.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE_P" file="default_100_percent/minimize_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-        <include name="IDR_MINIMIZE" file="linux_minimize.png" type="BINDATA" />
-        <include name="IDR_MINIMIZE_H" file="linux_minimize_h.png" type="BINDATA" />
-        <include name="IDR_MINIMIZE_P" file="linux_minimize_p.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE" file="default_100_percent/linux_minimize.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE_H" file="default_100_percent/linux_minimize_hover.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE_P" file="default_100_percent/linux_minimize_pressed.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_RESTORE" file="restore.png" type="BINDATA" />
-        <include name="IDR_RESTORE_H" file="restore_h.png" type="BINDATA" />
-        <include name="IDR_RESTORE_P" file="restore_p.png" type="BINDATA" />
+        <include name="IDR_RESTORE" file="default_100_percent/restore.png" type="BINDATA" />
+        <include name="IDR_RESTORE_H" file="default_100_percent/restore_hover.png" type="BINDATA" />
+        <include name="IDR_RESTORE_P" file="default_100_percent/restore_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-        <include name="IDR_RESTORE" file="linux_restore.png" type="BINDATA" />
-        <include name="IDR_RESTORE_H" file="linux_restore_h.png" type="BINDATA" />
-        <include name="IDR_RESTORE_P" file="linux_restore_p.png" type="BINDATA" />
+        <include name="IDR_RESTORE" file="default_100_percent/linux_restore.png" type="BINDATA" />
+        <include name="IDR_RESTORE_H" file="default_100_percent/linux_restore_hover.png" type="BINDATA" />
+        <include name="IDR_RESTORE_P" file="default_100_percent/linux_restore_pressed.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <!-- TODO(jamescook): Rename the IDR constants to put hot/pressed state before position. -->
-        <include name="IDR_TEXTBUTTON_BOTTOM_H" file="aura/textbutton_hot_bottom.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_H" file="aura/textbutton_hot_bottom_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_P" file="aura/textbutton_pressed_bottom_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_P" file="aura/textbutton_pressed_bottom.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_H" file="aura/textbutton_hot_bottom_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_P" file="aura/textbutton_pressed_bottom_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_CENTER_H" file="aura/textbutton_hot_center.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_CENTER_P" file="aura/textbutton_pressed_center.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_LEFT_H" file="aura/textbutton_hot_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_LEFT_P" file="aura/textbutton_pressed_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_RIGHT_H" file="aura/textbutton_hot_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_RIGHT_P" file="aura/textbutton_pressed_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_H" file="aura/textbutton_hot_top.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_LEFT_H" file="aura/textbutton_hot_top_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_LEFT_P" file="aura/textbutton_pressed_top_left.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_P" file="aura/textbutton_pressed_top.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_RIGHT_H" file="aura/textbutton_hot_top_right.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_RIGHT_P" file="aura/textbutton_pressed_top_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_H" file="default_100_percent/aura/textbutton_hot_bottom.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_H" file="default_100_percent/aura/textbutton_hot_bottom_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_P" file="default_100_percent/aura/textbutton_pressed_bottom_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_P" file="default_100_percent/aura/textbutton_pressed_bottom.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_H" file="default_100_percent/aura/textbutton_hot_bottom_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_P" file="default_100_percent/aura/textbutton_pressed_bottom_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_CENTER_H" file="default_100_percent/aura/textbutton_hot_center.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_CENTER_P" file="default_100_percent/aura/textbutton_pressed_center.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_LEFT_H" file="default_100_percent/aura/textbutton_hot_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_LEFT_P" file="default_100_percent/aura/textbutton_pressed_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_RIGHT_H" file="default_100_percent/aura/textbutton_hot_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_RIGHT_P" file="default_100_percent/aura/textbutton_pressed_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_H" file="default_100_percent/aura/textbutton_hot_top.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_LEFT_H" file="default_100_percent/aura/textbutton_hot_top_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_LEFT_P" file="default_100_percent/aura/textbutton_pressed_top_left.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_P" file="default_100_percent/aura/textbutton_pressed_top.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_RIGHT_H" file="default_100_percent/aura/textbutton_hot_top_right.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_RIGHT_P" file="default_100_percent/aura/textbutton_pressed_top_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TEXTBUTTON_BOTTOM_H" file="textbutton_b_h.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_H" file="textbutton_bl_h.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_P" file="textbutton_bl_p.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_P" file="textbutton_b_p.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_H" file="textbutton_br_h.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_P" file="textbutton_br_p.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_CENTER_H" file="textbutton_c_h.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_CENTER_P" file="textbutton_c_p.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_LEFT_H" file="textbutton_l_h.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_LEFT_P" file="textbutton_l_p.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_RIGHT_H" file="textbutton_r_h.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_RIGHT_P" file="textbutton_r_p.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_H" file="textbutton_t_h.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_LEFT_H" file="textbutton_tl_h.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_LEFT_P" file="textbutton_tl_p.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_P" file="textbutton_t_p.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_RIGHT_H" file="textbutton_tr_h.png" type="BINDATA" />
-        <include name="IDR_TEXTBUTTON_TOP_RIGHT_P" file="textbutton_tr_p.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_H" file="default_100_percent/textbutton_b_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_H" file="default_100_percent/textbutton_bl_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_LEFT_P" file="default_100_percent/textbutton_bl_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_P" file="default_100_percent/textbutton_b_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_H" file="default_100_percent/textbutton_br_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_BOTTOM_RIGHT_P" file="default_100_percent/textbutton_br_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_CENTER_H" file="default_100_percent/textbutton_c_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_CENTER_P" file="default_100_percent/textbutton_c_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_LEFT_H" file="default_100_percent/textbutton_l_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_LEFT_P" file="default_100_percent/textbutton_l_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_RIGHT_H" file="default_100_percent/textbutton_r_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_RIGHT_P" file="default_100_percent/textbutton_r_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_H" file="default_100_percent/textbutton_t_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_LEFT_H" file="default_100_percent/textbutton_tl_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_LEFT_P" file="default_100_percent/textbutton_tl_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_P" file="default_100_percent/textbutton_t_pressed.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_RIGHT_H" file="default_100_percent/textbutton_tr_hover.png" type="BINDATA" />
+        <include name="IDR_TEXTBUTTON_TOP_RIGHT_P" file="default_100_percent/textbutton_tr_pressed.png" type="BINDATA" />
       </if>
-      <include name="IDR_THROBBER" file="throbber.png" type="BINDATA" />
-      <include name="IDR_WINDOW_BOTTOM_CENTER" file="window_bottom_center.png" type="BINDATA" />
-      <include name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="window_bottom_left_corner.png" type="BINDATA" />
-      <include name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="window_bottom_right_corner.png" type="BINDATA" />
-      <include name="IDR_WINDOW_LEFT_SIDE" file="window_left_side.png" type="BINDATA" />
-      <include name="IDR_WINDOW_RIGHT_SIDE" file="window_right_side.png" type="BINDATA" />
-      <include name="IDR_WINDOW_TOP_CENTER" file="window_top_center.png" type="BINDATA" />
-      <include name="IDR_WINDOW_TOP_LEFT_CORNER" file="window_top_left_corner.png" type="BINDATA" />
-      <include name="IDR_WINDOW_TOP_RIGHT_CORNER" file="window_top_right_corner.png" type="BINDATA" />
-      <include name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="panel_bottom_left_corner.png" type="BINDATA" />
-      <include name="IDR_PANEL_BOTTOM_RIGHT_CORNER" file="panel_bottom_right_corner.png" type="BINDATA" />
+      <include name="IDR_THROBBER" file="default_100_percent/throbber.png" type="BINDATA" />
+      <include name="IDR_WINDOW_BOTTOM_CENTER" file="default_100_percent/window_bottom_center.png" type="BINDATA" />
+      <include name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="default_100_percent/window_bottom_left_corner.png" type="BINDATA" />
+      <include name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="default_100_percent/window_bottom_right_corner.png" type="BINDATA" />
+      <include name="IDR_WINDOW_LEFT_SIDE" file="default_100_percent/window_left_side.png" type="BINDATA" />
+      <include name="IDR_WINDOW_RIGHT_SIDE" file="default_100_percent/window_right_side.png" type="BINDATA" />
+      <include name="IDR_WINDOW_TOP_CENTER" file="default_100_percent/window_top_center.png" type="BINDATA" />
+      <include name="IDR_WINDOW_TOP_LEFT_CORNER" file="default_100_percent/window_top_left_corner.png" type="BINDATA" />
+      <include name="IDR_WINDOW_TOP_RIGHT_CORNER" file="default_100_percent/window_top_right_corner.png" type="BINDATA" />
+      <include name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="default_100_percent/panel_bottom_left_corner.png" type="BINDATA" />
+      <include name="IDR_PANEL_BOTTOM_RIGHT_CORNER" file="default_100_percent/panel_bottom_right_corner.png" type="BINDATA" />
 
       <!-- Images only used by the Views toolkit. -->
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_APP_TOP_LEFT" file="app_top_left.png" type="BINDATA" />
-        <include name="IDR_APP_TOP_RIGHT" file="app_top_right.png" type="BINDATA" />
-        <include name="IDR_CLOSE_SA" file="close_sa.png" type="BINDATA" />
-        <include name="IDR_CLOSE_SA_H" file="close_sa_h.png" type="BINDATA" />
-        <include name="IDR_CLOSE_SA_P" file="close_sa_p.png" type="BINDATA" />
-        <include name="IDR_DISCLOSURE_ARROW" file="discloure_arrow.png" type="BINDATA" />
-        <include name="IDR_MENU_ARROW" file="menu_arrow.png" type="BINDATA" />
-        <include name="IDR_MENU_CHECK" file="menu_check.png" type="BINDATA" />
+        <include name="IDR_APP_TOP_LEFT" file="default_100_percent/app_top_left.png" type="BINDATA" />
+        <include name="IDR_APP_TOP_RIGHT" file="default_100_percent/app_top_right.png" type="BINDATA" />
+        <include name="IDR_CLOSE_SA" file="default_100_percent/close_sa.png" type="BINDATA" />
+        <include name="IDR_CLOSE_SA_H" file="default_100_percent/close_sa_hover.png" type="BINDATA" />
+        <include name="IDR_CLOSE_SA_P" file="default_100_percent/close_sa_pressed.png" type="BINDATA" />
+        <include name="IDR_DISCLOSURE_ARROW" file="default_100_percent/discloure_arrow.png" type="BINDATA" />
+        <include name="IDR_MENU_ARROW" file="default_100_percent/menu_arrow.png" type="BINDATA" />
+        <include name="IDR_MENU_CHECK" file="default_100_percent/menu_check.png" type="BINDATA" />
       </if>
 
       <!-- Images only used by Aura. -->
       <if expr="pp_ifdef('use_aura')">
-        <include name="IDR_AURA_LAUNCHER_BROWSER_SHORTCUT" file="aura/chromium-32.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_BROWSER" file="aura/launcher_browser.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_BROWSER_PANEL" file="aura/launcher_browser_panel.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="aura/launcher_applist.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="aura/launcher_applist_h.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="aura/launcher_applist_p.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER" file="aura/launcher_incognito_browser.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL" file="aura/launcher_incognito_browser_panel.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER" file="aura/new_browser.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_HOT" file="aura/new_browser_h.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED" file="aura/new_browser_p.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_OVERFLOW" file="aura/launcher_overflow.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_OVERFLOW_HOT" file="aura/launcher_overflow_h.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_OVERFLOW_PUSHED" file="aura/launcher_overflow_p.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="aura/launcher_underline_active.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="aura/launcher_underline_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING" file="aura/launcher_underline_running.png" type="BINDATA" />
-        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="aura/multi_window_resize_h.png" type="BINDATA" />
-        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="aura/multi_window_resize_v.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="aura/resize_shadow_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_TOP" file="aura/resize_shadow_top.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="aura/resize_shadow_top_right.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_LEFT" file="aura/resize_shadow_left.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_RIGHT" file="aura/resize_shadow_right.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_LEFT" file="aura/resize_shadow_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM" file="aura/resize_shadow_bottom.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_RIGHT" file="aura/resize_shadow_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_TOP_LEFT" file="aura/window_shadow_active_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_TOP" file="aura/window_shadow_active_top.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_TOP_RIGHT" file="aura/window_shadow_active_top_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_LEFT" file="aura/window_shadow_active_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_RIGHT" file="aura/window_shadow_active_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_LEFT" file="aura/window_shadow_active_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM" file="aura/window_shadow_active_bottom.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_RIGHT" file="aura/window_shadow_active_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_TOP_LEFT" file="aura/window_shadow_inactive_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_TOP" file="aura/window_shadow_inactive_top.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_TOP_RIGHT" file="aura/window_shadow_inactive_top_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_LEFT" file="aura/window_shadow_inactive_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_RIGHT" file="aura/window_shadow_inactive_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_LEFT" file="aura/window_shadow_inactive_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM" file="aura/window_shadow_inactive_bottom.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_RIGHT" file="aura/window_shadow_inactive_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_TOP_LEFT" file="aura/small_shadow_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_TOP" file="aura/small_shadow_top.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_TOP_RIGHT" file="aura/small_shadow_top_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_LEFT" file="aura/small_shadow_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_RIGHT" file="aura/small_shadow_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_LEFT" file="aura/small_shadow_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM" file="aura/small_shadow_bottom.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT" file="aura/small_shadow_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_STATUS_MOCK" file="aura/statusbar.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_BROWSER_SHORTCUT" file="default_100_percent/aura/chromium-32.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_BROWSER" file="default_100_percent/aura/launcher_browser.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_BROWSER_PANEL" file="default_100_percent/aura/launcher_browser_panel.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="default_100_percent/aura/launcher_applist.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="default_100_percent/aura/launcher_applist_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="default_100_percent/aura/launcher_applist_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER" file="default_100_percent/aura/launcher_incognito_browser.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL" file="default_100_percent/aura/launcher_incognito_browser_panel.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER" file="default_100_percent/aura/new_browser.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_HOT" file="default_100_percent/aura/new_browser_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED" file="default_100_percent/aura/new_browser_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_OVERFLOW" file="default_100_percent/aura/launcher_overflow.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_OVERFLOW_HOT" file="default_100_percent/aura/launcher_overflow_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_OVERFLOW_PUSHED" file="default_100_percent/aura/launcher_overflow_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="default_100_percent/aura/launcher_underline_active.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="default_100_percent/aura/launcher_underline_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING" file="default_100_percent/aura/launcher_underline_running.png" type="BINDATA" />
+        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="default_100_percent/aura/multi_window_resize_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="default_100_percent/aura/multi_window_resize_v.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="default_100_percent/aura/resize_shadow_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_TOP" file="default_100_percent/aura/resize_shadow_top.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="default_100_percent/aura/resize_shadow_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_LEFT" file="default_100_percent/aura/resize_shadow_left.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_RIGHT" file="default_100_percent/aura/resize_shadow_right.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_LEFT" file="default_100_percent/aura/resize_shadow_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM" file="default_100_percent/aura/resize_shadow_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_RIGHT" file="default_100_percent/aura/resize_shadow_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_TOP_LEFT" file="default_100_percent/aura/window_shadow_active_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_TOP" file="default_100_percent/aura/window_shadow_active_top.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_TOP_RIGHT" file="default_100_percent/aura/window_shadow_active_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_LEFT" file="default_100_percent/aura/window_shadow_active_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_RIGHT" file="default_100_percent/aura/window_shadow_active_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_LEFT" file="default_100_percent/aura/window_shadow_active_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM" file="default_100_percent/aura/window_shadow_active_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_RIGHT" file="default_100_percent/aura/window_shadow_active_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_TOP_LEFT" file="default_100_percent/aura/window_shadow_inactive_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_TOP" file="default_100_percent/aura/window_shadow_inactive_top.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_TOP_RIGHT" file="default_100_percent/aura/window_shadow_inactive_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_LEFT" file="default_100_percent/aura/window_shadow_inactive_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_RIGHT" file="default_100_percent/aura/window_shadow_inactive_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_LEFT" file="default_100_percent/aura/window_shadow_inactive_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM" file="default_100_percent/aura/window_shadow_inactive_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_RIGHT" file="default_100_percent/aura/window_shadow_inactive_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_TOP_LEFT" file="default_100_percent/aura/small_shadow_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_TOP" file="default_100_percent/aura/small_shadow_top.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_TOP_RIGHT" file="default_100_percent/aura/small_shadow_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_LEFT" file="default_100_percent/aura/small_shadow_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_RIGHT" file="default_100_percent/aura/small_shadow_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_LEFT" file="default_100_percent/aura/small_shadow_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM" file="default_100_percent/aura/small_shadow_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT" file="default_100_percent/aura/small_shadow_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_STATUS_MOCK" file="default_100_percent/aura/statusbar.png" type="BINDATA" />
       </if>
 
       <!-- Wallpapers used by Ash when building ChromiumOS. -->
@@ -263,69 +263,69 @@
 
       <!-- Remaining images only used by Aura. -->
       <if expr="pp_ifdef('use_aura')">
-        <include name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_SHADOW" file="aura/window_fullscreen_shadow.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_BASE_ACTIVE" file="aura/window_header_base_active.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_BASE_INACTIVE" file="aura/window_header_base_inactive.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_CLOSE_ICON" file="default_100_percent/aura/slab_close.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_FULLSCREEN_SHADOW" file="default_100_percent/aura/window_fullscreen_shadow.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_BASE_ACTIVE" file="default_100_percent/aura/window_header_base_active.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_BASE_INACTIVE" file="default_100_percent/aura/window_header_base_inactive.png" type="BINDATA" />
         <!-- TODO(jamescook): We need updated incognito art for Aura. -->
-        <include name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE" file="aura/window_header_base_incognito_active.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE" file="aura/window_header_base_incognito_inactive.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_SHADE_BOTTOM" file="aura/window_header_shade_bottom.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_SHADE_BOTTOM_LEFT" file="aura/window_header_shade_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_SHADE_BOTTOM_RIGHT" file="aura/window_header_shade_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_SHADE_LEFT" file="aura/window_header_shade_left.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_SHADE_MIDDLE" file="aura/window_header_shade_middle.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_SHADE_RIGHT" file="aura/window_header_shade_right.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP" file="aura/window_header_shade_top.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT" file="aura/window_header_shade_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT" file="aura/window_header_shade_top_right.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="aura/status_volume_all.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="aura/status_volume_mute.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="aura/status_brightness.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_SETTINGS" file="aura/status_settings.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="aura/status_power_small_all.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="aura/status_power_small_all_dark.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE" file="aura/status_network_airplane.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="aura/status_network_info.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE" file="default_100_percent/aura/window_header_base_incognito_active.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE" file="default_100_percent/aura/window_header_base_incognito_inactive.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_BOTTOM" file="default_100_percent/aura/window_header_shade_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_BOTTOM_LEFT" file="default_100_percent/aura/window_header_shade_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_BOTTOM_RIGHT" file="default_100_percent/aura/window_header_shade_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_LEFT" file="default_100_percent/aura/window_header_shade_left.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_MIDDLE" file="default_100_percent/aura/window_header_shade_middle.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_RIGHT" file="default_100_percent/aura/window_header_shade_right.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP" file="default_100_percent/aura/window_header_shade_top.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT" file="default_100_percent/aura/window_header_shade_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT" file="default_100_percent/aura/window_header_shade_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="default_100_percent/aura/slab_zoom.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="default_100_percent/aura/status_volume_all.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="default_100_percent/aura/status_volume_mute.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="default_100_percent/aura/status_brightness.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_SETTINGS" file="default_100_percent/aura/status_settings.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="default_100_percent/aura/status_power_small_all.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="default_100_percent/aura/status_power_small_all_dark.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE" file="default_100_percent/aura/status_network_airplane.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="default_100_percent/aura/status_network_info.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_SMS" file="aura/status_sms.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_MORE" file="aura/status_more.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_LESS" file="aura/status_less.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="aura/status_accessibility_mode.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK" file="aura/status_capslock.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK" file="aura/status_capslock_dark.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH" file="aura/status_bluetooth.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE" file="aura/status_drive.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_FAILED" file="aura/status_drive_item_failed.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_DONE" file="aura/status_drive_item_done.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL" file="aura/status_drive_item_cancel.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER" file="aura/status_drive_item_cancel_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_LIGHT" file="aura/status_drive_light.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_IME" file="aura/status_ime.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_UPDATE" file="aura/status_update.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="aura/status_update_dark.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="aura/status_wifi_enabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_SMS" file="default_100_percent/aura/status_sms.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_MORE" file="default_100_percent/aura/status_more.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_LESS" file="default_100_percent/aura/status_less.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="default_100_percent/aura/status_accessibility_mode.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK" file="default_100_percent/aura/status_capslock.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK" file="default_100_percent/aura/status_capslock_dark.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH" file="default_100_percent/aura/status_bluetooth.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_DRIVE" file="default_100_percent/aura/status_drive.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_DRIVE_FAILED" file="default_100_percent/aura/status_drive_item_failed.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_DRIVE_DONE" file="default_100_percent/aura/status_drive_item_done.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL" file="default_100_percent/aura/status_drive_item_cancel.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER" file="default_100_percent/aura/status_drive_item_cancel_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_DRIVE_LIGHT" file="default_100_percent/aura/status_drive_light.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_IME" file="default_100_percent/aura/status_ime.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_UPDATE" file="default_100_percent/aura/status_update.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="default_100_percent/aura/status_update_dark.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="default_100_percent/aura/status_wifi_enabled.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="aura/status_wifi_disabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="default_100_percent/aura/status_wifi_disabled.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED" file="aura/status_cellular_enabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED" file="default_100_percent/aura/status_cellular_enabled.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED" file="aura/status_cellular_disabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED" file="default_100_percent/aura/status_cellular_disabled.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED" file="aura/status_bluetooth_enabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED" file="default_100_percent/aura/status_bluetooth_enabled.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED" file="aura/status_bluetooth_disabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED" file="default_100_percent/aura/status_bluetooth_disabled.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="aura/status_shutdown.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="default_100_percent/aura/status_shutdown.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="aura/status_lockscreen.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="default_100_percent/aura/status_lockscreen.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_HELP" file="aura/status_help.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_HELP" file="default_100_percent/aura/status_help.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="oak.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_LOCALE" file="aura/status_locale.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_LOCALE" file="default_100_percent/aura/status_locale.png" type="BINDATA" />
 
-        <include name="IDR_AURA_SWITCH_MONITOR" file="aura/switch_monitor.png" type="BINDATA" />
+        <include name="IDR_AURA_SWITCH_MONITOR" file="default_100_percent/aura/switch_monitor.png" type="BINDATA" />
         <include name="IDR_OAK" file="oak.png" type="BINDATA"/>
       </if>
     </includes>
