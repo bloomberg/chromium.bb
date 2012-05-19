@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/app_non_client_frame_view_aura.h"
 
-#include "ash/wm/workspace/frame_maximize_button.h"
 #include "base/debug/stack_trace.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -30,6 +29,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+#if defined(USE_ASH)
+#include "ash/wm/workspace/frame_maximize_button.h"
+#endif
+
 namespace {
 // The number of pixels to use as a hover zone at the top of the screen.
 const int kTopMargin = 1;
@@ -51,7 +54,12 @@ class AppNonClientFrameViewAura::ControlView
   explicit ControlView(AppNonClientFrameViewAura* owner) :
       owner_(owner),
       close_button_(new views::ImageButton(this)),
-      restore_button_(new ash::FrameMaximizeButton(this, owner_)) {
+#if defined(USE_ASH)
+      restore_button_(new ash::FrameMaximizeButton(this, owner_))
+#else
+      restore_button_(new views::ImageButton(this))
+#endif
+  {
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     restore_button_->SetAccessibleName(
