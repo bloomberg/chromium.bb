@@ -374,20 +374,31 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #endif
 
   QuitBrowsers();
+  CHECK(BrowserList::empty());
 }
 
 void InProcessBrowserTest::QuitBrowsers() {
   if (BrowserList::empty())
     return;
 
-  // Invoke CloseAllBrowsersAndMayExit on a running message loop.
-  // CloseAllBrowsersAndMayExit exits the message loop after everything has been
+  // Invoke AttemptExit on a running message loop.
+  // AttemptExit exits the message loop after everything has been
   // shut down properly.
   MessageLoopForUI::current()->PostTask(FROM_HERE,
                                         base::Bind(&browser::AttemptExit));
   ui_test_utils::RunMessageLoop();
 
 #if defined(OS_MACOSX)
+  // browser::AttemptExit() will attempt to close all browsers by deleting
+  // their tab contents. The last tab contents being removed triggers closing of
+  // the browser window.
+  //
+  // On the Mac, this eventually reaches
+  // -[BrowserWindowController windowWillClose:], which will post a deferred
+  // -autorelease on itself to ultimately destroy the Browser object. The line
+  // below is necessary to pump these pending messages to ensure all Browsers
+  // get deleted.
+  ui_test_utils::RunAllPendingInMessageLoop();
   delete autorelease_pool_;
   autorelease_pool_ = NULL;
 #endif
