@@ -230,10 +230,10 @@ class AURA_EXPORT TouchEvent : public LocatedEvent,
   // for each separable additional touch that the hardware can detect.
   const int touch_id_;
 
-  // Radius of the X (major) axis of the touch ellipse. 1.0 if unknown.
+  // Radius of the X (major) axis of the touch ellipse. 0.0 if unknown.
   float radius_x_;
 
-  // Radius of the Y (minor) axis of the touch ellipse. 1.0 if unknown.
+  // Radius of the Y (minor) axis of the touch ellipse. 0.0 if unknown.
   float radius_y_;
 
   // Angle of the major axis away from the X axis. Default 0.0.

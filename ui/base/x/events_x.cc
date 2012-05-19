@@ -834,12 +834,12 @@ int GetTouchId(const base::NativeEvent& xev) {
 
 float GetTouchRadiusX(const base::NativeEvent& native_event) {
   return GetTouchParamFromXEvent(native_event,
-      ui::TouchFactory::TP_TOUCH_MAJOR, 2.0) / 2.0;
+      ui::TouchFactory::TP_TOUCH_MAJOR, 0.0) / 2.0;
 }
 
 float GetTouchRadiusY(const base::NativeEvent& native_event) {
   return GetTouchParamFromXEvent(native_event,
-      ui::TouchFactory::TP_TOUCH_MINOR, 2.0) / 2.0;
+      ui::TouchFactory::TP_TOUCH_MINOR, 0.0) / 2.0;
 }
 
 float GetTouchAngle(const base::NativeEvent& native_event) {

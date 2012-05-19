@@ -410,8 +410,9 @@ WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
   if (!point)
     return NULL;
 
-  point->radiusX = event->radius_x();
-  point->radiusY = event->radius_y();
+  // The spec requires the radii values to be positive (and 1 when unknown).
+  point->radiusX = std::max(1.f, event->radius_x());
+  point->radiusY = std::max(1.f, event->radius_y());
   point->rotationAngle = event->rotation_angle();
   point->force = event->force();
 

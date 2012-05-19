@@ -271,8 +271,8 @@ TouchEvent::TouchEvent(ui::EventType type,
                        base::TimeDelta time_stamp)
     : LocatedEvent(type, location, location, 0),
       touch_id_(touch_id),
-      radius_x_(1.0f),
-      radius_y_(1.0f),
+      radius_x_(0.0f),
+      radius_y_(0.0f),
       rotation_angle_(0.0f),
       force_(0.0f) {
   set_time_stamp(time_stamp);
@@ -285,8 +285,10 @@ void TouchEvent::UpdateForRootTransform(const ui::Transform& root_transform) {
   LocatedEvent::UpdateForRootTransform(root_transform);
   gfx::Point3f scale;
   ui::InterpolatedTransform::FactorTRS(root_transform, NULL, NULL, &scale);
-  radius_x_ *= scale.x();
-  radius_y_ *= scale.y();
+  if (scale.x())
+    radius_x_ /= scale.x();
+  if (scale.y())
+    radius_y_ /= scale.y();
 }
 
 ui::EventType TouchEvent::GetEventType() const {
