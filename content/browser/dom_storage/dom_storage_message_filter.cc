@@ -76,12 +76,7 @@ bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message,
     return false;
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(host_.get());
-  DCHECK_EQ(0, connection_dispatching_message_for_);
 
-  // The connection_id is always the first param.
-  int connection_id = IPC::MessageIterator(message).NextInt();
-  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
-                            connection_id);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(DOMStorageMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(DOMStorageHostMsg_OpenStorageArea, OnOpenStorageArea)
@@ -149,6 +144,9 @@ void DOMStorageMessageFilter::OnSetItem(
     const string16& value, const GURL& page_url,
     WebKit::WebStorageArea::Result* result, NullableString16* old_value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(0, connection_dispatching_message_for_);
+  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+                            connection_id);
   *old_value = NullableString16(true);
   if (host_->SetAreaItem(connection_id, key, value, page_url, old_value))
     *result = WebKit::WebStorageArea::ResultOK;
@@ -160,6 +158,9 @@ void DOMStorageMessageFilter::OnSetItemAsync(
     int connection_id, int operation_id, const string16& key,
     const string16& value, const GURL& page_url) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(0, connection_dispatching_message_for_);
+  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+                            connection_id);
   NullableString16 not_used;
   bool success = host_->SetAreaItem(connection_id, key, value,
                                     page_url, &not_used);
@@ -170,6 +171,9 @@ void DOMStorageMessageFilter::OnRemoveItem(
     int connection_id, const string16& key, const GURL& page_url,
     NullableString16* old_value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(0, connection_dispatching_message_for_);
+  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+                            connection_id);
   string16 old_string_value;
   if (host_->RemoveAreaItem(connection_id, key, page_url, &old_string_value))
     *old_value = NullableString16(old_string_value, false);
@@ -181,6 +185,9 @@ void DOMStorageMessageFilter::OnRemoveItemAsync(
     int connection_id, int operation_id, const string16& key,
     const GURL& page_url) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(0, connection_dispatching_message_for_);
+  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+                            connection_id);
   string16 not_used;
   host_->RemoveAreaItem(connection_id, key, page_url, &not_used);
   Send(new DOMStorageMsg_AsyncOperationComplete(operation_id, true));
@@ -189,12 +196,18 @@ void DOMStorageMessageFilter::OnRemoveItemAsync(
 void DOMStorageMessageFilter::OnClear(int connection_id, const GURL& page_url,
                                       bool* something_cleared) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(0, connection_dispatching_message_for_);
+  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+                            connection_id);
   *something_cleared = host_->ClearArea(connection_id, page_url);
 }
 
 void DOMStorageMessageFilter::OnClearAsync(
     int connection_id, int operation_id, const GURL& page_url) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(0, connection_dispatching_message_for_);
+  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+                            connection_id);
   host_->ClearArea(connection_id, page_url);
   Send(new DOMStorageMsg_AsyncOperationComplete(operation_id, true));
 }
@@ -238,6 +251,10 @@ void DOMStorageMessageFilter::SendDomStorageEvent(
     const NullableString16& new_value,
     const NullableString16& old_value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (area->namespace_id() != dom_storage::kLocalStorageNamespaceId &&
+      !connection_dispatching_message_for_) {
+    return;  // No need to broadcast session storage events across processes.
+  }
   DOMStorageMsg_Event_Params params;
   params.origin = area->origin();
   params.page_url = page_url;
