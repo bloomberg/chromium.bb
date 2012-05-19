@@ -501,6 +501,12 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
   DCHECK_EQ(main_loop_, MessageLoop::current());
   DCHECK(proxy_);
 
+  if (!accelerated_compositing_reported_) {
+    accelerated_compositing_reported_ = true;
+    DCHECK_EQ(frame_->view()->isAcceleratedCompositingActive(), false);
+    UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", false);
+  }
+
   proxy_->Paint(canvas, rect, alpha);
 }
 
@@ -563,8 +569,8 @@ void WebMediaPlayerImpl::putCurrentFrame(
     WebKit::WebVideoFrame* web_video_frame) {
   if (!accelerated_compositing_reported_) {
     accelerated_compositing_reported_ = true;
-    UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive",
-                          frame_->view()->isAcceleratedCompositingActive());
+    DCHECK_EQ(frame_->view()->isAcceleratedCompositingActive(), true);
+    UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", true);
   }
   if (web_video_frame) {
     scoped_refptr<media::VideoFrame> video_frame(
