@@ -21,18 +21,23 @@ template <class ItemType>
 class ListModel {
  public:
   ListModel() {}
-  virtual ~ListModel() {}
+  ~ListModel() {}
 
   // Adds |item| to the model at given |index|.
-  virtual void AddAt(size_t index, ItemType* item) {
+  void AddAt(size_t index, ItemType* item) {
     DCHECK_LE(index, item_count());
     items_->insert(items_.begin() + index, item);
     NotifyItemsAdded(index, 1);
   }
 
+  // Convenience function to append an item to the model.
+  void Add(ItemType* item) {
+    AddAt(item_count(), item);
+  }
+
   // Removes an item at given |index| from the model. Note the removed item
   // is NOT deleted and it's up to the caller to delete it.
-  virtual ItemType* RemoveAt(size_t index) {
+  ItemType* RemoveAt(size_t index) {
     DCHECK_LT(index, item_count());
     ItemType* item = items_[index];
     items_->erase(items_.begin() + index);
@@ -41,27 +46,22 @@ class ListModel {
   }
 
   // Removes all items from the model. This does NOT delete the items.
-  virtual void RemoveAll() {
+  void RemoveAll() {
     size_t count = item_count();
     items_->clear();
     NotifyItemsRemoved(0, count);
   }
 
   // Removes an item at given |index| from the model and deletes it.
-  virtual void DeleteAt(size_t index) {
+  void DeleteAt(size_t index) {
     delete RemoveAt(index);
   }
 
   // Removes and deletes all items from the model.
-  virtual void DeleteAll() {
+  void DeleteAll() {
     size_t count = item_count();
     items_.reset();
     NotifyItemsRemoved(0, count);
-  }
-
-  // Convenience function to append an item to the model.
-  void Add(ItemType* item) {
-    AddAt(item_count(), item);
   }
 
   void AddObserver(ListModelObserver* observer) {
