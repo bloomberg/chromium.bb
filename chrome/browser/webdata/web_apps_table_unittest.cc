@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/webdata/web_apps_table.h"
@@ -22,19 +23,12 @@ class WebAppsTableTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    PathService::Get(chrome::DIR_TEST_DATA, &file_);
-    const std::string test_db = "TestWebDatabase" +
-        base::Int64ToString(Time::Now().ToTimeT()) +
-        ".db";
-    file_ = file_.AppendASCII(test_db);
-    file_util::Delete(file_, false);
-  }
-
-  virtual void TearDown() {
-    file_util::Delete(file_, false);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
   }
 
   FilePath file_;
+  ScopedTempDir temp_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppsTableTest);

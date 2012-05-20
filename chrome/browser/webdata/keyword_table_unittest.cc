@@ -7,6 +7,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
@@ -28,19 +29,12 @@ class KeywordTableTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    PathService::Get(chrome::DIR_TEST_DATA, &file_);
-    const std::string test_db = "TestWebDatabase" +
-        base::Int64ToString(Time::Now().ToTimeT()) +
-        ".db";
-    file_ = file_.AppendASCII(test_db);
-    file_util::Delete(file_, false);
-  }
-
-  virtual void TearDown() {
-    file_util::Delete(file_, false);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
   }
 
   FilePath file_;
+  ScopedTempDir temp_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeywordTableTest);
