@@ -41,13 +41,13 @@ const char kIfMatchAllHeader[] = "If-Match: *";
 const char kIfMatchHeaderFormat[] = "If-Match: %s";
 
 // URL requesting documents list that belong to the authenticated user only
-// (handled with '/mine' part).
+// (handled with '/-/mine' part).
 const char kGetDocumentListURLForAllDocuments[] =
     "https://docs.google.com/feeds/default/private/full/-/mine";
 // URL requesting documents list in a particular directory specified by "%s"
-// that belong to the authenticated user only (handled with '/mine' part).
+// that belong to the authenticated user only (handled with '/-/mine' part).
 const char kGetDocumentListURLForDirectoryFormat[] =
-    "https://docs.google.com/feeds/default/private/full/%s/contents/mine";
+    "https://docs.google.com/feeds/default/private/full/%s/contents/-/mine";
 
 // URL requesting documents list of changes to documents collections.
 const char kGetChangesListURL[] =
