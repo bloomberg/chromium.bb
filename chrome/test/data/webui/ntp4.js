@@ -51,7 +51,7 @@ TEST_F('NTP4WebUITest', 'NTPHasNavDots', function() {
 });
 
 // http://crbug.com/118514
-TEST_F('NTP4WebUITest', 'FLAKY_NTPHasSelectedPageAndDot', function() {
+TEST_F('NTP4WebUITest', 'DISABLED_NTPHasSelectedPageAndDot', function() {
   var selectedDot = document.querySelectorAll('.dot.selected');
   assertEquals(1, selectedDot.length,
                'There should be exactly one selected dot.');

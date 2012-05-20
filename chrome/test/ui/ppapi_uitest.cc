@@ -583,7 +583,8 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedCrossOriginRequest)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
 // TODO(bbudge) Fix Javascript URLs for trusted loaders.
 // http://crbug.com/103062
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(FAILS_URLLoader_TrustedJavascriptURLRestriction)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(
+    DISABLED_URLLoader_TrustedJavascriptURLRestriction)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_UntrustedHttpRestriction)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_TrustedHttpRestriction)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader_FollowURLRedirect)
@@ -610,7 +611,7 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedJavascriptURLRestriction)
 // TODO(bbudge) Fix Javascript URLs for trusted loaders.
 // http://crbug.com/103062
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(
-    FAILS_URLLoader_TrustedJavascriptURLRestriction)
+    DISABLED_URLLoader_TrustedJavascriptURLRestriction)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_UntrustedHttpRestriction)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_TrustedHttpRestriction)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader_FollowURLRedirect)
@@ -658,7 +659,7 @@ TEST_PPAPI_NACL_VIA_HTTP(PaintAggregator)
 // TODO(danakj): http://crbug.com/115286
 TEST_PPAPI_IN_PROCESS(DISABLED_Scrollbar)
 // http://crbug.com/89961
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FAILS_Scrollbar) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_Scrollbar) {
   RunTest("Scrollbar");
 }
 // TODO(danakj): http://crbug.com/115286

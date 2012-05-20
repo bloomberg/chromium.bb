@@ -17,7 +17,7 @@ class OffscreenTabsApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(OffscreenTabsApiTest, FLAKY_OffscreenTabBasics) {
+IN_PROC_BROWSER_TEST_F(OffscreenTabsApiTest, DISABLED_OffscreenTabBasics) {
   ASSERT_TRUE(RunExtensionSubtest("offscreen_tabs", "crud.html")) << message_;
 }
 
