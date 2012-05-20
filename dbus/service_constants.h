@@ -698,6 +698,9 @@ const char kDeviceObjectPathPrefix[] = "/org/chromium/WiMaxManager/Device/";
 const char kNetworkObjectPathPrefix[] = "/org/chromium/WiMaxManager/Network/";
 const char kDevicesProperty[] = "Devices";
 const char kNetworksProperty[] = "Networks";
+const char kEAPAnonymousIdentity[] = "EAPAnonymousIdentity";
+const char kEAPUserIdentity[] = "EAPUserIdentity";
+const char kEAPUserPassword[] = "EAPUserPassword";
 }  // namespace wimax_manager
 
 namespace bluetooth_common {
