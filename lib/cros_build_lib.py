@@ -313,18 +313,11 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   elif redirect_stderr or mute_output or log_output:
     stderr = _get_tempfile()
 
-  # Work around broken buffering usage in cbuildbot and consumers via
-  # forcing the current buffer to be flushed.  Without this, any leading
-  # info/error/whatever messages describing this invocation may be left
-  # sitting in the buffer, while the invoked program than writes straight
-  # to the duped fd; end result, any header we output can land after the
-  # actual invocation.  As such, just flush to work around broken code
-  # elsewhere.
-  if stdout is not None:
+  # If subprocesses have direct access to stdout or stderr, they can bypass
+  # our buffers, so we need to flush to ensure that output is not interleaved.
+  if stdout is None or stderr is None:
     sys.stdout.flush()
-  if stderr is not None:
     sys.stderr.flush()
-
 
   # TODO(sosa): gpylint complains about redefining built-in 'input'.
   #   Can we rename this variable?
