@@ -52,6 +52,18 @@ namespace content {
 class P2PHostAddressRequest;
 class P2PSocketClient;
 
+// Callback interface that allows the implementor to be notified before a
+// P2PSocketDispatcher is destroyed.
+// P2PSocketDispatcher requires that all NetworkListObservers are
+// unregistered when SocketDispatcherGone is called.
+class P2PSocketDispatcherDestructionObserver {
+ public:
+  virtual void OnSocketDispatcherDestroyed() = 0;
+
+ protected:
+  virtual ~P2PSocketDispatcherDestructionObserver() {}
+};
+
 class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
  public:
   explicit P2PSocketDispatcher(RenderViewImpl* render_view);
@@ -68,6 +80,10 @@ class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
   // which the observer was added.
   void RemoveNetworkListObserver(
       webkit_glue::NetworkListObserver* network_list_observer);
+
+  void AddDestructionObserver(P2PSocketDispatcherDestructionObserver* observer);
+  void RemoveDestructionObserver(
+      P2PSocketDispatcherDestructionObserver* observer);
 
   // RenderViewObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -110,6 +126,8 @@ class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
       network_list_observers_;
 
   scoped_refptr<AsyncMessageSender> async_message_sender_;
+
+  ObserverList<P2PSocketDispatcherDestructionObserver> destruction_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketDispatcher);
 };

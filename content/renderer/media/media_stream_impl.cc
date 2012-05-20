@@ -23,7 +23,6 @@
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
-#include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/message_loop_factory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -91,24 +90,7 @@ MediaStreamImpl::MediaStreamImpl(
 }
 
 MediaStreamImpl::~MediaStreamImpl() {
-  DCHECK(local_media_streams_.empty());
-  if (dependency_factory_.get())
-    dependency_factory_->ReleasePeerConnectionFactory();
-  if (network_manager_) {
-    // The network manager needs to free its resources on the thread they were
-    // created, which is the worked thread.
-    if (chrome_worker_thread_.IsRunning()) {
-      chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-          &MediaStreamImpl::DeleteIpcNetworkManager,
-          base::Unretained(this)));
-      // Stopping the thread will wait until all tasks have been
-      // processed before returning. We wait for the above task to finish before
-      // letting the destructor continue to avoid any potential race issues.
-      chrome_worker_thread_.Stop();
-    } else {
-      NOTREACHED() << "Worker thread not running.";
-    }
-  }
+  CleanupPeerConnectionFactory();
 }
 
 WebKit::WebPeerConnectionHandler* MediaStreamImpl::CreatePeerConnectionHandler(
@@ -380,6 +362,10 @@ void MediaStreamImpl::FrameWillClose(WebKit::WebFrame* frame) {
   }
 }
 
+void MediaStreamImpl::OnSocketDispatcherDestroyed() {
+  CleanupPeerConnectionFactory();
+}
+
 void MediaStreamImpl::InitializeWorkerThread(talk_base::Thread** thread,
                                              base::WaitableEvent* event) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
@@ -434,6 +420,7 @@ bool MediaStreamImpl::EnsurePeerConnectionFactory() {
           base::Unretained(this),
           &event));
     event.Wait();
+    p2p_socket_dispatcher_->AddDestructionObserver(this);
   }
 
   if (!socket_factory_.get()) {
@@ -454,6 +441,27 @@ bool MediaStreamImpl::EnsurePeerConnectionFactory() {
   }
 
   return true;
+}
+
+void MediaStreamImpl::CleanupPeerConnectionFactory() {
+  if (dependency_factory_.get())
+    dependency_factory_->ReleasePeerConnectionFactory();
+  if (network_manager_) {
+    // The network manager needs to free its resources on the thread they were
+    // created, which is the worked thread.
+    if (chrome_worker_thread_.IsRunning()) {
+      chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+          &MediaStreamImpl::DeleteIpcNetworkManager,
+          base::Unretained(this)));
+      // Stopping the thread will wait until all tasks have been
+      // processed before returning. We wait for the above task to finish before
+      // letting the the function continue to avoid any potential race issues.
+      chrome_worker_thread_.Stop();
+    } else {
+      NOTREACHED() << "Worker thread not running.";
+    }
+    p2p_socket_dispatcher_->RemoveDestructionObserver(this);
+  }
 }
 
 scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateLocalVideoDecoder(

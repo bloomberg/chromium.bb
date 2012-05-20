@@ -59,6 +59,8 @@ P2PSocketDispatcher::P2PSocketDispatcher(RenderViewImpl* render_view)
 }
 
 P2PSocketDispatcher::~P2PSocketDispatcher() {
+  FOR_EACH_OBSERVER(P2PSocketDispatcherDestructionObserver,
+                    destruction_observer_, OnSocketDispatcherDestroyed());
   network_list_observers_->AssertEmpty();
   if (network_notifications_started_)
     Send(new P2PHostMsg_StopNetworkNotifications(routing_id()));
@@ -80,6 +82,16 @@ void P2PSocketDispatcher::AddNetworkListObserver(
 void P2PSocketDispatcher::RemoveNetworkListObserver(
     webkit_glue::NetworkListObserver* network_list_observer) {
   network_list_observers_->RemoveObserver(network_list_observer);
+}
+
+void P2PSocketDispatcher::AddDestructionObserver(
+    P2PSocketDispatcherDestructionObserver* observer) {
+  destruction_observer_.AddObserver(observer);
+}
+
+void P2PSocketDispatcher::RemoveDestructionObserver(
+    P2PSocketDispatcherDestructionObserver* observer) {
+  destruction_observer_.RemoveObserver(observer);
 }
 
 bool P2PSocketDispatcher::OnMessageReceived(const IPC::Message& message) {

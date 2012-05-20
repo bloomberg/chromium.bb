@@ -24,6 +24,7 @@
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/rtc_video_decoder.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
 #include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
@@ -37,7 +38,6 @@ class WaitableEvent;
 namespace content {
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
-class P2PSocketDispatcher;
 }
 
 namespace talk_base {
@@ -74,6 +74,7 @@ class CONTENT_EXPORT MediaStreamImpl
       NON_EXPORTED_BASE(public webkit_media::MediaStreamClient),
       public MediaStreamDispatcherEventHandler,
       public base::SupportsWeakPtr<MediaStreamImpl>,
+      NON_EXPORTED_BASE(public content::P2PSocketDispatcherDestructionObserver),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   MediaStreamImpl(
@@ -137,6 +138,11 @@ class CONTENT_EXPORT MediaStreamImpl
   // content::RenderViewObserver OVERRIDE
   virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
 
+  // content P2PSocketDispatcherDestructionObserver implementation.
+  // This is needed since all IpcNetworkManager must be deleted before the
+  // P2PSocketDispatcher is destroyed. MediaStreamImpl owns a IpcNetworkManager.
+  virtual void OnSocketDispatcherDestroyed() OVERRIDE;
+
  protected:
   // This function is virtual for test purposes. A test can override this to
   // test requesting local media streams. The function notifies WebKit that the
@@ -188,6 +194,7 @@ class CONTENT_EXPORT MediaStreamImpl
   void DeleteIpcNetworkManager();
 
   bool EnsurePeerConnectionFactory();
+  void CleanupPeerConnectionFactory();
 
   PeerConnectionHandlerBase* FindPeerConnectionByStream(
       const WebKit::WebMediaStreamDescriptor& stream);
