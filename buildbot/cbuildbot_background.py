@@ -17,6 +17,7 @@ from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_results as results_lib
 
 _PRINT_INTERVAL = 1
+_BUFSIZE = 1024
 
 
 class BackgroundException(bs.NonBacktraceBuildException):
@@ -39,7 +40,7 @@ class BackgroundSteps(multiprocessing.Process):
 
   def AddStep(self, step):
     """Add a step to the list of steps to run in the background."""
-    output = tempfile.NamedTemporaryFile(delete=False)
+    output = tempfile.NamedTemporaryFile(delete=False, bufsize=0)
     self._steps.append((step, output))
 
   def WaitForStep(self):
@@ -51,25 +52,31 @@ class BackgroundSteps(multiprocessing.Process):
     """
     assert not self.Empty()
     _step, output = self._steps.pop(0)
-    pos = 0
-    more_output = True
-    while more_output:
-      # Check whether the process is finished.
-      try:
-        error, results = self._queue.get(True, _PRINT_INTERVAL)
-        more_output = False
-      except Queue.Empty:
-        more_output = True
 
-      # Print output so far.
-      output.seek(pos)
-      for line in output:
-        sys.stdout.write(line)
-      pos = output.tell()
+    # File position pointers are shared across processes, so we must open
+    # our own file descriptor to ensure output is not lost.
+    output_name = output.name
+    with open(output_name, 'r') as output:
+      os.unlink(output_name)
+      pos = 0
+      more_output = True
+      while more_output:
+        # Check whether the process is finished.
+        try:
+          error, results = self._queue.get(True, _PRINT_INTERVAL)
+          more_output = False
+        except Queue.Empty:
+          more_output = True
 
-    # Cleanup temp file.
-    output.close()
-    os.unlink(output.name)
+        # Print output so far.
+        output.seek(pos)
+        buf = output.read(_BUFSIZE)
+        while len(buf) > 0:
+          sys.stdout.write(buf)
+          pos = output.tell()
+          if len(buf) < _BUFSIZE:
+            break
+          buf = output.read(_BUFSIZE)
 
     # Propagate any results.
     for result in results:

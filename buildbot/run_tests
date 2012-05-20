@@ -50,6 +50,7 @@ sudo true
 all_tests=(
   portage_utilities_unittest.py
   cbuildbot_unittest.py
+  cbuildbot_background_unittest.py
   cbuildbot_config_unittest.py
   cbuildbot_commands_unittest.py
   cbuildbot_stages_unittest.py
