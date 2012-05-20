@@ -313,6 +313,9 @@ GLInProcessContext::Error GLInProcessContext::GetError() {
 }
 
 bool GLInProcessContext::IsCommandBufferContextLost() {
+  if (!command_buffer_.get()) {
+    return true;
+  }
   CommandBuffer::State state = command_buffer_->GetState();
   return state.error == ::gpu::error::kLostContext;
 }
@@ -510,7 +513,7 @@ void GLInProcessContext::Destroy() {
   command_buffer_.reset();
 
   if (decoder_.get()) {
-    decoder_->Destroy(context_lost);
+    decoder_->Destroy(!context_lost);
   }
 }
 
