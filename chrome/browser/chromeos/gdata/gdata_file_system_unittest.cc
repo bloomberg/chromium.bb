@@ -3663,4 +3663,17 @@ TEST_F(GDataFileSystemTest, MountUnmount) {
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
+TEST_F(GDataFileSystemTest, RequestDirectoryRefresh) {
+  // We'll fetch documents in the root directory with its resource ID.
+  EXPECT_CALL(*mock_doc_service_,
+              GetDocuments(Eq(GURL()), _, _, kGDataRootDirectoryResourceId, _))
+      .Times(1);
+  // We'll notify the directory change to the observer.
+  EXPECT_CALL(*mock_directory_observer_,
+              OnDirectoryChanged(Eq(FilePath(kGDataRootDirectory)))).Times(1);
+
+  file_system_->RequestDirectoryRefresh(FilePath(kGDataRootDirectory));
+  message_loop_.RunAllPending();
+}
+
 }   // namespace gdata
