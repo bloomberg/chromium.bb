@@ -279,7 +279,7 @@ void SpeechRecognitionBubbleGtk::UpdateImage() {
   if (image.isNull() || !bubble_)
     return;
 
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&image);
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
   gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
   g_object_unref(pixbuf);
 }

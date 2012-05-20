@@ -42,7 +42,7 @@ const double kRatingTextSize = 12.1;  // 12.1px = 9pt @ 96dpi
 // Adds a Skia image as an icon control to the given container.
 void AddResourceIcon(const SkBitmap* icon, void* data) {
   GtkWidget* container = static_cast<GtkWidget*>(data);
-  GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
+  GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(*icon);
   GtkWidget* icon_widget = gtk_image_new_from_pixbuf(icon_pixbuf);
   g_object_unref(icon_pixbuf);
   gtk_box_pack_start(GTK_BOX(container), icon_widget, FALSE, FALSE, 0);
@@ -192,7 +192,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     }
 
     // Put icon in the right column.
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&scaled_icon);
+    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(scaled_icon);
     GtkWidget* icon = gtk_image_new_from_pixbuf(pixbuf);
     g_object_unref(pixbuf);
     gtk_box_pack_start(GTK_BOX(top_content_hbox), icon, FALSE, FALSE, 0);

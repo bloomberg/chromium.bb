@@ -195,7 +195,7 @@ void HungRendererDialogGtk::ShowForWebContents(WebContents* hung_contents) {
 
       GdkPixbuf* pixbuf = NULL;
       if (favicon.width() > 0)
-        pixbuf = gfx::GdkPixbufFromSkBitmap(&favicon);
+        pixbuf = gfx::GdkPixbufFromSkBitmap(favicon);
       gtk_list_store_set(model_, &tree_iter,
           COL_FAVICON, pixbuf,
           COL_TITLE, title.c_str(),

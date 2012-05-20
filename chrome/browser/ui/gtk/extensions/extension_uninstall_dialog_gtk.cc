@@ -80,7 +80,7 @@ void ExtensionUninstallDialogGtk::Show() {
   gtk_box_pack_start(GTK_BOX(content_area), icon_hbox, TRUE, TRUE, 0);
 
   // Put Icon in the left column.
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon_);
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(icon_);
   GtkWidget* icon = gtk_image_new_from_pixbuf(pixbuf);
   g_object_unref(pixbuf);
   gtk_box_pack_start(GTK_BOX(icon_hbox), icon, TRUE, TRUE, 0);

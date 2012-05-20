@@ -1014,7 +1014,7 @@ void LocationBarViewGtk::SetKeywordLabel(const string16& keyword) {
           template_url_service->GetTemplateURLForKeyword(keyword);
       const SkBitmap& bitmap = profile->GetExtensionService()->
           GetOmniboxIcon(template_url->GetExtensionId());
-      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
+      GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
       gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_), pixbuf);
       g_object_unref(pixbuf);
     } else {
@@ -1127,7 +1127,7 @@ void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
 void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
                                          GdkDragContext* context) {
   SkBitmap favicon = GetFavicon();
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&favicon);
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(favicon);
   if (!pixbuf)
     return;
   drag_icon_ = bookmark_utils::GetDragRepresentation(pixbuf,
@@ -1592,7 +1592,7 @@ void LocationBarViewGtk::PageActionViewGtk::Update(
       if (last_icon_pixbuf_)
         g_object_unref(last_icon_pixbuf_);
       last_icon_skbitmap_ = icon;
-      last_icon_pixbuf_ = gfx::GdkPixbufFromSkBitmap(&icon);
+      last_icon_pixbuf_ = gfx::GdkPixbufFromSkBitmap(icon);
     }
     DCHECK(last_icon_pixbuf_);
     pixbuf = last_icon_pixbuf_;

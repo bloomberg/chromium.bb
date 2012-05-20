@@ -114,7 +114,7 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
   // The image we get from WebKit makes heavy use of alpha-shading. This looks
   // bad on non-compositing WMs. Fall back to the default drag icon.
   if (!image.isNull() && ui::IsScreenComposited())
-    drag_pixbuf_ = gfx::GdkPixbufFromSkBitmap(&image);
+    drag_pixbuf_ = gfx::GdkPixbufFromSkBitmap(image);
   image_offset_ = image_offset;
 
   GtkTargetList* list = ui::GetTargetListFromCodeMask(targets_mask);

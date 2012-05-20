@@ -87,15 +87,15 @@ void GdkInitFromCommandLine(const CommandLine& command_line) {
   CommonInitFromCommandLine(command_line, gdk_init);
 }
 
-GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap) {
-  if (bitmap->isNull())
+GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap& bitmap) {
+  if (bitmap.isNull())
     return NULL;
 
-  SkAutoLockPixels lock_pixels(*bitmap);
+  SkAutoLockPixels lock_pixels(bitmap);
 
-  int width = bitmap->width();
-  int height = bitmap->height();
-  int stride = bitmap->rowBytes();
+  int width = bitmap.width();
+  int height = bitmap.height();
+  int stride = bitmap.rowBytes();
 
   // SkBitmaps are premultiplied, we need to unpremultiply them.
   const int kBytesPerPixel = 4;
@@ -103,7 +103,7 @@ GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap) {
 
   for (int y = 0, i = 0; y < height; y++) {
     for (int x = 0; x < width; x++) {
-      uint32 pixel = bitmap->getAddr32(0, y)[x];
+      uint32 pixel = bitmap.getAddr32(0, y)[x];
 
       int alpha = SkColorGetA(pixel);
       if (alpha != 0 && alpha != 255) {

@@ -176,7 +176,7 @@ GdkCursor* WebCursor::GetCustomCursor() {
   bitmap.allocPixels();
   memcpy(bitmap.getAddr32(0, 0), custom_data_.data(), custom_data_.size());
 
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
   GdkCursor* cursor = gdk_cursor_new_from_pixbuf(gdk_display_get_default(),
                                                  pixbuf,
                                                  hotspot_.x(),

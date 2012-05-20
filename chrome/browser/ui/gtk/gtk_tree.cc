@@ -354,7 +354,7 @@ TreeAdapter::TreeAdapter(Delegate* delegate, ui::TreeModel* tree_model)
   std::vector<SkBitmap> icons;
   tree_model->GetIcons(&icons);
   for (size_t i = 0; i < icons.size(); ++i) {
-    pixbufs_.push_back(gfx::GdkPixbufFromSkBitmap(&icons[i]));
+    pixbufs_.push_back(gfx::GdkPixbufFromSkBitmap(icons[i]));
   }
 }
 

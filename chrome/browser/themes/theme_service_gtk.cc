@@ -27,7 +27,7 @@ GdkPixbuf* ThemeService::GetPixbufImpl(int id, bool rtl_enabled) const {
     return pixbufs_iter->second;
 
   SkBitmap* bitmap = GetBitmapNamed(id);
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(*bitmap);
 
   // We loaded successfully.  Cache the pixbuf.
   if (pixbuf) {
@@ -48,12 +48,11 @@ GdkPixbuf* ThemeService::GetPixbufImpl(int id, bool rtl_enabled) const {
   static GdkPixbuf* empty_bitmap = NULL;
   if (!empty_bitmap) {
     // The placeholder bitmap is bright red so people notice the problem.
-    // This bitmap will be leaked, but this code should never be hit.
-    scoped_ptr<SkBitmap> skia_bitmap(new SkBitmap());
-    skia_bitmap->setConfig(SkBitmap::kARGB_8888_Config, 32, 32);
-    skia_bitmap->allocPixels();
-    skia_bitmap->eraseARGB(255, 255, 0, 0);
-    empty_bitmap = gfx::GdkPixbufFromSkBitmap(skia_bitmap.get());
+    SkBitmap skia_bitmap;
+    skia_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 32, 32);
+    skia_bitmap.allocPixels();
+    skia_bitmap.eraseARGB(255, 255, 0, 0);
+    empty_bitmap = gfx::GdkPixbufFromSkBitmap(skia_bitmap);
   }
   return empty_bitmap;
 }

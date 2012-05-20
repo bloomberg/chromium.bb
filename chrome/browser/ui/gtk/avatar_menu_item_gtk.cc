@@ -219,9 +219,9 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
     canvas.DrawBitmapInt(*check_image, x, y);
 
     SkBitmap final_image = canvas.ExtractBitmap();
-    avatar_pixbuf = gfx::GdkPixbufFromSkBitmap(&final_image);
+    avatar_pixbuf = gfx::GdkPixbufFromSkBitmap(final_image);
   } else {
-    avatar_pixbuf = gfx::GdkPixbufFromSkBitmap(item_.icon.ToSkBitmap());
+    avatar_pixbuf = gfx::GdkPixbufFromSkBitmap(*item_.icon.ToSkBitmap());
   }
 
   GtkWidget* avatar_image = gtk_image_new_from_pixbuf(avatar_pixbuf);

@@ -148,7 +148,7 @@ void CustomDrawButtonBase::SetBackground(SkColor color,
     SkBitmap img =
         SkBitmapOperations::CreateButtonBackground(color, *image, *mask);
 
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&img);
+    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(img);
     background_image_->UsePixbuf(pixbuf);
     g_object_unref(pixbuf);
   }

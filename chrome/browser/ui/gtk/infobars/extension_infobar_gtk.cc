@@ -92,7 +92,7 @@ void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image,
                         image_size / 2);
 
   SkBitmap bitmap = canvas->ExtractBitmap();
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
   gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
   g_object_unref(pixbuf);
 }

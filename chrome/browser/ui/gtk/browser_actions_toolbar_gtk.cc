@@ -130,7 +130,7 @@ class BrowserActionButton : public content::NotificationObserver,
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_EXTENSIONS_FAVICON).ToSkBitmap();
       default_skbitmap_ = *bm;
-      default_icon_ = gfx::GdkPixbufFromSkBitmap(bm);
+      default_icon_ = gfx::GdkPixbufFromSkBitmap(*bm);
     }
 
     UpdateState();
@@ -227,7 +227,7 @@ class BrowserActionButton : public content::NotificationObserver,
     SkBitmap image = extension_->browser_action()->GetIcon(tab_id);
     if (!image.isNull()) {
       GdkPixbuf* previous_gdk_icon = tab_specific_icon_;
-      tab_specific_icon_ = gfx::GdkPixbufFromSkBitmap(&image);
+      tab_specific_icon_ = gfx::GdkPixbufFromSkBitmap(image);
       SetImage(tab_specific_icon_);
       if (previous_gdk_icon)
         g_object_unref(previous_gdk_icon);

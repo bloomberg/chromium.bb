@@ -186,7 +186,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   if (!icon_.isNull()) {
     // Scale icon down to 43x43, but allow smaller icons (don't scale up).
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon_);
+    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(icon_);
     gfx::Size size(icon_.width(), icon_.height());
     if (size.width() > kIconSize || size.height() > kIconSize) {
       if (size.width() > size.height()) {

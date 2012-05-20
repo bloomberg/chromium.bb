@@ -36,7 +36,7 @@ NSImage* ImageSkiaToNSImage(const ImageSkia* image);
 #endif
 
 #if defined(TOOLKIT_GTK)
-const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
+const ImageSkia GdkPixbufToImageSkia(GdkPixbuf* pixbuf) {
   CHECK(pixbuf);
   gfx::Canvas canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
                                gdk_pixbuf_get_height(pixbuf)), false);
@@ -44,7 +44,7 @@ const SkBitmap* GdkPixbufToSkBitmap(GdkPixbuf* pixbuf) {
   cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
   gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
   cairo_paint(cr);
-  return new SkBitmap(canvas.ExtractBitmap());
+  return ImageSkia(SkBitmap(canvas.ExtractBitmap()));
 }
 #endif
 
@@ -376,9 +376,8 @@ internal::ImageRep* Image::GetRepresentation(
 #if defined(TOOLKIT_GTK)
     if (storage_->default_representation_type() == Image::kImageRepGdk) {
       internal::ImageRepGdk* pixbuf_rep = default_rep->AsImageRepGdk();
-      scoped_ptr<const SkBitmap> bitmap(
-          internal::GdkPixbufToSkBitmap(pixbuf_rep->pixbuf()));
-      rep = new internal::ImageRepSkia(new ImageSkia(*bitmap));
+      rep = new internal::ImageRepSkia(new ImageSkia(
+          internal::GdkPixbufToImageSkia(pixbuf_rep->pixbuf())));
     }
     // We don't do conversions from CairoCachedSurfaces to Skia because the
     // data lives on the display server and we'll always have a GdkPixbuf if we
@@ -416,7 +415,7 @@ internal::ImageRep* Image::GetRepresentation(
 #elif defined(TOOLKIT_GTK)
     if (rep_type == Image::kImageRepGdk) {
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(
-          default_rep->AsImageRepSkia()->image()->bitmap());
+          *default_rep->AsImageRepSkia()->image()->bitmap());
       native_rep = new internal::ImageRepGdk(pixbuf);
     }
 #elif defined(OS_MACOSX)

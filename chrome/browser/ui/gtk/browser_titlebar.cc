@@ -611,7 +611,7 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
         if (icon.empty()) {
           gtk_util::SetWindowIcon(window_, profile);
         } else {
-          GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+          GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
           gtk_util::SetWindowIcon(window_, profile, icon_pixbuf);
           g_object_unref(icon_pixbuf);
         }
@@ -648,7 +648,7 @@ void BrowserTitlebar::UpdateThrobber(WebContents* web_contents) {
         gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
             rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToGdkPixbuf());
       } else {
-        GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+        GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
         gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
         g_object_unref(icon_pixbuf);
       }
@@ -1073,7 +1073,7 @@ static void MakeThrobberFrames(int resource_id,
   for (size_t i = 0; i < num_frames; ++i) {
     SkBitmap frame = SkBitmapOperations::CreateTiledBitmap(*frame_strip,
         i * frame_size, 0, frame_size, frame_size);
-    frames->push_back(gfx::GdkPixbufFromSkBitmap(&frame));
+    frames->push_back(gfx::GdkPixbufFromSkBitmap(frame));
   }
 }
 

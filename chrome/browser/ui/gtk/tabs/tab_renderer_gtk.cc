@@ -375,13 +375,13 @@ void TabRendererGtk::UpdateData(WebContents* contents,
 
       GdkPixbuf* pixbuf;
       if (dest_w == src_w && dest_h == src_h) {
-        pixbuf = gfx::GdkPixbufFromSkBitmap(&data_.favicon);
+        pixbuf = gfx::GdkPixbufFromSkBitmap(data_.favicon);
       } else {
         SkBitmap resized_icon = skia::ImageOperations::Resize(
             data_.favicon,
             skia::ImageOperations::RESIZE_BETTER,
             dest_w, dest_h);
-        pixbuf = gfx::GdkPixbufFromSkBitmap(&resized_icon);
+        pixbuf = gfx::GdkPixbufFromSkBitmap(resized_icon);
       }
 
       data_.cairo_favicon.UsePixbuf(pixbuf);

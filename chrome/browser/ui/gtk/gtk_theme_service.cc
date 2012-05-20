@@ -214,7 +214,7 @@ void BuildIconFromIDRWithColor(int id,
       fill_color, original);
 
   GtkIconSource* icon = gtk_icon_source_new();
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&masked);
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(masked);
   gtk_icon_source_set_pixbuf(icon, pixbuf);
   g_object_unref(pixbuf);
 

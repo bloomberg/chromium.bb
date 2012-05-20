@@ -421,7 +421,7 @@ GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
 
 GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
                                            const SkBitmap& icon) {
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
   GtkWidget* menu_item = BuildMenuItemWithImage(label,
       gtk_image_new_from_pixbuf(pixbuf));
   g_object_unref(pixbuf);
@@ -878,7 +878,7 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
         if (GTK_IS_IMAGE_MENU_ITEM(widget)) {
           SkBitmap icon;
           if (model->GetIconAt(id, &icon)) {
-            GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+            GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget),
                                           gtk_image_new_from_pixbuf(pixbuf));
             g_object_unref(pixbuf);

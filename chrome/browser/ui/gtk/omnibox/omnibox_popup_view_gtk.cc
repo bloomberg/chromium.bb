@@ -492,7 +492,7 @@ const gfx::Image* OmniboxPopupViewGtk::IconForMatch(
     if (!ContainsKey(images_, bitmap)) {
       // gfx::Image wants ownership of bitmaps given to it, and we might as
       // well make the bitmap copy a format that will be used.
-      images_[bitmap] = new gfx::Image(gfx::GdkPixbufFromSkBitmap(bitmap));
+      images_[bitmap] = new gfx::Image(gfx::GdkPixbufFromSkBitmap(*bitmap));
     }
     return images_[bitmap];
   }

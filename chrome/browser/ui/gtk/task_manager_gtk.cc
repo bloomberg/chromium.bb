@@ -722,7 +722,7 @@ GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
         GtkThemeService::GetDefaultFavicon(true)->ToGdkPixbuf()));
   }
 
-  return gfx::GdkPixbufFromSkBitmap(&icon);
+  return gfx::GdkPixbufFromSkBitmap(icon);
 }
 
 void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {

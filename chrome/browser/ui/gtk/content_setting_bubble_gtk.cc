@@ -138,7 +138,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
          i(popup_items.begin()); i != popup_items.end(); ++i, ++row) {
       GtkWidget* image = gtk_image_new();
       if (!i->bitmap.empty()) {
-        GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&i->bitmap);
+        GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(i->bitmap);
         gtk_image_set_from_pixbuf(GTK_IMAGE(image), icon_pixbuf);
         g_object_unref(icon_pixbuf);
 

@@ -71,7 +71,7 @@ PlatformImage CreatePlatformImage() {
   base::mac::NSObjectRetain(image);
   return image;
 #elif defined(TOOLKIT_GTK)
-  return gfx::GdkPixbufFromSkBitmap(&bitmap);
+  return gfx::GdkPixbufFromSkBitmap(bitmap);
 #else
   return bitmap;
 #endif
