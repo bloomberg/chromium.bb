@@ -384,7 +384,11 @@ bool GDataDirectory::RemoveChild(GDataEntry* entry) {
 }
 
 void GDataDirectory::RemoveChildren() {
-  // Remove child files first.
+  RemoveChildFiles();
+  RemoveChildDirectories();
+}
+
+void GDataDirectory::RemoveChildFiles() {
   for (GDataFileCollection::const_iterator iter = child_files_.begin();
        iter != child_files_.end(); ++iter) {
     if (root_)
@@ -392,7 +396,9 @@ void GDataDirectory::RemoveChildren() {
   }
   STLDeleteValues(&child_files_);
   child_files_.clear();
+}
 
+void GDataDirectory::RemoveChildDirectories() {
   for (GDataDirectoryCollection::iterator iter = child_directories_.begin();
        iter != child_directories_.end(); ++iter) {
     GDataDirectory* dir = iter->second;

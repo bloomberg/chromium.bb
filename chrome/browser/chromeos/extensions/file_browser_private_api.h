@@ -610,4 +610,13 @@ class GetNetworkConnectionStateFunction : public SyncExtensionFunction {
       "fileBrowserPrivate.getNetworkConnectionState");
 };
 
+// Implements the chrome.fileBrowserPrivate.requestDirectoryRefresh method.
+class RequestDirectoryRefreshFunction : public SyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "fileBrowserPrivate.requestDirectoryRefresh");
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

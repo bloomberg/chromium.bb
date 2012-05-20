@@ -932,6 +932,17 @@
             ]
           }
         ]
+      },
+      {
+        "name": "requestDirectoryRefresh",
+        "description": "Requests a refresh of a directory. Used to get the latest metadata of files in a particular directory. Upon completion, onFileChanged event is raised against the target directory, so that the file browser can redraw contents in the directory. Note that the onFileChanged event can be raised even if there is no change in the directory as it's expensive to check if the new contents match the existing ones.",
+        "parameters": [
+          {
+            "name": "fileURL",
+            "type": "string",
+            "description": "URL of the target directory"
+          }
+        ]
       }
     ],
     "events": [
