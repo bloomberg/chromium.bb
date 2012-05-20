@@ -336,10 +336,8 @@ class GDataDirectory : public GDataEntry {
   // Removes the entry from its children list and destroys the entry instance.
   bool RemoveEntry(GDataEntry* entry);
 
-  // Removes child elements.
+  // Removes children elements.
   void RemoveChildren();
-  void RemoveChildFiles();
-  void RemoveChildDirectories();
 
   // Last refresh time.
   const base::Time& refresh_time() const { return refresh_time_; }

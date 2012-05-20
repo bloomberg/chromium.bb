@@ -73,8 +73,6 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD2(ReadDirectoryByPathAsync,
                void(const FilePath& file_path,
                     const ReadDirectoryCallback& callback));
-  MOCK_METHOD1(RequestDirectoryRefresh,
-               void(const FilePath& file_path));
   MOCK_METHOD2(GetFileInfoByPath, bool(const FilePath& file_path,
                                        GDataFileProperties* properties));
   MOCK_CONST_METHOD1(IsUnderGDataCacheDirectory, bool(const FilePath& path));

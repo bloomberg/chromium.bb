@@ -365,22 +365,6 @@ class GDataFileSystemInterface {
       const FilePath& file_path,
       const ReadDirectoryCallback& callback) = 0;
 
-  // Requests a refresh of the directory pointed by |file_path| (i.e. fetches
-  // the latest metadata of files in the target directory).
-  //
-  // In particular, this function is used to get the latest thumbnail
-  // URLs. Thumbnail URLs change periodically even if contents of files are
-  // not changed, hence we should get the new thumbnail URLs manually if we
-  // detect that the existing thumnail URLs are stale.
-  //
-  // Upon success, the metadata of files in the target directory is updated,
-  // and the change is notified via Observer::OnDirectoryChanged(). Note that
-  // this function ignores changes in directories in the target
-  // directory. Changes in directories are handled via the delta feeds.
-  //
-  // Can be called from UI/IO thread.
-  virtual void RequestDirectoryRefresh(const FilePath& file_path) = 0;
-
   // Does server side content search for |search_query|. Search results will be
   // returned as gdata entries in temp directory proto, and their
   // title/file_name will be formatted as |<resource_id>.<original_file_name>|.
@@ -500,8 +484,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void ReadDirectoryByPathAsync(
       const FilePath& file_path,
       const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void RequestDirectoryRefresh(
-      const FilePath& file_path) OVERRIDE;
   virtual bool GetFileInfoByPath(const FilePath& file_path,
                                  GDataFileProperties* properties) OVERRIDE;
   virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const OVERRIDE;
@@ -1420,10 +1402,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void ReadDirectoryByPathAsyncOnUIThread(
       const FilePath& file_path,
       const ReadDirectoryCallback& callback);
-  void RequestDirectoryRefreshOnUIThread(
-      const FilePath& file_path);
-  void OnRequestDirectoryRefresh(GetDocumentsParams* params,
-                                 base::PlatformFileError error);
   void GetCacheStateOnUIThread(const std::string& resource_id,
                                const std::string& md5,
                                const GetCacheStateCallback& callback);
