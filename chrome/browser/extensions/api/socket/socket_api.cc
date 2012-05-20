@@ -173,7 +173,9 @@ void SocketReadFunction::OnCompleted(int bytes_read,
         base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
             bytes_read));
   } else {
-    result->Set(kDataKey, new base::BinaryValue());
+    // BinaryValue does not support NULL buffer. Workaround it with new char[1].
+    // http://crbug.com/127630
+    result->Set(kDataKey, base::BinaryValue::Create(new char[1], 0));
   }
   result_.reset(result);
 
@@ -254,7 +256,9 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
         base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
             bytes_read));
   } else {
-    result->Set(kDataKey, new base::BinaryValue());
+    // BinaryValue does not support NULL buffer. Workaround it with new char[1].
+    // http://crbug.com/127630
+    result->Set(kDataKey, base::BinaryValue::Create(new char[1], 0));
   }
   result->SetString(kAddressKey, address);
   result->SetInteger(kPortKey, port);
