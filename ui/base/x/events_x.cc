@@ -34,6 +34,12 @@
 #define AXIS_LABEL_PROP_ABS_FLING_Y       "Abs Fling Y Velocity"
 #define AXIS_LABEL_PROP_ABS_FLING_STATE   "Abs Fling State"
 
+// New versions of the valuators, with double values instead of fixed point.
+#define AXIS_LABEL_PROP_ABS_DBL_START_TIME "Abs Dbl Start Timestamp"
+#define AXIS_LABEL_PROP_ABS_DBL_END_TIME   "Abs Dbl End Timestamp"
+#define AXIS_LABEL_PROP_ABS_DBL_FLING_VX   "Abs Dbl Fling X Velocity"
+#define AXIS_LABEL_PROP_ABS_DBL_FLING_VY   "Abs Dbl Fling Y Velocity"
+
 namespace {
 
 // Scroll amount for each wheelscroll event. 53 is also the value used for GTK+.
@@ -74,9 +80,17 @@ class UI_EXPORT CMTEventData {
     Atom y_axis = XInternAtom(display, AXIS_LABEL_PROP_REL_WHEEL, false);
     Atom start_time =
         XInternAtom(display, AXIS_LABEL_PROP_ABS_START_TIME, false);
+    Atom start_time_dbl =
+        XInternAtom(display, AXIS_LABEL_PROP_ABS_DBL_START_TIME, false);
     Atom end_time = XInternAtom(display, AXIS_LABEL_PROP_ABS_END_TIME, false);
+    Atom end_time_dbl =
+        XInternAtom(display, AXIS_LABEL_PROP_ABS_DBL_END_TIME, false);
     Atom fling_vx = XInternAtom(display, AXIS_LABEL_PROP_ABS_FLING_X, false);
+    Atom fling_vx_dbl =
+        XInternAtom(display, AXIS_LABEL_PROP_ABS_DBL_FLING_VX, false);
     Atom fling_vy = XInternAtom(display, AXIS_LABEL_PROP_ABS_FLING_Y, false);
+    Atom fling_vy_dbl =
+        XInternAtom(display, AXIS_LABEL_PROP_ABS_DBL_FLING_VY, false);
     Atom fling_state =
         XInternAtom(display, AXIS_LABEL_PROP_ABS_FLING_STATE, false);
 
@@ -106,14 +120,26 @@ class UI_EXPORT CMTEventData {
         } else if (v->label == start_time) {
           valuators.start_time = number;
           is_cmt = true;
+        } else if (v->label == start_time_dbl) {
+          valuators.start_time_dbl = number;
+          is_cmt = true;
         } else if (v->label == end_time) {
           valuators.end_time = number;
+          is_cmt = true;
+        } else if (v->label == end_time_dbl) {
+          valuators.end_time_dbl = number;
           is_cmt = true;
         } else if (v->label == fling_vx) {
           valuators.fling_vx = number;
           is_cmt = true;
+        } else if (v->label == fling_vx_dbl) {
+          valuators.fling_vx_dbl = number;
+          is_cmt = true;
         } else if (v->label == fling_vy) {
           valuators.fling_vy = number;
+          is_cmt = true;
+        } else if (v->label == fling_vy_dbl) {
+          valuators.fling_vy_dbl = number;
           is_cmt = true;
         } else if (v->label == fling_state) {
           valuators.fling_state = number;
@@ -121,6 +147,15 @@ class UI_EXPORT CMTEventData {
         }
       }
       if (is_cmt) {
+        // Double valuators override fixed point ones.
+        if (valuators.start_time_dbl >= 0)
+          valuators.start_time = -1;
+        if (valuators.end_time_dbl >= 0)
+          valuators.end_time = -1;
+        if (valuators.fling_vx_dbl >= 0)
+          valuators.fling_vx = -1;
+        if (valuators.fling_vy_dbl >= 0)
+          valuators.fling_vy = -1;
         device_to_valuators_[info->deviceid] = valuators;
         cmt_devices_[info->deviceid] = true;
       }
@@ -204,24 +239,31 @@ class UI_EXPORT CMTEventData {
 
     const float natural_scroll_factor = GetNaturalScrollFactor(deviceid);
     const Valuators v = device_to_valuators_[deviceid];
-    if (!XIMaskIsSet(xiev->valuators.mask, v.fling_vx) ||
-        !XIMaskIsSet(xiev->valuators.mask, v.fling_vy) ||
+    if ((!XIMaskIsSet(xiev->valuators.mask, v.fling_vx) &&
+            !XIMaskIsSet(xiev->valuators.mask, v.fling_vx_dbl)) ||
+        (!XIMaskIsSet(xiev->valuators.mask, v.fling_vy) &&
+            !XIMaskIsSet(xiev->valuators.mask, v.fling_vy_dbl)) ||
         !XIMaskIsSet(xiev->valuators.mask, v.fling_state))
       return false;
 
     double* valuators = xiev->valuators.values;
     for (int i = 0; i <= v.max; ++i) {
       if (XIMaskIsSet(xiev->valuators.mask, i)) {
-        // Convert values to unsigned ints represending ms before storing them,
+        // Convert values to unsigned ints representing ms before storing them,
         // as that is how they were encoded before conversion to doubles.
-        if (v.fling_vx == i)
+        if (v.fling_vx_dbl == i) {
+          *vx = natural_scroll_factor * *valuators;
+        } else if (v.fling_vx == i) {
           *vx = natural_scroll_factor *
-                (static_cast<int>(*valuators)) / 1000.0f;
-        else if (v.fling_vy == i)
+              static_cast<double>(static_cast<int>(*valuators)) / 1000.0f;
+        } else if (v.fling_vy_dbl == i) {
+          *vy = natural_scroll_factor * *valuators;
+        } else if (v.fling_vy == i) {
           *vy = natural_scroll_factor *
-                (static_cast<int>(*valuators)) / 1000.0f;
-        else if (v.fling_state == i)
+              static_cast<double>(static_cast<int>(*valuators)) / 1000.0f;
+        } else if (v.fling_state == i) {
           *is_cancel = !!static_cast<unsigned int>(*valuators);
+        }
         valuators++;
       }
     }
@@ -240,21 +282,34 @@ class UI_EXPORT CMTEventData {
       return false;
 
     Valuators v = device_to_valuators_[xiev->deviceid];
-    if (!XIMaskIsSet(xiev->valuators.mask, v.start_time) ||
-        !XIMaskIsSet(xiev->valuators.mask, v.end_time))
+    if ((!XIMaskIsSet(xiev->valuators.mask, v.start_time) &&
+            !XIMaskIsSet(xiev->valuators.mask, v.start_time_dbl)) ||
+        (!XIMaskIsSet(xiev->valuators.mask, v.end_time) &&
+            !XIMaskIsSet(xiev->valuators.mask, v.end_time_dbl)))
       return false;
 
     double* valuators = xiev->valuators.values;
     for (int i = 0; i <= v.max; ++i) {
       if (XIMaskIsSet(xiev->valuators.mask, i)) {
-        // Convert values to unsigned ints represending ms before storing them,
-        // as that is how they were encoded before conversion to doubles.
-        if (v.start_time == i)
+        if (v.start_time_dbl == i) {
+          *start_time = *valuators;
+        } else if (v.start_time == i) {
+          // Convert values to unsigned ints representing ms before storing
+          // them, as that is how they were encoded before conversion
+          // to doubles.
           *start_time =
-              static_cast<double>(static_cast<unsigned int>(*valuators)) / 1000;
-        else if (v.end_time == i)
+              static_cast<double>(
+                  static_cast<unsigned int>(*valuators)) / 1000;
+        } else if (v.end_time_dbl == i) {
+          *end_time = *valuators;
+        } else if (v.end_time == i) {
+          // Convert values to unsigned ints representing ms before storing
+          // them, as that is how they were encoded before conversion
+          // to doubles.
           *end_time =
-              static_cast<double>(static_cast<unsigned int>(*valuators)) / 1000;
+              static_cast<double>(
+                  static_cast<unsigned int>(*valuators)) / 1000;
+        }
         valuators++;
       }
     }
@@ -275,6 +330,11 @@ class UI_EXPORT CMTEventData {
     int fling_vx;
     int fling_vy;
     int fling_state;
+    // *_dbl valuators take precedence over the fixed precision versions.
+    int start_time_dbl;
+    int end_time_dbl;
+    int fling_vx_dbl;
+    int fling_vy_dbl;
 
     Valuators()
         : max(-1),
@@ -284,8 +344,11 @@ class UI_EXPORT CMTEventData {
           end_time(-1),
           fling_vx(-1),
           fling_vy(-1),
-          fling_state(-1) {
-
+          fling_state(-1),
+          start_time_dbl(-1),
+          end_time_dbl(-1),
+          fling_vx_dbl(-1),
+          fling_vy_dbl(-1) {
     }
 
   };
@@ -700,7 +763,7 @@ base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
       double start, end;
       if (GetGestureTimes(native_event, &start, &end)) {
         // If the driver supports gesture times, use them.
-        return base::TimeDelta::FromMicroseconds(start * 1000000);
+        return base::TimeDelta::FromMicroseconds(end * 1000000);
       } else {
         XIDeviceEvent* xide =
             static_cast<XIDeviceEvent*>(native_event->xcookie.data);
