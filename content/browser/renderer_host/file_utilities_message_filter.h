@@ -39,7 +39,6 @@ class FileUtilitiesMessageFilter : public content::BrowserMessageFilter {
   void OnOpenFile(const FilePath& path,
                   int mode,
                   IPC::PlatformFileForTransit* result);
-  void OnRevealFolderInOS(const FilePath& path);
 
   // The ID of this process.
   int process_id_;

@@ -30,6 +30,3 @@ IPC_SYNC_MESSAGE_CONTROL2_1(FileUtilitiesMsg_OpenFile,
                             FilePath /* path */,
                             int /* mode */,
                             IPC::PlatformFileForTransit /* result */)
-
-IPC_MESSAGE_CONTROL1(FileUtilitiesMsg_RevealFolderInOS,
-                     FilePath /* path */)

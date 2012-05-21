@@ -112,7 +112,6 @@ class RendererWebKitPlatformSupportImpl::MimeRegistry
 class RendererWebKitPlatformSupportImpl::FileUtilities
     : public webkit_glue::WebFileUtilitiesImpl {
  public:
-  virtual void revealFolderInOS(const WebKit::WebString& path);
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual bool getFileModificationTime(const WebKit::WebString& path,
                                        double& result);
@@ -417,15 +416,6 @@ bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileSize(
 
   result = -1;
   return false;
-}
-
-void RendererWebKitPlatformSupportImpl::FileUtilities::revealFolderInOS(
-    const WebString& path) {
-  FilePath file_path(webkit_glue::WebStringToFilePath(path));
-  bool res = file_util::AbsolutePath(&file_path);
-  DCHECK(res);
-  RenderThreadImpl::current()->Send(
-      new FileUtilitiesMsg_RevealFolderInOS(file_path));
 }
 
 bool RendererWebKitPlatformSupportImpl::FileUtilities::getFileModificationTime(

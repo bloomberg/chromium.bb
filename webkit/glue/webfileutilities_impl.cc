@@ -24,10 +24,6 @@ WebFileUtilitiesImpl::WebFileUtilitiesImpl()
 WebFileUtilitiesImpl::~WebFileUtilitiesImpl() {
 }
 
-void WebFileUtilitiesImpl::revealFolderInOS(const WebString& path) {
-  NOTREACHED();
-}
-
 bool WebFileUtilitiesImpl::fileExists(const WebString& path) {
   FilePath::StringType file_path = WebStringToFilePathString(path);
   return file_util::PathExists(FilePath(file_path));
