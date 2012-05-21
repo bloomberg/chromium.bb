@@ -72,11 +72,11 @@ DialogFrameView::DialogFrameView() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(IDR_CLOSE_BAR).ToSkBitmap());
+      rb.GetImageNamed(IDR_CLOSE_BAR).ToImageSkia());
   close_button_->SetImage(views::CustomButton::BS_HOT,
-      rb.GetImageNamed(IDR_CLOSE_BAR_H).ToSkBitmap());
+      rb.GetImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
-      rb.GetImageNamed(IDR_CLOSE_BAR_P).ToSkBitmap());
+      rb.GetImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);
   AddChildView(close_button_);

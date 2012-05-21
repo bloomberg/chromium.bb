@@ -64,7 +64,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   views::ImageView* icon = new views::ImageView();
-  icon->SetImage(rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32).ToSkBitmap());
+  icon->SetImage(rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_32).ToImageSkia());
   gfx::Size icon_size = icon->GetPreferredSize();
 
   // An approximate window size. After Layout() we'll get better bounds.
@@ -159,11 +159,11 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
   // The close button is custom.
   views::ImageButton* close_button = new views::ImageButton(this);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
-                         rb.GetNativeImageNamed(IDR_CLOSE_BAR).ToSkBitmap());
+                         rb.GetNativeImageNamed(IDR_CLOSE_BAR).ToImageSkia());
   close_button->SetImage(views::CustomButton::BS_HOT,
-                         rb.GetNativeImageNamed(IDR_CLOSE_BAR_H).ToSkBitmap());
+                         rb.GetNativeImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
   close_button->SetImage(views::CustomButton::BS_PUSHED,
-                         rb.GetNativeImageNamed(IDR_CLOSE_BAR_P).ToSkBitmap());
+                         rb.GetNativeImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
   close_button->set_tag(BT_CLOSE_BUTTON);
   layout->AddView(close_button);
 

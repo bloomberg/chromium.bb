@@ -307,10 +307,10 @@ const SkBitmap* AutocompleteResultView::GetIcon() const {
   return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(icon);
 }
 
-const SkBitmap* AutocompleteResultView::GetKeywordIcon() const {
+const gfx::ImageSkia* AutocompleteResultView::GetKeywordIcon() const {
   // NOTE: If we ever begin returning icons of varying size, then callers need
   // to ensure that |keyword_icon_| is resized each time its image is reset.
-  return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       (GetState() == SELECTED) ? IDR_OMNIBOX_TTS_SELECTED : IDR_OMNIBOX_TTS);
 }
 
@@ -638,4 +638,3 @@ void AutocompleteResultView::AnimationProgressed(
   Layout();
   SchedulePaint();
 }
-

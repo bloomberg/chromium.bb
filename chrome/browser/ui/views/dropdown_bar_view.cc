@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/painter.h"
@@ -29,8 +30,8 @@ const int kAnimatingEdgeHeight = 5;
 class DropdownBackground : public views::Background {
  public:
   explicit DropdownBackground(BrowserView* browser,
-                              const SkBitmap* left_alpha_mask,
-                              const SkBitmap* right_alpha_mask);
+                              const gfx::ImageSkia* left_alpha_mask,
+                              const gfx::ImageSkia* right_alpha_mask);
   virtual ~DropdownBackground() {}
 
   // Overridden from views::Background.
@@ -38,15 +39,15 @@ class DropdownBackground : public views::Background {
 
  private:
   BrowserView* browser_view_;
-  const SkBitmap* left_alpha_mask_;
-  const SkBitmap* right_alpha_mask_;
+  const gfx::ImageSkia* left_alpha_mask_;
+  const gfx::ImageSkia* right_alpha_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(DropdownBackground);
 };
 
 DropdownBackground::DropdownBackground(BrowserView* browser_view,
-                                     const SkBitmap* left_alpha_mask,
-                                     const SkBitmap* right_alpha_mask)
+                                     const gfx::ImageSkia* left_alpha_mask,
+                                     const gfx::ImageSkia* right_alpha_mask)
     : browser_view_(browser_view),
       left_alpha_mask_(left_alpha_mask),
       right_alpha_mask_(right_alpha_mask) {
@@ -122,8 +123,8 @@ void DropdownBarView::OnPaint(gfx::Canvas* canvas) {
 ////////////////////////////////////////////////////////////////////////////////
 // DropDownBarView, protected:
 
-void DropdownBarView::SetBackground(const SkBitmap* left_alpha_mask,
-                                    const SkBitmap* right_alpha_mask) {
+void DropdownBarView::SetBackground(const gfx::ImageSkia* left_alpha_mask,
+                                    const gfx::ImageSkia* right_alpha_mask) {
   set_background(new DropdownBackground(host()->browser_view(), left_alpha_mask,
       right_alpha_mask));
 }

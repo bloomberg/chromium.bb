@@ -463,16 +463,16 @@ views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
   views::ImageButton* button = new views::ImageButton(this);
   ui::ThemeProvider* tp = frame()->GetThemeProvider();
   button->SetImage(views::CustomButton::BS_NORMAL,
-                   tp->GetBitmapNamed(normal_bitmap_id));
+                   tp->GetImageSkiaNamed(normal_bitmap_id));
   button->SetImage(views::CustomButton::BS_HOT,
-                   tp->GetBitmapNamed(hot_bitmap_id));
+                   tp->GetImageSkiaNamed(hot_bitmap_id));
   button->SetImage(views::CustomButton::BS_PUSHED,
-                   tp->GetBitmapNamed(pushed_bitmap_id));
+                   tp->GetImageSkiaNamed(pushed_bitmap_id));
   if (browser_view()->IsBrowserTypeNormal()) {
     button->SetBackground(
         tp->GetColor(ThemeService::COLOR_BUTTON_BACKGROUND),
-        tp->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND),
-        tp->GetBitmapNamed(mask_bitmap_id));
+        tp->GetImageSkiaNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND),
+        tp->GetImageSkiaNamed(mask_bitmap_id));
   }
   button->SetAccessibleName(
       l10n_util::GetStringUTF16(accessibility_string_id));

@@ -29,7 +29,7 @@ StarView::~StarView() {
 void StarView::SetToggled(bool on) {
   SetTooltipText(l10n_util::GetStringUTF16(
       on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       on ? IDR_STAR_LIT : IDR_STAR));
 }
 

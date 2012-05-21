@@ -183,9 +183,9 @@ ProfileItemView::ProfileItemView(const AvatarMenuModel::Item& item,
   SkBitmap profile_icon = *item_.icon.ToSkBitmap();
   if (item_.active) {
     SkBitmap badged_icon(GetBadgedIcon(profile_icon));
-    image_view_->SetImage(&badged_icon);
+    image_view_->SetImage(badged_icon);
   } else {
-    image_view_->SetImage(&profile_icon);
+    image_view_->SetImage(profile_icon);
   }
   AddChildView(image_view_);
 

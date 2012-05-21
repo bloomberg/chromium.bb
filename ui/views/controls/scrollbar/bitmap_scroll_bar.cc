@@ -134,25 +134,25 @@ class BitmapScrollBarThumb : public BaseScrollBarThumb {
   }
 
  private:
-  // Returns the bitmap rendered at the start of the thumb.
-  SkBitmap* start_cap_bitmap() const {
+  // Returns the image rendered at the start of the thumb.
+  gfx::ImageSkia* start_cap_bitmap() const {
     return scroll_bar_->images_[BitmapScrollBar::THUMB_START_CAP][GetState()];
   }
 
-  // Returns the bitmap rendered at the end of the thumb.
-  SkBitmap* end_cap_bitmap() const {
+  // Returns the image rendered at the end of the thumb.
+  gfx::ImageSkia* end_cap_bitmap() const {
     return scroll_bar_->images_[BitmapScrollBar::THUMB_END_CAP][GetState()];
   }
 
-  // Returns the bitmap that is tiled in the background of the thumb between
+  // Returns the image that is tiled in the background of the thumb between
   // the start and the end caps.
-  SkBitmap* background_bitmap() const {
+  gfx::ImageSkia* background_bitmap() const {
     return scroll_bar_->images_[BitmapScrollBar::THUMB_MIDDLE][GetState()];
   }
 
-  // Returns the bitmap that is rendered in the middle of the thumb
+  // Returns the image that is rendered in the middle of the thumb
   // transparently over the background bitmap.
-  SkBitmap* grippy_bitmap() const {
+  gfx::ImageSkia* grippy_bitmap() const {
     return scroll_bar_->images_[BitmapScrollBar::THUMB_GRIPPY]
         [CustomButton::BS_NORMAL];
   }
@@ -188,22 +188,22 @@ BitmapScrollBar::BitmapScrollBar(bool horizontal, bool show_scroll_buttons)
 
 void BitmapScrollBar::SetImage(ScrollBarPart part,
                                CustomButton::ButtonState state,
-                               SkBitmap* bitmap) {
+                               gfx::ImageSkia* image_skia) {
   DCHECK(part < PART_COUNT);
   DCHECK(state < CustomButton::BS_COUNT);
   switch (part) {
     case PREV_BUTTON:
-      prev_button_->SetImage(state, bitmap);
+      prev_button_->SetImage(state, image_skia);
       break;
     case NEXT_BUTTON:
-      next_button_->SetImage(state, bitmap);
+      next_button_->SetImage(state, image_skia);
       break;
     case THUMB_START_CAP:
     case THUMB_MIDDLE:
     case THUMB_END_CAP:
     case THUMB_GRIPPY:
     case THUMB_TRACK:
-      images_[part][state] = bitmap;
+      images_[part][state] = image_skia;
       break;
   }
 }

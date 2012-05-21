@@ -104,7 +104,7 @@ class AutocompleteResultView : public views::View,
   static bool SortRunsVisually(const RunData& lhs, const RunData& rhs);
 
   const SkBitmap* GetIcon() const;
-  const SkBitmap* GetKeywordIcon() const;
+  const gfx::ImageSkia* GetKeywordIcon() const;
 
   // Elides |runs| to fit in |remaining_width|.  The runs in |runs| should be in
   // logical order.

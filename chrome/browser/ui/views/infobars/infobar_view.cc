@@ -218,18 +218,18 @@ void InfoBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     gfx::Image* image = delegate()->GetIcon();
     if (image) {
       icon_ = new views::ImageView;
-      icon_->SetImage(image->ToSkBitmap());
+      icon_->SetImage(image->ToImageSkia());
       AddChildView(icon_);
     }
 
     close_button_ = new views::ImageButton(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                            rb.GetImageNamed(IDR_CLOSE_BAR).ToSkBitmap());
+                            rb.GetImageNamed(IDR_CLOSE_BAR).ToImageSkia());
     close_button_->SetImage(views::CustomButton::BS_HOT,
-                            rb.GetImageNamed(IDR_CLOSE_BAR_H).ToSkBitmap());
+                            rb.GetImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
     close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                            rb.GetImageNamed(IDR_CLOSE_BAR_P).ToSkBitmap());
+                            rb.GetImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->set_focusable(true);

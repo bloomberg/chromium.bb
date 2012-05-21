@@ -70,7 +70,7 @@ class DriveDefaultView : public TrayItemMore {
       : TrayItemMore(owner) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DRIVE).ToSkBitmap());
+    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DRIVE).ToImageSkia());
     Update(list);
   }
 
@@ -96,11 +96,11 @@ class DriveDetailedView : public TrayDetailsView,
         in_progress_img_(NULL),
         done_img_(NULL),
         failed_img_(NULL) {
-    in_progress_img_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    in_progress_img_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_DRIVE);
-    done_img_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    done_img_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_DRIVE_DONE);
-    failed_img_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    failed_img_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_DRIVE_FAILED);
 
     Update(list);
@@ -173,10 +173,10 @@ class DriveDetailedView : public TrayDetailsView,
 
       cancel_button_ = new views::ImageButton(this);
       cancel_button_->SetImage(views::ImageButton::BS_NORMAL,
-          ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_AURA_UBER_TRAY_DRIVE_CANCEL));
       cancel_button_->SetImage(views::ImageButton::BS_HOT,
-          ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
               IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER));
 
       UpdateStatus(state, progress);
@@ -266,7 +266,8 @@ class DriveDetailedView : public TrayDetailsView,
     CreateSpecialRow(IDS_ASH_STATUS_TRAY_DRIVE, this);
   }
 
-  SkBitmap* GetImageForState(ash::DriveOperationStatus::OperationState state) {
+  gfx::ImageSkia* GetImageForState(
+      ash::DriveOperationStatus::OperationState state) {
     switch (state) {
       case ash::DriveOperationStatus::OPERATION_NOT_STARTED:
       case ash::DriveOperationStatus::OPERATION_STARTED:
@@ -362,9 +363,9 @@ class DriveDetailedView : public TrayDetailsView,
   // Maps operation entries to their file paths.
   std::map<FilePath, RowView*> update_map_;
   views::View* settings_;
-  SkBitmap* in_progress_img_;
-  SkBitmap* done_img_;
-  SkBitmap* failed_img_;
+  gfx::ImageSkia* in_progress_img_;
+  gfx::ImageSkia* done_img_;
+  gfx::ImageSkia* failed_img_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveDetailedView);
 };

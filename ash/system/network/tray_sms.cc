@@ -142,7 +142,7 @@ class TraySms::SmsDefaultView : public TrayItemMore {
   explicit SmsDefaultView(TraySms* tray)
       : TrayItemMore(tray),
         tray_(tray) {
-    SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    SetImage(ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_SMS));
     Update();
   }
@@ -212,8 +212,8 @@ class TraySms::SmsMessageView : public views::View,
   int LayoutDetailedView() {
     views::ImageButton* close_button = new views::ImageButton(this);
     close_button->SetImage(views::CustomButton::BS_NORMAL,
-                           ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                               IDR_AURA_WINDOW_CLOSE));
+        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_AURA_WINDOW_CLOSE));
 
     int msg_width = kTrayPopupWidth - kNotificationCloseButtonWidth -
         kTrayPopupPaddingHorizontal * 2;
@@ -251,7 +251,7 @@ class TraySms::SmsMessageView : public views::View,
 
   int LayoutNotificationView() {
     icon_ = new views::ImageView;
-    icon_->SetImage(ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    icon_->SetImage(ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_SMS));
 
     int msg_width = kTrayPopupWidth - kNotificationCloseButtonWidth -

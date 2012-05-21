@@ -70,7 +70,7 @@ views::Button* MakeWindowSwitcherButton(views::ButtonListener* listener) {
   views::ImageButton* switcher_button = new views::ImageButton(listener);
   switcher_button->SetImage(
       views::ImageButton::BS_NORMAL,
-      ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_PAGEINFO_WARNING_MINOR));
   // TODO(cpu): Replace IDR_PAGEINFO_WARNING_MINOR with actual image.
   switcher_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,

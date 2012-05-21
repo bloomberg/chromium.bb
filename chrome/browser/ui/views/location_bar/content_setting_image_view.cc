@@ -73,7 +73,7 @@ void ContentSettingImageView::UpdateFromWebContents(WebContents* web_contents) {
     SetVisible(false);
     return;
   }
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       content_setting_image_model_->get_icon()));
   SetTooltipText(UTF8ToUTF16(content_setting_image_model_->get_tooltip()));
   SetVisible(true);
