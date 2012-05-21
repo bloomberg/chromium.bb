@@ -29,6 +29,8 @@ env_vars = [
     'GDB_TEST_GUEST=%s' % gdb_test_guest.abspath,
     'NACL_GDB=%s' % env['GDB'],
     ]
+if env.Bit('asan'):
+  env_vars += ['NACL_ASAN=1']
 
 node = env.CommandTest(
     'stepi_after_break.out',

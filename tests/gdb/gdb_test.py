@@ -13,7 +13,10 @@ def LaunchSelLdr(program, name):
   stderr = open(os.path.join(out_dir, name + '.perr'), 'w')
   sel_ldr = os.environ['NACL_SEL_LDR']
   irt = os.environ['NACL_IRT']
-  args = [sel_ldr, '-g', '-B', irt, program]
+  args = [sel_ldr, '-g']
+  if os.environ.has_key('NACL_ASAN'):
+    args += ['-Q']
+  args += ['-B', irt, program]
   return subprocess.Popen(args, stdout=stdout, stderr=stderr)
 
 
