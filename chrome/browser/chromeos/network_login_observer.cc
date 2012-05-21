@@ -21,10 +21,8 @@ NetworkLoginObserver::~NetworkLoginObserver() {
 }
 
 void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
-  const WifiNetworkVector& wifi_networks = cros->wifi_networks();
-  const VirtualNetworkVector& virtual_networks = cros->virtual_networks();
-
   // Check to see if we have any newly failed wifi network.
+  const WifiNetworkVector& wifi_networks = cros->wifi_networks();
   for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
        it != wifi_networks.end(); it++) {
     WifiNetwork* wifi = *it;
@@ -45,7 +43,30 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
       }
     }
   }
+  // Check to see if we have any newly failed wimax network.
+  const WimaxNetworkVector& wimax_networks = cros->wimax_networks();
+  for (WimaxNetworkVector::const_iterator it = wimax_networks.begin();
+       it != wimax_networks.end(); it++) {
+    WimaxNetwork* wimax = *it;
+    if (wimax->notify_failure()) {
+      // Display login dialog again for bad_passphrase and bad_wepkey errors.
+      // Always re-display for user initiated connections that fail.
+      // Always re-display the login dialog for encrypted networks that were
+      // added and failed to connect for any reason.
+      VLOG(1) << "NotifyFailure: " << wimax->name()
+              << ", error: " << wimax->error()
+              << ", added: " << wimax->added();
+      if (wimax->error() == ERROR_BAD_PASSPHRASE ||
+          wimax->error() == ERROR_BAD_WEPKEY ||
+          wimax->connection_started() ||
+          (wimax->passphrase_required() && wimax->added())) {
+        NetworkConfigView::Show(wimax, NULL);
+        return;  // Only support one failure per notification.
+      }
+    }
+  }
   // Check to see if we have any newly failed virtual network.
+  const VirtualNetworkVector& virtual_networks = cros->virtual_networks();
   for (VirtualNetworkVector::const_iterator it = virtual_networks.begin();
        it != virtual_networks.end(); it++) {
     VirtualNetwork* vpn = *it;
