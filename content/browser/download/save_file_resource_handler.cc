@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,8 @@ bool SaveFileResourceHandler::OnRequestRedirected(
 
 bool SaveFileResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response) {
+    content::ResourceResponse* response,
+    bool* defer) {
   save_id_ = save_manager_->GetNextId();
   // |save_manager_| consumes (deletes):
   SaveFileCreateInfo* info = new SaveFileCreateInfo;
@@ -80,7 +81,8 @@ bool SaveFileResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   return true;
 }
 
-bool SaveFileResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
+bool SaveFileResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+                                              bool* defer) {
   DCHECK(read_buffer_);
   // We are passing ownership of this buffer to the save file manager.
   scoped_refptr<net::IOBuffer> buffer;

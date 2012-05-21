@@ -69,9 +69,10 @@ DownloadResourceHandler::DownloadResourceHandler(
       started_cb_(started_cb),
       save_info_(save_info),
       buffer_(new content::DownloadBuffer),
-      is_paused_(false),
       last_buffer_size_(0),
-      bytes_read_(0) {
+      bytes_read_(0),
+      pause_count_(0),
+      was_deferred_(false) {
   download_stats::RecordDownloadCount(download_stats::UNTHROTTLED_COUNT);
 }
 
@@ -93,7 +94,8 @@ bool DownloadResourceHandler::OnRequestRedirected(
 // Send the download creation information to the download thread.
 bool DownloadResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response) {
+    content::ResourceResponse* response,
+    bool* defer) {
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id;
   download_start_time_ = base::TimeTicks::Now();
@@ -104,8 +106,8 @@ bool DownloadResourceHandler::OnResponseStarted(
   std::string content_disposition;
   request_->GetResponseHeaderByName("content-disposition",
                                     &content_disposition);
-  set_content_disposition(content_disposition);
-  set_content_length(response->content_length);
+  SetContentDisposition(content_disposition);
+  SetContentLength(response->content_length);
 
   const ResourceRequestInfoImpl* request_info =
       ResourceRequestInfoImpl::ForRequest(request_);
@@ -127,7 +129,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->remote_address = request_->GetSocketAddress().host();
   download_stats::RecordDownloadMimeType(info->mime_type);
 
-  DownloadRequestHandle request_handle(global_id_.child_id,
+  DownloadRequestHandle request_handle(this, global_id_.child_id,
                                        render_view_id_, global_id_.request_id);
 
   // Get the last modified time and etag.
@@ -159,18 +161,10 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->referrer_charset = request_->context()->referrer_charset();
   info->save_info = save_info_;
 
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadResourceHandler::StartOnUIThread, this,
                  base::Passed(&info), request_handle));
-
-  // We can't start saving the data before we create the file on disk and have a
-  // download id. The request will be un-paused in
-  // DownloadFileManager::CreateDownloadFile.
-  ResourceDispatcherHostImpl::Get()->PauseRequest(global_id_.child_id,
-                                                  global_id_.request_id,
-                                                  true);
 
   return true;
 }
@@ -205,7 +199,29 @@ bool DownloadResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 }
 
 // Pass the buffer to the download file writer.
-bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
+bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+                                              bool* defer) {
+  if (!read_buffer_) {
+    // Ignore spurious OnReadCompleted!  Deferring from OnReadCompleted tells
+    // the ResourceDispatcherHost that we did not consume the data.
+    // ResumeDeferredRequest then repeats the last OnReadCompleted call.
+    // TODO(darin): Fix the ResourceDispatcherHost to avoid this hack!
+    return true;
+  }
+
+  if (pause_count_ > 0) {
+    *defer = was_deferred_ = true;
+    return true;
+  }
+
+  if (download_id_ == DownloadId::Invalid()) {
+    // We can't start saving the data before we create the file on disk and
+    // have a download id. The request will be un-paused in
+    // DownloadFileManager::CreateDownloadFile.
+    *defer = was_deferred_ = true;
+    return true;
+  }
+
   base::TimeTicks now(base::TimeTicks::Now());
   if (!last_read_time_.is_null()) {
     double seconds_since_last_read = (now - last_read_time_).InSecondsF();
@@ -240,8 +256,10 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
 
   // We schedule a pause outside of the read loop if there is too much file
   // writing work to do.
-  if (vector_size > kLoadsToWrite)
-    StartPauseTimer();
+  if (vector_size > kLoadsToWrite) {
+    *defer = was_deferred_ = true;
+    CheckWriteProgressLater();
+  }
 
   return true;
 }
@@ -355,33 +373,41 @@ void DownloadResourceHandler::StartOnUIThread(
   }
   DownloadId download_id = download_manager->delegate()->GetNextId();
   info->download_id = download_id;
+
+  // NOTE: StartDownload triggers creation of the download destination file
+  // that will hold the downloaded data.  SetDownloadID unblocks the
+  // DownloadResourceHandler to begin forwarding network data to the download
+  // destination file.  The sequence of these two steps is critical as creation
+  // of the downloaded destination file has to happen before we attempt to
+  // append data to it.  Both of those operations happen on the FILE thread.
+
+  download_file_manager_->StartDownload(info.release(), handle);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DownloadResourceHandler::set_download_id, this,
-                 info->download_id));
-  // It's safe to continue on with download initiation before we have
-  // confirmation that that download_id_ has been set on the IO thread, as any
-  // messages generated by the UI thread that affect the IO thread will be
-  // behind the message posted above.
-  download_file_manager_->StartDownload(info.release(), handle);
+      base::Bind(&DownloadResourceHandler::SetDownloadID, this,
+                 download_id));
+
   CallStartedCB(download_id, net::OK);
 }
 
-void DownloadResourceHandler::set_download_id(content::DownloadId id) {
+void DownloadResourceHandler::SetDownloadID(content::DownloadId id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   download_id_ = id;
+  MaybeResumeRequest();
 }
 
 // If the content-length header is not present (or contains something other
 // than numbers), the incoming content_length is -1 (unknown size).
 // Set the content length to 0 to indicate unknown size to DownloadManager.
-void DownloadResourceHandler::set_content_length(const int64& content_length) {
+void DownloadResourceHandler::SetContentLength(const int64& content_length) {
   content_length_ = 0;
   if (content_length > 0)
     content_length_ = content_length;
 }
 
-void DownloadResourceHandler::set_content_disposition(
+void DownloadResourceHandler::SetContentDisposition(
     const std::string& content_disposition) {
   content_disposition_ = content_disposition;
 }
@@ -390,34 +416,36 @@ void DownloadResourceHandler::CheckWriteProgress() {
   if (!buffer_.get())
     return;  // The download completed while we were waiting to run.
 
-  size_t contents_size = buffer_->size();
-
-  bool should_pause = contents_size > kLoadsToWrite;
-
-  // We'll come back later and see if it's okay to unpause the request.
-  if (should_pause)
-    StartPauseTimer();
-
-  if (is_paused_ != should_pause) {
-    ResourceDispatcherHostImpl::Get()->PauseRequest(global_id_.child_id,
-                                                    global_id_.request_id,
-                                                    should_pause);
-    is_paused_ = should_pause;
+  if (buffer_->size() > kLoadsToWrite) {
+    // We'll come back later and see if it's okay to unpause the request.
+    CheckWriteProgressLater();
+    return;
   }
+
+  MaybeResumeRequest();
 }
 
-DownloadResourceHandler::~DownloadResourceHandler() {
-  // This won't do anything if the callback was called before.
-  // If it goes through, it will likely be because OnWillStart() returned
-  // false somewhere in the chain of resource handlers.
-  CallStartedCB(download_id_, net::ERR_ACCESS_DENIED);
+void DownloadResourceHandler::PauseRequest() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ++pause_count_;
 }
 
-void DownloadResourceHandler::StartPauseTimer() {
-  if (!pause_timer_.IsRunning())
-    pause_timer_.Start(FROM_HERE,
-                       base::TimeDelta::FromMilliseconds(kThrottleTimeMs), this,
-                       &DownloadResourceHandler::CheckWriteProgress);
+void DownloadResourceHandler::ResumeRequest() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_LT(0, pause_count_);
+
+  --pause_count_;
+  MaybeResumeRequest();
+}
+
+void DownloadResourceHandler::CancelRequest() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ResourceDispatcherHostImpl::Get()->CancelRequest(
+      global_id_.child_id,
+      global_id_.request_id,
+      false);
 }
 
 std::string DownloadResourceHandler::DebugString() const {
@@ -439,4 +467,38 @@ std::string DownloadResourceHandler::DebugString() const {
                             global_id_.request_id,
                             render_view_id_,
                             save_info_.file_path.value().c_str());
+}
+
+DownloadResourceHandler::~DownloadResourceHandler() {
+  // This won't do anything if the callback was called before.
+  // If it goes through, it will likely be because OnWillStart() returned
+  // false somewhere in the chain of resource handlers.
+  CallStartedCB(download_id_, net::ERR_ACCESS_DENIED);
+}
+
+void DownloadResourceHandler::CheckWriteProgressLater() {
+  if (!check_write_progress_timer_.IsRunning()) {
+    check_write_progress_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kThrottleTimeMs),
+        this,
+        &DownloadResourceHandler::CheckWriteProgress);
+  }
+}
+
+void DownloadResourceHandler::MaybeResumeRequest() {
+  if (!was_deferred_)
+    return;
+
+  if (pause_count_ > 0)
+    return;
+  if (download_id_ == DownloadId::Invalid())
+    return;
+  if (buffer_.get() && (buffer_->size() > kLoadsToWrite))
+    return;
+
+  was_deferred_ = false;
+  ResourceDispatcherHostImpl::Get()->ResumeDeferredRequest(
+      global_id_.child_id,
+      global_id_.request_id);
 }

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/stringprintf.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -15,28 +14,8 @@
 using content::BrowserThread;
 using content::DownloadManager;
 using content::RenderViewHostImpl;
-using content::ResourceDispatcherHostImpl;
 
-// IO Thread indirections to resource dispatcher host.
-// Provided as targets for PostTask from within this object
-// only.
-static void DoPauseRequest(
-    int process_unique_id,
-    int request_id,
-    bool pause) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ResourceDispatcherHostImpl::Get()->PauseRequest(process_unique_id,
-                                                  request_id,
-                                                  pause);
-}
-
-static void DoCancelRequest(
-    int process_unique_id,
-    int request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ResourceDispatcherHostImpl::Get()->CancelRequest(process_unique_id,
-                                                   request_id,
-                                                   false);
+DownloadRequestHandle::~DownloadRequestHandle() {
 }
 
 DownloadRequestHandle::DownloadRequestHandle()
@@ -45,15 +24,15 @@ DownloadRequestHandle::DownloadRequestHandle()
       request_id_(-1) {
 }
 
-DownloadRequestHandle::DownloadRequestHandle(int child_id,
+DownloadRequestHandle::DownloadRequestHandle(DownloadResourceHandler* handler,
+                                             int child_id,
                                              int render_view_id,
                                              int request_id)
-    : child_id_(child_id),
+    : handler_(handler),
+      child_id_(child_id),
       render_view_id_(render_view_id),
       request_id_(request_id) {
-  // ResourceDispatcherHostImpl should not be null for non-default instances of
-  // DownloadRequestHandle.
-  DCHECK(ResourceDispatcherHostImpl::Get());
+  DCHECK(handler_);
 }
 
 content::WebContents* DownloadRequestHandle::GetWebContents() const {
@@ -80,32 +59,26 @@ DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
 }
 
 void DownloadRequestHandle::PauseRequest() const {
-  // The post is safe because ResourceDispatcherHostImpl is guaranteed
-  // to outlive the IO thread.
-  if (ResourceDispatcherHostImpl::Get()) {
+  if (handler_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DoPauseRequest, child_id_, request_id_, true));
+        base::Bind(&DownloadResourceHandler::PauseRequest, handler_));
   }
 }
 
 void DownloadRequestHandle::ResumeRequest() const {
-  // The post is safe because ResourceDispatcherHostImpl is guaranteed
-  // to outlive the IO thread.
-  if (ResourceDispatcherHostImpl::Get()) {
+  if (handler_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DoPauseRequest, child_id_, request_id_, false));
+        base::Bind(&DownloadResourceHandler::ResumeRequest, handler_));
   }
 }
 
 void DownloadRequestHandle::CancelRequest() const {
-  // The post is safe because ResourceDispatcherHostImpl is guaranteed
-  // to outlive the IO thread.
-  if (ResourceDispatcherHostImpl::Get()) {
+  if (handler_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DoCancelRequest, child_id_, request_id_));
+        base::Bind(&DownloadResourceHandler::CancelRequest, handler_));
   }
 }
 

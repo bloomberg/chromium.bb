@@ -72,6 +72,7 @@ BufferedResourceHandler::BufferedResourceHandler(
       bytes_read_(0),
       sniff_content_(false),
       wait_for_plugins_(false),
+      deferred_waiting_for_plugins_(false),
       buffering_(false),
       next_handler_needs_response_started_(false),
       next_handler_needs_will_read_(false),
@@ -80,10 +81,17 @@ BufferedResourceHandler::BufferedResourceHandler(
 
 bool BufferedResourceHandler::OnResponseStarted(
     int request_id,
-    ResourceResponse* response) {
+    ResourceResponse* response,
+    bool* defer) {
   response_ = response;
+
   if (!DelayResponse())
-    return CompleteResponseStarted(request_id);
+    return CompleteResponseStarted(request_id, defer);
+
+  if (wait_for_plugins_) {
+    deferred_waiting_for_plugins_ = true;
+    *defer = true;
+  }
   return true;
 }
 
@@ -107,9 +115,9 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   if (finished_)
     return false;
 
-  if (!next_handler_->OnWillRead(request_id, buf, buf_size, min_size)) {
+  if (!next_handler_->OnWillRead(request_id, buf, buf_size, min_size))
     return false;
-  }
+
   read_buffer_ = *buf;
   read_buffer_size_ = *buf_size;
   DCHECK_GE(read_buffer_size_, net::kMaxBytesToSniff * 2);
@@ -117,35 +125,35 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   return true;
 }
 
-bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
-  ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
-
+bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+                                              bool* defer) {
   if (sniff_content_) {
-    if (KeepBuffering(*bytes_read))
+    if (KeepBuffering(*bytes_read)) {
+      if (wait_for_plugins_)
+        *defer = deferred_waiting_for_plugins_ = true;
       return true;
+    }
 
     *bytes_read = bytes_read_;
 
     // Done buffering, send the pending ResponseStarted event.
-    if (!CompleteResponseStarted(request_id))
+    if (!CompleteResponseStarted(request_id, defer))
       return false;
-
-    // The next handler might have paused the request in OnResponseStarted.
-    if (info->pause_count())
+    if (*defer)
       return true;
   } else if (wait_for_plugins_) {
+    *defer = deferred_waiting_for_plugins_ = true;
     return true;
   }
 
-  if (!ForwardPendingEventsToNextHandler(request_id))
+  if (!ForwardPendingEventsToNextHandler(request_id, defer))
     return false;
-  if (info->pause_count())
+  if (*defer)
     return true;
 
   // Release the reference that we acquired at OnWillRead.
   read_buffer_ = NULL;
-  return next_handler_->OnReadCompleted(request_id, bytes_read);
+  return next_handler_->OnReadCompleted(request_id, bytes_read, defer);
 }
 
 BufferedResourceHandler::~BufferedResourceHandler() {}
@@ -243,16 +251,17 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
   return false;
 }
 
-bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
+bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
+                                                      bool* defer) {
   ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request_);
   std::string mime_type;
   request_->GetMimeType(&mime_type);
 
-  // Check if this is an X.509 certificate, if yes, let it be handled
-  // by X509UserCertResourceHandler.
   if (mime_type == "application/x-x509-user-cert") {
-    // This is entirely similar to how DownloadResourceThrottle works except we
+    // Let X.509 certs be handled by the X509UserCertResourceHandler.
+
+    // This is entirely similar to how DownloadResourceHandler works except we
     // are doing it for an X.509 client certificates.
     // TODO(darin): This does not belong here!
 
@@ -272,14 +281,11 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
         new X509UserCertResourceHandler(request_,
                                         info->GetChildID(),
                                         info->GetRouteID());
-    if (!UseAlternateResourceHandler(request_id, x509_cert_handler))
+    if (!UseAlternateResourceHandler(request_id, x509_cert_handler, defer))
       return false;
-  }
+  } else if (info->allow_download() && ShouldDownload(NULL)) {
+    // Forward the data to the download thread.
 
-  // Check to see if we should forward the data from this request to the
-  // download thread.
-  // TODO(paulg): Only download if the context from the renderer allows it.
-  if (info->allow_download() && ShouldDownload(NULL)) {
     if (response_->headers &&  // Can be NULL if FTP.
         response_->headers->response_code() / 100 != 2) {
       // The response code indicates that this is an error page, but we don't
@@ -304,25 +310,20 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
             DownloadSaveInfo(),
             DownloadResourceHandler::OnStartedCallback()));
 
-    if (!UseAlternateResourceHandler(request_id, handler))
+    if (!UseAlternateResourceHandler(request_id, handler, defer))
       return false;
   }
 
-  if (info->pause_count())
+  if (*defer)
     return true;
 
-  return next_handler_->OnResponseStarted(request_id, response_);
+  return next_handler_->OnResponseStarted(request_id, response_, defer);
 }
 
 bool BufferedResourceHandler::ShouldWaitForPlugins() {
   bool need_plugin_list;
   if (!ShouldDownload(&need_plugin_list) || !need_plugin_list)
     return false;
-
-  // We don't want to keep buffering as our buffer will fill up.
-  ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
-  host_->PauseRequest(info->GetChildID(), info->GetRequestID(), true);
 
   // Get the plugins asynchronously.
   PluginServiceImpl::GetInstance()->GetPlugins(
@@ -379,11 +380,14 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
 
 bool BufferedResourceHandler::UseAlternateResourceHandler(
     int request_id,
-    ResourceHandler* handler) {
+    ResourceHandler* handler,
+    bool* defer) {
   // Inform the original ResourceHandler that this will be handled entirely by
   // the new ResourceHandler.
   // TODO(darin): We should probably check the return values of these.
-  next_handler_->OnResponseStarted(request_id, response_);
+  bool defer_ignored = false;
+  next_handler_->OnResponseStarted(request_id, response_, &defer_ignored);
+  DCHECK(!defer_ignored);
   net::URLRequestStatus status(net::URLRequestStatus::HANDLED_EXTERNALLY, 0);
   next_handler_->OnResponseCompleted(request_id, status, std::string());
 
@@ -401,32 +405,23 @@ bool BufferedResourceHandler::UseAlternateResourceHandler(
   next_handler_needs_response_started_ = true;
   next_handler_needs_will_read_ = true;
 
-  return ForwardPendingEventsToNextHandler(request_id);
+  return ForwardPendingEventsToNextHandler(request_id, defer);
 }
 
-bool BufferedResourceHandler::ForwardPendingEventsToNextHandler(
-    int request_id) {
-  ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(request_);
-  if (info->pause_count())
-    return true;
-
+bool BufferedResourceHandler::ForwardPendingEventsToNextHandler(int request_id,
+                                                                bool* defer) {
   if (next_handler_needs_response_started_) {
-    if (!next_handler_->OnResponseStarted(request_id, response_))
+    if (!next_handler_->OnResponseStarted(request_id, response_, defer))
       return false;
-    // If the request was paused during OnResponseStarted, we need to avoid
+    // If the request was deferred during OnResponseStarted, we need to avoid
     // calling OnResponseStarted again.
     next_handler_needs_response_started_ = false;
-    if (info->pause_count())
+    if (*defer)
       return true;
   }
 
   if (next_handler_needs_will_read_) {
     CopyReadBufferToNextHandler(request_id);
-    // If the request was paused during OnWillRead, we need to be sure to try
-    // calling OnWillRead again.
-    if (info->pause_count())
-      return true;
     next_handler_needs_will_read_ = false;
   }
   return true;
@@ -446,6 +441,9 @@ void BufferedResourceHandler::CopyReadBufferToNextHandler(int request_id) {
 
 void BufferedResourceHandler::OnPluginsLoaded(
     const std::vector<webkit::WebPluginInfo>& plugins) {
+  bool needs_resume = deferred_waiting_for_plugins_;
+  deferred_waiting_for_plugins_ = false;
+
   wait_for_plugins_ = false;
   if (!request_)
     return;
@@ -455,9 +453,12 @@ void BufferedResourceHandler::OnPluginsLoaded(
   int child_id = info->GetChildID();
   int request_id = info->GetRequestID();
 
-  host_->PauseRequest(child_id, request_id, false);
-  if (!CompleteResponseStarted(request_id))
+  bool defer = false;
+  if (!CompleteResponseStarted(request_id, &defer)) {
     host_->CancelRequest(child_id, request_id, false);
+  } else if (!defer && needs_resume) {
+    host_->ResumeDeferredRequest(child_id, request_id);
+  }
 }
 
 }  // namespace content

@@ -74,15 +74,14 @@ bool ThrottlingResourceHandler::OnWillStart(int request_id,
 
 bool ThrottlingResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response) {
+    content::ResourceResponse* response,
+    bool* defer) {
   DCHECK_EQ(request_id_, request_id);
 
   while (index_ < throttles_.size()) {
-    bool defer = false;
-    throttles_[index_]->WillProcessResponse(&defer);
+    throttles_[index_]->WillProcessResponse(defer);
     index_++;
-    if (defer) {
-      host_->PauseRequest(child_id_, request_id_, true);
+    if (*defer) {
       deferred_stage_ = DEFERRED_RESPONSE;
       deferred_response_ = response;
       return true;  // Do not cancel.
@@ -91,7 +90,7 @@ bool ThrottlingResourceHandler::OnResponseStarted(
 
   index_ = 0;  // Reset for next time.
 
-  return next_handler_->OnResponseStarted(request_id, response);
+  return next_handler_->OnResponseStarted(request_id, response, defer);
 }
 
 void ThrottlingResourceHandler::OnRequestClosed() {
@@ -154,11 +153,12 @@ void ThrottlingResourceHandler::ResumeResponse() {
   scoped_refptr<ResourceResponse> response;
   deferred_response_.swap(response);
 
-  // OnResponseStarted will pause again if necessary.
-  host_->PauseRequest(child_id_, request_id_, false);
-
-  if (!OnResponseStarted(request_id_, response))
+  bool defer = false;
+  if (!OnResponseStarted(request_id_, response, &defer)) {
     Cancel();
+  } else if (!defer) {
+    host_->ResumeDeferredRequest(child_id_, request_id_);
+  }
 }
 
 }  // namespace content

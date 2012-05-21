@@ -42,7 +42,8 @@ class X509UserCertResourceHandler : public ResourceHandler {
 
   // Check if this indeed an X509 cert.
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* resp) OVERRIDE;
+                                 content::ResourceResponse* resp,
+                                 bool* defer) OVERRIDE;
 
   // Pass-through implementation.
   virtual bool OnWillStart(int request_id,
@@ -57,7 +58,8 @@ class X509UserCertResourceHandler : public ResourceHandler {
 
   // A read was completed, maybe allocate a new buffer for further data.
   virtual bool OnReadCompleted(int request_id,
-                               int* bytes_read) OVERRIDE;
+                               int* bytes_read,
+                               bool* defer) OVERRIDE;
 
   // Done downloading the certificate.
   virtual bool OnResponseCompleted(int request_id,

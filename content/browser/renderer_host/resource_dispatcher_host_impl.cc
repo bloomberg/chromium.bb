@@ -1234,6 +1234,11 @@ void ResourceDispatcherHostImpl::StartDeferredRequest(int child_id,
   StartRequest(i->second);
 }
 
+void ResourceDispatcherHostImpl::ResumeDeferredRequest(int child_id,
+                                                       int request_id) {
+  PauseRequest(child_id, request_id, false);
+}
+
 bool ResourceDispatcherHostImpl::WillSendData(int child_id,
                                               int request_id) {
   PendingRequestList::iterator i = pending_requests_.find(
@@ -1256,38 +1261,6 @@ bool ResourceDispatcherHostImpl::WillSendData(int child_id,
   }
 
   return true;
-}
-
-void ResourceDispatcherHostImpl::PauseRequest(int child_id,
-                                              int request_id,
-                                              bool pause) {
-  GlobalRequestID global_id(child_id, request_id);
-  PendingRequestList::iterator i = pending_requests_.find(global_id);
-  if (i == pending_requests_.end()) {
-    DVLOG(1) << "Pausing a request that wasn't found";
-    return;
-  }
-
-  ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(i->second);
-  int pause_count = info->pause_count() + (pause ? 1 : -1);
-  if (pause_count < 0) {
-    NOTREACHED();  // Unbalanced call to pause.
-    return;
-  }
-  info->set_pause_count(pause_count);
-
-  VLOG(1) << "To pause (" << pause << "): " << i->second->url().spec();
-
-  // If we're resuming, kick the request to start reading again. Run the read
-  // asynchronously to avoid recursion problems.
-  if (info->pause_count() == 0) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(
-            &ResourceDispatcherHostImpl::ResumeRequest,
-            weak_factory_.GetWeakPtr(),
-            global_id));
-  }
 }
 
 int ResourceDispatcherHostImpl::GetOutstandingRequestsMemoryCost(
@@ -1597,8 +1570,17 @@ bool ResourceDispatcherHostImpl::CompleteResponseStarted(
 
   NotifyResponseStarted(request, info->GetChildID());
   info->set_called_on_response_started(true);
-  return info->resource_handler()->OnResponseStarted(info->GetRequestID(),
-                                                     response.get());
+
+  bool defer = false;
+  if (!info->resource_handler()->OnResponseStarted(info->GetRequestID(),
+                                                   response.get(),
+                                                   &defer))
+    return false;
+
+  if (defer)
+    PauseRequest(info->GetChildID(), info->GetRequestID(), true);
+
+  return true;
 }
 
 void ResourceDispatcherHostImpl::CancelRequest(int child_id,
@@ -1786,6 +1768,38 @@ bool ResourceDispatcherHostImpl::PauseRequestIfNeeded(
   return info->is_paused();
 }
 
+void ResourceDispatcherHostImpl::PauseRequest(int child_id,
+                                              int request_id,
+                                              bool pause) {
+  GlobalRequestID global_id(child_id, request_id);
+  PendingRequestList::iterator i = pending_requests_.find(global_id);
+  if (i == pending_requests_.end()) {
+    DVLOG(1) << "Pausing a request that wasn't found";
+    return;
+  }
+
+  ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(i->second);
+  int pause_count = info->pause_count() + (pause ? 1 : -1);
+  if (pause_count < 0) {
+    NOTREACHED();  // Unbalanced call to pause.
+    return;
+  }
+  info->set_pause_count(pause_count);
+
+  VLOG(1) << "To pause (" << pause << "): " << i->second->url().spec();
+
+  // If we're resuming, kick the request to start reading again. Run the read
+  // asynchronously to avoid recursion problems.
+  if (info->pause_count() == 0) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(
+            &ResourceDispatcherHostImpl::ResumeRequest,
+            weak_factory_.GetWeakPtr(),
+            global_id));
+  }
+}
+
 void ResourceDispatcherHostImpl::ResumeRequest(
     const GlobalRequestID& request_id) {
   PendingRequestList::iterator i = pending_requests_.find(request_id);
@@ -1927,11 +1941,16 @@ bool ResourceDispatcherHostImpl::CompleteRead(net::URLRequest* request,
   }
 
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
+
+  bool defer = false;
   if (!info->resource_handler()->OnReadCompleted(info->GetRequestID(),
-                                                 bytes_read)) {
+                                                 bytes_read, &defer)) {
     CancelRequestInternal(request, false);
     return false;
   }
+
+  if (defer)
+    PauseRequest(info->GetChildID(), info->GetRequestID(), true);
 
   return *bytes_read != 0;
 }

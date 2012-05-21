@@ -45,12 +45,13 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
 
 bool RedirectToFileResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response) {
+    content::ResourceResponse* response,
+    bool* defer) {
   if (response->status.is_success()) {
     DCHECK(deletable_file_ && !deletable_file_->path().empty());
     response->download_file_path = deletable_file_->path();
   }
-  return next_handler_->OnResponseStarted(request_id, response);
+  return next_handler_->OnResponseStarted(request_id, response, defer);
 }
 
 bool RedirectToFileResourceHandler::OnWillStart(int request_id,
@@ -92,15 +93,16 @@ bool RedirectToFileResourceHandler::OnWillRead(int request_id,
 }
 
 bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
-                                                    int* bytes_read) {
+                                                    int* bytes_read,
+                                                    bool* defer) {
   if (!buf_write_pending_) {
-    // Ignore spurious OnReadCompleted!  PauseRequest(true) called from within
-    // OnReadCompleted tells the ResourceDispatcherHost that we did not consume
-    // the data.  PauseRequest(false) then repeats the last OnReadCompleted
-    // call.  We pause the request so that we can copy our buffer to disk, so
-    // we need to consume the data now.  The ResourceDispatcherHost pause
-    // mechanism does not fit our use case very well.
-    // TODO(darin): Fix the ResourceDispatcherHost to avoid this hack!
+    // Ignore spurious OnReadCompleted!  Deferring from OnReadCompleted tells
+    // the ResourceDispatcherHost that we did not consume the data.
+    // ResumeDeferredRequest then repeats the last OnReadCompleted call.  We
+    // pause the request so that we can copy our buffer to disk, so we need to
+    // consume the data now.  The ResourceDispatcherHost pause mechanism does
+    // not fit our use case very well.  TODO(darin): Fix the
+    // ResourceDispatcherHost to avoid this hack!
     return true;
   }
 
@@ -113,7 +115,7 @@ bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
   buf_->set_offset(new_offset);
 
   if (BufIsFull())
-    host_->PauseRequest(process_id_, request_id, true);
+    *defer = true;
 
   return WriteMore();
 }
@@ -191,6 +193,8 @@ void RedirectToFileResourceHandler::DidWriteToFile(int result) {
   } else if (completed_during_write_) {
     next_handler_->OnResponseCompleted(request_id_, completed_status_,
                                        completed_security_info_);
+    // TODO(darin): OnResponseCompleted can return false to defer
+    // RemovePendingRequest.
     host_->RemovePendingRequest(process_id_, request_id_);
   }
 }
@@ -203,7 +207,7 @@ bool RedirectToFileResourceHandler::WriteMore() {
       // appending more data to the buffer.
       if (!buf_write_pending_) {
         if (BufIsFull())
-          host_->PauseRequest(process_id_, request_id_, false);
+          host_->ResumeDeferredRequest(process_id_, request_id_);
         buf_->set_offset(0);
         write_cursor_ = 0;
       }

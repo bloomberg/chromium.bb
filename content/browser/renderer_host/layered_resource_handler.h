@@ -24,12 +24,14 @@ class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 ResourceResponse* response,
+                                 bool* defer) OVERRIDE;
   virtual bool OnWillStart(int request_id, const GURL& url,
                            bool* defer) OVERRIDE;
   virtual bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
                           int min_size) OVERRIDE;
-  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE;
+  virtual bool OnReadCompleted(int request_id, int* bytes_read,
+                               bool* defer) OVERRIDE;
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;

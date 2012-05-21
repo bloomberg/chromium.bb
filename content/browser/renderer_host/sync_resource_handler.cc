@@ -61,7 +61,8 @@ bool SyncResourceHandler::OnRequestRedirected(
 
 bool SyncResourceHandler::OnResponseStarted(
     int request_id,
-    ResourceResponse* response) {
+    ResourceResponse* response,
+    bool* defer) {
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
   if (rdh_->delegate())
@@ -97,7 +98,8 @@ bool SyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   return true;
 }
 
-bool SyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
+bool SyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+                                          bool* defer) {
   if (!*bytes_read)
     return true;
   result_.data.append(read_buffer_->data(), *bytes_read);

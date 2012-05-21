@@ -136,13 +136,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Starts a request that was deferred during ResourceHandler::OnWillStart().
   void StartDeferredRequest(int child_id, int request_id);
 
+  // Resumes network activity for a particular request.
+  void ResumeDeferredRequest(int child_id, int request_id);
+
   // Returns true if it's ok to send the data. If there are already too many
   // data messages pending, it pauses the request and returns false. In this
   // case the caller should not send the data.
   bool WillSendData(int child_id, int request_id);
-
-  // Pauses or resumes network activity for a particular request.
-  void PauseRequest(int child_id, int request_id, bool pause);
 
   // Returns the number of pending requests. This is designed for the unittests
   int pending_requests() const {
@@ -264,6 +264,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const DownloadResourceHandler::OnStartedCallback& started_cb);
 
  private:
+  friend class ResourceDispatcherHostTest;
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
@@ -290,6 +291,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Returns true if the request is paused.
   bool PauseRequestIfNeeded(ResourceRequestInfoImpl* info);
+
+  // Pause or resume network activity for a particular request.
+  void PauseRequest(int child_id, int request_id, bool pause);
 
   // Resumes the given request by calling OnResponseStarted or OnReadCompleted.
   void ResumeRequest(const GlobalRequestID& request_id);

@@ -51,9 +51,12 @@ class CONTENT_EXPORT ResourceHandler
                                    bool* defer) = 0;
 
   // Response headers and meta data are available.  If the handler returns
-  // false, then the request is cancelled.
+  // false, then the request is cancelled.  Set |*defer| to true to defer
+  // processing of the response.  Call ResourceDispatcherHostImpl::
+  // ResumeDeferredRequest to continue processing the response.
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response) = 0;
+                                 content::ResourceResponse* response,
+                                 bool* defer) = 0;
 
   // Called before the net::URLRequest for |request_id| (whose url is |url|) is
   // to be started.  If the handler returns false, then the request is
@@ -79,8 +82,11 @@ class CONTENT_EXPORT ResourceHandler
 
   // Data (*bytes_read bytes) was written into the buffer provided by
   // OnWillRead.  A return value of false cancels the request, true continues
-  // reading data.
-  virtual bool OnReadCompleted(int request_id, int* bytes_read) = 0;
+  // reading data.  Set |*defer| to true to defer reading more response data.
+  // Call ResourceDispatcherHostImpl::ResumeDeferredRequest to continue reading
+  // response data.
+  virtual bool OnReadCompleted(int request_id, int* bytes_read,
+                               bool* defer) = 0;
 
   // The response is complete.  The final response status is given.  Returns
   // false if the handler is deferring the call to a later time.  Otherwise,

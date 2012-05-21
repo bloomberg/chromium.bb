@@ -31,12 +31,14 @@ class BufferedResourceHandler : public LayeredResourceHandler {
 
   // ResourceHandler implementation:
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 ResourceResponse* response,
+                                 bool* defer) OVERRIDE;
   virtual bool OnWillRead(int request_id,
                           net::IOBuffer** buf,
                           int* buf_size,
                           int min_size) OVERRIDE;
-  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE;
+  virtual bool OnReadCompleted(int request_id, int* bytes_read,
+                               bool* defer) OVERRIDE;
   virtual void OnRequestClosed() OVERRIDE;
 
  private:
@@ -52,7 +54,7 @@ class BufferedResourceHandler : public LayeredResourceHandler {
   bool KeepBuffering(int bytes_read);
 
   // Sends a pending OnResponseStarted notification.
-  bool CompleteResponseStarted(int request_id);
+  bool CompleteResponseStarted(int request_id, bool* defer);
 
   // Returns true if we have to wait until the plugin list is generated.
   bool ShouldWaitForPlugins();
@@ -68,11 +70,12 @@ class BufferedResourceHandler : public LayeredResourceHandler {
   // will be handled entirely by the new ResourceHandler |handler|.  A
   // reference to |handler| is acquired.  Returns false to indicate an error,
   // which will result in the request being cancelled.
-  bool UseAlternateResourceHandler(int request_id, ResourceHandler* handler);
+  bool UseAlternateResourceHandler(int request_id, ResourceHandler* handler,
+                                   bool* defer);
 
   // Forwards any queued events to |next_handler_|.  Returns false to indicate
   // an error, which will result in the request being cancelled.
-  bool ForwardPendingEventsToNextHandler(int request_id);
+  bool ForwardPendingEventsToNextHandler(int request_id, bool* defer);
 
   // Copies data from |read_buffer_| to |next_handler_|.
   void CopyReadBufferToNextHandler(int request_id);
@@ -89,6 +92,7 @@ class BufferedResourceHandler : public LayeredResourceHandler {
   int bytes_read_;
   bool sniff_content_;
   bool wait_for_plugins_;
+  bool deferred_waiting_for_plugins_;
   bool buffering_;
   bool next_handler_needs_response_started_;
   bool next_handler_needs_will_read_;

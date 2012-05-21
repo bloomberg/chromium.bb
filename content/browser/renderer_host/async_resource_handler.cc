@@ -120,7 +120,8 @@ bool AsyncResourceHandler::OnRequestRedirected(
 
 bool AsyncResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response) {
+    content::ResourceResponse* response,
+    bool* defer) {
   // For changes to the main frame, inform the renderer of the new URL's
   // per-host settings before the request actually commits.  This way the
   // renderer will be able to set these precisely at the time the
@@ -195,7 +196,8 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   return true;
 }
 
-bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
+bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+                                           bool* defer) {
   if (!*bytes_read)
     return true;
   DCHECK(read_buffer_.get());

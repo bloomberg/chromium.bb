@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,8 @@ class SaveFileResourceHandler : public ResourceHandler {
 
   // Sends the download creation information to the download thread.
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response,
+                                 bool* defer) OVERRIDE;
 
   // Pass-through implementation.
   virtual bool OnWillStart(int request_id,
@@ -50,7 +51,8 @@ class SaveFileResourceHandler : public ResourceHandler {
                           int min_size) OVERRIDE;
 
   // Passes the buffer to the download file writer.
-  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE;
+  virtual bool OnReadCompleted(int request_id, int* bytes_read,
+                               bool* defer) OVERRIDE;
 
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,

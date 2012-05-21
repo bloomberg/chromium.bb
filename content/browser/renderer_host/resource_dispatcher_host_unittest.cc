@@ -505,11 +505,12 @@ void ResourceDispatcherHostTest::CancelRequest(int request_id) {
 }
 
 void ResourceDispatcherHostTest::PauseRequest(int request_id) {
+  // TODO(darin): Replace with a ResourceThrottle implementation.
   host_.PauseRequest(filter_->child_id(), request_id, true);
 }
 
 void ResourceDispatcherHostTest::ResumeRequest(int request_id) {
-  host_.PauseRequest(filter_->child_id(), request_id, false);
+  host_.ResumeDeferredRequest(filter_->child_id(), request_id);
 }
 
 void ResourceDispatcherHostTest::CompleteStartRequest(int request_id) {

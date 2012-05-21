@@ -27,9 +27,10 @@ bool LayeredResourceHandler::OnRequestRedirected(int request_id,
 }
 
 bool LayeredResourceHandler::OnResponseStarted(int request_id,
-                                               ResourceResponse* response) {
+                                               ResourceResponse* response,
+                                               bool* defer) {
   DCHECK(next_handler_);
-  return next_handler_->OnResponseStarted(request_id, response);
+  return next_handler_->OnResponseStarted(request_id, response, defer);
 }
 
 bool LayeredResourceHandler::OnWillStart(int request_id, const GURL& url,
@@ -44,9 +45,10 @@ bool LayeredResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
   return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
 }
 
-bool LayeredResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
+bool LayeredResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
+                                             bool* defer) {
   DCHECK(next_handler_);
-  return next_handler_->OnReadCompleted(request_id, bytes_read);
+  return next_handler_->OnReadCompleted(request_id, bytes_read, defer);
 }
 
 bool LayeredResourceHandler::OnResponseCompleted(

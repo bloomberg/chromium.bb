@@ -31,9 +31,11 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 ResourceResponse* response,
+                                 bool* defer) OVERRIDE;
   virtual bool OnReadCompleted(int request_id,
-                               int* bytes_read) OVERRIDE;
+                               int* bytes_read,
+                               bool* defer) OVERRIDE;
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
@@ -50,7 +52,8 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   void StartCrossSiteTransition(
       int request_id,
       ResourceResponse* response,
-      const GlobalRequestID& global_id);
+      const GlobalRequestID& global_id,
+      bool* defer);
 
   int render_process_host_id_;
   int render_view_id_;

@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "content/browser/download/download_resource_handler.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -45,6 +47,8 @@ class CONTENT_EXPORT DownloadRequestHandleInterface {
 class CONTENT_EXPORT DownloadRequestHandle
     : public DownloadRequestHandleInterface {
  public:
+  virtual ~DownloadRequestHandle();
+
   // Create a null DownloadRequestHandle: getters will return null, and
   // all actions are no-ops.
   // TODO(rdsmith): Ideally, actions would be forbidden rather than
@@ -55,7 +59,8 @@ class CONTENT_EXPORT DownloadRequestHandle
   DownloadRequestHandle();
 
   // Note that |rdh| is required to be non-null.
-  DownloadRequestHandle(int child_id,
+  DownloadRequestHandle(DownloadResourceHandler* handler,
+                        int child_id,
                         int render_view_id,
                         int request_id);
 
@@ -68,6 +73,8 @@ class CONTENT_EXPORT DownloadRequestHandle
   virtual std::string DebugString() const OVERRIDE;
 
  private:
+  scoped_refptr<DownloadResourceHandler> handler_;
+
   // The ID of the child process that started the download.
   int child_id_;
 

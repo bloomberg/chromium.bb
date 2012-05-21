@@ -45,7 +45,8 @@ bool X509UserCertResourceHandler::OnRequestRedirected(
 
 bool X509UserCertResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* resp) {
+    content::ResourceResponse* resp,
+    bool* defer) {
   return (resp->mime_type == "application/x-x509-user-cert");
 }
 
@@ -73,7 +74,8 @@ bool X509UserCertResourceHandler::OnWillRead(int request_id,
 }
 
 bool X509UserCertResourceHandler::OnReadCompleted(int request_id,
-                                                  int* bytes_read) {
+                                                  int* bytes_read,
+                                                  bool* defer) {
   if (!*bytes_read)
     return true;
 

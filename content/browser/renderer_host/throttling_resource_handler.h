@@ -34,7 +34,8 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
                                    ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response,
+                                 bool* defer) OVERRIDE;
   virtual bool OnWillStart(int request_id, const GURL& url,
                            bool* defer) OVERRIDE;
   virtual void OnRequestClosed() OVERRIDE;

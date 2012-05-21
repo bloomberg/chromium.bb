@@ -118,9 +118,6 @@ void DownloadFileManager::CreateDownloadFile(
   } else {
     DCHECK(GetDownloadFile(info->download_id) == NULL);
     downloads_[info->download_id] = download_file.release();
-
-    // The file is now ready, we can un-pause the request and start saving data.
-    request_handle.ResumeRequest();
   }
 
   BrowserThread::PostTask(

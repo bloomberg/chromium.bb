@@ -60,7 +60,8 @@ class DownloadResourceHandler : public ResourceHandler {
 
   // Send the download creation information to the download thread.
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response,
+                                 bool* defer) OVERRIDE;
 
   // Pass-through implementation.
   virtual bool OnWillStart(int request_id,
@@ -74,21 +75,17 @@ class DownloadResourceHandler : public ResourceHandler {
                           int* buf_size,
                           int min_size) OVERRIDE;
 
-  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE;
+  virtual bool OnReadCompleted(int request_id, int* bytes_read,
+                               bool* defer) OVERRIDE;
 
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
                                    const std::string& security_info) OVERRIDE;
   virtual void OnRequestClosed() OVERRIDE;
 
-  // If the content-length header is not present (or contains something other
-  // than numbers), the incoming content_length is -1 (unknown size).
-  // Set the content length to 0 to indicate unknown size to DownloadManager.
-  void set_content_length(const int64& content_length);
-
-  void set_content_disposition(const std::string& content_disposition);
-
-  void CheckWriteProgress();
+  void PauseRequest();
+  void ResumeRequest();
+  void CancelRequest();
 
   std::string DebugString() const;
 
@@ -100,13 +97,22 @@ class DownloadResourceHandler : public ResourceHandler {
                                    const std::string& security_info,
                                    int response_code);
 
-  void StartPauseTimer();
+  void CheckWriteProgressLater();
+  void CheckWriteProgress();
+  void MaybeResumeRequest();
   void CallStartedCB(content::DownloadId id, net::Error error);
 
   // Generates a DownloadId and calls DownloadFileManager.
   void StartOnUIThread(scoped_ptr<DownloadCreateInfo> info,
                        const DownloadRequestHandle& handle);
-  void set_download_id(content::DownloadId id);
+  void SetDownloadID(content::DownloadId id);
+
+  // If the content-length header is not present (or contains something other
+  // than numbers), the incoming content_length is -1 (unknown size).
+  // Set the content length to 0 to indicate unknown size to DownloadManager.
+  void SetContentLength(const int64& content_length);
+
+  void SetContentDisposition(const std::string& content_disposition);
 
   content::DownloadId download_id_;
   content::GlobalRequestID global_id_;
@@ -120,8 +126,7 @@ class DownloadResourceHandler : public ResourceHandler {
   OnStartedCallback started_cb_;
   content::DownloadSaveInfo save_info_;
   scoped_refptr<content::DownloadBuffer> buffer_;
-  bool is_paused_;
-  base::OneShotTimer<DownloadResourceHandler> pause_timer_;
+  base::OneShotTimer<DownloadResourceHandler> check_write_progress_timer_;
 
   // The following are used to collect stats.
   base::TimeTicks download_start_time_;
@@ -129,6 +134,9 @@ class DownloadResourceHandler : public ResourceHandler {
   size_t last_buffer_size_;
   int64 bytes_read_;
   std::string accept_ranges_;
+
+  int pause_count_;
+  bool was_deferred_;
 
   static const int kReadBufSize = 32768;  // bytes
   static const int kThrottleTimeMs = 200;  // milliseconds
