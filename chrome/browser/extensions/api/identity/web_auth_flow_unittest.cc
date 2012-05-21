@@ -105,6 +105,14 @@ class WebAuthFlowTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
   }
 
+  virtual void TearDown() {
+    // |flow_| must be reset before ChromeRenderViewHostTestHarness::TearDown(),
+    // because |flow_| deletes the WebContents it owns via
+    // MessageLoop::DeleteSoon().
+    flow_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
   void CreateAuthFlow(const std::string& extension_id, const GURL& url) {
     flow_.reset(new MockWebAuthFlow(&delegate_, profile(), extension_id, url));
   }
