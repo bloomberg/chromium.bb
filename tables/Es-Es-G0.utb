@@ -32,16 +32,9 @@ space \x000A 0          # lf
 space \x000D 0          # cr
 space \X00A0 0          # Espacio de no separación
 
+# all except 0 are the same, so define 0 here to take higher presidence
 digit 0 34678				cero
-digit 1 16					uno
-digit 2 126					dos
-digit 3 146					tres
-digit 4 1456				cuatro
-digit 5 156					cinco
-digit 6 1246				seis
-digit 7 12456				siete
-digit 8 1256				ocho
-digit 9 246					nueve
+include digits6DotsPlusDot6.uti
 
 include latinLetterDef8Dots.uti
 
