@@ -440,6 +440,10 @@
       </description>
     </request>
 
+    <enum name="transient">
+      <entry name="inactive" value="0x1" summary="do not set keyboard focus"/>
+    </enum>
+
     <request name="set_transient">
       <description summary="make the surface a transient surface">
 	Map the surface relative to an existing surface. The x and y
