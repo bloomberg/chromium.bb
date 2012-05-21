@@ -2021,7 +2021,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
 
 // Checks that when a prerendered page is swapped in to a referring page, the
 // unload handlers on the referring page are executed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
+#if defined(OS_WIN)
+#define MAYBE_PrerenderUnload FLAKY_PrerenderUnload
+#else
+#define MAYBE_PrerenderUnload PrerenderUnload
+#endif
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderUnload) {
   set_loader_path("files/prerender/prerender_loader_with_unload.html");
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   string16 expected_title = ASCIIToUTF16("Unloaded");
