@@ -2695,7 +2695,7 @@ window_create(struct display *display)
 
 struct window *
 window_create_transient(struct display *display, struct window *parent,
-			int32_t x, int32_t y)
+			int32_t x, int32_t y, uint32_t flags)
 {
 	struct window *window;
 
@@ -2710,7 +2710,7 @@ window_create_transient(struct display *display, struct window *parent,
 	if (display->shell)
 		wl_shell_surface_set_transient(window->shell_surface,
 					       window->parent->shell_surface,
-					       window->x, window->y, 0);
+					       window->x, window->y, flags);
 
 	return window;
 }
