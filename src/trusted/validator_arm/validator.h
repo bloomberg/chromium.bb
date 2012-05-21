@@ -56,7 +56,6 @@ class Bundle {
   uint32_t size_;
 };
 
-
 /*
  * The SFI validator itself.  The validator is controlled by the following
  * inputs:
@@ -94,6 +93,24 @@ class SfiValidator {
    * Returns true iff no problems were found.
    */
   bool validate(const std::vector<CodeSegment> &, ProblemSink *out);
+
+  /*
+   * A 2-dimensional array, defined on the Condition of two
+   * instructions, defining when we can statically prove that the
+   * conditions of the first instruction implies the conditions of the
+   * second instruction.
+   *
+   * Note: The first index (i.e. row) corresponds to the condition of
+   * the first instruction, while the second index (i.e. column)
+   * corresponds to the condition of the second instruction.
+   *
+   * Note: The order the instructions execute is not important in
+   * this array. The context defines which instruction, of the
+   * instruction pair being compared, appears first.
+   */
+  static const bool
+  condition_implies[nacl_arm_dec::Instruction::ConditionSize]
+                   [nacl_arm_dec::Instruction::ConditionSize];
 
   /*
    * Checks whether the given Register always holds a valid data region address.
@@ -212,34 +229,48 @@ class DecodedInstruction {
   uint32_t addr() const { return vaddr_; }
 
   /*
-   * Checks that 'this' always precedes 'other' -- meaning that if 'other'
-   * executes, 'this' is guaranteed to have executed.  This is important if
-   * 'this' produces a sandboxed value that 'other' must consume.
+   * Checks that 'this' precedes 'other' -- meaning that if 'other'
+   * executes, we can guarantee that 'this' is executed as well (where
+   * other immediately follows this).  This is important if 'this'
+   * produces a sandboxed value that 'other' must consume.
    *
-   * Note: This function is conservative in that if it isn't sure whether
-   * this instruction changes the condition, it assumes that it does.
+   * Note: This function is conservative in that if it isn't sure
+   * whether this instruction changes the condition, it assumes that
+   * it does. Similarly, if the conditions of the two instructions do
+   * not statically infer that the conditional execution is correct,
+   * we assume that it is not.
    *
-   * Note that this function can't see the bundle size, so this result does not
-   * take it into account.  The SfiValidator reasons on this separately.
+   * Note that this function can't see the bundle size, so this result
+   * does not take it into account.  The SfiValidator reasons on this
+   * separately.
    */
-  bool always_precedes(const DecodedInstruction &other) const {
-    return inst_.GetCondition() == other.inst_.GetCondition() &&
-        !defines(nacl_arm_dec::kConditions);
+  bool provably_precedes(const DecodedInstruction &other) const {
+    return !defines(nacl_arm_dec::kConditions) &&
+        SfiValidator::condition_implies
+        [other.inst_.GetCondition()][inst_.GetCondition()];
   }
 
   /*
-   * Checks that 'this' always follows 'other' -- meaning that if 'other'
-   * executes, 'this' is guaranteed to follow.  This is important if 'other'
-   * produces an unsafe value that 'this' fixes before it can leak out.
+   * Checks that 'this' follows 'other' -- meaning that if 'other'
+   * executes, we can guarantee that 'this' is executed as well (where
+   * this immediately follows other). This is important if 'other'
+   * produces an unsafe value that 'this' fixes before it can leak
+   * out.
    *
-   * Note: This function is conservative in that if it isn't sure whether the
-   * other instruction changes the codntion, it assumes that it does.
+   * Note: This function is conservative in that if it isn't sure
+   * whether the other instruction changes the condition, it assumes
+   * that it does. Similarly, if the conditions of the two
+   * instructions do not statically infer that the conditional
+   * execution is correct, we assume that it is not.
    *
-   * Note that this function can't see the bundle size, so this result does not
-   * take it into account.  The SfiValidator reasons on this separately.
+   * Note that this function can't see the bundle size, so this result
+   * does not take it into account.  The SfiValidator reasons on this
+   * separately.
    */
-  bool always_follows(const DecodedInstruction &other) const {
-    return other.always_precedes(*this);
+  bool provably_follows(const DecodedInstruction &other) const {
+    return !other.defines(nacl_arm_dec::kConditions) &&
+        SfiValidator::condition_implies
+        [other.inst_.GetCondition()][inst_.GetCondition()];
   }
 
   /*

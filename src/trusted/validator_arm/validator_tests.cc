@@ -693,7 +693,106 @@ TEST_F(ValidatorTests, BfcLdrInstMaskWrongPlaceTest) {
                          "Bfc Ldr instruction mask wrong place test");
 }
 
+TEST_F(ValidatorTests, BfcLdrexMaskOkTestDoesPrecede) {
+  // Run test where Bfc is unconditional, and followed by ldrex.
+  // Note: Implicitly tests provably_precedes.
+  static const arm_inst bfc_inst[] = {
+    0xe7df2f1f,  // bfc r2, #30, #2
+    0x01920f9f,  // ldrexeq r0, [r2]
+  };
+  validation_should_pass(bfc_inst,
+                         NACL_ARRAY_SIZE(bfc_inst),
+                         kDefaultBaseAddr,
+                         "Bfc Ldreq instruction mask ok, "
+                         "tests provably_precedes succeeds");
+}
+
+TEST_F(ValidatorTests, BfcLdrexeqMaskOkTestDoesntPrecede) {
+  // Run test where Bfc, and followed by ldrexeq.
+  // Note: Implicitly tests provably_precedes.
+  static const arm_inst bfc_inst[] = {
+    0x07df2f1f,  // bfceq r2, #30, #2
+    0xe1920f9f,  // ldrex r0, [r2]
+  };
+  validation_should_fail(bfc_inst,
+                         NACL_ARRAY_SIZE(bfc_inst),
+                         kDefaultBaseAddr,
+                         "Bfc Ldrexeq instruction mask ok, "
+                         "tests provably_precedes fails");
+}
+
+TEST_F(ValidatorTests, BicMaskTestDoesPrecede) {
+  // Test bic followed by bxeq.
+  // Note: Implicitly tests provably_precedes.
+  static const arm_inst inst[] = {
+    0xe3cee2fe,  // bic lr, lr, #-536870897     ; 0xe000000f
+    0x012fff1e,  // bxeq lr
+  };
+  validation_should_pass(inst,
+                         NACL_ARRAY_SIZE(inst),
+                         kDefaultBaseAddr,
+                         "Bic mask label, then bxeq jump, "
+                         "tests provably_precedes succeeds");
+}
+
+TEST_F(ValidatorTests, BicMaskTestDoesntPrecede) {
+  // Test biceq followed by bx.
+  // Note: Implicitly tests provably_precedes.
+  static const arm_inst inst[] = {
+    0x03cee2fe,  // biceq lr, lr, #-536870897   ; 0xe000000f
+    0xe12fff1e,  // bx lr
+  };
+  validation_should_fail(inst,
+                         NACL_ARRAY_SIZE(inst),
+                         kDefaultBaseAddr,
+                         "Biceq mask label, then bx jump, "
+                         "tests provably_precedes fails");
+}
+
 // TODO(karl): Add pattern rules and test cases for using bfc to update SP.
+
+TEST_F(ValidatorTests, AddConstToSpTest) {
+  // Show that we can add a constant to the stack pointer is fine,
+  // so long as we follow it with a mask instruction.
+  static const arm_inst sp_inst[] = {
+    0xe28dd00c,  // add sp, sp, #12
+    0xe3cdd2ff,  // bic     sp, sp, #-268435441     ; 0xf000000f
+  };
+  validation_should_pass(sp_inst,
+                         NACL_ARRAY_SIZE(sp_inst),
+                         kDefaultBaseAddr,
+                         "Add constant (12) to sp, then mask with bic");
+}
+
+TEST_F(ValidatorTests, AddConstToSpBicTestDoesFollows) {
+  // Run test where we add a constant to a stack pointer, followed
+  // by a maks.
+  // Note: Implicitly tests provably_follows.
+  static const arm_inst sp_inst[] = {
+    0x028dd00c,  // addeq sp, sp, #12
+    0xe3cdd2ff,  // bic sp, sp, #-268435441     ; 0xf000000f
+  };
+  validation_should_pass(sp_inst,
+                         NACL_ARRAY_SIZE(sp_inst),
+                         kDefaultBaseAddr,
+                         "Add constant (12) to sp, then mask with bic, "
+                         "tests provably_follows succeeds");
+}
+
+TEST_F(ValidatorTests, AddConstToSpBicTestDoesntFollows) {
+  // Run test where we add a constant to a stack pointer, followed
+  // by a maks.
+  // Note: Implicitly tests provably_follows.
+  static const arm_inst sp_inst[] = {
+    0xe28dd00c,  // add sp, sp, #12
+    0x03cdd2ff,  // biceq sp, sp, #-268435441   ; 0xf000000f
+  };
+  validation_should_fail(sp_inst,
+                         NACL_ARRAY_SIZE(sp_inst),
+                         kDefaultBaseAddr,
+                         "Add constant (12) to sp, then mask with bic, "
+                         "tests provably_follows fails");
+}
 
 // Implementation of the ValidatorTests utility methods.  These are documented
 // toward the top of this file.

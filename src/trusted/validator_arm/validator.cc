@@ -71,8 +71,7 @@ static PatternMatch check_loadstore_mask(const SfiValidator &sfi,
 
   if (first.defines(second.base_address_register())
       && first.clears_bits(sfi.data_address_mask())
-      && !first.defs().Contains(kConditions)
-      && first.always_precedes(second)) {
+      && first.provably_precedes(second)) {
     return PATTERN_SAFE_2;
   }
 
@@ -100,7 +99,7 @@ static PatternMatch check_branch_mask(const SfiValidator &sfi,
 
   if (first.defines(second.branch_target_register())
       && first.clears_bits(sfi.code_address_mask())
-      && first.always_precedes(second)) {
+      && first.provably_precedes(second)) {
     return PATTERN_SAFE_2;
   }
 
@@ -131,7 +130,8 @@ static PatternMatch check_data_register_update(const SfiValidator &sfi,
 
   if (second.defines_all(data_addr_defs)
       && second.clears_bits(sfi.data_address_mask())
-      && second.always_follows(first)) {
+      && second.provably_follows(first)
+      ) {
     return PATTERN_SAFE_2;
   }
 
@@ -202,6 +202,124 @@ static PatternMatch check_pc_writes(const SfiValidator &sfi,
  * Implementation of SfiValidator itself.
  *
  *********************************************************/
+
+// Flags are:
+//    N - Negative condition code flag.
+//    Z - Zero condition code flag.
+//    C - Carry condition code flag.
+//    V - Overflow condition code flag.
+// where:
+//    EQ => Z==1
+//    NE => Z==0
+//    CS => C==1
+//    CC => C==0
+//    MI => N==1
+//    PL => N==0
+//    VS => V==1
+//    VC => V==0
+//    HI => C==1 & Z==0
+//    LS => C==0 | Z==1
+//    GE => N==V
+//    LT => N!=V
+//    GT => Z==0 & N==V
+//    LE => Z==1 & N!=V
+//    AL => Any
+const bool SfiValidator::
+condition_implies[nacl_arm_dec::Instruction::ConditionSize]
+                 [nacl_arm_dec::Instruction::ConditionSize] = {
+  {
+    // EQ => Z==1
+    // EQ,   NE,    CS,    CC,    MI,    PL,    VS,    VC,
+    true, false, false, false, false, false, false, false,
+    // HI,   LS,    GE,    LT,    GT,    LE,   AL
+    false, true, false, false, false, false, true,
+  }, {
+    // NE => Z==0
+    // EQ,   NE,    CS,    CC,    MI,    PL,    VS,    VC,
+    false, true, false, false, false, false, false, false,
+    // HI,    LS,    GE,    LT,    GT,    LE,   AL
+    false, false, false, false, false, false, true,
+  }, {
+    // CS => C==1
+    // EQ,    NE,   CS,    CC,    MI,    PL,    VS,    VC,
+    false, false, true, false, false, false, false, false,
+    // HI,    LS,    GE,    LT,    GT,    LE,   AL
+    false, false, false, false, false, false, true,
+  }, {
+    // CC => C==0
+    // EQ,    NE,    CS,   CC,    MI,    PL,    VS,    VC,
+    false, false, false, true, false, false, false, false,
+    // HI,   LS,    GE,    LT,    GT,    LE,   AL
+    false, true, false, false, false, false, true,
+  }, {
+    // MI => N==1
+    // EQ,    NE,    CS,    CC,   MI,    PL,    VS,    VC,
+    false, false, false, false, true, false, false, false,
+    // HI,   LS,    GE,    LT,    GT,    LE,    AL
+    false, false, false, false, false, false, true,
+  }, {
+    // PL => N==0
+    // EQ,    NE,    CS,    CC,   MI,    PL,    VS,    VC,
+    false, false, false, false, false, true, false, false,
+    // HI,   LS,    GE,    LT,    GT,    LE,    AL
+    false, false, false, false, false, false, true,
+  }, {
+    // VS => V==1
+    // EQ,    NE,    CS,    CC,   MI,     PL,   VS,    VC,
+    false, false, false, false, false, false, true, false,
+    // HI,   LS,    GE,    LT,    GT,    LE,    AL
+    false, false, false, false, false, false, true,
+  }, {
+    // VC => V==0
+    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,   VC,
+    false, false, false, false, false, false, false, true,
+    // HI,   LS,    GE,    LT,    GT,    LE,    AL
+    false, false, false, false, false, false, true,
+  }, {
+    // HI => C==1 & Z==0
+    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,    VC,
+    false, false, false, false, false, false, false, false,
+    // HI,  LS,    GE,    LT,    GT,    LE,    AL
+    true, false, false, false, false, false, true,
+  }, {
+    // LS => C==0 | Z==1
+    // EQ,    NE,    CS,   CC,    MI,    PL,    VS,    VC,
+    false, false, false, false, false, false, false, false,
+    // HI,   LS,    GE,    LT,    GT,    LE,   AL
+    false, true, false, false, false, false, true,
+  }, {
+    // GE => N==V
+    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,    VC,
+    false, false, false, false, false, false, false, false,
+    // HI,   LS,    GE,    LT,    GT,    LE,   AL
+    false, false, true, false, false, false, true,
+  }, {
+    // LT => N!=V
+    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,    VC,
+    false, false, false, false, false, false, false, false,
+    // HI,   LS,     GE,   LT,    GT,    LE,   AL
+    false, false, false, true, false, false, true,
+  }, {
+    // GT => Z==0 & N==V
+    // EQ,   NE,    CS,    CC,    MI,    PL,    VS,    VC,
+    false, true, false, false, false, false, false, false,
+    // HI,    LS,   GE,    LT,   GT,    LE,   AL
+    false, false, true, false, true, false, true,
+  }, {
+    // LE => Z==1 & N!=V
+    // EQ,   NE,    CS,    CC,    MI,    PL,    VS,    VC,
+    true, false, false, false, false, false, false, false,
+    // HI,   LS,    GE,   LT,    GT,   LE,   AL
+    false, true, false, true, false, true, true,
+  }, {
+    // AL => Any
+    // EQ,    NE,    CS,    CC,    MI,    PL,    VS,    VC,
+    false, false, false, false, false, false, false, false,
+    // HI,    LS,    GE,    LT,    GT,    LE,   AL
+    false, false, false, false, false, false, true,
+  },
+};
+
 
 SfiValidator::SfiValidator(uint32_t bytes_per_bundle,
                            uint32_t code_region_bytes,

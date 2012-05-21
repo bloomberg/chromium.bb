@@ -33,6 +33,7 @@
  */
 
 #include <stdint.h>
+#include <cstddef>
 
 namespace nacl_arm_dec {
 
@@ -261,6 +262,11 @@ class Instruction {
     EQ = 0, NE, CS, CC, MI, PL, VS, VC, HI, LS, GE, LT, GT, LE, AL,
     UNCONDITIONAL = 0xF  // Equivalent to AL -- converted in our API
   };
+
+  // Defines the size of enumerated type Condition, minus
+  // UNCONDITIONAL (assuming one uses GetCondition() to get the
+  // condition of an instruction).
+  static const size_t ConditionSize = 15;
 
   // Extracts the condition field.  UNCONDITIONAL is converted to AL -- in the
   // event that you need to distinguish, (1) make sure that's really true and
