@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -263,10 +263,12 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& address) {
     OnError();
     return;
   }
+
+  state_ = IS_OPEN;
+
   SignalAddressReady(this, local_address_);
   if (type_ == P2P_SOCKET_TCP_CLIENT)
     SignalConnect(this);
-  state_ = IS_OPEN;
 }
 
 void IpcPacketSocket::OnIncomingTcpConnection(
