@@ -16,12 +16,14 @@ namespace {
 class ExtensionResourcesJob : public net::URLRequestFileJob {
  public:
   explicit ExtensionResourcesJob(net::URLRequest* request)
-    : net::URLRequestFileJob(request, FilePath()) { }
+    : net::URLRequestFileJob(request, FilePath()),
+      thread_id_(content::BrowserThread::UI) {
+  }
 
   virtual void Start() OVERRIDE;
 
  protected:
-  ~ExtensionResourcesJob() { }
+  ~ExtensionResourcesJob() {}
 
   void ResolvePath();
   void ResolvePathDone();
