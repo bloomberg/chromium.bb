@@ -226,12 +226,15 @@ std::string JsonHostConfig::GetSerializedData() const {
                               inputData:""]) {
     LOG(ERROR) << "Failed to run the helper tool";
     [self showError];
+    [self notifyPlugin: kUpdateFailedNotificationName];
     return;
   }
 
   // Stop the launchd job.  This cannot easily be done by the helper tool,
   // since the launchd job runs in the current user's context.
   [self sendJobControlMessage:LAUNCH_KEY_STOPJOB];
+
+  [self notifyPlugin: kUpdateSucceededNotificationName];
 }
 
 - (void)onNewConfigFile:(NSNotification*)notification {
