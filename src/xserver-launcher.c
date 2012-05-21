@@ -186,6 +186,7 @@ struct weston_wm_window {
 	uint32_t protocols;
 	xcb_atom_t type;
 	int width, height;
+	int x, y;
 	int decorate;
 };
 
@@ -740,6 +741,8 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	if (configure_notify->window != window->id)
 		return;
 
+	window->x = configure_notify->x;
+	window->y = configure_notify->y;
 	window->width = configure_notify->width;
 	window->height = configure_notify->height;
 
@@ -1909,6 +1912,32 @@ get_wm_window(struct weston_surface *surface)
 }
 
 static void
+xserver_map_shell_surface(struct weston_wm *wm,
+			  struct weston_wm_window *window)
+{
+	struct weston_shell_interface *shell_interface =
+		&wm->server->compositor->shell_interface;
+	struct weston_wm_window *parent;
+
+	if (!shell_interface->create_shell_surface)
+		return;
+
+	shell_interface->create_shell_surface(shell_interface->shell,
+					      window->surface, &window->shsurf);
+
+	if (!window->transient_for) {
+		shell_interface->set_toplevel(window->shsurf);
+		return;
+	}
+
+	parent = hash_table_lookup(wm->window_hash, window->transient_for->id);
+	shell_interface->set_transient(window->shsurf, parent->shsurf,
+				       window->x - parent->x,
+				       window->y - parent->y,
+				       WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
+}
+
+static void
 xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 		      struct wl_resource *surface_resource, uint32_t id)
 {
@@ -1916,8 +1945,6 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 	struct weston_wm *wm = wxs->wm;
 	struct wl_surface *surface = surface_resource->data;
 	struct weston_wm_window *window;
-	struct weston_shell_interface *shell_interface =
-		&wm->server->compositor->shell_interface;
 
 	if (client != wxs->client)
 		return;
@@ -1938,14 +1965,7 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 		      &window->surface_destroy_listener);
 
 	weston_wm_window_schedule_repaint(window);
-
-	if (shell_interface->create_shell_surface) {
-		shell_interface->create_shell_surface(shell_interface->shell,
-						      window->surface,
-						      &window->shsurf);
-
-		shell_interface->set_toplevel(window->shsurf);
-	}
+	xserver_map_shell_surface(wm, window);
 }
 
 static const struct xserver_interface xserver_implementation = {
