@@ -769,6 +769,22 @@ const char kDiscoverableTimeoutProperty[] = "DiscoverableTimeout";
 const char kDiscoveringProperty[] = "Discovering";
 const char kDevicesProperty[] = "Devices";
 const char kUUIDsProperty[] = "UUIDs";
+
+// Bluetooth Adapter errors.
+const char kErrorFailed[] = "org.bluez.Error.Failed";
+const char kErrorInProgress[] = "org.bluez.Error.InProgress";
+const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+const char kErrorConnectionAttemptFailed[] =
+    "org.bluez.Error.ConnectionAttemptFailed";
+const char kErrorAuthenticationTimeout[] =
+    "org.bluez.Error.AuthenticationTimeout";
+const char kErrorRepeatedAttempts[] = "org.bluez.Error.RepeatedAttempts";
+const char kErrorAuthenticationRejected[] =
+    "org,bluez.Error.AuthenticationRejected";
+const char kErrorAuthenticationCanceled[] =
+    "org,bluez.Error.AuthenticationCanceled";
+const char kErrorAuthenticationFailed[] =
+    "org,bluez.Error.AuthenticationFailed";
 }  // namespace bluetooth_adapter
 
 namespace bluetooth_agent {
