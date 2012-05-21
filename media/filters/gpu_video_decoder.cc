@@ -477,8 +477,9 @@ void GpuVideoDecoder::EnsureDemuxOrDecode() {
   if (demuxer_read_in_progress_)
     return;
   demuxer_read_in_progress_ = true;
-  demuxer_stream_->Read(base::Bind(
-      &GpuVideoDecoder::RequestBufferDecode, this));
+  gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+      &DemuxerStream::Read, demuxer_stream_.get(),
+      base::Bind(&GpuVideoDecoder::RequestBufferDecode, this)));
 }
 
 void GpuVideoDecoder::NotifyFlushDone() {
