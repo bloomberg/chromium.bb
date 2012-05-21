@@ -12,7 +12,8 @@ typedef MetricsLogManager::SerializedLog SerializedLog;
 
 namespace {
 
-const size_t kMaxLocalListSize = 3;
+const size_t kListLengthLimit = 3;
+const size_t kLogByteLimit = 1000;
 
 }  // namespace
 
@@ -24,8 +25,8 @@ TEST(MetricsLogSerializerTest, EmptyLogList) {
   ListValue list;
   std::vector<SerializedLog> local_list;
 
-  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kMaxLocalListSize,
-                                            &list);
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
   EXPECT_EQ(0U, list.GetSize());
 
   local_list.clear();  // ReadLogsFromPrefList() expects empty |local_list|.
@@ -42,8 +43,8 @@ TEST(MetricsLogSerializerTest, SingleElementLogList) {
   std::vector<SerializedLog> local_list(1);
   local_list[0].xml = "Hello world!";
 
-  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kMaxLocalListSize,
-                                            &list);
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
 
   // |list| will now contain the following:
   // [1, Base64Encode("Hello world!"), MD5("Hello world!")].
@@ -76,40 +77,103 @@ TEST(MetricsLogSerializerTest, SingleElementLogList) {
   EXPECT_EQ(1U, local_list.size());
 }
 
-// Store elements greater than the limit.
-TEST(MetricsLogSerializerTest, OverLimitLogList) {
+// Store a set of logs over the length limit, but smaller than the min number of
+// bytes.
+TEST(MetricsLogSerializerTest, LongButTinyLogList) {
   ListValue list;
 
-  std::vector<SerializedLog> local_list(4);
-  local_list[0].proto = "one";
-  local_list[1].proto = "two";
-  local_list[2].proto = "three";
-  local_list[3].proto = "four";
+  size_t log_count = kListLengthLimit * 5;
+  std::vector<SerializedLog> local_list(log_count);
+  for (size_t i = 0; i < local_list.size(); ++i) {
+    local_list[0].xml = "x";
+  }
 
-  std::string expected_first;
-  base::Base64Encode(local_list[local_list.size() - kMaxLocalListSize].proto,
-                     &expected_first);
-  std::string expected_last;
-  base::Base64Encode(local_list[local_list.size() - 1].proto,
-                     &expected_last);
-
-  MetricsLogSerializer::WriteLogsToPrefList(local_list, false,
-                                            kMaxLocalListSize, &list);
-  EXPECT_EQ(kMaxLocalListSize + 2, list.GetSize());
-
-  std::string actual_first;
-  EXPECT_TRUE((*(list.begin() + 1))->GetAsString(&actual_first));
-  EXPECT_EQ(expected_first, actual_first);
-
-  std::string actual_last;
-  EXPECT_TRUE((*(list.end() - 2))->GetAsString(&actual_last));
-  EXPECT_EQ(expected_last, actual_last);
-
-  local_list.clear();
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
+  std::vector<SerializedLog> result_list;
   EXPECT_EQ(
       MetricsLogSerializer::RECALL_SUCCESS,
-      MetricsLogSerializer::ReadLogsFromPrefList(list, true, &local_list));
-  EXPECT_EQ(kMaxLocalListSize, local_list.size());
+      MetricsLogSerializer::ReadLogsFromPrefList(list, true, &result_list));
+  EXPECT_EQ(local_list.size(), result_list.size());
+
+  EXPECT_TRUE(result_list.front().xml.find("x") == 0);
+}
+
+// Store a set of logs over the length limit, but that doesn't reach the minimum
+// number of bytes until after passing the length limit.
+TEST(MetricsLogSerializerTest, LongButSmallLogList) {
+  ListValue list;
+
+  size_t log_count = kListLengthLimit * 5;
+  // Make log_count logs each slightly larger than
+  // kLogByteLimit / (log_count - 2)
+  // so that the minimum is reached before the oldest (first) two logs.
+  std::vector<SerializedLog> local_list(log_count);
+  size_t log_size = (kLogByteLimit / (log_count - 2)) + 2;
+  local_list[0].xml = "one";
+  local_list[1].xml = "two";
+  local_list[2].xml = "three";
+  local_list[log_count - 1].xml = "last";
+  for (size_t i = 0; i < local_list.size(); ++i) {
+    local_list[i].xml.resize(log_size, ' ');
+  }
+
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
+  std::vector<SerializedLog> result_list;
+  EXPECT_EQ(
+      MetricsLogSerializer::RECALL_SUCCESS,
+      MetricsLogSerializer::ReadLogsFromPrefList(list, true, &result_list));
+  EXPECT_EQ(local_list.size() - 2, result_list.size());
+
+  EXPECT_TRUE(result_list.front().xml.find("three") == 0);
+  EXPECT_TRUE(result_list.back().xml.find("last") == 0);
+}
+
+// Store a set of logs within the length limit, but well over the minimum
+// number of bytes.
+TEST(MetricsLogSerializerTest, ShortButLargeLogList) {
+  ListValue list;
+
+  std::vector<SerializedLog> local_list(kListLengthLimit);
+  // Make the total byte count about twice the minimum.
+  size_t log_size = (kLogByteLimit / local_list.size()) * 2;
+  for (size_t i = 0; i < local_list.size(); ++i) {
+    local_list[i].xml.resize(log_size, ' ');
+  }
+
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
+  std::vector<SerializedLog> result_list;
+  EXPECT_EQ(
+      MetricsLogSerializer::RECALL_SUCCESS,
+      MetricsLogSerializer::ReadLogsFromPrefList(list, true, &result_list));
+  EXPECT_EQ(local_list.size(), result_list.size());
+}
+
+// Store a set of logs over the length limit, and over the minimum number of
+// bytes.
+TEST(MetricsLogSerializerTest, LongAndLargeLogList) {
+  ListValue list;
+
+  // Include twice the max number of logs.
+  std::vector<SerializedLog> local_list(kListLengthLimit * 2);
+  // Make the total byte count about four times the minimum.
+  size_t log_size = (kLogByteLimit / local_list.size()) * 4;
+  local_list[local_list.size() - kListLengthLimit].xml = "First to keep";
+  for (size_t i = 0; i < local_list.size(); ++i) {
+    local_list[i].xml.resize(log_size, ' ');
+  }
+
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
+  std::vector<SerializedLog> result_list;
+  EXPECT_EQ(
+      MetricsLogSerializer::RECALL_SUCCESS,
+      MetricsLogSerializer::ReadLogsFromPrefList(list, true, &result_list));
+  // The max length should control the resulting size.
+  EXPECT_EQ(kListLengthLimit, result_list.size());
+  EXPECT_TRUE(result_list.front().xml.find("First to keep") == 0);
 }
 
 // Induce LIST_SIZE_TOO_SMALL corruption
@@ -119,8 +183,8 @@ TEST(MetricsLogSerializerTest, SmallRecoveredListSize) {
   std::vector<SerializedLog> local_list(1);
   local_list[0].xml = "Hello world!";
 
-  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kMaxLocalListSize,
-                                            &list);
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
   EXPECT_EQ(3U, list.GetSize());
 
   // Remove last element.
@@ -141,8 +205,8 @@ TEST(MetricsLogSerializerTest, RemoveSizeFromLogList) {
   local_list[0].xml = "one";
   local_list[1].xml = "two";
   EXPECT_EQ(2U, local_list.size());
-  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kMaxLocalListSize,
-                                            &list);
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
   EXPECT_EQ(4U, list.GetSize());
 
   list.Remove(0, NULL);  // Delete size (1st element).
@@ -161,8 +225,8 @@ TEST(MetricsLogSerializerTest, CorruptSizeOfLogList) {
   std::vector<SerializedLog> local_list(1);
   local_list[0].xml = "Hello world!";
 
-  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kMaxLocalListSize,
-                                            &list);
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
   EXPECT_EQ(3U, list.GetSize());
 
   // Change list size from 1 to 2.
@@ -182,8 +246,8 @@ TEST(MetricsLogSerializerTest, CorruptChecksumOfLogList) {
   std::vector<SerializedLog> local_list(1);
   local_list[0].xml = "Hello world!";
 
-  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kMaxLocalListSize,
-                                            &list);
+  MetricsLogSerializer::WriteLogsToPrefList(local_list, true, kListLengthLimit,
+                                            kLogByteLimit, &list);
   EXPECT_EQ(3U, list.GetSize());
 
   // Fetch checksum (last element) and change it.

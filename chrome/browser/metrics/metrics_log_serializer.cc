@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,11 @@
 
 namespace {
 
-// The number of "initial" logs we're willing to save, and hope to send during
-// a future Chrome session.  Initial logs contain crash stats, and are pretty
-// small.
-const size_t kMaxInitialLogsPersisted = 20;
+// The number of "initial" logs to save, and hope to send during a future Chrome
+// session.  Initial logs contain crash stats, and are pretty small.
+const size_t kInitialLogsPersistLimit = 20;
 
-// The number of ongoing logs we're willing to save persistently, and hope to
+// The number of ongoing logs to save persistently, and hope to
 // send during a this or future sessions.  Note that each log may be pretty
 // large, as presumably the related "initial" log wasn't sent (probably nothing
 // was, as the user was probably off-line).  As a result, the log probably kept
@@ -28,7 +27,12 @@ const size_t kMaxInitialLogsPersisted = 20;
 // A "standard shutdown" will create a small log, including just the data that
 // was not yet been transmitted, and that is normal (to have exactly one
 // ongoing_log_ at startup).
-const size_t kMaxOngoingLogsPersisted = 8;
+const size_t kOngoingLogsPersistLimit = 8;
+
+// The number of bytes each of initial and ongoing logs that must be stored.
+// This ensures that a reasonable amount of history will be stored even if there
+// is a long series of very small logs.
+const size_t kStorageByteLimitPerLogType = 300000;
 
 // We append (2) more elements to persisted lists: the size of the list and a
 // checksum of the elements.
@@ -75,17 +79,17 @@ void MetricsLogSerializer::SerializeLogs(
   DCHECK(local_state);
   const char* pref_xml = NULL;
   const char* pref_proto = NULL;
-  size_t max_store_count = 0;
+  size_t store_length_limit = 0;
   switch (log_type) {
     case MetricsLogManager::INITIAL_LOG:
       pref_xml = prefs::kMetricsInitialLogsXml;
       pref_proto = prefs::kMetricsInitialLogsProto;
-      max_store_count = kMaxInitialLogsPersisted;
+      store_length_limit = kInitialLogsPersistLimit;
       break;
     case MetricsLogManager::ONGOING_LOG:
       pref_xml = prefs::kMetricsOngoingLogsXml;
       pref_proto = prefs::kMetricsOngoingLogsProto;
-      max_store_count = kMaxOngoingLogsPersisted;
+      store_length_limit = kOngoingLogsPersistLimit;
       break;
     default:
       NOTREACHED();
@@ -94,11 +98,13 @@ void MetricsLogSerializer::SerializeLogs(
 
   // Write the XML version.
   ListPrefUpdate update_xml(local_state, pref_xml);
-  WriteLogsToPrefList(logs, true, max_store_count, update_xml.Get());
+  WriteLogsToPrefList(logs, true, store_length_limit,
+                      kStorageByteLimitPerLogType, update_xml.Get());
 
   // Write the protobuf version.
   ListPrefUpdate update_proto(local_state, pref_proto);
-  WriteLogsToPrefList(logs, false, max_store_count, update_proto.Get());
+  WriteLogsToPrefList(logs, false, store_length_limit,
+                      kStorageByteLimitPerLogType, update_proto.Get());
 }
 
 void MetricsLogSerializer::DeserializeLogs(
@@ -131,14 +137,36 @@ void MetricsLogSerializer::DeserializeLogs(
 void MetricsLogSerializer::WriteLogsToPrefList(
     const std::vector<MetricsLogManager::SerializedLog>& local_list,
     bool is_xml,
-    size_t max_list_size,
+    size_t list_length_limit,
+    size_t byte_limit,
     base::ListValue* list) {
+  // One of the limit arguments must be non-zero.
+  DCHECK(list_length_limit > 0 || byte_limit > 0);
+
   list->Clear();
+  if (local_list.size() == 0)
+    return;
+
   size_t start = 0;
-  if (local_list.size() > max_list_size)
-    start = local_list.size() - max_list_size;
-  DCHECK_LE(start, local_list.size());
-  if (local_list.size() <= start)
+  // If there are too many logs, keep the most recent logs up to the length
+  // limit, and at least to the minimum number of bytes.
+  if (local_list.size() > list_length_limit) {
+    start = local_list.size();
+    size_t bytes_used = 0;
+    for (std::vector<MetricsLogManager::SerializedLog>::const_reverse_iterator
+         it = local_list.rbegin(); it != local_list.rend(); ++it) {
+      // TODO(isherman): Always uses XML length so both formats of a given log
+      // will be saved; switch to proto once that's the primary format.
+      size_t log_size = it->xml.length();
+      if (bytes_used >= byte_limit &&
+          (local_list.size() - start) >= list_length_limit)
+        break;
+      bytes_used += log_size;
+      --start;
+    }
+  }
+  DCHECK_LT(start, local_list.size());
+  if (start >= local_list.size())
     return;
 
   // Store size at the beginning of the list.

@@ -49,10 +49,14 @@ class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
   // Encodes the textual log data from |local_list| and writes it to the given
   // pref list, along with list size and checksum.  If |is_xml| is true, writes
   // the XML data from |local_list|; otherwise writes the protobuf data.
+  // Logs will be stored starting with the most recent, and working backward
+  // until at least |list_length_limit| logs and |byte_limit| bytes of logs have
+  // been stored. At least one of those two arguments must be non-zero.
   static void WriteLogsToPrefList(
       const std::vector<MetricsLogManager::SerializedLog>& local_list,
       bool is_xml,
-      size_t max_list_size,
+      size_t list_length_limit,
+      size_t byte_limit,
       base::ListValue* list);
 
   // Decodes and verifies the textual log data from |list|, populating
@@ -65,7 +69,10 @@ class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
 
   FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, EmptyLogList);
   FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, SingleElementLogList);
-  FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, OverLimitLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, LongButTinyLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, LongButSmallLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, ShortButLargeLogList);
+  FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, LongAndLargeLogList);
   FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, SmallRecoveredListSize);
   FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, RemoveSizeFromLogList);
   FRIEND_TEST_ALL_PREFIXES(MetricsLogSerializerTest, CorruptSizeOfLogList);
