@@ -164,7 +164,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
               AR=os.path.join(bin_path, '%s-ar' % arch),
               AS=os.path.join(bin_path, '%s-as' % arch),
               ASPP=os.path.join(bin_path, '%s-gcc' % arch),
-              GDB=os.path.join(bin_path, 'nacl-gdb'),
+              GDB=os.path.join(bin_path, '%s-gdb' % arch),
               # NOTE: use g++ for linking so we can handle C AND C++.
               LINK=os.path.join(bin_path, '%s-g++' % arch),
               # Grrr... and sometimes we really need ld.

@@ -1160,6 +1160,8 @@ def GetSelLdr(env):
   trusted_env = env['TRUSTED_ENV']
   return trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 
+pre_base_env.AddMethod(GetSelLdr)
+
 def GetBootstrap(env):
   if 'TRUSTED_ENV' in env:
     trusted_env = env['TRUSTED_ENV']
@@ -3291,6 +3293,7 @@ irt_variant_tests = [
     'tests/file/nacl.scons',
     'tests/fixedfeaturecpu/nacl.scons',
     'tests/gc_instrumentation/nacl.scons',
+    'tests/gdb/nacl.scons',
     'tests/glibc_file64_test/nacl.scons',
     'tests/glibc_static_test/nacl.scons',
     'tests/glibc_syscall_wrappers/nacl.scons',

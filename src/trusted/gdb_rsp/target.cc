@@ -63,7 +63,7 @@ bool Target::Init() {
   // Set a more specific result which won't change.
   properties_["target.xml"] = targ_xml;
   properties_["Supported"] =
-    "PacketSize=7cf;qXfer:libraries:read+;qXfer:features:read+";
+    "PacketSize=7cf;qXfer:features:read+";
 
   mutex_ = IMutex::Allocate();
   sig_start_ = IEvent::Allocate();
