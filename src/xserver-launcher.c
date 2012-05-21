@@ -962,7 +962,7 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
 
-	if (window->repaint_source)
+	if (window->frame_id == XCB_WINDOW_NONE || window->repaint_source)
 		return;
 
 	window->repaint_source =
