@@ -31,8 +31,20 @@ import os
 import json
 
 from louis import translate
+from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
 from glob import iglob
 from os.path import basename
+
+modes = {
+    'noContractions': noContractions,
+    'compbrlAtCursor': compbrlAtCursor,
+    'dotsIO': dotsIO,
+    'comp8Dots': comp8Dots,
+    'pass1Only': pass1Only,
+    'compbrlLeftCursor': compbrlLeftCursor,
+    'otherTrans': otherTrans,
+    'ucBrl': ucBrl
+}
 
 def showCurPos(length, pos1, marker1="^", pos2=None, marker2="*"):
     """A helper function to make a string to show the position of the given cursor."""
@@ -111,8 +123,10 @@ for harness in iglob(os.path.join(harness_dir, '*_harness.txt')):
         f.close()
     print("Processing %s" %harness)
     failed = 0
-    tableList = [harnessModule['table']]
+    tableList = [harnessModule['table'].encode('UTF-8')]
     for test in harnessModule['tests']:
+        if 'mode' in test:
+            test['mode'] = modes[test['mode']]
         text = test['txt']
         mode = test.get('mode', 0)
         cursorPos = test.get('cursorPos', 0)
