@@ -1612,6 +1612,8 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		if (formats[i].type == XCB_RENDER_PICT_TYPE_DIRECT &&
 		    formats[i].depth == 24)
 			wm->render_format = formats[i];
+
+	free(formats_reply);
 }
 
 static void
