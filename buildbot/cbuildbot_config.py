@@ -683,6 +683,14 @@ _config.add_raw_config('x86-generic-asan',
   build_type=constants.BUILD_FROM_SOURCE_TYPE,
 )
 
+_config.add_raw_config('amd64-generic-asan',
+  boards=['amd64-generic'],
+  profile='asan',
+  prebuilts=False,
+  useflags=['asan'],
+  build_type=constants.BUILD_FROM_SOURCE_TYPE,
+)
+
 #
 # Internal Builds
 #
