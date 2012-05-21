@@ -1453,7 +1453,12 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest15, MenuStaysVisibleAfterDelete)
+#if defined(OS_WIN)
+#define MAYBE_MenuStaysVisibleAfterDelete DISABLED_MenuStaysVisibleAfterDelete
+#else
+#define MAYBE_MenuStaysVisibleAfterDelete MenuStaysVisibleAfterDelete
+#endif
+VIEW_TEST(BookmarkBarViewTest15, MAYBE_MenuStaysVisibleAfterDelete)
 
 // Tests that we don't crash or get stuck if the parent of a menu is closed.
 class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
@@ -1489,7 +1494,12 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest16, DeleteMenu)
+#if defined(OS_WIN)
+#define MAYBE_DeleteMenu DISABLED_DeleteMenu
+#else
+#define MAYBE_DeleteMenu DeleteMenu
+#endif
+VIEW_TEST(BookmarkBarViewTest16, MAYBE_DeleteMenu)
 
 // Makes sure right clicking on an item while a context menu is already showing
 // doesn't crash and works.
@@ -1570,7 +1580,12 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest17, ContextMenus3)
+#if defined(OS_WIN)
+#define MAYBE_ContextMenus3 DISABLED_ContextMenus3
+#else
+#define MAYBE_ContextMenus3 ContextMenus3
+#endif
+VIEW_TEST(BookmarkBarViewTest17, MAYBE_ContextMenus3)
 
 // Verifies sibling menus works. Clicks on the 'other bookmarks' folder, then
 // moves the mouse over the first item on the bookmark bar and makes sure the
@@ -1614,7 +1629,12 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest18, SiblingMenu)
+#if defined(OS_WIN)
+#define MAYBE_BookmarkBarViewTest18_SiblingMenu DISABLED_SiblingMenu
+#else
+#define MAYBE_BookmarkBarViewTest18_SiblingMenu SiblingMenu
+#endif
+VIEW_TEST(BookmarkBarViewTest18, MAYBE_BookmarkBarViewTest18_SiblingMenu)
 
 // Verifies mousing over an already open sibling menu doesn't prematurely cancel
 // the menu.
@@ -1688,4 +1708,9 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest19, SiblingMenu)
+#if defined(OS_WIN)
+#define MAYBE_BookmarkBarViewTest19_SiblingMenu DISABLED_SiblingMenu
+#else
+#define MAYBE_BookmarkBarViewTest19_SiblingMenu SiblingMenu
+#endif
+VIEW_TEST(BookmarkBarViewTest19, MAYBE_BookmarkBarViewTest19_SiblingMenu)
