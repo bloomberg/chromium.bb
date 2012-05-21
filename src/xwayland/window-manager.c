@@ -420,40 +420,34 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 }
 
 static void
-weston_wm_activate(struct weston_wm *wm,
-		 struct weston_wm_window *window, xcb_timestamp_t time)
-{
-	xcb_client_message_event_t client_message;
-
-	client_message.response_type = XCB_CLIENT_MESSAGE;
-	client_message.format = 32;
-	client_message.window = window->id;
-	client_message.type = wm->atom.wm_protocols;
-	client_message.data.data32[0] = wm->atom.wm_take_focus;
-	client_message.data.data32[1] = XCB_TIME_CURRENT_TIME;
-
-	xcb_send_event(wm->conn, 0, window->id, 
-		       XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
-		       (char *) &client_message);
-
-	xcb_set_input_focus (wm->conn,
-			     XCB_INPUT_FOCUS_POINTER_ROOT, window->id, time);
-}
-
-static void
 weston_wm_window_activate(struct wl_listener *listener, void *data)
 {
 	struct weston_surface *surface = data;
 	struct weston_wm_window *window = get_wm_window(surface);
-	struct weston_wm *wm = container_of(listener, struct weston_wm, activate_listener);
+	struct weston_wm *wm =
+		container_of(listener, struct weston_wm, activate_listener);
+	xcb_client_message_event_t client_message;
 
-	if (window)
-		weston_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
-	else
+	if (window) {
+		client_message.response_type = XCB_CLIENT_MESSAGE;
+		client_message.format = 32;
+		client_message.window = window->id;
+		client_message.type = wm->atom.wm_protocols;
+		client_message.data.data32[0] = wm->atom.wm_take_focus;
+		client_message.data.data32[1] = XCB_TIME_CURRENT_TIME;
+
+		xcb_send_event(wm->conn, 0, window->id, 
+			       XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
+			       (char *) &client_message);
+
+		xcb_set_input_focus (wm->conn, XCB_INPUT_FOCUS_POINTER_ROOT,
+				     window->id, XCB_TIME_CURRENT_TIME);
+	} else {
 		xcb_set_input_focus (wm->conn,
 				     XCB_INPUT_FOCUS_POINTER_ROOT,
 				     XCB_NONE,
 				     XCB_TIME_CURRENT_TIME);
+	}
 
 	if (wm->focus_window)
 		weston_wm_window_schedule_repaint(wm->focus_window);
