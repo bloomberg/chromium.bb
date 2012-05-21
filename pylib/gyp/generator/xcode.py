@@ -1068,8 +1068,8 @@ exit 1
       else:
         pbxp.AddOrGetFileInRootGroup(source)
 
-    # Add "mac_bundle_resources", "mac_framework_headers", and
-    # "mac_framework_private_headers" if it's a bundle of any type.
+    # Add "mac_bundle_resources" and "mac_framework_private_headers" if
+    # it's a bundle of any type.
     if is_bundle:
       for resource in tgt_mac_bundle_resources:
         (resource_root, resource_extension) = posixpath.splitext(resource)
@@ -1078,11 +1078,14 @@ exit 1
         else:
           pbxp.AddOrGetFileInRootGroup(resource)
 
-      for header in spec.get('mac_framework_headers', []):
-        AddHeaderToTarget(header, pbxp, xct, True)
-
       for header in spec.get('mac_framework_private_headers', []):
         AddHeaderToTarget(header, pbxp, xct, False)
+
+    # Add "mac_framework_headers". These can be valid for both frameworks
+    # and static libraries.
+    if is_bundle or type == 'static_library':
+      for header in spec.get('mac_framework_headers', []):
+        AddHeaderToTarget(header, pbxp, xct, True)
 
     # Add "copies".
     for copy_group in spec.get('copies', []):
