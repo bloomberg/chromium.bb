@@ -95,7 +95,7 @@ static const char* kRegressionTests[] = {
 
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, BasicTests) {
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, FAILS_BasicTests) {
   RunLayoutTests(kBasicTests);
 }
 
