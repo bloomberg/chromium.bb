@@ -124,6 +124,7 @@ struct weston_wm {
 	xcb_window_t wm_window;
 	struct weston_wm_window *focus_window;
 	struct theme *theme;
+	xcb_render_pictforminfo_t render_format;
 
 	xcb_window_t selection_window;
 	int incr;
@@ -885,38 +886,6 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	fprintf(stderr, "XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
 }
 
-static xcb_render_pictforminfo_t *
-find_depth (xcb_connection_t *connection, int depth)
-{
-	xcb_render_query_pict_formats_reply_t	*formats;
-	xcb_render_query_pict_formats_cookie_t cookie;
-	xcb_render_pictforminfo_iterator_t i;
-
-	cookie = xcb_render_query_pict_formats(connection);
-	xcb_flush(connection);
-
-	formats = xcb_render_query_pict_formats_reply(connection, cookie, 0);
-	if (formats == NULL)
-		return NULL;
-
-	for (i = xcb_render_query_pict_formats_formats_iterator (formats);
-	     i.rem;
-	     xcb_render_pictforminfo_next (&i)) {
-		if (i.data->type != XCB_RENDER_PICT_TYPE_DIRECT)
-			continue;
-
-		if (depth != i.data->depth)
-			continue;
-
-		free(formats);
-		return i.data;
-	}
-
-	free(formats);
-
-	return NULL;
-}
-
 static void
 weston_wm_window_draw_decoration(void *data)
 {
@@ -925,7 +894,6 @@ weston_wm_window_draw_decoration(void *data)
 	struct theme *t = wm->theme;
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	xcb_render_pictforminfo_t *render_format;
 	int x, y, width, height;
 	const char *title;
 	uint32_t flags = 0;
@@ -937,11 +905,10 @@ weston_wm_window_draw_decoration(void *data)
 	weston_wm_window_get_frame_size(window, &width, &height);
 	weston_wm_window_get_child_position(window, &x, &y);
 
-	render_format = find_depth(wm->conn, 24);
 	surface = cairo_xcb_surface_create_with_xrender_format(wm->conn,
 							       wm->screen,
 							       window->frame_id,
-							       render_format,
+							       &wm->render_format,
 							       width,
 							       height);
 	cr = cairo_create(surface);
@@ -1592,9 +1559,14 @@ wxs_wm_get_resources(struct weston_wm *wm)
 	xcb_xfixes_query_version_reply_t *xfixes_reply;
 	xcb_intern_atom_cookie_t cookies[ARRAY_LENGTH(atoms)];
 	xcb_intern_atom_reply_t *reply;
+	xcb_render_query_pict_formats_reply_t *formats_reply;
+	xcb_render_query_pict_formats_cookie_t formats_cookie;
+	xcb_render_pictforminfo_t *formats;
 	uint32_t i;
 
 	xcb_prefetch_extension_data (wm->conn, &xcb_xfixes_id);
+
+	formats_cookie = xcb_render_query_pict_formats(wm->conn);
 
 	for (i = 0; i < ARRAY_LENGTH(atoms); i++)
 		cookies[i] = xcb_intern_atom (wm->conn, 0,
@@ -1621,6 +1593,17 @@ wxs_wm_get_resources(struct weston_wm *wm)
 	       xfixes_reply->major_version, xfixes_reply->minor_version);
 
 	free(xfixes_reply);
+
+	formats_reply = xcb_render_query_pict_formats_reply(wm->conn,
+							    formats_cookie, 0);
+	if (formats_reply == NULL)
+		return;
+
+	formats = xcb_render_query_pict_formats_formats(formats_reply);
+	for (i = 0; i < formats_reply->length; i++)
+		if (formats[i].type == XCB_RENDER_PICT_TYPE_DIRECT &&
+		    formats[i].depth == 24)
+			wm->render_format = formats[i];
 }
 
 static void
