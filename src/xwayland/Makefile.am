@@ -14,7 +14,7 @@ xserver_launcher_la_LIBADD =			\
 	$(top_builddir)/shared/libshared.la
 xserver_launcher_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 xserver_launcher_la_SOURCES =			\
-	xserver-launcher.c			\
+	window-manager.c			\
 	selection.c				\
 	launcher.c				\
 	xserver-protocol.c			\
