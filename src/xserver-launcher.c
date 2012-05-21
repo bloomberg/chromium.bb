@@ -151,6 +151,20 @@ struct weston_wm {
 		xcb_atom_t		 net_wm_user_time;
 		xcb_atom_t		 net_wm_icon_name;
 		xcb_atom_t		 net_wm_window_type;
+		xcb_atom_t		 net_wm_window_type_desktop;
+		xcb_atom_t		 net_wm_window_type_dock;
+		xcb_atom_t		 net_wm_window_type_toolbar;
+		xcb_atom_t		 net_wm_window_type_menu;
+		xcb_atom_t		 net_wm_window_type_utility;
+		xcb_atom_t		 net_wm_window_type_splash;
+		xcb_atom_t		 net_wm_window_type_dialog;
+		xcb_atom_t		 net_wm_window_type_dropdown;
+		xcb_atom_t		 net_wm_window_type_popup;
+		xcb_atom_t		 net_wm_window_type_tooltip;
+		xcb_atom_t		 net_wm_window_type_notification;
+		xcb_atom_t		 net_wm_window_type_combo;
+		xcb_atom_t		 net_wm_window_type_dnd;
+		xcb_atom_t		 net_wm_window_type_normal;
 		xcb_atom_t		 net_wm_moveresize;
 		xcb_atom_t		 net_supporting_wm_check;
 		xcb_atom_t		 net_supported;
@@ -1542,6 +1556,22 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		{ "_NET_WM_USER_TIME", F(atom.net_wm_user_time) },
 		{ "_NET_WM_ICON_NAME", F(atom.net_wm_icon_name) },
 		{ "_NET_WM_WINDOW_TYPE", F(atom.net_wm_window_type) },
+
+		{ "_NET_WM_WINDOW_TYPE_DESKTOP", F(atom.net_wm_window_type_desktop) },
+		{ "_NET_WM_WINDOW_TYPE_DOCK", F(atom.net_wm_window_type_dock) },
+		{ "_NET_WM_WINDOW_TYPE_TOOLBAR", F(atom.net_wm_window_type_toolbar) },
+		{ "_NET_WM_WINDOW_TYPE_MENU", F(atom.net_wm_window_type_menu) },
+		{ "_NET_WM_WINDOW_TYPE_UTILITY", F(atom.net_wm_window_type_utility) },
+		{ "_NET_WM_WINDOW_TYPE_SPLASH", F(atom.net_wm_window_type_splash) },
+		{ "_NET_WM_WINDOW_TYPE_DIALOG", F(atom.net_wm_window_type_dialog) },
+		{ "_NET_WM_WINDOW_TYPE_DROPDOWN", F(atom.net_wm_window_type_dropdown) },
+		{ "_NET_WM_WINDOW_TYPE_POPUP", F(atom.net_wm_window_type_popup) },
+		{ "_NET_WM_WINDOW_TYPE_TOOLTIP", F(atom.net_wm_window_type_tooltip) },
+		{ "_NET_WM_WINDOW_TYPE_NOTIFICATION", F(atom.net_wm_window_type_notification) },
+		{ "_NET_WM_WINDOW_TYPE_COMBO", F(atom.net_wm_window_type_combo) },
+		{ "_NET_WM_WINDOW_TYPE_DND", F(atom.net_wm_window_type_dnd) },
+		{ "_NET_WM_WINDOW_TYPE_NORMAL",	F(atom.net_wm_window_type_normal) },
+
 		{ "_NET_WM_MOVERESIZE", F(atom.net_wm_moveresize) },
 		{ "_NET_SUPPORTING_WM_CHECK",
 					F(atom.net_supporting_wm_check) },
