@@ -38,6 +38,10 @@ def GetArchiveUrl(host_os, version):
   return urlparse.urljoin(HTTPS_BASE_URL, posixpath.join(version, basename))
 
 
+def MakeGsUrl(rel_path):
+  return update_nacl_manifest.GS_BUCKET_PATH + rel_path
+
+
 def GetPathFromGsUrl(url):
   assert url.startswith(update_nacl_manifest.GS_BUCKET_PATH)
   return url[len(update_nacl_manifest.GS_BUCKET_PATH):]
@@ -77,10 +81,10 @@ def MakeNonPepperBundle(name, with_archives=False):
 
 
 def MakeBundle(major_version, revision, version=None, host_oses=None):
-  assert version is None or version.split('.')[0] == major_version
-  bundle_name = 'pepper_' + major_version
+  assert version is None or version.split('.')[0] == str(major_version)
+  bundle_name = 'pepper_' + str(major_version)
   bundle = manifest_util.Bundle(bundle_name)
-  bundle.version = int(major_version)
+  bundle.version = major_version
   bundle.revision = revision
   bundle.description = 'Chrome %s bundle, revision %s' % (major_version,
       revision)
@@ -156,7 +160,7 @@ class TestDelegate(update_nacl_manifest.Delegate):
     result = []
     for filename, _ in self.files.iteritems():
       if filename.startswith(path):
-        result.append(filename)
+        result.append(MakeGsUrl(filename))
     return result
 
   def GsUtil_cat(self, url):
@@ -186,12 +190,12 @@ V18_0_1025_175 = '18.0.1025.175'
 V18_0_1025_184 = '18.0.1025.184'
 V19_0_1084_41 = '19.0.1084.41'
 V19_0_1084_67 = '19.0.1084.67'
-B18_0_1025_163_R1_MLW = MakeBundle('18', '1', V18_0_1025_163, OS_MLW)
-B18_0_1025_184_R1_MLW = MakeBundle('18', '1', V18_0_1025_184, OS_MLW)
-B18_R1_NONE = MakeBundle('18', '1')
-B19_0_1084_41_R1_MLW = MakeBundle('19', '1', V19_0_1084_41, OS_MLW)
-B19_0_1084_67_R1_MLW = MakeBundle('19', '1', V19_0_1084_67, OS_MLW)
-B19_R1_NONE = MakeBundle('19', '1')
+B18_0_1025_163_R1_MLW = MakeBundle(18, 1, V18_0_1025_163, OS_MLW)
+B18_0_1025_184_R1_MLW = MakeBundle(18, 1, V18_0_1025_184, OS_MLW)
+B18_R1_NONE = MakeBundle(18, '1')
+B19_0_1084_41_R1_MLW = MakeBundle(19, 1, V19_0_1084_41, OS_MLW)
+B19_0_1084_67_R1_MLW = MakeBundle(19, 1, V19_0_1084_67, OS_MLW)
+B19_R1_NONE = MakeBundle(19, '1')
 NON_PEPPER_BUNDLE_NOARCHIVES = MakeNonPepperBundle('foo')
 NON_PEPPER_BUNDLE_ARCHIVES = MakeNonPepperBundle('bar', with_archives=True)
 
@@ -354,6 +358,22 @@ class TestUpdateManifest(unittest.TestCase):
     self._ReadUploadedManifest()
     self._AssertUploadedManifestHasBundle(B18_0_1025_163_R1_MLW, BETA)
     self.assertEqual(len(self.uploaded_manifest.GetBundles()), 1)
+
+  def testSnippetWithStringRevisionAndVersion(self):
+    # This test exists because some manifest snippets were uploaded with
+    # strings for their revisions and versions. I want to make sure the
+    # resulting manifest is still consistent with the old format.
+    self.manifest = MakeManifest(B18_R1_NONE)
+    self.history.Add(OS_MLW, BETA, V18_0_1025_163)
+    bundle_string_revision = MakeBundle('18', '1234', V18_0_1025_163, OS_MLW)
+    self.files.Add(bundle_string_revision)
+    self._MakeDelegate()
+    self._Run(OS_MLW)
+    self._ReadUploadedManifest()
+    uploaded_bundle = self.uploaded_manifest.GetBundle(
+        bundle_string_revision.name)
+    self.assertEqual(uploaded_bundle.revision, 1234)
+    self.assertEqual(uploaded_bundle.version, 18)
 
 
 def main():

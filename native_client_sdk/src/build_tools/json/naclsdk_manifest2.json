@@ -198,30 +198,6 @@
       "version": 20,
       "repath": "pepper_20",
       "archives": [
-        {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.134804/naclsdk_mac.bz2",
-          "checksum": {
-            "sha1": "d134ebad9887fe8f163f7599f136aa21cb5779a7"
-          },
-          "host_os": "mac",
-          "size": 123117593
-        },
-        {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.134804/naclsdk_linux.bz2",
-          "checksum": {
-            "sha1": "f30ae1fe30208e52da0e26d262d42190b6575011"
-          },
-          "host_os": "linux",
-          "size": 127113829
-        },
-        {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.134804/naclsdk_win.bz2",
-          "checksum": {
-            "sha1": "a4457505fe1c8ee12aaaa1e0c85eae6edf74656d"
-          },
-          "host_os": "win",
-          "size": 119404351
-        }
       ],
       "revision": 134804
     }

@@ -693,9 +693,9 @@ def main(args):
                         'checksum': {'sha1': archive_sha1}})
       bundle = manifest_util.Bundle('pepper_' + pepper_ver)
       bundle.CopyFrom({
-          'revision': clnumber,
+          'revision': int(clnumber),
           'repath': 'pepper_' + pepper_ver,
-          'version': pepper_ver,
+          'version': int(pepper_ver),
           'description': 'Chrome %s bundle, revision %s' % (
               pepper_ver, clnumber),
           'stability': 'dev',

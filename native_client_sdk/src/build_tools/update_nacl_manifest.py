@@ -118,14 +118,18 @@ class Delegate(object):
     """Runs gsutil ls |url|
 
     Args:
-      url: The commondatastorage url to list."""
+      url: The commondatastorage url to list.
+    Returns:
+      A list of URLs, all with the gs:// schema."""
     raise NotImplementedError()
 
   def GsUtil_cat(self, url):
     """Runs gsutil cat |url|
 
     Args:
-      url: The commondatastorage url to read from."""
+      url: The commondatastorage url to read from.
+    Returns:
+      A string with the contents of the file at |url|."""
     raise NotImplementedError()
 
   def GsUtil_cp(self, src, dest, stdin=None):
@@ -176,7 +180,8 @@ class RealDelegate(Delegate):
 
   def GsUtil_cp(self, src, dest, stdin=None):
     """See Delegate.GsUtil_cp"""
-    return self._RunGsUtil(stdin, 'cp', '-a', 'public-read', src, dest)
+    # -p ensures we keep permissions when copying "in-the-cloud".
+    return self._RunGsUtil(stdin, 'cp', '-p', '-a', 'public-read', src, dest)
 
   def Print(self, *args):
     sys.stdout.write(' '.join(map(str, args)) + '\n')
@@ -306,10 +311,12 @@ class VersionFinder(object):
       version_string: The version to find archives for. (e.g. "18.0.1025.164")
     Returns:
       A list of strings, each of which is a platform-specific archive URL. (e.g.
-      "https://commondatastorage.googleapis.com/nativeclient_mirror/nacl/"
-      "nacl_sdk/18.0.1025.164/naclsdk_linux.bz2".
-    """
+      "gs://nativeclient_mirror/nacl/nacl_sdk/18.0.1025.164/naclsdk_linux.bz2").
+
+      All returned URLs will use the gs:// schema."""
     files = self.delegate.GsUtil_ls(GS_BUCKET_PATH + version_string)
+    assert all(file.startswith('gs://') for file in files)
+
     archives = [file for file in files if not file.endswith('.json')]
     manifests = [file for file in files if file.endswith('.json')]
 
@@ -356,14 +363,18 @@ class Updater(object):
        Bundle.
 
     Args:
-      archive: The URL of a platform-specific archive.
+      archive: A full URL of a platform-specific archive, using the gs schema.
     Returns:
       An object of type manifest_util.Bundle, read from a JSON file storing
       metadata for this archive.
     """
-    stdout = self.delegate.GsUtil_cat(GS_BUCKET_PATH + archive + '.json')
+    stdout = self.delegate.GsUtil_cat(archive + '.json')
     bundle = manifest_util.Bundle('')
     bundle.LoadDataFromString(stdout)
+    # Some snippets were uploaded with revisions and versions as strings. Fix
+    # those here.
+    bundle.revision = int(bundle.revision)
+    bundle.version = int(bundle.version)
     return bundle
 
   def _UploadManifest(self, manifest):
