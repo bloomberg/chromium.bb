@@ -26,9 +26,11 @@
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
+#include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
@@ -647,11 +649,30 @@ bool FileAPIMessageFilter::HasPermissionsForFile(
     return false;
   }
 
-  FilePath file_path =
-      mount_point_provider->GetPathForPermissionsCheck(virtual_path);
-  if (file_path.empty()) {
-    *error = base::PLATFORM_FILE_ERROR_SECURITY;
-    return false;
+  FilePath file_path;
+
+  // Special handling for isolated filesystem: its root path is purely
+  // virtual path and we don't have corresponding platform path with which
+  // we can check the permission.  To allow read-access on the virtual root
+  // we always return true if CrackIsolatedPath returns true (i.e. the
+  // isolated filesystem is valid) and the returned path is empty, i.e.
+  // the virtual_path is pointing to the root.
+  if (file_system_type == fileapi::kFileSystemTypeIsolated) {
+    std::string fsid;
+    if (!fileapi::IsolatedContext::GetInstance()->CrackIsolatedPath(
+            virtual_path, &fsid, NULL, &file_path)) {
+      return false;
+    }
+    // The root directory case.  Always allow read access as far as the
+    // filesystem is valid.
+    if (file_path.empty())
+      return (permissions == kReadFilePermissions);
+  } else {
+    file_path = mount_point_provider->GetPathForPermissionsCheck(virtual_path);
+    if (file_path.empty()) {
+      *error = base::PLATFORM_FILE_ERROR_SECURITY;
+      return false;
+    }
   }
 
   bool success =
