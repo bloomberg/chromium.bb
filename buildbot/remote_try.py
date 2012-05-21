@@ -47,6 +47,7 @@ class RemoteTryJob(object):
     patch_list = options.gerrit_patches + options.local_patches
     self.name = ','.join(patch_list)
     self.bots = bots[:]
+    self.slaves_request = options.slaves
     self.description = ('name: %s\n patches: %s\nbots: %s' %
                         (self.name, patch_list, self.bots))
     self.extra_args = options.pass_through_args
@@ -63,11 +64,12 @@ class RemoteTryJob(object):
   @property
   def values(self):
     return {
-        'user' : self.user,
-        'email' : [self.user_email],
-        'name' : self.name,
         'bot' : self.bots,
+        'email' : [self.user_email],
         'extra_args' : self.extra_args,
+        'name' : self.name,
+        'slaves_request' : self.slaves_request,
+        'user' : self.user,
         'version' : self.TRYJOB_FORMAT_VERSION,}
 
   def _Submit(self, testjob, dryrun):

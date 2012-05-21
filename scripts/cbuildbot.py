@@ -693,6 +693,11 @@ class CustomOption(optparse.Option):
   TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
   TYPE_CHECKER['path'] = check_path
 
+  ACTIONS = optparse.Option.ACTIONS + ('extend',)
+  STORE_ACTIONS = optparse.Option.STORE_ACTIONS + ('extend',)
+  TYPED_ACTIONS = optparse.Option.TYPED_ACTIONS + ('extend',)
+  ALWAYS_TYPED_ACTIONS = optparse.Option.ALWAYS_TYPED_ACTIONS + ('extend',)
+
   def __init__(self, *args, **kwargs):
     # The remote_pass_through argument specifies whether we should directly
     # pass the argument (with its value) onto the remote trybot.
@@ -700,8 +705,13 @@ class CustomOption(optparse.Option):
     optparse.Option.__init__(self, *args, **kwargs)
 
   def take_action(self, action, dest, opt, value, values, parser):
-    optparse.Option.take_action(self, action, dest, opt, value, values,
-                                parser)
+    if action == 'extend':
+      lvalue = value.split(' ')
+      values.ensure_value(dest, []).extend(lvalue)
+    else:
+      optparse.Option.take_action(self, action, dest, opt, value, values,
+                                  parser)
+
     if self.pass_through:
       parser.values.pass_through_args.append(opt)
       if self.nargs and self.nargs > 1:
@@ -735,7 +745,7 @@ def _CreateParser():
                            callback=_CheckChromeRevOption,
                            help=('Revision of Chrome to use, of type [%s]'
                                  % '|'.join(constants.VALID_CHROME_REVISIONS)))
-  parser.add_remote_option('-g', '--gerrit-patches', action='append',
+  parser.add_remote_option('-g', '--gerrit-patches', action='extend',
                            default=[], type='string',
                            metavar="'Id1 *int_Id2...IdN'",
                            help=("Space-separated list of short-form Gerrit "
@@ -747,7 +757,7 @@ def _CreateParser():
                           '--all to list all of the available configs.'))
   parser.add_option('--local', default=False, action='store_true',
                     help=('Specifies that this tryjob should be run locally.'))
-  parser.add_option('-p', '--local-patches', action='append', default=[],
+  parser.add_option('-p', '--local-patches', action='extend', default=[],
                     metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
                     help=('Space-separated list of project branches with '
                           'patches to apply.  Projects are specified by name. '
@@ -834,7 +844,7 @@ def _CreateParser():
   group.add_option('--remote-trybot', dest='remote_trybot', action='store_true',
                    default=False, help=optparse.SUPPRESS_HELP)
   # Patches uploaded by trybot client when run using the -p option.
-  group.add_remote_option('--remote-patches', action='append', default=[],
+  group.add_remote_option('--remote-patches', action='extend', default=[],
                           help=optparse.SUPPRESS_HELP)
   group.add_option('--resume', action='store_true', default=False,
                    help='Skip stages already successfully completed.')
@@ -843,6 +853,9 @@ def _CreateParser():
                                'can run for, at which point the build will be '
                                'aborted.  If set to zero, then there is no '
                                'timeout.')
+  # Specify specific remote tryslaves to run on.
+  group.add_option('--slaves', action='extend', default=[],
+                   help=optparse.SUPPRESS_HELP)
   group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT,
                    help=optparse.SUPPRESS_HELP)
   # Causes cbuildbot to bootstrap itself twice, in the sequence A->B->C.
@@ -926,6 +939,9 @@ def _FinishParsing(options, args):
       cros_lib.Die('Multiple configs not supported if not running with '
                    '--remote.')
 
+    if options.slaves:
+      cros_lib.Die('Cannot use --slaves if not running with --remote.')
+
     release_mode_with_patches = (options.buildbot and patches and
                                  not options.debug)
 
@@ -950,21 +966,6 @@ def _FinishParsing(options, args):
     options.debug = not options.buildbot and not options.remote
 
 
-def _SplitAndFlatten(appended_items):
-  """Given a list of space-separated items, split into flattened list.
-
-  Given ['abc def', 'hij'] return ['abc', 'def', 'hij'].
-  Arguments:
-    appended_items: List of delimiter-separated items.
-
-  Returns: Flattened list.
-  """
-  new_list = []
-  for item in appended_items:
-    new_list.extend(item.split())
-  return new_list
-
-
 # pylint: disable=W0613
 def _PostParseCheck(options, args):
   """Perform some usage validation after we've parsed the arguments
@@ -976,14 +977,12 @@ def _PostParseCheck(options, args):
     raise Exception('Could not find repo checkout at %s!'
                     % options.sourceroot)
 
-  options.gerrit_patches = _SplitAndFlatten(options.gerrit_patches)
-  options.remote_patches = _SplitAndFlatten(options.remote_patches)
   try:
     # TODO(rcui): Split this into two stages, one that parses, another that
     # validates.  Parsing step will be called by _FinishParsing().
     options.local_patches = _CheckLocalPatches(
         options.sourceroot,
-        _SplitAndFlatten(options.local_patches))
+        options.local_patches)
   except optparse.OptionValueError as e:
     cros_lib.Die(str(e))
 
