@@ -45,7 +45,6 @@ struct weston_xserver {
 	struct wl_client *client;
 	struct weston_compositor *compositor;
 	struct weston_wm *wm;
-	struct wl_listener activate_listener;
 	struct wl_listener destroy_listener;
 };
 
@@ -60,6 +59,7 @@ struct weston_wm {
 	struct weston_wm_window *focus_window;
 	struct theme *theme;
 	xcb_render_pictforminfo_t render_format;
+	struct wl_listener activate_listener;
 
 	xcb_window_t selection_window;
 	int incr;
@@ -132,3 +132,11 @@ weston_wm_handle_selection_event(struct weston_wm *wm,
 
 void
 weston_wm_set_selection(struct wl_listener *listener, void *data);
+
+extern const struct xserver_interface xserver_implementation;
+
+struct weston_wm *
+weston_wm_create(struct weston_xserver *wxs);
+void
+weston_wm_destroy(struct weston_wm *wm);
+
