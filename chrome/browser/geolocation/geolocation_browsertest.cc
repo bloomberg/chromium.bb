@@ -617,7 +617,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfoBarBeforeStart) {
   CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
+// Crashes on linux. http://crbug.com/129065
+#if defined(OS_LINUX)
+#define MAYBE_TwoWatchesInOneFrame DISABLED_TwoWatchesInOneFrame
+#else
+#define MAYBE_TwoWatchesInOneFrame TwoWatchesInOneFrame
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_TwoWatchesInOneFrame) {
   html_for_tests_ = "files/geolocation/two_watches.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   // First, set the JavaScript to navigate when it receives |final_position|.
