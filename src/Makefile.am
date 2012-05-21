@@ -4,8 +4,7 @@ bin_PROGRAMS = weston				\
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
-	-DLIBEXECDIR='"$(libexecdir)"'		\
-	-DXSERVER_PATH='"@XSERVER_PATH@"'
+	-DLIBEXECDIR='"$(libexecdir)"'
 
 weston_LDFLAGS = -export-dynamic
 weston_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
@@ -24,6 +23,13 @@ weston_SOURCES =				\
 	matrix.h				\
 	weston-launch.h				\
 	weston-egl-ext.h
+
+if ENABLE_XSERVER_LAUNCHER
+SUBDIRS = xwayland
+endif
+
+DIST_SUBDIRS = xwayland
+
 
 if BUILD_WESTON_LAUNCH
 weston_launch = weston-launch
@@ -53,7 +59,6 @@ moduledir = @libdir@/weston
 module_LTLIBRARIES =				\
 	$(desktop_shell)			\
 	$(tablet_shell)				\
-	$(xserver_launcher)			\
 	$(x11_backend)				\
 	$(drm_backend)				\
 	$(wayland_backend)			\
@@ -113,19 +118,6 @@ openwfd_backend_la_CFLAGS = $(OPENWFD_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
 openwfd_backend_la_SOURCES = compositor-openwfd.c tty.c evdev.c evdev.h
 endif
 
-if ENABLE_XSERVER_LAUNCHER
-xserver_launcher = xserver-launcher.la
-xserver_launcher_la_LDFLAGS = -module -avoid-version
-xserver_launcher_la_LIBADD = $(XSERVER_LAUNCHER_LIBS) ../shared/libshared.la
-xserver_launcher_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
-xserver_launcher_la_SOURCES =			\
-	xserver-launcher.c			\
-	xserver-protocol.c			\
-	xserver-server-protocol.h		\
-	hash.c					\
-	hash.h
-endif
-
 if ENABLE_DESKTOP_SHELL
 desktop_shell = desktop-shell.la
 desktop_shell_la_LDFLAGS = -module -avoid-version
@@ -154,8 +146,6 @@ BUILT_SOURCES =					\
 	screenshooter-protocol.c		\
 	tablet-shell-protocol.c			\
 	tablet-shell-server-protocol.h		\
-	xserver-protocol.c			\
-	xserver-server-protocol.h		\
 	desktop-shell-protocol.c		\
 	desktop-shell-server-protocol.h
 

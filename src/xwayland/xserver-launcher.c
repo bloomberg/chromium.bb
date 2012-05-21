@@ -38,8 +38,8 @@
 
 #include <wayland-server.h>
 
-#include "../shared/cairo-util.h"
-#include "compositor.h"
+#include "../../shared/cairo-util.h"
+#include "../compositor.h"
 #include "xserver-server-protocol.h"
 #include "hash.h"
 

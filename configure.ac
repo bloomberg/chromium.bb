@@ -194,6 +194,7 @@ WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])
 AC_CONFIG_FILES([Makefile
 		 shared/Makefile
 		 src/Makefile
+		 src/xwayland/Makefile
 		 clients/Makefile
 		 data/Makefile
 		 protocol/Makefile
