@@ -114,7 +114,7 @@ def _CheckBuildRootBranch(buildroot, tracking_branch):
                  'Buildroot checked out to %s\n' % manifest_branch)
 
 
-def AcquirePoolFromOptions(options, target_manifest_branch):
+def AcquirePoolFromOptions(options):
   """Generate patch objects from passed in options.
 
   Args:
@@ -141,7 +141,7 @@ def AcquirePoolFromOptions(options, target_manifest_branch):
     local_patches = cros_patch.PrepareLocalPatches(
         options.sourceroot,
         options.local_patches,
-        target_manifest_branch)
+        options.branch)
 
   if options.remote_patches:
     remote_patches = cros_patch.PrepareRemotePatches(
@@ -171,7 +171,7 @@ class Builder(object):
     release_tag:  The associated "chrome os version" of this build.
   """
 
-  def __init__(self, options, build_config, target_manifest_branch):
+  def __init__(self, options, build_config):
     """Initializes instance variables. Must be called by all subclasses."""
     self.build_config = build_config
     self.options = options
@@ -183,10 +183,9 @@ class Builder(object):
     self.archive_stages = {}
     self.archive_urls = {}
     self.release_tag = None
-    self.target_manifest_branch = target_manifest_branch
     self.patch_pool = trybot_patch_pool.GetEmptyPool()
 
-    bs.BuilderStage.SetManifestBranch(target_manifest_branch)
+    bs.BuilderStage.SetManifestBranch(self.options.branch)
 
   def Initialize(self):
     """Runs through the initialization steps of an actual build."""
@@ -195,7 +194,7 @@ class Builder(object):
 
     # Check branch matching early.
     if _IsIncrementalBuild(self.options.buildroot, self.options.clobber):
-      _CheckBuildRootBranch(self.options.buildroot, self.target_manifest_branch)
+      _CheckBuildRootBranch(self.options.buildroot, self.options.branch)
 
     self._RunStage(stages.CleanUpStage)
 
@@ -289,8 +288,7 @@ class Builder(object):
     changes_stage = stages.PatchChangesStage.StageNamePrefix()
     check_func = results_lib.Results.PreviouslyCompletedRecord
     if not check_func(changes_stage) or self.options.bootstrap:
-      self.patch_pool = AcquirePoolFromOptions(self.options,
-                                               self.target_manifest_branch)
+      self.patch_pool = AcquirePoolFromOptions(self.options)
 
   def _GetBootstrapStage(self):
     """Constructs and returns the BootStrapStage object.
@@ -300,7 +298,9 @@ class Builder(object):
     """
     stage = None
     chromite_pool = self.patch_pool.Filter(project=constants.CHROMITE_PROJECT)
-    if chromite_pool or self.options.test_bootstrap:
+    chromite_branch = _GetChromiteTrackingBranch()
+    if (chromite_pool or self.options.test_bootstrap
+        or chromite_branch != self.options.branch):
       stage = stages.BootstrapStage(self.options, self.build_config,
                                     chromite_pool)
     return stage
@@ -582,10 +582,8 @@ def _RunBuildStagesWrapper(options, build_config):
   cros_lib.Info("cbuildbot executed with args %s"
                 % ' '.join(map(repr, sys.argv)))
 
-  target_manifest_branch = _GetChromiteTrackingBranch()
-
   target = DistributedBuilder if IsDistributedBuilder() else SimpleBuilder
-  buildbot = target(options, build_config, target_manifest_branch)
+  buildbot = target(options, build_config)
   if not buildbot.Run():
     sys.exit(1)
 
@@ -735,6 +733,9 @@ def _CreateParser():
                     default=False,
                     help=('List all of the buildbot configs available. Use '
                           'with the --list option'))
+  parser.add_remote_option('-b', '--branch',
+                           help='The manifest branch to test.  The branch to '
+                                'check the buildroot out to.')
   parser.add_option('-r', '--buildroot', dest='buildroot', type='path',
                     help='Root directory where source is checked out to, and '
                          'where the build occurs. For external build configs, '
@@ -973,6 +974,9 @@ def _PostParseCheck(options, args):
   Args:
     options/args: The options/args object returned by optparse
   """
+  if not options.branch:
+    options.branch = _GetChromiteTrackingBranch()
+
   if options.local_patches and not repository.IsARepoRoot(options.sourceroot):
     raise Exception('Could not find repo checkout at %s!'
                     % options.sourceroot)
@@ -1042,7 +1046,7 @@ def main(argv):
 
     # Verify gerrit patches are valid.
     print 'Verifying patches...'
-    patch_pool = AcquirePoolFromOptions(options, _GetChromiteTrackingBranch())
+    patch_pool = AcquirePoolFromOptions(options)
 
     # --debug need to be explicitly passed through for remote invocations.
     if options.buildbot and '--debug' not in options.pass_through_args:
