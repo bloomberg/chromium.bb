@@ -65,10 +65,13 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
 
   set_accessibility_focusable(true);
 
-  ExtensionCommandService* command_service =
-      ExtensionCommandServiceFactory::GetForProfile(browser_->profile());
+  extensions::ExtensionCommandService* command_service =
+      extensions::ExtensionCommandServiceFactory::GetForProfile(
+          browser_->profile());
   const extensions::Command* page_action_command =
-      command_service->GetActivePageActionCommand(extension->id());
+      command_service->GetPageActionCommand(
+          extension->id(),
+          extensions::ExtensionCommandService::ACTIVE_ONLY);
   if (page_action_command) {
     keybinding_.reset(new ui::Accelerator(page_action_command->accelerator()));
     owner_->GetFocusManager()->RegisterAccelerator(

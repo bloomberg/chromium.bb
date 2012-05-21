@@ -9,7 +9,11 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
+namespace extensions {
 class ExtensionCommandService;
+}
+
+namespace extensions {
 
 // Singleton that associate ExtensionCommandService objects with Profiles.
 class ExtensionCommandServiceFactory : public ProfileKeyedServiceFactory {
@@ -34,5 +38,7 @@ class ExtensionCommandServiceFactory : public ProfileKeyedServiceFactory {
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionCommandServiceFactory);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_COMMANDS_EXTENSION_COMMAND_SERVICE_FACTORY_H_

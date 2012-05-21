@@ -6,6 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,7 +89,8 @@ TEST(ExtensionCommandsTest, ExtensionCommandParsing) {
 
     EXPECT_EQ(kTests[i].expected_result, result);
     if (result) {
-      EXPECT_STREQ(kTests[i].description, command.description().c_str());
+      EXPECT_STREQ(kTests[i].description,
+                   UTF16ToASCII(command.description()).c_str());
       EXPECT_STREQ(kTests[i].command_name, command.command_name().c_str());
       EXPECT_EQ(kTests[i].accelerator, command.accelerator());
     }
@@ -105,7 +108,8 @@ TEST(ExtensionCommandsTest, ExtensionCommandParsing) {
 
     EXPECT_EQ(kTests[i].expected_result, result);
     if (result) {
-      EXPECT_STREQ(kTests[i].description, command.description().c_str());
+      EXPECT_STREQ(kTests[i].description,
+                   UTF16ToASCII(command.description()).c_str());
       EXPECT_STREQ(kTests[i].command_name, command.command_name().c_str());
       EXPECT_EQ(kTests[i].accelerator, command.accelerator());
     }
@@ -131,7 +135,8 @@ TEST(ExtensionCommandsTest, ExtensionCommandParsingFallback) {
   extensions::Command command;
   string16 error;
   EXPECT_TRUE(command.Parse(input.get(), command_name, 0, &error));
-  EXPECT_STREQ(description.c_str(), command.description().c_str());
+  EXPECT_STREQ(description.c_str(),
+               UTF16ToASCII(command.description()).c_str());
   EXPECT_STREQ(command_name.c_str(), command.command_name().c_str());
 
 #if defined(OS_WIN)

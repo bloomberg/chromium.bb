@@ -4,6 +4,7 @@
 
 <include src="../shared/js/cr/ui/drag_wrapper.js"></include>
 <include src="../uber/uber_utils.js"></include>
+<include src="extension_commands_overlay.js"></include>
 <include src="extension_list.js"></include>
 <include src="pack_extension_overlay.js"></include>
 
@@ -101,6 +102,16 @@ cr.define('extensions', function() {
       var packExtensionOverlay = extensions.PackExtensionOverlay.getInstance();
       packExtensionOverlay.initializePage();
 
+      // Hook up the configure commands link to the overlay.
+      var link = document.querySelector('.extension-commands-config');
+      link.addEventListener('click',
+          this.handleExtensionCommandsConfig_.bind(this));
+
+      // Initialize the Commands overlay.
+      var extensionCommandsOverlay =
+          extensions.ExtensionCommandsOverlay.getInstance();
+      extensionCommandsOverlay.initializePage();
+
       cr.ui.overlay.setupOverlay($('dropTargetOverlay'));
     },
 
@@ -126,6 +137,17 @@ cr.define('extensions', function() {
     handlePackExtension_: function(e) {
       ExtensionSettings.showOverlay($('packExtensionOverlay'));
       chrome.send('coreOptionsUserMetricsAction', ['Options_PackExtension']);
+    },
+
+    /**
+     * Handles the Configure (Extension) Commands link.
+     * @param {Event} e Change event.
+     * @private
+     */
+    handleExtensionCommandsConfig_: function(e) {
+      ExtensionSettings.showOverlay($('extensionCommandsOverlay'));
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_ExtensionCommands']);
     },
 
     /**

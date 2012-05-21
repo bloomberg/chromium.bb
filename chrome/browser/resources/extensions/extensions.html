@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 
 <link rel="icon" href="chrome://theme/IDR_EXTENSIONS_FAVICON">
+<link rel="stylesheet" href="extension_commands_overlay.css">
 <link rel="stylesheet" href="extensions.css">
 <link rel="stylesheet" href="pack_extension_overlay.css">
 <link rel="stylesheet" href="chrome://resources/css/alert_overlay.css">
@@ -26,6 +27,7 @@
     i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
 <div id="overlay" class="overlay" hidden>
+  <include src="extension_commands_overlay.html">
   <include src="pack_extension_overlay.html">
   <include src="../shared/html/alert_overlay.html">
   <div id="dropTargetOverlay" class="page">
@@ -57,10 +59,13 @@
         i18n-values=".innerHTML:extensionSettingsSuggestGallery">
     </span>
   </div>
-  <div id="get-more-extensions">
+  <div id="footer-section">
     <a target="blank_"
         i18n-values="href:extensionSettingsGetMoreExtensionsUrl"
         i18n-content="extensionSettingsGetMoreExtensions"></a>
+    <a target="blank_" hidden
+        class="extension-commands-config"
+        i18n-content="extensionSettingsCommandsLink"></a>
   </div>
 </div>
 

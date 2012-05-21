@@ -1672,11 +1672,13 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
       extensions->GetByID(page_action_->extension_id());
   window_ = owner_->browser()->window()->GetNativeHandle();
 
-  ExtensionCommandService* command_service =
-      ExtensionCommandServiceFactory::GetForProfile(
+  extensions::ExtensionCommandService* command_service =
+      extensions::ExtensionCommandServiceFactory::GetForProfile(
           owner_->browser()->profile());
   const extensions::Command* command =
-      command_service->GetActivePageActionCommand(extension->id());
+      command_service->GetPageActionCommand(
+          extension->id(),
+          extensions::ExtensionCommandService::ACTIVE_ONLY);
   if (command) {
     // Found the browser action shortcut command, register it.
     keybinding_.reset(new ui::AcceleratorGtk(

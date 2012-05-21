@@ -44,10 +44,12 @@ gboolean ExtensionKeybindingRegistryGtk::HasPriorityHandler(
 
 void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
     const extensions::Extension* extension) {
-  ExtensionCommandService* command_service =
-      ExtensionCommandServiceFactory::GetForProfile(profile_);
+  extensions::ExtensionCommandService* command_service =
+      extensions::ExtensionCommandServiceFactory::GetForProfile(profile_);
   const extensions::CommandMap& commands =
-      command_service->GetActiveNamedCommands(extension->id());
+      command_service->GetNamedCommands(
+          extension->id(),
+          extensions::ExtensionCommandService::ACTIVE_ONLY);
   extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     ui::AcceleratorGtk accelerator(iter->second.accelerator().key_code(),
@@ -74,7 +76,9 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
   // action to the event_targets_, even though we don't register them as
   // handlers. See http://crbug.com/124873.
   const extensions::Command* browser_action =
-      command_service->GetActiveBrowserActionCommand(extension->id());
+      command_service->GetBrowserActionCommand(
+          extension->id(),
+          extensions::ExtensionCommandService::ACTIVE_ONLY);
   if (browser_action) {
     ui::AcceleratorGtk accelerator(browser_action->accelerator().key_code(),
                                    browser_action->accelerator().IsShiftDown(),
@@ -85,7 +89,9 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
   }
 
   const extensions::Command* page_action =
-      command_service->GetActivePageActionCommand(extension->id());
+      command_service->GetPageActionCommand(
+          extension->id(),
+          extensions::ExtensionCommandService::ACTIVE_ONLY);
   if (page_action) {
     ui::AcceleratorGtk accelerator(page_action->accelerator().key_code(),
                                    page_action->accelerator().IsShiftDown(),

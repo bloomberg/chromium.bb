@@ -146,11 +146,13 @@ class InstalledBubbleContent : public views::View,
 
     switch (type_) {
       case ExtensionInstalledBubble::BROWSER_ACTION: {
-        ExtensionCommandService* command_service =
-            ExtensionCommandServiceFactory::GetForProfile(
+        extensions::ExtensionCommandService* command_service =
+            extensions::ExtensionCommandServiceFactory::GetForProfile(
                 browser_->profile());
         const extensions::Command* browser_action_command =
-            command_service->GetActiveBrowserActionCommand(extension->id());
+            command_service->GetBrowserActionCommand(
+                extension->id(),
+                extensions::ExtensionCommandService::ACTIVE_ONLY);
         if (!browser_action_command) {
           info_ = new views::Label(l10n_util::GetStringUTF16(
               IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO));
@@ -168,11 +170,13 @@ class InstalledBubbleContent : public views::View,
         break;
       }
       case ExtensionInstalledBubble::PAGE_ACTION: {
-        ExtensionCommandService* command_service =
-            ExtensionCommandServiceFactory::GetForProfile(
+        extensions::ExtensionCommandService* command_service =
+            extensions::ExtensionCommandServiceFactory::GetForProfile(
                 browser_->profile());
         const extensions::Command* page_action_command =
-            command_service->GetActivePageActionCommand(extension->id());
+            command_service->GetPageActionCommand(
+                extension->id(),
+                extensions::ExtensionCommandService::ACTIVE_ONLY);
         if (!page_action_command) {
           info_ = new views::Label(l10n_util::GetStringUTF16(
               IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO));

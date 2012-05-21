@@ -4652,6 +4652,21 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_LOAD_FROM_DIRECTORY" desc="Title of directory browse dialog when user wants to load an extension from a directory.">
         Select the extension directory.
       </message>
+      <message name="IDS_EXTENSIONS_COMMANDS_CONFIGURE" desc="Text for the 'Configure commands' link to configure extension commands.">
+        Configure commands
+      </message>
+      <message name="IDS_EXTENSION_COMMANDS_DIALOG_TITLE" desc="Title of extension commands dialog">
+        Keyboard Shortcuts - Extensions and Apps
+      </message>
+      <message name="IDS_EXTENSION_COMMANDS_EMPTY" desc="The heading of the extension commands dialog when there are no commands to show.">
+        No extensions have keyboard shortcuts assigned.
+      </message>
+      <message name="IDS_EXTENSION_COMMANDS_INACTIVE" desc="The text shown instead of the shortcut text (Ctrl+F) if the shortcut is inactive.">
+        Not set
+      </message>
+      <message name="IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE" desc="The generic 'activate extension' text used as description for some commands">
+        Activate the extension
+      </message>
       <message name="IDS_EXTENSION_PACK_DIALOG_TITLE" desc="Title of pack extension dialog">
         Pack Extension
       </message>

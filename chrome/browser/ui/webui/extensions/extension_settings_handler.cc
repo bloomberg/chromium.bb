@@ -256,6 +256,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON));
   localized_strings->SetString("extensionSettingsPackButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_PACK_BUTTON));
+  localized_strings->SetString("extensionSettingsCommandsLink",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_COMMANDS_CONFIGURE));
   localized_strings->SetString("extensionSettingsUpdateButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_UPDATE_BUTTON));
   localized_strings->SetString("extensionSettingsCrashMessage",

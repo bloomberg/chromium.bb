@@ -64,12 +64,12 @@ html.loading * {
   -webkit-padding-start: 10px;
 }
 
-#get-more-extensions {
+#footer-section {
   background: url('chrome://theme/IDR_WEBSTORE_ICON_32') no-repeat left center;
   font-size: 1.25em;
 }
 
-#get-more-extensions > a {
+#footer-section > a {
   -webkit-margin-start: 42px;
   line-height: 32px;
 }
@@ -79,9 +79,9 @@ html.loading * {
 }
 
 .loading #no-extensions,
-.loading #get-more-extensions,
+.loading #footer-section,
 #extension-settings-list:not(.empty-extension-list) ~ #no-extensions,
-.empty-extension-list ~ #get-more-extensions {
+.empty-extension-list ~ #footer-section {
   display: none;
 }
 
@@ -192,6 +192,10 @@ html[dir='rtl'] .extension-list-item {
   /* Remove from the flow and hide. */
   position: absolute;
   visibility: hidden;
+}
+
+.extension-commands-config {
+  float: right;
 }
 
 /* Overlays */

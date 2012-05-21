@@ -133,11 +133,13 @@ void BrowserActionButton::ViewHierarchyChanged(
       UpdateState();
     }
 
-    ExtensionCommandService* command_service =
-        ExtensionCommandServiceFactory::GetForProfile(
+    extensions::ExtensionCommandService* command_service =
+        extensions::ExtensionCommandServiceFactory::GetForProfile(
             panel_->browser()->profile());
     const extensions::Command* browser_action_command =
-        command_service->GetActiveBrowserActionCommand(extension_->id());
+        command_service->GetBrowserActionCommand(
+            extension_->id(),
+            extensions::ExtensionCommandService::ACTIVE_ONLY);
     if (browser_action_command) {
       keybinding_.reset(new ui::Accelerator(
           browser_action_command->accelerator()));

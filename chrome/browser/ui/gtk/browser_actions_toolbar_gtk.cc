@@ -379,11 +379,12 @@ class BrowserActionButton : public content::NotificationObserver,
 
   // Connect the accelerator for the browser action popup.
   void ConnectBrowserActionPopupAccelerator() {
-    ExtensionCommandService* command_service =
-        ExtensionCommandServiceFactory::GetForProfile(
+    extensions::ExtensionCommandService* command_service =
+        extensions::ExtensionCommandServiceFactory::GetForProfile(
             toolbar_->browser()->profile());
     const extensions::Command* command =
-        command_service->GetActiveBrowserActionCommand(extension_->id());
+        command_service->GetBrowserActionCommand(extension_->id(),
+        extensions::ExtensionCommandService::ACTIVE_ONLY);
     if (command) {
       // Found the browser action shortcut command, register it.
       keybinding_.reset(new ui::AcceleratorGtk(

@@ -29,6 +29,8 @@ std::string GetPlatformKeybindingKeyForAccelerator(
 
 }  // namespace
 
+namespace extensions {
+
 // static
 void ExtensionCommandService::RegisterUserPrefs(
   PrefService* user_prefs) {
@@ -49,8 +51,8 @@ ExtensionCommandService::~ExtensionCommandService() {
 }
 
 const extensions::Command*
-    ExtensionCommandService::GetActiveBrowserActionCommand(
-        const std::string& extension_id) {
+    ExtensionCommandService::GetBrowserActionCommand(
+        const std::string& extension_id, QueryType type) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
@@ -59,7 +61,8 @@ const extensions::Command*
   const extensions::Command* command = extension->browser_action_command();
   if (!command)
     return NULL;
-  if (!IsKeybindingActive(command->accelerator(),
+  if (type == ACTIVE_ONLY &&
+      !IsKeybindingActive(command->accelerator(),
                           extension_id,
                           command->command_name())) {
     return NULL;
@@ -68,8 +71,8 @@ const extensions::Command*
   return command;
 }
 
-const extensions::Command* ExtensionCommandService::GetActivePageActionCommand(
-    const std::string& extension_id) {
+const extensions::Command* ExtensionCommandService::GetPageActionCommand(
+    const std::string& extension_id, QueryType type) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
@@ -78,7 +81,8 @@ const extensions::Command* ExtensionCommandService::GetActivePageActionCommand(
   const extensions::Command* command = extension->page_action_command();
   if (!command)
     return NULL;
-  if (!IsKeybindingActive(command->accelerator(),
+  if (type == ACTIVE_ONLY &&
+      !IsKeybindingActive(command->accelerator(),
                           extension_id,
                           command->command_name())) {
     return NULL;
@@ -87,8 +91,8 @@ const extensions::Command* ExtensionCommandService::GetActivePageActionCommand(
   return command;
 }
 
-extensions::CommandMap ExtensionCommandService::GetActiveNamedCommands(
-    const std::string& extension_id) {
+extensions::CommandMap ExtensionCommandService::GetNamedCommands(
+    const std::string& extension_id, QueryType type) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
@@ -101,7 +105,8 @@ extensions::CommandMap ExtensionCommandService::GetActiveNamedCommands(
 
   extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
-    if (!IsKeybindingActive(iter->second.accelerator(),
+    if (type == ACTIVE_ONLY &&
+        !IsKeybindingActive(iter->second.accelerator(),
                             extension_id,
                             iter->second.command_name())) {
       continue;
@@ -115,8 +120,8 @@ extensions::CommandMap ExtensionCommandService::GetActiveNamedCommands(
 
 bool ExtensionCommandService::IsKeybindingActive(
     const ui::Accelerator& accelerator,
-    std::string extension_id,
-    std::string command_name) {
+    const std::string& extension_id,
+    const std::string& command_name) const {
   CHECK(!extension_id.empty());
   CHECK(!command_name.empty());
 
@@ -234,3 +239,5 @@ void ExtensionCommandService::RemoveKeybindingPrefs(std::string extension_id) {
     bindings->Remove(*it, NULL);
   }
 }
+
+}  // namespace extensions

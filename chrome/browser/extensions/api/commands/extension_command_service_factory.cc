@@ -8,6 +8,8 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
+namespace extensions {
+
 // static
 ExtensionCommandService* ExtensionCommandServiceFactory::GetForProfile(
     Profile* profile) {
@@ -41,3 +43,5 @@ ProfileKeyedService* ExtensionCommandServiceFactory::BuildServiceInstanceFor(
 bool ExtensionCommandServiceFactory::ServiceRedirectedInIncognito() {
   return true;
 }
+
+}  // namespace extensions

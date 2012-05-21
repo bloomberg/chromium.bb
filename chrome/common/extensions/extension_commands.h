@@ -17,6 +17,10 @@ class DictionaryValue;
 }
 
 namespace extensions {
+class Extension;
+}
+
+namespace extensions {
 
 class Command {
  public:
@@ -33,10 +37,15 @@ class Command {
              int index,
              string16* error);
 
+  // Convert a Command object from |extension| to a DictionaryValue.
+  // |active| specifies whether the command is active or not.
+  base::DictionaryValue* ToValue(
+      const Extension* extension, bool active) const;
+
   // Accessors:
   const std::string& command_name() const { return command_name_; }
   const ui::Accelerator& accelerator() const { return accelerator_; }
-  const std::string& description() const { return description_; }
+  const string16& description() const { return description_; }
 
  private:
   ui::Accelerator ParseImpl(const std::string& shortcut,
@@ -45,7 +54,7 @@ class Command {
                             string16* error);
   std::string command_name_;
   ui::Accelerator accelerator_;
-  std::string description_;
+  string16 description_;
 };
 
 // A mapping of command name (std::string) to a command object.

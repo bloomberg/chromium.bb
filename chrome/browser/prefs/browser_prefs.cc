@@ -179,7 +179,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   chrome_browser_net::Predictor::RegisterUserPrefs(user_prefs);
   DownloadPrefs::RegisterUserPrefs(user_prefs);
   extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
-  ExtensionCommandService::RegisterUserPrefs(user_prefs);
+  extensions::ExtensionCommandService::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
   ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
   ExtensionWebUI::RegisterUserPrefs(user_prefs);

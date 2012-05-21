@@ -28,12 +28,14 @@ ExtensionKeybindingRegistryViews::~ExtensionKeybindingRegistryViews() {
 
 void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
     const extensions::Extension* extension) {
-  ExtensionCommandService* command_service =
-      ExtensionCommandServiceFactory::GetForProfile(profile_);
+  extensions::ExtensionCommandService* command_service =
+      extensions::ExtensionCommandServiceFactory::GetForProfile(profile_);
   // Add all the active keybindings (except page actions and browser actions,
   // which are handled elsewhere).
   const extensions::CommandMap& commands =
-      command_service->GetActiveNamedCommands(extension->id());
+      command_service->GetNamedCommands(
+          extension->id(),
+          extensions::ExtensionCommandService::ACTIVE_ONLY);
   extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     event_targets_[iter->second.accelerator()] =

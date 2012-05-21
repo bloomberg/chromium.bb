@@ -192,7 +192,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   DesktopNotificationServiceFactory::GetInstance();
 #endif
   DownloadServiceFactory::GetInstance();
-  ExtensionCommandServiceFactory::GetInstance();
+  extensions::ExtensionCommandServiceFactory::GetInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   ExtensionSystemFactory::GetInstance();
   FindBarStateFactory::GetInstance();

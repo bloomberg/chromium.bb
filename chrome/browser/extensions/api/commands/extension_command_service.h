@@ -20,9 +20,15 @@
 class PrefService;
 class Profile;
 
+namespace base {
+  class DictionaryValue;
+}
+
 namespace ui {
   class Accelerator;
 }
+
+namespace extensions {
 
 // This service keeps track of preferences related to extension commands
 // (assigning initial keybindings on install and removing them on deletion
@@ -30,6 +36,13 @@ namespace ui {
 class ExtensionCommandService : public ProfileKeyedService,
                                 public content::NotificationObserver {
  public:
+  // An enum specifying whether to fetch all extension commands or only active
+  // ones.
+  enum QueryType {
+    ALL,
+    ACTIVE_ONLY,
+  };
+
   // Register prefs for keybinding.
   static void RegisterUserPrefs(PrefService* user_prefs);
 
@@ -37,33 +50,36 @@ class ExtensionCommandService : public ProfileKeyedService,
   explicit ExtensionCommandService(Profile* profile);
   virtual ~ExtensionCommandService();
 
-  // Gets the active keybinding (if any) for the browser action of an extension
-  // given its |extension_id|. The function consults the master list to see if
+  // Gets the keybinding (if any) for the browser action of an extension given
+  // its |extension_id|. The function consults the master list to see if
   // the keybinding is active. Returns NULL if the extension has no browser
-  // action or no active keybinding for it.
-  const extensions::Command* GetActiveBrowserActionCommand(
-      const std::string& extension_id);
+  // action. Returns NULL if the keybinding is not active and |type| requested
+  // is ACTIVE_ONLY.
+  const extensions::Command* GetBrowserActionCommand(
+      const std::string& extension_id, QueryType type);
 
-  // Gets the active keybinding (if any) for the page action of an extension
-  // given its |extension_id|. The function consults the master list to see if
-  // the keybinding is active. Returns NULL if the extension has no page action
-  // or no active keybinding for it.
-  const extensions::Command* GetActivePageActionCommand(
-      const std::string& extension_id);
+  // Gets the keybinding (if any) for the page action of an extension given
+  // its |extension_id|. The function consults the master list to see if
+  // the keybinding is active. Returns NULL if the extension has no page
+  // action. Returns NULL if the keybinding is not active and |type| requested
+  // is ACTIVE_ONLY.
+  const extensions::Command* GetPageActionCommand(
+      const std::string& extension_id, QueryType type);
 
   // Gets the active keybinding (if any) for the named commands of an extension
   // given its |extension_id|. The function consults the master list to see if
   // the keybinding is active. Returns an empty map if the extension has no
-  // named commands or no active keybinding for the commands.
-  extensions::CommandMap GetActiveNamedCommands(
-      const std::string& extension_id);
+  // named commands or no active named commands when |type| requested is
+  // ACTIVE_ONLY.
+  extensions::CommandMap GetNamedCommands(
+      const std::string& extension_id, QueryType type);
 
   // Checks to see if a keybinding |accelerator| for a given |command_name| in
   // an extension with id |extension_id| is registered as active (by consulting
   // the master list in |user_prefs|).
   bool IsKeybindingActive(const ui::Accelerator& accelerator,
-                          std::string extension_id,
-                          std::string command_name);
+                          const std::string& extension_id,
+                          const std::string& command_name) const;
 
   // Records a keybinding |accelerator| as active for an extension with id
   // |extension_id| and command with the name |command_name|. If
@@ -101,5 +117,7 @@ class ExtensionCommandService : public ProfileKeyedService,
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionCommandService);
 };
+
+}  //  namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_COMMANDS_EXTENSION_COMMAND_SERVICE_H_

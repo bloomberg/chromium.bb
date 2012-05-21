@@ -10,6 +10,8 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
@@ -212,6 +214,25 @@ bool Command::Parse(DictionaryValue* command,
     }
   }
   return true;
+}
+
+DictionaryValue* Command::ToValue(const Extension* extension,
+                                  bool active) const {
+  DictionaryValue* extension_data = new DictionaryValue();
+
+  string16 command_description;
+  if (command_name() == values::kBrowserActionKeybindingEvent ||
+      command_name() == values::kPageActionKeybindingEvent) {
+    command_description =
+        l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE);
+  } else {
+    command_description = description();
+  }
+  extension_data->SetString("description", command_description);
+  extension_data->SetBoolean("active", active);
+  extension_data->SetString("keybinding", accelerator().GetShortcutText());
+
+  return extension_data;
 }
 
 }  // namespace extensions
