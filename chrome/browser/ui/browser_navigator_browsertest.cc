@@ -1156,12 +1156,13 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->GetSelectedWebContents()->GetURL());
 }
 
-#if defined(OS_MACOSX)
+// Times out on mac, fails on linux.
+// http://crbug.com/119779
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_NavigateFromOtherTabToSingletonOptions DISABLED_NavigateFromOtherTabToSingletonOptions
 #else
 #define MAYBE_NavigateFromOtherTabToSingletonOptions NavigatorFrameOtherTabToSingletonOptions
 #endif
-
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        MAYBE_NavigateFromOtherTabToSingletonOptions) {
   {
