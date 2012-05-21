@@ -115,6 +115,18 @@ bool DomStorageHost::ClearArea(int connection_id, const GURL& page_url) {
   return true;
 }
 
+bool DomStorageHost::HasAreaOpen(
+    int namespace_id, const GURL& origin) const {
+  AreaMap::const_iterator it = connections_.begin();
+  for (; it != connections_.end(); ++it) {
+    if (namespace_id == it->second.namespace_->namespace_id() &&
+        origin == it->second.area_->origin()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 DomStorageArea* DomStorageHost::GetOpenArea(int connection_id) {
   AreaMap::iterator found = connections_.find(connection_id);
   if (found == connections_.end())

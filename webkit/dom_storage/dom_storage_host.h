@@ -46,6 +46,7 @@ class DomStorageHost {
                   const GURL& page_url,
                   string16* old_value);
   bool ClearArea(int connection_id, const GURL& page_url);
+  bool HasAreaOpen(int namespace_id, const GURL& origin) const;
 
  private:
   // Struct to hold references needed for areas that are open
