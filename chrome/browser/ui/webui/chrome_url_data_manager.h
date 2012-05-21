@@ -107,6 +107,9 @@ class ChromeURLDataManager : public ProfileKeyedService {
     // TODO: nuke this and convert all callers to not replace.
     virtual bool ShouldReplaceExistingSource() const;
 
+    // Returns true if responses from this DataSource can be cached.
+    virtual bool AllowCaching() const { return true; }
+
     static void SetFontAndTextDirection(
         base::DictionaryValue* localized_strings);
 

@@ -177,8 +177,12 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // for us.
   void DataAvailable(base::RefCountedMemory* bytes);
 
-  void SetMimeType(const std::string& mime_type) {
+  void set_mime_type(const std::string& mime_type) {
     mime_type_ = mime_type;
+  }
+
+  void set_allow_caching(bool allow_caching) {
+    allow_caching_ = allow_caching;
   }
 
  private:
@@ -204,6 +208,9 @@ class URLRequestChromeJob : public net::URLRequestJob {
   int pending_buf_size_;
   std::string mime_type_;
 
+  // If true, set a header in the response to prevent it from being cached.
+  bool allow_caching_;
+
   // The backend is owned by ChromeURLRequestContext and always outlives us.
   ChromeURLDataManagerBackend* backend_;
 
@@ -217,6 +224,7 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
     : net::URLRequestJob(request),
       data_offset_(0),
       pending_buf_size_(0),
+      allow_caching_(true),
       backend_(backend),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(backend);
@@ -254,6 +262,8 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
   // indistiguishable from other error types. Instant relies on getting a 200.
   info->headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
   AddContentSecurityPolicyHeader(request_->url(), info->headers);
+  if (!allow_caching_)
+    info->headers->AddHeader("Cache-Control: no-cache");
 }
 
 void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
@@ -417,7 +427,8 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
   // TODO(eroman): would be nicer if the mimetype were set at the same time
   // as the data blob. For now do it here, since NotifyHeadersComplete() is
   // going to get called once we return.
-  job->SetMimeType(source->GetMimeType(path));
+  job->set_mime_type(source->GetMimeType(path));
+  job->set_allow_caching(source->AllowCaching());
 
   const ChromeURLRequestContext* context =
       static_cast<const ChromeURLRequestContext*>(job->request()->context());

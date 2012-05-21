@@ -49,3 +49,9 @@ bool SessionFaviconSource::ShouldReplaceExistingSource() const {
   // requests on the floor.
   return false;
 }
+
+bool SessionFaviconSource::AllowCaching() const {
+  // Prevent responses from being cached, otherwise session favicons won't
+  // update in a timely manner.
+  return false;
+}
