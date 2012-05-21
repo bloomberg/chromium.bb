@@ -656,6 +656,7 @@ class HWTestStageTest(AbstractStageTest):
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
+                            constants.HWTEST_MACH_POOL,
                             False)
 
     self.mox.ReplayAll()
@@ -674,6 +675,7 @@ class HWTestStageTest(AbstractStageTest):
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
+                            constants.HWTEST_MACH_POOL,
                             False).AndRaise(error)
     bs.BuilderStage._HandleExceptionAsWarning(mox.IgnoreArg())
     self.mox.ReplayAll()

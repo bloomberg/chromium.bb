@@ -197,6 +197,9 @@ _settings = dict(
 # vm_tests -- Run vm test type defined in constants.
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 
+# hw_tests_pool -- Pool to use for hw testing.
+  hw_tests_pool=constants.HWTEST_MACH_POOL,
+
 # hw_tests -- A list of autotest suites to run on remote hardware.
   hw_tests=[],
 
@@ -757,15 +760,18 @@ internal_paladin.add_config('kiev-paladin',
 )
 
 # TODO(sosa): Test configs for unified paladin builds.
-internal_paladin.add_config('unified-mario-paladin',
+internal_paladin.add_config('unified-lumpy-paladin',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
   overlays=constants.BOTH_OVERLAYS,
-  boards=['x86-mario'],
+  boards=['lumpy'],
   unified_manifest_version=True,
-  paladin_builder_name='unified mario paladin',
+  paladin_builder_name='unified lumpy paladin',
   vm_tests=None,
   prebuilts=None,
+  hw_tests_pool='cq-bvt',
+  hw_tests=['bvt'],
+  upload_hw_test_artifacts=True,
 )
 
 paladin.add_config('unified-x86-generic-paladin',

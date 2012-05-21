@@ -995,6 +995,7 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
     try:
       with cros_lib.SubCommandTimeout(HWTestStage.INFRASTRUCTURE_TIMEOUT):
         commands.RunHWTestSuite(build, self._suite, self._current_board,
+                                self._build_config['hw_tests_pool'],
                                 self._options.debug)
 
     except cros_lib.TimeoutError as exception:

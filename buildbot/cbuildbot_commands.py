@@ -400,7 +400,7 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
     cros_lib.Warning('========================================================')
 
 
-def RunHWTestSuite(build, suite, board, debug):
+def RunHWTestSuite(build, suite, board, pool, debug):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -408,6 +408,7 @@ def RunHWTestSuite(build, suite, board, debug):
       e.g. x86-mario-release/R18-1655.0.0-a1-b1584.
     suite: Name of the Autotest suite.
     board: The board the test suite should be scheduled against.
+    pool: The pool of machines we should use to run the hw tests on.
     debug: Whether we are in debug mode.
   """
   # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
@@ -417,7 +418,7 @@ def RunHWTestSuite(build, suite, board, debug):
          '-i', build,
          '-s', suite,
          '-b', board,
-         '-p', constants.HWTEST_MACH_POOL]
+         '-p', pool]
   if debug:
     cros_lib.Info('RunHWTestSuite would run: %s' % ' '.join(cmd))
   else:
