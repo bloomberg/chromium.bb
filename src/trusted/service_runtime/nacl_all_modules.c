@@ -30,9 +30,9 @@ void  NaClAllModulesInit(void) {
 
 
 void NaClAllModulesFini(void) {
-  NaClNrdAllModulesFini();
   NaClTlsFini();
   NaClSrpcModuleFini();
   NaClStackSafetyFini();
   NaClGlobalModuleFini();
+  NaClNrdAllModulesFini();
 }

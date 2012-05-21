@@ -40,7 +40,7 @@ NaClSyncStatus NaClMutexTryLock(struct NaClMutex *mp) {
     MAP(EBUSY, NACL_SYNC_BUSY);
     /* no EAGAIN; we don't support recursive mutexes */
   }
-  return (0 == pthread_mutex_trylock(&mp->mu)) ?  NACL_SYNC_OK : NACL_SYNC_BUSY;
+  return NACL_SYNC_INTERNAL_ERROR;
 }
 
 NaClSyncStatus NaClMutexUnlock(struct NaClMutex *mp) {

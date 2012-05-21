@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -23,6 +23,8 @@
 
 #include "native_client/src/shared/platform/nacl_sync.h"
 
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/platform/win/condition_variable.h"
 #include "native_client/src/shared/platform/win/lock.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
@@ -30,7 +32,8 @@
 /* Mutex */
 int NaClMutexCtor(struct NaClMutex *mp) {
   mp->lock = new NaCl::Lock();
-  return 1;
+  mp->held = 0;
+  return NULL != mp->lock;
 }
 
 void NaClMutexDtor(struct NaClMutex *mp) {
@@ -39,19 +42,55 @@ void NaClMutexDtor(struct NaClMutex *mp) {
 }
 
 NaClSyncStatus NaClMutexLock(struct NaClMutex *mp) {
-  /* TODO(gregoryd) - add argument validation for debug version,
-   * here and below
-   */
   reinterpret_cast<NaCl::Lock *>(mp->lock)->Acquire();
-  return NACL_SYNC_OK;
+  if (!mp->held) {
+    mp->held = 1;
+    return NACL_SYNC_OK;
+  } else {
+    /*
+     * The only way we can successfully Acquire but have mp->held
+     * already be true is because this is a recursive lock
+     * acquisition.  With binary mutexes, this is a trivial deadlock.
+     * Simulate the deadlock.
+     */
+    struct nacl_abi_timespec long_time;
+
+    long_time.tv_sec = 10000;
+    long_time.tv_nsec = 0;
+    /*
+     * Note that NaClLog uses mutexes internally, so this log message
+     * assumes that this error is not being triggered from there.  The
+     * service runtime should not deadlock in this way -- only
+     * untrusted user code might.  In any case, this is "safe" in that
+     * even if the NaClLog module were to have this bug, it would
+     * result in an infinite log spew -- something that ought to be
+     * quickly detected in normal testing.
+     */
+    NaClLog(LOG_WARNING,
+            ("NaClMutexLock: recursive lock of binary mutex."
+             "  Deadlock being simulated\n"));
+    for (;;) {
+      NaClNanosleep(&long_time, NULL);
+    }
+  }
 }
 
 NaClSyncStatus NaClMutexTryLock(struct NaClMutex *mp) {
-  return reinterpret_cast<NaCl::Lock *>(mp->lock)->Try() ? NACL_SYNC_OK :
-      NACL_SYNC_BUSY;
+  NaClSyncStatus status = reinterpret_cast<NaCl::Lock *>(mp->lock)->Try() ?
+      NACL_SYNC_OK : NACL_SYNC_BUSY;
+  if (status == NACL_SYNC_OK) {
+    if (mp->held) {
+      /* decrement internal recursion count in the underlying lock */
+      reinterpret_cast<NaCl::Lock *>(mp->lock)->Release();
+      status = NACL_SYNC_BUSY;
+    }
+    mp->held = 1;
+  }
+  return status;
 }
 
 NaClSyncStatus NaClMutexUnlock(struct NaClMutex *mp) {
+  mp->held = 0;
   reinterpret_cast<NaCl::Lock *>(mp->lock)->Release();
   return NACL_SYNC_OK;
 }
@@ -79,8 +118,10 @@ NaClSyncStatus NaClCondVarBroadcast(struct NaClCondVar *cvp) {
 
 NaClSyncStatus NaClCondVarWait(struct NaClCondVar *cvp,
                                struct NaClMutex   *mp) {
+  mp->held = 0;
   reinterpret_cast<NaCl::ConditionVariable*>(cvp->cv)->Wait(
       *(reinterpret_cast<NaCl::Lock *>(mp->lock)));
+  mp->held = 1;
   return NACL_SYNC_OK;
 }
 
@@ -95,9 +136,11 @@ NaClSyncStatus NaClCondVarTimedWaitRelative(
           + reltime->tv_nsec
           / NaCl::Time::kNanosecondsPerMicrosecond));
   int result;
+  mp->held = 0;
   result = (reinterpret_cast<NaCl::ConditionVariable*>(cvp->cv)->TimedWaitRel(
                 *(reinterpret_cast<NaCl::Lock *>(mp->lock)),
       relative_wait));
+  mp->held = 1;
   if (0 == result) {
     return NACL_SYNC_CONDVAR_TIMEDOUT;
   }
@@ -113,9 +156,11 @@ NaClSyncStatus NaClCondVarTimedWaitAbsolute(
                         + abstime->tv_nsec
                         / NaCl::Time::kNanosecondsPerMicrosecond);
   int result;
+  mp->held = 0;
   result = reinterpret_cast<NaCl::ConditionVariable*>(cvp->cv)->TimedWaitAbs(
       *(reinterpret_cast<NaCl::Lock *>(mp->lock)),
       ticks);
+  mp->held = 1;
   if (0 == result) {
     return NACL_SYNC_CONDVAR_TIMEDOUT;
   }

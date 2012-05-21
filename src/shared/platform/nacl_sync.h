@@ -14,8 +14,10 @@
 #if defined(__native_client__) || NACL_LINUX || NACL_OSX
 # include <pthread.h>
 # include "native_client/src/shared/platform/posix/nacl_fast_mutex.h"
-#else
+#elif NACL_WINDOWS
 # include "native_client/src/shared/platform/win/nacl_fast_mutex.h"
+#else
+# error "What OS?"
 #endif
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_base.h"
@@ -38,16 +40,26 @@ typedef struct nacl_abi_timespec NACL_TIMESPEC_T;
 struct NaClMutex {
 #if defined(__native_client__) || NACL_LINUX || NACL_OSX
   pthread_mutex_t mu;
-#else
+  int held;
+#elif NACL_WINDOWS
   void* lock;
+  int held;
+  /*
+   * Windows lock implementation is recursive -- use a boolean to
+   * convert to a binary mutex.
+   */
+#else
+# error "What OS?"
 #endif
 };
 
 struct NaClCondVar {
 #if defined(__native_client__) || NACL_LINUX || NACL_OSX
   pthread_cond_t cv;
-#else
+#elif NACL_WINDOWS
   void* cv;
+#else
+# error "What OS?"
 #endif
 };
 
@@ -143,6 +155,8 @@ int NaClFastMutexCtor(struct NaClFastMutex *flp) NACL_WUR;
 void NaClFastMutexDtor(struct NaClFastMutex *flp);
 
 void NaClFastMutexLock(struct NaClFastMutex *flp);
+
+int NaClFastMutexTryLock(struct NaClFastMutex *flp) NACL_WUR;
 
 void NaClFastMutexUnlock(struct NaClFastMutex *flp);
 
