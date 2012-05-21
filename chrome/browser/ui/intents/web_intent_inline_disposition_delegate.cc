@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_message_macros.h"
@@ -73,6 +74,13 @@ bool WebIntentInlineDispositionDelegate::OnMessageReceived(
   IPC_END_MESSAGE_MAP()
   return handled;
 }
+void WebIntentInlineDispositionDelegate::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  DCHECK(render_view_host);
+  render_view_host->EnableAutoResize(
+      WebIntentPicker::GetMinInlineDispositionSize(),
+      WebIntentPicker::GetMaxInlineDispositionSize());
+}
 
 content::WebContents* WebIntentInlineDispositionDelegate::
     GetAssociatedWebContents() const {
@@ -88,4 +96,9 @@ void WebIntentInlineDispositionDelegate::OnRequest(
     const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_.Dispatch(params,
                                           web_contents_->GetRenderViewHost());
+}
+void WebIntentInlineDispositionDelegate::ResizeDueToAutoResize(
+    content::WebContents* source, const gfx::Size& pref_size) {
+  DCHECK(picker_);
+  picker_->OnInlineDispositionAutoResize(pref_size);
 }

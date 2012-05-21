@@ -19,6 +19,10 @@ const int kMinInlineDispositionWidth = 300;
 // The minimum height of the inline disposition tab contents.
 const int kMinInlineDispositionHeight = 300;
 
+// Maximum inline disposition container sizes.
+const int kMaxInlineDispositionWidth = 900;
+const int kMaxInlineDispositionHeight = 900;
+
 }  // namespace
 
 // static
@@ -30,6 +34,16 @@ gfx::Size WebIntentPicker::GetDefaultInlineDispositionSize(
   int height = std::max(tab_size.height()/2, kMinInlineDispositionHeight);
 
   return gfx::Size(width, height);
+}
+
+// static
+gfx::Size WebIntentPicker::GetMinInlineDispositionSize() {
+  return gfx::Size(kMinInlineDispositionWidth, kMinInlineDispositionHeight);
+}
+
+// static
+gfx::Size WebIntentPicker::GetMaxInlineDispositionSize() {
+  return gfx::Size(kMaxInlineDispositionWidth, kMaxInlineDispositionHeight);
 }
 
 // static

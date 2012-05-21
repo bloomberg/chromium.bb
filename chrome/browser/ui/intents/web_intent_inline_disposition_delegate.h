@@ -40,9 +40,13 @@ class WebIntentInlineDispositionDelegate
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
+  virtual void ResizeDueToAutoResize(content::WebContents* source,
+                                     const gfx::Size& pref_size) OVERRIDE;
 
   // content::WebContentsObserver
- virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate
   virtual ExtensionWindowController* GetExtensionWindowController()

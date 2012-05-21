@@ -54,6 +54,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
                                       const string16& extension_id) OVERRIDE;
   virtual void OnInlineDisposition(WebIntentPickerModel* model,
                                    const GURL& url) OVERRIDE;
+  virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
 
   // ConstrainedWindowGtkDelegate implementation.
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;
@@ -61,10 +62,10 @@ class WebIntentPickerGtk : public WebIntentPicker,
   virtual void DeleteDelegate() OVERRIDE;
   virtual bool ShouldHaveBorderPadding() const OVERRIDE;
 
-   // content::NotificationObserver implementation.
-   virtual void Observe(int type,
-                        const content::NotificationSource& source,
-                        const content::NotificationDetails& details) OVERRIDE;
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Callback when picker is destroyed.

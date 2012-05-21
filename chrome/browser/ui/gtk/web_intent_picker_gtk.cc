@@ -242,7 +242,6 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
       std::string());
 
   // Replace the picker contents with the inline disposition.
-
   gtk_util::RemoveAllChildren(contents_);
 
   GtkWidget* service_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
@@ -266,15 +265,25 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
   // The separator between the icon/title/close and the inline renderer.
   gtk_box_pack_start(GTK_BOX(vbox), gtk_hseparator_new(), FALSE, TRUE, 0);
 
-  gtk_box_pack_end(GTK_BOX(vbox), tab_contents_container_->widget(),
-                   TRUE, TRUE, 0);
-
+  // hbox for the web contents, so we can have spacing on the borders.
+  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(
+      GTK_ALIGNMENT(alignment), 0, ui::kContentAreaBorder,
+      ui::kContentAreaBorder, ui::kContentAreaBorder);
+  gtk_container_add(GTK_CONTAINER(alignment),
+                    tab_contents_container_->widget());
+  gtk_box_pack_end(GTK_BOX(vbox), alignment, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(contents_), vbox);
 
-  gfx::Size size = GetDefaultInlineDispositionSize(web_contents);
+  gfx::Size size = GetMinInlineDispositionSize();
   gtk_widget_set_size_request(tab_contents_container_->widget(),
                               size.width(), size.height());
   gtk_widget_show_all(contents_);
+}
+
+void WebIntentPickerGtk::OnInlineDispositionAutoResize(const gfx::Size& size) {
+  gtk_widget_set_size_request(tab_contents_container_->widget(),
+                              size.width(), size.height());
 }
 
 GtkWidget* WebIntentPickerGtk::GetWidgetRoot() {
