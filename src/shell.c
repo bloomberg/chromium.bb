@@ -1309,27 +1309,27 @@ shell_get_shell_surface(struct wl_client *client,
 
 	if (get_shell_surface(surface)) {
 		wl_resource_post_error(surface_resource,
-			WL_DISPLAY_ERROR_INVALID_OBJECT,
-			"desktop_shell::get_shell_surface already requested");
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "desktop_shell::get_shell_surface already requested");
 		return;
 	}
 
 	shsurf = create_shell_surface(shell, surface);
-       if (!shsurf) {
-	       wl_resource_post_error(surface_resource,
-				      WL_DISPLAY_ERROR_INVALID_OBJECT,
-				      "surface->configure already set");
-	       return;
-       }
+	if (!shsurf) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface->configure already set");
+		return;
+	}
 
-       shsurf->resource.destroy = shell_destroy_shell_surface;
-       shsurf->resource.object.id = id;
-       shsurf->resource.object.interface = &wl_shell_surface_interface;
-       shsurf->resource.object.implementation =
-	       (void (**)(void)) &shell_surface_implementation;
-       shsurf->resource.data = shsurf;
+	shsurf->resource.destroy = shell_destroy_shell_surface;
+	shsurf->resource.object.id = id;
+	shsurf->resource.object.interface = &wl_shell_surface_interface;
+	shsurf->resource.object.implementation =
+		(void (**)(void)) &shell_surface_implementation;
+	shsurf->resource.data = shsurf;
 
-       wl_client_add_resource(client, &shsurf->resource);
+	wl_client_add_resource(client, &shsurf->resource);
 }
 
 static const struct wl_shell_interface shell_implementation = {
