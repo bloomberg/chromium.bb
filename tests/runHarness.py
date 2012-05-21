@@ -33,7 +33,6 @@ import json
 from louis import translate
 from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
 from glob import iglob
-from os.path import basename
 
 modes = {
     'noContractions': noContractions,
@@ -98,16 +97,12 @@ if 'HARNESS_DIR' in os.environ:
     harness_dir = os.environ['HARNESS_DIR']
 else:
     # we are not invoked via the Makefile, i.e. we have to set up the
-    # paths (PYTHONPATH and LOUIS_TABLEPATH) manually.
+    # paths (LOUIS_TABLEPATH) manually.
     harness_dir = "harness"
-    # make sure the harness modules are found in the harness
-    # directory, i.e. insert the harness directory into the module
-    # search path
-    # sys.path.insert(1, harness_dir)
     # make sure local test braille tables are found
     os.environ['LOUIS_TABLEPATH'] = 'tables'
 
-# Process all *_harness.py files in the harness directory.
+# Process all *_harness.txt files in the harness directory.
 
 for harness in iglob(os.path.join(harness_dir, '*_harness.txt')):
     try:
