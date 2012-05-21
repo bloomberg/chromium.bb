@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define PPAPI_CPP_DEV_IME_INPUT_EVENT_DEV_H_
 
 #include <utility>
+#include <vector>
 
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/cpp/input_event.h"
@@ -28,6 +29,34 @@ class IMEInputEvent_Dev : public InputEvent {
   ///
   /// @param[in] event A generic input event.
   explicit IMEInputEvent_Dev(const InputEvent& event);
+
+  /// This constructor manually constructs an IME event from the provided
+  /// parameters.
+  ///
+  /// @param[in] instance The instance for which this event occurred.
+  ///
+  /// @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
+  /// input event. The type must be one of the ime event types.
+  ///
+  /// @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+  /// when the event occurred.
+  ///
+  /// @param[in] text The string returned by <code>GetText</code>.
+  ///
+  /// @param[in] segment_offsets The array of numbers returned by
+  /// <code>GetSegmentOffset</code>.
+  ///
+  /// @param[in] target_segment The number returned by
+  /// <code>GetTargetSegment</code>.
+  ///
+  /// @param[in] selection The range returned by <code>GetSelection</code>.
+  IMEInputEvent_Dev(const InstanceHandle& instance,
+                    PP_InputEvent_Type type,
+                    PP_TimeTicks time_stamp,
+                    Var text,
+                    const std::vector<uint32_t>& segment_offsets,
+                    int32_t target_segment,
+                    const std::pair<uint32_t, uint32_t>& selection);
 
   /// Returns the composition text as a UTF-8 string for the given IME event.
   ///

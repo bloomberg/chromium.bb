@@ -293,6 +293,26 @@ const PPB_KeyboardInputEvent_Dev g_ppb_keyboard_input_event_dev_thunk = {
 
 // Composition -----------------------------------------------------------------
 
+PP_Resource CreateIMEInputEvent(PP_Instance instance,
+                                PP_InputEvent_Type type,
+                                PP_TimeTicks time_stamp,
+                                PP_Var text,
+                                uint32_t segment_number,
+                                const uint32_t segment_offsets[],
+                                int32_t target_segment,
+                                uint32_t selection_start,
+                                uint32_t selection_end) {
+  EnterResourceCreation enter(instance);
+  if (enter.failed())
+    return 0;
+  return enter.functions()->CreateIMEInputEvent(instance, type, time_stamp,
+                                                text, segment_number,
+                                                segment_offsets,
+                                                target_segment,
+                                                selection_start,
+                                                selection_end);
+}
+
 PP_Bool IsIMEInputEvent(PP_Resource resource) {
   if (!IsInputEvent(resource))
     return PP_FALSE;  // Prevent warning log in GetType.
@@ -340,7 +360,17 @@ void GetIMESelection(PP_Resource ime_event, uint32_t* start, uint32_t* end) {
   enter.object()->GetIMESelection(start, end);
 }
 
-const PPB_IMEInputEvent_Dev g_ppb_ime_input_event_thunk = {
+const PPB_IMEInputEvent_Dev_0_1 g_ppb_ime_input_event_0_1_thunk = {
+  &IsIMEInputEvent,
+  &GetIMEText,
+  &GetIMESegmentNumber,
+  &GetIMESegmentOffset,
+  &GetIMETargetSegment,
+  &GetIMESelection
+};
+
+const PPB_IMEInputEvent_Dev_0_2 g_ppb_ime_input_event_0_2_thunk = {
+  &CreateIMEInputEvent,
   &IsIMEInputEvent,
   &GetIMEText,
   &GetIMESegmentNumber,
@@ -377,7 +407,11 @@ const PPB_WheelInputEvent_1_0* GetPPB_WheelInputEvent_1_0_Thunk() {
 }
 
 const PPB_IMEInputEvent_Dev_0_1* GetPPB_IMEInputEvent_Dev_0_1_Thunk() {
-  return &g_ppb_ime_input_event_thunk;
+  return &g_ppb_ime_input_event_0_1_thunk;
+}
+
+const PPB_IMEInputEvent_Dev_0_2* GetPPB_IMEInputEvent_Dev_0_2_Thunk() {
+  return &g_ppb_ime_input_event_0_2_thunk;
 }
 
 }  // namespace thunk

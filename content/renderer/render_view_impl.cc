@@ -5021,6 +5021,20 @@ bool RenderViewImpl::GetPpapiPluginCaretBounds(gfx::Rect* rect) {
   return true;
 }
 
+void RenderViewImpl::SimulateImeSetComposition(
+    const string16& text,
+    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    int selection_start,
+    int selection_end) {
+  OnImeSetComposition(text, underlines, selection_start, selection_end);
+}
+
+void RenderViewImpl::SimulateImeConfirmComposition(
+    const string16& text,
+    const ui::Range& replacement_range) {
+  OnImeConfirmComposition(text, replacement_range);
+}
+
 void RenderViewImpl::PpapiPluginCancelComposition() {
   Send(new ViewHostMsg_ImeCancelComposition(routing_id()));
   ui::Range range(ui::Range::InvalidRange());

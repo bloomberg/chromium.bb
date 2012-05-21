@@ -1611,6 +1611,10 @@ void PluginInstance::SimulateInputEvent(const InputEventData& input_event) {
     return;
   }
 
+  bool handled = SimulateIMEEvent(input_event);
+  if (handled)
+    return;
+
   std::vector<linked_ptr<WebInputEvent> > events =
       CreateSimulatedWebInputEvents(
           input_event,
@@ -1620,6 +1624,52 @@ void PluginInstance::SimulateInputEvent(const InputEventData& input_event) {
       it != events.end(); ++it) {
     web_view->handleInputEvent(*it->get());
   }
+}
+
+bool PluginInstance::SimulateIMEEvent(const InputEventData& input_event) {
+  switch (input_event.event_type) {
+    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_START:
+    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_UPDATE:
+      SimulateImeSetCompositionEvent(input_event);
+      break;
+    case PP_INPUTEVENT_TYPE_IME_COMPOSITION_END:
+      DCHECK(input_event.character_text.empty());
+      SimulateImeSetCompositionEvent(input_event);
+      break;
+    case PP_INPUTEVENT_TYPE_IME_TEXT:
+      delegate()->SimulateImeConfirmComposition(
+          UTF8ToUTF16(input_event.character_text));
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+void PluginInstance::SimulateImeSetCompositionEvent(
+    const InputEventData& input_event) {
+  std::vector<size_t> offsets;
+  offsets.push_back(input_event.composition_selection_start);
+  offsets.push_back(input_event.composition_selection_end);
+  offsets.insert(offsets.end(),
+                 input_event.composition_segment_offsets.begin(),
+                 input_event.composition_segment_offsets.end());
+
+  string16 utf16_text =
+      UTF8ToUTF16AndAdjustOffsets(input_event.character_text, &offsets);
+
+  std::vector<WebKit::WebCompositionUnderline> underlines;
+  for (size_t i = 2; i + 1 < offsets.size(); ++i) {
+    WebKit::WebCompositionUnderline underline;
+    underline.startOffset = offsets[i];
+    underline.endOffset = offsets[i + 1];
+    if (input_event.composition_target_segment == static_cast<int32_t>(i - 2))
+      underline.thick = true;
+    underlines.push_back(underline);
+  }
+
+  delegate()->SimulateImeSetComposition(
+      utf16_text, underlines, offsets[0], offsets[1]);
 }
 
 void PluginInstance::ClosePendingUserGesture(PP_Instance instance,

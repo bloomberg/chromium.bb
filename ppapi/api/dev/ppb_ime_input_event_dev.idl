@@ -8,11 +8,59 @@
  */
 
 label Chrome {
-  M16 = 0.1
+  M16 = 0.1,
+  M21 = 0.2
 };
 
-[version=0.1, macro="PPB_IME_INPUT_EVENT_DEV_INTERFACE"]
+[macro="PPB_IME_INPUT_EVENT_DEV_INTERFACE"]
 interface PPB_IMEInputEvent_Dev {
+  /**
+   * Create() creates an IME input event with the given parameters. Normally
+   * you will get an IME event passed through the <code>HandleInputEvent</code>
+   * and will not need to create them, but some applications may want to create
+   * their own for internal use.
+   *
+   * @param[in] instance The instance for which this event occurred.
+   *
+   * @param[in] type A <code>PP_InputEvent_Type</code> identifying the type of
+   * input event. The type must be one of the IME event types.
+   *
+   * @param[in] time_stamp A <code>PP_TimeTicks</code> indicating the time
+   * when the event occurred.
+   *
+   * @param[in] text The string returned by <code>GetText</code>.
+   *
+   * @param[in] segment_number The number returned by
+   * <code>GetSegmentNumber</code>.
+   *
+   * @param[in] segment_offsets The array of numbers returned by
+   * <code>GetSegmentOffset</code>. If <code>segment_number</code> is zero,
+   * the number of elements of the array should be zero. If
+   * <code>segment_number</code> is non-zero, the length of the array must be
+   * <code>segment_number</code> + 1.
+   *
+   * @param[in] target_segment The number returned by
+   * <code>GetTargetSegment</code>.
+   *
+   * @param[in] selection_start The start index returned by
+   * <code>GetSelection</code>.
+   *
+   * @param[in] selection_end The end index returned by
+   * <code>GetSelection</code>.
+   *
+   * @return A <code>PP_Resource</code> containing the new IME input event.
+   */
+  [version=0.2]
+  PP_Resource Create([in] PP_Instance instance,
+                     [in] PP_InputEvent_Type type,
+                     [in] PP_TimeTicks time_stamp,
+                     [in] PP_Var text,
+                     [in] uint32_t segment_number,
+                     [in] uint32_t[] segment_offsets,
+                     [in] int32_t target_segment,
+                     [in] uint32_t selection_start,
+                     [in] uint32_t selection_end);
+
   /**
    * IsIMEInputEvent() determines if a resource is an IME event.
    *

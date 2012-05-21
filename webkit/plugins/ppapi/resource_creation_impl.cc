@@ -182,6 +182,21 @@ PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance instance,
   return PPB_ImageData_Impl::Create(instance, format, size, init_to_zero);
 }
 
+PP_Resource ResourceCreationImpl::CreateIMEInputEvent(
+    PP_Instance instance,
+    PP_InputEvent_Type type,
+    PP_TimeTicks time_stamp,
+    struct PP_Var text,
+    uint32_t segment_number,
+    const uint32_t* segment_offsets,
+    int32_t target_segment,
+    uint32_t selection_start,
+    uint32_t selection_end) {
+  return PPB_InputEvent_Shared::CreateIMEInputEvent(
+      ::ppapi::OBJECT_IS_IMPL, instance, type, time_stamp, text, segment_number,
+      segment_offsets, target_segment, selection_start, selection_end);
+}
+
 PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent(
     PP_Instance instance,
     PP_InputEvent_Type type,
@@ -189,26 +204,9 @@ PP_Resource ResourceCreationImpl::CreateKeyboardInputEvent(
     uint32_t modifiers,
     uint32_t key_code,
     struct PP_Var character_text) {
-  if (type != PP_INPUTEVENT_TYPE_RAWKEYDOWN &&
-      type != PP_INPUTEVENT_TYPE_KEYDOWN &&
-      type != PP_INPUTEVENT_TYPE_KEYUP &&
-      type != PP_INPUTEVENT_TYPE_CHAR)
-    return 0;
-
-  InputEventData data;
-  data.event_type = type;
-  data.event_time_stamp = time_stamp;
-  data.event_modifiers = modifiers;
-  data.key_code = key_code;
-  if (character_text.type == PP_VARTYPE_STRING) {
-    StringVar* string_var = StringVar::FromPPVar(character_text);
-    if (!string_var)
-      return 0;
-    data.character_text = string_var->value();
-  }
-
-  return (new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL,
-                                    instance, data))->GetReference();
+  return PPB_InputEvent_Shared::CreateKeyboardInputEvent(
+      ::ppapi::OBJECT_IS_IMPL, instance, type, time_stamp, modifiers, key_code,
+      character_text);
 }
 
 PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
@@ -220,24 +218,9 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
     const PP_Point* mouse_position,
     int32_t click_count,
     const PP_Point* mouse_movement) {
-  if (type != PP_INPUTEVENT_TYPE_MOUSEDOWN &&
-      type != PP_INPUTEVENT_TYPE_MOUSEUP &&
-      type != PP_INPUTEVENT_TYPE_MOUSEMOVE &&
-      type != PP_INPUTEVENT_TYPE_MOUSEENTER &&
-      type != PP_INPUTEVENT_TYPE_MOUSELEAVE)
-    return 0;
-
-  InputEventData data;
-  data.event_type = type;
-  data.event_time_stamp = time_stamp;
-  data.event_modifiers = modifiers;
-  data.mouse_button = mouse_button;
-  data.mouse_position = *mouse_position;
-  data.mouse_click_count = click_count;
-  data.mouse_movement = *mouse_movement;
-
-  return (new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL,
-                                    instance, data))->GetReference();
+  return PPB_InputEvent_Shared::CreateMouseInputEvent(
+      ::ppapi::OBJECT_IS_IMPL, instance, type, time_stamp, modifiers,
+      mouse_button, mouse_position, click_count, mouse_movement);
 }
 
 PP_Resource ResourceCreationImpl::CreateNetworkMonitor(
@@ -330,16 +313,9 @@ PP_Resource ResourceCreationImpl::CreateWheelInputEvent(
     const PP_FloatPoint* wheel_delta,
     const PP_FloatPoint* wheel_ticks,
     PP_Bool scroll_by_page) {
-  InputEventData data;
-  data.event_type = PP_INPUTEVENT_TYPE_WHEEL;
-  data.event_time_stamp = time_stamp;
-  data.event_modifiers = modifiers;
-  data.wheel_delta = *wheel_delta;
-  data.wheel_ticks = *wheel_ticks;
-  data.wheel_scroll_by_page = PP_ToBool(scroll_by_page);
-
-  return (new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL,
-                                    instance, data))->GetReference();
+  return PPB_InputEvent_Shared::CreateWheelInputEvent(
+      ::ppapi::OBJECT_IS_IMPL, instance, time_stamp, modifiers,
+      wheel_delta, wheel_ticks, scroll_by_page);
 }
 
 PP_Resource ResourceCreationImpl::CreateX509CertificatePrivate(

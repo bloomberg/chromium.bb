@@ -67,6 +67,15 @@ class ResourceCreationImpl : public ::ppapi::thunk::ResourceCreationAPI {
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero) OVERRIDE;
+  virtual PP_Resource CreateIMEInputEvent(PP_Instance instance,
+                                          PP_InputEvent_Type type,
+                                          PP_TimeTicks time_stamp,
+                                          struct PP_Var text,
+                                          uint32_t segment_number,
+                                          const uint32_t* segment_offsets,
+                                          int32_t target_segment,
+                                          uint32_t selection_start,
+                                          uint32_t selection_end) OVERRIDE;
   virtual PP_Resource CreateKeyboardInputEvent(
       PP_Instance instance,
       PP_InputEvent_Type type,

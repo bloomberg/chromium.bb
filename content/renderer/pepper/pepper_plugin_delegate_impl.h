@@ -161,6 +161,12 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void PluginSelectionChanged(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual void SimulateImeSetComposition(
+      const string16& text,
+      const std::vector<WebKit::WebCompositionUnderline>& underlines,
+      int selection_start,
+      int selection_end) OVERRIDE;
+  virtual void SimulateImeConfirmComposition(const string16& text) OVERRIDE;
   virtual void PluginCrashed(webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void InstanceCreated(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;

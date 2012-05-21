@@ -326,6 +326,12 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // which sends it back up to the plugin as if it came from the user.
   void SimulateInputEvent(const ::ppapi::InputEventData& input_event);
 
+  // Simulates an IME event at the level of RenderView which sends it back up to
+  // the plugin as if it came from the user.
+  bool SimulateIMEEvent(const ::ppapi::InputEventData& input_event);
+  void SimulateImeSetCompositionEvent(
+      const ::ppapi::InputEventData& input_event);
+
   // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,
                                PP_Resource device) OVERRIDE;

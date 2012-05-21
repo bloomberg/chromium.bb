@@ -502,6 +502,11 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_InputEvent)
 // TODO(bbudge) Enable when input events are proxied correctly for NaCl.
 TEST_PPAPI_NACL_VIA_HTTP(DISABLED_InputEvent)
 
+TEST_PPAPI_IN_PROCESS(ImeInputEvent)
+TEST_PPAPI_OUT_OF_PROCESS(ImeInputEvent)
+// TODO(kinaba) Enable when IME events are proxied correctly for NaCl.
+TEST_PPAPI_NACL_VIA_HTTP(DISABLED_ImeInputEvent)
+
 TEST_PPAPI_IN_PROCESS(Instance_ExecuteScript);
 TEST_PPAPI_OUT_OF_PROCESS(Instance_ExecuteScript)
 // ExecuteScript isn't supported by NaCl.

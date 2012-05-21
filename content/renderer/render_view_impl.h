@@ -296,6 +296,15 @@ class RenderViewImpl : public RenderWidget,
   // Retrieves the current caret position if a PPAPI plugin has focus.
   bool GetPpapiPluginCaretBounds(gfx::Rect* rect);
 
+  // Simulates IME events for testing purpose.
+  void SimulateImeSetComposition(
+      const string16& text,
+      const std::vector<WebKit::WebCompositionUnderline>& underlines,
+      int selection_start,
+      int selection_end);
+  void SimulateImeConfirmComposition(const string16& text,
+                                     const ui::Range& replacement_range);
+
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Informs the render view that the given plugin has gained or lost focus.
   void PluginFocusChanged(bool focused, int plugin_id);

@@ -429,6 +429,23 @@ void PepperPluginDelegateImpl::PluginSelectionChanged(
     render_view_->PpapiPluginSelectionChanged();
 }
 
+void PepperPluginDelegateImpl::SimulateImeSetComposition(
+    const string16& text,
+    const std::vector<WebKit::WebCompositionUnderline>& underlines,
+    int selection_start,
+    int selection_end) {
+  if (render_view_) {
+    render_view_->SimulateImeSetComposition(
+        text, underlines, selection_start, selection_end);
+  }
+}
+
+void PepperPluginDelegateImpl::SimulateImeConfirmComposition(
+    const string16& text) {
+  if (render_view_)
+    render_view_->SimulateImeConfirmComposition(text, ui::Range());
+}
+
 void PepperPluginDelegateImpl::OnImeSetComposition(
     const string16& text,
     const std::vector<WebKit::WebCompositionUnderline>& underlines,

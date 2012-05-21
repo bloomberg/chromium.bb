@@ -84,6 +84,42 @@ class PPAPI_SHARED_EXPORT PPB_InputEvent_Shared
   virtual int32_t GetIMETargetSegment() OVERRIDE;
   virtual void GetIMESelection(uint32_t* start, uint32_t* end) OVERRIDE;
 
+  // Implementations for event creation.
+  static PP_Resource CreateIMEInputEvent(ResourceObjectType type,
+                                         PP_Instance instance,
+                                         PP_InputEvent_Type event_type,
+                                         PP_TimeTicks time_stamp,
+                                         struct PP_Var text,
+                                         uint32_t segment_number,
+                                         const uint32_t* segment_offsets,
+                                         int32_t target_segment,
+                                         uint32_t selection_start,
+                                         uint32_t selection_end);
+  static PP_Resource CreateKeyboardInputEvent(ResourceObjectType type,
+                                              PP_Instance instance,
+                                              PP_InputEvent_Type event_type,
+                                              PP_TimeTicks time_stamp,
+                                              uint32_t modifiers,
+                                              uint32_t key_code,
+                                              struct PP_Var character_text);
+  static PP_Resource CreateMouseInputEvent(
+      ResourceObjectType type,
+      PP_Instance instance,
+      PP_InputEvent_Type event_type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      PP_InputEvent_MouseButton mouse_button,
+      const PP_Point* mouse_position,
+      int32_t click_count,
+      const PP_Point* mouse_movement);
+  static PP_Resource CreateWheelInputEvent(ResourceObjectType type,
+                                           PP_Instance instance,
+                                           PP_TimeTicks time_stamp,
+                                           uint32_t modifiers,
+                                           const PP_FloatPoint* wheel_delta,
+                                           const PP_FloatPoint* wheel_ticks,
+                                           PP_Bool scroll_by_page);
+
  private:
   InputEventData data_;
 
