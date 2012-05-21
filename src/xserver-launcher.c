@@ -731,12 +731,13 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 	uint32_t values[2];
 	int width, height;
 
-	fprintf(stderr, "XCB_CONFIGURE_NOTIFY (window %d) %d,%d @ %dx%d\n",
+	window = hash_table_lookup(wm->window_hash, configure_notify->window);
+
+	fprintf(stderr, "XCB_CONFIGURE_NOTIFY (%s window %d) %d,%d @ %dx%d\n",
+		configure_notify->window == window->id ? "client" : "frame",
 		configure_notify->window,
 		configure_notify->x, configure_notify->y,
 		configure_notify->width, configure_notify->height);
-
-	window = hash_table_lookup(wm->window_hash, configure_notify->window);
 
 	if (configure_notify->window != window->id)
 		return;
@@ -1301,9 +1302,10 @@ weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	uint32_t values[1];
 
 	fprintf(stderr,
-		"XCB_CREATE_NOTIFY (window %d, width %d, height %d%s)\n",
+		"XCB_CREATE_NOTIFY (window %d, width %d, height %d%s%s)\n",
 		create_notify->window,
 		create_notify->width, create_notify->height,
+		create_notify->override_redirect ? ", override" : "",
 		our_resource(wm, create_notify->window) ? ", ours" : "");
 
 	if (our_resource(wm, create_notify->window))
