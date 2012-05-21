@@ -153,9 +153,9 @@ weston_zoom_frame(struct weston_animation *animation,
 				0.5f * es->geometry.width,
 				0.5f * es->geometry.height, 0);
 
-	es->alpha = zoom->spring.current * 255;
-	if (es->alpha > 255)
-		es->alpha = 255;
+	es->alpha = zoom->spring.current;
+	if (es->alpha > 1.0)
+		es->alpha = 1.0;
 
 	zoom->surface->geometry.dirty = 1;
 	weston_compositor_schedule_repaint(es->compositor);
@@ -375,7 +375,7 @@ weston_fade_frame(struct weston_animation *animation,
 		fade_factor = 0;
 	else
 		fade_factor = fade->spring.current;
-	es->alpha = fade_factor * 255;
+	es->alpha = fade_factor;
 
 	fade->surface->geometry.dirty = 1;
 	weston_compositor_schedule_repaint(es->compositor);

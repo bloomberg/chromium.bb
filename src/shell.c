@@ -2398,11 +2398,11 @@ switcher_next(struct switcher *switcher)
 		      &switcher->listener);
 
 	switcher->current = next;
-	next->alpha = 255;
+	next->alpha = 1.0;
 
 	shsurf = get_shell_surface(switcher->current);
 	if (shsurf && shsurf->type ==SHELL_SURFACE_FULLSCREEN)
-		shsurf->fullscreen.black_surface->alpha = 255;
+		shsurf->fullscreen.black_surface->alpha = 1.0;
 }
 
 static void
@@ -2422,7 +2422,7 @@ switcher_destroy(struct switcher *switcher, uint32_t time)
 	struct wl_keyboard *keyboard = switcher->grab.keyboard;
 
 	wl_list_for_each(surface, &compositor->surface_list, link) {
-		surface->alpha = 255;
+		surface->alpha = 1.0;
 		weston_surface_damage(surface);
 	}
 

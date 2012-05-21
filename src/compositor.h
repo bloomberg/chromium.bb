@@ -333,9 +333,9 @@ struct weston_surface {
 	struct weston_shader *shader;
 	GLfloat color[4];
 	GLfloat opaque_rect[4];
-	uint32_t alpha;
-	uint32_t brightness;
-	uint32_t saturation;
+	GLfloat alpha;
+	GLfloat brightness;
+	GLfloat saturation;
 	int blend;
 
 	/* Surface geometry state, mutable.

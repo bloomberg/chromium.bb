@@ -225,9 +225,9 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->compositor = compositor;
 	surface->image = EGL_NO_IMAGE_KHR;
-	surface->alpha = 255;
-	surface->brightness = 255;
-	surface->saturation = 255;
+	surface->alpha = 1.0;
+	surface->brightness = 1.0;
+	surface->saturation = 1.0;
 	surface->blend = 1;
 	surface->opaque_rect[0] = 0.0;
 	surface->opaque_rect[1] = 0.0;
@@ -359,7 +359,7 @@ weston_surface_update_transform_disable(struct weston_surface *surface)
 				  surface->geometry.width,
 				  surface->geometry.height);
 
-	if (surface->alpha == 255) {
+	if (surface->alpha == 1.0) {
 		pixman_region32_copy(&surface->transform.opaque,
 				     &surface->opaque);
 		pixman_region32_translate(&surface->transform.opaque,
@@ -868,9 +868,9 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 			   1, GL_FALSE, output->matrix.d);
 	glUniform1i(es->shader->tex_uniform, 0);
 	glUniform4fv(es->shader->color_uniform, 1, es->color);
-	glUniform1f(es->shader->alpha_uniform, es->alpha / 255.0);
-	glUniform1f(es->shader->brightness_uniform, es->brightness / 255.0);
-	glUniform1f(es->shader->saturation_uniform, es->saturation / 255.0);
+	glUniform1f(es->shader->alpha_uniform, es->alpha);
+	glUniform1f(es->shader->brightness_uniform, es->brightness);
+	glUniform1f(es->shader->saturation_uniform, es->saturation);
 	glUniform1f(es->shader->texwidth_uniform,
 		    (GLfloat)es->geometry.width / es->pitch);
 	glUniform4fv(es->shader->opaque_uniform, 1, es->opaque_rect);
