@@ -2442,20 +2442,18 @@ weston_output_destroy(struct weston_output *output)
 WL_EXPORT void
 weston_output_update_zoom(struct weston_output *output, wl_fixed_t fx, wl_fixed_t fy)
 {
-	float ratio;
 	int32_t x, y;
 
-	if (output->zoom.level <= 0)
+	if (output->zoom.level >= 1.0)
 		return;
 
 	x = wl_fixed_to_int(fx);
 	y = wl_fixed_to_int(fy);
 
-	output->zoom.magnification = 1 / output->zoom.level;
-	ratio = 1 - (1 / output->zoom.magnification);
-
-	output->zoom.trans_x = (((float)(x - output->x) / output->current->width) * (ratio * 2)) - ratio;
-	output->zoom.trans_y = (((float)(y - output->y) / output->current->height) * (ratio * 2)) - ratio;
+	output->zoom.trans_x = (((float)(x - output->x) / output->current->width) *
+					(output->zoom.level * 2)) - output->zoom.level;
+	output->zoom.trans_y = (((float)(y - output->y) / output->current->height) *
+					(output->zoom.level * 2)) - output->zoom.level;
 
 	output->dirty = 1;
 	weston_output_damage(output);
@@ -2465,6 +2463,7 @@ WL_EXPORT void
 weston_output_update_matrix(struct weston_output *output)
 {
 	int flip;
+	float magnification;
 	struct weston_matrix camera;
 	struct weston_matrix modelview;
 
@@ -2477,12 +2476,14 @@ weston_output_update_matrix(struct weston_output *output)
 	weston_matrix_scale(&output->matrix,
 			    2.0 / (output->current->width + output->border.left + output->border.right),
 			    flip * 2.0 / (output->current->height + output->border.top + output->border.bottom), 1);
+
 	if (output->zoom.active) {
+		magnification = 1 / (1 - output->zoom.level);
 		weston_matrix_init(&camera);
 		weston_matrix_init(&modelview);
 		weston_matrix_translate(&camera, output->zoom.trans_x, flip * output->zoom.trans_y, 0);
 		weston_matrix_invert(&modelview, &camera);
-		weston_matrix_scale(&modelview, output->zoom.magnification, output->zoom.magnification, 1.0);
+		weston_matrix_scale(&modelview, magnification, magnification, 1.0);
 		weston_matrix_multiply(&output->matrix, &modelview);
 	}
 
@@ -2519,8 +2520,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 
 	output->zoom.active = 0;
 	output->zoom.increment = 0.05;
-	output->zoom.level = 1.0;
-	output->zoom.magnification = 1.0;
+	output->zoom.level = 0.0;
 	output->zoom.trans_x = 0.0;
 	output->zoom.trans_y = 0.0;
 

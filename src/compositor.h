@@ -77,7 +77,6 @@ struct weston_output_zoom {
 	int active;
 	float increment;
 	float level;
-	float magnification;
 	float trans_x, trans_y;
 };
 
