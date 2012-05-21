@@ -437,6 +437,10 @@ FileManager.prototype = {
     this.metadataProvider_ =
         new MetadataProvider(this.filesystem_.root.toURL());
 
+    // Holds the directories known to contain files with stale metadata
+    // as URL to bool map.
+    this.directoriesWithStaleMetadata_ = {};
+
     // PyAuto tests monitor this state by polling this variable
     this.__defineGetter__('workerInitialized_', function() {
        return self.getMetadataProvider().isInitialized();
@@ -1674,6 +1678,22 @@ FileManager.prototype = {
   };
 
   /**
+   * Ask the GData service to re-fetch the metadata for the current directory.
+   */
+  FileManager.prototype.requestMetadataRefresh = function() {
+    if (!this.isOnGData())
+      return;
+    // TODO(kaznacheev) This does not really work with GData search.
+    var url = this.getCurrentDirectoryURL();
+    // Skip if the current directory is now being refreshed.
+    if (this.directoriesWithStaleMetadata_[url])
+      return;
+
+    this.directoriesWithStaleMetadata_[url] = true;
+    chrome.fileBrowserPrivate.requestDirectoryRefresh(url);
+  };
+
+  /**
    * Create a box containing a centered thumbnail image.
    *
    * @param {Entry} entry Entry which thumbnail is generating for.
@@ -1707,6 +1727,17 @@ FileManager.prototype = {
         img.src = FileType.getPreviewArt(iconType);
         transform = null;
         util.applyTransform(box, transform);
+
+        var cached = self.thumbnailUrlCache_[entry.fullPath];
+        if (!cached.failed) {
+          cached.failed = true;
+          self.requestMetadataRefresh();
+          // Failing to fetch a thumbnail likely means that the thumbnail URL
+          // is now stale. Request a refresh of the current directory, to get
+          // the new thumbnail URLs. Once the directory is refreshed, we'll get
+          // notified via onFileChanged event.
+          self.requestMetadataRefresh();
+        }
       };
       img.src = url;
       util.applyTransform(box, transform);
@@ -1714,10 +1745,16 @@ FileManager.prototype = {
 
     // TODO(dgozman): move to new metadata cache.
     var cached = this.thumbnailUrlCache_[entry.fullPath];
-    if (cached)
+    // Don't reuse the cached URL if we are now retrying.
+    if (cached && !cached.failed)
       onThumbnailURL(cached.iconType, cached.url, cached.transform);
-    else
+    else {
+      if (cached && cached.failed) {
+        delete cached.failed;
+        this.metadataProvider_.reset(entry.toURL());  // Clear the cache.
+      }
       this.getThumbnailURL(entry, onThumbnailURL);
+    }
 
     return box;
   };
@@ -3681,8 +3718,14 @@ FileManager.prototype = {
 
   FileManager.prototype.onFileChanged_ = function(event) {
     // We receive a lot of events even in folders we are not interested in.
-    if (encodeURI(event.fileUrl) == this.getSearchOrCurrentDirectoryURL())
+    if (encodeURI(event.fileUrl) == this.getSearchOrCurrentDirectoryURL()) {
+      // This event is not necessarily caused by the metadata refresh
+      // completion. We clear the map knowing that if the metadata is still
+      // stale then a new re-fetch will be requested.
+      delete this.directoriesWithStaleMetadata_[
+          this.getSearchOrCurrentDirectoryURL()];
       this.directoryModel_.rescanLater();
+    }
   };
 
   FileManager.prototype.initiateRename_ = function() {
