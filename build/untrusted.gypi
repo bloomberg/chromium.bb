@@ -33,10 +33,19 @@
           ['OS=="win"', {
             'variables': {
               'python_exe': 'call <(DEPTH)/native_client/tools/win_py.cmd',
+              'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/win_x86',
             },
-          }, {
+          }],
+          ['OS=="mac"', {
             'variables': {
               'python_exe': 'python',
+              'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/mac_x86',
+            },
+          }],
+          ['OS=="linux"', {
+            'variables': {
+              'python_exe': 'python',
+              'nacl_glibc_tc_root': '<(DEPTH)/native_client/toolchain/linux_x86',
             },
           }],
         ],
@@ -51,8 +60,10 @@
           'extra_args': [],
           'enable_x86_32': 1,
           'enable_x86_64': 1,
-          'extra_deps64': [],
-          'extra_deps32': [],
+          'extra_deps_newlib64': [],
+          'extra_deps_newlib32': [],
+          'extra_deps_glibc64': [],
+          'extra_deps_glibc32': [],
           'lib_dirs': [],
           'include_dirs': ['<(DEPTH)','<(DEPTH)/ppapi'],
           'defines': [
@@ -134,7 +145,7 @@
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                    '>@(extra_deps64)',
+                    '>@(extra_deps_newlib64)',
                  ],
                  'outputs': ['>(out64)'],
                  'action': [
@@ -179,7 +190,7 @@
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                    '>@(extra_deps64)',
+                    '>@(extra_deps_newlib64)',
                  ],
                  'outputs': ['>(out64)'],
                  'action': [
@@ -224,7 +235,7 @@
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                    '>@(extra_deps32)',
+                    '>@(extra_deps_newlib32)',
                  ],
                  'outputs': ['>(out32)'],
                  'action': [
@@ -269,7 +280,7 @@
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                    '>@(extra_deps32)',
+                    '>@(extra_deps_newlib32)',
                  ],
                  'outputs': ['>(out32)'],
                  'action': [
@@ -385,7 +396,7 @@
         ],
       },
     }],
-    ['target_arch=="x64" or OS=="win"', {
+    ['target_arch!="arm"', {
       'target_defaults': {
         'target_conditions': [
            ['nexe_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
@@ -404,7 +415,7 @@
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                    '>@(extra_deps64)',
+                    '>@(extra_deps_glibc64)',
                  ],
                  'outputs': ['>(out64)'],
                  'action': [
@@ -427,57 +438,6 @@
                },
              ],
            }],
-        ],
-      },
-    }],
-    ['target_arch=="x64" or OS=="win"', {
-      'target_defaults': {
-        'target_conditions': [
-           ['nlib_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
-             'variables': {
-                'tool_name': 'glibc',
-                'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
-                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64/>(_target_name)',
-                'out64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
-             },
-             'actions': [
-               {
-                 'action_name': 'build glibc x86-64 nlib',
-                 'msvs_cygwin_shell': 0,
-                 'description': 'building >(out64)',
-                 'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
-                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
-                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                    '>@(extra_deps64)',
-                 ],
-                 'outputs': ['>(out64)'],
-                 'action': [
-                   '>(python_exe)',
-                   '<(DEPTH)/native_client/build/build_nexe.py',
-                   '>@(extra_args)',
-                   '--arch', 'x86-64',
-                   '--build', 'glibc_nlib',
-                   '--root', '<(DEPTH)',
-                   '--name', '>(out64)',
-                   '--objdir', '>(objdir)',
-                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
-                   '--lib-dirs', '>(lib_dirs) ',
-                   '--compile_flags', ' -m64 >(compile_flags)',
-                   '>@(defines)', '-DNACL_BUILD_SUBARCH=64',
-                   '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64 >(link_flags) >(_link_flags)',
-                   '^@(sources)',
-                   '^@(_sources)',
-                 ],
-               },
-             ],
-           }],
-        ],
-      },
-    }],
-    ['target_arch=="ia32"', {
-      'target_defaults': {
-        'target_conditions': [
            ['nexe_target!="" and build_glibc!=0 and enable_x86_32!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
@@ -494,7 +454,7 @@
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                    '>@(extra_deps32)',
+                    '>@(extra_deps_glibc32)',
                  ],
                  'outputs': ['>(out32)'],
                  'action': [
@@ -520,9 +480,48 @@
         ],
       },
     }],
-    ['target_arch=="ia32"', {
+    ['target_arch!="arm"', {
       'target_defaults': {
         'target_conditions': [
+           ['nlib_target!="" and build_glibc!=0 and enable_x86_64!=0 and disable_glibc==0', {
+             'variables': {
+                'tool_name': 'glibc',
+                'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc',
+                'objdir%': '>(INTERMEDIATE_DIR)/>(tool_name)-x86-64/>(_target_name)',
+                'out64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib64/>(nlib_target)',
+             },
+             'actions': [
+               {
+                 'action_name': 'build glibc x86-64 nlib',
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out64)',
+                 'inputs': [
+                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<(DEPTH)/ppapi/ppapi_cpp.gypi',
+                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps_glibc64)',
+                 ],
+                 'outputs': ['>(out64)'],
+                 'action': [
+                   '>(python_exe)',
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>@(extra_args)',
+                   '--arch', 'x86-64',
+                   '--build', 'glibc_nlib',
+                   '--root', '<(DEPTH)',
+                   '--name', '>(out64)',
+                   '--objdir', '>(objdir)',
+                   '--include-dirs', '>(inst_dir)/include >(include_dirs) >(include_dirs)',
+                   '--lib-dirs', '>(lib_dirs) ',
+                   '--compile_flags', ' -m64 >(compile_flags)',
+                   '>@(defines)', '-DNACL_BUILD_SUBARCH=64',
+                   '--link_flags', '-B<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64 >(link_flags) >(_link_flags)',
+                   '^@(sources)',
+                   '^@(_sources)',
+                 ],
+               },
+             ],
+           }],
            ['nlib_target!="" and build_glibc!=0 and enable_x86_32!=0 and disable_glibc==0', {
              'variables': {
                 'tool_name': 'glibc',
@@ -539,7 +538,7 @@
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
-                    '>@(extra_deps32)',
+                    '>@(extra_deps_glibc32)',
                  ],
                  'outputs': ['>(out32)'],
                  'action': [
