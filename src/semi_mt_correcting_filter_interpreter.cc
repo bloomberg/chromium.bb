@@ -25,8 +25,7 @@ SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
       non_linear_top_(prop_reg, "SemiMT Non Linear Area Top", 1250.0),
       non_linear_bottom_(prop_reg, "SemiMT Non Linear Area Bottom", 4570.0),
       non_linear_left_(prop_reg, "SemiMT Non Linear Area Left", 1360.0),
-      non_linear_right_(prop_reg, "SemiMT Non Linear Area Right", 5560.0),
-      big_jump_(prop_reg, "SemiMT Finger Big Jump Speed", 25000.0) {
+      non_linear_right_(prop_reg, "SemiMT Non Linear Area Right", 5560.0) {
   ClearHistory();
   next_.reset(next);
 }
@@ -43,7 +42,6 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
       SuppressTwoToOneFingerJump(hwstate);
       SuppressOneToTwoFingerJump(hwstate);
       CorrectFingerPosition(hwstate);
-      SuppressFingerJump(hwstate);
       UpdateHistory(hwstate);
     } else {
       ClearHistory();
@@ -317,25 +315,5 @@ void SemiMtCorrectingFilterInterpreter::LowPressureFilter(
       ((prev_hwstate_.finger_cnt > 0) &&
       (pressure < hysteresis_pressure_.val_)))
     hwstate->finger_cnt = hwstate->touch_cnt = 0;
-}
-
-void SemiMtCorrectingFilterInterpreter::SuppressFingerJump(
-    HardwareState* hwstate) {
-  if (prev_hwstate_.fingers == NULL)
-    return;
-  stime_t dt = hwstate->timestamp - prev_hwstate_.timestamp;
-  for (size_t i = 0; i < hwstate->finger_cnt; i++) {
-    struct FingerState *current = &hwstate->fingers[i];
-    struct FingerState *previous =
-        prev_hwstate_.GetFingerState(current->tracking_id);
-    if (previous == NULL)
-      continue;
-    float xdist = fabsf(previous->position_x - current->position_x);
-    float ydist = fabsf(previous->position_y - current->position_y);
-    if (xdist > big_jump_.val_ * dt)
-      hwstate->fingers[i].flags |= GESTURES_FINGER_WARP_X;
-    if (ydist > big_jump_.val_ * dt)
-      hwstate->fingers[i].flags |= GESTURES_FINGER_WARP_Y;
-  }
 }
 }  // namespace gestures

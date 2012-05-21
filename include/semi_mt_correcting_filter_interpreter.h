@@ -59,7 +59,6 @@ typedef enum {
 // include low-pressure filtering, hysteresis, finger position correction.
 
 class SemiMtCorrectingFilterInterpreter : public Interpreter {
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest);
@@ -143,10 +142,6 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // bounding box instead of real finger positions.
   void CorrectFingerPosition(HardwareState* hwstate);
 
-  // Set WARP flags for both fingers if their positions are either unreliable
-  // or jumpy.
-  void SuppressFingerJump(HardwareState* hwstate);
-
   // Set WARP flags for both fingers immediately after 1->2 finger transitions
   void SuppressOneToTwoFingerJump(HardwareState* hwstate);
 
@@ -197,10 +192,6 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   DoubleProperty non_linear_bottom_;
   DoubleProperty non_linear_left_;
   DoubleProperty non_linear_right_;
-
-  // Speed threshold for big jumps (pixels/second).
-  DoubleProperty big_jump_;
-
   scoped_ptr<Interpreter> next_;
 };
 
