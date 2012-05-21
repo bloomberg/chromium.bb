@@ -445,7 +445,7 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 {
 	struct weston_surface *surface = data;
 	struct weston_wm_window *window = get_wm_window(surface);
-	struct weston_wm *wm = window->wm;
+	struct weston_wm *wm = container_of(listener, struct weston_wm, activate_listener);
 
 	if (window)
 		weston_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
