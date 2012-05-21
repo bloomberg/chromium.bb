@@ -15,6 +15,7 @@ xserver_launcher_la_LIBADD =			\
 xserver_launcher_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 xserver_launcher_la_SOURCES =			\
 	xserver-launcher.c			\
+	selection.c				\
 	xserver-protocol.c			\
 	xserver-server-protocol.h		\
 	hash.c					\
