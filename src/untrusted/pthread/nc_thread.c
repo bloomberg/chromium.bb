@@ -206,7 +206,6 @@ static int nc_tdb_init(nc_thread_descriptor_t *tdb,
   tdb->tls_base = tdb;
   tdb->basic_data = basic_data;
   basic_data->tdb = tdb;
-  /* Put an illegal value, should be set when the ID is allocated */
   tdb->basic_data->retval = 0;
   tdb->basic_data->status = THREAD_RUNNING;
 
