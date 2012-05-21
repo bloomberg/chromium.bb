@@ -624,6 +624,7 @@ nacl_glibc_skiplist = set([
     # This test need more investigation.
     'run_syscall_test',
     ])
+nacl_glibc_skiplist.update(['%s_irt' % test for test in nacl_glibc_skiplist])
 
 
 # If a test is not in one of these suites, it will probally not be run on a

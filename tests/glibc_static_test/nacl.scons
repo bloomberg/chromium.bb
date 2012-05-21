@@ -45,9 +45,14 @@ if not env.Bit('nacl_static_link'):
         )
 nexe = env.ComponentProgram('glibc_static_hello', 'glibc_static_hello.c')
 
+# nacl-glibc's static linker scripts are not IRT-compatible yet.
+# See http://code.google.com/p/nativeclient/issues/detail?id=2573
+is_broken = env.Bit('tests_use_irt')
+
 node = env.CommandSelLdrTestNacl(
     'glibc_static_hello.out',
     nexe,
     stdout_golden=env.File('glibc_static_hello.stdout'),
     glibc_static=True)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_glibc_static_hello_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_glibc_static_hello_test',
+                       is_broken=is_broken)
