@@ -1920,6 +1920,7 @@ xserver_map_shell_surface(struct weston_wm *wm,
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
 	struct weston_wm_window *parent;
+	struct theme *t = window->wm->theme;
 
 	if (!shell_interface->create_shell_surface)
 		return;
@@ -1934,8 +1935,8 @@ xserver_map_shell_surface(struct weston_wm *wm,
 
 	parent = hash_table_lookup(wm->window_hash, window->transient_for->id);
 	shell_interface->set_transient(window->shsurf, parent->shsurf,
-				       window->x - parent->x,
-				       window->y - parent->y,
+				       window->x - parent->x + t->margin + t->width,
+				       window->y - parent->y + t->margin + t->titlebar_height,
 				       WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
 }
 
