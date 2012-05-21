@@ -77,6 +77,20 @@ cr.define('options.network', function() {
   var cellularEnabled_ = false;
 
   /**
+   * Indicates if WiMAX networks are available.
+   * @type {boolean}
+   * @private
+   */
+  var wimaxAvailable_ = false;
+
+  /**
+   * Indicates if WiMAX networks are enabled.
+   * @type {boolean}
+   * @private
+   */
+  var wimaxEnabled_ = false;
+
+  /**
    * Indicates if mobile data roaming is enabled.
    * @type {boolean}
    * @private
@@ -517,7 +531,7 @@ cr.define('options.network', function() {
           // TODO(zelidrag): Add proper strings for wimax.
           addendum.push({label: loadTimeData.getString('turnOffCellular'),
                        command: function() {
-                         chrome.send('disableCellular');
+                         chrome.send('disableWimax');
                        },
                        data: {}});
         } else if (this.data_.key == 'cellular') {
@@ -830,6 +844,8 @@ cr.define('options.network', function() {
     var networkList = $('network-list');
     cellularAvailable_ = data.cellularAvailable;
     cellularEnabled_ = data.cellularEnabled;
+    wimaxAvailable_ = data.wimaxAvailable;
+    wimaxEnabled_ = data.wimaxEnabled;
 
     if (data.accessLocked) {
       $('network-locked-message').hidden = false;
@@ -874,7 +890,6 @@ cr.define('options.network', function() {
     if (data.cellularAvailable && !data.airplaneMode) {
       if (data.cellularEnabled) {
         loadData_('cellular', data.wirelessList, data.rememberedList);
-        loadData_('wimax', data.wirelessList, data.rememberedList);
       } else {
         var subtitle = loadTimeData.getString('networkDisabled');
         var enableCellular = function() {
@@ -887,6 +902,24 @@ cr.define('options.network', function() {
       }
     } else {
       networkList.deleteItem('cellular');
+    }
+
+    // Only show cellular control if available and not in airplane mode.
+    if (data.wimaxAvailable && !data.airplaneMode) {
+      if (data.wimaxEnabled) {
+        loadData_('wimax', data.wirelessList, data.rememberedList);
+      } else {
+        var subtitle = loadTimeData.getString('networkDisabled');
+        var enableWimax = function() {
+          chrome.send('enableWimax');
+        };
+        networkList.update({key: 'wimax',
+                            subtitle: subtitle,
+                            iconType: 'cellular',
+                            command: enableWimax});
+      }
+    } else {
+      networkList.deleteItem('wimax');
     }
 
     // Only show VPN control if there is an available network and an internet

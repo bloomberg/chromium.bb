@@ -541,10 +541,10 @@ void NetworkLibraryImplStub::CallEnableNetworkDeviceType(
       wifi_networks_.clear();
       if (active_wifi_)
         DisconnectFromNetwork(active_wifi_);
-    } else if (device == TYPE_WIMAX && wifi_enabled()) {
+    } else if (device == TYPE_WIMAX && wimax_enabled()) {
         wimax_networks_.swap(disabled_wimax_networks_);
         wimax_networks_.clear();
-        if (active_wifi_)
+        if (active_wimax_)
           DisconnectFromNetwork(active_wimax_);
     } else if (device == TYPE_CELLULAR && cellular_enabled()) {
       cellular_networks_.swap(disabled_cellular_networks_);

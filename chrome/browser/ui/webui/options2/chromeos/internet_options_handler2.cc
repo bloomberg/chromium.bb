@@ -476,10 +476,16 @@ void InternetOptionsHandler::RegisterMessages() {
       base::Bind(&InternetOptionsHandler::DisableWifiCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("enableCellular",
-      base::Bind(&InternetOptionsHandler::EnableMobileCallback,
+      base::Bind(&InternetOptionsHandler::EnableCellularCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("disableCellular",
-      base::Bind(&InternetOptionsHandler::DisableMobileCallback,
+      base::Bind(&InternetOptionsHandler::DisableCellularCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("enableWimax",
+      base::Bind(&InternetOptionsHandler::EnableWimaxCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("disableWimax",
+      base::Bind(&InternetOptionsHandler::DisableWimaxCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("buyDataPlan",
       base::Bind(&InternetOptionsHandler::BuyDataPlanCallback,
@@ -509,12 +515,12 @@ void InternetOptionsHandler::DisableWifiCallback(const ListValue* args) {
   cros_->EnableWifiNetworkDevice(false);
 }
 
-void InternetOptionsHandler::EnableMobileCallback(const ListValue* args) {
+void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
   // TODO(nkostylev): Code duplication, see NetworkMenu::ToggleCellular().
   const chromeos::NetworkDevice* mobile = cros_->FindMobileDevice();
   if (!mobile) {
     LOG(ERROR) << "Didn't find mobile device, it should have been available.";
-    cros_->EnableMobileNetworkDevice(true);
+    cros_->EnableCellularNetworkDevice(true);
   } else if (!mobile->is_sim_locked()) {
     if (mobile->is_sim_absent()) {
       std::string setup_url;
@@ -531,7 +537,7 @@ void InternetOptionsHandler::EnableMobileCallback(const ListValue* args) {
         // TODO(nkostylev): Show generic error message. http://crosbug.com/15444
       }
     } else {
-      cros_->EnableMobileNetworkDevice(true);
+      cros_->EnableCellularNetworkDevice(true);
     }
   } else {
     chromeos::SimDialogDelegate::ShowDialog(GetNativeWindow(),
@@ -539,8 +545,16 @@ void InternetOptionsHandler::EnableMobileCallback(const ListValue* args) {
   }
 }
 
-void InternetOptionsHandler::DisableMobileCallback(const ListValue* args) {
-  cros_->EnableMobileNetworkDevice(false);
+void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
+  cros_->EnableCellularNetworkDevice(false);
+}
+
+void InternetOptionsHandler::EnableWimaxCallback(const ListValue* args) {
+  cros_->EnableWimaxNetworkDevice(true);
+}
+
+void InternetOptionsHandler::DisableWimaxCallback(const ListValue* args) {
+  cros_->EnableWimaxNetworkDevice(false);
 }
 
 void InternetOptionsHandler::ShowMorePlanInfoCallback(const ListValue* args) {
@@ -1403,9 +1417,12 @@ void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
   dictionary->SetBoolean("wifiAvailable", cros_->wifi_available());
   dictionary->SetBoolean("wifiBusy", cros_->wifi_busy());
   dictionary->SetBoolean("wifiEnabled", cros_->wifi_enabled());
-  dictionary->SetBoolean("cellularAvailable", cros_->mobile_available());
-  dictionary->SetBoolean("cellularBusy", cros_->mobile_busy());
-  dictionary->SetBoolean("cellularEnabled", cros_->mobile_enabled());
+  dictionary->SetBoolean("cellularAvailable", cros_->cellular_available());
+  dictionary->SetBoolean("cellularBusy", cros_->cellular_busy());
+  dictionary->SetBoolean("cellularEnabled", cros_->cellular_enabled());
+  dictionary->SetBoolean("wimaxEnabled", cros_->wimax_enabled());
+  dictionary->SetBoolean("wimaxAvailable", cros_->wimax_available());
+  dictionary->SetBoolean("wimaxBusy", cros_->wimax_busy());
   // TODO(kevers): The use of 'offline_mode' is not quite correct.  Update once
   // we have proper back-end support.
   dictionary->SetBoolean("airplaneMode", cros_->offline_mode());

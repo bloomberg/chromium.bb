@@ -101,8 +101,10 @@ class InternetOptionsHandler
   void SetIPConfigCallback(const base::ListValue* args);
   void EnableWifiCallback(const base::ListValue* args);
   void DisableWifiCallback(const base::ListValue* args);
-  void EnableMobileCallback(const base::ListValue* args);
-  void DisableMobileCallback(const base::ListValue* args);
+  void EnableCellularCallback(const base::ListValue* args);
+  void DisableCellularCallback(const base::ListValue* args);
+  void EnableWimaxCallback(const base::ListValue* args);
+  void DisableWimaxCallback(const base::ListValue* args);
   void BuyDataPlanCallback(const base::ListValue* args);
   void SetApnCallback(const base::ListValue* args);
   void SetSimCardLockCallback(const base::ListValue* args);
