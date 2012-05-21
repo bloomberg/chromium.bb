@@ -79,7 +79,7 @@ class CrashTriager(object):
     """
     chrome_branch = self.chrome_branch
     gsutil_archive = self._GetGSPath(bot_id, build_config)
-    pattern = '%s/R%s-*.dmp.txt' % (gsutil_archive, chrome_branch)
+    pattern = '%s/R%s-**.dmp.txt' % (gsutil_archive, chrome_branch)
     out = cros_build_lib.RunCommand(['gsutil', 'ls', pattern],
                                     error_code_ok=True,
                                     redirect_stdout=True,
