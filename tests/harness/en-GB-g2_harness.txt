@@ -1,0 +1,20 @@
+{
+    "table": "en-GB-g2.ctb", 
+    "tests": [
+        {
+            "brl": "! cat sat on ! mat", 
+            "txt": "the cat sat on the mat"
+        }, 
+        {
+            "brl": "6! moon", 
+            "txt": "to the moon"
+        }, 
+        {
+            "BRLCursorPos": 2, 
+            "brl": "y went to", 
+            "cursorPos": 4, 
+            "mode": "compbrlAtCursor", 
+            "txt": "you went to"
+        }
+    ]
+}

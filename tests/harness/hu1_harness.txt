@@ -1,0 +1,3153 @@
+{
+    "table": "hu1.ctb", 
+    "tests": [
+        {
+            "brl": "ad\"s5er}", 
+            "txt": "adásszerű"
+        }, 
+        {
+            "brl": "ad\"s5{net", 
+            "txt": "adásszünet"
+        }, 
+        {
+            "brl": "ad9s5\"mla", 
+            "txt": "adósszámla"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$a4agos5erg16", 
+            "txt": "Agyagosszergény"
+        }, 
+        {
+            "brl": "a4ag4}r}iken", 
+            "txt": "agyaggyűrűiken"
+        }, 
+        {
+            "brl": "a4on6om", 
+            "txt": "agyonnyom"
+        }, 
+        {
+            "brl": "a4on602ott", 
+            "txt": "agyonnyúzott"
+        }, 
+        {
+            "brl": "a4on6}tt ", 
+            "txt": "agyonnyűtt "
+        }, 
+        {
+            "brl": "\"40s5ekerek", 
+            "txt": "ágyússzekerek"
+        }, 
+        {
+            "brl": "\"jul\"s5er}", 
+            "txt": "ájulásszerű"
+        }, 
+        {
+            "brl": "ak\"csqv16", 
+            "txt": "akácsövény"
+        }, 
+        {
+            "brl": "\"k\"csqv16", 
+            "txt": "ákácsövény"
+        }, 
+        {
+            "brl": "al\"s5olg\"ja", 
+            "txt": "alásszolgája"
+        }, 
+        {
+            "brl": "al\"s5olg\"juk ", 
+            "txt": "alásszolgájuk "
+        }, 
+        {
+            "brl": "alkalma2\"s5erver", 
+            "txt": "alkalmazásszerver"
+        }, 
+        {
+            "brl": "\"ll\"s5qg", 
+            "txt": "állásszög"
+        }, 
+        {
+            "brl": "alm\"s5{rke", 
+            "txt": "almásszürke"
+        }, 
+        {
+            "brl": "alv\"s5eg16", 
+            "txt": "alvásszegény"
+        }, 
+        {
+            "brl": "alv\"s5{ks1glete", 
+            "txt": "alvásszükséglete"
+        }, 
+        {
+            "brl": "alv\"s2avar", 
+            "txt": "alvászavar"
+        }, 
+        {
+            "brl": "a6ag4727", 
+            "txt": "anyaggyőző"
+        }, 
+        {
+            "brl": "a6ag4}jt1s", 
+            "txt": "anyaggyűjtés"
+        }, 
+        {
+            "brl": "ara6os57ke", 
+            "txt": "aranyosszőke"
+        }, 
+        {
+            "brl": "\"rboc303", 
+            "txt": "árboccsúcs"
+        }, 
+        {
+            "brl": "\"rb9c303", 
+            "txt": "árbóccsúcs"
+        }, 
+        {
+            "brl": "\"rbocsudarat", 
+            "txt": "árbocsudarat"
+        }, 
+        {
+            "brl": "arc{reg4ullad\"s", 
+            "txt": "arcüreggyulladás"
+        }, 
+        {
+            "brl": "arc3ont", 
+            "txt": "arccsont"
+        }, 
+        {
+            "brl": "arcseb", 
+            "txt": "arcseb"
+        }, 
+        {
+            "brl": "arcsebe ", 
+            "txt": "arcsebe "
+        }, 
+        {
+            "brl": "arcs1r{l1s", 
+            "txt": "arcsérülés"
+        }, 
+        {
+            "brl": "\"rgus5em}", 
+            "txt": "árgusszemű"
+        }, 
+        {
+            "brl": "\"rv|2s0jtotta", 
+            "txt": "árvízsújtotta"
+        }, 
+        {
+            "brl": "aut9s5em{veg", 
+            "txt": "autósszemüveg"
+        }, 
+        {
+            "brl": "a2on6omban", 
+            "txt": "azonnyomban"
+        }, 
+        {
+            "brl": "b\"dog4}jtem16", 
+            "txt": "bádoggyűjtemény"
+        }, 
+        {
+            "brl": "barn\"s57ke", 
+            "txt": "barnásszőke"
+        }, 
+        {
+            "brl": "barn\"s57k1t", 
+            "txt": "barnásszőkét"
+        }, 
+        {
+            "brl": "barn\"s5{rke", 
+            "txt": "barnásszürke"
+        }, 
+        {
+            "brl": "barne55al", 
+            "txt": "barnesszal"
+        }, 
+        {
+            "brl": "be3l1s5er}en", 
+            "txt": "becslésszerűen"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$b1k1s5entandr\"s", 
+            "txt": "Békésszentandrás"
+        }, 
+        {
+            "brl": "b1l1s5qvet", 
+            "txt": "bélésszövet"
+        }, 
+        {
+            "brl": "b1eg4}jtem16", 
+            "txt": "bélyeggyűjtemény"
+        }, 
+        {
+            "brl": "b1rcs{veg", 
+            "txt": "bércsüveg"
+        }, 
+        {
+            "brl": "berende21s5er} ", 
+            "txt": "berendezésszerű "
+        }, 
+        {
+            "brl": "berende21s5ett", 
+            "txt": "berendezésszett"
+        }, 
+        {
+            "brl": "beteg494\"5", 
+            "txt": "beteggyógyász"
+        }, 
+        {
+            "brl": "bilin32qrg1s", 
+            "txt": "bilincszörgés"
+        }, 
+        {
+            "brl": "binsen44qk1r", 
+            "txt": "binsenggyökér"
+        }, 
+        {
+            "brl": "boh9csapk\"ja", 
+            "txt": "bohócsapkája"
+        }, 
+        {
+            "brl": "bonbonme44", 
+            "txt": "bonbonmeggy"
+        }, 
+        {
+            "brl": "bors5em", 
+            "txt": "borsszem"
+        }, 
+        {
+            "brl": "bors59r9", 
+            "txt": "borsszóró"
+        }, 
+        {
+            "brl": "bor2as57r}", 
+            "txt": "borzasszőrű"
+        }, 
+        {
+            "brl": "bor2`|r", 
+            "txt": "borzzsír"
+        }, 
+        {
+            "brl": "b7g1s5er}", 
+            "txt": "bőgésszerű"
+        }, 
+        {
+            "brl": "bqrtqn6elve", 
+            "txt": "börtönnyelve"
+        }, 
+        {
+            "brl": "brekeg1s5er}", 
+            "txt": "brekegésszerű"
+        }, 
+        {
+            "brl": "bron2s\"ska", 
+            "txt": "bronzsáska"
+        }, 
+        {
+            "brl": "bron2s\"sk\"k", 
+            "txt": "bronzsáskák"
+        }, 
+        {
+            "brl": "bron2sasokkal ", 
+            "txt": "bronzsasokkal "
+        }, 
+        {
+            "brl": "bron2sisak", 
+            "txt": "bronzsisak"
+        }, 
+        {
+            "brl": "b030j\"r\"s5er}", 
+            "txt": "búcsújárásszerű"
+        }, 
+        {
+            "brl": "b}n6omok", 
+            "txt": "bűnnyomok"
+        }, 
+        {
+            "brl": "chipses2a3k9", 
+            "txt": "chipseszacskó"
+        }, 
+        {
+            "brl": "3ap\"s5\"m", 
+            "txt": "csapásszám"
+        }, 
+        {
+            "brl": "3\"rd\"s59l9", 
+            "txt": "csárdásszóló"
+        }, 
+        {
+            "brl": "3attan\"s5er}", 
+            "txt": "csattanásszerű"
+        }, 
+        {
+            "brl": "3avar\"s5er}", 
+            "txt": "csavarásszerű"
+        }, 
+        {
+            "brl": "3ik9s5\"mad9", 
+            "txt": "csikósszámadó"
+        }, 
+        {
+            "brl": "3ipk1s51l}", 
+            "txt": "csipkésszélű"
+        }, 
+        {
+            "brl": "3obban\"s5er}", 
+            "txt": "csobbanásszerű"
+        }, 
+        {
+            "brl": "3ukl\"s5er}", 
+            "txt": "csuklásszerű"
+        }, 
+        {
+            "brl": "di55ert\"ci9", 
+            "txt": "disszertáció"
+        }, 
+        {
+            "brl": "dobperg1s5er}en", 
+            "txt": "dobpergésszerűen"
+        }, 
+        {
+            "brl": "dqg4apj0", 
+            "txt": "döggyapjú"
+        }, 
+        {
+            "brl": "d7l1s5qg", 
+            "txt": "dőlésszög"
+        }, 
+        {
+            "brl": "dqrg1s5er}", 
+            "txt": "dörgésszerű"
+        }, 
+        {
+            "brl": "dqrg1s5er} ", 
+            "txt": "dörgésszerű "
+        }, 
+        {
+            "brl": "drago6os5\"2ad ", 
+            "txt": "dragonyosszázad "
+        }, 
+        {
+            "brl": "drago6os2\"5l9alj", 
+            "txt": "dragonyoszászlóalj"
+        }, 
+        {
+            "brl": "drog4an0s", 
+            "txt": "droggyanús"
+        }, 
+        {
+            "brl": "d0s5ak\"ll0", 
+            "txt": "dússzakállú"
+        }, 
+        {
+            "brl": "1des5\"j0", 
+            "txt": "édesszájú"
+        }, 
+        {
+            "brl": "1des5e5testv1r", 
+            "txt": "édesszesztestvér"
+        }, 
+        {
+            "brl": "1g1s5ab\"", 
+            "txt": "égésszabály"
+        }, 
+        {
+            "brl": "1g1s5ag", 
+            "txt": "égésszag"
+        }, 
+        {
+            "brl": "1g1s5\"m", 
+            "txt": "égésszám"
+        }, 
+        {
+            "brl": "1g1s5igetel1s", 
+            "txt": "égésszigetelés"
+        }, 
+        {
+            "brl": "e4enes5\"l0", 
+            "txt": "egyenesszálú"
+        }, 
+        {
+            "brl": "e4enes5\"r60ak", 
+            "txt": "egyenesszárnyúak"
+        }, 
+        {
+            "brl": "e4enes5qg", 
+            "txt": "egyenesszög"
+        }, 
+        {
+            "brl": "e4e2s1g", 
+            "txt": "egyezség"
+        }, 
+        {
+            "brl": "1hes5\"jat ", 
+            "txt": "éhesszájat "
+        }, 
+        {
+            "brl": "ejt7er67s5\"r6ak", 
+            "txt": "ejtőernyősszárnyak"
+        }, 
+        {
+            "brl": "ejt7er67s5\"2ad", 
+            "txt": "ejtőernyősszázad"
+        }, 
+        {
+            "brl": "ejt7er67s2\"5l9alj ", 
+            "txt": "ejtőernyőszászlóalj "
+        }, 
+        {
+            "brl": "1kes59l\"s", 
+            "txt": "ékesszólás"
+        }, 
+        {
+            "brl": "1kes59l9 ", 
+            "txt": "ékesszóló "
+        }, 
+        {
+            "brl": "ekh9s5ek1r", 
+            "txt": "ekhósszekér"
+        }, 
+        {
+            "brl": "ekh9s5ekerek", 
+            "txt": "ekhósszekerek"
+        }, 
+        {
+            "brl": "eles1g4}jt1s ", 
+            "txt": "eleséggyűjtés "
+        }, 
+        {
+            "brl": "1les5em}", 
+            "txt": "élesszemű"
+        }, 
+        {
+            "brl": "ell\"t\"s5er}", 
+            "txt": "ellátásszerű"
+        }, 
+        {
+            "brl": "ellen\"ll\"s5ekr16", 
+            "txt": "ellenállásszekrény"
+        }, 
+        {
+            "brl": "ellen6ilatko2at", 
+            "txt": "ellennyilatkozat"
+        }, 
+        {
+            "brl": "ellen6om\"s", 
+            "txt": "ellennyomás"
+        }, 
+        {
+            "brl": "elm1ncs1g", 
+            "txt": "elméncség"
+        }, 
+        {
+            "brl": "el7|r\"s5er} ", 
+            "txt": "előírásszerű "
+        }, 
+        {
+            "brl": "elr1mi551k ", 
+            "txt": "elrémisszék "
+        }, 
+        {
+            "brl": "emberh0s5agot ", 
+            "txt": "emberhússzagot "
+        }, 
+        {
+            "brl": "emel1s5er}", 
+            "txt": "emelésszerű"
+        }, 
+        {
+            "brl": "1rc3apad1k, 1rc3eng1s, 1rc3atorna ", 
+            "txt": "érccsapadék, érccsengés, érccsatorna "
+        }, 
+        {
+            "brl": "1rcsalak", 
+            "txt": "ércsalak"
+        }, 
+        {
+            "brl": "1rcsas", 
+            "txt": "ércsas"
+        }, 
+        {
+            "brl": "1rcseem", 
+            "txt": "ércselyem"
+        }, 
+        {
+            "brl": "1rcs|p, 1rcs|pj\"ba, 1rcs|pl\"da ", 
+            "txt": "ércsíp, ércsípjába, ércsípláda "
+        }, 
+        {
+            "brl": "1r3|ptet7", 
+            "txt": "ércsíptető"
+        }, 
+        {
+            "brl": "1rcsisak", 
+            "txt": "ércsisak"
+        }, 
+        {
+            "brl": "1rcsodro6", 
+            "txt": "ércsodrony"
+        }, 
+        {
+            "brl": "er7forr\"s2ab\"l9", 
+            "txt": "erőforrászabáló"
+        }, 
+        {
+            "brl": "1r21kel1s5int", 
+            "txt": "érzékelésszint"
+        }, 
+        {
+            "brl": "155er}", 
+            "txt": "ésszerű"
+        }, 
+        {
+            "brl": "e5kq2sor, e5kq2sor\"n", 
+            "txt": "eszközsor, eszközsorán"
+        }, 
+        {
+            "brl": "ev1s2avar", 
+            "txt": "evészavar"
+        }, 
+        {
+            "brl": "fa4os5entek", 
+            "txt": "fagyosszentek"
+        }, 
+        {
+            "brl": "f\"k\"s2ene", 
+            "txt": "fáklyászene"
+        }, 
+        {
+            "brl": "farkas5\"j ", 
+            "txt": "farkasszáj "
+        }, 
+        {
+            "brl": "farkas5em", 
+            "txt": "farkasszem"
+        }, 
+        {
+            "brl": "farkas5emet ", 
+            "txt": "farkasszemet "
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$farkas5iget,", 
+            "txt": "Farkassziget,"
+        }, 
+        {
+            "brl": "f\"s5\"r0", 
+            "txt": "fásszárú"
+        }, 
+        {
+            "brl": "fe4enc3oport", 
+            "txt": "fegyenccsoport"
+        }, 
+        {
+            "brl": "fe4encsapk\"t ", 
+            "txt": "fegyencsapkát "
+        }, 
+        {
+            "brl": "feh1res57ke, feh1res5{rke ", 
+            "txt": "fehéresszőke, fehéresszürke "
+        }, 
+        {
+            "brl": "feket1s5{rke", 
+            "txt": "feketésszürke"
+        }, 
+        {
+            "brl": "feles1g4ilkos", 
+            "txt": "feleséggyilkos"
+        }, 
+        {
+            "brl": "felfede21s5\"mba", 
+            "txt": "felfedezésszámba"
+        }, 
+        {
+            "brl": "fels1g4ilkol\"s", 
+            "txt": "felséggyilkolás"
+        }, 
+        {
+            "brl": "fel5erel1s5ettet", 
+            "txt": "felszerelésszettet"
+        }, 
+        {
+            "brl": "fert721s5er}", 
+            "txt": "fertőzésszerű"
+        }, 
+        {
+            "brl": "filc3i2ma", 
+            "txt": "filccsizma"
+        }, 
+        {
+            "brl": "filigr\"n6el}", 
+            "txt": "filigránnyelű"
+        }, 
+        {
+            "brl": "fogas5eg", 
+            "txt": "fogasszeg"
+        }, 
+        {
+            "brl": "fogf\"j\"s5er}", 
+            "txt": "fogfájásszerű"
+        }, 
+        {
+            "brl": "foglalko2\"s5er}", 
+            "txt": "foglalkozásszerű"
+        }, 
+        {
+            "brl": "fog4alu", 
+            "txt": "foggyalu"
+        }, 
+        {
+            "brl": "fog4qk1r", 
+            "txt": "foggyökér"
+        }, 
+        {
+            "brl": "fog4ullad\"s", 
+            "txt": "foggyulladás"
+        }, 
+        {
+            "brl": "fog4}r}", 
+            "txt": "foggyűrű"
+        }, 
+        {
+            "brl": "forg\"s5ab\"", 
+            "txt": "forgásszabály"
+        }, 
+        {
+            "brl": "forr\"s5qveg", 
+            "txt": "forrásszöveg"
+        }, 
+        {
+            "brl": "fos5|n}", 
+            "txt": "fosszínű"
+        }, 
+        {
+            "brl": "fqld3u5aml\"s5er}en", 
+            "txt": "földcsuszamlásszerűen"
+        }, 
+        {
+            "brl": "fql1le55em", 
+            "txt": "fölélesszem"
+        }, 
+        {
+            "brl": "f727kal\"n6elet", 
+            "txt": "főzőkalánnyelet"
+        }, 
+        {
+            "brl": "fuvaros5ek1r", 
+            "txt": "fuvarosszekér"
+        }, 
+        {
+            "brl": "f0v9s5er5\"m", 
+            "txt": "fúvósszerszám"
+        }, 
+        {
+            "brl": "f0v9s5imf9nia", 
+            "txt": "fúvósszimfónia"
+        }, 
+        {
+            "brl": "f0v9s2enekar", 
+            "txt": "fúvószenekar"
+        }, 
+        {
+            "brl": "f}t1s5ag", 
+            "txt": "fűtésszag"
+        }, 
+        {
+            "brl": "garaboncsereg", 
+            "txt": "garaboncsereg"
+        }, 
+        {
+            "brl": "g\"2spray", 
+            "txt": "gázspray"
+        }, 
+        {
+            "brl": "g\"2sug\"r", 
+            "txt": "gázsugár"
+        }, 
+        {
+            "brl": "gerincs1r{lt", 
+            "txt": "gerincsérült"
+        }, 
+        {
+            "brl": "gerincs1rv ", 
+            "txt": "gerincsérv "
+        }, 
+        {
+            "brl": "gin5eng4qk1r", 
+            "txt": "ginszenggyökér"
+        }, 
+        {
+            "brl": "gin2eng4qk1r", 
+            "txt": "ginzenggyökér"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$gombos5eg", 
+            "txt": "Gombosszeg"
+        }, 
+        {
+            "brl": "gondvisel1s5er}", 
+            "txt": "gondviselésszerű"
+        }, 
+        {
+            "brl": "g72s|p", 
+            "txt": "gőzsíp"
+        }, 
+        {
+            "brl": "g72sug\"r", 
+            "txt": "gőzsugár"
+        }, 
+        {
+            "brl": "g725iva880", 
+            "txt": "gőzszivattyú"
+        }, 
+        {
+            "brl": "gr\"n\"tos2\"5l9alj", 
+            "txt": "gránátoszászlóalj"
+        }, 
+        {
+            "brl": "g06vers5er27", 
+            "txt": "gúnyversszerző"
+        }, 
+        {
+            "brl": "4alogos5\"2ad", 
+            "txt": "gyalogosszázad"
+        }, 
+        {
+            "brl": "4alogos2\"5l9alj,", 
+            "txt": "gyalogoszászlóalj,"
+        }, 
+        {
+            "brl": "4ors5\"r60", 
+            "txt": "gyorsszárnyú"
+        }, 
+        {
+            "brl": "4ors5ek1r ", 
+            "txt": "gyorsszekér "
+        }, 
+        {
+            "brl": "4ors5}r7", 
+            "txt": "gyorsszűrő"
+        }, 
+        {
+            "brl": "40jt\"s5ab\"", 
+            "txt": "gyújtásszabály"
+        }, 
+        {
+            "brl": "40jt\"s`in9r", 
+            "txt": "gyújtászsinór"
+        }, 
+        {
+            "brl": "4}l1s5|ne", 
+            "txt": "gyűlésszíne"
+        }, 
+        {
+            "brl": "habar33al", 
+            "txt": "habarccsal"
+        }, 
+        {
+            "brl": "habitus5er}en", 
+            "txt": "habitusszerűen"
+        }, 
+        {
+            "brl": "hadia6ag4\"r", 
+            "txt": "hadianyaggyár"
+        }, 
+        {
+            "brl": "hadsereg4}jt1s ", 
+            "txt": "hadsereggyűjtés "
+        }, 
+        {
+            "brl": "hajl\"s5qg", 
+            "txt": "hajlásszög"
+        }, 
+        {
+            "brl": "haj9s5ekerce ", 
+            "txt": "hajósszekerce "
+        }, 
+        {
+            "brl": "haj9s5em12et", 
+            "txt": "hajósszemélyzet"
+        }, 
+        {
+            "brl": "hall\"s2avar", 
+            "txt": "hallászavar"
+        }, 
+        {
+            "brl": "halottas5ek1r ", 
+            "txt": "halottasszekér "
+        }, 
+        {
+            "brl": "halottas5oba", 
+            "txt": "halottasszoba"
+        }, 
+        {
+            "brl": "halottas5ob\"ba", 
+            "txt": "halottasszobába"
+        }, 
+        {
+            "brl": "hamvas57ke", 
+            "txt": "hamvasszőke"
+        }, 
+        {
+            "brl": "hamvas5{rke", 
+            "txt": "hamvasszürke"
+        }, 
+        {
+            "brl": "hang4akorlat", 
+            "txt": "hanggyakorlat"
+        }, 
+        {
+            "brl": "h\"6\"s5ag", 
+            "txt": "hányásszag"
+        }, 
+        {
+            "brl": "haragos2qld", 
+            "txt": "haragoszöld"
+        }, 
+        {
+            "brl": "harcos5ellem", 
+            "txt": "harcosszellem"
+        }, 
+        {
+            "brl": "harc3elekm16 ", 
+            "txt": "harccselekmény "
+        }, 
+        {
+            "brl": "harc3oport", 
+            "txt": "harccsoport"
+        }, 
+        {
+            "brl": "harcsor", 
+            "txt": "harcsor"
+        }, 
+        {
+            "brl": "h\"rmas5\"m0", 
+            "txt": "hármasszámú"
+        }, 
+        {
+            "brl": "h\"rs51n", 
+            "txt": "hársszén"
+        }, 
+        {
+            "brl": "h\"rs5enet", 
+            "txt": "hársszenet"
+        }, 
+        {
+            "brl": "h\"r8\"s5\"r60", 
+            "txt": "hártyásszárnyú"
+        }, 
+        {
+            "brl": "hasis5agot", 
+            "txt": "hasisszagot"
+        }, 
+        {
+            "brl": "hat\"s5{net", 
+            "txt": "hatásszünet"
+        }, 
+        {
+            "brl": "h\"`\"rkod\"s\"t", 
+            "txt": "házsárkodását"
+        }, 
+        {
+            "brl": "he4es5qg", 
+            "txt": "hegyesszög"
+        }, 
+        {
+            "brl": "he45oros5er}", 
+            "txt": "hegyszorosszerű"
+        }, 
+        {
+            "brl": "hekus5agot", 
+            "txt": "hekusszagot"
+        }, 
+        {
+            "brl": "hentes5aktanfoam\"t", 
+            "txt": "hentesszaktanfolyamát"
+        }, 
+        {
+            "brl": "hirdet1s5qveg", 
+            "txt": "hirdetésszöveg"
+        }, 
+        {
+            "brl": "hivat\"s5er}en", 
+            "txt": "hivatásszerűen"
+        }, 
+        {
+            "brl": "h|2elked1s5\"mba", 
+            "txt": "hízelkedésszámba"
+        }, 
+        {
+            "brl": "h9ag4ullad\"s", 
+            "txt": "hólyaggyulladás"
+        }, 
+        {
+            "brl": "hqrg1s5er}", 
+            "txt": "hörgésszerű"
+        }, 
+        {
+            "brl": "h7s5|n15", 
+            "txt": "hősszínész"
+        }, 
+        {
+            "brl": "h7s5qvets1g ", 
+            "txt": "hősszövetség "
+        }, 
+        {
+            "brl": "h0s5aft", 
+            "txt": "hússzaft"
+        }, 
+        {
+            "brl": "h0s5ag", 
+            "txt": "hússzag"
+        }, 
+        {
+            "brl": "h0s5ag0", 
+            "txt": "hússzagú"
+        }, 
+        {
+            "brl": "h0s5\"ll|tm\"6 ", 
+            "txt": "hússzállítmány "
+        }, 
+        {
+            "brl": "h0s5\"ll|t9", 
+            "txt": "hússzállító"
+        }, 
+        {
+            "brl": "h0s5alonna", 
+            "txt": "hússzalonna"
+        }, 
+        {
+            "brl": "h0s5ekr16", 
+            "txt": "hússzekrény"
+        }, 
+        {
+            "brl": "h0s5elet", 
+            "txt": "hússzelet"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$h0s5iget", 
+            "txt": "Hússziget"
+        }, 
+        {
+            "brl": "h0s5|n}", 
+            "txt": "hússzínű"
+        }, 
+        {
+            "brl": "h}vqs5em}", 
+            "txt": "hűvösszemű"
+        }, 
+        {
+            "brl": "ideg4enges1g", 
+            "txt": "ideggyengeség"
+        }, 
+        {
+            "brl": "ideg494\"5at", 
+            "txt": "ideggyógyászat"
+        }, 
+        {
+            "brl": "ideg494int12et", 
+            "txt": "ideggyógyintézet"
+        }, 
+        {
+            "brl": "ideg4qnge", 
+            "txt": "ideggyönge"
+        }, 
+        {
+            "brl": "ideg4qtr7", 
+            "txt": "ideggyötrő"
+        }, 
+        {
+            "brl": "ideg4ullad\"s", 
+            "txt": "ideggyulladás"
+        }, 
+        {
+            "brl": "identit\"s2avar", 
+            "txt": "identitászavar"
+        }, 
+        {
+            "brl": "id7j\"r\"s5olg\"lat", 
+            "txt": "időjárásszolgálat"
+        }, 
+        {
+            "brl": "im\"ds\"g4}jtem16", 
+            "txt": "imádsággyűjtemény"
+        }, 
+        {
+            "brl": "inas5erep", 
+            "txt": "inasszerep"
+        }, 
+        {
+            "brl": "inas5erepet ", 
+            "txt": "inasszerepet "
+        }, 
+        {
+            "brl": "inas5eretetet", 
+            "txt": "inasszeretetet"
+        }, 
+        {
+            "brl": "indi\"n6elv", 
+            "txt": "indiánnyelv"
+        }, 
+        {
+            "brl": "|n60jt9,", 
+            "txt": "ínnyújtó,"
+        }, 
+        {
+            "brl": "|n60jt9t ", 
+            "txt": "ínnyújtót "
+        }, 
+        {
+            "brl": "|6encs1g", 
+            "txt": "ínyencség"
+        }, 
+        {
+            "brl": "|r\"s5eretet,", 
+            "txt": "írásszeretet,"
+        }, 
+        {
+            "brl": "irt\"s51l", 
+            "txt": "irtásszél"
+        }, 
+        {
+            "brl": "isten6ila", 
+            "txt": "istennyila"
+        }, 
+        {
+            "brl": "j\"r\"s5er} ", 
+            "txt": "járásszerű "
+        }, 
+        {
+            "brl": "j\"spis5obor", 
+            "txt": "jáspisszobor"
+        }, 
+        {
+            "brl": "jegec3oport", 
+            "txt": "jegeccsoport"
+        }, 
+        {
+            "brl": "j1g4\"rt\"s", 
+            "txt": "jéggyártás"
+        }, 
+        {
+            "brl": "jelen1s5er} ", 
+            "txt": "jelenésszerű "
+        }, 
+        {
+            "brl": "jelent1s5er}", 
+            "txt": "jelentésszerű"
+        }, 
+        {
+            "brl": "jelent1s5int", 
+            "txt": "jelentésszint"
+        }, 
+        {
+            "brl": "jel21s5er}", 
+            "txt": "jelzésszerű"
+        }, 
+        {
+            "brl": "j9s5avai,", 
+            "txt": "jósszavai,"
+        }, 
+        {
+            "brl": "j9s5elleme,", 
+            "txt": "jósszelleme,"
+        }, 
+        {
+            "brl": "kabin6|l\"son", 
+            "txt": "kabinnyíláson"
+        }, 
+        {
+            "brl": "kabin6om\"s", 
+            "txt": "kabinnyomás"
+        }, 
+        {
+            "brl": "kakas59", 
+            "txt": "kakasszó"
+        }, 
+        {
+            "brl": "kalap\"32eng1s", 
+            "txt": "kalapácszengés"
+        }, 
+        {
+            "brl": "kamion6i", 
+            "txt": "kamionnyi"
+        }, 
+        {
+            "brl": "kapar\"s5er}", 
+            "txt": "kaparásszerű"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kapos5ek37", 
+            "txt": "Kaposszekcső"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kapos5erdahe", 
+            "txt": "Kaposszerdahely"
+        }, 
+        {
+            "brl": "kapus5oba", 
+            "txt": "kapusszoba"
+        }, 
+        {
+            "brl": "karos51k", 
+            "txt": "karosszék"
+        }, 
+        {
+            "brl": "kart\"32\"por", 
+            "txt": "kartácszápor"
+        }, 
+        {
+            "brl": "karton6i", 
+            "txt": "kartonnyi"
+        }, 
+        {
+            "brl": "kas51k", 
+            "txt": "kasszék"
+        }, 
+        {
+            "brl": "katal9gus5\"m", 
+            "txt": "katalógusszám"
+        }, 
+        {
+            "brl": "kateki2mus5er}", 
+            "txt": "katekizmusszerű"
+        }, 
+        {
+            "brl": "kavar\"s5er}", 
+            "txt": "kavarásszerű"
+        }, 
+        {
+            "brl": "kavi35er} ", 
+            "txt": "kavicsszerű "
+        }, 
+        {
+            "brl": "kavi32\"por", 
+            "txt": "kavicszápor"
+        }, 
+        {
+            "brl": "kavi32\"to6", 
+            "txt": "kavicszátony"
+        }, 
+        {
+            "brl": "kavi32u2al1k", 
+            "txt": "kavicszuzalék"
+        }, 
+        {
+            "brl": "k1kes5{rke", 
+            "txt": "kékesszürke"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kemenes5entm\"rton", 
+            "txt": "Kemenesszentmárton"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kemenes5entp1ter", 
+            "txt": "Kemenesszentpéter"
+        }, 
+        {
+            "brl": "k1pm\"s5er} ", 
+            "txt": "képmásszerű "
+        }, 
+        {
+            "brl": "k1p21s5er} ", 
+            "txt": "képzésszerű "
+        }, 
+        {
+            "brl": "k1p21s5erve21s", 
+            "txt": "képzésszervezés"
+        }, 
+        {
+            "brl": "kerekes51k", 
+            "txt": "kerekesszék"
+        }, 
+        {
+            "brl": "keres1s5olg\"ltat9", 
+            "txt": "keresésszolgáltató"
+        }, 
+        {
+            "brl": "k1r1s5er}en", 
+            "txt": "kérésszerűen"
+        }, 
+        {
+            "brl": "ker|t1s5aggat9", 
+            "txt": "kerítésszaggató"
+        }, 
+        {
+            "brl": "k1s50r\"s", 
+            "txt": "késszúrás"
+        }, 
+        {
+            "brl": "kev1s5av0 ", 
+            "txt": "kevésszavú "
+        }, 
+        {
+            "brl": "kev1s5er", 
+            "txt": "kevésszer"
+        }, 
+        {
+            "brl": "kifejle55em", 
+            "txt": "kifejlesszem"
+        }, 
+        {
+            "brl": "kih|v\"s5er}", 
+            "txt": "kihívásszerű"
+        }, 
+        {
+            "brl": "kilenc3atorna", 
+            "txt": "kilenccsatorna"
+        }, 
+        {
+            "brl": "kilin32qrg1st ", 
+            "txt": "kilincszörgést "
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kis5\"ll\"s", 
+            "txt": "Kisszállás"
+        }, 
+        {
+            "brl": "kis5\"m0", 
+            "txt": "kisszámú"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kis5eben", 
+            "txt": "Kisszeben"
+        }, 
+        {
+            "brl": "kis51k", 
+            "txt": "kisszék"
+        }, 
+        {
+            "brl": "kis5ekr16", 
+            "txt": "kisszekrény"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kis5entm\"rton", 
+            "txt": "Kisszentmárton"
+        }, 
+        {
+            "brl": "kis5er}", 
+            "txt": "kisszerű"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kis5iget", 
+            "txt": "Kissziget"
+        }, 
+        {
+            "brl": "kis5ob\"ban", 
+            "txt": "kisszobában"
+        }, 
+        {
+            "brl": "kis59t\"r", 
+            "txt": "kisszótár"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kis2ombor", 
+            "txt": "Kiszombor"
+        }, 
+        {
+            "brl": "ki5qgell1s5er}en", 
+            "txt": "kiszögellésszerűen"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kis`id\"6", 
+            "txt": "Kiszsidány"
+        }, 
+        {
+            "brl": "kitqr1s5er}", 
+            "txt": "kitörésszerű"
+        }, 
+        {
+            "brl": "kit{ntet1s5alagokat", 
+            "txt": "kitüntetésszalagokat"
+        }, 
+        {
+            "brl": "kliens5oftver", 
+            "txt": "kliensszoftver"
+        }, 
+        {
+            "brl": "k9c3om9", 
+            "txt": "kóccsomó"
+        }, 
+        {
+            "brl": "koldus5\"j", 
+            "txt": "koldusszáj"
+        }, 
+        {
+            "brl": "koldus5ak\"ll", 
+            "txt": "koldusszakáll"
+        }, 
+        {
+            "brl": "koldus5eg16", 
+            "txt": "koldusszegény"
+        }, 
+        {
+            "brl": "koldus2ene ", 
+            "txt": "kolduszene "
+        }, 
+        {
+            "brl": "kommunik\"ci9s5oba", 
+            "txt": "kommunikációsszoba"
+        }, 
+        {
+            "brl": "kompo55e55or", 
+            "txt": "komposszesszor"
+        }, 
+        {
+            "brl": "kompo55e55or\"tus ", 
+            "txt": "komposszesszorátus "
+        }, 
+        {
+            "brl": "kormos5{rke", 
+            "txt": "kormosszürke"
+        }, 
+        {
+            "brl": "kos5arv", 
+            "txt": "kosszarv"
+        }, 
+        {
+            "brl": "kos5em", 
+            "txt": "kosszem"
+        }, 
+        {
+            "brl": "kqhqg1s5er}", 
+            "txt": "köhögésszerű"
+        }, 
+        {
+            "brl": "k7m}ves5em", 
+            "txt": "kőművesszem"
+        }, 
+        {
+            "brl": "k7m}ves5er5\"mait ", 
+            "txt": "kőművesszerszámait "
+        }, 
+        {
+            "brl": "kqntqs5eg1", 
+            "txt": "köntösszegély"
+        }, 
+        {
+            "brl": "kq6qkl1s51les", 
+            "txt": "könyöklésszéles"
+        }, 
+        {
+            "brl": "kq6ves5ekr16", 
+            "txt": "könyvesszekrény"
+        }, 
+        {
+            "brl": "k7ris5\"r", 
+            "txt": "kőrisszár"
+        }, 
+        {
+            "brl": "k7ris5\"rat ", 
+            "txt": "kőrisszárat "
+        }, 
+        {
+            "brl": "kqrqs5ak\"l", 
+            "txt": "körösszakál"
+        }, 
+        {
+            "brl": "kqrqs5ak\"li ", 
+            "txt": "körösszakáli "
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$kqrqs2ug", 
+            "txt": "Köröszug"
+        }, 
+        {
+            "brl": "kqteless1g4akorl\"s", 
+            "txt": "kötelességgyakorlás"
+        }, 
+        {
+            "brl": "kq2s\"v", 
+            "txt": "közsáv"
+        }, 
+        {
+            "brl": "kq2sereg", 
+            "txt": "közsereg"
+        }, 
+        {
+            "brl": "kudarcsoro2at", 
+            "txt": "kudarcsorozat"
+        }, 
+        {
+            "brl": "kul32qrg1s", 
+            "txt": "kulcszörgés"
+        }, 
+        {
+            "brl": "kuplung4\"r", 
+            "txt": "kuplunggyár"
+        }, 
+        {
+            "brl": "kurucs\"g", 
+            "txt": "kurucság"
+        }, 
+        {
+            "brl": "k{ldet1s5aga", 
+            "txt": "küldetésszaga"
+        }, 
+        {
+            "brl": "k{lqncs1g", 
+            "txt": "különcség"
+        }, 
+        {
+            "brl": "labirintus5er}", 
+            "txt": "labirintusszerű"
+        }, 
+        {
+            "brl": "lak\"s5entel7", 
+            "txt": "lakásszentelő"
+        }, 
+        {
+            "brl": "lak\"s5qvetke2et", 
+            "txt": "lakásszövetkezet"
+        }, 
+        {
+            "brl": "lakos5\"m", 
+            "txt": "lakosszám"
+        }, 
+        {
+            "brl": "l\"nc3qrg1s ", 
+            "txt": "lánccsörgés "
+        }, 
+        {
+            "brl": "l\"nc5em", 
+            "txt": "láncszem"
+        }, 
+        {
+            "brl": "l\"ng40jtogat9", 
+            "txt": "lánggyújtogató"
+        }, 
+        {
+            "brl": "lapos5\"r0", 
+            "txt": "laposszárú"
+        }, 
+        {
+            "brl": "l\"t\"s5qg", 
+            "txt": "látásszög"
+        }, 
+        {
+            "brl": "l\"t\"s2avar", 
+            "txt": "látászavar"
+        }, 
+        {
+            "brl": "l\"tom\"s5er}", 
+            "txt": "látomásszerű"
+        }, 
+        {
+            "brl": "la2ac3ontv\"2", 
+            "txt": "lazaccsontváz"
+        }, 
+        {
+            "brl": "l\"2sebess1ggel", 
+            "txt": "lázsebességgel"
+        }, 
+        {
+            "brl": "l\"2s9hajt\"s", 
+            "txt": "lázsóhajtás"
+        }, 
+        {
+            "brl": "l1g4qk", 
+            "txt": "léggyök"
+        }, 
+        {
+            "brl": "l1g4qk1r ", 
+            "txt": "léggyökér "
+        }, 
+        {
+            "brl": "lejt1s5qg", 
+            "txt": "lejtésszög"
+        }, 
+        {
+            "brl": "lejt1s5qge", 
+            "txt": "lejtésszöge"
+        }, 
+        {
+            "brl": "leme2st0di9", 
+            "txt": "lemezstúdió"
+        }, 
+        {
+            "brl": "leng1s5ab\"", 
+            "txt": "lengésszabály"
+        }, 
+        {
+            "brl": "l1p37s5\"r60", 
+            "txt": "lépcsősszárnyú"
+        }, 
+        {
+            "brl": "l1p1s5\"m", 
+            "txt": "lépésszám"
+        }, 
+        {
+            "brl": "l1p1s2aj ", 
+            "txt": "lépészaj "
+        }, 
+        {
+            "brl": "l1pten6omon", 
+            "txt": "léptennyomon"
+        }, 
+        {
+            "brl": "leves5ed7", 
+            "txt": "levesszedő"
+        }, 
+        {
+            "brl": "liberty", 
+            "txt": "liberty"
+        }, 
+        {
+            "brl": "licenc3al\"d ", 
+            "txt": "licenccsalád "
+        }, 
+        {
+            "brl": "licencs1rt1s", 
+            "txt": "licencsértés"
+        }, 
+        {
+            "brl": "li5tes2a3k9", 
+            "txt": "liszteszacskó"
+        }, 
+        {
+            "brl": "log4}jtem16", 
+            "txt": "loggyűjtemény"
+        }, 
+        {
+            "brl": "lovas5\"2ad", 
+            "txt": "lovasszázad"
+        }, 
+        {
+            "brl": "lovas5ekeret ", 
+            "txt": "lovasszekeret "
+        }, 
+        {
+            "brl": "lqk1s5\"m", 
+            "txt": "lökésszám"
+        }, 
+        {
+            "brl": "lqk1s5er} ", 
+            "txt": "lökésszerű "
+        }, 
+        {
+            "brl": "l7poros5ek1r", 
+            "txt": "lőporosszekér"
+        }, 
+        {
+            "brl": "l7poros5ekerek", 
+            "txt": "lőporosszekerek"
+        }, 
+        {
+            "brl": "l7r1s5er}", 
+            "txt": "lőrésszerű"
+        }, 
+        {
+            "brl": "lugas5er}", 
+            "txt": "lugasszerű"
+        }, 
+        {
+            "brl": "luxus5\"lloda", 
+            "txt": "luxusszálloda"
+        }, 
+        {
+            "brl": "ma3kakapar\"s5er} ", 
+            "txt": "macskakaparásszerű "
+        }, 
+        {
+            "brl": "mag\"n6elvmesterek", 
+            "txt": "magánnyelvmesterek"
+        }, 
+        {
+            "brl": "mag\"n6ugd|jp1n2t\"r", 
+            "txt": "magánnyugdíjpénztár"
+        }, 
+        {
+            "brl": "magas5\"r0", 
+            "txt": "magasszárú"
+        }, 
+        {
+            "brl": "m\"gn\"s5\"mba", 
+            "txt": "mágnásszámba"
+        }, 
+        {
+            "brl": "m\"gnes5alag", 
+            "txt": "mágnesszalag"
+        }, 
+        {
+            "brl": "m\"gnes5er}", 
+            "txt": "mágnesszerű"
+        }, 
+        {
+            "brl": "m\"gnes2\"r", 
+            "txt": "mágneszár"
+        }, 
+        {
+            "brl": "malacs\"g", 
+            "txt": "malacság"
+        }, 
+        {
+            "brl": "malacs{lt ", 
+            "txt": "malacsült "
+        }, 
+        {
+            "brl": "m\"lh\"s5ek1r", 
+            "txt": "málhásszekér"
+        }, 
+        {
+            "brl": "m\"lh\"s5ekereiket ", 
+            "txt": "málhásszekereiket "
+        }, 
+        {
+            "brl": "mandarin6elv", 
+            "txt": "mandarinnyelv"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$maros51k", 
+            "txt": "Marosszék"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$maros5ent4qr4 ", 
+            "txt": "Marosszentgyörgy "
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$maros2ug", 
+            "txt": "Maroszug"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$martraver55al", 
+            "txt": "Martraversszal"
+        }, 
+        {
+            "brl": "m\"s5|n}", 
+            "txt": "másszínű"
+        }, 
+        {
+            "brl": "m\"s5or", 
+            "txt": "másszor"
+        }, 
+        {
+            "brl": "m\"s59val", 
+            "txt": "másszóval"
+        }, 
+        {
+            "brl": "m\"s57r}ek", 
+            "txt": "másszőrűek"
+        }, 
+        {
+            "brl": "m13es5em", 
+            "txt": "mécsesszem"
+        }, 
+        {
+            "brl": "medres51k", 
+            "txt": "medresszék"
+        }, 
+        {
+            "brl": "me44bef7tt", 
+            "txt": "meggybefőtt"
+        }, 
+        {
+            "brl": "me44el", 
+            "txt": "meggyel"
+        }, 
+        {
+            "brl": "me44en", 
+            "txt": "meggyen"
+        }, 
+        {
+            "brl": "me44es", 
+            "txt": "meggyes"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$me44esi", 
+            "txt": "Meggyesi"
+        }, 
+        {
+            "brl": "me44et", 
+            "txt": "meggyet"
+        }, 
+        {
+            "brl": "me44fa", 
+            "txt": "meggyfa"
+        }, 
+        {
+            "brl": "me44he2", 
+            "txt": "meggyhez"
+        }, 
+        {
+            "brl": "me44|2}", 
+            "txt": "meggyízű"
+        }, 
+        {
+            "brl": "me44lekv\"r", 
+            "txt": "meggylekvár"
+        }, 
+        {
+            "brl": "me44mag", 
+            "txt": "meggymag"
+        }, 
+        {
+            "brl": "me44nek", 
+            "txt": "meggynek"
+        }, 
+        {
+            "brl": "me44piros", 
+            "txt": "meggypiros"
+        }, 
+        {
+            "brl": "me445|n", 
+            "txt": "meggyszín"
+        }, 
+        {
+            "brl": "me44t7l", 
+            "txt": "meggytől"
+        }, 
+        {
+            "brl": "me44t7l", 
+            "txt": "meggytől"
+        }, 
+        {
+            "brl": "me44vqrqs", 
+            "txt": "meggyvörös"
+        }, 
+        {
+            "brl": "m1hes5|n", 
+            "txt": "méhesszín"
+        }, 
+        {
+            "brl": "m1hes5|nben ", 
+            "txt": "méhesszínben "
+        }, 
+        {
+            "brl": "m1nes5\"r61kok", 
+            "txt": "ménesszárnyékok"
+        }, 
+        {
+            "brl": "m1reg4qkeret", 
+            "txt": "méreggyökeret"
+        }, 
+        {
+            "brl": "m1reg4qk1rr1", 
+            "txt": "méreggyökérré"
+        }, 
+        {
+            "brl": "m1reg4{mql331 ", 
+            "txt": "méreggyümölccsé "
+        }, 
+        {
+            "brl": "m1rleg4\"r", 
+            "txt": "mérleggyár"
+        }, 
+        {
+            "brl": "me5es5{rke", 
+            "txt": "meszesszürke"
+        }, 
+        {
+            "brl": "m12s\"rga", 
+            "txt": "mézsárga"
+        }, 
+        {
+            "brl": "m12ser", 
+            "txt": "mézser"
+        }, 
+        {
+            "brl": "m12sqr", 
+            "txt": "mézsör"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$mikos51plak", 
+            "txt": "Mikosszéplak"
+        }, 
+        {
+            "brl": "mikrofon6|l\"s", 
+            "txt": "mikrofonnyílás"
+        }, 
+        {
+            "brl": "mikron6i", 
+            "txt": "mikronnyi"
+        }, 
+        {
+            "brl": "mite55er", 
+            "txt": "mitesszer"
+        }, 
+        {
+            "brl": "mohas2qld", 
+            "txt": "mohaszöld"
+        }, 
+        {
+            "brl": "m9kus5er} ", 
+            "txt": "mókusszerű "
+        }, 
+        {
+            "brl": "m9kus57r", 
+            "txt": "mókusszőr"
+        }, 
+        {
+            "brl": "motoros5\"n", 
+            "txt": "motorosszán"
+        }, 
+        {
+            "brl": "mo2g\"s5er}", 
+            "txt": "mozgásszerű"
+        }, 
+        {
+            "brl": "mo2g\"s2avar", 
+            "txt": "mozgászavar"
+        }, 
+        {
+            "brl": "munk\"s5\"ll9", 
+            "txt": "munkásszálló"
+        }, 
+        {
+            "brl": "mu`ikus5em", 
+            "txt": "muzsikusszem"
+        }, 
+        {
+            "brl": "m}j1g4\"r", 
+            "txt": "műjéggyár"
+        }, 
+        {
+            "brl": "m}kqd1s2avar ", 
+            "txt": "működészavar "
+        }, 
+        {
+            "brl": "n\"5uta2\"s5er} ", 
+            "txt": "nászutazásszerű "
+        }, 
+        {
+            "brl": "nedves5{rke", 
+            "txt": "nedvesszürke"
+        }, 
+        {
+            "brl": "n142etyard", 
+            "txt": "négyzetyard"
+        }, 
+        {
+            "brl": "neh12s1g", 
+            "txt": "nehézség"
+        }, 
+        {
+            "brl": "neh12s00", 
+            "txt": "nehézsúlyú"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$nemes5al9k", 
+            "txt": "Nemesszalók"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$nemes5entandr\"s", 
+            "txt": "Nemesszentandrás"
+        }, 
+        {
+            "brl": "nemes57rme", 
+            "txt": "nemesszőrme"
+        }, 
+        {
+            "brl": "neme2sapka", 
+            "txt": "nemezsapka"
+        }, 
+        {
+            "brl": "neme2sapk\"t", 
+            "txt": "nemezsapkát"
+        }, 
+        {
+            "brl": "neme2s\"tor ", 
+            "txt": "nemezsátor "
+        }, 
+        {
+            "brl": "nercst9la", 
+            "txt": "nercstóla"
+        }, 
+        {
+            "brl": "6argonc3i2ma", 
+            "txt": "nyargonccsizma"
+        }, 
+        {
+            "brl": "6ereg4\"rt9k", 
+            "txt": "nyereggyártók"
+        }, 
+        {
+            "brl": "6ikkan\"s5er}", 
+            "txt": "nyikkanásszerű"
+        }, 
+        {
+            "brl": "6|l\"s2\"r9", 
+            "txt": "nyílászáró"
+        }, 
+        {
+            "brl": "6olcvan6olc", 
+            "txt": "nyolcvannyolc"
+        }, 
+        {
+            "brl": "6olc3atorn\"s ", 
+            "txt": "nyolccsatornás "
+        }, 
+        {
+            "brl": "6olcsebess1ges", 
+            "txt": "nyolcsebességes"
+        }, 
+        {
+            "brl": "6om\"s5ab\"29", 
+            "txt": "nyomásszabályzó"
+        }, 
+        {
+            "brl": "6om\"s5er}", 
+            "txt": "nyomásszerű"
+        }, 
+        {
+            "brl": "ordas57r}", 
+            "txt": "ordasszőrű"
+        }, 
+        {
+            "brl": "9ri\"s5alamandra", 
+            "txt": "óriásszalamandra"
+        }, 
+        {
+            "brl": "oro5l\"n6om", 
+            "txt": "oroszlánnyom"
+        }, 
+        {
+            "brl": "orvos5ak1rt7", 
+            "txt": "orvosszakértő"
+        }, 
+        {
+            "brl": "orvos5\"2ados", 
+            "txt": "orvosszázados"
+        }, 
+        {
+            "brl": "orvos5em1", 
+            "txt": "orvosszemély"
+        }, 
+        {
+            "brl": "orvos5ereikkel", 
+            "txt": "orvosszereikkel"
+        }, 
+        {
+            "brl": "orvos5er}", 
+            "txt": "orvosszerű"
+        }, 
+        {
+            "brl": "orvos5qvets1g", 
+            "txt": "orvosszövetség"
+        }, 
+        {
+            "brl": "9vod\"s5int}", 
+            "txt": "óvodásszintű"
+        }, 
+        {
+            "brl": "qkrqs5ek1r", 
+            "txt": "ökrösszekér"
+        }, 
+        {
+            "brl": "qn\"ll\"s5er}", 
+            "txt": "önállásszerű"
+        }, 
+        {
+            "brl": "qn6om\"sa,", 
+            "txt": "önnyomása,"
+        }, 
+        {
+            "brl": "qn6omat0 ", 
+            "txt": "önnyomatú "
+        }, 
+        {
+            "brl": "qrv16l1s5er}", 
+            "txt": "örvénylésszerű"
+        }, 
+        {
+            "brl": "7s5\"rma2\"s0 ", 
+            "txt": "ősszármazású "
+        }, 
+        {
+            "brl": "7s51keek", 
+            "txt": "ősszékelyek"
+        }, 
+        {
+            "brl": "q55ek1regetett", 
+            "txt": "összekéregetett"
+        }, 
+        {
+            "brl": "q55ek1regettek", 
+            "txt": "összekéregettek"
+        }, 
+        {
+            "brl": "q55ekeresg1lt", 
+            "txt": "összekeresgélt"
+        }, 
+        {
+            "brl": "755el", 
+            "txt": "ősszel"
+        }, 
+        {
+            "brl": "7s5ellem", 
+            "txt": "ősszellem"
+        }, 
+        {
+            "brl": "72sebesen", 
+            "txt": "őzsebesen"
+        }, 
+        {
+            "brl": "72sqr1t", 
+            "txt": "őzsörét"
+        }, 
+        {
+            "brl": "72suta", 
+            "txt": "őzsuta"
+        }, 
+        {
+            "brl": "padl\"s5oba", 
+            "txt": "padlásszoba"
+        }, 
+        {
+            "brl": "padl\"s2ugo", 
+            "txt": "padlászugoly"
+        }, 
+        {
+            "brl": "pal9cs\"g", 
+            "txt": "palócság"
+        }, 
+        {
+            "brl": "papiros5eletre", 
+            "txt": "papirosszeletre"
+        }, 
+        {
+            "brl": "paprik\"s5alonna-ba2\"r", 
+            "txt": "paprikásszalonna-bazár"
+        }, 
+        {
+            "brl": "papu32\"por", 
+            "txt": "papucszápor"
+        }, 
+        {
+            "brl": "p\"rn\"s51k", 
+            "txt": "párnásszék"
+        }, 
+        {
+            "brl": "p\"to55al", 
+            "txt": "pátosszal"
+        }, 
+        {
+            "brl": "pedag9gus5erve2et", 
+            "txt": "pedagógusszervezet"
+        }, 
+        {
+            "brl": "pedag9gus5ob\"ba", 
+            "txt": "pedagógusszobába"
+        }, 
+        {
+            "brl": "pedag9gus5tr\"jk", 
+            "txt": "pedagógussztrájk"
+        }, 
+        {
+            "brl": "p1n2es2a3k9", 
+            "txt": "pénzeszacskó"
+        }, 
+        {
+            "brl": "p1n2es`\"k", 
+            "txt": "pénzeszsák"
+        }, 
+        {
+            "brl": "p1n2`id9s\"gban ", 
+            "txt": "pénzzsidóságban "
+        }, 
+        {
+            "brl": "p1n2seg1", 
+            "txt": "pénzsegély"
+        }, 
+        {
+            "brl": "p1n2soro2at", 
+            "txt": "pénzsorozat"
+        }, 
+        {
+            "brl": "p1n2s9v\"r", 
+            "txt": "pénzsóvár"
+        }, 
+        {
+            "brl": "p1n25}ke", 
+            "txt": "pénzszűke"
+        }, 
+        {
+            "brl": "perecs{t7n7", 
+            "txt": "perecsütőnő"
+        }, 
+        {
+            "brl": "pergamen6al\"b", 
+            "txt": "pergamennyaláb"
+        }, 
+        {
+            "brl": "piac3arnok", 
+            "txt": "piaccsarnok"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$pilis5\"nt9,", 
+            "txt": "Pilisszántó,"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$pilis5entkere5t", 
+            "txt": "Pilisszentkereszt"
+        }, 
+        {
+            "brl": "pir|t9s5eleteken", 
+            "txt": "pirítósszeleteken"
+        }, 
+        {
+            "brl": "piros5em", 
+            "txt": "pirosszem"
+        }, 
+        {
+            "brl": "piros2\"5l9s", 
+            "txt": "piroszászlós"
+        }, 
+        {
+            "brl": "pi5kos57ke", 
+            "txt": "piszkosszőke"
+        }, 
+        {
+            "brl": "pi5kos5{rke ", 
+            "txt": "piszkosszürke "
+        }, 
+        {
+            "brl": "pi5kos2qld", 
+            "txt": "piszkoszöld"
+        }, 
+        {
+            "brl": "pi5tolqv1s5er}en", 
+            "txt": "pisztolylövésszerűen"
+        }, 
+        {
+            "brl": "pl{s5er}", 
+            "txt": "plüsszerű"
+        }, 
+        {
+            "brl": "pl{ss`\"k", 
+            "txt": "plüsszsák"
+        }, 
+        {
+            "brl": "pl{ss`ir\"f ", 
+            "txt": "plüsszsiráf "
+        }, 
+        {
+            "brl": "pl{ss`q1t", 
+            "txt": "plüsszsölyét"
+        }, 
+        {
+            "brl": "pokr9c3|k", 
+            "txt": "pokróccsík"
+        }, 
+        {
+            "brl": "polcsor", 
+            "txt": "polcsor"
+        }, 
+        {
+            "brl": "polic\"jkomi551r", 
+            "txt": "policájkomisszér"
+        }, 
+        {
+            "brl": "porcs1r{l1s", 
+            "txt": "porcsérülés"
+        }, 
+        {
+            "brl": "port\"s5oba", 
+            "txt": "portásszoba"
+        }, 
+        {
+            "brl": "post\"s5ak5erve2et", 
+            "txt": "postásszakszervezet"
+        }, 
+        {
+            "brl": "prec|2s1g", 
+            "txt": "precízség"
+        }, 
+        {
+            "brl": "pr1s5er}", 
+            "txt": "présszerű"
+        }, 
+        {
+            "brl": "priamo55a", 
+            "txt": "priamossza"
+        }, 
+        {
+            "brl": "princs1ged", 
+            "txt": "princséged"
+        }, 
+        {
+            "brl": "prog4ak", 
+            "txt": "proggyak"
+        }, 
+        {
+            "brl": "pul2us5\"m", 
+            "txt": "pulzusszám"
+        }, 
+        {
+            "brl": "pusk\"s5aka5", 
+            "txt": "puskásszakasz"
+        }, 
+        {
+            "brl": "pusk\"s5\"2ad", 
+            "txt": "puskásszázad"
+        }, 
+        {
+            "brl": "pusk\"s2\"5l9alj ", 
+            "txt": "puskászászlóalj "
+        }, 
+        {
+            "brl": "r\"cs\"g", 
+            "txt": "rácság"
+        }, 
+        {
+            "brl": "r\"di9s5oba", 
+            "txt": "rádiósszoba"
+        }, 
+        {
+            "brl": "rak\"s5\"mra", 
+            "txt": "rakásszámra"
+        }, 
+        {
+            "brl": "r\"ndul\"s5er}en", 
+            "txt": "rándulásszerűen"
+        }, 
+        {
+            "brl": "r\"nt\"s5ag", 
+            "txt": "rántásszag"
+        }, 
+        {
+            "brl": "r\"nt\"s5er} ", 
+            "txt": "rántásszerű "
+        }, 
+        {
+            "brl": "rec1s5\"r0", 
+            "txt": "recésszárú"
+        }, 
+        {
+            "brl": "r1gis1g4}jt7", 
+            "txt": "régiséggyűjtő"
+        }, 
+        {
+            "brl": "r1mi551tek", 
+            "txt": "rémisszétek"
+        }, 
+        {
+            "brl": "rendelke21s5er}", 
+            "txt": "rendelkezésszerű"
+        }, 
+        {
+            "brl": "rep{l1s5er}", 
+            "txt": "repülésszerű"
+        }, 
+        {
+            "brl": "rep{l7s5\"r6", 
+            "txt": "repülősszárny"
+        }, 
+        {
+            "brl": "r1`ut", 
+            "txt": "rézsut"
+        }, 
+        {
+            "brl": "ritkas\"g4}jt7", 
+            "txt": "ritkasággyűjtő"
+        }, 
+        {
+            "brl": "ritmus5ab\"o29", 
+            "txt": "ritmusszabályozó"
+        }, 
+        {
+            "brl": "ritmus2avar", 
+            "txt": "ritmuszavar"
+        }, 
+        {
+            "brl": "robban\"s5er}", 
+            "txt": "robbanásszerű"
+        }, 
+        {
+            "brl": "robban\"s2ajt", 
+            "txt": "robbanászajt"
+        }, 
+        {
+            "brl": "ron4os51l}", 
+            "txt": "rongyosszélű"
+        }, 
+        {
+            "brl": "ro55eml1k}", 
+            "txt": "rosszemlékű"
+        }, 
+        {
+            "brl": "rothad\"s5ag", 
+            "txt": "rothadásszag"
+        }, 
+        {
+            "brl": "r9`\"s57k1s", 
+            "txt": "rózsásszőkés"
+        }, 
+        {
+            "brl": "ro`2ab\"l\"s", 
+            "txt": "rozszabálás"
+        }, 
+        {
+            "brl": "rubin6akl\"nc", 
+            "txt": "rubinnyaklánc"
+        }, 
+        {
+            "brl": "ruh\"s5ekr16", 
+            "txt": "ruhásszekrény"
+        }, 
+        {
+            "brl": "ruh\"s5ob\"m1", 
+            "txt": "ruhásszobámé"
+        }, 
+        {
+            "brl": "s\"rg\"s5|n}", 
+            "txt": "sárgásszínű"
+        }, 
+        {
+            "brl": "sas5\"r60", 
+            "txt": "sasszárnyú"
+        }, 
+        {
+            "brl": "sas5eg", 
+            "txt": "sasszeg"
+        }, 
+        {
+            "brl": "s\"s51na", 
+            "txt": "sásszéna"
+        }, 
+        {
+            "brl": "s\"s5er} ", 
+            "txt": "sásszerű "
+        }, 
+        {
+            "brl": "sas5qmqd", 
+            "txt": "sasszömöd"
+        }, 
+        {
+            "brl": "s\"t\"n3apat", 
+            "txt": "sátáncsapat"
+        }, 
+        {
+            "brl": "semes57ke", 
+            "txt": "selymesszőke"
+        }, 
+        {
+            "brl": "sereg4}jt1s", 
+            "txt": "sereggyűjtés"
+        }, 
+        {
+            "brl": "sert1s5elet", 
+            "txt": "sertésszelet"
+        }, 
+        {
+            "brl": "sert1s5}2pe3e61re", 
+            "txt": "sertésszűzpecsenyére"
+        }, 
+        {
+            "brl": "sert1s`|r", 
+            "txt": "sertészsír"
+        }, 
+        {
+            "brl": "sonk\"s5elet", 
+            "txt": "sonkásszelet"
+        }, 
+        {
+            "brl": "sonk\"s5er} ", 
+            "txt": "sonkásszerű "
+        }, 
+        {
+            "brl": "sonk\"s`emle", 
+            "txt": "sonkászsemle"
+        }, 
+        {
+            "brl": "sors3ap\"s5er},", 
+            "txt": "sorscsapásszerű,"
+        }, 
+        {
+            "brl": "spa6olme44en", 
+            "txt": "spanyolmeggyen"
+        }, 
+        {
+            "brl": "sug\"r2\"s5er} ", 
+            "txt": "sugárzásszerű "
+        }, 
+        {
+            "brl": "sug\"r2\"s5intek", 
+            "txt": "sugárzásszintek"
+        }, 
+        {
+            "brl": "suhanc3{rhe", 
+            "txt": "suhanccsürhe"
+        }, 
+        {
+            "brl": "suhancsereg", 
+            "txt": "suhancsereg"
+        }, 
+        {
+            "brl": "5agl\"551k", 
+            "txt": "szaglásszék"
+        }, 
+        {
+            "brl": "5alon6elv, 5alon6elven ", 
+            "txt": "szalonnyelv, szalonnyelven "
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$5amos5eg", 
+            "txt": "Szamosszeg"
+        }, 
+        {
+            "brl": "5anit1c3oport", 
+            "txt": "szanitéccsoport"
+        }, 
+        {
+            "brl": "5\"ra2s\"g", 
+            "txt": "szárazság"
+        }, 
+        {
+            "brl": "5\"ra2s{lt", 
+            "txt": "szárazsült"
+        }, 
+        {
+            "brl": "5arvas5|v", 
+            "txt": "szarvasszív"
+        }, 
+        {
+            "brl": "5arvas`|r", 
+            "txt": "szarvaszsír"
+        }, 
+        {
+            "brl": "51n\"s5ek1r", 
+            "txt": "szénásszekér"
+        }, 
+        {
+            "brl": "5ents1ges5}2m\"ri\"m", 
+            "txt": "szentségesszűzmáriám"
+        }, 
+        {
+            "brl": "5ents1g4al\"2\"s", 
+            "txt": "szentséggyalázás"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$5epes5ombat", 
+            "txt": "Szepesszombat"
+        }, 
+        {
+            "brl": "5er27d1s5eg1s", 
+            "txt": "szerződésszegés"
+        }, 
+        {
+            "brl": "5er27d1s5eg7 ", 
+            "txt": "szerződésszegő "
+        }, 
+        {
+            "brl": "51to55a", 
+            "txt": "szétossza"
+        }, 
+        {
+            "brl": "51to55\"k ", 
+            "txt": "szétosszák "
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$5ilv\"s5entm\"rton", 
+            "txt": "Szilvásszentmárton"
+        }, 
+        {
+            "brl": "5indik\"tus5er} ", 
+            "txt": "szindikátusszerű "
+        }, 
+        {
+            "brl": "5indik\"tus5erve27", 
+            "txt": "szindikátusszervező"
+        }, 
+        {
+            "brl": "5|n6om\"s", 
+            "txt": "színnyomás"
+        }, 
+        {
+            "brl": "5ocseg1", 
+            "txt": "szocsegély"
+        }, 
+        {
+            "brl": "59d\"s5ifon", 
+            "txt": "szódásszifon"
+        }, 
+        {
+            "brl": "5ok\"s5er}", 
+            "txt": "szokásszerű"
+        }, 
+        {
+            "brl": "59l\"s5abads\"g", 
+            "txt": "szólásszabadság"
+        }, 
+        {
+            "brl": "59l\"s5apul\"s", 
+            "txt": "szólásszapulás"
+        }, 
+        {
+            "brl": "59rako2\"s5\"mba", 
+            "txt": "szórakozásszámba"
+        }, 
+        {
+            "brl": "5orong\"s5er}", 
+            "txt": "szorongásszerű"
+        }, 
+        {
+            "brl": "5orong\"s5int", 
+            "txt": "szorongásszint"
+        }, 
+        {
+            "brl": "5qg4\"r", 
+            "txt": "szöggyár"
+        }, 
+        {
+            "brl": "5qveg4}jtem16", 
+            "txt": "szöveggyűjtemény"
+        }, 
+        {
+            "brl": "50r\"s5er}", 
+            "txt": "szúrásszerű"
+        }, 
+        {
+            "brl": "50r9s5em}", 
+            "txt": "szúrósszemű"
+        }, 
+        {
+            "brl": "5{let1s5ab\"o2\"s", 
+            "txt": "születésszabályozás"
+        }, 
+        {
+            "brl": "5}2s{lt", 
+            "txt": "szűzsült"
+        }, 
+        {
+            "brl": "t\"gul\"s5ab\"", 
+            "txt": "tágulásszabály"
+        }, 
+        {
+            "brl": "tag4}l1s", 
+            "txt": "taggyűlés"
+        }, 
+        {
+            "brl": "t\"nc3oport", 
+            "txt": "tánccsoport"
+        }, 
+        {
+            "brl": "t\"rsalg\"s5\"mba", 
+            "txt": "társalgásszámba"
+        }, 
+        {
+            "brl": "t\"rsalg\"s5er} ", 
+            "txt": "társalgásszerű "
+        }, 
+        {
+            "brl": "t\"rs5ek1r", 
+            "txt": "társszekér"
+        }, 
+        {
+            "brl": "t\"rs5qvets1g", 
+            "txt": "társszövetség"
+        }, 
+        {
+            "brl": "te\"s5erv|2", 
+            "txt": "teásszervíz"
+        }, 
+        {
+            "brl": "tejfqlqs5\"j0", 
+            "txt": "tejfölösszájú"
+        }, 
+        {
+            "brl": "telep{l1s5erke2et ", 
+            "txt": "településszerkezet "
+        }, 
+        {
+            "brl": "templomos5ak1rt7", 
+            "txt": "templomosszakértő"
+        }, 
+        {
+            "brl": "tet51s2aj", 
+            "txt": "tetszészaj"
+        }, 
+        {
+            "brl": "tet51s`ivaj ", 
+            "txt": "tetszészsivaj "
+        }, 
+        {
+            "brl": "tigris5emek ", 
+            "txt": "tigrisszemek "
+        }, 
+        {
+            "brl": "tigris5er}", 
+            "txt": "tigrisszerű"
+        }, 
+        {
+            "brl": "tipus5\"m", 
+            "txt": "tipusszám"
+        }, 
+        {
+            "brl": "t|pus5\"m", 
+            "txt": "típusszám"
+        }, 
+        {
+            "brl": "t|pus5qveg", 
+            "txt": "típusszöveg"
+        }, 
+        {
+            "brl": "t|pus2ubbo6", 
+            "txt": "típuszubbony"
+        }, 
+        {
+            "brl": "titkos5olg\"lat", 
+            "txt": "titkosszolgálat"
+        }, 
+        {
+            "brl": "ti2edes5\"ll\"s", 
+            "txt": "tizedesszállás"
+        }, 
+        {
+            "brl": "t|2gallon6i", 
+            "txt": "tízgallonnyi"
+        }, 
+        {
+            "brl": "toj\"s5er}", 
+            "txt": "tojásszerű"
+        }, 
+        {
+            "brl": "top\"2s\"rg\"ja", 
+            "txt": "topázsárgája"
+        }, 
+        {
+            "brl": "tor2s\"g", 
+            "txt": "torzság"
+        }, 
+        {
+            "brl": "tqbbes5\"m", 
+            "txt": "többesszám"
+        }, 
+        {
+            "brl": "tqlt1s5ab\"o29", 
+            "txt": "töltésszabályozó"
+        }, 
+        {
+            "brl": "tqlt1s5\"m", 
+            "txt": "töltésszám"
+        }, 
+        {
+            "brl": "tqlt1s5er}en", 
+            "txt": "töltésszerűen"
+        }, 
+        {
+            "brl": "tqrle55em", 
+            "txt": "törlesszem"
+        }, 
+        {
+            "brl": "tqvis5\"r", 
+            "txt": "tövisszár"
+        }, 
+        {
+            "brl": "tqvis50r\"s", 
+            "txt": "tövisszúrás"
+        }, 
+        {
+            "brl": "trichin6avaa", 
+            "txt": "trichinnyavalya"
+        }, 
+        {
+            "brl": "tud\"s5int", 
+            "txt": "tudásszint"
+        }, 
+        {
+            "brl": "tud\"s5omj", 
+            "txt": "tudásszomj"
+        }, 
+        {
+            "brl": "t{krqs51l}", 
+            "txt": "tükrösszélű"
+        }, 
+        {
+            "brl": "t{ntet1s5er}en", 
+            "txt": "tüntetésszerűen"
+        }, 
+        {
+            "brl": "t{2es5em}", 
+            "txt": "tüzesszemű"
+        }, 
+        {
+            "brl": "t}2`ongl7r ", 
+            "txt": "tűzzsonglőr "
+        }, 
+        {
+            "brl": "t}2sebess1g", 
+            "txt": "tűzsebesség"
+        }, 
+        {
+            "brl": "t}2sug\"r", 
+            "txt": "tűzsugár"
+        }, 
+        {
+            "brl": "udvaroncsereg", 
+            "txt": "udvaroncsereg"
+        }, 
+        {
+            "brl": "ugr\"s5er}en", 
+            "txt": "ugrásszerűen"
+        }, 
+        {
+            "brl": "0joncs\"g", 
+            "txt": "újoncság"
+        }, 
+        {
+            "brl": "ul\"nus5\"2ad", 
+            "txt": "ulánusszázad"
+        }, 
+        {
+            "brl": "university", 
+            "txt": "university"
+        }, 
+        {
+            "brl": "utal\"s5er}en", 
+            "txt": "utalásszerűen"
+        }, 
+        {
+            "brl": "ut\"np9tl\"s5\"ll|tm\"66al", 
+            "txt": "utánpótlásszállítmánnyal"
+        }, 
+        {
+            "brl": "ut\"n6om\"s", 
+            "txt": "utánnyomás"
+        }, 
+        {
+            "brl": "utas5\"ll|t9", 
+            "txt": "utasszállító"
+        }, 
+        {
+            "brl": "utas5\"m", 
+            "txt": "utasszám"
+        }, 
+        {
+            "brl": "utas5erep", 
+            "txt": "utasszerep"
+        }, 
+        {
+            "brl": "utas5int", 
+            "txt": "utasszint"
+        }, 
+        {
+            "brl": "utas5olg\"lat", 
+            "txt": "utasszolgálat"
+        }, 
+        {
+            "brl": "uta2\"s5er}", 
+            "txt": "utazásszerű"
+        }, 
+        {
+            "brl": "uta2\"s5erve27", 
+            "txt": "utazásszervező"
+        }, 
+        {
+            "brl": "{l1s5ak", 
+            "txt": "ülésszak"
+        }, 
+        {
+            "brl": "{l1s5ak", 
+            "txt": "ülésszak"
+        }, 
+        {
+            "brl": "{t1s5er}", 
+            "txt": "ütésszerű"
+        }, 
+        {
+            "brl": "{t1s2\"por ", 
+            "txt": "ütészápor "
+        }, 
+        {
+            "brl": "{veg4apot", 
+            "txt": "üveggyapot"
+        }, 
+        {
+            "brl": "{veg4\"rt\"s", 
+            "txt": "üveggyártás"
+        }, 
+        {
+            "brl": "{veg4qn4", 
+            "txt": "üveggyöngy"
+        }, 
+        {
+            "brl": "{veg4}r}", 
+            "txt": "üveggyűrű"
+        }, 
+        {
+            "brl": "vagon6i", 
+            "txt": "vagonnyi"
+        }, 
+        {
+            "brl": "vakar33al", 
+            "txt": "vakarccsal"
+        }, 
+        {
+            "brl": "vall\"s5abads\"g", 
+            "txt": "vallásszabadság"
+        }, 
+        {
+            "brl": "vallom\"s5\"mba", 
+            "txt": "vallomásszámba"
+        }, 
+        {
+            "brl": "v\"llperec3ontj\"b9l", 
+            "txt": "vállpereccsontjából"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$v\"mos5abadi", 
+            "txt": "Vámosszabadi"
+        }, 
+        {
+            "brl": "v\"ros51pe", 
+            "txt": "városszépe"
+        }, 
+        {
+            "brl": "v\"ros5erte", 
+            "txt": "városszerte"
+        }, 
+        {
+            "brl": "v\"ros5iluett", 
+            "txt": "várossziluett"
+        }, 
+        {
+            "brl": "v\"ros2ajon", 
+            "txt": "városzajon"
+        }, 
+        {
+            "brl": "v\"ros2ajt ", 
+            "txt": "városzajt "
+        }, 
+        {
+            "brl": "v\"ros`arnok", 
+            "txt": "városzsarnok"
+        }, 
+        {
+            "brl": "vasas5ako5t\"", 
+            "txt": "vasasszakosztály"
+        }, 
+        {
+            "brl": "vasutas5tr\"jk", 
+            "txt": "vasutassztrájk"
+        }, 
+        {
+            "brl": "vas5\"ll|tm\"6", 
+            "txt": "vasszállítmány"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$va5ar", 
+            "txt": "Vaszar"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$v\"`nok", 
+            "txt": "Vázsnok"
+        }, 
+        {
+            "brl": "v1gig4akorolni", 
+            "txt": "végiggyakorolni"
+        }, 
+        {
+            "brl": "v1gig4alogolhatja", 
+            "txt": "végiggyalogolhatja"
+        }, 
+        {
+            "brl": "vend1g4ermek", 
+            "txt": "vendéggyermek"
+        }, 
+        {
+            "brl": "vend1g4{leke2et", 
+            "txt": "vendéggyülekezet"
+        }, 
+        {
+            "brl": "veres5ak\"ll0 ", 
+            "txt": "veresszakállú "
+        }, 
+        {
+            "brl": "veres5em}", 
+            "txt": "veresszemű"
+        }, 
+        {
+            "brl": "vers5ak", 
+            "txt": "versszak"
+        }, 
+        {
+            "brl": "vers5ak\"ban ", 
+            "txt": "versszakában "
+        }, 
+        {
+            "brl": "vers5er}", 
+            "txt": "versszerű"
+        }, 
+        {
+            "brl": "v1rtes5\"2ad", 
+            "txt": "vértesszázad"
+        }, 
+        {
+            "brl": "v1rtes5\"2adbeli ", 
+            "txt": "vértesszázadbeli "
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$v1rtes57l7s", 
+            "txt": "Vértesszőlős"
+        }, 
+        {
+            "brl": "vet1s5alag", 
+            "txt": "vetésszalag"
+        }, 
+        {
+            "brl": "viccsor", 
+            "txt": "viccsor"
+        }, 
+        {
+            "brl": "vil\"goss\"g40jt\"sra", 
+            "txt": "világossággyújtásra"
+        }, 
+        {
+            "brl": "vil\"gos57ke", 
+            "txt": "világosszőke"
+        }, 
+        {
+            "brl": "vil\"gos5{rke ", 
+            "txt": "világosszürke "
+        }, 
+        {
+            "brl": "vil\"g4}lql7", 
+            "txt": "világgyűlölő"
+        }, 
+        {
+            "brl": "villamos51k", 
+            "txt": "villamosszék"
+        }, 
+        {
+            "brl": "villamos5er}", 
+            "txt": "villamosszerű"
+        }, 
+        {
+            "brl": "villan\"s5er}en", 
+            "txt": "villanásszerűen"
+        }, 
+        {
+            "brl": "vir\"g4apjaikat", 
+            "txt": "virággyapjaikat"
+        }, 
+        {
+            "brl": "vir\"g4}jtem16 ", 
+            "txt": "virággyűjtemény "
+        }, 
+        {
+            "brl": "vir\"g4}jt1s", 
+            "txt": "virággyűjtés"
+        }, 
+        {
+            "brl": "virgoncs\"g", 
+            "txt": "virgoncság"
+        }, 
+        {
+            "brl": "v|rus5er}", 
+            "txt": "vírusszerű"
+        }, 
+        {
+            "brl": "viselked1s5er}", 
+            "txt": "viselkedésszerű"
+        }, 
+        {
+            "brl": "viselked1s2avar", 
+            "txt": "viselkedészavar"
+        }, 
+        {
+            "brl": "visually", 
+            "txt": "visually"
+        }, 
+        {
+            "brl": "vi551r", 
+            "txt": "visszér"
+        }, 
+        {
+            "brl": "vi55eres", 
+            "txt": "visszeres"
+        }, 
+        {
+            "brl": "vi551rm}t1t ", 
+            "txt": "visszérműtét "
+        }, 
+        {
+            "brl": "vitorl\"s5e2on", 
+            "txt": "vitorlásszezon"
+        }, 
+        {
+            "brl": "vi2eletes2a3k9 ", 
+            "txt": "vizeleteszacskó "
+        }, 
+        {
+            "brl": "vi2es`emle", 
+            "txt": "vizeszsemle"
+        }, 
+        {
+            "brl": "v|2s\"v", 
+            "txt": "vízsáv"
+        }, 
+        {
+            "brl": "v|2sivatag ", 
+            "txt": "vízsivatag "
+        }, 
+        {
+            "brl": "v|2sodor", 
+            "txt": "vízsodor"
+        }, 
+        {
+            "brl": "von9s5eren\"d ", 
+            "txt": "vonósszerenád "
+        }, 
+        {
+            "brl": "von9s2enekar", 
+            "txt": "vonószenekar"
+        }, 
+        {
+            "brl": "vqrhe6es57ke", 
+            "txt": "vörhenyesszőke"
+        }, 
+        {
+            "brl": "vqrqses57ke", 
+            "txt": "vörösesszőke"
+        }, 
+        {
+            "brl": "vqrqses57ke", 
+            "txt": "vörösesszőke"
+        }, 
+        {
+            "brl": "vqrqs5ak\"ll0", 
+            "txt": "vörösszakállú"
+        }, 
+        {
+            "brl": "vqrqs5em", 
+            "txt": "vörösszem"
+        }, 
+        {
+            "brl": "vqrqs5|n}", 
+            "txt": "vörösszínű"
+        }, 
+        {
+            "brl": "vqrqs57ke", 
+            "txt": "vörösszőke"
+        }, 
+        {
+            "brl": "vqrqs2\"5l9", 
+            "txt": "vöröszászló"
+        }, 
+        {
+            "brl": "2\"log4}r}met", 
+            "txt": "záloggyűrűmet"
+        }, 
+        {
+            "brl": "2avaros5{rke", 
+            "txt": "zavarosszürke"
+        }, 
+        {
+            "brl": "2qkken1s5er}", 
+            "txt": "zökkenésszerű"
+        }, 
+        {
+            "brl": "2qrg1s5er}", 
+            "txt": "zörgésszerű"
+        }, 
+        {
+            "brl": "2uhan\"s5er}", 
+            "txt": "zuhanásszerű"
+        }, 
+        {
+            "brl": "`|ros51n", 
+            "txt": "zsírosszén"
+        }, 
+        {
+            "brl": "`oldos5ok\"s", 
+            "txt": "zsoldosszokás"
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$a telefon5\"mom: #jf-#a-#bef-#bef.", 
+            "txt": "A telefonszámom: 06-1-256-256."
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$a fqldreng1s #g,e er7ss1g} volt.", 
+            "txt": "A földrengés 7,5 erősségű volt."
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$tam\"s m1g nem tudta, ho4 mi v\"r r\".", 
+            "txt": "Tamás még nem tudta, hogy mi vár rá."
+        }, 
+        {
+            "brl": "($tam\"s m1g nem tudta, ho4 mi v\"r r\".)", 
+            "txt": "\"Tamás még nem tudta, hogy mi vár rá.\""
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$i don'.t no why happened this problem.", 
+            "txt": "I don't no why happened this problem."
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$a2 #a#v paragrafus alapj\"n a kedve2m16 ig16be vehet7.", 
+            "txt": "Az 1§ paragrafus alapján a kedvezmény igénybe vehető."
+        }, 
+        {
+            "brl": "- $a sivatagi karav\"n0ton, ne4ven va4 qtven m1rfqld6ire innen. $e4 $ford. $de mi nem me4{nk mag\"val. - $el7vette a2 iratt\"rc\"j\"t, 1s \"tadott $na5ifnak e4 angol fontot. - $ha vi55ajqn, keressen meg a vas0t\"llom\"s mellett a $grand $hotelban.", 
+            "txt": "– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban."
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$a v1tel\"r #a <e.", 
+            "txt": "A vételár 1 €."
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$de nekem na4on nehe2emre esik a lev1l|r\"s ~n12d el a hees|r\"si hib\"kat 1s a 306a |r\"somatz.", 
+            "txt": "De nekem nagyon nehezemre esik a levélírás (nézd el a helyesírási hibákat és a csúnya írásomat)."
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$a ki\"ll|t\"s meg6it9j\"n jelen volt a2 $$mv4o5 elnqke.", 
+            "txt": "A kiállítás megnyitóján jelen volt az MVGYOSZ elnöke."
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$a pontos id7 #aa.de perc.", 
+            "txt": "A pontos idő 11:45 perc."
+        }, 
+        {
+            "brl": "'*$a kiad\"s 0jdons\"gai.", 
+            "txt": "•A kiadás újdonságai."
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$a hu'-list f\"jl nem l1te2ik.", 
+            "txt": "A hu_list fájl nem létezik."
+        }, 
+        {
+            "BRLCursorPos": 1, 
+            "brl": "$a2 e-mail c|mem: akarmi>akarmi.hu.", 
+            "txt": "Az e-mail címem: akarmi@akarmi.hu."
+        }
+    ]
+}

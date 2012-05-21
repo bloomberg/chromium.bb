@@ -28,6 +28,7 @@ Please see the liblouis documentation for information of how to add a new harnes
 
 import sys
 import os
+import json
 
 from louis import translate
 from glob import iglob
@@ -90,30 +91,28 @@ else:
     # make sure the harness modules are found in the harness
     # directory, i.e. insert the harness directory into the module
     # search path
-    sys.path.insert(1, harness_dir)
+    # sys.path.insert(1, harness_dir)
     # make sure local test braille tables are found
     os.environ['LOUIS_TABLEPATH'] = 'tables'
 
 # Process all *_harness.py files in the harness directory.
-harness_modules = None
-if sys.version_info[0] == 2:
-    harness_modules = iglob(os.path.join(harness_dir, '*_harness.py'))
-else:
-    harness_modules = iglob(os.path.join(harness_dir, '*_harness_py3.py'))
 
-for harness in harness_modules:
+for harness in iglob(os.path.join(harness_dir, '*_harness.txt')):
     try:
-        harnessModule = __import__(basename(harness)[:-3])
+        f = open(harness, 'r')
+        harnessModule = json.load(f, encoding="UTF-8")
     except Exception as e:
         # Doesn't look like the harness is a valid python file.
-        print("Warning: could not import %s" % harness)
+        print("Warning: could not load %s" % harness)
         print(e)
         total_failed += 1
         continue
+    finally:
+        f.close()
     print("Processing %s" %harness)
     failed = 0
-    tableList = [harnessModule.table]
-    for test in harnessModule.tests:
+    tableList = [harnessModule['table']]
+    for test in harnessModule['tests']:
         text = test['txt']
         mode = test.get('mode', 0)
         cursorPos = test.get('cursorPos', 0)
@@ -125,6 +124,6 @@ for harness in harness_modules:
             failed += 1 
             reportFailure(text, actualBRL, expectedBRL, cursorPos, actualBRLCursorPos, expectedBRLCursorPos)
     total_failed += failed
-    print("%d of %d tests failed." %(failed, len(harnessModule.tests)))
+    print("%d of %d tests failed." %(failed, len(harnessModule['tests'])))
 
 sys.exit(0 if total_failed == 0 else 1)
