@@ -1050,6 +1050,10 @@ enum NotificationType {
   // Sent when the browser enters or exits fullscreen mode.
   NOTIFICATION_FULLSCREEN_CHANGED,
 
+  // Sent when the FullscreenController changes, confirms, or denies mouse lock.
+  // The source is the browser's FullscreenController, no details.
+  NOTIFICATION_MOUSE_LOCK_CHANGED,
+
   // Sent by the PluginPrefs when there is a change of plugin enable/disable
   // status. The source is the profile.
   NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,

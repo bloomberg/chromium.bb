@@ -53,6 +53,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_transition_types.h"
@@ -96,6 +97,9 @@ const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
 
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
+
+const char* kFullscreenMouseLockHTML =
+    "files/fullscreen_mouselock/fullscreen_mouselock.html";
 
 // Given a page title, returns the expected window caption string.
 string16 WindowCaptionFromPageTitle(const string16& page_title) {
@@ -179,7 +183,6 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
   InterstitialPage* interstitial_page_;  // Owns us.
 };
 
-// Fullscreen transition notification observer simplifies test code.
 class FullscreenNotificationObserver
     : public ui_test_utils::WindowedNotificationObserver {
  public:
@@ -188,10 +191,23 @@ class FullscreenNotificationObserver
       content::NotificationService::AllSources()) {}
 };
 
+class MouseLockNotificationObserver
+    : public ui_test_utils::WindowedNotificationObserver {
+ public:
+  MouseLockNotificationObserver() : WindowedNotificationObserver(
+      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+      content::NotificationService::AllSources()) {}
+};
+
 }  // namespace
 
 class BrowserTest : public ExtensionBrowserTest {
  protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnablePointerLock);
+  }
+
   // In RTL locales wrap the page title with RTL embedding characters so that it
   // matches the value returned by GetWindowTitle().
   string16 LocaleWindowCaptionFromPageTitle(const string16& expected_title) {
@@ -255,6 +271,10 @@ class BrowserTest : public ExtensionBrowserTest {
     browser()->LostMouseLock();
   }
 
+  bool SendEscapeToFullscreenController() {
+    return browser()->fullscreen_controller_->HandleUserPressedEscape();
+  }
+
   bool IsFullscreenForBrowser() {
     return browser()->fullscreen_controller_->IsFullscreenForBrowser();
   }
@@ -264,6 +284,11 @@ class BrowserTest : public ExtensionBrowserTest {
   }
 
   bool IsMouseLocked() {
+    // Verify that IsMouseLocked is consistent between the
+    // Fullscreen Controller and the Render View Host View.
+    EXPECT_TRUE(browser()->IsMouseLocked() ==
+                browser()->GetSelectedWebContents()->
+                    GetRenderViewHost()->GetView()->IsMouseLocked());
     return browser()->IsMouseLocked();
   }
 
@@ -290,8 +315,7 @@ class BrowserTest : public ExtensionBrowserTest {
   bool IsFullscreenBubbleDisplayed() {
     FullscreenExitBubbleType type =
         browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
-    // TODO(scheib): Should be FEB_TYPE_NONE, crbug.com/107013 will include fix.
-    return type != FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
+    return type != FEB_TYPE_NONE;
   }
 
   bool IsFullscreenBubbleDisplayingButtons() {
@@ -305,6 +329,12 @@ class BrowserTest : public ExtensionBrowserTest {
     FullscreenExitBubbleType type =
         browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
     browser()->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);
+  }
+
+  void DenyCurrentFullscreenOrMouseLockRequest() {
+    FullscreenExitBubbleType type =
+        browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
+    browser()->OnDenyFullscreenPermission(type);
   }
 
   // Helper method to be called by multiple tests.
@@ -1037,16 +1067,221 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestFullscreenBubbleMouseLockState) {
   ASSERT_FALSE(IsFullscreenBubbleDisplayingButtons());
 }
 
-// Tests mouse lock fails before fullscreen is entered.
+// Tests mouse lock then fullscreen.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MouseLockThenFullscreen) {
+  ASSERT_TRUE(test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(kFullscreenMouseLockHTML));
+
   WebContents* tab = browser()->GetSelectedWebContents();
+
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());
 
-  RequestToLockMouse(tab, true);
+  // Lock the mouse without a user gesture, expect no response.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_D, false, false, false, false,
+      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+      content::NotificationService::AllSources()));
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+  ASSERT_FALSE(IsMouseLocked());
 
+  // Lock the mouse with a user gesture.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_1, false, false, false, false,
+      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+      content::NotificationService::AllSources()));
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_TRUE(IsMouseLockPermissionRequested());
+  ASSERT_FALSE(IsMouseLocked());
+
+  // Accept mouse lock.
+  AcceptCurrentFullscreenOrMouseLockRequest();
+  ASSERT_TRUE(IsMouseLocked());
+  ASSERT_FALSE(IsFullscreenBubbleDisplayingButtons());
+
+  // Enter fullscreen mode, mouse lock should be dropped to present buttons.
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(tab, true));
   ASSERT_TRUE(IsFullscreenPermissionRequested());
+  ASSERT_FALSE(IsMouseLockPermissionRequested());
+  ASSERT_FALSE(IsMouseLocked());
+
+  // Request mouse lock also, expect fullscreen and mouse lock buttons.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), ui::VKEY_1, false, false, false, false,
+      chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+      content::NotificationService::AllSources()));
+  ASSERT_TRUE(IsFullscreenPermissionRequested());
+  ASSERT_TRUE(IsMouseLockPermissionRequested());
+  ASSERT_FALSE(IsMouseLocked());
+
+  // Accept fullscreen and mouse lock.
+  AcceptCurrentFullscreenOrMouseLockRequest();
+  ASSERT_TRUE(IsMouseLocked());
+  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsFullscreenBubbleDisplayingButtons());
+}
+
+// Tests mouse lock then fullscreen in same request.
+IN_PROC_BROWSER_TEST_F(BrowserTest, MouseLockAndFullscreen) {
+  ASSERT_TRUE(test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(kFullscreenMouseLockHTML));
+
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+
+  // Request to lock the mouse and enter fullscreen.
+  {
+    FullscreenNotificationObserver fullscreen_observer;
+    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_B, false, true, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+    fullscreen_observer.Wait();
+  }
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+  ASSERT_TRUE(IsFullscreenPermissionRequested());
+  ASSERT_TRUE(IsMouseLockPermissionRequested());
+  ASSERT_FALSE(IsMouseLocked());
+  ASSERT_TRUE(IsFullscreenForTabOrPending());
+
+  // Deny both first, to make sure we can.
+  {
+    FullscreenNotificationObserver fullscreen_observer;
+    DenyCurrentFullscreenOrMouseLockRequest();
+    fullscreen_observer.Wait();
+  }
+  ASSERT_FALSE(IsMouseLocked());
+  ASSERT_FALSE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+
+  // Request to lock the mouse and enter fullscreen.
+  {
+    FullscreenNotificationObserver fullscreen_observer;
+    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_B, false, true, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+    fullscreen_observer.Wait();
+  }
+  ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+  ASSERT_TRUE(IsFullscreenPermissionRequested());
+  ASSERT_TRUE(IsMouseLockPermissionRequested());
+  ASSERT_FALSE(IsMouseLocked());
+  ASSERT_TRUE(IsFullscreenForTabOrPending());
+
+  // Accept both, confirm they are enabled and there is no prompt.
+  AcceptCurrentFullscreenOrMouseLockRequest();
+  ASSERT_TRUE(IsMouseLocked());
+  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+}
+
+// Tests mouse lock can be escaped with ESC key.
+IN_PROC_BROWSER_TEST_F(BrowserTest, EscapingMouseLock) {
+  ASSERT_TRUE(test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(kFullscreenMouseLockHTML));
+
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+
+  // Request to lock the mouse.
+  {
+    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_1, false, false, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+  }
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_TRUE(IsMouseLockPermissionRequested());
+
+  // Escape, no prompts should remain.
+  SendEscapeToFullscreenController();
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_FALSE(IsMouseLockPermissionRequested());
+
+  // Request to lock the mouse.
+  {
+    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_1, false, false, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+  }
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_TRUE(IsMouseLockPermissionRequested());
+
+  // Accept mouse lock, confirm it and that there is no prompt.
+  AcceptCurrentFullscreenOrMouseLockRequest();
+  ASSERT_TRUE(IsMouseLocked());
+  ASSERT_FALSE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_FALSE(IsMouseLockPermissionRequested());
+
+  // Escape, confirm we are out of mouse lock with no prompts.
+  SendEscapeToFullscreenController();
+  ASSERT_FALSE(IsMouseLocked());
+  ASSERT_FALSE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_FALSE(IsMouseLockPermissionRequested());
+}
+
+// Tests mouse lock and fullscreen modes can be escaped with ESC key.
+IN_PROC_BROWSER_TEST_F(BrowserTest, EscapingMouseLockAndFullscreen) {
+  ASSERT_TRUE(test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(kFullscreenMouseLockHTML));
+
+  ASSERT_FALSE(IsFullscreenBubbleDisplayed());
+
+  // Request to lock the mouse and enter fullscreen.
+  {
+    FullscreenNotificationObserver fullscreen_observer;
+    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_B, false, true, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+    fullscreen_observer.Wait();
+  }
+  ASSERT_TRUE(IsFullscreenPermissionRequested());
+  ASSERT_TRUE(IsMouseLockPermissionRequested());
+
+  // Escape, no prompts should remain.
+  {
+    FullscreenNotificationObserver fullscreen_observer;
+    SendEscapeToFullscreenController();
+    fullscreen_observer.Wait();
+  }
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_FALSE(IsMouseLockPermissionRequested());
+
+  // Request to lock the mouse and enter fullscreen.
+  {
+    FullscreenNotificationObserver fullscreen_observer;
+    ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+        browser(), ui::VKEY_B, false, true, false, false,
+        chrome::NOTIFICATION_MOUSE_LOCK_CHANGED,
+        content::NotificationService::AllSources()));
+    fullscreen_observer.Wait();
+  }
+  ASSERT_TRUE(IsFullscreenPermissionRequested());
+  ASSERT_TRUE(IsMouseLockPermissionRequested());
+
+  // Accept both, confirm mouse lock and fullscreen and no prompts.
+  AcceptCurrentFullscreenOrMouseLockRequest();
+  ASSERT_TRUE(IsMouseLocked());
+  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
+  ASSERT_FALSE(IsMouseLockPermissionRequested());
+
+  // Escape, confirm we are out of mouse lock and fullscreen with no prompts.
+  {
+    FullscreenNotificationObserver fullscreen_observer;
+    SendEscapeToFullscreenController();
+    fullscreen_observer.Wait();
+  }
+  ASSERT_FALSE(IsMouseLocked());
+  ASSERT_FALSE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsFullscreenPermissionRequested());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
 

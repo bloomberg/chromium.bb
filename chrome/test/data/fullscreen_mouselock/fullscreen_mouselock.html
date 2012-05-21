@@ -96,19 +96,32 @@ function lockMouse1AndEnterFullscreen() {
 </head>
 <body title="This tooltip should not be shown if the mouse is locked.">
   <div id="container">
-    <button id="enterFullscreen" onclick="enterFullscreen();">enterFullscreen()</button><br>
-    <button id="exitFullscreen" onclick="exitFullscreen();">exitFullscreen()</button><br>
-    <button id="lockMouse1" onclick="lockMouse1();">lockMouse1()</button><br>
-    <button id="lockMouse2" onclick="lockMouse2();">lockMouse2()</button><br>
-    <button id="delayedLockMouse1" onclick="delayedLockMouse1();">delayedLockMouse1()</button><br>
+    <button id="enterFullscreen" onclick="enterFullscreen();">enterFullscreen() [f]</button><br>
+    <button id="exitFullscreen" onclick="exitFullscreen();">exitFullscreen() [x]</button><br>
+    <button id="lockMouse1" onclick="lockMouse1();">lockMouse1() [1]</button><br>
+    <button id="lockMouse2" onclick="lockMouse2();">lockMouse2() [2]</button><br>
+    <button id="delayedLockMouse1" onclick="delayedLockMouse1();">delayedLockMouse1() [d]</button><br>
     <button id="spamLockMouse2" onclick="spamLockMouse2();">spamLockMouse2()</button><br>
-    <button id="unlockMouse" onclick="unlockMouse();">unlockMouse()</button><br>
-    <button id="enterFullscreenAndLockMouse1" onclick="enterFullscreenAndLockMouse1()">enterFullscreenAndLockMouse1()</button><br>
-    <button id="lockMouse1AndEnterFullscreen" onclick="lockMouse1AndEnterFullscreen()">lockMouse1AndEnterFullscreen()</button><br>
+    <button id="unlockMouse" onclick="unlockMouse();">unlockMouse() [u]</button><br>
+    <button id="enterFullscreenAndLockMouse1" onclick="enterFullscreenAndLockMouse1()">enterFullscreenAndLockMouse1() [b]</button><br>
+    <button id="lockMouse1AndEnterFullscreen" onclick="lockMouse1AndEnterFullscreen()">lockMouse1AndEnterFullscreen() [B]</button><br>
     <div id="lockTarget1">lockTarget1</div>
     <div id="lockTarget2">lockTarget2</div>
   </div>
   This text is outside of the container that is made fullscreen. This text should not be visible when fullscreen.
 </body>
-</html>
+<script>
+document.body.onkeypress = function (e) {
+  switch (String.fromCharCode(e.charCode)) {
+  case "f": enterFullscreen(); break;
+  case "x": exitFullscreen(); break;
+  case "1": lockMouse1(); break;
+  case "2": lockMouse2(); break;
+  case "d": delayedLockMouse1(); break;
+  case "u": unlockMouse(); break;
+  case "b": enterFullscreenAndLockMouse1(); break;
+  case "B": lockMouse1AndEnterFullscreen(); break;
+  }
+}
+</script>
 </html>

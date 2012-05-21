@@ -92,13 +92,15 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
 
   virtual ~FullscreenController();
 
-  // Notifies the tab that it has been forced out of fullscreen mode if
-  // necessary.
-  void NotifyTabOfFullscreenExitIfNecessary();
-  // Make the current tab exit fullscreen mode if it is in it.
-  void ExitTabbedFullscreenModeIfNecessary();
+  // Notifies the tab that it has been forced out of fullscreen and mouse lock
+  // mode if necessary.
+  void NotifyTabOfExitIfNecessary();
+
+  // Make the current tab exit fullscreen mode or mouse lock if it is in it.
+  void ExitTabFullscreenOrMouseLockIfNecessary();
   void UpdateFullscreenExitBubbleContent();
   void NotifyFullscreenChange();
+  void NotifyMouseLockChange();
   ContentSetting GetFullscreenSetting(const GURL& url) const;
   ContentSetting GetMouseLockSetting(const GURL& url) const;
 
@@ -124,6 +126,12 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   // True if tab fullscreen has been allowed, either by settings or by user
   // clicking the allow button on the fullscreen infobar.
   bool tab_fullscreen_accepted_;
+
+  // True if this controller has toggled into tab OR browser fullscreen.
+  bool toggled_into_fullscreen_;
+
+  // Wrapper for current tab requesting or currently in mouse lock.
+  TabContentsWrapper* mouse_lock_tab_;
 
   MouseLockState mouse_lock_state_;
 

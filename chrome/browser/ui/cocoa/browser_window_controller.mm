@@ -1983,7 +1983,16 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 - (void)updateFullscreenExitBubbleURL:(const GURL&)url
                            bubbleType:(FullscreenExitBubbleType)bubbleType {
-  [fullscreenExitBubbleController_.get() updateURL:url bubbleType:bubbleType];
+  fullscreenUrl_ = url;
+  fullscreenBubbleType_ = bubbleType;
+  if (bubbleType == FEB_TYPE_NONE) {
+    [self destroyFullscreenExitBubbleIfNecessary];
+  } else {
+    if (!fullscreenExitBubbleController_.get()) {
+      [self showFullscreenExitBubbleIfNecessary];
+    }
+    [fullscreenExitBubbleController_.get() updateURL:url bubbleType:bubbleType];
+  }
 }
 
 - (BOOL)isFullscreen {

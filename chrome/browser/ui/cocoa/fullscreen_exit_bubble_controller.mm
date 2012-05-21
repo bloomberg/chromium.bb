@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -120,10 +120,9 @@ const float kHideDuration = 0.7;
     [self showButtons:NO];
     [self hideSoon];
   }
-  NSRect windowFrame = [owner_ window].frame;
   [tweaker_ tweakUI:info_bubble];
-  [self positionInWindowAtTop:NSHeight(windowFrame) width:NSWidth(windowFrame)];
   [[owner_ window] addChildWindow:info_bubble ordered:NSWindowAbove];
+  [owner_ layoutSubviews];
 
   [info_bubble orderFront:self];
 }
@@ -136,9 +135,11 @@ const float kHideDuration = 0.7;
 
 - (void)positionInWindowAtTop:(CGFloat)maxY width:(CGFloat)maxWidth {
   NSRect windowFrame = [self window].frame;
+  NSRect ownerWindowFrame = [owner_ window].frame;
   NSPoint origin;
-  origin.x = (int)(maxWidth/2 - NSWidth(windowFrame)/2);
-  origin.y = maxY - NSHeight(windowFrame);
+  origin.x = ownerWindowFrame.origin.x +
+      (int)(NSWidth(ownerWindowFrame)/2 - NSWidth(windowFrame)/2);
+  origin.y = ownerWindowFrame.origin.y + maxY - NSHeight(windowFrame);
   [[self window] setFrameOrigin:origin];
 }
 
@@ -169,8 +170,7 @@ const float kHideDuration = 0.7;
 
   // Relayout. A bit jumpy, but functional.
   [tweaker_ tweakUI:[self window]];
-  NSRect windowFrame = [owner_ window].frame;
-  [self positionInWindowAtTop:NSHeight(windowFrame) width:NSWidth(windowFrame)];
+  [owner_ layoutSubviews];
 }
 
 // Called when someone clicks on the embedded link.
@@ -271,6 +271,8 @@ const float kHideDuration = 0.7;
 }
 
 - (NSString*)getLabelText {
+  if (bubbleType_ == FEB_TYPE_NONE)
+    return @"";
   return SysUTF16ToNSString(fullscreen_bubble::GetLabelTextForType(
           bubbleType_, url_, browser_->profile()->GetExtensionService()));
 }

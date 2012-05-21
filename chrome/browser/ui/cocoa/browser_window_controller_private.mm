@@ -791,23 +791,15 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)showFullscreenExitBubbleIfNecessary {
-  if (!browser_->IsFullscreenForTabOrPending()) {
-    return;
-  }
-
   [presentationModeController_ ensureOverlayHiddenWithAnimation:NO delay:NO];
 
+  [fullscreenExitBubbleController_ closeImmediately];
   fullscreenExitBubbleController_.reset(
       [[FullscreenExitBubbleController alloc]
           initWithOwner:self
                 browser:browser_.get()
                     url:fullscreenUrl_
              bubbleType:fullscreenBubbleType_]);
-  NSView* contentView = [[self window] contentView];
-  CGFloat maxWidth = NSWidth([contentView frame]);
-  CGFloat maxY = NSMaxY([[[self window] contentView] frame]);
-  [fullscreenExitBubbleController_
-      positionInWindowAtTop:maxY width:maxWidth];
   [fullscreenExitBubbleController_ showWindow];
 }
 
