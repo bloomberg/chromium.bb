@@ -589,17 +589,6 @@ bad_build_lists = {
 # This is a list of tests that do not yet pass when using nacl-glibc.
 # TODO(mseaborn): Enable more of these tests!
 nacl_glibc_skiplist = set([
-    # These tests assume they can allocate address ranges from the
-    # dynamic code area themselves.  However, this does not work when
-    # ld.so assumes it can do the same.  To fix this, ld.so will need
-    # an interface, like mmap() or brk(), for reserving space in the
-    # dynamic code area.
-    'run_dynamic_load_test',
-    'run_write_to_dyncode_test',
-    'run_dyncode_debug_mode_test',
-    'run_dyncode_demand_alloc_test',
-    'run_dyncode_disabled_test',
-    'run_dynamic_modify_test',
     # This uses a canned binary that is compiled w/ newlib.  A
     # glibc version might be useful.
     'run_fuzz_nullptr_test',
@@ -634,9 +623,6 @@ nacl_glibc_skiplist = set([
 
     # This test need more investigation.
     'run_syscall_test',
-    # GetPid is no longer supplied by IRT so does not work in GLibC.
-    'run_getpid_test',
-    'run_getpid_disabled_test',
     ])
 
 

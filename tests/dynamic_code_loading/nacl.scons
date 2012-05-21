@@ -16,6 +16,14 @@ if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
 if env.Bit('bitcode') and not env.Bit('target_arm'):
   Return()
 
+# These tests assume they can allocate address ranges from the dynamic
+# code area themselves.  However, this does not work when ld.so
+# assumes it can do the same.
+# TODO(mseaborn): To fix this, ld.so will need an interface, like
+# mmap() or brk(), for reserving space in the dynamic code area.
+# See http://code.google.com/p/nativeclient/issues/detail?id=1112
+is_broken = not env.Bit('nacl_static_link')
+
 # there is fair amount of assembly code in these tests
 asm_env = env.Clone()
 if env.Bit('bitcode'):
@@ -97,28 +105,32 @@ if env.IsRunningUnderValgrind():
 node = env.CommandSelLdrTestNacl('dynamic_load_test.out',
                                  dynamic_load_test_nexe,
                                  sel_ldr_flags=sel_ldr_flags)
-env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_load_test',
+                       is_broken=is_broken)
 
 node = env.CommandSelLdrTestNacl(
     'write_to_dyncode.out',
     write_to_dyncode_nexe,
     exit_status='untrusted_segfault',
     stdout_golden=env.File('write_to_dyncode.stdout'))
-env.AddNodeToTestSuite(node, test_suites, 'run_write_to_dyncode_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_write_to_dyncode_test',
+                       is_broken=is_broken)
 
 node = env.CommandSelLdrTestNacl(
     'debug_mode_test.out',
     debug_mode_test_nexe,
     # NOTE: the data we are loading does not pass the validator
     sel_ldr_flags=["-c"])
-env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_debug_mode_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_debug_mode_test',
+                       is_broken=is_broken)
 
 # This tests, from untrusted code, that dyncode pages are inaccessible
 # before they are allocated.
 node = env.CommandSelLdrTestNacl(
     'dyncode_demand_alloc_test.out',
     dyncode_demand_alloc_test_nexe, declares_exit_status=True)
-env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_demand_alloc_test')
+env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_demand_alloc_test',
+                       is_broken=is_broken)
 
 # The IRT itself counts as dynamic code loading, so we cannot disable
 # dynamic loading when using the IRT.
@@ -127,7 +139,8 @@ if not env.Bit('tests_use_irt'):
       'dyncode_disabled_test.out',
       dyncode_disabled_test_nexe,
       osenv='NACL_DISABLE_DYNAMIC_LOADING=1')
-  env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_disabled_test')
+  env.AddNodeToTestSuite(node, test_suites, 'run_dyncode_disabled_test',
+                         is_broken=is_broken)
 
 if not env.Bit('target_arm'):
   node = env.CommandSelLdrTestNacl('dynamic_modify_test.out',
@@ -138,4 +151,4 @@ if not env.Bit('target_arm'):
   # shared memory segment.  It does not know to flush its code
   # translation cache.
   env.AddNodeToTestSuite(node, test_suites, 'run_dynamic_modify_test',
-                         is_broken=env.IsRunningUnderValgrind())
+                         is_broken=is_broken or env.IsRunningUnderValgrind())

@@ -41,6 +41,10 @@ if not env.Bit('host_windows'):
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
 #endif
 
+# TODO(mseaborn): Add an IRT call for getpid() so that it works in nacl-glibc.
+# See http://code.google.com/p/nativeclient/issues/detail?id=2488
+getpid_is_broken = env.Bit('nacl_glibc')
+
 getpid_test_nexe = env.ComponentProgram('getpid_test',
                                         ['getpid_test.cc'],
                                         EXTRA_LIBS=['syscall_test_framework',
@@ -52,7 +56,8 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_getpid_test')
+                       'run_getpid_test',
+                       is_broken=getpid_is_broken)
 
 raw_syscall_objects = env.RawSyscallObjects(['getpid_test.cc'])
 raw_getpid_test_nexe = env.ComponentProgram(
@@ -76,7 +81,8 @@ node = env.CommandSelLdrTestNacl('getpid_disabled_test.out',
                                  getpid_disabled_test_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
-                       'run_getpid_disabled_test')
+                       'run_getpid_disabled_test',
+                       is_broken=getpid_is_broken)
 
 # The next few tests test the exit syscall.
 # The first one checks for exit success.
