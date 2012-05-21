@@ -462,7 +462,12 @@ class BookmarkBarViewTest3 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest3, Submenus)
+#if defined(OS_WIN)
+#define MAYBE_Submenus DISABLED_Submenus
+#else
+#define MAYBE_Submenus Submenus
+#endif
+VIEW_TEST(BookmarkBarViewTest3, MAYBE_Submenus)
 
 // Observer that posts task upon the context menu creation.
 // This is necessary for Linux as the context menu has to check
@@ -551,7 +556,12 @@ class BookmarkBarViewTest4 : public BookmarkBarViewEventTestBase {
   ContextMenuNotificationObserver observer_;
 };
 
-VIEW_TEST(BookmarkBarViewTest4, ContextMenus)
+#if defined(OS_WIN)
+#define MAYBE_ContextMenus DISABLED_ContextMenus
+#else
+#define MAYBE_ContextMenus ContextMenus
+#endif
+VIEW_TEST(BookmarkBarViewTest4, MAYBE_ContextMenus)
 
 // Tests drag and drop within the same menu.
 class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
@@ -621,7 +631,12 @@ class BookmarkBarViewTest5 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-VIEW_TEST(BookmarkBarViewTest5, DND)
+#if defined(OS_WIN)
+#define MAYBE_DND DISABLED_DND
+#else
+#define MAYBE_DND DND
+#endif
+VIEW_TEST(BookmarkBarViewTest5, MAYBE_DND)
 
 // Tests holding mouse down on overflow button, dragging such that menu pops up
 // then selecting an item.
@@ -659,7 +674,12 @@ class BookmarkBarViewTest6 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-VIEW_TEST(BookmarkBarViewTest6, OpenMenuOnClickAndHold)
+#if defined(OS_WIN)
+#define MAYBE_OpenMenuOnClickAndHold DISABLED_OpenMenuOnClickAndHold
+#else
+#define MAYBE_OpenMenuOnClickAndHold OpenMenuOnClickAndHold
+#endif
+VIEW_TEST(BookmarkBarViewTest6, MAYBE_OpenMenuOnClickAndHold)
 
 // Tests drag and drop to different menu.
 class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
@@ -749,7 +769,12 @@ class BookmarkBarViewTest7 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-VIEW_TEST(BookmarkBarViewTest7, DNDToDifferentMenu)
+#if defined(OS_WIN)
+#define MAYBE_DNDToDifferentMenu DISABLED_DNDToDifferentMenu
+#else
+#define MAYBE_DNDToDifferentMenu DNDToDifferentMenu
+#endif
+VIEW_TEST(BookmarkBarViewTest7, MAYBE_DNDToDifferentMenu)
 
 // Drags from one menu to next so that original menu closes, then back to
 // original menu.
@@ -853,7 +878,12 @@ class BookmarkBarViewTest8 : public BookmarkBarViewEventTestBase {
   GURL url_dragging_;
 };
 
-VIEW_TEST(BookmarkBarViewTest8, DNDBackToOriginatingMenu)
+#if defined(OS_WIN)
+#define MAYBE_DNDBackToOriginatingMenu DISABLED_DNDBackToOriginatingMenu
+#else
+#define MAYBE_DNDBackToOriginatingMenu DNDBackToOriginatingMenu
+#endif
+VIEW_TEST(BookmarkBarViewTest8, MAYBE_DNDBackToOriginatingMenu)
 
 // Moves the mouse over the scroll button and makes sure we get scrolling.
 class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
