@@ -23,8 +23,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationApiTest,
   ASSERT_TRUE(RunExtensionTest("geolocation/no_permission")) << message_;
 }
 
+// Timing out. http://crbug.com/128412
 IN_PROC_BROWSER_TEST_F(GeolocationApiTest,
-                       FAILS_ExtensionGeolocationAccessPass) {
+                       DISABLED_ExtensionGeolocationAccessPass) {
   // Test that geolocation can be accessed from extension with permission.
   ASSERT_TRUE(RunExtensionTest("geolocation/has_permission")) << message_;
 }
