@@ -503,8 +503,12 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
 
   if (!accelerated_compositing_reported_) {
     accelerated_compositing_reported_ = true;
-    DCHECK_EQ(frame_->view()->isAcceleratedCompositingActive(), false);
-    UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", false);
+    // Normally paint() is only called in non-accelerated rendering, but there
+    // are exceptions such as webgl where compositing is used in the WebView but
+    // video frames are still rendered to a canvas.
+    UMA_HISTOGRAM_BOOLEAN(
+        "Media.AcceleratedCompositingActive",
+        frame_->view()->isAcceleratedCompositingActive());
   }
 
   proxy_->Paint(canvas, rect, alpha);
@@ -569,7 +573,7 @@ void WebMediaPlayerImpl::putCurrentFrame(
     WebKit::WebVideoFrame* web_video_frame) {
   if (!accelerated_compositing_reported_) {
     accelerated_compositing_reported_ = true;
-    DCHECK_EQ(frame_->view()->isAcceleratedCompositingActive(), true);
+    DCHECK(frame_->view()->isAcceleratedCompositingActive());
     UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", true);
   }
   if (web_video_frame) {
