@@ -174,6 +174,7 @@ struct weston_wm_window {
 	struct weston_wm *wm;
 	xcb_window_t id;
 	xcb_window_t frame_id;
+	cairo_surface_t *cairo_surface;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 	struct wl_listener surface_destroy_listener;
@@ -869,6 +870,13 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_map_window(wm->conn, map_request->window);
 	xcb_map_window(wm->conn, window->frame_id);
 
+	window->cairo_surface =
+		cairo_xcb_surface_create_with_xrender_format(wm->conn,
+							     wm->screen,
+							     window->frame_id,
+							     &wm->render_format,
+							     width, height);
+
 	hash_table_insert(wm->window_hash, window->frame_id, window);
 }
 
@@ -892,7 +900,6 @@ weston_wm_window_draw_decoration(void *data)
 	struct weston_wm_window *window = data;
 	struct weston_wm *wm = window->wm;
 	struct theme *t = wm->theme;
-	cairo_surface_t *surface;
 	cairo_t *cr;
 	int x, y, width, height;
 	const char *title;
@@ -905,13 +912,8 @@ weston_wm_window_draw_decoration(void *data)
 	weston_wm_window_get_frame_size(window, &width, &height);
 	weston_wm_window_get_child_position(window, &x, &y);
 
-	surface = cairo_xcb_surface_create_with_xrender_format(wm->conn,
-							       wm->screen,
-							       window->frame_id,
-							       &wm->render_format,
-							       width,
-							       height);
-	cr = cairo_create(surface);
+	cairo_xcb_surface_set_size(window->cairo_surface, width, height);
+	cr = cairo_create(window->cairo_surface);
 
 	if (window->decorate) {
 		if (wm->focus_window == window)
@@ -934,7 +936,6 @@ weston_wm_window_draw_decoration(void *data)
 	}
 
 	cairo_destroy(cr);
-	cairo_surface_destroy(surface);
 
 	if (window->surface) {
 		/* We leave an extra pixel around the X window area to
@@ -1346,6 +1347,8 @@ weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event
 
 	if (window->repaint_source)
 		wl_event_source_remove(window->repaint_source);
+	if (window->cairo_surface)
+		cairo_surface_destroy(window->cairo_surface);
 
 	hash_table_remove(wm->window_hash, window->id);
 	hash_table_remove(wm->window_hash, window->frame_id);
