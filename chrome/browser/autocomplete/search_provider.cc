@@ -136,6 +136,7 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
                                                         &adjusted_input_text);
 
   const string16 text = adjusted_input_text + suggest_text;
+  bool results_updated = false;
   // Remove any matches that are identical to |text|. We don't use the
   // destination_url for comparison as it varies depending upon the index passed
   // to TemplateURL::ReplaceSearchTerms.
@@ -144,6 +145,7 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
          (i->type == AutocompleteMatch::SEARCH_SUGGEST)) &&
         (i->fill_into_edit == text)) {
       i = matches_.erase(i);
+      results_updated = true;
     } else {
       ++i;
     }
@@ -159,10 +161,13 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
                 CalculateRelevanceForWhatYouTyped() + 1,
                 AutocompleteMatch::SEARCH_SUGGEST,
                 did_not_accept_default_suggestion, false, &match_map);
-  DCHECK_EQ(1u, match_map.size());
-  matches_.push_back(match_map.begin()->second);
+  if (!match_map.empty()) {
+    matches_.push_back(match_map.begin()->second);
+    results_updated = true;
+  }
 
-  listener_->OnProviderUpdate(true);
+  if (results_updated || done_)
+    listener_->OnProviderUpdate(results_updated);
 }
 
 void SearchProvider::Start(const AutocompleteInput& input,
