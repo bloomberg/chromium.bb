@@ -94,6 +94,10 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) = 0;
+  virtual PP_Resource CreateImageData(PP_Instance instance,
+                                      PP_ImageDataFormat format,
+                                      const PP_Size& size,
+                                      PP_Bool init_to_zero) = 0;
 #if !defined(OS_NACL)
   virtual PP_Resource CreateAudioTrusted(PP_Instance instance) = 0;
   virtual PP_Resource CreateAudioInput0_1(
@@ -125,10 +129,6 @@ class ResourceCreationAPI {
                                           PP_Resource share_context,
                                           const int32_t* attrib_list) = 0;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;
-  virtual PP_Resource CreateImageData(PP_Instance instance,
-                                      PP_ImageDataFormat format,
-                                      const PP_Size& size,
-                                      PP_Bool init_to_zero) = 0;
   virtual PP_Resource CreateNetworkMonitor(
       PP_Instance instance,
       PPB_NetworkMonitor_Callback callback,
