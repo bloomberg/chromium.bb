@@ -1200,6 +1200,9 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	shsurf->surface->configure = NULL;
 	ping_timer_destroy(shsurf);
 
+	if (shsurf->unresponsive_animation.exists)
+		wl_list_remove(&shsurf->unresponsive_animation.current.link);
+
 	wl_list_remove(&shsurf->link);
 	free(shsurf);
 }
