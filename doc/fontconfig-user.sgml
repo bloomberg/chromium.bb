@@ -567,13 +567,13 @@ This is an example of a system-wide configuration file
 &lt;/match&gt;
 
 &lt;!--
-	Names not including any well known alias are given 'sans'
+	Names not including any well known alias are given 'sans-serif'
 --&gt;
 &lt;match target="pattern"&gt;
-	&lt;test qual="all" name="family" mode="not_eq"&gt;sans&lt;/test&gt;
-	&lt;test qual="all" name="family" mode="not_eq"&gt;serif&lt;/test&gt;
-	&lt;test qual="all" name="family" mode="not_eq"&gt;monospace&lt;/test&gt;
-	&lt;edit name="family" mode="append_last"&gt;&lt;string&gt;sans&lt;/string&gt;&lt;/edit&gt;
+	&lt;test qual="all" name="family" mode="not_eq"&gt;&lt;string&gt;sans-serif&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="all" name="family" mode="not_eq"&gt;&lt;string&gt;serif&lt;/string&gt;&lt;/test&gt;
+	&lt;test qual="all" name="family" mode="not_eq"&gt;&lt;string&gt;monospace&lt;/string&gt;&lt;/test&gt;
+	&lt;edit name="family" mode="append_last"&gt;&lt;string&gt;sans-serif&lt;/string&gt;&lt;/edit&gt;
 &lt;/match&gt;
 
 &lt;!--
