@@ -31,6 +31,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/monitor.h"
+#include "ui/gfx/point3.h"
 #include "ui/gfx/screen.h"
 
 using std::vector;
@@ -1003,8 +1004,12 @@ void RootWindow::SynthesizeMouseMoveEvent() {
   synthesize_mouse_move_ = false;
 #if !defined(OS_WIN)
   // Temporarily disabled for windows. See crbug.com/112222.
-  gfx::Point orig_mouse_location = last_mouse_location_;
-  layer()->transform().TransformPoint(orig_mouse_location);
+  gfx::Point3f point(last_mouse_location_);
+  ui::Transform transform = layer()->transform();
+  float scale = ui::GetDeviceScaleFactor(layer());
+  transform.ConcatScale(scale, scale);
+  transform.TransformPoint(point);
+  gfx::Point orig_mouse_location = point.AsPoint();
 
   // TODO(derat|oshima): Don't use mouse_button_flags_ as it's
   // currently broken. See/ crbug.com/107931.
