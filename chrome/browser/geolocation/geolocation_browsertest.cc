@@ -389,13 +389,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-// http://crbug.com/44589. Hangs on Mac, crashes on Windows
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_NoInfobarForSecondTab DISABLED_NoInfobarForSecondTab
-#else
-#define MAYBE_NoInfobarForSecondTab NoInfobarForSecondTab
-#endif
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
+// http://crbug.com/44589 and http://crbug.com/129065.
+// Hangs on mac, crashes on linux and windows.
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
@@ -431,8 +427,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-// http://crbug.com/100763. Crashes occasionally on XP.
-#if defined(OS_WIN)
+// http://crbug.com/100763 and http://crbug.com/129065.
+// Crashes occasionally on XP and linux.
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_NoInfobarForAllowedOrigin DISABLED_NoInfobarForAllowedOrigin
 #else
 #define MAYBE_NoInfobarForAllowedOrigin NoInfobarForAllowedOrigin
@@ -450,7 +447,14 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForAllowedOrigin) 
   CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
+// Crashes on linux.
+// http://crbug.com/129065
+#if defined(OS_LINUX)
+#define MAYBE_NoInfobarForOffTheRecord DISABLED_NoInfobarForOffTheRecord
+#else
+#define MAYBE_NoInfobarForOffTheRecord NoInfobarForOffTheRecord
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForOffTheRecord) {
   // First, check infobar will be created for regular profile
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
