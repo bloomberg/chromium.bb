@@ -17,6 +17,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 
+using extensions::Extension;
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("page_action/basics")) << message_;

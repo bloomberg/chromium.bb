@@ -8,12 +8,15 @@
 
 #include "content/public/browser/render_view_host_observer.h"
 
+class Profile;
+
 namespace chrome_browser_net {
 class Predictor;
 }
 
+namespace extensions {
 class Extension;
-class Profile;
+}
 
 // This class holds the Chrome specific parts of RenderViewHost, and has the
 // same lifetime.
@@ -37,7 +40,7 @@ class ChromeRenderViewHostObserver : public content::RenderViewHostObserver {
    // created by a RenderViewHost.
   void InitRenderViewForExtensions();
   // Gets the extension or app (if any) that is associated with the RVH.
-  const Extension* GetExtension();
+  const extensions::Extension* GetExtension();
   // Cleans up when a RenderViewHost is removed, or on destruction.
   void RemoveRenderViewHostForExtensions(content::RenderViewHost* rvh);
   void OnFocusedEditableNodeTouched();

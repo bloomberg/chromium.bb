@@ -140,8 +140,9 @@ const ExtensionMenuItem::List* ExtensionMenuManager::MenuItems(
   return NULL;
 }
 
-bool ExtensionMenuManager::AddContextItem(const Extension* extension,
-                                          ExtensionMenuItem* item) {
+bool ExtensionMenuManager::AddContextItem(
+    const extensions::Extension* extension,
+    ExtensionMenuItem* item) {
   const std::string& extension_id = item->extension_id();
   // The item must have a non-empty extension id, and not have already been
   // added.
@@ -544,8 +545,8 @@ void ExtensionMenuManager::Observe(
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
 
   // Remove menu items for disabled/uninstalled extensions.
-  const Extension* extension =
-      content::Details<UnloadedExtensionInfo>(details)->extension;
+  const extensions::Extension* extension =
+      content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
   if (ContainsKey(context_items_, extension->id())) {
     RemoveAllContextItems(extension->id());
   }

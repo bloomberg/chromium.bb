@@ -21,6 +21,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
+using extensions::Extension;
+
 namespace {
 
 enum CommandId {

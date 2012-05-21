@@ -21,6 +21,10 @@ class Browser;
 @class NSMenu;
 @class NSWindow;
 
+namespace extensions {
+class Extension;
+}
+
 // An implementation of BrowserWindow for Cocoa. Bridges between C++ and
 // the Cocoa NSWindow. Cross-platform code will interact with this object when
 // it needs to manipulate the window.
@@ -123,7 +127,7 @@ class BrowserWindowCocoa : public BrowserWindow,
       TabContentsWrapper* tab_contents) OVERRIDE;
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile* profile,
-      const Extension* app) OVERRIDE;
+      const extensions::Extension* app) OVERRIDE;
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;

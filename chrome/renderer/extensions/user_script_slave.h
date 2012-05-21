@@ -18,9 +18,12 @@
 #include "chrome/common/extensions/user_script.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 
-class Extension;
 class ExtensionSet;
 class GURL;
+
+namespace extensions {
+class Extension;
+}
 
 namespace WebKit {
 class WebFrame;
@@ -52,7 +55,7 @@ class UserScriptSlave {
   // Gets the isolated world ID to use for the given |extension| in the given
   // |frame|. If no isolated world has been created for that extension,
   // one will be created and initialized.
-  int GetIsolatedWorldIdForExtension(const Extension* extension,
+  int GetIsolatedWorldIdForExtension(const extensions::Extension* extension,
                                      WebKit::WebFrame* frame);
 
   // Gets the id of the extension running in a given isolated world. If no such
@@ -64,7 +67,7 @@ class UserScriptSlave {
 
  private:
   static void InitializeIsolatedWorld(int isolated_world_id,
-                                      const Extension* extension);
+                                      const extensions::Extension* extension);
 
   // Shared memory containing raw script data.
   scoped_ptr<base::SharedMemory> shared_memory_;

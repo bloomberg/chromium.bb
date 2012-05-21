@@ -31,7 +31,6 @@
 #endif
 
 class Browser;
-class Extension;
 class ExtensionWindowController;
 class PrefsTabHelper;
 
@@ -39,6 +38,10 @@ namespace content {
 class RenderProcessHost;
 class RenderWidgetHostView;
 class SiteInstance;
+}
+
+namespace extensions {
+class Extension;
 }
 
 // This class is the browser component of an extension component's RenderView.
@@ -63,7 +66,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   typedef ExtensionViewAndroid PlatformExtensionView;
 #endif
 
-  ExtensionHost(const Extension* extension,
+  ExtensionHost(const extensions::Extension* extension,
                 content::SiteInstance* site_instance,
                 const GURL& url, content::ViewType host_type);
   virtual ~ExtensionHost();
@@ -92,7 +95,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   // instantiate Browser objects.
   void CreateView(Browser* browser);
 
-  const Extension* extension() const { return extension_; }
+  const extensions::Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
   content::WebContents* host_contents() const { return host_contents_.get(); }
   content::RenderViewHost* render_view_host() const;
@@ -199,7 +202,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   bool is_background_page() const { return !view(); }
 
   // The extension that we're hosting in this view.
-  const Extension* extension_;
+  const extensions::Extension* extension_;
 
   // Id of extension that we're hosting in this view.
   const std::string extension_id_;

@@ -27,6 +27,11 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/gfx/image/image.h"
 
+using extensions::Extension;
+using extensions::ExtensionList;
+using extensions::UnloadedExtensionInfo;
+using extensions::UpdatedExtensionPermissionsInfo;
+
 class ExtensionNameComparator {
  public:
   explicit ExtensionNameComparator(icu::Collator* collator);
@@ -228,7 +233,8 @@ BackgroundApplicationListModel::FindApplication(
 }
 
 BackgroundApplicationListModel::Application*
-BackgroundApplicationListModel::FindApplication(const Extension* extension) {
+BackgroundApplicationListModel::FindApplication(
+    const Extension* extension) {
   const std::string& id = extension->id();
   ApplicationMap::iterator found = applications_.find(id);
   return (found == applications_.end()) ? NULL : found->second;

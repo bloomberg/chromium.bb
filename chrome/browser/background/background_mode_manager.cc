@@ -42,6 +42,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::UserMetricsAction;
+using extensions::Extension;
+using extensions::UpdatedExtensionPermissionsInfo;
 
 BackgroundModeManager::BackgroundModeData::BackgroundModeData(
     int command_id,
@@ -80,7 +82,8 @@ void BackgroundModeManager::BackgroundModeData::ExecuteCommand(int item) {
       break;
     default:
       // Launch the app associated with this item.
-      const Extension* extension = applications_->GetExtension(item);
+      const Extension* extension = applications_->
+          GetExtension(item);
       BackgroundModeManager::LaunchBackgroundApplication(profile_, extension);
       break;
   }
@@ -109,7 +112,8 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
     menu->AddItemWithStringId(IDC_MinimumLabelValue,
                               IDS_BACKGROUND_APP_NOT_INSTALLED);
   } else {
-    for (ExtensionList::const_iterator cursor = applications_->begin();
+    for (extensions::ExtensionList::const_iterator cursor =
+             applications_->begin();
          cursor != applications_->end();
          ++cursor, ++position) {
       const SkBitmap* icon = applications_->GetIcon(*cursor);

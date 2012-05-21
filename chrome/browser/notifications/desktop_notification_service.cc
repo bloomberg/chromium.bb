@@ -270,8 +270,8 @@ void DesktopNotificationService::Observe(
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     // Remove all notifications currently shown or queued by the extension
     // which was unloaded.
-    const Extension* extension =
-        content::Details<UnloadedExtensionInfo>(details)->extension;
+    const extensions::Extension* extension =
+        content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
     if (extension)
       GetUIManager()->CancelAllBySourceOrigin(extension->url());
   } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
@@ -408,7 +408,7 @@ string16 DesktopNotificationService::DisplayNameForOrigin(
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
     ExtensionService* extension_service = profile_->GetExtensionService();
     if (extension_service) {
-      const Extension* extension =
+      const extensions::Extension* extension =
           extension_service->extensions()->GetExtensionOrAppByURL(
               ExtensionURLInfo(
                   WebSecurityOrigin::createFromString(

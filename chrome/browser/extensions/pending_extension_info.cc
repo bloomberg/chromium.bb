@@ -10,7 +10,7 @@ PendingExtensionInfo::PendingExtensionInfo(
     ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     bool install_silently,
-    Extension::Location install_source)
+    extensions::Extension::Location install_source)
     : update_url_(update_url),
       version_(version),
       should_allow_install_(should_allow_install),
@@ -23,4 +23,4 @@ PendingExtensionInfo::PendingExtensionInfo()
       should_allow_install_(NULL),
       is_from_sync_(true),
       install_silently_(false),
-      install_source_(Extension::INVALID) {}
+      install_source_(extensions::Extension::INVALID) {}

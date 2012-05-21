@@ -80,7 +80,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
  public:
   ExtensionUninstallDialogDelegateView(
       ExtensionUninstallDialogViews* dialog_view,
-      const Extension* extension,
+      const extensions::Extension* extension,
       SkBitmap* icon);
   virtual ~ExtensionUninstallDialogDelegateView();
 
@@ -156,7 +156,7 @@ void ExtensionUninstallDialogViews::ExtensionUninstallCanceled() {
 
 ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     ExtensionUninstallDialogViews* dialog_view,
-    const Extension* extension,
+    const extensions::Extension* extension,
     SkBitmap* icon)
     : dialog_(dialog_view) {
   // Scale down to icon size, but allow smaller icons (don't scale up).

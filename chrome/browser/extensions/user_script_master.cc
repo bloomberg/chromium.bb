@@ -350,8 +350,8 @@ void UserScriptMaster::Observe(int type,
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       // Add any content scripts inside the extension.
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
+      const extensions::Extension* extension =
+          content::Details<const extensions::Extension>(details).ptr();
       extensions_info_[extension->id()] =
           ExtensionSet::ExtensionPathAndDefaultLocale(
               extension->path(), extension->default_locale());
@@ -369,8 +369,9 @@ void UserScriptMaster::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       // Remove any content scripts.
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
+      const extensions::Extension* extension =
+          content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension;
       extensions_info_.erase(extension->id());
       UserScriptList new_user_scripts;
       for (UserScriptList::iterator iter = user_scripts_.begin();

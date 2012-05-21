@@ -21,7 +21,6 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
-class Extension;
 class SkBitmap;
 class TabContentsWrapper;
 class TaskManagerModel;
@@ -29,6 +28,11 @@ class TaskManagerModel;
 namespace base {
 class ProcessMetrics;
 }
+
+namespace extensions {
+class Extension;
+}
+
 namespace net {
 class URLRequest;
 }
@@ -85,7 +89,7 @@ class TaskManager {
 
     // Return extension associated with the resource, or NULL
     // if not applicable.
-    virtual const Extension* GetExtension() const { return NULL; }
+    virtual const extensions::Extension* GetExtension() const { return NULL; }
 
     virtual bool ReportsV8MemoryStats() const { return false; }
     virtual size_t GetV8MemoryAllocated() const { return 0; }
@@ -399,7 +403,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   TabContentsWrapper* GetResourceTabContents(int index) const;
 
   // Returns Extension of given resource or NULL if not applicable.
-  const Extension* GetResourceExtension(int index) const;
+  const extensions::Extension* GetResourceExtension(int index) const;
 
   void AddResource(TaskManager::Resource* resource);
   void RemoveResource(TaskManager::Resource* resource);

@@ -35,6 +35,7 @@ using WebKit::WebFrame;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebURL;
 using content::RenderThread;
+using extensions::Extension;
 
 namespace {
 

@@ -51,6 +51,7 @@
 
 using content::WebContents;
 using extensions::BundleInstaller;
+using extensions::Extension;
 
 static const int kTitleIds[ExtensionInstallUI::NUM_PROMPT_TYPES] = {
   0,  // The regular install prompt depends on what's being installed.

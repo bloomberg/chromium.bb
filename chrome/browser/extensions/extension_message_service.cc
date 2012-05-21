@@ -126,7 +126,7 @@ static content::RenderProcessHost* GetExtensionProcess(
     Profile* profile, const std::string& extension_id) {
   SiteInstance* site_instance =
       profile->GetExtensionProcessManager()->GetSiteInstanceForURL(
-          Extension::GetBaseURLFromExtensionId(extension_id));
+          extensions::Extension::GetBaseURLFromExtensionId(extension_id));
 
   if (!site_instance->HasProcess())
     return NULL;
@@ -430,7 +430,8 @@ bool ExtensionMessageService::MaybeAddPendingOpenChannelTask(
     const OpenChannelParams& params) {
   ExtensionService* service = profile->GetExtensionService();
   const std::string& extension_id = params.target_extension_id;
-  const Extension* extension = service->extensions()->GetByID(extension_id);
+  const extensions::Extension* extension = service->extensions()->GetByID(
+      extension_id);
   if (extension && extension->has_lazy_background_page()) {
     // If the extension uses spanning incognito mode, make sure we're always
     // using the original profile since that is what the extension process

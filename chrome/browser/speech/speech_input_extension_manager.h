@@ -15,7 +15,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 
-class Extension;
 class Profile;
 class SpeechRecognitionTrayIconController;
 

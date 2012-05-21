@@ -35,6 +35,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::ResourceRequestInfo;
+using extensions::Extension;
 
 namespace {
 

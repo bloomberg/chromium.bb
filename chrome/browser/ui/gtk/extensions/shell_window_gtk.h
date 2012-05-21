@@ -16,12 +16,16 @@
 
 class Profile;
 
+namespace extensions {
+class Extension;
+}
+
 class ShellWindowGtk : public ShellWindow,
                        public ExtensionViewGtk::Container,
                        public ui::ActiveWindowWatcherXObserver {
  public:
   ShellWindowGtk(Profile* profile,
-                 const Extension* extension,
+                 const extensions::Extension* extension,
                  const GURL& url);
 
   // BaseWindow implementation.

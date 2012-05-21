@@ -52,7 +52,7 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   // extension ids.
   static const char kExtensionsPref[];
 
-  typedef std::vector<linked_ptr<ExtensionInfo> > ExtensionsInfo;
+  typedef std::vector<linked_ptr<extensions::ExtensionInfo> > ExtensionsInfo;
 
   // Vector containing identifiers for preferences.
   typedef std::set<std::string> PrefKeySet;
@@ -110,18 +110,19 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   // Called when an extension is installed, so that prefs get created.
   // If |page_ordinal| is an invalid ordinal, then a page will be found
   // for the App.
-  void OnExtensionInstalled(const Extension* extension,
-                            Extension::State initial_state,
+  void OnExtensionInstalled(const extensions::Extension* extension,
+                            extensions::Extension::State initial_state,
                             bool from_webstore,
                             const StringOrdinal& page_ordinal);
 
   // Called when an extension is uninstalled, so that prefs get cleaned up.
   void OnExtensionUninstalled(const std::string& extension_id,
-                              const Extension::Location& location,
+                              const extensions::Extension::Location& location,
                               bool external_uninstall);
 
   // Called to change the extension's state when it is enabled/disabled.
-  void SetExtensionState(const std::string& extension_id, Extension::State);
+  void SetExtensionState(const std::string& extension_id,
+      extensions::Extension::State);
 
   // Returns all installed extensions
   void GetExtensions(ExtensionIdSet* out);
@@ -133,21 +134,24 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
       const base::DictionaryValue* extension_prefs);
 
   // Getter and setter for browser action visibility.
-  bool GetBrowserActionVisibility(const Extension* extension);
-  void SetBrowserActionVisibility(const Extension* extension, bool visible);
+  bool GetBrowserActionVisibility(const extensions::Extension* extension);
+  void SetBrowserActionVisibility(const extensions::Extension* extension,
+     bool visible);
 
   // Did the extension ask to escalate its permission during an upgrade?
   bool DidExtensionEscalatePermissions(const std::string& id);
 
   // If |did_escalate| is true, the preferences for |extension| will be set to
   // require the install warning when the user tries to enable.
-  void SetDidExtensionEscalatePermissions(const Extension* extension,
-                                          bool did_escalate);
+  void SetDidExtensionEscalatePermissions(
+      const extensions::Extension* extension,
+      bool did_escalate);
 
   // Getter and setters for disabled reason.
-  Extension::DisableReason GetDisableReason(const std::string& extension_id);
+  extensions::Extension::DisableReason GetDisableReason(
+      const std::string& extension_id);
   void SetDisableReason(const std::string& extension_id,
-                        Extension::DisableReason disable_reason);
+                        extensions::Extension::DisableReason disable_reason);
   void RemoveDisableReason(const std::string& extension_id);
 
   // Returns the version string for the currently installed extension, or
@@ -156,7 +160,7 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
 
   // Re-writes the extension manifest into the prefs.
   // Called to change the extension's manifest when it's re-localized.
-  void UpdateManifest(const Extension* extension);
+  void UpdateManifest(const extensions::Extension* extension);
 
   // Returns extension path based on extension ID, or empty FilePath on error.
   FilePath GetExtensionPath(const std::string& extension_id);
@@ -205,7 +209,7 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   // Is the extension with |extension_id| allowed by policy (checking both
   // whitelist and blacklist).
   bool IsExtensionAllowedByPolicy(const std::string& extension_id,
-                                  Extension::Location location) const;
+      extensions::Extension::Location location) const;
 
   // Checks if extensions are blacklisted by default, by policy. When true, this
   // means that even extensions without an ID should be blacklisted (e.g.
@@ -301,7 +305,7 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   // If |extension|'s prefs do not have a launch type set, then
   // use |default_pref_value|.
   extension_misc::LaunchContainer GetLaunchContainer(
-      const Extension* extension,
+      const extensions::Extension* extension,
       LaunchType default_pref_value);
 
   // Saves ExtensionInfo for each installed extension with the path to the
@@ -312,7 +316,8 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
 
   // Returns the ExtensionInfo from the prefs for the given extension. If the
   // extension is not present, NULL is returned.
-  ExtensionInfo* GetInstalledExtensionInfo(const std::string& extension_id);
+  extensions::ExtensionInfo* GetInstalledExtensionInfo(
+      const std::string& extension_id);
 
   // We've downloaded an updated .crx file for the extension, but are waiting
   // for idle time to install it.
@@ -522,7 +527,7 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   // Checks whether there is a state pref for the extension and if so, whether
   // it matches |check_state|.
   bool DoesExtensionHaveState(const std::string& id,
-                              Extension::State check_state) const;
+                              extensions::Extension::State check_state) const;
 
   // The pref service specific to this set of extension prefs. Owned by profile.
   PrefService* prefs_;

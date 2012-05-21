@@ -27,6 +27,7 @@
 
 using content::NavigationController;
 using content::WebContents;
+using extensions::Extension;
 
 class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
  protected:

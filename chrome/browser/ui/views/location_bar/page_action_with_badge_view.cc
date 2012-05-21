@@ -22,8 +22,8 @@ void PageActionWithBadgeView::GetAccessibleState(
 }
 
 gfx::Size PageActionWithBadgeView::GetPreferredSize() {
-  return gfx::Size(Extension::kPageActionIconMaxSize,
-                   Extension::kPageActionIconMaxSize);
+  return gfx::Size(extensions::Extension::kPageActionIconMaxSize,
+                   extensions::Extension::kPageActionIconMaxSize);
 }
 
 void PageActionWithBadgeView::Layout() {

@@ -19,6 +19,10 @@
 class ExtensionIconSet;
 class Profile;
 
+namespace extensions {
+class Extension;
+}
+
 // ExtensionIconSource serves extension icons through network level chrome:
 // requests. Icons can be retrieved for any installed extension or app.
 //
@@ -55,7 +59,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   // desaturated version of the icon. |exists|, if non-NULL, will be set to true
   // if the icon exists; false if it will lead to a default or not-present
   // image.
-  static GURL GetIconURL(const Extension* extension,
+  static GURL GetIconURL(const extensions::Extension* extension,
                          int icon_size,
                          ExtensionIconSet::MatchType match,
                          bool grayscale,
@@ -131,7 +135,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   // Stores the parameters associated with the |request_id|, making them
   // as an ExtensionIconRequest via GetData.
   void SetData(int request_id,
-               const Extension* extension,
+               const extensions::Extension* extension,
                bool grayscale,
                int size,
                ExtensionIconSet::MatchType match);

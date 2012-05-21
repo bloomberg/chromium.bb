@@ -31,8 +31,9 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
    public:
     // Invoked when data that the model associates with the extension, such as
     // the Icon, has changed.
-    virtual void OnApplicationDataChanged(const Extension* extension,
-                                          Profile* profile);
+    virtual void OnApplicationDataChanged(
+        const extensions::Extension* extension,
+        Profile* profile);
 
     // Invoked when the model detects a previously unknown extension and/or when
     // it no longer detects a previously known extension.
@@ -58,26 +59,26 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   //       releasing it if the associated background application is unloaded.
   // NOTE: All icons are currently sized as
   //       ExtensionIconSet::EXTENSION_ICON_BITTY.
-  const SkBitmap* GetIcon(const Extension* extension);
+  const SkBitmap* GetIcon(const extensions::Extension* extension);
 
   // Return the position of |extension| within this list model.
-  int GetPosition(const Extension* extension) const;
+  int GetPosition(const extensions::Extension* extension) const;
 
   // Return the extension at the specified |position| in this list model.
-  const Extension* GetExtension(int position) const;
+  const extensions::Extension* GetExtension(int position) const;
 
   // Returns true if the passed extension is a background app.
-  static bool IsBackgroundApp(const Extension& extension,
+  static bool IsBackgroundApp(const extensions::Extension& extension,
                               Profile* profile);
 
   // Dissociate observer from this model.
   void RemoveObserver(Observer* observer);
 
-  ExtensionList::const_iterator begin() const {
+  extensions::ExtensionList::const_iterator begin() const {
     return extensions_.begin();
   }
 
-  ExtensionList::const_iterator end() const {
+  extensions::ExtensionList::const_iterator end() const {
     return extensions_.end();
   }
 
@@ -94,16 +95,17 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   typedef std::map<std::string, Application*> ApplicationMap;
 
   // Identifies and caches data related to the extension.
-  void AssociateApplicationData(const Extension* extension);
+  void AssociateApplicationData(const extensions::Extension* extension);
 
   // Clears cached data related to |extension|.
-  void DissociateApplicationData(const Extension* extension);
+  void DissociateApplicationData(const extensions::Extension* extension);
 
   // Returns the Application associated with |extension| or NULL.
-  const Application* FindApplication(const Extension* extension) const;
+  const Application* FindApplication(
+      const extensions::Extension* extension) const;
 
   // Returns the Application associated with |extension| or NULL.
-  Application* FindApplication(const Extension* extension);
+  Application* FindApplication(const extensions::Extension* extension);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -112,29 +114,30 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
 
   // Notifies observers that some of the data associated with this background
   // application, e. g. the Icon, has changed.
-  void SendApplicationDataChangedNotifications(const Extension* extension);
+  void SendApplicationDataChangedNotifications(
+      const extensions::Extension* extension);
 
   // Notifies observers that at least one background application has been added
   // or removed.
   void SendApplicationListChangedNotifications();
 
   // Invoked by Observe for NOTIFICATION_EXTENSION_LOADED.
-  void OnExtensionLoaded(const Extension* extension);
+  void OnExtensionLoaded(const extensions::Extension* extension);
 
   // Invoked by Observe for NOTIFICATION_EXTENSION_UNLOADED.
-  void OnExtensionUnloaded(const Extension* extension);
+  void OnExtensionUnloaded(const extensions::Extension* extension);
 
   // Invoked by Observe for NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED.
   void OnExtensionPermissionsUpdated(
-      const Extension* extension,
-      UpdatedExtensionPermissionsInfo::Reason reason,
+      const extensions::Extension* extension,
+      extensions::UpdatedExtensionPermissionsInfo::Reason reason,
       const ExtensionPermissionSet* permissions);
 
   // Refresh the list of background applications and generate notifications.
   void Update();
 
   ApplicationMap applications_;
-  ExtensionList extensions_;
+  extensions::ExtensionList extensions_;
   ObserverList<Observer> observers_;
   Profile* profile_;
   content::NotificationRegistrar registrar_;

@@ -13,8 +13,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class Extension;
 class Profile;
+
+namespace extensions {
+class Extension;
+}
 
 namespace chromeos {
 
@@ -45,7 +48,7 @@ class KioskModeScreensaver : public PowerManagerClient::Observer,
 
   // Called back on the UI thread to Setup the screensaver with the now unpacked
   // and loaded extension.
-  void SetupScreensaver(scoped_refptr<Extension> extension,
+  void SetupScreensaver(scoped_refptr<extensions::Extension> extension,
                         Profile* default_profile,
                         const FilePath& extension_base_path);
 

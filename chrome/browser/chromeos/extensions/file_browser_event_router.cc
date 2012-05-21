@@ -429,7 +429,7 @@ void FileBrowserEventRouter::DispatchFolderChangeEvent(
 
   for (ExtensionUsageRegistry::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
-    GURL target_origin_url(Extension::GetBaseURLFromExtensionId(
+    GURL target_origin_url(extensions::Extension::GetBaseURLFromExtensionId(
         iter->first));
     GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
         fileapi::kFileSystemTypeExternal);

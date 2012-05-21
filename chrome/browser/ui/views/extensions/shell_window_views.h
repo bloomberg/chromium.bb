@@ -14,12 +14,16 @@
 
 class Profile;
 
+namespace extensions {
+class Extension;
+}
+
 class ShellWindowViews : public ShellWindow,
                          public views::NativeViewHost,
                          public views::WidgetDelegate {
  public:
   ShellWindowViews(Profile* profile,
-                   const Extension* extension,
+                   const extensions::Extension* extension,
                    const GURL& url);
 
   // BaseWindow implementation.

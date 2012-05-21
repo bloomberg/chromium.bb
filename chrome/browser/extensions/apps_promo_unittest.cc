@@ -57,7 +57,8 @@ void ExtensionAppsPromo::SetUp() {
 #if !defined(OS_CHROMEOS)
 
 TEST_F(ExtensionAppsPromo, HappyPath) {
-  const ExtensionIdSet& default_app_ids = apps_promo()->old_default_apps();
+  const extensions::ExtensionIdSet& default_app_ids =
+      apps_promo()->old_default_apps();
 
   EXPECT_GT(default_app_ids.size(), 0u);
 
@@ -68,7 +69,7 @@ TEST_F(ExtensionAppsPromo, HappyPath) {
 
   // The app launcher and promo should not be shown if there are no extensions
   // installed and no promo is set.
-  ExtensionIdSet installed_ids;
+  extensions::ExtensionIdSet installed_ids;
   bool promo_just_expired = false;
   EXPECT_FALSE(AppsPromo::IsPromoSupportedForLocale());
   EXPECT_FALSE(apps_promo()->ShouldShowAppLauncher(installed_ids));

@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "ui/views/controls/button/button.h"
 
-class Extension;
 class PanelBrowserView;
 class SkPaint;
 namespace gfx {

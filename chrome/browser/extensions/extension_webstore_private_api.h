@@ -145,7 +145,7 @@ class BeginInstallWithManifestFunction
 
   // A dummy Extension object we create for the purposes of using
   // ExtensionInstallUI to prompt for confirmation of the install.
-  scoped_refptr<Extension> dummy_extension_;
+  scoped_refptr<extensions::Extension> dummy_extension_;
 
   // The class that displays the install prompt.
   scoped_ptr<ExtensionInstallUI> install_ui_;

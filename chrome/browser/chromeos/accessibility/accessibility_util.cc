@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
@@ -116,7 +117,7 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
   FilePath path = FilePath(extension_misc::kAccessExtensionPath)
       .AppendASCII(extension_misc::kChromeVoxDirectoryName);
   if (enabled) {  // Load ChromeVox
-    const Extension* extension =
+    const extensions::Extension* extension =
         extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,
                                                    path);
 

@@ -27,6 +27,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using extensions::Extension;
+
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;

@@ -555,7 +555,8 @@ void ExtensionUninstallObserver::Observe(
     }
 
     case chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED: {
-      const Extension* extension = content::Details<Extension>(details).ptr();
+      const extensions::Extension* extension =
+          content::Details<extensions::Extension>(details).ptr();
       if (id_ == extension->id()) {
         scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
         return_value->SetBoolean("success", false);
@@ -615,11 +616,12 @@ void ExtensionReadyNotificationObserver::Observe(
         return;
       break;
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      const Extension* loaded_extension =
-          content::Details<const Extension>(details).ptr();
+      const extensions::Extension* loaded_extension =
+          content::Details<const extensions::Extension>(details).ptr();
       // Only track an internal or unpacked extension load.
-      Extension::Location location = loaded_extension->location();
-      if (location != Extension::INTERNAL && location != Extension::LOAD)
+      extensions::Extension::Location location = loaded_extension->location();
+      if (location != extensions::Extension::INTERNAL &&
+          location != extensions::Extension::LOAD)
         return;
       extension_ = loaded_extension;
       if (!DidExtensionViewsStopLoading(manager_))
@@ -731,7 +733,8 @@ void ExtensionsUpdatedObserver::Observe(
       // An extension has either completed update installation and is now
       // loaded, or else the install has been skipped because it is
       // either not allowed or else has been disabled.
-      const Extension* extension = content::Details<Extension>(details).ptr();
+      const extensions::Extension* extension =
+          content::Details<extensions::Extension>(details).ptr();
       in_progress_updates_.erase(extension->id());
       break;
     }
@@ -1876,7 +1879,7 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
       DictionaryValue* app_info = new DictionaryValue();
       AppLauncherHandler::CreateAppInfo(*ext, NULL, ext_service, app_info);
       app_info->SetBoolean("is_component_extension",
-                           (*ext)->location() == Extension::COMPONENT);
+          (*ext)->location() == extensions::Extension::COMPONENT);
 
       // Convert the launch_type integer into a more descriptive string.
       int launch_type;

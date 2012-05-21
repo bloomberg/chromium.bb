@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 
-class Extension;
 class ExtensionPermissionSet;
 class ExtensionService;
 

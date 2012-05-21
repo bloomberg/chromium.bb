@@ -302,9 +302,9 @@ ExtensionSystemImpl::rules_registry_service() {
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   base::Time install_time;
-  if (extension->location() != Extension::COMPONENT) {
+  if (extension->location() != extensions::Extension::COMPONENT) {
     install_time = extension_service()->extension_prefs()->
         GetInstallTime(extension->id());
   }

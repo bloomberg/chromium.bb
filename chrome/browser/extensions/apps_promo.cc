@@ -202,7 +202,7 @@ AppsPromo::AppsPromo(PrefService* prefs)
 
 AppsPromo::~AppsPromo() {}
 
-bool AppsPromo::ShouldShowPromo(const ExtensionIdSet& installed_ids,
+bool AppsPromo::ShouldShowPromo(const extensions::ExtensionIdSet& installed_ids,
                                 bool* just_expired) {
   *just_expired = false;
 
@@ -253,7 +253,8 @@ bool AppsPromo::ShouldShowPromo(const ExtensionIdSet& installed_ids,
   return false;
 }
 
-bool AppsPromo::ShouldShowAppLauncher(const ExtensionIdSet& installed_ids) {
+bool AppsPromo::ShouldShowAppLauncher(
+    const extensions::ExtensionIdSet& installed_ids) {
   // On Chrome OS the default apps are installed via a separate mechanism that
   // is always enabled. Therefore we always show the launcher.
 #if defined(OS_CHROMEOS)

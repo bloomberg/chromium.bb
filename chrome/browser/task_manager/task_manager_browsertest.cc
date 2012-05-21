@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("packaged_app")));
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  const Extension* extension =
+  const extensions::Extension* extension =
       service->GetExtensionById(last_loaded_extension_id_, false);
 
   // Browser and the New Tab Page.
@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ReloadExtension) {
   EXPECT_TRUE(model()->GetResourceExtension(1) == NULL);
   ASSERT_TRUE(model()->GetResourceExtension(2) != NULL);
 
-  const Extension* extension = model()->GetResourceExtension(2);
+  const extensions::Extension* extension = model()->GetResourceExtension(2);
   ASSERT_TRUE(extension != NULL);
 
   // Reload the extension a few times and make sure our resource count

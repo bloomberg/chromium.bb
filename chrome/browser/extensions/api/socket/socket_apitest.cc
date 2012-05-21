@@ -14,6 +14,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/test/test_server.h"
 
+using extensions::Extension;
+
 namespace utils = extension_function_test_utils;
 
 namespace {

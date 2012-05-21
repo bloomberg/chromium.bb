@@ -23,6 +23,7 @@
 using content::ChildProcessSecurityPolicy;
 using content::RenderViewHost;
 using content::SiteInstance;
+using extensions::Extension;
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
     RenderViewHost* render_view_host, chrome_browser_net::Predictor* predictor)

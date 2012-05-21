@@ -42,7 +42,6 @@ class Browser;
 class BrowserViewLayout;
 class ContentsContainer;
 class DownloadShelfView;
-class Extension;
 class FullscreenExitBubbleViews;
 class InfoBarContainerView;
 class LocationBarView;
@@ -58,6 +57,10 @@ class JumpList;
 #if defined(USE_AURA)
 class BrowserLauncherItemController;
 #endif
+
+namespace extensions {
+class Extension;
+}
 
 namespace views {
 class AccessiblePaneView;
@@ -302,7 +305,7 @@ class BrowserView : public BrowserWindow,
   virtual void ShowCreateWebAppShortcutsDialog(
       TabContentsWrapper* tab_contents) OVERRIDE;
   virtual void ShowCreateChromeAppShortcutsDialog(
-      Profile*, const Extension* app) OVERRIDE;
+      Profile*, const extensions::Extension* app) OVERRIDE;
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;

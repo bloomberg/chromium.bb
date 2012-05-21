@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 namespace {
 

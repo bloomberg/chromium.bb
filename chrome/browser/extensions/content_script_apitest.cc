@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionAPIs) {
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  const Extension* extension = LoadExtension(
+  const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("content_scripts/extension_api"));
 
   ResultCatcher catcher;

@@ -54,6 +54,7 @@
 
 using content::RenderViewHost;
 using content::WebContents;
+using extensions::Extension;
 using extensions::ExtensionUpdater;
 
 ///////////////////////////////////////////////////////////////////////////////

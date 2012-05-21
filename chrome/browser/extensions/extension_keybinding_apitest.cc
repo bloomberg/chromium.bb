@@ -40,7 +40,7 @@ class KeybindingApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/basics")) << message_;
-  const Extension* extension = GetSingleLoadedExtension();
+  const extensions::Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
   // Load this extension, which uses the same keybindings but sets the page
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
 IN_PROC_BROWSER_TEST_F(KeybindingApiTest, PageAction) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
-  const Extension* extension = GetSingleLoadedExtension();
+  const extensions::Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
   {

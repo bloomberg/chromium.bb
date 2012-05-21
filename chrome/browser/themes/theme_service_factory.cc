@@ -23,7 +23,8 @@ ThemeService* ThemeServiceFactory::GetForProfile(Profile* profile) {
 }
 
 // static
-const Extension* ThemeServiceFactory::GetThemeForProfile(Profile* profile) {
+const extensions::Extension* ThemeServiceFactory::GetThemeForProfile(
+    Profile* profile) {
   std::string id = GetForProfile(profile)->GetThemeID();
   if (id == ThemeService::kDefaultThemeID)
     return NULL;

@@ -18,15 +18,22 @@
 #include "ui/gfx/color_utils.h"
 
 class FilePath;
-namespace ui {
-class DataPack;
-}
-namespace gfx {
-class Image;
-}
+
 namespace base {
 class DictionaryValue;
 class RefCountedMemory;
+}
+
+namespace extensions {
+class Extensions;
+}
+
+namespace gfx {
+class Image;
+}
+
+namespace ui {
+class DataPack;
 }
 
 // An optimized representation of a theme, backed by a mmapped DataPack.
@@ -53,7 +60,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // on a separate thread as it takes so long. This can fail and return NULL in
   // the case where the theme has invalid data.
   static scoped_refptr<BrowserThemePack> BuildFromExtension(
-      const Extension* extension);
+      const extensions::Extension* extension);
 
   // Builds the theme pack from a previously performed WriteToDisk(). This
   // operation should be relatively fast, as it should be an mmap() and some
@@ -118,7 +125,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   virtual ~BrowserThemePack();
 
   // Builds a header ready to write to disk.
-  void BuildHeader(const Extension* extension);
+  void BuildHeader(const extensions::Extension* extension);
 
   // Transforms the JSON tint values into their final versions in the |tints_|
   // array.

@@ -290,7 +290,7 @@ void GetAllCookiesFunction::GetAllCookiesOnIOThread() {
 
 void GetAllCookiesFunction::GetAllCookiesCallback(
     const net::CookieList& cookie_list) {
-  const Extension* extension = GetExtension();
+  const extensions::Extension* extension = GetExtension();
   if (extension) {
     ListValue* matching_list = new ListValue();
     cookies_helpers::AppendMatchingCookiesToList(

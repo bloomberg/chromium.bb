@@ -71,6 +71,7 @@ using WebKit::WebView;
 using content::RenderThread;
 using extensions::ApiDefinitionsNatives;
 using extensions::ContextMenusCustomBindings;
+using extensions::Extension;
 using extensions::ExperimentalUsbCustomBindings;
 using extensions::ExtensionAPI;
 using extensions::ExtensionCustomBindings;
@@ -86,6 +87,7 @@ using extensions::SendRequestNatives;
 using extensions::SetIconNatives;
 using extensions::TTSCustomBindings;
 using extensions::TabsCustomBindings;
+using extensions::UpdatedExtensionPermissionsInfo;
 using extensions::WebRequestCustomBindings;
 
 namespace {

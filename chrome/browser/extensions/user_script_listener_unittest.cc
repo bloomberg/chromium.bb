@@ -23,6 +23,7 @@
 
 using content::ResourceThrottle;
 using content::ResourceThrottleController;
+using extensions::Extension;
 
 namespace {
 

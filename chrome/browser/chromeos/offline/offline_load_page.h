@@ -14,8 +14,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 
-class Extension;
-
 namespace base {
 class DictionaryValue;
 }
@@ -23,6 +21,10 @@ class DictionaryValue;
 namespace content {
 class InterstitialPage;
 class WebContents;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace chromeos {
@@ -67,7 +69,7 @@ class OfflineLoadPage : public content::InterstitialPageDelegate,
 
   // Retrieves template strings of the offline page for app and
   // normal site.
-  void GetAppOfflineStrings(const Extension* app,
+  void GetAppOfflineStrings(const extensions::Extension* app,
                             const string16& faield_url,
                             base::DictionaryValue* strings) const;
   void GetNormalOfflineStrings(const string16& faield_url,

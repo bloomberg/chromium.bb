@@ -21,6 +21,7 @@
 #include "ui/gfx/size.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 class ImageLoadingTrackerTest : public testing::Test,
                                 public ImageLoadingTracker::Observer {
@@ -168,12 +169,12 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   EXPECT_EQ(0, image_loaded_count());
 
   // Send out notification the extension was uninstalled.
-  UnloadedExtensionInfo details(extension.get(),
-                                extension_misc::UNLOAD_REASON_UNINSTALL);
+  extensions::UnloadedExtensionInfo details(extension.get(),
+      extension_misc::UNLOAD_REASON_UNINSTALL);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::NotificationService::AllSources(),
-      content::Details<UnloadedExtensionInfo>(&details));
+      content::Details<extensions::UnloadedExtensionInfo>(&details));
 
   // Chuck the extension, that way if anyone tries to access it we should crash
   // or get valgrind errors.

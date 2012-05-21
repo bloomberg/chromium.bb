@@ -18,7 +18,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class Extension;
 class ExtensionPermissionSet;
 class MessageLoop;
 class Profile;
@@ -27,11 +26,12 @@ class TabContentsWrapper;
 
 namespace base {
 class DictionaryValue;
-}  // namespace base
+}
 
 namespace extensions {
 class BundleInstaller;
-}  // namespace extensions
+class Extension;
+}
 
 // Displays all the UI around extension installation.
 class ExtensionInstallUI : public ImageLoadingTracker::Observer {
@@ -92,8 +92,10 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     }
 
     // Populated for all other types.
-    const Extension* extension() const { return extension_; }
-    void set_extension(const Extension* extension) { extension_ = extension; }
+    const extensions::Extension* extension() const { return extension_; }
+    void set_extension(const extensions::Extension* extension) {
+      extension_ = extension;
+    }
 
     const gfx::Image& icon() const { return icon_; }
     void set_icon(const gfx::Image& icon) { icon_ = icon; }
@@ -105,7 +107,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     std::vector<string16> permissions_;
 
     // The extension or bundle being installed.
-    const Extension* extension_;
+    const extensions::Extension* extension_;
     const extensions::BundleInstaller* bundle_;
 
     // The icon to be displayed.
@@ -138,7 +140,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
   // Creates a dummy extension from the |manifest|, replacing the name and
   // description with the localizations if provided.
-  static scoped_refptr<Extension> GetLocalizedExtensionForDisplay(
+  static scoped_refptr<extensions::Extension> GetLocalizedExtensionForDisplay(
       const base::DictionaryValue* manifest,
       const std::string& id,
       const std::string& localized_name,
@@ -173,7 +175,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmInlineInstall(Delegate* delegate,
-                                    const Extension* extension,
+                                    const extensions::Extension* extension,
                                     SkBitmap* icon,
                                     const Prompt& prompt);
 
@@ -182,31 +184,34 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmWebstoreInstall(Delegate* delegate,
-                                      const Extension* extension,
+                                      const extensions::Extension* extension,
                                       const SkBitmap* icon);
 
   // This is called by the installer to verify whether the installation should
   // proceed. This is declared virtual for testing.
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension);
+  virtual void ConfirmInstall(Delegate* delegate,
+                              const extensions::Extension* extension);
 
   // This is called by the app handler launcher to verify whether the app
   // should be re-enabled. This is declared virtual for testing.
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmReEnable(Delegate* delegate, const Extension* extension);
+  virtual void ConfirmReEnable(Delegate* delegate,
+                               const extensions::Extension* extension);
 
   // This is called by the extension permissions API to verify whether an
   // extension may be granted additional permissions.
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmPermissions(Delegate* delegate,
-                                  const Extension* extension,
+                                  const extensions::Extension* extension,
                                   const ExtensionPermissionSet* permissions);
 
   // Installation was successful. This is declared virtual for testing.
-  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon);
+  virtual void OnInstallSuccess(const extensions::Extension* extension,
+                                SkBitmap* icon);
 
   // Installation failed. This is declared virtual for testing.
   virtual void OnInstallFailure(const string16& error);
@@ -235,7 +240,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // theme.
   static void ShowThemeInfoBar(
       const std::string& previous_theme_id, bool previous_using_native_theme,
-      const Extension* new_theme, Profile* profile);
+      const extensions::Extension* new_theme, Profile* profile);
 
   // Sets the icon that will be used in any UI. If |icon| is NULL, or contains
   // an empty bitmap, then a default icon will be used instead.
@@ -253,7 +258,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // within its own function due to its platform-specific nature.
   static InfoBarDelegate* GetNewThemeInstalledInfoBarDelegate(
       TabContentsWrapper* tab_contents,
-      const Extension* new_theme,
+      const extensions::Extension* new_theme,
       const std::string& previous_theme_id,
       bool previous_using_native_theme);
 
@@ -268,7 +273,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   SkBitmap icon_;
 
   // The extension we are showing the UI for.
-  const Extension* extension_;
+  const extensions::Extension* extension_;
 
   // The bundle we are showing the UI for, if type BUNDLE_INSTALL_PROMPT.
   const extensions::BundleInstaller* bundle_;

@@ -51,6 +51,7 @@
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ResourceRequestInfo;
+using extensions::Extension;
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;

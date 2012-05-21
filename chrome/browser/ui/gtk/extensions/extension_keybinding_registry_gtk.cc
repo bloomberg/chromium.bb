@@ -43,7 +43,7 @@ gboolean ExtensionKeybindingRegistryGtk::HasPriorityHandler(
 }
 
 void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   ExtensionCommandService* command_service =
       ExtensionCommandServiceFactory::GetForProfile(profile_);
   const extensions::CommandMap& commands =
@@ -97,7 +97,7 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
 }
 
 void ExtensionKeybindingRegistryGtk::RemoveExtensionKeybinding(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   EventTargets::iterator iter = event_targets_.begin();
   while (iter != event_targets_.end()) {
     if (iter->second.first != extension->id()) {

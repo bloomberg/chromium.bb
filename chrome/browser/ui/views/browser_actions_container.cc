@@ -55,6 +55,8 @@
 #include "ui/views/controls/resize_area.h"
 #include "ui/views/metrics.h"
 
+using extensions::Extension;
+
 namespace {
 
 // Horizontal spacing between most items in the container, as well as after the
@@ -483,8 +485,8 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
   if (!model_)
     return;
 
-  for (ExtensionList::iterator iter = model_->begin(); iter != model_->end();
-       ++iter) {
+  for (extensions::ExtensionList::iterator iter = model_->begin();
+       iter != model_->end(); ++iter) {
     if (!ShouldDisplayBrowserAction(*iter))
       continue;
 

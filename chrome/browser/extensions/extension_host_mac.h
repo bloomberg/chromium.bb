@@ -8,11 +8,15 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 
+namespace extensions {
+class Extension;
+}
+
 // TODO(mpcomplete): I don't know what this does or if it is needed anymore,
 // now that ExtensionHost is restructured to rely on WebContents.
 class ExtensionHostMac : public ExtensionHost {
  public:
-  ExtensionHostMac(const Extension* extension,
+  ExtensionHostMac(const extensions::Extension* extension,
                    content::SiteInstance* site_instance,
                    const GURL& url, content::ViewType host_type) :
       ExtensionHost(extension, site_instance, url, host_type) {}

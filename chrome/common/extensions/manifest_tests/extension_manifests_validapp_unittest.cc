@@ -9,7 +9,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST_F(ExtensionManifestTest, ValidApp) {
-  scoped_refptr<Extension> extension(LoadAndExpectSuccess("valid_app.json"));
+  scoped_refptr<extensions::Extension> extension(
+      LoadAndExpectSuccess("valid_app.json"));
   URLPatternSet expected_patterns;
   AddPattern(&expected_patterns, "http://www.google.com/mail/*");
   AddPattern(&expected_patterns, "http://www.google.com/foobar/*");

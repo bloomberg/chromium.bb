@@ -62,7 +62,8 @@ const ChromeV8Extension::InstanceSet& ChromeV8Extension::GetAll() {
   return g_instances.Get();
 }
 
-const Extension* ChromeV8Extension::GetExtensionForCurrentRenderView() const {
+const extensions::Extension*
+    ChromeV8Extension::GetExtensionForCurrentRenderView() const {
   content::RenderView* renderview = GetCurrentRenderView();
   if (!renderview)
     return NULL;  // this can happen as a tab is closing.

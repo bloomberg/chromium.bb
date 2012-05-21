@@ -100,7 +100,7 @@ const std::string DnsApiTest::kAddress = "9.8.7.6";
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   scoped_refptr<extensions::DnsResolveFunction> resolve_function(
       new extensions::DnsResolveFunction());
-  scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
+  scoped_refptr<extensions::Extension> empty_extension(CreateEmptyExtension());
 
   resolve_function->set_extension(empty_extension.get());
   resolve_function->set_has_callback(true);
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
   scoped_refptr<extensions::DnsResolveFunction> resolve_function(
       new extensions::DnsResolveFunction());
-  scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
+  scoped_refptr<extensions::Extension> empty_extension(CreateEmptyExtension());
 
   resolve_function->set_extension(empty_extension.get());
   resolve_function->set_has_callback(true);

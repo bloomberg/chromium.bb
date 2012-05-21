@@ -26,7 +26,7 @@ v8::Handle<v8::Value> PageActionsCustomBindings::GetCurrentPageActions(
       GetFromArguments<PageActionsCustomBindings>(args);
   std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
   CHECK(!extension_id.empty());
-  const ::Extension* extension =
+  const Extension* extension =
       self->extension_dispatcher_->extensions()->GetByID(extension_id);
   CHECK(extension);
 

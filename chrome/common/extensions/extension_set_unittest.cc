@@ -11,6 +11,8 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 namespace {
 
 scoped_refptr<Extension> CreateTestExtension(const std::string& name,

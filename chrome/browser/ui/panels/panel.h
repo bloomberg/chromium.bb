@@ -20,6 +20,10 @@ class NativePanel;
 class PanelManager;
 class PanelStrip;
 
+namespace extensions {
+class Extension;
+}
+
 // A platform independent implementation of BrowserWindow for Panels.  This
 // class would get the first crack at all the BrowserWindow calls for Panels and
 // do one or more of the following:
@@ -175,7 +179,7 @@ class Panel : public BrowserWindow,
   virtual void ShowCreateWebAppShortcutsDialog(
       TabContentsWrapper* tab_contents) OVERRIDE;
   virtual void ShowCreateChromeAppShortcutsDialog(
-      Profile* profile, const Extension* app) OVERRIDE;
+      Profile* profile, const extensions::Extension* app) OVERRIDE;
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;

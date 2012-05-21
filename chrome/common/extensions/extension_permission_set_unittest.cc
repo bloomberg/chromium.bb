@@ -17,6 +17,8 @@
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;

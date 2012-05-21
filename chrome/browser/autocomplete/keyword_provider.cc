@@ -172,7 +172,7 @@ string16 KeywordProvider::GetKeywordForText(
 
   // Don't provide a keyword for inactive/disabled extension keywords.
   if (template_url->IsExtensionKeyword()) {
-    const Extension* extension = profile_->GetExtensionService()->
+    const extensions::Extension* extension = profile_->GetExtensionService()->
         GetExtensionById(template_url->GetExtensionId(), false);
     if (!extension ||
         (profile_->IsOffTheRecord() &&
@@ -249,7 +249,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     // we're incognito), or disabled.
     if (profile_ && template_url->IsExtensionKeyword()) {
       ExtensionService* service = profile_->GetExtensionService();
-      const Extension* extension = service->GetExtensionById(
+      const extensions::Extension* extension = service->GetExtensionById(
           template_url->GetExtensionId(), false);
       bool enabled =
           extension && (!profile_->IsOffTheRecord() ||

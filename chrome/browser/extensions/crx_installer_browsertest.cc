@@ -32,11 +32,13 @@ class MockInstallUI : public ExtensionInstallUI {
   bool confirmation_requested() { return confirmation_requested_; }
 
   // Overriding some of the ExtensionInstallUI API.
-  void ConfirmInstall(Delegate* delegate, const Extension* extension) {
+  void ConfirmInstall(Delegate* delegate,
+                      const extensions::Extension* extension) {
     confirmation_requested_ = true;
     delegate->InstallUIProceed();
   }
-  void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {
+  void OnInstallSuccess(const extensions::Extension* extension,
+                        SkBitmap* icon) {
     MessageLoopForUI::current()->Quit();
   }
   void OnInstallFailure(const string16& error) {

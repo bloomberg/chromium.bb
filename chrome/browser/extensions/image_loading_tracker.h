@@ -16,8 +16,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/size.h"
 
-class Extension;
 class SkBitmap;
+
+namespace extensions {
+class Extension;
+}
 
 namespace gfx {
 class Image;
@@ -77,7 +80,7 @@ class ImageLoadingTracker : public content::NotificationObserver {
   // |max_size| it will be resized to those dimensions. IMPORTANT NOTE: this
   // function may call back your observer synchronously (ie before it returns)
   // if the image was found in the cache.
-  void LoadImage(const Extension* extension,
+  void LoadImage(const extensions::Extension* extension,
                  const ExtensionResource& resource,
                  const gfx::Size& max_size,
                  CacheParam cache);
@@ -85,7 +88,7 @@ class ImageLoadingTracker : public content::NotificationObserver {
   // Same as LoadImage() above except it loads multiple images from the same
   // extension. This is used to load multiple resolutions of the same image
   // type.
-  void LoadImages(const Extension* extension,
+  void LoadImages(const extensions::Extension* extension,
                   const std::vector<ImageInfo>& info_list,
                   CacheParam cache);
 
@@ -100,7 +103,7 @@ class ImageLoadingTracker : public content::NotificationObserver {
     PendingLoadInfo();
     ~PendingLoadInfo();
 
-    const Extension* extension;
+    const extensions::Extension* extension;
     // This is cached separate from |extension| in case the extension in
     // unloaded.
     std::string extension_id;
@@ -126,7 +129,7 @@ class ImageLoadingTracker : public content::NotificationObserver {
   // Checks whether image is a component extension resource. Returns false
   // if a given |resource| does not have a corresponding image in bundled
   // resources. Otherwise fills |resource_id|.
-  bool IsComponentExtensionResource(const Extension* extension,
+  bool IsComponentExtensionResource(const extensions::Extension* extension,
                                     const ExtensionResource& resource,
                                     int& resource_id) const;
 

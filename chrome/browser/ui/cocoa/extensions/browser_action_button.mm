@@ -29,6 +29,8 @@
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/size.h"
 
+using extensions::Extension;
+
 NSString* const kBrowserActionButtonUpdatedNotification =
     @"BrowserActionButtonUpdatedNotification";
 

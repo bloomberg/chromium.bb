@@ -12,7 +12,7 @@
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, ParseHomepageURLs) {
-  scoped_refptr<Extension> extension(
+  scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("homepage_valid.json"));
 
   Testcase testcases[] = {
@@ -28,7 +28,7 @@ TEST_F(ExtensionManifestTest, ParseHomepageURLs) {
 }
 
 TEST_F(ExtensionManifestTest, GetHomepageURL) {
-  scoped_refptr<Extension> extension(
+  scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("homepage_valid.json"));
   EXPECT_EQ(GURL("http://foo.com#bar"), extension->GetHomepageURL());
 

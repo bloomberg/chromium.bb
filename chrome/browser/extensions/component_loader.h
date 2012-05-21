@@ -15,11 +15,12 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 
-class Extension;
 class ExtensionServiceInterface;
 class PrefService;
 
 namespace extensions {
+
+class Extension;
 
 // For registering, loading, and unloading component extensions.
 class ComponentLoader : public content::NotificationObserver {

@@ -278,7 +278,7 @@ void AppPackUpdater::BlockingCheckCacheInternal(
       }
     }
 
-    if (!Extension::IdIsValid(id)) {
+    if (!extensions::Extension::IdIsValid(id)) {
       LOG(ERROR) << "Bad AppPack extension id in cache: " << id;
       id.clear();
     } else if (!ContainsKey(*valid_ids, id)) {

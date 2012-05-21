@@ -94,8 +94,9 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
 
   RunInlineInstallTest("runTest");
 
-  const Extension* extension = browser()->profile()->GetExtensionService()->
-      GetExtensionById("ecglahbcnmdpdciemllbhojghbkagdje", false);
+  const extensions::Extension* extension = browser()->profile()->
+      GetExtensionService()->GetExtensionById(
+          "ecglahbcnmdpdciemllbhojghbkagdje", false);
   EXPECT_TRUE(extension);
 }
 

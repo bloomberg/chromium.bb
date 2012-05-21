@@ -47,7 +47,7 @@ void ExtensionKeybindingRegistry::Observe(
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED:
       AddExtensionKeybinding(
-          content::Details<const Extension>(details).ptr());
+          content::Details<const extensions::Extension>(details).ptr());
       break;
     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
       RemoveExtensionKeybinding(

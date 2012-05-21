@@ -88,7 +88,7 @@ class AppsPromo {
 
   // Gets the set of old default apps that may have been installed by previous
   // versions of Chrome.
-  const ExtensionIdSet& old_default_apps() const {
+  const extensions::ExtensionIdSet& old_default_apps() const {
     return old_default_app_ids_;
   }
 
@@ -101,10 +101,10 @@ class AppsPromo {
   void HidePromo();
 
   // Returns true if the app launcher should be displayed on the NTP.
-  bool ShouldShowAppLauncher(const ExtensionIdSet& installed_ids);
+  bool ShouldShowAppLauncher(const extensions::ExtensionIdSet& installed_ids);
 
   // Returns true if the apps promo should be displayed in the launcher.
-  bool ShouldShowPromo(const ExtensionIdSet& installed_ids,
+  bool ShouldShowPromo(const extensions::ExtensionIdSet& installed_ids,
                        bool* just_expired);
 
  private:
@@ -136,7 +136,7 @@ class AppsPromo {
 
   // The set of default extensions. Initialized to a static list in the
   // constructor.
-  ExtensionIdSet old_default_app_ids_;
+  extensions::ExtensionIdSet old_default_app_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsPromo);
 };

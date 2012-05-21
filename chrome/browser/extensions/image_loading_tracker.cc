@@ -22,6 +22,7 @@
 #include "webkit/glue/image_decoder.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoadingTracker::Observer
@@ -327,7 +328,7 @@ void ImageLoadingTracker::Observe(int type,
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
 
   const Extension* extension =
-      content::Details<UnloadedExtensionInfo>(details)->extension;
+      content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
 
   // Remove reference to this extension from all pending load entries. This
   // ensures we don't attempt to cache the image when the load completes.

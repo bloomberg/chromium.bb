@@ -49,6 +49,8 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
+using extensions::Extension;
+
 namespace {
 
 // The width of the browser action buttons.
@@ -609,7 +611,7 @@ void BrowserActionsToolbarGtk::CreateAllButtons() {
   extension_button_map_.clear();
 
   int i = 0;
-  for (ExtensionList::iterator iter = model_->begin();
+  for (extensions::ExtensionList::iterator iter = model_->begin();
        iter != model_->end(); ++iter) {
     CreateButtonForExtension(*iter, i++);
   }

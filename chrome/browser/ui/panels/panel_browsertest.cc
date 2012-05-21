@@ -50,6 +50,7 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
+using extensions::Extension;
 
 class PanelBrowserTest : public BasePanelBrowserTest {
  public:
@@ -1332,12 +1333,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
       content::Source<Browser>(panel1->browser()));
 
   // Send unload notification on the first extension.
-  UnloadedExtensionInfo details(extension,
+  extensions::UnloadedExtensionInfo details(extension,
                                 extension_misc::UNLOAD_REASON_UNINSTALL);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::Source<Profile>(browser()->profile()),
-      content::Details<UnloadedExtensionInfo>(&details));
+      content::Details<extensions::UnloadedExtensionInfo>(&details));
 
   // Wait for the panels opened by the first extension to close.
   signal.Wait();

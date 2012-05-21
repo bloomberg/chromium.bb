@@ -90,7 +90,7 @@ void ExtensionActivityUI::HandleRequestExtensionData(
 }
 
 void ExtensionActivityUI::OnExtensionActivity(
-      const Extension* extension,
+      const extensions::Extension* extension,
       ExtensionActivityLog::Activity activity,
       const std::string& msg) {
   DictionaryValue result;

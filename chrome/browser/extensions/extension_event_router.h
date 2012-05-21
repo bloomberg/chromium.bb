@@ -18,13 +18,16 @@
 #include "ipc/ipc_message.h"
 
 class GURL;
-class Extension;
 class ExtensionHost;
 class ExtensionDevToolsManager;
 class Profile;
 
 namespace content {
 class RenderProcessHost;
+}
+
+namespace extensions {
+class Extension;
 }
 
 class ExtensionEventRouter : public content::NotificationObserver {
@@ -163,7 +166,7 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // the event crosses the incognito boundary.
   bool CanDispatchEventToProfile(
       Profile* profile,
-      const Extension* extension,
+      const extensions::Extension* extension,
       const linked_ptr<ExtensionEvent>& event,
       const std::string** event_args);
 
@@ -179,12 +182,13 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // dispatch an event.
   void MaybeLoadLazyBackgroundPage(
       Profile* profile,
-      const Extension* extension,
+      const extensions::Extension* extension,
       const linked_ptr<ExtensionEvent>& event);
 
   // Track of the number of dispatched events that have not yet sent an
   // ACK from the renderer.
-  void IncrementInFlightEvents(Profile* profile, const Extension* extension);
+  void IncrementInFlightEvents(Profile* profile,
+                               const extensions::Extension* extension);
 
   void DispatchPendingEvent(const linked_ptr<ExtensionEvent>& event,
                             ExtensionHost* host);

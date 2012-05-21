@@ -54,7 +54,7 @@ static void EncodePinnedTab(TabStripModel* model,
 
   TabContentsWrapper* tab_contents = model->GetTabContentsAt(index);
   if (model->IsAppTab(index)) {
-    const Extension* extension =
+    const extensions::Extension* extension =
         tab_contents->extension_tab_helper()->extension_app();
     DCHECK(extension);
     value->SetString(kAppID, extension->id());

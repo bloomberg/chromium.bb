@@ -22,6 +22,9 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 
+using extensions::Extension;
+using extensions::ExtensionInfo;
+
 namespace {
 
 // Additional preferences keys
@@ -855,8 +858,8 @@ void ExtensionPrefs::SetActiveBit(const std::string& extension_id,
 
 void ExtensionPrefs::MigratePermissions(const ExtensionIdSet& extension_ids) {
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
-  for (ExtensionIdSet::const_iterator ext_id = extension_ids.begin();
-       ext_id != extension_ids.end(); ++ext_id) {
+  for (ExtensionIdSet::const_iterator ext_id =
+       extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
 
     // An extension's granted permissions need to be migrated if the
     // full_access bit is present. This bit was always present in the previous
@@ -1166,7 +1169,7 @@ bool ExtensionPrefs::IsExtensionDisabled(
 }
 
 std::vector<std::string> ExtensionPrefs::GetToolbarOrder() {
-  ExtensionPrefs::ExtensionIdSet extension_ids;
+  ExtensionIdSet extension_ids;
   const ListValue* toolbar_order = prefs_->GetList(kExtensionToolbar);
   if (toolbar_order) {
     for (size_t i = 0; i < toolbar_order->GetSize(); ++i) {

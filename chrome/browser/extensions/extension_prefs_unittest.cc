@@ -25,6 +25,8 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
+using extensions::Extension;
+using extensions::ExtensionList;
 
 namespace {
 
@@ -447,7 +449,7 @@ class ExtensionPrefsBlacklist : public ExtensionPrefsTest {
     EXPECT_EQ(4u, info->size());
     ExtensionPrefs::ExtensionsInfo::iterator info_iter;
     for (info_iter = info->begin(); info_iter != info->end(); ++info_iter) {
-      ExtensionInfo* extension_info = info_iter->get();
+      extensions::ExtensionInfo* extension_info = info_iter->get();
       EXPECT_NE(extensions_[0]->id(), extension_info->extension_id);
     }
   }

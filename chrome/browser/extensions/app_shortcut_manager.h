@@ -36,7 +36,7 @@ class AppShortcutManager : public ImageLoadingTracker::Observer,
   static void SetShortcutCreationDisabledForTesting(bool disabled);
  private:
   // Install the shortcuts for an application.
-  void InstallApplicationShortcuts(const Extension* extension);
+  void InstallApplicationShortcuts(const extensions::Extension* extension);
 
   content::NotificationRegistrar registrar_;
   Profile* profile_;

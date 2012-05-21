@@ -17,6 +17,8 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using extensions::Extension;
+
 namespace {
 // Allow tests to disable shortcut creation, to prevent developers' desktops
 // becoming overrun with shortcuts.

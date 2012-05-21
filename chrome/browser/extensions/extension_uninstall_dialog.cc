@@ -29,7 +29,8 @@ ExtensionUninstallDialog::ExtensionUninstallDialog(
 
 ExtensionUninstallDialog::~ExtensionUninstallDialog() {}
 
-void ExtensionUninstallDialog::ConfirmUninstall(const Extension* extension) {
+void ExtensionUninstallDialog::ConfirmUninstall(
+    const extensions::Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
 

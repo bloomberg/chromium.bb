@@ -14,7 +14,6 @@
 #include "base/memory/singleton.h"
 #include "googleurl/src/gurl.h"
 
-class Extension;
 class ExtensionTtsPlatformImpl;
 class Profile;
 

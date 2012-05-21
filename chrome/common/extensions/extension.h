@@ -42,13 +42,15 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace extensions {
-class Manifest;
-}
-
 namespace webkit_glue {
 struct WebIntentServiceData;
 }
+
+FORWARD_DECLARE_TEST(TabStripModelTest, Apps);
+
+namespace extensions {
+
+class Manifest;
 
 // Represents a Chrome extension.
 class Extension : public base::RefCountedThreadSafe<Extension> {
@@ -1062,7 +1064,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   std::string content_security_policy_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionTest, LoadPageActionHelper);
-  FRIEND_TEST_ALL_PREFIXES(TabStripModelTest, Apps);
+  FRIEND_TEST_ALL_PREFIXES(::TabStripModelTest, Apps);
 
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };
@@ -1123,5 +1125,7 @@ struct UpdatedExtensionPermissionsInfo {
       const ExtensionPermissionSet* permissions,
       Reason reason);
 };
+
+} // namespace extensions
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_H_

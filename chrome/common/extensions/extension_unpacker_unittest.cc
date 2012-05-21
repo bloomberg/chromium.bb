@@ -43,8 +43,10 @@ public:
         ", Crx path " << crx_path.value();
 
     unpacker_.reset(
-        new ExtensionUnpacker(
-            crx_path, std::string(), Extension::INTERNAL, Extension::NO_FLAGS));
+        new ExtensionUnpacker(crx_path,
+                              std::string(),
+                              extensions::Extension::INTERNAL,
+                              extensions::Extension::NO_FLAGS));
   }
 
  protected:

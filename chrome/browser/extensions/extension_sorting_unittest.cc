@@ -7,6 +7,8 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 namespace keys = extension_manifest_keys;
 
 class ExtensionSortingTest : public ExtensionPrefsTest {

@@ -17,6 +17,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using extensions::Extension;
+using extensions::ExtensionInfo;
+
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 

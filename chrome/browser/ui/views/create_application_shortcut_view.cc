@@ -208,7 +208,7 @@ void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
 
 void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
                                         Profile* profile,
-                                        const Extension* app) {
+                                        const extensions::Extension* app) {
   views::Widget::CreateWindowWithParent(
       new CreateChromeApplicationShortcutView(profile, app),
       parent_window)->Show();
@@ -482,7 +482,7 @@ void CreateUrlApplicationShortcutView::OnIconDownloaded(bool errored,
 
 CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
     Profile* profile,
-    const Extension* app) :
+    const extensions::Extension* app) :
       CreateApplicationShortcutView(profile),
       app_(app),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {

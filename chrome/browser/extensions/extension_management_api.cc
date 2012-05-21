@@ -40,6 +40,7 @@ using base::IntToString;
 using content::BrowserThread;
 using content::UtilityProcessHost;
 using content::UtilityProcessHostClient;
+using extensions::Extension;
 
 namespace events = extension_event_names;
 namespace keys = extension_management_api_constants;
@@ -489,7 +490,8 @@ void ExtensionManagementEventRouter::Observe(
   } else {
     const Extension* extension = NULL;
     if (event_name == events::kOnExtensionDisabled) {
-      extension = content::Details<UnloadedExtensionInfo>(details)->extension;
+      extension = content::Details<extensions::UnloadedExtensionInfo>(
+          details)->extension;
     } else {
       extension = content::Details<const Extension>(details).ptr();
     }

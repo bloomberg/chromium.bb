@@ -16,7 +16,6 @@
 #include "net/cookies/cookie_monster.h"
 
 class Browser;
-class Extension;
 class Profile;
 
 namespace base {
@@ -25,6 +24,9 @@ class ListValue;
 }
 
 namespace extensions {
+
+class Extension;
+
 namespace cookies_helpers {
 
 // Returns either the original profile or the incognito profile, based on the

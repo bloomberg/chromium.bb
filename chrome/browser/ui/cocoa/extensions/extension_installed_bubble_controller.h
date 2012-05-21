@@ -15,13 +15,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
-class Extension;
 class ExtensionLoadedNotificationObserver;
 @class HoverCloseButton;
 @class InfoBubbleView;
 
 namespace extensions {
 class BundleInstaller;
+class Extension;
 }
 
 namespace extension_installed_bubble {
@@ -52,7 +52,7 @@ typedef enum {
 // future.
 @interface ExtensionInstalledBubbleController : BaseBubbleController {
  @private
-  const Extension* extension_;  // weak
+  const extensions::Extension* extension_;  // weak
   const extensions::BundleInstaller* bundle_;  // weak
   Browser* browser_;  // weak
   scoped_nsobject<NSImage> icon_;
@@ -83,14 +83,14 @@ typedef enum {
   IBOutlet NSTextField* failedItemsMsg_;
 }
 
-@property(nonatomic, readonly) const Extension* extension;
+@property(nonatomic, readonly) const extensions::Extension* extension;
 @property(nonatomic, readonly) const extensions::BundleInstaller* bundle;
 @property(nonatomic) BOOL pageActionRemoved;
 
 // Initialize the window, and then create observers to wait for the extension
 // to complete loading, or the browser window to close.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                 extension:(const Extension*)extension
+                 extension:(const extensions::Extension*)extension
                     bundle:(const extensions::BundleInstaller*)bundle
                    browser:(Browser*)browser
                       icon:(SkBitmap)icon;

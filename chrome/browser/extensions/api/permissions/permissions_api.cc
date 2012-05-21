@@ -75,7 +75,7 @@ bool RemovePermissionsFunction::RunImpl() {
   if (!permissions.get())
     return false;
 
-  const Extension* extension = GetExtension();
+  const extensions::Extension* extension = GetExtension();
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
 
   // Make sure they're only trying to remove permissions supported by this API.

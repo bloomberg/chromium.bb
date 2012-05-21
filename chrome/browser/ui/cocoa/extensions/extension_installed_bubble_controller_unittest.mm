@@ -21,6 +21,8 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "webkit/glue/image_decoder.h"
 
+using extensions::Extension;
+
 // ExtensionInstalledBubbleController with removePageActionPreview overridden
 // to a no-op, because pageActions are not yet hooked up in the test browser.
 @interface ExtensionInstalledBubbleControllerForTest :

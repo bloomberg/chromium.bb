@@ -9,7 +9,6 @@
 #include <string>
 
 class Browser;
-class Extension;
 class GURL;
 class Profile;
 class TabContentsWrapper;
@@ -22,6 +21,10 @@ class ListValue;
 
 namespace content {
 class WebContents;
+}
+
+namespace extensions {
+class Extension;
 }
 
 // Provides various utility functions that help manipulate tabs.
@@ -71,7 +74,7 @@ class ExtensionTabUtil {
   // extension base, we decided it wasn't worth breaking existing extensions to
   // fix.
   static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
-                                         const Extension* extension);
+      const extensions::Extension* extension);
 
   // Returns true if |url| is used for testing crashes.
   static bool IsCrashURL(const GURL& url);

@@ -10,7 +10,6 @@
 
 #include "googleurl/src/gurl.h"
 
-class Extension;
 class Profile;
 
 class TerminalExtensionHelper {

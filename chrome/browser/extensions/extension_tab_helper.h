@@ -16,7 +16,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class Extension;
 class ExtensionTabHelperDelegate;
 class TabContentsWrapper;
 struct WebApplicationInfo;
@@ -27,6 +26,7 @@ struct LoadCommittedDetails;
 
 namespace extensions {
 class ActionBoxController;
+class Extension;
 class ScriptBadgeController;
 class ScriptExecutor;
 }
@@ -79,7 +79,7 @@ class ExtensionTabHelper
   // NOTE: this should only be manipulated before the tab is added to a browser.
   // TODO(sky): resolve if this is the right way to identify an app tab. If it
   // is, than this should be passed in the constructor.
-  void SetExtensionApp(const Extension* extension);
+  void SetExtensionApp(const extensions::Extension* extension);
 
   // Convenience for setting the app extension by id. This does nothing if
   // |extension_app_id| is empty, or an extension can't be found given the
@@ -89,7 +89,7 @@ class ExtensionTabHelper
   // Set just the app icon, used by panels created by an extension.
   void SetExtensionAppIconById(const std::string& extension_app_id);
 
-  const Extension* extension_app() const { return extension_app_; }
+  const extensions::Extension* extension_app() const { return extension_app_; }
   bool is_app() const { return extension_app_ != NULL; }
   const WebApplicationInfo& web_app_info() const {
     return web_app_info_;
@@ -150,9 +150,10 @@ class ExtensionTabHelper
 
   // Resets app_icon_ and if |extension| is non-null creates a new
   // ImageLoadingTracker to load the extension's image.
-  void UpdateExtensionAppIcon(const Extension* extension);
+  void UpdateExtensionAppIcon(const extensions::Extension* extension);
 
-  const Extension* GetExtension(const std::string& extension_app_id);
+  const extensions::Extension* GetExtension(
+      const std::string& extension_app_id);
 
   // ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(const gfx::Image& image,
@@ -183,7 +184,7 @@ class ExtensionTabHelper
 
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.
-  const Extension* extension_app_;
+  const extensions::Extension* extension_app_;
 
   // Icon for extension_app_ (if non-null) or a manually-set icon for
   // non-extension apps.

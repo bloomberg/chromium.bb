@@ -8,10 +8,11 @@
 
 namespace extensions {
 
-const Extension* GetNonBookmarkAppExtension(
+const extensions::Extension* GetNonBookmarkAppExtension(
     const ExtensionSet& extensions, const ExtensionURLInfo& url) {
   // Exclude bookmark apps, which do not use the app process model.
-  const Extension* extension = extensions.GetExtensionOrAppByURL(url);
+  const extensions::Extension* extension =
+      extensions.GetExtensionOrAppByURL(url);
   if (extension && extension->from_bookmark())
     extension = NULL;
   return extension;
@@ -21,10 +22,12 @@ bool CrossesExtensionProcessBoundary(
     const ExtensionSet& extensions,
     const ExtensionURLInfo& old_url,
     const ExtensionURLInfo& new_url) {
-  const Extension* old_url_extension = GetNonBookmarkAppExtension(extensions,
-                                                                  old_url);
-  const Extension* new_url_extension = GetNonBookmarkAppExtension(extensions,
-                                                                  new_url);
+  const extensions::Extension* old_url_extension = GetNonBookmarkAppExtension(
+      extensions,
+      old_url);
+  const extensions::Extension* new_url_extension = GetNonBookmarkAppExtension(
+      extensions,
+      new_url);
 
   // TODO(creis): Temporary workaround for crbug.com/59285: Do not swap process
   // to navigate from a hosted app to a normal page or another hosted app

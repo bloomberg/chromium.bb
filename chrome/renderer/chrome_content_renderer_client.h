@@ -15,7 +15,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 
 class ChromeRenderProcessObserver;
-class Extension;
 class ExtensionDispatcher;
 class ExtensionSet;
 class RendererHistogramSnapshots;

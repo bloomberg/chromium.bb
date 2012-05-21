@@ -28,7 +28,7 @@ using extensions::BundleInstaller;
 // When an extension is installed on Mac with neither browser action nor
 // page action icons, show an infobar instead of a popup bubble.
 static void ShowGenericExtensionInstalledInfoBar(
-    const Extension* new_extension,
+    const extensions::Extension* new_extension,
     const SkBitmap& icon,
     Profile* profile) {
   Browser* browser = browser::FindLastActiveWithProfile(profile);
@@ -55,7 +55,7 @@ static void ShowGenericExtensionInstalledInfoBar(
 namespace browser {
 
 void ShowExtensionInstalledBubble(
-    const Extension* extension,
+    const extensions::Extension* extension,
     Browser* browser,
     const SkBitmap& icon,
     Profile* profile) {

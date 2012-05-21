@@ -14,7 +14,7 @@ TEST_F(ExtensionManifestTest, DevToolsExtensions) {
   LoadAndExpectError("devtools_extension_url_invalid_type.json",
                      errors::kInvalidDevToolsPage);
 
-  scoped_refptr<Extension> extension;
+  scoped_refptr<extensions::Extension> extension;
   extension = LoadAndExpectSuccess("devtools_extension.json");
   EXPECT_EQ(extension->url().spec() + "devtools.html",
             extension->devtools_url().spec());

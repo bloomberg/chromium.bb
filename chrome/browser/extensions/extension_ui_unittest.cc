@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
 
 class ExtensionUITest : public testing::Test {
  protected:

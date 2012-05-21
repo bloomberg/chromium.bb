@@ -29,12 +29,15 @@
 #include "net/base/file_stream.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using extensions::Extension;
+
 namespace errors = extension_manifest_errors;
 
 namespace extension_file_util {
 
 // Validates locale info. Doesn't check if messages.json files are valid.
-static bool ValidateLocaleInfo(const Extension& extension, std::string* error);
+static bool ValidateLocaleInfo(const Extension& extension,
+                               std::string* error);
 
 // Returns false and sets the error if script file can't be loaded,
 // or if it's not UTF-8 encoded.
@@ -124,8 +127,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
                                        Extension::Location location,
                                        int flags,
                                        std::string* error) {
-  return LoadExtension(
-      extension_path, std::string(), location, flags, error);
+  return LoadExtension(extension_path, std::string(), location, flags, error);
 }
 
 scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
@@ -140,13 +142,12 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
                                               error))
     return NULL;
 
-  scoped_refptr<Extension> extension(Extension::Create(
-      extension_path,
-      location,
-      *manifest,
-      flags,
-      extension_id,
-      error));
+  scoped_refptr<Extension> extension(Extension::Create(extension_path,
+                                                       location,
+                                                       *manifest,
+                                                       flags,
+                                                       extension_id,
+                                                       error));
   if (!extension.get())
     return NULL;
 
@@ -190,7 +191,8 @@ DictionaryValue* LoadManifest(const FilePath& extension_path,
   return static_cast<DictionaryValue*>(root.release());
 }
 
-bool ValidateExtension(const Extension* extension, std::string* error) {
+bool ValidateExtension(const Extension* extension,
+                       std::string* error) {
   // Validate icons exist.
   for (ExtensionIconSet::IconMap::const_iterator iter =
            extension->icons().map().begin();
@@ -435,7 +437,8 @@ ExtensionMessageBundle* LoadExtensionMessageBundle(
     std::string* error) {
   error->clear();
   // Load locale information if available.
-  FilePath locale_path = extension_path.Append(Extension::kLocaleFolder);
+  FilePath locale_path = extension_path.Append(
+      Extension::kLocaleFolder);
   if (!file_util::PathExists(locale_path))
     return NULL;
 
@@ -484,9 +487,11 @@ SubstitutionMap* LoadExtensionMessageBundleSubstitutionMap(
   return returnValue;
 }
 
-static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
+static bool ValidateLocaleInfo(const Extension& extension,
+                               std::string* error) {
   // default_locale and _locales have to be both present or both missing.
-  const FilePath path = extension.path().Append(Extension::kLocaleFolder);
+  const FilePath path = extension.path().Append(
+      Extension::kLocaleFolder);
   bool path_exists = file_util::PathExists(path);
   std::string default_locale = extension.default_locale();
 

@@ -20,6 +20,7 @@
 #include "ui/gfx/color_utils.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 class BrowserThemePackTest : public ::testing::Test {
  public:

@@ -15,6 +15,8 @@
 #include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
 #include "chrome/common/extensions/extension.h"
 
+using extensions::Extension;
+
 namespace constants = tts_extension_api_constants;
 
 namespace events {

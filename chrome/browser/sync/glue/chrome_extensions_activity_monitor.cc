@@ -51,7 +51,8 @@ void ChromeExtensionsActivityMonitor::Observe(
     const content::NotificationDetails& details) {
   base::AutoLock lock(records_lock_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const Extension* extension = content::Source<const Extension>(source).ptr();
+  const extensions::Extension* extension =
+      content::Source<const extensions::Extension>(source).ptr();
   const BookmarksFunction* f =
       content::Details<const BookmarksFunction>(details).ptr();
   if (f->name() == "bookmarks.update" ||

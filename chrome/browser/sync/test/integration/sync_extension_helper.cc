@@ -20,6 +20,8 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 SyncExtensionHelper::ExtensionState::ExtensionState()
     : enabled_state(ENABLED), incognito_enabled(false) {}
 

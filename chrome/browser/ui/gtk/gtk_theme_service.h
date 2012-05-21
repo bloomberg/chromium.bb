@@ -21,6 +21,10 @@
 
 class Profile;
 
+namespace extensions {
+class Extension;
+}
+
 namespace gfx {
 class CairoCachedSurface;
 }
@@ -68,7 +72,7 @@ class GtkThemeService : public ThemeService {
   virtual const gfx::Image* GetImageNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;
   virtual bool HasCustomImage(int id) const OVERRIDE;
-  virtual void SetTheme(const Extension* extension) OVERRIDE;
+  virtual void SetTheme(const extensions::Extension* extension) OVERRIDE;
   virtual void UseDefaultTheme() OVERRIDE;
   virtual void SetNativeTheme() OVERRIDE;
   virtual bool UsingDefaultTheme() const OVERRIDE;

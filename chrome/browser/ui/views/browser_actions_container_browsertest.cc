@@ -11,6 +11,8 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 
+using extensions::Extension;
+
 class BrowserActionsContainerTest : public ExtensionBrowserTest {
  public:
   BrowserActionsContainerTest() {

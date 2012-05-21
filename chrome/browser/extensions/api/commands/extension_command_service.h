@@ -88,7 +88,7 @@ class ExtensionCommandService : public ProfileKeyedService,
   // free, it will be taken by this extension. If not, that keybinding request
   // is ignored. |user_pref| is the PrefService used to record the new
   // keybinding assignment.
-  void AssignInitialKeybindings(const Extension* extension);
+  void AssignInitialKeybindings(const extensions::Extension* extension);
 
   // Removes all keybindings for a given extension by its |extension_id|.
   void RemoveKeybindingPrefs(std::string extension_id);

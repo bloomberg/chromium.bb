@@ -21,6 +21,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
+using extensions::Extension;
+
 class ChromeAppAPITest : public ExtensionBrowserTest {
  protected:
   bool IsAppInstalled() { return IsAppInstalled(L""); }

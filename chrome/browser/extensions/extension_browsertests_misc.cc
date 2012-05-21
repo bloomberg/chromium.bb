@@ -34,6 +34,7 @@
 
 using content::NavigationController;
 using content::WebContents;
+using extensions::Extension;
 
 const std::string kSubscribePage = "/subscribe.html";
 const std::string kFeedPage = "files/feeds/feed.html";

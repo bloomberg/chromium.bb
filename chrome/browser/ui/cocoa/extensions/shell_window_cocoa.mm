@@ -25,7 +25,7 @@
 @end
 
 ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
-                                   const Extension* extension,
+                                   const extensions::Extension* extension,
                                    const GURL& url)
     : ShellWindow(profile, extension, url),
       attention_request_id_(0) {
@@ -170,7 +170,7 @@ NSWindow* ShellWindowCocoa::window() const {
 
 // static
 ShellWindow* ShellWindow::CreateImpl(Profile* profile,
-                                     const Extension* extension,
+                                     const extensions::Extension* extension,
                                      const GURL& url) {
   return new ShellWindowCocoa(profile, extension, url);
 }

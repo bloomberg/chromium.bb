@@ -153,6 +153,7 @@ using content::QuotaPermissionContext;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
+using extensions::Extension;
 using webkit_glue::WebPreferences;
 
 namespace {

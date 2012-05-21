@@ -13,9 +13,12 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
-class Extension;
 class ExtensionAction;
 class Profile;
+
+namespace extensions {
+class Extension;
+}
 
 // The menu model for the context menu for extension action icons (browser and
 // page actions).
@@ -26,7 +29,8 @@ class ExtensionContextMenuModel
       public ExtensionUninstallDialog::Delegate {
  public:
   // Creates a menu model for the given extension action.
-  ExtensionContextMenuModel(const Extension* extension, Browser* browser);
+  ExtensionContextMenuModel(const extensions::Extension* extension,
+                            Browser* browser);
 
   // SimpleMenuModel::Delegate overrides.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -48,7 +52,7 @@ class ExtensionContextMenuModel
 
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.
-  const Extension* GetExtension() const;
+  const extensions::Extension* GetExtension() const;
 
   // A copy of the extension's id.
   std::string extension_id_;

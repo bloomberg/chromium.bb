@@ -26,6 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 using testing::_;
 using testing::AtLeast;
 using testing::Return;
@@ -75,7 +76,7 @@ class ExtensionMenuManagerTest : public testing::Test {
   content::TestBrowserThread file_thread_;
 
   ExtensionMenuManager manager_;
-  ExtensionList extensions_;
+  extensions::ExtensionList extensions_;
   TestExtensionPrefs prefs_;
   int next_id_;
 
@@ -357,11 +358,12 @@ TEST_F(ExtensionMenuManagerTest, ExtensionUnloadRemovesMenuItems) {
 
   // Notify that the extension was unloaded, and make sure the right item is
   // gone.
-  UnloadedExtensionInfo details(
+  extensions::UnloadedExtensionInfo details(
       extension1, extension_misc::UNLOAD_REASON_DISABLE);
   notifier->Notify(chrome::NOTIFICATION_EXTENSION_UNLOADED,
                    content::Source<Profile>(&profile_),
-                   content::Details<UnloadedExtensionInfo>(&details));
+                   content::Details<extensions::UnloadedExtensionInfo>(
+                      &details));
   ASSERT_EQ(NULL, manager_.MenuItems(extension1->id()));
   ASSERT_EQ(1u, manager_.MenuItems(extension2->id())->size());
   ASSERT_TRUE(manager_.GetItemById(id1) == NULL);

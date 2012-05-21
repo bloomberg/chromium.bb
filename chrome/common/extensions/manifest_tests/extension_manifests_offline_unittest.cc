@@ -8,6 +8,8 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, OfflineEnabled) {

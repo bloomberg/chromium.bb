@@ -29,6 +29,7 @@
 #include "ui/gfx/skbitmap_operations.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 namespace {
 

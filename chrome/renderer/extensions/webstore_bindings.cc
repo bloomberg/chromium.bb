@@ -173,7 +173,7 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
 
     std::string candidate_webstore_item_id = webstore_url.path().substr(
         webstore_base_url.path().length());
-    if (!::Extension::IdIsValid(candidate_webstore_item_id)) {
+    if (!extensions::Extension::IdIsValid(candidate_webstore_item_id)) {
       *error = kInvalidWebstoreItemUrlError;
       return false;
     }

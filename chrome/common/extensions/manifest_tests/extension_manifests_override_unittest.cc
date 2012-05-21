@@ -17,7 +17,7 @@ TEST_F(ExtensionManifestTest, Override) {
   RunTestcases(testcases, arraysize(testcases),
                EXPECT_TYPE_ERROR);
 
-  scoped_refptr<Extension> extension;
+  scoped_refptr<extensions::Extension> extension;
 
   extension = LoadAndExpectSuccess("override_new_tab.json");
   EXPECT_EQ(extension->url().spec() + "newtab.html",

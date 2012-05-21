@@ -12,6 +12,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/test_location_bar.h"
 
+namespace extensions {
+class Extension;
+}
+
 // An implementation of BrowserWindow used for testing. TestBrowserWindow only
 // contains a valid LocationBar, all other getters return NULL.
 // See BrowserWithTestWindowTest for an example of using this class.
@@ -75,7 +79,7 @@ class TestBrowserWindow : public BrowserWindow {
       TabContentsWrapper* tab_contents) OVERRIDE {}
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile* profile,
-      const Extension* app) OVERRIDE {}
+      const extensions::Extension* app) OVERRIDE {}
 
   virtual bool IsBookmarkBarVisible() const OVERRIDE;
   virtual bool IsBookmarkBarAnimating() const OVERRIDE;

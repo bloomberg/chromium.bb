@@ -31,6 +31,8 @@
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 class StartupBrowserCreatorTest : public ExtensionBrowserTest {
  protected:
   virtual bool SetUpUserDataDirectory() OVERRIDE {

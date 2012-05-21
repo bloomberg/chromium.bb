@@ -10,7 +10,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class Extension;
 class Profile;
 class SkBitmap;
 class TabContentsWrapper;
@@ -20,6 +19,10 @@ class WebDialogDelegate;
 
 namespace content {
 class WebContents;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace browser {
@@ -54,7 +57,7 @@ void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
 // the extension has loaded. |extension| is the installed extension. |browser|
 // is the browser window which will host the bubble. |icon| is the install
 // icon of the extension.
-void ShowExtensionInstalledBubble(const Extension* extension,
+void ShowExtensionInstalledBubble(const extensions::Extension* extension,
                                   Browser* browser,
                                   const SkBitmap& icon,
                                   Profile* profile);

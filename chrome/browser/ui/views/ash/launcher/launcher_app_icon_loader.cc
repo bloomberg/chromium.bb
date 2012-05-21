@@ -22,7 +22,7 @@ LauncherAppIconLoader::~LauncherAppIconLoader() {
 }
 
 std::string LauncherAppIconLoader::GetAppID(TabContentsWrapper* tab) {
-  const Extension* extension = GetExtensionForTab(tab);
+  const extensions::Extension* extension = GetExtensionForTab(tab);
   return extension ? extension->id() : std::string();
 }
 
@@ -37,7 +37,7 @@ void LauncherAppIconLoader::FetchImage(const std::string& id) {
       return;  // Already loading the image.
   }
 
-  const Extension* extension = GetExtensionByID(id);
+  const extensions::Extension* extension = GetExtensionByID(id);
   if (!extension)
     return;
   if (!image_loader_.get())
@@ -67,7 +67,7 @@ void LauncherAppIconLoader::OnImageLoaded(const gfx::Image& image,
     host_->SetAppImage(id, image.ToSkBitmap());
 }
 
-const Extension* LauncherAppIconLoader::GetExtensionForTab(
+const extensions::Extension* LauncherAppIconLoader::GetExtensionForTab(
     TabContentsWrapper* tab) {
   ExtensionService* extension_service = profile_->GetExtensionService();
   if (!extension_service)
@@ -75,7 +75,7 @@ const Extension* LauncherAppIconLoader::GetExtensionForTab(
   return extension_service->GetInstalledApp(tab->web_contents()->GetURL());
 }
 
-const Extension* LauncherAppIconLoader::GetExtensionByID(
+const extensions::Extension* LauncherAppIconLoader::GetExtensionByID(
     const std::string& id) {
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)

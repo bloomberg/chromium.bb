@@ -61,7 +61,7 @@ bool ExtensionSpecialStoragePolicy::IsFileHandler(
 }
 
 void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   DCHECK(extension);
   if (!extension->is_hosted_app() &&
       !extension->HasAPIPermission(
@@ -85,7 +85,7 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
 }
 
 void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   DCHECK(extension);
   if (!extension->is_hosted_app() &&
       !extension->HasAPIPermission(
@@ -158,13 +158,13 @@ bool ExtensionSpecialStoragePolicy::SpecialCollection::ContainsExtension(
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::Add(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   cached_results_.clear();
   extensions_[extension->id()] = extension;
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::Remove(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   cached_results_.clear();
   extensions_.erase(extension->id());
 }

@@ -12,6 +12,10 @@
 class PrefService;
 class Profile;
 
+namespace extensions {
+class Extension;
+}
+
 // Functions and types related to installing default apps.
 namespace default_apps {
 
@@ -36,8 +40,8 @@ class Provider : public ExternalExtensionProviderImpl {
   Provider(Profile* profile,
            VisitorInterface* service,
            ExternalExtensionLoader* loader,
-           Extension::Location crx_location,
-           Extension::Location download_location,
+           extensions::Extension::Location crx_location,
+           extensions::Extension::Location download_location,
            int creation_flags);
 
   // ExternalExtensionProviderImpl overrides:

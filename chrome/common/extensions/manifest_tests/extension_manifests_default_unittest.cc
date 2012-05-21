@@ -11,7 +11,7 @@
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, DefaultPathForExtent) {
-  scoped_refptr<Extension> extension(
+  scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("default_path_for_extent.json"));
 
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
@@ -24,7 +24,7 @@ TEST_F(ExtensionManifestTest, DefaultLocale) {
   LoadAndExpectError("default_locale_invalid.json",
                      errors::kInvalidDefaultLocale);
 
-  scoped_refptr<Extension> extension(
+  scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("default_locale_valid.json"));
   EXPECT_EQ("de-AT", extension->default_locale());
 }

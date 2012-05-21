@@ -86,7 +86,7 @@ bool PathContainsParentDirectory(const FilePath& path) {
 
 ExtensionUnpacker::ExtensionUnpacker(const FilePath& extension_path,
                                      const std::string& extension_id,
-                                     Extension::Location location,
+                                     extensions::Extension::Location location,
                                      int creation_flags)
     : extension_path_(extension_path),
       extension_id_(extension_id),
@@ -99,7 +99,7 @@ ExtensionUnpacker::~ExtensionUnpacker() {
 
 DictionaryValue* ExtensionUnpacker::ReadManifest() {
   FilePath manifest_path =
-      temp_install_dir_.Append(Extension::kManifestFilename);
+      temp_install_dir_.Append(extensions::Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
     SetError(errors::kInvalidManifest);
     return NULL;
@@ -124,7 +124,7 @@ DictionaryValue* ExtensionUnpacker::ReadManifest() {
 bool ExtensionUnpacker::ReadAllMessageCatalogs(
     const std::string& default_locale) {
   FilePath locales_path =
-    temp_install_dir_.Append(Extension::kLocaleFolder);
+    temp_install_dir_.Append(extensions::Extension::kLocaleFolder);
 
   // Not all folders under _locales have to be valid locales.
   file_util::FileEnumerator locales(locales_path,
@@ -140,7 +140,7 @@ bool ExtensionUnpacker::ReadAllMessageCatalogs(
       continue;
 
     FilePath messages_path =
-      locale_path.Append(Extension::kMessagesFilename);
+      locale_path.Append(extensions::Extension::kMessagesFilename);
 
     if (!ReadMessageCatalog(messages_path))
       return false;
@@ -178,7 +178,7 @@ bool ExtensionUnpacker::Run() {
     return false;  // Error was already reported.
 
   std::string error;
-  scoped_refptr<Extension> extension(Extension::Create(
+  scoped_refptr<extensions::Extension> extension(extensions::Extension::Create(
       temp_install_dir_,
       location_,
       *parsed_manifest_,

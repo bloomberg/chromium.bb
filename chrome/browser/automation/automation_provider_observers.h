@@ -56,7 +56,6 @@
 class AutomationProvider;
 class BalloonCollection;
 class Browser;
-class Extension;
 class ExtensionProcessManager;
 class ExtensionService;
 class InfoBarTabHelper;
@@ -79,6 +78,10 @@ namespace content {
 class NavigationController;
 class RenderViewHost;
 class WebContents;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace history {
@@ -364,7 +367,7 @@ class ExtensionReadyNotificationObserver
   ExtensionService* service_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  const Extension* extension_;
+  const extensions::Extension* extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionReadyNotificationObserver);
 };

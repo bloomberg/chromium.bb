@@ -9,6 +9,7 @@
 #include "base/string_split.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/extension_api.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -44,7 +45,7 @@ std::string GetContextTypeDescription(Feature::Context context_type) {
 
 ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                  WebKit::WebFrame* web_frame,
-                                 const Extension* extension,
+                                 const extensions::Extension* extension,
                                  Feature::Context context_type)
     : v8_context_(v8::Persistent<v8::Context>::New(v8_context)),
       web_frame_(web_frame),

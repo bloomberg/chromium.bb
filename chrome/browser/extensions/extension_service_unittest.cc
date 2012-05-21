@@ -95,6 +95,7 @@ using content::BrowserThread;
 using content::DOMStorageContext;
 using content::IndexedDBContext;
 using content::PluginService;
+using extensions::Extension;
 
 namespace keys = extension_manifest_keys;
 
@@ -523,9 +524,10 @@ class ExtensionServiceTest
 
       case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
         const Extension* e =
-            content::Details<UnloadedExtensionInfo>(details)->extension;
+            content::Details<extensions::UnloadedExtensionInfo>(
+                details)->extension;
         unloaded_id_ = e->id();
-        ExtensionList::iterator i =
+        extensions::ExtensionList::iterator i =
             std::find(loaded_.begin(), loaded_.end(), e);
         // TODO(erikkay) fix so this can be an assert.  Right now the tests
         // are manually calling clear() on loaded_, so this isn't doable.
@@ -944,7 +946,7 @@ class ExtensionServiceTest
   }
 
  protected:
-  ExtensionList loaded_;
+  extensions::ExtensionList loaded_;
   std::string unloaded_id_;
   const Extension* installed_;
 

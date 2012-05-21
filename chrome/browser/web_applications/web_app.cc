@@ -81,7 +81,7 @@ FilePath GetWebAppDataDirectory(const FilePath& profile_path,
 }
 
 FilePath GetWebAppDataDirectory(const FilePath& profile_path,
-                                const Extension& extension) {
+                                const extensions::Extension& extension) {
   return GetWebAppDataDirectory(
       profile_path, extension.id(), GURL(extension.launch_web_url()));
 }

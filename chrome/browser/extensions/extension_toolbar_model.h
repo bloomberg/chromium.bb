@@ -28,13 +28,15 @@ class ExtensionToolbarModel : public content::NotificationObserver {
    public:
     // An extension with a browser action button has been added, and should go
     // in the toolbar at |index|.
-    virtual void BrowserActionAdded(const Extension* extension, int index) {}
+    virtual void BrowserActionAdded(const extensions::Extension* extension,
+                                    int index) {}
 
     // The browser action button for |extension| should no longer show.
-    virtual void BrowserActionRemoved(const Extension* extension) {}
+    virtual void BrowserActionRemoved(const extensions::Extension* extension) {}
 
     // The browser action button for |extension| has been moved to |index|.
-    virtual void BrowserActionMoved(const Extension* extension, int index) {}
+    virtual void BrowserActionMoved(const extensions::Extension* extension,
+                                    int index) {}
 
     // The browser action button for |extension_id| (which was not a popup) was
     // clicked, executing it.
@@ -51,7 +53,7 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   // Functions called by the view.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-  void MoveBrowserAction(const Extension* extension, int index);
+  void MoveBrowserAction(const extensions::Extension* extension, int index);
   void ExecuteBrowserAction(const std::string& extension_id, Browser* browser);
   // If count == size(), this will set the visible icon count to -1, meaning
   // "show all actions".
@@ -65,15 +67,15 @@ class ExtensionToolbarModel : public content::NotificationObserver {
     return toolitems_.size();
   }
 
-  ExtensionList::iterator begin() {
+  extensions::ExtensionList::iterator begin() {
     return toolitems_.begin();
   }
 
-  ExtensionList::iterator end() {
+  extensions::ExtensionList::iterator end() {
     return toolitems_.end();
   }
 
-  const Extension* GetExtensionByIndex(int index) const;
+  const extensions::Extension* GetExtensionByIndex(int index) const;
 
   // Utility functions for converting between an index into the list of
   // incognito-enabled browser actions, and the list of all browser actions.
@@ -97,8 +99,8 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   // Our observers.
   ObserverList<Observer> observers_;
 
-  void AddExtension(const Extension* extension);
-  void RemoveExtension(const Extension* extension);
+  void AddExtension(const extensions::Extension* extension);
+  void RemoveExtension(const extensions::Extension* extension);
 
   // Our ExtensionService, guaranteed to outlive us.
   ExtensionService* service_;
@@ -109,7 +111,7 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   bool extensions_initialized_;
 
   // Ordered list of browser action buttons.
-  ExtensionList toolitems_;
+  extensions::ExtensionList toolitems_;
 
   // Keeps track of what the last extension to get disabled was.
   std::string last_extension_removed_;

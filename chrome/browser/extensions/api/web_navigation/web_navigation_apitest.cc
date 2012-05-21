@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   ResultCatcher catcher;
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  const Extension* extension =
+  const extensions::Extension* extension =
       service->GetExtensionById(last_loaded_extension_id_, false);
   GURL url = extension->GetResourceURL("userAction/a.html");
 
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationRequestOpenTab) {
   ResultCatcher catcher;
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  const Extension* extension =
+  const extensions::Extension* extension =
       service->GetExtensionById(last_loaded_extension_id_, false);
   GURL url = extension->GetResourceURL("requestOpenTab/a.html");
 

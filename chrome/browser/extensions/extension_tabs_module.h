@@ -16,19 +16,21 @@
 #include "googleurl/src/gurl.h"
 
 class BackingStore;
-class Extension;
 class GURL;
 class SkBitmap;
 class TabContentsWrapper;
+
 namespace base {
 class DictionaryValue;
-}  // namespace base
+}
+
 namespace content {
 class WebContents;
-}  // namespace content
+}
+
 namespace skia {
 class PlatformCanvas;
-}  // namespace skia
+}
 
 // Windows
 class GetWindowFunction : public SyncExtensionFunction {

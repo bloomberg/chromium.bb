@@ -23,6 +23,8 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using extensions::Extension;
+
 namespace {
 
 const char* kSpecialApps[] = {
@@ -251,7 +253,8 @@ void AppListModelBuilder::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension;
       int index = FindApp(extension->id());
       if (index >= 0)
         model_->DeleteItemAt(index);

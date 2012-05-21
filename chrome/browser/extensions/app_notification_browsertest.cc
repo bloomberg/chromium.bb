@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(AppNotificationTest, SaveClientId) {
   Interceptor interceptor;
   AppNotifyChannelSetup::SetInterceptorForTests(&interceptor);
 
-  const Extension* app =
+  const extensions::Extension* app =
       LoadExtension(test_data_dir_.AppendASCII("app_notifications"));
   ASSERT_TRUE(app != NULL);
 

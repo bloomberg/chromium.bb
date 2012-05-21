@@ -133,6 +133,10 @@ using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::PluginService;
+using extensions::Extension;
+using extensions::ExtensionIdSet;
+using extensions::ExtensionInfo;
+using extensions::UnloadedExtensionInfo;
 
 namespace errors = extension_manifest_errors;
 

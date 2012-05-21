@@ -1108,8 +1108,9 @@ void BrowserView::ShowCreateWebAppShortcutsDialog(
   browser::ShowCreateWebAppShortcutsDialog(GetNativeHandle(), tab_contents);
 }
 
-void BrowserView::ShowCreateChromeAppShortcutsDialog(Profile* profile,
-                                                     const Extension* app) {
+void BrowserView::ShowCreateChromeAppShortcutsDialog(
+    Profile* profile,
+    const extensions::Extension* app) {
   browser::ShowCreateChromeAppShortcutsDialog(GetNativeHandle(), profile, app);
 }
 

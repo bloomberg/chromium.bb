@@ -29,15 +29,15 @@ class ExtensionGlobalError : public GlobalError {
 
   // Returns sets replaying the IDs that have been added with the
   // Add[...]Extension methods.
-  const ExtensionIdSet* get_external_extension_ids() const {
+  const extensions::ExtensionIdSet* get_external_extension_ids() const {
     return external_extension_ids_.get();
   }
 
-  const ExtensionIdSet* get_blacklisted_extension_ids() const {
+  const extensions::ExtensionIdSet* get_blacklisted_extension_ids() const {
     return blacklisted_extension_ids_.get();
   }
 
-  const ExtensionIdSet* get_orphaned_extension_ids() const {
+  const extensions::ExtensionIdSet* get_orphaned_extension_ids() const {
     return orphaned_extension_ids_.get();
   }
 
@@ -59,14 +59,14 @@ class ExtensionGlobalError : public GlobalError {
  private:
   bool should_delete_self_on_close_;
   ExtensionService* extension_service_;
-  scoped_ptr<ExtensionIdSet> external_extension_ids_;
-  scoped_ptr<ExtensionIdSet> blacklisted_extension_ids_;
-  scoped_ptr<ExtensionIdSet> orphaned_extension_ids_;
+  scoped_ptr<extensions::ExtensionIdSet> external_extension_ids_;
+  scoped_ptr<extensions::ExtensionIdSet> blacklisted_extension_ids_;
+  scoped_ptr<extensions::ExtensionIdSet> orphaned_extension_ids_;
   string16 message_;  // Displayed in the body of the alert.
 
   // For a given set of extension IDs, generates appropriate text
   // describing what the user needs to know about them.
-  string16 GenerateMessageSection(const ExtensionIdSet* extensions,
+  string16 GenerateMessageSection(const extensions::ExtensionIdSet* extensions,
                                   int template_message_id);
 
   // Generates the message displayed in the body of the alert.

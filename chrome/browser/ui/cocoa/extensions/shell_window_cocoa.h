@@ -31,7 +31,7 @@ class ShellWindowCocoa;
 class ShellWindowCocoa : public ShellWindow {
  public:
   ShellWindowCocoa(Profile* profile,
-                   const Extension* extension,
+                   const extensions::Extension* extension,
                    const GURL& url);
 
   // BaseWindow implementation.

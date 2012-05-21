@@ -8,10 +8,11 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-class Extension;
 class Profile;
 
 namespace extensions {
+
+class Extension;
 
 class AppNotifyFunction : public SyncExtensionFunction {
  public:

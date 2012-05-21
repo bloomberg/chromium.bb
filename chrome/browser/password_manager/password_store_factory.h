@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 
 class PasswordStore;
-class Extension;
 class Profile;
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)

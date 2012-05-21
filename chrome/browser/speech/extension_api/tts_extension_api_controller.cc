@@ -172,7 +172,7 @@ void ExtensionTtsController::SpeakOrEnqueue(Utterance* utterance) {
 }
 
 void ExtensionTtsController::SpeakNow(Utterance* utterance) {
-  const Extension* extension;
+  const extensions::Extension* extension;
   size_t voice_index;
   if (GetMatchingExtensionVoice(utterance, &extension, &voice_index)) {
     current_utterance_ = utterance;

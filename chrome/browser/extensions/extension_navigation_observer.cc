@@ -55,7 +55,7 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
     return;
 
   ExtensionService* extension_service = profile_->GetExtensionService();
-  const Extension* extension =
+  const extensions::Extension* extension =
       extension_service->disabled_extensions()->
       GetExtensionOrAppByURL(ExtensionURLInfo(nav_entry->GetURL()));
   if (!extension)
@@ -80,7 +80,7 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
 
 void ExtensionNavigationObserver::InstallUIProceed() {
   ExtensionService* extension_service = profile_->GetExtensionService();
-  const Extension* extension = extension_service->GetExtensionById(
+  const extensions::Extension* extension = extension_service->GetExtensionById(
       in_progress_prompt_extension_id_, true);
   NavigationController* nav_controller =
       in_progress_prompt_navigation_controller_;
@@ -98,7 +98,7 @@ void ExtensionNavigationObserver::InstallUIProceed() {
 
 void ExtensionNavigationObserver::InstallUIAbort(bool user_initiated) {
   ExtensionService* extension_service = profile_->GetExtensionService();
-  const Extension* extension = extension_service->GetExtensionById(
+  const extensions::Extension* extension = extension_service->GetExtensionById(
       in_progress_prompt_extension_id_, true);
 
   in_progress_prompt_extension_id_ = "";

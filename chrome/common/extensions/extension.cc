@@ -59,6 +59,8 @@ namespace switch_utils = extensions::switch_utils;
 using extensions::csp_validator::ContentSecurityPolicyIsLegal;
 using extensions::csp_validator::ContentSecurityPolicyIsSecure;
 
+namespace extensions {
+
 namespace {
 
 const int kModernManifestVersion = 1;
@@ -3560,3 +3562,5 @@ UpdatedExtensionPermissionsInfo::UpdatedExtensionPermissionsInfo(
     : reason(reason),
       extension(extension),
       permissions(permissions) {}
+
+}   // namespace extensions

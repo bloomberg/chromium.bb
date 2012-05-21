@@ -14,7 +14,9 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/web_apps.h"
 
+namespace extensions {
 class Extension;
+}
 
 namespace web_app {
 
@@ -28,7 +30,7 @@ FilePath GetWebAppDataDirectory(const FilePath& profile_path,
 // Gets the user data directory to use for |extension| located inside
 // |profile_path|.
 FilePath GetWebAppDataDirectory(const FilePath& profile_path,
-                                const Extension& extension);
+                                const extensions::Extension& extension);
 
 // Compute a deterministic name based on data in the shortcut_info.
 std::string GenerateApplicationNameFromInfo(

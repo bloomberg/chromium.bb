@@ -8,6 +8,7 @@
 
 #include "base/string_util.h"
 #include "chrome/common/chrome_view_type.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
@@ -73,7 +74,7 @@ v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
 
   ExtensionCustomBindings* v8_extension =
       GetFromArguments<ExtensionCustomBindings>(args);
-  const ::Extension* extension =
+  const Extension* extension =
       v8_extension->GetExtensionForCurrentRenderView();
   if (!extension)
     return v8::Undefined();

@@ -12,9 +12,12 @@
 #include "base/memory/scoped_ptr.h"
 
 class AsyncUninstaller;
-class Extension;
 class ExtensionAction;
 class Profile;
+
+namespace extensions {
+class Extension;
+}
 
 namespace extension_action_context_menu {
 
@@ -24,7 +27,7 @@ namespace extension_action_context_menu {
 @interface ExtensionActionContextMenu : NSMenu {
  @private
   // The extension that this menu belongs to. Weak.
-  const Extension* extension_;
+  const extensions::Extension* extension_;
 
   // The extension action this menu belongs to. Weak.
   ExtensionAction* action_;
@@ -38,7 +41,7 @@ namespace extension_action_context_menu {
 }
 
 // Initializes and returns a context menu for the given extension and profile.
-- (id)initWithExtension:(const Extension*)extension
+- (id)initWithExtension:(const extensions::Extension*)extension
                 profile:(Profile*)profile
         extensionAction:(ExtensionAction*)action;
 

@@ -160,10 +160,11 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
 
   // Loads the extension, which temporarily starts the lazy background page
   // to dispatch the onInstalled event. We wait until it shuts down again.
-  const Extension* LoadExtensionAndWait(const std::string& test_name) {
+  const extensions::Extension* LoadExtensionAndWait(
+      const std::string& test_name) {
     BackgroundObserver page_complete;
     FilePath extdir = test_data_dir_.AppendASCII(test_name);
-    const Extension* extension = LoadExtension(extdir);
+    const extensions::Extension* extension = LoadExtension(extdir);
     if (extension)
       page_complete.WaitUntilClosed();
     return extension;

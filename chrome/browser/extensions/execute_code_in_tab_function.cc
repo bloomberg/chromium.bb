@@ -157,7 +157,7 @@ void ExecuteCodeInTabFunction::OnExecuteCodeFinished(bool success,
 void ExecuteCodeInTabFunction::DidLoadFile(bool success,
                                            const std::string& data) {
   std::string function_name = name();
-  const Extension* extension = GetExtension();
+  const extensions::Extension* extension = GetExtension();
 
   // Check if the file is CSS and needs localization.
   if (success &&
@@ -231,7 +231,7 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
     return false;
   }
 
-  const Extension* extension = GetExtension();
+  const extensions::Extension* extension = GetExtension();
   if (!extension) {
     SendResponse(false);
     return false;

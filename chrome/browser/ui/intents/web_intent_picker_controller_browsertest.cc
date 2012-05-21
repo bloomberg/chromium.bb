@@ -463,8 +463,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   OnExtensionInstallRequested(extension_id);
   picker_.Wait();
   EXPECT_EQ(1, picker_.num_extensions_installed_);
-  const Extension* extension = browser()->profile()->GetExtensionService()->
-      GetExtensionById(extension_id, false);
+  const extensions::Extension* extension = browser()->profile()->
+      GetExtensionService()->GetExtensionById(extension_id, false);
   EXPECT_TRUE(extension);
 
   // Installing an extension should also choose it. Since this extension uses

@@ -16,6 +16,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 
+using extensions::UnloadedExtensionInfo;
+
 namespace content_settings {
 
 PlatformAppProvider::PlatformAppProvider(ExtensionService* extension_service)
@@ -64,7 +66,8 @@ void PlatformAppProvider::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      const Extension* extension = content::Details<Extension>(details).ptr();
+      const extensions::Extension* extension =
+          content::Details<extensions::Extension>(details).ptr();
       if (extension->plugins().size() > 0)
         SetContentSettingForExtension(extension, CONTENT_SETTING_ALLOW);
       break;
@@ -88,7 +91,7 @@ void PlatformAppProvider::ShutdownOnUIThread() {
 }
 
 void PlatformAppProvider::SetContentSettingForExtension(
-    const Extension* extension,
+    const extensions::Extension* extension,
     ContentSetting setting) {
   scoped_ptr<ContentSettingsPattern::BuilderInterface> pattern_builder(
       ContentSettingsPattern::CreateBuilder(false));

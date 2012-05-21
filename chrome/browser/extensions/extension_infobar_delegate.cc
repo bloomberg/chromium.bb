@@ -18,7 +18,7 @@
 ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
     Browser* browser,
     InfoBarTabHelper* infobar_helper,
-    const Extension* extension,
+    const extensions::Extension* extension,
     const GURL& url,
     int height)
         : InfoBarDelegate(infobar_helper),
@@ -97,7 +97,8 @@ void ExtensionInfoBarDelegate::Observe(
   } else {
     DCHECK(type == chrome::NOTIFICATION_EXTENSION_UNLOADED);
     if (extension_ ==
-        content::Details<UnloadedExtensionInfo>(details)->extension) {
+        content::Details<extensions::UnloadedExtensionInfo>(
+            details)->extension) {
       RemoveSelf();
     }
   }

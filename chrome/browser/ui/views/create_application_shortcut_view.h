@@ -15,10 +15,13 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class Extension;
 class Profile;
 class TabContentsWrapper;
 class SkBitmap;
+
+namespace extensions {
+class Extension;
+}
 
 namespace views {
 class Checkbox;
@@ -110,7 +113,8 @@ class CreateChromeApplicationShortcutView
     : public CreateApplicationShortcutView,
      public ImageLoadingTracker::Observer {
  public:
-  CreateChromeApplicationShortcutView(Profile* profile, const Extension* app);
+  CreateChromeApplicationShortcutView(Profile* profile,
+                                      const extensions::Extension* app);
   virtual ~CreateChromeApplicationShortcutView();
 
   // Implement ImageLoadingTracker::Observer.  |tracker_| is used to
@@ -121,7 +125,7 @@ class CreateChromeApplicationShortcutView
                              int index) OVERRIDE;
 
  private:
-  const Extension* app_;
+  const extensions::Extension* app_;
   ImageLoadingTracker tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateChromeApplicationShortcutView);

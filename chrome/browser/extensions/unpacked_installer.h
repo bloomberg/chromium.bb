@@ -12,10 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 
-class Extension;
 class ExtensionService;
 
 namespace extensions {
+
+class Extension;
 
 // Installs and loads an unpacked extension.
 // TODO(erikkay): It might be useful to be able to load a packed extension

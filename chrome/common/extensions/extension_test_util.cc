@@ -10,10 +10,10 @@ namespace extension_test_util {
 
 std::string MakeId(std::string seed) {
   std::string result;
-  bool success = Extension::GenerateId(seed, &result);
+  bool success = extensions::Extension::GenerateId(seed, &result);
   EXPECT_TRUE(success);
   EXPECT_FALSE(result.empty());
-  EXPECT_TRUE(Extension::IdIsValid(result));
+  EXPECT_TRUE(extensions::Extension::IdIsValid(result));
   return result;
 }
 

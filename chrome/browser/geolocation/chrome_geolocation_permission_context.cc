@@ -604,7 +604,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
 
   ExtensionService* extension_service = profile_->GetExtensionService();
   if (extension_service) {
-    const Extension* extension =
+    const extensions::Extension* extension =
         extension_service->extensions()->GetExtensionOrAppByURL(
             ExtensionURLInfo(
                 WebSecurityOrigin::createFromString(

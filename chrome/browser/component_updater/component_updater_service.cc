@@ -37,6 +37,7 @@
 using content::BrowserThread;
 using content::UtilityProcessHost;
 using content::UtilityProcessHostClient;
+using extensions::Extension;
 
 // The component updater is designed to live until process shutdown, so
 // base::Bind() calls are not refcounted.

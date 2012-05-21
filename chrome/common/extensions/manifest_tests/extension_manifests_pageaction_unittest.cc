@@ -11,7 +11,7 @@
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, PageActionManifestVersion2) {
-  scoped_refptr<Extension> extension(
+  scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("page_action_manifest_version_2.json"));
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->page_action());

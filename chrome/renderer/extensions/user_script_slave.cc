@@ -39,6 +39,7 @@ using WebKit::WebString;
 using WebKit::WebVector;
 using WebKit::WebView;
 using content::RenderThread;
+using extensions::Extension;
 
 // These two strings are injected before and after the Greasemonkey API and
 // user script to wrap it in an anonymous scope.

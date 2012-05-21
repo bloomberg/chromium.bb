@@ -21,7 +21,6 @@ class AutocompleteClassifier;
 class BookmarkModel;
 class ChromeAppCacheService;
 class ChromeURLDataManager;
-class Extension;
 class ExtensionEventRouter;
 class ExtensionProcessManager;
 class ExtensionService;
@@ -39,8 +38,16 @@ class UserScriptMaster;
 class VisitedLinkMaster;
 class WebDataService;
 
+namespace android {
+class TabContentsProvider;
+}
+
 namespace base {
 class Time;
+}
+
+namespace chrome_browser_net {
+class Predictor;
 }
 
 namespace chromeos {
@@ -48,17 +55,10 @@ class LibCrosServiceLibraryImpl;
 class ResetDefaultProxyConfigServiceTask;
 }
 
-namespace chrome_browser_net {
-class Predictor;
-}
 
 namespace content {
 class SpeechRecognitionPreferences;
 class WebUI;
-}
-
-namespace android {
-class TabContentsProvider;
 }
 
 namespace fileapi {

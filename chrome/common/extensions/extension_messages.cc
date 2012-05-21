@@ -4,9 +4,12 @@
 
 #include "chrome/common/extensions/extension_messages.h"
 
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "content/public/common/common_param_traits.h"
+
+using extensions::Extension;
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
     : location(Extension::INVALID),

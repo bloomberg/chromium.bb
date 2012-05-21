@@ -22,7 +22,7 @@ TEST(ChromeV8ContextSet, Lifecycle) {
   // Dirty hack, but we don't actually need the frame, and this is easier than
   // creating a whole webview.
   WebKit::WebFrame* frame = reinterpret_cast<WebKit::WebFrame*>(1);
-  const Extension* extension = NULL;
+  const extensions::Extension* extension = NULL;
   ChromeV8Context* context = new ChromeV8Context(
       v8_context,
       frame,

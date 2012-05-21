@@ -14,7 +14,10 @@
 #include "webkit/quota/special_storage_policy.h"
 
 class CookieSettings;
+
+namespace extensions {
 class Extension;
+}
 
 // Special rights are granted to 'extensions' and 'applications'. The
 // storage subsystems and the browsing data remover query this interface
@@ -32,8 +35,8 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   virtual bool HasSessionOnlyOrigins() OVERRIDE;
 
   // Methods used by the ExtensionService to populate this class.
-  void GrantRightsForExtension(const Extension* extension);
-  void RevokeRightsForExtension(const Extension* extension);
+  void GrantRightsForExtension(const extensions::Extension* extension);
+  void RevokeRightsForExtension(const extensions::Extension* extension);
   void RevokeRightsForAllExtensions();
 
  protected:
@@ -47,13 +50,14 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
 
     bool Contains(const GURL& origin);
     bool ContainsExtension(const std::string& extension_id);
-    void Add(const Extension* extension);
-    void Remove(const Extension* extension);
+    void Add(const extensions::Extension* extension);
+    void Remove(const extensions::Extension* extension);
     void Clear();
 
    private:
     typedef std::map<GURL, bool> CachedResults;
-    typedef std::map<std::string, scoped_refptr<const Extension> > Extensions;
+    typedef std::map<std::string, scoped_refptr<const extensions::Extension> >
+        Extensions;
     Extensions extensions_;
     CachedResults cached_results_;
   };

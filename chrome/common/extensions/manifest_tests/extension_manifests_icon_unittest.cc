@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST_F(ExtensionManifestTest, NormalizeIconPaths) {
-  scoped_refptr<Extension> extension(
+  scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("normalize_icon_paths.json"));
   EXPECT_EQ("16.png", extension->icons().Get(
       ExtensionIconSet::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY));
@@ -18,7 +18,7 @@ TEST_F(ExtensionManifestTest, NormalizeIconPaths) {
 }
 
 TEST_F(ExtensionManifestTest, InvalidIconSizes) {
-  scoped_refptr<Extension> extension(
+  scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("init_ignored_icon_size.json"));
   EXPECT_EQ("", extension->icons().Get(
       static_cast<ExtensionIconSet::Icons>(300),
@@ -26,7 +26,7 @@ TEST_F(ExtensionManifestTest, InvalidIconSizes) {
 }
 
 TEST_F(ExtensionManifestTest, ValidIconSizes) {
-  scoped_refptr<Extension> extension(
+  scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("init_valid_icon_size.json"));
   EXPECT_EQ("16.png", extension->icons().Get(
       ExtensionIconSet::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY));

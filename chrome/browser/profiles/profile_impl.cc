@@ -717,7 +717,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
   ExtensionService* extension_service =
       ExtensionSystem::Get(this)->extension_service();
   if (extension_service) {
-    const Extension* installed_app = extension_service->
+    const extensions::Extension* installed_app = extension_service->
         GetInstalledAppForRenderer(renderer_child_id);
     if (installed_app != NULL && installed_app->is_storage_isolated()) {
       return GetRequestContextForIsolatedApp(installed_app->id());

@@ -496,7 +496,7 @@ void ExtensionSorting::RemoveOrdinalMapping(
 
 void ExtensionSorting::SyncIfNeeded(const std::string& extension_id) {
   if (extension_service_) {
-    const Extension* ext =
+    const extensions::Extension* ext =
         extension_service_->GetInstalledExtension(extension_id);
 
     if (ext) {

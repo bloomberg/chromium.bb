@@ -20,6 +20,8 @@
 #include "content/test/test_notification_tracker.h"
 #include "net/base/mock_host_resolver.h"
 
+using extensions::Extension;
+
 class AppBackgroundPageApiTest : public ExtensionApiTest {
  public:
   void SetUpCommandLine(CommandLine* command_line) OVERRIDE {

@@ -66,6 +66,7 @@ using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
 using content::WebContents;
+using extensions::Extension;
 using file_handler_util::FileTaskExecutor;
 using gdata::GDataOperationRegistry;
 

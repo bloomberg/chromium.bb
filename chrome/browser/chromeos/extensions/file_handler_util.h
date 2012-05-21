@@ -99,7 +99,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
   class ExecuteTasksFileSystemCallbackDispatcher;
   void RequestFileEntryOnFileThread(
       const GURL& handler_base_url,
-      const scoped_refptr<const Extension>& handler,
+      const scoped_refptr<const extensions::Extension>& handler,
       int handler_pid,
       const std::vector<GURL>& file_urls);
 
@@ -118,7 +118,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
   // will be given to the handler extension host process.
   void InitHandlerHostFileAccessPermissions(
       const FileDefinitionList& file_list,
-      const Extension* handler_extension,
+      const extensions::Extension* handler_extension,
       const std::string& action_id);
   // Registers file permissions from |handler_host_permissions_| with
   // ChildProcessSecurityPolicy for process with id |handler_pid|.

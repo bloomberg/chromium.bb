@@ -247,7 +247,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateNoPermissions) {
   // The test empty extension has no permissions, therefore it should not get
   // tab data in the function result.
   scoped_refptr<UpdateTabFunction> update_tab_function(new UpdateTabFunction());
-  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<extensions::Extension> empty_extension(
+      utils::CreateEmptyExtension());
   update_tab_function->set_extension(empty_extension.get());
   // Without a callback the function will not generate a result.
   update_tab_function->set_has_callback(true);

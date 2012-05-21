@@ -13,6 +13,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using extensions::ExtensionIdSet;
+
 ExtensionGlobalError::ExtensionGlobalError(ExtensionService* extension_service)
     : extension_service_(extension_service),
       external_extension_ids_(new ExtensionIdSet),
@@ -75,7 +77,8 @@ string16 ExtensionGlobalError::GenerateMessageSection(
 
   for (ExtensionIdSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
-    const Extension* e = extension_service_->GetExtensionById(*iter, true);
+    const extensions::Extension* e = extension_service_->GetExtensionById(*iter,
+        true);
     message += l10n_util::GetStringFUTF16(template_message_id,
                                           string16(ASCIIToUTF16(e->name())));
   }

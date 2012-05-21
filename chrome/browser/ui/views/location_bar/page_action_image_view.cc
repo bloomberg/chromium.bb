@@ -29,6 +29,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 
 using content::WebContents;
+using extensions::Extension;
 
 PageActionImageView::PageActionImageView(LocationBarView* owner,
                                          ExtensionAction* page_action,
@@ -272,7 +273,7 @@ void PageActionImageView::Observe(int type,
                                   const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
   const Extension* unloaded_extension =
-      content::Details<UnloadedExtensionInfo>(details)->extension;
+      content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
   if (page_action_ == unloaded_extension ->page_action())
     owner_->UpdatePageActions();
 }

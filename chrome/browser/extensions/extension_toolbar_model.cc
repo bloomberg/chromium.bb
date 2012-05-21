@@ -15,6 +15,9 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
+using extensions::Extension;
+using extensions::ExtensionList;
+
 ExtensionToolbarModel::ExtensionToolbarModel(ExtensionService* service)
     : service_(service),
       prefs_(service->profile()->GetPrefs()),
@@ -101,7 +104,8 @@ void ExtensionToolbarModel::Observe(
 
   const Extension* extension = NULL;
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
-    extension = content::Details<UnloadedExtensionInfo>(details)->extension;
+    extension = content::Details<extensions::UnloadedExtensionInfo>(
+        details)->extension;
   } else {
     extension = content::Details<const Extension>(details).ptr();
   }

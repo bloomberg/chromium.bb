@@ -15,6 +15,10 @@
 class MessageLoop;
 class Profile;
 
+namespace extensions {
+class Extension;
+}
+
 class ExtensionUninstallDialog
     : public ImageLoadingTracker::Observer,
       public base::SupportsWeakPtr<ExtensionUninstallDialog> {
@@ -41,7 +45,7 @@ class ExtensionUninstallDialog
   // Starts the process of showing a confirmation UI, which is split into two.
   // 1) Set off a 'load icon' task.
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
-  void ConfirmUninstall(const Extension* extension);
+  void ConfirmUninstall(const extensions::Extension* extension);
 
  protected:
   // Constructor used by the derived classes.
@@ -53,7 +57,7 @@ class ExtensionUninstallDialog
   Delegate* delegate_;
 
   // The extension we are showing the dialog for.
-  const Extension* extension_;
+  const extensions::Extension* extension_;
 
   // The extensions icon.
   SkBitmap icon_;

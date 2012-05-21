@@ -43,6 +43,7 @@ using content::NavigationEntry;
 using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::WebContents;
+using extensions::Extension;
 
 // static
 std::string ProcessMemoryInformation::GetRendererTypeNameInEnglish(

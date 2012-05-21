@@ -24,6 +24,8 @@
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 
+using extensions::Extension;
+
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 

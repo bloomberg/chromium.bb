@@ -15,8 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host_client.h"
 
-class Extension;
-
 namespace base {
 class DictionaryValue;
 }
@@ -37,7 +35,7 @@ class SandboxedExtensionUnpackerClient
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_root,
                                const base::DictionaryValue* original_manifest,
-                               const Extension* extension) = 0;
+                               const extensions::Extension* extension) = 0;
   virtual void OnUnpackFailure(const string16& error) = 0;
 
  protected:
@@ -102,7 +100,7 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
   // is done in a sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedExtensionUnpacker(const FilePath& crx_path,
                              bool run_out_of_process,
-                             Extension::Location location,
+                             extensions::Extension::Location location,
                              int creation_flags,
                              SandboxedExtensionUnpackerClient* client);
 
@@ -233,7 +231,7 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
   FilePath extension_root_;
 
   // Represents the extension we're unpacking.
-  scoped_refptr<Extension> extension_;
+  scoped_refptr<extensions::Extension> extension_;
 
   // Whether we've received a response from the utility process yet.
   bool got_response_;
@@ -249,7 +247,7 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
   base::TimeTicks unpack_start_time_;
 
   // Location to use for the unpacked extension.
-  Extension::Location location_;
+  extensions::Extension::Location location_;
 
   // Creation flags to use for the extension.  These flags will be used
   // when calling Extenion::Create() by the crx installer.

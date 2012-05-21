@@ -15,7 +15,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class Extension;
 class ExtensionWindowController;
 class GURL;
 class Profile;
@@ -23,6 +22,10 @@ class TabContentsWrapper;
 
 namespace content {
 class WebContents;
+}
+
+namespace extensions {
+class Extension;
 }
 
 // ShellWindow is the type of window used by platform apps. Shell windows
@@ -34,7 +37,7 @@ class ShellWindow : public content::NotificationObserver,
                     public BaseWindow {
  public:
   static ShellWindow* Create(Profile* profile,
-                             const Extension* extension,
+                             const extensions::Extension* extension,
                              const GURL& url);
 
   const SessionID& session_id() const { return session_id_; }
@@ -49,11 +52,11 @@ class ShellWindow : public content::NotificationObserver,
   static const int kDefaultHeight = 384;
 
   ShellWindow(Profile* profile,
-              const Extension* extension,
+              const extensions::Extension* extension,
               const GURL& url);
   virtual ~ShellWindow();
 
-  const Extension* extension() const { return extension_; }
+  const extensions::Extension* extension() const { return extension_; }
   content::WebContents* web_contents() const { return web_contents_; }
 
  private:
@@ -63,7 +66,7 @@ class ShellWindow : public content::NotificationObserver,
   // Instantiates a platform-specific ShellWindow subclass (one implementation
   // per platform). Public users of ShellWindow should use ShellWindow::Create.
   static ShellWindow* CreateImpl(Profile* profile,
-                                 const Extension* extension,
+                                 const extensions::Extension* extension,
                                  const GURL& url);
 
   // content::WebContentsObserver implementation.
@@ -92,7 +95,8 @@ class ShellWindow : public content::NotificationObserver,
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   Profile* profile_;  // weak pointer - owned by ProfileManager.
-  const Extension* extension_;  // weak pointer - owned by ExtensionService.
+  // weak pointer - owned by ExtensionService.
+  const extensions::Extension* extension_;
 
   const SessionID session_id_;
   scoped_ptr<TabContentsWrapper> contents_wrapper_;

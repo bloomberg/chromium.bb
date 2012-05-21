@@ -9,9 +9,12 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
-class ThemeService;
-class Extension;
 class Profile;
+class ThemeService;
+
+namespace extensions {
+class Extension;
+}
 
 // Singleton that owns all ThemeServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
@@ -26,7 +29,7 @@ class ThemeServiceFactory : public ProfileKeyedServiceFactory {
   // Returns the Extension that implements the theme associated with
   // |profile|. Returns NULL if the theme is no longer installed, if there is
   // no installed theme, or the theme was cleared.
-  static const Extension* GetThemeForProfile(Profile* profile);
+  static const extensions::Extension* GetThemeForProfile(Profile* profile);
 
   static ThemeServiceFactory* GetInstance();
 

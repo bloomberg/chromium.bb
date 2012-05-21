@@ -12,7 +12,6 @@
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 
-class Extension;
 class Profile;
 class SkBitmap;
 

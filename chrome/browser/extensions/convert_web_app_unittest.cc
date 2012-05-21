@@ -105,7 +105,7 @@ TEST(ExtensionFromWebApp, Basic) {
     web_app.icons.push_back(GetIconInfo(icon_url, sizes[i]));
   }
 
-  scoped_refptr<Extension> extension = ConvertWebAppToExtension(
+  scoped_refptr<extensions::Extension> extension = ConvertWebAppToExtension(
       web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0));
   ASSERT_TRUE(extension.get());
 
@@ -148,7 +148,7 @@ TEST(ExtensionFromWebApp, Minimal) {
   web_app.title = ASCIIToUTF16("Gearpad");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
 
-  scoped_refptr<Extension> extension = ConvertWebAppToExtension(
+  scoped_refptr<extensions::Extension> extension = ConvertWebAppToExtension(
       web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0));
   ASSERT_TRUE(extension.get());
 

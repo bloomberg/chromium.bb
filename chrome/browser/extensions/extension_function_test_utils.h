@@ -13,13 +13,16 @@
 
 class AsyncExtensionFunction;
 class Browser;
-class Extension;
 class UIThreadExtensionFunction;
 
 namespace base {
 class Value;
 class DictionaryValue;
 class ListValue;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace extension_function_test_utils {
@@ -45,12 +48,12 @@ base::ListValue* ToList(base::Value* val);
 
 // Creates an extension instance that can be attached to an ExtensionFunction
 // before running it.
-scoped_refptr<Extension> CreateEmptyExtension();
+scoped_refptr<extensions::Extension> CreateEmptyExtension();
 
 // Creates an extension instance with a specified location that can be attached
 // to an ExtensionFunction before running.
-scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
-    Extension::Location location);
+scoped_refptr<extensions::Extension> CreateEmptyExtensionWithLocation(
+    extensions::Extension::Location location);
 
 enum RunFunctionFlags {
   NONE = 0,

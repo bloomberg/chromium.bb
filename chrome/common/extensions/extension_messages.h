@@ -103,16 +103,16 @@ typedef std::map<std::string, std::string> SubstitutionMap;
 struct ExtensionMsg_Loaded_Params {
   ExtensionMsg_Loaded_Params();
   ~ExtensionMsg_Loaded_Params();
-  explicit ExtensionMsg_Loaded_Params(const Extension* extension);
+  explicit ExtensionMsg_Loaded_Params(const extensions::Extension* extension);
 
   // Creates a new extension from the data in this object.
-  scoped_refptr<Extension> ConvertToExtension() const;
+  scoped_refptr<extensions::Extension> ConvertToExtension() const;
 
   // The subset of the extension manifest data we send to renderers.
   linked_ptr<DictionaryValue> manifest;
 
   // The location the extension was installed from.
-  Extension::Location location;
+  extensions::Extension::Location location;
 
   // The path the extension was loaded from. This is used in the renderer only
   // to generate the extension ID for extensions that are loaded unpacked.
@@ -214,7 +214,8 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_Unloaded,
 // Updates the scripting whitelist for extensions in the render process. This is
 // only used for testing.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetScriptingWhitelist,
-                     Extension::ScriptingWhitelist /* extenison ids */)
+                     // extension ids
+                     extensions::Extension::ScriptingWhitelist)
 
 // Notification that renderer should run some JavaScript code.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,

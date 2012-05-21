@@ -120,7 +120,7 @@ void ExternalRegistryExtensionLoader::LoadOnFileThread() {
 
     std::string id = WideToASCII(*it);
     StringToLowerASCII(&id);
-    if (!Extension::IdIsValid(id)) {
+    if (!extensions::Extension::IdIsValid(id)) {
       LOG(ERROR) << "Invalid id value " << id
                  << " for key " << key_path << ".";
       continue;

@@ -30,7 +30,7 @@ class ExtensionUnpacker {
 
   ExtensionUnpacker(const FilePath& extension_path,
                     const std::string& extension_id,
-                    Extension::Location location,
+                    extensions::Extension::Location location,
                     int creation_flags);
   ~ExtensionUnpacker();
 
@@ -93,7 +93,7 @@ class ExtensionUnpacker {
   std::string extension_id_;
 
   // The location to use for the created extension.
-  Extension::Location location_;
+  extensions::Extension::Location location_;
 
   // The creation flags to use with the created extension.
   int creation_flags_;

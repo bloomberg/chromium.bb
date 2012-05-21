@@ -114,7 +114,7 @@ bool ChromeDownloadManagerDelegate::IsExtensionDownload(
   if (item->PromptUserForSaveLocation())
     return false;
 
-  if (item->GetMimeType() == Extension::kMimeType ||
+  if (item->GetMimeType() == extensions::Extension::kMimeType ||
       UserScript::IsURLUserScript(item->GetURL(), item->GetMimeType())) {
     return true;
   } else {
@@ -212,7 +212,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
   FilePath::StringType extension = path.Extension();
   if (extension.empty())
     return false;
-  if (Extension::IsExtension(path))
+  if (extensions::Extension::IsExtension(path))
     return false;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
   extension.erase(0, 1);

@@ -16,6 +16,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 namespace browser_sync {
 
 namespace {

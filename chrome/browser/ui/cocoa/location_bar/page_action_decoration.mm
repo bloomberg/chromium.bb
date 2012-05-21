@@ -22,6 +22,7 @@
 #include "skia/ext/skia_utils_mac.h"
 
 using content::WebContents;
+using extensions::Extension;
 
 namespace {
 

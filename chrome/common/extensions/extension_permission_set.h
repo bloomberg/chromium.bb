@@ -19,8 +19,11 @@
 
 // TODO(jstritar): Move each class to its own file in extensions/permissions.
 
-class Extension;
 class ExtensionPermissionsInfo;
+
+namespace extensions {
+class Extension;
+}
 
 // When prompting the user to install or approve permissions, we display
 // messages describing the effects of the permissions rather than listing the
@@ -290,7 +293,7 @@ class ExtensionPermissionSet
   // the api and host permissions (|apis| and |hosts|). The effective hosts
   // of the newly created permission set will be inferred from the |extension|
   // manifest, |apis| and |hosts|.
-  ExtensionPermissionSet(const Extension* extension,
+  ExtensionPermissionSet(const extensions::Extension* extension,
                          const ExtensionAPIPermissionSet& apis,
                          const URLPatternSet& explicit_hosts,
                          const ExtensionOAuth2Scopes& scopes);
@@ -411,7 +414,7 @@ class ExtensionPermissionSet
       bool exclude_file_scheme);
 
   // Initializes the set based on |extension|'s manifest data.
-  void InitImplicitExtensionPermissions(const Extension* extension);
+  void InitImplicitExtensionPermissions(const extensions::Extension* extension);
 
   // Initializes the effective host permission based on the data in this set.
   void InitEffectiveHosts();

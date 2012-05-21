@@ -88,12 +88,19 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 
+using autofill::AutofillAgent;
+using autofill::PasswordAutofillManager;
+using autofill::PasswordGenerationManager;
+using content::RenderThread;
+using extensions::Extension;
 using WebKit::WebCache;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDataSource;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebPlugin;
+using webkit::WebPluginInfo;
+using webkit::WebPluginMimeType;
 using WebKit::WebPluginParams;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSecurityPolicy;
@@ -103,12 +110,6 @@ using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using WebKit::WebVector;
-using autofill::AutofillAgent;
-using autofill::PasswordAutofillManager;
-using autofill::PasswordGenerationManager;
-using content::RenderThread;
-using webkit::WebPluginInfo;
-using webkit::WebPluginMimeType;
 
 namespace {
 

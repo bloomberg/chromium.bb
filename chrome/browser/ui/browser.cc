@@ -226,6 +226,7 @@ using content::SiteInstance;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
+using extensions::Extension;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -4112,10 +4113,11 @@ void Browser::Observe(int type,
 
       // Close any tabs from the unloaded extension, unless it's terminated,
       // in which case let the sad tabs remain.
-      if (content::Details<UnloadedExtensionInfo>(details)->reason !=
-          extension_misc::UNLOAD_REASON_TERMINATE) {
+      if (content::Details<extensions::UnloadedExtensionInfo>(
+            details)->reason != extension_misc::UNLOAD_REASON_TERMINATE) {
         const Extension* extension =
-            content::Details<UnloadedExtensionInfo>(details)->extension;
+            content::Details<extensions::UnloadedExtensionInfo>(
+                details)->extension;
         for (int i = tab_strip_model_->count() - 1; i >= 0; --i) {
           WebContents* tc =
               tab_strip_model_->GetTabContentsAt(i)->web_contents();

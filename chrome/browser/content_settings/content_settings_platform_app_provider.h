@@ -13,8 +13,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class Extension;
 class ExtensionService;
+
+namespace extensions {
+class Extension;
+}
 
 namespace content_settings {
 
@@ -49,7 +52,7 @@ class PlatformAppProvider : public ObservableProvider,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
  private:
-  void SetContentSettingForExtension(const Extension* extension,
+  void SetContentSettingForExtension(const extensions::Extension* extension,
                                      ContentSetting setting);
 
   OriginIdentifierValueMap value_map_;

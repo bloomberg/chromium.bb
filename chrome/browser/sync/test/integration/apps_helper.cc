@@ -42,7 +42,9 @@ bool AllProfilesHaveSameAppsAsVerifier() {
 
 std::string InstallApp(Profile* profile, int index) {
   return SyncExtensionHelper::GetInstance()->InstallExtension(
-      profile, CreateFakeAppName(index), Extension::TYPE_HOSTED_APP);
+      profile,
+      CreateFakeAppName(index),
+      extensions::Extension::TYPE_HOSTED_APP);
 }
 
 std::string InstallAppForAllProfiles(int index) {
@@ -78,7 +80,7 @@ void IncognitoDisableApp(Profile* profile, int index) {
 
 void InstallAppsPendingForSync(Profile* profile) {
   SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(
-      profile, Extension::TYPE_HOSTED_APP);
+      profile, extensions::Extension::TYPE_HOSTED_APP);
 }
 
 StringOrdinal GetPageOrdinalForApp(Profile* profile,

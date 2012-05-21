@@ -60,14 +60,14 @@ ExtensionIconSource::ExtensionIconSource(Profile* profile)
 
 struct ExtensionIconSource::ExtensionIconRequest {
   int request_id;
-  const Extension* extension;
+  const extensions::Extension* extension;
   bool grayscale;
   int size;
   ExtensionIconSet::MatchType match;
 };
 
 // static
-GURL ExtensionIconSource::GetIconURL(const Extension* extension,
+GURL ExtensionIconSource::GetIconURL(const extensions::Extension* extension,
                                      int icon_size,
                                      ExtensionIconSet::MatchType match,
                                      bool grayscale,
@@ -296,7 +296,7 @@ bool ExtensionIconSource::ParseData(const std::string& path,
     match_type = ExtensionIconSet::MATCH_EXACTLY;
 
   std::string extension_id = path_parts.at(0);
-  const Extension* extension =
+  const extensions::Extension* extension =
       profile_->GetExtensionService()->GetInstalledExtension(extension_id);
   if (!extension)
     return false;
@@ -316,7 +316,7 @@ void ExtensionIconSource::SendDefaultResponse(int request_id) {
 }
 
 void ExtensionIconSource::SetData(int request_id,
-                                  const Extension* extension,
+                                  const extensions::Extension* extension,
                                   bool grayscale,
                                   int size,
                                   ExtensionIconSet::MatchType match) {

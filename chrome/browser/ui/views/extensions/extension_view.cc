@@ -34,7 +34,7 @@ ExtensionView::~ExtensionView() {
   CleanUp();
 }
 
-const Extension* ExtensionView::extension() const {
+const extensions::Extension* ExtensionView::extension() const {
   return host_->extension();
 }
 

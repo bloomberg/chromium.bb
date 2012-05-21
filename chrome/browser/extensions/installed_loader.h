@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_INSTALLED_LOADER_H_
 #pragma once
 
-class Extension;
 class ExtensionPrefs;
 class ExtensionService;
-struct ExtensionInfo;
 
 namespace extensions {
+
+struct ExtensionInfo;
 
 // Loads installed extensions from the prefs.
 class InstalledLoader {

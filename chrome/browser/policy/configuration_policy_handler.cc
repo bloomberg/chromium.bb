@@ -265,7 +265,8 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
                        ValueTypeToString(base::Value::TYPE_STRING));
       return false;
     }
-    if (!(allow_wildcards_ && id == "*") && !Extension::IdIsValid(id)) {
+    if (!(allow_wildcards_ && id == "*") &&
+        !extensions::Extension::IdIsValid(id)) {
       errors->AddError(policy_name(),
                        entry - list_value->begin(),
                        IDS_POLICY_VALUE_FORMAT_ERROR);

@@ -35,6 +35,7 @@
 #include "ui/gfx/favicon_size.h"
 
 using content::WebContents;
+using extensions::Extension;
 
 namespace {
 

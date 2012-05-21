@@ -24,7 +24,6 @@
 #include "sync/api/sync_change.h"
 #include "sync/api/syncable_service.h"
 
-class Extension;
 class GURL;
 class PrefService;
 class Profile;
@@ -33,6 +32,10 @@ class SearchTermsData;
 class SyncData;
 class SyncErrorFactory;
 class TemplateURLServiceObserver;
+
+namespace extensions {
+class Extension;
+}
 
 namespace history {
 struct URLVisitedDetails;
@@ -174,16 +177,17 @@ class TemplateURLService : public WebDataServiceConsumer,
   // If the given extension has an omnibox keyword, adds a TemplateURL for that
   // keyword. Only 1 keyword is allowed for a given extension. If the keyword
   // already exists for this extension, does nothing.
-  void RegisterExtensionKeyword(const Extension* extension);
+  void RegisterExtensionKeyword(const extensions::Extension* extension);
 
   // Removes the TemplateURL containing the keyword for the given extension,
   // if any.
-  void UnregisterExtensionKeyword(const Extension* extension);
+  void UnregisterExtensionKeyword(const extensions::Extension* extension);
 
   // Returns the TemplateURL associated with the keyword for this extension.
   // This works by checking the extension ID, not the keyword, so it will work
   // even if the user changed the keyword.
-  TemplateURL* GetTemplateURLForExtension(const Extension* extension);
+  TemplateURL* GetTemplateURLForExtension(
+      const extensions::Extension* extension);
 
   // Returns the set of URLs describing the keywords. The elements are owned
   // by TemplateURLService and should not be deleted.

@@ -14,10 +14,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 
-class Extension;
 class Profile;
 
 namespace extensions {
+
+class Extension;
 
 // The ExtensionKeybindingRegistry is a class that handles the cross-platform
 // logic for keyboard accelerators. See platform-specific implementations for
@@ -34,9 +35,11 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
 
  protected:
   // Add extension keybinding for the events defined by the |extension|.
-  virtual void AddExtensionKeybinding(const Extension* extension) = 0;
+  virtual void AddExtensionKeybinding(
+      const Extension* extension) = 0;
   // Remove extension bindings for |extension|.
-  virtual void RemoveExtensionKeybinding(const Extension* extension) = 0;
+  virtual void RemoveExtensionKeybinding(
+      const Extension* extension) = 0;
 
   // Make sure all extensions registered have keybindings added.
   void Init();

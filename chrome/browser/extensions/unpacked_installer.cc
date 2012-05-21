@@ -16,6 +16,7 @@
 #include "chrome/common/string_ordinal.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 namespace {
 

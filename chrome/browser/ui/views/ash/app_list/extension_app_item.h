@@ -13,22 +13,25 @@
 #include "chrome/browser/ui/views/ash/app_list/chrome_app_list_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class Extension;
 class ExtensionResource;
 class Profile;
 class SkBitmap;
+
+namespace extensions {
+class Extension;
+}
 
 // ExtensionAppItem represents an extension app in app list.
 class ExtensionAppItem : public ChromeAppListItem,
                          public ImageLoadingTracker::Observer,
                          public ui::SimpleMenuModel::Delegate {
  public:
-  ExtensionAppItem(Profile* profile, const Extension* extension);
+  ExtensionAppItem(Profile* profile, const extensions::Extension* extension);
   virtual ~ExtensionAppItem();
 
   // Gets extension associated with this model. Returns NULL if extension
   // no longer exists.
-  const Extension* GetExtension() const;
+  const extensions::Extension* GetExtension() const;
 
   const std::string& extension_id() const {
     return extension_id_;
@@ -36,7 +39,7 @@ class ExtensionAppItem : public ChromeAppListItem,
 
  private:
   // Loads extension icon.
-  void LoadImage(const Extension* extension);
+  void LoadImage(const extensions::Extension* extension);
 
   void ShowExtensionOptions();
   void StartExtensionUninstall();

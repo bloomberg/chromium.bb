@@ -19,7 +19,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Browser;
-class Extension;
 class ExtensionHost;
 class GURL;
 class Profile;
@@ -28,6 +27,10 @@ namespace content {
 class RenderViewHost;
 class SiteInstance;
 };
+
+namespace extensions {
+class Extension;
+}
 
 // Manages dynamic state of running Chromium extensions. There is one instance
 // of this class per Profile. OTR Profiles have a separate instance that keeps
@@ -50,30 +53,31 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Creates a new ExtensionHost with its associated view, grouping it in the
   // appropriate SiteInstance (and therefore process) based on the URL and
   // profile.
-  virtual ExtensionHost* CreateViewHost(const Extension* extension,
+  virtual ExtensionHost* CreateViewHost(const extensions::Extension* extension,
                                         const GURL& url,
                                         Browser* browser,
                                         content::ViewType view_type);
   ExtensionHost* CreateViewHost(const GURL& url,
                                 Browser* browser,
                                 content::ViewType view_type);
-  ExtensionHost* CreatePopupHost(const Extension* extension,
+  ExtensionHost* CreatePopupHost(const extensions::Extension* extension,
                                  const GURL& url,
                                  Browser* browser);
   ExtensionHost* CreatePopupHost(const GURL& url, Browser* browser);
   ExtensionHost* CreateDialogHost(const GURL& url, Browser* browser);
-  ExtensionHost* CreateInfobarHost(const Extension* extension,
+  ExtensionHost* CreateInfobarHost(const extensions::Extension* extension,
                                    const GURL& url,
                                    Browser* browser);
   ExtensionHost* CreateInfobarHost(const GURL& url,
                                    Browser* browser);
 
   // Open the extension's options page.
-  void OpenOptionsPage(const Extension* extension, Browser* browser);
+  void OpenOptionsPage(const extensions::Extension* extension,
+                       Browser* browser);
 
   // Creates a new UI-less extension instance.  Like CreateViewHost, but not
   // displayed anywhere.
-  virtual void CreateBackgroundHost(const Extension* extension,
+  virtual void CreateBackgroundHost(const extensions::Extension* extension,
                                     const GURL& url);
 
   // Gets the ExtensionHost for the background page for an extension, or NULL if
@@ -87,7 +91,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Registers a RenderViewHost as hosting a given extension.
   void RegisterRenderViewHost(content::RenderViewHost* render_view_host,
-                              const Extension* extension);
+                              const extensions::Extension* extension);
 
   // Unregisters a RenderViewHost as hosting any extension.
   void UnregisterRenderViewHost(content::RenderViewHost* render_view_host);
@@ -99,7 +103,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Returns the extension associated with the specified RenderViewHost, or
   // NULL.
-  const Extension* GetExtensionForRenderViewHost(
+  const extensions::Extension* GetExtensionForRenderViewHost(
       content::RenderViewHost* render_view_host);
 
   // Returns true if the (lazy) background host for the given extension has
@@ -110,9 +114,9 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // the count of how many outstanding "things" are keeping the page alive.
   // When this reaches 0, we will begin the process of shutting down the page.
   // "Things" include pending events, resource loads, and API calls.
-  int GetLazyKeepaliveCount(const Extension* extension);
-  int IncrementLazyKeepaliveCount(const Extension* extension);
-  int DecrementLazyKeepaliveCount(const Extension* extension);
+  int GetLazyKeepaliveCount(const extensions::Extension* extension);
+  int IncrementLazyKeepaliveCount(const extensions::Extension* extension);
+  int DecrementLazyKeepaliveCount(const extensions::Extension* extension);
 
   void IncrementLazyKeepaliveCountForView(
       content::RenderViewHost* render_view_host);

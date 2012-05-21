@@ -74,14 +74,14 @@ TEST_F(ExtensionManifestTest, InitFromValueInvalid) {
 }
 
 TEST_F(ExtensionManifestTest, InitFromValueValid) {
-  scoped_refptr<Extension> extension(LoadAndExpectSuccess(
+  scoped_refptr<extensions::Extension> extension(LoadAndExpectSuccess(
       "init_valid_minimal.json"));
 
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions");
 
-  EXPECT_TRUE(Extension::IdIsValid(extension->id()));
+  EXPECT_TRUE(extensions::Extension::IdIsValid(extension->id()));
   EXPECT_EQ("1.0.0.0", extension->VersionString());
   EXPECT_EQ("my extension", extension->name());
   EXPECT_EQ(extension->id(), extension->url().host());
@@ -134,7 +134,7 @@ TEST_F(ExtensionManifestTest, InitFromValueValidNameInRTL) {
 #endif
 
   // No strong RTL characters in name.
-  scoped_refptr<Extension> extension(LoadAndExpectSuccess(
+  scoped_refptr<extensions::Extension> extension(LoadAndExpectSuccess(
       "init_valid_name_no_rtl.json"));
 
   string16 localized_name(ASCIIToUTF16("Dictionary (by Google)"));

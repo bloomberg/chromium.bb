@@ -34,6 +34,7 @@
 
 using content::BrowserThread;
 using content::UtilityProcessHost;
+using extensions::Extension;
 
 // The following macro makes histograms that record the length of paths
 // in this file much easier to read.

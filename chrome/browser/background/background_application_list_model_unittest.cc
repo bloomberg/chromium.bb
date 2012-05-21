@@ -30,6 +30,8 @@
 // operations to produce a repeatable sequence.
 #define RANDOM_SEED (0x33F7A7A7)
 
+using extensions::Extension;
+
 // For ExtensionService interface when it requires a path that is not used.
 FilePath bogus_file_path() {
   return FilePath(FILE_PATH_LITERAL("//foobar_nonexistent"));

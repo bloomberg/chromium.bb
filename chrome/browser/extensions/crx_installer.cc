@@ -49,6 +49,7 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
+using extensions::Extension;
 using extensions::PermissionsUpdater;
 
 // static

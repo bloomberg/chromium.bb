@@ -24,6 +24,7 @@ namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 
 using content::BrowserThread;
+using extensions::Extension;
 using testing::_;
 using testing::Invoke;
 

@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 class ExternalPolicyExtensionProviderTest : public testing::Test {
  public:

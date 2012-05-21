@@ -56,7 +56,6 @@ class BrowserSyncedWindowDelegate;
 class BrowserToolbarModelDelegate;
 class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
-class Extension;
 class ExtensionWindowController;
 class FindBarController;
 class FullscreenController;
@@ -74,6 +73,10 @@ class WebDialogDelegate;
 namespace content {
 class NavigationController;
 class SessionStorageNamespace;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace gfx {
@@ -290,7 +293,7 @@ class Browser : public TabStripModelDelegate,
   // |override_url| is used in place of the app launch url.
   static content::WebContents* OpenApplication(
       Profile* profile,
-      const Extension* extension,
+      const extensions::Extension* extension,
       extension_misc::LaunchContainer container,
       const GURL& override_url,
       WindowOpenDisposition disposition);
@@ -299,7 +302,7 @@ class Browser : public TabStripModelDelegate,
   // Opens |url| in a new application panel window for the specified url.
   static content::WebContents* OpenApplicationPanel(
       Profile* profile,
-      const Extension* extension,
+      const extensions::Extension* extension,
       const GURL& url);
 #endif
 
@@ -312,7 +315,7 @@ class Browser : public TabStripModelDelegate,
   // returned tab.
   static content::WebContents* OpenApplicationWindow(
       Profile* profile,
-      const Extension* extension,
+      const extensions::Extension* extension,
       extension_misc::LaunchContainer container,
       const GURL& url,
       Browser** app_browser);
@@ -332,7 +335,7 @@ class Browser : public TabStripModelDelegate,
   // non-empty, |override_url| is used in place of the app launch url.
   static content::WebContents* OpenApplicationTab(
       Profile* profile,
-      const Extension* extension,
+      const extensions::Extension* extension,
       const GURL& override_url,
       WindowOpenDisposition disposition);
 

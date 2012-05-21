@@ -124,7 +124,7 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
     ExtensionService* extension_service =
         balloon_->profile()->GetExtensionService();
-    const Extension* extension =
+    const extensions::Extension* extension =
         extension_service->extensions()->GetExtensionOrAppByURL(
             ExtensionURLInfo(origin));
     // We get back no extension here when we show the notification after
@@ -176,7 +176,7 @@ string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
     if (origin.SchemeIs(chrome::kExtensionScheme)) {
       ExtensionService* extension_service =
           balloon_->profile()->GetExtensionService();
-      const Extension* extension =
+      const extensions::Extension* extension =
           extension_service->extensions()->GetExtensionOrAppByURL(
               ExtensionURLInfo(origin));
       if (extension) {
@@ -234,14 +234,14 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
         service->GrantPermission(origin);
       break;
     case kToggleExtensionCommand: {
-      const Extension* extension =
+      const extensions::Extension* extension =
           extension_service->extensions()->GetExtensionOrAppByURL(
               ExtensionURLInfo(origin));
       if (extension) {
         const std::string& id = extension->id();
         if (extension_service->IsExtensionEnabled(id))
           extension_service->DisableExtension(
-              id, Extension::DISABLE_USER_ACTION);
+              id, extensions::Extension::DISABLE_USER_ACTION);
         else
           extension_service->EnableExtension(id);
       }

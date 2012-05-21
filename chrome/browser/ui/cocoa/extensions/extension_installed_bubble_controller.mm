@@ -33,6 +33,7 @@
 
 using content::BrowserThread;
 using extensions::BundleInstaller;
+using extensions::Extension;
 
 // C++ class that receives EXTENSION_LOADED notifications and proxies them back
 // to |controller|.

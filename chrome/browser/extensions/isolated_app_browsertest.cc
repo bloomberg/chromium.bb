@@ -35,8 +35,8 @@ class IsolatedAppTest : public ExtensionBrowserTest {
     return actual_cookie.find(cookie) != std::string::npos;
   }
 
-  const Extension* GetInstalledApp(WebContents* contents) {
-    const Extension* installed_app = NULL;
+  const extensions::Extension* GetInstalledApp(WebContents* contents) {
+    const extensions::Extension* installed_app = NULL;
     Profile* profile =
         Profile::FromBrowserContext(contents->GetBrowserContext());
     ExtensionService* service = profile->GetExtensionService();

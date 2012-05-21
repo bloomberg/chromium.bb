@@ -20,6 +20,7 @@
 #include "crypto/signature_verifier.h"
 
 using crypto::SecureHash;
+using extensions::Extension;
 
 namespace {
 // This class makes sure that the CRX digital signature is valid

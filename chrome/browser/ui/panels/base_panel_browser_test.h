@@ -92,9 +92,10 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
 
   void CreateTestTabContents(Browser* browser);
 
-  scoped_refptr<Extension> CreateExtension(const FilePath::StringType& path,
-                                           Extension::Location location,
-                                           const DictionaryValue& extra_value);
+  scoped_refptr<extensions::Extension> CreateExtension(
+      const FilePath::StringType& path,
+      extensions::Extension::Location location,
+      const DictionaryValue& extra_value);
 
   void MoveMouseAndWaitForExpansionStateChange(Panel* panel,
                                                const gfx::Point& position);

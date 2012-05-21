@@ -69,7 +69,8 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 
   // Load the Extension's icon image.
   void LoadIcon() {
-    const Extension* extension = delegate_->extension_host()->extension();
+    const extensions::Extension* extension = delegate_->extension_host()->
+        extension();
     ExtensionResource icon_resource =
         extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_BITTY,
                                    ExtensionIconSet::MATCH_EXACTLY);

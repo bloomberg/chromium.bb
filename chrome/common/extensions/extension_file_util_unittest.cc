@@ -17,6 +17,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using extensions::Extension;
+
 namespace keys = extension_manifest_keys;
 
 #if defined(OS_WIN)

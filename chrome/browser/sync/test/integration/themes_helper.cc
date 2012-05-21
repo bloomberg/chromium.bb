@@ -60,7 +60,7 @@ bool HasOrWillHaveCustomTheme(Profile* profile, const std::string& id) {
 
 void UseCustomTheme(Profile* profile, int index) {
   SyncExtensionHelper::GetInstance()->InstallExtension(
-      profile, MakeName(index), Extension::TYPE_THEME);
+      profile, MakeName(index), extensions::Extension::TYPE_THEME);
 }
 
 void UseDefaultTheme(Profile* profile) {

@@ -31,6 +31,7 @@
 #include "ui/gfx/image/image.h"
 
 using content::WebContents;
+using extensions::Extension;
 using extensions::ScriptBadgeController;
 using extensions::ScriptExecutorImpl;
 using extensions::PageActionController;

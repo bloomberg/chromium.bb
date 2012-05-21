@@ -9,6 +9,10 @@
 #include "chrome/browser/extensions/extension_activity_log.h"
 #include "content/public/browser/web_ui_controller.h"
 
+namespace extensions {
+class Extension;
+}
+
 class ExtensionActivityUI : public content::WebUIController,
                             public ExtensionActivityLog::Observer {
  public:
@@ -19,12 +23,12 @@ class ExtensionActivityUI : public content::WebUIController,
   void HandleRequestExtensionData(const base::ListValue* args);
 
   // ExtensionActivityLog::Observer implementation.
-  virtual void OnExtensionActivity(const Extension* extension,
+  virtual void OnExtensionActivity(const extensions::Extension* extension,
                                    ExtensionActivityLog::Activity activity,
                                    const std::string& msg) OVERRIDE;
 
  private:
-  const Extension* extension_;
+  const extensions::Extension* extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActivityUI);
 };

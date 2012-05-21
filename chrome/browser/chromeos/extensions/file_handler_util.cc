@@ -39,6 +39,7 @@ using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
 using content::WebContents;
+using extensions::Extension;
 
 namespace file_handler_util {
 namespace {

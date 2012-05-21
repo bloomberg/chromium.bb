@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_SYNC_GLUE_THEME_UTIL_H_
 #pragma once
 
-class Extension;
 class Profile;
+
+namespace extensions {
+class Extension;
+}
 
 namespace sync_pb {
 class ThemeSpecifics;
@@ -41,7 +44,7 @@ void GetThemeSpecificsFromCurrentTheme(
 
 // Exposed only for testing.
 void GetThemeSpecificsFromCurrentThemeHelper(
-    const Extension* current_theme,
+    const extensions::Extension* current_theme,
     bool is_system_theme_distinct_from_default_theme,
     bool use_system_theme_by_default,
     sync_pb::ThemeSpecifics* theme_specifics);

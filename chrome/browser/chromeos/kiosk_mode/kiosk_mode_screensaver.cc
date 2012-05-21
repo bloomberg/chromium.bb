@@ -21,6 +21,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
+using extensions::Extension;
+
 namespace chromeos {
 
 typedef base::Callback<void(

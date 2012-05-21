@@ -34,8 +34,10 @@ void EnterpriseExtensionObserver::Observe(
   if (content::Source<Profile>(source).ptr() != profile_) {
     return;
   }
-  Extension* extension = content::Details<Extension>(details).ptr();
-  if (extension->location() != Extension::EXTERNAL_POLICY_DOWNLOAD) {
+  extensions::Extension* extension =
+      content::Details<extensions::Extension>(details).ptr();
+  if (extension->location() !=
+      extensions::Extension::EXTERNAL_POLICY_DOWNLOAD) {
     return;
   }
   BrowserThread::PostTask(

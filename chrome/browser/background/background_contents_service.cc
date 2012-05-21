@@ -37,6 +37,8 @@
 
 using content::SiteInstance;
 using content::WebContents;
+using extensions::Extension;
+using extensions::UnloadedExtensionInfo;
 
 namespace {
 
@@ -55,7 +57,8 @@ void ScheduleCloseBalloon(const std::string& extension_id) {
 
 class CrashNotificationDelegate : public NotificationDelegate {
  public:
-  CrashNotificationDelegate(Profile* profile, const Extension* extension)
+  CrashNotificationDelegate(Profile* profile,
+                            const Extension* extension)
       : profile_(profile),
         is_hosted_app_(extension->is_hosted_app()),
         extension_id_(extension->id()) {
@@ -366,8 +369,8 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
   for (DictionaryValue::key_iterator it = contents->begin_keys();
        it != contents->end_keys(); ++it) {
     // Check to make sure that the parent extension is still enabled.
-    const Extension* extension = extensions_service->GetExtensionById(
-        *it, false);
+    const Extension* extension = extensions_service->
+        GetExtensionById(*it, false);
     if (!extension) {
       // We should never reach here - it should not be possible for an app
       // to become uninstalled without the associated BackgroundContents being

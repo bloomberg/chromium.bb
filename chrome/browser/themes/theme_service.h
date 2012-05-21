@@ -21,12 +21,15 @@
 
 class BrowserThemePack;
 class ThemeServiceTest;
-class Extension;
 class FilePath;
 class Profile;
 
 namespace color_utils {
 struct HSL;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace gfx {
@@ -178,7 +181,7 @@ class ThemeService : public base::NonThreadSafe,
 #endif
 
   // Set the current theme to the theme defined in |extension|.
-  virtual void SetTheme(const Extension* extension);
+  virtual void SetTheme(const extensions::Extension* extension);
 
   // Reset the theme to default.
   virtual void UseDefaultTheme();
@@ -281,7 +284,7 @@ class ThemeService : public base::NonThreadSafe,
 
   // Implementation of SetTheme() (and the fallback from LoadThemePrefs() in
   // case we don't have a theme pack).
-  void BuildFromExtension(const Extension* extension);
+  void BuildFromExtension(const extensions::Extension* extension);
 
 #if defined(TOOLKIT_GTK)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.

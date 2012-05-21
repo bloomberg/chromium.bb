@@ -103,6 +103,7 @@ using content::RenderViewHost;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;
+using extensions::Extension;
 
 namespace {
 

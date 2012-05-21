@@ -183,7 +183,8 @@ void SpeechInputExtensionManager::Observe(int type,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     ExtensionUnloaded(
-        content::Details<UnloadedExtensionInfo>(details)->extension->id());
+        content::Details<extensions::UnloadedExtensionInfo>(details)->
+            extension->id());
   } else {
     NOTREACHED();
   }
@@ -319,7 +320,7 @@ void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
   VLOG(1) << "State changed to recording";
   state_ = kRecording;
 
-  const Extension* extension = profile_->GetExtensionService()->
+  const extensions::Extension* extension = profile_->GetExtensionService()->
       GetExtensionById(extension_id_in_use_, true);
   DCHECK(extension);
 

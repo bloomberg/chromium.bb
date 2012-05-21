@@ -10,6 +10,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
+using extensions::Extension;
+
 // An InProcessBrowserTest for testing the ExtensionToolbarModel.
 // TODO(erikkay) It's unfortunate that this needs to be an in-proc browser test.
 // It would be nice to refactor things so that ExtensionService could run
@@ -48,7 +50,8 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
   }
 
   const Extension* ExtensionAt(int index) {
-    for (ExtensionList::iterator i = model_->begin(); i < model_->end(); ++i) {
+    for (extensions::ExtensionList::iterator i = model_->begin();
+         i < model_->end(); ++i) {
       if (index-- == 0)
         return *i;
     }

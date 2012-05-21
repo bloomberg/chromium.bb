@@ -11,7 +11,7 @@
 
 namespace extension_webkit_preferences {
 
-void SetPreferences(const Extension* extension,
+void SetPreferences(const extensions::Extension* extension,
                     content::ViewType render_view_type,
                     webkit_glue::WebPreferences* webkit_prefs) {
   if (!extension)
@@ -51,7 +51,7 @@ void SetPreferences(const Extension* extension,
   // sometimes loaded with chrome-extension: URLs - we should expect the
   // performance characteristics to be similar in both cases.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (extension->location() == Extension::COMPONENT &&
+  if (extension->location() == extensions::Extension::COMPONENT &&
       !command_line.HasSwitch(switches::kAllowWebUICompositing)) {
     webkit_prefs->accelerated_compositing_enabled = false;
     webkit_prefs->accelerated_2d_canvas_enabled = false;

@@ -25,6 +25,7 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/image_decoder.h"
 
+using extensions::Extension;
 
 // Base class for our tests.
 class ExtensionInstallDialogControllerTest : public CocoaProfileTest {

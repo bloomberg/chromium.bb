@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome::VersionInfo;
+using extensions::Extension;
 using extensions::Feature;
 
 namespace {

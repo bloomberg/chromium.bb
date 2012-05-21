@@ -15,7 +15,6 @@
 #include "googleurl/src/gurl.h"
 
 class ChromeRenderMessageFilter;
-class Extension;
 class ExtensionFunction;
 class ExtensionWindowController;
 class ExtensionInfoMap;
@@ -28,6 +27,7 @@ class WebContents;
 }
 
 namespace extensions {
+class Extension;
 class ExtensionAPI;
 class ProcessMap;
 }
@@ -104,7 +104,7 @@ class ExtensionFunctionDispatcher
 
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
-  void OnExtensionFunctionCompleted(const Extension* extension);
+  void OnExtensionFunctionCompleted(const extensions::Extension* extension);
 
   // The profile that this dispatcher is associated with.
   Profile* profile() { return profile_; }
@@ -115,7 +115,7 @@ class ExtensionFunctionDispatcher
   // Does not set subclass properties, or include_incognito.
   static ExtensionFunction* CreateExtensionFunction(
       const ExtensionHostMsg_Request_Params& params,
-      const Extension* extension,
+      const extensions::Extension* extension,
       int requesting_process_id,
       const extensions::ProcessMap& process_map,
       extensions::ExtensionAPI* api,

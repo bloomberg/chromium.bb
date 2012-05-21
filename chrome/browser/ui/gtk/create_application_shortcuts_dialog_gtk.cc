@@ -32,6 +32,7 @@
 #include "ui/gfx/gtk_util.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 namespace {
 

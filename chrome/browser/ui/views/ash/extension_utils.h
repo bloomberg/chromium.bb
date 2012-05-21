@@ -7,14 +7,17 @@
 #pragma once
 
 class Profile;
+
+namespace extensions {
 class Extension;
+}
 
 namespace extension_utils {
 
 // Opens an extension.  |event_flags| holds the flags of the event
 // which triggered this extension.
 void OpenExtension(Profile* profile,
-                   const Extension* extension,
+                   const extensions::Extension* extension,
                    int event_flags);
 
 }  // namespace extension_utils

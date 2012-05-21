@@ -43,6 +43,7 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::RenderViewHost;
 using content::SiteInstance;
+using extensions::Extension;
 
 namespace {
 
@@ -540,7 +541,8 @@ void ExtensionProcessManager::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension;
       for (ExtensionHostSet::iterator iter = background_hosts_.begin();
            iter != background_hosts_.end(); ++iter) {
         ExtensionHost* host = *iter;

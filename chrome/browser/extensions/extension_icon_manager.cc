@@ -46,7 +46,7 @@ ExtensionIconManager::ExtensionIconManager()
 ExtensionIconManager::~ExtensionIconManager() {
 }
 
-void ExtensionIconManager::LoadIcon(const Extension* extension) {
+void ExtensionIconManager::LoadIcon(const extensions::Extension* extension) {
   ExtensionResource icon_resource = extension->GetIconResource(
       ExtensionIconSet::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_BIGGER);
   if (!icon_resource.extension_root().empty()) {

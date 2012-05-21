@@ -188,7 +188,7 @@ void BrowserLauncherItemController::UpdateLauncher(TabContentsWrapper* tab) {
     if (!new_image.empty())
       item.image = new_image;
     else if (item.image.empty())
-      item.image = Extension::GetDefaultIcon(true);
+      item.image = extensions::Extension::GetDefaultIcon(true);
   } else {
     DCHECK_EQ(TYPE_TABBED, type_);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

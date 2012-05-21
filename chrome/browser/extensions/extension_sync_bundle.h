@@ -17,12 +17,13 @@
 #include "sync/api/syncable_service.h"
 
 class SyncChangeProcessor;
-class Extension;
 class ExtensionService;
 class ExtensionSet;
 class SyncErrorFactory;
 
 namespace extensions {
+
+class Extension;
 
 // Bundle of extension specific sync stuff.
 class ExtensionSyncBundle {

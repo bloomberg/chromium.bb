@@ -13,8 +13,11 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "ui/base/accelerators/accelerator.h"
 
-class Extension;
 class Profile;
+
+namespace extensions {
+class Extension;
+}
 
 namespace views {
 class FocusManager;
@@ -40,8 +43,10 @@ class ExtensionKeybindingRegistryViews
 
  private:
   // Overridden from ExtensionKeybindingRegistry:
-  virtual void AddExtensionKeybinding(const Extension* extension) OVERRIDE;
-  virtual void RemoveExtensionKeybinding(const Extension* extension) OVERRIDE;
+  virtual void AddExtensionKeybinding(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void RemoveExtensionKeybinding(
+      const extensions::Extension* extension) OVERRIDE;
 
   // Weak pointer to the our profile. Not owned by us.
   Profile* profile_;

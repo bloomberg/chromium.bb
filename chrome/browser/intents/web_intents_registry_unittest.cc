@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 using webkit_glue::WebIntentServiceData;
 
 class MockExtensionService: public TestExtensionService {

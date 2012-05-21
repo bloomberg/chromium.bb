@@ -123,7 +123,7 @@ class ExtensionHost::ProcessCreationQueue {
 ////////////////
 // ExtensionHost
 
-ExtensionHost::ExtensionHost(const Extension* extension,
+ExtensionHost::ExtensionHost(const extensions::Extension* extension,
                              SiteInstance* site_instance,
                              const GURL& url,
                              content::ViewType host_type)
@@ -245,7 +245,7 @@ void ExtensionHost::LoadInitialURL() {
       !profile_->GetExtensionService()->IsBackgroundPageReady(extension_)) {
     // Make sure the background page loads before any others.
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-                   content::Source<Extension>(extension_));
+                   content::Source<extensions::Extension>(extension_));
     return;
   }
 
@@ -276,7 +276,8 @@ void ExtensionHost::Observe(int type,
       // when multiple ExtensionHost objects pointing to the same Extension are
       // present.
       if (extension_ ==
-          content::Details<UnloadedExtensionInfo>(details)->extension) {
+          content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension) {
         extension_ = NULL;
       }
       break;

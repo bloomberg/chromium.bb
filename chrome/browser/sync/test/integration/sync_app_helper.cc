@@ -60,7 +60,7 @@ AppStateMap GetAppStates(Profile* profile) {
       extension_service->GenerateInstalledExtensionsSet());
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    if ((*it)->GetSyncType() == Extension::SYNC_TYPE_APP) {
+    if ((*it)->GetSyncType() == extensions::Extension::SYNC_TYPE_APP) {
       const std::string& id = (*it)->id();
       LoadApp(extension_service, id, &(app_state_map[id]));
     }

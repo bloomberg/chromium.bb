@@ -227,7 +227,7 @@ string16 ChromeJavaScriptDialogCreator::GetTitle(const GURL& origin_url,
 
   // If the URL is a chrome extension one, return the extension name.
   if (extension_host_) {
-    const Extension* extension = extension_host_->
+    const extensions::Extension* extension = extension_host_->
       profile()->GetExtensionService()->extensions()->
       GetExtensionOrAppByURL(ExtensionURLInfo(origin_url));
     if (extension) {

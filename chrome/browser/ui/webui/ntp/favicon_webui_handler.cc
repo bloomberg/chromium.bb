@@ -142,7 +142,7 @@ void FaviconWebUIHandler::HandleGetAppIconDominantColor(
 
   ExtensionService* extension_service =
       Profile::FromWebUI(web_ui())->GetExtensionService();
-  const Extension* extension = extension_service->GetExtensionById(
+  const extensions::Extension* extension = extension_service->GetExtensionById(
       extension_id, false);
   if (!extension)
     return;

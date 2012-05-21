@@ -42,7 +42,7 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
     ExtensionService* service = browser()->profile()->GetExtensionService();
-    const Extension* extension = service->GetExtensionById(
+    const extensions::Extension* extension = service->GetExtensionById(
         last_loaded_extension_id_, false);
     EXPECT_TRUE(extension);
 

@@ -22,6 +22,8 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 
+using extensions::Extension;
+
 namespace {
 
 const char kHtmlPath[] = "path";

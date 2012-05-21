@@ -90,7 +90,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
   // This must happen after adding all children because it can trigger layout,
   // which assumes that particular children (e.g. the close button) have already
   // been added.
-  const Extension* extension = extension_host->extension();
+  const extensions::Extension* extension = extension_host->extension();
   ExtensionIconSet::Icons image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
   ExtensionResource icon_resource = extension->GetIconResource(
       image_size, ExtensionIconSet::MATCH_EXACTLY);
@@ -142,7 +142,8 @@ void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
                                            const gfx::Point& point) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
-  const Extension* extension = GetDelegate()->extension_host()->extension();
+  const extensions::Extension* extension = GetDelegate()->extension_host()->
+      extension();
   if (!extension->ShowConfigureContextMenus())
     return;
 

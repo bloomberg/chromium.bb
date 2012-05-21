@@ -16,6 +16,10 @@
 
 struct DefaultWebIntentService;
 
+namespace extensions {
+class Extension;
+}
+
 // Handles storing and retrieving of web intents services in the web database.
 // The registry provides filtering logic to retrieve specific types of services.
 class WebIntentsRegistry
@@ -107,7 +111,7 @@ class WebIntentsRegistry
   void CollapseIntents(IntentServiceList* services);
 
  private:
-   const Extension* ExtensionForURL(const std::string& url);
+   const extensions::Extension* ExtensionForURL(const std::string& url);
 
    struct IntentsQuery;
 

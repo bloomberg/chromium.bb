@@ -43,6 +43,7 @@ namespace keys = bookmark_extension_api_constants;
 using base::TimeDelta;
 using content::BrowserThread;
 using content::WebContents;
+
 typedef QuotaLimitHeuristic::Bucket Bucket;
 typedef QuotaLimitHeuristic::Config Config;
 typedef QuotaLimitHeuristic::BucketList BucketList;
@@ -92,7 +93,7 @@ void BookmarksFunction::Run() {
   if (success) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-        content::Source<const Extension>(GetExtension()),
+        content::Source<const extensions::Extension>(GetExtension()),
         content::Details<const BookmarksFunction>(this));
   }
   SendResponse(success);

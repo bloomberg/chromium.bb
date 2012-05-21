@@ -41,6 +41,8 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
+using extensions::Extension;
+
 namespace {
 
 const int kIconSize = 43;
@@ -387,7 +389,7 @@ void ExtensionInstalledBubble::Observe(
     }
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const Extension* extension =
-        content::Details<UnloadedExtensionInfo>(details)->extension;
+        content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
     if (extension == extension_)
       extension_ = NULL;
   } else {

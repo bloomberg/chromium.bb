@@ -24,6 +24,8 @@
 // These are a mash-up of the tests from from page_actions_apitest.cc and
 // browser_actions_apitest.cc.
 
+using extensions::Extension;
+
 namespace {
 
 class PageAsBrowserActionApiTest : public ExtensionApiTest {

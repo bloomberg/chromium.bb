@@ -21,7 +21,7 @@ TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
   std::string error;
   LoadExtension(Manifest("permission_chrome_resources_url.json"),
                 &error,
-                Extension::COMPONENT,
-                Extension::STRICT_ERROR_CHECKS);
+                extensions::Extension::COMPONENT,
+                extensions::Extension::STRICT_ERROR_CHECKS);
   EXPECT_EQ("", error);
 }

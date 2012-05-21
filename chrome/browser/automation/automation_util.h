@@ -13,7 +13,6 @@
 class AutomationId;
 class AutomationProvider;
 class Browser;
-class Extension;
 class GURL;
 class Profile;
 class TabContentsWrapper;
@@ -25,6 +24,10 @@ class WebContents;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace IPC {
@@ -96,7 +99,7 @@ AutomationId GetIdForExtensionView(
     const content::RenderViewHost* render_view_host);
 
 // Returns a valid automation ID for the extension.
-AutomationId GetIdForExtension(const Extension* extension);
+AutomationId GetIdForExtension(const extensions::Extension* extension);
 
 // Gets the tab for the given ID. Returns true on success.
 bool GetTabForId(const AutomationId& id, content::WebContents** tab);
@@ -109,7 +112,7 @@ bool GetRenderViewForId(const AutomationId& id,
 // Gets the extension for the given ID. Returns true on success.
 bool GetExtensionForId(const AutomationId& id,
                        Profile* profile,
-                       const Extension** extension);
+                       const extensions::Extension** extension);
 
 // Returns whether the given ID refers to an actual automation entity.
 bool DoesObjectWithIdExist(const AutomationId& id, Profile* profile);

@@ -13,7 +13,7 @@
 #include "ui/gfx/rect.h"
 
 ShellWindowGtk::ShellWindowGtk(Profile* profile,
-                               const Extension* extension,
+                               const extensions::Extension* extension,
                                const GURL& url)
     : ShellWindow(profile, extension, url),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
@@ -168,7 +168,7 @@ gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
 
 // static
 ShellWindow* ShellWindow::CreateImpl(Profile* profile,
-                                     const Extension* extension,
+                                     const extensions::Extension* extension,
                                      const GURL& url) {
   return new ShellWindowGtk(profile, extension, url);
 }

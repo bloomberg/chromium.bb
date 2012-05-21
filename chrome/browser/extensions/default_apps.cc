@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -117,8 +118,8 @@ void RegisterUserPrefs(PrefService* prefs) {
 Provider::Provider(Profile* profile,
                    VisitorInterface* service,
                    ExternalExtensionLoader* loader,
-                   Extension::Location crx_location,
-                   Extension::Location download_location,
+                   extensions::Extension::Location crx_location,
+                   extensions::Extension::Location download_location,
                    int creation_flags)
     : ExternalExtensionProviderImpl(service, loader, crx_location,
                                     download_location, creation_flags),

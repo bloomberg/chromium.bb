@@ -12,7 +12,9 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 
+namespace extensions {
 class Extension;
+}
 
 // A utility for tracing interesting activity for each extension.
 class ExtensionActivityLog {
@@ -25,7 +27,7 @@ class ExtensionActivityLog {
   // Observers can listen for activity events.
   class Observer {
    public:
-    virtual void OnExtensionActivity(const Extension* extension,
+    virtual void OnExtensionActivity(const extensions::Extension* extension,
                                      Activity activity,
                                      const std::string& msg) = 0;
   };
@@ -34,14 +36,15 @@ class ExtensionActivityLog {
   static ExtensionActivityLog* GetInstance();
 
   // Add/remove observer.
-  void AddObserver(const Extension* extension, Observer* observer);
-  void RemoveObserver(const Extension* extension, Observer* observer);
+  void AddObserver(const extensions::Extension* extension, Observer* observer);
+  void RemoveObserver(const extensions::Extension* extension,
+                      Observer* observer);
 
   // Check for the existence observer list by extension_id.
-  bool HasObservers(const Extension* extension) const;
+  bool HasObservers(const extensions::Extension* extension) const;
 
   // Log |activity| for |extension|.
-  void Log(const Extension* extension,
+  void Log(const extensions::Extension* extension,
            Activity activity,
            const std::string& msg) const;
 
@@ -59,7 +62,8 @@ class ExtensionActivityLog {
   bool log_activity_to_stdout_;
 
   typedef ObserverListThreadSafe<Observer> ObserverList;
-  typedef std::map<const Extension*, scoped_refptr<ObserverList> > ObserverMap;
+  typedef std::map<const extensions::Extension*, scoped_refptr<ObserverList> >
+      ObserverMap;
   // A map of extensions to activity observers for that extension.
   ObserverMap observers_;
 

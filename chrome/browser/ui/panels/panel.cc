@@ -602,7 +602,7 @@ void Panel::ShowCreateWebAppShortcutsDialog(TabContentsWrapper* tab_contents) {
 }
 
 void Panel::ShowCreateChromeAppShortcutsDialog(Profile* profile,
-                                               const Extension* app) {
+    const extensions::Extension* app) {
   NOTIMPLEMENTED();
 }
 

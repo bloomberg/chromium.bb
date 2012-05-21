@@ -35,12 +35,15 @@ struct NativeWebKeyboardEvent;
 struct SSLStatus;
 }
 
+namespace extensions {
+class Extension;
+}
+
 namespace gfx {
 class Rect;
 class Size;
 }
 
-class Extension;
 
 enum DevToolsDockSide {
   DEVTOOLS_DOCK_SIDE_BOTTOM = 0,
@@ -293,7 +296,8 @@ class BrowserWindow : public BaseWindow {
 
   // Shows the create chrome app shortcut dialog box.
   virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
-                                                  const Extension* app) = 0;
+      const extensions::Extension* app) = 0;
+
 
   // Clipboard commands applied to the whole browser window.
   virtual void Cut() = 0;

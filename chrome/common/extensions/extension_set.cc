@@ -5,9 +5,11 @@
 #include "chrome/common/extensions/extension_set.h"
 
 #include "base/logging.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 
 using WebKit::WebSecurityOrigin;
+using extensions::Extension;
 
 ExtensionURLInfo::ExtensionURLInfo(WebSecurityOrigin origin, const GURL& url)
   : origin_(origin),

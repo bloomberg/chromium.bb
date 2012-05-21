@@ -12,13 +12,15 @@
 #include <string>
 #include <vector>
 
-class Extension;
 class ExtensionMessageBundle;
 class FilePath;
-struct ExtensionInfo;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace extensions {
+struct ExtensionInfo;
 }
 
 namespace extension_l10n_util {
@@ -35,7 +37,7 @@ std::string GetDefaultLocaleFromManifest(const base::DictionaryValue& manifest,
 
 // Returns true iff the extension was localized, and the current locale
 // doesn't match the locale written into info.extension_manifest.
-bool ShouldRelocalizeManifest(const ExtensionInfo& info);
+bool ShouldRelocalizeManifest(const extensions::ExtensionInfo& info);
 
 // Localize extension name, description, browser_action and other fields
 // in the manifest.

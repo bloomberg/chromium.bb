@@ -10,7 +10,7 @@
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, OptionsPageInApps) {
-  scoped_refptr<Extension> extension;
+  scoped_refptr<extensions::Extension> extension;
 
   // Allow options page with absolute URL in hosted apps.
   extension = LoadAndExpectSuccess("hosted_app_absolute_options.json");

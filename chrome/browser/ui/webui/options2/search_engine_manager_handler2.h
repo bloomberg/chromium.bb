@@ -9,8 +9,11 @@
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "ui/base/models/table_model_observer.h"
 
-class Extension;
 class KeywordEditorController;
+
+namespace extensions {
+class Extension;
+}
 
 namespace options2 {
 
@@ -73,7 +76,7 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
 
   // Returns a dictionary to pass to WebUI representing the extension.
   base::DictionaryValue* CreateDictionaryForExtension(
-      const Extension& extension);
+      const extensions::Extension& extension);
 
   DISALLOW_COPY_AND_ASSIGN(SearchEngineManagerHandler);
 };

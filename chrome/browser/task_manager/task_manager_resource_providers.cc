@@ -72,6 +72,7 @@
 using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::WebContents;
+using extensions::Extension;
 
 namespace {
 

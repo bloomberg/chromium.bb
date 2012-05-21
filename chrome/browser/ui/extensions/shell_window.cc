@@ -84,14 +84,14 @@ void ShellWindowController::SetFullscreenMode(bool is_fullscreen,
 }  // namespace internal
 
 ShellWindow* ShellWindow::Create(Profile* profile,
-                                 const Extension* extension,
+                                 const extensions::Extension* extension,
                                  const GURL& url) {
   // This object will delete itself when the window is closed.
   return ShellWindow::CreateImpl(profile, extension, url);
 }
 
 ShellWindow::ShellWindow(Profile* profile,
-                         const Extension* extension,
+                         const extensions::Extension* extension,
                          const GURL& url)
     : profile_(profile),
       extension_(extension),
@@ -180,8 +180,9 @@ void ShellWindow::Observe(int type,
                           const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const Extension* unloaded_extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
+      const extensions::Extension* unloaded_extension =
+          content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension;
       if (extension_ == unloaded_extension)
         Close();
       break;

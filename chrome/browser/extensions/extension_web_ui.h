@@ -42,9 +42,9 @@ class ExtensionWebUI : public content::WebUIController {
   // Page names are the keys, and chrome-extension: URLs are the values.
   // (e.g. { "newtab": "chrome-extension://<id>/my_new_tab.html" }
   static void RegisterChromeURLOverrides(Profile* profile,
-      const Extension::URLOverrideMap& overrides);
+      const extensions::Extension::URLOverrideMap& overrides);
   static void UnregisterChromeURLOverrides(Profile* profile,
-      const Extension::URLOverrideMap& overrides);
+      const extensions::Extension::URLOverrideMap& overrides);
   static void UnregisterChromeURLOverride(const std::string& page,
                                           Profile* profile,
                                           base::Value* override);

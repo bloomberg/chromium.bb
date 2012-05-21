@@ -33,7 +33,7 @@ TEST_F(ExtensionManifestTest, TtsEngine) {
   RunTestcases(testcases, arraysize(testcases),
                EXPECT_TYPE_ERROR);
 
-  scoped_refptr<Extension> extension(
+  scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("tts_engine_valid.json"));
 
   ASSERT_EQ(1u, extension->tts_voices().size());

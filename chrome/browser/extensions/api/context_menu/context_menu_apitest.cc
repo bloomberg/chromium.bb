@@ -24,7 +24,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenusFromMultipleContexts) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("context_menus/add_from_multiple_contexts"))
       << message_;
-  const Extension* extension = GetSingleLoadedExtension();
+  const extensions::Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
   {

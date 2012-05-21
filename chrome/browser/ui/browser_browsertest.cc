@@ -76,6 +76,7 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 using content::WebContentsObserver;
+using extensions::Extension;
 
 namespace {
 

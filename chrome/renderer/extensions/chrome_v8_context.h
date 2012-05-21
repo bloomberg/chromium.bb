@@ -21,6 +21,10 @@ namespace content {
 class RenderView;
 }
 
+namespace extensions {
+class Extension;
+}
+
 // Chrome's wrapper for a v8 context.
 //
 // TODO(aa): Consider converting this back to a set of bindings_utils. It would
@@ -30,7 +34,7 @@ class ChromeV8Context {
  public:
   ChromeV8Context(v8::Handle<v8::Context> context,
                   WebKit::WebFrame* frame,
-                  const Extension* extension,
+                  const extensions::Extension* extension,
                   extensions::Feature::Context context_type);
   ~ChromeV8Context();
 
@@ -38,7 +42,7 @@ class ChromeV8Context {
     return v8_context_;
   }
 
-  const Extension* extension() const {
+  const extensions::Extension* extension() const {
     return extension_.get();
   }
 
@@ -114,7 +118,7 @@ class ChromeV8Context {
 
   // The extension associated with this context, or NULL if there is none. This
   // might be a hosted app in the case that this context is hosting a web URL.
-  scoped_refptr<const Extension> extension_;
+  scoped_refptr<const extensions::Extension> extension_;
 
   // The type of context.
   extensions::Feature::Context context_type_;

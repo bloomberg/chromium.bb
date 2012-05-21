@@ -24,6 +24,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/url_fetcher.h"
 
+using extensions::Extension;
+
 class ExtensionManagementTest : public ExtensionBrowserTest {
  protected:
   // Helper method that returns whether the extension is at the given version.

@@ -22,9 +22,12 @@ typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 
-class Extension;
 class Profile;
 class TabContentsWrapper;
+
+namespace extensions{
+class Extension;
+}
 
 class CreateApplicationShortcutsDialogGtk
     : public base::RefCountedThreadSafe<CreateApplicationShortcutsDialogGtk,
@@ -103,11 +106,12 @@ class CreateChromeApplicationShortcutsDialogGtk
     public ImageLoadingTracker::Observer {
  public:
   // Displays the dialog box to create application shortcuts for |app|.
-  static void Show(GtkWindow* parent, Profile* profile, const Extension* app);
+  static void Show(GtkWindow* parent, Profile* profile,
+                   const extensions::Extension* app);
 
   CreateChromeApplicationShortcutsDialogGtk(GtkWindow* parent,
                                             Profile* profile,
-                                            const Extension* app);
+                                            const extensions::Extension* app);
 
   // Implement ImageLoadingTracker::Observer.  |tracker_| is used to
   // load the app's icon.  This method recieves the icon, and adds
@@ -123,7 +127,7 @@ class CreateChromeApplicationShortcutsDialogGtk
       const ShellIntegration::ShortcutInfo& shortcut_info) OVERRIDE;
 
  private:
-  const Extension* app_;
+  const extensions::Extension* app_;
   FilePath profile_path_;
   ImageLoadingTracker tracker_;
   DISALLOW_COPY_AND_ASSIGN(CreateChromeApplicationShortcutsDialogGtk);

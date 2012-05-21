@@ -38,20 +38,21 @@ class TestExtensionPrefs {
 
   // Creates a new Extension with the given name in our temp dir, adds it to
   // our ExtensionPrefs, and returns it.
-  scoped_refptr<Extension> AddExtension(std::string name);
+  scoped_refptr<extensions::Extension> AddExtension(std::string name);
 
   // As above, but the extension is an app.
-  scoped_refptr<Extension> AddApp(std::string name);
+  scoped_refptr<extensions::Extension> AddApp(std::string name);
 
   // Similar to AddExtension, but takes a dictionary with manifest values.
-  scoped_refptr<Extension> AddExtensionWithManifest(
-      const base::DictionaryValue& manifest, Extension::Location location);
+  scoped_refptr<extensions::Extension> AddExtensionWithManifest(
+      const base::DictionaryValue& manifest,
+      extensions::Extension::Location location);
 
   // Similar to AddExtension, but takes a dictionary with manifest values
   // and extension flags.
-  scoped_refptr<Extension> AddExtensionWithManifestAndFlags(
+  scoped_refptr<extensions::Extension> AddExtensionWithManifestAndFlags(
       const base::DictionaryValue& manifest,
-      Extension::Location location,
+      extensions::Extension::Location location,
       int extra_flags);
 
   // Similar to AddExtension, this adds a new test Extension. This is useful for

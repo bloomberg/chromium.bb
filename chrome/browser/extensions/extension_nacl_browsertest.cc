@@ -22,6 +22,7 @@
 
 using content::PluginService;
 using content::WebContents;
+using extensions::Extension;
 
 namespace {
 

@@ -33,6 +33,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using extensions::Extension;
+
 namespace {
 
 static base::LazyInstance<
@@ -290,8 +292,8 @@ void ExtensionDisabledGlobalError::Observe(
     extension = content::Details<const Extension>(details).ptr();
   } else {
     DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNLOADED, type);
-    UnloadedExtensionInfo* info =
-        content::Details<UnloadedExtensionInfo>(details).ptr();
+    extensions::UnloadedExtensionInfo* info =
+        content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
     extension = info->extension;
   }
   if (extension == extension_) {

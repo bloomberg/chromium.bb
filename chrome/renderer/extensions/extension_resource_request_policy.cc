@@ -17,6 +17,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
+using extensions::Extension;
+
 // static
 bool ExtensionResourceRequestPolicy::CanRequestResource(
     const GURL& resource_url,

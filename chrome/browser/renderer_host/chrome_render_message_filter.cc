@@ -27,6 +27,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -304,7 +305,7 @@ void ChromeRenderMessageFilter::OpenChannelToTabOnUIThread(
 
 void ChromeRenderMessageFilter::OnGetExtensionMessageBundle(
     const std::string& extension_id, IPC::Message* reply_msg) {
-  const Extension* extension =
+  const extensions::Extension* extension =
       extension_info_map_->extensions().GetByID(extension_id);
   FilePath extension_path;
   std::string default_locale;

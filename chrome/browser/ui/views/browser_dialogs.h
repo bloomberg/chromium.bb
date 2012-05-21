@@ -19,7 +19,6 @@
 
 class BrowserView;
 class EditSearchEngineControllerDelegate;
-class Extension;
 class FindBar;
 class GURL;
 class Profile;
@@ -28,6 +27,10 @@ class TemplateURL;
 
 namespace content {
 struct SSLStatus;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace gfx {
@@ -91,7 +94,7 @@ void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
 // Shows the create chrome app shortcut dialog box.
 void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
                                         Profile* profile,
-                                        const Extension* app);
+                                        const extensions::Extension* app);
 
 }  // namespace browser
 

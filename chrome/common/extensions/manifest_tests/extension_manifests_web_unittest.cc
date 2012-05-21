@@ -11,6 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+using extensions::Extension;
+
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, WebAccessibleResources) {

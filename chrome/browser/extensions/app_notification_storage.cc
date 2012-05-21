@@ -131,7 +131,7 @@ bool LevelDbAppNotificationStorage::GetExtensionIds(
   scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options_));
   for (iter->SeekToFirst(); iter->Valid(); iter->Next()) {
     std::string key = iter->key().ToString();
-    if (Extension::IdIsValid(key))
+    if (extensions::Extension::IdIsValid(key))
       result->insert(key);
   }
 

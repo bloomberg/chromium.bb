@@ -23,7 +23,7 @@ ExtensionActivityLog* ExtensionActivityLog::GetInstance() {
 }
 
 void ExtensionActivityLog::AddObserver(
-    const Extension* extension,
+    const extensions::Extension* extension,
     ExtensionActivityLog::Observer* observer) {
   base::AutoLock scoped_lock(lock_);
 
@@ -35,7 +35,7 @@ void ExtensionActivityLog::AddObserver(
 }
 
 void ExtensionActivityLog::RemoveObserver(
-    const Extension* extension,
+    const extensions::Extension* extension,
     ExtensionActivityLog::Observer* observer) {
   base::AutoLock scoped_lock(lock_);
 
@@ -43,8 +43,9 @@ void ExtensionActivityLog::RemoveObserver(
     observers_[extension]->RemoveObserver(observer);
   }
 }
-
-bool ExtensionActivityLog::HasObservers(const Extension* extension) const {
+// Extension*
+bool ExtensionActivityLog::HasObservers(
+    const extensions::Extension* extension) const {
   base::AutoLock scoped_lock(lock_);
 
   // We also return true if extension activity logging is enabled since in that
@@ -52,7 +53,7 @@ bool ExtensionActivityLog::HasObservers(const Extension* extension) const {
   return observers_.count(extension) > 0 || log_activity_to_stdout_;
 }
 
-void ExtensionActivityLog::Log(const Extension* extension,
+void ExtensionActivityLog::Log(const extensions::Extension* extension,
                                Activity activity,
                                const std::string& msg) const {
   base::AutoLock scoped_lock(lock_);

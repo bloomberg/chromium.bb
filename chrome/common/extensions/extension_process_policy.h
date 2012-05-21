@@ -6,11 +6,12 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
 #pragma once
 
-class Extension;
 class ExtensionSet;
 class ExtensionURLInfo;
 
 namespace extensions {
+
+class Extension;
 
 // Returns the extension for the given URL.  Excludes extension objects for
 // bookmark apps, which do not use the app process model.

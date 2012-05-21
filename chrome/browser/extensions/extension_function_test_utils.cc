@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::WebContents;
+using extensions::Extension;
 
 namespace {
 

@@ -23,7 +23,7 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
     ExtensionService* extension_service,
     ThemeService* theme_service,
-    const Extension* new_theme,
+    const extensions::Extension* new_theme,
     const std::string& previous_theme_id,
     bool previous_using_native_theme)
     : ConfirmInfoBarDelegate(infobar_helper),
@@ -38,7 +38,8 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
                  content::Source<ThemeService>(theme_service_));
 }
 
-bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) const {
+bool ThemeInstalledInfoBarDelegate::MatchesTheme(
+    const extensions::Extension* theme) const {
   return theme && (theme->id() == theme_id_);
 }
 
@@ -51,7 +52,7 @@ ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
 
 bool ThemeInstalledInfoBarDelegate::Cancel() {
   if (!previous_theme_id_.empty()) {
-    const Extension* previous_theme =
+    const extensions::Extension* previous_theme =
         extension_service_->GetExtensionById(previous_theme_id_, true);
     if (previous_theme) {
       theme_service_->SetTheme(previous_theme);

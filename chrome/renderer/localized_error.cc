@@ -707,7 +707,7 @@ void LocalizedError::GetFormRepostStrings(const GURL& display_url,
 void LocalizedError::GetAppErrorStrings(
     const WebURLError& error,
     const GURL& display_url,
-    const Extension* app,
+    const extensions::Extension* app,
     DictionaryValue* error_strings) {
   DCHECK(app);
 

@@ -24,7 +24,7 @@ class ExtensionFromWebAppTest
   }
 
   std::string expected_extension_id_;
-  const Extension* installed_extension_;
+  const extensions::Extension* installed_extension_;
 
  private:
   // InProcessBrowserTest
@@ -37,8 +37,8 @@ class ExtensionFromWebAppTest
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
     if (type == chrome::NOTIFICATION_EXTENSION_INSTALLED) {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
+      const extensions::Extension* extension =
+          content::Details<const extensions::Extension>(details).ptr();
       if (extension->id() == expected_extension_id_) {
         installed_extension_ = extension;
         MessageLoopForUI::current()->Quit();

@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 
 using chrome::VersionInfo;
+using extensions::Extension;
 
 namespace {
 

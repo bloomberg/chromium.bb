@@ -21,7 +21,7 @@ string16 GetLabelTextForType(FullscreenExitBubbleType type,
   if (extension_service) {
     const ExtensionSet* extensions = extension_service->extensions();
     DCHECK(extensions);
-    const Extension* extension =
+    const extensions::Extension* extension =
         extensions->GetExtensionOrAppByURL(ExtensionURLInfo(url));
     if (extension) {
       host = UTF8ToUTF16(extension->name());

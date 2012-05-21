@@ -34,6 +34,9 @@
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 
+using extensions::Extension;
+using extensions::ExtensionList;
+
 NSString* const kBrowserActionVisibilityChangedNotification =
     @"BrowserActionVisibilityChangedNotification";
 

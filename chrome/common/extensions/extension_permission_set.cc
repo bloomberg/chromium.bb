@@ -452,7 +452,7 @@ ExtensionAPIPermission* ExtensionPermissionsInfo::RegisterPermission(
 ExtensionPermissionSet::ExtensionPermissionSet() {}
 
 ExtensionPermissionSet::ExtensionPermissionSet(
-    const Extension* extension,
+    const extensions::Extension* extension,
     const ExtensionAPIPermissionSet& apis,
     const URLPatternSet& explicit_hosts,
     const ExtensionOAuth2Scopes& scopes)
@@ -869,7 +869,7 @@ std::set<std::string> ExtensionPermissionSet::GetDistinctHosts(
 }
 
 void ExtensionPermissionSet::InitImplicitExtensionPermissions(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   // Add the implied permissions.
   if (!extension->plugins().empty())
     apis_.insert(ExtensionAPIPermission::kPlugin);

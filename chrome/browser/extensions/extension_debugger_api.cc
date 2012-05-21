@@ -269,7 +269,8 @@ void ExtensionDevToolsClientHost::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     std::string id =
-        content::Details<UnloadedExtensionInfo>(details)->extension->id();
+        content::Details<extensions::UnloadedExtensionInfo>(details)->
+            extension->id();
     if (id == extension_id_)
         Close();
   } else {

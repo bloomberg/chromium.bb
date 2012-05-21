@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/extensions/extension_constants.h"
 
-class Extension;
 class ExtensionDevToolsManager;
 class ExtensionEventRouter;
 class ExtensionInfoMap;
@@ -27,6 +26,7 @@ class UserScriptMaster;
 
 namespace extensions {
 class AlarmManager;
+class Extension;
 class LazyBackgroundTaskQueue;
 class RulesRegistryService;
 }
@@ -89,7 +89,7 @@ class ExtensionSystem : public ProfileKeyedService {
   // avoid race conditions by making sure URLRequestContexts learn about new
   // extensions before anything else needs them to know.
   virtual void RegisterExtensionWithRequestContexts(
-      const Extension* extension) {}
+      const extensions::Extension* extension) {}
 
   // Called by the ExtensionService that lives in this system. Lets the
   // info map clean up its RequestContexts once all the listeners to the
@@ -129,7 +129,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
       OVERRIDE;  // shared
 
   virtual void RegisterExtensionWithRequestContexts(
-      const Extension* extension) OVERRIDE;
+      const extensions::Extension* extension) OVERRIDE;
 
   virtual void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,

@@ -259,7 +259,7 @@ bool BeginInstallWithManifestFunction::RunImpl() {
   CHECK(details);
 
   EXTENSION_FUNCTION_VALIDATE(details->GetString(kIdKey, &id_));
-  if (!Extension::IdIsValid(id_)) {
+  if (!extensions::Extension::IdIsValid(id_)) {
     SetResult(INVALID_ID);
     error_ = kInvalidIdError;
     return false;
@@ -448,7 +448,7 @@ void BeginInstallWithManifestFunction::InstallUIAbort(bool user_initiated) {
 bool CompleteInstallFunction::RunImpl() {
   std::string id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &id));
-  if (!Extension::IdIsValid(id)) {
+  if (!extensions::Extension::IdIsValid(id)) {
     error_ = kInvalidIdError;
     return false;
   }

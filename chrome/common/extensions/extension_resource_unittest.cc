@@ -116,7 +116,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   ASSERT_TRUE(file_util::WriteFile(root_resource, data.c_str(), data.length()));
 
   // Create l10n resources (for current locale and its parents).
-  FilePath l10n_path = temp.path().Append(Extension::kLocaleFolder);
+  FilePath l10n_path = temp.path().Append(extensions::Extension::kLocaleFolder);
   ASSERT_TRUE(file_util::CreateDirectory(l10n_path));
 
   std::vector<std::string> locales;

@@ -18,6 +18,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::DownloadItem;
+using extensions::Extension;
 
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {}
 

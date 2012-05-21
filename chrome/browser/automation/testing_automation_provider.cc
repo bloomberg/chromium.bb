@@ -187,6 +187,8 @@ using content::Referrer;
 using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
+using extensions::Extension;
+using extensions::ExtensionList;
 
 namespace {
 
@@ -3998,9 +4000,8 @@ ListValue* GetAPIPermissions(const Extension* ext) {
 // Sample json input: { "command": "GetExtensionsInfo" }
 // See GetExtensionsInfo() in chrome/test/pyautolib/pyauto.py for sample json
 // output.
-void TestingAutomationProvider::GetExtensionsInfo(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
+void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
+                                                  IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   Browser* browser;
   std::string error_msg;
@@ -4046,9 +4047,11 @@ void TestingAutomationProvider::GetExtensionsInfo(
     Extension::Location location = extension->location();
     extension_value->SetBoolean("is_component",
                                 location == Extension::COMPONENT);
-    extension_value->SetBoolean("is_internal", location == Extension::INTERNAL);
+    extension_value->SetBoolean("is_internal",
+                                location == Extension::INTERNAL);
     extension_value->SetBoolean("is_user_installed",
-        location == Extension::INTERNAL || location == Extension::LOAD);
+        location == Extension::INTERNAL ||
+        location == Extension::LOAD);
     extension_value->SetBoolean("is_enabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean("allowed_in_incognito",
                                 service->IsIncognitoEnabled(id));
@@ -4151,7 +4154,8 @@ void TestingAutomationProvider::SetExtensionStateById(
       AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     }
   } else {
-    service->DisableExtension(extension->id(), Extension::DISABLE_USER_ACTION);
+    service->DisableExtension(extension->id(),
+                              Extension::DISABLE_USER_ACTION);
     AutomationJSONReply(this, reply_message).SendSuccess(NULL);
   }
 

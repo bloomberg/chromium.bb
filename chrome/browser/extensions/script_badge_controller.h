@@ -16,12 +16,13 @@
 #include "chrome/browser/extensions/script_executor_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class Extension;
 class ExtensionAction;
 class ExtensionService;
 class TabContentsWrapper;
 
 namespace extensions {
+
+class Extension;
 
 // An ActionBoxController which corresponds to script badges, and implements
 // ScriptExecutor in order to show those scripts in the action box too.

@@ -8,6 +8,8 @@
 #include "sync/api/sync_error_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 TestExtensionService::~TestExtensionService() {}
 
 const ExtensionSet* TestExtensionService::extensions() const {

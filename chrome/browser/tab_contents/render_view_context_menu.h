@@ -33,6 +33,10 @@ class RenderViewHost;
 class WebContents;
 }
 
+namespace extensions {
+class Extension;
+}
+
 namespace gfx {
 class Point;
 }
@@ -204,7 +208,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
       bool can_cross_incognito);
 
   // Gets the extension (if any) associated with the WebContents that we're in.
-  const Extension* GetExtension() const;
+  const extensions::Extension* GetExtension() const;
   void AppendPlatformAppItems();
   void AppendPopupExtensionItems();
   bool AppendCustomItems();

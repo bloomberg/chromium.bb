@@ -23,6 +23,8 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
+using extensions::Extension;
+using extensions::ExtensionInfo;
 
 namespace errors = extension_manifest_errors;
 

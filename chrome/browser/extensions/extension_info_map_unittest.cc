@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 

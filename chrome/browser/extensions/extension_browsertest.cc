@@ -32,6 +32,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 
+using extensions::Extension;
+
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
       installed_(false),

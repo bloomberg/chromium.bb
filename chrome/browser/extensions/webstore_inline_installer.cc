@@ -163,7 +163,7 @@ WebstoreInlineInstaller::WebstoreInlineInstaller(WebContents* web_contents,
 void WebstoreInlineInstaller::BeginInstall() {
   AddRef(); // Balanced in CompleteInstall or WebContentsDestroyed.
 
-  if (!Extension::IdIsValid(id_)) {
+  if (!extensions::Extension::IdIsValid(id_)) {
     CompleteInstall(kInvalidWebstoreItemId);
     return;
   }

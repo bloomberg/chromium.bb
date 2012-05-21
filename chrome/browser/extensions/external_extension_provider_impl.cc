@@ -40,6 +40,7 @@
 #endif
 
 using content::BrowserThread;
+using extensions::Extension;
 
 // Constants for keeping track of extension preferences in a dictionary.
 const char ExternalExtensionProviderImpl::kExternalCrx[] = "external_crx";

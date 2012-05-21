@@ -26,6 +26,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 
+using extensions::Extension;
+
 namespace {
 // Helper class to wait for a lazy background page to load and close again.
 class LazyBackgroundObserver {

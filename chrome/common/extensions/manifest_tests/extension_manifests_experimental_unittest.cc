@@ -14,9 +14,9 @@ namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, ExperimentalPermission) {
   LoadAndExpectError("experimental.json", errors::kExperimentalFlagRequired);
-  LoadAndExpectSuccess("experimental.json", Extension::COMPONENT);
-  LoadAndExpectSuccess("experimental.json", Extension::INTERNAL,
-                       Extension::FROM_WEBSTORE);
+  LoadAndExpectSuccess("experimental.json", extensions::Extension::COMPONENT);
+  LoadAndExpectSuccess("experimental.json", extensions::Extension::INTERNAL,
+                       extensions::Extension::FROM_WEBSTORE);
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   LoadAndExpectSuccess("experimental.json");

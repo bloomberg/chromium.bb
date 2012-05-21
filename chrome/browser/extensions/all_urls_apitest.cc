@@ -23,10 +23,10 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
                                           .AppendASCII("execute_script");
 
   // Then add the two extensions to the whitelist.
-  Extension::ScriptingWhitelist whitelist;
-  whitelist.push_back(Extension::GenerateIdForPath(extension_dir1));
-  whitelist.push_back(Extension::GenerateIdForPath(extension_dir2));
-  Extension::SetScriptingWhitelist(whitelist);
+  extensions::Extension::ScriptingWhitelist whitelist;
+  whitelist.push_back(extensions::Extension::GenerateIdForPath(extension_dir1));
+  whitelist.push_back(extensions::Extension::GenerateIdForPath(extension_dir2));
+  extensions::Extension::SetScriptingWhitelist(whitelist);
 
   // Then load extensions.
   ExtensionService* service = browser()->profile()->GetExtensionService();

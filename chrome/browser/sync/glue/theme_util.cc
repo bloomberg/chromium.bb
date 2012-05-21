@@ -17,6 +17,8 @@
 #include "googleurl/src/gurl.h"
 #include "sync/protocol/theme_specifics.pb.h"
 
+using extensions::Extension;
+
 namespace browser_sync {
 
 const char kCurrentThemeClientTag[] = "current_theme";

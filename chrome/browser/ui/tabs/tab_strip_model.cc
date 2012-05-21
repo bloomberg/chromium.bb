@@ -1020,8 +1020,9 @@ void TabStripModel::Observe(int type,
     }
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
+      const extensions::Extension* extension =
+          content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension;
       // Iterate backwards as we may remove items while iterating.
       for (int i = count() - 1; i >= 0; i--) {
         TabContentsWrapper* contents = GetTabContentsAt(i);

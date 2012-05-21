@@ -166,7 +166,7 @@ void SearchEngineManagerHandler::OnItemsRemoved(int start, int length) {
 }
 
 base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForExtension(
-    const Extension& extension) {
+    const extensions::Extension& extension) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("name",  extension.name());
   dict->SetString("displayName", extension.name());

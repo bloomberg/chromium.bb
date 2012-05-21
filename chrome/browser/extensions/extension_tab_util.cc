@@ -207,7 +207,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
 }
 
 GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,
-                                                  const Extension* extension) {
+    const extensions::Extension* extension) {
   GURL url = GURL(url_string);
   if (!url.is_valid())
     url = extension->GetResourceURL(url_string);

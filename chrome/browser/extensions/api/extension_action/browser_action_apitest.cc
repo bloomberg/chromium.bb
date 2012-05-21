@@ -26,6 +26,7 @@
 #include "ui/gfx/size.h"
 
 using content::WebContents;
+using extensions::Extension;
 
 class BrowserActionApiTest : public ExtensionApiTest {
  public:

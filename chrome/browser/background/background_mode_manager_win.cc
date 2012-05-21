@@ -33,7 +33,7 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
 }
 
 void BackgroundModeManager::DisplayAppInstalledNotification(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   // Create a status tray notification balloon explaining to the user that
   // a background app has been installed.
   CreateStatusTrayIcon();

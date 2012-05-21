@@ -15,6 +15,7 @@
 #include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 // Our test class that takes care of managing the necessary threads for loading
 // extension icons, and waiting for those loads to happen.

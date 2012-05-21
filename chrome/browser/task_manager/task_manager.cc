@@ -486,7 +486,8 @@ TabContentsWrapper* TaskManagerModel::GetResourceTabContents(int index) const {
   return resources_[index]->GetTabContents();
 }
 
-const Extension* TaskManagerModel::GetResourceExtension(int index) const {
+const extensions::Extension* TaskManagerModel::GetResourceExtension(
+    int index) const {
   CHECK_LT(index, ResourceCount());
   return resources_[index]->GetExtension();
 }

@@ -20,12 +20,15 @@
 
 class Browser;
 class CommandLine;
-class Extension;
 class PrefService;
 class Profile;
 class ProfileInfoCache;
 class StatusIcon;
 class StatusTray;
+
+namespace extensions {
+class Extension;
+}
 
 // BackgroundModeManager is responsible for switching Chrome into and out of
 // "background mode" and for providing UI for the user to exit Chrome when there
@@ -56,7 +59,7 @@ class BackgroundModeManager
   virtual void RegisterProfile(Profile* profile);
 
   static void LaunchBackgroundApplication(Profile* profile,
-                                          const Extension* extension);
+      const extensions::Extension* extension);
 
   // For testing purposes.
   int NumberOfBackgroundModeData();
@@ -153,7 +156,7 @@ class BackgroundModeManager
                        const content::NotificationDetails& details) OVERRIDE;
 
   // BackgroundApplicationListModel::Observer implementation.
-  virtual void OnApplicationDataChanged(const Extension* extension,
+  virtual void OnApplicationDataChanged(const extensions::Extension* extension,
                                         Profile* profile) OVERRIDE;
   virtual void OnApplicationListChanged(Profile* profile) OVERRIDE;
 
@@ -177,7 +180,7 @@ class BackgroundModeManager
   // Invoked when an extension is installed so we can ensure that
   // launch-on-startup is enabled if appropriate. |extension| can be NULL when
   // called from unit tests.
-  void OnBackgroundAppInstalled(const Extension* extension);
+  void OnBackgroundAppInstalled(const extensions::Extension* extension);
 
   // Called to make sure that our launch-on-startup mode is properly set.
   // (virtual so we can override for tests).
@@ -185,7 +188,7 @@ class BackgroundModeManager
 
   // Invoked when a background app is installed so we can display a
   // platform-specific notification to the user.
-  void DisplayAppInstalledNotification(const Extension* extension);
+  void DisplayAppInstalledNotification(const extensions::Extension* extension);
 
   // Invoked to put Chrome in KeepAlive mode - chrome runs in the background
   // and has a status bar icon.

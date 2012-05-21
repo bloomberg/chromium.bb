@@ -39,6 +39,8 @@
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
+using extensions::Extension;
+
 namespace {
 
 // Values used for prefs::kShelfAutoHideBehavior.
@@ -534,7 +536,8 @@ void ChromeLauncherController::Observe(
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension;
       if (IsAppPinned(extension->id())) {
         // TODO(dpolukhin): also we need to remember index of the app to show
         // it on the same place when it gets loaded again.

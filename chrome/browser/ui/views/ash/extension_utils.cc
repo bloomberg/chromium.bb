@@ -17,7 +17,7 @@ namespace extension_utils {
 // Opens an extension.  |event_flags| holds the flags of the event
 // which invokes this extension.
 void OpenExtension(Profile* profile,
-                   const Extension* extension,
+                   const extensions::Extension* extension,
                    int event_flags) {
   DCHECK(profile);
   DCHECK(extension);

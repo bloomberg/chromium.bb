@@ -19,7 +19,7 @@ TEST_F(ExtensionManifestTest, IsolatedApps) {
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  scoped_refptr<Extension> extension2(
+  scoped_refptr<extensions::Extension> extension2(
       LoadAndExpectSuccess("isolated_app_valid.json"));
   EXPECT_TRUE(extension2->is_storage_isolated());
 }

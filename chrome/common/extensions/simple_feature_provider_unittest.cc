@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
 using extensions::Feature;
 using extensions::SimpleFeatureProvider;
 

@@ -132,8 +132,8 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
         web_contents->GetBrowserContext());
     if (profile) {
       ExtensionService* extension_service = profile->GetExtensionService();
-      const Extension* extension = extension_service->extensions()->GetByID(
-          web_contents->GetURL().host());
+      const extensions::Extension* extension = extension_service->
+          extensions()->GetByID(web_contents->GetURL().host());
       if (extension) {
         target_type = kExtensionTargetType;
         title = extension->name();

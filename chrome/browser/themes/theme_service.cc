@@ -30,6 +30,7 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
+using extensions::Extension;
 using ui::ResourceBundle;
 
 // Strings used in alignment properties.

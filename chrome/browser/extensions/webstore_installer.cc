@@ -46,6 +46,8 @@ using content::DownloadUrlParameters;
 
 namespace {
 
+using extensions::Extension;
+
 // Key used to attach the Approval to the DownloadItem.
 const char kApprovalKey[] = "extensions.webstore_installer";
 

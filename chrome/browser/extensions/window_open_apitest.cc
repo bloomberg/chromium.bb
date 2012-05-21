@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
         new ExtensionTestMessageListener(test_strings[i], false));
   }
 
-  const Extension* extension = LoadExtension(
+  const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII(
           "close_panels_on_uninstall"));
   ASSERT_TRUE(extension);

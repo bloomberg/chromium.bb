@@ -925,7 +925,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   BackgroundApplicationListModel applications(profile);
   DCHECK(tag >= 0 &&
          tag < static_cast<int>(applications.size()));
-  const Extension* extension = applications.GetExtension(tag);
+  const extensions::Extension* extension = applications.GetExtension(tag);
   BackgroundModeManager::LaunchBackgroundApplication(profile, extension);
 }
 
@@ -1239,7 +1239,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       NSString* menuStr =
           l10n_util::GetNSStringWithFixup(IDS_BACKGROUND_APPS_MAC);
       scoped_nsobject<NSMenu> appMenu([[NSMenu alloc] initWithTitle:menuStr]);
-      for (ExtensionList::const_iterator cursor = applications.begin();
+      for (extensions::ExtensionList::const_iterator cursor =
+            applications.begin();
            cursor != applications.end();
            ++cursor, ++position) {
         DCHECK_EQ(applications.GetPosition(*cursor), position);

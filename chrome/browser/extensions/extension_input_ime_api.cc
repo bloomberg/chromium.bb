@@ -326,7 +326,7 @@ void ExtensionInputImeEventRouter::Init() {}
 bool ExtensionInputImeEventRouter::RegisterIme(
     Profile* profile,
     const std::string& extension_id,
-    const Extension::InputComponentInfo& component) {
+    const extensions::Extension::InputComponentInfo& component) {
   VLOG(1) << "RegisterIme: " << extension_id << " id: " << component.id;
 
   std::map<std::string, chromeos::InputMethodEngine*>& engine_map =

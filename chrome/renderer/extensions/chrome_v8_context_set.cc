@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/render_thread.h"
@@ -118,7 +119,7 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
       continue;
 
     if (!extension_id.empty()) {
-      const Extension* extension = (*it)->extension();
+      const extensions::Extension* extension = (*it)->extension();
       if (!extension || (extension_id != extension->id()))
         continue;
     }

@@ -32,7 +32,7 @@ class ExternalExtensionProviderInterface {
         const std::string& id,
         const Version* version,
         const FilePath& path,
-        Extension::Location location,
+        extensions::Extension::Location location,
         int creation_flags,
         bool mark_acknowledged) = 0;
 
@@ -42,7 +42,7 @@ class ExternalExtensionProviderInterface {
     virtual bool OnExternalExtensionUpdateUrlFound(
         const std::string& id,
         const GURL& update_url,
-        Extension::Location location) = 0;
+        extensions::Extension::Location location) = 0;
 
     // Called after all the external extensions have been reported
     // through the above two methods. |provider| is a pointer to the
@@ -74,7 +74,7 @@ class ExternalExtensionProviderInterface {
   // provider type, it will not be changed.
   // This function is no longer used outside unit tests.
   virtual bool GetExtensionDetails(const std::string& id,
-                                   Extension::Location* location,
+                                   extensions::Extension::Location* location,
                                    scoped_ptr<Version>* version) const = 0;
 
   // Determines if this provider had loaded the list of external extensions

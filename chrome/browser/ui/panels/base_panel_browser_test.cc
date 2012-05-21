@@ -40,6 +40,7 @@
 #endif
 
 using content::WebContentsTester;
+using extensions::Extension;
 
 namespace {
 

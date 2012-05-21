@@ -14,8 +14,11 @@
 #include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
-class Extension;
 class Profile;
+
+namespace extensions {
+class Extension;
+}
 
 typedef struct _GtkAccelGroup GtkAccelGroup;
 typedef struct _GdkEventKey GdkEventKey;
@@ -42,8 +45,10 @@ class ExtensionKeybindingRegistryGtk
 
  protected:
   // Overridden from ExtensionKeybindingRegistry:
-  virtual void AddExtensionKeybinding(const Extension* extension) OVERRIDE;
-  virtual void RemoveExtensionKeybinding(const Extension* extension) OVERRIDE;
+  virtual void AddExtensionKeybinding(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void RemoveExtensionKeybinding(
+      const extensions::Extension* extension) OVERRIDE;
 
  private:
   // The accelerator handler for when the extension command shortcuts are

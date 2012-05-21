@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class Extension;
 class Profile;
 
 // Displays the extension or bundle install prompt, and notifies the

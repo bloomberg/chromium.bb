@@ -25,6 +25,7 @@
 
 using WebKit::WebFrame;
 using content::V8ValueConverter;
+using extensions::Extension;
 
 namespace {
 
@@ -77,7 +78,7 @@ AppBindings::AppBindings(ExtensionDispatcher* dispatcher,
 
 v8::Handle<v8::Value> AppBindings::GetIsInstalled(
     const v8::Arguments& args) {
-  const Extension* extension = context_->extension();
+  const extensions::Extension* extension = context_->extension();
 
   // TODO(aa): Why only hosted app?
   bool result = extension && extension->is_hosted_app() &&
@@ -134,7 +135,7 @@ v8::Handle<v8::Value> AppBindings::GetDetailsForFrame(
 
 v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
     WebFrame* frame) {
-  const ::Extension* extension =
+  const extensions::Extension* extension =
       extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
           ExtensionURLInfo(frame->document().securityOrigin(),
                            frame->document().url()));

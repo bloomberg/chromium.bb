@@ -16,6 +16,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 namespace {
 
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {

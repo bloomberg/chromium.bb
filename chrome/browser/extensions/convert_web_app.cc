@@ -32,6 +32,7 @@
 namespace keys = extension_manifest_keys;
 
 using base::Time;
+using extensions::Extension;
 
 namespace {
 

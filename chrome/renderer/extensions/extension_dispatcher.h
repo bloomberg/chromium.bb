@@ -40,6 +40,10 @@ namespace content {
 class RenderThread;
 }
 
+namespace extension {
+class Extension;
+}
+
 // Dispatches extension control messages sent to the renderer and stores
 // renderer extension related state.
 class ExtensionDispatcher : public content::RenderProcessObserver {
@@ -140,7 +144,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
       const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions);
   void OnUnloaded(const std::string& id);
   void OnSetScriptingWhitelist(
-      const Extension::ScriptingWhitelist& extension_ids);
+      const extensions::Extension::ScriptingWhitelist& extension_ids);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
   void OnActivateExtension(const std::string& extension_id);
@@ -165,10 +169,11 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   void RegisterExtension(v8::Extension* extension, bool restrict_to_extensions);
 
   // Sets up the host permissions for |extension|.
-  void InitOriginPermissions(const Extension* extension);
-  void UpdateOriginPermissions(UpdatedExtensionPermissionsInfo::Reason reason,
-                               const Extension* extension,
-                               const URLPatternSet& origins);
+  void InitOriginPermissions(const extensions::Extension* extension);
+  void UpdateOriginPermissions(
+      extensions::UpdatedExtensionPermissionsInfo::Reason reason,
+      const extensions::Extension* extension,
+      const URLPatternSet& origins);
 
   void RegisterNativeHandlers(ModuleSystem* module_system,
                               ChromeV8Context* context);

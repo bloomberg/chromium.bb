@@ -31,6 +31,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 
+using extensions::Extension;
+
 namespace {
 
 const int kHorizontalColumnSpacing = 10;
@@ -115,7 +117,7 @@ void ExtensionInstalledBubbleGtk::Observe(
     }
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const Extension* extension =
-        content::Details<UnloadedExtensionInfo>(details)->extension;
+        content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
     if (extension == extension_)
       extension_ = NULL;
   } else {

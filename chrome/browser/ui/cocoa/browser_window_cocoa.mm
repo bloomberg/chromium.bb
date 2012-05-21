@@ -547,7 +547,7 @@ void BrowserWindowCocoa::ShowCreateWebAppShortcutsDialog(
 }
 
 void BrowserWindowCocoa::ShowCreateChromeAppShortcutsDialog(
-    Profile* profile, const Extension* app) {
+    Profile* profile, const extensions::Extension* app) {
   NOTIMPLEMENTED();
 }
 

@@ -30,6 +30,7 @@
 using content::NavigationController;
 using content::RenderViewHost;
 using content::WebContents;
+using extensions::Extension;
 
 // Simulates a page calling window.open on an URL, and waits for the navigation.
 static void WindowOpenHelper(Browser* browser,

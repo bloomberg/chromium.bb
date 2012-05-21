@@ -27,11 +27,11 @@ class Value;
 }
 
 class GURL;
-class Extension;
 class ExtensionPermissionSet;
 
 namespace extensions {
 
+class Extension;
 class Feature;
 
 // C++ Wrapper for the JSON API definitions in chrome/common/extensions/api/.

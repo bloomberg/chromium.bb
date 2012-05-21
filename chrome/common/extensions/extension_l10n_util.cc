@@ -48,7 +48,7 @@ std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
 
 }
 
-bool ShouldRelocalizeManifest(const ExtensionInfo& info) {
+bool ShouldRelocalizeManifest(const extensions::ExtensionInfo& info) {
   DictionaryValue* manifest = info.extension_manifest.get();
   if (!manifest)
     return false;
@@ -206,7 +206,7 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
   }
   // Check if messages file is actually present (but don't check content).
   if (file_util::PathExists(
-      locale_folder.Append(Extension::kMessagesFilename))) {
+      locale_folder.Append(extensions::Extension::kMessagesFilename))) {
     valid_locales->insert(locale_name);
   } else {
     *error = base::StringPrintf("Catalog file is missing for locale %s.",
@@ -279,7 +279,7 @@ static DictionaryValue* LoadMessageFile(const FilePath& locale_path,
                                         std::string* error) {
   std::string extension_locale = locale;
   FilePath file = locale_path.AppendASCII(extension_locale)
-      .Append(Extension::kMessagesFilename);
+      .Append(extensions::Extension::kMessagesFilename);
   JSONFileValueSerializer messages_serializer(file);
   Value *dictionary = messages_serializer.Deserialize(NULL, error);
   if (!dictionary && error->empty()) {

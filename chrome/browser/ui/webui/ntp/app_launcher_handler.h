@@ -37,7 +37,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
 
   // Populate a dictionary with the information from an extension.
   static void CreateAppInfo(
-      const Extension* extension,
+      const extensions::Extension* extension,
       const AppNotification* notification,
       ExtensionService* service,
       base::DictionaryValue* value);
@@ -56,7 +56,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Create a dictionary value for the given extension. May return NULL, e.g. if
   // the given extension is not an app. If non-NULL, the caller assumes
   // ownership of the pointer.
-  base::DictionaryValue* GetAppInfo(const Extension* extension);
+  base::DictionaryValue* GetAppInfo(const extensions::Extension* extension);
 
   // Populate the given dictionary with the web store promo content.
   void FillPromoDictionary(base::DictionaryValue* value);

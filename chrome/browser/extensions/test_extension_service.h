@@ -14,6 +14,10 @@
 class CrxInstaller;
 class SyncErrorFactory;
 
+namespace extensions {
+class Extension;
+}
+
 // Implemention of ExtensionServiceInterface with default
 // implementations for methods that add failures.  You should subclass
 // this and override the methods you care about.
@@ -31,9 +35,9 @@ class TestExtensionService : public ExtensionServiceInterface {
       const FilePath& path,
       const GURL& download_url,
       CrxInstaller** out_crx_installer) OVERRIDE;
-  virtual const Extension* GetExtensionById(
+  virtual const extensions::Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE;
-  virtual const Extension* GetInstalledExtension(
+  virtual const extensions::Extension* GetInstalledExtension(
       const std::string& id) const OVERRIDE;
   virtual bool IsExtensionEnabled(
       const std::string& extension_id) const OVERRIDE;
@@ -58,13 +62,14 @@ class TestExtensionService : public ExtensionServiceInterface {
 
   virtual bool is_ready() OVERRIDE;
 
-  virtual void AddExtension(const Extension* extension) OVERRIDE;
+  virtual void AddExtension(const extensions::Extension* extension) OVERRIDE;
 
   virtual void UnloadExtension(
       const std::string& extension_id,
       extension_misc::UnloadedExtensionReason reason) OVERRIDE;
 
-  virtual void SyncExtensionChangeIfNeeded(const Extension& extension) OVERRIDE;
+  virtual void SyncExtensionChangeIfNeeded(
+      const extensions::Extension& extension) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SERVICE_H_

@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/resource_type.h"
 
+using extensions::Extension;
 using extensions::ExtensionAPI;
 using content::RenderViewHost;
 using WebKit::WebSecurityOrigin;

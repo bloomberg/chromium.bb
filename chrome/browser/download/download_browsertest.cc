@@ -70,6 +70,7 @@ using content::DownloadManager;
 using content::DownloadPersistentStoreInfo;
 using content::DownloadUrlParameters;
 using content::WebContents;
+using extensions::Extension;
 
 namespace {
 

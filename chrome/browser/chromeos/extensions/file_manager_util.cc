@@ -463,7 +463,7 @@ void OpenFileBrowser(const FilePath& path,
   if (!service)
     return;
 
-  const Extension* extension =
+  const extensions::Extension* extension =
       service->GetExtensionById(kFileBrowserDomain, false);
   if (!extension)
     return;

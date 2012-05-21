@@ -8,11 +8,12 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-class Extension;
 class ExtensionHost;
 class Profile;
 
 namespace extensions {
+
+class Extension;
 
 class RuntimeEventRouter {
  public:

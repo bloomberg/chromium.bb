@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestNewTab) {
   ResultCatcher catcher;
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  const Extension* extension =
+  const extensions::Extension* extension =
       service->GetExtensionById(last_loaded_extension_id_, false);
   GURL url = extension->GetResourceURL("newTab/a.html");
 

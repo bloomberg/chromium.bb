@@ -21,11 +21,14 @@
 
 class BackgroundContents;
 class BalloonHost;
-class Extension;
 class TabContentsWrapper;
 
 namespace content {
 class RenderViewHost;
+}
+
+namespace extensions {
+class Extension;
 }
 
 // These file contains the resource providers used in the task manager.
@@ -112,7 +115,7 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   virtual string16 GetProfileName() const OVERRIDE;
   virtual SkBitmap GetIcon() const OVERRIDE;
   virtual TabContentsWrapper* GetTabContents() const OVERRIDE;
-  virtual const Extension* GetExtension() const OVERRIDE;
+  virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
  private:
   bool IsPrerendering() const;
@@ -358,7 +361,7 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
   virtual void Inspect() const OVERRIDE;
   virtual bool SupportNetworkUsage() const OVERRIDE;
   virtual void SetSupportNetworkUsage() OVERRIDE;
-  virtual const Extension* GetExtension() const OVERRIDE;
+  virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
   // Returns the pid of the extension process.
   int process_id() const { return pid_; }

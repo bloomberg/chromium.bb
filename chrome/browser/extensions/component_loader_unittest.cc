@@ -16,6 +16,8 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 namespace {
 
 class MockExtensionService : public TestExtensionService {

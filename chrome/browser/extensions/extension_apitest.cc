@@ -174,7 +174,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
   DCHECK(!std::string(extension_name).empty() || !page_url.empty()) <<
       "extension_name and page_url cannot both be empty";
 
-  const Extension* extension = NULL;
+  const extensions::Extension* extension = NULL;
   if (!std::string(extension_name).empty()) {
     FilePath extension_path = test_data_dir_.AppendASCII(extension_name);
     if (load_as_component) {
@@ -226,15 +226,15 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
 }
 
 // Test that exactly one extension is loaded, and return it.
-const Extension* ExtensionApiTest::GetSingleLoadedExtension() {
+const extensions::Extension* ExtensionApiTest::GetSingleLoadedExtension() {
   ExtensionService* service = browser()->profile()->GetExtensionService();
 
-  const Extension* extension = NULL;
+  const extensions::Extension* extension = NULL;
   for (ExtensionSet::const_iterator it = service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
     // Ignore any component extensions. They are automatically loaded into all
     // profiles and aren't the extension we're looking for here.
-    if ((*it)->location() == Extension::COMPONENT)
+    if ((*it)->location() == extensions::Extension::COMPONENT)
       continue;
 
     if (extension != NULL) {

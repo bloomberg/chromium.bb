@@ -38,6 +38,7 @@
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+using extensions::Extension;
 
 // A class that loads the extension icon on the I/O thread before showing the
 // confirmation dialog to uninstall the given extension.

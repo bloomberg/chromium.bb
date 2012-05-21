@@ -14,6 +14,8 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using extensions::Extension;
+
 ExtensionManifestTest::ExtensionManifestTest() : enable_apps_(true) {}
 
 // static

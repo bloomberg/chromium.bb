@@ -31,6 +31,7 @@
 #include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 using extensions::ExtensionAPI;
 
 namespace {
@@ -487,8 +488,8 @@ void ExtensionEventRouter::Observe(
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       // Remove all registered lazy listeners from our cache.
-      UnloadedExtensionInfo* unloaded =
-          content::Details<UnloadedExtensionInfo>(details).ptr();
+      extensions::UnloadedExtensionInfo* unloaded =
+          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
       ListenerProcess lazy_listener(NULL, unloaded->extension->id());
       for (ListenerMap::iterator it = lazy_listeners_.begin();
            it != lazy_listeners_.end(); ++it) {

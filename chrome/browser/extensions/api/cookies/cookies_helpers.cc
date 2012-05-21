@@ -202,4 +202,4 @@ bool MatchFilter::MatchesDomain(const std::string& domain) {
 }
 
 }  // namespace cookies_helpers
-}  // namespace extensions
+}  // namespace extension

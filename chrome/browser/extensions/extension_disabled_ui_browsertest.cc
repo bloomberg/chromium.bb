@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 
+using extensions::Extension;
+
 class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
  protected:
   void SetUpOnMainThread() {

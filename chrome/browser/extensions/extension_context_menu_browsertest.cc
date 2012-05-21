@@ -156,7 +156,7 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
 
   // Returns a pointer to the currently loaded extension with |name|, or null
   // if not found.
-  const Extension* GetExtensionNamed(std::string name) {
+  const extensions::Extension* GetExtensionNamed(std::string name) {
     const ExtensionSet* extensions =
         browser()->profile()->GetExtensionService()->extensions();
     ExtensionSet::const_iterator i;
@@ -357,7 +357,7 @@ static void VerifyMenuForSeparatorsTest(const MenuModel& menu) {
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   // Load the extension.
   ASSERT_TRUE(LoadContextMenuExtension("separators"));
-  const Extension* extension = GetExtensionNamed("Separators Test");
+  const extensions::Extension* extension = GetExtensionNamed("Separators Test");
   ASSERT_TRUE(extension != NULL);
 
   // Navigate to test1.html inside the extension, which should create a bunch

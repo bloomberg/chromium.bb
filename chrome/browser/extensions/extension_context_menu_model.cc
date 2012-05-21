@@ -23,6 +23,7 @@
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+using extensions::Extension;
 
 enum MenuEntries {
   NAME = 0,

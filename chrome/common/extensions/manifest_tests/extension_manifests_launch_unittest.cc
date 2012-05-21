@@ -14,7 +14,7 @@
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, AppLaunchContainer) {
-  scoped_refptr<Extension> extension;
+  scoped_refptr<extensions::Extension> extension;
 
   extension = LoadAndExpectSuccess("launch_tab.json");
   EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());
@@ -98,7 +98,7 @@ TEST_F(ExtensionManifestTest, AppLaunchURL) {
   RunTestcases(testcases, arraysize(testcases),
       EXPECT_TYPE_ERROR);
 
-  scoped_refptr<Extension> extension;
+  scoped_refptr<extensions::Extension> extension;
   extension = LoadAndExpectSuccess("launch_local_path.json");
   EXPECT_EQ(extension->url().spec() + "launch.html",
             extension->GetFullLaunchURL().spec());

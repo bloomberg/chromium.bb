@@ -14,6 +14,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
+using extensions::Extension;
+
 namespace {
 
 const char kExtension[] = "extension";

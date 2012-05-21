@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using extensions::Extension;
 
 namespace keys = extension_manifest_keys;
 

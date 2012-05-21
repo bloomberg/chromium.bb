@@ -89,6 +89,7 @@
 
 using content::ChildProcessSecurityPolicy;
 using content::WebContents;
+using extensions::Extension;
 using protector::ProtectedPrefsWatcher;
 using protector::ProtectorService;
 using protector::ProtectorServiceFactory;

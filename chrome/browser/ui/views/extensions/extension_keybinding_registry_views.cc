@@ -27,7 +27,7 @@ ExtensionKeybindingRegistryViews::~ExtensionKeybindingRegistryViews() {
 }
 
 void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   ExtensionCommandService* command_service =
       ExtensionCommandServiceFactory::GetForProfile(profile_);
   // Add all the active keybindings (except page actions and browser actions,
@@ -45,7 +45,7 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
 }
 
 void ExtensionKeybindingRegistryViews::RemoveExtensionKeybinding(
-    const Extension* extension) {
+    const extensions::Extension* extension) {
   EventTargets::iterator iter = event_targets_.begin();
   while (iter != event_targets_.end()) {
     if (iter->second.first != extension->id()) {

@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
+using extensions::Extension;
 
 class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
  public:

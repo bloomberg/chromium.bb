@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideHistory) {
 
 // Regression test for http://crbug.com/41442.
 IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldNotCreateDuplicateEntries) {
-  const Extension* extension =
+  const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("override/history"));
   ASSERT_TRUE(extension);
 
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideKeyboard) {
   }
 
   // Load the failing version.  This should take precedence.
-  const Extension* extension = LoadExtension(
+  const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("override").AppendASCII("keyboard_fails"));
   ASSERT_TRUE(extension);
   {

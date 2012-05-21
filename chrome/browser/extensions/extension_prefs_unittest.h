@@ -15,6 +15,10 @@ namespace base {
 class Value;
 }
 
+namespace extensions {
+class Extension;
+}
+
 // Base class for extension preference-related unit tests.
 class ExtensionPrefsTest : public testing::Test {
  public:
@@ -57,41 +61,41 @@ class ExtensionPrefsPrepopulatedTest : public ExtensionPrefsTest {
 
   virtual void RegisterPreferences() OVERRIDE;
 
-  void InstallExtControlledPref(Extension *ext,
+  void InstallExtControlledPref(extensions::Extension* ext,
                                 const std::string& key,
                                 base::Value* val);
 
-  void InstallExtControlledPrefIncognito(Extension *ext,
+  void InstallExtControlledPrefIncognito(extensions::Extension* ext,
                                          const std::string& key,
                                          base::Value* val);
 
   void InstallExtControlledPrefIncognitoSessionOnly(
-      Extension *ext,
+      extensions::Extension* ext,
       const std::string& key,
       base::Value* val);
 
-  void InstallExtension(Extension *ext);
+  void InstallExtension(extensions::Extension* ext);
 
   void UninstallExtension(const std::string& extension_id);
 
   // Weak references, for convenience.
-  Extension* ext1_;
-  Extension* ext2_;
-  Extension* ext3_;
-  Extension* ext4_;
+  extensions::Extension* ext1_;
+  extensions::Extension* ext2_;
+  extensions::Extension* ext3_;
+  extensions::Extension* ext4_;
 
   // Flags indicating whether each of the extensions has been installed, yet.
   bool installed[4];
 
  private:
-  void EnsureExtensionInstalled(Extension *ext);
+  void EnsureExtensionInstalled(extensions::Extension *ext);
 
   void EnsureExtensionUninstalled(const std::string& extension_id);
 
-  scoped_refptr<Extension> ext1_scoped_;
-  scoped_refptr<Extension> ext2_scoped_;
-  scoped_refptr<Extension> ext3_scoped_;
-  scoped_refptr<Extension> ext4_scoped_;
+  scoped_refptr<extensions::Extension> ext1_scoped_;
+  scoped_refptr<extensions::Extension> ext2_scoped_;
+  scoped_refptr<extensions::Extension> ext3_scoped_;
+  scoped_refptr<extensions::Extension> ext4_scoped_;
 };
 
 

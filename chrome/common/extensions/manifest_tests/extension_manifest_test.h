@@ -54,36 +54,41 @@ class ExtensionManifestTest : public testing::Test {
     mutable scoped_ptr<DictionaryValue> manifest_holder_;
   };
 
-  scoped_refptr<Extension> LoadExtension(
+  scoped_refptr<extensions::Extension> LoadExtension(
       const Manifest& manifest,
       std::string* error,
-      Extension::Location location = Extension::INTERNAL,
-      int flags = Extension::NO_FLAGS);
+      extensions::Extension::Location location =
+          extensions::Extension::INTERNAL,
+      int flags = extensions::Extension::NO_FLAGS);
 
-  scoped_refptr<Extension> LoadAndExpectSuccess(
+  scoped_refptr<extensions::Extension> LoadAndExpectSuccess(
       const Manifest& manifest,
-      Extension::Location location = Extension::INTERNAL,
-      int flags = Extension::NO_FLAGS);
+      extensions::Extension::Location location =
+          extensions::Extension::INTERNAL,
+      int flags = extensions::Extension::NO_FLAGS);
 
-  scoped_refptr<Extension> LoadAndExpectSuccess(
+  scoped_refptr<extensions::Extension> LoadAndExpectSuccess(
       char const* manifest_name,
-      Extension::Location location = Extension::INTERNAL,
-      int flags = Extension::NO_FLAGS);
+      extensions::Extension::Location location =
+          extensions::Extension::INTERNAL,
+      int flags = extensions::Extension::NO_FLAGS);
 
-  void VerifyExpectedError(Extension* extension,
+  void VerifyExpectedError(extensions::Extension* extension,
                            const std::string& name,
                            const std::string& error,
                            const std::string& expected_error);
 
   void LoadAndExpectError(char const* manifest_name,
                           const std::string& expected_error,
-                          Extension::Location location = Extension::INTERNAL,
-                          int flags = Extension::NO_FLAGS);
+                          extensions::Extension::Location location =
+                              extensions::Extension::INTERNAL,
+                          int flags = extensions::Extension::NO_FLAGS);
 
   void LoadAndExpectError(const Manifest& manifest,
                           const std::string& expected_error,
-                          Extension::Location location = Extension::INTERNAL,
-                          int flags = Extension::NO_FLAGS);
+                          extensions::Extension::Location location =
+                              extensions::Extension::INTERNAL,
+                          int flags = extensions::Extension::NO_FLAGS);
 
   void AddPattern(URLPatternSet* extent, const std::string& pattern);
 
@@ -94,18 +99,19 @@ class ExtensionManifestTest : public testing::Test {
   struct Testcase {
     std::string manifest_filename_;
     std::string expected_error_; // only used for ExpectedError tests
-    Extension::Location location_;
+    extensions::Extension::Location location_;
     int flags_;
 
     Testcase(std::string manifest_filename, std::string expected_error,
-        Extension::Location location, int flags);
+        extensions::Extension::Location location, int flags);
 
     Testcase(std::string manifest_filename, std::string expected_error);
 
     explicit Testcase(std::string manifest_filename);
 
-    Testcase(std::string manifest_filename, Extension::Location location,
-        int flags);
+    Testcase(std::string manifest_filename,
+             extensions::Extension::Location location,
+             int flags);
   };
 
   void RunTestcases(const Testcase* testcases, size_t num_testcases,

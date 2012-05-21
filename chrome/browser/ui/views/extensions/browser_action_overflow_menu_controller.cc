@@ -96,7 +96,7 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     int id,
     const gfx::Point& p,
     bool is_mouse_gesture) {
-  const Extension* extension =
+  const extensions::Extension* extension =
       (*views_)[start_index_ + id - 1]->button()->extension();
   if (!extension->ShowConfigureContextMenus())
     return false;

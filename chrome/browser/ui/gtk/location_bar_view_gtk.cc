@@ -84,6 +84,7 @@ using content::NavigationEntry;
 using content::OpenURLParams;
 using content::WebContents;
 using extensions::ActionBoxController;
+using extensions::Extension;
 
 namespace {
 

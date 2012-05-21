@@ -52,6 +52,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 using content::WebContents;
+using extensions::Extension;
 
 namespace {
 
@@ -273,15 +274,16 @@ void AppLauncherHandler::Observe(int type,
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
+          content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension;
       if (!extension->is_app())
         return;
 
       scoped_ptr<DictionaryValue> app_info(GetAppInfo(extension));
       scoped_ptr<base::FundamentalValue> uninstall_value(
           Value::CreateBooleanValue(
-              content::Details<UnloadedExtensionInfo>(details)->reason ==
-              extension_misc::UNLOAD_REASON_UNINSTALL));
+              content::Details<extensions::UnloadedExtensionInfo>(
+                  details)->reason == extension_misc::UNLOAD_REASON_UNINSTALL));
       if (app_info.get()) {
         scoped_ptr<base::FundamentalValue> from_page(
             Value::CreateBooleanValue(!extension_id_prompting_.empty()));
@@ -982,8 +984,8 @@ ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
 
 void AppLauncherHandler::UninstallDefaultApps() {
   AppsPromo* apps_promo = extension_service_->apps_promo();
-  const ExtensionIdSet& app_ids = apps_promo->old_default_apps();
-  for (ExtensionIdSet::const_iterator iter = app_ids.begin();
+  const extensions::ExtensionIdSet& app_ids = apps_promo->old_default_apps();
+  for (extensions::ExtensionIdSet::const_iterator iter = app_ids.begin();
        iter != app_ids.end(); ++iter) {
     if (extension_service_->GetExtensionById(*iter, true))
       extension_service_->UninstallExtension(*iter, false, NULL);

@@ -21,6 +21,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace extensions {
+class Extension;
+}
+
 // A specialization of the ExternalExtensionProvider that uses an instance
 // of ExternalExtensionLoader to provide external extensions. This class
 // can be seen as a bridge between the extension system and an
@@ -38,8 +42,8 @@ class ExternalExtensionProviderImpl
   ExternalExtensionProviderImpl(
       VisitorInterface* service,
       ExternalExtensionLoader* loader,
-      Extension::Location crx_location,
-      Extension::Location download_location,
+      extensions::Extension::Location crx_location,
+      extensions::Extension::Location download_location,
       int creation_flags);
 
   virtual ~ExternalExtensionProviderImpl();
@@ -59,7 +63,7 @@ class ExternalExtensionProviderImpl
   virtual void VisitRegisteredExtension() OVERRIDE;
   virtual bool HasExtension(const std::string& id) const OVERRIDE;
   virtual bool GetExtensionDetails(const std::string& id,
-                                   Extension::Location* location,
+                                   extensions::Extension::Location* location,
                                    scoped_ptr<Version>* version) const OVERRIDE;
 
   virtual bool IsReady() const OVERRIDE;
@@ -77,11 +81,11 @@ class ExternalExtensionProviderImpl
  private:
   // Location for external extensions that are provided by this provider from
   // local crx files.
-  const Extension::Location crx_location_;
+  const extensions::Extension::Location crx_location_;
 
   // Location for external extensions that are provided by this provider from
   // update URLs.
-  const Extension::Location download_location_;
+  const extensions::Extension::Location download_location_;
 
   // Weak pointer to the object that consumes the external extensions.
   // This is zeroed out by: ServiceShutdown()

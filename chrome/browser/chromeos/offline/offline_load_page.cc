@@ -98,7 +98,7 @@ std::string OfflineLoadPage::GetHTMLContents() {
   Profile* profile = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext());
   DCHECK(profile);
-  const Extension* extension = NULL;
+  const extensions::Extension* extension = NULL;
   ExtensionService* extensions_service = profile->GetExtensionService();
   // Extension service does not exist in test.
   if (extensions_service)
@@ -138,7 +138,7 @@ void OfflineLoadPage::OnDontProceed() {
 }
 
 void OfflineLoadPage::GetAppOfflineStrings(
-    const Extension* app,
+    const extensions::Extension* app,
     const string16& failed_url,
     DictionaryValue* strings) const {
   strings->SetString("title", app->name());

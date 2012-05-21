@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -346,7 +347,7 @@ void GtkThemeService::InitThemesFor(NotificationObserver* observer) {
                     content::NotificationService::NoDetails());
 }
 
-void GtkThemeService::SetTheme(const Extension* extension) {
+void GtkThemeService::SetTheme(const extensions::Extension* extension) {
   profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, false);
   LoadDefaultValues();
   ThemeService::SetTheme(extension);

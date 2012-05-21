@@ -124,8 +124,10 @@ class ExtensionFunction
   void set_profile_id(void* profile_id) { profile_id_ = profile_id; }
   void* profile_id() const { return profile_id_; }
 
-  void set_extension(const Extension* extension) { extension_ = extension; }
-  const Extension* GetExtension() const { return extension_.get(); }
+  void set_extension(const extensions::Extension* extension) {
+    extension_ = extension;
+  }
+  const extensions::Extension* GetExtension() const { return extension_.get(); }
   const std::string& extension_id() const { return extension_->id(); }
 
   void set_request_id(int request_id) { request_id_ = request_id; }
@@ -181,7 +183,7 @@ class ExtensionFunction
   void* profile_id_;
 
   // The extension that called this function.
-  scoped_refptr<const Extension> extension_;
+  scoped_refptr<const extensions::Extension> extension_;
 
   // The name of this function.
   std::string name_;

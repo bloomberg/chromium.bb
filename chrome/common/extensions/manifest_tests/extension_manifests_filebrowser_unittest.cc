@@ -11,6 +11,8 @@
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using extensions::Extension;
+
 namespace errors = extension_manifest_errors;
 
 TEST_F(ExtensionManifestTest, FileBrowserHandlers) {

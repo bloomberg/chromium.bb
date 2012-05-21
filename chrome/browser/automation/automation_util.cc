@@ -438,7 +438,7 @@ AutomationId GetIdForExtensionView(
   return AutomationId(type, id);
 }
 
-AutomationId GetIdForExtension(const Extension* extension) {
+AutomationId GetIdForExtension(const extensions::Extension* extension) {
   return AutomationId(AutomationId::kTypeExtension, extension->id());
 }
 
@@ -526,11 +526,11 @@ bool GetRenderViewForId(
 bool GetExtensionForId(
     const AutomationId& id,
     Profile* profile,
-    const Extension** extension) {
+    const extensions::Extension** extension) {
   if (id.type() != AutomationId::kTypeExtension)
     return false;
   ExtensionService* service = profile->GetExtensionService();
-  const Extension* installed_extension =
+  const extensions::Extension* installed_extension =
       service->GetInstalledExtension(id.id());
   if (installed_extension)
     *extension = installed_extension;
@@ -550,7 +550,7 @@ bool DoesObjectWithIdExist(const AutomationId& id, Profile* profile) {
       return GetExtensionRenderViewForId(id, profile, &rvh);
     }
     case AutomationId::kTypeExtension: {
-      const Extension* extension;
+      const extensions::Extension* extension;
       return GetExtensionForId(id, profile, &extension);
     }
     default:

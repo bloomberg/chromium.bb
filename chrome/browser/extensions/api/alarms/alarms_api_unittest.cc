@@ -49,7 +49,8 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
     alarm_delegate_ = new AlarmDelegate();
     alarm_manager_->set_delegate(alarm_delegate_);
 
-    extension_ = utils::CreateEmptyExtensionWithLocation(Extension::LOAD);
+    extension_ = utils::CreateEmptyExtensionWithLocation(
+        extensions::Extension::LOAD);
   }
 
   base::Value* RunFunctionWithExtension(
@@ -117,7 +118,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
  protected:
   AlarmManager* alarm_manager_;
   AlarmDelegate* alarm_delegate_;
-  scoped_refptr<Extension> extension_;
+  scoped_refptr<extensions::Extension> extension_;
 };
 
 TEST_F(ExtensionAlarmsTest, Create) {

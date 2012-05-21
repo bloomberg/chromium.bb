@@ -46,6 +46,7 @@ using content::BrowserThread;
 using content::NavigationController;
 using content::SiteInstance;
 using content::WebContents;
+using extensions::Extension;
 using testing::_;
 
 namespace {

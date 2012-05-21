@@ -99,7 +99,7 @@ void ShellWindowFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 ShellWindowViews::ShellWindowViews(Profile* profile,
-                                   const Extension* extension,
+                                   const extensions::Extension* extension,
                                    const GURL& url)
     : ShellWindow(profile, extension, url),
       initialized_(false),
@@ -348,7 +348,7 @@ void ShellWindowViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 // static
 ShellWindow* ShellWindow::CreateImpl(Profile* profile,
-                                     const Extension* extension,
+                                     const extensions::Extension* extension,
                                      const GURL& url) {
   return new ShellWindowViews(profile, extension, url);
 }

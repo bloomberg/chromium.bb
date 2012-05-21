@@ -26,7 +26,7 @@ bool CheckExtension(const std::string& id, const std::string& update_url) {
                  << "extension: " << update_url;
     return false;
   }
-  if (!Extension::IdIsValid(id)) {
+  if (!extensions::Extension::IdIsValid(id)) {
     LOG(WARNING) << "Policy specifies invalid ID for external "
                  << "extension: " << id;
     return false;

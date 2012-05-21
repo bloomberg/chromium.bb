@@ -40,6 +40,10 @@ class StatusBubbleGtk;
 class TabContentsContainerGtk;
 class TabStripGtk;
 
+namespace extensions {
+class Extension;
+}
+
 // An implementation of BrowserWindow for GTK.
 // Cross-platform code will interact with this object when
 // it needs to manipulate the window.
@@ -153,7 +157,7 @@ class BrowserWindowGtk : public BrowserWindow,
       TabContentsWrapper* tab_contents) OVERRIDE;
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile* profile,
-      const Extension* app) OVERRIDE;
+      const extensions::Extension* app) OVERRIDE;
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;

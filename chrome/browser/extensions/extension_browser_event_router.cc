@@ -676,7 +676,7 @@ void ExtensionBrowserEventRouter::ExtensionActionExecuted(
     Profile* profile,
     const std::string& extension_id,
     TabContentsWrapper* tab_contents) {
-  const Extension* extension =
+  const extensions::Extension* extension =
       profile->GetExtensionService()->GetExtensionById(extension_id, false);
   if (!extension)
     return;

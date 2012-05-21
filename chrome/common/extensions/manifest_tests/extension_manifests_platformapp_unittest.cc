@@ -20,7 +20,7 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
 
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
 
-  scoped_refptr<Extension> extension =
+  scoped_refptr<extensions::Extension> extension =
       LoadAndExpectSuccess("init_valid_platform_app.json");
   EXPECT_TRUE(extension->is_storage_isolated());
 

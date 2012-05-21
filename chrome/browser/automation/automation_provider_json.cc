@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
 
 using automation::Error;
@@ -181,7 +182,7 @@ bool GetExtensionFromJSONArgsHelper(
     const std::string& key,
     Profile* profile,
     bool include_disabled,
-    const Extension** extension,
+    const extensions::Extension** extension,
     std::string* error) {
   std::string id;
   if (!args->GetString(key, &id)) {
@@ -200,7 +201,7 @@ bool GetExtensionFromJSONArgsHelper(
                                 id.c_str());
     return false;
   }
-  const Extension* installed_extension =
+  const extensions::Extension* installed_extension =
       service->GetExtensionById(id, include_disabled);
   if (!installed_extension) {
     *error = "Extension is disabled or has crashed.";
@@ -216,7 +217,7 @@ bool GetExtensionFromJSONArgs(
     base::DictionaryValue* args,
     const std::string& key,
     Profile* profile,
-    const Extension** extension,
+    const extensions::Extension** extension,
     std::string* error) {
   return GetExtensionFromJSONArgsHelper(
       args, key, profile, true /* include_disabled */, extension, error);
@@ -226,7 +227,7 @@ bool GetEnabledExtensionFromJSONArgs(
     base::DictionaryValue* args,
     const std::string& key,
     Profile* profile,
-    const Extension** extension,
+    const extensions::Extension** extension,
     std::string* error) {
   return GetExtensionFromJSONArgsHelper(
       args, key, profile, false /* include_disabled */, extension, error);

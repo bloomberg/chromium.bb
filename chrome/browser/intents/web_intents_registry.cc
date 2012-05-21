@@ -19,6 +19,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 
+using extensions::Extension;
+
 namespace {
 
 typedef WebIntentsRegistry::IntentServiceList IntentServiceList;
