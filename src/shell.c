@@ -1246,21 +1246,20 @@ get_shell_surface(struct weston_surface *surface)
 static void
 shell_surface_configure(struct weston_surface *, int32_t, int32_t);
 
-static void
-create_shell_surface(void *shell, struct weston_surface *surface,
-		     struct shell_surface **ret)
+static 	struct shell_surface *
+create_shell_surface(void *shell, struct weston_surface *surface)
 {
 	struct shell_surface *shsurf;
 
 	if (surface->configure) {
 		fprintf(stderr, "surface->configure already set\n");
-		return;
+		return NULL;
 	}
 
 	shsurf = calloc(1, sizeof *shsurf);
 	if (!shsurf) {
 		fprintf(stderr, "no memory to allocate shell surface\n");
-		return;
+		return NULL;
 	}
 
 	surface->configure = shell_surface_configure;
@@ -1295,7 +1294,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	shsurf->type = SHELL_SURFACE_NONE;
 	shsurf->next_type = SHELL_SURFACE_NONE;
 
-	*ret = shsurf;
+	return shsurf;
 }
 
 static void
@@ -1315,7 +1314,7 @@ shell_get_shell_surface(struct wl_client *client,
 		return;
 	}
 
-       create_shell_surface(shell, surface, &shsurf);
+	shsurf = create_shell_surface(shell, surface);
        if (!shsurf) {
 	       wl_resource_post_error(surface_resource,
 				      WL_DISPLAY_ERROR_INVALID_OBJECT,

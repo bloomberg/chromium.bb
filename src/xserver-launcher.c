@@ -1957,8 +1957,9 @@ xserver_map_shell_surface(struct weston_wm *wm,
 	if (!shell_interface->create_shell_surface)
 		return;
 
-	shell_interface->create_shell_surface(shell_interface->shell,
-					      window->surface, &window->shsurf);
+	window->shsurf = 
+		shell_interface->create_shell_surface(shell_interface->shell,
+						      window->surface);
 
 	if (!window->transient_for) {
 		shell_interface->set_toplevel(window->shsurf);

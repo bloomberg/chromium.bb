@@ -58,9 +58,9 @@ struct weston_mode {
 struct weston_shell_interface {
 	void *shell;			/* either desktop or tablet */
 
-	void (*create_shell_surface)(void *shell,
-				     struct weston_surface *surface,
-				     struct shell_surface **ret);
+	struct shell_surface *(*create_shell_surface)(void *shell,
+						      struct weston_surface *surface);
+
 	void (*set_toplevel)(struct shell_surface *shsurf);
 
 	void (*set_transient)(struct shell_surface *shsurf,
