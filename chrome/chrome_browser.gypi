@@ -94,6 +94,8 @@
         'browser/accessibility/accessibility_extension_api_constants.h',
         'browser/accessibility/accessibility_events.cc',
         'browser/accessibility/accessibility_events.h',
+        'browser/accessibility/invert_bubble_prefs.cc',
+        'browser/accessibility/invert_bubble_prefs.h',
         'browser/accessibility/invert_bubble_views.cc',
         'browser/accessibility/invert_bubble_views.h',
         'browser/alternate_nav_url_fetcher.cc',

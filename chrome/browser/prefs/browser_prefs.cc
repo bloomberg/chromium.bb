@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 
 #include "chrome/browser/about_flags.h"
+#include "chrome/browser/accessibility/invert_bubble_prefs.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -75,10 +76,6 @@
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "chrome/browser/ui/cocoa/presentation_mode_prefs.h"
-#endif
-
-#if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
-#include "chrome/browser/accessibility/invert_bubble_views.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -207,7 +204,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  InvertBubble::RegisterUserPrefs(user_prefs);
+  browser::RegisterInvertBubbleUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
 #endif

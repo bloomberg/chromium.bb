@@ -155,13 +155,6 @@ void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
   }
 }
 
-// static
-void InvertBubble::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kInvertNotificationShown,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
-}
-
 void InvertBubble::MaybeShowInvertBubble(Profile* profile,
                                          views::View* anchor_view) {
   PrefService* pref_service = profile->GetPrefs();
