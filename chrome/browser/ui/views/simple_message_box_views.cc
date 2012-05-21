@@ -154,16 +154,19 @@ SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
-  if (dialog_type_ == DIALOG_TYPE_INFORMATION ||
-      dialog_type_ == DIALOG_TYPE_WARNING)
-    return ui::DIALOG_BUTTON_OK;
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  if (dialog_type_ == DIALOG_TYPE_QUESTION)
+    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 string16 SimpleMessageBoxViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
-      IDS_OK : IDS_CLOSE);
+  if (dialog_type_ == DIALOG_TYPE_QUESTION) {
+    return l10n_util::GetStringUTF16((button == ui::DIALOG_BUTTON_OK) ?
+        IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
+        IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+  }
+  return l10n_util::GetStringUTF16(IDS_OK);
 }
 
 bool SimpleMessageBoxViews::Cancel() {
