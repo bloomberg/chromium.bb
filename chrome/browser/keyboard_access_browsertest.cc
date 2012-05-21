@@ -210,7 +210,13 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestAltMenuKeyboardAccess) {
 }
 
 // If this flakes, use http://crbug.com/62311.
-IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestShiftAltMenuKeyboardAccess) {
+#if defined(OS_WIN)
+#define MAYBE_TestShiftAltMenuKeyboardAccess FLAKY_TestShiftAltMenuKeyboardAccess
+#else
+#define MAYBE_TestShiftAltMenuKeyboardAccess TestShiftAltMenuKeyboardAccess
+#endif
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
+                       MAYBE_TestShiftAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true, true);
 }
 
