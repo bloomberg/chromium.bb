@@ -4531,14 +4531,14 @@ FileManager.prototype = {
       if (this.directoryModel_.getFileList().length === 0) {
         var text = strf('SEARCH_NO_MATCHING_FILES', searchString);
         noResultsDiv.innerHTML = text;
-        noResultsDiv.hidden = false;
+        noResultsDiv.setAttribute('show', 'true');
       } else {
-        noResultsDiv.hidden = true;
+        noResultsDiv.removeAttribute('show');
       }
     }
 
     function hideNoResultsDiv() {
-      noResultsDiv.hidden = true;
+      noResultsDiv.removeAttribute('show');
     }
 
     this.directoryModel_.search(searchString,

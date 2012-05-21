@@ -1286,9 +1286,14 @@ body:not([type='saveas-file']):not([type='full-page'])
 
 #no-search-results {
   bottom: 0;
+  display: none;
   left: 0;
   padding: 10px;
   position: absolute;
   right: 0;
   top: 28px;  /* Leave room for the file list header. */
+}
+
+.dialog-container:not([gdrive-welcome='page']) #no-search-results[show] {
+  display: block;
 }
