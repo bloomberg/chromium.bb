@@ -3238,7 +3238,6 @@ nacl_env.Append(
     'src/untrusted/nacl_ppapi_util/nacl.scons',
     'src/untrusted/pnacl_irt_shim/nacl.scons',
     'src/untrusted/pnacl_support_extension/nacl.scons',
-    'src/untrusted/ppapi/nacl.scons',
     'src/untrusted/valgrind/nacl.scons',
     ####  ALPHABETICALLY SORTED ####
     ], ppapi_scons_files['untrusted_scons_files']))

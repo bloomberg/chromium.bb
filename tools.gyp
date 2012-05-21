@@ -75,7 +75,6 @@
             '<(DEPTH)/native_client/src/trusted/weak_ref/call_on_main_thread.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
             '<(DEPTH)/native_client/src/untrusted/nacl/nacl_dyncode.h',
-            '<(DEPTH)/native_client/src/untrusted/ppapi/nacl_file.h',
             '<(DEPTH)/native_client/src/shared/imc/nacl_imc_c.h',
             '<(DEPTH)/native_client/src/shared/imc/nacl_imc.h',
             '<(DEPTH)/native_client/src/include/nacl/nacl_inttypes.h',
@@ -101,7 +100,6 @@
           'files': [
             '<(DEPTH)/native_client/src/trusted/weak_ref/call_on_main_thread.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_check.h',
-            '<(DEPTH)/native_client/src/untrusted/ppapi/nacl_file.h',
             '<(DEPTH)/native_client/src/shared/imc/nacl_imc.h',
             '<(DEPTH)/native_client/src/include/nacl/nacl_inttypes.h',
             '<(DEPTH)/native_client/src/shared/platform/nacl_log.h',
