@@ -30,7 +30,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
@@ -394,8 +393,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
         agent_host,
         window_->devtools_client_host());
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
-    WebContents* client_contents =
-        client_rvh->GetDelegate()->GetAsWebContents();
+    WebContents* client_contents = WebContents::FromRenderViewHost(client_rvh);
     if (client_contents->IsLoading()) {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,

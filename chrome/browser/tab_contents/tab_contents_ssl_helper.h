@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/render_view_host_delegate.h"
 
 class SSLAddCertHandler;
 class TabContentsWrapper;
