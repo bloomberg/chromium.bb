@@ -84,7 +84,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const DownloadSaveInfo& save_info,
       const DownloadStartedCallback& started_callback) OVERRIDE;
   virtual void ClearLoginDelegateForRequest(net::URLRequest* request) OVERRIDE;
-  virtual void MarkAsTransferredNavigation(net::URLRequest* request) OVERRIDE;
 
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
@@ -143,6 +142,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // data messages pending, it pauses the request and returns false. In this
   // case the caller should not send the data.
   bool WillSendData(int child_id, int request_id);
+
+  // Marks the request as "parked". This happens if a request is
+  // redirected cross-site and needs to be resumed by a new render view.
+  void MarkAsTransferredNavigation(net::URLRequest* request);
 
   // Returns the number of pending requests. This is designed for the unittests
   int pending_requests() const {

@@ -53,10 +53,6 @@ class CONTENT_EXPORT ResourceDispatcherHost {
   // Clears the ResourceDispatcherHostLoginDelegate associated with the request.
   virtual void ClearLoginDelegateForRequest(net::URLRequest* request) = 0;
 
-  // Marks the request as "parked". This happens if a request is
-  // redirected cross-site and needs to be resumed by a new render view.
-  virtual void MarkAsTransferredNavigation(net::URLRequest* request) = 0;
-
  protected:
   virtual ~ResourceDispatcherHost() {}
 };

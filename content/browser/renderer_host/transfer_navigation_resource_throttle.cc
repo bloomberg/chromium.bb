@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/transfer_navigation_resource_throttle.h"
+#include "content/browser/renderer_host/transfer_navigation_resource_throttle.h"
 
 #include "base/bind.h"
-#include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/common/extensions/extension_process_policy.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/referrer.h"
 #include "net/url_request/url_request.h"
@@ -19,7 +17,7 @@
 using content::GlobalRequestID;
 using content::Referrer;
 using content::RenderViewHostDelegate;
-using content::ResourceDispatcherHost;
+using content::ResourceDispatcherHostImpl;
 using content::ResourceRequestInfo;
 
 namespace {
@@ -57,8 +55,6 @@ TransferNavigationResourceThrottle::~TransferNavigationResourceThrottle() {
 void TransferNavigationResourceThrottle::WillRedirectRequest(
     const GURL& new_url,
     bool* defer) {
-  // TODO(darin): Move this logic into src/content.
-
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
 
   // If a toplevel request is redirecting across extension extents, we want to
@@ -67,13 +63,11 @@ void TransferNavigationResourceThrottle::WillRedirectRequest(
   // to host the new URL.
   // TODO(mpcomplete): handle for cases other than extensions (e.g. WebUI).
   content::ResourceContext* resource_context = info->GetContext();
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  if (extensions::CrossesExtensionProcessBoundary(
-          io_data->GetExtensionInfoMap()->extensions(),
-          ExtensionURLInfo(request_->url()), ExtensionURLInfo(new_url))) {
+  if (content::GetContentClient()->browser()->ShouldSwapProcessesForRedirect(
+          resource_context, request_->url(), new_url)) {
     int render_process_id, render_view_id;
     if (info->GetAssociatedRenderView(&render_process_id, &render_view_id)) {
-      ResourceDispatcherHost::Get()->MarkAsTransferredNavigation(request_);
+      ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(request_);
 
       GlobalRequestID global_id(info->GetChildID(), info->GetRequestID());
       content::BrowserThread::PostTask(

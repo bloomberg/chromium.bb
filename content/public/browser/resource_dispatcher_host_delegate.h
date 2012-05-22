@@ -47,10 +47,8 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       ResourceContext* resource_context,
       const Referrer& referrer);
 
-  // Called after ShouldBeginRequest when all the resource handlers from the
-  // content layer have been added.  To add new handlers to the front, return
-  // a new handler that is chained to the given one, otherwise just reutrn the
-  // given handler.
+  // Called after ShouldBeginRequest to allow the embedder to add resource
+  // throttles.
   virtual void RequestBeginning(
       net::URLRequest* request,
       ResourceContext* resource_context,

@@ -87,6 +87,12 @@ bool MockContentBrowserClient::ShouldSwapProcessesForNavigation(
   return false;
 }
 
+bool MockContentBrowserClient::ShouldSwapProcessesForRedirect(
+    ResourceContext* resource_context, const GURL& current_url,
+    const GURL& new_url) {
+  return false;
+}
+
 std::string MockContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return std::string();

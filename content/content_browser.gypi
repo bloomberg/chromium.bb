@@ -612,6 +612,8 @@
     'browser/renderer_host/text_input_client_message_filter.mm',
     'browser/renderer_host/throttling_resource_handler.cc',
     'browser/renderer_host/throttling_resource_handler.h',
+    'browser/renderer_host/transfer_navigation_resource_throttle.cc',
+    'browser/renderer_host/transfer_navigation_resource_throttle.h',
     'browser/renderer_host/web_input_event_aura.cc',
     'browser/renderer_host/web_input_event_aura.h',
     'browser/renderer_host/web_input_event_aurawin.cc',

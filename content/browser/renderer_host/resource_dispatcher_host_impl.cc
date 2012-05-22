@@ -39,7 +39,7 @@
 #include "content/browser/renderer_host/redirect_to_file_resource_handler.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
-#include "content/public/browser/resource_request_details.h"
+#include "content/browser/renderer_host/transfer_navigation_resource_throttle.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/renderer_host/sync_resource_handler.h"
 #include "content/browser/renderer_host/throttling_resource_handler.h"
@@ -58,6 +58,7 @@
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -552,27 +553,6 @@ void ResourceDispatcherHostImpl::ClearLoginDelegateForRequest(
     info->set_login_delegate(NULL);
 }
 
-void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
-    net::URLRequest* transferred_request) {
-  ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(transferred_request);
-
-  GlobalRequestID transferred_request_id(info->GetChildID(),
-                                         info->GetRequestID());
-  transferred_navigations_[transferred_request_id] = transferred_request;
-
-  // If a URLRequest is transferred to a new RenderViewHost, its
-  // ResourceHandler should not receive any notifications because it may
-  // depend on the state of the old RVH. We set a ResourceHandler that only
-  // allows canceling requests, because on shutdown of the RDH all pending
-  // requests are canceled. The RVH of requests that are being transferred may
-  // be gone by that time. If the request is resumed, the ResoureHandlers are
-  // substituted again.
-  scoped_refptr<ResourceHandler> transferred_resource_handler(
-      new DoomedResourceHandler(info->resource_handler()));
-  info->set_resource_handler(transferred_resource_handler.get());
-}
-
 void ResourceDispatcherHostImpl::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::IO,
@@ -898,11 +878,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Insert a buffered event handler before the actual one.
   handler = new BufferedResourceHandler(handler, this, request);
 
+  ScopedVector<ResourceThrottle> throttles;
   if (delegate_) {
     bool is_continuation_of_transferred_request =
         (deferred_request != NULL);
 
-    ScopedVector<ResourceThrottle> throttles;
     delegate_->RequestBeginning(request,
                                 resource_context,
                                 request_data.resource_type,
@@ -910,10 +890,16 @@ void ResourceDispatcherHostImpl::BeginRequest(
                                 route_id,
                                 is_continuation_of_transferred_request,
                                 &throttles);
-    if (!throttles.empty()) {
-      handler = new ThrottlingResourceHandler(this, handler, child_id,
-                                              request_id, throttles.Pass());
-    }
+  }
+
+  if (request_data.resource_type == ResourceType::MAIN_FRAME) {
+    throttles.insert(
+        throttles.begin(), new TransferNavigationResourceThrottle(request));
+  }
+
+  if (!throttles.empty()) {
+    handler = new ThrottlingResourceHandler(this, handler, child_id, request_id,
+                                            throttles.Pass());
   }
 
   bool allow_download = request_data.allow_download &&
@@ -1261,6 +1247,27 @@ bool ResourceDispatcherHostImpl::WillSendData(int child_id,
   }
 
   return true;
+}
+
+void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
+    net::URLRequest* transferred_request) {
+  ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(transferred_request);
+
+  GlobalRequestID transferred_request_id(info->GetChildID(),
+                                         info->GetRequestID());
+  transferred_navigations_[transferred_request_id] = transferred_request;
+
+  // If a URLRequest is transferred to a new RenderViewHost, its
+  // ResourceHandler should not receive any notifications because it may
+  // depend on the state of the old RVH. We set a ResourceHandler that only
+  // allows canceling requests, because on shutdown of the RDH all pending
+  // requests are canceled. The RVH of requests that are being transferred may
+  // be gone by that time. If the request is resumed, the ResoureHandlers are
+  // substituted again.
+  scoped_refptr<ResourceHandler> transferred_resource_handler(
+      new DoomedResourceHandler(info->resource_handler()));
+  info->set_resource_handler(transferred_resource_handler.get());
 }
 
 int ResourceDispatcherHostImpl::GetOutstandingRequestsMemoryCost(

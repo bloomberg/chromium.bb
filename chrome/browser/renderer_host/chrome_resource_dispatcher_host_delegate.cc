@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
-#include "chrome/browser/renderer_host/transfer_navigation_resource_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/auto_login_prompter.h"
 #include "chrome/browser/ui/login/login_prompt.h"
@@ -133,16 +132,14 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     request->set_priority(net::IDLE);
   }
 
-  if (resource_type == ResourceType::MAIN_FRAME) {
-    throttles->push_back(new TransferNavigationResourceThrottle(request));
-
 #if defined(OS_CHROMEOS)
+  if (resource_type == ResourceType::MAIN_FRAME) {
     // We check offline first, then check safe browsing so that we still can
     // block unsafe site after we remove offline page.
     throttles->push_back(new OfflineResourceThrottle(
         child_id, route_id, request, resource_context));
-#endif
   }
+#endif
 
   AppendChromeMetricsHeaders(request, resource_context, resource_type);
 

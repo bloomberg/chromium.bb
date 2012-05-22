@@ -93,6 +93,12 @@ bool ShellContentBrowserClient::ShouldSwapProcessesForNavigation(
   return false;
 }
 
+bool ShellContentBrowserClient::ShouldSwapProcessesForRedirect(
+    ResourceContext* resource_context, const GURL& current_url,
+    const GURL& new_url) {
+  return false;
+}
+
 std::string ShellContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return std::string();
