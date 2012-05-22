@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 import contextlib
 import errno
 import itertools
+import logging
 import mox
 import shutil
 import signal
@@ -41,6 +42,17 @@ class TestRunCommandNoMock(unittest.TestCase):
     """Raise error when proc.communicate() returns non-zero."""
     self.assertRaises(cros_build_lib.RunCommandError, cros_build_lib.RunCommand,
                       ['/does/not/exist'])
+
+
+def _ForceLoggingLevel(functor):
+  def inner(*args, **kwds):
+    current = cros_build_lib.logger.getEffectiveLevel()
+    try:
+      cros_build_lib.logger.setLevel(logging.INFO)
+      return functor(*args, **kwds)
+    finally:
+      cros_build_lib.logger.setLevel(current)
+  return inner
 
 
 class TestRunCommand(unittest.TestCase):
@@ -117,6 +129,7 @@ class TestRunCommand(unittest.TestCase):
     self.assertEqual(expected.output, actual.output)
     self.assertEqual(expected.returncode, actual.returncode)
 
+  @_ForceLoggingLevel
   def _TestCmd(self, cmd, real_cmd, sp_kv=dict(), rc_kv=dict(), sudo=False):
     """Factor out common setup logic for testing RunCommand().
 
@@ -185,6 +198,7 @@ class TestRunCommand(unittest.TestCase):
     real_cmd = ['cros_sdk', '--'] + cmd_list
     self._TestCmd(cmd_list, real_cmd, rc_kv=dict(enter_chroot=True))
 
+  @_ForceLoggingLevel
   def testCommandFailureRaisesError(self, ignore_sigint=False):
     """Verify error raised by communicate() is caught.
 
@@ -207,6 +221,7 @@ class TestRunCommand(unittest.TestCase):
                       ignore_sigint=ignore_sigint, error_ok=False)
     self.mox.VerifyAll()
 
+  @_ForceLoggingLevel
   def testSubprocessCommunicateExceptionRaisesError(self, ignore_sigint=False):
     """Verify error raised by communicate() is caught.
 
@@ -230,6 +245,7 @@ class TestRunCommand(unittest.TestCase):
     """Test RunCommand() properly sets/restores sigint.  Exception case."""
     self.testSubprocessCommunicateExceptionRaisesError(ignore_sigint=True)
 
+  @_ForceLoggingLevel
   def testSubprocessCommunicateExceptionNotRaisesError(self):
     """Don't re-raise error from communicate() when --error_ok=True."""
     cmd = ['test', 'cmd']
@@ -361,6 +377,7 @@ class TestRunCommand(unittest.TestCase):
 
 class TestRunCommandLogging(cros_test_lib.TempDirMixin, unittest.TestCase):
 
+  @_ForceLoggingLevel
   def testLogStdoutToFile(self):
     # Make mox happy.
     log = os.path.join(self.tempdir, 'output')

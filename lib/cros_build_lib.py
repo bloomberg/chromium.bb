@@ -989,6 +989,8 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
   retry_on = kwds.pop('retry_on', set(xrange(255)))
   exc_info = None
   for attempt in xrange(max_retry + 1):
+    if attempt:
+      time.sleep(sleep * attempt)
     try:
       return RunCommand(*args, **kwds)
     except TerminateRunCommandError:
@@ -1003,8 +1005,6 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
       # throw the original failure if all retries fail.
       if exc_info is None:
         exc_info = sys.exc_info()
-
-      time.sleep(sleep * (attempt + 1))
 
   #pylint: disable=E0702
   raise exc_info[0], exc_info[1], exc_info[2]
