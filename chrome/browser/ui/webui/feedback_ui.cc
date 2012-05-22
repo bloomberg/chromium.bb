@@ -357,6 +357,8 @@ bool FeedbackHandler::Init() {
   }
 #endif
 
+  // TODO(beng): Replace GetLastActive with a more specific method of locating
+  //             the target contents.
   Browser* browser = BrowserList::GetLastActive();
   // Sanity checks.
   if (((index == 0) && (index_str != "0")) || !browser ||
@@ -547,14 +549,13 @@ void FeedbackHandler::HandleCancel(const ListValue*) {
 
 void FeedbackHandler::HandleOpenSystemTab(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  Browser* last_active = BrowserList::GetLastActive();
-  last_active->OpenURL(
+  web_ui()->GetWebContents()->GetDelegate()->OpenURLFromTab(
+      web_ui()->GetWebContents(),
       content::OpenURLParams(GURL(chrome::kChromeUISystemInfoURL),
                              content::Referrer(),
                              NEW_FOREGROUND_TAB,
                              content::PAGE_TRANSITION_LINK,
                              false));
-  last_active->window()->Activate();
 #endif
 }
 
@@ -571,13 +572,7 @@ void FeedbackHandler::CancelFeedbackCollection() {
 
 void FeedbackHandler::CloseFeedbackTab() {
   ClobberScreenshotsSource();
-
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser) {
-    browser->CloseTabContents(tab_);
-  } else {
-    LOG(FATAL) << "Failed to get last active browser.";
-  }
+  tab_->GetDelegate()->CloseContents(tab_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
