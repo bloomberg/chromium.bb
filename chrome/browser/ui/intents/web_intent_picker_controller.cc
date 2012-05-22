@@ -34,9 +34,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -100,7 +100,7 @@ string16 GetIntentActionString(const std::string& action) {
 }
 
 // Self-deleting trampoline that forwards A URLFetcher response to a callback.
-class URLFetcherTrampoline : public content::URLFetcherDelegate {
+class URLFetcherTrampoline : public net::URLFetcherDelegate {
  public:
   typedef base::Callback<void(const net::URLFetcher* source)>
       ForwardingCallback;
@@ -108,7 +108,7 @@ class URLFetcherTrampoline : public content::URLFetcherDelegate {
   explicit URLFetcherTrampoline(const ForwardingCallback& callback);
   ~URLFetcherTrampoline();
 
-  // content::URLFetcherDelegate implementation.
+  // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:

@@ -16,10 +16,10 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_combiner.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {

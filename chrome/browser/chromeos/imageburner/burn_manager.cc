@@ -282,7 +282,7 @@ void BurnManager::FetchConfigFile(Delegate* delegate) {
     return;
 
   config_fetcher_.reset(content::URLFetcher::Create(
-      config_file_url_, content::URLFetcher::GET, this));
+      config_file_url_, net::URLFetcher::GET, this));
   config_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
   config_fetcher_->Start();
@@ -292,7 +292,7 @@ void BurnManager::FetchImage(const GURL& image_url, const FilePath& file_path) {
   tick_image_download_start_ = base::TimeTicks::Now();
   bytes_image_download_progress_last_reported_ = 0;
   image_fetcher_.reset(content::URLFetcher::Create(image_url,
-                                                   content::URLFetcher::GET,
+                                                   net::URLFetcher::GET,
                                                    this));
   image_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());

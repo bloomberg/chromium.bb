@@ -60,15 +60,15 @@ void GaiaOAuthFetcher::CancelRequest() {
 }
 
 // static
-content::URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
+net::URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
     net::URLRequestContextGetter* getter,
     const GURL& gaia_gurl,
     const std::string& body,
     const std::string& headers,
     bool send_cookies,
-    content::URLFetcherDelegate* delegate) {
+    net::URLFetcherDelegate* delegate) {
   bool empty_body = body.empty();
-  content::URLFetcher* result = content::URLFetcher::Create(
+  net::URLFetcher* result = content::URLFetcher::Create(
       0, gaia_gurl,
       empty_body ? content::URLFetcher::GET : content::URLFetcher::POST,
       delegate);
@@ -683,7 +683,7 @@ void GaiaOAuthFetcher::OnUserInfoFetched(
 
 void GaiaOAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   // Keep |fetcher_| around to avoid invalidating its |status| (accessed below).
-  scoped_ptr<content::URLFetcher> current_fetcher(fetcher_.release());
+  scoped_ptr<net::URLFetcher> current_fetcher(fetcher_.release());
   fetch_pending_ = false;
   std::string data;
   source->GetResponseAsString(&data);

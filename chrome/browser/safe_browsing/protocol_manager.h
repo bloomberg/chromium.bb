@@ -25,7 +25,11 @@
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_delegate.h"
+
+namespace net {
+class URLFetcher;
+}  // namespace net
 
 #if defined(COMPILER_GCC)
 // Allows us to use URLFetchers in a hash_map with gcc (MSVC is okay without
@@ -56,7 +60,7 @@ class SBProtocolManagerFactory {
   DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactory);
 };
 
-class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
+class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestBackOffTimes);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestChunkStrings);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestGetHashUrl);
@@ -91,7 +95,7 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   // of the SafeBrowsing service.
   virtual void Initialize();
 
-  // content::URLFetcherDelegate interface.
+  // net::URLFetcherDelegate interface.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // API used by the SafeBrowsingService for issuing queries. When the results
@@ -282,7 +286,7 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   // Current active request (in case we need to cancel) for updates or chunks
   // from the SafeBrowsing service. We can only have one of these outstanding
   // at any given time unlike GetHash requests, which are tracked separately.
-  scoped_ptr<content::URLFetcher> request_;
+  scoped_ptr<net::URLFetcher> request_;
 
   // The kind of request that is currently in progress.
   SafeBrowsingRequestType request_type_;

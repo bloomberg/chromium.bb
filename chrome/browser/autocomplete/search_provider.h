@@ -27,13 +27,17 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
 class TemplateURLService;
 
 namespace base {
 class Value;
+}
+
+namespace net {
+class URLFetcher;
 }
 
 // Autocomplete provider for searches and suggestions from a search engine.
@@ -47,7 +51,7 @@ class Value;
 // comes back, the provider creates and returns matches for the best
 // suggestions.
 class SearchProvider : public AutocompleteProvider,
-                       public content::URLFetcherDelegate {
+                       public net::URLFetcherDelegate {
  public:
   SearchProvider(ACProviderListener* listener, Profile* profile);
 
@@ -75,7 +79,7 @@ class SearchProvider : public AutocompleteProvider,
   // Adds search-provider-specific information to omnibox event logs.
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
 
-  // content::URLFetcherDelegate
+  // net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // ID used in creating URLFetcher for default provider's suggest results.
@@ -220,7 +224,7 @@ class SearchProvider : public AutocompleteProvider,
 
   // Creates a URLFetcher requesting suggest results from the specified
   // |suggestions_url|. The caller owns the returned URLFetcher.
-  content::URLFetcher* CreateSuggestFetcher(
+  net::URLFetcher* CreateSuggestFetcher(
       int id,
       const TemplateURLRef& suggestions_url,
       const string16& text);
@@ -326,11 +330,11 @@ class SearchProvider : public AutocompleteProvider,
   base::TimeTicks time_suggest_request_sent_;
 
   // The fetcher that retrieves suggest results for the keyword from the server.
-  scoped_ptr<content::URLFetcher> keyword_fetcher_;
+  scoped_ptr<net::URLFetcher> keyword_fetcher_;
 
   // The fetcher that retrieves suggest results for the default engine from the
   // server.
-  scoped_ptr<content::URLFetcher> default_fetcher_;
+  scoped_ptr<net::URLFetcher> default_fetcher_;
 
   // Suggestions returned by the Suggest server for the input text.
   SuggestResults keyword_suggest_results_;

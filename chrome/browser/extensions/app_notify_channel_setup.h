@@ -14,8 +14,8 @@
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class AppNotifyChannelSetupTest;
 class Profile;
@@ -30,7 +30,7 @@ class Profile;
 // 4. Call the delegate passed in to the constructor with the results of
 //    the above steps.
 class AppNotifyChannelSetup
-    : public content::URLFetcherDelegate,
+    : public net::URLFetcherDelegate,
       public AppNotifyChannelUI::Delegate,
       public OAuth2AccessTokenConsumer,
       public base::RefCountedThreadSafe<AppNotifyChannelSetup> {
@@ -97,7 +97,7 @@ class AppNotifyChannelSetup
   int callback_id() const { return callback_id_; }
 
  protected:
-  // content::URLFetcherDelegate.
+  // net::URLFetcherDelegate.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // AppNotifyChannelUI::Delegate.

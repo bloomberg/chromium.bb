@@ -37,7 +37,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
@@ -48,6 +47,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -64,7 +64,7 @@ const char kSyncServerCommandLine[] = "sync-server-command-line";
 }
 
 // Helper class that checks whether a sync test server is running or not.
-class SyncServerStatusChecker : public content::URLFetcherDelegate {
+class SyncServerStatusChecker : public net::URLFetcherDelegate {
  public:
   SyncServerStatusChecker() : running_(false) {}
 

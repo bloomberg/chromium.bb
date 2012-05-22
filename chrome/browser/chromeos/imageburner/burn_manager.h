@@ -15,8 +15,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
+
+namespace net {
+class URLFetcher;
+}  // namespace net
 
 namespace chromeos {
 namespace imageburner {
@@ -154,7 +158,7 @@ class StateMachine {
   DISALLOW_COPY_AND_ASSIGN(StateMachine);
 };
 
-class BurnManager : content::URLFetcherDelegate {
+class BurnManager : net::URLFetcherDelegate {
  public:
 
   class Delegate : public base::SupportsWeakPtr<Delegate> {
@@ -252,8 +256,8 @@ class BurnManager : content::URLFetcherDelegate {
 
   scoped_ptr<StateMachine> state_machine_;
 
-  scoped_ptr<content::URLFetcher> config_fetcher_;
-  scoped_ptr<content::URLFetcher> image_fetcher_;
+  scoped_ptr<net::URLFetcher> config_fetcher_;
+  scoped_ptr<net::URLFetcher> image_fetcher_;
 
   base::TimeTicks tick_image_download_start_;
   int64 bytes_image_download_progress_last_reported_;

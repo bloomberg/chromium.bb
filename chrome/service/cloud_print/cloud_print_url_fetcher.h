@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
 
@@ -31,7 +31,7 @@ class URLRequestStatus;
 // must also be retried.
 class CloudPrintURLFetcher
     : public base::RefCountedThreadSafe<CloudPrintURLFetcher>,
-      public content::URLFetcherDelegate {
+      public net::URLFetcherDelegate {
  public:
   enum ResponseAction {
     CONTINUE_PROCESSING,
@@ -106,7 +106,7 @@ class CloudPrintURLFetcher
                         const std::string& post_data,
                         const std::string& additional_headers);
 
-  // content::URLFetcherDelegate implementation.
+  // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:

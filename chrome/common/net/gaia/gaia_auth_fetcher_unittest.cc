@@ -17,12 +17,12 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,7 +85,7 @@ MockFetcher::MockFetcher(bool success,
                          const GURL& url,
                          const std::string& results,
                          content::URLFetcher::RequestType request_type,
-                         content::URLFetcherDelegate* d)
+                         net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d) {
   set_url(url);
   net::URLRequestStatus::Status code;
@@ -108,7 +108,7 @@ MockFetcher::MockFetcher(const GURL& url,
                          const net::ResponseCookies& cookies,
                          const std::string& results,
                          content::URLFetcher::RequestType request_type,
-                         content::URLFetcherDelegate* d)
+                         net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(status);

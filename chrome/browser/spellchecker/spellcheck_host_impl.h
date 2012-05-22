@@ -18,7 +18,11 @@
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_delegate.h"
+
+namespace net {
+class URLFetcher;
+}  // namespace net
 
 // This class implements the SpellCheckHost interface to provide the
 // functionalities listed below:
@@ -41,7 +45,7 @@
 // Available languages for the checker, which we need to specify via Create(),
 // can be listed using SpellCheckHost::GetAvailableLanguages() static method.
 class SpellCheckHostImpl : public SpellCheckHost,
-                           public content::URLFetcherDelegate,
+                           public net::URLFetcherDelegate,
                            public content::NotificationObserver {
  public:
   SpellCheckHostImpl(SpellCheckProfileProvider* profile,
@@ -107,7 +111,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
   // Returns true if the dictionary is ready to use.
   virtual bool IsReady() const OVERRIDE;
 
-  // content::URLFetcherDelegate implementation.  Called when we finish
+  // net::URLFetcherDelegate implementation.  Called when we finish
   // downloading the spellcheck dictionary; saves the dictionary to |data_|.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
@@ -159,7 +163,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
   net::URLRequestContextGetter* request_context_getter_;
 
   // Used for downloading the dictionary file.
-  scoped_ptr<content::URLFetcher> fetcher_;
+  scoped_ptr<net::URLFetcher> fetcher_;
 
   content::NotificationRegistrar registrar_;
 

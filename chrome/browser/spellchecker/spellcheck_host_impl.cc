@@ -324,7 +324,7 @@ void SpellCheckHostImpl::WriteWordToCustomDictionary(const std::string& word) {
 void SpellCheckHostImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(source);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<content::URLFetcher> fetcher_destructor(fetcher_.release());
+  scoped_ptr<net::URLFetcher> fetcher_destructor(fetcher_.release());
 
   if ((source->GetResponseCode() / 100) != 2) {
     // Initialize will not try to download the file a second time.

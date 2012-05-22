@@ -135,7 +135,7 @@ void CreateSnapshotFile(CreateSnapshotFileCallback callback) {
 
 // Send snapshot file contents as POST data in a job submit request.
 // Call this as a BlockingPoolSequencedTask (before posting DeleteSnapshotFile).
-void SubmitSnapshotFile(content::URLFetcher* request,
+void SubmitSnapshotFile(net::URLFetcher* request,
                         const ChromeToMobileService::RequestData& data) {
   std::string file;
   if (file_util::ReadFileToString(data.snapshot_path, &file) && !file.empty()) {
@@ -253,7 +253,7 @@ void ChromeToMobileService::SendToMobile(const string16& mobile_id,
   data.snapshot_id = send_snapshot ? guid::GenerateGUID() : std::string();
   data.type = send_snapshot ? DELAYED_SNAPSHOT : URL;
 
-  content::URLFetcher* submit_url = CreateRequest(data);
+  net::URLFetcher* submit_url = CreateRequest(data);
   request_observer_map_[submit_url] = observer;
   submit_url->Start();
 
@@ -261,7 +261,7 @@ void ChromeToMobileService::SendToMobile(const string16& mobile_id,
     LogMetric(SENDING_SNAPSHOT);
 
     data.type = SNAPSHOT;
-    content::URLFetcher* submit_snapshot = CreateRequest(data);
+    net::URLFetcher* submit_snapshot = CreateRequest(data);
     request_observer_map_[submit_snapshot] = observer;
     content::BrowserThread::PostBlockingPoolSequencedTask(
         data.snapshot_path.AsUTF8Unsafe(), FROM_HERE,
@@ -342,11 +342,11 @@ void ChromeToMobileService::SnapshotFileCreated(
   }
 }
 
-content::URLFetcher* ChromeToMobileService::CreateRequest(
+net::URLFetcher* ChromeToMobileService::CreateRequest(
   const RequestData& data) {
   bool get = data.type != SNAPSHOT;
   GURL service_url(cloud_print_url_->GetCloudPrintServiceURL());
-  content::URLFetcher* request = content::URLFetcher::Create(
+  net::URLFetcher* request = content::URLFetcher::Create(
       data.type == SEARCH ? GetSearchURL(service_url) :
                             GetSubmitURL(service_url, data),
       get ? content::URLFetcher::GET : content::URLFetcher::POST, this);

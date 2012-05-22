@@ -14,13 +14,12 @@
 #include "content/browser/speech/audio_encoder.h"
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
-
-class URLFetcher;
+#include "net/url_request/url_fetcher_delegate.h"
 
 namespace content {
 struct SpeechRecognitionResult;
+class URLFetcher;
 }
 
 namespace net {
@@ -35,7 +34,7 @@ class AudioChunk;
 // Google speech recognition webservice.
 class CONTENT_EXPORT GoogleOneShotRemoteEngine
     : public NON_EXPORTED_BASE(SpeechRecognitionEngine),
-      public content::URLFetcherDelegate {
+      public net::URLFetcherDelegate {
  public:
   // Duration of each audio packet.
   static const int kAudioPacketIntervalMs;
@@ -54,7 +53,7 @@ class CONTENT_EXPORT GoogleOneShotRemoteEngine
   virtual bool IsRecognitionPending() const OVERRIDE;
   virtual int GetDesiredAudioChunkDurationMs() const OVERRIDE;
 
-  // content::URLFetcherDelegate methods.
+  // net::URLFetcherDelegate methods.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:

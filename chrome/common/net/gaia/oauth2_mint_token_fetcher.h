@@ -12,13 +12,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/net/gaia/oauth2_mint_token_consumer.h"
-#include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class OAuth2MintTokenFetcherTest;
 
 namespace net {
+class URLFetcher;
 class URLRequestContextGetter;
 class URLRequestStatus;
 }
@@ -39,7 +39,7 @@ class URLRequestStatus;
 //
 // This class can handle one request at a time. To parallelize requests,
 // create multiple instances.
-class OAuth2MintTokenFetcher : public content::URLFetcherDelegate {
+class OAuth2MintTokenFetcher : public net::URLFetcherDelegate {
  public:
   OAuth2MintTokenFetcher(OAuth2MintTokenConsumer* consumer,
                          net::URLRequestContextGetter* getter,
@@ -54,7 +54,7 @@ class OAuth2MintTokenFetcher : public content::URLFetcherDelegate {
 
   void CancelRequest();
 
-  // Implementation of content::URLFetcherDelegate
+  // Implementation of net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  private:
@@ -89,7 +89,7 @@ class OAuth2MintTokenFetcher : public content::URLFetcherDelegate {
   State state_;
 
   // While a fetch is in progress.
-  scoped_ptr<content::URLFetcher> fetcher_;
+  scoped_ptr<net::URLFetcher> fetcher_;
   std::string oauth_login_access_token_;
   std::string client_id_;
   std::vector<std::string> scopes_;

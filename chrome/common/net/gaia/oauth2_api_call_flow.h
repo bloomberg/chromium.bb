@@ -12,13 +12,13 @@
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "chrome/common/net/gaia/oauth2_mint_token_consumer.h"
 #include "chrome/common/net/gaia/oauth2_mint_token_fetcher.h"
-#include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class GoogleServiceAuthError;
 class OAuth2MintTokenFlowTest;
 
 namespace net {
+class URLFetcher;
 class URLRequestContextGetter;
 }
 
@@ -35,7 +35,7 @@ class URLRequestContextGetter;
 // This class abstracts the basic steps and exposes template methods
 // for sub-classes to implement for API specific details.
 class OAuth2ApiCallFlow
-    : public content::URLFetcherDelegate,
+    : public net::URLFetcherDelegate,
       public OAuth2AccessTokenConsumer {
  public:
   // Creates an instance that works with the given data.
@@ -56,7 +56,7 @@ class OAuth2ApiCallFlow
   virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
-  // content::URLFetcherDelegate implementation.
+  // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
  protected:
@@ -101,7 +101,7 @@ class OAuth2ApiCallFlow
   // The URLFether's method will be GET if body is empty, POST otherwise.
   // Caller owns the returned instance.
   // Note that this is virtual since it is mocked during unit testing.
-  virtual content::URLFetcher* CreateURLFetcher();
+  virtual net::URLFetcher* CreateURLFetcher();
 
   // Helper methods to implement the state machine for the flow.
   void BeginApiCall();
@@ -118,7 +118,7 @@ class OAuth2ApiCallFlow
   // Whether we have already tried minting an access token once.
   bool tried_mint_access_token_;
 
-  scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2ApiCallFlow);

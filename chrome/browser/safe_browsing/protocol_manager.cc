@@ -172,7 +172,7 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
     IssueUpdateRequest();
 }
 
-// content::URLFetcherDelegate implementation ----------------------------------
+// net::URLFetcherDelegate implementation ----------------------------------
 
 // All SafeBrowsing request responses are handled here.
 // TODO(paulg): Clarify with the SafeBrowsing team whether a failed parse of a

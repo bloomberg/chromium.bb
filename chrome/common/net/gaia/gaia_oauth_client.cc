@@ -9,10 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -25,7 +25,7 @@ namespace gaia {
 
 class GaiaOAuthClient::Core
     : public base::RefCountedThreadSafe<GaiaOAuthClient::Core>,
-      public content::URLFetcherDelegate {
+      public net::URLFetcherDelegate {
  public:
   Core(const std::string& gaia_url,
        net::URLRequestContextGetter* request_context_getter)
@@ -43,7 +43,7 @@ class GaiaOAuthClient::Core
                     int max_retries,
                     GaiaOAuthClient::Delegate* delegate);
 
-  // content::URLFetcherDelegate implementation.
+  // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source);
 
  private:

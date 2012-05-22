@@ -28,7 +28,7 @@ class TestSpellingURLFetcher : public TestURLFetcher {
  public:
   TestSpellingURLFetcher(int id,
                          const GURL& url,
-                         content::URLFetcherDelegate* d,
+                         net::URLFetcherDelegate* d,
                          int version,
                          const std::string& text,
                          int status,

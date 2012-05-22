@@ -9,9 +9,11 @@
 #include "content/common/content_export.h"
 #include "net/url_request/url_fetcher.h"
 
-namespace content {
-
+namespace net {
 class URLFetcherDelegate;
+}  // namespace net
+
+namespace content {
 
 // TODO(akalin): Move the static functions to net::URLFetcher and
 // remove content::URLFetcher.
@@ -22,7 +24,7 @@ class CONTENT_EXPORT URLFetcher : public net::URLFetcher {
   // |d| the object that will receive the callback on fetch completion.
   static URLFetcher* Create(const GURL& url,
                             RequestType request_type,
-                            URLFetcherDelegate* d);
+                            net::URLFetcherDelegate* d);
 
   // Like above, but if there's a URLFetcherFactory registered with the
   // implementation it will be used. |id| may be used during testing to identify
@@ -30,7 +32,7 @@ class CONTENT_EXPORT URLFetcher : public net::URLFetcher {
   static URLFetcher* Create(int id,
                             const GURL& url,
                             RequestType request_type,
-                            URLFetcherDelegate* d);
+                            net::URLFetcherDelegate* d);
 
   // Cancels all existing URLFetchers.  Will notify the URLFetcherDelegates.
   // Note that any new URLFetchers created while this is running will not be

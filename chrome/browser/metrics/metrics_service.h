@@ -24,7 +24,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -50,6 +50,10 @@ namespace extensions {
 class ExtensionDownloader;
 }
 
+namespace net {
+class URLFetcher;
+}
+
 namespace prerender {
 bool IsOmniboxEnabled(Profile* profile);
 }
@@ -65,7 +69,7 @@ struct WebPluginInfo;
 class MetricsService
     : public chrome_browser_metrics::TrackingSynchronizerObserver,
       public content::NotificationObserver,
-      public content::URLFetcherDelegate,
+      public net::URLFetcherDelegate,
       public MetricsServiceBase {
  public:
   MetricsService();
@@ -270,7 +274,7 @@ class MetricsService
   // copy of the staged log.
   void PrepareFetchWithStagedLog();
 
-  // Implementation of content::URLFetcherDelegate. Called after transmission
+  // Implementation of net::URLFetcherDelegate. Called after transmission
   // completes (either successfully or with failure).
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
@@ -377,8 +381,8 @@ class MetricsService
   scoped_ptr<MetricsLog> initial_log_;
 
   // The outstanding transmission appears as a URL Fetch operation.
-  scoped_ptr<content::URLFetcher> current_fetch_xml_;
-  scoped_ptr<content::URLFetcher> current_fetch_proto_;
+  scoped_ptr<net::URLFetcher> current_fetch_xml_;
+  scoped_ptr<net::URLFetcher> current_fetch_proto_;
 
   // Cached responses from the XML request while we wait for a response to the
   // protubuf request.

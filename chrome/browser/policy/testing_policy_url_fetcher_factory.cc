@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ class TestingPolicyURLFetcher : public TestURLFetcher {
   TestingPolicyURLFetcher(
       const base::WeakPtr<TestingPolicyURLFetcherFactory>& parent,
       const GURL& url,
-      content::URLFetcherDelegate* delegate);
+      net::URLFetcherDelegate* delegate);
 
   virtual void Start() OVERRIDE;
   void Respond();
@@ -65,7 +65,7 @@ class TestingPolicyURLFetcher : public TestURLFetcher {
 TestingPolicyURLFetcher::TestingPolicyURLFetcher(
     const base::WeakPtr<TestingPolicyURLFetcherFactory>& parent,
     const GURL& url,
-    content::URLFetcherDelegate* delegate)
+    net::URLFetcherDelegate* delegate)
     : TestURLFetcher(0, url, delegate),
       parent_(parent) {
   set_url(url);
@@ -126,7 +126,7 @@ content::URLFetcher* TestingPolicyURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     content::URLFetcher::RequestType request_type,
-    content::URLFetcherDelegate* delegate) {
+    net::URLFetcherDelegate* delegate) {
   return new TestingPolicyURLFetcher(
       weak_ptr_factory_.GetWeakPtr(), url, delegate);
 }

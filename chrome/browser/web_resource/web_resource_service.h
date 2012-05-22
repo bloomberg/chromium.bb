@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class PrefService;
 class ResourceDispatcherHost;
@@ -21,11 +21,15 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace net {
+class URLFetcher;
+}
+
 // A WebResourceService fetches JSON data from a web server and periodically
 // refreshes it.
 class WebResourceService
     : public base::RefCountedThreadSafe<WebResourceService>,
-      public content::URLFetcherDelegate {
+      public net::URLFetcherDelegate {
  public:
   WebResourceService(PrefService* prefs,
                      const GURL& web_resource_server,
@@ -50,7 +54,7 @@ class WebResourceService
   class UnpackerClient;
   friend class base::RefCountedThreadSafe<WebResourceService>;
 
-  // content::URLFetcherDelegate implementation:
+  // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Schedules a fetch after |delay_ms| milliseconds.
@@ -67,7 +71,7 @@ class WebResourceService
   base::WeakPtrFactory<WebResourceService> weak_ptr_factory_;
 
   // The tool that fetches the url data from the server.
-  scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
 
   // True if we are currently fetching or unpacking data. If we are asked to
   // start a fetch when we are still fetching resource data, schedule another

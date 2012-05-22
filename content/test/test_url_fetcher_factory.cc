@@ -11,9 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "content/common/net/url_fetcher_impl.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
 ScopedURLFetcherFactory::ScopedURLFetcherFactory(
@@ -29,7 +29,7 @@ ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
 
 TestURLFetcher::TestURLFetcher(int id,
                                const GURL& url,
-                               content::URLFetcherDelegate* d)
+                               net::URLFetcherDelegate* d)
     : id_(id),
       original_url_(url),
       delegate_(d),
@@ -223,7 +223,7 @@ content::URLFetcher* TestURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     content::URLFetcher::RequestType request_type,
-    content::URLFetcherDelegate* d) {
+    net::URLFetcherDelegate* d) {
   TestURLFetcher* fetcher = new TestURLFetcher(id, url, d);
   fetchers_[id] = fetcher;
   return fetcher;
@@ -245,7 +245,7 @@ class FakeURLFetcher : public TestURLFetcher {
  public:
   // Normal URL fetcher constructor but also takes in a pre-baked response.
   FakeURLFetcher(const GURL& url,
-                 content::URLFetcherDelegate* d,
+                 net::URLFetcherDelegate* d,
                  const std::string& response_data, bool success)
     : TestURLFetcher(0, url, d),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -301,7 +301,7 @@ content::URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     content::URLFetcher::RequestType request_type,
-    content::URLFetcherDelegate* d) {
+    net::URLFetcherDelegate* d) {
   FakeResponseMap::const_iterator it = fake_responses_.find(url);
   if (it == fake_responses_.end()) {
     if (default_factory_ == NULL) {
@@ -334,6 +334,6 @@ content::URLFetcher* URLFetcherImplFactory::CreateURLFetcher(
     int id,
     const GURL& url,
     content::URLFetcher::RequestType request_type,
-    content::URLFetcherDelegate* d) {
+    net::URLFetcherDelegate* d) {
   return new URLFetcherImpl(url, request_type, d);
 }

@@ -222,7 +222,7 @@ void WebResourceService::StartFetch() {
 
 void WebResourceService::OnURLFetchComplete(const net::URLFetcher* source) {
   // Delete the URLFetcher when this function exits.
-  scoped_ptr<content::URLFetcher> clean_up_fetcher(url_fetcher_.release());
+  scoped_ptr<net::URLFetcher> clean_up_fetcher(url_fetcher_.release());
 
   // Don't parse data if attempt to download was unsuccessful.
   // Stop loading new web resource data, and silently exit.

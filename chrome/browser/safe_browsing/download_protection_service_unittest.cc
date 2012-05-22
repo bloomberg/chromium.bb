@@ -24,11 +24,11 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/zip.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/x509_certificate.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

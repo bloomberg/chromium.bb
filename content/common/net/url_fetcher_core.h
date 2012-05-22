@@ -34,13 +34,12 @@ class MessageLoopProxy;
 namespace net {
 class HttpResponseHeaders;
 class IOBuffer;
+class URLFetcherDelegate;
 class URLRequestContextGetter;
 class URLRequestThrottlerEntryInterface;
 }  // namespace net
 
 namespace content {
-
-class URLFetcherDelegate;
 
 class URLFetcherCore
     : public base::RefCountedThreadSafe<URLFetcherCore>,
@@ -49,7 +48,7 @@ class URLFetcherCore
   URLFetcherCore(URLFetcher* fetcher,
                  const GURL& original_url,
                  URLFetcher::RequestType request_type,
-                 URLFetcherDelegate* d);
+                 net::URLFetcherDelegate* d);
 
   // Starts the load.  It's important that this not happen in the constructor
   // because it causes the IO thread to begin AddRef()ing and Release()ing
@@ -125,7 +124,7 @@ class URLFetcherCore
   virtual void OnReadCompleted(
       net::URLRequest* request, int bytes_read) OVERRIDE;
 
-  URLFetcherDelegate* delegate() const { return delegate_; }
+  net::URLFetcherDelegate* delegate() const { return delegate_; }
   static void CancelAll();
   static int GetNumFetcherCores();
   static void SetEnableInterceptionForTests(bool enabled);
@@ -300,7 +299,7 @@ class URLFetcherCore
   GURL url_;                         // The URL we eventually wound up at
   URLFetcher::RequestType request_type_;  // What type of request is this?
   net::URLRequestStatus status_;     // Status of the request
-  URLFetcherDelegate* delegate_;     // Object to notify on completion
+  net::URLFetcherDelegate* delegate_;  // Object to notify on completion
   scoped_refptr<base::MessageLoopProxy> delegate_loop_proxy_;
                                      // Message loop proxy of the creating
                                      // thread.

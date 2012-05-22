@@ -22,13 +22,13 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------
 class TemplateURLFetcher::RequestDelegate
-    : public content::URLFetcherDelegate,
+    : public net::URLFetcherDelegate,
       public content::NotificationObserver {
  public:
   // Takes ownership of |callbacks|.
@@ -45,7 +45,7 @@ class TemplateURLFetcher::RequestDelegate
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  // content::URLFetcherDelegate:
+  // net::URLFetcherDelegate:
   // If data contains a valid OSDD, a TemplateURL is created and added to
   // the TemplateURLService.
   virtual void OnURLFetchComplete(const net::URLFetcher* source);

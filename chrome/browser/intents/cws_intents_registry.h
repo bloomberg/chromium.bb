@@ -11,8 +11,8 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -21,7 +21,7 @@ class URLRequestContextGetter;
 // Handles storing and retrieving of web intents in the web database.
 // The registry provides filtering logic to retrieve specific types of intents.
 class CWSIntentsRegistry : public ProfileKeyedService,
-                           public content::URLFetcherDelegate {
+                           public net::URLFetcherDelegate {
  public:
   // Data returned from CWS for a single service.
   struct IntentExtensionInfo {
@@ -72,7 +72,7 @@ class CWSIntentsRegistry : public ProfileKeyedService,
   explicit CWSIntentsRegistry(net::URLRequestContextGetter* context);
   virtual ~CWSIntentsRegistry();
 
-  // content::URLFetcherDelegate implementation.
+  // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Map for all in-flight web data requests/intent queries.

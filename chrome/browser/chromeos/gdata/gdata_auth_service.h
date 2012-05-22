@@ -8,9 +8,10 @@
 
 #include <string>
 
-#include "base/observer_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop_proxy.h"
+#include "base/observer_list.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"

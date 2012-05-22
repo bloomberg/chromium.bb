@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,10 @@
 #pragma once
 
 #include "content/public/common/url_fetcher.h"
+
+namespace net {
+class URLFetcherDelegate;
+}  // namespace net
 
 namespace content {
 
@@ -18,7 +22,7 @@ class URLFetcherFactory {
       int id,
       const GURL& url,
       URLFetcher::RequestType request_type,
-      URLFetcherDelegate* d) = 0;
+      net::URLFetcherDelegate* d) = 0;
 
  protected:
   virtual ~URLFetcherFactory() {}

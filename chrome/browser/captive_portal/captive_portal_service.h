@@ -14,9 +14,9 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/backoff_entry.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
 
@@ -46,7 +46,7 @@ enum Result {
 // be accessed on the UI thread.
 // Design doc: https://docs.google.com/document/d/1k-gP2sswzYNvryu9NcgN7q5XrsMlUdlUdoW9WRaEmfM/edit
 class CaptivePortalService : public ProfileKeyedService,
-                             public content::URLFetcherDelegate,
+                             public net::URLFetcherDelegate,
                              public content::NotificationObserver,
                              public base::NonThreadSafe {
  public:
@@ -115,7 +115,7 @@ class CaptivePortalService : public ProfileKeyedService,
   // is disabled, just acts like there's an Internet connection.
   void DetectCaptivePortalInternal();
 
-  // content::URLFetcherDelegate:
+  // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver:

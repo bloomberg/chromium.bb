@@ -6,10 +6,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -378,8 +378,8 @@ TEST_F(SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
 
   // Schedule the fetch completion callback (but don't run it yet). Don't take
   // a reference to the bridge to mimic URLFetcher's handling of the delegate.
-  content::URLFetcherDelegate* delegate =
-      static_cast<content::URLFetcherDelegate*>(bridge_for_race_test());
+  net::URLFetcherDelegate* delegate =
+      static_cast<net::URLFetcherDelegate*>(bridge_for_race_test());
   net::ResponseCookies cookies;
   std::string response_content = "success!";
   TestURLFetcher fetcher(0, GURL(), NULL);
@@ -389,7 +389,7 @@ TEST_F(SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   fetcher.SetResponseString(response_content);
   ASSERT_TRUE(BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&content::URLFetcherDelegate::OnURLFetchComplete,
+      base::Bind(&net::URLFetcherDelegate::OnURLFetchComplete,
           base::Unretained(delegate), &fetcher)));
 
   // Abort the fetch. This should be smart enough to handle the case where

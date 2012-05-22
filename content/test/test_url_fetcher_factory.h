@@ -58,7 +58,7 @@ class TestURLFetcher : public content::URLFetcher {
  public:
   TestURLFetcher(int id,
                  const GURL& url,
-                 content::URLFetcherDelegate* d);
+                 net::URLFetcherDelegate* d);
   virtual ~TestURLFetcher();
 
   // content::URLFetcher implementation
@@ -126,7 +126,7 @@ class TestURLFetcher : public content::URLFetcher {
   const std::list<std::string>& upload_chunks() const { return chunks_; }
 
   // Returns the delegate installed on the URLFetcher.
-  content::URLFetcherDelegate* delegate() const { return delegate_; }
+  net::URLFetcherDelegate* delegate() const { return delegate_; }
 
   void set_url(const GURL& url) { fake_url_ = url; }
   void set_status(const net::URLRequestStatus& status);
@@ -152,7 +152,7 @@ class TestURLFetcher : public content::URLFetcher {
 
   const int id_;
   const GURL original_url_;
-  content::URLFetcherDelegate* delegate_;
+  net::URLFetcherDelegate* delegate_;
   std::string upload_data_;
   std::list<std::string> chunks_;
   bool did_receive_last_chunk_;
@@ -190,7 +190,7 @@ class TestURLFetcherFactory : public content::URLFetcherFactory,
       int id,
       const GURL& url,
       content::URLFetcher::RequestType request_type,
-      content::URLFetcherDelegate* d) OVERRIDE;
+      net::URLFetcherDelegate* d) OVERRIDE;
   TestURLFetcher* GetFetcherByID(int id) const;
   void RemoveFetcherFromMap(int id);
 
@@ -252,7 +252,7 @@ class FakeURLFetcherFactory : public content::URLFetcherFactory,
       int id,
       const GURL& url,
       content::URLFetcher::RequestType request_type,
-      content::URLFetcherDelegate* d) OVERRIDE;
+      net::URLFetcherDelegate* d) OVERRIDE;
 
   // Sets the fake response for a given URL.  If success is true we will serve
   // an HTTP/200 and an HTTP/500 otherwise.  The |response_data| may be empty.
@@ -286,7 +286,7 @@ class URLFetcherImplFactory : public content::URLFetcherFactory {
       int id,
       const GURL& url,
       content::URLFetcher::RequestType request_type,
-      content::URLFetcherDelegate* d) OVERRIDE;
+      net::URLFetcherDelegate* d) OVERRIDE;
 
 };
 

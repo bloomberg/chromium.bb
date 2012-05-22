@@ -276,7 +276,7 @@ void HttpBridge::Abort() {
   http_post_completed_.Signal();
 }
 
-void HttpBridge::DestroyURLFetcherOnIOThread(content::URLFetcher* fetcher) {
+void HttpBridge::DestroyURLFetcherOnIOThread(net::URLFetcher* fetcher) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   delete fetcher;
 }

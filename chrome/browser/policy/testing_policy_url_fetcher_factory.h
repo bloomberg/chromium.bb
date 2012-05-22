@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class GURL;
@@ -43,7 +43,7 @@ class TestingPolicyURLFetcherFactory : public content::URLFetcherFactory,
       int id,
       const GURL& url,
       content::URLFetcher::RequestType request_type,
-      content::URLFetcherDelegate* delegate) OVERRIDE;
+      net::URLFetcherDelegate* delegate) OVERRIDE;
 
   LoggingWorkScheduler* scheduler();
 

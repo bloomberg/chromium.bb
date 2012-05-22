@@ -31,9 +31,9 @@
 #include "base/time.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class SafeBrowsingService;
 
@@ -46,6 +46,7 @@ class RenderProcessHost;
 }
 
 namespace net {
+class URLFetcher;
 class URLRequestContextGetter;
 class URLRequestStatus;
 typedef std::vector<std::string> ResponseCookies;
@@ -56,7 +57,7 @@ class ClientPhishingRequest;
 class ClientPhishingResponse;
 class ClientSideModel;
 
-class ClientSideDetectionService : public content::URLFetcherDelegate,
+class ClientSideDetectionService : public net::URLFetcherDelegate,
                                    public content::NotificationObserver {
  public:
   // void(GURL phishing_url, bool is_phishing).
@@ -83,7 +84,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
     return enabled_;
   }
 
-  // From the content::URLFetcherDelegate interface.
+  // From the net::URLFetcherDelegate interface.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver overrides:
@@ -258,7 +259,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   std::string model_str_;
   scoped_ptr<ClientSideModel> model_;
   scoped_ptr<base::TimeDelta> model_max_age_;
-  scoped_ptr<content::URLFetcher> model_fetcher_;
+  scoped_ptr<net::URLFetcher> model_fetcher_;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.

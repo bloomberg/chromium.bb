@@ -530,7 +530,7 @@ void SearchProvider::ClearResults() {
   have_suggest_results_ = false;
 }
 
-content::URLFetcher* SearchProvider::CreateSuggestFetcher(
+net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     int id,
     const TemplateURLRef& suggestions_url,
     const string16& text) {

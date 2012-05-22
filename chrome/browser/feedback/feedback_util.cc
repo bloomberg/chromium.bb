@@ -27,12 +27,12 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/locid.h"
@@ -88,14 +88,14 @@ const int64 kRetryDelayLimit = 14400000;  // 4 hours
 }  // namespace
 
 
-// Simple content::URLFetcherDelegate to clean up URLFetcher on completion.
-class FeedbackUtil::PostCleanup : public content::URLFetcherDelegate {
+// Simple net::URLFetcherDelegate to clean up URLFetcher on completion.
+class FeedbackUtil::PostCleanup : public net::URLFetcherDelegate {
  public:
   PostCleanup(Profile* profile, std::string* post_body,
               int64 previous_delay) : profile_(profile),
                                       post_body_(post_body),
                                       previous_delay_(previous_delay) { }
-  // Overridden from content::URLFetcherDelegate.
+  // Overridden from net::URLFetcherDelegate.
   virtual void OnURLFetchComplete(const net::URLFetcher* source);
 
  protected:

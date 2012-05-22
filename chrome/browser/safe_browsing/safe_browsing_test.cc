@@ -39,12 +39,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_log.h"
 #include "net/test/python_utils.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -348,7 +348,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 class SafeBrowsingServiceTestHelper
     : public base::RefCountedThreadSafe<SafeBrowsingServiceTestHelper>,
       public SafeBrowsingService::Client,
-      public content::URLFetcherDelegate {
+      public net::URLFetcherDelegate {
  public:
   SafeBrowsingServiceTestHelper(SafeBrowsingServiceTest* safe_browsing_test,
                                 net::URLRequestContextGetter* request_context)

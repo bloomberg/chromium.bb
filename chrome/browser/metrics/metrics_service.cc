@@ -1262,7 +1262,7 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   // We're not allowed to re-use the existing |URLFetcher|s, so free them here.
   // Note however that |source| is aliased to one of these, so we should be
   // careful not to delete it too early.
-  scoped_ptr<content::URLFetcher> s;
+  scoped_ptr<net::URLFetcher> s;
   if (source == current_fetch_xml_.get()) {
     s.reset(current_fetch_xml_.release());
 

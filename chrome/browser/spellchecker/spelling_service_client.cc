@@ -110,7 +110,7 @@ bool SpellingServiceClient::RequestTextCheck(
 
 void SpellingServiceClient::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  scoped_ptr<content::URLFetcher> clean_up_fetcher(fetcher_.release());
+  scoped_ptr<net::URLFetcher> clean_up_fetcher(fetcher_.release());
   bool success = false;
   std::vector<SpellCheckResult> results;
   if (source->GetResponseCode() / 100 == 2) {
@@ -121,7 +121,7 @@ void SpellingServiceClient::OnURLFetchComplete(
   callback_.Run(tag_, success, results);
 }
 
-content::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {
+net::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {
   return content::URLFetcher::Create(url, content::URLFetcher::POST, this);
 }
 

@@ -20,8 +20,8 @@
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class OAuth2AccessTokenFetcher;
 class CloudPrintURL;
@@ -32,10 +32,14 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace net {
+class URLFetcher;
+}
+
 // ChromeToMobileService connects to the cloud print service to enumerate
 // compatible mobiles owned by its profile and send URLs and MHTML snapshots.
 class ChromeToMobileService : public ProfileKeyedService,
-                              public content::URLFetcherDelegate,
+                              public net::URLFetcherDelegate,
                               public content::NotificationObserver,
                               public OAuth2AccessTokenConsumer {
  public:
@@ -119,7 +123,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Virtual for unit test mocking.
   virtual void LogMetric(Metric metric);
 
-  // content::URLFetcherDelegate method.
+  // net::URLFetcherDelegate method.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver method.
@@ -141,7 +145,7 @@ class ChromeToMobileService : public ProfileKeyedService,
                            bool success);
 
   // Utility function to create URLFetcher requests.
-  content::URLFetcher* CreateRequest(const RequestData& data);
+  net::URLFetcher* CreateRequest(const RequestData& data);
 
   // Send the OAuth2AccessTokenFetcher request.
   // Virtual for unit test mocking.
@@ -184,11 +188,11 @@ class ChromeToMobileService : public ProfileKeyedService,
   base::OneShotTimer<ChromeToMobileService> auth_retry_timer_;
 
   // The pending account information request and the cloud print access flag.
-  scoped_ptr<content::URLFetcher> account_info_request_;
+  scoped_ptr<net::URLFetcher> account_info_request_;
   bool cloud_print_accessible_;
 
   // The pending mobile device search request; and the time of the last request.
-  scoped_ptr<content::URLFetcher> search_request_;
+  scoped_ptr<net::URLFetcher> search_request_;
   base::TimeTicks previous_search_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeToMobileService);

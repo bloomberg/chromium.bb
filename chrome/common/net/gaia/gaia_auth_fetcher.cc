@@ -225,14 +225,14 @@ void GaiaAuthFetcher::CancelRequest() {
 }
 
 // static
-content::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
+net::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     net::URLRequestContextGetter* getter,
     const std::string& body,
     const std::string& headers,
     const GURL& gaia_gurl,
     int load_flags,
-    content::URLFetcherDelegate* delegate) {
-  content::URLFetcher* to_return = content::URLFetcher::Create(
+    net::URLFetcherDelegate* delegate) {
+  net::URLFetcher* to_return = content::URLFetcher::Create(
       0, gaia_gurl,
       body == "" ? content::URLFetcher::GET : content::URLFetcher::POST,
       delegate);

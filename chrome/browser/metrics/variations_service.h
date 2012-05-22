@@ -10,18 +10,22 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/time.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/common/chrome_version_info.h"
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class PrefService;
 
+namespace net {
+class URLFetcher;
+}  // namespace net
+
 // Used to setup field trials based on stored variations seed data, and fetch
 // new seed data from the variations server.
-class VariationsService : public content::URLFetcherDelegate {
+class VariationsService : public net::URLFetcherDelegate {
  public:
   VariationsService();
   virtual ~VariationsService();
@@ -35,7 +39,7 @@ class VariationsService : public content::URLFetcherDelegate {
   // response.
   void StartFetchingVariationsSeed();
 
-  // content::URLFetcherDelegate implementation:
+  // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Register Variations related prefs in Local State.
@@ -80,7 +84,7 @@ class VariationsService : public content::URLFetcherDelegate {
 
   // Contains the current seed request. Will only have a value while a request
   // is pending, and will be reset by |OnURLFetchComplete|.
-  scoped_ptr<content::URLFetcher> pending_seed_request_;
+  scoped_ptr<net::URLFetcher> pending_seed_request_;
 
   // The variations seed data being used for this session.
   // TODO(jwd): This should be removed. When the seed data is loaded, it will be

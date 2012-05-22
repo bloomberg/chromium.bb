@@ -16,16 +16,20 @@
 #include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class ProfileDownloaderDelegate;
 class OAuth2AccessTokenFetcher;
 
+namespace net {
+class URLFetcher;
+}  // namespace net
+
 // Downloads user profile information. The profile picture is decoded in a
 // sandboxed process.
-class ProfileDownloader : public content::URLFetcherDelegate,
+class ProfileDownloader : public net::URLFetcherDelegate,
                           public ImageDecoder::Delegate,
                           public content::NotificationObserver,
                           public OAuth2AccessTokenConsumer {
@@ -67,7 +71,7 @@ class ProfileDownloader : public content::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, ParseData);
   FRIEND_TEST_ALL_PREFIXES(ProfileDownloaderTest, DefaultURL);
 
-  // Overriden from content::URLFetcherDelegate:
+  // Overriden from net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Overriden from ImageDecoder::Delegate:
@@ -107,8 +111,8 @@ class ProfileDownloader : public content::URLFetcherDelegate,
 
   ProfileDownloaderDelegate* delegate_;
   std::string auth_token_;
-  scoped_ptr<content::URLFetcher> user_entry_fetcher_;
-  scoped_ptr<content::URLFetcher> profile_image_fetcher_;
+  scoped_ptr<net::URLFetcher> user_entry_fetcher_;
+  scoped_ptr<net::URLFetcher> profile_image_fetcher_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
   content::NotificationRegistrar registrar_;
   string16 profile_full_name_;

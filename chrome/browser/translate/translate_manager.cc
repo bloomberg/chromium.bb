@@ -423,7 +423,7 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
       (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
       source->GetResponseCode() != 200);
   if (translate_script_request_pending_.get() == source) {
-    scoped_ptr<const content::URLFetcher> delete_ptr(
+    scoped_ptr<const net::URLFetcher> delete_ptr(
         translate_script_request_pending_.release());
     if (!error) {
       base::StringPiece str = ResourceBundle::GetSharedInstance().
@@ -477,7 +477,7 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
     }
     pending_requests_.clear();
   } else {  // if (translate_script_request_pending_.get() == source)
-    scoped_ptr<const content::URLFetcher> delete_ptr(
+    scoped_ptr<const net::URLFetcher> delete_ptr(
         language_list_request_pending_.release());
     if (!error) {
       std::string data;

@@ -16,7 +16,7 @@ static content::URLFetcherFactory* g_factory = NULL;
 content::URLFetcher* content::URLFetcher::Create(
     const GURL& url,
     RequestType request_type,
-    content::URLFetcherDelegate* d) {
+    net::URLFetcherDelegate* d) {
   return new URLFetcherImpl(url, request_type, d);
 }
 
@@ -25,7 +25,7 @@ content::URLFetcher* content::URLFetcher::Create(
     int id,
     const GURL& url,
     RequestType request_type,
-    content::URLFetcherDelegate* d) {
+    net::URLFetcherDelegate* d) {
   return g_factory ? g_factory->CreateURLFetcher(id, url, request_type, d) :
                      new URLFetcherImpl(url, request_type, d);
 }
@@ -67,7 +67,7 @@ void AssociateURLFetcherWithRenderView(net::URLFetcher* url_fetcher,
 
 URLFetcherImpl::URLFetcherImpl(const GURL& url,
                                RequestType request_type,
-                               content::URLFetcherDelegate* d)
+                               net::URLFetcherDelegate* d)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
         core_(new content::URLFetcherCore(this, url, request_type, d))) {
 }
@@ -227,7 +227,7 @@ int URLFetcherImpl::GetNumFetcherCores() {
   return content::URLFetcherCore::GetNumFetcherCores();
 }
 
-content::URLFetcherDelegate* URLFetcherImpl::delegate() const {
+net::URLFetcherDelegate* URLFetcherImpl::delegate() const {
   return core_->delegate();
 }
 

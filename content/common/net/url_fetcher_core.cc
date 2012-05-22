@@ -11,11 +11,11 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/tracked_objects.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_throttler_manager.h"
@@ -245,7 +245,7 @@ static bool g_interception_enabled = false;
 URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
                                const GURL& original_url,
                                URLFetcher::RequestType request_type,
-                               content::URLFetcherDelegate* d)
+                               net::URLFetcherDelegate* d)
     : fetcher_(fetcher),
       original_url_(original_url),
       request_type_(request_type),

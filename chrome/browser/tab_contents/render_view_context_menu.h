@@ -56,7 +56,7 @@ struct WebPluginAction;
 // The following snippet describes the simple usage that updates a context-menu
 // item with this interface.
 //
-//   class MyTask : public content::URLFetcherDelegate {
+//   class MyTask : public net::URLFetcherDelegate {
 //    public:
 //     MyTask(RenderViewContextMenuProxy* proxy, int id)
 //         : proxy_(proxy),

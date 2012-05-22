@@ -6,9 +6,9 @@
 
 #include "base/base64.h"
 #include "base/build_time.h"
-#include "base/version.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -83,7 +83,7 @@ void VariationsService::StartFetchingVariationsSeed() {
 void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(pending_seed_request_.get(), source);
   // When we're done handling the request, the fetcher will be deleted.
-  scoped_ptr<const content::URLFetcher> request(
+  scoped_ptr<const net::URLFetcher> request(
       pending_seed_request_.release());
   if (request->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
       request->GetResponseCode() != 200)

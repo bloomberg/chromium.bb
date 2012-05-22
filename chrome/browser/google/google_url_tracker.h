@@ -17,9 +17,9 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class GoogleURLTrackerInfoBarDelegate;
 class PrefService;
@@ -43,7 +43,7 @@ class WebContents;
 // To protect users' privacy and reduce server load, no updates will be
 // performed (ever) unless at least one consumer registers interest by calling
 // RequestServerCheck().
-class GoogleURLTracker : public content::URLFetcherDelegate,
+class GoogleURLTracker : public net::URLFetcherDelegate,
                          public content::NotificationObserver,
                          public net::NetworkChangeNotifier::IPAddressObserver,
                          public ProfileKeyedService {
@@ -117,7 +117,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   // it and can currently do so.
   void StartFetchIfDesirable();
 
-  // content::URLFetcherDelegate:
+  // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver:

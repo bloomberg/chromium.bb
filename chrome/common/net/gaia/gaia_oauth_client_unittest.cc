@@ -11,11 +11,11 @@
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +31,7 @@ class MockOAuthFetcher : public TestURLFetcher {
                    const GURL& url,
                    const std::string& results,
                    content::URLFetcher::RequestType request_type,
-                   content::URLFetcherDelegate* d)
+                   net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d),
       max_failure_count_(max_failure_count),
       current_failure_count_(0) {
@@ -76,7 +76,7 @@ class MockOAuthFetcherFactory : public content::URLFetcherFactory,
       int id,
       const GURL& url,
       content::URLFetcher::RequestType request_type,
-      content::URLFetcherDelegate* d) {
+      net::URLFetcherDelegate* d) {
     return new MockOAuthFetcher(
         response_code_,
         max_failure_count_,

@@ -20,12 +20,13 @@
 #include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/update_manifest.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class Version;
 
 namespace net {
+class URLFetcher;
 class URLRequestContextGetter;
 class URLRequestStatus;
 }
@@ -38,7 +39,7 @@ class ExtensionUpdaterTest;
 // the crx file when updates are found. It uses a |ExtensionDownloaderDelegate|
 // that takes ownership of the downloaded crx files, and handles events during
 // the update check.
-class ExtensionDownloader : public content::URLFetcherDelegate {
+class ExtensionDownloader : public net::URLFetcherDelegate {
  public:
   // |delegate| is stored as a raw pointer and must outlive the
   // ExtensionDownloader.
@@ -118,7 +119,7 @@ class ExtensionDownloader : public content::URLFetcherDelegate {
   // Begins an update check. Takes ownership of |fetch_data|.
   void StartUpdateCheck(ManifestFetchData* fetch_data);
 
-  // content::URLFetcherDelegate implementation.
+  // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Handles the result of a manifest fetch.
@@ -180,8 +181,8 @@ class ExtensionDownloader : public content::URLFetcherDelegate {
   FetchMap fetches_preparing_;
 
   // Outstanding url fetch requests for manifests and updates.
-  scoped_ptr<content::URLFetcher> manifest_fetcher_;
-  scoped_ptr<content::URLFetcher> extension_fetcher_;
+  scoped_ptr<net::URLFetcher> manifest_fetcher_;
+  scoped_ptr<net::URLFetcher> extension_fetcher_;
 
   // Pending manifests and extensions to be fetched when the appropriate fetcher
   // is available.

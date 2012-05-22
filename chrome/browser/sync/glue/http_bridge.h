@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/internal_api/http_post_provider_factory.h"
@@ -26,6 +26,7 @@ class HttpBridgeTest;
 
 namespace net {
 class HttpResponseHeaders;
+class URLFetcher;
 }
 
 namespace browser_sync {
@@ -38,7 +39,7 @@ namespace browser_sync {
 // needs to stick around across context switches, etc.
 class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
                    public sync_api::HttpPostProviderInterface,
-                   public content::URLFetcherDelegate {
+                   public net::URLFetcherDelegate {
  public:
   // A request context used for HTTP requests bridged from the sync backend.
   // A bridged RequestContext has a dedicated in-memory cookie store and does
@@ -122,7 +123,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   virtual const std::string GetResponseHeaderValue(
       const std::string& name) const OVERRIDE;
 
-  // content::URLFetcherDelegate implementation.
+  // net::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
 #if defined(UNIT_TEST)
@@ -151,7 +152,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // a reference to |this| is held while flushing any pending fetch completion
   // callbacks coming from the IO thread en route to finally destroying the
   // fetcher.
-  void DestroyURLFetcherOnIOThread(content::URLFetcher* fetcher);
+  void DestroyURLFetcherOnIOThread(net::URLFetcher* fetcher);
 
   // Gets a customized net::URLRequestContext for bridged requests. See
   // RequestContext definition for details.
@@ -185,7 +186,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // NOTE: This is not a scoped_ptr for a reason. It must be deleted on the
     // same thread that created it, which isn't the same thread |this| gets
     // deleted on. We must manually delete url_poster_ on the IO loop.
-    content::URLFetcher* url_poster;
+    net::URLFetcher* url_poster;
 
     // Used to support 'Abort' functionality.
     bool aborted;

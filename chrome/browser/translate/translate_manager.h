@@ -20,7 +20,7 @@
 #include "chrome/common/translate_errors.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 template <typename T> struct DefaultSingletonTraits;
 class GURL;
@@ -32,13 +32,17 @@ namespace content {
 class WebContents;
 }
 
+namespace net {
+class URLFetcher;
+}
+
 // The TranslateManager class is responsible for showing an info-bar when a page
 // in a language different than the user language is loaded.  It triggers the
 // page translation the user requests.
 // It is a singleton.
 
 class TranslateManager : public content::NotificationObserver,
-                         public content::URLFetcherDelegate {
+                         public net::URLFetcherDelegate {
  public:
   // Returns the singleton instance.
   static TranslateManager* GetInstance();
@@ -79,7 +83,7 @@ class TranslateManager : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // content::URLFetcherDelegate implementation:
+  // net::URLFetcherDelegate implementation:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Used by unit-tests to override the default delay after which the translate
@@ -208,11 +212,11 @@ class TranslateManager : public content::NotificationObserver,
   base::TimeDelta translate_script_expiration_delay_;
 
   // Set when the translate JS is currently being retrieved. NULL otherwise.
-  scoped_ptr<content::URLFetcher> translate_script_request_pending_;
+  scoped_ptr<net::URLFetcher> translate_script_request_pending_;
 
   // Set when the list of languages is currently being retrieved.
   // NULL otherwise.
-  scoped_ptr<content::URLFetcher> language_list_request_pending_;
+  scoped_ptr<net::URLFetcher> language_list_request_pending_;
 
   // The list of pending translate requests.  Translate requests are queued when
   // the translate script is not ready and has to be fetched from the translate

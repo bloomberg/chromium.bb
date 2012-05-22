@@ -22,7 +22,7 @@ class MockFetcher : public TestURLFetcher {
               const GURL& url,
               const std::string& results,
               content::URLFetcher::RequestType request_type,
-              content::URLFetcherDelegate* d);
+              net::URLFetcherDelegate* d);
 
   MockFetcher(const GURL& url,
               const net::URLRequestStatus& status,
@@ -30,7 +30,7 @@ class MockFetcher : public TestURLFetcher {
               const net::ResponseCookies& cookies,
               const std::string& results,
               content::URLFetcher::RequestType request_type,
-              content::URLFetcherDelegate* d);
+              net::URLFetcherDelegate* d);
 
   virtual ~MockFetcher();
 
@@ -53,7 +53,7 @@ class MockURLFetcherFactory : public content::URLFetcherFactory,
       int id,
       const GURL& url,
       content::URLFetcher::RequestType request_type,
-      content::URLFetcherDelegate* d) OVERRIDE {
+      net::URLFetcherDelegate* d) OVERRIDE {
     return new T(success_, url, results_, request_type, d);
   }
   void set_success(bool success) {

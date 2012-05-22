@@ -13,8 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 // Authenticate a user against the Google Accounts ClientLogin API
 // with various capabilities and return results to a GaiaAuthConsumer.
@@ -29,11 +29,12 @@
 class GaiaAuthFetcherTest;
 
 namespace net {
+class URLFetcher;
 class URLRequestContextGetter;
 class URLRequestStatus;
 }
 
-class GaiaAuthFetcher : public content::URLFetcherDelegate {
+class GaiaAuthFetcher : public net::URLFetcherDelegate {
  public:
   enum HostedAccountsSetting {
     HostedAccountsAllowed,
@@ -169,7 +170,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   void StartOAuthLogin(const std::string& access_token,
                        const std::string& service);
 
-  // Implementation of content::URLFetcherDelegate
+  // Implementation of net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // StartClientLogin been called && results not back yet?
@@ -370,15 +371,15 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   // as the body of the POST request sent to GAIA.  Any strings listed in
   // |headers| are added as extra HTTP headers in the request.
   //
-  // |load_flags| are passed to directly to content::URLFetcher::Create() when
+  // |load_flags| are passed to directly to net::URLFetcher::Create() when
   // creating the URL fetcher.
-  static content::URLFetcher* CreateGaiaFetcher(
+  static net::URLFetcher* CreateGaiaFetcher(
       net::URLRequestContextGetter* getter,
       const std::string& body,
       const std::string& headers,
       const GURL& gaia_gurl,
       int load_flags,
-      content::URLFetcherDelegate* delegate);
+      net::URLFetcherDelegate* delegate);
 
   // From a URLFetcher result, generate an appropriate error.
   // From the API documentation, both IssueAuthToken and ClientLogin have
@@ -402,7 +403,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   const GURL oauth_login_gurl_;
 
   // While a fetch is going on:
-  scoped_ptr<content::URLFetcher> fetcher_;
+  scoped_ptr<net::URLFetcher> fetcher_;
   GURL client_login_to_oauth2_gurl_;
   std::string request_body_;
   std::string requested_service_; // Currently tracked for IssueAuthToken only.

@@ -11,13 +11,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/geolocation/device_data_provider.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
-
-class URLFetcher;
+#include "net/url_request/url_fetcher_delegate.h"
 
 namespace content {
 struct Geoposition;
+class URLFetcher;
 }
 
 namespace net {
@@ -26,7 +25,7 @@ class URLRequestContextGetter;
 
 // Takes a set of device data and sends it to a server to get a position fix.
 // It performs formatting of the request and interpretation of the response.
-class NetworkLocationRequest : private content::URLFetcherDelegate {
+class NetworkLocationRequest : private net::URLFetcherDelegate {
  public:
   // ID passed to URLFetcher::Create(). Used for testing.
   CONTENT_EXPORT static int url_fetcher_id_for_tests;
@@ -63,7 +62,7 @@ class NetworkLocationRequest : private content::URLFetcherDelegate {
   const GURL& url() const { return url_; }
 
  private:
-  // content::URLFetcherDelegate
+  // net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   scoped_refptr<net::URLRequestContextGetter> url_context_;

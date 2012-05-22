@@ -11,10 +11,14 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/public/common/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_delegate.h"
 
 class PrefService;
 class Profile;
+
+namespace net {
+class URLFetcher;
+}  // namespace net
 
 // This encapsulates business logic for:
 // - Whether to show the apps promo in the launcher
@@ -143,7 +147,7 @@ class AppsPromo {
 
 // Fetches logos over HTTPS, making sure we don't send cookies and that we
 // cache the image until its source URL changes.
-class AppsPromoLogoFetcher : public content::URLFetcherDelegate {
+class AppsPromoLogoFetcher : public net::URLFetcherDelegate {
  public:
   AppsPromoLogoFetcher(Profile* profile,
                        const AppsPromo::PromoData& promo_data);
@@ -167,7 +171,7 @@ class AppsPromoLogoFetcher : public content::URLFetcherDelegate {
 
   Profile* profile_;
   AppsPromo::PromoData promo_data_;
-  scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APPS_PROMO_H_

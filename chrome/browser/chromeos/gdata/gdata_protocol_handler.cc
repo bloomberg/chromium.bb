@@ -16,12 +16,12 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
@@ -236,9 +236,9 @@ void GDataURLRequestJob::Start() {
   //    7.1) Whenever content::URLFetcherCore::OnReadCompleted() receives a part
   //         of the response, it invokes
   //         constent::URLFetcherDelegate::OnURLFetchDownloadData() if
-  //         content::URLFetcherDelegate::ShouldSendDownloadData() is true.
+  //         net::URLFetcherDelegate::ShouldSendDownloadData() is true.
   //    7.2) gdata::DownloadFileOperation overrides the default implementations
-  //         of the following methods of content::URLFetcherDelegate:
+  //         of the following methods of net::URLFetcherDelegate:
   //         - ShouldSendDownloadData(): returns true for non-null
   //                                     GetDownloadDataCallback.
   //         - OnURLFetchDownloadData(): invokes non-null

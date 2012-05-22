@@ -33,7 +33,7 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher {
   // |d| the object that will receive the callback on fetch completion.
   URLFetcherImpl(const GURL& url,
                  RequestType request_type,
-                 content::URLFetcherDelegate* d);
+                 net::URLFetcherDelegate* d);
   virtual ~URLFetcherImpl();
 
   // content::URLFetcher implementation:
@@ -89,7 +89,7 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher {
 
  protected:
   // Returns the delegate.
-  content::URLFetcherDelegate* delegate() const;
+  net::URLFetcherDelegate* delegate() const;
 
  private:
   friend class ScopedURLFetcherFactory;

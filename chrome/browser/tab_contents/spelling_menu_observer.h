@@ -23,7 +23,7 @@ class SpellingServiceClient;
 // while we show it. This class implements two interfaces:
 // * RenderViewContextMenuObserver
 //   This interface is used for adding a menu item and update it while showing.
-// * content::URLFetcherDelegate
+// * net::URLFetcherDelegate
 //   This interface is used for sending a JSON_RPC request to the Spelling
 //   service and retrieving its response.
 // These interfaces allow this class to make a JSON-RPC call to the Spelling

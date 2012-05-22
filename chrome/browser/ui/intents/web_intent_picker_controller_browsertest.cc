@@ -8,11 +8,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
@@ -85,7 +85,7 @@ class DummyURLFetcherFactory : public content::URLFetcherFactory {
        int id,
        const GURL& url,
        content::URLFetcher::RequestType request_type,
-       content::URLFetcherDelegate* d) OVERRIDE {
+       net::URLFetcherDelegate* d) OVERRIDE {
      return new TestURLFetcher(id, url, d);
    }
 };

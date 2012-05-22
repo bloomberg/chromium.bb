@@ -28,11 +28,11 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/common/url_fetcher.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/x509_cert_types.h"
 #include "net/base/x509_certificate.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -331,7 +331,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     : public base::RefCountedThreadSafe<
           DownloadProtectionService::CheckClientDownloadRequest,
           BrowserThread::DeleteOnUIThread>,
-      public content::URLFetcherDelegate {
+      public net::URLFetcherDelegate {
  public:
   CheckClientDownloadRequest(const DownloadInfo& info,
                              const CheckDownloadCallback& callback,
@@ -421,7 +421,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     service_ = NULL;
   }
 
-  // From the content::URLFetcherDelegate interface.
+  // From the net::URLFetcherDelegate interface.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(source, fetcher_.get());

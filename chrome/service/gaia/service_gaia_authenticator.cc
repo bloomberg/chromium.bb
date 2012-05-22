@@ -21,7 +21,7 @@ ServiceGaiaAuthenticator::ServiceGaiaAuthenticator(
           http_response_code_(0) {
 }
 
-// content::URLFetcherDelegate implementation
+// net::URLFetcherDelegate implementation
 void ServiceGaiaAuthenticator::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
