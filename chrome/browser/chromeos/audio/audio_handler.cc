@@ -96,6 +96,8 @@ double AudioHandler::GetVolumePercent() {
 
 void AudioHandler::SetVolumePercent(double volume_percent) {
   volume_percent = min(max(volume_percent, 0.0), 100.0);
+  if (IsMuted() && volume_percent > 0.0)
+    SetMuted(false);
   mixer_->SetVolumePercent(volume_percent);
   prefs_->SetDouble(prefs::kAudioVolumePercent, volume_percent);
   FOR_EACH_OBSERVER(VolumeObserver, volume_observers_, OnVolumeChanged());

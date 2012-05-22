@@ -106,7 +106,8 @@ class VolumeView : public views::View,
         ash::Shell::GetInstance()->tray_delegate();
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
     slider_->set_focus_border_color(kFocusBorderColor);
-    slider_->SetValue(delegate->GetVolumeLevel());
+    slider_->SetValue(
+        delegate->IsAudioMuted() ? 0.0 : delegate->GetVolumeLevel());
     slider_->SetAccessibleName(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_VOLUME));
@@ -148,8 +149,11 @@ class VolumeView : public views::View,
                                   float value,
                                   float old_value,
                                   views::SliderChangeReason reason) OVERRIDE {
-    if (reason == views::VALUE_CHANGED_BY_USER)
-      ash::Shell::GetInstance()->tray_delegate()->SetVolumeLevel(value);
+    if (reason == views::VALUE_CHANGED_BY_USER) {
+      ash::SystemTrayDelegate* delegate =
+          ash::Shell::GetInstance()->tray_delegate();
+      delegate->SetVolumeLevel(value);
+    }
     icon_->Update();
   }
 
@@ -171,7 +175,9 @@ TrayVolume::~TrayVolume() {
 }
 
 bool TrayVolume::GetInitialVisibility() {
-  return ash::Shell::GetInstance()->tray_delegate()->IsAudioMuted();
+  ash::SystemTrayDelegate* delegate =
+      ash::Shell::GetInstance()->tray_delegate();
+  return delegate->GetVolumeLevel() == 0.0 || delegate->IsAudioMuted();
 }
 
 views::View* TrayVolume::CreateDefaultView(user::LoginStatus status) {
@@ -201,6 +207,8 @@ void TrayVolume::OnVolumeChanged(float percent) {
     tray_view()->SetVisible(GetInitialVisibility());
 
   if (volume_view_) {
+    if (ash::Shell::GetInstance()->tray_delegate()->IsAudioMuted())
+      percent = 0.0;
     volume_view_->SetVolumeLevel(percent);
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
     return;
