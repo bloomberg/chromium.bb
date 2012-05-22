@@ -506,7 +506,8 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
 
   // We set font_y_adjustment_ so that the ascender of the font gets
   // centered on the available height of the view.
-  font_y_adjustment_ = (parent_view->GetHeight() - cap_height) / 2 -
+  font_y_adjustment_ =
+      (parent_view->GetInternalHeight(true) - cap_height) / 2 -
       tm.tmInternalLeading;
 
   // Get the number of twips per pixel, which we need below to offset our text

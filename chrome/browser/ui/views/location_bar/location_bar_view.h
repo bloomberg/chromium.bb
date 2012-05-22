@@ -312,8 +312,11 @@ class LocationBarView : public LocationBar,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Calculates the height of the view.
-  int GetHeight();
+  // Returns the height of the control without the top and bottom
+  // edges(i.e.  the height of the edit control inside).  If
+  // |use_preferred_size| is true this will be the preferred height,
+  // otherwise it will be the current height.
+  int GetInternalHeight(bool use_preferred_size);
 
   // Space between items in the location bar.
   static int GetItemPadding();

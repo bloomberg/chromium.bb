@@ -182,7 +182,7 @@ void LocationBarView::Init() {
   }
 
   // If this makes the font too big, try to make it smaller so it will fit.
-  const int height = GetHeight();
+  const int height = GetInternalHeight(true);
   while ((font_.GetHeight() > height) && (font_.GetFontSize() > 1))
     font_ = font_.DeriveFont(-1);
 
@@ -526,7 +526,7 @@ void LocationBarView::Layout() {
   // to position our child views in this case, because other things may be
   // positioned relative to them (e.g. the "bookmark added" bubble if the user
   // hits ctrl-d).
-  int location_height = std::max(height() - (kVerticalEdgeThickness * 2), 0);
+  int location_height = GetInternalHeight(false);
 
   // The edge stroke is 1 px thick.  In popup mode, the edges are drawn by the
   // omnibox' parent, so there isn't any edge to account for at all.
@@ -1293,9 +1293,10 @@ void LocationBarView::Observe(int type,
   }
 }
 
-int LocationBarView::GetHeight() {
-  return std::max(
-      GetPreferredSize().height() - (kVerticalEdgeThickness * 2), 0);
+int LocationBarView::GetInternalHeight(bool use_preferred_size) {
+  int total_height =
+      use_preferred_size ? GetPreferredSize().height() : height();
+  return std::max(total_height - (kVerticalEdgeThickness * 2), 0);
 }
 
 #if defined(OS_WIN) || defined(USE_AURA)
