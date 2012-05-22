@@ -75,6 +75,16 @@ void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
 }
 
+void AdjustScreenBounds(aura::Window* window, gfx::Rect* bounds) {
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(window);
+  if (screen_position_client) {
+    gfx::Point origin = bounds->origin();
+    screen_position_client->ConvertToScreenPoint(&origin);
+    bounds->set_origin(origin);
+  }
+}
+
 }  // namespace
 
 // Used when SetInactiveRenderingDisabled() is invoked to track when active
@@ -420,15 +430,7 @@ void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
 
 gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
   gfx::Rect bounds = window_->GetBoundsInRootWindow();
-
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(window_->GetRootWindow());
-  if (screen_position_client) {
-    gfx::Point origin = bounds.origin();
-    screen_position_client->ConvertToScreenPoint(&origin);
-    bounds.set_origin(origin);
-  }
-
+  AdjustScreenBounds(window_, &bounds);
   return bounds;
 }
 
@@ -436,15 +438,7 @@ gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
   // View-to-screen coordinate system transformations depend on this returning
   // the full window bounds, for example View::ConvertPointToScreen().
   gfx::Rect bounds = window_->GetBoundsInRootWindow();
-
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(window_->GetRootWindow());
-  if (screen_position_client) {
-    gfx::Point origin = bounds.origin();
-    screen_position_client->ConvertToScreenPoint(&origin);
-    bounds.set_origin(origin);
-  }
-
+  AdjustScreenBounds(window_, &bounds);
   return bounds;
 }
 
