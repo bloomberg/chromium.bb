@@ -11,11 +11,6 @@ if env.Bit('nacl_glibc'):
   raise UserError('src/untrusted/irt/nacl.scons in the wrong environment?')
 
 blob_env = env.Clone()
-
-if blob_env.Bit('bitcode'):
-  # Tell pnacl-ld to allow control over native linking behavior.
-  blob_env.Append(LINKFLAGS='-Wl,--pnacl-allow-native')
-
 blob_env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_BLOB_DATA_START}')
 # The PNaCl linker (gold) does not implement the "-Ttext-segment"
 # option.  However, with the linker for x86, the "-Ttext" option does
@@ -26,16 +21,12 @@ else:
   blob_env.Append(LINKFLAGS='-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}')
 
 irt_support_sources = [
-    'irt_entry.c',
     'irt_malloc.c',
     'irt_private_pthread.c',
     'irt_private_tls.c',
     ]
 
-# The bitcode build must use -mtls-use-call to separate user TLS
-# from IRT-private TLS.
-if env.Bit('bitcode'):
-  blob_env.Append(LINKFLAGS='-Wt,-mtls-use-call')
+irt_entry_obj = blob_env.ComponentObject('irt_entry.c')
 
 # NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
 blob_env.FilterOut(CCFLAGS=['-pedantic'])
@@ -76,8 +67,16 @@ if env.Bit('target_arm'):
   blob_env.Append(LINKFLAGS='--pnacl-allow-native')
   native_env = blob_env.Clone()
   native_env.PNaClForceNative()
-  irt_support_objs.append(native_env.ComponentObject('aeabi_read_tp.o',
-                                                     'aeabi_read_tp.S'))
+  read_tp_obj = native_env.ComponentObject('aeabi_read_tp.o', 'aeabi_read_tp.S')
+  irt_support_objs.append(read_tp_obj)
+  # Publish the object file for tests/irt_private_pthread to use.
+  # Putting aeabi_read_tp.o into libirt_support_private is not
+  # sufficient because of link ordering issues.
+  env.Replicate('${STAGING_DIR}', read_tp_obj)
+
+# Build a library so that irt_support_objs can be used in tests that
+# cover IRT-internal code.
+env.ComponentLibrary('libirt_support_private', irt_support_objs)
 
 # These go into only one image or the other.
 irt_nonbrowser = ['irt_interfaces.c',
@@ -93,7 +92,8 @@ irt_browser = ['irt_interfaces_ppapi.c',
                ]
 
 def LinkIrt(output, files, libs):
-  return blob_env.ComponentProgram(output, irt_support_objs + files,
+  return blob_env.ComponentProgram(output,
+                                   [irt_entry_obj] + irt_support_objs + files,
                                    EXTRA_LIBS=libs)
 
 irt_core_library = LinkIrt('irt_core', irt_nonbrowser, [])

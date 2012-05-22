@@ -3479,8 +3479,9 @@ if nacl_irt_env.Bit('bitcode'):
 # is reserved for user TLS.  Instead, ensure all TLS accesses use a
 # call to __nacl_read_tp, which the IRT code overrides to segregate
 # IRT-private TLS from user TLS.
-# For bitcode, this option is added to the final translate command instead.
-if not nacl_irt_env.Bit('bitcode'):
+if nacl_irt_env.Bit('bitcode'):
+  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wt,-mtls-use-call'])
+else:
   nacl_irt_env.Append(CCFLAGS=['-mtls-use-call'])
 
 # TODO(mcgrathr): Clean up uses of these methods.
@@ -3595,6 +3596,7 @@ nacl_irt_env.Append(
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
         'src/untrusted/stubs/nacl.scons',
+        'tests/irt_private_pthread/nacl.scons',
     ], ppapi_scons_files['untrusted_irt_scons_files']))
 
 environment_list.append(nacl_irt_env)

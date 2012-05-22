@@ -1,0 +1,38 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+irt_support_objs = []
+if env.Bit('target_arm'):
+  # We need to force the override of __aeabi_read_tp() so that we get
+  # the version that uses the IRT-internal TLS area instead of the
+  # PNaCl-provided version that uses the user TLS area.  Having
+  # aeabi_read_tp.o in the irt_support_private library is not
+  # sufficient because of link ordering issues that arise in PNaCl.
+  #
+  # In a native, non-PNaCl toolchain, the .o files would contain
+  # __aeabi_read_tp references, which would be taken from
+  # libirt_support_private.a because it appears before libnacl.a in
+  # the link line.  However, in PNaCl, references to __aeabi_read_tp
+  # do not appear in the bitcode and so are not resolved at bitcode
+  # linking time.  The __aeabi_read_tp references only appear after
+  # ARM code generation which can cause the wrong version to be used
+  # in post-translation linking.
+  irt_support_objs.append(env.File('${STAGING_DIR}/aeabi_read_tp.o'))
+
+# This test reports races under tsan because:
+#  * The Valgrind interceptors are not hooked up because we are not
+#    linking this test with '-Wl,-u,have_nacl_valgrind_interceptors'.
+#  * The Valgrind interceptors don't work because we use malloc() in
+#    __pthread_initialize() and the intercepted malloc() uses TLS.
+is_broken = env.Bit('running_on_valgrind')
+
+irt_thread_test_nexe = env.ComponentProgram(
+    'irt_thread_test', ['irt_thread_test.c'] + irt_support_objs,
+    EXTRA_LIBS=['irt_support_private'])
+node = env.CommandSelLdrTestNacl('irt_thread_test.out', irt_thread_test_nexe)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_thread_test',
+                       is_broken=is_broken)
