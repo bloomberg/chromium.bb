@@ -658,7 +658,6 @@ class Browser : public TabStripModelDelegate,
   void OpenAboutChromeDialog();
   void OpenUpdateChromeDialog();
   void ShowHelpTab();
-  void OpenAutofillHelpTabAndActivate();
   void OpenPrivacyDashboardTabAndActivate();
   void OpenSearchEngineOptionsDialog();
   void OpenPluginsTabAndActivate();

@@ -2256,11 +2256,6 @@ void Browser::ShowHelpTab() {
   ShowSingletonTab(GURL(chrome::kChromeHelpURL));
 }
 
-void Browser::OpenAutofillHelpTabAndActivate() {
-  AddSelectedTabWithURL(GURL(chrome::kAutofillHelpURL),
-                        content::PAGE_TRANSITION_LINK);
-}
-
 void Browser::OpenPrivacyDashboardTabAndActivate() {
   OpenURL(OpenURLParams(
       GURL(kPrivacyDashboardUrl), Referrer(),

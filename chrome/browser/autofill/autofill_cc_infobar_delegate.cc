@@ -7,8 +7,11 @@
 #include "base/logging.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/common/url_constants.h"
+#include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,14 +89,12 @@ string16 AutofillCCInfoBarDelegate::GetLinkText() const {
 }
 
 bool AutofillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-#if defined(OS_ANDROID)
-  // There's no link for infobars on Android.
-  NOTREACHED();
+  owner()->web_contents()->GetDelegate()->OpenURLFromTab(
+      owner()->web_contents(),
+      content::OpenURLParams(GURL(chrome::kAutofillHelpURL),
+                             content::Referrer(),
+                             NEW_FOREGROUND_TAB,
+                             content::PAGE_TRANSITION_LINK,
+                             false));
   return false;
-#else
-  Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser);
-  browser->OpenAutofillHelpTabAndActivate();
-  return false;
-#endif  // #if defined(OS_ANDROID)
 }
