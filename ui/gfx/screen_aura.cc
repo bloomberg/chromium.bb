@@ -27,6 +27,11 @@ void Screen::SetInstance(ScreenImpl* screen) {
 // ifdef.
 
 // static
+bool Screen::IsDIPEnabled() {
+  return true;
+}
+
+// static
 Point Screen::GetCursorScreenPoint() {
   return g_instance_->GetCursorScreenPoint();
 }

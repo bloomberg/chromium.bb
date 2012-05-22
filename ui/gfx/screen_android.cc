@@ -10,6 +10,11 @@
 namespace gfx {
 
 // static
+bool Screen::IsDIPEnabled() {
+  return false;
+}
+
+// static
 gfx::Monitor Screen::GetPrimaryMonitor() {
   NOTIMPLEMENTED() << "crbug.com/117839 tracks implementation";
   return gfx::Monitor(0, gfx::Rect(0, 0, 1, 1));

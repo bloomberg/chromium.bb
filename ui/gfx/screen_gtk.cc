@@ -76,6 +76,11 @@ gfx::Rect GetMonitorAreaNearestWindow(gfx::NativeView view) {
 namespace gfx {
 
 // static
+bool Screen::IsDIPEnabled() {
+  return false;
+}
+
+// static
 gfx::Point Screen::GetCursorScreenPoint() {
   gint x, y;
   gdk_display_get_pointer(gdk_display_get_default(), NULL, &x, &y, NULL);
