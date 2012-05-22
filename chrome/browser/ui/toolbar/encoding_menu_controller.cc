@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,10 +85,8 @@ bool EncodingMenuController::IsItemChecked(
     return false;
 
   std::string encoding = current_tab_encoding;
-  if (encoding.empty()) {
-    encoding =
-        browser_profile->GetPrefs()->GetString(prefs::kGlobalDefaultCharset);
-  }
+  if (encoding.empty())
+    encoding = browser_profile->GetPrefs()->GetString(prefs::kDefaultCharset);
 
   if (item_id == IDC_ENCODING_AUTO_DETECT) {
     return browser_profile->GetPrefs()->GetBoolean(

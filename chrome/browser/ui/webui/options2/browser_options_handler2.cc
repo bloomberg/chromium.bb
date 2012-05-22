@@ -598,7 +598,7 @@ void BrowserOptionsHandler::InitializeHandler() {
 #endif
 
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
-  default_font_size_.Init(prefs::kWebKitGlobalDefaultFontSize, prefs, this);
+  default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
   default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
 #if !defined(OS_CHROMEOS)
   proxy_prefs_.reset(
@@ -847,7 +847,7 @@ void BrowserOptionsHandler::Observe(
       if (cloud_print_connector_ui_enabled_)
         SetupCloudPrintConnectorSection();
 #endif
-    } else if (*pref_name == prefs::kWebKitGlobalDefaultFontSize) {
+    } else if (*pref_name == prefs::kWebKitDefaultFontSize) {
       SetupFontSizeSelector();
     } else if (*pref_name == prefs::kDefaultZoomLevel) {
       SetupPageZoomSelector();

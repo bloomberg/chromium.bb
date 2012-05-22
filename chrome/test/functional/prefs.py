@@ -188,13 +188,13 @@ class PrefsTest(pyauto.PyUITest):
   def testJavaScriptEnableDisable(self):
     """Verify enabling disabling javascript prefs work """
     self.assertTrue(
-        self.GetPrefsInfo().Prefs(pyauto.kWebKitGlobalJavascriptEnabled))
+        self.GetPrefsInfo().Prefs(pyauto.kWebKitJavascriptEnabled))
     url = self.GetFileURLForDataPath(
               os.path.join('javaScriptTitle.html'))
     title1 = 'Title from script javascript enabled'
     self.NavigateToURL(url)
     self.assertEqual(title1, self.GetActiveTabTitle())
-    self.SetPrefs(pyauto.kWebKitGlobalJavascriptEnabled, False)
+    self.SetPrefs(pyauto.kWebKitJavascriptEnabled, False)
     title = 'This is html title'
     self.NavigateToURL(url)
     self.assertEqual(title, self.GetActiveTabTitle())

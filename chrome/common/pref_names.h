@@ -39,6 +39,15 @@ extern const char kOwnerLocale[];
 
 // Obselete keys, kept only for migration code to the new keys. See
 // http://crbug.com/123812
+extern const char kGlobalDefaultCharset[];
+extern const char kWebKitGlobalDefaultFontSize[];
+extern const char kWebKitGlobalDefaultFixedFontSize[];
+extern const char kWebKitGlobalMinimumFontSize[];
+extern const char kWebKitGlobalMinimumLogicalFontSize[];
+extern const char kWebKitGlobalJavascriptEnabled[];
+extern const char kWebKitGlobalJavascriptCanOpenWindowsAutomatically[];
+extern const char kWebKitGlobalLoadsImagesAutomatically[];
+extern const char kWebKitGlobalPluginsEnabled[];
 extern const char kWebKitGlobalStandardFontFamily[];
 extern const char kWebKitGlobalFixedFontFamily[];
 extern const char kWebKitGlobalSerifFontFamily[];
@@ -52,7 +61,6 @@ extern const char kWebKitOldSansSerifFontFamily[];
 extern const char kWebKitOldCursiveFontFamily[];
 extern const char kWebKitOldFantasyFontFamily[];
 
-extern const char kGlobalDefaultCharset[];
 extern const char kDefaultCharset[];
 extern const char kAcceptLanguages[];
 extern const char kStaticEncodings[];
@@ -101,22 +109,14 @@ extern const char kWebKitFixedFontFamilyTraditionalHan[];
 extern const char kWebKitSerifFontFamilyTraditionalHan[];
 extern const char kWebKitSansSerifFontFamilyTraditionalHan[];
 
-extern const char kWebKitGlobalDefaultFontSize[];
 extern const char kWebKitDefaultFontSize[];
-extern const char kWebKitGlobalDefaultFixedFontSize[];
 extern const char kWebKitDefaultFixedFontSize[];
-extern const char kWebKitGlobalMinimumFontSize[];
 extern const char kWebKitMinimumFontSize[];
-extern const char kWebKitGlobalMinimumLogicalFontSize[];
 extern const char kWebKitMinimumLogicalFontSize[];
-extern const char kWebKitGlobalJavascriptEnabled[];
 extern const char kWebKitJavascriptEnabled[];
 extern const char kWebKitWebSecurityEnabled[];
-extern const char kWebKitGlobalJavascriptCanOpenWindowsAutomatically[];
 extern const char kWebKitJavascriptCanOpenWindowsAutomatically[];
-extern const char kWebKitGlobalLoadsImagesAutomatically[];
 extern const char kWebKitLoadsImagesAutomatically[];
-extern const char kWebKitGlobalPluginsEnabled[];
 extern const char kWebKitPluginsEnabled[];
 extern const char kWebKitDomPasteEnabled[];
 extern const char kWebKitShrinksStandaloneImagesToFit[];

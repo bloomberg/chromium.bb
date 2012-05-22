@@ -254,9 +254,8 @@ void ChromeURLRequestContextGetter::Observe(
               &ChromeURLRequestContextGetter::OnAcceptLanguageChange,
               this,
               accept_language));
-    } else if (*pref_name_in == prefs::kGlobalDefaultCharset) {
-      std::string default_charset =
-          prefs->GetString(prefs::kGlobalDefaultCharset);
+    } else if (*pref_name_in == prefs::kDefaultCharset) {
+      std::string default_charset = prefs->GetString(prefs::kDefaultCharset);
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(
@@ -283,7 +282,7 @@ void ChromeURLRequestContextGetter::RegisterPrefsObserver(Profile* profile) {
 
   registrar_.Init(profile->GetPrefs());
   registrar_.Add(prefs::kAcceptLanguages, this);
-  registrar_.Add(prefs::kGlobalDefaultCharset, this);
+  registrar_.Add(prefs::kDefaultCharset, this);
   registrar_.Add(prefs::kClearSiteDataOnExit, this);
 }
 

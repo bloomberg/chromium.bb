@@ -16,10 +16,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettings) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetString(prefs::kWebKitStandardFontFamilyKorean, "Tahoma");
   prefs->SetString(prefs::kWebKitSansSerifFontFamily, "Arial");
-  prefs->SetInteger(prefs::kWebKitGlobalDefaultFontSize, 16);
-  prefs->SetInteger(prefs::kWebKitGlobalDefaultFixedFontSize, 14);
-  prefs->SetInteger(prefs::kWebKitGlobalMinimumFontSize, 8);
-  prefs->SetString(prefs::kGlobalDefaultCharset, "Shift_JIS");
+  prefs->SetInteger(prefs::kWebKitDefaultFontSize, 16);
+  prefs->SetInteger(prefs::kWebKitDefaultFixedFontSize, 14);
+  prefs->SetInteger(prefs::kWebKitMinimumFontSize, 8);
+  prefs->SetString(prefs::kDefaultCharset, "Shift_JIS");
 
   EXPECT_TRUE(RunExtensionTest("font_settings/standard")) << message_;
 }
@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettingsIncognito) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetString(prefs::kWebKitStandardFontFamilyKorean, "Tahoma");
   prefs->SetString(prefs::kWebKitSansSerifFontFamily, "Arial");
-  prefs->SetInteger(prefs::kWebKitGlobalDefaultFontSize, 16);
+  prefs->SetInteger(prefs::kWebKitDefaultFontSize, 16);
 
   int flags = ExtensionApiTest::kFlagEnableIncognito |
       ExtensionApiTest::kFlagUseIncognito;

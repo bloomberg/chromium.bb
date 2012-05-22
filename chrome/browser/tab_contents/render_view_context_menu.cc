@@ -1918,8 +1918,7 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT) {
     const CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (!profile_->GetPrefs()->GetBoolean(
-        prefs::kWebKitGlobalJavascriptEnabled) ||
+    if (!profile_->GetPrefs()->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
         command_line->HasSwitch(switches::kDisableJavaScript))
       return false;
 

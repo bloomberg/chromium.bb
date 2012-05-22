@@ -17,8 +17,10 @@ namespace {
 
 const char* overlay_key = prefs::kBrowserWindowPlacement;
 const char* regular_key = prefs::kShowBookmarkBar;
-const char* mapped_overlay_key = prefs::kWebKitJavascriptEnabled;
-const char* mapped_underlay_key = prefs::kWebKitGlobalJavascriptEnabled;
+// With the removal of the kWebKitGlobalXXX prefs, we'll no longer have real
+// prefs using the overlay pref store, so make up keys here.
+const char* mapped_overlay_key = "test.per_tab.javascript_enabled";
+const char* mapped_underlay_key = "test.per_profile.javascript_enabled";
 
 }  // namespace
 

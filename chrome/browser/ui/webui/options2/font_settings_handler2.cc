@@ -106,19 +106,15 @@ void FontSettingsHandler::RegisterMessages() {
   FontSettingsUtilities::ValidateSavedFonts(pref_service);
 
   // Register for preferences that we need to observe manually.
-  standard_font_.Init(prefs::kWebKitStandardFontFamily,
-                      pref_service, this);
+  standard_font_.Init(prefs::kWebKitStandardFontFamily, pref_service, this);
   serif_font_.Init(prefs::kWebKitSerifFontFamily, pref_service, this);
-  sans_serif_font_.Init(prefs::kWebKitSansSerifFontFamily,
-                        pref_service, this);
+  sans_serif_font_.Init(prefs::kWebKitSansSerifFontFamily, pref_service, this);
   fixed_font_.Init(prefs::kWebKitFixedFontFamily, pref_service, this);
-  font_encoding_.Init(prefs::kGlobalDefaultCharset, pref_service, this);
-  default_font_size_.Init(prefs::kWebKitGlobalDefaultFontSize,
-                          pref_service, this);
-  default_fixed_font_size_.Init(prefs::kWebKitGlobalDefaultFixedFontSize,
+  font_encoding_.Init(prefs::kDefaultCharset, pref_service, this);
+  default_font_size_.Init(prefs::kWebKitDefaultFontSize, pref_service, this);
+  default_fixed_font_size_.Init(prefs::kWebKitDefaultFixedFontSize,
                                 pref_service, this);
-  minimum_font_size_.Init(prefs::kWebKitGlobalMinimumFontSize,
-                          pref_service, this);
+  minimum_font_size_.Init(prefs::kWebKitMinimumFontSize, pref_service, this);
 
   web_ui()->RegisterMessageCallback("fetchFontsData",
       base::Bind(&FontSettingsHandler::HandleFetchFontsData,
@@ -205,11 +201,11 @@ void FontSettingsHandler::Observe(int type,
     } else if (*pref_name == prefs::kWebKitFixedFontFamily ||
                *pref_name == prefs::kWebKitDefaultFixedFontSize) {
       SetUpFixedFontSample();
-    } else if (*pref_name == prefs::kWebKitGlobalDefaultFontSize) {
+    } else if (*pref_name == prefs::kWebKitDefaultFontSize) {
       SetUpStandardFontSample();
       SetUpSerifFontSample();
       SetUpSansSerifFontSample();
-    } else if (*pref_name == prefs::kWebKitGlobalMinimumFontSize) {
+    } else if (*pref_name == prefs::kWebKitMinimumFontSize) {
       SetUpMinimumFontSample();
     }
   }

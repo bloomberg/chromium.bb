@@ -56,41 +56,38 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
 };
 
 // This tests migration like:
-// webkit.webprefs.default_charset -> webkit.webprefs.global.default_charset
-// This was needed for per-tab prefs, which have since been removed. So
-// eventually this migration will be replaced with the reverse migration.
-IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, NonGlobalPrefsAreMigrated) {
-  PrefService* prefs = browser()->profile()->GetPrefs();
-
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kDefaultCharset));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitDefaultFontSize));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitDefaultFixedFontSize));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitMinimumFontSize));
-  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitMinimumLogicalFontSize));
-
-  EXPECT_EQ("ISO-8859-1", prefs->GetString(prefs::kGlobalDefaultCharset));
-  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitGlobalDefaultFontSize));
-  EXPECT_EQ(42,
-            prefs->GetInteger(prefs::kWebKitGlobalDefaultFixedFontSize));
-  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitGlobalMinimumFontSize));
-  EXPECT_EQ(42,
-            prefs->GetInteger(prefs::kWebKitGlobalMinimumLogicalFontSize));
-};
-
-// This tests migration like:
 // webkit.webprefs.standard_font_family -> webkit.webprefs.fonts.standard.Zyyy
 // This migration moves the formerly "non-per-script" font prefs into the
 // per-script font maps, as the entry for "Common" script (Zyyy is the ISO 15924
 // script code for the Common script).
+//
+// In addition, it tests that the former migration of
+// webkit.webprefs.blahblah -> webkit.webprefs.global.blahblah
+// no longer occurs.
 IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest, PrefsAreMigratedToFontMap) {
   PrefService* prefs = browser()->profile()->GetPrefs();
 
+  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kGlobalDefaultCharset));
+  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalDefaultFontSize));
+  EXPECT_EQ(NULL,
+            prefs->FindPreference(prefs::kWebKitGlobalDefaultFixedFontSize));
+  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalMinimumFontSize));
+  EXPECT_EQ(NULL,
+            prefs->FindPreference(prefs::kWebKitGlobalMinimumLogicalFontSize));
   EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldCursiveFontFamily));
   EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldFantasyFontFamily));
   EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldFixedFontFamily));
   EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldSansSerifFontFamily));
   EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldSerifFontFamily));
   EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitOldStandardFontFamily));
+
+  EXPECT_EQ("ISO-8859-1", prefs->GetString(prefs::kDefaultCharset));
+  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitDefaultFontSize));
+  EXPECT_EQ(42,
+            prefs->GetInteger(prefs::kWebKitDefaultFixedFontSize));
+  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitMinimumFontSize));
+  EXPECT_EQ(42,
+            prefs->GetInteger(prefs::kWebKitMinimumLogicalFontSize));
   EXPECT_EQ("CursiveFontFamily",
             prefs->GetString(prefs::kWebKitCursiveFontFamily));
   EXPECT_EQ("FantasyFontFamily",
@@ -119,15 +116,25 @@ class PrefsTabHelperBrowserTest2 : public PrefsTabHelperBrowserTest {
 };
 
 // This tests migration like:
+// webkit.webprefs.global.blahblah -> webkit.webprefs.blahblah
+// This undoes the migration to "global" names (originally done for the per-tab
+// pref mechanism, which has since been removed).
+//
+// In addition it tests the migration for font families:
 // webkit.webprefs.global.standard_font_family ->
 // webkit.webprefs.fonts.standard.Zyyy
-// This undoes the migration to "global" names (originally done for the per-tab
-// pref mechanism, which has since been removed). In addition, it moves the
-// formerly "non-per-script" font prefs into the per-script font maps, as
-// described in the comment for PrefsAreMigratedToFontMap.
+// This moves the formerly "non-per-script" font prefs into the per-script font
+// maps, as described in the comment for PrefsAreMigratedToFontMap.
 IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest2, GlobalPrefsAreMigrated) {
   PrefService* prefs = browser()->profile()->GetPrefs();
 
+  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kGlobalDefaultCharset));
+  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalDefaultFontSize));
+  EXPECT_EQ(NULL,
+            prefs->FindPreference(prefs::kWebKitGlobalDefaultFixedFontSize));
+  EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalMinimumFontSize));
+  EXPECT_EQ(NULL,
+            prefs->FindPreference(prefs::kWebKitGlobalMinimumLogicalFontSize));
   EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalCursiveFontFamily));
   EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalFantasyFontFamily));
   EXPECT_EQ(NULL, prefs->FindPreference(prefs::kWebKitGlobalFixedFontFamily));
@@ -137,6 +144,13 @@ IN_PROC_BROWSER_TEST_F(PrefsTabHelperBrowserTest2, GlobalPrefsAreMigrated) {
   EXPECT_EQ(NULL,
             prefs->FindPreference(prefs::kWebKitGlobalStandardFontFamily));
 
+  EXPECT_EQ("ISO-8859-1", prefs->GetString(prefs::kDefaultCharset));
+  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitDefaultFontSize));
+  EXPECT_EQ(42,
+            prefs->GetInteger(prefs::kWebKitDefaultFixedFontSize));
+  EXPECT_EQ(42, prefs->GetInteger(prefs::kWebKitMinimumFontSize));
+  EXPECT_EQ(42,
+            prefs->GetInteger(prefs::kWebKitMinimumLogicalFontSize));
   EXPECT_EQ("CursiveFontFamily",
             prefs->GetString(prefs::kWebKitCursiveFontFamily));
   EXPECT_EQ("FantasyFontFamily",

@@ -674,8 +674,7 @@ void AutomationProvider::OnSetPageFontSize(int tab_handle,
       DCHECK(tab->GetWebContents()->GetBrowserContext() != NULL);
       Profile* profile = Profile::FromBrowserContext(
           tab->GetWebContents()->GetBrowserContext());
-      profile->GetPrefs()->SetInteger(
-          prefs::kWebKitGlobalDefaultFontSize, font_size);
+      profile->GetPrefs()->SetInteger(prefs::kWebKitDefaultFontSize, font_size);
     }
   }
 }

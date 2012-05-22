@@ -1349,19 +1349,18 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
                     &web_prefs->fantasy_font_family_map);
 
   web_prefs->default_font_size =
-      prefs->GetInteger(prefs::kWebKitGlobalDefaultFontSize);
+      prefs->GetInteger(prefs::kWebKitDefaultFontSize);
   web_prefs->default_fixed_font_size =
-      prefs->GetInteger(prefs::kWebKitGlobalDefaultFixedFontSize);
+      prefs->GetInteger(prefs::kWebKitDefaultFixedFontSize);
   web_prefs->minimum_font_size =
-      prefs->GetInteger(prefs::kWebKitGlobalMinimumFontSize);
+      prefs->GetInteger(prefs::kWebKitMinimumFontSize);
   web_prefs->minimum_logical_font_size =
-      prefs->GetInteger(prefs::kWebKitGlobalMinimumLogicalFontSize);
+      prefs->GetInteger(prefs::kWebKitMinimumLogicalFontSize);
 
-  web_prefs->default_encoding = prefs->GetString(prefs::kGlobalDefaultCharset);
+  web_prefs->default_encoding = prefs->GetString(prefs::kDefaultCharset);
 
   web_prefs->javascript_can_open_windows_automatically =
-      prefs->GetBoolean(
-          prefs::kWebKitGlobalJavascriptCanOpenWindowsAutomatically);
+      prefs->GetBoolean(prefs::kWebKitJavascriptCanOpenWindowsAutomatically);
   web_prefs->dom_paste_enabled =
       prefs->GetBoolean(prefs::kWebKitDomPasteEnabled);
   web_prefs->shrinks_standalone_images_to_fit =
@@ -1379,16 +1378,16 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
   web_prefs->tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);
 
-  if (!prefs->GetBoolean(prefs::kWebKitGlobalJavascriptEnabled))
+  if (!prefs->GetBoolean(prefs::kWebKitJavascriptEnabled))
     web_prefs->javascript_enabled = false;
   if (!prefs->GetBoolean(prefs::kWebKitWebSecurityEnabled))
     web_prefs->web_security_enabled = false;
-  if (!prefs->GetBoolean(prefs::kWebKitGlobalPluginsEnabled))
+  if (!prefs->GetBoolean(prefs::kWebKitPluginsEnabled))
     web_prefs->plugins_enabled = false;
   if (!prefs->GetBoolean(prefs::kWebKitJavaEnabled))
     web_prefs->java_enabled = false;
   web_prefs->loads_images_automatically =
-      prefs->GetBoolean(prefs::kWebKitGlobalLoadsImagesAutomatically);
+      prefs->GetBoolean(prefs::kWebKitLoadsImagesAutomatically);
 
   if (prefs->GetBoolean(prefs::kDisable3DAPIs))
     web_prefs->experimental_webgl_enabled = false;
@@ -1432,9 +1431,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       CharacterEncoding::GetCanonicalEncodingNameByAliasName(
           web_prefs->default_encoding);
   if (web_prefs->default_encoding.empty()) {
-    prefs->ClearPref(prefs::kGlobalDefaultCharset);
-    web_prefs->default_encoding =
-        prefs->GetString(prefs::kGlobalDefaultCharset);
+    prefs->ClearPref(prefs::kDefaultCharset);
+    web_prefs->default_encoding = prefs->GetString(prefs::kDefaultCharset);
   }
   DCHECK(!web_prefs->default_encoding.empty());
 

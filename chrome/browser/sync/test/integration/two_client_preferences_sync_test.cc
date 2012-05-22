@@ -357,13 +357,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
 }
 
 // TCM ID - 3673298.
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kGlobalDefaultCharset) {
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kDefaultCharset) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(StringPrefMatches(prefs::kGlobalDefaultCharset));
+  ASSERT_TRUE(StringPrefMatches(prefs::kDefaultCharset));
 
-  ChangeStringPref(0, prefs::kGlobalDefaultCharset, "Thai");
+  ChangeStringPref(0, prefs::kDefaultCharset, "Thai");
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(StringPrefMatches(prefs::kGlobalDefaultCharset));
+  ASSERT_TRUE(StringPrefMatches(prefs::kDefaultCharset));
 }
 
 // TCM ID - 3653296.

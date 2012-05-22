@@ -314,7 +314,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
   urls_to_restore->Append(Value::CreateStringValue(example_url1_));
   urls_to_restore->Append(Value::CreateStringValue(example_url2_));
   cloud_data[prefs::kURLsToRestoreOnStartup] = urls_to_restore;
-  cloud_data[prefs::kGlobalDefaultCharset] =
+  cloud_data[prefs::kDefaultCharset] =
       Value::CreateStringValue(non_default_charset_value_);
 
   AddPreferenceEntriesHelper helper(this, cloud_data);
@@ -339,13 +339,13 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
   EXPECT_TRUE(GetPreferenceValue(prefs::kURLsToRestoreOnStartup).
               Equals(expected_urls.get()));
 
-  value.reset(GetSyncedValue(prefs::kGlobalDefaultCharset));
+  value.reset(GetSyncedValue(prefs::kDefaultCharset));
   ASSERT_TRUE(value.get());
   EXPECT_TRUE(static_cast<const StringValue*>(value.get())->
               GetAsString(&string_value));
   EXPECT_EQ(non_default_charset_value_, string_value);
   EXPECT_EQ(non_default_charset_value_,
-            prefs_->GetString(prefs::kGlobalDefaultCharset));
+            prefs_->GetString(prefs::kDefaultCharset));
   STLDeleteValues(&cloud_data);
 }
 

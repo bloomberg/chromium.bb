@@ -30,26 +30,8 @@ using webkit_glue::WebPreferences;
 
 namespace {
 
-static void RegisterFontsAndCharsetPrefs(PrefService* prefs) {
-  WebPreferences pref_defaults;
-
-  prefs->RegisterLocalizedStringPref(prefs::kDefaultCharset,
-                                     IDS_DEFAULT_ENCODING,
-                                     PrefService::SYNCABLE_PREF);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
-                                      IDS_DEFAULT_FONT_SIZE,
-                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFixedFontSize,
-                                      IDS_DEFAULT_FIXED_FONT_SIZE,
-                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumFontSize,
-                                      IDS_MINIMUM_FONT_SIZE,
-                                      PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumLogicalFontSize,
-                                      IDS_MINIMUM_LOGICAL_FONT_SIZE,
-                                      PrefService::UNSYNCABLE_PREF);
-
-  // These are only registered to be used in migration.
+// Registers prefs only used for migration.
+static void RegisterPrefsToMigrate(PrefService* prefs) {
   prefs->RegisterLocalizedStringPref(prefs::kWebKitOldStandardFontFamily,
                                      IDS_STANDARD_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
@@ -68,6 +50,22 @@ static void RegisterFontsAndCharsetPrefs(PrefService* prefs) {
   prefs->RegisterLocalizedStringPref(prefs::kWebKitOldFantasyFontFamily,
                                      IDS_FANTASY_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedStringPref(prefs::kGlobalDefaultCharset,
+                                     IDS_DEFAULT_ENCODING,
+                                     PrefService::SYNCABLE_PREF);
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitGlobalDefaultFontSize,
+                                      IDS_DEFAULT_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitGlobalDefaultFixedFontSize,
+                                      IDS_DEFAULT_FIXED_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitGlobalMinimumFontSize,
+                                      IDS_MINIMUM_FONT_SIZE,
+                                      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterLocalizedIntegerPref(
+      prefs::kWebKitGlobalMinimumLogicalFontSize,
+      IDS_MINIMUM_LOGICAL_FONT_SIZE,
+      PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitGlobalStandardFontFamily,
                                      IDS_STANDARD_FONT_FAMILY,
                                      PrefService::UNSYNCABLE_PREF);
@@ -91,18 +89,18 @@ static void RegisterFontsAndCharsetPrefs(PrefService* prefs) {
 // The list of prefs we want to observe.
 const char* kPrefsToObserve[] = {
   prefs::kDefaultZoomLevel,
-  prefs::kGlobalDefaultCharset,
+  prefs::kDefaultCharset,
   prefs::kEnableReferrers,
   prefs::kWebKitAllowDisplayingInsecureContent,
   prefs::kWebKitAllowRunningInsecureContent,
-  prefs::kWebKitGlobalDefaultFixedFontSize,
-  prefs::kWebKitGlobalDefaultFontSize,
-  prefs::kWebKitGlobalJavascriptEnabled,
+  prefs::kWebKitDefaultFixedFontSize,
+  prefs::kWebKitDefaultFontSize,
+  prefs::kWebKitJavascriptEnabled,
   prefs::kWebKitJavaEnabled,
-  prefs::kWebKitGlobalLoadsImagesAutomatically,
-  prefs::kWebKitGlobalMinimumFontSize,
-  prefs::kWebKitGlobalMinimumLogicalFontSize,
-  prefs::kWebKitGlobalPluginsEnabled,
+  prefs::kWebKitLoadsImagesAutomatically,
+  prefs::kWebKitMinimumFontSize,
+  prefs::kWebKitMinimumLogicalFontSize,
+  prefs::kWebKitPluginsEnabled,
   prefs::kWebkitTabsToLinks,
   prefs::kWebKitUsesUniversalDetector
 };
@@ -255,17 +253,6 @@ const struct {
   const char* from;
   const char* to;
 } kPrefNamesToMigrate[] = {
-  { prefs::kDefaultCharset,
-    prefs::kGlobalDefaultCharset },
-  { prefs::kWebKitDefaultFixedFontSize,
-    prefs::kWebKitGlobalDefaultFixedFontSize },
-  { prefs::kWebKitDefaultFontSize,
-    prefs::kWebKitGlobalDefaultFontSize },
-  { prefs::kWebKitMinimumFontSize,
-    prefs::kWebKitGlobalMinimumFontSize },
-  { prefs::kWebKitMinimumLogicalFontSize,
-    prefs::kWebKitGlobalMinimumLogicalFontSize },
-
   // Migrate prefs like "webkit.webprefs.standard_font_family" to
   // "webkit.webprefs.fonts.standard.Zyyy". This moves the formerly
   // "non-per-script" font prefs into the per-script font pref maps, as the
@@ -290,6 +277,16 @@ const struct {
   // (for the per-tab pref mechanism, which has since been removed) occurred.
   // In addition, this moves the formerly "non-per-script" font prefs into the
   // per-script font pref maps, as above.
+  { prefs::kGlobalDefaultCharset,
+    prefs::kDefaultCharset },
+  { prefs::kWebKitGlobalDefaultFixedFontSize,
+    prefs::kWebKitDefaultFixedFontSize },
+  { prefs::kWebKitGlobalDefaultFontSize,
+    prefs::kWebKitDefaultFontSize },
+  { prefs::kWebKitGlobalMinimumFontSize,
+    prefs::kWebKitMinimumFontSize },
+  { prefs::kWebKitGlobalMinimumLogicalFontSize,
+    prefs::kWebKitMinimumLogicalFontSize },
   { prefs::kWebKitGlobalCursiveFontFamily,
     prefs::kWebKitCursiveFontFamily },
   { prefs::kWebKitGlobalFantasyFontFamily,
@@ -307,7 +304,7 @@ const struct {
 const int kPrefsToMigrateLength = ARRAYSIZE_UNSAFE(kPrefNamesToMigrate);
 
 static void MigratePreferences(PrefService* prefs) {
-  RegisterFontsAndCharsetPrefs(prefs);
+  RegisterPrefsToMigrate(prefs);
   for (int i = 0; i < kPrefsToMigrateLength; ++i) {
     const PrefService::Preference *pref =
         prefs->FindPreference(kPrefNamesToMigrate[i].from);
@@ -371,20 +368,20 @@ void PrefsTabHelper::InitIncognitoUserPrefStore(
 // static
 void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
   WebPreferences pref_defaults;
-  prefs->RegisterBooleanPref(prefs::kWebKitGlobalJavascriptEnabled,
+  prefs->RegisterBooleanPref(prefs::kWebKitJavascriptEnabled,
                              pref_defaults.javascript_enabled,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitWebSecurityEnabled,
                              pref_defaults.web_security_enabled,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(
-      prefs::kWebKitGlobalJavascriptCanOpenWindowsAutomatically,
+      prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
       true,
       PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebKitGlobalLoadsImagesAutomatically,
+  prefs->RegisterBooleanPref(prefs::kWebKitLoadsImagesAutomatically,
                              pref_defaults.loads_images_automatically,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kWebKitGlobalPluginsEnabled,
+  prefs->RegisterBooleanPref(prefs::kWebKitPluginsEnabled,
                              pref_defaults.plugins_enabled,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitDomPasteEnabled,
@@ -421,7 +418,7 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
                                      IDS_ACCEPT_LANGUAGES,
                                      PrefService::UNSYNCABLE_PREF);
 #endif
-  prefs->RegisterLocalizedStringPref(prefs::kGlobalDefaultCharset,
+  prefs->RegisterLocalizedStringPref(prefs::kDefaultCharset,
                                      IDS_DEFAULT_ENCODING,
                                      PrefService::SYNCABLE_PREF);
   prefs->RegisterLocalizedStringPref(prefs::kWebKitStandardFontFamily,
@@ -473,17 +470,17 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
   RegisterFontFamilyMap(prefs, prefs::kWebKitCursiveFontFamilyMap);
   RegisterFontFamilyMap(prefs, prefs::kWebKitFantasyFontFamilyMap);
 
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitGlobalDefaultFontSize,
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFontSize,
                                       IDS_DEFAULT_FONT_SIZE,
                                       PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitGlobalDefaultFixedFontSize,
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitDefaultFixedFontSize,
                                       IDS_DEFAULT_FIXED_FONT_SIZE,
                                       PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitGlobalMinimumFontSize,
+  prefs->RegisterLocalizedIntegerPref(prefs::kWebKitMinimumFontSize,
                                       IDS_MINIMUM_FONT_SIZE,
                                       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedIntegerPref(
-      prefs::kWebKitGlobalMinimumLogicalFontSize,
+      prefs::kWebKitMinimumLogicalFontSize,
       IDS_MINIMUM_LOGICAL_FONT_SIZE,
       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterLocalizedBooleanPref(prefs::kWebKitUsesUniversalDetector,
@@ -515,8 +512,7 @@ void PrefsTabHelper::Observe(int type,
       std::string* pref_name_in = content::Details<std::string>(details).ptr();
       DCHECK(content::Source<PrefService>(source).ptr() ==
                  GetProfile()->GetPrefs());
-      if ((*pref_name_in == prefs::kDefaultCharset ||
-           *pref_name_in == prefs::kGlobalDefaultCharset) ||
+      if (*pref_name_in == prefs::kDefaultCharset ||
           StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
         UpdateWebPreferences();
       } else if (*pref_name_in == prefs::kDefaultZoomLevel ||
