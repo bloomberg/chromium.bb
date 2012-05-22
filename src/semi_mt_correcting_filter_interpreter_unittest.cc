@@ -645,4 +645,54 @@ TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest) {
   EXPECT_EQ(interpreter.prev2_hwstate_.fingers, kNullFingers);
 }
 
+const unsigned kWarpFlags = GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
+
+// Cr-48 tp firmware often reports the 'lifted' finger instead of the
+// 'still present' finger for one packet following 1->2 finger transitions.
+// This test simulates this, and tests that it doesn't generate motion.
+TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 65, 0, 3134, 2894, 67, 0},
+    { 0, 0, 0, 0, 65, 0, 3132, 1891, 68, 0},
+    { 0, 0, 0, 0, 65, 0, 3134, 2894, 68, 0},  // fs[0] position w/ fs[1] tid
+  };
+
+  HardwareState hs[] = {
+    { 0.500, 0, 2, 2, &fs[0] },  // fs[0] and fs[1]
+    { 0.525, 0, 1, 1, &fs[2] },  // fs[0] lifts, reported by fw w/ fs[1] tid
+    { 0.550, 0, 1, 1, &fs[1] },  // fw switches to reporting fs[1] position
+    { 0.575, 0, 1, 1, &fs[1] },  // fw continues to report fs[1]
+  };
+
+  HardwareProperties hwprops = {
+    1217, 5733, 1061, 4798,  // left, top, right, bottom
+    1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = 1;
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    // No Warp at first
+    interpreter.SyncInterpret(&hs[i], NULL);
+    FingerState *fs = &hs[i].fingers[0];
+    switch (i) {
+    case 0: // No warp 2-finger sample, and 3rd sample after 2->1
+    case 3:
+      EXPECT_NE(fs->flags & kWarpFlags, kWarpFlags);
+      break;
+    case 1:  // Warp on 2->1 and sample after 2->1
+    case 2:
+      EXPECT_EQ(fs->flags & kWarpFlags, kWarpFlags);
+      break;
+    }
+    fs->flags &= ~kWarpFlags;
+  }
+}
 }  // namespace gestures

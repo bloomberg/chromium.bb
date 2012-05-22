@@ -67,6 +67,7 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest);
 
  public:
   SemiMtCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
@@ -143,6 +144,9 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // Set WARP flags for both fingers if their positions are either unreliable
   // or jumpy.
   void SuppressFingerJump(HardwareState* hwstate);
+
+  // Set WARP flags for both fingers immediately after 1->2 finger transitions
+  void SuppressTwoToOneFingerJump(HardwareState* hwstate);
 
   // Starting finger positions of the two-finger gesture.
   FingerPosition start_pos_[kMaxSemiMtFingers];
