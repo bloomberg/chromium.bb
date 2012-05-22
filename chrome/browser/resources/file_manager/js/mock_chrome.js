@@ -614,7 +614,10 @@ chrome.fileBrowserPrivate = {
       POWERPOINT_PRESENTATION_FILE_TYPE: 'PowerPoint presentation',
       EXCEL_FILE_TYPE: 'Excel spreadsheet',
 
-      SEARCH_NO_MATCHING_FILES: 'No files match <b>"$1"</b>'
+      SEARCH_NO_MATCHING_FILES: 'No files match <b>"$1"</b>',
+
+      TIME_TODAY: 'Today $1',
+      TIME_YESTERDAY: 'Yesterday $1'
     });
   }
 };
@@ -723,3 +726,29 @@ chrome.mediaPlayerPrivate = {
     this.popup_ = null;
   }
 };
+
+/**
+ * TODO(olege): Remove once a Chrome with this interface available is released.
+ */
+var v8Intl = (function() {
+
+var v8Intl = {};
+
+/**
+ * Constructs v8Intl.DateTimeFormat object given optional locales and options
+ * parameters.
+ *
+ * @constructor
+ * @param {Array?} locales Unused in the mock.
+ * @param {Object} options Unused in the mock.
+ */
+v8Intl.DateTimeFormat = function(locales, options) {
+  return {
+    format: function(dateValue) {
+      return dateValue.toString();
+    }
+  };
+};
+
+return v8Intl;
+}());

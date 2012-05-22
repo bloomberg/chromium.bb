@@ -121,6 +121,11 @@ FileManager.prototype = {
   var MINIMUM_BUTTER_DISPLAY_TIME_MS = 1300;
 
   /**
+   * Number of milliseconds in a day.
+   */
+  var MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
+
+  /**
    * Item for the Grid View.
    * @constructor
    */
@@ -328,8 +333,13 @@ FileManager.prototype = {
 
     this.metadataCache_ = MetadataCache.createFull();
 
-    this.shortDateFormatter_ =
-      this.locale_.createDateTimeFormat({'dateType': 'medium'});
+    this.dateFormatter_ = v8Intl.DateTimeFormat(
+        {} /* default locale */,
+        {year: 'numeric', month: 'short', day: 'numeric',
+         hour: 'numeric', minute: 'numeric'});
+    this.timeFormatter_ = v8Intl.DateTimeFormat(
+        {} /* default locale */,
+        {hour: 'numeric', minute: 'numeric'});
 
     this.collator_ = this.locale_.createCollator({
       'numeric': true, 'ignoreCase': true, 'ignoreAccents': true});
@@ -675,6 +685,15 @@ FileManager.prototype = {
     this.setListType(listType);
 
     this.textSearchState_ = {text: '', date: new Date()};
+
+    // Update metadata to change 'Today' and 'Yesterday' dates.
+    var today = new Date();
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    today.setMilliseconds(0);
+    setTimeout(this.dailyUpdateModificationTime_.bind(this),
+               today.getTime() + MILLISECONDS_IN_DAY - Date.now() + 1000);
   };
 
   FileManager.prototype.initRootsList_ = function() {
@@ -1999,9 +2018,25 @@ FileManager.prototype = {
   FileManager.prototype.updateDate_ = function(div, filesystemProps) {
     if (!filesystemProps) {
       div.textContent = '...';
+      return;
+    }
+
+    var modTime = filesystemProps.modificationTime;
+    var today = new Date();
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    today.setMilliseconds(0);
+
+    if (modTime >= today &&
+        modTime < today.getTime() + MILLISECONDS_IN_DAY) {
+      div.textContent = strf('TIME_TODAY', this.timeFormatter_.format(modTime));
+    } else if (modTime >= today - MILLISECONDS_IN_DAY && modTime < today) {
+      div.textContent = strf('TIME_YESTERDAY',
+                             this.timeFormatter_.format(modTime));
     } else {
       div.textContent =
-          this.shortDateFormatter_.format(filesystemProps.modificationTime);
+          this.dateFormatter_.format(filesystemProps.modificationTime);
     }
   };
 
@@ -2047,6 +2082,20 @@ FileManager.prototype = {
       this.metadataCache_.clear(entries, 'gdata');
       this.metadataCache_.get(entries, 'gdata', null);
     }
+  };
+
+  FileManager.prototype.dailyUpdateModificationTime_ = function() {
+    var fileList = this.directoryModel_.getFileList();
+    var urls = [];
+    for (var i = 0; i < fileList.length; i++) {
+      urls.push(fileList.item(i).toURL());
+    }
+    this.metadataCache_.get(
+        fileList.slice(), 'filesystem',
+        this.updateMetadataInUI_.bind(this, 'filesystem', urls));
+
+    setTimeout(this.dailyUpdateModificationTime_.bind(this),
+               MILLISECONDS_IN_DAY);
   };
 
   FileManager.prototype.updateMetadataInUI_ = function(

@@ -11073,6 +11073,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Thumbnail view
       </message>
 
+      <message name="IDS_FILE_BROWSER_TIME_TODAY" desc="File date and time in case the date is today.">
+        Today <ph name="TODAY_DAYTIME">$1<ex>6:19 AM</ex></ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_TIME_YESTERDAY" desc="File date and time in case the date is yesterday.">
+        Yesterday <ph name="YESTERDAY_DAYTIME">$1<ex>4:48 PM</ex></ph>
+      </message>
+
       <!-- Bookmark manager -->
       <message name="IDS_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
         Bookmark Manager
