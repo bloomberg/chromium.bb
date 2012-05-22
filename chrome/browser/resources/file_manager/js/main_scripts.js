@@ -50,6 +50,7 @@
 //<include src="combobutton.js"/>
 //
 //<include src="util.js"/>
+//<include src="volume_manager.js"/>
 //<include src="directory_model.js"/>
 //<include src="file_copy_manager.js"/>
 //<include src="file_manager.js"/>

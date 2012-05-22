@@ -647,3 +647,12 @@ util.getFileAndDisplayNameForGDataSearchResult = function(path) {
     return null;
   }
 };
+
+/**
+ * Makes filesystem: URL from the path.
+ * @param {string} path File or directory path.
+ * @return {string} URL.
+ */
+util.makeFilesystemUrl = function(path) {
+  return 'filesystem:' + chrome.extension.getURL('external' + path);
+};

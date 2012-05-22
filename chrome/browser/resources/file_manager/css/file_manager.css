@@ -8,17 +8,23 @@ html.col-resize * {
 
 /* Outer frame of the dialog. */
 body {
-   -webkit-box-flex: 1;
-   -webkit-box-orient: vertical;
-   -webkit-transition: opacity 70ms linear;
-   -webkit-user-select: none;
-   display: -webkit-box;
-   height: 100%;
-   margin: 0;
-   opacity: 0;
-   padding: 0;
-   position: absolute;
-   width: 100%;
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  -webkit-transition: opacity 70ms linear;
+  -webkit-user-select: none;
+  display: -webkit-box;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  padding: 0;
+  position: absolute;
+  width: 100%;
+}
+
+body.loaded {
+  /* Do not use display:none because list will calculate metrics incorrectly. */
+  /*display: -webkit-box;*/
+  opacity: 1;
 }
 
 button,
@@ -328,6 +334,7 @@ div.root-eject:hover {
   border-top: 1px solid #d4d4d4;
   display: -webkit-box;
   overflow: hidden;
+  position: relative;
 }
 
 /* Container for the ok/cancel buttons. */
@@ -1122,34 +1129,48 @@ div.shade[fadein] {
 }
 
 /* Message panel for unmounted GData */
-.dialog-container:not([unmounted]) .dialog-body > div.unmounted-panel,
-.dialog-container[unmounted] .dialog-body > div:not(.unmounted-panel) {
-  display: none;
-}
-
-div.unmounted-panel {
+#unmounted-panel {
+  bottom: 0;
   color: #333;
+  display: none;
+  left: 0;
   padding-left: 50px;
   padding-top: 20px;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
-div.unmounted-panel > * {
+.dialog-container[gdata='mounting'] #unmounted-panel,
+.dialog-container[gdata='error'] #unmounted-panel {
+  display: block;
+}
+
+.dialog-container[gdata='unmounted'] .filelist-panel,
+.dialog-container[gdata='mounting'] .filelist-panel,
+.dialog-container[gdata='error'] .filelist-panel {
+  /* Hide file list when GData is not mounted.
+     Use opacity to avoid manual resizing.*/
+  opacity: 0;
+}
+
+#unmounted-panel > * {
   height: 22px;
   margin-bottom: 10px;
 }
 
-div.unmounted-panel > div {
+#unmounted-panel > * {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-  display: -webkit-box;
+  display: none;
 }
 
-.unmounted-panel > .gdata.loading {
+#unmounted-panel > .loading {
   position: relative;
 }
 
-.unmounted-panel > .gdata.loading .spinner-box {
+#unmounted-panel > .loading > .spinner-box {
   bottom: 0;
   position: absolute;
   right: 100%;
@@ -1157,17 +1178,17 @@ div.unmounted-panel > div {
   width: 40px;
 }
 
-.unmounted-panel > .gdata.progress {
-  color: #999;
-  margin-top: -10px;
+[gdata='mounting'] #unmounted-panel > .loading,
+[gdata='mounting'] #unmounted-panel > .progress,
+[gdata='error'] #unmounted-panel > .error,
+#unmounted-panel.retry-enabled > .retry,
+#unmounted-panel.retry-enabled > .learn-more {
+  display: -webkit-box;
 }
 
-.unmounted-panel:not([loading]) > .gdata.loading,
-.unmounted-panel:not([loading]) > .gdata.progress,
-.unmounted-panel:not([error]) > .gdata.error,
-.unmounted-panel:not([retry]) > .gdata.retry,
-.unmounted-panel:not([retry]) > .gdata.learn-more {
-  display: none;
+#unmounted-panel > .progress {
+  color: #999;
+  margin-top: -10px;
 }
 
 .plain-link {
