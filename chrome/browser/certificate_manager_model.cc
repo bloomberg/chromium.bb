@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,9 +81,7 @@ string16 CertificateManagerModel::GetColumnText(
 
 #if defined(OS_CHROMEOS)
       // TODO(xiyuan): Put this into a column when we have js tree-table.
-      if (crypto::IsTPMTokenReady() &&
-          cert.os_cert_handle()->slot ==
-            cert_db().GetPrivateModule()->os_module_handle()) {
+      if (IsHardwareBacked(&cert)) {
         rv = l10n_util::GetStringFUTF16(
             IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT,
             rv,
@@ -152,4 +150,15 @@ bool CertificateManagerModel::Delete(net::X509Certificate* cert) {
   if (result)
     Refresh();
   return result;
+}
+
+bool CertificateManagerModel::IsHardwareBacked(
+    const net::X509Certificate* cert) const {
+#if defined(OS_CHROMEOS)
+  return crypto::IsTPMTokenReady() &&
+         cert->os_cert_handle()->slot ==
+             cert_db().GetPrivateModule()->os_module_handle();
+#else
+  return false;
+#endif
 }

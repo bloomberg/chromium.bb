@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,6 +99,9 @@ class CertificateManagerModel {
   // Delete the cert.  Returns true on success.  |cert| is still valid when this
   // function returns.
   bool Delete(net::X509Certificate* cert);
+
+  // IsHardwareBacked returns true if |cert| is hardware backed.
+  bool IsHardwareBacked(const net::X509Certificate* cert) const;
 
  private:
   // Callback used by Refresh() for when the cert slots have been unlocked.

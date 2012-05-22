@@ -39,6 +39,7 @@ static const char kSubNodesId[] = "subnodes";
 static const char kNameId[] = "name";
 static const char kReadOnlyId[] = "readonly";
 static const char kUntrustedId[] = "untrusted";
+static const char kExtractableId[] = "extractable";
 static const char kSecurityDeviceId[] = "device";
 static const char kErrorId[] = "error";
 
@@ -975,6 +976,9 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
         cert_dict->SetBoolean(
             kUntrustedId,
             certificate_manager_model_->cert_db().IsUntrusted(cert));
+        cert_dict->SetBoolean(
+            kExtractableId,
+            !certificate_manager_model_->IsHardwareBacked(cert));
         // TODO(mattm): Other columns.
         subnodes->Append(cert_dict);
       }

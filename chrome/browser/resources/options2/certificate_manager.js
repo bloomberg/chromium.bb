@@ -116,12 +116,13 @@ cr.define('options', function() {
     updateButtonState: function(data) {
       var isCert = !!data && data.id.substr(0, 5) == 'cert-';
       var readOnly = !!data && data.readonly;
+      var extractable = !!data && data.extractable;
       var hasChildren = this.tree.items.length > 0;
       this.viewButton.disabled = !isCert;
       if (this.editButton !== null)
         this.editButton.disabled = !isCert;
       if (this.backupButton !== null)
-        this.backupButton.disabled = !isCert;
+        this.backupButton.disabled = !isCert || !extractable;
       if (this.backupAllButton !== null)
         this.backupAllButton.disabled = !hasChildren;
       if (this.exportButton !== null)
