@@ -410,16 +410,21 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 
 - (void)startThrobberForRow:(NSInteger)index {
   for (SingleSuggestionView* row in [self subviews]) {
-    [row setEnabled:NO];
-    if ([row tag] == index)
-      [row startThrobber];
+    if ([row isMemberOfClass:[SingleSuggestionView class]]) {
+      [row setEnabled:NO];
+      if ([row tag] == index) {
+        [row startThrobber];
+      }
+    }
   }
 }
 
 - (void)stopThrobber {
   for (SingleSuggestionView* row in [self subviews]) {
-    [row stopThrobber];
-    [row setEnabled:YES];
+    if ([row isMemberOfClass:[SingleSuggestionView class]]) {
+      [row stopThrobber];
+      [row setEnabled:YES];
+    }
   }
 }
 
