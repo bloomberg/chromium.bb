@@ -1637,15 +1637,24 @@ zoom_binding(struct wl_seat *seat, uint32_t time,
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
 	struct weston_output *output;
-	float maximum_level;
+	float maximum_level, increment;
 
 	wl_list_for_each(output, &compositor->output_list, link) {
 		if (pixman_region32_contains_point(&output->region,
 						   wl_fixed_to_double(seat->pointer->x),
 						   wl_fixed_to_double(seat->pointer->y),
 						   NULL)) {
+			if (key == KEY_PAGEUP && value)
+				increment = output->zoom.increment;
+			else if (key == KEY_PAGEDOWN && value)
+				increment = -output->zoom.increment;
+			else if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
+				increment = output->zoom.increment * value;
+			else
+				increment = 0;
+
 			output->zoom.active = 1;
-			output->zoom.level += output->zoom.increment * value;
+			output->zoom.level += increment;
 
 			if (output->zoom.level <= 0.0) {
 				output->zoom.active = 0;
@@ -2579,6 +2588,10 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 
 	/* configurable bindings */
 	mod = shell->binding_modifier;
+	weston_compositor_add_binding(ec, KEY_PAGEUP, 0, 0, mod,
+				      zoom_binding, NULL);
+	weston_compositor_add_binding(ec, KEY_PAGEDOWN, 0, 0, mod,
+				      zoom_binding, NULL);
 	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, mod,
 				      move_binding, shell);
 	weston_compositor_add_binding(ec, 0, BTN_MIDDLE, 0, mod,
