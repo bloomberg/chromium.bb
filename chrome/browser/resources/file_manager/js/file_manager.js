@@ -2228,6 +2228,9 @@ FileManager.prototype = {
         showThumbnails();
     }
 
+    var thumbnailClickHandler =
+        this.dispatchDefaultTask_.bind(this, selection);
+
     for (var i = 0; i < selection.indexes.length; i++) {
       var entry = this.directoryModel_.getFileList().item(selection.indexes[i]);
       if (!entry)
@@ -2252,6 +2255,7 @@ FileManager.prototype = {
           }
           var thumbnail = this.renderThumbnailBox_(entry, true,
                                                    onFirstThumbnailLoaded);
+          zoomed.addEventListener('click', thumbnailClickHandler);
         } else {
           var thumbnail = this.renderThumbnailBox_(entry, true,
                                                    onThumbnailLoaded);
@@ -2259,8 +2263,7 @@ FileManager.prototype = {
         thumbnailCount++;
         box.appendChild(thumbnail);
         box.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
-        box.addEventListener('click',
-            this.dispatchDefaultTask_.bind(this, selection));
+        box.addEventListener('click', thumbnailClickHandler);
 
         thumbnails.push(box);
       }
