@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "leveldb/write_batch.h"
 
@@ -52,6 +53,8 @@ GDataLevelDB::~GDataLevelDB() {
 }
 
 void GDataLevelDB::Init(const FilePath& db_path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   leveldb::DB* level_db = NULL;
   leveldb::Options options;
   options.create_if_missing = true;
@@ -65,6 +68,8 @@ void GDataLevelDB::Init(const FilePath& db_path) {
 }
 
 GDataDB::Status GDataLevelDB::Put(const GDataEntry& entry) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   // Write the serialized proto.
   std::string serialized_proto;
   entry.SerializeToString(&serialized_proto);
@@ -87,6 +92,8 @@ GDataDB::Status GDataLevelDB::Put(const GDataEntry& entry) {
 
 GDataDB::Status GDataLevelDB::DeleteByResourceId(
     const std::string& resource_id) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   scoped_ptr<GDataEntry> entry;
   Status status = GetByResourceId(resource_id, &entry);
   if (status == DB_KEY_NOT_FOUND)
@@ -107,6 +114,8 @@ GDataDB::Status GDataLevelDB::DeleteByResourceId(
 
 GDataDB::Status GDataLevelDB::DeleteByPath(
     const FilePath& path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   std::string resource_id;
   const Status status = ResourceIdForPath(path, &resource_id);
   if (status != DB_OK)
@@ -116,6 +125,8 @@ GDataDB::Status GDataLevelDB::DeleteByPath(
 
 GDataDB::Status GDataLevelDB::GetByResourceId(const std::string& resource_id,
                                               scoped_ptr<GDataEntry>* entry) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   entry->reset();
   std::string serialized_proto;
   const std::string resource_id_key = ResourceIdToKey(resource_id);
@@ -136,6 +147,8 @@ GDataDB::Status GDataLevelDB::GetByResourceId(const std::string& resource_id,
 
 GDataDB::Status GDataLevelDB::GetByPath(const FilePath& path,
                                         scoped_ptr<GDataEntry>* entry) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   entry->reset();
   std::string resource_id;
   const Status status = ResourceIdForPath(path, &resource_id);
@@ -146,6 +159,8 @@ GDataDB::Status GDataLevelDB::GetByPath(const FilePath& path,
 
 GDataDB::Status GDataLevelDB::ResourceIdForPath(const FilePath& path,
                                                 std::string* resource_id) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   const std::string path_key = PathToKey(path);
   const leveldb::Status db_status = level_db_->Get(
       leveldb::ReadOptions(), path_key, resource_id);
@@ -167,6 +182,8 @@ GDataLevelDBIter::GDataLevelDBIter(scoped_ptr<leveldb::Iterator> level_db_iter,
     : level_db_iter_(level_db_iter.Pass()),
       db_(db),
       path_(path) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   const std::string path_key = PathToKey(path);
   level_db_iter_->Seek(leveldb::Slice(path_key));
 }
@@ -176,6 +193,8 @@ GDataLevelDBIter::~GDataLevelDBIter() {
 
 bool GDataLevelDBIter::GetNext(std::string* path,
                                scoped_ptr<GDataEntry>* entry) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   DCHECK(path);
   DCHECK(entry);
   path->clear();

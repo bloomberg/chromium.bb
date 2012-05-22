@@ -61,7 +61,6 @@ class GDataDBTest : public testing::Test {
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<GDataDB> gdata_db_;
-  std::set<GDataEntry*> entry_set_;
 };
 
 void GDataDBTest::SetUp() {
@@ -102,8 +101,8 @@ void GDataDBTest::TestGetFound(const GDataEntry& source) {
 void GDataDBTest::InitDB() {
   int sequence_id = 1;
   GDataRootDirectory root;
-  GDataDirectory* dir1 = AddDirectory(NULL, &root, sequence_id++);
-  GDataDirectory* dir2 = AddDirectory(NULL, &root, sequence_id++);
+  GDataDirectory* dir1 = AddDirectory(&root, &root, sequence_id++);
+  GDataDirectory* dir2 = AddDirectory(&root, &root, sequence_id++);
   GDataDirectory* dir3 = AddDirectory(dir1, &root, sequence_id++);
 
   AddFile(dir1, &root, sequence_id++);
@@ -115,25 +114,23 @@ void GDataDBTest::InitDB() {
 
   AddFile(dir3, &root, sequence_id++);
   AddFile(dir3, &root, sequence_id++);
-
-  STLDeleteElements(&entry_set_);
 }
 
 GDataDirectory* GDataDBTest::AddDirectory(GDataDirectory* parent,
                                           GDataRootDirectory* root,
                                           int sequence_id) {
-  GDataDirectory* dir = new GDataDirectory(parent ? parent : root, root);
+  GDataDirectory* dir = new GDataDirectory(parent, root);
   const std::string dir_name = "dir" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("dir_resource_id:") +
                                   dir_name;
   dir->set_title(dir_name);
-  dir->set_file_name(dir_name);
   dir->set_resource_id(resource_id);
+  parent->AddEntry(dir);
+
   GDataDB::Status status = gdata_db_->Put(*dir);
   EXPECT_EQ(GDataDB::DB_OK, status);
   DVLOG(1) << "AddDirectory " << dir->GetFilePath().value()
            << ", " << resource_id;
-  entry_set_.insert(dir);
   return dir;
 }
 
@@ -145,13 +142,13 @@ GDataFile* GDataDBTest::AddFile(GDataDirectory* parent,
   const std::string resource_id = std::string("file_resource_id:") +
                                   title;
   file->set_title(title);
-  file->set_file_name(title);
   file->set_resource_id(resource_id);
+  parent->AddEntry(file);
+
   GDataDB::Status status = gdata_db_->Put(*file);
   EXPECT_EQ(GDataDB::DB_OK, status);
   DVLOG(1) << "AddFile " << file->GetFilePath().value()
            << ", " << resource_id;
-  entry_set_.insert(file);
   return file;
 }
 
