@@ -26,6 +26,13 @@
 UNFILED MAC WIN LINUX : conformance_more_* = SKIP
 UNFILED MAC WIN LINUX : conformance_ogles_* = SKIP
 
+UNFILED MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_canvas_* = FAIL
+UNFILED MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_image_data_* = FAIL
+UNFILED MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_image_* = FAIL
+
+UNFILED MAC WIN LINUX : conformance_state_gl_get_calls = FAIL
+UNFILED MAC WIN LINUX : conformance_attribs_gl_vertex_attrib_render = FAIL
+
 125963 MAC AMD : conformance_programs_use_program_crash_with_discard_in_fragment_shader = FAIL
 125963 MAC AMD : conformance_typedarrays_data_view_test = FAIL
 
@@ -50,7 +57,6 @@ UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_hex_int_constant_macro
 UNFILED MAC WIN LINUX : conformance_glsl_misc_shader_with_vec4_vec3_vec4_conditional = FAIL
 
 125679 MAC WIN LINUX : conformance_buffers_index_validation = FAIL
-125679 MAC WIN LINUX : conformance_canvas_framebuffer_bindings_unaffected_on_resize = FAIL
 125679 MAC WIN LINUX : conformance_context_context_creation_and_destruction = FAIL
 125679 WIN LINUX : conformance_glsl_misc_shader_with_non_reserved_words = FAIL
 
@@ -150,4 +156,6 @@ UNFILED LINUX AMD : conformance_textures_texture_mips = FAIL
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-
+// Should be passing after the next webkit roll
+UNFILED MAC WIN LINUX : conformance_renderbuffers_framebuffer_state_restoration = FAIL
+UNFILED MAC WIN LINUX : conformance_canvas_framebuffer_bindings_unaffected_on_resize = FAIL
