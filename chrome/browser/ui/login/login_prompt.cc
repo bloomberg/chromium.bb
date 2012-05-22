@@ -131,15 +131,6 @@ WebContents* LoginHandler::GetWebContentsForLogin() const {
                                       tab_contents_id_);
 }
 
-RenderViewHostDelegate* LoginHandler::GetRenderViewHostDelegate() const {
-  RenderViewHost* rvh = RenderViewHost::FromID(render_process_host_id_,
-                                               tab_contents_id_);
-  if (!rvh)
-    return NULL;
-
-  return rvh->GetDelegate();
-}
-
 void LoginHandler::SetAuth(const string16& username,
                            const string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

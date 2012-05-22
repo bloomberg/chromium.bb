@@ -30,7 +30,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
@@ -120,9 +119,9 @@ ListValue* GetTabsForProcess(int process_id) {
 
     content::RenderViewHost* host = content::RenderViewHost::From(
         const_cast<content::RenderWidgetHost*>(widget));
-    content::RenderViewHostDelegate* host_delegate = host->GetDelegate();
-    content::WebContents* contents = host_delegate->GetAsWebContents();
-    if (contents != NULL) {
+    content::WebContents* contents =
+        content::WebContents::FromRenderViewHost(host);
+    if (contents) {
       tab_id = ExtensionTabUtil::GetTabId(contents);
       if (tab_id != -1)
         tabs_list->Append(Value::CreateIntegerValue(tab_id));

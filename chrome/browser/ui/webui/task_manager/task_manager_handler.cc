@@ -18,7 +18,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -348,9 +347,8 @@ void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
 void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
   content::RenderViewHost* rvh =
       web_ui()->GetWebContents()->GetRenderViewHost();
-  if (rvh && rvh->GetDelegate()) {
-    webkit_glue::WebPreferences webkit_prefs =
-        rvh->GetDelegate()->GetWebkitPrefs();
+  if (rvh) {
+    webkit_glue::WebPreferences webkit_prefs = rvh->GetWebkitPreferences();
     webkit_prefs.allow_scripts_to_close_windows = true;
     rvh->UpdateWebkitPreferences(webkit_prefs);
   } else {

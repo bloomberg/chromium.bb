@@ -26,7 +26,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
@@ -123,10 +122,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
                     .AppendASCII("1.0.0.0")));
 
   ExtensionProcessManager* manager =
-        browser()->profile()->GetExtensionProcessManager();
+      browser()->profile()->GetExtensionProcessManager();
   ExtensionHost* host = FindHostWithPath(manager, "/backgroundpage.html", 1);
   webkit_glue::WebPreferences prefs =
-      host->render_view_host()->GetDelegate()->GetWebkitPrefs();
+      host->render_view_host()->GetWebkitPreferences();
   ASSERT_TRUE(prefs.experimental_webgl_enabled);
   ASSERT_TRUE(prefs.accelerated_compositing_enabled);
   ASSERT_TRUE(prefs.accelerated_2d_canvas_enabled);

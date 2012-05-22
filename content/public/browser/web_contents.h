@@ -65,6 +65,10 @@ class WebContents : public PageNavigator {
       const WebContents* base_web_contents,
       SessionStorageNamespace* session_storage_namespace);
 
+  // Returns a WebContents that wraps the RenderViewHost, or NULL if the
+  // render view host's delegate isn't a WebContents.
+  CONTENT_EXPORT static WebContents* FromRenderViewHost(RenderViewHost* rvh);
+
   virtual ~WebContents() {}
 
   // Intrinsic tab state -------------------------------------------------------

@@ -31,7 +31,6 @@ class ProcessMetrics;
 
 namespace content {
 class RenderViewHost;
-class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class WebContents;
 }

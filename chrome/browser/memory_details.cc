@@ -249,12 +249,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         GURL url = host_delegate->GetURL();
         content::ViewType type = host_delegate->GetRenderViewType();
         if (host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) {
-          // TODO(erikkay) the type for devtools doesn't actually appear to
-          // be set.
-          if (type == content::VIEW_TYPE_DEV_TOOLS_UI)
-            process.renderer_type = ProcessMemoryInformation::RENDERER_DEVTOOLS;
-          else
-            process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
+          process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
         } else if (extension_process_map->Contains(
             host->GetProcess()->GetID())) {
           // For our purposes, don't count processes containing only hosted apps

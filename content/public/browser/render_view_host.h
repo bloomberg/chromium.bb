@@ -251,6 +251,9 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   virtual void ToggleSpeechInput() = 0;
 
+  // Returns the current WebKit preferences.
+  virtual webkit_glue::WebPreferences GetWebkitPreferences() = 0;
+
   // Passes a list of Webkit preferences to the renderer.
   virtual void UpdateWebkitPreferences(
       const webkit_glue::WebPreferences& prefs) = 0;

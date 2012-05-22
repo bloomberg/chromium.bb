@@ -57,9 +57,6 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // Returns the WebContents that needs authentication.
   content::WebContents* GetWebContentsForLogin() const;
 
-  // Returns the RenderViewHostDelegate for the page that needs authentication.
-  content::RenderViewHostDelegate* GetRenderViewHostDelegate() const;
-
   // Resend the request with authentication credentials.
   // This function can be called from either thread.
   void SetAuth(const string16& username, const string16& password);

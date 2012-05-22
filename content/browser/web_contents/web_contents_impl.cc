@@ -250,6 +250,11 @@ WebContents* WebContents::Create(
       NULL,
       static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace));
 }
+
+WebContents* WebContents::FromRenderViewHost(RenderViewHost* rvh) {
+  return rvh->GetDelegate()->GetAsWebContents();
+}
+
 }
 
 // WebContentsImpl -------------------------------------------------------------
