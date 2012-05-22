@@ -14,6 +14,11 @@ namespace {
 // Percent by which the volume should be changed when a volume key is pressed.
 const double kStepPercentage = 4.0;
 
+// Percent to which the volume should be set when the "volume up" key is pressed
+// while we're muted and have the volume set to 0.  See
+// http://crosbug.com/13618.
+const double kVolumePercentOnVolumeUpWhileMuted = 25.0;
+
 }  // namespace
 
 bool VolumeController::HandleVolumeMute(const ui::Accelerator& accelerator) {
@@ -53,11 +58,8 @@ bool VolumeController::HandleVolumeUp(const ui::Accelerator& accelerator) {
   chromeos::AudioHandler* audio_handler = chromeos::AudioHandler::GetInstance();
   if (audio_handler->IsMuted()) {
     audio_handler->SetMuted(false);
-    // If volume percent is still 0.0 after reset the mute status, it means that
-    // the mute status was done by VolumeDown, so we need to increase
-    // the volume as usual.
-    if (audio_handler->GetVolumePercent() == 0.0)
-      audio_handler->AdjustVolumeByPercent(kStepPercentage);
+    if (audio_handler->GetVolumePercent() <= 0.1)  // float comparison
+      audio_handler->SetVolumePercent(kVolumePercentOnVolumeUpWhileMuted);
   } else {
     audio_handler->AdjustVolumeByPercent(kStepPercentage);
   }

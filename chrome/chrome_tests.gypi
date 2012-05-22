@@ -2832,7 +2832,6 @@
         'browser/ui/views/ash/browser_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/ash/caps_lock_handler_browsertest.cc',
         'browser/ui/views/ash/launcher/launcher_favicon_loader_browsertest.cc',
-        'browser/ui/views/ash/volume_controller_chromeos_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',

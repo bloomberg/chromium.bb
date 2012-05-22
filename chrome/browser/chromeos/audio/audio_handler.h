@@ -33,10 +33,6 @@ class AudioHandler {
   static void Initialize();
   static void Shutdown();
 
-  // Same as Initialize but using the specified audio mixer.  It takes
-  // ownership of |mixer|.
-  static void InitializeForTesting(AudioMixer* mixer);
-
   // GetInstance returns NULL if not initialized or if already shutdown.
   static AudioHandler* GetInstance();
 
@@ -66,8 +62,7 @@ class AudioHandler {
   // and constructor/destructor private as recommended for Singletons.
   friend struct DefaultSingletonTraits<AudioHandler>;
 
-  // Takes ownership of |mixer|.
-  explicit AudioHandler(AudioMixer* mixer);
+  AudioHandler();
   virtual ~AudioHandler();
 
   scoped_ptr<AudioMixer> mixer_;
