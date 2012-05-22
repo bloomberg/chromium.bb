@@ -14,7 +14,7 @@
     '../skia/skia.gyp:skia',
     '../third_party/icu/icu.gyp:icuuc',
     '../third_party/npapi/npapi.gyp:npapi',
-    '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+    '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
     '../ui/gl/gl.gyp:gl',
     '../ui/ui.gyp:ui',
     '../webkit/support/webkit_support.gyp:appcache',

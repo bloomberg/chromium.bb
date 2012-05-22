@@ -15,7 +15,7 @@
     '../third_party/libjingle/libjingle.gyp:libjingle',
     '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
     '../third_party/npapi/npapi.gyp:npapi',
-    '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+    '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
     '../ui/surface/surface.gyp:surface',
     '../v8/tools/gyp/v8.gyp:v8',
     '../webkit/support/webkit_support.gyp:webkit_media',

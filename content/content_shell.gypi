@@ -33,7 +33,7 @@
         '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/ui.gyp:ui',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:appcache',

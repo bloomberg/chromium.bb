@@ -6,16 +6,34 @@
   'variables': {
     'chromium_code': 1,  # Use higher warning level.
     'directxsdk_exists': '<!(python <(DEPTH)/build/dir_exists.py ../third_party/directxsdk)',
+    'conditions': [
+      ['inside_chromium_build==0', {
+        'webkit_src_dir': '../../../..',
+      },{
+        'webkit_src_dir': '../third_party/WebKit',
+      }],
+    ],
   },
   'includes': [
     '../build/win_precompile.gypi',
     'content_shell.gypi',
-    'content_tests.gypi',
   ],
   'target_defaults': {
     'defines': ['CONTENT_IMPLEMENTATION'],
+    'conditions': [
+      ['inside_chromium_build==0', {
+        'dependencies': [
+          '../webkit/support/setup_third_party.gyp:third_party_headers',
+        ],
+      }],
+    ],
   },
   'conditions': [
+    ['inside_chromium_build==1', {
+      'includes': [
+        'content_tests.gypi',
+      ]
+    }],
    # In component mode, we build all of content as a single DLL.
    # However, in the static mode, we need to build content as multiple
    # targets in order to prevent dependencies from getting introduced

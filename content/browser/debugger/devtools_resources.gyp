@@ -3,12 +3,21 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'conditions': [
+      ['inside_chromium_build==0', {
+        'webkit_src_dir': '../../../../../..',
+      },{
+        'webkit_src_dir': '../../../third_party/WebKit',
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'devtools_resources',
       'type': 'none',
       'dependencies': [
-        '../../../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:generate_devtools_grd',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:generate_devtools_grd',
       ],
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',

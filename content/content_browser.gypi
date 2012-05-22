@@ -14,7 +14,7 @@
     '../skia/skia.gyp:skia',
     '../third_party/flac/flac.gyp:libflac',
     '../third_party/speex/speex.gyp:libspeex',
-    '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+    '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
     '../third_party/zlib/zlib.gyp:zlib',
     '../ui/surface/surface.gyp:surface',
     '../ui/ui.gyp:ui',
