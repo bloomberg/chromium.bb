@@ -197,8 +197,13 @@ void Layer::SetOpacity(float opacity) {
 void Layer::SetBackgroundBlur(int blur_radius)
 {
   WebKit::WebFilterOperations filters;
-  if (blur_radius)
+  if (blur_radius) {
+#if WEBKIT_HAS_NEW_WEBFILTEROPERATION_API
+    filters.append(WebKit::WebFilterOperation::createBlurFilter(blur_radius));
+#else
     filters.append(WebKit::WebBlurFilterOperation(blur_radius));
+#endif
+  }
   web_layer_.setBackgroundFilters(filters);
 
   background_blur_radius_ = blur_radius;
