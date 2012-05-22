@@ -33,6 +33,8 @@ class WebIntentPickerCocoa : public WebIntentPicker,
 
   void OnSheetDidEnd(NSWindow* sheet);
 
+  WebIntentPickerModel* model() { return model_; }
+
   // WebIntentPickerDelegate forwarding API.
   void OnCancelled();
   void OnServiceChosen(size_t index);
