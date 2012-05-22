@@ -173,6 +173,16 @@
 	Destroy the pool.
       </description>
     </request>
+
+    <request name="resize">
+      <description summary="change the size of the pool mapping">
+	This request will cause the server to remap the backing memory
+	for the pool from the fd passed when the pool was creating but
+	using the new size.
+      </description>
+
+      <arg name="size" type="int"/>
+    </request>
   </interface>
 
   <interface name="wl_shm" version="1">

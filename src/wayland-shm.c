@@ -38,13 +38,14 @@ struct wl_shm_pool {
 	int refcount;
 	char *data;
 	int size;
+	int fd;
 };
 
 struct wl_shm_buffer {
 	struct wl_buffer buffer;
 	int32_t stride;
 	uint32_t format;
-	void *data;
+	int offset;
 	struct wl_shm_pool *pool;
 };
 
@@ -56,6 +57,7 @@ shm_pool_unref(struct wl_shm_pool *pool)
 		return;
 
 	munmap(pool->data, pool->size);
+	close(pool->fd);
 	free(pool);
 }
 
@@ -120,7 +122,7 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 	buffer->buffer.height = height;
 	buffer->format = format;
 	buffer->stride = stride;
-	buffer->data = pool->data + offset;
+	buffer->offset = offset;
 	buffer->pool = pool;
 	pool->refcount++;
 
@@ -150,9 +152,32 @@ shm_pool_destroy(struct wl_client *client, struct wl_resource *resource)
 	wl_resource_destroy(resource);
 }
 
+static void
+shm_pool_resize(struct wl_client *client, struct wl_resource *resource,
+		int32_t size)
+{
+	struct wl_shm_pool *pool = resource->data;
+	void *data;
+
+	data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED,
+		    pool->fd, 0);
+
+	if (data == MAP_FAILED) {
+		wl_resource_post_error(resource,
+				       WL_SHM_ERROR_INVALID_FD,
+				       "failed mmap fd %d", pool->fd);
+		return;
+	}
+
+	munmap(pool->data, pool->size);
+	pool->data = data;
+	pool->size = size;
+}
+
 struct wl_shm_pool_interface shm_pool_interface = {
 	shm_pool_create_buffer,
-	shm_pool_destroy
+	shm_pool_destroy,
+	shm_pool_resize
 };
 
 static void
@@ -177,10 +202,10 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	pool->refcount = 1;
+	pool->fd = fd;
 	pool->size = size;
 	pool->data = mmap(NULL, size,
 			  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	close(fd);
 	if (pool->data == MAP_FAILED) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FD,
@@ -252,7 +277,7 @@ wl_shm_buffer_get_data(struct wl_buffer *buffer_base)
 	if (!wl_buffer_is_shm(buffer_base))
 		return NULL;
 
-	return buffer->data;
+	return buffer->pool->data + buffer->offset;
 }
 
 WL_EXPORT uint32_t
