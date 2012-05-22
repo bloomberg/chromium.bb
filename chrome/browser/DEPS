@@ -58,7 +58,6 @@ include_rules = [
   "+chrome/browser/ui/views/browser_actions_container.h",
   "+chrome/browser/ui/views/chrome_views_delegate.h",
   "+chrome/browser/ui/views/constrained_window_views.h",
-  "+chrome/browser/ui/views/event_utils.h",
   "+chrome/browser/ui/views/extensions/extension_popup.h",
   "+chrome/browser/ui/views/extensions/extension_view.h",
   "+chrome/browser/ui/views/frame/browser_view.h",
