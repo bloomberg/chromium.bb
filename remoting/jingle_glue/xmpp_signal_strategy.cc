@@ -167,24 +167,6 @@ void XmppSignalStrategy::OnConnectionStateChanged(
   DCHECK(CalledOnValidThread());
 
   if (state == buzz::XmppEngine::STATE_OPEN) {
-    // Verify that the JID that we've received matches the username
-    // that we have. If it doesn't, then the OAuth token was probably
-    // issued for a different account, so we treat is a an auth error.
-    //
-    // TODO(sergeyu): Some user accounts may not have associated
-    // e-mail address. The check below will fail for such
-    // accounts. Make sure we can handle this case proprely.
-    if (!StartsWithASCII(GetLocalJid(), username_, false)) {
-      LOG(ERROR) << "Received JID that is different from the expected value.";
-      error_ = AUTHENTICATION_FAILED;
-      xmpp_client_->SignalStateChange.disconnect(this);
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&DisconnectXmppClient, xmpp_client_));
-      xmpp_client_ = NULL;
-      SetState(DISCONNECTED);
-      return;
-    }
-
     keep_alive_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kKeepAliveIntervalSeconds),
         this, &XmppSignalStrategy::SendKeepAlive);

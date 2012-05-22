@@ -266,8 +266,8 @@ class SimpleHost : public HeartbeatSender::Listener {
     if (!is_it2me_) {
       scoped_ptr<protocol::AuthenticatorFactory> factory(
           new protocol::Me2MeHostAuthenticatorFactory(
-              xmpp_login_, key_pair_.GenerateCertificate(),
-              *key_pair_.private_key(), host_secret_hash_));
+              key_pair_.GenerateCertificate(), *key_pair_.private_key(),
+              host_secret_hash_));
       host_->SetAuthenticatorFactory(factory.Pass());
     }
   }
