@@ -1064,7 +1064,8 @@ bool CrosAddIPConfig(const std::string& device_path, IPConfigType type) {
         DBusThreadManager::Get()->GetFlimflamDeviceClient()->
         CallAddIPConfigAndBlock(dbus::ObjectPath(device_path), type_str);
     if (result.value().empty()) {
-      LOG(WARNING) <<"Add IPConfig failed: ";
+      LOG(ERROR) << "Add IPConfig failed for device path " << device_path
+                 << " and type " << type_str;
       return false;
     }
     return true;

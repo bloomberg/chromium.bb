@@ -515,6 +515,8 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
   if (ipconfig.device_path.empty())
     return;
 
+  VLOG(1) << "Setting IPConfig: " << ipconfig.ToString();
+
   NetworkIPConfig* ipconfig_dhcp = NULL;
   std::string ipconfig_dhcp_path;
   NetworkIPConfig* ipconfig_static = NULL;
@@ -536,17 +538,24 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
   NetworkIPConfigVector ipconfigs2;
   std::vector<std::string> ipconfig_paths2;
   if (ipconfig.type == chromeos::IPCONFIG_TYPE_DHCP) {
-    // If switching from static to dhcp, create new dhcp ip config.
-    if (!ipconfig_dhcp)
-      CrosAddIPConfig(ipconfig.device_path, chromeos::IPCONFIG_TYPE_DHCP);
-    // User wants DHCP now. So delete the static ip config.
+    // If switching from static to DHCP, create new DHCP IPConfig.
+    if (!ipconfig_dhcp &&
+        !CrosAddIPConfig(ipconfig.device_path, chromeos::IPCONFIG_TYPE_DHCP)) {
+      LOG(ERROR) << "Unable to add new DHCP IPConfig";
+      return;
+    }
+    // User wants DHCP now. So delete the static IPConfig.
     if (ipconfig_static)
       CrosRemoveIPConfig(ipconfig_static_path);
   } else if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4) {
-    // If switching from dhcp to static, create new static ip config.
+    // If switching from DHCP to static, create new static IPConfig.
     if (!ipconfig_static) {
-      CrosAddIPConfig(ipconfig.device_path, chromeos::IPCONFIG_TYPE_IPV4);
-      // Now find the newly created IP config.
+      if (!CrosAddIPConfig(ipconfig.device_path,
+                           chromeos::IPCONFIG_TYPE_IPV4)) {
+        LOG(ERROR) << "Unable to add new static IPConfig";
+        return;
+      }
+      // Now find the newly created IPConfig.
       if (CrosListIPConfigs(ipconfig.device_path, &ipconfigs2,
                             &ipconfig_paths2, NULL)) {
         for (size_t i = 0; i < ipconfigs2.size(); ++i) {
@@ -556,39 +565,42 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
           }
         }
       }
+      if (!ipconfig_static) {
+        LOG(ERROR) << "Unable to find newly added static IPConfig";
+        return;
+      }
     }
-    if (ipconfig_static) {
-      // Save any changed details.
-      if (ipconfig.address != ipconfig_static->address) {
-        base::StringValue value(ipconfig.address);
-        CrosSetNetworkIPConfigProperty(ipconfig_static->device_path,
-                                       flimflam::kAddressProperty, value);
-      }
-      if (ipconfig.netmask != ipconfig_static->netmask) {
-        int prefixlen = ipconfig.GetPrefixLength();
-        if (prefixlen == -1) {
-          VLOG(1) << "IP config prefixlen is invalid for netmask "
-                  << ipconfig.netmask;
-        } else {
-          base::FundamentalValue value(prefixlen);
-          CrosSetNetworkIPConfigProperty(ipconfig_static->device_path,
-                                         flimflam::kPrefixlenProperty, value);
-        }
-      }
-      if (ipconfig.gateway != ipconfig_static->gateway) {
-        base::StringValue value(ipconfig.gateway);
-        CrosSetNetworkIPConfigProperty(ipconfig_static->device_path,
-                                       flimflam::kGatewayProperty, value);
-      }
-      if (ipconfig.name_servers != ipconfig_static->name_servers) {
-        base::StringValue value(ipconfig.name_servers);
-        CrosSetNetworkIPConfigProperty(ipconfig_static->device_path,
-                                       flimflam::kNameServersProperty, value);
-      }
-      // Remove dhcp ip config if there is one.
-      if (ipconfig_dhcp)
-        CrosRemoveIPConfig(ipconfig_dhcp_path);
+
+    // Save any changed details.
+    if (ipconfig.address != ipconfig_static->address) {
+      base::StringValue value(ipconfig.address);
+      CrosSetNetworkIPConfigProperty(ipconfig_static_path,
+                                     flimflam::kAddressProperty, value);
     }
+    if (ipconfig.netmask != ipconfig_static->netmask) {
+      int prefixlen = ipconfig.GetPrefixLength();
+      if (prefixlen == -1) {
+        VLOG(1) << "IPConfig prefix length is invalid for netmask "
+            << ipconfig.netmask;
+      } else {
+        base::FundamentalValue value(prefixlen);
+        CrosSetNetworkIPConfigProperty(ipconfig_static_path,
+                                       flimflam::kPrefixlenProperty, value);
+      }
+    }
+    if (ipconfig.gateway != ipconfig_static->gateway) {
+      base::StringValue value(ipconfig.gateway);
+      CrosSetNetworkIPConfigProperty(ipconfig_static_path,
+                                     flimflam::kGatewayProperty, value);
+    }
+    if (ipconfig.name_servers != ipconfig_static->name_servers) {
+      base::StringValue value(ipconfig.name_servers);
+      CrosSetNetworkIPConfigProperty(ipconfig_static_path,
+                                     flimflam::kNameServersProperty, value);
+    }
+    // Remove DHCP IPConfig if there is one.
+    if (ipconfig_dhcp)
+      CrosRemoveIPConfig(ipconfig_dhcp_path);
   }
 }
 

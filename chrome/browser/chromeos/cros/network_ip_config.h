@@ -19,6 +19,8 @@ struct NetworkIPConfig {
                   const std::string& gateway, const std::string& name_servers);
   ~NetworkIPConfig();
 
+  std::string ToString() const;
+
   // Gets the PrefixLength for an IPv4 netmask.
   // For example, "255.255.255.0" => 24
   // If the netmask is invalid, this will return -1;

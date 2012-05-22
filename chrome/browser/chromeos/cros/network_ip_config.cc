@@ -4,9 +4,29 @@
 
 #include "chrome/browser/chromeos/cros/network_ip_config.h"
 
+#include "base/logging.h"
 #include "base/string_tokenizer.h"
 
 namespace chromeos {
+
+namespace {
+#define ENUM_CASE(x) case x: return std::string(#x)
+std::string IPConfigTypeAsString(IPConfigType type) {
+  switch (type) {
+    ENUM_CASE(IPCONFIG_TYPE_UNKNOWN);
+    ENUM_CASE(IPCONFIG_TYPE_IPV4);
+    ENUM_CASE(IPCONFIG_TYPE_IPV6);
+    ENUM_CASE(IPCONFIG_TYPE_DHCP);
+    ENUM_CASE(IPCONFIG_TYPE_BOOTP);
+    ENUM_CASE(IPCONFIG_TYPE_ZEROCONF);
+    ENUM_CASE(IPCONFIG_TYPE_DHCP6);
+    ENUM_CASE(IPCONFIG_TYPE_PPP);
+  }
+  NOTREACHED() << "Unhandled enum value " << type;
+  return std::string();
+}
+#undef ENUM_CASE
+}  // namespace
 
 NetworkIPConfig::NetworkIPConfig(
     const std::string& device_path, IPConfigType type,
@@ -21,6 +41,15 @@ NetworkIPConfig::NetworkIPConfig(
 }
 
 NetworkIPConfig::~NetworkIPConfig() {}
+
+std::string NetworkIPConfig::ToString() const {
+  return std::string("path: ") + device_path
+      + " type: " + IPConfigTypeAsString(type)
+      + " address: " + address
+      + " netmask: " + netmask
+      + " gateway: " + gateway
+      + " name_servers: " + name_servers;
+}
 
 int32 NetworkIPConfig::GetPrefixLength() const {
   int count = 0;
