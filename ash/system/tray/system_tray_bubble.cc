@@ -43,6 +43,7 @@ const int kSystemTrayBubbleVerticalInset = 1;
 const int kArrowHeight = 10;
 const int kArrowWidth = 20;
 const int kArrowPaddingFromRight = 20;
+const int kArrowPaddingFromBottom = 17;
 const int kMinArrowOffset = 12;
 
 const int kAnimationDurationForPopupMS = 200;
@@ -350,12 +351,16 @@ void SystemTrayBubbleView::OnMouseExited(const views::MouseEvent& event) {
 
 // SystemTrayBubble::InitParams
 SystemTrayBubble::InitParams::InitParams(
-    SystemTrayBubble::AnchorType anchor_type)
+    SystemTrayBubble::AnchorType anchor_type,
+    ShelfAlignment shelf_alignment)
     : anchor(NULL),
       anchor_type(anchor_type),
       can_activate(false),
       login_status(ash::user::LOGGED_IN_NONE),
-      arrow_offset(kArrowPaddingFromRight + kArrowWidth / 2) {
+      arrow_offset(
+          (shelf_alignment == SHELF_ALIGNMENT_BOTTOM ?
+               kArrowPaddingFromRight : kArrowPaddingFromBottom)
+          + kArrowWidth / 2) {
 }
 
 // SystemTrayBubble

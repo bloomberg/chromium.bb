@@ -453,7 +453,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
         ash::Shell::GetInstance()->tray_delegate();
     views::View* anchor = tray_container_;
     SystemTrayBubble::InitParams init_params(
-        SystemTrayBubble::ANCHOR_TYPE_TRAY);
+        SystemTrayBubble::ANCHOR_TYPE_TRAY,
+        shelf_alignment());
     init_params.anchor = anchor;
     init_params.can_activate = can_activate;
     init_params.login_status = delegate->GetUserLoginStatus();
@@ -496,7 +497,7 @@ void SystemTray::UpdateNotificationBubble() {
     anchor = tray_container_;
     anchor_type = SystemTrayBubble::ANCHOR_TYPE_TRAY;
   }
-  SystemTrayBubble::InitParams init_params(anchor_type);
+  SystemTrayBubble::InitParams init_params(anchor_type, shelf_alignment());
   init_params.anchor = anchor;
   init_params.login_status =
       ash::Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
@@ -539,8 +540,6 @@ bool SystemTray::PerformAction(const views::Event& event) {
       if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM)
         arrow_offset = base::i18n::IsRTL() ?
             located_event.x() : tray_container_->width() - located_event.x();
-      else
-        arrow_offset = tray_container_->height() - located_event.y();
     }
     ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset);
   }

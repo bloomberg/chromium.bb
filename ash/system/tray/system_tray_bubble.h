@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/system/user/login_status.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/base_export.h"
 #include "base/message_pump_observer.h"
 #include "base/timer.h"
@@ -74,7 +75,7 @@ class SystemTrayBubble : public base::MessagePumpObserver,
   };
 
   struct InitParams {
-    InitParams(AnchorType anchor_type);
+    InitParams(AnchorType anchor_type, ShelfAlignment shelf_alignmen);
 
     views::View* anchor;
     AnchorType anchor_type;
