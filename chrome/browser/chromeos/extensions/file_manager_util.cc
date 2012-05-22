@@ -26,7 +26,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -440,9 +439,7 @@ void OpenFileBrowser(const FilePath& path,
   if (FileManageTabExists(path, mode))
     return;
 
-  Browser* last_active = BrowserList::GetLastActive();
-  Profile* profile = last_active ? last_active->profile() :
-      ProfileManager::GetDefaultProfileOrOffTheRecord();
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
   std::string url = chrome::kChromeUIFileManagerURL;
   if (flag_name.size()) {
