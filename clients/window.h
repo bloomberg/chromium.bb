@@ -123,10 +123,8 @@ struct wl_buffer *
 display_get_buffer_for_surface(struct display *display,
 			       cairo_surface_t *surface);
 
-cairo_surface_t *
-display_get_pointer_surface(struct display *display, int pointer,
-			    int *width, int *height,
-			    int *hotspot_x, int *hotspot_y);
+struct wl_cursor_image *
+display_get_pointer_image(struct display *display, int pointer);
 
 void
 display_defer(struct display *display, struct task *task);

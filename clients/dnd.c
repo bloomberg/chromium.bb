@@ -32,6 +32,7 @@
 #include <sys/epoll.h>
 
 #include <wayland-client.h>
+#include <wayland-cursor.h>
 
 #include "window.h"
 #include "../shared/cairo-util.h"
@@ -311,25 +312,20 @@ create_drag_cursor(struct dnd_drag *dnd_drag,
 		   struct item *item, int32_t x, int32_t y, double opacity)
 {
 	struct dnd *dnd = dnd_drag->dnd;
-	cairo_surface_t *surface, *pointer;
-	int32_t pointer_width, pointer_height, hotspot_x, hotspot_y;
+	cairo_surface_t *surface;
+	struct wl_cursor_image *pointer;
 	struct rectangle rectangle;
 	cairo_pattern_t *pattern;
 	cairo_t *cr;
 
-	pointer = display_get_pointer_surface(dnd->display,
-					      POINTER_DRAGGING,
-					      &pointer_width,
-					      &pointer_height,
-					      &hotspot_x,
-					      &hotspot_y);
+	pointer = display_get_pointer_image(dnd->display, WL_CURSOR_DRAGGING);
 
-	rectangle.width = item_width + 2 * pointer_width;
-	rectangle.height = item_height + 2 * pointer_height;
+	rectangle.width = item_width + 2 * pointer->width;
+	rectangle.height = item_height + 2 * pointer->height;
 	surface = display_create_surface(dnd->display, NULL, &rectangle, 0);
 
 	cr = cairo_create(surface);
-	cairo_translate(cr, pointer_width, pointer_height);
+	cairo_translate(cr, pointer->width, pointer->height);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0);
@@ -341,17 +337,12 @@ create_drag_cursor(struct dnd_drag *dnd_drag,
 	cairo_mask(cr, pattern);
 	cairo_pattern_destroy(pattern);
 
-	cairo_set_source_surface(cr, pointer,
-				 x - item->x - hotspot_x,
-				 y - item->y - hotspot_y);
-	cairo_surface_destroy(pointer);
-	cairo_paint(cr);
 	/* FIXME: more cairo-gl brokeness */
 	surface_flush_device(surface);
 	cairo_destroy(cr);
 
-	dnd_drag->hotspot_x = pointer_width + x - item->x;
-	dnd_drag->hotspot_y = pointer_height + y - item->y;
+	dnd_drag->hotspot_x = pointer->width + x - item->x;
+	dnd_drag->hotspot_y = pointer->height + y - item->y;
 	dnd_drag->width = rectangle.width;
 	dnd_drag->height = rectangle.height;
 
@@ -419,7 +410,7 @@ dnd_button_handler(struct widget *widget,
 					  dnd_drag->drag_surface,
 					  serial);
 
-		input_set_pointer_image(input, time, POINTER_DRAGGING);
+		input_set_pointer_image(input, time, WL_CURSOR_DRAGGING);
 
 		dnd_drag->opaque =
 			create_drag_cursor(dnd_drag, item, x, y, 1);
@@ -443,9 +434,9 @@ lookup_cursor(struct dnd *dnd, int x, int y)
 
 	item = dnd_get_item(dnd, x, y);
 	if (item)
-		return POINTER_HAND1;
+		return WL_CURSOR_HAND1;
 	else
-		return POINTER_LEFT_PTR;
+		return WL_CURSOR_LEFT_PTR;
 }
 
 static int

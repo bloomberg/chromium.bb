@@ -33,6 +33,7 @@
 #include <linux/input.h>
 
 #include <wayland-client.h>
+#include <wayland-cursor.h>
 #include "window.h"
 #include "../shared/cairo-util.h"
 #include "../shared/config-parser.h"
@@ -240,7 +241,7 @@ panel_launcher_enter_handler(struct widget *widget, struct input *input,
 	launcher->focused = 1;
 	widget_schedule_redraw(widget);
 
-	return POINTER_LEFT_PTR;
+	return WL_CURSOR_LEFT_PTR;
 }
 
 static void
@@ -511,7 +512,7 @@ unlock_dialog_widget_enter_handler(struct widget *widget,
 	dialog->button_focused = 1;
 	widget_schedule_redraw(widget);
 
-	return POINTER_LEFT_PTR;
+	return WL_CURSOR_LEFT_PTR;
 }
 
 static void
