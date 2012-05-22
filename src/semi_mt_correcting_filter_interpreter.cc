@@ -62,6 +62,12 @@ void SemiMtCorrectingFilterInterpreter::SetHardwareProperties(
 }
 
 void SemiMtCorrectingFilterInterpreter::UpdateHistory(HardwareState* hwstate) {
+  if (prev_hwstate_.fingers) {
+    prev2_hwstate_ = prev_hwstate_;
+    std::copy(prev_hwstate_.fingers, prev_hwstate_.fingers + kMaxSemiMtFingers,
+              prev2_fingers_);
+    prev2_hwstate_.fingers = prev2_fingers_;
+  }
   prev_hwstate_ = *hwstate;
   std::copy(hwstate->fingers, hwstate->fingers + kMaxSemiMtFingers,
             prev_fingers_);
@@ -70,6 +76,7 @@ void SemiMtCorrectingFilterInterpreter::UpdateHistory(HardwareState* hwstate) {
 
 void SemiMtCorrectingFilterInterpreter::ClearHistory() {
   memset(&prev_hwstate_, 0, sizeof(prev_hwstate_));
+  memset(&prev2_hwstate_, 0, sizeof(prev2_hwstate_));
 }
 
 void SemiMtCorrectingFilterInterpreter::AssignTrackingId(

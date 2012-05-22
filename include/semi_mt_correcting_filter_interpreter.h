@@ -153,6 +153,12 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // Previous Fingers.
   FingerState prev_fingers_[kMaxSemiMtFingers];
 
+  // HardwareState before Previous
+  HardwareState prev2_hwstate_;
+
+  // Fingers before Previous
+  FingerState prev2_fingers_[kMaxSemiMtFingers];
+
   // The last used id number.
   unsigned short last_id_;
 

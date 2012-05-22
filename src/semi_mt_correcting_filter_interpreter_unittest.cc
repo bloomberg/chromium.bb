@@ -606,11 +606,14 @@ TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest) {
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
     { 0, 0, 0, 0, 100, 0, 3000, 1800, 67, 0},
+    { 0, 0, 0, 0, 110, 0, 3100, 2000, 68, 0},
+    { 0, 0, 0, 0, 120, 0, 3200, 2200, 69, 0},
   };
 
   HardwareState hs[] = {
     // time, buttons, finger count, touch count, fingers
     { 0.500, 0, 1, 1, &fs[0] },
+    { 0.525, 0, 2, 2, &fs[1] },
   };
 
   HardwareProperties hwprops = {
@@ -623,16 +626,23 @@ TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest) {
 
   // HardwareState history should be initially cleared
   EXPECT_EQ(interpreter.prev_hwstate_.fingers, kNullFingers);
+  EXPECT_EQ(interpreter.prev2_hwstate_.fingers, kNullFingers);
 
   // HardwareState history should not be cleared if interpreter enabled
   interpreter.interpreter_enabled_.val_ = 1;
   interpreter.SyncInterpret(&hs[0], NULL);
   EXPECT_TRUE(interpreter.prev_hwstate_.SameFingersAs(hs[0]));
+  EXPECT_EQ(interpreter.prev2_hwstate_.fingers, kNullFingers);
+
+  interpreter.SyncInterpret(&hs[1], NULL);
+  EXPECT_TRUE(interpreter.prev_hwstate_.SameFingersAs(hs[1]));
+  EXPECT_TRUE(interpreter.prev2_hwstate_.SameFingersAs(hs[0]));
 
   // HardwareState history should be cleared if interpreter disabled
   interpreter.interpreter_enabled_.val_ = 0;
   interpreter.SyncInterpret(&hs[0], NULL);
   EXPECT_EQ(interpreter.prev_hwstate_.fingers, kNullFingers);
+  EXPECT_EQ(interpreter.prev2_hwstate_.fingers, kNullFingers);
 }
 
 }  // namespace gestures
