@@ -58,14 +58,17 @@ def RunFyiTests(options, webdriver_checkout):
       chromedriver_path=chromedriver_path,
       chrome_path=chrome_path))
 
-  print '@@@BUILD_STEP java_stable_tests@@@'
-  print '@@@STEP_TEXT@chromedriver r%s@@@' % revision
-  PrintTestResults(java_tests.Run(
-      test_target=java_tests.CHROME_TESTS,
-      test_filter=options.filter,
-      webdriver_dir=webdriver_checkout,
-      chromedriver_path=chromedriver_path,
-      chrome_path=None))
+  # Disable running latest ChromeDriver with Chrome stable, since
+  # there is a compatibility break between v20 and v21.
+  # See http://code.google.com/p/chromedriver/issues/detail?id=80
+  # print '@@@BUILD_STEP java_stable_tests@@@'
+  # print '@@@STEP_TEXT@chromedriver r%s@@@' % revision
+  # PrintTestResults(java_tests.Run(
+  #     test_target=java_tests.CHROME_TESTS,
+  #     test_filter=options.filter,
+  #     webdriver_dir=webdriver_checkout,
+  #     chromedriver_path=chromedriver_path,
+  #     chrome_path=None))
 
 
 def PrintTestResults(results):
