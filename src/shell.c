@@ -1598,7 +1598,7 @@ surface_opacity_binding(struct wl_seat *seat, uint32_t time,
 			uint32_t key, uint32_t button, uint32_t axis,
 			int32_t value, void *data)
 {
-	uint32_t step = 15;
+	float step = 0.05;
 	struct shell_surface *shsurf;
 	struct weston_surface *surface =
 		(struct weston_surface *) seat->pointer->focus;
@@ -1620,8 +1620,8 @@ surface_opacity_binding(struct wl_seat *seat, uint32_t time,
 
 	surface->alpha += value * step;
 
-	if (surface->alpha > 255)
-		surface->alpha = 255;
+	if (surface->alpha > 1.0)
+		surface->alpha = 1.0;
 	if (surface->alpha < step)
 		surface->alpha = step;
 
@@ -2371,7 +2371,7 @@ switcher_next(struct switcher *switcher)
 			if (prev == switcher->current)
 				next = surface;
 			prev = surface;
-			surface->alpha = 64;
+			surface->alpha = 0.25;
 			surface->geometry.dirty = 1;
 			weston_surface_damage(surface);
 			break;
@@ -2380,7 +2380,7 @@ switcher_next(struct switcher *switcher)
 		}
 
 		if (is_black_surface(surface, NULL)) {
-			surface->alpha = 64;
+			surface->alpha = 0.25;
 			surface->geometry.dirty = 1;
 			weston_surface_damage(surface);
 		}
