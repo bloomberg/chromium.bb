@@ -79,7 +79,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // BrowserChildProcessHostDelegate implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
   virtual void OnProcessLaunched() OVERRIDE;
 
   void OnResourcesReady();

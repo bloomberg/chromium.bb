@@ -529,12 +529,6 @@ bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void NaClProcessHost::OnProcessCrashed(int exit_code) {
-  std::string message = base::StringPrintf(
-      "NaCl process exited with status %i (0x%x)", exit_code, exit_code);
-  LOG(ERROR) << message;
-}
-
 void NaClProcessHost::OnProcessLaunched() {
   if (!StartWithLaunchedProcess())
     delete this;
