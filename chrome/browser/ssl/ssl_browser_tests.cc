@@ -521,7 +521,48 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoForward) {
   EXPECT_TRUE(entry2 == entry4);
 }
 
-// Visits a HTTPS page and proceeds despite an invalid certificate. The page
+// Visit a HTTP page which request WSS connection to a server providing invalid
+// certificate. Close the page while WSS connection waits for UI.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndClose) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  // Setup page title observer.
+  WebContents* tab = browser()->GetSelectedWebContents();
+  ui_test_utils::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+
+  // Create GURLs to test pages.
+  std::string masterUrlPath = StringPrintf("%s?%d",
+      test_server()->GetURL("files/ssl/wss_close.html").spec().c_str(),
+      https_server_expired_.host_port_pair().port());
+  GURL masterUrl(masterUrlPath);
+  std::string slaveUrlPath = StringPrintf("%s?%d",
+      test_server()->GetURL("files/ssl/wss_close_slave.html").spec().c_str(),
+      https_server_expired_.host_port_pair().port());
+  GURL slaveUrl(slaveUrlPath);
+
+  // Create tabs and visit pages which create hanging WebSocket connections.
+  TabContentsWrapper* tabs[16];
+  for (int i = 0; i < 16; ++i) {
+    tabs[i] = browser()->AddSelectedTabWithURL(
+        slaveUrl, content::PAGE_TRANSITION_LINK);
+  }
+  browser()->SelectNextTab();
+
+  // Visit a page which causes a hanging WebSocket connection. After waiting
+  // for two round trip time, the title will be changed to 'PASS'.
+  ui_test_utils::NavigateToURL(browser(), masterUrl);
+  const string16 result = watcher.WaitAndGetTitle();
+  EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
+
+  // Close tabs which contains the test page.
+  for (int i = 0; i < 16; ++i)
+    browser()->CloseTabContents(tabs[i]->web_contents());
+  browser()->CloseTabContents(tab);
+}
+
+// Visit a HTTPS page and proceeds despite an invalid certificate. The page
 // requests WSS connection to the same origin host to check if WSS connection
 // share certificates policy with HTTPS correcly.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
@@ -541,14 +582,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
   ui_test_utils::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
   watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
-  // Visits bad HTTPS page.
+  // Visit bad HTTPS page.
   std::string urlPath =
       StringPrintf("%s%d%s", "https://localhost:", port, "/wss.html");
   ui_test_utils::NavigateToURL(browser(), GURL(urlPath));
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  false, true);  // Interstitial showing
 
-  // Proceeds anyway.
+  // Proceed anyway.
   ProceedThroughInterstitial(tab);
 
   // Test page run a WebSocket wss connection test. The result will be shown

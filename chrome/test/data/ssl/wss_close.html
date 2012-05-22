@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>test to close hanging wss connection</title>
+<script type="text/javascript">
+
+var href = window.location.href;
+var queryBegin = href.lastIndexOf('?') + 1;
+var port = href.slice(queryBegin);
+var url = 'wss://localhost:' + port;
+
+function fail()
+{
+  // Set document title to 'FAIL'. The test observer catches this title changes
+  // to know the result.
+  document.title = 'FAIL';
+}
+// Do connection test.
+var ws = new WebSocket(url);
+
+ws.onopen = fail;
+ws.onclose = fail;
+ws.onerror = fail;
+
+// Use XHR to wait about two round trip time.
+var xhr = new XMLHttpRequest();
+xhr.onreadystatechange = function(){
+  if (this.readyState != this.DONE)
+    return;
+  var xhr2 = new XMLHttpRequest();
+  xhr2.onreadystatechange = function(){
+    if (this.readyState != this.DONE)
+      return;
+    document.title = 'PASS';
+  };
+  xhr2.open('GET', href);
+  xhr2.send();
+};
+xhr.open('GET', href);
+xhr.send();
+
+setTimeout(fail, 3000);
+
+</script>
+</head>
+</html>

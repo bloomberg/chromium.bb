@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>slave tab pages which create hanging wss connection</title>
+<script type="text/javascript">
+var href = window.location.href;
+var queryBegin = href.lastIndexOf('?') + 1;
+var port = href.slice(queryBegin);
+var url = 'wss://localhost:' + port;
+var ws = new WebSocket(url);
+</script>
+</head>
+</html>
