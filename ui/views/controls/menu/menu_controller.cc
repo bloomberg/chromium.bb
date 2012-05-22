@@ -163,7 +163,7 @@ class MenuController::MenuScrollTask {
     if (new_menu == submenu_ && is_scrolling_up_ == new_is_up)
       return;
 
-    start_scroll_time_ = Time::Now();
+    start_scroll_time_ = base::Time::Now();
     start_y_ = part.submenu->GetVisibleBounds().y();
     submenu_ = new_menu;
     is_scrolling_up_ = new_is_up;
@@ -190,7 +190,7 @@ class MenuController::MenuScrollTask {
     DCHECK(submenu_);
     gfx::Rect vis_rect = submenu_->GetVisibleBounds();
     const int delta_y = static_cast<int>(
-        (Time::Now() - start_scroll_time_).InMilliseconds() *
+        (base::Time::Now() - start_scroll_time_).InMilliseconds() *
         pixels_per_second_ / 1000);
     vis_rect.set_y(is_scrolling_up_ ?
         std::max(0, start_y_ - delta_y) :
