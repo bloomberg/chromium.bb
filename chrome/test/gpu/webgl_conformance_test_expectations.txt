@@ -33,6 +33,10 @@ UNFILED MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_ima
 UNFILED MAC WIN LINUX : conformance_state_gl_get_calls = FAIL
 UNFILED MAC WIN LINUX : conformance_attribs_gl_vertex_attrib_render = FAIL
 
+UNFILED MAC RELEASE : conformance_uniforms_uniform_samplers_test = FAIL
+UNFILED WIN : conformance_uniforms_uniform_samplers_test = FAIL
+UNFILED LINUX NVIDIA AMD : conformance_uniforms_uniform_samplers_test = FAIL
+
 125963 MAC AMD : conformance_programs_use_program_crash_with_discard_in_fragment_shader = FAIL
 125963 MAC AMD : conformance_typedarrays_data_view_test = FAIL
 
