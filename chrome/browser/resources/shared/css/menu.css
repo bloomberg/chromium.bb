@@ -8,7 +8,6 @@ menu {
   background: white;
   color: black;
   cursor: default;
-  display: none;
   left: 0;
   margin: 0;
   outline: 1px solid rgba(0, 0, 0, 0.2);
@@ -16,6 +15,10 @@ menu {
   position: fixed;
   white-space: nowrap;
   z-index: 3;
+}
+
+menu:not(.decorated) {
+  display: none;
 }
 
 menu > * {
