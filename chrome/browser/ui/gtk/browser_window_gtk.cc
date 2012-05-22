@@ -428,6 +428,11 @@ void BrowserWindowGtk::Init() {
   // Set the initial background color of widgets.
   SetBackgroundColor();
   HideUnsupportedWindowFeatures();
+
+  // Setting _GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED tells gnome-shell to not force
+  // fullscreen on the window when it matches the desktop size.
+  ui::SetHideTitlebarWhenMaximizedProperty(
+      ui::GetX11WindowFromGtkWidget(GTK_WIDGET(window_)));
 }
 
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,

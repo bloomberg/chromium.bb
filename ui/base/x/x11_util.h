@@ -121,6 +121,9 @@ UI_EXPORT GtkWindow* GetGtkWindowFromX11Window(XID xid);
 UI_EXPORT void* GetVisualFromGtkWidget(GtkWidget* widget);
 #endif  // defined(TOOLKIT_GTK)
 
+// Sets _GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED on |window|.
+UI_EXPORT void SetHideTitlebarWhenMaximizedProperty(XID window);
+
 // Return the number of bits-per-pixel for a pixmap of the given depth
 UI_EXPORT int BitsPerPixelForPixmapDepth(Display* display, int depth);
 

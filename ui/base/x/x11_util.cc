@@ -469,6 +469,18 @@ void* GetVisualFromGtkWidget(GtkWidget* widget) {
 }
 #endif  // defined(TOOLKIT_GTK)
 
+void SetHideTitlebarWhenMaximizedProperty(XID window) {
+  uint32 hide = 1;
+  XChangeProperty(GetXDisplay(),
+      window,
+      GetAtom("_GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED"),
+      XA_CARDINAL,
+      32,  // size in bits
+      PropModeReplace,
+      reinterpret_cast<unsigned char*>(&hide),
+      1);
+}
+
 int BitsPerPixelForPixmapDepth(Display* dpy, int depth) {
   int count;
   XPixmapFormatValues* formats = XListPixmapFormats(dpy, &count);
