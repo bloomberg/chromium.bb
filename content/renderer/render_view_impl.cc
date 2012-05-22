@@ -2235,11 +2235,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     collection->AddAudioRenderer(audio_renderer);
   }
 
-  // Currently only cros has any HW video decode support in
+  // Currently only cros/arm has any HW video decode support in
   // GpuVideoDecodeAccelerator so we don't even try to use it on other
   // platforms.  This is a startup-time optimization.  When new VDA
-  // implementations are added, relax the #if below.
-#if defined(OS_CHROMEOS)
+  // implementations are added, relax the #if above.
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   // Note we don't actually use the result of this blind down-cast unless it's
   // valid (not NULL and of the right type).
   WebGraphicsContext3DCommandBufferImpl* context3d =
