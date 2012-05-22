@@ -744,15 +744,57 @@ weston_wm_handle_destroy_notify(struct weston_wm *wm, xcb_generic_event_t *event
 }
 
 static void
+weston_wm_window_handle_moveresize(struct weston_wm_window *window,
+				   xcb_client_message_event_t *client_message)
+{
+	static const int map[] = {
+		THEME_LOCATION_RESIZING_TOP_LEFT,
+		THEME_LOCATION_RESIZING_TOP,
+		THEME_LOCATION_RESIZING_TOP_RIGHT,
+		THEME_LOCATION_RESIZING_RIGHT,
+		THEME_LOCATION_RESIZING_BOTTOM_RIGHT,
+		THEME_LOCATION_RESIZING_BOTTOM,
+		THEME_LOCATION_RESIZING_BOTTOM_LEFT,
+		THEME_LOCATION_RESIZING_LEFT
+	};
+
+	struct weston_wm *wm = window->wm;
+	struct weston_seat *seat = wm->server->compositor->seat;
+	int detail;
+	struct weston_shell_interface *shell_interface =
+		&wm->server->compositor->shell_interface;
+
+	if (seat->seat.pointer->button_count != 1 ||
+	    seat->seat.pointer->focus != &window->surface->surface)
+		return;
+
+	detail = client_message->data.data32[2];
+	switch (detail) {
+	case _NET_WM_MOVERESIZE_MOVE:
+		shell_interface->move(window->shsurf, seat);
+		break;
+	case _NET_WM_MOVERESIZE_SIZE_TOPLEFT:
+	case _NET_WM_MOVERESIZE_SIZE_TOP:
+	case _NET_WM_MOVERESIZE_SIZE_TOPRIGHT:
+	case _NET_WM_MOVERESIZE_SIZE_RIGHT:
+	case _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT:
+	case _NET_WM_MOVERESIZE_SIZE_BOTTOM:
+	case _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT:
+	case _NET_WM_MOVERESIZE_SIZE_LEFT:
+		shell_interface->resize(window->shsurf, seat, map[detail]);
+		break;
+	case _NET_WM_MOVERESIZE_CANCEL:
+		break;
+	}
+}
+
+static void
 weston_wm_handle_client_message(struct weston_wm *wm,
 				xcb_generic_event_t *event)
 {
 	xcb_client_message_event_t *client_message =
 		(xcb_client_message_event_t *) event;
-	struct weston_shell_interface *shell_interface =
-		&wm->server->compositor->shell_interface;
 	struct weston_wm_window *window;
-	struct weston_seat *seat;
 
 	window = hash_table_lookup(wm->window_hash, client_message->window);
 
@@ -764,12 +806,8 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 		client_message->data.data32[3],
 		client_message->data.data32[4]);
 
-	seat = wm->server->compositor->seat;
-	if (client_message->type == wm->atom.net_wm_moveresize &&
-	    client_message->data.data32[2] == _NET_WM_MOVERESIZE_MOVE &&
-	    seat->seat.pointer->button_count == 1 &&
-	    seat->seat.pointer->focus == &window->surface->surface)
-			shell_interface->move(window->shsurf, seat);
+	if (client_message->type == wm->atom.net_wm_moveresize)
+		weston_wm_window_handle_moveresize(window, client_message);
 }
 
 static void
