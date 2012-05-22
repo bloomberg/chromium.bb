@@ -276,6 +276,8 @@ const ExtraLanguage kExtraLanguages[] = {
   // The code "es-419" comes from l10_util.cc.
   // For Spanish in Latin America, use Latin American keyboard layout.
   { "es-419", "xkb:latam::spa" },
+  // For Malay, use US keyboard layout. crosbug.com/p/8288
+  { "ms", "xkb:us::eng" },
 
   // TODO(yusukes): Add {"sw", "xkb:us::eng"} once Swahili is removed from the
   // blacklist in src/ui/base/l10n/l10n_util_posix.cc.
