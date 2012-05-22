@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/ibus/ibus_text.h"
 
 namespace dbus {
 class MessageReader;
@@ -16,6 +17,8 @@ class MessageWriter;
 }  // dbus
 
 namespace chromeos {
+// TODO(nona): Remove ibus namespace after complete libibus removal.
+namespace ibus {
 
 // The data structure of IBusObject is represented as variant in "(sav...)"
 // signatur. The IBusObject is constructed with two sections, header and
@@ -25,7 +28,8 @@ namespace chromeos {
 //
 // DATA STRUCTURE OVERVIEW:
 //
-// variant  struct {
+// variant  // Handle with top_variant_writer_/top_variant_reader_.
+//   struct {  // Handle with contents_writer_/contents_reader_.
 //     // Header section
 //     string typename  // The type name of object, like "IBusText"
 //     array []  // attachement array.
@@ -91,8 +95,21 @@ class CHROMEOS_EXPORT IBusObjectReader {
   bool PopString(std::string* out);
   bool PopUint32(uint32* out);
   bool PopArray(dbus::MessageReader* reader);
-  bool PopIBusObject(IBusObjectReader* reader);
+  bool PopBool(bool* out);
+  bool PopInt32(int32* out);
   bool HasMoreData();
+
+  // Sets up |reader| for reading an IBusObject entry.
+  bool PopIBusObject(IBusObjectReader* reader);
+
+  // Pops a IBusText.
+  // Returns true on success.
+  bool PopIBusText(ibus::IBusText* text);
+
+  // Pops a IBusText and store it's text field into |text|. Use PopIBusText
+  // instead in the case of using any attribute entries in IBusText.
+  // Return true on success.
+  bool PopStringFromIBusText(std::string* text);
 
  private:
   enum CheckResult {
@@ -141,6 +158,8 @@ class CHROMEOS_EXPORT IBusObjectWriter {
   // The following functions delegate dbus::MessageReader's functions.
   void AppendString(const std::string& input);
   void AppendUint32(uint32 value);
+  void AppendInt32(int32 value);
+  void AppendBool(bool value);
   void OpenArray(const std::string& signature,
                  dbus::MessageWriter* writer);
   void CloseContainer(dbus::MessageWriter* writer);
@@ -154,8 +173,14 @@ class CHROMEOS_EXPORT IBusObjectWriter {
   // Returns true if writer is initialized.
   bool IsInitialized() const;
 
+  // Appends a IBusText.
+  void AppendIBusText(const ibus::IBusText& text);
+
+  // Appends a string as IBusText without any attributes. Use AppendIBusText
+  // instead in the case of using any attribute entries.
+  void AppendStringAsIBusText(const std::string& text);
+
  private:
-  friend class TestableIBusObjectWriter;
   // Appends IBusObject headers, should be called once.
   void Init();
 
@@ -168,6 +193,7 @@ class CHROMEOS_EXPORT IBusObjectWriter {
   DISALLOW_COPY_AND_ASSIGN(IBusObjectWriter);
 };
 
+}  // namespace ibus
 }  // namespace chromeos
 
 #endif  // CHROMEOS_DBUS_IBUS_IBUS_OBJECT_H_

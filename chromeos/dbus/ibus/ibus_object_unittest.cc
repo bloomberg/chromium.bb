@@ -12,6 +12,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+// TODO(nona): Remove ibus namespace after complete libibus removal.
+namespace ibus {
 
 TEST(IBusObjectTest, WriteReadTest) {
   scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
@@ -22,12 +24,16 @@ TEST(IBusObjectTest, WriteReadTest) {
   const char kSampleText1[] = "Sample Text 1";
   const char kSampleText2[] = "Sample Text 2";
   const uint32 kSampleUint32 = 12345UL;
+  const int32 kSampleInt32 = 54321;
+  const bool kSampleBool = false;
   const uint32 kSampleArrayOfUint32Count = 10UL;
 
   // Create ibus object.
-  IBusObjectWriter ibus_object_writer(kSampleTypeName1, "suauv", &writer);
+  IBusObjectWriter ibus_object_writer(kSampleTypeName1, "suibauv", &writer);
   ibus_object_writer.AppendString(kSampleText1);
   ibus_object_writer.AppendUint32(kSampleUint32);
+  ibus_object_writer.AppendInt32(kSampleInt32);
+  ibus_object_writer.AppendBool(kSampleBool);
   dbus::MessageWriter array_writer(NULL);
   ibus_object_writer.OpenArray("u", &array_writer);
   for (uint32 i = 0; i < kSampleArrayOfUint32Count; ++i)
@@ -47,18 +53,26 @@ TEST(IBusObjectTest, WriteReadTest) {
   ASSERT_TRUE(ibus_object_reader.PopString(&expected_string));
   EXPECT_EQ(kSampleText1, expected_string);
   // Check the second uint32 value.
-  uint32 expected_uint32;
+  uint32 expected_uint32 = 0UL;
   ASSERT_TRUE(ibus_object_reader.PopUint32(&expected_uint32));
   EXPECT_EQ(kSampleUint32, expected_uint32);
-  // Check the third value which is array of uint32.
+  // Check the third int value.
+  int32 expected_int32 = 0;
+  ASSERT_TRUE(ibus_object_reader.PopInt32(&expected_int32));
+  EXPECT_EQ(kSampleInt32, expected_int32);
+  // Check the fourth boolean value.
+  bool expected_bool = true;
+  ASSERT_TRUE(ibus_object_reader.PopBool(&expected_bool));
+  EXPECT_EQ(kSampleBool, expected_bool);
+  // Check the fifth value which is array of uint32.
   dbus::MessageReader array_reader(NULL);
   ASSERT_TRUE(ibus_object_reader.PopArray(&array_reader));
   for (uint32 i = 0; i < kSampleArrayOfUint32Count; ++i) {
-    uint32 expected_uint32;
+    uint32 expected_uint32 = 0;
     ASSERT_TRUE(array_reader.PopUint32(&expected_uint32));
     EXPECT_EQ(i, expected_uint32);
   }
-  // Check the fourth value which is IBusObject.
+  // Check the sixth value which is IBusObject.
   IBusObjectReader ibus_nested_object_reader(kSampleTypeName2, NULL);
   ibus_object_reader.PopIBusObject(&ibus_nested_object_reader);
   std::string expected_text2;
@@ -87,4 +101,60 @@ TEST(IBusObjectTest, EmptyEntryTest) {
   EXPECT_FALSE(ibus_object_reader.HasMoreData());
 }
 
+TEST(IBusObjectTest, PopAppendIBusTextTest) {
+  const char kSampleTypeName[] = "Empty IBusObject Name";
+  const char kSampleString[] = "Sapmle String";
+  IBusText::SelectionAttribute selection_attribute;
+  selection_attribute.start_index = 0UL;
+  selection_attribute.end_index = 10UL;
+  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+
+  // Write IBusText.
+  dbus::MessageWriter writer(message.get());
+  IBusObjectWriter ibus_object_writer(kSampleTypeName, "v", &writer);
+  IBusText ibus_text;
+  ibus_text.mutable_selection_attributes()->push_back(selection_attribute);
+  ibus_text.set_text(kSampleString);
+  ibus_object_writer.AppendIBusText(ibus_text);
+  ibus_object_writer.CloseAll();
+
+  // Read IBusText;
+  dbus::MessageReader reader(message.get());
+  IBusObjectReader ibus_object_reader(kSampleTypeName, &reader);
+  IBusText result_text;
+  ASSERT_TRUE(ibus_object_reader.Init());
+  ASSERT_TRUE(ibus_object_reader.PopIBusText(&result_text));
+  EXPECT_FALSE(ibus_object_reader.HasMoreData());
+  EXPECT_EQ(kSampleString, result_text.text());
+  const std::vector<IBusText::SelectionAttribute>& selection_attributes =
+      result_text.selection_attributes();
+  ASSERT_EQ(1UL, selection_attributes.size());
+  EXPECT_EQ(selection_attribute.start_index,
+            selection_attributes[0].start_index);
+  EXPECT_EQ(selection_attribute.end_index,
+            selection_attributes[0].end_index);
+}
+
+TEST(IBusObjectTest, PopAppendStringAsIBusText) {
+  const char kSampleTypeName[] = "Empty IBusObject Name";
+  const char kSampleString[] = "Sapmle String";
+  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+
+  // Write string as IBusText.
+  dbus::MessageWriter writer(message.get());
+  IBusObjectWriter ibus_object_writer(kSampleTypeName, "v", &writer);
+  ibus_object_writer.AppendStringAsIBusText(kSampleString);
+  ibus_object_writer.CloseAll();
+
+  // Read string from IBusText;
+  dbus::MessageReader reader(message.get());
+  IBusObjectReader ibus_object_reader(kSampleTypeName, &reader);
+  std::string result_str;
+  ASSERT_TRUE(ibus_object_reader.Init());
+  ASSERT_TRUE(ibus_object_reader.PopStringFromIBusText(&result_str));
+  EXPECT_FALSE(ibus_object_reader.HasMoreData());
+  EXPECT_EQ(kSampleString, result_str);
+}
+
+}  // namespace ibus
 }  // namespace chromeos

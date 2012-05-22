@@ -5,9 +5,12 @@
 #include "chromeos/dbus/ibus/ibus_object.h"
 
 #include "base/logging.h"
+#include "chromeos/dbus/ibus/ibus_text.h"
 #include "dbus/message.h"
 
 namespace chromeos {
+// TODO(nona): Remove ibus namespace after complete libibus removal.
+namespace ibus {
 
 ///////////////////////////////////////////////////////////////////////////////
 // IBusObjectReader
@@ -92,10 +95,35 @@ bool IBusObjectReader::PopUint32(uint32* out) {
   return IsValid() && contents_reader_->PopUint32(out);
 }
 
+bool IBusObjectReader::PopInt32(int32* out) {
+  DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
+  DCHECK(contents_reader_.get());
+  return IsValid() && contents_reader_->PopInt32(out);
+}
+
+bool IBusObjectReader::PopBool(bool* out) {
+  DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
+  DCHECK(contents_reader_.get());
+  return IsValid() && contents_reader_->PopBool(out);
+}
+
 bool IBusObjectReader::PopArray(dbus::MessageReader* reader) {
   DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
   DCHECK(contents_reader_.get());
   return IsValid() && contents_reader_->PopArray(reader);
+}
+
+bool IBusObjectReader::PopIBusText(IBusText* text) {
+  DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
+  DCHECK(contents_reader_.get());
+  return IsValid() && chromeos::ibus::PopIBusText(contents_reader_.get(), text);
+}
+
+bool IBusObjectReader::PopStringFromIBusText(std::string* text) {
+  DCHECK_NE(IBUS_OBJECT_NOT_CHECKED, check_result_);
+  DCHECK(contents_reader_.get());
+  return IsValid() && chromeos::ibus::PopStringFromIBusText(
+      contents_reader_.get(), text);
 }
 
 bool IBusObjectReader::HasMoreData() {
@@ -141,10 +169,30 @@ void IBusObjectWriter::AppendUint32(uint32 input) {
   contents_writer_->AppendUint32(input);
 }
 
+void IBusObjectWriter::AppendInt32(int32 input) {
+  DCHECK(IsInitialized());
+  contents_writer_->AppendInt32(input);
+}
+
+void IBusObjectWriter::AppendBool(bool input) {
+  DCHECK(IsInitialized());
+  contents_writer_->AppendBool(input);
+}
+
 void IBusObjectWriter::OpenArray(const std::string& signature,
                                  dbus::MessageWriter* writer) {
   DCHECK(IsInitialized());
   contents_writer_->OpenArray(signature, writer);
+}
+
+void IBusObjectWriter::AppendIBusText(const IBusText& text) {
+  DCHECK(IsInitialized());
+  chromeos::ibus::AppendIBusText(text, contents_writer_.get());
+}
+
+void IBusObjectWriter::AppendStringAsIBusText(const std::string& text) {
+  DCHECK(IsInitialized());
+  chromeos::ibus::AppendStringAsIBusText(text, contents_writer_.get());
 }
 
 void IBusObjectWriter::CloseContainer(dbus::MessageWriter* writer) {
@@ -198,4 +246,5 @@ bool IBusObjectWriter::IsInitialized() const {
   return contents_writer_.get() != NULL;
 }
 
+}  // namespace ibus
 }  // namespace chromeos
