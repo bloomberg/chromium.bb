@@ -18,6 +18,34 @@
 
 namespace nacl_arm_test {
 
+// Implements a decoder tester for an UnsafeClassDecoder
+class UnsafeCondNopTester : public Arm32DecoderTester {
+ public:
+  explicit UnsafeCondNopTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeCondNopTester);
+};
+
+// Implements a decoder tester for decoder CondNop.
+// Nop<c>
+// +--------+--------------------------------------------------------+
+// |31302918|272625242322212019181716151413121110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------------------------------------------------+
+// |  cond  |                                                        |
+// +--------+--------------------------------------------------------+
+class CondNopTester : public Arm32DecoderTester {
+ public:
+  explicit CondNopTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(CondNopTester);
+};
+
 // Implements a decoder tester for decoder Unary1RegisterImmediateOp.
 // Op(S)<c> Rd, #const
 // +--------+--------------+--+--------+--------+------------------------+

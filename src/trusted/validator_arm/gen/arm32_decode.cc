@@ -782,18 +782,18 @@ const ClassDecoder& Arm32DecoderState::decode_msr_and_hints(
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
-      (insn.Bits() & 0x000000FF) == 0x00000002)
+      (insn.Bits() & 0x000000FF) == 0x00000001)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
       (insn.Bits() & 0x000000FF) == 0x00000004)
-    return EffectiveNoOp_instance_;
+    return Forbidden_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
-      (insn.Bits() & 0x000000FD) == 0x00000001)
-    return EffectiveNoOp_instance_;
+      (insn.Bits() & 0x000000FE) == 0x00000002 /* op2(7:0) == 0000001x */)
+    return Forbidden_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&

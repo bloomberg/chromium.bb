@@ -14,6 +14,16 @@
 
 namespace nacl_arm_dec {
 
+SafetyLevel CondNop::safety(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList CondNop::defs(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
+
 // Unary1RegisterImmediateOp
 SafetyLevel Unary1RegisterImmediateOp::safety(const Instruction i) const {
   if (d.reg(i).Equals(kRegisterPc)) return UNPREDICTABLE;

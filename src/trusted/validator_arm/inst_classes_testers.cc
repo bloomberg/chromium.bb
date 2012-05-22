@@ -20,6 +20,56 @@ using nacl_arm_dec::Instruction;
 
 namespace nacl_arm_test {
 
+// UnsafeClassDecoderTester
+UnsafeCondNopTester::UnsafeCondNopTester(
+    const NamedClassDecoder& decoder) : Arm32DecoderTester(decoder) {}
+
+bool UnsafeCondNopTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::UnsafeCondNop expected_decoder(nacl_arm_dec::UNKNOWN);
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Apply ARM restriction -- I.e. we shouldn't be here. This is an
+  // UNSAFE instruction.
+  NC_EXPECT_FALSE_PRECOND(true);
+
+  // Don't continue, we've already reported the root problem!
+  return false;
+}
+
+// CondNopTester
+CondNopTester::CondNopTester(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool CondNopTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::CondNop expected_decoder;
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  return true;
+}
+
 // Unary1RegisterImmediateOpTester
 Unary1RegisterImmediateOpTester::Unary1RegisterImmediateOpTester(
     const NamedClassDecoder& decoder)

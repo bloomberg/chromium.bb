@@ -305,6 +305,24 @@ class BxBlx_None
   virtual ~BxBlx_None() {}
 };
 
+class CondNop_Dbg_Rule_40_A1_P88
+    : public CondNop {
+ public:
+  virtual ~CondNop_Dbg_Rule_40_A1_P88() {}
+};
+
+class CondNop_Nop_Rule_110_A1_P222
+    : public CondNop {
+ public:
+  virtual ~CondNop_Nop_Rule_110_A1_P222() {}
+};
+
+class CondNop_Yield_Rule_413_A1_P812
+    : public CondNop {
+ public:
+  virtual ~CondNop_Yield_Rule_413_A1_P812() {}
+};
+
 class CoprocessorOp_None
     : public CoprocessorOp {
  public:
@@ -333,6 +351,30 @@ class Forbidden_None
     : public Forbidden {
  public:
   virtual ~Forbidden_None() {}
+};
+
+class ForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12
+    : public ForbiddenCondNop {
+ public:
+  virtual ~ForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12() {}
+};
+
+class ForbiddenCondNop_Sev_Rule_158_A1_P316
+    : public ForbiddenCondNop {
+ public:
+  virtual ~ForbiddenCondNop_Sev_Rule_158_A1_P316() {}
+};
+
+class ForbiddenCondNop_Wfe_Rule_411_A1_P808
+    : public ForbiddenCondNop {
+ public:
+  virtual ~ForbiddenCondNop_Wfe_Rule_411_A1_P808() {}
+};
+
+class ForbiddenCondNop_Wfi_Rule_412_A1_P810
+    : public ForbiddenCondNop {
+ public:
+  virtual ~ForbiddenCondNop_Wfi_Rule_412_A1_P810() {}
 };
 
 class Load3RegisterDoubleOp_Ldrd_Rule_68_A1_P140
@@ -675,6 +717,48 @@ class Defs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288
     : public Defs12To15RdRnRsRmNotPc {
  public:
   virtual ~Defs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288() {}
+};
+
+class EffectiveNoOp_Dbg_Rule_40_A1_P88
+    : public EffectiveNoOp {
+ public:
+  virtual ~EffectiveNoOp_Dbg_Rule_40_A1_P88() {}
+};
+
+class EffectiveNoOp_Nop_Rule_110_A1_P222
+    : public EffectiveNoOp {
+ public:
+  virtual ~EffectiveNoOp_Nop_Rule_110_A1_P222() {}
+};
+
+class EffectiveNoOp_Yield_Rule_413_A1_P812
+    : public EffectiveNoOp {
+ public:
+  virtual ~EffectiveNoOp_Yield_Rule_413_A1_P812() {}
+};
+
+class Forbidden_Msr_Rule_B6_1_6_A1_PB6_12
+    : public Forbidden {
+ public:
+  virtual ~Forbidden_Msr_Rule_B6_1_6_A1_PB6_12() {}
+};
+
+class Forbidden_Sev_Rule_158_A1_P316
+    : public Forbidden {
+ public:
+  virtual ~Forbidden_Sev_Rule_158_A1_P316() {}
+};
+
+class Forbidden_Wfe_Rule_411_A1_P808
+    : public Forbidden {
+ public:
+  virtual ~Forbidden_Wfe_Rule_411_A1_P808() {}
+};
+
+class Forbidden_Wfi_Rule_412_A1_P810
+    : public Forbidden {
+ public:
+  virtual ~Forbidden_Wfi_Rule_412_A1_P810() {}
 };
 
 class LdrRegister_Ldrh_Rule_76_A1_P156
@@ -1369,6 +1453,45 @@ class NamedBxBlx_None
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBxBlx_None);
 };
 
+class NamedCondNop_Dbg_Rule_40_A1_P88
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondNop_Dbg_Rule_40_A1_P88()
+    : NamedClassDecoder(decoder_, "CondNop Dbg_Rule_40_A1_P88")
+  {}
+  virtual ~NamedCondNop_Dbg_Rule_40_A1_P88() {}
+
+ private:
+  nacl_arm_dec::CondNop_Dbg_Rule_40_A1_P88 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondNop_Dbg_Rule_40_A1_P88);
+};
+
+class NamedCondNop_Nop_Rule_110_A1_P222
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondNop_Nop_Rule_110_A1_P222()
+    : NamedClassDecoder(decoder_, "CondNop Nop_Rule_110_A1_P222")
+  {}
+  virtual ~NamedCondNop_Nop_Rule_110_A1_P222() {}
+
+ private:
+  nacl_arm_dec::CondNop_Nop_Rule_110_A1_P222 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondNop_Nop_Rule_110_A1_P222);
+};
+
+class NamedCondNop_Yield_Rule_413_A1_P812
+    : public NamedClassDecoder {
+ public:
+  inline NamedCondNop_Yield_Rule_413_A1_P812()
+    : NamedClassDecoder(decoder_, "CondNop Yield_Rule_413_A1_P812")
+  {}
+  virtual ~NamedCondNop_Yield_Rule_413_A1_P812() {}
+
+ private:
+  nacl_arm_dec::CondNop_Yield_Rule_413_A1_P812 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondNop_Yield_Rule_413_A1_P812);
+};
+
 class NamedCoprocessorOp_None
     : public NamedClassDecoder {
  public:
@@ -1432,6 +1555,58 @@ class NamedForbidden_None
  private:
   nacl_arm_dec::Forbidden_None decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_None);
+};
+
+class NamedForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12
+    : public NamedClassDecoder {
+ public:
+  inline NamedForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12()
+    : NamedClassDecoder(decoder_, "ForbiddenCondNop Msr_Rule_B6_1_6_A1_PB6_12")
+  {}
+  virtual ~NamedForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12() {}
+
+ private:
+  nacl_arm_dec::ForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12);
+};
+
+class NamedForbiddenCondNop_Sev_Rule_158_A1_P316
+    : public NamedClassDecoder {
+ public:
+  inline NamedForbiddenCondNop_Sev_Rule_158_A1_P316()
+    : NamedClassDecoder(decoder_, "ForbiddenCondNop Sev_Rule_158_A1_P316")
+  {}
+  virtual ~NamedForbiddenCondNop_Sev_Rule_158_A1_P316() {}
+
+ private:
+  nacl_arm_dec::ForbiddenCondNop_Sev_Rule_158_A1_P316 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondNop_Sev_Rule_158_A1_P316);
+};
+
+class NamedForbiddenCondNop_Wfe_Rule_411_A1_P808
+    : public NamedClassDecoder {
+ public:
+  inline NamedForbiddenCondNop_Wfe_Rule_411_A1_P808()
+    : NamedClassDecoder(decoder_, "ForbiddenCondNop Wfe_Rule_411_A1_P808")
+  {}
+  virtual ~NamedForbiddenCondNop_Wfe_Rule_411_A1_P808() {}
+
+ private:
+  nacl_arm_dec::ForbiddenCondNop_Wfe_Rule_411_A1_P808 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondNop_Wfe_Rule_411_A1_P808);
+};
+
+class NamedForbiddenCondNop_Wfi_Rule_412_A1_P810
+    : public NamedClassDecoder {
+ public:
+  inline NamedForbiddenCondNop_Wfi_Rule_412_A1_P810()
+    : NamedClassDecoder(decoder_, "ForbiddenCondNop Wfi_Rule_412_A1_P810")
+  {}
+  virtual ~NamedForbiddenCondNop_Wfi_Rule_412_A1_P810() {}
+
+ private:
+  nacl_arm_dec::ForbiddenCondNop_Wfi_Rule_412_A1_P810 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondNop_Wfi_Rule_412_A1_P810);
 };
 
 class NamedLoad3RegisterDoubleOp_Ldrd_Rule_68_A1_P140
@@ -2173,6 +2348,97 @@ class NamedDefs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288
  private:
   nacl_arm_dec::Defs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15RdRnRsRmNotPc_Rsb_Rule_144_A1_P288);
+};
+
+class NamedEffectiveNoOp_Dbg_Rule_40_A1_P88
+    : public NamedClassDecoder {
+ public:
+  inline NamedEffectiveNoOp_Dbg_Rule_40_A1_P88()
+    : NamedClassDecoder(decoder_, "EffectiveNoOp Dbg_Rule_40_A1_P88")
+  {}
+  virtual ~NamedEffectiveNoOp_Dbg_Rule_40_A1_P88() {}
+
+ private:
+  nacl_arm_dec::EffectiveNoOp_Dbg_Rule_40_A1_P88 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEffectiveNoOp_Dbg_Rule_40_A1_P88);
+};
+
+class NamedEffectiveNoOp_Nop_Rule_110_A1_P222
+    : public NamedClassDecoder {
+ public:
+  inline NamedEffectiveNoOp_Nop_Rule_110_A1_P222()
+    : NamedClassDecoder(decoder_, "EffectiveNoOp Nop_Rule_110_A1_P222")
+  {}
+  virtual ~NamedEffectiveNoOp_Nop_Rule_110_A1_P222() {}
+
+ private:
+  nacl_arm_dec::EffectiveNoOp_Nop_Rule_110_A1_P222 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEffectiveNoOp_Nop_Rule_110_A1_P222);
+};
+
+class NamedEffectiveNoOp_Yield_Rule_413_A1_P812
+    : public NamedClassDecoder {
+ public:
+  inline NamedEffectiveNoOp_Yield_Rule_413_A1_P812()
+    : NamedClassDecoder(decoder_, "EffectiveNoOp Yield_Rule_413_A1_P812")
+  {}
+  virtual ~NamedEffectiveNoOp_Yield_Rule_413_A1_P812() {}
+
+ private:
+  nacl_arm_dec::EffectiveNoOp_Yield_Rule_413_A1_P812 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEffectiveNoOp_Yield_Rule_413_A1_P812);
+};
+
+class NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12
+    : public NamedClassDecoder {
+ public:
+  inline NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12()
+    : NamedClassDecoder(decoder_, "Forbidden Msr_Rule_B6_1_6_A1_PB6_12")
+  {}
+  virtual ~NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12() {}
+
+ private:
+  nacl_arm_dec::Forbidden_Msr_Rule_B6_1_6_A1_PB6_12 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12);
+};
+
+class NamedForbidden_Sev_Rule_158_A1_P316
+    : public NamedClassDecoder {
+ public:
+  inline NamedForbidden_Sev_Rule_158_A1_P316()
+    : NamedClassDecoder(decoder_, "Forbidden Sev_Rule_158_A1_P316")
+  {}
+  virtual ~NamedForbidden_Sev_Rule_158_A1_P316() {}
+
+ private:
+  nacl_arm_dec::Forbidden_Sev_Rule_158_A1_P316 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Sev_Rule_158_A1_P316);
+};
+
+class NamedForbidden_Wfe_Rule_411_A1_P808
+    : public NamedClassDecoder {
+ public:
+  inline NamedForbidden_Wfe_Rule_411_A1_P808()
+    : NamedClassDecoder(decoder_, "Forbidden Wfe_Rule_411_A1_P808")
+  {}
+  virtual ~NamedForbidden_Wfe_Rule_411_A1_P808() {}
+
+ private:
+  nacl_arm_dec::Forbidden_Wfe_Rule_411_A1_P808 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Wfe_Rule_411_A1_P808);
+};
+
+class NamedForbidden_Wfi_Rule_412_A1_P810
+    : public NamedClassDecoder {
+ public:
+  inline NamedForbidden_Wfi_Rule_412_A1_P810()
+    : NamedClassDecoder(decoder_, "Forbidden Wfi_Rule_412_A1_P810")
+  {}
+  virtual ~NamedForbidden_Wfi_Rule_412_A1_P810() {}
+
+ private:
+  nacl_arm_dec::Forbidden_Wfi_Rule_412_A1_P810 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Wfi_Rule_412_A1_P810);
 };
 
 class NamedLdrRegister_Ldrh_Rule_76_A1_P156

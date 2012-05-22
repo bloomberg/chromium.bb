@@ -83,12 +83,13 @@
 # the baseline class tester.
 # #############################################################
 
+class ForbiddenCondNop : UnsafeCondNop
+class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
+class Load3RegisterOp : LoadStore3RegisterOp
 class MaskedBinary2RegisterImmediateOp : Binary2RegisterImmediateOp
 class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
-class Load3RegisterOp : LoadStore3RegisterOp
-class Store3RegisterOp : LoadStore3RegisterOp
-class Load3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 class Store3RegisterDoubleOp : LoadStore3RegisterDoubleOp
+class Store3RegisterOp : LoadStore3RegisterOp
 
 ##############################################################
 # The following define decoder tables.
@@ -438,18 +439,50 @@ class Store3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 
 +-- msr_and_hints (See Section A5.2.11)
 | op(22) op1(19:16) op2(7:0)
-| 0      0000       0000_0000  =EffectiveNoOp(v6K,v6T2)  # NOP
-| "      "          0000_0001  =EffectiveNoOp(v6K)  # YIELD
-| "      "          0000_0010  =EffectiveNoOp(v6K)  # WFE
-| "      "          0000_0011  =EffectiveNoOp(v6K)  # WFI
-| "      "          0000_0100  =EffectiveNoOp(v6K)  # SEV
-| "      "          1111_xxxx  =EffectiveNoOp(v7)   # DBG
-| "      0100       -          =MoveToStatusRegister  # MSR(immediate)
-| "      1x00       -          =MoveToStatusRegister  # MSR(immediate)
-| "      xx01       -          =Forbidden  # MSR(immediate), ring0 version
-| "      xx1x       -          =Forbidden  # MSR(immediate), ring0 version
-| 1      -          -          =Forbidden  # MSR(immediate), ring0 version
-| else:                        =Forbidden  # Unallocated hints, page A5-17
+| 0      0000       0000_0000  = CondNop => EffectiveNoOp
+                                 # TODO(karl) fix actual class decoder
+                                 Nop_Rule_110_A1_P222
+                                 cccc0011001000001111000000000000 (v6K,v6T2)
+| "      "          0000_0001  = CondNop => EffectiveNoOp 
+                                 # TODO(karl) fix actual class decoder
+                                 Yield_Rule_413_A1_P812
+                                 cccc0011001000001111000000000001 (v6K)
+| "      "          0000_0010  = ForbiddenCondNop => Forbidden
+                                 # Don't allow, may put hardware to sleep
+                                 # until a send event occurs.
+                                 Wfe_Rule_411_A1_P808
+                                 cccc0011001000001111000000000010 (v6K)
+| "      "          0000_0011  = ForbiddenCondNop => Forbidden
+                                 # Don't allow, may put hardware to sleep
+                                 # until a send event occurs.
+                                 Wfi_Rule_412_A1_P810
+                                 cccc0011001000001111000000000011 (v6K)
+| "      "          0000_0100  = ForbiddenCondNop => Forbidden
+                                 # Don't allow, causes an event to be
+                                 # signalled to all processors in the
+                                 # multiprocessor system.
+                                 Sev_Rule_158_A1_P316
+                                 cccc0011001000001111000000000100 (v6K)
+| "      "          1111_xxxx  = CondNop => EffectiveNoOp
+                                 # TODO(karl) fix actual
+                                 Dbg_Rule_40_A1_P88
+                                 cccc001100100000111100001111iiii (v7)
+# TODO(karl): Define a baseline class decoder for the following two rows.
+| "      0100       -          =MoveToStatusRegister  # MSR(immediate) A8-208
+| "      1x00       -          =MoveToStatusRegister  # MSR(immediate) A8-208
+| "      xx01       -          = ForbiddenCondNop => Forbidden
+                                 Msr_Rule_B6_1_6_A1_PB6_12
+                                 cccc00110010ii011111iiiiiiiiiiii
+                                 # MSR(immediate), ring0 version
+| "      xx1x       -          = ForbiddenCondNop => Forbidden
+                                 Msr_Rule_B6_1_6_A1_PB6_12
+                                 cccc00110010ii1i1111iiiiiiiiiiii
+                                 # MSR(immediate), ring0 version
+| 1      -          -          = ForbiddenCondNop => Forbidden
+                                 Msr_Rule_B6_1_6_A1_PB6_12
+                                 cccc00110110iiii1111iiiiiiiiiiii
+                                 # MSR(immediate), ring0 version
+| else:                        = Forbidden  # Unallocated hints, page A5-17
 +--
 
 +-- misc (See Section A5.2.12)

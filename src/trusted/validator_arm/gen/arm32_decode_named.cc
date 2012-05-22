@@ -878,27 +878,32 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_msr_and_hints(
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
       (insn.Bits() & 0x000000FF) == 0x00000000)
-    return EffectiveNoOp_None_instance_;
+    return CondNop_Nop_Rule_110_A1_P222_instance_;
+
+  if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
+      (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
+      (insn.Bits() & 0x000000FF) == 0x00000001)
+    return CondNop_Yield_Rule_413_A1_P812_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
       (insn.Bits() & 0x000000FF) == 0x00000002)
-    return EffectiveNoOp_None_instance_;
+    return ForbiddenCondNop_Wfe_Rule_411_A1_P808_instance_;
+
+  if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
+      (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
+      (insn.Bits() & 0x000000FF) == 0x00000003)
+    return ForbiddenCondNop_Wfi_Rule_412_A1_P810_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
       (insn.Bits() & 0x000000FF) == 0x00000004)
-    return EffectiveNoOp_None_instance_;
-
-  if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
-      (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
-      (insn.Bits() & 0x000000FD) == 0x00000001)
-    return EffectiveNoOp_None_instance_;
+    return ForbiddenCondNop_Sev_Rule_158_A1_P316_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
       (insn.Bits() & 0x000000F0) == 0x000000F0 /* op2(7:0) == 1111xxxx */)
-    return EffectiveNoOp_None_instance_;
+    return CondNop_Dbg_Rule_40_A1_P88_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00040000 /* op1(19:16) == 0100 */ &&
@@ -913,17 +918,17 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_msr_and_hints(
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x00030000) == 0x00010000 /* op1(19:16) == xx01 */ &&
       true)
-    return Forbidden_None_instance_;
+    return ForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x00020000) == 0x00020000 /* op1(19:16) == xx1x */ &&
       true)
-    return Forbidden_None_instance_;
+    return ForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00400000 /* op(22:22) == 1 */ &&
       true &&
       true)
-    return Forbidden_None_instance_;
+    return ForbiddenCondNop_Msr_Rule_B6_1_6_A1_PB6_12_instance_;
 
   if (true)
     return Forbidden_None_instance_;
