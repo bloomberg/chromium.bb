@@ -24,10 +24,7 @@ class AppModalDialogQueue {
   // queue, the dialog will be shown immediately. Once it is shown, the
   // most recently active browser window (or whichever is currently active)
   // will be app modal, meaning it will be activated if the user tries to
-  // activate any other browser windows. So the dialog being shown should
-  // assure it is the child of BrowserList::GetLastActive() so that it is
-  // activated as well. See browser_list.h for more notes about our somewhat
-  // sloppy app modality.
+  // activate any other browser windows.
   // Note: The AppModalDialog |dialog| must be window modal before it
   // can be added as app modal.
   void AddDialog(AppModalDialog* dialog);
