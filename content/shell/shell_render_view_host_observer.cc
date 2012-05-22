@@ -38,7 +38,11 @@ bool ShellRenderViewHostObserver::OnMessageReceived(
 }
 
 void ShellRenderViewHostObserver::OnTextDump(const std::string& dump) {
+  std::cout << "Content-Type: text/plain\n";
   std::cout << dump;
+  std::cout << "#EOF\n";
+  std::cerr << "#EOF\n";
+
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
