@@ -166,7 +166,8 @@ const char* kPredefinedAllowedSocketOrigins[] = {
   "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
   "kgngmbheleoaphbjbaiobfdepmghbfah",  // Pre-release Chrome Remote Desktop
   "odkaodonbgfohohmklejpjiejmcipmib",  // Dogfood Chrome Remote Desktop
-  "ojoimpklfciegopdfgeenehpalipignm"   // Chromoting canary
+  "ojoimpklfciegopdfgeenehpalipignm",  // Chromoting canary
+  "cbkkbcmdlboombapidmoeolnmdacpkch"   // see crbug.com/129089
 };
 
 // Handles rewriting Web UI URLs.
