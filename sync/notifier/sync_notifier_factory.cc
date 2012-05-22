@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/non_blocking_invalidation_notifier.h"
 #include "sync/notifier/p2p_notifier.h"
 #include "sync/notifier/sync_notifier.h"
@@ -26,9 +25,7 @@ SyncNotifier* CreateDefaultSyncNotifier(
     // NOTIFY_OTHERS.  There's no good reason to notify ourselves of our own
     // commits.  We self-notify for now only because the integration tests rely
     // on this behaviour.  See crbug.com/97780.
-    return new P2PNotifier(
-        notifier::PushClient::CreateDefault(notifier_options),
-        NOTIFY_ALL);
+    return new P2PNotifier(notifier_options, NOTIFY_ALL);
   }
 
   return new NonBlockingInvalidationNotifier(

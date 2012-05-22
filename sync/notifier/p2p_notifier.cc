@@ -9,8 +9,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/values.h"
-#include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/sync_notifier_observer.h"
 #include "sync/syncable/model_type_payload_map.h"
 
@@ -140,62 +140,63 @@ bool P2PNotificationData::ResetFromString(const std::string& str) {
   return true;
 }
 
-P2PNotifier::P2PNotifier(scoped_ptr<notifier::PushClient> push_client,
+P2PNotifier::P2PNotifier(const notifier::NotifierOptions& notifier_options,
                          P2PNotificationTarget send_notification_target)
-    : push_client_(push_client.Pass()),
+    : push_client_(notifier_options),
       logged_in_(false),
       notifications_enabled_(false),
-      send_notification_target_(send_notification_target) {
+      send_notification_target_(send_notification_target),
+      parent_message_loop_proxy_(base::MessageLoopProxy::current()) {
   DCHECK(send_notification_target_ == NOTIFY_OTHERS ||
          send_notification_target_ == NOTIFY_ALL);
-  push_client_->AddObserver(this);
+  push_client_.AddObserver(this);
 }
 
 P2PNotifier::~P2PNotifier() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  push_client_->RemoveObserver(this);
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  push_client_.RemoveObserver(this);
 }
 
 void P2PNotifier::AddObserver(SyncNotifierObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   observer_list_.AddObserver(observer);
 }
 
 void P2PNotifier::RemoveObserver(SyncNotifierObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   observer_list_.RemoveObserver(observer);
 }
 
 void P2PNotifier::SetUniqueId(const std::string& unique_id) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   unique_id_ = unique_id;
 }
 
 void P2PNotifier::SetState(const std::string& state) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
-  // Do nothing.
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
 }
 
 void P2PNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   notifier::Subscription subscription;
   subscription.channel = kSyncP2PNotificationChannel;
   // There may be some subtle issues around case sensitivity of the
   // from field, but it doesn't matter too much since this is only
   // used in p2p mode (which is only used in testing).
   subscription.from = email;
-  push_client_->UpdateSubscriptions(
+  push_client_.UpdateSubscriptions(
       notifier::SubscriptionList(1, subscription));
+
   // If already logged in, the new credentials will take effect on the
   // next reconnection.
-  push_client_->UpdateCredentials(email, token);
+  push_client_.UpdateCredentials(email, token);
   logged_in_ = true;
 }
 
 void P2PNotifier::UpdateEnabledTypes(
     syncable::ModelTypeSet enabled_types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   const syncable::ModelTypeSet new_enabled_types =
       Difference(enabled_types, enabled_types_);
   enabled_types_ = enabled_types;
@@ -206,14 +207,14 @@ void P2PNotifier::UpdateEnabledTypes(
 
 void P2PNotifier::SendNotification(
     syncable::ModelTypeSet changed_types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   const P2PNotificationData notification_data(
       unique_id_, send_notification_target_, changed_types);
   SendNotificationData(notification_data);
 }
 
 void P2PNotifier::OnNotificationStateChange(bool notifications_enabled) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   bool disabled_to_enabled = notifications_enabled && !notifications_enabled_;
   notifications_enabled_ = notifications_enabled;
   FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
@@ -227,7 +228,7 @@ void P2PNotifier::OnNotificationStateChange(bool notifications_enabled) {
 
 void P2PNotifier::OnIncomingNotification(
     const notifier::Notification& notification) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   DVLOG(1) << "Received notification " << notification.ToString();
   if (!logged_in_) {
     DVLOG(1) << "Not logged in yet -- not emitting notification";
@@ -264,20 +265,31 @@ void P2PNotifier::OnIncomingNotification(
                     OnIncomingNotification(type_payloads, REMOTE_NOTIFICATION));
 }
 
+void P2PNotifier::SimulateConnectForTest(
+    base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  push_client_.SimulateConnectAndSubscribeForTest(base_task);
+}
+
+void P2PNotifier::ReflectSentNotificationsForTest() {
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  push_client_.ReflectSentNotificationsForTest();
+}
+
 void P2PNotifier::SendNotificationDataForTest(
     const P2PNotificationData& notification_data) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   SendNotificationData(notification_data);
 }
 
 void P2PNotifier::SendNotificationData(
     const P2PNotificationData& notification_data) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
   notifier::Notification notification;
   notification.channel = kSyncP2PNotificationChannel;
   notification.data = notification_data.ToString();
   DVLOG(1) << "Sending XMPP notification: " << notification.ToString();
-  push_client_->SendNotification(notification);
+  push_client_.SendNotification(notification);
 }
 
 }  // namespace sync_notifier
