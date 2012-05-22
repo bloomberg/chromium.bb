@@ -124,7 +124,7 @@ cr.define('options', function() {
       var item = this.dataModel.item(index);
       if (item) {
         // Inform the network library that we are forgetting this network.
-        chrome.send('buttonClickCallback',
+        chrome.send('networkCommand',
                     [String(item.networkType),
                     item.servicePath,
                     'forget']);
