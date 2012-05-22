@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -23,8 +24,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -818,7 +817,7 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   if (service->GetAuthError().state() != GoogleServiceAuthError::NONE) {
     DLOG(INFO) << "Signing out the user to fix a sync error.";
-    BrowserList::GetLastActive()->ExecuteCommand(IDC_EXIT);
+    browser::AttemptUserExit();
     return;
   }
 #endif
