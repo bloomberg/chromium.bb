@@ -57,19 +57,21 @@ def main(argv):
       #
       # Run the C compiler as a preprocessor and pipe the output into a string
       #
-      print >>sys.stderr, 'Preprocessing...'
       cl_env = os.environ.copy()
       cl_env['PATH'] = os.environ['PRE_WINPY_PATH']
       p = subprocess.Popen(['cl.exe',
+                            '/nologo',
                             '/DNACL_BUILD_ARCH=' + nacl_build_arch,
                             '/DNACL_BUILD_SUBARCH=' + str(nacl_build_subarch),
                             '/DNACL_WINDOWS=1',
+                            '/TP',
                             '/E',
                             '/I' + nacl_path,
                             filename],
                            env=cl_env,
                            shell=True,
-                           stdout=subprocess.PIPE)
+                           stdout=subprocess.PIPE,
+                           stderr=open(os.devnull, 'w'))
       cl_output = p.communicate()[0]
 
       #
@@ -92,7 +94,6 @@ def main(argv):
         #
         # Pipe the preprocessor output into the assembler
         #
-        print >>sys.stderr, 'Assembling...'
         p = subprocess.Popen([nacl_path + as_exe,
                               '-defsym','@feat.00=1',
                               '--' + str(nacl_build_subarch),
@@ -109,7 +110,8 @@ def main(argv):
         as_error = re.sub(r'Error', 'error', as_error)
         as_error = re.sub(r'Warning', 'warning', as_error)
 
-        print >>sys.stderr, as_error
+        if as_error:
+          print >>sys.stderr, as_error
 
       # endif
     # endfor
