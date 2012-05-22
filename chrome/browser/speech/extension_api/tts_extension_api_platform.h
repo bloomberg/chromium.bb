@@ -53,6 +53,9 @@ class ExtensionTtsPlatformImpl {
 
  protected:
   ExtensionTtsPlatformImpl() {}
+
+  // On some platforms this may be a leaky singleton - do not rely on the
+  // destructor being called!  http://crbug.com/122026
   virtual ~ExtensionTtsPlatformImpl() {}
 
   std::string error_;
