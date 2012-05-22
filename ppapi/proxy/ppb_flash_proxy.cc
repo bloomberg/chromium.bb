@@ -770,7 +770,7 @@ int32_t PPB_Flash_Proxy::OpenFileRef(PP_Instance instance,
                                      PP_Resource file_ref_id,
                                      int32_t mode,
                                      PP_FileHandle* file) {
-  EnterResourceNoLock<PPB_FileRef> enter(file_ref_id, true);
+  EnterResourceNoLock<thunk::PPB_FileRef_API> enter(file_ref_id, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
 
@@ -786,7 +786,7 @@ int32_t PPB_Flash_Proxy::OpenFileRef(PP_Instance instance,
 int32_t PPB_Flash_Proxy::QueryFileRef(PP_Instance instance,
                                       PP_Resource file_ref_id,
                                       PP_FileInfo* info) {
-  EnterResourceNoLock<PPB_FileRef> enter(file_ref_id, true);
+  EnterResourceNoLock<thunk::PPB_FileRef_API> enter(file_ref_id, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
 
