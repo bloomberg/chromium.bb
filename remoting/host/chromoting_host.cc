@@ -254,15 +254,20 @@ void ChromotingHost::OnSessionClosed(ClientSession* client) {
     recorder_->RemoveConnection(client->connection());
   }
 
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientDisconnected(client->client_jid()));
+  if (client->is_authenticated()) {
+    FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                      OnClientDisconnected(client->client_jid()));
 
-  if (recorder_.get()) {
-    // Currently we don't allow more than one simultaneous connection,
-    // so we need to shutdown recorder when a client disconnects.
-    StopScreenRecorder();
+    // TODO(sergeyu): This teardown logic belongs to ClientSession
+    // class. It should start/stop screen recorder or tell the host
+    // when to do it.
+    if (recorder_.get()) {
+      // Currently we don't allow more than one simultaneous connection,
+      // so we need to shutdown recorder when a client disconnects.
+      StopScreenRecorder();
+    }
+    desktop_environment_->OnSessionFinished();
   }
-  desktop_environment_->OnSessionFinished();
 }
 
 void ChromotingHost::OnSessionSequenceNumber(ClientSession* session,

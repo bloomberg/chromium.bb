@@ -109,6 +109,8 @@ class ClientSession : public protocol::HostEventStub,
 
   const std::string& client_jid() { return client_jid_; }
 
+  bool is_authenticated() { return is_authenticated_;  }
+
   // Indicate that local mouse activity has been detected. This causes remote
   // inputs to be ignored for a short time so that the local user will always
   // have the upper hand in 'pointer wars'.
@@ -125,6 +127,7 @@ class ClientSession : public protocol::HostEventStub,
   scoped_ptr<protocol::ConnectionToClient> connection_;
 
   std::string client_jid_;
+  bool is_authenticated_;
 
   // The host event stub to which this object delegates. This is the final
   // element in the input pipeline, whose components appear in order below.

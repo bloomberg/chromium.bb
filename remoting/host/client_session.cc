@@ -21,6 +21,7 @@ ClientSession::ClientSession(
     : event_handler_(event_handler),
       connection_(connection.Pass()),
       client_jid_(connection_->session()->jid()),
+      is_authenticated_(false),
       host_event_stub_(host_event_stub),
       input_tracker_(host_event_stub_),
       remote_input_filter_(&input_tracker_),
@@ -90,6 +91,7 @@ void ClientSession::OnConnectionAuthenticated(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
+  is_authenticated_ = true;
   auth_input_filter_.set_input_stub(&disable_input_filter_);
   event_handler_->OnSessionAuthenticated(this);
 }
@@ -107,7 +109,7 @@ void ClientSession::OnConnectionClosed(
     protocol::ErrorCode error) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
-  if (!auth_input_filter_.input_stub())
+  if (!is_authenticated_)
     event_handler_->OnSessionAuthenticationFailed(this);
   auth_input_filter_.set_input_stub(NULL);
 
