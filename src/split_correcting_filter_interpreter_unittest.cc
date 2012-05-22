@@ -288,6 +288,82 @@ TEST(SplitCorrectingFilterInterpreterTest, DistFromPointToLineTest) {
   }
 }
 
+struct LumpyThumbSplitTestInputs {
+  stime_t now;
+  unsigned short buttons_down;
+  float x0, y0, pressure0;
+  short id0;
+  float x1, y1, pressure1;
+  short id1;
+};
+
+// Test that a thumbsplit on lumpy doesn't cause two fingers to appear
+TEST(SplitCorrectingFilterInterpreterTest, LumpyThumbSplitTest) {
+  SplitCorrectingFilterInterpreterTestInterpreter* base_interpreter
+      = new SplitCorrectingFilterInterpreterTestInterpreter;
+  SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  base_interpreter->expected_ids_.insert(2);
+  base_interpreter->expect_finger_ids_ = true;
+
+  HardwareProperties hwprops = {
+    0.0,  // left edge
+    0.0,  // top edge
+    106.666672,  // right edge
+    68.0,  // bottom edge
+    1.0,  // x pixels/TP width
+    1.0,  // y pixels/TP height
+    25.4,  // x screen DPI
+    25.4,  // y screen DPI
+    15,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+  interpreter.SetHardwareProperties(hwprops);
+
+  LumpyThumbSplitTestInputs inputs[] = {
+    { 8.5812, 0, 52.66, 66.09,  79.39, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.5904, 0, 52.66, 66.09,  81.33, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.6087, 0, 52.66, 66.00,  81.33, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.6179, 0, 52.66, 65.80,  83.27, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.6365, 0, 52.58, 65.80,  85.21, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.6457, 0, 52.41, 65.59,  89.09, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.6550, 0, 52.25, 65.59,  91.03, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.6642, 0, 52.00, 65.59,  92.97, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.6735, 0, 51.91, 65.59,  96.85, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.6828, 0, 51.58, 65.40, 102.67, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.6921, 0, 51.33, 65.30, 104.61, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7015, 0, 51.25, 65.30, 106.55, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7110, 0, 51.00, 65.20, 110.43, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7205, 0, 50.83, 65.20, 116.26, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7298, 0, 50.41, 65.20, 118.20, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7393, 0, 50.08, 65.00, 118.20, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7487, 0, 49.66, 65.00, 118.20, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7582, 0, 49.25, 64.90, 118.20, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7678, 0, 48.83, 64.70, 118.20, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7773, 0, 48.58, 64.50, 118.20, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.7869, 1, 48.33, 64.50, 118.20, 2,  0.00,  0.00,  0.00, 0 },
+    { 8.8088, 1, 49.83, 64.59, 118.20, 2, 39.91, 60.60, 98.79, 4 },
+    { 8.8213, 1, 45.91, 61.90, 191.93, 2,  0.00,  0.00,  0.00, 0 },
+  };
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    const LumpyThumbSplitTestInputs& input = inputs[i];
+    FingerState fs[2] = {
+      { 0, 0, 0, 0, input.pressure0, 0, input.x0, input.y0, input.id0, 0 },
+      { 0, 0, 0, 0, input.pressure1, 0, input.x1, input.y1, input.id1, 0 },
+    };
+    unsigned short finger_cnt = input.id1 ? 2 : 1;
+    HardwareState hs = {
+      input.now, input.buttons_down, finger_cnt, finger_cnt, fs
+    };
+    stime_t timeout = -1;
+    interpreter.SyncInterpret(&hs, &timeout);
+  }
+  EXPECT_EQ(arraysize(inputs), base_interpreter->iteration_);
+}
+
 // Test that this doesn't do anything on T5R2 pads
 TEST(SplitCorrectingFilterInterpreterTest, T5R2Test) {
   InputEventWithExpectations events[] = {

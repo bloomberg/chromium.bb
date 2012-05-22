@@ -16,7 +16,7 @@ SplitCorrectingFilterInterpreter::SplitCorrectingFilterInterpreter(
     : enabled_(true),
       merge_max_separation_(prop_reg, "Split Merge Max Separation", 17.0),
       merge_max_movement_(prop_reg, "Split Merge Max Movement", 3.0),
-      merge_max_ratio_(prop_reg, "Merge Max Ratio", sinf(DegToRad(13.0))) {
+      merge_max_ratio_(prop_reg, "Merge Max Ratio", sinf(DegToRad(19.0))) {
   next_.reset(next);
 }
 
