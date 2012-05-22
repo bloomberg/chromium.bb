@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_MODAL_DIALOGS_MESSAGE_BOX_HANDLER_H_
-#define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_MESSAGE_BOX_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_CREATOR_H_
+#define CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_CREATOR_H_
 #pragma once
 
 namespace content {
@@ -22,4 +22,4 @@ content::JavaScriptDialogCreator* GetJavaScriptDialogCreatorInstance();
 content::JavaScriptDialogCreator* CreateJavaScriptDialogCreatorInstance(
     ExtensionHost* extension_host);
 
-#endif  // CHROME_BROWSER_UI_APP_MODAL_DIALOGS_MESSAGE_BOX_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_APP_MODAL_DIALOGS_JAVASCRIPT_DIALOG_CREATOR_H_
