@@ -839,6 +839,7 @@ WL_EXPORT void
 weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 		    pixman_region32_t *damage)
 {
+	GLfloat surface_rect[4] = { 0.0, 1.0, 0.0, 1.0 };
 	struct weston_compositor *ec = es->compositor;
 	GLfloat *v;
 	pixman_region32_t repaint;
@@ -854,7 +855,7 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 		goto out;
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	if (es->blend)
+	if (es->blend || es->alpha < 1.0)
 		glEnable(GL_BLEND);
 	else
 		glDisable(GL_BLEND);
@@ -873,7 +874,10 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 	glUniform1f(es->shader->saturation_uniform, es->saturation);
 	glUniform1f(es->shader->texwidth_uniform,
 		    (GLfloat)es->geometry.width / es->pitch);
-	glUniform4fv(es->shader->opaque_uniform, 1, es->opaque_rect);
+	if (es->blend)
+		glUniform4fv(es->shader->opaque_uniform, 1, es->opaque_rect);
+	else
+		glUniform4fv(es->shader->opaque_uniform, 1, surface_rect);
 
 	if (es->transform.enabled || output->zoom.active)
 		filter = GL_LINEAR;
@@ -2419,10 +2423,8 @@ weston_shader_init(struct weston_shader *shader,
 	shader->brightness_uniform = glGetUniformLocation(shader->program, "bright");
 	shader->saturation_uniform = glGetUniformLocation(shader->program, "saturation");
 	shader->color_uniform = glGetUniformLocation(shader->program, "color");
-	shader->texwidth_uniform = glGetUniformLocation(shader->program,
-							"texwidth");
-	shader->opaque_uniform =
-		glGetUniformLocation(shader->program, "opaque");
+	shader->texwidth_uniform = glGetUniformLocation(shader->program, "texwidth");
+	shader->opaque_uniform = glGetUniformLocation(shader->program, "opaque");
 
 	return 0;
 }
