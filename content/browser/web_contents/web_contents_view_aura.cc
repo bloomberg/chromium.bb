@@ -301,6 +301,10 @@ void WebContentsViewAura::SetPageTitle(const string16& title) {
 void WebContentsViewAura::OnTabCrashed(base::TerminationStatus status,
                                        int error_code) {
   view_ = NULL;
+  // Set the focus to the parent because neither the view window nor this
+  // window can handle key events.
+  if (window_->HasFocus() && window_->parent())
+    window_->parent()->Focus();
 }
 
 void WebContentsViewAura::SizeContents(const gfx::Size& size) {
@@ -569,7 +573,9 @@ ui::GestureStatus WebContentsViewAura::OnGestureEvent(
 }
 
 bool WebContentsViewAura::CanFocus() {
-  return true;
+  // Do not take the focus if |view_| is gone because neither the view window
+  // nor this window can handle key events.
+  return view_ != NULL;
 }
 
 void WebContentsViewAura::OnCaptureLost() {
