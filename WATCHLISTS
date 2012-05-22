@@ -131,6 +131,9 @@
     'linux-sandboxing': {
       'filepath': 'sandbox/linux/.*',
     },
+    'linux-seccomp-bpf': {
+      'filepath': 'content/common/sandbox_init_linux.cc',
+    },
     'sync': {
       'filepath': 'chrome/browser/sync/.*',
     },
@@ -376,6 +379,7 @@
     'media': ['feature-media-reviews@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
     'linux-sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
+    'linux-seccomp-bpf': ['jln+watch@chromium.org'],
     'sync': ['tim@chromium.org', 'nick@chromium.org',
              'akalin@chromium.org', 'rsimha@chromium.org'],
     'tools': ['pam+watch@chromium.org'],
