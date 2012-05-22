@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/string_piece.h"
@@ -18,8 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -187,9 +186,7 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
   } else if (command == "dontproceed") {
     interstitial_page_->DontProceed();
   } else if (command == "open_network_settings") {
-    Browser* browser = BrowserList::GetLastActive();
-    DCHECK(browser);
-    browser->ShowOptionsTab(chrome::kInternetOptionsSubPage);
+    ash::Shell::GetInstance()->tray_delegate()->ShowNetworkSettings();
   } else if (command == "open_activate_broadband") {
     ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
   } else {
