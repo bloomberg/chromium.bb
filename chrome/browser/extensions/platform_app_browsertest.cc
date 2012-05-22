@@ -5,10 +5,13 @@
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +28,9 @@
 #include "ui/base/models/menu_model.h"
 
 using content::WebContents;
+using extensions::Extension;
+
+namespace utils = extension_function_test_utils;
 
 namespace {
 // Non-abstract RenderViewContextMenu class.
@@ -56,17 +62,13 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   }
 
  protected:
-  void LoadAndLaunchPlatformApp(const char* name) {
+  const Extension* LoadAndLaunchPlatformApp(const char* name) {
     ui_test_utils::WindowedNotificationObserver app_loaded_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
 
-    EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII("platform_apps").
-        AppendASCII(name)));
-
-    ExtensionService* service = browser()->profile()->GetExtensionService();
-    const extensions::Extension* extension = service->GetExtensionById(
-        last_loaded_extension_id_, false);
+    const Extension* extension = LoadExtension(
+        test_data_dir_.AppendASCII("platform_apps").AppendASCII(name));
     EXPECT_TRUE(extension);
 
     Browser::OpenApplication(
@@ -77,6 +79,8 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
         NEW_WINDOW);
 
     app_loaded_observer.Wait();
+
+    return extension;
   }
 
   // Gets the WebContents associated with the first shell window that is found
@@ -94,6 +98,35 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
     return NULL;
   }
+
+  // Runs chrome.windows.getAll for the given extension and returns the number
+  // of windows that the function returns.
+  size_t RunGetWindowsFunctionForExtension(const Extension* extension) {
+    GetAllWindowsFunction* function = new GetAllWindowsFunction();
+    function->set_extension(extension);
+    scoped_ptr<base::ListValue> result(utils::ToList(
+        utils::RunFunctionAndReturnResult(function, "[]", browser())));
+    return result->GetSize();
+  }
+
+  // Runs chrome.windows.get(|window_id|) for the the given extension and
+  // returns whether or not a window was found.
+  bool RunGetWindowFunctionForExtension(
+      int window_id, const Extension* extension) {
+    GetWindowFunction* function = new GetWindowFunction();
+    function->set_extension(extension);
+    utils::RunFunction(
+            function,
+            base::StringPrintf("[%u]", window_id),
+            browser(),
+            utils::NONE);
+    return function->GetResultValue() != NULL;
+  }
+
+  size_t GetShellWindowCount() {
+    return ShellWindowRegistry::Get(browser()->profile())->
+        shell_windows().size();
+  }
 };
 
 // Tests that platform apps received the "launch" event when launched.
@@ -103,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   ExtensionTestMessageListener launched_listener("Launched", false);
-  LoadAndLaunchPlatformApp("empty_context_menu");
+  LoadAndLaunchPlatformApp("minimal");
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
@@ -197,4 +230,44 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
   // Let the platform app request the same URL, and make sure that it doesn't
   // see the cookie.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/isolation")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
+  // Initially there should be just the one browser window visible to the
+  // extensions API.
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("common/background_page"));
+  ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(extension));
+
+  // And no shell windows.
+  ASSERT_EQ(0U, GetShellWindowCount());
+
+  // Launch a platform app that shows a window.
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  const Extension* platform_app = LoadAndLaunchPlatformApp("minimal");
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  ASSERT_EQ(1U, GetShellWindowCount());
+  ShellWindowRegistry::ShellWindowSet shell_windows =
+      ShellWindowRegistry::Get(browser()->profile())->shell_windows();
+  int shell_window_id = (*shell_windows.begin())->session_id().id();
+
+  // But it's not visible to the extensions API, it still thinks there's just
+  // one browser window.
+  ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(extension));
+  // It can't look it up by ID either
+  ASSERT_FALSE(RunGetWindowFunctionForExtension(shell_window_id, extension));
+
+  // The app can also only see one window (its own).
+  ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(platform_app));
+  ASSERT_TRUE(RunGetWindowFunctionForExtension(shell_window_id, platform_app));
+
+  // Launch another platform app that also shows a window.
+  ExtensionTestMessageListener launched_listener2("Launched", false);
+  const Extension* platform_app2 = LoadAndLaunchPlatformApp("context_menu");
+  ASSERT_TRUE(launched_listener2.WaitUntilSatisfied());
+
+  // There are two total shell windows, but each app can only see its own.
+  ASSERT_EQ(2U, GetShellWindowCount());
+  ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(platform_app));
+  ASSERT_EQ(1U, RunGetWindowsFunctionForExtension(platform_app2));
 }

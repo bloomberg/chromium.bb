@@ -219,12 +219,24 @@ UIThreadExtensionFunction::GetExtensionWindowController() {
   if (window_controller)
     return window_controller;
 
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host_->GetProcess()->GetBrowserContext());
-  ExtensionWindowList::ProfileMatchType match_type = include_incognito_
-      ? ExtensionWindowController::MATCH_INCOGNITO
-      : ExtensionWindowController::MATCH_NORMAL_ONLY;
-  return ExtensionWindowList::GetInstance()->CurrentWindow(profile, match_type);
+  return ExtensionWindowList::GetInstance()->CurrentWindowForFunction(this);
+}
+
+bool UIThreadExtensionFunction::CanOperateOnWindow(
+    const ExtensionWindowController* window_controller) const {
+  const extensions::Extension* extension = GetExtension();
+  // |extension| is NULL for unit tests only.
+  if (extension != NULL && !window_controller->IsVisibleToExtension(extension))
+    return false;
+
+  if (profile() == window_controller->profile())
+    return true;
+
+  if (!include_incognito())
+    return false;
+
+  return profile()->HasOffTheRecordProfile() &&
+      profile()->GetOffTheRecordProfile() == window_controller->profile();
 }
 
 void UIThreadExtensionFunction::SendResponse(bool success) {

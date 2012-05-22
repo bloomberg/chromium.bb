@@ -10,6 +10,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/extensions/extension.h"
 
 BrowserExtensionWindowController::BrowserExtensionWindowController(
     Browser* browser)
@@ -67,4 +68,11 @@ void BrowserExtensionWindowController::SetFullscreenMode(
 
 Browser* BrowserExtensionWindowController::GetBrowser() const {
   return browser_;
+}
+
+bool BrowserExtensionWindowController::IsVisibleToExtension(
+    const extensions::Extension* extension) const {
+  // Platform apps can only see their own windows.
+  // TODO(mihaip): what about non-Aura panels?
+  return !extension->is_platform_app();
 }

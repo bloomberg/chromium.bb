@@ -141,13 +141,6 @@ bool GetBrowserFromWindowID(
   return true;
 }
 
-ExtensionWindowController::ProfileMatchType ProfileMatchType(
-    bool include_incognito) {
-  return include_incognito ?
-      ExtensionWindowController::MATCH_INCOGNITO
-      : ExtensionWindowController::MATCH_NORMAL_ONLY;
-}
-
 bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
                            int window_id,
                            ExtensionWindowController** controller) {
@@ -159,19 +152,16 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
       *controller = extension_window_controller;
     } else {
       // Otherwise get the focused or most recently added window.
-      *controller = ExtensionWindowList::GetInstance()->CurrentWindow(
-          function->profile(),
-          ProfileMatchType(function->include_incognito()));
+      *controller = ExtensionWindowList::GetInstance()->
+          CurrentWindowForFunction(function);
     }
     if (!(*controller)) {
       function->SetError(keys::kNoCurrentWindowError);
       return false;
     }
   } else {
-    *controller = ExtensionWindowList::GetInstance()->FindWindowById(
-        function->profile(),
-        ProfileMatchType(function->include_incognito()),
-        window_id);
+    *controller = ExtensionWindowList::GetInstance()->FindWindowForFunctionById(
+        function, window_id);
     if (!(*controller)) {
       function->SetError(ExtensionErrorUtils::FormatErrorMessage(
           keys::kWindowNotFoundError, base::IntToString(window_id)));
@@ -310,8 +300,7 @@ bool GetAllWindowsFunction::RunImpl() {
   for (ExtensionWindowList::WindowList::const_iterator iter =
            windows.begin();
        iter != windows.end(); ++iter) {
-    if (!(*iter)->MatchesProfile(
-            profile(), ProfileMatchType(include_incognito())))
+    if (!this->CanOperateOnWindow(*iter))
       continue;
     if (populate_tabs)
       window_list->Append((*iter)->CreateWindowValueWithTabs());

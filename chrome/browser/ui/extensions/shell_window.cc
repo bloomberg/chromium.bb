@@ -46,6 +46,8 @@ class ShellWindowController : public ExtensionWindowController {
   virtual bool CanClose(Reason* reason) const OVERRIDE;
   virtual void SetFullscreenMode(bool is_fullscreen,
                                  const GURL& extension_url) const OVERRIDE;
+  virtual bool IsVisibleToExtension(
+      const extensions::Extension* extension) const OVERRIDE;
 
  private:
   ShellWindow* shell_window_;
@@ -80,6 +82,11 @@ bool ShellWindowController::CanClose(Reason* reason) const {
 void ShellWindowController::SetFullscreenMode(bool is_fullscreen,
                                               const GURL& extension_url) const {
   // TODO(mihaip): implement
+}
+
+bool ShellWindowController::IsVisibleToExtension(
+    const extensions::Extension* extension) const {
+  return shell_window_->extension() == extension;
 }
 
 }  // namespace internal

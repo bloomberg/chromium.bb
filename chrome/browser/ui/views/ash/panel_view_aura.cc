@@ -7,6 +7,8 @@
 #include "ash/wm/panel_frame_view.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_view_type.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -187,6 +190,8 @@ class PanelExtensionWindowController : public ExtensionWindowController {
   virtual bool CanClose(Reason* reason) const OVERRIDE;
   virtual void SetFullscreenMode(bool is_fullscreen,
                                  const GURL& extension_url) const OVERRIDE;
+  virtual bool IsVisibleToExtension(
+      const extensions::Extension* extension) const OVERRIDE;
 
  private:
   PanelViewAura* panel_view_;
@@ -235,6 +240,26 @@ bool PanelExtensionWindowController::CanClose(Reason* reason) const {
 
 void PanelExtensionWindowController::SetFullscreenMode(
     bool is_fullscreen, const GURL& extension_url) const {
+}
+
+bool PanelExtensionWindowController::IsVisibleToExtension(
+    const extensions::Extension* extension) const {
+ ExtensionProcessManager* process_manager =
+      ExtensionSystem::Get(panel_host_->profile())->process_manager();
+  const extensions::Extension* panel_extension = process_manager->
+      GetExtensionForRenderViewHost(
+          panel_view_->WebContents()->GetRenderViewHost());
+
+  // Non-extension panels are visible to all extensions.
+  if (!panel_extension)
+    return !extension->is_platform_app();
+
+  // Platform apps can only see their own panels.
+  if (extension->is_platform_app())
+    return extension == panel_extension;
+
+  // Other extensions can see non-platform app panels.
+  return !panel_extension->is_platform_app();
 }
 
 }  // namespace internal

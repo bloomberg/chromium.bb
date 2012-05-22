@@ -23,6 +23,8 @@ class BrowserExtensionWindowController : public ExtensionWindowController {
   virtual void SetFullscreenMode(bool is_fullscreen,
                                  const GURL& extension_url) const OVERRIDE;
   virtual Browser* GetBrowser() const OVERRIDE;
+  virtual bool IsVisibleToExtension(
+      const extensions::Extension* extension) const OVERRIDE;
 
  private:
   Browser* browser_;

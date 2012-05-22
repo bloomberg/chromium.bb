@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
 
@@ -36,28 +37,24 @@ void ExtensionWindowList::RemoveExtensionWindow(
     windows_.erase(iter);
 }
 
-ExtensionWindowController* ExtensionWindowList::FindWindowById(
-    Profile* profile,
-    ProfileMatchType match_type,
+ExtensionWindowController* ExtensionWindowList::FindWindowForFunctionById(
+    const UIThreadExtensionFunction* function,
     int id) const {
   for (WindowList::const_iterator iter = windows().begin();
        iter != windows().end(); ++iter) {
-    if ((*iter)->MatchesProfile(profile, match_type)) {
-      if ((*iter)->GetWindowId() == id)
-        return *iter;
-    }
+    if (function->CanOperateOnWindow(*iter) && (*iter)->GetWindowId() == id)
+      return *iter;
   }
   return NULL;
 }
 
-ExtensionWindowController* ExtensionWindowList::CurrentWindow(
-    Profile* profile,
-    ProfileMatchType match_type) const {
+ExtensionWindowController* ExtensionWindowList::CurrentWindowForFunction(
+    const UIThreadExtensionFunction* function) const {
   ExtensionWindowController* result = NULL;
   // Returns either the focused window (if any), or the last window in the list.
   for (WindowList::const_iterator iter = windows().begin();
        iter != windows().end(); ++iter) {
-    if ((*iter)->MatchesProfile(profile, match_type)) {
+    if (function->CanOperateOnWindow(*iter)) {
       result = *iter;
       if (result->window()->IsActive())
         break;  // use focused window

@@ -140,7 +140,7 @@ class ExtensionFunction
   bool has_callback() { return has_callback_; }
 
   void set_include_incognito(bool include) { include_incognito_ = include; }
-  bool include_incognito() { return include_incognito_; }
+  bool include_incognito() const { return include_incognito_; }
 
   void set_user_gesture(bool user_gesture) { user_gesture_ = user_gesture; }
   bool user_gesture() const { return user_gesture_; }
@@ -286,6 +286,11 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   // Same as above but uses ExtensionWindowList instead of BrowserList.
   ExtensionWindowController* GetExtensionWindowController();
+
+  // Returns true if this function (and the profile and extension that it was
+  // invoked from) can operate on the window wrapped by |window_controller|.
+  bool CanOperateOnWindow(
+      const ExtensionWindowController* window_controller) const;
 
  protected:
   friend struct content::BrowserThread::DeleteOnThread<

@@ -21,6 +21,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace extensions {
+class Extension;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -34,20 +38,12 @@ class ExtensionWindowController {
     REASON_NOT_EDITABLE,
   };
 
-  enum ProfileMatchType {
-    MATCH_NORMAL_ONLY,
-    MATCH_INCOGNITO
-  };
-
   ExtensionWindowController(BaseWindow* window, Profile* profile);
   virtual ~ExtensionWindowController();
 
   BaseWindow* window() const { return window_; }
 
   Profile* profile() const { return profile_; }
-
-  // Returns true if the window matches the profile.
-  bool MatchesProfile(Profile* profile, ProfileMatchType match_type) const;
 
   // Return an id uniquely identifying the window.
   virtual int GetWindowId() const = 0;
@@ -75,6 +71,11 @@ class ExtensionWindowController {
   // Returns a Browser if available. Defaults to returning NULL.
   // TODO(stevenjb): Temporary workaround. Eliminate this.
   virtual Browser* GetBrowser() const;
+
+  // Extension/window visibility and ownership is window-specific, subclasses
+  // need to define this behavior.
+  virtual bool IsVisibleToExtension(
+      const extensions::Extension* extension) const = 0;
 
  private:
   BaseWindow* window_;

@@ -1,5 +1,5 @@
 {
-  "name": "Platform App Test: empty context menu",
+  "name": "Platform App Test: minimal platform app",
   "platform_app": true,
   "version": "1",
   "manifest_version": 2,

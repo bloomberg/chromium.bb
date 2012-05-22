@@ -25,15 +25,6 @@ ExtensionWindowController::~ExtensionWindowController() {
   ExtensionWindowList::GetInstance()->RemoveExtensionWindow(this);
 }
 
-bool ExtensionWindowController::MatchesProfile(
-    Profile* match_profile,
-    ProfileMatchType match_type) const {
-  return ((profile_ == match_profile) ||
-          (match_type == MATCH_INCOGNITO &&
-           (match_profile->HasOffTheRecordProfile() &&
-            match_profile->GetOffTheRecordProfile() == profile_)));
-}
-
 Browser* ExtensionWindowController::GetBrowser() const {
   return NULL;
 }

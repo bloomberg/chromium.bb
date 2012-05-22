@@ -13,12 +13,12 @@
 #include "chrome/browser/extensions/extension_window_controller.h"
 
 class Profile;
+class UIThreadExtensionFunction;
 
 // Class to maintain a list of ExtensionWindowControllers.
 class ExtensionWindowList {
  public:
   typedef std::list<ExtensionWindowController*> WindowList;
-  typedef ExtensionWindowController::ProfileMatchType ProfileMatchType;
 
   ExtensionWindowList();
   ~ExtensionWindowList();
@@ -26,14 +26,15 @@ class ExtensionWindowList {
   void AddExtensionWindow(ExtensionWindowController* window);
   void RemoveExtensionWindow(ExtensionWindowController* window);
 
-  // Returns a window matching the profile and id, or NULL.
-  ExtensionWindowController* FindWindowById(Profile* profile,
-                                            ProfileMatchType match_type,
-                                            int id) const;
+  // Returns a window matching the context the function was invoked in.
+  ExtensionWindowController* FindWindowForFunctionById(
+      const UIThreadExtensionFunction* function,
+      int id) const;
 
-  // Returns the focused or last added window matching the profile, or NULL.
-  ExtensionWindowController* CurrentWindow(Profile* profile,
-                                           ProfileMatchType match_type) const;
+  // Returns the focused or last added window matching the context the function
+  // was invoked in.
+  ExtensionWindowController* CurrentWindowForFunction(
+      const UIThreadExtensionFunction* function) const;
 
   const WindowList& windows() const { return windows_; }
 
