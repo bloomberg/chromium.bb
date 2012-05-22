@@ -6,91 +6,44 @@
 #define JINGLE_NOTIFIER_LISTENER_PUSH_CLIENT_H_
 
 #include <string>
-#include <vector>
 
-#include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "jingle/notifier/base/notifier_options.h"
+#include "base/memory/scoped_ptr.h"
 #include "jingle/notifier/listener/notification_defines.h"
-
-namespace base {
-class MessageLoopProxy;
-} // namespace base
-
-namespace buzz {
-class XmppTaskParentInterface;
-}  // namespace buzz
 
 namespace notifier {
 
-// This class implements a client for the XMPP google:push protocol.
-//
-// This class must be used on a single thread.
+struct NotifierOptions;
+class PushClientObserver;
+
+// A PushClient is an interface for classes that implement a push
+// mechanism, where a client can push notifications to and receive
+// notifications from other clients.
 class PushClient {
  public:
-  // An Observer is sent messages whenever a notification is received
-  // or when the state of the push client changes.
-  class Observer {
-   public:
-    // Called when the state of the push client changes.  If
-    // |notifications_enabled| is true, that means notifications can
-    // be sent and received freely.  If it is false, that means no
-    // notifications can be sent or received.
-    virtual void OnNotificationStateChange(bool notifications_enabled) = 0;
+  virtual ~PushClient();
 
-    // Called when a notification is received.  The details of the
-    // notification are in |notification|.
-    virtual void OnIncomingNotification(const Notification& notification) = 0;
+  // Creates a default non-blocking PushClient implementation from the
+  // given options.
+  static scoped_ptr<PushClient> CreateDefault(
+      const NotifierOptions& notifier_options);
 
-   protected:
-    virtual ~Observer();
-  };
+  // Manage the list of observers for incoming notifications.
+  virtual void AddObserver(PushClientObserver* observer) = 0;
+  virtual void RemoveObserver(PushClientObserver* observer) = 0;
 
-  explicit PushClient(const NotifierOptions& notifier_options);
-  ~PushClient();
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
-  // Takes effect only on the next (re-)connection.  Therefore, you
-  // probably want to call this before UpdateCredentials().
-  void UpdateSubscriptions(const SubscriptionList& subscriptions);
+  // Implementors are required to have this take effect only on the
+  // next (re-)connection.  Therefore, clients should call this before
+  // UpdateCredentials().
+  virtual void UpdateSubscriptions(const SubscriptionList& subscriptions) = 0;
 
   // If not connected, connects with the given credentials.  If
   // already connected, the next connection attempt will use the given
   // credentials.
-  void UpdateCredentials(const std::string& email, const std::string& token);
+  virtual void UpdateCredentials(
+      const std::string& email, const std::string& token) = 0;
 
-  // Sends a notification.  Can be called when notifications are
-  // disabled; the notification will be sent when notifications become
-  // enabled.
-  void SendNotification(const Notification& notification);
-
-  void SimulateOnNotificationReceivedForTest(
-      const Notification& notification);
-
-  void SimulateConnectAndSubscribeForTest(
-      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
-
-  void SimulateDisconnectForTest();
-
-  void SimulateSubscriptionErrorForTest();
-
-  // Any notifications sent after this is called will be reflected,
-  // i.e. will be treated as an incoming notification also.
-  void ReflectSentNotificationsForTest();
-
- private:
-  class Core;
-
-  // The real guts of PushClient, which allows this class to not be
-  // refcounted.
-  const scoped_refptr<Core> core_;
-  const scoped_refptr<base::MessageLoopProxy> parent_message_loop_proxy_;
-  const scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(PushClient);
+  // Sends a notification (with no reliability guarantees).
+  virtual void SendNotification(const Notification& notification) = 0;
 };
 
 }  // namespace notifier
