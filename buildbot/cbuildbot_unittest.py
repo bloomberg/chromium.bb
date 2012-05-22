@@ -202,6 +202,28 @@ class InterfaceTest(mox.MoxTestBase):
     self.parser = cbuildbot._CreateParser()
     self.mox.StubOutWithMock(cros_lib, 'Die')
 
+  # Let this test run for a max of 3s; if it takes longer, then it's
+  # likely that there is an exec loop in the pathways.
+  @cros_lib.TimeoutDecorator(3)
+  def testDepotTools(self):
+    """Test that the entry point used by depot_tools works."""
+    path = os.path.join(constants.SOURCE_ROOT, 'chromite', 'buildbot',
+                        'cbuildbot')
+
+    # Verify the tests below actually are testing correct behaviour;
+    # specifically that it doesn't always just return 0.
+    self.assertRaises(cros_lib.RunCommandError,
+                      cros_lib.RunCommandCaptureOutput,
+                      ['cbuildbot', '--monkeys'], cwd=constants.SOURCE_ROOT)
+
+    # Validate depot_tools lookup.
+    cros_lib.RunCommandCaptureOutput(
+        ['cbuildbot', '--help'], cwd=constants.SOURCE_ROOT)
+
+    # Validate buildbot invocation pathway.
+    cros_lib.RunCommandCaptureOutput(
+        [path, '--help'], cwd=constants.SOURCE_ROOT)
+
   def testDebugBuildBotSetByDefault(self):
     """Test that debug and buildbot flags are set by default."""
     args = ['--local', '-r', self._BUILD_ROOT, self._X86_PREFLIGHT]
