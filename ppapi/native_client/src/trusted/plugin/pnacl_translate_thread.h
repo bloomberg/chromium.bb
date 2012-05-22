@@ -33,7 +33,7 @@ class PnaclTranslateThread {
   virtual ~PnaclTranslateThread();
   // TODO(jvoung/dschuff): handle surfaway issues when coordinator/plugin
   // goes away. This data may have to be refcounted not touched in that case.
-  void RunTranslate(pp::CompletionCallback finish_callback,
+  void RunTranslate(const pp::CompletionCallback& finish_callback,
                     const Manifest* manifest,
                     const Manifest* ld_manifest,
                     LocalTempFile* obj_file,
