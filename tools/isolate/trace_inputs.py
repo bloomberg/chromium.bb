@@ -221,7 +221,36 @@ def cleanup_path(x):
   return x
 
 
-class Strace(object):
+class ApiBase(object):
+  @staticmethod
+  def clean_trace(logname):
+    """Deletes the old log."""
+    raise NotImplementedError()
+
+  @classmethod
+  def gen_trace(cls, cmd, cwd, logname, output):
+    """Runs the OS-specific trace program on an executable.
+
+    Since the logs are per pid, we need to log the list of the initial pid.
+    """
+    raise NotImplementedError(cls.__class__.__name__)
+
+  @classmethod
+  def parse_log(cls, filename, blacklist):
+    """Processes a trace log and returns the files opened and the files that do
+    not exist.
+
+    It does not track directories.
+
+    Most of the time, files that do not exist are temporary test files that
+    should be put in /tmp instead. See http://crbug.com/116251.
+
+    Returns a tuple (existing files, non existing files, nb_processes_created)
+    """
+    raise NotImplementedError(cls.__class__.__name__)
+
+
+class Strace(ApiBase):
   """strace implies linux."""
   IGNORED = (
     '/bin',
@@ -482,7 +511,6 @@ class Strace(object):
 
   @staticmethod
   def clean_trace(logname):
-    """Deletes the old log."""
     if os.path.isfile(logname):
       os.remove(logname)
     # Also delete any pid specific file from previous traces.
@@ -524,16 +552,6 @@ class Strace(object):
 
   @classmethod
   def parse_log(cls, filename, blacklist):
-    """Processes a strace log and returns the files opened and the files that do
-    not exist.
-
-    It does not track directories.
-
-    Most of the time, files that do not exist are temporary test files that
-    should be put in /tmp instead. See http://crbug.com/116251.
-
-    Returns a tuple (existing files, non existing files, nb_processes_created)
-    """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
     with open(filename, 'r') as f:
       data = json.load(f)
@@ -553,7 +571,7 @@ class Strace(object):
         len(context.processes))
 
 
-class Dtrace(object):
+class Dtrace(ApiBase):
   """Uses DTrace framework through dtrace. Requires root access.
 
   Implies Mac OSX.
@@ -819,13 +837,18 @@ class Dtrace(object):
 
   @staticmethod
   def clean_trace(logname):
-    """Deletes the old log."""
     if os.path.isfile(logname):
       os.remove(logname)
 
   @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
-    """Runs dtrace on an executable."""
+    """Runs dtrace on an executable.
+
+    This dtruss is broken when it starts the process itself or when tracing
+    child processes, this code starts a wrapper process trace_child_process.py,
+    which waits for dtrace to start, then trace_child_process.py starts the
+    executable to trace.
+    """
     logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
     logging.info('Running: %s' % cmd)
     signal = 'Go!'
@@ -898,16 +921,6 @@ class Dtrace(object):
 
   @classmethod
   def parse_log(cls, filename, blacklist):
-    """Processes a dtrace log and returns the files opened and the files that do
-    not exist.
-
-    It does not track directories.
-
-    Most of the time, files that do not exist are temporary test files that
-    should be put in /tmp instead. See http://crbug.com/116251
-
-    Returns a tuple (existing files, non existing files, nb_processes_created)
-    """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
     context = cls.Context(blacklist)
     for line in open(filename, 'rb'):
@@ -932,7 +945,7 @@ class Dtrace(object):
       logfile.write(''.join(lines))
 
 
-class LogmanTrace(object):
+class LogmanTrace(ApiBase):
   """Uses the native Windows ETW based tracing functionality to trace a child
   process.
   """
@@ -1118,6 +1131,7 @@ class LogmanTrace(object):
         self.non_existent.add(filename)
 
   def __init__(self):
+    super(LogmanTrace, self).__init__()
     # Most ignores need to be determined at runtime.
     self.IGNORED = set([os.path.dirname(sys.executable)])
     # Add many directories from environment variables.
@@ -1146,7 +1160,6 @@ class LogmanTrace(object):
 
   @staticmethod
   def clean_trace(logname):
-    """Deletes the old log."""
     if os.path.isfile(logname):
       os.remove(logname)
     if os.path.isfile(logname + '.etl'):
@@ -1154,6 +1167,9 @@ class LogmanTrace(object):
 
   @classmethod
   def gen_trace(cls, cmd, cwd, logname, output):
+    """Uses logman.exe to start and stop the NT Kernel Logger while the
+    executable to be traced is run.
+    """
     logging.info('gen_trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
     # Use "logman -?" for help.
 
@@ -1241,16 +1257,6 @@ class LogmanTrace(object):
 
   @classmethod
   def parse_log(cls, filename, blacklist):
-    """Processes a ETL log and returns the files opened and the files that do
-    not exist.
-
-    It does not track directories.
-
-    Most of the time, files that do not exist are temporary test files that
-    should be put in /tmp instead. See http://crbug.com/116251
-
-    Returns a tuple (existing files, non existing files, nb_processes_created)
-    """
     logging.info('parse_log(%s, %s)' % (filename, blacklist))
 
     # Auto-detect the log format
