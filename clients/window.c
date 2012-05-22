@@ -1275,71 +1275,34 @@ frame_redraw_handler(struct widget *widget, void *data)
 }
 
 static int
-frame_get_pointer_location(struct frame *frame, int32_t x, int32_t y)
-{
-	struct widget *widget = frame->widget;
-	int vlocation, hlocation, location;
-	const int grip_size = 8;
-	struct theme *t = widget->window->display->theme;
-
-	if (x < t->margin)
-		hlocation = WINDOW_EXTERIOR;
-	else if (t->margin <= x && x < t->margin + grip_size)
-		hlocation = WINDOW_RESIZING_LEFT;
-	else if (x < widget->allocation.width - t->margin - grip_size)
-		hlocation = WINDOW_INTERIOR;
-	else if (x < widget->allocation.width - t->margin)
-		hlocation = WINDOW_RESIZING_RIGHT;
-	else
-		hlocation = WINDOW_EXTERIOR;
-
-	if (y < t->margin)
-		vlocation = WINDOW_EXTERIOR;
-	else if (t->margin <= y && y < t->margin + grip_size)
-		vlocation = WINDOW_RESIZING_TOP;
-	else if (y < widget->allocation.height - t->margin - grip_size)
-		vlocation = WINDOW_INTERIOR;
-	else if (y < widget->allocation.height - t->margin)
-		vlocation = WINDOW_RESIZING_BOTTOM;
-	else
-		vlocation = WINDOW_EXTERIOR;
-
-	location = vlocation | hlocation;
-	if (location & WINDOW_EXTERIOR)
-		location = WINDOW_EXTERIOR;
-	if (location == WINDOW_INTERIOR && y < t->margin + 50)
-		location = WINDOW_TITLEBAR;
-	else if (location == WINDOW_INTERIOR)
-		location = WINDOW_CLIENT_AREA;
-
-	return location;
-}
-
-static int
 frame_get_pointer_image_for_location(struct frame *frame, struct input *input)
 {
+	struct theme *t = frame->widget->window->display->theme;
 	int location;
 
-	location = frame_get_pointer_location(frame, input->sx, input->sy);
+	location = theme_get_location(t, input->sx, input->sy,
+				      frame->widget->allocation.width,
+				      frame->widget->allocation.height);
+
 	switch (location) {
-	case WINDOW_RESIZING_TOP:
+	case THEME_LOCATION_RESIZING_TOP:
 		return WL_CURSOR_TOP;
-	case WINDOW_RESIZING_BOTTOM:
+	case THEME_LOCATION_RESIZING_BOTTOM:
 		return WL_CURSOR_BOTTOM;
-	case WINDOW_RESIZING_LEFT:
+	case THEME_LOCATION_RESIZING_LEFT:
 		return WL_CURSOR_LEFT;
-	case WINDOW_RESIZING_RIGHT:
+	case THEME_LOCATION_RESIZING_RIGHT:
 		return WL_CURSOR_RIGHT;
-	case WINDOW_RESIZING_TOP_LEFT:
+	case THEME_LOCATION_RESIZING_TOP_LEFT:
 		return WL_CURSOR_TOP_LEFT;
-	case WINDOW_RESIZING_TOP_RIGHT:
+	case THEME_LOCATION_RESIZING_TOP_RIGHT:
 		return WL_CURSOR_TOP_RIGHT;
-	case WINDOW_RESIZING_BOTTOM_LEFT:
+	case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
 		return WL_CURSOR_BOTTOM_LEFT;
-	case WINDOW_RESIZING_BOTTOM_RIGHT:
+	case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
 		return WL_CURSOR_BOTTOM_RIGHT;
-	case WINDOW_EXTERIOR:
-	case WINDOW_TITLEBAR:
+	case THEME_LOCATION_EXTERIOR:
+	case THEME_LOCATION_TITLEBAR:
 	default:
 		return WL_CURSOR_LEFT_PTR;
 	}
@@ -1407,11 +1370,13 @@ frame_button_handler(struct widget *widget,
 	struct display *display = window->display;
 	int location;
 
-	location = frame_get_pointer_location(frame, input->sx, input->sy);
+	location = theme_get_location(display->theme, input->sx, input->sy,
+				      frame->widget->allocation.width,
+				      frame->widget->allocation.height);
 
 	if (window->display->shell && button == BTN_LEFT && state == 1) {
 		switch (location) {
-		case WINDOW_TITLEBAR:
+		case THEME_LOCATION_TITLEBAR:
 			if (!window->shell_surface)
 				break;
 			input_set_pointer_image(input, time, WL_CURSOR_DRAGGING);
@@ -1420,14 +1385,14 @@ frame_button_handler(struct widget *widget,
 					      input_get_seat(input),
 					      display->serial);
 			break;
-		case WINDOW_RESIZING_TOP:
-		case WINDOW_RESIZING_BOTTOM:
-		case WINDOW_RESIZING_LEFT:
-		case WINDOW_RESIZING_RIGHT:
-		case WINDOW_RESIZING_TOP_LEFT:
-		case WINDOW_RESIZING_TOP_RIGHT:
-		case WINDOW_RESIZING_BOTTOM_LEFT:
-		case WINDOW_RESIZING_BOTTOM_RIGHT:
+		case THEME_LOCATION_RESIZING_TOP:
+		case THEME_LOCATION_RESIZING_BOTTOM:
+		case THEME_LOCATION_RESIZING_LEFT:
+		case THEME_LOCATION_RESIZING_RIGHT:
+		case THEME_LOCATION_RESIZING_TOP_LEFT:
+		case THEME_LOCATION_RESIZING_TOP_RIGHT:
+		case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
+		case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
 			if (!window->shell_surface)
 				break;
 			input_ungrab(input);

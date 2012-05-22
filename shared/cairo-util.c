@@ -427,3 +427,43 @@ theme_render_frame(struct theme *t,
 		cairo_show_text(cr, title);
 	}
 }
+
+enum theme_location
+theme_get_location(struct theme *t, int x, int y, int width, int height)
+{
+	int vlocation, hlocation, location;
+	const int grip_size = 8;
+
+	if (x < t->margin)
+		hlocation = THEME_LOCATION_EXTERIOR;
+	else if (t->margin <= x && x < t->margin + grip_size)
+		hlocation = THEME_LOCATION_RESIZING_LEFT;
+	else if (x < width - t->margin - grip_size)
+		hlocation = THEME_LOCATION_INTERIOR;
+	else if (x < width - t->margin)
+		hlocation = THEME_LOCATION_RESIZING_RIGHT;
+	else
+		hlocation = THEME_LOCATION_EXTERIOR;
+
+	if (y < t->margin)
+		vlocation = THEME_LOCATION_EXTERIOR;
+	else if (t->margin <= y && y < t->margin + grip_size)
+		vlocation = THEME_LOCATION_RESIZING_TOP;
+	else if (y < height - t->margin - grip_size)
+		vlocation = THEME_LOCATION_INTERIOR;
+	else if (y < height - t->margin)
+		vlocation = THEME_LOCATION_RESIZING_BOTTOM;
+	else
+		vlocation = THEME_LOCATION_EXTERIOR;
+
+	location = vlocation | hlocation;
+	if (location & THEME_LOCATION_EXTERIOR)
+		location = THEME_LOCATION_EXTERIOR;
+	if (location == THEME_LOCATION_INTERIOR &&
+	    y < t->margin + t->titlebar_height)
+		location = THEME_LOCATION_TITLEBAR;
+	else if (location == THEME_LOCATION_INTERIOR)
+		location = THEME_LOCATION_CLIENT_AREA;
+
+	return location;
+}

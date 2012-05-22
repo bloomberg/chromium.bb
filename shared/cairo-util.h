@@ -65,4 +65,23 @@ theme_render_frame(struct theme *t,
 		   cairo_t *cr, int width, int height,
 		   const char *title, uint32_t flags);
 
+enum theme_location {
+	THEME_LOCATION_INTERIOR = 0,
+	THEME_LOCATION_RESIZING_TOP = 1,
+	THEME_LOCATION_RESIZING_BOTTOM = 2,
+	THEME_LOCATION_RESIZING_LEFT = 4,
+	THEME_LOCATION_RESIZING_TOP_LEFT = 5,
+	THEME_LOCATION_RESIZING_BOTTOM_LEFT = 6,
+	THEME_LOCATION_RESIZING_RIGHT = 8,
+	THEME_LOCATION_RESIZING_TOP_RIGHT = 9,
+	THEME_LOCATION_RESIZING_BOTTOM_RIGHT = 10,
+	THEME_LOCATION_RESIZING_MASK = 15,
+	THEME_LOCATION_EXTERIOR = 16,
+	THEME_LOCATION_TITLEBAR = 17,
+	THEME_LOCATION_CLIENT_AREA = 18,
+};
+
+enum theme_location
+theme_get_location(struct theme *t, int x, int y, int width, int height);
+
 #endif

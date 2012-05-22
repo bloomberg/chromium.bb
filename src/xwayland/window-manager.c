@@ -779,6 +779,8 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
 	struct weston_wm_window *window;
+	enum theme_location location;
+	struct theme *t = wm->theme;
 
 	fprintf(stderr, "XCB_BUTTON_%s (detail %d)\n",
 		button->response_type == XCB_BUTTON_PRESS ?
@@ -786,9 +788,22 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	window = hash_table_lookup(wm->window_hash, button->event);
 	if (button->response_type == XCB_BUTTON_PRESS &&
-	    button->detail == 1)
-		shell_interface->move(window->shsurf,
-				      wm->server->compositor->seat);
+	    button->detail == 1) {
+		location = theme_get_location(t,
+					      button->event_x,
+					      button->event_y,
+					      window->width,
+					      window->height);
+
+		switch (location) {
+		case THEME_LOCATION_TITLEBAR:
+			shell_interface->move(window->shsurf,
+					      wm->server->compositor->seat);
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 static int
