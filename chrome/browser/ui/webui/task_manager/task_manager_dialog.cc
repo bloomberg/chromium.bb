@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/size.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/views/widget/widget.h"
