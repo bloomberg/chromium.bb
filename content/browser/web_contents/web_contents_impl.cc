@@ -1104,6 +1104,12 @@ bool WebContentsImpl::NavigateToPendingEntry(
       reload_type);
 }
 
+void WebContentsImpl::RenderViewForInterstitialPageCreated(
+    content::RenderViewHost* render_view_host) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    RenderViewForInterstitialPageCreated(render_view_host));
+}
+
 bool WebContentsImpl::NavigateToEntry(
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {

@@ -187,6 +187,8 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
   }
 
   // content::WebContentsObserver overrides.
+  virtual void RenderViewForInterstitialPageCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,

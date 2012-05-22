@@ -48,7 +48,7 @@ class InterstitialPage {
       InterstitialPageDelegate* delegate);
 
   // Retrieves the InterstitialPage if any associated with the specified
-  // |web_contents| (used by ui tests).
+  // |web_contents|.
   CONTENT_EXPORT static InterstitialPage* GetInterstitialPage(
       WebContents* web_contents);
 

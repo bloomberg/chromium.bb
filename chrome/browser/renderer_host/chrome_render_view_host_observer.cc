@@ -43,12 +43,6 @@ ChromeRenderViewHostObserver::~ChromeRenderViewHostObserver() {
 
 void ChromeRenderViewHostObserver::RenderViewHostInitialized() {
   InitRenderViewForExtensions();
-
-  if (render_view_host()->GetDelegate()->GetRenderViewType() ==
-      content::VIEW_TYPE_INTERSTITIAL_PAGE) {
-    render_view_host()->Send(new ChromeViewMsg_SetAsInterstitial(
-        render_view_host()->GetRoutingID()));
-  }
 }
 
 void ChromeRenderViewHostObserver::RenderViewHostDestroyed(

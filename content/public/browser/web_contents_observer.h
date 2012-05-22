@@ -27,7 +27,11 @@ struct Referrer;
 class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
                                            public IPC::Message::Sender {
  public:
+  // Only one of the two methods below will be called when a RVH is created for
+  // a WebContents, depending on whether it's for an interstitial or not.
   virtual void RenderViewCreated(RenderViewHost* render_view_host) {}
+  virtual void RenderViewForInterstitialPageCreated(
+      RenderViewHost* render_view_host) {}
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) {}
   virtual void RenderViewReady() {}
   virtual void RenderViewGone(base::TerminationStatus status) {}

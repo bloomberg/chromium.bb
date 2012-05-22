@@ -112,6 +112,10 @@ class CONTENT_EXPORT WebContentsImpl
   bool NavigateToPendingEntry(
       content::NavigationController::ReloadType reload_type);
 
+  // Called by InterstitialPageImpl when it creates a RenderViewHost.
+  void RenderViewForInterstitialPageCreated(
+      content::RenderViewHost* render_view_host);
+
   // Sets the passed passed interstitial as the currently showing interstitial.
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
   // method to unset the interstitial) and no interstitial page should be set

@@ -433,6 +433,12 @@ void TabSpecificContentSettings::ClearGeolocationContentSettings() {
   geolocation_settings_state_.ClearStateMap();
 }
 
+void TabSpecificContentSettings::RenderViewForInterstitialPageCreated(
+    RenderViewHost* render_view_host) {
+  render_view_host->Send(new ChromeViewMsg_SetAsInterstitial(
+      render_view_host->GetRoutingID()));
+}
+
 bool TabSpecificContentSettings::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;

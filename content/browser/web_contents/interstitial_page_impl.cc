@@ -30,7 +30,6 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/public/common/view_type.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/dom_storage/dom_storage_types.h"
@@ -492,6 +491,7 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   RenderViewHostImpl* render_view_host = new RenderViewHostImpl(
       SiteInstance::Create(web_contents()->GetBrowserContext()), this, this,
       MSG_ROUTING_NONE, false, dom_storage::kInvalidSessionStorageNamespaceId);
+  web_contents_->RenderViewForInterstitialPageCreated(render_view_host);
   return render_view_host;
 }
 
