@@ -59,13 +59,14 @@ typedef enum {
 // include low-pressure filtering, hysteresis, finger position correction.
 
 class SemiMtCorrectingFilterInterpreter : public Interpreter {
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest);
-  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest);
 
  public:
   SemiMtCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
