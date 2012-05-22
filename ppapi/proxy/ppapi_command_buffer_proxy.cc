@@ -268,7 +268,8 @@ void PpapiCommandBufferProxy::UpdateState(
   if (success) {
     if (state.generation - last_state_.generation < 0x80000000U) {
       last_state_ = state;
-  } else
+    }
+  } else {
     last_state_.error = gpu::error::kLostContext;
     ++last_state_.generation;
   }
