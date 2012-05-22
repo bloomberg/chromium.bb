@@ -1002,11 +1002,6 @@ class RenderViewImpl : public RenderWidget,
   bool IsBackForwardToStaleEntry(const ViewMsg_Navigate_Params& params,
                                  bool is_reload);
 
-  // Returns false unless this is a top-level navigation that crosses origins.
-  bool IsNonLocalTopLevelNavigation(const GURL& url,
-                                    WebKit::WebFrame* frame,
-                                    WebKit::WebNavigationType type);
-
   bool MaybeLoadAlternateErrorPage(WebKit::WebFrame* frame,
                                    const WebKit::WebURLError& error,
                                    bool replace);

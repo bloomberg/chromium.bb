@@ -20,8 +20,8 @@ RendererPreferences::RendererPreferences()
       active_selection_fg_color(0),
       inactive_selection_bg_color(0),
       inactive_selection_fg_color(0),
-      browser_handles_top_level_requests(false),
-      browser_handles_all_requests(false),
+      browser_handles_non_local_top_level_requests(false),
+      browser_handles_all_top_level_requests(false),
       caret_blink_interval(0),
       enable_referrers(true),
       default_zoom_level(0) {

@@ -1,0 +1,13 @@
+{
+  "name": "Platform App Test: local iframes are allowed",
+  "platform_app": true,
+  "version": "1",
+  "manifest_version": 2,
+  "permissions": [
+    "experimental",
+    "windows"
+  ],
+  "background": {
+    "scripts": ["test.js"]
+  }
+}

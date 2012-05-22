@@ -194,7 +194,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   tab_contents_->web_contents()->SetDelegate(this);
 
   tab_contents_->web_contents()->
-      GetMutableRendererPrefs()->browser_handles_top_level_requests =
+      GetMutableRendererPrefs()->browser_handles_non_local_top_level_requests =
           handle_top_level_requests;
 
   if (!existing_contents) {

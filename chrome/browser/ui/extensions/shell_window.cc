@@ -105,8 +105,8 @@ ShellWindow::ShellWindow(Profile* profile,
   content::WebContentsObserver::Observe(web_contents_);
   web_contents_->SetDelegate(this);
   web_contents_->SetViewType(chrome::VIEW_TYPE_APP_SHELL);
-  web_contents_->GetMutableRendererPrefs()->browser_handles_all_requests =
-      true;
+  web_contents_->GetMutableRendererPrefs()->
+      browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
   web_contents_->GetController().LoadURL(

@@ -149,6 +149,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/navigation")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Iframes) {
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/iframes")) << message_;
+}
+
 // Tests that localStorage and WebSQL are disabled for platform apps.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowStorage) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/storage")) << message_;

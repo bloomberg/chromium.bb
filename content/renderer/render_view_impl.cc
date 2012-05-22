@@ -389,6 +389,47 @@ static void MaybeHandleDebugURL(const GURL& url) {
   }
 }
 
+// Returns false unless this is a top-level navigation.
+static bool IsTopLevelNavigation(WebFrame* frame) {
+  return frame->parent() == NULL;
+}
+
+// Returns false unless this is a top-level navigation that crosses origins.
+static bool IsNonLocalTopLevelNavigation(const GURL& url,
+                                         WebFrame* frame,
+                                         WebNavigationType type) {
+  if (!IsTopLevelNavigation(frame))
+    return false;
+
+  // Navigations initiated within Webkit are not sent out to the external host
+  // in the following cases.
+  // 1. The url scheme is not http/https
+  // 2. The origin of the url and the opener is the same in which case the
+  //    opener relationship is maintained.
+  // 3. Reloads/form submits/back forward navigations
+  if (!url.SchemeIs(chrome::kHttpScheme) && !url.SchemeIs(chrome::kHttpsScheme))
+    return false;
+
+  // Not interested in reloads/form submits/resubmits/back forward navigations.
+  if (type != WebKit::WebNavigationTypeReload &&
+      type != WebKit::WebNavigationTypeFormSubmitted &&
+      type != WebKit::WebNavigationTypeFormResubmitted &&
+      type != WebKit::WebNavigationTypeBackForward) {
+    // The opener relationship between the new window and the parent allows the
+    // new window to script the parent and vice versa. This is not allowed if
+    // the origins of the two domains are different. This can be treated as a
+    // top level navigation and routed back to the host.
+    WebKit::WebFrame* opener = frame->opener();
+    if (!opener) {
+      return true;
+    }
+
+    if (url.GetOrigin() != GURL(opener->document().url()).GetOrigin())
+      return true;
+  }
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 struct RenderViewImpl::PendingFileChooser {
@@ -2375,14 +2416,18 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     }
   }
 
-  // If the browser is interested, then give it a chance to look at top level
-  // navigations.
+  // If the browser is interested, then give it a chance to look at the request.
   if (is_content_initiated) {
-    bool browser_handles_top_level_requests =
-        renderer_preferences_.browser_handles_top_level_requests &&
+    bool browser_handles_request =
+        renderer_preferences_.browser_handles_non_local_top_level_requests &&
         IsNonLocalTopLevelNavigation(url, frame, type);
-    if (browser_handles_top_level_requests ||
-        renderer_preferences_.browser_handles_all_requests) {
+    if (!browser_handles_request) {
+      browser_handles_request =
+          renderer_preferences_.browser_handles_all_top_level_requests &&
+          IsTopLevelNavigation(frame);
+    }
+
+    if (browser_handles_request) {
       // Reset these counters as the RenderView could be reused for the next
       // navigation.
       page_id_ = -1;
@@ -5336,41 +5381,6 @@ WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
 WebKit::WebUserMediaClient* RenderViewImpl::userMediaClient() {
   EnsureMediaStreamImpl();
   return media_stream_impl_;
-}
-
-bool RenderViewImpl::IsNonLocalTopLevelNavigation(
-    const GURL& url, WebKit::WebFrame* frame, WebKit::WebNavigationType type) {
-  // Must be a top level frame.
-  if (frame->parent() != NULL)
-    return false;
-
-  // Navigations initiated within Webkit are not sent out to the external host
-  // in the following cases.
-  // 1. The url scheme is not http/https
-  // 2. The origin of the url and the opener is the same in which case the
-  //    opener relationship is maintained.
-  // 3. Reloads/form submits/back forward navigations
-  if (!url.SchemeIs(chrome::kHttpScheme) && !url.SchemeIs(chrome::kHttpsScheme))
-    return false;
-
-  // Not interested in reloads/form submits/resubmits/back forward navigations.
-  if (type != WebKit::WebNavigationTypeReload &&
-      type != WebKit::WebNavigationTypeFormSubmitted &&
-      type != WebKit::WebNavigationTypeFormResubmitted &&
-      type != WebKit::WebNavigationTypeBackForward) {
-    // The opener relationship between the new window and the parent allows the
-    // new window to script the parent and vice versa. This is not allowed if
-    // the origins of the two domains are different. This can be treated as a
-    // top level navigation and routed back to the host.
-    WebKit::WebFrame* opener = frame->opener();
-    if (!opener) {
-      return true;
-    } else {
-      if (url.GetOrigin() != GURL(opener->document().url()).GetOrigin())
-        return true;
-    }
-  }
-  return false;
 }
 
 void RenderViewImpl::OnAsyncFileOpened(
