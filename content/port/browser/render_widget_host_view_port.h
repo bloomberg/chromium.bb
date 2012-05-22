@@ -180,6 +180,9 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
 
 #if defined(OS_MACOSX)
+  // Called just before GetBackingStore blocks for an updated frame.
+  virtual void AboutToWaitForBackingStoreMsg() = 0;
+
   // Retrieve the bounds of the view, in cocoa view coordinates.
   // If the UI scale factor is 2, |GetViewBounds()| will return a size of e.g.
   // (400, 300) in pixels, while this method will return (200, 150).

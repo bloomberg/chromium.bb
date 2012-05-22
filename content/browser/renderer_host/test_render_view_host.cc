@@ -125,6 +125,9 @@ bool TestRenderWidgetHostView::HasAcceleratedSurface(
 
 #if defined(OS_MACOSX)
 
+void TestRenderWidgetHostView::AboutToWaitForBackingStoreMsg() {
+}
+
 gfx::Rect TestRenderWidgetHostView::GetViewCocoaBounds() const {
   return gfx::Rect();
 }

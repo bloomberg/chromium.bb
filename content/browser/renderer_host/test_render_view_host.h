@@ -111,6 +111,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
 #if defined(OS_MACOSX)
+  virtual void AboutToWaitForBackingStoreMsg() OVERRIDE;
   virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
   virtual void PluginFocusChanged(bool focused, int plugin_id) OVERRIDE;
   virtual void StartPluginIme() OVERRIDE;

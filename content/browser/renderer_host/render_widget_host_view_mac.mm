@@ -276,6 +276,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
+  AckPendingSwapBuffers();
   UnlockMouse();
 }
 
@@ -368,6 +369,10 @@ void RenderWidgetHostViewMac::DidBecomeSelected() {
 void RenderWidgetHostViewMac::WasHidden() {
   if (is_hidden_)
     return;
+
+  // Send ACKs for any pending SwapBuffers (if any) since we won't be displaying
+  // them and the GPU process is waiting.
+  AckPendingSwapBuffers();
 
   // If we receive any more paint messages while we are hidden, we want to
   // ignore them so we don't re-allocate the backing store.  We will paint
@@ -661,6 +666,8 @@ void RenderWidgetHostViewMac::RenderViewGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewMac::Destroy() {
+  AckPendingSwapBuffers();
+
   // On Windows, popups are implemented with a popup window style, so that when
   // an event comes in that would "cancel" it, it receives the OnCancelMode
   // message and can kill itself. Alas, on the Mac, views cannot capture events
@@ -943,22 +950,47 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
                                                    transport_dib);
 }
 
-void RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle) {
+bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle) {
   if (is_hidden_)
-    return;
+    return true;
 
   if (!compositing_iosurface_.get())
     compositing_iosurface_.reset(CompositingIOSurfaceMac::Create());
 
   if (!compositing_iosurface_.get())
-    return;
+    return true;
 
   compositing_iosurface_->SetIOSurface(surface_handle);
+
+  GotAcceleratedFrame();
+
   // No need to draw the surface if we are inside a drawRect. It will be done
   // later.
-  if (!about_to_validate_and_paint_)
-    compositing_iosurface_->DrawIOSurface(cocoa_view_);
-  GotAcceleratedFrame();
+  if (!about_to_validate_and_paint_) {
+    // Trigger a drawRect, but don't invalidate the whole window because it
+    // is expensive to clear it with transparency to expose the GL underneath.
+    [cocoa_view_ setNeedsDisplayInRect:NSMakeRect(0, 0, 1, 1)];
+
+    // While resizing, OSX fails to call drawRect on the NSView unless the
+    // window size has changed. That means we won't see animations update if the
+    // user has the mouse button held down, but is not currently changing the
+    // size of the window. To work around that, display here while resizing.
+    if ([cocoa_view_ inLiveResize])
+      [cocoa_view_ displayIfNeeded];
+  }
+  return false;
+}
+
+void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewMac::AckPendingSwapBuffers");
+  while (!pending_swap_buffers_acks_.empty()) {
+    if (pending_swap_buffers_acks_.front().first != 0) {
+      RenderWidgetHostImpl::AcknowledgeSwapBuffers(
+          pending_swap_buffers_acks_.front().first,
+          pending_swap_buffers_acks_.front().second);
+    }
+    pending_swap_buffers_acks_.erase(pending_swap_buffers_acks_.begin());
+  }
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
@@ -966,13 +998,17 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     int gpu_host_id) {
   TRACE_EVENT0("browser",
       "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  pending_swap_buffers_acks_.push_back(std::make_pair(params.route_id,
+                                                      gpu_host_id));
 
   // Compositor window is always gfx::kNullPluginWindow.
   // TODO(jbates) http://crbug.com/105344 This will be removed when there are no
   // plugin windows.
   if (params.window == gfx::kNullPluginWindow) {
-    CompositorSwapBuffers(params.surface_handle);
+    if (CompositorSwapBuffers(params.surface_handle))
+      AckPendingSwapBuffers();
   } else {
     // Deprecated accelerated plugin code path.
     AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
@@ -986,11 +1022,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
         [view setHidden:NO];
       [view drawView];
     }
-  }
-
-  if (params.route_id != 0) {
-    RenderWidgetHostImpl::AcknowledgeSwapBuffers(params.route_id,
-                                                 gpu_host_id);
+    AckPendingSwapBuffers();
   }
 }
 
@@ -999,13 +1031,17 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
     int gpu_host_id) {
   TRACE_EVENT0("browser",
       "RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer");
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  pending_swap_buffers_acks_.push_back(std::make_pair(params.route_id,
+                                                      gpu_host_id));
 
   // Compositor window is always gfx::kNullPluginWindow.
   // TODO(jbates) http://crbug.com/105344 This will be removed when there are no
   // plugin windows.
   if (params.window == gfx::kNullPluginWindow) {
-    CompositorSwapBuffers(params.surface_handle);
+    if (CompositorSwapBuffers(params.surface_handle))
+      AckPendingSwapBuffers();
   } else {
     // Deprecated accelerated plugin code path.
     AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
@@ -1021,11 +1057,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
         [view setHidden:NO];
       [view drawView];
     }
-  }
-
-  if (params.route_id != 0) {
-    RenderWidgetHostImpl::AcknowledgePostSubBuffer(
-        params.route_id, gpu_host_id);
+    AckPendingSwapBuffers();
   }
 }
 
@@ -1041,6 +1073,10 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
          compositing_iosurface_->HasIOSurface() &&
          (desired_size.IsEmpty() ||
           compositing_iosurface_->io_surface_size() == desired_size);
+}
+
+void RenderWidgetHostViewMac::AboutToWaitForBackingStoreMsg() {
+  AckPendingSwapBuffers();
 }
 
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
@@ -1154,10 +1190,8 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
 
     // Need to wipe the software view with transparency to expose the GL
     // underlay. Invalidate the whole window to do that.
-    if (!about_to_validate_and_paint_) {
+    if (!about_to_validate_and_paint_)
       [cocoa_view_ setNeedsDisplay:YES];
-      [cocoa_view_ displayIfNeeded];
-    }
 
     // Delete software backingstore.
     BackingStoreManager::RemoveBackingStore(render_widget_host_);
@@ -1167,6 +1201,8 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
 void RenderWidgetHostViewMac::GotSoftwareFrame() {
   if (last_frame_was_accelerated_) {
     last_frame_was_accelerated_ = false;
+
+    AckPendingSwapBuffers();
 
     // Forget IOSurface since we are drawing a software frame now.
     if (compositing_iosurface_.get() &&
@@ -1895,9 +1931,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   if (renderWidgetHostView_->last_frame_was_accelerated_ &&
       renderWidgetHostView_->compositing_iosurface_.get()) {
-    // Note that this code path is only executed when there's window damage
-    // (when the window is foregrounded, for example). Normally, GPU frames
-    // arrive and are drawn during AcceleratedSurfaceBuffersSwapped.
     {
       TRACE_EVENT0("browser", "NSRectFill");
       // Draw transparency to expose the GL underlay. NSRectFill is extremely
@@ -1909,6 +1942,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     }
 
     renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(self);
+    renderWidgetHostView_->AckPendingSwapBuffers();
     return;
   }
 

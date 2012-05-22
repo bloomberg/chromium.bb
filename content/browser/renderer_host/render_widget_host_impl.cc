@@ -615,6 +615,10 @@ BackingStore* RenderWidgetHostImpl::GetBackingStore(bool force_create) {
   do {
     TRACE_EVENT0("renderer_host", "GetBackingStore::WaitForUpdate");
 
+#if defined(OS_MACOSX)
+    view_->AboutToWaitForBackingStoreMsg();
+#endif
+
     // When we have asked the RenderWidget to resize, and we are still waiting
     // on a response, block for a little while to see if we can't get a response
     // before returning the old (incorrectly sized) backing store.

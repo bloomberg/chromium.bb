@@ -283,6 +283,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
+  virtual void AboutToWaitForBackingStoreMsg() OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
@@ -319,8 +320,12 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   const std::string& selected_text() const { return selected_text_; }
 
   // Call setNeedsDisplay on the cocoa_view_. The IOSurface will be drawn during
-  // the next drawRect.
-  void CompositorSwapBuffers(uint64 surface_handle);
+  // the next drawRect. Return true if the Ack should be sent, false if it
+  // should be deferred until drawRect.
+  bool CompositorSwapBuffers(uint64 surface_handle);
+  // Ack pending SwapBuffers requests, if any, to unblock the GPU process. Has
+  // no effect if there are no pending requests.
+  void AckPendingSwapBuffers();
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
@@ -419,6 +424,10 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // The fullscreen window used for pepper flash.
   scoped_nsobject<NSWindow> pepper_fullscreen_window_;
   scoped_nsobject<FullscreenWindowManager> fullscreen_window_manager_;
+
+  // List of pending swaps for deferred acking:
+  //   pairs of (route_id, gpu_host_id).
+  std::list<std::pair<int32, int32> > pending_swap_buffers_acks_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };
