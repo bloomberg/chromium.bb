@@ -875,19 +875,14 @@ FileManager.prototype = {
    * Compare by type first, then by subtype and then by name.
    */
   FileManager.prototype.compareType_ = function(a, b) {
-    var aType = FileType.getType(a);
-    var bType = FileType.getType(b);
+    // Directories precede files.
+    if (a.isDirectory != b.isDirectory)
+      return Number(b.isDirectory) - Number(a.isDirectory);
 
+    var aType = this.getFileTypeString_(a);
+    var bType = this.getFileTypeString_(b);
 
-    // Files of unknown type follows all the others.
-    var result = this.collator_.compare(aType.type || 'Z',
-                                        bType.type || 'Z');
-    if (result != 0)
-      return result;
-
-    // If types are same both subtypes are defined of both are undefined.
-    result = this.collator_.compare(aType.subtype || '',
-                                    bType.subtype || '');
+    var result = this.collator_.compare(aType, bType);
     if (result != 0)
       return result;
 
@@ -1991,12 +1986,20 @@ FileManager.prototype = {
   FileManager.prototype.renderType_ = function(entry, columnId, table) {
     var div = this.document_.createElement('div');
     div.className = 'type';
+    div.textContent = this.getFileTypeString_(entry);
+    return div;
+  };
+
+  /**
+   * @param {Entry} entry File or directory entry.
+   * @return {string} Localized string representation of file type.
+   */
+  FileManager.prototype.getFileTypeString_ = function(entry) {
     var fileType = FileType.getType(entry);
     if (fileType.subtype)
-      div.textContent = strf(fileType.name, fileType.subtype);
+      return strf(fileType.name, fileType.subtype);
     else
-      div.textContent = str(fileType.name);
-    return div;
+      return str(fileType.name);
   };
 
   /**
