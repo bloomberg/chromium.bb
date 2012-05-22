@@ -557,12 +557,12 @@ const ClassDecoder& Arm32DecoderState::decode_media(
 
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
       (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
-      (insn.Bits() & 0x0000000F) != 0x0000000F)
+      (insn.Bits() & 0x0000000F) != 0x0000000F /* Rn(3:0) == ~1111 */)
     return DataProc_instance_;
 
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
       (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
-      (insn.Bits() & 0x0000000F) == 0x0000000F)
+      (insn.Bits() & 0x0000000F) == 0x0000000F /* Rn(3:0) == 1111 */)
     return Unary1RegisterBitRange_instance_;
 
   if ((insn.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20) == 11x1x */ &&
@@ -777,17 +777,17 @@ const ClassDecoder& Arm32DecoderState::decode_msr_and_hints(
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
-      (insn.Bits() & 0x000000FF) == 0x00000000)
+      (insn.Bits() & 0x000000FF) == 0x00000000 /* op2(7:0) == 00000000 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
-      (insn.Bits() & 0x000000FF) == 0x00000001)
+      (insn.Bits() & 0x000000FF) == 0x00000001 /* op2(7:0) == 00000001 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
-      (insn.Bits() & 0x000000FF) == 0x00000004)
+      (insn.Bits() & 0x000000FF) == 0x00000004 /* op2(7:0) == 00000100 */)
     return Forbidden_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&

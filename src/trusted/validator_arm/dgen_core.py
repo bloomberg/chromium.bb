@@ -209,7 +209,7 @@ class BitPattern(object):
       if self.column: return self
       for (name, hi_bit, lo_bit) in columns:
         index = self.first_bit()
-        if not index: break
+        if index is None : continue
         if index >= lo_bit and index <= hi_bit:
           return BitPattern(self.mask, self.value, self.op,
                             (name, hi_bit, lo_bit))
@@ -229,10 +229,10 @@ class BitPattern(object):
 
     def __repr__(self):
         """Returns the printable string for the bit pattern."""
-        repr = ''.join(reversed(self._bits_repr()))
+        rep = ''.join(reversed(self._bits_repr()))
         if self.op == '!=':
-          repr = '~' + repr
-        return repr
+          rep = '~' + rep
+        return rep
 
 class Table(object):
     """A table in the instruction set definition.  Each table contains 1+
