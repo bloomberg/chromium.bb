@@ -83,7 +83,6 @@
       'test_basic',
       'test_pyauto',
       'themes',
-      'youtube',
 
       # One-click infobars disabled on M20 by r135749.
       # Re-enable for M21 after branch point.
@@ -168,8 +167,6 @@
       '-sync.SyncTest.testRestartBrowser',
       # crbug.com/87642
       '-sync.SyncTest.testDisableAndEnableDatatypes',
-      # crbug.com/95621
-      '-youtube.YoutubeTest.testPlayerStatus',
       # crbug.com/98526
       '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
@@ -223,10 +220,6 @@
       # crbug.com/98526
       '-pyauto_webdriver.PyAutoWebDriverTest.testCanConnectToRestartedBrowser',
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
-      # crbug.com/109035
-      '-youtube.YoutubeTest.testPlayerBytes',
-      # crbug.com/109035
-      '-youtube.YoutubeTest.testPlayerResolution',
     ],
 
     'linux': [  # linux != chromeos
@@ -273,10 +266,6 @@
       '-sync',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
-      # crbug.com/109035
-      '-youtube.YoutubeTest.testPlayerBytes',
-      # crbug.com/109035
-      '-youtube.YoutubeTest.testPlayerResolution',
     ],
 
     # ChromeOS is linux, but note that this section does not include the
@@ -476,6 +465,7 @@
       'media.media_basic_playback',
       'nacl_sdk',
       'translate',
+      'youtube',
 
       # ===========================
       # Permanently-disabled tests.
@@ -519,9 +509,18 @@
       '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
       # crbug.com/115646
       '-translate.TranslateTest.testSeveralLanguages',
+      # crbug.com/95621
+      '-youtube.YoutubeTest.testPlayerStatus',
     ],
 
     'mac': [
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      # crbug.com/109035
+      '-youtube.YoutubeTest.testPlayerBytes',
+      '-youtube.YoutubeTest.testPlayerResolution',
+
       # ===========================
       # Permanently-disabled tests.
       # ===========================
@@ -561,6 +560,9 @@
       # crbug.com/123419
       '-browsing_data.BrowsingDataTest.testClearCookies',
       '-databases.DatabasesTest.testDeleteAndUpdateDatabase',
+      # crbug.com/109035
+      '-youtube.YoutubeTest.testPlayerBytes',
+      '-youtube.YoutubeTest.testPlayerResolution',
     ],
 
     'chromeos': [
