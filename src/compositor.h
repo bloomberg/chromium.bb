@@ -73,6 +73,9 @@ struct weston_shell_interface {
 			      struct shell_surface *pshsurf,
 			      int x, int y, uint32_t flags);
 	int (*move)(struct shell_surface *shsurf, struct weston_seat *ws);
+	int (*resize)(struct shell_surface *shsurf,
+		      struct weston_seat *ws, uint32_t edges);
+
 };
 
 struct weston_border {

@@ -626,8 +626,8 @@ static const struct wl_pointer_grab_interface resize_grab_interface = {
 };
 
 static int
-weston_surface_resize(struct shell_surface *shsurf,
-		      struct weston_seat *ws, uint32_t edges)
+surface_resize(struct shell_surface *shsurf,
+	       struct weston_seat *ws, uint32_t edges)
 {
 	struct weston_resize_grab *resize;
 
@@ -673,7 +673,7 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 	    ws->seat.pointer->focus != &shsurf->surface->surface)
 		return;
 
-	if (weston_surface_resize(shsurf, ws, edges) < 0)
+	if (surface_resize(shsurf, ws, edges) < 0)
 		wl_resource_post_no_memory(resource);
 }
 
@@ -1610,7 +1610,7 @@ resize_binding(struct wl_seat *seat, uint32_t time,
 	else
 		edges |= WL_SHELL_SURFACE_RESIZE_BOTTOM;
 
-	weston_surface_resize(shsurf, (struct weston_seat *) seat, edges);
+	surface_resize(shsurf, (struct weston_seat *) seat, edges);
 }
 
 static void
@@ -2658,6 +2658,7 @@ shell_init(struct weston_compositor *ec)
 	ec->shell_interface.set_toplevel = set_toplevel;
 	ec->shell_interface.set_transient = set_transient;
 	ec->shell_interface.move = surface_move;
+	ec->shell_interface.resize = surface_resize;
 
 	wl_list_init(&shell->backgrounds);
 	wl_list_init(&shell->panels);
