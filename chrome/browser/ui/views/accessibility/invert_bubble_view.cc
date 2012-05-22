@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
+
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/accessibility/invert_bubble_views.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,11 +25,11 @@
 #include "ui/views/layout/layout_constants.h"
 
 namespace {
+
 const char kHighContrastExtensionUrl[] = "https://chrome.google.com/webstore/detail/djcfdncoelnlbldjfhinnjlhdjlikmph";
 const char kDarkThemeSearchUrl[] = "https://chrome.google.com/webstore/search-themes/dark";
 const char kLearnMoreUrl[] = "https://groups.google.com/a/googleproductforums.com/d/topic/chrome/Xrco2HsXS-8/discussion";
 const int kBubbleWidth = 500;
-}  // namespace
 
 class InvertBubbleView : public views::BubbleDelegateView,
                          public views::LinkListener {
@@ -37,13 +38,11 @@ class InvertBubbleView : public views::BubbleDelegateView,
   virtual ~InvertBubbleView();
 
  protected:
-  // views::BubbleDelegateView overrides:
+  // Overridden from views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
-
-  // views::BubbleDelegateView overrides:
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
 
-  // views::LinkListener overrides:
+  // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   void OpenLink(const std::string& url, int event_flags);
@@ -59,15 +58,15 @@ class InvertBubbleView : public views::BubbleDelegateView,
 
 InvertBubbleView::InvertBubbleView(Profile* profile, views::View* anchor_view)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
-    profile_(profile) {
+      profile_(profile) {
 }
 
 InvertBubbleView::~InvertBubbleView() {
 }
 
 void InvertBubbleView::Init() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font& original_font = rb.GetFont(ResourceBundle::MediumFont);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::Font& original_font = rb.GetFont(ui::ResourceBundle::MediumFont);
 
   views::Label* title = new views::Label(
       l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_NOTIFICATION));
@@ -155,8 +154,11 @@ void InvertBubbleView::OpenLink(const std::string& url, int event_flags) {
   }
 }
 
-void InvertBubble::MaybeShowInvertBubble(Profile* profile,
-                                         views::View* anchor_view) {
+}  // namespace
+
+namespace browser {
+
+void MaybeShowInvertBubbleView(Profile* profile, views::View* anchor_view) {
   PrefService* pref_service = profile->GetPrefs();
   if (gfx::IsInvertedColorScheme() &&
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
@@ -166,3 +168,5 @@ void InvertBubble::MaybeShowInvertBubble(Profile* profile,
     delegate->StartFade(true);
   }
 }
+
+}  // namespace browser

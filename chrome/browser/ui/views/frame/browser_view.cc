@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/accessibility/invert_bubble_views.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -42,6 +41,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -560,7 +560,7 @@ void BrowserView::Show() {
 
   browser()->OnWindowDidShow();
 
-  InvertBubble::MaybeShowInvertBubble(browser_->profile(), contents_);
+  browser::MaybeShowInvertBubbleView(browser_->profile(), contents_);
 }
 
 void BrowserView::ShowInactive() {
@@ -1771,7 +1771,7 @@ bool BrowserView::SplitHandleMoved(views::SingleSplitView* sender) {
 }
 
 void BrowserView::OnSysColorChange() {
-  InvertBubble::MaybeShowInvertBubble(browser_->profile(), contents_);
+  browser::MaybeShowInvertBubbleView(browser_->profile(), contents_);
 }
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
