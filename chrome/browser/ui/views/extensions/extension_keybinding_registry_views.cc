@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 
-#include "chrome/browser/extensions/api/commands/extension_command_service.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,14 +28,13 @@ ExtensionKeybindingRegistryViews::~ExtensionKeybindingRegistryViews() {
 
 void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
     const extensions::Extension* extension) {
-  extensions::ExtensionCommandService* command_service =
-      extensions::ExtensionCommandServiceFactory::GetForProfile(profile_);
+  extensions::CommandService* command_service =
+      extensions::CommandServiceFactory::GetForProfile(profile_);
   // Add all the active keybindings (except page actions and browser actions,
   // which are handled elsewhere).
   const extensions::CommandMap& commands =
       command_service->GetNamedCommands(
-          extension->id(),
-          extensions::ExtensionCommandService::ACTIVE_ONLY);
+          extension->id(), extensions::CommandService::ACTIVE_ONLY);
   extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     event_targets_[iter->second.accelerator()] =

@@ -11,8 +11,8 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -146,13 +146,13 @@ class InstalledBubbleContent : public views::View,
 
     switch (type_) {
       case ExtensionInstalledBubble::BROWSER_ACTION: {
-        extensions::ExtensionCommandService* command_service =
-            extensions::ExtensionCommandServiceFactory::GetForProfile(
+        extensions::CommandService* command_service =
+            extensions::CommandServiceFactory::GetForProfile(
                 browser_->profile());
         const extensions::Command* browser_action_command =
             command_service->GetBrowserActionCommand(
                 extension->id(),
-                extensions::ExtensionCommandService::ACTIVE_ONLY);
+                extensions::CommandService::ACTIVE_ONLY);
         if (!browser_action_command) {
           info_ = new views::Label(l10n_util::GetStringUTF16(
               IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO));
@@ -170,13 +170,13 @@ class InstalledBubbleContent : public views::View,
         break;
       }
       case ExtensionInstalledBubble::PAGE_ACTION: {
-        extensions::ExtensionCommandService* command_service =
-            extensions::ExtensionCommandServiceFactory::GetForProfile(
+        extensions::CommandService* command_service =
+            extensions::CommandServiceFactory::GetForProfile(
                 browser_->profile());
         const extensions::Command* page_action_command =
             command_service->GetPageActionCommand(
                 extension->id(),
-                extensions::ExtensionCommandService::ACTIVE_ONLY);
+                extensions::CommandService::ACTIVE_ONLY);
         if (!page_action_command) {
           info_ = new views::Label(l10n_util::GetStringUTF16(
               IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO));

@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -65,13 +65,13 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
 
   set_accessibility_focusable(true);
 
-  extensions::ExtensionCommandService* command_service =
-      extensions::ExtensionCommandServiceFactory::GetForProfile(
+  extensions::CommandService* command_service =
+      extensions::CommandServiceFactory::GetForProfile(
           browser_->profile());
   const extensions::Command* page_action_command =
       command_service->GetPageActionCommand(
           extension->id(),
-          extensions::ExtensionCommandService::ACTIVE_ONLY);
+          extensions::CommandService::ACTIVE_ONLY);
   if (page_action_command) {
     keybinding_.reset(new ui::Accelerator(page_action_command->accelerator()));
     owner_->GetFocusManager()->RegisterAccelerator(

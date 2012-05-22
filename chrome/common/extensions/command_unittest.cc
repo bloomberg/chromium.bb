@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_commands.h"
+#include "chrome/common/extensions/command.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -11,10 +11,10 @@
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ExtensionCommandsTest : public testing::Test {
+class CommandTest : public testing::Test {
 };
 
-TEST(ExtensionCommandsTest, ExtensionCommandParsing) {
+TEST(CommandTest, ExtensionCommandParsing) {
   const ui::Accelerator none = ui::Accelerator();
   const ui::Accelerator shift_f = ui::Accelerator(ui::VKEY_F,
                                                   ui::EF_SHIFT_DOWN);
@@ -116,7 +116,7 @@ TEST(ExtensionCommandsTest, ExtensionCommandParsing) {
   }
 }
 
-TEST(ExtensionCommandsTest, ExtensionCommandParsingFallback) {
+TEST(CommandTest, ExtensionCommandParsingFallback) {
   std::string description = "desc";
   std::string command_name = "foo";
 

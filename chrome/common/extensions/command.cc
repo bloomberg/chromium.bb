@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_commands.h"
+#include "chrome/common/extensions/command.h"
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"

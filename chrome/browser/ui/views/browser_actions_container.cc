@@ -8,8 +8,8 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -133,13 +133,13 @@ void BrowserActionButton::ViewHierarchyChanged(
       UpdateState();
     }
 
-    extensions::ExtensionCommandService* command_service =
-        extensions::ExtensionCommandServiceFactory::GetForProfile(
+    extensions::CommandService* command_service =
+        extensions::CommandServiceFactory::GetForProfile(
             panel_->browser()->profile());
     const extensions::Command* browser_action_command =
         command_service->GetBrowserActionCommand(
             extension_->id(),
-            extensions::ExtensionCommandService::ACTIVE_ONLY);
+            extensions::CommandService::ACTIVE_ONLY);
     if (browser_action_command) {
       keybinding_.reset(new ui::Accelerator(
           browser_action_command->accelerator()));

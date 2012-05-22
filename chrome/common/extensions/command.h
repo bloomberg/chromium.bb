@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_COMMANDS_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_COMMANDS_H_
+#ifndef CHROME_COMMON_EXTENSIONS_COMMAND_H_
+#define CHROME_COMMON_EXTENSIONS_COMMAND_H_
 #pragma once
 
 #include <string>
@@ -62,4 +62,4 @@ typedef std::map<std::string, Command> CommandMap;
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_COMMANDS_H_
+#endif  // CHROME_COMMON_EXTENSIONS_COMMAND_H_

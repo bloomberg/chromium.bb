@@ -24,8 +24,8 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -1672,13 +1672,13 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
       extensions->GetByID(page_action_->extension_id());
   window_ = owner_->browser()->window()->GetNativeHandle();
 
-  extensions::ExtensionCommandService* command_service =
-      extensions::ExtensionCommandServiceFactory::GetForProfile(
+  extensions::CommandService* command_service =
+      extensions::CommandServiceFactory::GetForProfile(
           owner_->browser()->profile());
   const extensions::Command* command =
       command_service->GetPageActionCommand(
           extension->id(),
-          extensions::ExtensionCommandService::ACTIVE_ONLY);
+          extensions::CommandService::ACTIVE_ONLY);
   if (command) {
     // Found the browser action shortcut command, register it.
     keybinding_.reset(new ui::AcceleratorGtk(

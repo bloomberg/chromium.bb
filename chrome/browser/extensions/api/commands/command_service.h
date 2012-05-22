@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_COMMANDS_EXTENSION_COMMAND_SERVICE_H_
-#define CHROME_BROWSER_EXTENSIONS_API_COMMANDS_EXTENSION_COMMAND_SERVICE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_COMMANDS_COMMAND_SERVICE_H_
+#define CHROME_BROWSER_EXTENSIONS_API_COMMANDS_COMMAND_SERVICE_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_commands.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -33,8 +33,8 @@ namespace extensions {
 // This service keeps track of preferences related to extension commands
 // (assigning initial keybindings on install and removing them on deletion
 // and answers questions related to which commands are active.
-class ExtensionCommandService : public ProfileKeyedService,
-                                public content::NotificationObserver {
+class CommandService : public ProfileKeyedService,
+                       public content::NotificationObserver {
  public:
   // An enum specifying whether to fetch all extension commands or only active
   // ones.
@@ -46,9 +46,9 @@ class ExtensionCommandService : public ProfileKeyedService,
   // Register prefs for keybinding.
   static void RegisterUserPrefs(PrefService* user_prefs);
 
-  // Constructs an ExtensionCommandService object for the given profile.
-  explicit ExtensionCommandService(Profile* profile);
-  virtual ~ExtensionCommandService();
+  // Constructs an CommandService object for the given profile.
+  explicit CommandService(Profile* profile);
+  virtual ~CommandService();
 
   // Gets the keybinding (if any) for the browser action of an extension given
   // its |extension_id|. The function consults the master list to see if
@@ -115,9 +115,9 @@ class ExtensionCommandService : public ProfileKeyedService,
   // A weak pointer to the profile we are associated with. Not owned by us.
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionCommandService);
+  DISALLOW_COPY_AND_ASSIGN(CommandService);
 };
 
 }  //  namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_COMMANDS_EXTENSION_COMMAND_SERVICE_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_COMMANDS_COMMAND_SERVICE_H_

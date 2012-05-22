@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/commands/extension_command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
@@ -32,14 +32,13 @@ std::string GetPlatformKeybindingKeyForAccelerator(
 namespace extensions {
 
 // static
-void ExtensionCommandService::RegisterUserPrefs(
+void CommandService::RegisterUserPrefs(
   PrefService* user_prefs) {
       user_prefs->RegisterDictionaryPref(prefs::kExtensionKeybindings,
                                          PrefService::SYNCABLE_PREF);
 }
 
-ExtensionCommandService::ExtensionCommandService(
-    Profile* profile)
+CommandService::CommandService(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::Source<Profile>(profile));
@@ -47,12 +46,11 @@ ExtensionCommandService::ExtensionCommandService(
       content::Source<Profile>(profile));
 }
 
-ExtensionCommandService::~ExtensionCommandService() {
+CommandService::~CommandService() {
 }
 
-const extensions::Command*
-    ExtensionCommandService::GetBrowserActionCommand(
-        const std::string& extension_id, QueryType type) {
+const extensions::Command* CommandService::GetBrowserActionCommand(
+    const std::string& extension_id, QueryType type) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
@@ -71,7 +69,7 @@ const extensions::Command*
   return command;
 }
 
-const extensions::Command* ExtensionCommandService::GetPageActionCommand(
+const extensions::Command* CommandService::GetPageActionCommand(
     const std::string& extension_id, QueryType type) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
@@ -91,7 +89,7 @@ const extensions::Command* ExtensionCommandService::GetPageActionCommand(
   return command;
 }
 
-extensions::CommandMap ExtensionCommandService::GetNamedCommands(
+extensions::CommandMap CommandService::GetNamedCommands(
     const std::string& extension_id, QueryType type) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
@@ -118,7 +116,7 @@ extensions::CommandMap ExtensionCommandService::GetNamedCommands(
   return result;
 }
 
-bool ExtensionCommandService::IsKeybindingActive(
+bool CommandService::IsKeybindingActive(
     const ui::Accelerator& accelerator,
     const std::string& extension_id,
     const std::string& command_name) const {
@@ -146,7 +144,7 @@ bool ExtensionCommandService::IsKeybindingActive(
   return true;  // We found a match, this one is active.
 }
 
-bool ExtensionCommandService::AddKeybindingPref(
+bool CommandService::AddKeybindingPref(
     const ui::Accelerator& accelerator,
     std::string extension_id,
     std::string command_name,
@@ -167,7 +165,7 @@ bool ExtensionCommandService::AddKeybindingPref(
   return true;
 }
 
-void ExtensionCommandService::Observe(
+void CommandService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -185,8 +183,7 @@ void ExtensionCommandService::Observe(
   }
 }
 
-void ExtensionCommandService::AssignInitialKeybindings(
-    const Extension* extension) {
+void CommandService::AssignInitialKeybindings(const Extension* extension) {
   const extensions::CommandMap& commands = extension->named_commands();
   extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
@@ -215,7 +212,7 @@ void ExtensionCommandService::AssignInitialKeybindings(
   }
 }
 
-void ExtensionCommandService::RemoveKeybindingPrefs(std::string extension_id) {
+void CommandService::RemoveKeybindingPrefs(std::string extension_id) {
   DictionaryPrefUpdate updater(profile_->GetPrefs(),
                                prefs::kExtensionKeybindings);
   DictionaryValue* bindings = updater.Get();

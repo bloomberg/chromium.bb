@@ -13,8 +13,8 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -379,12 +379,12 @@ class BrowserActionButton : public content::NotificationObserver,
 
   // Connect the accelerator for the browser action popup.
   void ConnectBrowserActionPopupAccelerator() {
-    extensions::ExtensionCommandService* command_service =
-        extensions::ExtensionCommandServiceFactory::GetForProfile(
+    extensions::CommandService* command_service =
+        extensions::CommandServiceFactory::GetForProfile(
             toolbar_->browser()->profile());
     const extensions::Command* command =
         command_service->GetBrowserActionCommand(extension_->id(),
-        extensions::ExtensionCommandService::ACTIVE_ONLY);
+        extensions::CommandService::ACTIVE_ONLY);
     if (command) {
       // Found the browser action shortcut command, register it.
       keybinding_.reset(new ui::AcceleratorGtk(

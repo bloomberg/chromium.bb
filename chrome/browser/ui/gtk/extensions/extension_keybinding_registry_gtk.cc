@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/gtk/extensions/extension_keybinding_registry_gtk.h"
 
-#include "chrome/browser/extensions/api/commands/extension_command_service.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,12 +44,12 @@ gboolean ExtensionKeybindingRegistryGtk::HasPriorityHandler(
 
 void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
     const extensions::Extension* extension) {
-  extensions::ExtensionCommandService* command_service =
-      extensions::ExtensionCommandServiceFactory::GetForProfile(profile_);
+  extensions::CommandService* command_service =
+      extensions::CommandServiceFactory::GetForProfile(profile_);
   const extensions::CommandMap& commands =
       command_service->GetNamedCommands(
           extension->id(),
-          extensions::ExtensionCommandService::ACTIVE_ONLY);
+          extensions::CommandService::ACTIVE_ONLY);
   extensions::CommandMap::const_iterator iter = commands.begin();
   for (; iter != commands.end(); ++iter) {
     ui::AcceleratorGtk accelerator(iter->second.accelerator().key_code(),
@@ -78,7 +78,7 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
   const extensions::Command* browser_action =
       command_service->GetBrowserActionCommand(
           extension->id(),
-          extensions::ExtensionCommandService::ACTIVE_ONLY);
+          extensions::CommandService::ACTIVE_ONLY);
   if (browser_action) {
     ui::AcceleratorGtk accelerator(browser_action->accelerator().key_code(),
                                    browser_action->accelerator().IsShiftDown(),
@@ -91,7 +91,7 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
   const extensions::Command* page_action =
       command_service->GetPageActionCommand(
           extension->id(),
-          extensions::ExtensionCommandService::ACTIVE_ONLY);
+          extensions::CommandService::ACTIVE_ONLY);
   if (page_action) {
     ui::AcceleratorGtk accelerator(page_action->accelerator().key_code(),
                                    page_action->accelerator().IsShiftDown(),

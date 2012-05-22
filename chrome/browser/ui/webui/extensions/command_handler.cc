@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/extensions/extension_commands_handler.h"
+#include "chrome/browser/ui/webui/extensions/command_handler.h"
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service.h"
-#include "chrome/browser/extensions/api/commands/extension_command_service_factory.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,14 +20,13 @@
 namespace extensions {
 
 
-ExtensionCommandsHandler::ExtensionCommandsHandler() {
+CommandHandler::CommandHandler() {
 }
 
-ExtensionCommandsHandler::~ExtensionCommandsHandler() {
+CommandHandler::~CommandHandler() {
 }
 
-void ExtensionCommandsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+void CommandHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   localized_strings->SetString("extensionCommandsOverlay",
       l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_DIALOG_TITLE));
@@ -38,27 +37,25 @@ void ExtensionCommandsHandler::GetLocalizedValues(
   localized_strings->SetString("close", l10n_util::GetStringUTF16(IDS_CLOSE));
 }
 
-void ExtensionCommandsHandler::RegisterMessages() {
+void CommandHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionCommandsRequestExtensionsData",
-      base::Bind(&ExtensionCommandsHandler::HandleRequestExtensionsData,
+      base::Bind(&CommandHandler::HandleRequestExtensionsData,
       base::Unretained(this)));
 }
 
-void ExtensionCommandsHandler::HandleRequestExtensionsData(
-    const ListValue* args) {
+void CommandHandler::HandleRequestExtensionsData(const ListValue* args) {
   DictionaryValue results;
   GetAllCommands(&results);
   web_ui()->CallJavascriptFunction(
       "ExtensionCommandsOverlay.returnExtensionsData", results);
 }
 
-void ExtensionCommandsHandler::GetAllCommands(
-    base::DictionaryValue* commands) {
+void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
   ListValue* results = new ListValue;
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  ExtensionCommandService* command_service =
-      ExtensionCommandServiceFactory::GetForProfile(profile);
+  CommandService* command_service =
+      CommandServiceFactory::GetForProfile(profile);
 
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile)->extension_service()->extensions();
@@ -73,7 +70,7 @@ void ExtensionCommandsHandler::GetAllCommands(
 
     const extensions::Command* browser_action =
         command_service->GetBrowserActionCommand((*extension)->id(),
-                                                 ExtensionCommandService::ALL);
+                                                 CommandService::ALL);
     if (browser_action) {
       extensions_list->Append(browser_action->ToValue(
           (*extension),
@@ -84,7 +81,7 @@ void ExtensionCommandsHandler::GetAllCommands(
 
     const extensions::Command* page_action =
         command_service->GetPageActionCommand((*extension)->id(),
-                                              ExtensionCommandService::ALL);
+                                              CommandService::ALL);
     if (page_action) {
       extensions_list->Append(page_action->ToValue(
           (*extension),
@@ -95,7 +92,7 @@ void ExtensionCommandsHandler::GetAllCommands(
 
     extensions::CommandMap named_commands =
         command_service->GetNamedCommands((*extension)->id(),
-                                          ExtensionCommandService::ALL);
+                                          CommandService::ALL);
     extensions::CommandMap::const_iterator iter = named_commands.begin();
     for (; iter != named_commands.end(); ++iter) {
       extensions_list->Append(iter->second.ToValue(
