@@ -136,7 +136,10 @@ class Arm32DecoderState : DecoderState {
   // for each call to "decode").
   const Binary2RegisterImmediateOp Binary2RegisterImmediateOp_instance_;
   const Binary3RegisterOp Binary3RegisterOp_instance_;
+  const Binary3RegisterOpAltA Binary3RegisterOpAltA_instance_;
   const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
+  const Binary4RegisterDualOp Binary4RegisterDualOp_instance_;
+  const Binary4RegisterDualResult Binary4RegisterDualResult_instance_;
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
   const BinaryRegisterImmediateTest BinaryRegisterImmediateTest_instance_;
   const Branch Branch_instance_;

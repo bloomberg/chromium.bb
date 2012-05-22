@@ -323,6 +323,124 @@ class Binary3RegisterOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOp);
 };
 
+// Models a 3-register binary operation of the form:
+// Op(S)<c> <Rd>, <Rn>, <Rm>
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |  cond  |              | S|   Rd   |        |   Rm   |        |   Rn   |
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rn - The first operand
+//    Rm - The second operand
+//    S - Defines if the flags regsiter is updated.
+//
+// If Rd, Rm, or Rn is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+class Binary3RegisterOpAltA : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegNBits0To3Interface n;
+  static const RegMBits8To11Interface m;
+  static const RegDBits16To19Interface d;
+  static const UpdatesConditionsBit20Interface conditions;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline Binary3RegisterOpAltA() : ClassDecoder() {}
+  virtual ~Binary3RegisterOpAltA() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltA);
+};
+
+// A Binary3RegisterOpAltA where the conditions flags are not set,
+// even though bit S is true.
+class Binary3RegisterOpAltANoCondUpdates : public Binary3RegisterOpAltA {
+ public:
+  inline Binary3RegisterOpAltANoCondUpdates() {}
+  virtual ~Binary3RegisterOpAltANoCondUpdates() {}
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltANoCondUpdates);
+};
+
+// Models a 4-register double binary operation of the form:
+// Op(S)<c> <Rd>, <Rn>, <Rm>, <Ra>
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |  cond  |              | S|   Rd   |   Ra   |   Rm   |        |   Rn   |
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// Definitions:
+//    Rd - The destination register (of the operation on the inner operation
+//         and Ra).
+//    Rn - The first operand to the inner operation.
+//    Rm - The second operand to the inner operation.
+//    Ra - The second operand to the outer operation.
+//
+// If Rd, Rm, Rn, or Ra is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+class Binary4RegisterDualOp : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegNBits0To3Interface n;
+  static const RegMBits8To11Interface m;
+  static const RegABits12To15Interface a;
+  static const RegDBits16To19Interface d;
+  static const UpdatesConditionsBit20Interface conditions;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class
+  inline Binary4RegisterDualOp() : ClassDecoder() {}
+  virtual ~Binary4RegisterDualOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualOp);
+};
+
+// Models a dual level, 2 input, 2 output binary operation of the form:
+// Op(S)<c> <RdLo>, <RdHi>, <Rn>, <Rm>
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |  cond  |              | S|  RdHi  |  RdLo  |   Rm   |        |   Rn   |
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// Definitions:
+//    RdHi - Input to the outer binary operation, and the upper 32-bit result
+//           of that operation.
+//    RdLo - Input to the outer bianry operation, and the lower 32-bit result
+//           of that operation.
+//    Rn - The first operand to the inner binary operation.
+//    Rm - The second operand to the inner binary operation.
+// Note: The result of the inner operation is a 64-bit value used as an
+//    argument to the outer operation.
+//
+// If RdHi, RdLo, Rn, or Rm is R15, the instruction is unpredictable.
+// If RdHi == RdLo, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+class Binary4RegisterDualResult : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegNBits0To3Interface n;
+  static const RegMBits8To11Interface m;
+  static const RegDBits12To15Interface d_lo;
+  static const RegDBits16To19Interface d_hi;
+  static const UpdatesConditionsBit20Interface conditions;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class
+  inline Binary4RegisterDualResult() : ClassDecoder() {}
+  virtual ~Binary4RegisterDualResult() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+};
 
 // Models a 3-register load/store operation of the forms:
 // Op<c> <Rt>, [<Rn>, +/-<Rm>]{!}

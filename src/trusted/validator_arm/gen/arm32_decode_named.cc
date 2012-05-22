@@ -948,19 +948,31 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_mult(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00F00000) == 0x00400000 /* op(23:20) == 0100 */)
-    return LongMultiply_None_instance_;
+    return Binary4RegisterDualResult_Umaal_Rule_244_A1_P482_instance_;
 
   if ((insn.Bits() & 0x00F00000) == 0x00600000 /* op(23:20) == 0110 */)
-    return Multiply_None_instance_;
+    return Binary4RegisterDualOp_Mls_Rule_95_A1_P192_instance_;
 
   if ((insn.Bits() & 0x00D00000) == 0x00500000 /* op(23:20) == 01x1 */)
     return Undefined_None_instance_;
 
-  if ((insn.Bits() & 0x00C00000) == 0x00000000 /* op(23:20) == 00xx */)
-    return Multiply_None_instance_;
+  if ((insn.Bits() & 0x00E00000) == 0x00000000 /* op(23:20) == 000x */)
+    return Binary3RegisterOpAltA_Mul_Rule_105_A1_P212_instance_;
 
-  if ((insn.Bits() & 0x00800000) == 0x00800000 /* op(23:20) == 1xxx */)
-    return LongMultiply_None_instance_;
+  if ((insn.Bits() & 0x00E00000) == 0x00200000 /* op(23:20) == 001x */)
+    return Binary4RegisterDualOp_Mla_Rule_94_A1_P190_instance_;
+
+  if ((insn.Bits() & 0x00E00000) == 0x00800000 /* op(23:20) == 100x */)
+    return Binary4RegisterDualResult_Umull_Rule_246_A1_P486_instance_;
+
+  if ((insn.Bits() & 0x00E00000) == 0x00A00000 /* op(23:20) == 101x */)
+    return Binary4RegisterDualResult_Umlal_Rule_245_A1_P484_instance_;
+
+  if ((insn.Bits() & 0x00E00000) == 0x00C00000 /* op(23:20) == 110x */)
+    return Binary4RegisterDualResult_Smull_Rule_179_A1_P356_instance_;
+
+  if ((insn.Bits() & 0x00E00000) == 0x00E00000 /* op(23:20) == 111x */)
+    return Binary4RegisterDualResult_Smlal_Rule_168_A1_P334_instance_;
 
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: mult could not parse %08X",

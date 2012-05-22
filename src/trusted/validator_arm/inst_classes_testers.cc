@@ -447,6 +447,209 @@ ApplySanityChecks(Instruction inst,
 
   return true;
 }
+// Binary3RegisterOpTesterAltA
+Binary3RegisterOpAltATester::Binary3RegisterOpAltATester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool Binary3RegisterOpAltATester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary3RegisterOpAltA expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used in DataProc.
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(11, 8)));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_TRUE(expected_decoder.conditions.conds_if_updated(inst).
+                Equals(kConditions));
+  } else {
+    EXPECT_TRUE(expected_decoder.conditions.conds_if_updated(inst).
+                Equals(kRegisterNone));
+  }
+
+  // Other NaCl constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+      << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+
+  return true;
+}
+
+// Binary3RegisterOpAltATesterRegsNotPc
+Binary3RegisterOpAltATesterRegsNotPc::Binary3RegisterOpAltATesterRegsNotPc(
+    const NamedClassDecoder& decoder)
+    : Binary3RegisterOpAltATester(decoder) {}
+
+bool Binary3RegisterOpAltATesterRegsNotPc::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary3RegisterOpAltA expected_decoder;
+
+  NC_PRECOND(Binary3RegisterOpAltATester::ApplySanityChecks(inst, decoder));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+
+  return true;
+}
+
+// Binary4RegisterDualOpTester
+Binary4RegisterDualOpTester::Binary4RegisterDualOpTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool Binary4RegisterDualOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary4RegisterDualOp expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used in DataProc.
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_TRUE(expected_decoder.a.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(11, 8)));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_TRUE(expected_decoder.conditions.conds_if_updated(inst).
+                Equals(kConditions));
+  } else {
+    EXPECT_TRUE(expected_decoder.conditions.conds_if_updated(inst).
+                Equals(kRegisterNone));
+  }
+
+  // Other NaCl constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+      << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+
+  return true;
+}
+
+// Binary4RegisterDualOpTesterRegsNotPc
+Binary4RegisterDualOpTesterRegsNotPc::Binary4RegisterDualOpTesterRegsNotPc(
+    const NamedClassDecoder& decoder)
+    : Binary4RegisterDualOpTester(decoder) {}
+
+bool Binary4RegisterDualOpTesterRegsNotPc::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary4RegisterDualOp expected_decoder;
+  NC_PRECOND(Binary4RegisterDualOpTester::ApplySanityChecks(inst, decoder));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.a.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+
+  return true;
+}
+// Binary4RegisterDualResultTester
+Binary4RegisterDualResultTester::Binary4RegisterDualResultTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool Binary4RegisterDualResultTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary4RegisterDualResult expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used in DataProc.
+  EXPECT_TRUE(expected_decoder.d_hi.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_TRUE(expected_decoder.d_lo.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.m.reg(inst).Equals(inst.Reg(11, 8)));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder.conditions.is_updated(inst), inst.Bit(20));
+  if (expected_decoder.conditions.is_updated(inst)) {
+    EXPECT_TRUE(expected_decoder.conditions.conds_if_updated(inst).
+                Equals(kConditions));
+  } else {
+    EXPECT_TRUE(expected_decoder.conditions.conds_if_updated(inst).
+                Equals(kRegisterNone));
+  }
+
+  // Arm constraint between RdHi and RdLo.
+  EXPECT_FALSE(expected_decoder.d_hi.reg(inst).
+               Equals(expected_decoder.d_lo.reg(inst)))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
+  // Other NaCl constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.d_lo.reg(inst).Equals(kRegisterPc))
+      << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+  EXPECT_FALSE(expected_decoder.d_hi.reg(inst).Equals(kRegisterPc))
+      << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+
+  return true;
+}
+
+// Binary4RegisterDualResultTesterRegsNotPc
+Binary4RegisterDualResultTesterRegsNotPc::
+Binary4RegisterDualResultTesterRegsNotPc(
+    const NamedClassDecoder& decoder)
+    : Binary4RegisterDualResultTester(decoder) {}
+
+bool Binary4RegisterDualResultTesterRegsNotPc::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary4RegisterDualResult expected_decoder;
+
+  NC_PRECOND(Binary4RegisterDualResultTester::ApplySanityChecks(inst, decoder));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.d_hi.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.d_lo.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.m.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected Unpredictable for " << InstContents();
+
+  return true;
+}
 
 // LoadStore3RegisterOpTester
 LoadStore3RegisterOpTester::LoadStore3RegisterOpTester(

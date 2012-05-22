@@ -131,6 +131,63 @@ RegisterList Binary3RegisterOp::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
+// Binary3RegisterOpAltA
+SafetyLevel Binary3RegisterOpAltA::safety(const Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).
+      Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary3RegisterOpAltA::defs(const Instruction i) const {
+  return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
+}
+
+// Binary4RegisterDualOp
+SafetyLevel Binary4RegisterDualOp::safety(const Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).Add(a.reg(i)).
+      Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary4RegisterDualOp::defs(const Instruction i) const {
+  return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
+}
+
+// Binary4RegisterDualResult
+SafetyLevel Binary4RegisterDualResult::safety(const Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if (RegisterList(d_lo.reg(i)).Add(d_hi.reg(i)).Add(n.reg(i)).Add(m.reg(i)).
+      Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  // Unsafe if RdHi == RdLo
+  if (d_hi.reg(i).Equals(d_lo.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary4RegisterDualResult::defs(const Instruction i) const {
+  return RegisterList(d_hi.reg(i)).Add(d_lo.reg(i)).
+      Add(conditions.conds_if_updated(i));
+}
+
 // LoadStore3RegisterOp
 SafetyLevel LoadStore3RegisterOp::safety(const Instruction i) const {
   if (indexing.IsPreIndexing(i)) {

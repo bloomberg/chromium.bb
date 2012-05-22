@@ -71,7 +71,6 @@ class ShiftTypeBits5To6Interface {
     return ComputeDecodeImmShift(value(insn), imm5_value);
   }
  private:
-  ShiftTypeBits5To6Interface() {}
   static uint32_t ComputeDecodeImmShift(uint32_t shift_type,
                                         uint32_t imm5_value);
   NACL_DISALLOW_COPY_AND_ASSIGN(ShiftTypeBits5To6Interface);
@@ -91,8 +90,21 @@ class ConditionBits28To31Interface {
   }
 
  private:
-  ConditionBits28To31Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(ConditionBits28To31Interface);
+};
+
+// Interface class to pull out Register A from bits 12 through 15.
+class RegABits12To15Interface {
+ public:
+  static inline uint32_t number(const Instruction& i) {
+    return i.Bits(15, 12);
+  }
+  static inline Register reg(const Instruction& i) {
+    return Register(number(i));
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegABits12To15Interface);
 };
 
 // Interface class to pull out Register D from bits 12 through 15.
@@ -106,8 +118,21 @@ class RegDBits12To15Interface {
   }
 
  private:
-  RegDBits12To15Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegDBits12To15Interface);
+};
+
+// Interface class to pull out Register D from bits 16 through 19.
+class RegDBits16To19Interface {
+ public:
+  static inline uint32_t number(const Instruction& i) {
+    return i.Bits(19, 16);
+  }
+  static inline Register reg(const Instruction& i) {
+    return Register(number(i));
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegDBits16To19Interface);
 };
 
 // Interface class to pull out Register M from bits 0 through 3.
@@ -121,7 +146,6 @@ class RegMBits0To3Interface {
   }
 
  private:
-  RegMBits0To3Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegMBits0To3Interface);
 };
 
@@ -136,7 +160,6 @@ class RegMBits8To11Interface {
   }
 
  private:
-  RegMBits8To11Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegMBits8To11Interface);
 };
 
@@ -151,7 +174,6 @@ class RegNBits0To3Interface {
   }
 
  private:
-  RegNBits0To3Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegNBits0To3Interface);
 };
 
@@ -166,7 +188,6 @@ class RegNBits16To19Interface {
   }
 
  private:
-  RegNBits16To19Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegNBits16To19Interface);
 };
 
@@ -181,7 +202,6 @@ class RegSBits8To11Interface {
   }
 
  private:
-  RegSBits8To11Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(RegSBits8To11Interface);
 };
 
@@ -228,7 +248,6 @@ class Imm12Bits0To11Interface {
   static uint32_t get_modified_immediate(Instruction i);
 
  private:
-  Imm12Bits0To11Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm12Bits0To11Interface);
 };
 
@@ -240,7 +259,6 @@ class Imm5Bits7To11Interface {
   }
 
  private:
-  Imm5Bits7To11Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm5Bits7To11Interface);
 };
 
@@ -263,7 +281,6 @@ class Imm4Bits16To19Interface {
   }
 
  private:
-  Imm4Bits16To19Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits16To19Interface);
 };
 
@@ -282,7 +299,6 @@ class UpdatesConditionsBit20Interface {
   }
 
  private:
-  UpdatesConditionsBit20Interface() {}
   NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesConditionsBit20Interface);
 };
 

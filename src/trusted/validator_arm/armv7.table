@@ -361,16 +361,38 @@ class Store3RegisterOp : LoadStore3RegisterOp
 
 +-- mult (See Section A5.2.5)
 | op(23:20)
-| 000x      =Multiply          # MUL
-| 001x      =Multiply          # MLA
-| 0100      =LongMultiply(v6)  # UMAAL
-| 0101      =Undefined
-| 0110      =Multiply(v6T2)    # MLS
-| 0111      =Undefined
-| 100x      =LongMultiply  # UMULL
-| 101x      =LongMultiply  # UMLAL
-| 110x      =LongMultiply  # SMULL
-| 111x      =LongMultiply  # SMLAL
+| 000x      = Binary3RegisterOpAltA Mul_Rule_105_A1_P212
+                 cccc0000000udddd0000mmmm1001nnnn RegsNotPc
+| 001x      = Binary4RegisterDualOp Mla_Rule_94_A1_P190
+                 # Note: doesn't handle:
+                 # if ArchVersion() < 6 && d == n then Unpredictable.
+                 cccc0000001uddddaaaammmm1001nnnn RegsNotPc
+| 0100      = Binary4RegisterDualResult Umaal_Rule_244_A1_P482
+                 cccc00000100hhhhllllmmmm1001nnnn RegsNotPc (v6)
+| 0101      = Undefined
+| 0110      = Binary4RegisterDualOp Mls_Rule_95_A1_P192
+                 cccc00000110ddddaaaammmm1001nnnn RegsNotPc (v6T2)
+| 0111      = Undefined
+| 100x      = Binary4RegisterDualResult Umull_Rule_246_A1_P486
+                 # Note: doesn't handle:
+                 # If ArchVersion() < 6 && (dHi==n || dLo==n)
+                 #   then unpredictable.
+                 cccc0000100uhhhhllllmmmm1001nnnn RegsNotPc                 
+| 101x      = Binary4RegisterDualResult Umlal_Rule_245_A1_P484
+                 # Note: doesn't handle:
+                 # If ArchVersion() < 6 && (dHi==n || dLo==n)
+                 #   then unpredictable.
+                 cccc0000101uhhhhllllmmmm1001nnnn RegsNotPc
+| 110x      = Binary4RegisterDualResult Smull_Rule_179_A1_P356
+                 # Note: doesn't handle:
+                 # If ArchVersion() < 6 && (dHi==n || dLo==n)
+                 #   then unpredictable.
+                 cccc0000110uhhhhllllmmmm1001nnnn RegsNotPc   
+| 111x      = Binary4RegisterDualResult Smlal_Rule_168_A1_P334
+                 # Note: doesn't handle:
+                 # If ArchVersion() < 6 && (dHi==n || dLo==n)
+                 #   then unpredictable.
+                 cccc0000111uhhhhllllmmmm1001nnnn RegsNotPc
 +--
 
 +-- sat_add_sub (See Section A5.2.6)

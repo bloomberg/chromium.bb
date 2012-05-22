@@ -185,6 +185,12 @@ class Binary3RegisterOp_Ror_Rule_140_A1_P280
   virtual ~Binary3RegisterOp_Ror_Rule_140_A1_P280() {}
 };
 
+class Binary3RegisterOpAltA_Mul_Rule_105_A1_P212
+    : public Binary3RegisterOpAltA {
+ public:
+  virtual ~Binary3RegisterOpAltA_Mul_Rule_105_A1_P212() {}
+};
+
 class Binary3RegisterShiftedTest_Cmn_Rule_34_A1_P78
     : public Binary3RegisterShiftedTest {
  public:
@@ -207,6 +213,48 @@ class Binary3RegisterShiftedTest_Tst_Rule_232_A1_P458
     : public Binary3RegisterShiftedTest {
  public:
   virtual ~Binary3RegisterShiftedTest_Tst_Rule_232_A1_P458() {}
+};
+
+class Binary4RegisterDualOp_Mla_Rule_94_A1_P190
+    : public Binary4RegisterDualOp {
+ public:
+  virtual ~Binary4RegisterDualOp_Mla_Rule_94_A1_P190() {}
+};
+
+class Binary4RegisterDualOp_Mls_Rule_95_A1_P192
+    : public Binary4RegisterDualOp {
+ public:
+  virtual ~Binary4RegisterDualOp_Mls_Rule_95_A1_P192() {}
+};
+
+class Binary4RegisterDualResult_Smlal_Rule_168_A1_P334
+    : public Binary4RegisterDualResult {
+ public:
+  virtual ~Binary4RegisterDualResult_Smlal_Rule_168_A1_P334() {}
+};
+
+class Binary4RegisterDualResult_Smull_Rule_179_A1_P356
+    : public Binary4RegisterDualResult {
+ public:
+  virtual ~Binary4RegisterDualResult_Smull_Rule_179_A1_P356() {}
+};
+
+class Binary4RegisterDualResult_Umaal_Rule_244_A1_P482
+    : public Binary4RegisterDualResult {
+ public:
+  virtual ~Binary4RegisterDualResult_Umaal_Rule_244_A1_P482() {}
+};
+
+class Binary4RegisterDualResult_Umlal_Rule_245_A1_P484
+    : public Binary4RegisterDualResult {
+ public:
+  virtual ~Binary4RegisterDualResult_Umlal_Rule_245_A1_P484() {}
+};
+
+class Binary4RegisterDualResult_Umull_Rule_246_A1_P486
+    : public Binary4RegisterDualResult {
+ public:
+  virtual ~Binary4RegisterDualResult_Umull_Rule_246_A1_P486() {}
 };
 
 class Binary4RegisterShiftedOp_Adc_Rule_3_A1_P18
@@ -1193,6 +1241,19 @@ class NamedBinary3RegisterOp_Ror_Rule_140_A1_P280
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOp_Ror_Rule_140_A1_P280);
 };
 
+class NamedBinary3RegisterOpAltA_Mul_Rule_105_A1_P212
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary3RegisterOpAltA_Mul_Rule_105_A1_P212()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltA Mul_Rule_105_A1_P212")
+  {}
+  virtual ~NamedBinary3RegisterOpAltA_Mul_Rule_105_A1_P212() {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltA_Mul_Rule_105_A1_P212 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltA_Mul_Rule_105_A1_P212);
+};
+
 class NamedBinary3RegisterShiftedTest_Cmn_Rule_34_A1_P78
     : public NamedClassDecoder {
  public:
@@ -1243,6 +1304,97 @@ class NamedBinary3RegisterShiftedTest_Tst_Rule_232_A1_P458
  private:
   nacl_arm_dec::Binary3RegisterShiftedTest_Tst_Rule_232_A1_P458 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterShiftedTest_Tst_Rule_232_A1_P458);
+};
+
+class NamedBinary4RegisterDualOp_Mla_Rule_94_A1_P190
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary4RegisterDualOp_Mla_Rule_94_A1_P190()
+    : NamedClassDecoder(decoder_, "Binary4RegisterDualOp Mla_Rule_94_A1_P190")
+  {}
+  virtual ~NamedBinary4RegisterDualOp_Mla_Rule_94_A1_P190() {}
+
+ private:
+  nacl_arm_dec::Binary4RegisterDualOp_Mla_Rule_94_A1_P190 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterDualOp_Mla_Rule_94_A1_P190);
+};
+
+class NamedBinary4RegisterDualOp_Mls_Rule_95_A1_P192
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary4RegisterDualOp_Mls_Rule_95_A1_P192()
+    : NamedClassDecoder(decoder_, "Binary4RegisterDualOp Mls_Rule_95_A1_P192")
+  {}
+  virtual ~NamedBinary4RegisterDualOp_Mls_Rule_95_A1_P192() {}
+
+ private:
+  nacl_arm_dec::Binary4RegisterDualOp_Mls_Rule_95_A1_P192 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterDualOp_Mls_Rule_95_A1_P192);
+};
+
+class NamedBinary4RegisterDualResult_Smlal_Rule_168_A1_P334
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary4RegisterDualResult_Smlal_Rule_168_A1_P334()
+    : NamedClassDecoder(decoder_, "Binary4RegisterDualResult Smlal_Rule_168_A1_P334")
+  {}
+  virtual ~NamedBinary4RegisterDualResult_Smlal_Rule_168_A1_P334() {}
+
+ private:
+  nacl_arm_dec::Binary4RegisterDualResult_Smlal_Rule_168_A1_P334 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterDualResult_Smlal_Rule_168_A1_P334);
+};
+
+class NamedBinary4RegisterDualResult_Smull_Rule_179_A1_P356
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary4RegisterDualResult_Smull_Rule_179_A1_P356()
+    : NamedClassDecoder(decoder_, "Binary4RegisterDualResult Smull_Rule_179_A1_P356")
+  {}
+  virtual ~NamedBinary4RegisterDualResult_Smull_Rule_179_A1_P356() {}
+
+ private:
+  nacl_arm_dec::Binary4RegisterDualResult_Smull_Rule_179_A1_P356 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterDualResult_Smull_Rule_179_A1_P356);
+};
+
+class NamedBinary4RegisterDualResult_Umaal_Rule_244_A1_P482
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary4RegisterDualResult_Umaal_Rule_244_A1_P482()
+    : NamedClassDecoder(decoder_, "Binary4RegisterDualResult Umaal_Rule_244_A1_P482")
+  {}
+  virtual ~NamedBinary4RegisterDualResult_Umaal_Rule_244_A1_P482() {}
+
+ private:
+  nacl_arm_dec::Binary4RegisterDualResult_Umaal_Rule_244_A1_P482 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterDualResult_Umaal_Rule_244_A1_P482);
+};
+
+class NamedBinary4RegisterDualResult_Umlal_Rule_245_A1_P484
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary4RegisterDualResult_Umlal_Rule_245_A1_P484()
+    : NamedClassDecoder(decoder_, "Binary4RegisterDualResult Umlal_Rule_245_A1_P484")
+  {}
+  virtual ~NamedBinary4RegisterDualResult_Umlal_Rule_245_A1_P484() {}
+
+ private:
+  nacl_arm_dec::Binary4RegisterDualResult_Umlal_Rule_245_A1_P484 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterDualResult_Umlal_Rule_245_A1_P484);
+};
+
+class NamedBinary4RegisterDualResult_Umull_Rule_246_A1_P486
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary4RegisterDualResult_Umull_Rule_246_A1_P486()
+    : NamedClassDecoder(decoder_, "Binary4RegisterDualResult Umull_Rule_246_A1_P486")
+  {}
+  virtual ~NamedBinary4RegisterDualResult_Umull_Rule_246_A1_P486() {}
+
+ private:
+  nacl_arm_dec::Binary4RegisterDualResult_Umull_Rule_246_A1_P486 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterDualResult_Umull_Rule_246_A1_P486);
 };
 
 class NamedBinary4RegisterShiftedOp_Adc_Rule_3_A1_P18

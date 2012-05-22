@@ -294,6 +294,132 @@ class Binary3RegisterOpTesterRegsNotPc
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpTesterRegsNotPc);
 };
 
+// Implements a decoder tester for decoder Binary3RegisterOpAltA
+// Op(S)<c> <Rd>, <Rn>, <Rm>
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |  cond  |              | S|   Rd   |        |   Rm   |        |   Rn   |
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rn - The first operand register.
+//    Rm - The second operand register.
+//    S - Defines if the flags regsiter is updated.
+class Binary3RegisterOpAltATester : public Arm32DecoderTester {
+ public:
+  explicit Binary3RegisterOpAltATester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltATester);
+};
+
+// Implements a decoder tester for Binary3RegisterOpAltA with a
+// constraint that if Rd, Rm, or Rn is R15, the instruction is
+// unpredictable.
+class Binary3RegisterOpAltATesterRegsNotPc
+    : public Binary3RegisterOpAltATester {
+ public:
+  explicit Binary3RegisterOpAltATesterRegsNotPc(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOpAltATesterRegsNotPc);
+};
+
+// Implements a Binary3RegisterOpAltANoCondUpdates tester (i.e.
+// a Binary3RegisterOpAltA above except that S is 1 but ignored).
+// class Binary3RegisterOpAltANoCondUpdates : public
+
+// Implements a decoder tester for decoder Binary4RegisterDualOp
+// Op(S)<c> <Rd>, <Rn>, <Rm>, <Ra>
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |  cond  |              | S|   Rd   |   Ra   |   Rm   |        |   Rn   |
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// Definitions:
+//    Rd - The destination register (of the operation on the inner operation
+//         and Ra).
+//    Rn - The first operand to the inner operation.
+//    Rm - The second operand to the inner operation.
+//    Ra - The second operand to the outer operation.
+class Binary4RegisterDualOpTester : public Arm32DecoderTester {
+ public:
+  explicit Binary4RegisterDualOpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualOpTester);
+};
+
+// Implements a decoder tester for Binary4RegisterDualOp with a constraint
+// that if Rd, Ra, Rm, or Rn is R15, the instruction is unpredictable.
+class Binary4RegisterDualOpTesterRegsNotPc
+    : public Binary4RegisterDualOpTester {
+ public:
+  explicit Binary4RegisterDualOpTesterRegsNotPc(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualOpTesterRegsNotPc);
+};
+
+// Implements a decoder tester for decoder Binary4RegisterDualResult
+// Op(S)<c> <RdLo>, <RdHi>, <Rn>, <Rm>
+// +--------+----------------+--------+--------+--------+--------+--------+
+// |31302928|2726252423222120|19181716|15141312|1110 9 8| 7 6 5 4| 3 2 1 0|
+// +--------+----------------+--------+--------+--------+--------+--------+
+// |  cond  |                |  RdHi  |  RdLo  |   Rm   |        |   Rn   |
+// +--------+----------------+--------+--------+--------+--------+--------+
+// Definitions:
+//    RdHi - Input to the outer binary operation, and the upper 32-bit result
+//           of that operation.
+//    RdLo - Input to the outer bianry operation, and the lower 32-bit result
+//           of that operation.
+//    Rn - The first operand to the inner binary operation.
+//    Rm - The second operand to the inner binary operation.
+// Note: The result of the inner operation is a 64-bit value used as an
+//    argument to the outer operation.
+class Binary4RegisterDualResultTester : public Arm32DecoderTester {
+ public:
+  explicit Binary4RegisterDualResultTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualResultTester);
+};
+
+// Implements a decoder tester for Binary4RegisterDualResult with a constraint
+// that if RdHi, RdLo, Rm, or Rn is R15, the instruction is unpredictable.
+class Binary4RegisterDualResultTesterRegsNotPc
+    : public Binary4RegisterDualResultTester {
+ public:
+  explicit Binary4RegisterDualResultTesterRegsNotPc(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualResultTesterRegsNotPc);
+};
+
 // Models a 3-register load/store operation of the forms:
 // Op<c> <Rt>, [<Rn>, +/-<Rm>]{!}
 // Op<c> <Rt>, [<Rn>], +/-<Rm>

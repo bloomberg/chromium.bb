@@ -17,7 +17,10 @@ namespace nacl_arm_dec {
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary2RegisterImmediateOp_instance_()
   , Binary3RegisterOp_instance_()
+  , Binary3RegisterOpAltA_instance_()
   , Binary3RegisterShiftedTest_instance_()
+  , Binary4RegisterDualOp_instance_()
+  , Binary4RegisterDualResult_instance_()
   , Binary4RegisterShiftedOp_instance_()
   , BinaryRegisterImmediateTest_instance_()
   , Branch_instance_()
@@ -841,19 +844,22 @@ const ClassDecoder& Arm32DecoderState::decode_mult(
 {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00F00000) == 0x00400000 /* op(23:20) == 0100 */)
-    return LongMultiply_instance_;
+    return Binary4RegisterDualResult_instance_;
 
   if ((insn.Bits() & 0x00F00000) == 0x00600000 /* op(23:20) == 0110 */)
-    return Multiply_instance_;
+    return Binary4RegisterDualOp_instance_;
 
   if ((insn.Bits() & 0x00D00000) == 0x00500000 /* op(23:20) == 01x1 */)
     return Undefined_instance_;
 
-  if ((insn.Bits() & 0x00C00000) == 0x00000000 /* op(23:20) == 00xx */)
-    return Multiply_instance_;
+  if ((insn.Bits() & 0x00E00000) == 0x00000000 /* op(23:20) == 000x */)
+    return Binary3RegisterOpAltA_instance_;
+
+  if ((insn.Bits() & 0x00E00000) == 0x00200000 /* op(23:20) == 001x */)
+    return Binary4RegisterDualOp_instance_;
 
   if ((insn.Bits() & 0x00800000) == 0x00800000 /* op(23:20) == 1xxx */)
-    return LongMultiply_instance_;
+    return Binary4RegisterDualResult_instance_;
 
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: mult could not parse %08X",
