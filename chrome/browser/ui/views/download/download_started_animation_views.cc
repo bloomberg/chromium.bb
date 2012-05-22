@@ -96,7 +96,7 @@ DownloadStartedAnimationWin::DownloadStartedAnimationWin(
 
   registrar_.Add(
       this,
-      content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<WebContents>(web_contents_));
   registrar_.Add(
       this,
@@ -143,7 +143,7 @@ void DownloadStartedAnimationWin::Close() {
 
   registrar_.Remove(
       this,
-      content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<WebContents>(web_contents_));
   registrar_.Remove(
       this,
@@ -171,6 +171,11 @@ void DownloadStartedAnimationWin::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
+    bool visible = *content::Details<bool>(details).ptr();
+    if (visible)
+      return;
+  }
   Close();
 }
 

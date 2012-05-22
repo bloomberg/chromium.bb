@@ -49,7 +49,7 @@ AutofillPopupView::AutofillPopupView(
     return;
 
   registrar_.Add(this,
-                 content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+                 content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
                  content::Source<content::WebContents>(web_contents));
   registrar_.Add(
       this,
@@ -196,7 +196,10 @@ bool AutofillPopupView::HasAutofillEntries() {
 void AutofillPopupView::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_WEB_CONTENTS_HIDDEN
-      || type == content::NOTIFICATION_NAV_ENTRY_COMMITTED)
+  if (type == content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED) {
+    if (!*content::Details<bool>(details).ptr())
+      Hide();
+  } else if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     Hide();
+  }
 }

@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
   EXPECT_CALL(*autofill_popup_view_, Hide()).Times(AtLeast(1));
 
   ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<content::WebContents>(web_contents_));
   browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
                                    content::PAGE_TRANSITION_START_PAGE);

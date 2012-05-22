@@ -201,8 +201,10 @@ class WebContents : public PageNavigator {
   virtual base::TimeTicks GetLastSelectedTime() const = 0;
 
   // Invoked when the WebContents becomes hidden.
-  // NOTE: If you override this, call the superclass version too!
   virtual void WasHidden() = 0;
+
+  // Invoked when the WebContents is restored.
+  virtual void WasRestored() = 0;
 
   // TODO(brettw) document these.
   virtual void ShowContents() = 0;

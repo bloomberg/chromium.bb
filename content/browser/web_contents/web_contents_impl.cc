@@ -47,6 +47,7 @@
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -906,10 +907,19 @@ void WebContentsImpl::WasHidden() {
       rwhv->WasHidden();
   }
 
+  bool is_visible = false;
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_WEB_CONTENTS_HIDDEN,
+      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
       content::Source<WebContents>(this),
-      content::NotificationService::NoDetails());
+      content::Details<bool>(&is_visible));
+}
+
+void WebContentsImpl::WasRestored() {
+  bool is_visible = true;
+  content::NotificationService::current()->Notify(
+      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+      content::Source<WebContents>(this),
+      content::Details<bool>(&is_visible));
 }
 
 void WebContentsImpl::ShowContents() {
@@ -917,6 +927,7 @@ void WebContentsImpl::ShowContents() {
       RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
   if (rwhv)
     rwhv->DidBecomeSelected();
+  WasRestored();
 }
 
 void WebContentsImpl::HideContents() {

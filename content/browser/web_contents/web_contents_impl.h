@@ -187,6 +187,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidBecomeSelected() OVERRIDE;
   virtual base::TimeTicks GetLastSelectedTime() const OVERRIDE;
   virtual void WasHidden() OVERRIDE;
+  virtual void WasRestored() OVERRIDE;
   virtual void ShowContents() OVERRIDE;
   virtual void HideContents() OVERRIDE;
   virtual bool NeedToFireBeforeUnload() OVERRIDE;

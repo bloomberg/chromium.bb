@@ -212,9 +212,10 @@ enum NotificationType {
   // is a std::pair<NavigationEntry*, bool> that contains more information.
   NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
 
-  // This notification is sent when a WebContents is being hidden, e.g. due
-  // to switching away from this tab.  The source is a Source<WebContents>.
-  NOTIFICATION_WEB_CONTENTS_HIDDEN,
+  // Indicates a WebContents has been hidden or restored.  The source is
+  // a Source<WebContents>. The details is a bool set to true if the new
+  // state is visible.
+  NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
 
   // This notification is sent when a WebContents is being destroyed. Any
   // object holding a reference to a WebContents can listen to that
