@@ -25,9 +25,17 @@ class ServerLogEntry {
     ME2ME
   };
 
+  // Constructs a log stanza. The caller should add one or more log entry
+  // stanzas as children of this stanza, before sending the log stanza to
+  // the remoting bot.
+  static scoped_ptr<buzz::XmlElement> MakeStanza();
+
   // Constructs a log entry for a session state change.
   // Currently this is either connection or disconnection.
   static ServerLogEntry* MakeSessionStateChange(bool connection);
+
+  // Constructs a log entry for a heartbeat.
+  static ServerLogEntry* MakeForHeartbeat();
 
   ~ServerLogEntry();
 

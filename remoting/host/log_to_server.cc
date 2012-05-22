@@ -21,10 +21,6 @@ using buzz::XmlElement;
 
 namespace remoting {
 
-namespace {
-const char kLogCommand[] = "log";
-}  // namespace
-
 LogToServer::LogToServer(ChromotingHost* host,
                          ServerLogEntry::Mode mode,
                          SignalStrategy* signal_strategy)
@@ -112,8 +108,7 @@ void LogToServer::SendPendingEntries() {
     return;
   }
   // Make one stanza containing all the pending entries.
-  scoped_ptr<XmlElement> stanza(new XmlElement(QName(
-      kChromotingXmlNamespace, kLogCommand)));
+  scoped_ptr<XmlElement> stanza(ServerLogEntry::MakeStanza());
   while (!pending_entries_.empty()) {
     ServerLogEntry& entry = pending_entries_.front();
     stanza->AddElement(entry.ToStanza().release());

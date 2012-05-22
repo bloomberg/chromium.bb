@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/constants.h"
+#include "remoting/host/server_log_entry.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -229,12 +230,19 @@ void HeartbeatSender::SetSequenceId(int sequence_id) {
 }
 
 scoped_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
+  // Create heartbeat stanza.
   scoped_ptr<XmlElement> query(new XmlElement(
       QName(kChromotingXmlNamespace, kHeartbeatQueryTag)));
   query->AddAttr(QName(kChromotingXmlNamespace, kHostIdAttr), host_id_);
   query->AddAttr(QName(kChromotingXmlNamespace, kSequenceIdAttr),
                  base::IntToString(sequence_id_));
   query->AddElement(CreateSignature().release());
+  // Append log message (which isn't signed).
+  scoped_ptr<XmlElement> log(ServerLogEntry::MakeStanza());
+  scoped_ptr<ServerLogEntry> log_entry(ServerLogEntry::MakeForHeartbeat());
+  log_entry->AddHostFields();
+  log->AddElement(log_entry->ToStanza().release());
+  query->AddElement(log.release());
   return query.Pass();
 }
 

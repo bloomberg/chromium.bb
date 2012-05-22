@@ -70,8 +70,20 @@ TEST_F(ServerLogEntryTest, MakeSessionStateChange) {
   key_value_pairs["event-name"] = "session-state";
   key_value_pairs["session-state"] = "connected";
   std::set<std::string> keys;
-  ASSERT_TRUE(VerifyStanza(key_value_pairs, keys, stanza.get(), &error)) <<
-      error;
+  ASSERT_TRUE(VerifyStanza(key_value_pairs, keys, stanza.get(), &error))
+      << error;
+}
+
+TEST_F(ServerLogEntryTest, MakeHeartbeat) {
+  scoped_ptr<ServerLogEntry> entry(ServerLogEntry::MakeForHeartbeat());
+  scoped_ptr<XmlElement> stanza = entry->ToStanza();
+  std::string error;
+  std::map<std::string, std::string> key_value_pairs;
+  key_value_pairs["role"] = "host";
+  key_value_pairs["event-name"] = "heartbeat";
+  std::set<std::string> keys;
+  ASSERT_TRUE(VerifyStanza(key_value_pairs, keys, stanza.get(), &error))
+      << error;
 }
 
 TEST_F(ServerLogEntryTest, AddHostFields) {

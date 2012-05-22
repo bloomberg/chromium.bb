@@ -17,10 +17,13 @@ using remoting::protocol::Session;
 namespace remoting {
 
 namespace {
+const char kLogCommand[] = "log";
+
 const char kLogEntry[] = "entry";
 
 const char kKeyEventName[] = "event-name";
 const char kValueEventNameSessionState[] = "session-state";
+const char kValueEventNameHeartbeat[] = "heartbeat";
 
 const char kKeyRole[] = "role";
 const char kValueRoleHost[] = "host";
@@ -53,11 +56,26 @@ ServerLogEntry::ServerLogEntry() {
 ServerLogEntry::~ServerLogEntry() {
 }
 
+// static
+scoped_ptr<buzz::XmlElement> ServerLogEntry::MakeStanza() {
+  return scoped_ptr<buzz::XmlElement>(
+      new XmlElement(QName(kChromotingXmlNamespace, kLogCommand)));
+}
+
+// static
 ServerLogEntry* ServerLogEntry::MakeSessionStateChange(bool connected) {
   ServerLogEntry* entry = new ServerLogEntry();
   entry->Set(kKeyRole, kValueRoleHost);
   entry->Set(kKeyEventName, kValueEventNameSessionState);
   entry->Set(kKeySessionState, GetValueSessionState(connected));
+  return entry;
+}
+
+// static
+ServerLogEntry* ServerLogEntry::MakeForHeartbeat() {
+  ServerLogEntry* entry = new ServerLogEntry();
+  entry->Set(kKeyRole, kValueRoleHost);
+  entry->Set(kKeyEventName, kValueEventNameHeartbeat);
   return entry;
 }
 
@@ -98,6 +116,7 @@ void ServerLogEntry::AddConnectionTypeField(
   Set(kKeyConnectionType, protocol::TransportRoute::GetTypeString(type));
 }
 
+// static
 const char* ServerLogEntry::GetValueMode(ServerLogEntry::Mode mode) {
   switch(mode) {
     case IT2ME:
@@ -120,6 +139,7 @@ scoped_ptr<XmlElement> ServerLogEntry::ToStanza() const {
   return stanza.Pass();
 }
 
+// static
 const char* ServerLogEntry::GetValueSessionState(bool connected) {
   return connected ? kValueSessionStateConnected : kValueSessionStateClosed;
 }
