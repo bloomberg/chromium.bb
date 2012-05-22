@@ -137,6 +137,10 @@ int main(int argc, char **argv) {
 
   NaClAllModulesInit();
 
+#if NACL_LINUX
+  NaClSignalHandlerInit();
+#endif
+
   if (argc != 2) {
     NaClLog(LOG_FATAL, "Expected 1 argument: executable filename\n");
   }

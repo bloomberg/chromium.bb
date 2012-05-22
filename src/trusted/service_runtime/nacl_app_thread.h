@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_APP_THREAD_H__
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_APP_THREAD_H__ 1
 
+#include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
@@ -26,18 +27,30 @@ struct NaClApp;
  * between NACL_APP_THREAD_TRUSTED and NACL_APP_THREAD_UNTRUSTED using
  * NaClAppThreadSetSuspendState().
  *
- * Another thread may change this from:
+ * A controlling thread may change this from:
  *   NACL_APP_THREAD_UNTRUSTED
  *   -> NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING
  * or
  *   NACL_APP_THREAD_TRUSTED
  *   -> NACL_APP_THREAD_TRUSTED | NACL_APP_THREAD_SUSPENDING
  * and back again.
+ *
+ * Additionally, on Linux, the signal handler in the thread being
+ * suspended will change suspend_state from:
+ *   NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING
+ *   -> (NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING
+ *       | NACL_APP_THREAD_SUSPENDED)
+ * The controlling thread will later change suspend_thread back to:
+ *   NACL_APP_THREAD_UNTRUSTED
+ * This tells the signal handler to resume execution.
  */
 enum NaClSuspendState {
   NACL_APP_THREAD_UNTRUSTED = 1,
   NACL_APP_THREAD_TRUSTED = 2,
   NACL_APP_THREAD_SUSPENDING = 4
+#if NACL_LINUX
+  , NACL_APP_THREAD_SUSPENDED = 8
+#endif
 };
 
 /*
@@ -72,14 +85,7 @@ struct NaClAppThread {
 
   struct NaClThread         thread;  /* low level thread representation */
 
-  /*
-   * Thread suspension is currently only needed and implemented for
-   * Windows, for preventing race conditions when opening up holes in
-   * untrusted address space during mmap/munmap.
-   */
-#if NACL_WINDOWS
-  enum NaClSuspendState     suspend_state;
-#endif
+  Atomic32                  suspend_state; /* enum NaClSuspendState */
 
   struct NaClThreadContext  user;
   struct NaClThreadContext  sys;

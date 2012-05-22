@@ -12,6 +12,21 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
+void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
+                                  enum NaClSuspendState old_state,
+                                  enum NaClSuspendState new_state) {
+  NaClXMutexLock(&natp->mu);
+  while ((natp->suspend_state & NACL_APP_THREAD_SUSPENDING) != 0) {
+    /*
+     * We are being suspended, but SuspendThread() has not taken effect yet.
+     */
+    NaClXCondVarWait(&natp->cv, &natp->mu);
+  }
+  DCHECK(natp->suspend_state == old_state);
+  natp->suspend_state = new_state;
+  NaClXMutexUnlock(&natp->mu);
+}
+
 void NaClUntrustedThreadSuspend(struct NaClAppThread *natp) {
   enum NaClSuspendState old_state;
 

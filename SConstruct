@@ -751,6 +751,7 @@ tests_to_disable_qemu = set([
     'run_srpc_manifest_file_test',
     'run_srpc_message_untrusted_test',
     'run_thread_stack_alloc_test',
+    'run_thread_suspension_test',
     'run_thread_test',
     'run_tool_tests',
     'run_trusted_mmap_test',

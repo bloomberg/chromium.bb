@@ -46,6 +46,7 @@
 static int s_Signals[] = {
 #if NACL_LINUX
   SIGSTKFLT,
+  NACL_THREAD_SUSPEND_SIGNAL,
 #endif
   SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGBUS, SIGFPE, SIGSEGV
 };
@@ -313,6 +314,13 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
    */
   if (natp != NULL) {
     NaClSetGs(natp->sys.gs);
+  }
+#endif
+
+#if NACL_LINUX
+  if (sig == NACL_THREAD_SUSPEND_SIGNAL) {
+    NaClSuspendSignalHandler();
+    return;
   }
 #endif
 

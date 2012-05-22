@@ -217,6 +217,7 @@ if env.Bit('windows'):
 
 if env.Bit('linux'):
   ldr_inputs += [
+      'linux/thread_suspension.c',
       'posix/nacl_signal.c',
       'posix/sel_addrspace_posix.c'
       ]
@@ -231,6 +232,7 @@ if env.Bit('linux'):
 
 if env.Bit('mac'):
   ldr_inputs += [
+      'generic/thread_suspension.c',
       'posix/nacl_signal.c',
       'posix/sel_addrspace_posix.c'
       ]
@@ -577,14 +579,7 @@ if (not env.Bit('coverage_enabled') and
     not env.IsRunningUnderValgrind()):
   nacl_signal_exe = env.ComponentProgram('nacl_signal_unittest',
                                          'nacl_signal_unittest.c',
-                                         EXTRA_LIBS=['sel',
-                                                     'env_cleanser',
-                                                     'nacl_perf_counter',
-                                                     'gio_wrapped_desc',
-                                                     'nacl_fault_inject',
-                                                     'nacl_interval',
-                                                     'platform',
-                                                     ])
+                                         EXTRA_LIBS=['sel', 'sel_debug_dummy'])
   node = env.CommandTest('nacl_signal_unittest.out',
                          command=[nacl_signal_exe],
                          exit_status='trusted_sigsegv_or_equivalent',
@@ -596,14 +591,7 @@ if (not env.Bit('coverage_enabled') and
 if env.Bit('posix'):
   test_prog = env.ComponentProgram('nacl_signal_frame_test',
                                    'nacl_signal_frame_test.c',
-                                   EXTRA_LIBS=['sel',
-                                               'env_cleanser',
-                                               'nacl_perf_counter',
-                                               'gio_wrapped_desc',
-                                               'nacl_fault_inject',
-                                               'nacl_interval',
-                                               'platform',
-                                               ])
+                                   EXTRA_LIBS=['sel', 'sel_debug_dummy'])
   node = env.CommandTest('nacl_signal_frame_test.out',
                          command=[test_prog],
                          declares_exit_status=True,

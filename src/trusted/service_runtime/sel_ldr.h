@@ -754,29 +754,17 @@ void NaClVmIoPendingCheck_mu(struct NaClApp *nap,
 
 void NaClGdbHook(struct NaClApp const *nap);
 
-#if NACL_WINDOWS
-
 void NaClUntrustedThreadSuspend(struct NaClAppThread *natp);
 void NaClUntrustedThreadResume(struct NaClAppThread *natp);
 void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap);
 void NaClUntrustedThreadsResumeAll(struct NaClApp *nap);
 
-#else
-
-static INLINE void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap) {
-  UNREFERENCED_PARAMETER(nap);
-  NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspendAll: Not implemented\n");
-}
-
-static INLINE void NaClUntrustedThreadsResumeAll(struct NaClApp *nap) {
-  UNREFERENCED_PARAMETER(nap);
-  NaClLog(LOG_FATAL, "NaClUntrustedThreadsResumeAll: Not implemented\n");
-}
-
-#endif
-
 #if NACL_LINUX
+
+void NaClSuspendSignalHandler(void);
+
 void handle_r_debug(const char *switch_value, char *argv0);
+
 #endif
 
 EXTERN_C_END

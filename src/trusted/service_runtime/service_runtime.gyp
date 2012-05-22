@@ -98,6 +98,7 @@
         'conditions': [
             ['OS=="mac"', {
               'sources': [
+                'generic/thread_suspension.c',
                 'osx/crash_filter.c',
                 'osx/mach_exception_handler.c',
                 'osx/nacl_ldt.c',
@@ -166,6 +167,7 @@
                 'linux/nacl_oop_debugger_hooks.c',
                 'linux/nacl_thread_nice.c',
                 'linux/r_debug.c',
+                'linux/thread_suspension.c',
               ],
               'conditions': [
                 ['target_arch=="ia32" or target_arch=="x64"', {

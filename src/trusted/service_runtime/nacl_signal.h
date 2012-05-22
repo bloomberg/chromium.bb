@@ -58,6 +58,10 @@ enum PosixSignals {
 };
 #endif
 
+#if NACL_LINUX
+# define NACL_THREAD_SUSPEND_SIGNAL SIGUSR1
+#endif
+
 
 /*
  * Prototype for a signal handler.  The handler will receive the POSIX

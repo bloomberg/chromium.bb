@@ -162,7 +162,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    * After this NaClAppThreadSetSuspendState() call, we should not
    * claim any mutexes, otherwise we risk deadlock.  Note that if
    * NACLVERBOSITY is set high enough to enable the NaClLog() calls in
-   * NaClSwitchToApp(), these calls could deadlock on Windows.
+   * NaClSwitchToApp(), these calls could deadlock.
    */
   NaClAppThreadSetSuspendState(natp, NACL_APP_THREAD_TRUSTED,
                                NACL_APP_THREAD_UNTRUSTED);
