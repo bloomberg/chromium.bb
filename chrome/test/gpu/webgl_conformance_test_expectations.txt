@@ -37,6 +37,10 @@ UNFILED MAC RELEASE : conformance_uniforms_uniform_samplers_test = FAIL
 UNFILED WIN : conformance_uniforms_uniform_samplers_test = FAIL
 UNFILED LINUX NVIDIA AMD : conformance_uniforms_uniform_samplers_test = FAIL
 
+UNFILED WIN MAC : conformance_glsl_misc_shader_with_short_circuiting_operators = FAIL
+
+UNFILED WIN LINUX : conformance_textures_texture_attachment_formats = FAIL
+
 125963 MAC AMD : conformance_programs_use_program_crash_with_discard_in_fragment_shader = FAIL
 125963 MAC AMD : conformance_typedarrays_data_view_test = FAIL
 
