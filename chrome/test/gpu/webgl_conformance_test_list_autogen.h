@@ -71,6 +71,8 @@ CONFORMANCE_TEST(conformance_more_functions_drawElementsBadArgs,
   "conformance/more/functions/drawElementsBadArgs.html");
 CONFORMANCE_TEST(conformance_more_functions_isTests,
   "conformance/more/functions/isTests.html");
+CONFORMANCE_TEST(conformance_more_functions_isTestsBadArgs,
+  "conformance/more/functions/isTestsBadArgs.html");
 CONFORMANCE_TEST(conformance_more_functions_readPixels,
   "conformance/more/functions/readPixels.html");
 CONFORMANCE_TEST(conformance_more_functions_readPixelsBadArgs,
@@ -121,6 +123,8 @@ CONFORMANCE_TEST(conformance_attribs_gl_enable_vertex_attrib,
   "conformance/attribs/gl-enable-vertex-attrib.html");
 CONFORMANCE_TEST(conformance_attribs_gl_vertex_attrib_render,
   "conformance/attribs/gl-vertex-attrib-render.html");
+CONFORMANCE_TEST(conformance_attribs_gl_disabled_vertex_attrib,
+  "conformance/attribs/gl-disabled-vertex-attrib.html");
 CONFORMANCE_TEST(conformance_attribs_gl_vertex_attrib_zero_issues,
   "conformance/attribs/gl-vertex-attrib-zero-issues.html");
 CONFORMANCE_TEST(conformance_attribs_gl_vertex_attrib,
@@ -183,8 +187,18 @@ CONFORMANCE_TEST(conformance_context_premultiplyalpha_test,
   "conformance/context/premultiplyalpha-test.html");
 CONFORMANCE_TEST(conformance_context_resource_sharing_test,
   "conformance/context/resource-sharing-test.html");
+CONFORMANCE_TEST(conformance_extensions_get_extension,
+  "conformance/extensions/get-extension.html");
 CONFORMANCE_TEST(conformance_extensions_oes_standard_derivatives,
   "conformance/extensions/oes-standard-derivatives.html");
+CONFORMANCE_TEST(conformance_extensions_oes_texture_float_with_canvas,
+  "conformance/extensions/oes-texture-float-with-canvas.html");
+CONFORMANCE_TEST(conformance_extensions_oes_texture_float_with_image_data,
+  "conformance/extensions/oes-texture-float-with-image-data.html");
+CONFORMANCE_TEST(conformance_extensions_oes_texture_float_with_image,
+  "conformance/extensions/oes-texture-float-with-image.html");
+CONFORMANCE_TEST(conformance_extensions_oes_texture_float_with_video,
+  "conformance/extensions/oes-texture-float-with-video.html");
 CONFORMANCE_TEST(conformance_extensions_oes_texture_float,
   "conformance/extensions/oes-texture-float.html");
 CONFORMANCE_TEST(conformance_extensions_oes_vertex_array_object,
@@ -257,6 +271,8 @@ CONFORMANCE_TEST(conformance_reading_read_pixels_test,
   "conformance/reading/read-pixels-test.html");
 CONFORMANCE_TEST(conformance_renderbuffers_framebuffer_object_attachment,
   "conformance/renderbuffers/framebuffer-object-attachment.html");
+CONFORMANCE_TEST(conformance_renderbuffers_framebuffer_state_restoration,
+  "conformance/renderbuffers/framebuffer-state-restoration.html");
 CONFORMANCE_TEST(conformance_renderbuffers_framebuffer_test,
   "conformance/renderbuffers/framebuffer-test.html");
 CONFORMANCE_TEST(conformance_renderbuffers_renderbuffer_initialization,
@@ -307,12 +323,36 @@ CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_array_buff
   "conformance/textures/tex-image-and-sub-image-2d-with-array-buffer-view.html");
 CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_canvas,
   "conformance/textures/tex-image-and-sub-image-2d-with-canvas.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_canvas_rgb565,
+  "conformance/textures/tex-image-and-sub-image-2d-with-canvas-rgb565.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_canvas_rgba4444,
+  "conformance/textures/tex-image-and-sub-image-2d-with-canvas-rgba4444.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_canvas_rgba5551,
+  "conformance/textures/tex-image-and-sub-image-2d-with-canvas-rgba5551.html");
 CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image_data,
   "conformance/textures/tex-image-and-sub-image-2d-with-image-data.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image_data_rgb565,
+  "conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgb565.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image_data_rgba4444,
+  "conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba4444.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image_data_rgba5551,
+  "conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba5551.html");
 CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image,
   "conformance/textures/tex-image-and-sub-image-2d-with-image.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image_rgb565,
+  "conformance/textures/tex-image-and-sub-image-2d-with-image-rgb565.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image_rgba4444,
+  "conformance/textures/tex-image-and-sub-image-2d-with-image-rgba4444.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_image_rgba5551,
+  "conformance/textures/tex-image-and-sub-image-2d-with-image-rgba5551.html");
 CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_video,
   "conformance/textures/tex-image-and-sub-image-2d-with-video.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_video_rgb565,
+  "conformance/textures/tex-image-and-sub-image-2d-with-video-rgb565.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_video_rgba4444,
+  "conformance/textures/tex-image-and-sub-image-2d-with-video-rgba4444.html");
+CONFORMANCE_TEST(conformance_textures_tex_image_and_sub_image_2d_with_video_rgba5551,
+  "conformance/textures/tex-image-and-sub-image-2d-with-video-rgba5551.html");
 CONFORMANCE_TEST(conformance_textures_tex_image_and_uniform_binding_bugs,
   "conformance/textures/tex-image-and-uniform-binding-bugs.html");
 CONFORMANCE_TEST(conformance_textures_tex_image_with_format_and_type,
@@ -331,6 +371,8 @@ CONFORMANCE_TEST(conformance_textures_texture_active_bind_2,
   "conformance/textures/texture-active-bind-2.html");
 CONFORMANCE_TEST(conformance_textures_texture_active_bind,
   "conformance/textures/texture-active-bind.html");
+CONFORMANCE_TEST(conformance_textures_texture_attachment_formats,
+  "conformance/textures/texture-attachment-formats.html");
 CONFORMANCE_TEST(conformance_textures_texture_clear,
   "conformance/textures/texture-clear.html");
 CONFORMANCE_TEST(conformance_textures_texture_complete,
@@ -721,6 +763,8 @@ CONFORMANCE_TEST(conformance_glsl_misc_struct_nesting_under_maximum,
   "conformance/glsl/misc/struct-nesting-under-maximum.html");
 CONFORMANCE_TEST(conformance_glsl_misc_uniform_location_length_limits,
   "conformance/glsl/misc/uniform-location-length-limits.html");
+CONFORMANCE_TEST(conformance_glsl_misc_shader_with_short_circuiting_operators,
+  "conformance/glsl/misc/shader-with-short-circuiting-operators.html");
 CONFORMANCE_TEST(conformance_glsl_reserved__webgl_field_vert,
   "conformance/glsl/reserved/_webgl_field.vert.html");
 CONFORMANCE_TEST(conformance_glsl_reserved__webgl_function_vert,
