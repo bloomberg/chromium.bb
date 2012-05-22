@@ -49,6 +49,8 @@
           '-lppapi_cpp',
           '-lppapi',
         ],
+        # TODO(bradchen): get rid of extra_deps64 and extra_deps32
+        # once native_client/build/untrusted.gypi no longer needs them.
         'extra_deps64': [
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_cpp.a',
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi.a',
@@ -56,6 +58,22 @@
         'extra_deps32': [
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_cpp.a',
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi.a',
+        ],
+        'extra_deps_newlib64': [
+          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_cpp.a',
+          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi.a',
+        ],
+        'extra_deps_newlib32': [
+          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_cpp.a',
+          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi.a',
+        ],
+        'extra_deps_glibc64': [
+          '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libppapi_cpp.a',
+          '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libppapi.a',
+        ],
+        'extra_deps_glibc32': [
+          '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libppapi_cpp.a',
+          '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libppapi.a',
         ],
         'extra_deps_arm': [
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppapi_cpp.a',

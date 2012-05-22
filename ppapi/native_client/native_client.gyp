@@ -91,6 +91,8 @@
             'extra_args': [
               '--strip-debug',
             ],
+            # TODO(bradchen): get rid of extra_deps64 and extra_deps32
+            # once native_client/build/untrusted.gypi no longer needs them.
             'extra_deps64': [
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppruntime.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libirt_browser.a',
@@ -106,6 +108,38 @@
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libplatform.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libimc_syscalls.a',
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libgio.a',
+            ],
+            'extra_deps_newlib64': [
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppruntime.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libirt_browser.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libsrpc.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libplatform.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libimc_syscalls.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libgio.a',
+            ],
+            'extra_deps_newlib32': [
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppruntime.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libirt_browser.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libsrpc.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libplatform.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libimc_syscalls.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libgio.a',
+            ],
+            'extra_deps_glibc64': [
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libppruntime.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libirt_browser.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libsrpc.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libplatform.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libimc_syscalls.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64/libgio.a',
+            ],
+            'extra_deps_glibc32': [
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libppruntime.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libirt_browser.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libsrpc.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libplatform.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libimc_syscalls.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32/libgio.a',
             ],
             'extra_deps_arm': [
               '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm/libppruntime.a',
