@@ -292,11 +292,15 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
 #if defined(OS_MACOSX)
 // http://crbug.com/81451
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_NormalKeyEvents) {
+#define MAYBE_NormalKeyEvents DISABLED_NormalKeyEvents
+#elif defined(OS_LINUX)
+// http://crbug.com/129235
+#define MAYBE_NormalKeyEvents FAILS_NormalKeyEvents
 #else
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
+#define MAYBE_NormalKeyEvents NormalKeyEvents
 #endif
 
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
   static const KeyEventTestData kTestNoInput[] = {
     // a
     { ui::VKEY_A, false, false, false, false,
@@ -392,7 +396,15 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
 }
 
 #if defined(OS_WIN) || defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
+
+#if defined(OS_LINUX)
+// http://crbug.com/129235
+#define MAYBE_CtrlKeyEvents FAILS_CtrlKeyEvents
+#else
+#define MAYBE_CtrlKeyEvents CtrlKeyEvents
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_CtrlKeyEvents) {
   static const KeyEventTestData kTestCtrlF = {
     ui::VKEY_F, true, false, false, false,
     false, false, false, false, 2,
@@ -514,10 +526,15 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_CommandKeyEvents) {
 
 #if defined(OS_MACOSX)
 // http://crbug.com/81451 for mac
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_AccessKeys) {
+#define MAYBE_AccessKeys DISABLED_AccessKeys
+#elif defined(OS_LINUX)
+// http://crbug.com/129235
+#define MAYBE_AccessKeys FAILS_AccessKeys
 #else
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
+#define MAYBE_AccessKeys AccessKeys
 #endif
+
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {
