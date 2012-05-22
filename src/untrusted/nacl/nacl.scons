@@ -48,17 +48,14 @@ SRCS_NEWLIB_MISC = [
     'start.c',         # contains _start, preventing us from making this a .so
     'nacl_add_tp.c',
     'nacl_read_tp.c',
+    'pthread_stubs.c', # weak version of __pthread_initialize
 ]
 
 SRCS_NEWLIB_STATIC = [
-    'pthread_stubs.c',               # weak version of __pthread_initialize
     'pthread_initialize_minimal.c',
     'tls.c',
 ]
 
-# For now assume newlib share will always be linked against pthread so
-# we do not have to deal with weak linkage and other problems.
-# TODO(robertm): support shared newlib without pthreads
 SRCS_NEWLIB_SHARED = [
     'pthread_initialize_minimal_using_ldso.c',
     'tls_using_ldso.c',
