@@ -489,7 +489,7 @@ void CheckDuplicateHandle(HANDLE handle) {
   OBJECT_TYPE_INFORMATION* type_info =
       reinterpret_cast<OBJECT_TYPE_INFORMATION*>(buffer);
   ULONG size = sizeof(buffer) - sizeof(wchar_t);
-  DWORD error;
+  NTSTATUS error;
   error = g_QueryObject(handle, ObjectTypeInformation, type_info, size, &size);
   CHECK(NT_SUCCESS(error));
   type_info->Name.Buffer[type_info->Name.Length / sizeof(wchar_t)] = L'\0';
