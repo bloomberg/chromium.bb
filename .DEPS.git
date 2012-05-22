@@ -118,7 +118,7 @@ deps = {
     'src/third_party/webdriver/pylib':
         Var('git_url') + '/external/selenium/py.git@43dd2f3b684a129cdaf84e4e4e0656e2d7852a4c',
     'src/third_party/webgl_conformance':
-        Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@32ecf502fa4a1c5887f8124c9e4412db61151a35',
+        Var('git_url') + '/chromium/deps/webgl/sdk/tests.git@30876f3405c5cd90e00117caba57127480c30bd6',
     'src/third_party/webpagereplay':
         Var('git_url') + '/external/web-page-replay.git@61a6a2eb31bb53450330351ed15d6b032ae4f2c8',
     'src/third_party/webrtc':
