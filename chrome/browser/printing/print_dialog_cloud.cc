@@ -20,8 +20,8 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -40,21 +40,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/glue/webpreferences.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/foreground_helper.h"
-#endif
-
-#include "webkit/glue/webpreferences.h"
-
-#include "grit/generated_resources.h"
-
-#if defined(USE_AURA)
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/web_dialog_view.h"
-#include "ui/aura/root_window.h"
-#include "ui/views/widget/widget.h"
 #endif
 
 // This module implements the UI support in Chrome for cloud printing.
