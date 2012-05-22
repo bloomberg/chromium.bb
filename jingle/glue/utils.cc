@@ -42,7 +42,7 @@ bool SocketAddressToIPEndPoint(const talk_base::SocketAddress& address_lj,
 std::string SerializeP2PCandidate(const cricket::Candidate& candidate) {
   // TODO(sergeyu): Use SDP to format candidates?
   DictionaryValue value;
-  value.SetString("ip", candidate.address().IPAsString());
+  value.SetString("ip", candidate.address().ipaddr().ToString());
   value.SetInteger("port", candidate.address().port());
   value.SetString("type", candidate.type());
   value.SetString("protocol", candidate.protocol());

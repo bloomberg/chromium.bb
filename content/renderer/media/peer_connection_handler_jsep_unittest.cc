@@ -12,7 +12,7 @@
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/peer_connection_handler_jsep.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebICECandidateDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebICEOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaHints.h"

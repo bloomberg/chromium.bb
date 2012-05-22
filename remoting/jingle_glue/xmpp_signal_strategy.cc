@@ -61,7 +61,7 @@ void XmppSignalStrategy::Connect() {
   settings.set_resource(resource_name_);
   settings.set_use_tls(buzz::TLS_ENABLED);
   settings.set_token_service(auth_token_service_);
-  settings.set_auth_cookie(auth_token_);
+  settings.set_auth_token(buzz::AUTH_MECHANISM_GOOGLE_TOKEN, auth_token_);
   settings.set_server(talk_base::SocketAddress("talk.google.com", 5222));
 
   buzz::AsyncSocket* socket = new XmppSocketAdapter(settings, false);
@@ -221,7 +221,7 @@ buzz::PreXmppAuth* XmppSignalStrategy::CreatePreXmppAuth(
   }
 
   return new notifier::GaiaTokenPreXmppAuth(
-      jid.Str(), settings.auth_cookie(), settings.token_service(), mechanism);
+      jid.Str(), settings.auth_token(), settings.token_service(), mechanism);
 }
 
 }  // namespace remoting

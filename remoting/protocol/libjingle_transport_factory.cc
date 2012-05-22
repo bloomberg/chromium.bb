@@ -14,6 +14,7 @@
 #include "remoting/protocol/transport_config.h"
 #include "third_party/libjingle/source/talk/base/basicpacketsocketfactory.h"
 #include "third_party/libjingle/source/talk/base/network.h"
+#include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 #include "third_party/libjingle/source/talk/p2p/client/httpportallocator.h"
@@ -73,6 +74,8 @@ class LibjingleStreamTransport : public StreamTransport,
   EventHandler* event_handler_;
   StreamTransport::ConnectedCallback callback_;
   scoped_ptr<ChannelAuthenticator> authenticator_;
+  std::string ice_username_fragment_;
+  std::string ice_password_;
 
   scoped_ptr<cricket::P2PTransportChannel> channel_;
 
@@ -87,7 +90,10 @@ LibjingleStreamTransport::LibjingleStreamTransport(
     bool incoming_only)
     : port_allocator_(port_allocator),
       incoming_only_(incoming_only),
-      event_handler_(NULL) {
+      event_handler_(NULL),
+      ice_username_fragment_(
+          talk_base::CreateRandomString(cricket::ICE_UFRAG_LENGTH)),
+      ice_password_(talk_base::CreateRandomString(cricket::ICE_PWD_LENGTH)) {
 }
 
 LibjingleStreamTransport::~LibjingleStreamTransport() {
@@ -130,7 +136,9 @@ void LibjingleStreamTransport::Connect(
   // Create P2PTransportChannel, attach signal handlers and connect it.
   // TODO(sergeyu): Specify correct component ID for the channel.
   channel_.reset(new cricket::P2PTransportChannel(
-      name_, 0, NULL, port_allocator_));
+      0, NULL, port_allocator_));
+  channel_->SetIceUfrag(ice_username_fragment_);
+  channel_->SetIcePwd(ice_password_);
   channel_->SignalRequestSignaling.connect(
       this, &LibjingleStreamTransport::OnRequestSignaling);
   channel_->SignalCandidateReady.connect(

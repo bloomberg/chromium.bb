@@ -118,7 +118,7 @@ XmlElement* FormatCandidate(const JingleMessage::NamedCandidate& candidate) {
       new XmlElement(QName(kP2PTransportNamespace, "candidate"));
   result->SetAttr(QName(kEmptyNamespace, "name"), candidate.name);
   result->SetAttr(QName(kEmptyNamespace, "address"),
-                  candidate.candidate.address().IPAsString());
+                  candidate.candidate.address().ipaddr().ToString());
   result->SetAttr(QName(kEmptyNamespace, "port"),
                   base::IntToString(candidate.candidate.address().port()));
   result->SetAttr(QName(kEmptyNamespace, "type"), candidate.candidate.type());

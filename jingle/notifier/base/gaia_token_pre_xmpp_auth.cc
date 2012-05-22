@@ -69,7 +69,8 @@ void GaiaTokenPreXmppAuth::StartPreXmppAuth(
     const buzz::Jid& jid,
     const talk_base::SocketAddress& server,
     const talk_base::CryptString& pass,
-    const std::string& auth_cookie) {
+    const std::string& auth_mechanism,
+    const std::string& auth_token) {
   SignalAuthDone();
 }
 
@@ -93,8 +94,12 @@ buzz::CaptchaChallenge GaiaTokenPreXmppAuth::GetCaptchaChallenge() const {
   return buzz::CaptchaChallenge();
 }
 
-std::string GaiaTokenPreXmppAuth::GetAuthCookie() const {
-  return std::string();
+std::string GaiaTokenPreXmppAuth::GetAuthToken() const {
+  return token_;
+}
+
+std::string GaiaTokenPreXmppAuth::GetAuthMechanism() const {
+  return auth_mechanism_;
 }
 
 std::string GaiaTokenPreXmppAuth::ChooseBestSaslMechanism(

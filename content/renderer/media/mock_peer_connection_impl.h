@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
 class MockMediaStreamDependencyFactory;
 

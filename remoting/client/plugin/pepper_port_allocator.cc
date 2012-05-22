@@ -32,8 +32,9 @@ class PepperPortAllocatorSession
  public:
   PepperPortAllocatorSession(
       cricket::HttpPortAllocatorBase* allocator,
-      const std::string& channel_name,
       int component,
+      const std::string& ice_username_fragment,
+      const std::string& ice_password,
       const std::vector<talk_base::SocketAddress>& stun_hosts,
       const std::vector<std::string>& relay_hosts,
       const std::string& relay_token,
@@ -73,15 +74,16 @@ class PepperPortAllocatorSession
 
 PepperPortAllocatorSession::PepperPortAllocatorSession(
     cricket::HttpPortAllocatorBase* allocator,
-    const std::string& channel_name,
     int component,
+    const std::string& ice_username_fragment,
+    const std::string& ice_password,
     const std::vector<talk_base::SocketAddress>& stun_hosts,
     const std::vector<std::string>& relay_hosts,
     const std::string& relay_token,
     const pp::InstanceHandle& instance)
-    : cricket::HttpPortAllocatorSessionBase(
-        allocator, channel_name, component, stun_hosts,
-        relay_hosts, relay_token, ""),
+    : HttpPortAllocatorSessionBase(
+        allocator, component, ice_username_fragment, ice_password,
+        stun_hosts, relay_hosts, relay_token, ""),
       instance_(instance),
       stun_address_resolver_(instance_),
       stun_port_(0),
@@ -204,7 +206,7 @@ void PepperPortAllocatorSession::SendSessionRequest(
   std::stringstream headers;
   headers << "X-Talk-Google-Relay-Auth: " << relay_token() << "\n\r";
   headers << "X-Google-Relay-Auth: " << relay_token() << "\n\r";
-  headers << "X-StreamType: " << channel_name() << "\n\r";
+  headers << "X-Stream-Type: " << "chromoting" << "\n\r";
   request_info.SetHeaders(headers.str());
 
   int result = relay_url_loader_->Open(request_info, pp::CompletionCallback(
@@ -328,12 +330,13 @@ PepperPortAllocator::PepperPortAllocator(
 PepperPortAllocator::~PepperPortAllocator() {
 }
 
-cricket::PortAllocatorSession* PepperPortAllocator::CreateSession(
-    const std::string& channel_name,
-    int component) {
-  return new PepperPortAllocatorSession(
-      this, channel_name, component, stun_hosts(),
-      relay_hosts(), relay_token(), instance_);
+cricket::PortAllocatorSession* PepperPortAllocator::CreateSessionInternal(
+    int component,
+    const std::string& ice_username_fragment,
+    const std::string& ice_password) {
+   return new PepperPortAllocatorSession(
+       this, component, ice_username_fragment, ice_password,
+       stun_hosts(), relay_hosts(), relay_token(), instance_);
 }
 
 }  // namespace remoting

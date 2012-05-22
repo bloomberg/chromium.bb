@@ -70,17 +70,22 @@ P2PPortAllocator::P2PPortAllocator(
 P2PPortAllocator::~P2PPortAllocator() {
 }
 
-cricket::PortAllocatorSession* P2PPortAllocator::CreateSession(
-    const std::string& channel_name,
-    int component) {
-  return new P2PPortAllocatorSession(this, channel_name, component);
+cricket::PortAllocatorSession* P2PPortAllocator::CreateSessionInternal(
+    int component,
+    const std::string& ice_username_fragment,
+    const std::string& ice_password) {
+  return new P2PPortAllocatorSession(
+      this, component, ice_username_fragment, ice_password);
 }
 
 P2PPortAllocatorSession::P2PPortAllocatorSession(
     P2PPortAllocator* allocator,
-    const std::string& channel_name,
-    int component)
-    : cricket::BasicPortAllocatorSession(allocator, channel_name, component),
+    int component,
+    const std::string& ice_username_fragment,
+    const std::string& ice_password)
+    : cricket::BasicPortAllocatorSession(
+        allocator, component,
+        ice_username_fragment, ice_password),
       allocator_(allocator),
       relay_session_attempts_(0),
       relay_udp_port_(0),
@@ -221,7 +226,7 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
       WebString::fromUTF8("X-Google-Relay-Auth"),
       WebString::fromUTF8(allocator_->config_.relay_password));
   request.addHTTPHeaderField(WebString::fromUTF8("X-Stream-Type"),
-                             WebString::fromUTF8(channel_name()));
+                             WebString::fromUTF8("chromoting"));
 
   relay_session_request_->loadAsynchronously(request, this);
 }

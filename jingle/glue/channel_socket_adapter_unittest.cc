@@ -30,7 +30,7 @@ const int kTestError = -32123;
 class MockTransportChannel : public cricket::TransportChannel {
  public:
   MockTransportChannel()
-      : cricket::TransportChannel("", 0) {
+      : cricket::TransportChannel(0) {
     set_writable(true);
     set_readable(true);
   }

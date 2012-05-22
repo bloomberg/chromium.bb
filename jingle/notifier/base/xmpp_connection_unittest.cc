@@ -47,17 +47,19 @@ class MockPreXmppAuth : public buzz::PreXmppAuth {
                std::string(const std::vector<std::string>&, bool));
   MOCK_METHOD1(CreateSaslMechanism,
                buzz::SaslMechanism*(const std::string&));
-  MOCK_METHOD4(StartPreXmppAuth,
+  MOCK_METHOD5(StartPreXmppAuth,
                void(const buzz::Jid&,
                     const talk_base::SocketAddress&,
                     const talk_base::CryptString&,
+                    const std::string&,
                     const std::string&));
   MOCK_CONST_METHOD0(IsAuthDone, bool());
   MOCK_CONST_METHOD0(IsAuthorized, bool());
   MOCK_CONST_METHOD0(HadError, bool());
   MOCK_CONST_METHOD0(GetError, int());
   MOCK_CONST_METHOD0(GetCaptchaChallenge, buzz::CaptchaChallenge());
-  MOCK_CONST_METHOD0(GetAuthCookie, std::string());
+  MOCK_CONST_METHOD0(GetAuthToken, std::string());
+  MOCK_CONST_METHOD0(GetAuthMechanism, std::string());
 };
 
 class MockXmppConnectionDelegate : public XmppConnection::Delegate {
@@ -113,7 +115,7 @@ TEST_F(XmppConnectionTest, ImmediateFailure) {
 }
 
 TEST_F(XmppConnectionTest, PreAuthFailure) {
-  EXPECT_CALL(*mock_pre_xmpp_auth_, StartPreXmppAuth(_, _, _, _));
+  EXPECT_CALL(*mock_pre_xmpp_auth_, StartPreXmppAuth(_, _, _, _,_));
   EXPECT_CALL(*mock_pre_xmpp_auth_, IsAuthDone()).WillOnce(Return(true));
   EXPECT_CALL(*mock_pre_xmpp_auth_, IsAuthorized()).WillOnce(Return(false));
   EXPECT_CALL(*mock_pre_xmpp_auth_, HadError()).WillOnce(Return(true));
@@ -132,10 +134,11 @@ TEST_F(XmppConnectionTest, PreAuthFailure) {
 }
 
 TEST_F(XmppConnectionTest, FailureAfterPreAuth) {
-  EXPECT_CALL(*mock_pre_xmpp_auth_, StartPreXmppAuth(_, _, _, _));
+  EXPECT_CALL(*mock_pre_xmpp_auth_, StartPreXmppAuth(_, _, _, _,_));
   EXPECT_CALL(*mock_pre_xmpp_auth_, IsAuthDone()).WillOnce(Return(true));
   EXPECT_CALL(*mock_pre_xmpp_auth_, IsAuthorized()).WillOnce(Return(true));
-  EXPECT_CALL(*mock_pre_xmpp_auth_, GetAuthCookie()).WillOnce(Return(""));
+  EXPECT_CALL(*mock_pre_xmpp_auth_, GetAuthMechanism()).WillOnce(Return(""));
+  EXPECT_CALL(*mock_pre_xmpp_auth_, GetAuthToken()).WillOnce(Return(""));
 
   EXPECT_CALL(mock_xmpp_connection_delegate_,
               OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL));

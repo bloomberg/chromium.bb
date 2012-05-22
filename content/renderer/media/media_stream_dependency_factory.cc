@@ -13,7 +13,6 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {

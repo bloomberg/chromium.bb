@@ -12,7 +12,7 @@
 #include "base/message_loop_proxy.h"
 #include "content/common/content_export.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
-#include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
+#include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 
 class MediaStreamDependencyFactory;
