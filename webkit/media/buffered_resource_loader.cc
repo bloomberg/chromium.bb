@@ -355,7 +355,12 @@ void BufferedResourceLoader::didSendData(
 void BufferedResourceLoader::didReceiveResponse(
     WebURLLoader* loader,
     const WebURLResponse& response) {
-  DVLOG(1) << "didReceiveResponse: " << response.httpStatusCode();
+  DVLOG(1) << "didReceiveResponse: HTTP/"
+           << (response.httpVersion() == WebURLResponse::HTTP_0_9 ? "0.9" :
+               response.httpVersion() == WebURLResponse::HTTP_1_0 ? "1.0" :
+               response.httpVersion() == WebURLResponse::HTTP_1_1 ? "1.1" :
+               "Unknown")
+           << " " << response.httpStatusCode();
   DCHECK(active_loader_.get());
 
   // The loader may have been stopped and |start_cb| is destroyed.

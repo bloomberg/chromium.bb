@@ -229,6 +229,14 @@ void PopulateURLResponse(
   if (!headers)
     return;
 
+  WebURLResponse::HTTPVersion version = WebURLResponse::Unknown;
+  if (headers->GetHttpVersion() == net::HttpVersion(0, 9))
+    version = WebURLResponse::HTTP_0_9;
+  else if (headers->GetHttpVersion() == net::HttpVersion(1, 0))
+    version = WebURLResponse::HTTP_1_0;
+  else if (headers->GetHttpVersion() == net::HttpVersion(1, 1))
+    version = WebURLResponse::HTTP_1_1;
+  response->setHTTPVersion(version);
   response->setHTTPStatusCode(headers->response_code());
   response->setHTTPStatusText(WebString::fromUTF8(headers->GetStatusText()));
 
