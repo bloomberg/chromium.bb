@@ -360,6 +360,7 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
   display: inline-block;
   margin: 0;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 #chrome-web-store-title {
