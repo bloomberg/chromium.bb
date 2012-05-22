@@ -103,7 +103,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   CHECK(socketpair(PF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);
 #endif
   base::FileHandleMappingVector fds_to_map;
-  fds_to_map.push_back(std::make_pair(fds[1], 3));
+  fds_to_map.push_back(std::make_pair(fds[1], content::kZygoteSocketPairFd));
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kZygoteCmdPrefix)) {
@@ -161,13 +161,14 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
   // Start up the sandbox host process and get the file descriptor for the
   // renderers to talk to it.
   const int sfd = RenderSandboxHostLinux::GetInstance()->GetRendererSocket();
-  fds_to_map.push_back(std::make_pair(sfd, 5));
+  fds_to_map.push_back(std::make_pair(sfd, content::kZygoteRendererSocketFd));
 
   int dummy_fd = -1;
   if (using_suid_sandbox_) {
     dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
     CHECK(dummy_fd >= 0);
-    fds_to_map.push_back(std::make_pair(dummy_fd, 7));
+    fds_to_map.push_back(std::make_pair(dummy_fd,
+                                        content::kZygoteIdFd));
   }
 
   base::ProcessHandle process = -1;

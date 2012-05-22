@@ -11,6 +11,17 @@ namespace content {
 // is ready to go.
 static const char kZygoteHelloMessage[] = "ZYGOTE_OK";
 
+// File descriptors initialized by the Zygote Host
+const int kZygoteSocketPairFd = 3;
+const int kZygoteRendererSocketFd = 5;
+// This file descriptor is special. It is passed to the Zygote and a setuid
+// helper will be called to locate the process of the Zygote on the system.
+// This mechanism is used when multiple PID namespaces exist because of the
+// setuid sandbox.
+// It is very important that this file descriptor does not exist in multiple
+// processes.
+const int kZygoteIdFd = 7;
+
 // These are the command codes used on the wire between the browser and the
 // zygote.
 enum {

@@ -35,8 +35,6 @@ namespace content {
 
 namespace {
 
-const int kZygoteIdDescriptor = 7;
-
 // NOP function. See below where this handler is installed.
 void SIGCHLDHandler(int signal) {
 }
@@ -413,7 +411,7 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
 
     close(kBrowserDescriptor);  // Our socket from the browser.
     if (UsingSUIDSandbox())
-      close(kZygoteIdDescriptor);  // Another socket from the browser.
+      close(kZygoteIdFd);  // Another socket from the browser.
     base::GlobalDescriptors::GetInstance()->Reset(mapping);
 
 #if defined(CHROMIUM_SELINUX)
