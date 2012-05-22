@@ -60,9 +60,9 @@ class ServerLogEntryTest : public testing::Test {
   }
 };
 
-TEST_F(ServerLogEntryTest, MakeSessionStateChange) {
+TEST_F(ServerLogEntryTest, MakeForSessionStateChange) {
   scoped_ptr<ServerLogEntry> entry(
-      ServerLogEntry::MakeSessionStateChange(true));
+      ServerLogEntry::MakeForSessionStateChange(true));
   scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
   std::map<std::string, std::string> key_value_pairs;
@@ -74,7 +74,7 @@ TEST_F(ServerLogEntryTest, MakeSessionStateChange) {
       << error;
 }
 
-TEST_F(ServerLogEntryTest, MakeHeartbeat) {
+TEST_F(ServerLogEntryTest, MakeForHeartbeat) {
   scoped_ptr<ServerLogEntry> entry(ServerLogEntry::MakeForHeartbeat());
   scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
@@ -88,7 +88,7 @@ TEST_F(ServerLogEntryTest, MakeHeartbeat) {
 
 TEST_F(ServerLogEntryTest, AddHostFields) {
   scoped_ptr<ServerLogEntry> entry(
-      ServerLogEntry::MakeSessionStateChange(true));
+      ServerLogEntry::MakeForSessionStateChange(true));
   entry->AddHostFields();
   scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
@@ -116,7 +116,7 @@ TEST_F(ServerLogEntryTest, AddHostFields) {
 
 TEST_F(ServerLogEntryTest, AddModeField1) {
   scoped_ptr<ServerLogEntry> entry(
-      ServerLogEntry::MakeSessionStateChange(true));
+      ServerLogEntry::MakeForSessionStateChange(true));
   entry->AddModeField(ServerLogEntry::IT2ME);
   scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;
@@ -132,7 +132,7 @@ TEST_F(ServerLogEntryTest, AddModeField1) {
 
 TEST_F(ServerLogEntryTest, AddModeField2) {
   scoped_ptr<ServerLogEntry> entry(
-      ServerLogEntry::MakeSessionStateChange(true));
+      ServerLogEntry::MakeForSessionStateChange(true));
   entry->AddModeField(ServerLogEntry::ME2ME);
   scoped_ptr<XmlElement> stanza = entry->ToStanza();
   std::string error;

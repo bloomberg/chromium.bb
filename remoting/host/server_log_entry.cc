@@ -63,20 +63,21 @@ scoped_ptr<buzz::XmlElement> ServerLogEntry::MakeStanza() {
 }
 
 // static
-ServerLogEntry* ServerLogEntry::MakeSessionStateChange(bool connected) {
-  ServerLogEntry* entry = new ServerLogEntry();
+scoped_ptr<ServerLogEntry> ServerLogEntry::MakeForSessionStateChange(
+    bool connected) {
+  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->Set(kKeyRole, kValueRoleHost);
   entry->Set(kKeyEventName, kValueEventNameSessionState);
   entry->Set(kKeySessionState, GetValueSessionState(connected));
-  return entry;
+  return entry.Pass();
 }
 
 // static
-ServerLogEntry* ServerLogEntry::MakeForHeartbeat() {
-  ServerLogEntry* entry = new ServerLogEntry();
+scoped_ptr<ServerLogEntry> ServerLogEntry::MakeForHeartbeat() {
+  scoped_ptr<ServerLogEntry> entry(new ServerLogEntry());
   entry->Set(kKeyRole, kValueRoleHost);
   entry->Set(kKeyEventName, kValueEventNameHeartbeat);
-  return entry;
+  return entry.Pass();
 }
 
 void ServerLogEntry::AddHostFields() {

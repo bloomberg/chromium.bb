@@ -45,7 +45,7 @@ void LogToServer::LogSessionStateChange(bool connected) {
   DCHECK(CalledOnValidThread());
 
   scoped_ptr<ServerLogEntry> entry(
-      ServerLogEntry::MakeSessionStateChange(connected));
+      ServerLogEntry::MakeForSessionStateChange(connected));
   entry->AddHostFields();
   entry->AddModeField(mode_);
 

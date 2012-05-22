@@ -32,10 +32,10 @@ class ServerLogEntry {
 
   // Constructs a log entry for a session state change.
   // Currently this is either connection or disconnection.
-  static ServerLogEntry* MakeSessionStateChange(bool connection);
+  static scoped_ptr<ServerLogEntry> MakeForSessionStateChange(bool connection);
 
   // Constructs a log entry for a heartbeat.
-  static ServerLogEntry* MakeForHeartbeat();
+  static scoped_ptr<ServerLogEntry> MakeForHeartbeat();
 
   ~ServerLogEntry();
 
