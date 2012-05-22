@@ -759,7 +759,7 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
   const string16 text = textfield_->text();
   GURL url;
   bool write_url;
-  model_->AdjustTextForCopy(selection_range.start(), selected_text == text,
+  model_->AdjustTextForCopy(selection_range.GetMin(), selected_text == text,
       &selected_text, &url, &write_url);
   ui::ScopedClipboardWriter scw(cb, ui::Clipboard::BUFFER_STANDARD);
   scw.WriteText(selected_text);
