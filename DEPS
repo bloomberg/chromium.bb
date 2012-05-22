@@ -23,7 +23,7 @@ vars = {
 
   "lcov_rev": "54822",
   "python_26_rev": "53573",
-  "tools_rev": "8228",
+  "tools_rev": "8673",
 
   # These are URL prefixes rather than revision numbers, so keep them separate.
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
@@ -111,6 +111,12 @@ deps_os = {
       (Var("chromium_trunk") + "/tools/third_party/python_26@" +
        Var("python_26_rev")),
   },
+  "unix": {
+    # Ragel for validator_ragel
+    "third_party/ragel":
+      (Var("native_client_trunk") + "/deps/third_party/ragel@" +
+       Var("tools_rev")),
+  }
 }
 
 hooks = [

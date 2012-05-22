@@ -170,16 +170,7 @@ int DecodeChunkAMD64(const uint8_t *data, size_t size,
   int cs;
 
   %% write init;
-  /* Ragel-generated code stores a difference between pointers into an "int"
-     variable. This produces C4244 warning on Windows x64.  */
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4244) // possible loss of data
-#endif
   %% write exec;
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 error_detected:
   return result;
