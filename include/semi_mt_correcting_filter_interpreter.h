@@ -77,6 +77,12 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
  private:
+  // Helper function to append current HardwareState to history buffer
+  void UpdateHistory(HardwareState* hwstate);
+
+  // Helper function to to clear HardwareState history buffer
+  void ClearHistory();
+
   // As the Synaptics touchpad on Cr48 is very sensitive, we want to avoid the
   // hovering finger to be gone and back with the same tracking id. In addition
   // to reassign a new tracking id for the case, the function also supports

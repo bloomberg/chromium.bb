@@ -595,4 +595,44 @@ TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest) {
   // then test if the WARP flag is set for fs[15].
   EXPECT_EQ(fs[15].flags, GESTURES_FINGER_WARP_Y);
 }
+
+const struct FingerState* kNullFingers = NULL;
+
+TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 100, 0, 3000, 1800, 67, 0},
+  };
+
+  HardwareState hs[] = {
+    // time, buttons, finger count, touch count, fingers
+    { 0.500, 0, 1, 1, &fs[0] },
+  };
+
+  HardwareProperties hwprops = {
+    1217, 5733, 1061, 4798,  // left, top, right, bottom
+    1.0, 1.0, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3, 0, 1, 1  // max_fingers, max_touch, t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+
+  // HardwareState history should be initially cleared
+  EXPECT_EQ(interpreter.prev_hwstate_.fingers, kNullFingers);
+
+  // HardwareState history should not be cleared if interpreter enabled
+  interpreter.interpreter_enabled_.val_ = 1;
+  interpreter.SyncInterpret(&hs[0], NULL);
+  EXPECT_TRUE(interpreter.prev_hwstate_.SameFingersAs(hs[0]));
+
+  // HardwareState history should be cleared if interpreter disabled
+  interpreter.interpreter_enabled_.val_ = 0;
+  interpreter.SyncInterpret(&hs[0], NULL);
+  EXPECT_EQ(interpreter.prev_hwstate_.fingers, kNullFingers);
+}
+
 }  // namespace gestures

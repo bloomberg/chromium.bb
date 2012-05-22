@@ -27,7 +27,7 @@ SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
       non_linear_left_(prop_reg, "SemiMT Non Linear Area Left", 1360.0),
       non_linear_right_(prop_reg, "SemiMT Non Linear Area Right", 5560.0),
       big_jump_(prop_reg, "SemiMT Finger Big Jump Speed", 25000.0) {
-  memset(&prev_hwstate_, 0, sizeof(prev_hwstate_));
+  ClearHistory();
   next_.reset(next);
 }
 
@@ -42,12 +42,9 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
         ClipNonLinearFingerPosition(hwstate);
       CorrectFingerPosition(hwstate);
       SuppressFingerJump(hwstate);
-      prev_hwstate_ = *hwstate;
-      std::copy(hwstate->fingers, hwstate->fingers + kMaxSemiMtFingers,
-                prev_fingers_);
-      prev_hwstate_.fingers = prev_fingers_;
+      UpdateHistory(hwstate);
     } else {
-      memset(&prev_hwstate_, 0, sizeof(prev_hwstate_));
+      ClearHistory();
     }
   }
   return next_->SyncInterpret(hwstate, timeout);
@@ -62,6 +59,17 @@ void SemiMtCorrectingFilterInterpreter::SetHardwareProperties(
     const HardwareProperties& hw_props) {
   is_semi_mt_device_ = hw_props.support_semi_mt;
   next_->SetHardwareProperties(hw_props);
+}
+
+void SemiMtCorrectingFilterInterpreter::UpdateHistory(HardwareState* hwstate) {
+  prev_hwstate_ = *hwstate;
+  std::copy(hwstate->fingers, hwstate->fingers + kMaxSemiMtFingers,
+            prev_fingers_);
+  prev_hwstate_.fingers = prev_fingers_;
+}
+
+void SemiMtCorrectingFilterInterpreter::ClearHistory() {
+  memset(&prev_hwstate_, 0, sizeof(prev_hwstate_));
 }
 
 void SemiMtCorrectingFilterInterpreter::AssignTrackingId(
