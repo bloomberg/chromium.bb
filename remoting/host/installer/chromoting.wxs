@@ -52,7 +52,8 @@
              Compressed="yes"
              Description="$(var.ChromotingHost) Package"
              InstallerVersion="200"
-             Manufacturer="$(var.Manufacturer)"/>
+             Manufacturer="$(var.Manufacturer)"
+             InstallScope="perMachine"/>
 
     <Condition
       Message="$(var.ChromotingHost) is only supported on Windows Vista, Windows Server 2008, or higher.">
