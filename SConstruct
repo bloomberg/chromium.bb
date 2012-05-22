@@ -3048,6 +3048,13 @@ nacl_env = MakeArchSpecificEnv().Clone(
     DYNCODE_LIBS = ['nacl_dyncode_private'],
     )
 
+# This is disabled for PNaCl/ARM because it causes an assertion
+# failure when linking irt.nexe.  See
+# http://code.google.com/p/nativeclient/issues/detail?id=2797.
+# TODO(mseaborn): Enable for PNaCl and move to the Clone() block above.
+if not nacl_env.Bit('bitcode'):
+  nacl_env.Append(CCFLAGS=['-g'])
+
 # This is the address at which a user executable is expected to place its
 # data segment in order to be compatible with the integrated runtime (IRT)
 # library.  This address should not be changed lightly.

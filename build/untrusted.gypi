@@ -24,6 +24,7 @@
     'default_compile_flags': [
       #'-std=gnu99',  Added by build_nexe
       '-O3',
+      '-g',
     ],
   },
   'conditions': [
