@@ -23,9 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
 #include "chrome/browser/task_manager/task_manager_worker_resource_provider.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/pref_names.h"
@@ -1128,34 +1126,11 @@ TaskManager* TaskManager::GetInstance() {
 }
 
 void TaskManager::OpenAboutMemory() {
-  Browser* browser = BrowserList::GetLastActive();
-  OpenURLParams params(
-      GURL(chrome::kChromeUIMemoryURL), Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false);
-
-  if (!browser) {
-    // On OS X, the task manager can be open without any open browser windows.
-    if (!g_browser_process || !g_browser_process->profile_manager())
-      return;
-    Profile* profile =
-        g_browser_process->profile_manager()->GetLastUsedProfile();
-    if (!profile)
-      return;
-    browser = Browser::Create(profile);
-    browser->OpenURL(params);
-  } else {
-    browser->OpenURL(params);
-
-    // In case the browser window is minimized, show it. If |browser| is a
-    // non-tabbed window, the call to OpenURL above will have opened a
-    // TabContentsWrapper in a tabbed browser, so we need to grab it with
-    // GetLastActive before the call to show().
-    if (!browser->is_type_tabbed()) {
-      browser = BrowserList::GetLastActive();
-      DCHECK(browser);
-    }
-  }
-  browser->window()->Show();
+  browser::NavigateParams params(NULL,
+                                 GURL(chrome::kChromeUIMemoryURL),
+                                 content::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  browser::Navigate(&params);
 }
 
 bool TaskManagerModel::GetAndCacheMemoryMetrics(base::ProcessHandle handle,
