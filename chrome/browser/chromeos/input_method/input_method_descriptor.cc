@@ -10,6 +10,8 @@
 #include "base/string_split.h"
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 
+// TODO(yusukes): Remove virtual keyboard support.
+
 namespace chromeos {
 namespace input_method {
 

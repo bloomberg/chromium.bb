@@ -522,8 +522,6 @@
             'browser/extensions/extension_input_ime_api.h',
             'browser/extensions/extension_input_method_api.cc',
             'browser/extensions/extension_input_method_api.h',
-            'browser/extensions/extension_input_ui_api.cc',
-            'browser/extensions/extension_input_ui_api.h',
             'browser/extensions/extension_managed_mode_api.cc',
             'browser/extensions/extension_managed_mode_api.h',
             'browser/extensions/extension_management_api.cc',
@@ -577,11 +575,6 @@
             ['include', '^browser/extensions/api/web_request/web_request_api_constants.cc'],
             ['include', '^browser/extensions/api/web_request/web_request_api_helpers.cc'],
             ['include', '^browser/extensions/api/web_request/web_request_time_tracker.cc'],
-          ],
-        }],
-        ['use_virtual_keyboard==0', {
-          'sources/': [
-            ['exclude', '^browser/extensions/extension_input_ui_api.*'],
           ],
         }],
         ['OS=="linux" and use_aura==1', {
@@ -642,14 +635,6 @@
                 ['exclude', '^browser/extensions/extension_input_api.h'],
                 ['exclude', '^browser/extensions/key_identifier_conversion_views.cc'],
                 ['exclude', '^browser/extensions/key_identifier_conversion_views.h'],
-              ],
-            }],
-            # Exclude extension_input_ui_api that depends on chromeos again
-            # (Required because of the '^browser/extensions/' include above)
-            ['chromeos == 0 or use_virtual_keyboard == 0', {
-              'sources/': [
-                ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
-                ['exclude', '^browser/extensions/extension_input_ui_api.h'],
               ],
             }],
             ['chromeos==1',{

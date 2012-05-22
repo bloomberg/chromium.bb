@@ -581,7 +581,6 @@ bool InputMethodManagerImpl::ContainOnlyKeyboardLayout(
 }
 
 void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
-#if !defined(USE_VIRTUAL_KEYBOARD)
   if (candidate_window_controller_.get())
     return;
 
@@ -591,7 +590,6 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
     candidate_window_controller_->AddObserver(this);
   else
     DVLOG(1) << "Failed to initialize the candidate window controller";
-#endif
 }
 
 // static

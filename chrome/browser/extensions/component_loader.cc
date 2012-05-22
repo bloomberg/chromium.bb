@@ -275,10 +275,6 @@ void ComponentLoader::AddDefaultComponentExtensions() {
   AddFileManagerExtension();
 #endif
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-  Add(IDR_KEYBOARD_MANIFEST, FilePath(FILE_PATH_LITERAL("keyboard")));
-#endif
-
 #if defined(OS_CHROMEOS)
     Add(IDR_MOBILE_MANIFEST,
         FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/mobile")));

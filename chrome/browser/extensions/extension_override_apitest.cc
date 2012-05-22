@@ -43,18 +43,6 @@ class ExtensionOverrideTest : public ExtensionApiTest {
 
     return true;
   }
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-  // Navigate to the keyboard page, and ensure we have arrived at an
-  // extension URL.
-  void NavigateToKeyboard() {
-    ui_test_utils::NavigateToURL(browser(), GURL("chrome://keyboard/"));
-    WebContents* tab = browser()->GetSelectedWebContents();
-    ASSERT_TRUE(tab->GetController().GetActiveEntry());
-    EXPECT_TRUE(tab->GetController().GetActiveEntry()->GetURL().
-                SchemeIs(chrome::kExtensionScheme));
-  }
-#endif
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtab) {
@@ -153,32 +141,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldCleanUpDuplicateEntries) {
 
   ASSERT_TRUE(CheckHistoryOverridesContainsNoDupes());
 }
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideKeyboard) {
-  ASSERT_TRUE(RunExtensionTest("override/keyboard")) << message_;
-  {
-    ResultCatcher catcher;
-    NavigateToKeyboard();
-    ASSERT_TRUE(catcher.GetNextResult());
-  }
-
-  // Load the failing version.  This should take precedence.
-  const extensions::Extension* extension = LoadExtension(
-      test_data_dir_.AppendASCII("override").AppendASCII("keyboard_fails"));
-  ASSERT_TRUE(extension);
-  {
-    ResultCatcher catcher;
-    NavigateToKeyboard();
-    ASSERT_FALSE(catcher.GetNextResult());
-  }
-
-  // Unload the failing version.  We should be back to passing now.
-  UnloadExtension(extension->id());
-  {
-    ResultCatcher catcher;
-    NavigateToKeyboard();
-    ASSERT_TRUE(catcher.GetNextResult());
-  }
-}
-#endif

@@ -21,15 +21,6 @@
 
 using content::BrowserThread;
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-// Since USE_VIRTUAL_KEYBOARD build only supports a few keyboard layouts, we
-// skip the tests for now.
-#define TestCreateFullXkbLayoutNameKeepAlt \
-  DISABLED_TestCreateFullXkbLayoutNameKeepAlt
-#define TestCreateFullXkbLayoutNameKeepCapsLock \
-  DISABLED_TestCreateFullXkbLayoutNameKeepCapsLock
-#endif  // USE_VIRTUAL_KEYBOARD
-
 namespace chromeos {
 namespace input_method {
 

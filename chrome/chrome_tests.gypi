@@ -1093,7 +1093,6 @@
         'browser/chromeos/input_method/input_method_property_unittest.cc',
         'browser/chromeos/input_method/input_method_util_unittest.cc',
         'browser/chromeos/input_method/input_method_whitelist_unittest.cc',
-        'browser/chromeos/input_method/virtual_keyboard_selector_unittest.cc',
         'browser/chromeos/input_method/xkeyboard_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_screensaver_unittest.cc',
@@ -1773,7 +1772,6 @@
         'browser/ui/webui/chrome_web_ui_data_source_unittest.cc',
         'browser/ui/webui/fileicon_source_unittest.cc',
         'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
-        'browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2_unittest.cc',
         'browser/ui/webui/options2/language_options_handler2_unittest.cc',
         'browser/ui/webui/policy_ui_unittest.cc',
         'browser/ui/webui/print_preview/print_preview_handler_unittest.cc',
@@ -2072,12 +2070,6 @@
         ['enable_automation!=1', {
           'sources/': [
             ['exclude', '^browser/automation/'],
-          ],
-        }],
-        ['use_virtual_keyboard!=1', {
-          'sources/': [
-            ['exclude', '^browser/chromeos/input_method/virtual_keyboard_selector_unittest.cc'],
-            ['exclude', '^browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2_unittest.cc'],
           ],
         }],
         ['enable_session_service!=1', {
@@ -2711,7 +2703,6 @@
         'browser/extensions/extension_input_apitest.cc',
         'browser/extensions/extension_input_ime_apitest_chromeos.cc',
         'browser/extensions/extension_input_method_apitest_chromeos.cc',
-        'browser/extensions/extension_input_ui_apitest.cc',
         'browser/extensions/extension_install_ui_browsertest.cc',
         'browser/extensions/extension_javascript_url_apitest.cc',
         'browser/extensions/extension_keybinding_apitest.cc',
@@ -3060,19 +3051,9 @@
             'browser/ui/panels/panel_browser_view_browsertest.cc',
           ],
         }],
-        ['use_virtual_keyboard==1', {
-          'sources': [
-            'browser/ui/virtual_keyboard/virtual_keyboard_manager_browsertest.cc',
-          ],
-        }],
         ['file_manager_extension==0', {
           'sources!': [
             'browser/ui/views/select_file_dialog_extension_browsertest.cc',
-          ],
-        }],
-        ['chromeos==0 or use_virtual_keyboard==0', {
-          'sources!': [
-            'browser/extensions/extension_input_ui_apitest.cc',
           ],
         }],
         ['configuration_policy==0', {

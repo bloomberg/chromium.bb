@@ -49,10 +49,6 @@ class IBusControllerImpl : public IBusControllerBase {
   virtual bool Stop() OVERRIDE;
   virtual bool ChangeInputMethod(const std::string& id) OVERRIDE;
   virtual bool ActivateInputMethodProperty(const std::string& key) OVERRIDE;
-#if defined(USE_VIRTUAL_KEYBOARD)
-  virtual void SendHandwritingStroke(const HandwritingStroke& stroke) OVERRIDE;
-  virtual void CancelHandwriting(int n_strokes) OVERRIDE;
-#endif
 
   // Calls <anonymous_namespace>::FindAndUpdateProperty. This method is just for
   // unit testing.

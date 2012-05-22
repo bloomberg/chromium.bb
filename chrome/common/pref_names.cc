@@ -645,11 +645,6 @@ const char kLanguageXkbAutoRepeatInterval[] =
 // "_r2" suffixes are added to the three prefs above when we change the
 // preferences not user-configurable, not to sync them with cloud.
 
-// A dictionary pref which determines a preferred virtual keyboard per layout.
-// e.g. { "us(dvorak)": "http://asdfg..yuiop/" }
-const char kLanguagePreferredVirtualKeyboard[] =
-    "settings.language.preferred_virtual_keyboard";
-
 // A boolean pref which determines whether spoken feedback is enabled.
 const char kSpokenFeedbackEnabled[] = "settings.accessibility";
 // A boolean pref which determines whether high conrast is enabled.
@@ -657,6 +652,7 @@ const char kHighContrastEnabled[] = "settings.a11y.high_contrast";
 // A boolean pref which determines whether screen magnifier is enabled.
 const char kScreenMagnifierEnabled[] = "settings.a11y.screen_magnifier";
 // A boolean pref which determines whether virtual keyboard is enabled.
+// TODO(hashimoto): Remove this pref.
 const char kVirtualKeyboardEnabled[] = "settings.a11y.virtual_keyboard";
 
 // A boolean pref which turns on Advanced Filesystem

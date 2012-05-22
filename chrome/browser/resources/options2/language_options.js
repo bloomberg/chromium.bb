@@ -118,17 +118,6 @@ cr.define('options', function() {
 
       $('language-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
-
-      // Listen to user clicks on the "Change touch keyboard settings..."
-      // button (if it exists).
-      var virtualKeyboardButton = $('language-options-virtual-keyboard');
-      if (virtualKeyboardButton) {
-        // TODO(yusukes): would be better to hide the button if no virtual
-        // keyboard is registered.
-        virtualKeyboardButton.onclick = function(e) {
-          OptionsPage.navigateToPage('virtualKeyboards');
-        };
-      }
     },
 
     // The preference is a boolean that enables/disables spell checking.

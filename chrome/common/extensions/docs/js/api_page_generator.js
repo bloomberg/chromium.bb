@@ -41,7 +41,6 @@ var MODULE_SCHEMAS = [
   '../api/experimental_font_settings.json',
   '../api/experimental_identity.json',
   '../api/experimental_infobars.json',
-  '../api/experimental_input_ui.json',
   '../api/experimental_input_virtual_keyboard.json',
   '../api/experimental_keybinding.json',
   '../api/experimental_media_galleries.json',

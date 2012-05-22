@@ -19,15 +19,6 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-#include "content/public/browser/notification_service.h"
-#endif
-
-#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/login/base_login_display_host.h"
-#endif
-
 namespace {
 
 // Keys.
@@ -73,13 +64,6 @@ uint16 UnicodeIdentifierStringToInt(const std::string& key_identifier) {
 }
 
 views::Widget* GetTopLevelWidget(Browser* browser) {
-#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
-  chromeos::LoginDisplayHost* host =
-      chromeos::BaseLoginDisplayHost::default_host();
-  if (host)
-    return views::Widget::GetWidgetForNativeWindow(host->GetNativeWindow());
-#endif
-
   if (!browser)
     return NULL;
 
@@ -156,82 +140,3 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
   return true;
 }
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-bool HideKeyboardFunction::RunImpl() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_HIDE_KEYBOARD_INVOKED,
-      content::Source<HideKeyboardFunction>(this),
-      content::NotificationService::NoDetails());
-  return true;
-}
-
-bool SetKeyboardHeightFunction::RunImpl() {
-  int height = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &height));
-
-  if (height < 0) {
-    error_ = kInvalidHeight;
-    return false;
-  }
-
-  // TODO(penghuang) Check the height is not greater than height of browser view
-  // and set the height of virtual keyboard directly instead of using
-  // notification.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
-      content::Source<SetKeyboardHeightFunction>(this),
-      content::Details<int>(&height));
-  return true;
-}
-#endif
-
-#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
-// TODO(yusukes): This part should be moved to extension_input_api_chromeos.cc.
-bool SendHandwritingStrokeFunction::RunImpl() {
-  // TODO(yusukes): Add a parameter for an input context ID.
-  ListValue* value = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &value));
-
-  chromeos::input_method::HandwritingStroke stroke;
-  for (size_t i = 0; i < value->GetSize(); ++i) {
-    DictionaryValue* dict;
-    double x = 0.0;
-    double y = 0.0;
-    EXTENSION_FUNCTION_VALIDATE(value->GetDictionary(i, &dict));
-    EXTENSION_FUNCTION_VALIDATE(dict->GetDouble("x", &x));
-    EXTENSION_FUNCTION_VALIDATE(dict->GetDouble("y", &y));
-    stroke.push_back(std::make_pair(x, y));
-  }
-
-  views::Widget* widget = GetTopLevelWidget(GetCurrentBrowser());
-  views::InputMethod* ime = widget ? widget->GetInputMethod() : NULL;
-  if (ime) {
-    static const views::KeyEvent* dummy_keydown = new views::KeyEvent(
-        ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
-    static const views::KeyEvent* dummy_keyup = new views::KeyEvent(
-        ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, 0);
-    // These fake key events are necessary for clearing |suppress_next_result_|
-    // flag in view/ime/input_method_*.cc. Otherwise, clicking a candidate in
-    // the candidate window might be ignored.
-    ime->DispatchKeyEvent(*dummy_keydown);
-    ime->DispatchKeyEvent(*dummy_keyup);
-  }
-
-  chromeos::input_method::InputMethodManager::GetInstance()->
-      SendHandwritingStroke(stroke);
-  return true;
-}
-
-bool CancelHandwritingStrokesFunction::RunImpl() {
-  // TODO(yusukes): Add a parameter for an input context ID.
-  int stroke_count = 0;  // zero means 'clear all strokes'.
-  if (HasOptionalArgument(0)) {
-    EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &stroke_count));
-    EXTENSION_FUNCTION_VALIDATE(stroke_count >= 0);
-  }
-  chromeos::input_method::InputMethodManager::GetInstance()->
-      CancelHandwritingStrokes(stroke_count);
-  return true;
-}
-#endif

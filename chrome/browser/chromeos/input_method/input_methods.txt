@@ -55,42 +55,41 @@
 
 # U.S. English
 xkb:us::eng	us	en-US
-xkb:us:intl:eng	us(intl)	en-US	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:us:altgr-intl:eng	us(altgr-intl)	en-US	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:us:dvorak:eng	us(dvorak)	en-US	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:us:colemak:eng	us(colemak)	en-US	!defined(USE_VIRTUAL_KEYBOARD)
-english-m	us	en-US	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:us:intl:eng	us(intl)	en-US	
+xkb:us:altgr-intl:eng	us(altgr-intl)	en-US	
+xkb:us:dvorak:eng	us(dvorak)	en-US	
+xkb:us:colemak:eng	us(colemak)	en-US	
+english-m	us	en-US	
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.
 
 # Dutch
-xkb:be::nld	be	nl	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:be::nld	be	nl	
 # We don't support xkb:nl::nld. See b/4430951.
 
 # French
 xkb:fr::fra	fr	fr
-xkb:be::fra	be	fr	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:ca::fra	ca	fr	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:ch:fr:fra	ch(fr)	fr	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:be::fra	be	fr	
+xkb:ca::fra	ca	fr	
+xkb:ch:fr:fra	ch(fr)	fr	
 
 # German
-xkb:de::ger	de	de	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:de:neo:ger	de(neo)	de	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:be::ger	be	de	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:ch::ger	ch	de	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:de::ger	de	de	
+xkb:de:neo:ger	de(neo)	de	
+xkb:be::ger	be	de	
+xkb:ch::ger	ch	de	
 
 # Japanese
 mozc	us	ja
-mozc-jp	jp	ja	!defined(USE_VIRTUAL_KEYBOARD)
-mozc-dv	us(dvorak)	ja	!defined(USE_VIRTUAL_KEYBOARD)
+mozc-jp	jp	ja	
+mozc-dv	us(dvorak)	ja	
 # |kMozcJaInputMethodIds| in ibus_ui_controller.cc should also be updated when
 # a new Mozc Japanese IME for another keyboard layout is added.
-xkb:jp::jpn	jp	ja	!defined(USE_VIRTUAL_KEYBOARD)
-zinnia-japanese	handwriting-vk,jp	ja	defined(USE_VIRTUAL_KEYBOARD)
+xkb:jp::jpn	jp	ja	
 
 # Russian
-xkb:ru::rus	ru	ru	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:ru:phonetic:rus	ru(phonetic)	ru	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:ru::rus	ru	ru	
+xkb:ru:phonetic:rus	ru(phonetic)	ru	
 
 # Thai
 m17n:th:kesmanee	us	th
@@ -99,7 +98,7 @@ m17n:th:tis820	us	th
 
 # Simplified Chinese
 pinyin	us	zh-CN
-pinyin-dv	us(dvorak)	zh-CN	!defined(USE_VIRTUAL_KEYBOARD)
+pinyin-dv	us(dvorak)	zh-CN	
 
 # Traditional Chinese
 mozc-chewing	us	zh-TW
@@ -175,35 +174,35 @@ m17n:kn:itrans	us	kn
 m17n:am:sera	us	am
 
 # Keyboard layouts.
-xkb:br::por	br	pt-BR	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:bg::bul	bg	bg	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:bg:phonetic:bul	bg(phonetic)	bg	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:ca:eng:eng	ca(eng)	en-CA	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:cz::cze	cz	cs	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:ee::est	ee	et	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:es::spa	es	es	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:es:cat:cat	es(cat)	ca	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:dk::dan	dk	da	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:gr::gre	gr	el	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:il::heb	il	he	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:latam::spa	latam	es	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:lt::lit	lt	lt	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:lv:apostrophe:lav	lv(apostrophe)	lv	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:hr::scr	hr	hr	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:gb:extd:eng	gb(extd)	en-GB	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:gb:dvorak:eng	gb(dvorak)	en-GB	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:fi::fin	fi	fi	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:hu::hun	hu	hu	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:it::ita	it	it	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:no::nob	no	nb	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:pl::pol	pl	pl	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:pt::por	pt	pt-PT	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:ro::rum	ro	ro	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:se::swe	se	sv	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:sk::slo	sk	sk	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:si::slv	si	sl	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:rs::srp	rs	sr	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:tr::tur	tr	tr	!defined(USE_VIRTUAL_KEYBOARD)
-xkb:ua::ukr	ua	uk	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:br::por	br	pt-BR	
+xkb:bg::bul	bg	bg	
+xkb:bg:phonetic:bul	bg(phonetic)	bg	
+xkb:ca:eng:eng	ca(eng)	en-CA	
+xkb:cz::cze	cz	cs	
+xkb:ee::est	ee	et	
+xkb:es::spa	es	es	
+xkb:es:cat:cat	es(cat)	ca	
+xkb:dk::dan	dk	da	
+xkb:gr::gre	gr	el	
+xkb:il::heb	il	he	
+xkb:latam::spa	latam	es	
+xkb:lt::lit	lt	lt	
+xkb:lv:apostrophe:lav	lv(apostrophe)	lv	
+xkb:hr::scr	hr	hr	
+xkb:gb:extd:eng	gb(extd)	en-GB	
+xkb:gb:dvorak:eng	gb(dvorak)	en-GB	
+xkb:fi::fin	fi	fi	
+xkb:hu::hun	hu	hu	
+xkb:it::ita	it	it	
+xkb:no::nob	no	nb	
+xkb:pl::pol	pl	pl	
+xkb:pt::por	pt	pt-PT	
+xkb:ro::rum	ro	ro	
+xkb:se::swe	se	sv	
+xkb:sk::slo	sk	sk	
+xkb:si::slv	si	sl	
+xkb:rs::srp	rs	sr	
+xkb:tr::tur	tr	tr	
+xkb:ua::ukr	ua	uk	
 # TODO(yusukes): Support xkb:latam:deadtilde:spa and/or xkb:latam:nodeadkeys:spa
 # if necessary.

@@ -39,12 +39,6 @@ class TestIBusController : public IBusControllerBase {
   virtual bool ActivateInputMethodProperty(const std::string& key) OVERRIDE {
     return true;
   }
-#if defined(USE_VIRTUAL_KEYBOARD)
-  virtual void SendHandwritingStroke(const HandwritingStroke& stroke) OVERRIDE {
-  }
-  virtual void CancelHandwriting(int n_strokes) OVERRIDE {
-  }
-#endif
 
   size_t GetObserverCount() const {
     return observers_.size();

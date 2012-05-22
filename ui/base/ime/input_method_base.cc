@@ -53,7 +53,6 @@ TextInputClient* InputMethodBase::GetTextInputClient() const {
 void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
-  // TODO(yusukes): Support TextInputTypeTracker for USE_VIRTUAL_KEYBOARD.
 }
 
 TextInputType InputMethodBase::GetTextInputType() const {

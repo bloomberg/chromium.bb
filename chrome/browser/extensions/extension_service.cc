@@ -123,10 +123,6 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
-#include "chrome/browser/extensions/extension_input_ui_api.h"
-#endif
-
 using base::Time;
 using content::BrowserContext;
 using content::BrowserThread;
@@ -519,11 +515,6 @@ void ExtensionService::InitEventRouters() {
   ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
   ExtensionInputImeEventRouter::GetInstance()->Init();
 #endif
-
-#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
-  ExtensionInputUiEventRouter::GetInstance()->Init();
-#endif
-
 #endif  // defined(ENABLE_EXTENSIONS)
   event_routers_initialized_ = true;
 }
@@ -1045,20 +1036,6 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
       ExtensionInputImeEventRouter::GetInstance()->RegisterIme(
           profile_, extension->id(), *component);
     }
-#if defined(USE_VIRTUAL_KEYBOARD)
-    if (component->type == Extension::INPUT_COMPONENT_TYPE_VIRTUAL_KEYBOARD &&
-        !component->layouts.empty()) {
-      chromeos::input_method::InputMethodManager* input_method_manager =
-          chromeos::input_method::InputMethodManager::GetInstance();
-      const bool is_system_keyboard =
-          extension->location() == Extension::COMPONENT;
-      input_method_manager->RegisterVirtualKeyboard(
-          extension->url(),
-          component->name,  // human-readable name of the keyboard extension.
-          component->layouts,
-          is_system_keyboard);
-    }
-#endif
   }
 #endif
 }

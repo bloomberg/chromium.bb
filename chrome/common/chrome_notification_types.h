@@ -1017,25 +1017,6 @@ enum NotificationType {
   // Sent when a new web store promo has been loaded.
   NOTIFICATION_WEB_STORE_PROMO_LOADED,
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-  // Sent when the keyboard visibility has changed. Used for testing purposes
-  // only. Source is the keyboard manager, and Details is a boolean indicating
-  // whether the keyboard is visibile or not.
-  NOTIFICATION_KEYBOARD_VISIBILITY_CHANGED,
-
-  // Sent when an API for hiding the keyboard is invoked from JavaScript code.
-  NOTIFICATION_HIDE_KEYBOARD_INVOKED,
-
-  // Sent when an API for set height of the keyboard is invoked from
-  // JavaScript code.
-  NOTIFICATION_SET_KEYBOARD_HEIGHT_INVOKED,
-
-  // Sent after the keyboard has been animated up or down. Source is the
-  // keyboard Widget, and Details is bounds of the keyboard in screen
-  // coordinates.
-  NOTIFICATION_KEYBOARD_VISIBLE_BOUNDS_CHANGED,
-#endif
-
   // Protocol Handler Registry -----------------------------------------------
   // Sent when a ProtocolHandlerRegistry is changed. The source is the profile.
   NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,

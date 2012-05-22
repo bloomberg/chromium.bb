@@ -69,10 +69,6 @@ class RenderProcessHostTest : public InProcessBrowserTest {
     content::RenderProcessHost* rph2 = NULL;
     content::RenderProcessHost* rph3 = NULL;
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-    ++host_count;  // For the virtual keyboard.
-#endif
-
     // Change the first tab to be the new tab page (TYPE_WEBUI).
     GURL newtab(chrome::kTestNewTabURL);
     ui_test_utils::NavigateToURL(browser(), newtab);
@@ -130,11 +126,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
     if (browser()->tab_count() == tab_count)
       ui_test_utils::WaitForNewTab(browser());
     tab_count++;
-#if !defined(USE_VIRTUAL_KEYBOARD)
-    // The virtual keyboard already creates an extension process. So this
-    // should not increase the process count.
     host_count++;
-#endif
     EXPECT_EQ(tab_count, browser()->tab_count());
     tab1 = browser()->GetWebContentsAt(tab_count - 1);
     rph3 = tab1->GetRenderProcessHost();
@@ -163,10 +155,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
 
   int tab_count = 1;
   int host_count = 1;
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-  ++host_count;  // For the virtual keyboard.
-#endif
 
   // Change the first tab to be the new tab page (TYPE_WEBUI).
   GURL newtab(chrome::kTestNewTabURL);

@@ -77,9 +77,6 @@
 #include "chrome/browser/ui/webui/options2/chromeos/stats_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/user_image_source2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.h"
-#if defined(USE_VIRTUAL_KEYBOARD)
-#include "chrome/browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2.h"
-#endif
 #endif
 
 #if defined(OS_CHROMEOS) && defined(USE_ASH)
@@ -270,12 +267,6 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   chromeos::options2::PointerHandler* pointer_handler =
       new chromeos::options2::PointerHandler();
   AddOptionsPageUIHandler(localized_strings, pointer_handler);
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-  AddOptionsPageUIHandler(
-      localized_strings,
-      new chromeos::options2::VirtualKeyboardManagerHandler());
-#endif
 
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::ProxyHandler());

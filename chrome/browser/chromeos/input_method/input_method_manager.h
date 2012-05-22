@@ -176,8 +176,4 @@ class InputMethodManager {
 }  // namespace input_method
 }  // namespace chromeos
 
-// TODO(yusukes): Adding back the Virtual Keyboard support to somewhere in
-// input_method/. Adding it directly to this class is probably not the right
-// thing to do.
-
 #endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_MANAGER_H_

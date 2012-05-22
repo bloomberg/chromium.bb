@@ -597,8 +597,6 @@
         'browser/chromeos/input_method/input_method_whitelist.h',
         'browser/chromeos/input_method/mock_ibus_controller.cc',
         'browser/chromeos/input_method/mock_ibus_controller.h',
-        'browser/chromeos/input_method/virtual_keyboard_selector.cc',
-        'browser/chromeos/input_method/virtual_keyboard_selector.h',
         'browser/chromeos/input_method/xkeyboard.cc',
         'browser/chromeos/input_method/xkeyboard.h',
         'browser/chromeos/input_method/xkeyboard_data.h',
@@ -3618,8 +3616,6 @@
         'browser/ui/views/web_intent_picker_views.cc',
         'browser/ui/views/wrench_menu.cc',
         'browser/ui/views/wrench_menu.h',
-        'browser/ui/virtual_keyboard/virtual_keyboard_manager.cc',
-        'browser/ui/virtual_keyboard/virtual_keyboard_manager.h',
         'browser/ui/web_applications/web_app_ui.cc',
         'browser/ui/web_applications/web_app_ui.h',
         'browser/ui/website_settings_ui.cc',
@@ -3741,8 +3737,6 @@
         'browser/ui/webui/history_ui.h',
         'browser/ui/webui/inspect_ui.cc',
         'browser/ui/webui/inspect_ui.h',
-        'browser/ui/webui/keyboard_ui.cc',
-        'browser/ui/webui/keyboard_ui.h',
         'browser/ui/webui/media/media_internals_handler.cc',
         'browser/ui/webui/media/media_internals_handler.h',
         'browser/ui/webui/media/media_internals_proxy.cc',
@@ -3838,8 +3832,6 @@
         'browser/ui/webui/options2/chromeos/system_settings_provider2.h',
         'browser/ui/webui/options2/chromeos/user_image_source2.cc',
         'browser/ui/webui/options2/chromeos/user_image_source2.h',
-        'browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2.cc',
-        'browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2.h',
         'browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.cc',
         'browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.h',
         'browser/ui/webui/options2/clear_browser_data_handler2.cc',
@@ -4403,14 +4395,6 @@
         ['ui_compositor_image_transport==1', {
           'dependencies': [
             '../ui/gl/gl.gyp:gl',
-          ],
-        }],
-        ['use_virtual_keyboard==0', {
-          'sources/': [
-            ['exclude', '^browser/chromeos/input_method/virtual_keyboard_selector.*'],
-            ['exclude', '^browser/ui/virtual_keyboard/*'],
-            ['exclude', '^browser/ui/webui/keyboard_ui.*'],
-            ['exclude', '^browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2.*'],
           ],
         }],
         ['os_posix == 1 and OS != "mac" and OS != "android"', {

@@ -30,7 +30,6 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_FONTSSETTINGS" file="extensions\api\experimental_font_settings.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_IDENTITY" file="extensions\api\experimental_identity.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS" file="extensions\api\experimental_infobars.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_UI" file="extensions\api\experimental_input_ui.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD" file="extensions\api\experimental_input_virtual_keyboard.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_KEYBINDING" file="extensions\api\experimental_keybinding.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_MEDIAGALLERIES" file="extensions\api\experimental_media_galleries.json" type="BINDATA" />

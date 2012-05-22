@@ -71,10 +71,6 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   int tab_count = 1;
   int host_count = 1;
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-  ++host_count;  // For the virtual keyboard.
-#endif
-
   GURL page1("data:text/html,hello world1");
   browser()->ShowSingletonTab(page1);
   if (browser()->tab_count() == tab_count)
@@ -107,10 +103,6 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
                        DevToolsOnSelfInOwnProcess) {
   int tab_count = 1;
   int host_count = 1;
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-  ++host_count;  // For the virtual keyboard.
-#endif
 
   GURL page1("data:text/html,hello world1");
   browser()->ShowSingletonTab(page1);

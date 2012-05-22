@@ -1084,11 +1084,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kUIEnablePartialSwap,
       ::switches::kUseGL,
       ::switches::kUserDataDir,
-#if defined(USE_VIRTUAL_KEYBOARD)
-      // The virtual keyboard extension (chrome://keyboard) highly relies on
-      // experimental APIs.
-      ::switches::kEnableExperimentalExtensionApis,
-#endif
       chromeos::switches::kDbusStub,
   };
   command_line->CopySwitchesFrom(base_command_line,

@@ -65,22 +65,6 @@ class IBusController {
   // Gets the latest input method property send from the system input method
   // framework.
   virtual const InputMethodPropertyList& GetCurrentProperties() const = 0;
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-  typedef std::vector<std::pair<double, double> > HandwritingStroke;
-
-  // Sends a handwriting stroke to the system input method. The std::pair
-  // contains x and y coordinates. (0.0, 0.0) represents the top-left corner of
-  // a handwriting area, and (1.0, 1.0) does the bottom-right. For example, the
-  // second stroke for U+30ED (Katakana character Ro) would be something like
-  // [(0,0), (1,0), (1,1)].  stroke.size() should always be >= 2 (i.e. a single
-  // dot is not allowed).
-  virtual void SendHandwritingStroke(const HandwritingStroke& stroke) = 0;
-
-  // Clears the last N handwriting strokes. Pass zero for clearing all strokes.
-  // TODO(yusukes): Currently ibus-daemon only accepts 0 for |n_strokes|.
-  virtual void CancelHandwriting(int n_strokes) = 0;
-#endif
 };
 
 }  // namespace input_method

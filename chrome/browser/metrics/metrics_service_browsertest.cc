@@ -62,12 +62,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CloseRenderersNormally) {
   // Verify that the expected stability metrics were recorded.
   const PrefService* prefs = g_browser_process->local_state();
   EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityLaunchCount));
-#if defined(USE_VIRTUAL_KEYBOARD)
-  // The keyboard page loads.
-  EXPECT_EQ(4, prefs->GetInteger(prefs::kStabilityPageLoadCount));
-#else
   EXPECT_EQ(3, prefs->GetInteger(prefs::kStabilityPageLoadCount));
-#endif
   EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityRendererCrashCount));
   // TODO(isherman): We should also verify that prefs::kStabilityExitedCleanly
   // is set to true, but this preference isn't set until the browser
@@ -97,12 +92,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceTest, CrashRenderers) {
 
   // Verify that the expected stability metrics were recorded.
   EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityLaunchCount));
-#if defined(USE_VIRTUAL_KEYBOARD)
-  // The keyboard page loads.
-  EXPECT_EQ(5, prefs->GetInteger(prefs::kStabilityPageLoadCount));
-#else
   EXPECT_EQ(4, prefs->GetInteger(prefs::kStabilityPageLoadCount));
-#endif
   EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityRendererCrashCount));
   // TODO(isherman): We should also verify that prefs::kStabilityExitedCleanly
   // is set to true, but this preference isn't set until the browser

@@ -14,22 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-// Since USE_VIRTUAL_KEYBOARD build only supports a few keyboard layouts, we
-// skip the tests for now.
-#define TestGetFirstLoginInputMethodIds_Dvorak_And_Ja \
-  DISABLED_TestGetFirstLoginInputMethodIds_Dvorak_And_Ja
-#define TestGetFirstLoginInputMethodIds_JP_And_Ja \
-  DISABLED_TestGetFirstLoginInputMethodIds_JP_And_Ja
-#define TestGetFirstLoginInputMethodIds_Us_And_Ru \
-  DISABLED_TestGetFirstLoginInputMethodIds_Us_And_Ru
-#define TestGetInputMethodDescriptorFromXkbId \
-  DISABLED_TestGetInputMethodDescriptorFromXkbId
-#define TestGetKeyboardLayoutName DISABLED_TestGetKeyboardLayoutName
-#define TestGetLanguageCodesFromInputMethodIds \
-  DISABLED_TestGetLanguageCodesFromInputMethodIds
-#endif  // USE_VIRTUAL_KEYBOARD
-
 namespace chromeos {
 
 extern const char* kExtensionImePrefix;

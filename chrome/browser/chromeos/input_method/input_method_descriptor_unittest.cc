@@ -7,12 +7,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-// Since USE_VIRTUAL_KEYBOARD build only supports a few keyboard layouts, we
-// skip the test for now.
-#define TestCreateInputMethodDescriptor DISABLED_TestCreateInputMethodDescriptor
-#endif  // USE_VIRTUAL_KEYBOARD
-
 namespace chromeos {
 namespace input_method {
 
@@ -63,8 +57,6 @@ TEST_F(InputMethodDescriptorTest, TestCreateInputMethodDescriptor) {
   EXPECT_EQ(kFallbackLayout, GetDesc("not-supported").keyboard_layout());
   EXPECT_EQ(kFallbackLayout, GetDesc(",").keyboard_layout());
   EXPECT_EQ(kFallbackLayout, GetDesc("").keyboard_layout());
-
-  // TODO(yusukes): Add tests for |virtual_keyboard_layout| member.
 }
 
 TEST_F(InputMethodDescriptorTest, TestOperatorEqual) {

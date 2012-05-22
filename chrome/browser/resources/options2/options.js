@@ -31,7 +31,6 @@ var SessionRestoreOverlay = options.SessionRestoreOverlay;
 var SpellingConfirmOverlay = options.SpellingConfirmOverlay;
 var StartupOverlay = options.StartupOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
-var VirtualKeyboardManager = options.VirtualKeyboardManager;
 
 /**
  * DOMContentLoaded handler, sets up the page.
@@ -156,13 +155,6 @@ function load() {
                         loadTimeData.getString('languagePinyinPageTabTitle'),
                         'languagePinyinPage'),
         LanguageOptions.getInstance());
-    // Only use the VirtualKeyboardManager if the keyboard DOM elements (which
-    // it will assume exists) are present (i.e. if we were built with
-    // use_virtual_keyboard=1).
-    if ($('language-options-virtual-keyboard')) {
-      OptionsPage.registerOverlay(VirtualKeyboardManager.getInstance(),
-                                  LanguageOptions.getInstance());
-    }
   }
 
 <if expr="pp_ifdef('chromeos') and pp_ifdef('use_ash')">

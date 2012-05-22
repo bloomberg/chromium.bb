@@ -30,8 +30,6 @@
   <include src="chromeos/accounts_user_name_edit.js"></include>
   <include src="chromeos/keyboard_overlay.js"></include>
   <include src="chromeos/pointer_overlay.js"></include>
-  <include src="chromeos/virtual_keyboard.js"></include>
-  <include src="chromeos/virtual_keyboard_list.js"></include>
   var AccountsOptions = options.AccountsOptions;
   var ChangePictureOptions = options.ChangePictureOptions;
   var DetailsInternetPage = options.internet.DetailsInternetPage;

@@ -234,9 +234,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              language_prefs::kXkbAutoRepeatIntervalInMs,
                              PrefService::UNSYNCABLE_PREF);
 
-  prefs->RegisterDictionaryPref(prefs::kLanguagePreferredVirtualKeyboard,
-                                PrefService::SYNCABLE_PREF);
-
   // Screen lock default to off.
   prefs->RegisterBooleanPref(prefs::kEnableScreenLock,
                              false,
@@ -357,9 +354,6 @@ void Preferences::Init(PrefService* prefs) {
 
   // Initialize preferences to currently saved state.
   NotifyPrefChanged(NULL);
-
-  // Initialize virtual keyboard settings to currently saved state.
-  UpdateVirturalKeyboardPreference(prefs);
 
   // If a guest is logged in, initialize the prefs as if this is the first
   // login.
@@ -708,32 +702,6 @@ void Preferences::UpdateAutoRepeatRate() {
   DCHECK(rate.initial_delay_in_ms > 0);
   DCHECK(rate.repeat_interval_in_ms > 0);
   input_method::XKeyboard::SetAutoRepeatRate(rate);
-}
-
-// static
-void Preferences::UpdateVirturalKeyboardPreference(PrefService* prefs) {
-  const DictionaryValue* virtual_keyboard_pref =
-      prefs->GetDictionary(prefs::kLanguagePreferredVirtualKeyboard);
-  DCHECK(virtual_keyboard_pref);
-
-  // TODO(yusukes): Clear all virtual keyboard preferences here.
-  std::string url;
-  std::vector<std::string> layouts_to_remove;
-  for (DictionaryValue::key_iterator iter = virtual_keyboard_pref->begin_keys();
-       iter != virtual_keyboard_pref->end_keys();
-       ++iter) {
-    const std::string& layout_id = *iter;  // e.g. "us", "handwriting-vk"
-    if (!virtual_keyboard_pref->GetString(layout_id, &url))
-      continue;
-    // TODO(yusukes): add the virtual keyboard preferences here.
-  }
-
-  // Remove invalid prefs.
-  DictionaryPrefUpdate updater(prefs, prefs::kLanguagePreferredVirtualKeyboard);
-  DictionaryValue* pref_value = updater.Get();
-  for (size_t i = 0; i < layouts_to_remove.size(); ++i) {
-    pref_value->RemoveWithoutPathExpansion(layouts_to_remove[i], NULL);
-  }
 }
 
 }  // namespace chromeos

@@ -1947,14 +1947,6 @@ bool Extension::LoadInputComponents(
     if (module_value->GetString(keys::kType, &type_str)) {
       if (type_str == "ime") {
         type = INPUT_COMPONENT_TYPE_IME;
-      } else if (type_str == "virtual_keyboard") {
-          if (!api_permissions.count(ExtensionAPIPermission::kExperimental)) {
-            // Virtual Keyboards require the experimental flag.
-            *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-                errors::kInvalidInputComponentType, base::IntToString(i));
-            return false;
-          }
-        type = INPUT_COMPONENT_TYPE_VIRTUAL_KEYBOARD;
       } else {
         *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidInputComponentType, base::IntToString(i));
@@ -2306,9 +2298,6 @@ bool Extension::LoadChromeURLOverrides(string16* error) {
     std::string val;
     // Restrict override pages to a list of supported URLs.
     if ((page != chrome::kChromeUINewTabHost &&
-#if defined(USE_VIRTUAL_KEYBOARD)
-         page != chrome::kChromeUIKeyboardHost &&
-#endif
 #if defined(OS_CHROMEOS)
          page != chrome::kChromeUIActivationMessageHost &&
 #endif

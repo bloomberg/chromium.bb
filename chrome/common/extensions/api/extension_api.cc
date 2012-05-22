@@ -365,8 +365,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_IDENTITY));
   RegisterSchema("experimental.infobars", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INFOBARS));
-  RegisterSchema("experimental.input.ui", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_UI));
   RegisterSchema("experimental.input.virtualKeyboard", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD));
   RegisterSchema("experimental.keybinding", ReadFromResource(

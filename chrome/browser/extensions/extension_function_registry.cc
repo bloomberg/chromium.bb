@@ -59,10 +59,6 @@
 #include "chrome/browser/extensions/extension_input_api.h"
 #endif
 
-#if defined(OS_CHROMEOS) && defined(USE_VIRTUAL_KEYBOARD)
-#include "chrome/browser/extensions/extension_input_ui_api.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
@@ -274,11 +270,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<SendKeyboardEventInputFunction>();
 #endif
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-  RegisterFunction<HideKeyboardFunction>();
-  RegisterFunction<SetKeyboardHeightFunction>();
-#endif
-
 #if defined(OS_CHROMEOS)
   // IME
   RegisterFunction<SetCompositionFunction>();
@@ -291,16 +282,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<UpdateMenuItemsFunction>();
 
   RegisterFunction<InputEventHandled>();
-#if defined(USE_VIRTUAL_KEYBOARD)
-  RegisterFunction<CandidateClickedInputUiFunction>();
-  RegisterFunction<CursorUpInputUiFunction>();
-  RegisterFunction<CursorDownInputUiFunction>();
-  RegisterFunction<PageUpInputUiFunction>();
-  RegisterFunction<PageDownInputUiFunction>();
-  RegisterFunction<RegisterInputUiFunction>();
-  RegisterFunction<PageUpInputUiFunction>();
-  RegisterFunction<PageDownInputUiFunction>();
-#endif
 #endif
 
   // Managed mode.
@@ -401,12 +382,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<SendInputToTerminalProcessFunction>();
   RegisterFunction<CloseTerminalProcessFunction>();
   RegisterFunction<OnTerminalResizeFunction>();
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-  // Input
-  RegisterFunction<SendHandwritingStrokeFunction>();
-  RegisterFunction<CancelHandwritingStrokesFunction>();
-#endif
 #endif
 
   // Websocket to TCP proxy. Currently noop on anything other than ChromeOS.

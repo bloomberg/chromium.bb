@@ -33,10 +33,6 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-#include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
-#endif
-
 using content::NativeWebKeyboardEvent;
 using content::RenderViewHost;
 using content::WebContents;
@@ -131,10 +127,6 @@ WebUILoginView::WebUILoginView()
                  chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
                  content::NotificationService::AllSources());
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-  // Make sure the singleton VirtualKeyboardManager object is created.
-  VirtualKeyboardManager::GetInstance();
-#endif
   accel_map_[ui::Accelerator(ui::VKEY_Z,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameAccessibility;

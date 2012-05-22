@@ -42,10 +42,6 @@
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_shape.h"
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-#include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
-#endif
-
 using content::WebContents;
 
 namespace {
@@ -159,11 +155,6 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                    content::NotificationService::AllSources());
   }
-
-#if defined(USE_VIRTUAL_KEYBOARD)
-  // Make sure the singleton VirtualKeyboardManager object is initialized.
-  VirtualKeyboardManager::GetInstance();
-#endif
 }
 
 OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {

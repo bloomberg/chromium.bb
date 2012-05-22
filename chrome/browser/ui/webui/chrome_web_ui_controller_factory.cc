@@ -75,10 +75,6 @@
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #endif
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-#include "chrome/browser/ui/webui/keyboard_ui.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/browser/ui/webui/conflicts_ui.h"
 #endif
@@ -291,10 +287,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUITaskManagerHost)
     return &NewWebUI<TaskManagerUI>;
 #endif  // defined(ENABLE_TASK_MANAGER)
-#if defined(USE_VIRTUAL_KEYBOARD)
-  if (url.host() == chrome::kChromeUIKeyboardHost)
-    return &NewWebUI<KeyboardUI>;
-#endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
   if (url.host() == chrome::kChromeUICollectedCookiesHost ||

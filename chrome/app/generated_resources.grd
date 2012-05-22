@@ -8509,26 +8509,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Restart
         </message>
       </if>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_BUTTON"
-               desc="The label for the virtual keyboard button for customizing virtual keyboard settings">
-        Change on-screen keyboard settings...
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_SETTINGS_TITLE"
-               desc="The label for the virtual keyboard manager page">
-        On-screen keyboard settings
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_LAYOUT_COLUMN_TITLE"
-               desc="The label for the virtual keyboard manager page">
-        Keyboard
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_KEYBOARD_COLUMN_TITLE"
-               desc="The label for the virtual keyboard manager page">
-        On-screen keyboard
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DEFAULT_VIRTUAL_KEYBOARD"
-               desc="The label for a default virtual keyboard in a drop down menu">
-        Default
-      </message>
       <message name="IDS_OPTIONS_LANGUAGES_ADD_TITLE" desc="The title for the add language dialog.">
         Add language
       </message>

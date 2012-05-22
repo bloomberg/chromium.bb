@@ -6,13 +6,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_VIRTUAL_KEYBOARD)
-// Since USE_VIRTUAL_KEYBOARD build only supports a few keyboard layouts, we
-// skip the tests for now.
-#define TestInputMethodIdIsWhitelisted DISABLED_TestInputMethodIdIsWhitelisted
-#define TestXkbLayoutIsSupported DISABLED_TestXkbLayoutIsSupported
-#endif  // USE_VIRTUAL_KEYBOARD
-
 namespace chromeos {
 namespace input_method {
 
