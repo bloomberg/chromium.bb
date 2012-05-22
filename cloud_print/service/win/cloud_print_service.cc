@@ -10,12 +10,9 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
 #include "base/win/scoped_handle.h"
 #include "cloud_print/service/win/resource.h"
-#include "cloud_print/service/win/service_state.h"
 
 namespace {
 
@@ -28,8 +25,6 @@ const char kServiceSwitch[] = "service";
 
 const char kUserDataDirSwitch[] = "user-data-dir";
 const char kQuietSwitch[] = "quiet";
-
-const wchar_t kServiceStateFileName[] = L"Service State";
 
 // The traits class for Windows Service.
 class ServiceHandleTraits {
@@ -101,34 +96,6 @@ void InvalidUsage() {
     std::cout << kSwitchHelp[i].description << "\n";
   }
   std::cout << "\n";
-}
-
-std::string GetOption(const std::string& name, const std::string& default,
-                      bool secure) {
-  std::cout << "Input \'" << name << "\'";
-  if (!default.empty()) {
-    std::cout << ", press [ENTER] to keep '";
-    std::cout << default;
-    std::cout << "'";
-  }
-  std::cout << ":";
-  std::string tmp;
-
-  if (secure) {
-    DWORD saved_mode = 0;
-    // Don't close.
-    HANDLE stdin_handle = ::GetStdHandle(STD_INPUT_HANDLE);
-    ::GetConsoleMode(stdin_handle, &saved_mode);
-    ::SetConsoleMode(stdin_handle, saved_mode & ~ENABLE_ECHO_INPUT);
-    std::getline(std::cin, tmp);
-    ::SetConsoleMode(stdin_handle, saved_mode);
-    std::cout << "\n";
-  } else {
-    std::getline(std::cin, tmp);
-  }
-  if (tmp.empty())
-    return default;
-  return tmp;
 }
 
 }  // namespace
@@ -229,11 +196,7 @@ class CloudPrintServiceModule
       }
 
       FilePath data_dir = command_line.GetSwitchValuePath(kUserDataDirSwitch);
-      HRESULT hr = ProcessServiceState(data_dir,
-                                       command_line.HasSwitch(kQuietSwitch));
-      if (FAILED(hr))
-        return hr;
-      hr = Install(data_dir);
+      HRESULT hr = Install(data_dir);
       if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
         return StartService();
 
@@ -251,61 +214,6 @@ class CloudPrintServiceModule
 
     InvalidUsage();
     return S_FALSE;
-  }
-
-  HRESULT ProcessServiceState(const FilePath& user_data_dir, bool quiet) {
-    FilePath file = user_data_dir.Append(kServiceStateFileName);
-
-    for (;;) {
-      std::string contents;
-      ServiceState service_state;
-
-      bool is_valid = file_util::ReadFileToString(file, &contents) &&
-                      service_state.FromString(contents);
-
-      if (!quiet) {
-        std::cout << file.value() << ":\n";
-        std::cout << contents << "\n";
-      }
-
-      if (!is_valid)
-        LOG(ERROR) << "Invalid file: " << file.value();
-
-      if (quiet)
-        return is_valid ? S_OK : HRESULT_FROM_WIN32(ERROR_FILE_INVALID);
-
-      std::cout << "Do you want to use this file [y/n]:";
-      for (;;) {
-        std::string input;
-        std::getline(std::cin, input);
-        StringToLowerASCII(&input);
-        if (input == "y") {
-          return S_OK;
-        } else if (input == "n") {
-          is_valid = false;
-          break;
-        }
-      }
-
-      while (!is_valid) {
-        std::string email = GetOption("email", service_state.email(), false);
-        std::string password = GetOption("password", "", true);
-        std::string proxy_id = GetOption("connector_id",
-                                         service_state.proxy_id(), false);
-        is_valid = service_state.Configure(email, password, proxy_id);
-        if (is_valid) {
-          std::string new_contents = service_state.ToString();
-          if (new_contents != contents) {
-            if (file_util::WriteFile(file, new_contents.c_str(),
-                                     new_contents.size()) <= 0) {
-              return HResultFromLastError();
-            }
-          }
-        }
-      }
-    }
-
-    return S_OK;
   }
 
   HRESULT OpenServiceManager(ServiceHandle* service_manager) {
