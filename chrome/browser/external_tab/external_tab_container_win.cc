@@ -20,6 +20,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -720,12 +721,12 @@ void ExternalTabContainer::ShowRepostFormWarningDialog(
 
 void ExternalTabContainer::RunFileChooser(
     WebContents* tab, const content::FileChooserParams& params) {
-  Browser::RunFileChooserHelper(tab, params);
+  FileSelectHelper::RunFileChooser(tab, params);
 }
 
 void ExternalTabContainer::EnumerateDirectory(WebContents* tab, int request_id,
                                               const FilePath& path) {
-  Browser::EnumerateDirectoryHelper(tab, request_id, path);
+  FileSelectHelper::EnumerateDirectory(tab, request_id, path);
 }
 
 void ExternalTabContainer::JSOutOfMemory(WebContents* tab) {

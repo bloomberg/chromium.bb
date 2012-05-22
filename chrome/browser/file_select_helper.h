@@ -31,20 +31,19 @@ class FileSelectHelper
       public SelectFileDialog::Listener,
       public content::NotificationObserver {
  public:
-  explicit FileSelectHelper(Profile* profile);
 
   // Show the file chooser dialog.
-  void RunFileChooser(content::RenderViewHost* render_view_host,
-                      content::WebContents* tab_contents,
-                      const content::FileChooserParams& params);
+  static void RunFileChooser(content::WebContents* tab,
+                             const content::FileChooserParams& params);
 
   // Enumerates all the files in directory.
-  void EnumerateDirectory(int request_id,
-                          content::RenderViewHost* render_view_host,
-                          const FilePath& path);
+  static void EnumerateDirectory(content::WebContents* tab,
+                                 int request_id,
+                                 const FilePath& path);
 
  private:
   friend class base::RefCountedThreadSafe<FileSelectHelper>;
+  explicit FileSelectHelper(Profile* profile);
   virtual ~FileSelectHelper();
 
   // Utility class which can listen for directory lister events and relay
@@ -71,6 +70,9 @@ class FileSelectHelper
     DISALLOW_COPY_AND_ASSIGN(DirectoryListerDispatchDelegate);
   };
 
+  void RunFileChooser(content::RenderViewHost* render_view_host,
+                      content::WebContents* tab_contents,
+                      const content::FileChooserParams& params);
   void RunFileChooserOnFileThread(
       const content::FileChooserParams& params);
   void RunFileChooserOnUIThread(
@@ -98,6 +100,10 @@ class FileSelectHelper
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  void EnumerateDirectory(int request_id,
+                          content::RenderViewHost* render_view_host,
+                          const FilePath& path);
 
   // Kicks off a new directory enumeration.
   void StartNewEnumeration(const FilePath& path,

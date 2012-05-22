@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/selected_file_info.h"
 #include "grit/generated_resources.h"
@@ -28,6 +29,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::FileChooserParams;
 using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -300,10 +302,31 @@ SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
   return file_type.release();
 }
 
-void FileSelectHelper::RunFileChooser(
-    RenderViewHost* render_view_host,
-    content::WebContents* web_contents,
-    const content::FileChooserParams& params) {
+// static
+void FileSelectHelper::RunFileChooser(content::WebContents* tab,
+                                      const FileChooserParams& params) {
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  // FileSelectHelper will keep itself alive until it sends the result message.
+  scoped_refptr<FileSelectHelper> file_select_helper(
+      new FileSelectHelper(profile));
+  file_select_helper->RunFileChooser(tab->GetRenderViewHost(), tab, params);
+}
+
+// static
+void FileSelectHelper::EnumerateDirectory(content::WebContents* tab,
+                                          int request_id,
+                                          const FilePath& path) {
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  // FileSelectHelper will keep itself alive until it sends the result message.
+  scoped_refptr<FileSelectHelper> file_select_helper(
+      new FileSelectHelper(profile));
+  file_select_helper->EnumerateDirectory(
+      request_id, tab->GetRenderViewHost(), path);
+}
+
+void FileSelectHelper::RunFileChooser(RenderViewHost* render_view_host,
+                                      content::WebContents* web_contents,
+                                      const FileChooserParams& params) {
   DCHECK(!render_view_host_);
   DCHECK(!web_contents_);
   render_view_host_ = render_view_host;
@@ -329,7 +352,7 @@ void FileSelectHelper::RunFileChooser(
 }
 
 void FileSelectHelper::RunFileChooserOnFileThread(
-    const content::FileChooserParams& params) {
+    const FileChooserParams& params) {
   select_file_types_.reset(
       GetFileTypesFromAcceptType(params.accept_types));
 
@@ -339,7 +362,7 @@ void FileSelectHelper::RunFileChooserOnFileThread(
 }
 
 void FileSelectHelper::RunFileChooserOnUIThread(
-    const content::FileChooserParams& params) {
+    const FileChooserParams& params) {
   if (!render_view_host_ || !web_contents_) {
     // If the renderer was destroyed before we started, just cancel the
     // operation.
@@ -351,16 +374,16 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     select_file_dialog_ = SelectFileDialog::Create(this);
 
   switch (params.mode) {
-    case content::FileChooserParams::Open:
+    case FileChooserParams::Open:
       dialog_type_ = SelectFileDialog::SELECT_OPEN_FILE;
       break;
-    case content::FileChooserParams::OpenMultiple:
+    case FileChooserParams::OpenMultiple:
       dialog_type_ = SelectFileDialog::SELECT_OPEN_MULTI_FILE;
       break;
-    case content::FileChooserParams::OpenFolder:
+    case FileChooserParams::OpenFolder:
       dialog_type_ = SelectFileDialog::SELECT_FOLDER;
       break;
-    case content::FileChooserParams::Save:
+    case FileChooserParams::Save:
       dialog_type_ = SelectFileDialog::SELECT_SAVEAS_FILE;
       break;
     default:
@@ -400,7 +423,6 @@ void FileSelectHelper::RunFileChooserEnd() {
 void FileSelectHelper::EnumerateDirectory(int request_id,
                                           RenderViewHost* render_view_host,
                                           const FilePath& path) {
-  DCHECK_NE(kFileSelectEnumerationId, request_id);
 
   // Because this class returns notifications to the RenderViewHost, it is
   // difficult for callers to know how long to keep a reference to this

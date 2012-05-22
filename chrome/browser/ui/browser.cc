@@ -2504,34 +2504,6 @@ bool Browser::RunUnloadEventsHelper(WebContents* contents) {
 }
 
 // static
-void Browser::RunFileChooserHelper(
-    WebContents* tab, const content::FileChooserParams& params) {
-  Profile* profile =
-      Profile::FromBrowserContext(tab->GetBrowserContext());
-  // FileSelectHelper adds a reference to itself and only releases it after
-  // sending the result message. It won't be destroyed when this reference
-  // goes out of scope.
-  scoped_refptr<FileSelectHelper> file_select_helper(
-      new FileSelectHelper(profile));
-  file_select_helper->RunFileChooser(tab->GetRenderViewHost(), tab, params);
-}
-
-// static
-void Browser::EnumerateDirectoryHelper(WebContents* tab, int request_id,
-                                       const FilePath& path) {
-  Profile* profile =
-      Profile::FromBrowserContext(tab->GetBrowserContext());
-  // FileSelectHelper adds a reference to itself and only releases it after
-  // sending the result message. It won't be destroyed when this reference
-  // goes out of scope.
-  scoped_refptr<FileSelectHelper> file_select_helper(
-      new FileSelectHelper(profile));
-  file_select_helper->EnumerateDirectory(request_id,
-                                         tab->GetRenderViewHost(),
-                                         path);
-}
-
-// static
 void Browser::JSOutOfMemoryHelper(WebContents* tab) {
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
@@ -3889,12 +3861,13 @@ void Browser::DidEndColorChooser() {
 
 void Browser::RunFileChooser(WebContents* tab,
                              const content::FileChooserParams& params) {
-  RunFileChooserHelper(tab, params);
+  FileSelectHelper::RunFileChooser(tab, params);
 }
 
-void Browser::EnumerateDirectory(WebContents* tab, int request_id,
+void Browser::EnumerateDirectory(WebContents* tab,
+                                 int request_id,
                                  const FilePath& path) {
-  EnumerateDirectoryHelper(tab, request_id, path);
+  FileSelectHelper::EnumerateDirectory(tab, request_id, path);
 }
 
 void Browser::ToggleFullscreenModeForTab(WebContents* tab,

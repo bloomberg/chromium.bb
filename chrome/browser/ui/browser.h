@@ -683,15 +683,6 @@ class Browser : public TabStripModelDelegate,
   // Helper function to run unload listeners on a WebContents.
   static bool RunUnloadEventsHelper(content::WebContents* contents);
 
-  // Helper function to display the file selection dialog.
-  static void RunFileChooserHelper(
-      content::WebContents* tab, const content::FileChooserParams& params);
-
-  // Helper function to enumerate a directory.
-  static void EnumerateDirectoryHelper(content::WebContents* tab,
-                                       int request_id,
-                                       const FilePath& path);
-
   // Helper function to handle JS out of memory notifications
   static void JSOutOfMemoryHelper(content::WebContents* tab);
 

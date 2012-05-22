@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -172,7 +173,7 @@ void ShellWindow::WebIntentDispatch(
 
 void ShellWindow::RunFileChooser(WebContents* tab,
                                  const content::FileChooserParams& params) {
-  Browser::RunFileChooserHelper(tab, params);
+  FileSelectHelper::RunFileChooser(tab, params);
 }
 
 void ShellWindow::Observe(int type,

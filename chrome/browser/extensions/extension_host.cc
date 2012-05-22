@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
+#include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/message_box_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -536,7 +537,7 @@ content::JavaScriptDialogCreator* ExtensionHost::GetJavaScriptDialogCreator() {
 
 void ExtensionHost::RunFileChooser(WebContents* tab,
                                    const content::FileChooserParams& params) {
-  Browser::RunFileChooserHelper(tab, params);
+  FileSelectHelper::RunFileChooser(tab, params);
 }
 
 void ExtensionHost::AddNewContents(WebContents* source,
