@@ -12,13 +12,6 @@
 // The cause is that CMD + C triggers a system action and Chrome injects only a
 // keydown event for the C key. Safari shares the same behavior.
 //
-// This is a list of sample edge cases:
-//
-// CMD DOWN, C DOWN, C UP, CMD UP
-// CMD DOWN, SHIFT DOWN, C DOWN, C UP, CMD UP, SHIFT UP
-// CMD DOWN, CAPS LOCK DOWN, CMD DOWN, CAPS LOCK DOWN
-// L CMD DOWN, C DOWN, R CMD DOWN, L CMD UP, C UP, R CMD UP
-//
 // SOLUTION
 //
 // When a keyup event for CMD key happens we will check all prior keydown
@@ -41,7 +34,8 @@
 // CMD DOWN, C DOWN, C UP, CMD UP, C UP
 //
 // Because we artificially generate keyup events the C UP event is duplicated
-// as user releases the key after CMD key.
+// as user releases the key after CMD key. This would not be a problem as the
+// receiver end will drop this duplicated keyup event.
 
 #ifndef REMOTING_CLIENT_PLUGIN_MAC_KEY_EVENT_PROCESSOR_H_
 #define REMOTING_CLIENT_PLUGIN_MAC_KEY_EVENT_PROCESSOR_H_
@@ -66,12 +60,8 @@ class MacKeyEventProcessor : public protocol::InputFilter {
   // InputFilter overrides.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
 
-  // Return the number of keys pressed. This method is used by unit test to
-  // test correctness of this class.
-  int NumberOfPressedKeys() const;
-
  private:
-  // Iterate the current pressed keys and generate keyup events.
+  // Generate keyup events for any keys pressed with CMD.
   void GenerateKeyupEvents();
 
   // A map that stores pressed keycodes and the corresponding key event.

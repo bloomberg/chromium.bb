@@ -6,17 +6,21 @@
 
 #include <vector>
 
+#include "base/logging.h"
+
 namespace remoting {
 
 namespace {
 
-// A list of known keycodes.
-const int kShift = 16;
-const int kControl = 17;
-const int kOption = 18;
-const int kCapsLock = 20;
-const int kLeftCmd = 91;
-const int kRightCmd = 93;
+const unsigned int kUsbLeftControl  = 0x0700e0;
+const unsigned int kUsbLeftShift    = 0x0700e1;
+const unsigned int kUsbLeftOption   = 0x0700e2;
+const unsigned int kUsbLeftCmd      = 0x0700e3;
+const unsigned int kUsbRightControl = 0x0700e4;
+const unsigned int kUsbRightShift   = 0x0700e5;
+const unsigned int kUsbRightOption  = 0x0700e6;
+const unsigned int kUsbRightCmd     = 0x0700e7;
+const unsigned int kUsbTab          = 0x07002b;
 
 }  // namespace
 
@@ -28,19 +32,32 @@ MacKeyEventProcessor::~MacKeyEventProcessor() {
 }
 
 void MacKeyEventProcessor::InjectKeyEvent(const protocol::KeyEvent& event) {
-  if (event.pressed()) {
-    key_pressed_map_[event.keycode()] = event;
-  } else {
-    key_pressed_map_.erase(event.keycode());
-    if (event.keycode() == kLeftCmd || event.keycode() == kRightCmd)
-      GenerateKeyupEvents();
+  DCHECK(event.has_usb_keycode());
+
+  bool is_special_key = event.usb_keycode() == kUsbLeftControl ||
+      event.usb_keycode() == kUsbLeftShift ||
+      event.usb_keycode() == kUsbLeftOption ||
+      event.usb_keycode() == kUsbRightControl ||
+      event.usb_keycode() == kUsbRightShift ||
+      event.usb_keycode() == kUsbRightOption ||
+      event.usb_keycode() == kUsbTab;
+
+  bool is_cmd_key = event.usb_keycode() == kUsbLeftCmd ||
+      event.usb_keycode() == kUsbRightCmd;
+
+  if (!is_cmd_key && !is_special_key) {
+    if (event.pressed()) {
+      key_pressed_map_[event.usb_keycode()] = event;
+    } else {
+      key_pressed_map_.erase(event.usb_keycode());
+    }
+  }
+
+  if (is_cmd_key && !event.pressed()) {
+    GenerateKeyupEvents();
   }
 
   InputFilter::InjectKeyEvent(event);
-}
-
-int MacKeyEventProcessor::NumberOfPressedKeys() const {
-  return key_pressed_map_.size();
 }
 
 void MacKeyEventProcessor::GenerateKeyupEvents() {
@@ -51,12 +68,6 @@ void MacKeyEventProcessor::GenerateKeyupEvents() {
   for (KeyPressedMap::iterator i = key_pressed_map_.begin();
        i != key_pressed_map_.end(); ++i) {
     const int keycode = i->first;
-
-    if (keycode == kCapsLock || keycode == kOption ||
-        keycode == kControl || keycode == kShift ||
-        keycode == kLeftCmd || keycode == kRightCmd) {
-      continue;
-    }
 
     keycodes.push_back(keycode);
     protocol::KeyEvent event = i->second;
