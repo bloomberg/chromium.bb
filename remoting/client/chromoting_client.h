@@ -36,7 +36,6 @@ class RectangleUpdateDecoder;
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
 class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                          public protocol::ClientStub,
-                         public protocol::ClipboardStub,
                          public protocol::VideoStub {
  public:
   // Objects passed in are not owned by this class.

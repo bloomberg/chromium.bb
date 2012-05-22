@@ -24,10 +24,9 @@ class HostStub;
 class Session;
 
 // HostControlDispatcher dispatches incoming messages on the control
-// channel to HostStub or ClipboardStub, and also implements ClientStub and
-// ClipboardStub for outgoing messages.
-class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub,
-                              public ClipboardStub {
+// channel to HostStub or ClipboardStub, and also implements ClientStub for
+// outgoing messages.
+class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub {
  public:
   HostControlDispatcher();
   virtual ~HostControlDispatcher();

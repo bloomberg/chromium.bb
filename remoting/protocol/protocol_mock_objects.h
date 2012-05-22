@@ -117,6 +117,8 @@ class MockClientStub : public ClientStub {
   MockClientStub();
   virtual ~MockClientStub();
 
+  MOCK_METHOD1(InjectClipboardEvent, void(const ClipboardEvent& event));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientStub);
 };

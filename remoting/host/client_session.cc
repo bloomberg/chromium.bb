@@ -10,6 +10,7 @@
 #include "remoting/host/capturer.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/client_stub.h"
 
 namespace remoting {
 
@@ -35,6 +36,7 @@ ClientSession::ClientSession(
   connection_->set_clipboard_stub(this);
   connection_->set_host_stub(this);
   connection_->set_input_stub(this);
+  clipboard_echo_filter_.set_host_stub(host_event_stub_);
 }
 
 ClientSession::~ClientSession() {
@@ -51,7 +53,7 @@ void ClientSession::InjectClipboardEvent(
   if (disable_input_filter_.input_stub() == NULL)
     return;
 
-  host_event_stub_->InjectClipboardEvent(event);
+  clipboard_echo_filter_.host_filter()->InjectClipboardEvent(event);
 }
 
 void ClientSession::InjectKeyEvent(const protocol::KeyEvent& event) {
@@ -93,6 +95,7 @@ void ClientSession::OnConnectionAuthenticated(
   DCHECK_EQ(connection_.get(), connection);
   is_authenticated_ = true;
   auth_input_filter_.set_input_stub(&disable_input_filter_);
+  clipboard_echo_filter_.set_client_stub(connection_->client_stub());
   event_handler_->OnSessionAuthenticated(this);
 }
 

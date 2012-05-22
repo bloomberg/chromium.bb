@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,12 @@
 #define REMOTING_PROTOCOL_CLIENT_STUB_H_
 
 #include "base/basictypes.h"
+#include "remoting/protocol/clipboard_stub.h"
 
 namespace remoting {
 namespace protocol {
 
-class ClientStub {
+class ClientStub : public ClipboardStub {
  public:
   ClientStub() {}
   virtual ~ClientStub() {}
