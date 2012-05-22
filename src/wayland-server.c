@@ -895,6 +895,7 @@ wl_display_create(void)
 	wl_list_init(&display->client_list);
 
 	display->id = 1;
+	display->serial = 0;
 
 	if (!wl_display_add_global(display, &wl_display_interface, 
 				   display, bind_display)) {
