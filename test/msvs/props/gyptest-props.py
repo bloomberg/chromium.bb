@@ -10,7 +10,6 @@ props file to set the name of the built executable.
 """
 
 import TestGyp
-import os
 
 test = TestGyp.TestGyp(workdir='workarea_all', formats=['msvs'])
 

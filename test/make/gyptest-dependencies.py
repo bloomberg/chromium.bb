@@ -8,7 +8,6 @@
 Verifies that .d files and all.deps are properly generated.
 """
 
-import os
 import TestGyp
 
 # .d files are only used by the make build.
