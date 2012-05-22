@@ -1407,6 +1407,7 @@ FcConfigSubstituteWithPat (FcConfig    *config,
     FcEdit	    *e;
     FcValueList	    *l;
     FcPattern	    *m;
+    FcStrSet	    *strs;
 
     if (!config)
     {
@@ -1433,6 +1434,23 @@ FcConfigSubstituteWithPat (FcConfig    *config,
     if (!st && config->maxObjects)
 	return FcFalse;
     FcMemAlloc (FC_MEM_SUBSTATE, config->maxObjects * sizeof (FcSubState));
+
+    strs = FcGetDefaultLangs ();
+    if (strs)
+    {
+	FcStrList *l = FcStrListCreate (strs);
+	FcChar8 *lang;
+	FcValue v;
+
+	FcStrSetDestroy (strs);
+	while (l && (lang = FcStrListNext (l)))
+	{
+	    v.type = FcTypeString;
+	    v.u.s = lang;
+	    FcPatternObjectAddWithBinding (p, FC_LANG_OBJECT, v, FcValueBindingWeak, FcTrue);
+	}
+	FcStrListDone (l);
+    }
 
     if (FcDebug () & FC_DBG_EDIT)
     {
