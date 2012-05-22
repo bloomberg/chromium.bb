@@ -55,11 +55,17 @@ struct weston_mode {
 	struct wl_list link;
 };
 
+struct weston_shell_client {
+	void (*send_configure)(struct weston_surface *surface,
+			       uint32_t edges, int32_t width, int32_t height);
+};
+
 struct weston_shell_interface {
 	void *shell;			/* either desktop or tablet */
 
 	struct shell_surface *(*create_shell_surface)(void *shell,
-						      struct weston_surface *surface);
+						      struct weston_surface *surface,
+						      const struct weston_shell_client *client);
 
 	void (*set_toplevel)(struct shell_surface *shsurf);
 

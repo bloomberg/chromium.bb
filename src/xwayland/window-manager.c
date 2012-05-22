@@ -99,6 +99,7 @@ struct weston_wm_window {
 	struct shell_surface *shsurf;
 	struct wl_listener surface_destroy_listener;
 	struct wl_event_source *repaint_source;
+	struct wl_event_source *configure_source;
 	int properties_dirty;
 	char *class;
 	char *name;
@@ -1156,6 +1157,65 @@ get_wm_window(struct weston_surface *surface)
 }
 
 static void
+weston_wm_window_configure(void *data)
+{
+	struct weston_wm_window *window = data;
+	struct weston_wm *wm = window->wm;
+	uint32_t values[2];
+	int width, height;
+
+	values[0] = window->width;
+	values[1] = window->height;
+	xcb_configure_window(wm->conn,
+			     window->id,
+			     XCB_CONFIG_WINDOW_WIDTH |
+			     XCB_CONFIG_WINDOW_HEIGHT,
+			     values);
+
+	weston_wm_window_get_frame_size(window, &width, &height);
+	values[0] = width;
+	values[1] = height;
+	xcb_configure_window(wm->conn,
+			     window->frame_id,
+			     XCB_CONFIG_WINDOW_WIDTH |
+			     XCB_CONFIG_WINDOW_HEIGHT,
+			     values);
+
+	window->configure_source = NULL;
+
+	weston_wm_window_schedule_repaint(window);
+}
+
+static void
+send_configure(struct weston_surface *surface,
+	       uint32_t edges, int32_t width, int32_t height)
+{
+	struct weston_wm_window *window = get_wm_window(surface);
+	struct weston_wm *wm = window->wm;
+	struct theme *t = window->wm->theme;
+
+	if (window->decorate) {
+		window->width = width - 2 * (t->margin + t->width);
+		window->height = height - 2 * t->margin -
+			t->titlebar_height - t->width;
+	} else {
+		window->width = width - 2 * t->margin;
+		window->height = height - 2 * t->margin;
+	}
+
+	if (window->configure_source)
+		return;
+
+	window->configure_source =
+		wl_event_loop_add_idle(wm->server->loop,
+				       weston_wm_window_configure, window);
+}
+
+static const struct weston_shell_client shell_client = {
+	send_configure
+};
+
+static void
 xserver_map_shell_surface(struct weston_wm *wm,
 			  struct weston_wm_window *window)
 {
@@ -1169,7 +1229,8 @@ xserver_map_shell_surface(struct weston_wm *wm,
 
 	window->shsurf = 
 		shell_interface->create_shell_surface(shell_interface->shell,
-						      window->surface);
+						      window->surface,
+						      &shell_client);
 
 	if (!window->transient_for) {
 		shell_interface->set_toplevel(window->shsurf);

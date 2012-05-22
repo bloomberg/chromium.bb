@@ -160,6 +160,8 @@ struct shell_surface {
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
 	struct wl_list link;
+
+	const struct weston_shell_client *client;
 };
 
 struct shell_grab {
@@ -557,17 +559,18 @@ resize_grab_motion(struct wl_pointer_grab *grab,
 {
 	struct weston_resize_grab *resize = (struct weston_resize_grab *) grab;
 	struct wl_pointer *pointer = grab->pointer;
+	struct shell_surface *shsurf = resize->base.shsurf;
 	int32_t width, height;
 	wl_fixed_t from_x, from_y;
 	wl_fixed_t to_x, to_y;
 
-	if (!resize->base.shsurf)
+	if (!shsurf)
 		return;
 
-	weston_surface_from_global_fixed(resize->base.shsurf->surface,
+	weston_surface_from_global_fixed(shsurf->surface,
 				         pointer->grab_x, pointer->grab_y,
 				         &from_x, &from_y);
-	weston_surface_from_global_fixed(resize->base.shsurf->surface,
+	weston_surface_from_global_fixed(shsurf->surface,
 				         pointer->x, pointer->y, &to_x, &to_y);
 
 	width = resize->width;
@@ -584,9 +587,23 @@ resize_grab_motion(struct wl_pointer_grab *grab,
 		height += wl_fixed_to_int(to_y - from_y);
 	}
 
-	wl_shell_surface_send_configure(&resize->base.shsurf->resource,
-					resize->edges, width, height);
+	shsurf->client->send_configure(shsurf->surface,
+				       resize->edges, width, height);
 }
+
+static void
+send_configure(struct weston_surface *surface,
+	       uint32_t edges, int32_t width, int32_t height)
+{
+	struct shell_surface *shsurf = get_shell_surface(surface);
+
+	wl_shell_surface_send_configure(&shsurf->resource,
+					edges, width, height);
+}
+
+static const struct weston_shell_client shell_client = {
+	send_configure
+};
 
 static void
 resize_grab_button(struct wl_pointer_grab *grab,
@@ -893,9 +910,9 @@ shell_surface_set_maximized(struct wl_client *client,
 	panel_height = get_output_panel_height(shell, es->output);
 	edges = WL_SHELL_SURFACE_RESIZE_TOP|WL_SHELL_SURFACE_RESIZE_LEFT;
 
-	wl_shell_surface_send_configure(&shsurf->resource, edges,
-					es->output->current->width,
-					es->output->current->height - panel_height);
+	shsurf->client->send_configure(shsurf->surface, edges,
+				       es->output->current->width,
+				       es->output->current->height - panel_height);
 
 	shsurf->next_type = SHELL_SURFACE_MAXIMIZED;
 }
@@ -1039,9 +1056,9 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	shsurf->fullscreen.framerate = framerate;
 	shsurf->next_type = SHELL_SURFACE_FULLSCREEN;
 
-	wl_shell_surface_send_configure(&shsurf->resource, 0,
-					shsurf->output->current->width,
-					shsurf->output->current->height);
+	shsurf->client->send_configure(shsurf->surface, 0,
+				       shsurf->output->current->width,
+				       shsurf->output->current->height);
 }
 
 static void
@@ -1247,7 +1264,8 @@ static void
 shell_surface_configure(struct weston_surface *, int32_t, int32_t);
 
 static 	struct shell_surface *
-create_shell_surface(void *shell, struct weston_surface *surface)
+create_shell_surface(void *shell, struct weston_surface *surface,
+		     const struct weston_shell_client *client)
 {
 	struct shell_surface *shsurf;
 
@@ -1294,6 +1312,8 @@ create_shell_surface(void *shell, struct weston_surface *surface)
 	shsurf->type = SHELL_SURFACE_NONE;
 	shsurf->next_type = SHELL_SURFACE_NONE;
 
+	shsurf->client = client;
+
 	return shsurf;
 }
 
@@ -1314,7 +1334,7 @@ shell_get_shell_surface(struct wl_client *client,
 		return;
 	}
 
-	shsurf = create_shell_surface(shell, surface);
+	shsurf = create_shell_surface(shell, surface, &shell_client);
 	if (!shsurf) {
 		wl_resource_post_error(surface_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
