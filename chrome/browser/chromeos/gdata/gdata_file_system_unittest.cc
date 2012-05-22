@@ -1434,6 +1434,18 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
       FILE_PATH_LITERAL("drive/New Directory/File in new dir.gdoc"))));
 }
 
+TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewButDeletedDirectory) {
+  int latest_changelog = 0;
+  LoadRootFeedDocument("root_feed.json");
+
+  // This feed contains thw following updates:
+  // 1) A new PDF file is added to a new directory
+  // 2) but the new directory is marked "deleted" (i.e. moved to Trash)
+  // Hence, the PDF file should be just ignored.
+  LoadChangeFeed("delta_file_added_in_new_but_deleted_directory.json",
+                 ++latest_changelog);
+}
+
 TEST_F(GDataFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");

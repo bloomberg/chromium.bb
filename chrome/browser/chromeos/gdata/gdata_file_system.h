@@ -894,9 +894,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
       int root_feed_changestamp);
 
   // Applies the pre-processed feed from |file_map| map onto the file system.
+  // All entries in |file_map| will be erased (i.e. the map becomes empty),
+  // and values are deleted.
   void ApplyFeedFromFileUrlMap(bool is_delta_feed,
                                int feed_changestamp,
-                               const FileResourceIdMap& file_map);
+                               FileResourceIdMap* file_map);
 
   // Finds directory where new |file| should be added to during feed processing.
   // |orphaned_entries_dir| collects files/dirs that don't have a parent in
