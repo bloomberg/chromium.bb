@@ -67,8 +67,6 @@
         'drag_drop/drag_image_view.h',
         'focus_cycler.cc',
         'focus_cycler.h',
-        'high_contrast/high_contrast_controller.cc',
-        'high_contrast/high_contrast_controller.h',
         'key_rewriter_delegate.h',
         'launcher/background_animator.cc',
         'launcher/background_animator.h',

@@ -14,7 +14,6 @@
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
-#include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/monitor/monitor_controller.h"
@@ -755,7 +754,6 @@ void Shell::Init() {
 
   drag_drop_controller_.reset(new internal::DragDropController);
   magnification_controller_.reset(new internal::MagnificationController);
-  high_contrast_controller_.reset(new HighContrastController);
   power_button_controller_.reset(new PowerButtonController);
   AddShellObserver(power_button_controller_.get());
   video_detector_.reset(new VideoDetector);

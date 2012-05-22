@@ -464,12 +464,7 @@ cr.define('options', function() {
       if (cr.isChromeOS) {
         $('accessibility-spoken-feedback-check').onchange = function(event) {
           chrome.send('spokenFeedbackChange',
-                      [$('accessibility-spoken-feedback-check').checked]);
-        };
-
-        $('accessibility-high-contrast-check').onchange = function(event) {
-          chrome.send('highContrastChange',
-                      [$('accessibility-high-contrast-check').checked]);
+          [$('accessibility-spoken-feedback-check').checked]);
         };
       }
 
@@ -1217,7 +1212,7 @@ cr.define('options', function() {
      * @private
      */
     setHighContrastCheckboxState_: function(checked) {
-      $('accessibility-high-contrast-check').checked = checked;
+      // TODO(zork): Update UI
     },
 
     /**

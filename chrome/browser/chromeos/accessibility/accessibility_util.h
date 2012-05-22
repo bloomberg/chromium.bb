@@ -40,9 +40,6 @@ void Speak(const std::string& utterance);
 // Returns true if spoken feedback is enabled, or false if not.
 bool IsSpokenFeedbackEnabled();
 
-// Returns true if High Contrast is enabled, or false if not.
-bool IsHighContrastEnabled();
-
 // Speak the given text if the accessibility pref is already set.
 void MaybeSpeak(const std::string& utterance);
 
