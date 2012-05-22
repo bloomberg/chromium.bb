@@ -3904,6 +3904,8 @@ void Browser::WebIntentDispatch(
   if (!web_intents::IsWebIntentsEnabled(profile_))
     return;
 
+  UMA_HISTOGRAM_COUNTS("WebIntents.Dispatch", 1);
+
   TabContentsWrapper* tcw =
       TabContentsWrapper::GetCurrentWrapperForContents(tab);
   tcw->web_intent_picker_controller()->SetIntentsDispatcher(intents_dispatcher);
