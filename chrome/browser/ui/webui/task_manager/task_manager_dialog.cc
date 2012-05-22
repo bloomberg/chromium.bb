@@ -18,13 +18,13 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -192,10 +192,10 @@ void TaskManagerDialogImpl::OnCloseDialog() {
 }
 
 void TaskManagerDialogImpl::OpenWebDialog() {
-  Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser);
-  window_ = browser::ShowWebDialog(
-      NULL, browser->profile()->GetOriginalProfile(), NULL, this);
+  window_ = browser::ShowWebDialog(NULL,
+                                   ProfileManager::GetDefaultProfile(),
+                                   NULL,
+                                   this);
 }
 
 // static
