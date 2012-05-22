@@ -120,6 +120,7 @@ shm_pool_create_buffer(struct wl_client *client, struct wl_resource *resource,
 
 	buffer->buffer.width = width;
 	buffer->buffer.height = height;
+	buffer->buffer.busy_count = 0;
 	buffer->format = format;
 	buffer->stride = stride;
 	buffer->offset = offset;
