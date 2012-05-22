@@ -30,6 +30,18 @@ const int kMinContentsSize = 50;
 }  // end namespace
 
 
+@interface GraySplitView : NSSplitView
+- (NSColor*)dividerColor;
+@end
+
+
+@implementation GraySplitView
+- (NSColor*)dividerColor {
+  return [NSColor darkGrayColor];
+}
+@end
+
+
 @interface DevToolsController (Private)
 - (void)showDevToolsContents:(WebContents*)devToolsContents
                  withProfile:(Profile*)profile;
@@ -43,14 +55,20 @@ const int kMinContentsSize = 50;
 
 - (id)init {
   if ((self = [super init])) {
-    splitView_.reset([[NSSplitView alloc] initWithFrame:NSZeroRect]);
+    splitView_.reset([[GraySplitView alloc] initWithFrame:NSZeroRect]);
     [splitView_ setDividerStyle:NSSplitViewDividerStyleThin];
     [splitView_ setVertical:NO];
     [splitView_ setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+    [splitView_ setDelegate:self];
 
     dockToRight_ = NO;
   }
   return self;
+}
+
+- (void)dealloc {
+  [splitView_ setDelegate:nil];
+  [super dealloc];
 }
 
 - (NSView*)view {
@@ -208,6 +226,10 @@ const int kMinContentsSize = 50;
   if ([[splitView_ subviews] indexOfObject:subview] == 1)
     return NO;
   return YES;
+}
+
+-(void)splitViewWillResizeSubviews:(NSNotification *)notification {
+  [[splitView_ window] disableScreenUpdatesUntilFlush];
 }
 
 @end

@@ -312,6 +312,9 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 }
 
 - (void)dealloc {
+  // Clear delegate so it doesn't get called during stopAnimation.
+  [[self animatableView] setResizeDelegate:nil];
+
   // We better stop any in-flight animation if we're being killed.
   [[self animatableView] stopAnimation];
 
