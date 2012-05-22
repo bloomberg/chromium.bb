@@ -293,6 +293,11 @@ void RootWindowHostWin::PostNativeEvent(const base::NativeEvent& native_event) {
       hwnd(), native_event.message, native_event.wParam, native_event.lParam);
 }
 
+void RootWindowHostWin::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+  NOTIMPLEMENTED();
+}
+
 void RootWindowHostWin::OnClose() {
   // TODO: this obviously shouldn't be here.
   MessageLoopForUI::current()->Quit();

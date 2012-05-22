@@ -585,6 +585,18 @@ void RootWindow::OnCompositingEnded(ui::Compositor*) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// RootWindow, ui::LayerDelegate implementation:
+void RootWindow::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+  if (cursor_shown_)
+    ShowCursor(false);
+  host_->OnDeviceScaleFactorChanged(device_scale_factor);
+  Window::OnDeviceScaleFactorChanged(device_scale_factor);
+  if (cursor_shown_)
+    ShowCursor(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
 
 void RootWindow::HandleMouseCaptureChanged(Window* old_capture_window) {

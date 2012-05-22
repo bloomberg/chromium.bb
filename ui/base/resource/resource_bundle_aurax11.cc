@@ -40,6 +40,8 @@ void ResourceBundle::LoadCommonResources() {
                 ResourceHandle::kScaleFactor100x);
     AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
                 ResourceHandle::kScaleFactor100x);
+    AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"),
+                ResourceHandle::kScaleFactor200x);
   }
 }
 

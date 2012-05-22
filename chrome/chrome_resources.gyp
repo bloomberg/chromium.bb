@@ -265,7 +265,7 @@
             },
           ],
         }],
-        ['OS != "mac" and enable_hidpi == 1', {
+        ['(OS != "mac" and enable_hidpi == 1) or chromeos == 1', {
           'copies': [
             {
               'destination': '<(PRODUCT_DIR)',

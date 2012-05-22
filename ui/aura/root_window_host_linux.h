@@ -54,6 +54,7 @@ class RootWindowHostLinux : public RootWindowHost,
       const gfx::Rect& snapshot_bounds,
       std::vector<unsigned char>* png_representation) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
 
   // Returns true if there's an X window manager present... in most cases.  Some
   // window managers (notably, ion3) don't implement enough of ICCCM for us to

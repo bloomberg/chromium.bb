@@ -99,6 +99,9 @@ class RootWindowHost {
 #if !defined(OS_MACOSX)
   virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
 #endif
+
+  // Called when the device scale factor of the root window has chagned.
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) = 0;
 };
 
 }  // namespace aura

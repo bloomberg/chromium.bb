@@ -33,6 +33,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 using std::max;
 using std::min;
@@ -295,13 +296,46 @@ bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
 // image resources.
 class RootWindowHostLinux::ImageCursors {
  public:
-  ImageCursors() {
-    LoadImageCursor(ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP);
-    LoadImageCursor(ui::kCursorCopy, IDR_AURA_CURSOR_COPY);
+  ImageCursors() : scale_factor_(0.0) {
+  }
+
+  void Reload(float scale_factor) {
+    if (scale_factor_ == scale_factor)
+      return;
+    scale_factor_ = scale_factor;
+    UnloadAll();
+    // The cursor's hot points are defined in chromeos's
+    // src/platforms/assets/cursors/*.cfg files.
+    LoadImageCursor(ui::kCursorNull, IDR_AURA_CURSOR_PTR, 9, 5);
+    LoadImageCursor(ui::kCursorPointer, IDR_AURA_CURSOR_PTR, 9, 5);
+    LoadImageCursor(ui::kCursorNoDrop, IDR_AURA_CURSOR_NO_DROP, 9, 5);
+    LoadImageCursor(ui::kCursorCopy, IDR_AURA_CURSOR_COPY, 9, 5);
+    LoadImageCursor(ui::kCursorHand, IDR_AURA_CURSOR_HAND, 9, 4);
+    LoadImageCursor(ui::kCursorMove, IDR_AURA_CURSOR_MOVE, 12, 12);
+    LoadImageCursor(ui::kCursorNorthEastResize,
+                    IDR_AURA_CURSOR_NORTH_EAST_RESIZE, 12, 11);
+    LoadImageCursor(ui::kCursorSouthWestResize,
+                    IDR_AURA_CURSOR_SOUTH_WEST_RESIZE, 12, 11);
+    LoadImageCursor(ui::kCursorSouthEastResize,
+                    IDR_AURA_CURSOR_SOUTH_EAST_RESIZE, 11, 11);
+    LoadImageCursor(ui::kCursorNorthWestResize,
+                    IDR_AURA_CURSOR_NORTH_WEST_RESIZE, 11, 11);
+    LoadImageCursor(ui::kCursorNorthResize,
+                    IDR_AURA_CURSOR_NORTH_RESIZE, 11, 10);
+    LoadImageCursor(ui::kCursorSouthResize,
+                    IDR_AURA_CURSOR_SOUTH_RESIZE, 11, 10);
+    LoadImageCursor(ui::kCursorEastResize, IDR_AURA_CURSOR_EAST_RESIZE, 11, 11);
+    LoadImageCursor(ui::kCursorWestResize, IDR_AURA_CURSOR_WEST_RESIZE, 11, 11);
+    LoadImageCursor(ui::kCursorIBeam, IDR_AURA_CURSOR_IBEAM, 12, 11);
+
     // TODO (varunjain): add more cursors once we have assets.
   }
 
   ~ImageCursors() {
+    UnloadAll();
+  }
+
+  void UnloadAll() {
     std::map<int, Cursor>::const_iterator it;
     for (it = cursors_.begin(); it != cursors_.end(); ++it)
       ui::UnrefCustomXCursor(it->second);
@@ -320,18 +354,31 @@ class RootWindowHostLinux::ImageCursors {
 
  private:
   // Creates an X Cursor from an image resource and puts it in the cursor map.
-  void LoadImageCursor(int id, int resource_id) {
-    const SkBitmap* bitmap =
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            resource_id).ToSkBitmap();
-
-    XcursorImage* image = ui::SkBitmapToXcursorImage(bitmap, gfx::Point(0, 0));
-    cursors_[id] = ui::CreateReffedCustomXCursor(image);
+  void LoadImageCursor(int id, int resource_id, int hot_x, int hot_y) {
+    const gfx::ImageSkia* image =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+    float actual_scale = 0;
+    const SkBitmap& bitmap = image->GetBitmapForScale(scale_factor_,
+                                                      scale_factor_,
+                                                      &actual_scale);
+    // We never use scaled cursor, but the following DCHECK fails
+    // because the method above computes the actual scale from the image
+    // size instead of obtaining from the resource data, and the some
+    // of cursors are indeed not 2x size of the 2x images.
+    // TODO(oshima): Fix this and enable the following DCHECK.
+    // DCHECK_EQ(actual_scale, scale_factor_);
+    XcursorImage* x_image =
+        ui::SkBitmapToXcursorImage(&bitmap, gfx::Point(0, 0));
+    x_image->xhot = hot_x * actual_scale;
+    x_image->yhot = hot_y * actual_scale;
+    cursors_[id] = ui::CreateReffedCustomXCursor(x_image);
     // |bitmap| is owned by the resource bundle. So we do not need to free it.
   }
 
   // A map to hold all image cursors. It maps the cursor ID to the X Cursor.
   std::map<int, Cursor> cursors_;
+
+  float scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageCursors);
 };
@@ -639,6 +686,8 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
 
 void RootWindowHostLinux::SetRootWindow(RootWindow* root_window) {
   root_window_ = root_window;
+  // The device scale factor is now accessible, so load cursors now.
+  image_cursors_->Reload(root_window_->layer()->device_scale_factor());
 }
 
 RootWindow* RootWindowHostLinux::GetRootWindow() {
@@ -871,6 +920,11 @@ void RootWindowHostLinux::PostNativeEvent(
   XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
 }
 
+void RootWindowHostLinux::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+  image_cursors_->Reload(device_scale_factor);
+}
+
 bool RootWindowHostLinux::IsWindowManagerPresent() {
   // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
   // of WM_Sn selections (where n is a screen number).
@@ -883,11 +937,9 @@ void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
   ::Cursor xcursor =
       image_cursors_->IsImageCursor(cursor) ?
       image_cursors_->ImageCursorFromNative(cursor) :
-      cursor == ui::kCursorNone ?
-      invisible_cursor_ :
-      cursor == ui::kCursorCustom ?
-      cursor.platform() :
-      ui::GetXCursor(CursorShapeFromNative(cursor));
+      (cursor == ui::kCursorNone ? invisible_cursor_ :
+       (cursor == ui::kCursorCustom ? cursor.platform() :
+        ui::GetXCursor(CursorShapeFromNative(cursor))));
   XDefineCursor(xdisplay_, xwindow_, xcursor);
 }
 

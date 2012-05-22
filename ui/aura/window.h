@@ -335,6 +335,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Type of a function to delete a property that this window owns.
   typedef void (*PropertyDeallocator)(intptr_t value);
 
+  // Overridden from ui::LayerDelegate:
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+
  private:
   friend class LayoutManager;
 
@@ -395,7 +398,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
 
   // Updates the layer name with a name based on the window's name and id.
   void UpdateLayerName(const std::string& name);
