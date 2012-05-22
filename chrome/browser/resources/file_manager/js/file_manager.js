@@ -2499,6 +2499,15 @@ FileManager.prototype = {
   };
 
   /**
+   * Creates combobox item based on task.
+   * @param {Object} task Task to convert.
+   * @return {Object} Item appendable to combobox drop-down list.
+   */
+  FileManager.prototype.createComboboxItem_ = function(task) {
+    return { label: task.title, iconUrl: task.iconUrl, task: task };
+  }
+
+  /**
    * Callback called when tasks for selected files are determined.
    * @param {Object} selection Selection is passed here, since this.selection
    *     can change before tasks were found, and we should be accurate.
@@ -2508,7 +2517,8 @@ FileManager.prototype = {
     this.taskItems_.clear();
 
     var defaultTask = null;
-    var tasksCount = 0;
+    var dropDownItems = [];
+
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
 
@@ -2567,15 +2577,27 @@ FileManager.prototype = {
           task.title = str('INSTALL_CRX');
         }
       }
-      this.taskItems_.addItem(this.renderTaskItem_(task));
-      tasksCount++;
-      if (defaultTask == null) defaultTask = task;
+
+      if (defaultTask == null) {
+        defaultTask = task;
+        this.taskItems_.defaultItem = this.createComboboxItem_(task);
+        task.title = task.title + ' ' + str('DEFAULT_ACTION_LABEL');
+        dropDownItems.push(this.createComboboxItem_(task));
+      } else {
+        dropDownItems.push(this.createComboboxItem_(task));
+      }
     }
 
-    this.taskItems_.hidden = tasksCount == 0;
-    if (tasksCount > 1) {
-      // Duplicate default task in drop-down list.
-      this.taskItems_.addItem(this.renderTaskItem_(defaultTask));
+    this.taskItems_.hidden = dropDownItems.length == 0;
+
+    if (dropDownItems.length > 1) {
+      dropDownItems.sort(function(a, b) {
+        return a.label.localeCompare(b.label);
+      });
+
+      for (var j = 0; j < dropDownItems.length; j++) {
+        this.taskItems_.addDropDownItem(dropDownItems[j]);
+      }
     }
 
     selection.tasksList = tasksList;
@@ -2584,22 +2606,6 @@ FileManager.prototype = {
       selection.dispatchDefault = false;
       this.dispatchDefaultTask_(selection);
     }
-  };
-
-  FileManager.prototype.renderTaskItem_ = function(task) {
-    var item = this.document_.createElement('div');
-    item.className = 'task-item';
-    item.task = task;
-
-    var img = this.document_.createElement('img');
-    img.src = task.iconUrl;
-    item.appendChild(img);
-
-    var label = this.document_.createElement('div');
-    label.appendChild(this.document_.createTextNode(task.title));
-    item.appendChild(label);
-
-    return item;
   };
 
   FileManager.prototype.getExtensionId_ = function() {

@@ -3,77 +3,38 @@
  * found in the LICENSE file. */
 
 .buttonbar button.combobutton {
+  -webkit-box-align: stretch;
   display: -webkit-box;
-  padding-left: 0;
-  padding-right: 0;
 }
 
-.buttonbar .combobutton .task-item div {
-  padding-left: 7px;
-  padding-right: 0;
+.buttonbar .combobutton > img {
+  display: block;
+  height: 16px;
+  margin-bottom: 6px;
+  margin-right: 4px;
+  margin-top: 6px;
+  width: 16px;
 }
 
-.buttonbar .combobutton > div:nth-child(2) {
-  border-left: solid 1px #dcdcdc;
-  display: none;
-  width: 22px;
-}
-
-.buttonbar .combobutton[multiple] > div:nth-child(2) {
+.buttonbar .combobutton > span {
+  -webkit-box-flex: 1;
   display: block;
 }
 
-.buttonbar .combobutton > div:nth-child(2) > span.disclosureindicator {
+.buttonbar .combobutton > div {
+  border-left: solid 1px #dcdcdc;
+  display: none;
+  margin-left: 8px;
+  margin-right: -8px;
+  width: 22px;
+}
+
+.buttonbar .combobutton[multiple] > div {
+  display: block;
+}
+
+.buttonbar .combobutton > div > span.disclosureindicator {
   -webkit-transform: rotate(90deg);
-}
-
-.buttonbar .combobutton div.task-item {
-  line-height: normal;
-}
-
-.buttonbar .combobutton .popup {
-  -webkit-box-align: stretch;
-  -webkit-box-orient: vertical;
-  -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, .50);
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  box-sizing: border-box;
-  color: black;
-  cursor: default;
-  display: -webkit-box;
-  opacity: 0;
-  padding: 8px 0;
-  pointer-events: none;
-  position: absolute;
-  right: 1px;
-  white-space: nowrap;
-}
-
-.buttonbar .combobutton .popup:active {
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.buttonbar .combobutton[open] .popup {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.buttonbar .combobutton .popup > * {
-  background: transparent;
-  border: 0;
-  font: inherit;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.buttonbar .combobutton .popup > *:hover {
-  background-color: rgb(220, 229, 250);
-}
-
-.buttonbar .combobutton .popup > *:active {
-  background-color: rgb(66, 109, 201);
-  color: #fff;
 }
 
 .buttonbar .combobutton[hidden] {

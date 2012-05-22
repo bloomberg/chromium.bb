@@ -201,9 +201,11 @@ menu.chrome-menu {
   border-radius: 2px;
   outline: none;
   padding: 2px 0;
+  z-index: 15;
 }
-
 menu.chrome-menu > :not(hr) {
+  background-position: 6px center;
+  background-repeat: no-repeat;
   color: rgb(34, 34, 34);
   height: 30px;
   line-height: 28px;
@@ -229,7 +231,8 @@ menu.chrome-menu > hr {
 }
 
 menu.chrome-menu > :not(hr)[checked] {
-  background: url('../images/common/check_no_box.png') no-repeat 2px center;
+  background-image: url('../images/common/check_no_box.png');
+  background-position: 2px center;
 }
 
 menu.chrome-menu > [checked]:before {

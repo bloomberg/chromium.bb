@@ -123,6 +123,9 @@
           i18n-content=GDATA_SHOW_HOSTED_FILES_OPTION></menuitem>
     </menu>
 
+    <menu id="tasks-menu" class="chrome-menu">
+    </menu>
+
     <div class=dialog-title invisibleif='full-page'>[TITLE]</div>
     <div class=dialog-container>
       <div class=dialog-sidebar>
@@ -151,7 +154,7 @@
             </div>
             <button class="menubutton" id="gdata-settings"
                     menu="#docs-settings" visibleif="full-page">
-              <img src="images/settings.svg" alt="Settings">
+              <img src="images/settings.svg">
               <span class="disclosureindicator"></span>
             </button>
           </div>
@@ -178,7 +181,8 @@
             </div>
             <div class=preview-summary></div>
             <div class="right buttonbar" visibleif="full-page">
-              <button id="tasks" class="combobutton"></button>
+              <button id="tasks" class="combobutton" menu="#tasks-menu">
+              </button>
               <button id="delete-button" command="#delete"
                       i18n-content="DELETE_BUTTON_LABEL">
               </button>
