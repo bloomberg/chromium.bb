@@ -208,7 +208,7 @@ class MenuController::MenuScrollTask {
   base::RepeatingTimer<MenuScrollTask> scrolling_timer_;
 
   // Time we started scrolling at.
-  Time start_scroll_time_;
+  base::Time start_scroll_time_;
 
   // How many pixels to scroll per second.
   int pixels_per_second_;

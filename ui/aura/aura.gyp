@@ -110,6 +110,8 @@
         'window.h',
         'window_delegate.h',
         'window_observer.h',
+        'x11_atom_cache.cc',
+        'x11_atom_cache.h',
       ],
       'conditions': [
         ['OS=="mac"', {

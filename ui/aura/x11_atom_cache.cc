@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/x/x11_atom_cache.h"
+#include "ui/aura/x11_atom_cache.h"
 
 #include <X11/Xatom.h>
 
 #include "base/message_pump_x.h"
 
-namespace ui {
+namespace aura {
 
 namespace {
 
 // A list of atoms that we'll intern on host creation to save roundtrips to the
 // X11 server. Must be kept in sync with AtomCache::AtomName
 struct AtomInfo {
-  ui::AtomName id;
+  AtomName id;
   const char* name;
 } const kAtomList[] = {
   { ATOM_WM_DELETE_WINDOW, "WM_DELETE_WINDOW" },
@@ -27,14 +27,9 @@ struct AtomInfo {
 };
 
 // Our lists need to stay in sync here.
-COMPILE_ASSERT(arraysize(kAtomList) == ui::ATOM_COUNT,
-               atom_lists_are_same_size);
+COMPILE_ASSERT(arraysize(kAtomList) == ATOM_COUNT, atom_lists_are_same_size);
 
 }  // namespace
-
-X11AtomCache* X11AtomCache::GetInstance() {
-  return Singleton<X11AtomCache>::get();
-}
 
 ::Atom X11AtomCache::GetAtom(AtomName name) const {
   std::map<AtomName, ::Atom>::const_iterator it = cached_atoms_.find(name);
@@ -60,6 +55,4 @@ X11AtomCache::X11AtomCache() {
 
 X11AtomCache::~X11AtomCache() {}
 
-}  // namespace ui
-
-
+}  // namespace aura

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_X_X11_ATOM_CACHE_H_
-#define UI_BASE_X_X11_ATOM_CACHE_H_
+#ifndef UI_AURA_X11_ATOM_CACHE_H_
+#define UI_AURA_X11_ATOM_CACHE_H_
 
 #include "base/basictypes.h"
-#include "base/memory/singleton.h"
-#include "ui/base/ui_export.h"
+#include "ui/aura/aura_export.h"
 
 #include <X11/Xlib.h>
 
@@ -16,7 +15,8 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
-namespace ui {
+namespace aura {
+class Env;
 
 // Names of cached atoms that we fetch from X11AtomCache. Adding an entry here
 // also requires adding an entry in the cc file.
@@ -34,15 +34,13 @@ enum AtomName {
 // Pre-caches all Atoms on first use to minimize roundtrips to the X11
 // server. Assumes that we only have a single X11 display,
 // base::MessagePumpX::GetDefaultXDisplay().
-class UI_EXPORT X11AtomCache {
+class AURA_EXPORT X11AtomCache {
  public:
-  static X11AtomCache* GetInstance();
-
   // Returns the pre-interned Atom by enum instead of string.
   ::Atom GetAtom(AtomName name) const;
 
  private:
-  friend struct DefaultSingletonTraits<X11AtomCache>;
+  friend class aura::Env;
 
   // Constructor performs all interning
   X11AtomCache();
@@ -53,6 +51,6 @@ class UI_EXPORT X11AtomCache {
   DISALLOW_COPY_AND_ASSIGN(X11AtomCache);
 };
 
-}  // namespace ui
+}  // namespace aura
 
-#endif  // UI_BASE_X_ATOM_CACHE_H_
+#endif  // UI_AURA_ATOM_CACHE_H_
