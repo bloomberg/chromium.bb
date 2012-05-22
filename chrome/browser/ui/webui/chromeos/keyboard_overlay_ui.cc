@@ -13,15 +13,15 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
@@ -304,10 +304,13 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
 }
 
 void KeyboardOverlayHandler::OpenLearnMorePage(const ListValue* args) {
-  Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser);
-  browser->AddSelectedTabWithURL(GURL(kLearnMoreURL),
-                                 content::PAGE_TRANSITION_LINK);
+  web_ui()->GetWebContents()->GetDelegate()->OpenURLFromTab(
+      web_ui()->GetWebContents(),
+      content::OpenURLParams(GURL(kLearnMoreURL),
+                             content::Referrer(),
+                             NEW_FOREGROUND_TAB,
+                             content::PAGE_TRANSITION_LINK,
+                             false));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
