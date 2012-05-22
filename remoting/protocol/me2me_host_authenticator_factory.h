@@ -24,6 +24,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  public:
   // Doesn't take ownership of |local_private_key|.
   Me2MeHostAuthenticatorFactory(
+      const std::string& local_jid,
       const std::string& local_cert,
       const crypto::RSAPrivateKey& local_private_key,
       const SharedSecretHash& shared_secret_hash);
@@ -31,7 +32,6 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
 
   // AuthenticatorFactory interface.
   virtual scoped_ptr<Authenticator> CreateAuthenticator(
-      const std::string& local_jid,
       const std::string& remote_jid,
       const buzz::XmlElement* first_message) OVERRIDE;
 

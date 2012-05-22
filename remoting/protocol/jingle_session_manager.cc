@@ -141,8 +141,7 @@ bool JingleSessionManager::OnSignalStrategyIncomingStanza(
 
     scoped_ptr<Authenticator> authenticator =
         authenticator_factory_->CreateAuthenticator(
-            signal_strategy_->GetLocalJid(), message.from,
-            message.description->authenticator_message());
+            message.from, message.description->authenticator_message());
 
     JingleSession* session = new JingleSession(this);
     session->InitializeIncomingConnection(message, authenticator.Pass());
