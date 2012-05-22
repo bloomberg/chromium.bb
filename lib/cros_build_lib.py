@@ -1150,7 +1150,7 @@ def SubCommandTimeout(max_run_time):
   Timeout.
 
   Args:
-    max_run_time: a positive integer.
+    max_run_time: Number (integer) of seconds to wait before sending SIGALRM.
   """
   max_run_time = int(max_run_time)
   if max_run_time <= 0:
