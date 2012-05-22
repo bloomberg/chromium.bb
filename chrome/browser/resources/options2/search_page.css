@@ -10,29 +10,57 @@
   background-color: rgba(255, 240, 120, 0.9);
 }
 
+/* Container for the elements that make up the search bubble. */
 .search-bubble {
-  -webkit-box-shadow: 0 2px 2px #888;
-  background-color: rgba(255, 240, 120, 0.8);
-  border-radius: 6px;
-  box-shadow: 0 2px 2px #888;
   left: 0;
-  margin: 12px 0 0;
-  padding: 4px 10px;
+  margin-top: 5px;
   pointer-events: none;
   position: absolute;
+  top: -1000px;  /* Minor hack: position off-screen by default. */
+  /* Create a z-context for search-bubble-innards, its after and before. */
+  z-index: 0;
+}
+
+/* Contains the text content of the bubble.  */
+.search-bubble-innards {
+  background: -webkit-linear-gradient(rgba(255, 248, 172, 0.9),
+                                      rgba(255, 243, 128, 0.9));
+  border-radius: 2px;
+  padding: 4px 10px;
   text-align: center;
-  top: -1000px;  /* minor hack: position off-screen by default */
   width: 100px;
 }
 
-.search-bubble:after {
-  border-color: rgba(255, 240, 120, 0.9) transparent;
-  border-style: solid;
-  border-width: 0 10px 10px;
+/* Provides the border around the bubble (has to be behind :after). */
+.search-bubble-innards::before {
+  border: 1px solid rgb(220, 198, 72);
+  border-radius: 2px;
+  bottom: -1px;
   content: '';
-  left: 50px;
+  left: -1px;
   position: absolute;
-  top: -10px;
+  right: -1px;
+  top: -1px;
+  z-index: -2;
+}
+
+/* Provides the arrow which points at the anchor element. */
+.search-bubble-innards::after {
+  -webkit-transform: rotate(45deg);
+  background:
+      -webkit-linear-gradient(-45deg, rgb(251, 255, 181),
+                                      rgb(255, 248, 172) 50%,
+                                      rgba(255, 248, 172, 0));
+  border: 1px solid rgb(220, 198, 72);
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+  content: '';
+  height: 12px;
+  left: 53px;
+  position: absolute;
+  top: -7px;
+  width: 12px;
+  z-index: -1;
 }
 
 .search-bubble-wrapper {

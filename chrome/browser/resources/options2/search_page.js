@@ -12,7 +12,7 @@ cr.define('options', function() {
   function SearchBubble(text) {
     var el = cr.doc.createElement('div');
     SearchBubble.decorate(el);
-    el.textContent = text;
+    el.content = text;
     return el;
   }
 
@@ -27,6 +27,10 @@ cr.define('options', function() {
     decorate: function() {
       this.className = 'search-bubble';
 
+      this.innards_ = cr.doc.createElement('div');
+      this.innards_.className = 'search-bubble-innards';
+      this.appendChild(this.innards_);
+
       // We create a timer to periodically update the position of the bubbles.
       // While this isn't all that desirable, it's the only sure-fire way of
       // making sure the bubbles stay in the correct location as sections
@@ -34,9 +38,17 @@ cr.define('options', function() {
       this.intervalId = setInterval(this.updatePosition.bind(this), 250);
     },
 
-  /**
-   * Attach the bubble to the element.
-   */
+    /**
+     * Sets the text message in the bubble.
+     * @param {string} text The text the bubble will show.
+     */
+    set content(text) {
+      this.innards_.textContent = text;
+    },
+
+    /**
+     * Attach the bubble to the element.
+     */
     attachTo: function(element) {
       var parent = element.parentElement;
       if (!parent)
