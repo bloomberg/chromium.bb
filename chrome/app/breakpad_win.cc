@@ -152,31 +152,29 @@ bool IsBoringCommandLineSwitch(const std::wstring& flag) {
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetCommandLine(
-    const CommandLine* command_line) {
+    const wchar_t** argv, size_t argc) {
   if (!g_custom_entries)
     return;
-
-  const CommandLine::StringVector& argv = command_line->argv();
 
   // Copy up to the kMaxSwitches arguments into the custom entries array. Skip
   // past the first argument, as it is just the executable path.
   size_t argv_i = 1;
   size_t num_added = 0;
 
-  for (; argv_i < argv.size() && num_added < kMaxSwitches; ++argv_i) {
+  for (; argv_i < argc && num_added < kMaxSwitches; ++argv_i) {
     // Don't bother including boring command line switches in crash reports.
     if (IsBoringCommandLineSwitch(argv[argv_i]))
       continue;
 
     base::wcslcpy((*g_custom_entries)[g_switches_offset + num_added].value,
-                  argv[argv_i].c_str(),
+                  argv[argv_i],
                   google_breakpad::CustomInfoEntry::kValueMaxLength);
     num_added++;
   }
 
   // Make note of the total number of switches. This is useful in case we have
   // truncated at kMaxSwitches, to see how many were unaccounted for.
-  SetIntegerValue(g_num_switches_offset, static_cast<int>(argv.size()) - 1);
+  SetIntegerValue(g_num_switches_offset, static_cast<int>(argc) - 1);
 }
 
 // Appends the plugin path to |g_custom_entries|.
@@ -319,7 +317,10 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   // Fill in the command line arguments using CommandLine::ForCurrentProcess().
   // The browser process may call SetCommandLine() again later on with a command
   // line that has been augmented with the about:flags experiments.
-  SetCommandLine(CommandLine::ForCurrentProcess());
+  std::vector<const wchar_t*> switches;
+  StringVectorToCStringVector(
+      CommandLine::ForCurrentProcess()->argv(), &switches);
+  SetCommandLine(&switches[0], switches.size());
 
   if (type == L"renderer" || type == L"plugin" || type == L"gpu-process") {
     g_num_of_views_offset = g_custom_entries->size();
@@ -822,4 +823,12 @@ void InitCrashReporter() {
 
 void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {
   previous_filter = SetUnhandledExceptionFilter(filter);
+}
+
+void StringVectorToCStringVector(const std::vector<std::wstring>& wstrings,
+                                 std::vector<const wchar_t*>* cstrings) {
+  cstrings->clear();
+  cstrings->reserve(wstrings.size());
+  for (size_t i = 0; i < wstrings.size(); ++i)
+    cstrings->push_back(wstrings[i].c_str());
 }

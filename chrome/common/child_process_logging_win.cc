@@ -17,6 +17,9 @@
 #include "googleurl/src/gurl.h"
 
 namespace child_process_logging {
+
+namespace {
+
 // exported in breakpad_win.cc: void __declspec(dllexport) __cdecl SetActiveURL.
 typedef void (__cdecl *MainSetActiveURL)(const wchar_t*);
 
@@ -46,11 +49,22 @@ typedef void (__cdecl *MainSetNumberOfViews)(int);
 
 // exported in breakpad_win.cc:
 //   void __declspec(dllexport) __cdecl SetCommandLine
-typedef void (__cdecl *MainSetCommandLine)(const CommandLine*);
+typedef void (__cdecl *MainSetCommandLine)(const wchar_t**, size_t);
 
 // exported in breakpad_field_trial_win.cc:
 //   void __declspec(dllexport) __cdecl SetExperimentList
-typedef void (__cdecl *MainSetExperimentList)(const std::vector<string16>&);
+typedef void (__cdecl *MainSetExperimentList)(const wchar_t**, size_t);
+
+// Copied from breakpad_win.cc.
+void StringVectorToCStringVector(const std::vector<std::wstring>& wstrings,
+                                 std::vector<const wchar_t*>* cstrings) {
+  cstrings->clear();
+  cstrings->reserve(wstrings.size());
+  for (size_t i = 0; i < wstrings.size(); ++i)
+    cstrings->push_back(wstrings[i].c_str());
+}
+
+}  // namespace
 
 void SetActiveURL(const GURL& url) {
   static MainSetActiveURL set_active_url = NULL;
@@ -189,7 +203,10 @@ void SetCommandLine(const CommandLine* command_line) {
     if (!set_command_line)
       return;
   }
-  (set_command_line)(command_line);
+
+  std::vector<const wchar_t*> cstrings;
+  StringVectorToCStringVector(command_line->argv(), &cstrings);
+  (set_command_line)(&cstrings[0], cstrings.size());
 }
 
 void SetExperimentList(const std::vector<string16>& state) {
@@ -204,7 +221,10 @@ void SetExperimentList(const std::vector<string16>& state) {
     if (!set_experiment_list)
       return;
   }
-  (set_experiment_list)(state);
+
+  std::vector<const wchar_t*> cstrings;
+  StringVectorToCStringVector(state, &cstrings);
+  (set_experiment_list)(&cstrings[0], cstrings.size());
 }
 
 void SetNumberOfViews(int number_of_views) {

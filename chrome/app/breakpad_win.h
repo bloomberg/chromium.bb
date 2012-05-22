@@ -42,6 +42,12 @@ void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter);
 // a dialog asking for permission to continue execution or to exit now.
 bool ShowRestartDialogIfCrashed(bool* exit_now);
 
+// Helper to convert a vector of wstrings to corresponding vector of cstrings.
+// Note that |cstrings| will reference memory owned by |wstrings|. Consequently
+// |wstrings| must outlive |cstrings|, and |wstrings| should not be mutated.
+void StringVectorToCStringVector(const std::vector<std::wstring>& wstrings,
+                                 std::vector<const wchar_t*>* cstrings);
+
 namespace testing {
 
 // Testing entry point for calling a function from the unnamed namespace.
