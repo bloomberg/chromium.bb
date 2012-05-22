@@ -341,10 +341,6 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   set_focusable(true);
-
-  // TODO(sad): Turn animation back on once there are proper assets.
-  // http://crbug.com/119832
-  set_animate_on_state_change(false);
 }
 
 TrayPopupHeaderButton::~TrayPopupHeaderButton() {}
