@@ -37,13 +37,15 @@ class JsonHostConfig {
 
 }
 
+@class Me2MePreferencePaneConfirmPin;
+@class Me2MePreferencePaneDisable;
+
 @interface Me2MePreferencePane : NSPreferencePane {
+  Me2MePreferencePaneConfirmPin* confirm_pin_view_;
+  Me2MePreferencePaneDisable* disable_view_;
+
   IBOutlet NSTextField* status_message_;
-  IBOutlet NSButton* disable_button_;
-  IBOutlet NSTextField* pin_instruction_message_;
-  IBOutlet NSTextField* email_;
-  IBOutlet NSTextField* pin_;
-  IBOutlet NSButton* apply_button_;
+  IBOutlet NSBox* box_;
   IBOutlet SFAuthorizationView* authorization_view_;
 
   // Holds the new proposed configuration if a temporary config file is
@@ -64,8 +66,9 @@ class JsonHostConfig {
 - (void)mainViewDidLoad;
 - (void)willSelect;
 - (void)willUnselect;
-- (IBAction)onDisable:(id)sender;
-- (IBAction)onApply:(id)sender;
+- (void)onDisable:(id)sender;
+- (void)applyConfiguration:(id)sender
+                       pin:(NSString*)pin;
 - (void)onNewConfigFile:(NSNotification*)notification;
 - (void)refreshServiceStatus:(NSTimer*)timer;
 - (void)authorizationViewDidAuthorize:(SFAuthorizationView*)view;
