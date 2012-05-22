@@ -9,7 +9,6 @@
 
 #feedback-page > h1 {
   border-bottom: 1px solid #eee;
-  font-size: 2em;
   padding-bottom: 6px;
   width: 718px;
 }
@@ -36,6 +35,11 @@
   display: -webkit-box;
 }
 
+#page-url-text {
+  /* Don't push checkboxes out of alignment with bulky input. */
+  margin-bottom: -0.25em;
+}
+
 #page-url > label {
   -webkit-margin-end: 1em;
 }
@@ -47,7 +51,7 @@
 
 .thumbnail-list {
   margin-bottom: 1em;
-  margin-top: 0.5em;
+  margin-top: 1em;
   min-height: 151px;
 }
 
@@ -75,6 +79,11 @@
   height: 140px;
 }
 
+#privacy-note {
+  margin-bottom: 0.8em;
+  width: 44em;
+}
+
 #buttons-pane {
   /* Linux and Mac OS X display OK/Cancel dialogs in the reverse direction. */
 <if expr="not pp_ifdef('toolkit_views')">
@@ -84,7 +93,7 @@
   padding: 0;
 }
 
-#privacy-note {
-  padding-bottom: 10px;
-  width: 44em;
+#buttons-pane > input {
+  -webkit-margin-end: 0.8em;
+  display: block;
 }
