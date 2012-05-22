@@ -808,6 +808,24 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
 #undef print_name
   if ((strcmp(instruction_name, "nop") || operands_count != 0) &&
       strcmp(instruction_name, "fwait") &&
+      strcmp(instruction_name, "nopw   %cs:0x0(%eax,%eax,1)") &&
+      strcmp(instruction_name, "nopw   %cs:0x0(%rax,%rax,1)") &&
+      strcmp(instruction_name, "data32 nopw %cs:0x0(%eax,%eax,1)") &&
+      strcmp(instruction_name, "data32 nopw %cs:0x0(%rax,%rax,1)") &&
+      strcmp(instruction_name, "data32 data32 nopw %cs:0x0(%eax,%eax,1)") &&
+      strcmp(instruction_name, "data32 data32 nopw %cs:0x0(%rax,%rax,1)") &&
+      strcmp(instruction_name,
+                            "data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)") &&
+      strcmp(instruction_name,
+                            "data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)") &&
+      strcmp(instruction_name,
+                     "data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)") &&
+      strcmp(instruction_name,
+                     "data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)") &&
+      strcmp(instruction_name,
+              "data32 data32 data32 data32 data32 nopw %cs:0x0(%eax,%eax,1)") &&
+      strcmp(instruction_name,
+              "data32 data32 data32 data32 data32 nopw %cs:0x0(%rax,%rax,1)") &&
       strcmp(instruction_name, "pop    %fs") &&
       strcmp(instruction_name, "pop    %gs") &&
       strcmp(instruction_name, "popq   %fs") &&
@@ -1381,8 +1399,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         printf("%02x ", *p);
       }
     }
+    printf("\n");
     if (p >= end) {
-      printf("\n");
       return;
     }
     begin += 7;

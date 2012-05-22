@@ -25,7 +25,8 @@ INST_DEFS = general-purpose-instructions.def \
             system-instructions.def \
             x87-instructions.def \
             mmx-instructions.def \
-            xmm-instructions.def
+            xmm-instructions.def \
+            nops.def
 
 FAST_TMP_FOR_TEST=/dev/shm
 
@@ -76,7 +77,7 @@ $(OBJD)/validator-x86_32-instruction-consts.c \
 	$(GEN_DFA) -o $(OBJD)/validator-x86_32-instruction.rl $(INST_DEFS) \
 	  -d check_access,opcode,parse_operands,parse_operands_states \
 	  -d instruction_name,mark_data_fields,nacl-forbidden \
-	  -d imm_operand_action,rel_operand_action nops.def
+	  -d imm_operand_action,rel_operand_action
 
 $(OBJD)/validator-x86_64.c: $(OBJD)/validator-x86_64-instruction-consts.c
 $(OBJD)/validator-x86_64.c: $(OBJD)/validator-x86_64-instruction.rl
@@ -87,7 +88,7 @@ $(OBJD)/validator-x86_64-instruction-consts.c \
 	  -d nacl-forbidden,parse_nonwrite_registers,parse_x87_operands \
 	  -d parse_mmx_operands,parse_xmm_operands,parse_ymm_operands \
 	  -d parse_relative_operands,parse_immediate_operands \
-	  -d parse_operands_states,parse_operand_positions nops.def -m amd64
+	  -d parse_operands_states,parse_operand_positions -m amd64
 
 # Facilities for testing:
 #   one-instruction.dot: the description of the DFA that accepts all instruction

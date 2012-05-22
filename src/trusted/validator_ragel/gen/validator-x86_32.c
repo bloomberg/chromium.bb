@@ -1,7 +1,7 @@
 
 #line 1 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19,23 +19,75 @@
 #define inline __inline
 #endif
 
-#define check_jump_dest \
-    if ((jump_dest & bundle_mask) != bundle_mask) { \
-      if (jump_dest >= size) { \
-        printf("direct jump out of range: %"NACL_PRIxS"\n", jump_dest); \
-        result = 1; \
-        goto error_detected; \
-      } else { \
-        BitmapSetBit(jump_dests, jump_dest + 1); \
-      } \
+static const int kBitsPerByte = 8;
+
+static inline uint8_t *BitmapAllocate(size_t indexes) {
+  size_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
+  uint8_t *bitmap = malloc(byte_count);
+  if (bitmap != NULL) {
+    memset(bitmap, 0, byte_count);
+  }
+  return bitmap;
+}
+
+static inline int BitmapIsBitSet(uint8_t *bitmap, size_t index) {
+  return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
+}
+
+static inline void BitmapSetBit(uint8_t *bitmap, size_t index) {
+  bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
+}
+
+static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
+  bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
+}
+
+static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
+                            size_t size) {
+  size_t i;
+  for (i = 0; i < size / 32; i++) {
+    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
+    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
+    if ((jump_dest_mask & ~valid_target_mask) != 0) {
+      printf("bad jump to around %x\n", (unsigned)(i * 32));
+      return 1;
     }
+  }
+  return 0;
+}
+
+static const size_t kBundleSize = 32;
+static const size_t kBundleMask = 31;
+
+/* Mark the destination of a jump instruction and make an early validity check:
+ * to jump outside given code region, the target address must be aligned.
+ *
+ * Returns TRUE iff the jump passes the early validity check.
+ */
+static int MarkJumpTarget(size_t jump_dest,
+                          uint8_t *jump_dests,
+                          size_t size,
+                          size_t report_inst_offset) {
+  if ((jump_dest & kBundleMask) == 0) {
+    return TRUE;
+  }
+  if (jump_dest >= size) {
+    printf("offset 0x%zx: direct jump out of range at destination: %"NACL_PRIxS
+           "\n",
+           report_inst_offset,
+           jump_dest);
+    return FALSE;
+  }
+  BitmapSetBit(jump_dests, jump_dest);
+  return TRUE;
+}
 
 
-#line 96 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 156 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 
 
 
-#line 39 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 91 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 static const int x86_64_decoder_start = 247;
 static const int x86_64_decoder_first_final = 247;
 static const int x86_64_decoder_error = 0;
@@ -43,7 +95,7 @@ static const int x86_64_decoder_error = 0;
 static const int x86_64_decoder_en_main = 247;
 
 
-#line 99 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 159 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 
 /* Ignore this information for now.  */
 #define GET_VEX_PREFIX3 0
@@ -105,50 +157,10 @@ static const int x86_64_decoder_en_main = 247;
 #define CPUFeature_x87      cpu_features->data[NaClCPUFeature_x87]
 #define CPUFeature_XOP      cpu_features->data[NaClCPUFeature_XOP]
 
-static const int kBitsPerByte = 8;
-
-static inline uint8_t *BitmapAllocate(size_t indexes) {
-  size_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
-  uint8_t *bitmap = malloc(byte_count);
-  if (bitmap != NULL) {
-    memset(bitmap, 0, byte_count);
-  }
-  return bitmap;
-}
-
-static inline int BitmapIsBitSet(uint8_t *bitmap, size_t index) {
-  return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
-}
-
-static inline void BitmapSetBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
-}
-
-static inline void BitmapClearBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
-}
-
-static int CheckJumpTargets(uint8_t *valid_targets, uint8_t *jump_dests,
-                            size_t size) {
-  size_t i;
-  for (i = 0; i < size / 32; i++) {
-    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
-    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
-    if ((jump_dest_mask & ~valid_target_mask) != 0) {
-      printf("bad jump to around %x\n", (unsigned)(i * 32));
-      return 1;
-    }
-  }
-  return 0;
-}
-
 int ValidateChunkIA32(const uint8_t *data, size_t size,
                       const NaClCPUFeaturesX86 *cpu_features,
                       process_validation_error_func process_error,
                       void *userdata) {
-  const size_t bundle_size = 32;
-  const size_t bundle_mask = bundle_size - 1;
-
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
 
@@ -157,29 +169,29 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
 
   int result = 0;
 
-  assert(size % bundle_size == 0);
+  assert(size % kBundleSize == 0);
 
   while (p < data + size) {
-    const uint8_t *pe = p + bundle_size;
+    const uint8_t *pe = p + kBundleSize;
     const uint8_t *eof = pe;
     int cs;
 
     
-#line 169 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 181 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	{
 	cs = x86_64_decoder_start;
 	}
 
-#line 220 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 240 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
     
-#line 176 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 188 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	{
 	if ( p == pe )
 		goto _test_eof;
 	switch ( cs )
 	{
 tr0:
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -193,7 +205,7 @@ tr9:
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -207,7 +219,7 @@ tr10:
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(p);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -216,9 +228,9 @@ tr10:
      }
 	goto st247;
 tr11:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 113 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -227,9 +239,9 @@ tr11:
      }
 	goto st247;
 tr15:
-#line 55 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 115 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -242,7 +254,7 @@ tr21:
 	{
     SET_CPU_FEATURE(CPUFeature_3DNOW);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -255,7 +267,7 @@ tr29:
 	{
     SET_CPU_FEATURE(CPUFeature_TSC);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -268,7 +280,7 @@ tr36:
 	{
     SET_CPU_FEATURE(CPUFeature_MMX);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -281,7 +293,7 @@ tr48:
 	{
     SET_CPU_FEATURE(CPUFeature_MON);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -294,7 +306,7 @@ tr49:
 	{
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -307,7 +319,7 @@ tr50:
 	{
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -320,7 +332,7 @@ tr62:
 	{
     SET_CPU_FEATURE(CPUFeature_E3DNOW);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -333,7 +345,7 @@ tr68:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -342,14 +354,18 @@ tr68:
      }
 	goto st247;
 tr89:
-#line 43 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 99 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     int32_t offset =
-           (uint32_t) (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * (p[0]))));
-    size_t jump_dest = offset + (p - data);
-    check_jump_dest;
+        (p[-3] + 256U * (p[-2] + 256U * (p[-1] + 256U * ((uint32_t) p[0]))));
+    size_t jump_dest = offset + (p - data) + 1;
+
+    if (!MarkJumpTarget(jump_dest, jump_dests, size, begin - data)) {
+      result = 1;
+      goto error_detected;
+    }
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -362,7 +378,7 @@ tr92:
 	{
     SET_CPU_FEATURE(CPUFeature_CLFLUSH);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -375,7 +391,7 @@ tr101:
 	{
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -388,7 +404,7 @@ tr102:
 	{
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -401,7 +417,7 @@ tr103:
 	{
     SET_CPU_FEATURE(CPUFeature_CX8);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -410,13 +426,17 @@ tr103:
      }
 	goto st247;
 tr111:
-#line 35 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 87 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
     int8_t offset = (uint8_t) (p[0]);
-    size_t jump_dest = offset + (p - data);
-    check_jump_dest;
+    size_t jump_dest = offset + (p - data) + 1;
+
+    if (!MarkJumpTarget(jump_dest, jump_dests, size, begin - data)) {
+      result = 1;
+      goto error_detected;
+    }
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -425,9 +445,9 @@ tr111:
      }
 	goto st247;
 tr132:
-#line 54 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 114 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -440,7 +460,7 @@ tr178:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -453,7 +473,7 @@ tr257:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -466,7 +486,7 @@ tr264:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -479,7 +499,7 @@ tr298:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -492,7 +512,7 @@ tr325:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -501,9 +521,9 @@ tr325:
      }
 	goto st247;
 tr351:
-#line 52 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 112 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -516,7 +536,7 @@ tr377:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -529,7 +549,7 @@ tr383:
 	{
     SET_CPU_FEATURE(CPUFeature_CMOVx87);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -542,7 +562,7 @@ tr403:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -551,11 +571,11 @@ tr403:
      }
 	goto st247;
 tr411:
-#line 73 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 133 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
       BitmapClearBit(valid_targets, (p - data) - 1);
     }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -564,12 +584,12 @@ tr411:
      }
 	goto st247;
 tr425:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
      }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -578,7 +598,7 @@ tr425:
      }
 	goto st247;
 tr434:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -587,7 +607,7 @@ tr434:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -599,7 +619,7 @@ st247:
 	if ( ++p == pe )
 		goto _test_eof247;
 case 247:
-#line 603 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 623 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr420;
 		case 5u: goto tr421;
@@ -969,7 +989,7 @@ tr407:
   }
 	goto st1;
 tr419:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -979,7 +999,7 @@ st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 983 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1003 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -1084,7 +1104,7 @@ st2:
 	if ( ++p == pe )
 		goto _test_eof2;
 case 2:
-#line 1088 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1108 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto st3;
 		case 13u: goto st3;
@@ -1181,7 +1201,7 @@ tr379:
   }
 	goto st3;
 tr435:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -1191,7 +1211,7 @@ st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
-#line 1195 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1215 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st4;
 st4:
 	if ( ++p == pe )
@@ -1272,7 +1292,7 @@ st7:
 	if ( ++p == pe )
 		goto _test_eof7;
 case 7:
-#line 1276 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1296 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr10;
 tr72:
 #line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -1338,7 +1358,7 @@ st8:
 	if ( ++p == pe )
 		goto _test_eof8;
 case 8:
-#line 1342 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1362 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st7;
 tr73:
 #line 282 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -1404,7 +1424,7 @@ st9:
 	if ( ++p == pe )
 		goto _test_eof9;
 case 9:
-#line 1408 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1428 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st3;
 tr85:
 #line 261 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -1463,15 +1483,15 @@ tr306:
   }
 	goto st10;
 tr376:
-#line 58 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 118 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 	goto st10;
 tr400:
-#line 57 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 117 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
 	goto st10;
 tr420:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -1481,7 +1501,7 @@ st10:
 	if ( ++p == pe )
 		goto _test_eof10;
 case 10:
-#line 1485 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1505 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr11;
 tr219:
 #line 46 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -1504,7 +1524,7 @@ tr268:
   }
 	goto st11;
 tr421:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -1514,7 +1534,7 @@ st11:
 	if ( ++p == pe )
 		goto _test_eof11;
 case 11:
-#line 1518 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1538 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st12;
 st12:
 	if ( ++p == pe )
@@ -1532,19 +1552,19 @@ st14:
 case 14:
 	goto tr15;
 tr19:
-#line 90 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 150 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         process_error(begin, userdata);
         result = 1;
         goto error_detected;
     }
 	goto st0;
-#line 1543 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1563 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 st0:
 cs = 0;
 	goto _out;
 tr422:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -1554,7 +1574,7 @@ st15:
 	if ( ++p == pe )
 		goto _test_eof15;
 case 15:
-#line 1558 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1578 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto st16;
 		case 1u: goto st17;
@@ -1857,7 +1877,7 @@ st20:
 	if ( ++p == pe )
 		goto _test_eof20;
 case 20:
-#line 1861 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 1881 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 12u: goto tr62;
 		case 13u: goto tr21;
@@ -2074,7 +2094,7 @@ tr406:
   }
 	goto st30;
 tr432:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -2084,7 +2104,7 @@ st30:
 	if ( ++p == pe )
 		goto _test_eof30;
 case 30:
-#line 2088 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2108 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -2259,7 +2279,7 @@ st33:
 	if ( ++p == pe )
 		goto _test_eof33;
 case 33:
-#line 2263 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2283 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 192u <= (*p) )
 		goto tr0;
 	goto tr19;
@@ -2396,7 +2416,7 @@ tr408:
   }
 	goto st34;
 tr429:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -2406,7 +2426,7 @@ st34:
 	if ( ++p == pe )
 		goto _test_eof34;
 case 34:
-#line 2410 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2430 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -2477,7 +2497,7 @@ st35:
 	if ( ++p == pe )
 		goto _test_eof35;
 case 35:
-#line 2481 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2501 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto st36;
 		case 13u: goto st36;
@@ -2543,7 +2563,7 @@ st36:
 	if ( ++p == pe )
 		goto _test_eof36;
 case 36:
-#line 2547 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2567 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st37;
 st37:
 	if ( ++p == pe )
@@ -2590,7 +2610,7 @@ st40:
 	if ( ++p == pe )
 		goto _test_eof40;
 case 40:
-#line 2594 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2614 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr84;
 tr162:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -2622,7 +2642,7 @@ st41:
 	if ( ++p == pe )
 		goto _test_eof41;
 case 41:
-#line 2626 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2646 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st40;
 tr163:
 #line 25 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -2654,7 +2674,7 @@ st42:
 	if ( ++p == pe )
 		goto _test_eof42;
 case 42:
-#line 2658 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2678 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st36;
 st43:
 	if ( ++p == pe )
@@ -2680,7 +2700,7 @@ case 44:
 		goto tr85;
 	goto tr19;
 tr452:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -2690,7 +2710,7 @@ st45:
 	if ( ++p == pe )
 		goto _test_eof45;
 case 45:
-#line 2694 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2714 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st46;
 st46:
 	if ( ++p == pe )
@@ -2793,7 +2813,7 @@ st50:
 	if ( ++p == pe )
 		goto _test_eof50;
 case 50:
-#line 2797 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2817 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 192u <= (*p) )
 		goto st10;
 	goto tr19;
@@ -2817,7 +2837,7 @@ case 51:
 		goto tr106;
 	goto tr19;
 tr423:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -2828,7 +2848,7 @@ tr423:
   }
 	goto st52;
 tr424:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -2842,7 +2862,7 @@ st52:
 	if ( ++p == pe )
 		goto _test_eof52;
 case 52:
-#line 2846 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2866 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 15u )
 		goto st53;
 	if ( 112u <= (*p) && (*p) <= 127u )
@@ -2856,7 +2876,7 @@ case 53:
 		goto st45;
 	goto tr19;
 tr430:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -2866,10 +2886,10 @@ st54:
 	if ( ++p == pe )
 		goto _test_eof54;
 case 54:
-#line 2870 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2890 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr111;
 tr426:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -2879,7 +2899,7 @@ st55:
 	if ( ++p == pe )
 		goto _test_eof55;
 case 55:
-#line 2883 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2903 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 139u: goto st56;
 		case 161u: goto st57;
@@ -2929,7 +2949,7 @@ case 60:
 		goto tr0;
 	goto tr19;
 tr427:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -2943,7 +2963,7 @@ st61:
 	if ( ++p == pe )
 		goto _test_eof61;
 case 61:
-#line 2947 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 2967 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st1;
 		case 3u: goto st1;
@@ -3028,7 +3048,7 @@ tr192:
   }
 	goto st62;
 tr442:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -3038,7 +3058,7 @@ st62:
 	if ( ++p == pe )
 		goto _test_eof62;
 case 62:
-#line 3042 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3062 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st63;
 st63:
 	if ( ++p == pe )
@@ -3551,7 +3571,7 @@ case 95:
 		goto tr195;
 	goto tr19;
 tr436:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -3561,7 +3581,7 @@ st96:
 	if ( ++p == pe )
 		goto _test_eof96;
 case 96:
-#line 3565 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3585 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -3639,7 +3659,7 @@ case 97:
 		goto st92;
 	goto tr19;
 tr443:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -3649,7 +3669,7 @@ st98:
 	if ( ++p == pe )
 		goto _test_eof98;
 case 98:
-#line 3653 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3673 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -3720,7 +3740,7 @@ st99:
 	if ( ++p == pe )
 		goto _test_eof99;
 case 99:
-#line 3724 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3744 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st30;
 		case 3u: goto st30;
@@ -3901,7 +3921,7 @@ st105:
 	if ( ++p == pe )
 		goto _test_eof105;
 case 105:
-#line 3905 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3925 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st106;
 		case 167u: goto tr0;
@@ -3942,7 +3962,7 @@ st108:
 	if ( ++p == pe )
 		goto _test_eof108;
 case 108:
-#line 3946 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 3966 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st109;
 		case 165u: goto tr0;
@@ -4075,7 +4095,7 @@ tr274:
   }
 	goto st112;
 tr428:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -4085,7 +4105,7 @@ st112:
 	if ( ++p == pe )
 		goto _test_eof112;
 case 112:
-#line 4089 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4109 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st113;
 		case 5u: goto st114;
@@ -4136,7 +4156,7 @@ st113:
 	if ( ++p == pe )
 		goto _test_eof113;
 case 113:
-#line 4140 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4160 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 5u: goto st114;
 		case 13u: goto st114;
@@ -4182,7 +4202,7 @@ st114:
 	if ( ++p == pe )
 		goto _test_eof114;
 case 114:
-#line 4186 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4206 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st115;
 st115:
 	if ( ++p == pe )
@@ -4209,7 +4229,7 @@ st118:
 	if ( ++p == pe )
 		goto _test_eof118;
 case 118:
-#line 4213 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4233 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto tr220;
 tr272:
 #line 255 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -4221,7 +4241,7 @@ st119:
 	if ( ++p == pe )
 		goto _test_eof119;
 case 119:
-#line 4225 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4245 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st118;
 tr273:
 #line 255 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
@@ -4233,10 +4253,10 @@ st120:
 	if ( ++p == pe )
 		goto _test_eof120;
 case 120:
-#line 4237 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4257 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st114;
 tr431:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -4246,7 +4266,7 @@ st121:
 	if ( ++p == pe )
 		goto _test_eof121;
 case 121:
-#line 4250 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4270 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -4303,9 +4323,9 @@ case 122:
 		goto tr229;
 	goto tr11;
 tr229:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 113 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4317,7 +4337,7 @@ st248:
 	if ( ++p == pe )
 		goto _test_eof248;
 case 248:
-#line 4321 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4341 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr420;
 		case 5u: goto tr421;
@@ -4461,7 +4481,7 @@ case 248:
 		goto tr419;
 	goto tr425;
 tr433:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -4471,7 +4491,7 @@ st123:
 	if ( ++p == pe )
 		goto _test_eof123;
 case 123:
-#line 4475 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4495 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -4542,7 +4562,7 @@ st125:
 	if ( ++p == pe )
 		goto _test_eof125;
 case 125:
-#line 4546 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4566 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 166u: goto tr237;
 		case 182u: goto tr237;
@@ -4590,7 +4610,7 @@ st126:
 	if ( ++p == pe )
 		goto _test_eof126;
 case 126:
-#line 4594 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4614 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st128;
 		case 5u: goto st129;
@@ -4649,7 +4669,7 @@ st127:
 	if ( ++p == pe )
 		goto _test_eof127;
 case 127:
-#line 4653 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4673 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 0u: goto tr0;
 		case 16u: goto tr0;
@@ -4745,7 +4765,7 @@ st136:
 	if ( ++p == pe )
 		goto _test_eof136;
 case 136:
-#line 4749 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4769 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 162u )
 		goto tr237;
 	goto tr19;
@@ -4759,7 +4779,7 @@ st137:
 	if ( ++p == pe )
 		goto _test_eof137;
 case 137:
-#line 4763 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4783 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 166u: goto tr237;
 		case 182u: goto tr237;
@@ -4798,7 +4818,7 @@ st138:
 	if ( ++p == pe )
 		goto _test_eof138;
 case 138:
-#line 4802 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4822 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 162u <= (*p) && (*p) <= 163u )
 		goto tr237;
 	goto tr19;
@@ -4836,7 +4856,7 @@ st140:
 	if ( ++p == pe )
 		goto _test_eof140;
 case 140:
-#line 4840 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4860 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st141;
 		case 2u: goto st142;
@@ -4944,7 +4964,7 @@ st143:
 	if ( ++p == pe )
 		goto _test_eof143;
 case 143:
-#line 4948 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 4968 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 1u: goto st141;
 		case 2u: goto st142;
@@ -4990,7 +5010,7 @@ st145:
 	if ( ++p == pe )
 		goto _test_eof145;
 case 145:
-#line 4994 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5014 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 128u <= (*p) && (*p) <= 129u )
 		goto tr256;
 	goto tr19;
@@ -5004,7 +5024,7 @@ st146:
 	if ( ++p == pe )
 		goto _test_eof146;
 case 146:
-#line 5008 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5028 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 144u <= (*p) && (*p) <= 155u )
 		goto tr256;
 	goto tr19;
@@ -5033,7 +5053,7 @@ st148:
 	if ( ++p == pe )
 		goto _test_eof148;
 case 148:
-#line 5037 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5057 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 18u )
 		goto st149;
 	goto tr19;
@@ -5073,14 +5093,14 @@ st150:
 	if ( ++p == pe )
 		goto _test_eof150;
 case 150:
-#line 5077 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5097 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 16u: goto tr274;
 		case 18u: goto st149;
 	}
 	goto tr19;
 tr437:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -5090,7 +5110,7 @@ st151:
 	if ( ++p == pe )
 		goto _test_eof151;
 case 151:
-#line 5094 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5114 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 225u: goto st152;
 		case 226u: goto st174;
@@ -5180,7 +5200,7 @@ st153:
 	if ( ++p == pe )
 		goto _test_eof153;
 case 153:
-#line 5184 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5204 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st154;
 		case 22u: goto st154;
@@ -5262,7 +5282,7 @@ st155:
 	if ( ++p == pe )
 		goto _test_eof155;
 case 155:
-#line 5266 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5286 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto tr296;
 		case 81u: goto tr295;
@@ -5342,7 +5362,7 @@ st158:
 	if ( ++p == pe )
 		goto _test_eof158;
 case 158:
-#line 5346 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5366 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 42u: goto tr295;
 		case 81u: goto tr295;
@@ -5365,7 +5385,7 @@ st159:
 	if ( ++p == pe )
 		goto _test_eof159;
 case 159:
-#line 5369 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5389 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 42u: goto tr295;
 		case 81u: goto tr295;
@@ -5398,7 +5418,7 @@ st160:
 	if ( ++p == pe )
 		goto _test_eof160;
 case 160:
-#line 5402 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5422 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto tr295;
 		case 194u: goto tr297;
@@ -5430,7 +5450,7 @@ st161:
 	if ( ++p == pe )
 		goto _test_eof161;
 case 161:
-#line 5434 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5454 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto tr295;
 		case 194u: goto tr297;
@@ -5466,7 +5486,7 @@ st162:
 	if ( ++p == pe )
 		goto _test_eof162;
 case 162:
-#line 5470 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5490 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 16u <= (*p) && (*p) <= 17u )
 		goto tr307;
 	goto tr19;
@@ -5487,7 +5507,7 @@ st163:
 	if ( ++p == pe )
 		goto _test_eof163;
 case 163:
-#line 5491 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5511 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 208u )
 		goto tr295;
 	if ( (*p) > 17u ) {
@@ -5513,7 +5533,7 @@ st164:
 	if ( ++p == pe )
 		goto _test_eof164;
 case 164:
-#line 5517 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5537 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto st154;
 		case 19u: goto tr296;
@@ -5578,7 +5598,7 @@ st166:
 	if ( ++p == pe )
 		goto _test_eof166;
 case 166:
-#line 5582 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5602 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 43u: goto tr296;
 		case 80u: goto tr307;
@@ -5687,7 +5707,7 @@ st168:
 	if ( ++p == pe )
 		goto _test_eof168;
 case 168:
-#line 5691 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5711 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto tr295;
 		case 22u: goto tr295;
@@ -5722,7 +5742,7 @@ st169:
 	if ( ++p == pe )
 		goto _test_eof169;
 case 169:
-#line 5726 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5746 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto tr295;
 		case 42u: goto tr295;
@@ -5765,7 +5785,7 @@ st170:
 	if ( ++p == pe )
 		goto _test_eof170;
 case 170:
-#line 5769 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5789 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 43u: goto tr296;
 		case 80u: goto tr307;
@@ -5802,7 +5822,7 @@ st171:
 	if ( ++p == pe )
 		goto _test_eof171;
 case 171:
-#line 5806 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5826 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 43u: goto tr296;
 		case 80u: goto tr307;
@@ -5846,7 +5866,7 @@ st172:
 	if ( ++p == pe )
 		goto _test_eof172;
 case 172:
-#line 5850 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5870 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto tr295;
 		case 22u: goto tr295;
@@ -5874,7 +5894,7 @@ st173:
 	if ( ++p == pe )
 		goto _test_eof173;
 case 173:
-#line 5878 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5898 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto tr295;
 		case 208u: goto tr295;
@@ -5944,7 +5964,7 @@ st175:
 	if ( ++p == pe )
 		goto _test_eof175;
 case 175:
-#line 5948 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 5968 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 242u: goto tr323;
 		case 243u: goto st176;
@@ -5991,7 +6011,7 @@ st177:
 	if ( ++p == pe )
 		goto _test_eof177;
 case 177:
-#line 5995 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6015 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) == 43u )
 		goto tr295;
 	if ( (*p) < 55u ) {
@@ -6028,7 +6048,7 @@ st178:
 	if ( ++p == pe )
 		goto _test_eof178;
 case 178:
-#line 6032 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6052 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 154u: goto tr331;
 		case 156u: goto tr331;
@@ -6065,7 +6085,7 @@ st179:
 	if ( ++p == pe )
 		goto _test_eof179;
 case 179:
-#line 6069 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6089 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 19u: goto tr333;
 		case 23u: goto tr295;
@@ -6115,7 +6135,7 @@ st180:
 	if ( ++p == pe )
 		goto _test_eof180;
 case 180:
-#line 6119 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6139 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 19u: goto tr333;
 		case 23u: goto tr295;
@@ -6157,7 +6177,7 @@ st181:
 	if ( ++p == pe )
 		goto _test_eof181;
 case 181:
-#line 6161 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6181 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 159u )
 			goto tr331;
@@ -6177,7 +6197,7 @@ st182:
 	if ( ++p == pe )
 		goto _test_eof182;
 case 182:
-#line 6181 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6201 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 154u: goto tr331;
 		case 156u: goto tr331;
@@ -6247,7 +6267,7 @@ st184:
 	if ( ++p == pe )
 		goto _test_eof184;
 case 184:
-#line 6251 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6271 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 33u: goto tr297;
 		case 68u: goto tr340;
@@ -6284,7 +6304,7 @@ st185:
 	if ( ++p == pe )
 		goto _test_eof185;
 case 185:
-#line 6288 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6308 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st187;
 		case 5u: goto st188;
@@ -6343,7 +6363,7 @@ st186:
 	if ( ++p == pe )
 		goto _test_eof186;
 case 186:
-#line 6347 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6367 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) < 48u ) {
 		if ( (*p) < 16u ) {
 			if ( (*p) <= 3u )
@@ -6452,7 +6472,7 @@ st195:
 	if ( ++p == pe )
 		goto _test_eof195;
 case 195:
-#line 6456 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6476 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 6u: goto tr297;
 		case 64u: goto tr297;
@@ -6494,7 +6514,7 @@ st196:
 	if ( ++p == pe )
 		goto _test_eof196;
 case 196:
-#line 6498 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6518 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 22u: goto tr297;
 		case 23u: goto tr357;
@@ -6546,24 +6566,16 @@ st197:
 	if ( ++p == pe )
 		goto _test_eof197;
 case 197:
-#line 6550 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6570 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st35;
-		case 5u: goto st36;
 		case 12u: goto st35;
-		case 13u: goto st36;
 		case 20u: goto st35;
-		case 21u: goto st36;
 		case 28u: goto st35;
-		case 29u: goto st36;
 		case 36u: goto st35;
-		case 37u: goto st36;
 		case 44u: goto st35;
-		case 45u: goto st36;
 		case 52u: goto st35;
-		case 53u: goto st36;
 		case 60u: goto st35;
-		case 61u: goto st36;
 		case 68u: goto st41;
 		case 76u: goto st41;
 		case 84u: goto st41;
@@ -6581,15 +6593,39 @@ case 197:
 		case 180u: goto st42;
 		case 188u: goto st42;
 	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 63u )
+	if ( (*p) < 38u ) {
+		if ( (*p) < 14u ) {
+			if ( (*p) > 3u ) {
+				if ( 6u <= (*p) && (*p) <= 11u )
+					goto st10;
+			} else
+				goto st10;
+		} else if ( (*p) > 19u ) {
+			if ( (*p) > 27u ) {
+				if ( 30u <= (*p) && (*p) <= 35u )
+					goto st10;
+			} else if ( (*p) >= 22u )
+				goto st10;
+		} else
 			goto st10;
-	} else if ( (*p) > 127u ) {
-		if ( 128u <= (*p) && (*p) <= 191u )
-			goto st36;
+	} else if ( (*p) > 43u ) {
+		if ( (*p) < 62u ) {
+			if ( (*p) > 51u ) {
+				if ( 54u <= (*p) && (*p) <= 59u )
+					goto st10;
+			} else if ( (*p) >= 46u )
+				goto st10;
+		} else if ( (*p) > 63u ) {
+			if ( (*p) > 127u ) {
+				if ( 192u <= (*p) )
+					goto tr19;
+			} else if ( (*p) >= 64u )
+				goto st40;
+		} else
+			goto st10;
 	} else
-		goto st40;
-	goto tr19;
+		goto st10;
+	goto st36;
 tr337:
 #line 161 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
@@ -6600,7 +6636,7 @@ st198:
 	if ( ++p == pe )
 		goto _test_eof198;
 case 198:
-#line 6604 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6640 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 29u: goto tr358;
 		case 64u: goto tr297;
@@ -6648,7 +6684,7 @@ st199:
 	if ( ++p == pe )
 		goto _test_eof199;
 case 199:
-#line 6652 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6688 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
 			goto tr341;
@@ -6671,7 +6707,7 @@ st200:
 	if ( ++p == pe )
 		goto _test_eof200;
 case 200:
-#line 6675 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6711 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( (*p) < 104u ) {
 		if ( (*p) > 73u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
@@ -6691,7 +6727,7 @@ case 200:
 		goto tr343;
 	goto tr19;
 tr438:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -6701,7 +6737,7 @@ st201:
 	if ( ++p == pe )
 		goto _test_eof201;
 case 201:
-#line 6705 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6741 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 193u: goto tr360;
 		case 194u: goto tr361;
@@ -6775,7 +6811,7 @@ st202:
 	if ( ++p == pe )
 		goto _test_eof202;
 case 202:
-#line 6779 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6815 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto tr295;
 		case 83u: goto tr295;
@@ -6798,7 +6834,7 @@ st203:
 	if ( ++p == pe )
 		goto _test_eof203;
 case 203:
-#line 6802 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6838 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 81u: goto tr295;
 		case 194u: goto tr297;
@@ -6824,7 +6860,7 @@ st204:
 	if ( ++p == pe )
 		goto _test_eof204;
 case 204:
-#line 6828 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6864 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto tr295;
 		case 22u: goto tr295;
@@ -6856,7 +6892,7 @@ st205:
 	if ( ++p == pe )
 		goto _test_eof205;
 case 205:
-#line 6860 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6896 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 18u: goto tr295;
 		case 81u: goto tr295;
@@ -6879,7 +6915,7 @@ case 205:
 		goto tr295;
 	goto tr19;
 tr439:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -6889,7 +6925,7 @@ st206:
 	if ( ++p == pe )
 		goto _test_eof206;
 case 206:
-#line 6893 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6929 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -6909,7 +6945,7 @@ case 206:
 		goto st40;
 	goto tr19;
 tr440:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -6919,7 +6955,7 @@ st207:
 	if ( ++p == pe )
 		goto _test_eof207;
 case 207:
-#line 6923 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6959 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st113;
 		case 5u: goto st114;
@@ -6939,7 +6975,7 @@ case 207:
 		goto st118;
 	goto tr19;
 tr441:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -6949,7 +6985,7 @@ st208:
 	if ( ++p == pe )
 		goto _test_eof208;
 case 208:
-#line 6953 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 6989 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	goto st209;
 st209:
 	if ( ++p == pe )
@@ -6957,7 +6993,7 @@ st209:
 case 209:
 	goto tr376;
 tr444:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -6967,7 +7003,7 @@ st210:
 	if ( ++p == pe )
 		goto _test_eof210;
 case 210:
-#line 6971 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7007 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr378;
 		case 5u: goto tr379;
@@ -7009,7 +7045,7 @@ case 210:
 		goto tr380;
 	goto tr377;
 tr445:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7019,7 +7055,7 @@ st211:
 	if ( ++p == pe )
 		goto _test_eof211;
 case 211:
-#line 7023 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7059 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr378;
 		case 5u: goto tr379;
@@ -7091,7 +7127,7 @@ case 211:
 		goto tr379;
 	goto tr377;
 tr446:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7101,7 +7137,7 @@ st212:
 	if ( ++p == pe )
 		goto _test_eof212;
 case 212:
-#line 7105 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7141 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr378;
 		case 12u: goto tr378;
@@ -7166,7 +7202,7 @@ case 212:
 		goto tr377;
 	goto tr379;
 tr447:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7176,7 +7212,7 @@ st213:
 	if ( ++p == pe )
 		goto _test_eof213;
 case 213:
-#line 7180 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7216 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr378;
 		case 5u: goto tr379;
@@ -7240,7 +7276,7 @@ case 213:
 		goto tr380;
 	goto tr19;
 tr448:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7250,7 +7286,7 @@ st214:
 	if ( ++p == pe )
 		goto _test_eof214;
 case 214:
-#line 7254 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7290 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr378;
 		case 5u: goto tr379;
@@ -7295,7 +7331,7 @@ case 214:
 		goto tr379;
 	goto tr377;
 tr449:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7305,7 +7341,7 @@ st215:
 	if ( ++p == pe )
 		goto _test_eof215;
 case 215:
-#line 7309 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7345 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr378;
 		case 5u: goto tr379;
@@ -7364,7 +7400,7 @@ case 215:
 		goto tr379;
 	goto tr377;
 tr450:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7374,7 +7410,7 @@ st216:
 	if ( ++p == pe )
 		goto _test_eof216;
 case 216:
-#line 7378 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7414 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr378;
 		case 5u: goto tr379;
@@ -7422,7 +7458,7 @@ case 216:
 		goto tr379;
 	goto tr377;
 tr451:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7432,7 +7468,7 @@ st217:
 	if ( ++p == pe )
 		goto _test_eof217;
 case 217:
-#line 7436 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7472 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr378;
 		case 5u: goto tr379;
@@ -7483,7 +7519,7 @@ case 217:
 		goto tr19;
 	goto tr377;
 tr453:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7497,7 +7533,7 @@ st218:
 	if ( ++p == pe )
 		goto _test_eof218;
 case 218:
-#line 7501 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7537 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st219;
 		case 102u: goto tr385;
@@ -7591,7 +7627,7 @@ case 220:
 		goto st118;
 	goto tr19;
 tr454:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7605,7 +7641,7 @@ st221:
 	if ( ++p == pe )
 		goto _test_eof221;
 case 221:
-#line 7609 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7645 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st222;
 		case 102u: goto tr388;
@@ -7670,7 +7706,7 @@ st224:
 	if ( ++p == pe )
 		goto _test_eof224;
 case 224:
-#line 7674 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7710 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	if ( 192u <= (*p) )
 		goto st225;
 	goto tr19;
@@ -7680,7 +7716,7 @@ st225:
 case 225:
 	goto tr400;
 tr455:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7698,7 +7734,7 @@ st226:
 	if ( ++p == pe )
 		goto _test_eof226;
 case 226:
-#line 7702 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7738 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 15u: goto st227;
 		case 102u: goto tr402;
@@ -7749,7 +7785,7 @@ case 227:
 		goto tr404;
 	goto tr19;
 tr456:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7759,7 +7795,7 @@ st228:
 	if ( ++p == pe )
 		goto _test_eof228;
 case 228:
-#line 7763 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7799 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st35;
 		case 5u: goto st36;
@@ -7821,7 +7857,7 @@ case 228:
 		goto st7;
 	goto tr0;
 tr457:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7831,7 +7867,7 @@ st229:
 	if ( ++p == pe )
 		goto _test_eof229;
 case 229:
-#line 7835 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7871 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st113;
 		case 5u: goto st114;
@@ -7893,7 +7929,7 @@ case 229:
 		goto st7;
 	goto tr0;
 tr458:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7903,7 +7939,7 @@ st230:
 	if ( ++p == pe )
 		goto _test_eof230;
 case 230:
-#line 7907 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7943 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7927,7 +7963,7 @@ case 230:
 		goto st7;
 	goto tr19;
 tr460:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7937,7 +7973,7 @@ st231:
 	if ( ++p == pe )
 		goto _test_eof231;
 case 231:
-#line 7941 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 7977 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -7986,9 +8022,9 @@ case 232:
 		goto tr412;
 	goto tr11;
 tr412:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 113 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -8000,7 +8036,7 @@ st249:
 	if ( ++p == pe )
 		goto _test_eof249;
 case 249:
-#line 8004 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8040 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr420;
 		case 5u: goto tr421;
@@ -8144,7 +8180,7 @@ case 249:
 		goto tr419;
 	goto tr425;
 tr461:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -8154,7 +8190,7 @@ st233:
 	if ( ++p == pe )
 		goto _test_eof233;
 case 233:
-#line 8158 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8194 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -8203,9 +8239,9 @@ case 234:
 		goto tr413;
 	goto tr11;
 tr413:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 113 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -8217,7 +8253,7 @@ st250:
 	if ( ++p == pe )
 		goto _test_eof250;
 case 250:
-#line 8221 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8257 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr420;
 		case 5u: goto tr421;
@@ -8361,7 +8397,7 @@ case 250:
 		goto tr419;
 	goto tr425;
 tr462:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -8371,7 +8407,7 @@ st235:
 	if ( ++p == pe )
 		goto _test_eof235;
 case 235:
-#line 8375 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8411 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -8420,9 +8456,9 @@ case 236:
 		goto tr414;
 	goto tr11;
 tr414:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 113 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -8434,7 +8470,7 @@ st251:
 	if ( ++p == pe )
 		goto _test_eof251;
 case 251:
-#line 8438 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8474 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr420;
 		case 5u: goto tr421;
@@ -8578,7 +8614,7 @@ case 251:
 		goto tr419;
 	goto tr425;
 tr463:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -8588,7 +8624,7 @@ st237:
 	if ( ++p == pe )
 		goto _test_eof237;
 case 237:
-#line 8592 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8628 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -8637,9 +8673,9 @@ case 238:
 		goto tr415;
 	goto tr11;
 tr415:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 113 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -8651,7 +8687,7 @@ st252:
 	if ( ++p == pe )
 		goto _test_eof252;
 case 252:
-#line 8655 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8691 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr420;
 		case 5u: goto tr421;
@@ -8795,7 +8831,7 @@ case 252:
 		goto tr419;
 	goto tr425;
 tr464:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -8805,7 +8841,7 @@ st239:
 	if ( ++p == pe )
 		goto _test_eof239;
 case 239:
-#line 8809 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8845 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -8854,9 +8890,9 @@ case 240:
 		goto tr416;
 	goto tr11;
 tr416:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 113 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -8868,7 +8904,7 @@ st253:
 	if ( ++p == pe )
 		goto _test_eof253;
 case 253:
-#line 8872 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 8908 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr420;
 		case 5u: goto tr421;
@@ -9012,7 +9048,7 @@ case 253:
 		goto tr419;
 	goto tr425;
 tr465:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -9022,7 +9058,7 @@ st241:
 	if ( ++p == pe )
 		goto _test_eof241;
 case 241:
-#line 9026 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 9062 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -9071,9 +9107,9 @@ case 242:
 		goto tr417;
 	goto tr11;
 tr417:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 113 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -9085,7 +9121,7 @@ st254:
 	if ( ++p == pe )
 		goto _test_eof254;
 case 254:
-#line 9089 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 9125 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr420;
 		case 5u: goto tr421;
@@ -9229,7 +9265,7 @@ case 254:
 		goto tr419;
 	goto tr425;
 tr466:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -9239,7 +9275,7 @@ st243:
 	if ( ++p == pe )
 		goto _test_eof243;
 case 243:
-#line 9243 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 9279 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -9288,9 +9324,9 @@ case 244:
 		goto tr418;
 	goto tr11;
 tr418:
-#line 53 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 113 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{ }
-#line 84 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 144 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -9302,7 +9338,7 @@ st255:
 	if ( ++p == pe )
 		goto _test_eof255;
 case 255:
-#line 9306 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 9342 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto tr420;
 		case 5u: goto tr421;
@@ -9446,7 +9482,7 @@ case 255:
 		goto tr419;
 	goto tr425;
 tr467:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -9456,7 +9492,7 @@ st245:
 	if ( ++p == pe )
 		goto _test_eof245;
 case 245:
-#line 9460 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 9496 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -9498,7 +9534,7 @@ case 245:
 		goto st7;
 	goto tr19;
 tr459:
-#line 80 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 140 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -9508,7 +9544,7 @@ st246:
 	if ( ++p == pe )
 		goto _test_eof246;
 case 246:
-#line 9512 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 9548 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 5u: goto st3;
@@ -10054,21 +10090,21 @@ case 246:
 	case 244: 
 	case 245: 
 	case 246: 
-#line 90 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 150 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
 	{
         process_error(begin, userdata);
         result = 1;
         goto error_detected;
     }
 	break;
-#line 10065 "src/trusted/validator_ragel/gen/validator-x86_32.c"
+#line 10101 "src/trusted/validator_ragel/gen/validator-x86_32.c"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 221 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
+#line 241 "src/trusted/validator_ragel/unreviewed/validator-x86_32.rl"
   }
 
   if (CheckJumpTargets(valid_targets, jump_dests, size)) {

@@ -6840,75 +6840,75 @@ _match:
 	break;
 	case 188:
 #line 1137 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3055); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3083); }
 	break;
 	case 189:
 #line 1138 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3067); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3095); }
 	break;
 	case 190:
 #line 1139 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3289); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3317); }
 	break;
 	case 191:
 #line 1140 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3299); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3327); }
 	break;
 	case 192:
 #line 1141 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2794); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2822); }
 	break;
 	case 193:
 #line 1142 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2806); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2834); }
 	break;
 	case 194:
 #line 1143 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2046); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2074); }
 	break;
 	case 195:
 #line 1144 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2054); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2082); }
 	break;
 	case 196:
 #line 1145 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2066); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2094); }
 	break;
 	case 197:
 #line 1146 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2074); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2102); }
 	break;
 	case 198:
 #line 1147 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2086); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2114); }
 	break;
 	case 199:
 #line 1148 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2094); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2122); }
 	break;
 	case 200:
 #line 1149 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4114); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4142); }
 	break;
 	case 201:
 #line 1150 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4120); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4148); }
 	break;
 	case 202:
 #line 1151 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2111); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2139); }
 	break;
 	case 203:
 #line 1152 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2119); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2147); }
 	break;
 	case 204:
 #line 1153 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2127); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2155); }
 	break;
 	case 205:
 #line 1154 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2134); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2162); }
 	break;
 	case 206:
 #line 1155 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -6936,19 +6936,19 @@ _match:
 	break;
 	case 212:
 #line 1161 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2141); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2169); }
 	break;
 	case 213:
 #line 1162 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2150); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2178); }
 	break;
 	case 214:
 #line 1163 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2159); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2187); }
 	break;
 	case 215:
 #line 1164 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2169); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2197); }
 	break;
 	case 216:
 #line 1165 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7000,7 +7000,7 @@ _match:
 	break;
 	case 228:
 #line 1177 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1945); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1973); }
 	break;
 	case 229:
 #line 1178 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7112,11 +7112,11 @@ _match:
 	break;
 	case 256:
 #line 1205 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2220); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2248); }
 	break;
 	case 257:
 #line 1206 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2227); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2255); }
 	break;
 	case 258:
 #line 1207 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7124,11 +7124,11 @@ _match:
 	break;
 	case 259:
 #line 1208 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2234); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2262); }
 	break;
 	case 260:
 #line 1209 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2241); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2269); }
 	break;
 	case 261:
 #line 1210 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7140,11 +7140,11 @@ _match:
 	break;
 	case 263:
 #line 1212 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5652); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5680); }
 	break;
 	case 264:
 #line 1213 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5661); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5689); }
 	break;
 	case 265:
 #line 1214 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7156,15 +7156,15 @@ _match:
 	break;
 	case 267:
 #line 1216 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2264); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2292); }
 	break;
 	case 268:
 #line 1217 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2274); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2302); }
 	break;
 	case 269:
 #line 1218 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2284); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2312); }
 	break;
 	case 270:
 #line 1219 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7172,7 +7172,7 @@ _match:
 	break;
 	case 271:
 #line 1220 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2294); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2322); }
 	break;
 	case 272:
 #line 1221 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7184,11 +7184,11 @@ _match:
 	break;
 	case 274:
 #line 1223 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2314); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2342); }
 	break;
 	case 275:
 #line 1224 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2324); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2352); }
 	break;
 	case 276:
 #line 1225 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7196,31 +7196,31 @@ _match:
 	break;
 	case 277:
 #line 1226 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2344); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2372); }
 	break;
 	case 278:
 #line 1227 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2354); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2382); }
 	break;
 	case 279:
 #line 1228 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2364); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2392); }
 	break;
 	case 280:
 #line 1229 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2374); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2402); }
 	break;
 	case 281:
 #line 1230 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2384); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2412); }
 	break;
 	case 282:
 #line 1231 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2394); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2422); }
 	break;
 	case 283:
 #line 1232 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2404); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2432); }
 	break;
 	case 284:
 #line 1233 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7228,7 +7228,7 @@ _match:
 	break;
 	case 285:
 #line 1234 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2415); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2443); }
 	break;
 	case 286:
 #line 1235 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7236,11 +7236,11 @@ _match:
 	break;
 	case 287:
 #line 1236 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2426); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2454); }
 	break;
 	case 288:
 #line 1237 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2437); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2465); }
 	break;
 	case 289:
 #line 1238 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7272,7 +7272,7 @@ _match:
 	break;
 	case 296:
 #line 1245 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2049); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2077); }
 	break;
 	case 297:
 #line 1246 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7280,27 +7280,27 @@ _match:
 	break;
 	case 298:
 #line 1247 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2448); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2476); }
 	break;
 	case 299:
 #line 1248 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2455); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2483); }
 	break;
 	case 300:
 #line 1249 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2462); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2490); }
 	break;
 	case 301:
 #line 1250 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2469); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2497); }
 	break;
 	case 302:
 #line 1251 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2476); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2504); }
 	break;
 	case 303:
 #line 1252 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2482); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2510); }
 	break;
 	case 304:
 #line 1253 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7308,11 +7308,11 @@ _match:
 	break;
 	case 305:
 #line 1254 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1953); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1981); }
 	break;
 	case 306:
 #line 1255 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2511); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2539); }
 	break;
 	case 307:
 #line 1256 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7328,7 +7328,7 @@ _match:
 	break;
 	case 310:
 #line 1259 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1411); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1439); }
 	break;
 	case 311:
 #line 1260 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7532,7 +7532,7 @@ _match:
 	break;
 	case 361:
 #line 1310 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1453); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1481); }
 	break;
 	case 362:
 #line 1311 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7640,7 +7640,7 @@ _match:
 	break;
 	case 388:
 #line 1337 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1515); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1543); }
 	break;
 	case 389:
 #line 1338 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7648,7 +7648,7 @@ _match:
 	break;
 	case 390:
 #line 1339 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1521); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1549); }
 	break;
 	case 391:
 #line 1340 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7712,11 +7712,11 @@ _match:
 	break;
 	case 406:
 #line 1355 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3534); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3562); }
 	break;
 	case 407:
 #line 1356 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3542); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3570); }
 	break;
 	case 408:
 #line 1357 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7724,11 +7724,11 @@ _match:
 	break;
 	case 409:
 #line 1358 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3550); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3578); }
 	break;
 	case 410:
 #line 1359 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3558); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3586); }
 	break;
 	case 411:
 #line 1360 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7744,7 +7744,7 @@ _match:
 	break;
 	case 414:
 #line 1363 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1449); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1477); }
 	break;
 	case 415:
 #line 1364 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7756,7 +7756,7 @@ _match:
 	break;
 	case 417:
 #line 1366 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3578); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3606); }
 	break;
 	case 418:
 #line 1367 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7772,7 +7772,7 @@ _match:
 	break;
 	case 421:
 #line 1370 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5744); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5772); }
 	break;
 	case 422:
 #line 1371 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7880,11 +7880,11 @@ _match:
 	break;
 	case 448:
 #line 1397 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3588); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3616); }
 	break;
 	case 449:
 #line 1398 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3595); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3623); }
 	break;
 	case 450:
 #line 1399 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7960,7 +7960,7 @@ _match:
 	break;
 	case 468:
 #line 1417 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3964); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3992); }
 	break;
 	case 469:
 #line 1418 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7980,7 +7980,7 @@ _match:
 	break;
 	case 473:
 #line 1422 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3604); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3632); }
 	break;
 	case 474:
 #line 1423 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -7988,19 +7988,19 @@ _match:
 	break;
 	case 475:
 #line 1424 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3638); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3666); }
 	break;
 	case 476:
 #line 1425 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3645); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3673); }
 	break;
 	case 477:
 #line 1426 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4806); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4834); }
 	break;
 	case 478:
 #line 1427 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3659); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3687); }
 	break;
 	case 479:
 #line 1428 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8008,19 +8008,19 @@ _match:
 	break;
 	case 480:
 #line 1429 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3666); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3694); }
 	break;
 	case 481:
 #line 1430 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3673); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3701); }
 	break;
 	case 482:
 #line 1431 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4854); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4882); }
 	break;
 	case 483:
 #line 1432 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3687); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3715); }
 	break;
 	case 484:
 #line 1433 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8028,23 +8028,23 @@ _match:
 	break;
 	case 485:
 #line 1434 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4172); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4200); }
 	break;
 	case 486:
 #line 1435 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3709); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3737); }
 	break;
 	case 487:
 #line 1436 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3717); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3745); }
 	break;
 	case 488:
 #line 1437 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3725); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3753); }
 	break;
 	case 489:
 #line 1438 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3731); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3759); }
 	break;
 	case 490:
 #line 1439 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8052,51 +8052,51 @@ _match:
 	break;
 	case 491:
 #line 1440 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3740); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3768); }
 	break;
 	case 492:
 #line 1441 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3608); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3636); }
 	break;
 	case 493:
 #line 1442 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3756); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3784); }
 	break;
 	case 494:
 #line 1443 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3765); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3793); }
 	break;
 	case 495:
 #line 1444 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3773); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3801); }
 	break;
 	case 496:
 #line 1445 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3781); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3809); }
 	break;
 	case 497:
 #line 1446 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3790); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3818); }
 	break;
 	case 498:
 #line 1447 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3798); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3826); }
 	break;
 	case 499:
 #line 1448 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3806); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3834); }
 	break;
 	case 500:
 #line 1449 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3816); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3844); }
 	break;
 	case 501:
 #line 1450 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3826); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3854); }
 	break;
 	case 502:
 #line 1451 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3835); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3863); }
 	break;
 	case 503:
 #line 1452 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8104,11 +8104,11 @@ _match:
 	break;
 	case 504:
 #line 1453 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3845); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3873); }
 	break;
 	case 505:
 #line 1454 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3854); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3882); }
 	break;
 	case 506:
 #line 1455 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8140,19 +8140,19 @@ _match:
 	break;
 	case 513:
 #line 1462 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3869); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3897); }
 	break;
 	case 514:
 #line 1463 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3876); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3904); }
 	break;
 	case 515:
 #line 1464 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3886); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3914); }
 	break;
 	case 516:
 #line 1465 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3896); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3924); }
 	break;
 	case 517:
 #line 1466 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8160,11 +8160,11 @@ _match:
 	break;
 	case 518:
 #line 1467 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3903); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3931); }
 	break;
 	case 519:
 #line 1468 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3911); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3939); }
 	break;
 	case 520:
 #line 1469 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8180,7 +8180,7 @@ _match:
 	break;
 	case 523:
 #line 1472 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3919); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3947); }
 	break;
 	case 524:
 #line 1473 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8188,19 +8188,19 @@ _match:
 	break;
 	case 525:
 #line 1474 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3941); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3969); }
 	break;
 	case 526:
 #line 1475 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3948); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3976); }
 	break;
 	case 527:
 #line 1476 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3955); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3983); }
 	break;
 	case 528:
 #line 1477 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3962); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3990); }
 	break;
 	case 529:
 #line 1478 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8216,11 +8216,11 @@ _match:
 	break;
 	case 532:
 #line 1481 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 363); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1365); }
 	break;
 	case 533:
 #line 1482 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1365); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1393); }
 	break;
 	case 534:
 #line 1483 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -8228,915 +8228,915 @@ _match:
 	break;
 	case 535:
 #line 1484 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5710); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5738); }
 	break;
 	case 536:
 #line 1485 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5717); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5745); }
 	break;
 	case 537:
 #line 1486 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1369); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1397); }
 	break;
 	case 538:
 #line 1487 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1373); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1401); }
 	break;
 	case 539:
 #line 1488 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3981); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4009); }
 	break;
 	case 540:
 #line 1489 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3988); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4016); }
 	break;
 	case 541:
 #line 1490 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3995); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4023); }
 	break;
 	case 542:
 #line 1491 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4002); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4030); }
 	break;
 	case 543:
 #line 1492 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4012); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4040); }
 	break;
 	case 544:
 #line 1493 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4022); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4050); }
 	break;
 	case 545:
 #line 1494 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4032); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4060); }
 	break;
 	case 546:
 #line 1495 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4042); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4070); }
 	break;
 	case 547:
 #line 1496 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4049); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4077); }
 	break;
 	case 548:
 #line 1497 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4056); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4084); }
 	break;
 	case 549:
 #line 1498 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4063); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4091); }
 	break;
 	case 550:
 #line 1499 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4071); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4099); }
 	break;
 	case 551:
 #line 1500 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4079); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4107); }
 	break;
 	case 552:
 #line 1501 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4088); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4116); }
 	break;
 	case 553:
 #line 1502 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4097); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4125); }
 	break;
 	case 554:
 #line 1503 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4104); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4132); }
 	break;
 	case 555:
 #line 1504 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4113); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4141); }
 	break;
 	case 556:
 #line 1505 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4119); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4147); }
 	break;
 	case 557:
 #line 1506 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1378); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1406); }
 	break;
 	case 558:
 #line 1507 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4126); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4154); }
 	break;
 	case 559:
 #line 1508 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1384); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1412); }
 	break;
 	case 560:
 #line 1509 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4133); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4161); }
 	break;
 	case 561:
 #line 1510 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4140); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4168); }
 	break;
 	case 562:
 #line 1511 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4150); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4178); }
 	break;
 	case 563:
 #line 1512 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4159); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4187); }
 	break;
 	case 564:
 #line 1513 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4177); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4205); }
 	break;
 	case 565:
 #line 1514 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4186); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4214); }
 	break;
 	case 566:
 #line 1515 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4195); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4223); }
 	break;
 	case 567:
 #line 1516 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4204); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4232); }
 	break;
 	case 568:
 #line 1517 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4213); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4241); }
 	break;
 	case 569:
 #line 1518 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4224); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4252); }
 	break;
 	case 570:
 #line 1519 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4235); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4263); }
 	break;
 	case 571:
 #line 1520 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4244); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4272); }
 	break;
 	case 572:
 #line 1521 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4253); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4281); }
 	break;
 	case 573:
 #line 1522 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4262); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4290); }
 	break;
 	case 574:
 #line 1523 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4271); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4299); }
 	break;
 	case 575:
 #line 1524 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4282); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4310); }
 	break;
 	case 576:
 #line 1525 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4406); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4434); }
 	break;
 	case 577:
 #line 1526 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4414); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4442); }
 	break;
 	case 578:
 #line 1527 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4422); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4450); }
 	break;
 	case 579:
 #line 1528 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1392); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1420); }
 	break;
 	case 580:
 #line 1529 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1398); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1426); }
 	break;
 	case 581:
 #line 1530 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1404); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1432); }
 	break;
 	case 582:
 #line 1531 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1410); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1438); }
 	break;
 	case 583:
 #line 1532 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1416); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1444); }
 	break;
 	case 584:
 #line 1533 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1424); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1452); }
 	break;
 	case 585:
 #line 1534 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1432); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1460); }
 	break;
 	case 586:
 #line 1535 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1440); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1468); }
 	break;
 	case 587:
 #line 1536 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1446); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1474); }
 	break;
 	case 588:
 #line 1537 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1452); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1480); }
 	break;
 	case 589:
 #line 1538 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1458); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1486); }
 	break;
 	case 590:
 #line 1539 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1465); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1493); }
 	break;
 	case 591:
 #line 1540 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1473); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1501); }
 	break;
 	case 592:
 #line 1541 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1479); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1507); }
 	break;
 	case 593:
 #line 1542 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1488); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1516); }
 	break;
 	case 594:
 #line 1543 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1497); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1525); }
 	break;
 	case 595:
 #line 1544 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1506); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1534); }
 	break;
 	case 596:
 #line 1545 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1514); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1542); }
 	break;
 	case 597:
 #line 1546 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1520); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1548); }
 	break;
 	case 598:
 #line 1547 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4457); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4485); }
 	break;
 	case 599:
 #line 1548 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4474); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4502); }
 	break;
 	case 600:
 #line 1549 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4543); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4571); }
 	break;
 	case 601:
 #line 1550 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4569); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4597); }
 	break;
 	case 602:
 #line 1551 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4590); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4618); }
 	break;
 	case 603:
 #line 1552 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4607); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4635); }
 	break;
 	case 604:
 #line 1553 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4616); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4644); }
 	break;
 	case 605:
 #line 1554 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1527); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1555); }
 	break;
 	case 606:
 #line 1555 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1533); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1561); }
 	break;
 	case 607:
 #line 1556 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4633); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4661); }
 	break;
 	case 608:
 #line 1557 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4641); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4669); }
 	break;
 	case 609:
 #line 1558 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4649); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4677); }
 	break;
 	case 610:
 #line 1559 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4777); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4805); }
 	break;
 	case 611:
 #line 1560 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4788); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4816); }
 	break;
 	case 612:
 #line 1561 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4797); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4825); }
 	break;
 	case 613:
 #line 1562 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4805); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4833); }
 	break;
 	case 614:
 #line 1563 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4813); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4841); }
 	break;
 	case 615:
 #line 1564 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4821); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4849); }
 	break;
 	case 616:
 #line 1565 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4829); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4857); }
 	break;
 	case 617:
 #line 1566 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4837); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4865); }
 	break;
 	case 618:
 #line 1567 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4845); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4873); }
 	break;
 	case 619:
 #line 1568 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4853); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4881); }
 	break;
 	case 620:
 #line 1569 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4861); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4889); }
 	break;
 	case 621:
 #line 1570 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4869); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4897); }
 	break;
 	case 622:
 #line 1571 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4877); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4905); }
 	break;
 	case 623:
 #line 1572 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4885); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4913); }
 	break;
 	case 624:
 #line 1573 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4893); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4921); }
 	break;
 	case 625:
 #line 1574 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4903); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4931); }
 	break;
 	case 626:
 #line 1575 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4913); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4941); }
 	break;
 	case 627:
 #line 1576 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4923); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4951); }
 	break;
 	case 628:
 #line 1577 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4933); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4961); }
 	break;
 	case 629:
 #line 1578 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4943); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4971); }
 	break;
 	case 630:
 #line 1579 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4953); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4981); }
 	break;
 	case 631:
 #line 1580 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4963); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4991); }
 	break;
 	case 632:
 #line 1581 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4973); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5001); }
 	break;
 	case 633:
 #line 1582 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4983); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5011); }
 	break;
 	case 634:
 #line 1583 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4993); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5021); }
 	break;
 	case 635:
 #line 1584 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5003); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5031); }
 	break;
 	case 636:
 #line 1585 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5013); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5041); }
 	break;
 	case 637:
 #line 1586 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5023); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5051); }
 	break;
 	case 638:
 #line 1587 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5031); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5059); }
 	break;
 	case 639:
 #line 1588 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1539); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1567); }
 	break;
 	case 640:
 #line 1589 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5041); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5069); }
 	break;
 	case 641:
 #line 1590 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5050); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5078); }
 	break;
 	case 642:
 #line 1591 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5058); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5086); }
 	break;
 	case 643:
 #line 1592 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5066); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5094); }
 	break;
 	case 644:
 #line 1593 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5074); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5102); }
 	break;
 	case 645:
 #line 1594 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1547); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1575); }
 	break;
 	case 646:
 #line 1595 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1551); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1579); }
 	break;
 	case 647:
 #line 1596 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1562); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1590); }
 	break;
 	case 648:
 #line 1597 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1573); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1601); }
 	break;
 	case 649:
 #line 1598 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1580); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1608); }
 	break;
 	case 650:
 #line 1599 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1585); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1613); }
 	break;
 	case 651:
 #line 1600 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5083); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5111); }
 	break;
 	case 652:
 #line 1601 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1591); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1619); }
 	break;
 	case 653:
 #line 1602 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1600); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1628); }
 	break;
 	case 654:
 #line 1603 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1612); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1640); }
 	break;
 	case 655:
 #line 1604 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1623); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1651); }
 	break;
 	case 656:
 #line 1605 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1634); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1662); }
 	break;
 	case 657:
 #line 1606 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1645); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1673); }
 	break;
 	case 658:
 #line 1607 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3920); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3948); }
 	break;
 	case 659:
 #line 1608 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5187); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5215); }
 	break;
 	case 660:
 #line 1609 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5195); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5223); }
 	break;
 	case 661:
 #line 1610 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5203); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5231); }
 	break;
 	case 662:
 #line 1611 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5212); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5240); }
 	break;
 	case 663:
 #line 1612 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1655); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1683); }
 	break;
 	case 664:
 #line 1613 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5221); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5249); }
 	break;
 	case 665:
 #line 1614 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5229); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5257); }
 	break;
 	case 666:
 #line 1615 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5237); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5265); }
 	break;
 	case 667:
 #line 1616 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5245); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5273); }
 	break;
 	case 668:
 #line 1617 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5252); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5280); }
 	break;
 	case 669:
 #line 1618 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5260); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5288); }
 	break;
 	case 670:
 #line 1619 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5267); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5295); }
 	break;
 	case 671:
 #line 1620 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5274); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5302); }
 	break;
 	case 672:
 #line 1621 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5281); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5309); }
 	break;
 	case 673:
 #line 1622 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5288); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5316); }
 	break;
 	case 674:
 #line 1623 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5295); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5323); }
 	break;
 	case 675:
 #line 1624 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5303); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5331); }
 	break;
 	case 676:
 #line 1625 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5310); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5338); }
 	break;
 	case 677:
 #line 1626 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5317); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5345); }
 	break;
 	case 678:
 #line 1627 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5324); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5352); }
 	break;
 	case 679:
 #line 1628 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5331); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5359); }
 	break;
 	case 680:
 #line 1629 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5338); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5366); }
 	break;
 	case 681:
 #line 1630 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5346); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5374); }
 	break;
 	case 682:
 #line 1631 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5354); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5382); }
 	break;
 	case 683:
 #line 1632 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5363); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5391); }
 	break;
 	case 684:
 #line 1633 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5372); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5400); }
 	break;
 	case 685:
 #line 1634 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1662); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1690); }
 	break;
 	case 686:
 #line 1635 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5379); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5407); }
 	break;
 	case 687:
 #line 1636 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5386); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5414); }
 	break;
 	case 688:
 #line 1637 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5397); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5425); }
 	break;
 	case 689:
 #line 1638 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5408); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5436); }
 	break;
 	case 690:
 #line 1639 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5420); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5448); }
 	break;
 	case 691:
 #line 1640 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5431); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5459); }
 	break;
 	case 692:
 #line 1641 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5442); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5470); }
 	break;
 	case 693:
 #line 1642 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5453); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5481); }
 	break;
 	case 694:
 #line 1643 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5465); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5493); }
 	break;
 	case 695:
 #line 1644 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1669); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1697); }
 	break;
 	case 696:
 #line 1645 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1674); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1702); }
 	break;
 	case 697:
 #line 1646 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1685); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1713); }
 	break;
 	case 698:
 #line 1647 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1696); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1724); }
 	break;
 	case 699:
 #line 1648 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1702); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1730); }
 	break;
 	case 700:
 #line 1649 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5476); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5504); }
 	break;
 	case 701:
 #line 1650 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1709); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1737); }
 	break;
 	case 702:
 #line 1651 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5482); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5510); }
 	break;
 	case 703:
 #line 1652 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5489); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5517); }
 	break;
 	case 704:
 #line 1653 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1713); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1741); }
 	break;
 	case 705:
 #line 1654 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1717); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1745); }
 	break;
 	case 706:
 #line 1655 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1723); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1751); }
 	break;
 	case 707:
 #line 1656 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1729); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1757); }
 	break;
 	case 708:
 #line 1657 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1735); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1763); }
 	break;
 	case 709:
 #line 1658 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1970); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1998); }
 	break;
 	case 710:
 #line 1659 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1742); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1770); }
 	break;
 	case 711:
 #line 1660 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1746); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1774); }
 	break;
 	case 712:
 #line 1661 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5496); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5524); }
 	break;
 	case 713:
 #line 1662 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5505); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5533); }
 	break;
 	case 714:
 #line 1663 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5514); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5542); }
 	break;
 	case 715:
 #line 1664 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5523); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5551); }
 	break;
 	case 716:
 #line 1665 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1750); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1778); }
 	break;
 	case 717:
 #line 1666 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5532); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5560); }
 	break;
 	case 718:
 #line 1667 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5541); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5569); }
 	break;
 	case 719:
 #line 1668 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1754); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1782); }
 	break;
 	case 720:
 #line 1669 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1759); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1787); }
 	break;
 	case 721:
 #line 1670 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1763); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1791); }
 	break;
 	case 722:
 #line 1671 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1767); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1795); }
 	break;
 	case 723:
 #line 1672 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1772); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1800); }
 	break;
 	case 724:
 #line 1673 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1777); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1805); }
 	break;
 	case 725:
 #line 1674 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1783); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1811); }
 	break;
 	case 726:
 #line 1675 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1788); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1816); }
 	break;
 	case 727:
 #line 1676 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1794); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1822); }
 	break;
 	case 728:
 #line 1677 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1799); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1827); }
 	break;
 	case 729:
 #line 1678 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1804); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1832); }
 	break;
 	case 730:
 #line 1679 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1810); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1838); }
 	break;
 	case 731:
 #line 1680 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1815); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1843); }
 	break;
 	case 732:
 #line 1681 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1821); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1849); }
 	break;
 	case 733:
 #line 1682 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1827); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1855); }
 	break;
 	case 734:
 #line 1683 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1833); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1861); }
 	break;
 	case 735:
 #line 1684 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1839); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1867); }
 	break;
 	case 736:
 #line 1685 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1845); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1873); }
 	break;
 	case 737:
 #line 1686 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1850); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1878); }
 	break;
 	case 738:
 #line 1687 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1855); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1883); }
 	break;
 	case 739:
 #line 1688 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1860); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1888); }
 	break;
 	case 740:
 #line 1689 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1867); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1895); }
 	break;
 	case 741:
 #line 1690 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1873); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1901); }
 	break;
 	case 742:
 #line 1691 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5167); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5195); }
 	break;
 	case 743:
 #line 1692 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1877); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1905); }
 	break;
 	case 744:
 #line 1693 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1881); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1909); }
 	break;
 	case 745:
 #line 1694 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5550); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5578); }
 	break;
 	case 746:
 #line 1695 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5558); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5586); }
 	break;
 	case 747:
 #line 1696 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1886); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1914); }
 	break;
 	case 748:
 #line 1697 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1892); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1920); }
 	break;
 	case 749:
 #line 1698 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1899); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1927); }
 	break;
 	case 750:
 #line 1699 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1904); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1932); }
 	break;
 	case 751:
 #line 1700 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1911); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1939); }
 	break;
 	case 752:
 #line 1701 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5566); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5594); }
 	break;
 	case 753:
 #line 1702 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5533); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5561); }
 	break;
 	case 754:
 #line 1703 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5582); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5610); }
 	break;
 	case 755:
 #line 1704 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5542); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5570); }
 	break;
 	case 756:
 #line 1705 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1916); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1944); }
 	break;
 	case 757:
 #line 1706 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1920); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1948); }
 	break;
 	case 758:
 #line 1707 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1924); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1952); }
 	break;
 	case 759:
 #line 1708 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1929); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1957); }
 	break;
 	case 760:
 #line 1709 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5598); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5626); }
 	break;
 	case 761:
 #line 1710 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1933); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1961); }
 	break;
 	case 762:
 #line 1711 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1938); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1966); }
 	break;
 	case 763:
 #line 1712 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -9144,1691 +9144,1691 @@ _match:
 	break;
 	case 764:
 #line 1713 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2797); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2825); }
 	break;
 	case 765:
 #line 1714 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2809); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2837); }
 	break;
 	case 766:
 #line 1715 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3485); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3513); }
 	break;
 	case 767:
 #line 1716 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3495); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3523); }
 	break;
 	case 768:
 #line 1717 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1942); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1970); }
 	break;
 	case 769:
 #line 1718 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1950); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1978); }
 	break;
 	case 770:
 #line 1719 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1959); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1987); }
 	break;
 	case 771:
 #line 1720 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1967); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 1995); }
 	break;
 	case 772:
 #line 1721 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1974); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2002); }
 	break;
 	case 773:
 #line 1722 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5380); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5408); }
 	break;
 	case 774:
 #line 1723 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1981); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2009); }
 	break;
 	case 775:
 #line 1724 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1987); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2015); }
 	break;
 	case 776:
 #line 1725 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5651); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5679); }
 	break;
 	case 777:
 #line 1726 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5660); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5688); }
 	break;
 	case 778:
 #line 1727 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1993); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2021); }
 	break;
 	case 779:
 #line 1728 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5669); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5697); }
 	break;
 	case 780:
 #line 1729 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5679); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5707); }
 	break;
 	case 781:
 #line 1730 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5689); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5717); }
 	break;
 	case 782:
 #line 1731 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5699); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5727); }
 	break;
 	case 783:
 #line 1732 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 1997); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2025); }
 	break;
 	case 784:
 #line 1733 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2004); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2032); }
 	break;
 	case 785:
 #line 1734 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2011); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2039); }
 	break;
 	case 786:
 #line 1735 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2018); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2046); }
 	break;
 	case 787:
 #line 1736 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2025); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2053); }
 	break;
 	case 788:
 #line 1737 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2035); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2063); }
 	break;
 	case 789:
 #line 1738 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2045); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2073); }
 	break;
 	case 790:
 #line 1739 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2053); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2081); }
 	break;
 	case 791:
 #line 1740 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2065); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2093); }
 	break;
 	case 792:
 #line 1741 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2073); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2101); }
 	break;
 	case 793:
 #line 1742 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2085); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2113); }
 	break;
 	case 794:
 #line 1743 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2093); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2121); }
 	break;
 	case 795:
 #line 1744 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2110); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2138); }
 	break;
 	case 796:
 #line 1745 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2118); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2146); }
 	break;
 	case 797:
 #line 1746 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2126); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2154); }
 	break;
 	case 798:
 #line 1747 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2133); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2161); }
 	break;
 	case 799:
 #line 1748 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2140); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2168); }
 	break;
 	case 800:
 #line 1749 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2149); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2177); }
 	break;
 	case 801:
 #line 1750 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2158); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2186); }
 	break;
 	case 802:
 #line 1751 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2168); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2196); }
 	break;
 	case 803:
 #line 1752 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2178); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2206); }
 	break;
 	case 804:
 #line 1753 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2193); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2221); }
 	break;
 	case 805:
 #line 1754 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2206); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2234); }
 	break;
 	case 806:
 #line 1755 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2219); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2247); }
 	break;
 	case 807:
 #line 1756 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2226); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2254); }
 	break;
 	case 808:
 #line 1757 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2233); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2261); }
 	break;
 	case 809:
 #line 1758 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2240); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2268); }
 	break;
 	case 810:
 #line 1759 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2247); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2275); }
 	break;
 	case 811:
 #line 1760 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2255); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2283); }
 	break;
 	case 812:
 #line 1761 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2263); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2291); }
 	break;
 	case 813:
 #line 1762 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2273); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2301); }
 	break;
 	case 814:
 #line 1763 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2283); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2311); }
 	break;
 	case 815:
 #line 1764 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2293); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2321); }
 	break;
 	case 816:
 #line 1765 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2303); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2331); }
 	break;
 	case 817:
 #line 1766 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2313); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2341); }
 	break;
 	case 818:
 #line 1767 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2323); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2351); }
 	break;
 	case 819:
 #line 1768 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2333); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2361); }
 	break;
 	case 820:
 #line 1769 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2343); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2371); }
 	break;
 	case 821:
 #line 1770 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2353); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2381); }
 	break;
 	case 822:
 #line 1771 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2363); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2391); }
 	break;
 	case 823:
 #line 1772 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2373); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2401); }
 	break;
 	case 824:
 #line 1773 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2383); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2411); }
 	break;
 	case 825:
 #line 1774 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2393); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2421); }
 	break;
 	case 826:
 #line 1775 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2403); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2431); }
 	break;
 	case 827:
 #line 1776 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2414); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2442); }
 	break;
 	case 828:
 #line 1777 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2425); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2453); }
 	break;
 	case 829:
 #line 1778 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2436); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2464); }
 	break;
 	case 830:
 #line 1779 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2447); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2475); }
 	break;
 	case 831:
 #line 1780 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2454); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2482); }
 	break;
 	case 832:
 #line 1781 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2461); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2489); }
 	break;
 	case 833:
 #line 1782 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2468); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2496); }
 	break;
 	case 834:
 #line 1783 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2475); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2503); }
 	break;
 	case 835:
 #line 1784 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2481); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2509); }
 	break;
 	case 836:
 #line 1785 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2487); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2515); }
 	break;
 	case 837:
 #line 1786 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2492); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2520); }
 	break;
 	case 838:
 #line 1787 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2497); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2525); }
 	break;
 	case 839:
 #line 1788 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2510); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2538); }
 	break;
 	case 840:
 #line 1789 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2521); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2549); }
 	break;
 	case 841:
 #line 1790 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2533); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2561); }
 	break;
 	case 842:
 #line 1791 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2545); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2573); }
 	break;
 	case 843:
 #line 1792 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2557); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2585); }
 	break;
 	case 844:
 #line 1793 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2569); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2597); }
 	break;
 	case 845:
 #line 1794 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2581); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2609); }
 	break;
 	case 846:
 #line 1795 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2593); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2621); }
 	break;
 	case 847:
 #line 1796 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2605); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2633); }
 	break;
 	case 848:
 #line 1797 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2617); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2645); }
 	break;
 	case 849:
 #line 1798 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2629); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2657); }
 	break;
 	case 850:
 #line 1799 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2641); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2669); }
 	break;
 	case 851:
 #line 1800 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2653); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2681); }
 	break;
 	case 852:
 #line 1801 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2665); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2693); }
 	break;
 	case 853:
 #line 1802 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2674); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2702); }
 	break;
 	case 854:
 #line 1803 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2683); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2711); }
 	break;
 	case 855:
 #line 1804 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2692); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2720); }
 	break;
 	case 856:
 #line 1805 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2701); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2729); }
 	break;
 	case 857:
 #line 1806 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2716); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2744); }
 	break;
 	case 858:
 #line 1807 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2731); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2759); }
 	break;
 	case 859:
 #line 1808 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2746); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2774); }
 	break;
 	case 860:
 #line 1809 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2761); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2789); }
 	break;
 	case 861:
 #line 1810 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2776); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2804); }
 	break;
 	case 862:
 #line 1811 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2791); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2819); }
 	break;
 	case 863:
 #line 1812 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2803); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2831); }
 	break;
 	case 864:
 #line 1813 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2815); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2843); }
 	break;
 	case 865:
 #line 1814 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2827); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2855); }
 	break;
 	case 866:
 #line 1815 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2839); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2867); }
 	break;
 	case 867:
 #line 1816 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2851); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2879); }
 	break;
 	case 868:
 #line 1817 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2863); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2891); }
 	break;
 	case 869:
 #line 1818 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2875); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2903); }
 	break;
 	case 870:
 #line 1819 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2887); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2915); }
 	break;
 	case 871:
 #line 1820 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2899); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2927); }
 	break;
 	case 872:
 #line 1821 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2911); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2939); }
 	break;
 	case 873:
 #line 1822 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2923); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2951); }
 	break;
 	case 874:
 #line 1823 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2935); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2963); }
 	break;
 	case 875:
 #line 1824 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2947); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2975); }
 	break;
 	case 876:
 #line 1825 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2959); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 2987); }
 	break;
 	case 877:
 #line 1826 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2974); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3002); }
 	break;
 	case 878:
 #line 1827 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 2989); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3017); }
 	break;
 	case 879:
 #line 1828 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3004); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3032); }
 	break;
 	case 880:
 #line 1829 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3019); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3047); }
 	break;
 	case 881:
 #line 1830 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3034); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3062); }
 	break;
 	case 882:
 #line 1831 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3049); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3077); }
 	break;
 	case 883:
 #line 1832 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3061); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3089); }
 	break;
 	case 884:
 #line 1833 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3073); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3101); }
 	break;
 	case 885:
 #line 1834 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3082); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3110); }
 	break;
 	case 886:
 #line 1835 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3091); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3119); }
 	break;
 	case 887:
 #line 1836 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3100); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3128); }
 	break;
 	case 888:
 #line 1837 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3109); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3137); }
 	break;
 	case 889:
 #line 1838 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3122); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3150); }
 	break;
 	case 890:
 #line 1839 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3135); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3163); }
 	break;
 	case 891:
 #line 1840 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3148); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3176); }
 	break;
 	case 892:
 #line 1841 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3161); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3189); }
 	break;
 	case 893:
 #line 1842 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3174); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3202); }
 	break;
 	case 894:
 #line 1843 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3187); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3215); }
 	break;
 	case 895:
 #line 1844 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3200); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3228); }
 	break;
 	case 896:
 #line 1845 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3213); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3241); }
 	break;
 	case 897:
 #line 1846 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3226); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3254); }
 	break;
 	case 898:
 #line 1847 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3239); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3267); }
 	break;
 	case 899:
 #line 1848 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3252); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3280); }
 	break;
 	case 900:
 #line 1849 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3265); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3293); }
 	break;
 	case 901:
 #line 1850 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3275); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3303); }
 	break;
 	case 902:
 #line 1851 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3285); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3313); }
 	break;
 	case 903:
 #line 1852 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3295); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3323); }
 	break;
 	case 904:
 #line 1853 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3305); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3333); }
 	break;
 	case 905:
 #line 1854 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3318); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3346); }
 	break;
 	case 906:
 #line 1855 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3331); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3359); }
 	break;
 	case 907:
 #line 1856 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3344); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3372); }
 	break;
 	case 908:
 #line 1857 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3357); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3385); }
 	break;
 	case 909:
 #line 1858 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3370); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3398); }
 	break;
 	case 910:
 #line 1859 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3383); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3411); }
 	break;
 	case 911:
 #line 1860 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3396); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3424); }
 	break;
 	case 912:
 #line 1861 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3409); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3437); }
 	break;
 	case 913:
 #line 1862 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3422); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3450); }
 	break;
 	case 914:
 #line 1863 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3435); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3463); }
 	break;
 	case 915:
 #line 1864 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3448); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3476); }
 	break;
 	case 916:
 #line 1865 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3461); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3489); }
 	break;
 	case 917:
 #line 1866 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3471); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3499); }
 	break;
 	case 918:
 #line 1867 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3481); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3509); }
 	break;
 	case 919:
 #line 1868 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3491); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3519); }
 	break;
 	case 920:
 #line 1869 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3501); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3529); }
 	break;
 	case 921:
 #line 1870 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3509); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3537); }
 	break;
 	case 922:
 #line 1871 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3517); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3545); }
 	break;
 	case 923:
 #line 1872 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3525); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3553); }
 	break;
 	case 924:
 #line 1873 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3533); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3561); }
 	break;
 	case 925:
 #line 1874 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3541); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3569); }
 	break;
 	case 926:
 #line 1875 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3549); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3577); }
 	break;
 	case 927:
 #line 1876 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3557); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3585); }
 	break;
 	case 928:
 #line 1877 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3565); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3593); }
 	break;
 	case 929:
 #line 1878 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3577); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3605); }
 	break;
 	case 930:
 #line 1879 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3587); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3615); }
 	break;
 	case 931:
 #line 1880 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3594); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3622); }
 	break;
 	case 932:
 #line 1881 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3603); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3631); }
 	break;
 	case 933:
 #line 1882 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3615); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3643); }
 	break;
 	case 934:
 #line 1883 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3626); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3654); }
 	break;
 	case 935:
 #line 1884 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3637); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3665); }
 	break;
 	case 936:
 #line 1885 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3644); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3672); }
 	break;
 	case 937:
 #line 1886 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3651); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3679); }
 	break;
 	case 938:
 #line 1887 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3658); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3686); }
 	break;
 	case 939:
 #line 1888 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3665); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3693); }
 	break;
 	case 940:
 #line 1889 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3672); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3700); }
 	break;
 	case 941:
 #line 1890 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3679); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3707); }
 	break;
 	case 942:
 #line 1891 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3686); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3714); }
 	break;
 	case 943:
 #line 1892 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3693); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3721); }
 	break;
 	case 944:
 #line 1893 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3700); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3728); }
 	break;
 	case 945:
 #line 1894 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3708); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3736); }
 	break;
 	case 946:
 #line 1895 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3716); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3744); }
 	break;
 	case 947:
 #line 1896 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3724); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3752); }
 	break;
 	case 948:
 #line 1897 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3730); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3758); }
 	break;
 	case 949:
 #line 1898 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3739); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3767); }
 	break;
 	case 950:
 #line 1899 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3747); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3775); }
 	break;
 	case 951:
 #line 1900 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3755); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3783); }
 	break;
 	case 952:
 #line 1901 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3764); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3792); }
 	break;
 	case 953:
 #line 1902 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3772); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3800); }
 	break;
 	case 954:
 #line 1903 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3780); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3808); }
 	break;
 	case 955:
 #line 1904 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3789); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3817); }
 	break;
 	case 956:
 #line 1905 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3797); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3825); }
 	break;
 	case 957:
 #line 1906 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3805); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3833); }
 	break;
 	case 958:
 #line 1907 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3815); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3843); }
 	break;
 	case 959:
 #line 1908 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3825); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3853); }
 	break;
 	case 960:
 #line 1909 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3834); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3862); }
 	break;
 	case 961:
 #line 1910 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3844); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3872); }
 	break;
 	case 962:
 #line 1911 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3853); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3881); }
 	break;
 	case 963:
 #line 1912 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3862); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3890); }
 	break;
 	case 964:
 #line 1913 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3868); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3896); }
 	break;
 	case 965:
 #line 1914 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3875); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3903); }
 	break;
 	case 966:
 #line 1915 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3885); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3913); }
 	break;
 	case 967:
 #line 1916 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3895); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3923); }
 	break;
 	case 968:
 #line 1917 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3902); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3930); }
 	break;
 	case 969:
 #line 1918 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3910); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3938); }
 	break;
 	case 970:
 #line 1919 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3918); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3946); }
 	break;
 	case 971:
 #line 1920 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3927); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3955); }
 	break;
 	case 972:
 #line 1921 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3933); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3961); }
 	break;
 	case 973:
 #line 1922 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3940); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3968); }
 	break;
 	case 974:
 #line 1923 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3947); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3975); }
 	break;
 	case 975:
 #line 1924 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3954); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3982); }
 	break;
 	case 976:
 #line 1925 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3961); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3989); }
 	break;
 	case 977:
 #line 1926 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3968); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 3996); }
 	break;
 	case 978:
 #line 1927 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3974); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4002); }
 	break;
 	case 979:
 #line 1928 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3980); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4008); }
 	break;
 	case 980:
 #line 1929 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3987); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4015); }
 	break;
 	case 981:
 #line 1930 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 3994); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4022); }
 	break;
 	case 982:
 #line 1931 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4001); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4029); }
 	break;
 	case 983:
 #line 1932 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4011); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4039); }
 	break;
 	case 984:
 #line 1933 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4021); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4049); }
 	break;
 	case 985:
 #line 1934 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4031); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4059); }
 	break;
 	case 986:
 #line 1935 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4041); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4069); }
 	break;
 	case 987:
 #line 1936 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4048); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4076); }
 	break;
 	case 988:
 #line 1937 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4055); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4083); }
 	break;
 	case 989:
 #line 1938 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4062); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4090); }
 	break;
 	case 990:
 #line 1939 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4070); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4098); }
 	break;
 	case 991:
 #line 1940 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4078); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4106); }
 	break;
 	case 992:
 #line 1941 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4087); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4115); }
 	break;
 	case 993:
 #line 1942 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4096); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4124); }
 	break;
 	case 994:
 #line 1943 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4103); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4131); }
 	break;
 	case 995:
 #line 1944 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4112); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4140); }
 	break;
 	case 996:
 #line 1945 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4118); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4146); }
 	break;
 	case 997:
 #line 1946 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4125); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4153); }
 	break;
 	case 998:
 #line 1947 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4132); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4160); }
 	break;
 	case 999:
 #line 1948 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4139); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4167); }
 	break;
 	case 1000:
 #line 1949 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4149); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4177); }
 	break;
 	case 1001:
 #line 1950 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4158); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4186); }
 	break;
 	case 1002:
 #line 1951 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4169); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4197); }
 	break;
 	case 1003:
 #line 1952 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4176); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4204); }
 	break;
 	case 1004:
 #line 1953 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4185); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4213); }
 	break;
 	case 1005:
 #line 1954 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4194); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4222); }
 	break;
 	case 1006:
 #line 1955 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4203); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4231); }
 	break;
 	case 1007:
 #line 1956 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4212); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4240); }
 	break;
 	case 1008:
 #line 1957 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4223); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4251); }
 	break;
 	case 1009:
 #line 1958 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4234); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4262); }
 	break;
 	case 1010:
 #line 1959 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4243); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4271); }
 	break;
 	case 1011:
 #line 1960 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4252); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4280); }
 	break;
 	case 1012:
 #line 1961 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4261); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4289); }
 	break;
 	case 1013:
 #line 1962 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4270); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4298); }
 	break;
 	case 1014:
 #line 1963 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4281); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4309); }
 	break;
 	case 1015:
 #line 1964 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4292); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4320); }
 	break;
 	case 1016:
 #line 1965 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4299); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4327); }
 	break;
 	case 1017:
 #line 1966 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4306); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4334); }
 	break;
 	case 1018:
 #line 1967 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4313); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4341); }
 	break;
 	case 1019:
 #line 1968 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4321); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4349); }
 	break;
 	case 1020:
 #line 1969 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4329); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4357); }
 	break;
 	case 1021:
 #line 1970 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4337); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4365); }
 	break;
 	case 1022:
 #line 1971 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4345); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4373); }
 	break;
 	case 1023:
 #line 1972 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4352); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4380); }
 	break;
 	case 1024:
 #line 1973 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4363); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4391); }
 	break;
 	case 1025:
 #line 1974 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4374); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4402); }
 	break;
 	case 1026:
 #line 1975 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4385); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4413); }
 	break;
 	case 1027:
 #line 1976 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4395); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4423); }
 	break;
 	case 1028:
 #line 1977 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4405); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4433); }
 	break;
 	case 1029:
 #line 1978 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4413); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4441); }
 	break;
 	case 1030:
 #line 1979 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4421); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4449); }
 	break;
 	case 1031:
 #line 1980 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4429); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4457); }
 	break;
 	case 1032:
 #line 1981 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4438); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4466); }
 	break;
 	case 1033:
 #line 1982 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4447); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4475); }
 	break;
 	case 1034:
 #line 1983 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4456); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4484); }
 	break;
 	case 1035:
 #line 1984 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4464); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4492); }
 	break;
 	case 1036:
 #line 1985 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4473); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4501); }
 	break;
 	case 1037:
 #line 1986 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4482); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4510); }
 	break;
 	case 1038:
 #line 1987 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4492); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4520); }
 	break;
 	case 1039:
 #line 1988 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4502); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4530); }
 	break;
 	case 1040:
 #line 1989 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4512); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4540); }
 	break;
 	case 1041:
 #line 1990 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4522); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4550); }
 	break;
 	case 1042:
 #line 1991 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4532); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4560); }
 	break;
 	case 1043:
 #line 1992 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4542); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4570); }
 	break;
 	case 1044:
 #line 1993 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4550); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4578); }
 	break;
 	case 1045:
 #line 1994 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4559); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4587); }
 	break;
 	case 1046:
 #line 1995 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4568); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4596); }
 	break;
 	case 1047:
 #line 1996 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4580); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4608); }
 	break;
 	case 1048:
 #line 1997 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4589); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4617); }
 	break;
 	case 1049:
 #line 1998 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4597); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4625); }
 	break;
 	case 1050:
 #line 1999 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4606); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4634); }
 	break;
 	case 1051:
 #line 2000 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4615); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4643); }
 	break;
 	case 1052:
 #line 2001 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4623); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4651); }
 	break;
 	case 1053:
 #line 2002 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4632); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4660); }
 	break;
 	case 1054:
 #line 2003 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4640); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4668); }
 	break;
 	case 1055:
 #line 2004 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4648); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4676); }
 	break;
 	case 1056:
 #line 2005 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4656); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4684); }
 	break;
 	case 1057:
 #line 2006 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4665); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4693); }
 	break;
 	case 1058:
 #line 2007 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4675); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4703); }
 	break;
 	case 1059:
 #line 2008 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4685); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4713); }
 	break;
 	case 1060:
 #line 2009 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4695); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4723); }
 	break;
 	case 1061:
 #line 2010 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4706); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4734); }
 	break;
 	case 1062:
 #line 2011 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4717); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4745); }
 	break;
 	case 1063:
 #line 2012 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4727); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4755); }
 	break;
 	case 1064:
 #line 2013 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4737); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4765); }
 	break;
 	case 1065:
 #line 2014 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4746); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4774); }
 	break;
 	case 1066:
 #line 2015 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4755); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4783); }
 	break;
 	case 1067:
 #line 2016 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4766); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4794); }
 	break;
 	case 1068:
 #line 2017 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4776); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4804); }
 	break;
 	case 1069:
 #line 2018 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4787); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4815); }
 	break;
 	case 1070:
 #line 2019 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4796); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4824); }
 	break;
 	case 1071:
 #line 2020 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4804); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4832); }
 	break;
 	case 1072:
 #line 2021 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4812); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4840); }
 	break;
 	case 1073:
 #line 2022 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4820); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4848); }
 	break;
 	case 1074:
 #line 2023 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4828); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4856); }
 	break;
 	case 1075:
 #line 2024 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4836); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4864); }
 	break;
 	case 1076:
 #line 2025 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4844); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4872); }
 	break;
 	case 1077:
 #line 2026 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4852); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4880); }
 	break;
 	case 1078:
 #line 2027 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4860); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4888); }
 	break;
 	case 1079:
 #line 2028 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4868); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4896); }
 	break;
 	case 1080:
 #line 2029 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4876); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4904); }
 	break;
 	case 1081:
 #line 2030 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4884); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4912); }
 	break;
 	case 1082:
 #line 2031 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4892); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4920); }
 	break;
 	case 1083:
 #line 2032 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4902); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4930); }
 	break;
 	case 1084:
 #line 2033 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4912); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4940); }
 	break;
 	case 1085:
 #line 2034 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4922); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4950); }
 	break;
 	case 1086:
 #line 2035 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4932); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4960); }
 	break;
 	case 1087:
 #line 2036 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4942); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4970); }
 	break;
 	case 1088:
 #line 2037 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4952); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4980); }
 	break;
 	case 1089:
 #line 2038 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4962); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 4990); }
 	break;
 	case 1090:
 #line 2039 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4972); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5000); }
 	break;
 	case 1091:
 #line 2040 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4982); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5010); }
 	break;
 	case 1092:
 #line 2041 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 4992); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5020); }
 	break;
 	case 1093:
 #line 2042 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5002); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5030); }
 	break;
 	case 1094:
 #line 2043 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5012); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5040); }
 	break;
 	case 1095:
 #line 2044 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5022); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5050); }
 	break;
 	case 1096:
 #line 2045 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5030); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5058); }
 	break;
 	case 1097:
 #line 2046 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5040); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5068); }
 	break;
 	case 1098:
 #line 2047 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5049); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5077); }
 	break;
 	case 1099:
 #line 2048 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5057); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5085); }
 	break;
 	case 1100:
 #line 2049 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5065); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5093); }
 	break;
 	case 1101:
 #line 2050 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5073); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5101); }
 	break;
 	case 1102:
 #line 2051 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5082); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5110); }
 	break;
 	case 1103:
 #line 2052 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5087); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5115); }
 	break;
 	case 1104:
 #line 2053 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5094); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5122); }
 	break;
 	case 1105:
 #line 2054 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5101); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5129); }
 	break;
 	case 1106:
 #line 2055 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5108); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5136); }
 	break;
 	case 1107:
 #line 2056 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5115); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5143); }
 	break;
 	case 1108:
 #line 2057 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5122); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5150); }
 	break;
 	case 1109:
 #line 2058 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5130); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5158); }
 	break;
 	case 1110:
 #line 2059 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5137); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5165); }
 	break;
 	case 1111:
 #line 2060 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5144); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5172); }
 	break;
 	case 1112:
 #line 2061 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5151); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5179); }
 	break;
 	case 1113:
 #line 2062 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5158); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5186); }
 	break;
 	case 1114:
 #line 2063 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5165); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5193); }
 	break;
 	case 1115:
 #line 2064 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5172); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5200); }
 	break;
 	case 1116:
 #line 2065 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5179); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5207); }
 	break;
 	case 1117:
 #line 2066 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5186); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5214); }
 	break;
 	case 1118:
 #line 2067 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5194); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5222); }
 	break;
 	case 1119:
 #line 2068 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5202); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5230); }
 	break;
 	case 1120:
 #line 2069 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5211); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5239); }
 	break;
 	case 1121:
 #line 2070 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5220); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5248); }
 	break;
 	case 1122:
 #line 2071 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5228); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5256); }
 	break;
 	case 1123:
 #line 2072 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5236); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5264); }
 	break;
 	case 1124:
 #line 2073 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5244); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5272); }
 	break;
 	case 1125:
 #line 2074 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5251); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5279); }
 	break;
 	case 1126:
 #line 2075 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5259); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5287); }
 	break;
 	case 1127:
 #line 2076 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5266); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5294); }
 	break;
 	case 1128:
 #line 2077 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5273); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5301); }
 	break;
 	case 1129:
 #line 2078 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5280); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5308); }
 	break;
 	case 1130:
 #line 2079 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5287); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5315); }
 	break;
 	case 1131:
 #line 2080 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5294); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5322); }
 	break;
 	case 1132:
 #line 2081 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5302); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5330); }
 	break;
 	case 1133:
 #line 2082 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5309); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5337); }
 	break;
 	case 1134:
 #line 2083 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5316); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5344); }
 	break;
 	case 1135:
 #line 2084 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5323); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5351); }
 	break;
 	case 1136:
 #line 2085 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5330); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5358); }
 	break;
 	case 1137:
 #line 2086 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5337); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5365); }
 	break;
 	case 1138:
 #line 2087 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5345); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5373); }
 	break;
 	case 1139:
 #line 2088 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5353); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5381); }
 	break;
 	case 1140:
 #line 2089 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5362); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5390); }
 	break;
 	case 1141:
 #line 2090 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5371); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5399); }
 	break;
 	case 1142:
 #line 2091 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5378); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5406); }
 	break;
 	case 1143:
 #line 2092 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5385); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5413); }
 	break;
 	case 1144:
 #line 2093 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5396); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5424); }
 	break;
 	case 1145:
 #line 2094 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5407); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5435); }
 	break;
 	case 1146:
 #line 2095 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5419); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5447); }
 	break;
 	case 1147:
 #line 2096 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5430); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5458); }
 	break;
 	case 1148:
 #line 2097 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5441); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5469); }
 	break;
 	case 1149:
 #line 2098 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5452); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5480); }
 	break;
 	case 1150:
 #line 2099 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5464); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5492); }
 	break;
 	case 1151:
 #line 2100 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5475); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5503); }
 	break;
 	case 1152:
 #line 2101 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5481); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5509); }
 	break;
 	case 1153:
 #line 2102 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5488); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5516); }
 	break;
 	case 1154:
 #line 2103 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5495); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5523); }
 	break;
 	case 1155:
 #line 2104 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5504); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5532); }
 	break;
 	case 1156:
 #line 2105 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5513); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5541); }
 	break;
 	case 1157:
 #line 2106 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5522); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5550); }
 	break;
 	case 1158:
 #line 2107 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5531); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5559); }
 	break;
 	case 1159:
 #line 2108 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5540); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5568); }
 	break;
 	case 1160:
 #line 2109 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5549); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5577); }
 	break;
 	case 1161:
 #line 2110 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5557); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5585); }
 	break;
 	case 1162:
 #line 2111 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5565); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5593); }
 	break;
 	case 1163:
 #line 2112 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5573); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5601); }
 	break;
 	case 1164:
 #line 2113 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5581); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5609); }
 	break;
 	case 1165:
 #line 2114 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5589); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5617); }
 	break;
 	case 1166:
 #line 2115 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5597); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5625); }
 	break;
 	case 1167:
 #line 2116 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5606); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5634); }
 	break;
 	case 1168:
 #line 2117 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5613); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5641); }
 	break;
 	case 1169:
 #line 2118 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5620); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5648); }
 	break;
 	case 1170:
 #line 2119 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5627); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5655); }
 	break;
 	case 1171:
 #line 2120 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5634); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5662); }
 	break;
 	case 1172:
 #line 2121 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5642); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5670); }
 	break;
 	case 1173:
 #line 2122 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5650); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5678); }
 	break;
 	case 1174:
 #line 2123 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5659); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5687); }
 	break;
 	case 1175:
 #line 2124 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5668); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5696); }
 	break;
 	case 1176:
 #line 2125 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5678); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5706); }
 	break;
 	case 1177:
 #line 2126 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5688); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5716); }
 	break;
 	case 1178:
 #line 2127 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5698); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5726); }
 	break;
 	case 1179:
 #line 2128 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5708); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5736); }
 	break;
 	case 1180:
 #line 2129 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5715); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5743); }
 	break;
 	case 1181:
 #line 2130 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5722); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5750); }
 	break;
 	case 1182:
 #line 2131 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5731); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5759); }
 	break;
 	case 1183:
 #line 2132 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5742); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5770); }
 	break;
 	case 1184:
 #line 2133 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5749); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5777); }
 	break;
 	case 1185:
 #line 2134 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5755); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5783); }
 	break;
 	case 1186:
 #line 2135 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -10836,23 +10836,23 @@ _match:
 	break;
 	case 1187:
 #line 2136 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5760); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5788); }
 	break;
 	case 1188:
 #line 2137 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5767); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5795); }
 	break;
 	case 1189:
 #line 2138 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5477); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5505); }
 	break;
 	case 1190:
 #line 2139 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5709); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5737); }
 	break;
 	case 1191:
 #line 2140 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5716); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5744); }
 	break;
 	case 1192:
 #line 2141 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
@@ -10864,11 +10864,11 @@ _match:
 	break;
 	case 1194:
 #line 2143 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5772); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5800); }
 	break;
 	case 1195:
 #line 2144 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
-	{ SET_INSTRUCTION_NAME(instruction_names + 5781); }
+	{ SET_INSTRUCTION_NAME(instruction_names + 5809); }
 	break;
 	case 1196:
 #line 25 "src/trusted/validator_ragel/unreviewed/decoder-x86_32.rl"
