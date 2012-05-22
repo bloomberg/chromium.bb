@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/detached_panel_strip.h"
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
@@ -214,12 +215,6 @@ void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
   if (panel->panel_strip() == docked_strip_.get())
     docked_strip_->OnPanelExpansionStateChanged(panel);
 
-}
-
-void PanelManager::OnWindowAutoResized(Panel* panel,
-                                       const gfx::Size& preferred_window_size) {
-  DCHECK(auto_sizing_enabled_);
-  panel->panel_strip()->ResizePanelWindow(panel, preferred_window_size);
 }
 
 void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {

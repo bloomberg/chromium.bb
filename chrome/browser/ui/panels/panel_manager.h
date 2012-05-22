@@ -17,6 +17,7 @@
 #include "ui/gfx/rect.h"
 
 class Browser;
+class BrowserWindow;
 class DetachedPanelStrip;
 class DockedPanelStrip;
 class PanelDragController;
@@ -64,13 +65,8 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // Resizes the panel and sets the origin.
   void OnPanelResizedByMouse(Panel* panel, const gfx::Rect& new_bounds);
 
-  // Invoked when the preferred window size of the given panel might need to
-  // get changed.
-  void OnWindowAutoResized(Panel* panel,
-                           const gfx::Size& preferred_window_size);
-
-  // Resizes the panel. Explicitly setting the panel size is not allowed
-  // for panels that are auto-sized.
+  // Resizes the panel. Explicitly setting the panel size will disable
+  // auto-size for the panel.
   void ResizePanel(Panel* panel, const gfx::Size& new_size);
 
   // Invoked when a panel's expansion state changes.

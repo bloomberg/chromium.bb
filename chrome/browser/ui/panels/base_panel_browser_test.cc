@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
+#include "chrome/browser/ui/panels/panel_browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -338,7 +339,9 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
     observer.Wait();
   }
 
-  Panel* panel = static_cast<Panel*>(panel_browser->window());
+  PanelBrowserWindow* panel_browser_window =
+      static_cast<PanelBrowserWindow*>(panel_browser->window());
+  Panel* panel = panel_browser_window->panel();
 
   if (!PanelManager::GetInstance()->auto_sizing_enabled() ||
       params.bounds.width() || params.bounds.height()) {

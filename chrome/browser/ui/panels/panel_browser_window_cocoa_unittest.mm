@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
@@ -59,7 +60,9 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
             Browser::TYPE_PANEL, panel_name, gfx::Rect(), profile()));
     EXPECT_EQ(panels_count + 1, manager->num_panels());
 
-    Panel* panel = static_cast<Panel*>(panel_browser->window());
+    PanelBrowserWindow* panel_browser_window =
+        static_cast<PanelBrowserWindow*>(panel_browser->window());
+    Panel* panel = panel_browser_window->panel();
     EXPECT_TRUE(panel);
     EXPECT_TRUE(panel->native_panel());  // Native panel is created right away.
     PanelBrowserWindowCocoa* native_window =

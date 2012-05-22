@@ -3365,7 +3365,7 @@ BrowserWindow* Browser::CreateBrowserWindow() {
   create_panel = is_type_panel();
 #endif
   if (create_panel)
-    return PanelManager::GetInstance()->CreatePanel(this);
+    return PanelManager::GetInstance()->CreatePanel(this)->browser_window();
 
   return BrowserWindow::CreateBrowserWindow(this);
 }

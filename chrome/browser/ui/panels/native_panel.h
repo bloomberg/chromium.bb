@@ -9,10 +9,12 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "ui/gfx/native_widget_types.h"
 
+class Browser;
 class FindBar;
 class NativePanelTesting;
 
 namespace content {
+struct NativeWebKeyboardEvent;
 class WebContents;
 }
 
@@ -32,6 +34,7 @@ class Rect;
 // use Panel in all the method names to avoid collisions.
 class NativePanel {
   friend class Panel;
+  friend class PanelBrowserWindow;
   friend class PanelBrowserTest;
 
  protected:
