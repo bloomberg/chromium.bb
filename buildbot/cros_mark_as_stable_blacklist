@@ -9,6 +9,7 @@
 chromeos-base/courgette
 chromeos-base/libchrome
 chromeos-base/libchrome_crypto
+media-libs/mesa
 
 # Temporary (Feb 24, 2012) blacklist of this until we can move the
 # kernel source to be public.
