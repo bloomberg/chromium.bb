@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,6 +63,22 @@ TEST_F(OwnerKeyUtilsTest, ExportImportPublicKey) {
        pubkey_it++, disk_it++) {
     EXPECT_EQ(*pubkey_it, *disk_it);
   }
+}
+
+TEST_F(OwnerKeyUtilsTest, ImportPublicKeyFailed) {
+  ScopedTempDir tmpdir;
+  FilePath tmpfile;
+  ASSERT_TRUE(tmpdir.CreateUniqueTempDir());
+
+  // First test the case where the file is missing which should fail.
+  std::vector<uint8> from_disk;
+  ASSERT_FALSE(utils_->ImportPublicKey(tmpfile, &from_disk));
+
+  // Next try empty file. This should fail and the array should be empty.
+  from_disk.resize(10);
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(tmpdir.path(), &tmpfile));
+  ASSERT_FALSE(utils_->ImportPublicKey(tmpfile, &from_disk));
+  ASSERT_FALSE(from_disk.size());
 }
 
 }  // namespace chromeos

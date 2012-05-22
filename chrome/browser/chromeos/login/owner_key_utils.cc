@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,6 +123,12 @@ bool OwnerKeyUtilsImpl::ImportPublicKey(const FilePath& key_file,
   int32 safe_file_size = static_cast<int32>(file_size);
 
   output->resize(safe_file_size);
+
+  if (safe_file_size == 0) {
+    LOG(WARNING) << "Public key file is empty. This seems wrong.";
+    return false;
+  }
+
   // Get the key data off of disk
   int data_read = file_util::ReadFile(key_file,
                                       reinterpret_cast<char*>(&(output->at(0))),
