@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_FULLSCREEN_EXIT_BUBBLE_H_
 #pragma once
 
-#include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"

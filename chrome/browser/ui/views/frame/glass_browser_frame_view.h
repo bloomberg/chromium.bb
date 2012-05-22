@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_GLASS_BROWSER_FRAME_VIEW_H_
 #pragma once
 
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/frame/browser_frame_win.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "content/public/browser/notification_observer.h"

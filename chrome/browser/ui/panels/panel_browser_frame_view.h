@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_FRAME_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"

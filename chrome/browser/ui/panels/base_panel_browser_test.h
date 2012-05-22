@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/values.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_strip.h"

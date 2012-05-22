@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
