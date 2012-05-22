@@ -182,9 +182,11 @@ static void EmitTrap(std::vector<struct sock_filter>* program) {
   EmitRet(SECCOMP_RET_TRAP, program);
 }
 
-static void EmitAllowKillSelf(int signal,
-                              std::vector<struct sock_filter>* program) {
-  EmitAllowSyscallArgN(__NR_kill, 2, signal, program);
+// TODO(cevans) -- only really works as advertised once we restrict clone()
+// to CLONE_THREAD.
+static void EmitAllowSignalSelf(std::vector<struct sock_filter>* program) {
+  EmitAllowSyscallArgN(__NR_kill, 1, getpid(), program);
+  EmitAllowSyscallArgN(__NR_tgkill, 1, getpid(), program);
 }
 
 static void EmitAllowGettime(std::vector<struct sock_filter>* program) {
@@ -214,6 +216,7 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_pipe, program);
   EmitAllowSyscall(__NR_mmap, program);
   EmitAllowSyscall(__NR_mprotect, program);
+  // TODO(cevans): restrict flags.
   EmitAllowSyscall(__NR_clone, program);
   EmitAllowSyscall(__NR_set_robust_list, program);
   EmitAllowSyscall(__NR_getuid, program);
@@ -240,7 +243,9 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_getpid, program);  // Nvidia binary driver.
   EmitAllowSyscall(__NR_getppid, program);  // ATI binary driver.
   EmitAllowSyscall(__NR_lseek, program);  // Nvidia binary driver.
-  EmitAllowKillSelf(SIGTERM, program);  // GPU watchdog.
+  EmitAllowSyscall(__NR_shutdown, program);  // Virtual driver.
+  EmitAllowSyscall(__NR_rt_sigaction, program);  // Breakpad signal handler.
+  EmitAllowSignalSelf(program);  // GPU watchdog.
 
   // Generally, filename-based syscalls will fail with ENOENT to behave
   // similarly to a possible future setuid sandbox.
@@ -248,6 +253,7 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitFailSyscall(__NR_access, ENOENT, program);
   EmitFailSyscall(__NR_mkdir, ENOENT, program);  // Nvidia binary driver.
   EmitFailSyscall(__NR_readlink, ENOENT, program);  // ATI binary driver.
+  EmitFailSyscall(__NR_stat, ENOENT, program);  // Nvidia binary driver.
 }
 
 static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
@@ -260,6 +266,7 @@ static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
 
   // Less hot syscalls.
   EmitAllowGettime(program);
+  // TODO(cevans): restrict flags.
   EmitAllowSyscall(__NR_clone, program);
   EmitAllowSyscall(__NR_set_robust_list, program);
   EmitAllowSyscall(__NR_getuid, program);
@@ -291,6 +298,9 @@ static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_lseek, program);
   EmitAllowSyscall(__NR_brk, program);
   EmitAllowSyscall(__NR_sched_yield, program);
+  EmitAllowSyscall(__NR_shutdown, program);
+  EmitAllowSyscall(__NR_sched_getaffinity, program);  // 3D
+  EmitAllowSignalSelf(program);
 
   // These are under investigation, and hopefully not here for the long term.
   EmitAllowSyscall(__NR_shmctl, program);
