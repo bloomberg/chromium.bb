@@ -66,6 +66,7 @@ void ViewsTestBase::TearDown() {
   test_stacking_client_.reset();
   test_activation_client_.reset();
   root_window_.reset();
+  aura::Env::DeleteInstance();
 #endif
 }
 

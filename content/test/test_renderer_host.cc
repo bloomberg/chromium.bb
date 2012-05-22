@@ -148,6 +148,7 @@ void RenderViewHostTestHarness::TearDown() {
 #if defined(USE_AURA)
   test_stacking_client_.reset();
   root_window_.reset();
+  aura::Env::DeleteInstance();
 #endif
 
   // Make sure that we flush any messages related to WebContentsImpl destruction
