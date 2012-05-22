@@ -1,4 +1,4 @@
-dist_check_SCRIPTS = \
-	en-GB-g2_harness.py \
-	hu1_harness.py \
-	letterDefTest_harness.py
+EXTRA_DIST = 				\
+	en-GB-g2_harness.txt		\
+	hu1_harness.txt			\
+	letterDefTest_harness.txt
