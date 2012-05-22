@@ -103,7 +103,7 @@ void GoogleURLTrackerInfoBarDelegate::Show() {
 }
 
 void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
-  if (redo_search) {
+  if (redo_search && owner()) {
     // Re-do the user's search on the new domain.
     url_canon::Replacements<char> replacements;
     const std::string& host(new_google_url_.host());
