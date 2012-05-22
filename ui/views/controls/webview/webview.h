@@ -70,6 +70,10 @@ class VIEWS_EXPORT WebView : public View,
     allow_accelerators_ = allow_accelerators;
   }
 
+  // Sets the preferred size. If empty, View's implementation of
+  // GetPreferredSize() is used.
+  void SetPreferredSize(const gfx::Size& preferred_size);
+
   // Overridden from View:
   virtual std::string GetClassName() const OVERRIDE;
 
@@ -86,6 +90,7 @@ class VIEWS_EXPORT WebView : public View,
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -115,6 +120,7 @@ class VIEWS_EXPORT WebView : public View,
   content::BrowserContext* browser_context_;
   content::NotificationRegistrar registrar_;
   bool allow_accelerators_;
+  gfx::Size preferred_size_;
 
   DISALLOW_COPY_AND_ASSIGN(WebView);
 };

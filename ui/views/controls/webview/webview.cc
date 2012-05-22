@@ -79,6 +79,10 @@ void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
     focus_manager->SetFocusedView(this);
 }
 
+void WebView::SetPreferredSize(const gfx::Size& preferred_size) {
+  preferred_size_ = preferred_size;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, View overrides:
 
@@ -135,6 +139,13 @@ gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
       return host_view->GetNativeViewAccessible();
   }
   return View::GetNativeViewAccessible();
+}
+
+gfx::Size WebView::GetPreferredSize() {
+  if (preferred_size_ == gfx::Size())
+    return View::GetPreferredSize();
+  else
+    return preferred_size_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

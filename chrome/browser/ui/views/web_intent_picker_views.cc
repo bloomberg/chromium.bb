@@ -686,6 +686,7 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual void SetActionString(const string16& action) OVERRIDE;
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
+  virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
   virtual void OnInlineDispositionWebContentsLoaded(
       content::WebContents* web_contents) OVERRIDE;
 
@@ -885,6 +886,13 @@ void WebIntentPickerViews::OnExtensionInstallFailure(const std::string& id) {
   // TODO(binji): What to display to user on failure?
 }
 
+void WebIntentPickerViews::OnInlineDispositionAutoResize(
+    const gfx::Size& size) {
+  webview_->SetPreferredSize(size);
+  contents_->Layout();
+  SizeToContents();
+}
+
 void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
     content::WebContents* web_contents) {
   if (displaying_web_contents_)
@@ -915,7 +923,7 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
 #endif
 
   views::ColumnSet* full_cs = grid_layout->AddColumnSet(1);
-  full_cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+  full_cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
                      GridLayout::USE_PREF, 0, 0);
 
   const WebIntentPickerModel::InstalledService* service =
@@ -944,7 +952,7 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
   // Inline web contents row.
   grid_layout->StartRow(0, 1);
   grid_layout->AddView(webview_, 1, 1, GridLayout::CENTER,
-                       GridLayout::CENTER, kDialogMinWidth, 140);
+                       GridLayout::CENTER, 0, 0);
   contents_->Layout();
   SizeToContents();
   displaying_web_contents_ = true;
@@ -1148,8 +1156,7 @@ void WebIntentPickerViews::SizeToContents() {
   gfx::Rect client_bounds(client_size);
   gfx::Rect new_window_bounds = window_->non_client_view()->frame_view()->
       GetWindowBoundsForClientBounds(client_bounds);
-  // TODO(binji): figure out how to get the constrained dialog centered...
-  window_->SetSize(new_window_bounds.size());
+  window_->CenterWindow(new_window_bounds.size());
 }
 
 #if defined(USE_CLOSE_BUTTON)
