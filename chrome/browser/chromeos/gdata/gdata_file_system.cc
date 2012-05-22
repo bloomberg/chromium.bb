@@ -3648,11 +3648,14 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
   if (should_notify_initial_load)
     NotifyInitialLoadFinished();
 
-  const int num_total_files = num_hosted_documents + num_regular_files;
-  UMA_HISTOGRAM_COUNTS("GData.NumberOfRegularFiles", num_regular_files);
-  UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
-                       num_hosted_documents);
-  UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
+  // Shouldn't record histograms when processing delta feeds.
+  if (!is_delta_feed) {
+    const int num_total_files = num_hosted_documents + num_regular_files;
+    UMA_HISTOGRAM_COUNTS("GData.NumberOfRegularFiles", num_regular_files);
+    UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
+                         num_hosted_documents);
+    UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
+  }
   return base::PLATFORM_FILE_OK;
 }
 
