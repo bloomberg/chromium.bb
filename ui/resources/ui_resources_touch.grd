@@ -75,8 +75,21 @@
         <include name="IDR_AURA_WINDOW_SNAP_MINIMIZE_P" file="touch_100_percent/window_snap_minimize_pressed.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_SNAP_P" file="touch_100_percent/window_snap_pressed.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_SNAP_RIGHT_P" file="touch_100_percent/window_snap_right_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NO_DROP" file="default_100_percent/aura/left_ptr_nodrop.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_COPY" file="default_100_percent/aura/left_ptr_copy.png" type="BINDATA" />
+        <!-- cursors -->
+        <include name="IDR_AURA_CURSOR_PTR" file="default_100_percent/aura/left_ptr.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NO_DROP" file="default_100_percent/aura/nodrop.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_COPY" file="default_100_percent/aura/copy.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_HAND" file="default_100_percent/aura/hand2.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_MOVE" file="default_100_percent/aura/fleur.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_IBEAM" file="default_100_percent/aura/xterm.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NORTH_WEST_RESIZE" file="default_100_percent/aura/top_left_corner.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_SOUTH_EAST_RESIZE" file="default_100_percent/aura/top_left_corner.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NORTH_EAST_RESIZE" file="default_100_percent/aura/top_right_corner.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_SOUTH_WEST_RESIZE" file="default_100_percent/aura/top_right_corner.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NORTH_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_EAST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_SOUTH_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_WEST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
       </if>
     </includes>
   </release>

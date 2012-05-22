@@ -80,8 +80,8 @@
         <include name="IDR_AURA_WINDOW_SNAP_RIGHT_P" file="default_100_percent/aura/window_snap_right_pressed.png" type="BINDATA" />
         <!-- cursors -->
         <include name="IDR_AURA_CURSOR_PTR" file="default_200_percent/aura/left_ptr.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NO_DROP" file="default_200_percent/aura/left_ptr_nodrop.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_COPY" file="default_200_percent/aura/left_ptr_copy.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_NO_DROP" file="default_200_percent/aura/nodrop.png" type="BINDATA" />
+        <include name="IDR_AURA_CURSOR_COPY" file="default_200_percent/aura/copy.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_HAND" file="default_200_percent/aura/hand2.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_MOVE" file="default_200_percent/aura/fleur.png" type="BINDATA" />
         <include name="IDR_AURA_CURSOR_IBEAM" file="default_200_percent/aura/xterm.png" type="BINDATA" />
