@@ -1007,7 +1007,7 @@ def RunCommandWithRetries(max_retry, *args, **kwds):
       time.sleep(sleep * (attempt + 1))
 
   #pylint: disable=E0702
-  raise exc_info
+  raise exc_info[0], exc_info[1], exc_info[2]
 
 def RunCommandCaptureOutput(cmd, **kwds):
   """Wrapper for RunCommand that captures output.
