@@ -8,13 +8,14 @@
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/size.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -72,10 +73,10 @@ MobileSetupDialogDelegate::~MobileSetupDialogDelegate() {
 }
 
 void MobileSetupDialogDelegate::ShowDialog() {
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return;
-  browser->BrowserShowWebDialog(this, NULL);
+  browser::ShowWebDialog(NULL,
+                         ProfileManager::GetDefaultProfileOrOffTheRecord(),
+                         NULL,
+                         this);
 }
 
 ui::ModalType MobileSetupDialogDelegate::GetDialogModalType() const {
