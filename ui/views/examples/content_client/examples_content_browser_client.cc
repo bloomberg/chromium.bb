@@ -97,6 +97,13 @@ bool ExamplesContentBrowserClient::ShouldSwapProcessesForNavigation(
   return false;
 }
 
+bool ExamplesContentBrowserClient::ShouldSwapProcessesForRedirect(
+    content::ResourceContext* resource_context,
+    const GURL& current_url,
+    const GURL& new_url) {
+  return false;
+}
+
 std::string ExamplesContentBrowserClient::GetCanonicalEncodingNameByAliasName(
     const std::string& alias_name) {
   return std::string();
