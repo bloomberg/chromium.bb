@@ -78,6 +78,8 @@ AM_CONDITIONAL([HAVE_PUBLICAN], [test "x$PUBLICAN" != "x"])
 
 AC_CONFIG_FILES([Makefile
 		 wayland-scanner.m4
+		 cursor/Makefile
+		 cursor/wayland-cursor.pc
 		 doc/Makefile
 		 doc/Wayland/Makefile
 		 src/Makefile

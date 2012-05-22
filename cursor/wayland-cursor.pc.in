@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+ 
+Name: Wayland Cursor
+Description: Wayland cursor helper library
+Version: @WAYLAND_VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lwayland-cursor

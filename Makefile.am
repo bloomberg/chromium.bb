@@ -1,4 +1,4 @@
-SUBDIRS = src protocol doc tests
+SUBDIRS = src protocol doc tests cursor
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
