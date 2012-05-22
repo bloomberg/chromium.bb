@@ -113,6 +113,9 @@ struct weston_wm_window {
 static struct weston_wm_window *
 get_wm_window(struct weston_surface *surface);
 
+static void
+weston_wm_window_schedule_repaint(struct weston_wm_window *window);
+
 const char *
 get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
 {
@@ -320,48 +323,6 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 }
 
 static void
-weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *event)
-{
-	xcb_configure_request_event_t *configure_request = 
-		(xcb_configure_request_event_t *) event;
-	struct weston_wm_window *window;
-	uint32_t values[16];
-	int i = 0;
-
-	fprintf(stderr, "XCB_CONFIGURE_REQUEST (window %d) %d,%d @ %dx%d\n",
-		configure_request->window,
-		configure_request->x, configure_request->y,
-		configure_request->width, configure_request->height);
-
-	window = hash_table_lookup(wm->window_hash, configure_request->window);
-
-	if (configure_request->value_mask & XCB_CONFIG_WINDOW_X)
-		values[i++] = configure_request->x;
-	if (configure_request->value_mask & XCB_CONFIG_WINDOW_Y)
-		values[i++] = configure_request->y;
-	if (configure_request->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
-		values[i++] = configure_request->width;
-		window->width = configure_request->width;
-	}
-	if (configure_request->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
-		values[i++] = configure_request->height;
-		window->height = configure_request->height;
-	}
-
-	values[i++] = 0; /* XCB_CONFIG_WINDOW_BORDER_WIDTH */
-
-	if (configure_request->value_mask & XCB_CONFIG_WINDOW_SIBLING)
-		values[i++] = configure_request->sibling;
-	if (configure_request->value_mask & XCB_CONFIG_WINDOW_STACK_MODE)
-		values[i++] = configure_request->stack_mode;
-
-	xcb_configure_window(wm->conn,
-			     configure_request->window,
-			     configure_request->value_mask |
-			     XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
-}
-
-static void
 weston_wm_window_get_frame_size(struct weston_wm_window *window,
 				int *width, int *height)
 {
@@ -391,14 +352,63 @@ weston_wm_window_get_child_position(struct weston_wm_window *window,
 		*y = t->margin;
 	}
 }
+
+static void
+weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_configure_request_event_t *configure_request = 
+		(xcb_configure_request_event_t *) event;
+	struct weston_wm_window *window;
+	uint32_t mask, values[16];
+	int x, y, width, height, i = 0;
+
+	fprintf(stderr, "XCB_CONFIGURE_REQUEST (window %d) %d,%d @ %dx%d\n",
+		configure_request->window,
+		configure_request->x, configure_request->y,
+		configure_request->width, configure_request->height);
+
+	window = hash_table_lookup(wm->window_hash, configure_request->window);
+
+	if (configure_request->value_mask & XCB_CONFIG_WINDOW_WIDTH)
+		window->width = configure_request->width;
+	if (configure_request->value_mask & XCB_CONFIG_WINDOW_HEIGHT)
+		window->height = configure_request->height;
+
+	weston_wm_window_get_child_position(window, &x, &y);
+	values[i++] = x;
+	values[i++] = y;
+	values[i++] = window->width;
+	values[i++] = window->height;
+	values[i++] = 0;
+	mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y |
+		XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT |
+		XCB_CONFIG_WINDOW_BORDER_WIDTH;
+	if (configure_request->value_mask & XCB_CONFIG_WINDOW_SIBLING) {
+		values[i++] = configure_request->sibling;
+		mask |= XCB_CONFIG_WINDOW_SIBLING;
+	}
+	if (configure_request->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
+		values[i++] = configure_request->stack_mode;
+		mask |= XCB_CONFIG_WINDOW_STACK_MODE;
+	}
+
+	xcb_configure_window(wm->conn, window->id, mask, values);
+
+	weston_wm_window_get_frame_size(window, &width, &height);
+	values[0] = width;
+	values[1] = height;
+	mask = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
+	xcb_configure_window(wm->conn, window->frame_id, mask, values);
+
+	weston_wm_window_schedule_repaint(window);
+}
+
 static void
 weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 	xcb_configure_notify_event_t *configure_notify = 
 		(xcb_configure_notify_event_t *) event;
 	struct weston_wm_window *window;
-	uint32_t values[2];
-	int width, height;
 
 	window = hash_table_lookup(wm->window_hash, configure_notify->window);
 
@@ -407,24 +417,6 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 		configure_notify->window,
 		configure_notify->x, configure_notify->y,
 		configure_notify->width, configure_notify->height);
-
-	if (configure_notify->window != window->id)
-		return;
-
-	window->x = configure_notify->x;
-	window->y = configure_notify->y;
-	window->width = configure_notify->width;
-	window->height = configure_notify->height;
-
-	weston_wm_window_get_frame_size(window, &width, &height);
-	values[0] = width;
-	values[1] = height;
-
-	xcb_configure_window(wm->conn,
-			     window->frame_id,
-			     XCB_CONFIG_WINDOW_WIDTH |
-			     XCB_CONFIG_WINDOW_HEIGHT,
-			     values);
 }
 
 static void
@@ -447,9 +439,6 @@ weston_wm_activate(struct weston_wm *wm,
 	xcb_set_input_focus (wm->conn,
 			     XCB_INPUT_FOCUS_POINTER_ROOT, window->id, time);
 }
-
-static void
-weston_wm_window_schedule_repaint(struct weston_wm_window *window);
 
 static void
 weston_wm_window_activate(struct wl_listener *listener, void *data)
@@ -511,6 +500,9 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 		XCB_EVENT_MASK_BUTTON_PRESS |
 		XCB_EVENT_MASK_BUTTON_RELEASE |
 		XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
+		XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+		XCB_EVENT_MASK_RESIZE_REDIRECT |
+		XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
 		XCB_EVENT_MASK_EXPOSURE;
 
 	window->frame_id = xcb_generate_id(wm->conn);
@@ -648,10 +640,7 @@ weston_wm_handle_expose(struct weston_wm *wm, xcb_generic_event_t *event)
 	window = hash_table_lookup(wm->window_hash, expose->window);
 	fprintf(stderr, "XCB_EXPOSE (window %d, title %s, surface %p)\n",
 		window->id, window->name, window->surface);
-
-	weston_wm_window_schedule_repaint(window);
 }
-
 
 static void
 weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *event)
