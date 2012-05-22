@@ -89,10 +89,13 @@ void TestURLFetcher::SetRequestContext(
     net::URLRequestContextGetter* request_context_getter) {
 }
 
-void TestURLFetcher::AssociateWithRenderView(
-    const GURL& first_party_for_cookies,
-    int render_process_id,
-    int render_view_id) {
+void TestURLFetcher::SetFirstPartyForCookies(
+    const GURL& first_party_for_cookies) {
+}
+
+void TestURLFetcher::SetURLRequestUserData(
+    const void* key,
+    const CreateDataCallback& create_data_callback) {
 }
 
 void TestURLFetcher::SetAutomaticallyRetryOn5xx(bool retry) {

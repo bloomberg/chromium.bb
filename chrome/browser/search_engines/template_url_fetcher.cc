@@ -108,7 +108,8 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   url_fetcher_->SetRequestContext(fetcher->profile()->GetRequestContext());
   // Can be NULL during tests.
   if (web_contents) {
-    url_fetcher_->AssociateWithRenderView(
+    content::AssociateURLFetcherWithRenderView(
+        url_fetcher_.get(),
         web_contents->GetURL(),
         web_contents->GetRenderProcessHost()->GetID(),
         web_contents->GetRenderViewHost()->GetRoutingID());

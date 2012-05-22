@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/file_path.h"
@@ -19,12 +18,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "base/supports_user_data.h"
 #include "base/timer.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
@@ -47,10 +46,6 @@ class URLFetcherCore
     : public base::RefCountedThreadSafe<URLFetcherCore>,
       public net::URLRequest::Delegate {
  public:
-  // Used by SetURLRequestUserData.  The callback should make a fresh
-  // Data* object every time it's called.
-  typedef base::Callback<base::SupportsUserData::Data*()> CreateDataCallback;
-
   URLFetcherCore(URLFetcher* fetcher,
                  const GURL& original_url,
                  URLFetcher::RequestType request_type,
@@ -87,12 +82,14 @@ class URLFetcherCore
   void AddExtraRequestHeader(const std::string& header_line);
   void GetExtraRequestHeaders(net::HttpRequestHeaders* headers) const;
   void SetRequestContext(net::URLRequestContextGetter* request_context_getter);
+  // Set the URL that should be consulted for the third-party cookie
+  // blocking policy.
   void SetFirstPartyForCookies(const GURL& first_party_for_cookies);
-  // Whenever a URLRequest object is created, SetUserData() will be
-  // called on it with the given key and the result of the given
-  // callback.
+  // Set the key and data callback that is used when setting the user
+  // data on any URLRequest objects this object creates.
   void SetURLRequestUserData(
-      const void* key, const CreateDataCallback& create_data_callback);
+      const void* key,
+      const net::URLFetcher::CreateDataCallback& create_data_callback);
   void SetAutomaticallyRetryOn5xx(bool retry);
   void SetMaxRetries(int max_retries);
   int GetMaxRetries() const;
@@ -325,7 +322,7 @@ class URLFetcherCore
   GURL first_party_for_cookies_;     // The first party URL for the request
   // The user data to add to each newly-created URLRequest.
   const void* url_request_data_key_;
-  CreateDataCallback url_request_create_data_callback_;
+  net::URLFetcher::CreateDataCallback url_request_create_data_callback_;
   net::ResponseCookies cookies_;     // Response cookies
   net::HttpRequestHeaders extra_request_headers_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;

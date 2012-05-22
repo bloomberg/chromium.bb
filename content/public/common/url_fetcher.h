@@ -13,14 +13,10 @@ namespace content {
 
 class URLFetcherDelegate;
 
-// Extend net::URLFetcher to add content-specific methods.
-//
-// TODO(akalin): Move some more content-specific methods from
-// net::URLFetcher.
+// TODO(akalin): Move the static functions to net::URLFetcher and
+// remove content::URLFetcher.
 class CONTENT_EXPORT URLFetcher : public net::URLFetcher {
  public:
-  // TODO(akalin): Move the static functions to net::URLFetcher.
-
   // |url| is the URL to send the request to.
   // |request_type| is the type of request to make.
   // |d| the object that will receive the callback on fetch completion.
@@ -48,13 +44,15 @@ class CONTENT_EXPORT URLFetcher : public net::URLFetcher {
   // to enable it for tests. Also see ScopedURLFetcherFactory for another way
   // of testing code that uses an URLFetcher.
   static void SetEnableInterceptionForTests(bool enabled);
-
-  // Mark URLRequests started by the URLFetcher to stem from the given render
-  // view.
-  virtual void AssociateWithRenderView(const GURL& first_party_for_cookies,
-                                       int render_process_id,
-                                       int render_view_id) = 0;
 };
+
+// Mark URLRequests started by the URLFetcher to stem from the given render
+// view.
+CONTENT_EXPORT void AssociateURLFetcherWithRenderView(
+    net::URLFetcher* url_fetcher,
+    const GURL& first_party_for_cookies,
+    int render_process_id,
+    int render_view_id);
 
 }  // namespace content
 

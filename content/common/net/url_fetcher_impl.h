@@ -53,9 +53,11 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher {
       net::HttpRequestHeaders* headers) const OVERRIDE;
   virtual void SetRequestContext(
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
-  virtual void AssociateWithRenderView(const GURL& first_party_for_cookies,
-                                       int render_process_id,
-                                       int render_view_id) OVERRIDE;
+  virtual void SetFirstPartyForCookies(
+      const GURL& first_party_for_cookies) OVERRIDE;
+  virtual void SetURLRequestUserData(
+      const void* key,
+      const CreateDataCallback& create_data_callback) OVERRIDE;
   virtual void SetAutomaticallyRetryOn5xx(bool retry) OVERRIDE;
   virtual void SetMaxRetries(int max_retries) OVERRIDE;
   virtual int GetMaxRetries() const OVERRIDE;

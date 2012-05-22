@@ -40,6 +40,30 @@ void content::URLFetcher::SetEnableInterceptionForTests(bool enabled) {
   URLFetcherCore::SetEnableInterceptionForTests(enabled);
 }
 
+namespace {
+
+base::SupportsUserData::Data* CreateURLRequestUserData(
+    int render_process_id,
+    int render_view_id) {
+  return new URLRequestUserData(render_process_id, render_view_id);
+}
+
+}  // namespace
+
+namespace content {
+
+void AssociateURLFetcherWithRenderView(net::URLFetcher* url_fetcher,
+                                       const GURL& first_party_for_cookies,
+                                       int render_process_id,
+                                       int render_view_id) {
+  url_fetcher->SetFirstPartyForCookies(first_party_for_cookies);
+  url_fetcher->SetURLRequestUserData(
+      URLRequestUserData::kUserDataKey,
+      base::Bind(&CreateURLRequestUserData,
+                 render_process_id, render_view_id));
+}
+
+}  // namespace content
 
 URLFetcherImpl::URLFetcherImpl(const GURL& url,
                                RequestType request_type,
@@ -98,25 +122,15 @@ void URLFetcherImpl::SetRequestContext(
   core_->SetRequestContext(request_context_getter);
 }
 
-namespace {
-
-base::SupportsUserData::Data* CreateURLRequestUserData(
-    int render_process_id,
-    int render_view_id) {
-  return new URLRequestUserData(render_process_id, render_view_id);
+void URLFetcherImpl::SetFirstPartyForCookies(
+    const GURL& first_party_for_cookies) {
+  core_->SetFirstPartyForCookies(first_party_for_cookies);
 }
 
-}  // namespace
-
-void URLFetcherImpl::AssociateWithRenderView(
-    const GURL& first_party_for_cookies,
-    int render_process_id,
-    int render_view_id) {
-  core_->SetFirstPartyForCookies(first_party_for_cookies);
-  core_->SetURLRequestUserData(
-      URLRequestUserData::kUserDataKey,
-      base::Bind(&CreateURLRequestUserData,
-                 render_process_id, render_view_id));
+void URLFetcherImpl::SetURLRequestUserData(
+    const void* key,
+    const CreateDataCallback& create_data_callback) {
+  core_->SetURLRequestUserData(key, create_data_callback);
 }
 
 void URLFetcherImpl::SetAutomaticallyRetryOn5xx(bool retry) {

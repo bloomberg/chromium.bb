@@ -406,7 +406,8 @@ void URLFetcherCore::SetFirstPartyForCookies(
 }
 
 void URLFetcherCore::SetURLRequestUserData(
-    const void* key, const CreateDataCallback& create_data_callback) {
+    const void* key,
+    const URLFetcher::CreateDataCallback& create_data_callback) {
   DCHECK(key);
   DCHECK(!create_data_callback.is_null());
   url_request_data_key_ = key;

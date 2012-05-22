@@ -197,7 +197,8 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
       controller_->GetBrowserContext()->GetRequestContext());
 
   content::WebContents* web_contents = controller_->GetWebContents();
-  fetcher_->AssociateWithRenderView(
+  content::AssociateURLFetcherWithRenderView(
+      fetcher_.get(),
       web_contents->GetURL(),
       web_contents->GetRenderProcessHost()->GetID(),
       web_contents->GetRenderViewHost()->GetRoutingID());
