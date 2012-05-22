@@ -765,6 +765,10 @@ def _CreateParser():
       'Advanced Options',
       'Caution: use these options at your own risk.')
 
+  # bootstrap-args are not verified by the bootstrap code.  It gets passed
+  # direcly to the bootstrap re-execution.
+  group.add_remote_option('--bootstrap-args', action='append',
+                          default=[], help=optparse.SUPPRESS_HELP)
   group.add_remote_option('--buildbot', dest='buildbot', action='store_true',
                           default=False, help='This is running on a buildbot')
   group.add_remote_option('--buildnumber', help='build number', type='int',

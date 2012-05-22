@@ -204,6 +204,7 @@ class BootstrapStage(PatchChangesStage):
     self._ApplyPatches(apply_func)
 
     extra_params = ['--sourceroot=%s' % self._options.sourceroot]
+    extra_params.extend(self._options.bootstrap_args)
     argv = sys.argv[1:]
     if '--test-bootstrap' in argv:
       # We don't want re-executed instance to see this.
