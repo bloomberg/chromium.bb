@@ -174,7 +174,6 @@ class FileSystemOperation : public FileSystemOperationInterface {
                          bool recursive);
   void DoCopy(const StatusCallback& callback);
   void DoMove(const StatusCallback& callback);
-  void DoWrite(scoped_ptr<net::URLRequest> blob_request);
   void DoTruncate(const StatusCallback& callback, int64 length);
   void DoOpenFile(const OpenFileCallback& callback, int file_flags);
 
@@ -217,13 +216,6 @@ class FileSystemOperation : public FileSystemOperationInterface {
                    base::PlatformFileError rv,
                    base::PassPlatformFile file,
                    bool created);
-
-  // Helper for Write().
-  void OnFileOpenedForWrite(scoped_ptr<net::URLRequest> blob_request,
-                            FileSystemOperationContext* context_unused,
-                            base::PlatformFileError rv,
-                            base::PassPlatformFile file,
-                            bool created);
 
   // Checks the validity of a given |path_url| and and populates
   // |path| and |file_util| for |mode|.

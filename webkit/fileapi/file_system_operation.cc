@@ -19,6 +19,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_writer_delegate.h"
+#include "webkit/fileapi/sandbox_file_writer.h"
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 
@@ -79,17 +80,6 @@ FileSystemOperation::TaskParamsForDidGetQuota::TaskParamsForDidGetQuota()
 FileSystemOperation::TaskParamsForDidGetQuota::~TaskParamsForDidGetQuota() {}
 
 FileSystemOperation::~FileSystemOperation() {
-  if (file_writer_delegate_.get()) {
-    FileSystemOperationContext* c =
-        new FileSystemOperationContext(operation_context_);
-    base::FileUtilProxy::RelayClose(
-        file_system_context()->file_task_runner(),
-        base::Bind(&FileSystemFileUtil::Close,
-                   base::Unretained(src_util_),
-                   base::Owned(c)),
-        file_writer_delegate_->file(),
-        base::FileUtilProxy::StatusCallback());
-  }
 }
 
 void FileSystemOperation::CreateFile(const GURL& path_url,
@@ -288,17 +278,15 @@ void FileSystemOperation::Write(
   }
   DCHECK(blob_url.is_valid());
   file_writer_delegate_.reset(new FileWriterDelegate(
-          this, src_path_, offset));
+      base::Bind(&FileSystemOperation::DidWrite, weak_factory_.GetWeakPtr()),
+      scoped_ptr<FileWriter>(
+          new SandboxFileWriter(file_system_context(), path_url, offset))));
   set_write_callback(callback);
   scoped_ptr<net::URLRequest> blob_request(
       new net::URLRequest(blob_url, file_writer_delegate_.get()));
   blob_request->set_context(url_request_context);
 
-  GetUsageAndQuotaThenRunTask(
-      src_path_.origin(), src_path_.type(),
-      base::Bind(&FileSystemOperation::DoWrite, weak_factory_.GetWeakPtr(),
-                 base::Passed(&blob_request)),
-      base::Bind(callback, base::PLATFORM_FILE_ERROR_FAILED, 0, true));
+  file_writer_delegate_->Start(blob_request.Pass());
 }
 
 void FileSystemOperation::Truncate(const GURL& path_url, int64 length,
@@ -542,23 +530,6 @@ void FileSystemOperation::DoMove(const StatusCallback& callback) {
                  base::Owned(this), callback));
 }
 
-void FileSystemOperation::DoWrite(scoped_ptr<net::URLRequest> blob_request) {
-  int file_flags = base::PLATFORM_FILE_OPEN |
-                   base::PLATFORM_FILE_WRITE |
-                   base::PLATFORM_FILE_ASYNC;
-
-  // We may get deleted on the way so allocate a new operation context
-  // to keep it alive.
-  FileSystemOperationContext* write_context = new FileSystemOperationContext(
-      operation_context_);
-  FileSystemFileUtilProxy::CreateOrOpen(
-      write_context, src_util_, src_path_, file_flags,
-      base::Bind(&FileSystemOperation::OnFileOpenedForWrite,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&blob_request),
-                 base::Owned(write_context)));
-}
-
 void FileSystemOperation::DoTruncate(const StatusCallback& callback,
                                      int64 length) {
   FileSystemFileUtilProxy::Truncate(
@@ -669,21 +640,6 @@ void FileSystemOperation::DidOpenFile(
   if (rv == base::PLATFORM_FILE_OK)
     CHECK_NE(base::kNullProcessHandle, peer_handle_);
   callback.Run(rv, file.ReleaseValue(), peer_handle_);
-}
-
-void FileSystemOperation::OnFileOpenedForWrite(
-    scoped_ptr<net::URLRequest> blob_request,
-    FileSystemOperationContext* unused,
-    base::PlatformFileError rv,
-    base::PassPlatformFile file,
-    bool created) {
-  if (rv != base::PLATFORM_FILE_OK) {
-    if (!write_callback_.is_null())
-      write_callback_.Run(rv, 0, false);
-    delete this;
-    return;
-  }
-  file_writer_delegate_->Start(file.ReleaseValue(), blob_request.Pass());
 }
 
 base::PlatformFileError FileSystemOperation::SetUpFileSystemPath(

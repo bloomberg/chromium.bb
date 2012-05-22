@@ -13,7 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/file_util_proxy.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
@@ -24,12 +23,9 @@
 #include "testing/platform_test.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
-#include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_test_helper.h"
-#include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_writer_delegate.h"
-#include "webkit/quota/quota_manager.h"
-#include "webkit/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/fileapi/sandbox_file_writer.h"
 
 namespace fileapi {
 
@@ -81,45 +77,53 @@ class FileWriterDelegateTest : public PlatformTest {
  public:
   FileWriterDelegateTest()
       : loop_(MessageLoop::TYPE_IO),
-        test_helper_(GURL("http://example.com"), kFileSystemTypeTest),
-        file_(base::kInvalidPlatformFileValue) {}
+        test_helper_(GURL("http://example.com"), kFileSystemTypeTest) {}
 
  protected:
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
-  virtual void SetUpTestHelper(const FilePath& base_dir) {
-    test_helper_.SetUp(base_dir, NULL);
+  FileSystemFileUtil* file_util() {
+    return test_helper_.file_util();
   }
 
   int64 ComputeCurrentOriginUsage() {
-    base::FlushPlatformFile(file_);
     return test_helper_.ComputeCurrentOriginUsage();
   }
 
-  // Creates and sets up a FileWriterDelegate for writing the given |blob_url|
-  // to a file (file_) from |offset| with |allowed_growth| quota setting.
+  FileSystemPath GetFileSystemPath(const char* file_name) const {
+    return test_helper_.CreatePathFromUTF8(file_name);
+  }
+
+  GURL GetFileSystemURL(const char* file_name) const {
+    return test_helper_.GetURLForPath(FilePath().AppendASCII(file_name));
+  }
+
+  FileWriterDelegate* CreateWriterDelegate(
+      const char* test_file_path,
+      int64 offset,
+      int64 allowed_growth,
+      Result* result) {
+    SandboxFileWriter* writer = new SandboxFileWriter(
+        test_helper_.file_system_context(),
+        GetFileSystemURL(test_file_path),
+        offset);
+    writer->set_default_quota(allowed_growth);
+    return new FileWriterDelegate(
+        base::Bind(&Result::DidWrite, base::Unretained(result)),
+        scoped_ptr<FileWriter>(writer));
+  }
+
+  // Creates and sets up a FileWriterDelegate for writing the given |blob_url|,
+  // and creates a new FileWriterDelegate for the file.
   void PrepareForWrite(const GURL& blob_url,
                        int64 offset,
                        int64 allowed_growth) {
-    bool created;
-    base::PlatformFileError error_code;
-    file_ = base::CreatePlatformFile(
-        file_path_,
-        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
-            base::PLATFORM_FILE_ASYNC,
-        &created, &error_code);
-    ASSERT_EQ(base::PLATFORM_FILE_OK, error_code);
-
     result_.reset(new Result());
-    file_writer_delegate_.reset(new FileWriterDelegate(
-        CreateNewOperation(result_.get(), allowed_growth),
-        test_helper_.CreatePath(file_path_),
-        offset));
+    file_writer_delegate_.reset(
+        CreateWriterDelegate("test", offset, allowed_growth, result_.get()));
     request_.reset(new net::URLRequest(blob_url, file_writer_delegate_.get()));
   }
-
-  FileSystemOperation* CreateNewOperation(Result* result, int64 quota);
 
   static net::URLRequest::ProtocolFactory Factory;
 
@@ -132,11 +136,10 @@ class FileWriterDelegateTest : public PlatformTest {
   FileSystemTestOriginHelper test_helper_;
 
   ScopedTempDir dir_;
-  FilePath file_path_;
-  PlatformFile file_;
 
   static const char* content_;
 };
+
 const char* FileWriterDelegateTest::content_ = NULL;
 
 namespace {
@@ -200,27 +203,24 @@ net::URLRequestJob* FileWriterDelegateTest::Factory(
 void FileWriterDelegateTest::SetUp() {
   ASSERT_TRUE(dir_.CreateUniqueTempDir());
   FilePath base_dir = dir_.path().AppendASCII("filesystem");
-  SetUpTestHelper(base_dir);
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(
-      test_helper_.GetOriginRootPath(), &file_path_));
+  test_helper_.SetUp(base_dir, NULL);
+
+  scoped_ptr<FileSystemOperationContext> context(
+      test_helper_.NewOperationContext());
+  context->set_allowed_bytes_growth(kint64max);
+  bool created = false;
+  base::PlatformFileError error = file_util()->EnsureFileExists(
+      context.get(),
+      GetFileSystemPath("test"),
+      &created);
+  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+  ASSERT_TRUE(created);
   net::URLRequest::Deprecated::RegisterProtocolFactory("blob", &Factory);
 }
 
 void FileWriterDelegateTest::TearDown() {
   net::URLRequest::Deprecated::RegisterProtocolFactory("blob", NULL);
-  base::ClosePlatformFile(file_);
   test_helper_.TearDown();
-}
-
-FileSystemOperation* FileWriterDelegateTest::CreateNewOperation(
-    Result* result, int64 quota) {
-  FileSystemOperation* operation = test_helper_.NewOperation();
-  operation->set_write_callback(base::Bind(&Result::DidWrite,
-                                           base::Unretained(result)));
-  FileSystemOperationContext* context =
-      operation->file_system_operation_context();
-  context->set_allowed_bytes_growth(quota);
-  return operation;
 }
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
@@ -230,16 +230,16 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
   PrepareForWrite(kBlobURL, 0, quota::QuotaManager::kNoLimit);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate_->Start(request_.Pass());
   MessageLoop::current()->Run();
+
+  ASSERT_TRUE(result_->complete());
+  file_writer_delegate_.reset();
+
   ASSERT_EQ(kDataSize, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
-
   EXPECT_EQ(kDataSize, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  EXPECT_TRUE(result_->complete());
-
-  file_writer_delegate_.reset();
 }
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
@@ -249,16 +249,16 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
   PrepareForWrite(kBlobURL, 0, kAllowedGrowth);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate_->Start(request_.Pass());
   MessageLoop::current()->Run();
+  ASSERT_TRUE(result_->complete());
+  file_writer_delegate_.reset();
+
   ASSERT_EQ(kAllowedGrowth, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
 
-  file_writer_delegate_.reset();
-
   EXPECT_EQ(kAllowedGrowth, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  EXPECT_TRUE(result_->complete());
 }
 
 TEST_F(FileWriterDelegateTest, WriteFailureByQuota) {
@@ -268,12 +268,13 @@ TEST_F(FileWriterDelegateTest, WriteFailureByQuota) {
   PrepareForWrite(kBlobURL, 0, kAllowedGrowth);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate_->Start(request_.Pass());
   MessageLoop::current()->Run();
+  ASSERT_TRUE(result_->complete());
+  file_writer_delegate_.reset();
+
   ASSERT_EQ(kAllowedGrowth, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
-
-  file_writer_delegate_.reset();
 
   EXPECT_EQ(kAllowedGrowth, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, result_->status());
@@ -287,12 +288,13 @@ TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
   PrepareForWrite(kBlobURL, 0, kAllowedGrowth);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate_->Start(request_.Pass());
   MessageLoop::current()->Run();
+  ASSERT_TRUE(result_->complete());
+  file_writer_delegate_.reset();
+
   ASSERT_EQ(kAllowedGrowth, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
-
-  file_writer_delegate_.reset();
 
   EXPECT_EQ(kAllowedGrowth, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
@@ -304,18 +306,13 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   scoped_ptr<net::URLRequest> request2;
   scoped_ptr<Result> result2;
 
-  FilePath file_path2;
-  PlatformFile file2;
-  bool created;
-  base::PlatformFileError error_code;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(
-      test_helper_.GetOriginRootPath(), &file_path2));
-  file2 = base::CreatePlatformFile(
-      file_path2,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
-          base::PLATFORM_FILE_ASYNC,
-      &created, &error_code);
-  ASSERT_EQ(base::PLATFORM_FILE_OK, error_code);
+  scoped_ptr<FileSystemOperationContext> context(
+      test_helper_.NewOperationContext());
+  bool created = false;
+  file_util()->EnsureFileExists(context.get(),
+                                GetFileSystemPath("test2"),
+                                &created);
+  ASSERT_TRUE(created);
 
   const GURL kBlobURL("blob:nolimitconcurrent");
   const GURL kBlobURL2("blob:nolimitconcurrent2");
@@ -325,32 +322,29 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
 
   // Credate another FileWriterDelegate for concurrent write.
   result2.reset(new Result());
-  file_writer_delegate2.reset(new FileWriterDelegate(
-      CreateNewOperation(result2.get(), quota::QuotaManager::kNoLimit),
-      test_helper_.CreatePath(file_path2), 0));
+  file_writer_delegate2.reset(CreateWriterDelegate(
+      "test2", 0, quota::QuotaManager::kNoLimit, result2.get()));
   request2.reset(new net::URLRequest(kBlobURL2, file_writer_delegate2.get()));
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.Pass());
-  file_writer_delegate2->Start(file2, request2.Pass());
+  file_writer_delegate_->Start(request_.Pass());
+  file_writer_delegate2->Start(request2.Pass());
   MessageLoop::current()->Run();
   if (!result_->complete() || !result2->complete())
     MessageLoop::current()->Run();
 
-  ASSERT_EQ(kDataSize * 2, test_helper_.GetCachedOriginUsage());
-  base::FlushPlatformFile(file2);
-  EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
-
+  ASSERT_TRUE(result_->complete());
+  ASSERT_TRUE(result2->complete());
   file_writer_delegate_.reset();
+  file_writer_delegate2.reset();
+
+  ASSERT_EQ(kDataSize * 2, test_helper_.GetCachedOriginUsage());
+  EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
 
   EXPECT_EQ(kDataSize, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  EXPECT_TRUE(result_->complete());
   EXPECT_EQ(kDataSize, result2->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, result2->status());
-  EXPECT_TRUE(result2->complete());
-
-  base::ClosePlatformFile(file2);
 }
 
 TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
@@ -364,20 +358,22 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
   ASSERT_EQ(0, test_helper_.GetCachedOriginUsage());
-  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate_->Start(request_.Pass());
   MessageLoop::current()->Run();
+  ASSERT_TRUE(result_->complete());
+  file_writer_delegate_.reset();
+
   ASSERT_EQ(kDataSize, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(kDataSize, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  EXPECT_TRUE(result_->complete());
 
   // Trying to overwrite kDataSize bytes data while allowed_growth is 20.
   offset = 0;
   allowed_growth = 20;
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
-  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate_->Start(request_.Pass());
   MessageLoop::current()->Run();
   EXPECT_EQ(kDataSize, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
@@ -391,13 +387,15 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   allowed_growth = 55;
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
-  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate_->Start(request_.Pass());
   MessageLoop::current()->Run();
+  ASSERT_TRUE(result_->complete());
+  file_writer_delegate_.reset();
+
   EXPECT_EQ(offset + kDataSize, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(kDataSize, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  EXPECT_TRUE(result_->complete());
 
   // Trying to overwrite 45 bytes data while allowed_growth is -20.
   offset = 0;
@@ -405,13 +403,15 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
   int64 pre_write_usage = ComputeCurrentOriginUsage();
-  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate_->Start(request_.Pass());
   MessageLoop::current()->Run();
+  ASSERT_TRUE(result_->complete());
+  file_writer_delegate_.reset();
+
   EXPECT_EQ(pre_write_usage, test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(kDataSize, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  EXPECT_TRUE(result_->complete());
 
   // Trying to overwrite 45 bytes data with offset pre_write_usage - 20,
   // while allowed_growth is 10.
@@ -420,19 +420,16 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   allowed_growth = 10;
   PrepareForWrite(kBlobURL, offset, allowed_growth);
 
-  file_writer_delegate_->Start(file_, request_.Pass());
+  file_writer_delegate_->Start(request_.Pass());
   MessageLoop::current()->Run();
+  ASSERT_TRUE(result_->complete());
+  file_writer_delegate_.reset();
+
   EXPECT_EQ(pre_write_usage + allowed_growth,
             test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(ComputeCurrentOriginUsage(), test_helper_.GetCachedOriginUsage());
   EXPECT_EQ(kOverlap + allowed_growth, result_->bytes_written());
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, result_->status());
-  EXPECT_TRUE(result_->complete());
 }
-
-class FileWriterDelegateUnlimitedTest : public FileWriterDelegateTest {
- protected:
-  virtual void SetUpTestHelper(const FilePath& path) OVERRIDE;
-};
 
 }  // namespace fileapi

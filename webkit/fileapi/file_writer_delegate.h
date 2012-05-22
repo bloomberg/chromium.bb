@@ -13,32 +13,29 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
+#include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_path.h"
 
 namespace fileapi {
 
-class FileSystemOperation;
 class FileSystemOperationContext;
 class FileSystemQuotaUtil;
+class FileWriter;
 
 class FileWriterDelegate : public net::URLRequest::Delegate {
  public:
   FileWriterDelegate(
-      FileSystemOperation* write_operation,
-      const FileSystemPath& path,
-      int64 offset);
+      const FileSystemOperationInterface::WriteCallback& write_callback,
+      scoped_ptr<FileWriter> file_writer);
   virtual ~FileWriterDelegate();
 
-  void Start(base::PlatformFile file,
-             scoped_ptr<net::URLRequest> request);
+  void Start(scoped_ptr<net::URLRequest> request);
 
   // Cancels the current write operation.  Returns true if it is ok to
   // delete this instance immediately.  Otherwise this will call
   // |write_operation|->DidWrite() with complete=true to let the operation
   // perform the final cleanup.
   bool Cancel();
-
-  base::PlatformFile file() const { return file_; }
 
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
@@ -66,25 +63,18 @@ class FileWriterDelegate : public net::URLRequest::Delegate {
   void OnDataWritten(int write_response);
   void OnError(base::PlatformFileError error);
   void OnProgress(int bytes_read, bool done);
+  void OnWriteCancelled(int status);
 
-  FileSystemOperationContext* file_system_operation_context() const;
   FileSystemQuotaUtil* quota_util() const;
 
-  FileSystemOperation* file_system_operation_;
-  base::PlatformFile file_;
-  FileSystemPath path_;
-  int64 size_;
-  int64 offset_;
-  bool has_pending_write_;
+  FileSystemOperationInterface::WriteCallback write_callback_;
+  scoped_ptr<FileWriter> file_writer_;
   base::Time last_progress_event_time_;
   int bytes_written_backlog_;
   int bytes_written_;
   int bytes_read_;
-  int64 total_bytes_written_;
-  int64 allowed_bytes_to_write_;
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_refptr<net::DrainableIOBuffer> cursor_;
-  scoped_ptr<net::FileStream> file_stream_;
   scoped_ptr<net::URLRequest> request_;
   base::WeakPtrFactory<FileWriterDelegate> weak_factory_;
 };

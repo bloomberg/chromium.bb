@@ -16,6 +16,12 @@ class IOBuffer;
 namespace fileapi {
 
 // A generic interface for writing to a file-like object.
+//
+// TODO(kinuko): Consider better naming. (http://crbug.com/128483)
+// Note: this does not directly correspond to FileWriter in File API (which
+// is implemented by WebCore::FileWriter), though this class is used to
+// implement a part of it.  FileWriterDelegate is NOT a delegate of this
+// class either.
 class FileWriter {
  public:
   // Closes the file. If there's an in-flight operation, it is canceled (i.e.,
@@ -30,6 +36,13 @@ class FileWriter {
   // returns an error code. Otherwise, net::ERR_IO_PENDING is returned, and the
   // callback will be run on the thread where Write() was called when the write
   // has completed.
+  //
+  // This errors out (either synchronously or via callback) with:
+  //   net::ERR_FILE_NOT_FOUND: When the target file is not found.
+  //   net::ERR_ACCESS_DENIED: When the target file is a directory or
+  //      the writer has no permission on the file.
+  //   net::ERR_FILE_NO_SPACE: When the write will result in out of quota
+  //      or there is not enough room left on the disk.
   //
   // It is invalid to call Write while there is an in-flight async operation.
   virtual int Write(net::IOBuffer* buf, int buf_len,
@@ -53,4 +66,3 @@ class FileWriter {
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_WRITER_H_
-

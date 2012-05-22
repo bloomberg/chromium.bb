@@ -74,6 +74,8 @@
         'native_file_util.h',
         'obfuscated_file_util.cc',
         'obfuscated_file_util.h',
+        'sandbox_file_writer.cc',
+        'sandbox_file_writer.h',
         'sandbox_mount_point_provider.cc',
         'sandbox_mount_point_provider.h',
         'test_mount_point_provider.cc',
