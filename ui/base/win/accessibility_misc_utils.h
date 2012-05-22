@@ -1,22 +1,22 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef BASE_WIN_ACCESSIBILITY_MISC_UTILS_H_
-#define BASE_WIN_ACCESSIBILITY_MISC_UTILS_H_
+#ifndef UI_BASE_WIN_ACCESSIBILITY_MISC_UTILS_H_
+#define UI_BASE_WIN_ACCESSIBILITY_MISC_UTILS_H_
 #pragma once
 
 #include <atlbase.h>
 #include <atlcom.h>
 #include <UIAutomationCore.h>
 
-#include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "ui/base/ui_export.h"
 
 namespace base {
 namespace win {
 
   // UIA Text provider implementation for edit controls.
-class BASE_EXPORT UIATextProvider
+class UI_EXPORT UIATextProvider
     : public NON_EXPORTED_BASE(CComObjectRootEx<CComMultiThreadModel>),
       public IValueProvider,
       public ITextProvider {
@@ -40,45 +40,45 @@ class BASE_EXPORT UIATextProvider
   //
   // IValueProvider methods.
   //
-  STDMETHODIMP get_IsReadOnly(BOOL* read_only);
+  STDMETHOD(get_IsReadOnly)(BOOL* read_only);
 
   //
   // IValueProvider methods not implemented.
   //
-  STDMETHODIMP SetValue(const wchar_t* val) {
+  STDMETHOD(SetValue)(const wchar_t* val) {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP get_Value(BSTR* value) {
+  STDMETHOD(get_Value)(BSTR* value) {
     return E_NOTIMPL;
   }
 
   //
   // ITextProvider methods.
   //
-  STDMETHODIMP GetSelection(SAFEARRAY** ret) {
+  STDMETHOD(GetSelection)(SAFEARRAY** ret) {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetVisibleRanges(SAFEARRAY** ret) {
+  STDMETHOD(GetVisibleRanges)(SAFEARRAY** ret) {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP RangeFromChild(IRawElementProviderSimple* child,
-                              ITextRangeProvider** ret) {
+  STDMETHOD(RangeFromChild)(IRawElementProviderSimple* child,
+                            ITextRangeProvider** ret) {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP RangeFromPoint(struct UiaPoint point,
-                              ITextRangeProvider** ret) {
+  STDMETHOD(RangeFromPoint)(struct UiaPoint point,
+                            ITextRangeProvider** ret) {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP get_DocumentRange(ITextRangeProvider** ret) {
+  STDMETHOD(get_DocumentRange)(ITextRangeProvider** ret) {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP get_SupportedTextSelection(enum SupportedTextSelection* ret) {
+  STDMETHOD(get_SupportedTextSelection)(enum SupportedTextSelection* ret) {
     return E_NOTIMPL;
   }
 
@@ -89,4 +89,4 @@ class BASE_EXPORT UIATextProvider
 }  // win
 }  // base
 
-#endif  // BASE_WIN_ACCESSIBILITY_MISC_UTILS_H_
+#endif  // UI_BASE_WIN_ACCESSIBILITY_MISC_UTILS_H_

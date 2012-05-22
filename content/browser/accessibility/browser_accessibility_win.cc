@@ -10,7 +10,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/accessibility_misc_utils.h"
 #include "base/win/enum_variant.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
@@ -18,6 +17,7 @@
 #include "content/common/accessibility_messages.h"
 #include "net/base/escape.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
+#include "ui/base/win/accessibility_misc_utils.h"
 
 using webkit_glue::WebAccessibility;
 

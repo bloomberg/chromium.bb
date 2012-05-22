@@ -1,9 +1,10 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "base/win/accessibility_misc_utils.h"
+#include "ui/base/win/accessibility_misc_utils.h"
 
 #include "base/logging.h"
+#include "ui/base/win/atl_module.h"
 
 namespace base {
 namespace win {
@@ -14,6 +15,9 @@ UIATextProvider::UIATextProvider()
 
 // static
 bool UIATextProvider::CreateTextProvider(bool editable, IUnknown** provider) {
+  // Make sure ATL is initialized in this module.
+  ui::win::CreateATLModuleIfNeeded();
+
   CComObject<UIATextProvider>* text_provider = NULL;
   HRESULT hr = CComObject<UIATextProvider>::CreateInstance(&text_provider);
   if (SUCCEEDED(hr)) {

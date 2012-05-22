@@ -10,12 +10,12 @@
 
 #include <vector>
 
-#include "base/win/accessibility_misc_utils.h"
 #include "base/win/windows_version.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/view_prop.h"
+#include "ui/base/win/accessibility_misc_utils.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/widget/native_widget_win.h"
