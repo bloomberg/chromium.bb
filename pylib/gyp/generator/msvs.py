@@ -733,6 +733,9 @@ def _EscapeCppDefineForMSBuild(s):
   s = _EscapeEnvironmentVariableExpansion(s)
   s = _EscapeCommandLineArgumentForMSBuild(s)
   s = _EscapeMSBuildSpecialCharacters(s)
+  # cl.exe replaces literal # characters with = in preprocesor definitions for
+  # some reason. Octal-encode to work around that.
+  s = s.replace('#', '\\%03o' % ord('#'))
   return s
 
 
