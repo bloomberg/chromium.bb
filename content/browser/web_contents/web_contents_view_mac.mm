@@ -13,7 +13,6 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
-#include "content/browser/web_contents/popup_menu_helper_mac.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
 #import "content/browser/web_contents/web_drag_source_mac.h"
@@ -356,19 +355,6 @@ void WebContentsViewMac::ShowContextMenu(
     delegate()->ShowContextMenu(params);
   else
     DLOG(ERROR) << "Cannot show context menus without a delegate.";
-}
-
-// Display a popup menu for WebKit using Cocoa widgets.
-void WebContentsViewMac::ShowPopupMenu(
-    const gfx::Rect& bounds,
-    int item_height,
-    double item_font_size,
-    int selected_item,
-    const std::vector<WebMenuItem>& items,
-    bool right_aligned) {
-  PopupMenuHelper popup_menu_helper(web_contents_->GetRenderViewHost());
-  popup_menu_helper.ShowPopupMenu(bounds, item_height, item_font_size,
-                                  selected_item, items, right_aligned);
 }
 
 bool WebContentsViewMac::IsEventTracking() const {

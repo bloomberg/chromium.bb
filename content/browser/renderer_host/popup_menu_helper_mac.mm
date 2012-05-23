@@ -4,7 +4,7 @@
 
 #import <Carbon/Carbon.h>
 
-#include "content/browser/web_contents/popup_menu_helper_mac.h"
+#include "content/browser/renderer_host/popup_menu_helper_mac.h"
 
 #import "base/mac/scoped_sending_event.h"
 #include "base/memory/scoped_nsobject.h"

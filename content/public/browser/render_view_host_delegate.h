@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
@@ -30,7 +29,6 @@ struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewMsg_PostMessage_Params;
 struct WebDropData;
-struct WebMenuItem;
 
 namespace webkit_glue {
 struct WebPreferences;
@@ -126,16 +124,6 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
     // A context menu should be shown, to be built using the context information
     // provided in the supplied params.
     virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
-
-    // Shows a popup menu with the specified items.
-    // This method should call RenderViewHost::DidSelectPopupMenuItemAt() or
-    // RenderViewHost::DidCancelPopupMenu() ased on the user action.
-    virtual void ShowPopupMenu(const gfx::Rect& bounds,
-                               int item_height,
-                               double item_font_size,
-                               int selected_item,
-                               const std::vector<WebMenuItem>& items,
-                               bool right_aligned) = 0;
 
     // The user started dragging content of the specified type within the
     // RenderView. Contextual information about the dragged content is supplied

@@ -98,12 +98,6 @@ class InterstitialPageImpl::InterstitialPageRVHViewDelegate
                                  const gfx::Rect& initial_pos);
   virtual void ShowCreatedFullscreenWidget(int route_id);
   virtual void ShowContextMenu(const content::ContextMenuParams& params);
-  virtual void ShowPopupMenu(const gfx::Rect& bounds,
-                             int item_height,
-                             double item_font_size,
-                             int selected_item,
-                             const std::vector<WebMenuItem>& items,
-                             bool right_aligned);
   virtual void StartDragging(const WebDropData& drop_data,
                              WebDragOperationsMask operations_allowed,
                              const SkBitmap& image,
@@ -709,15 +703,6 @@ void InterstitialPageImpl::InterstitialPageRVHViewDelegate::
 
 void InterstitialPageImpl::InterstitialPageRVHViewDelegate::ShowContextMenu(
     const content::ContextMenuParams& params) {
-}
-
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::ShowPopupMenu(
-    const gfx::Rect& bounds,
-    int item_height,
-    double item_font_size,
-    int selected_item,
-    const std::vector<WebMenuItem>& items,
-    bool right_aligned) {
 }
 
 void InterstitialPageImpl::InterstitialPageRVHViewDelegate::StartDragging(

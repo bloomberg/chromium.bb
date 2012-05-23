@@ -18,9 +18,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
@@ -59,13 +56,17 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#if defined(OS_WIN)
-#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
-#endif
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/renderer_host/popup_menu_helper_mac.h"
+#endif
 
 using base::TimeDelta;
 using content::NativeWebKeyboardEvent;
@@ -1807,15 +1808,10 @@ void RenderViewHostImpl::OnCancelDesktopNotification(int notification_id) {
 #if defined(OS_MACOSX)
 void RenderViewHostImpl::OnMsgShowPopup(
     const ViewHostMsg_ShowPopup_Params& params) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view) {
-    view->ShowPopupMenu(params.bounds,
-                        params.item_height,
-                        params.item_font_size,
-                        params.selected_item,
-                        params.popup_items,
-                        params.right_aligned);
-  }
+  PopupMenuHelper popup_menu_helper(this);
+  popup_menu_helper.ShowPopupMenu(params.bounds, params.item_height,
+                                  params.item_font_size, params.selected_item,
+                                  params.popup_items, params.right_aligned);
 }
 #endif
 

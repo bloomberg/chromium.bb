@@ -378,17 +378,6 @@ void WebContentsViewGtk::ShowContextMenu(
     DLOG(ERROR) << "Cannot show context menus without a delegate.";
 }
 
-void WebContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,
-                                       int item_height,
-                                       double item_font_size,
-                                       int selected_item,
-                                       const std::vector<WebMenuItem>& items,
-                                       bool right_aligned) {
-  // We are not using external popup menus on Linux, they are rendered by
-  // WebKit.
-  NOTREACHED();
-}
-
 // Render view DnD -------------------------------------------------------------
 
 void WebContentsViewGtk::StartDragging(const WebDropData& drop_data,

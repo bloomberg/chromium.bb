@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_CONTENTS_POPUP_MENU_HELPER_MAC_H_
-#define CONTENT_BROWSER_WEB_CONTENTS_POPUP_MENU_HELPER_MAC_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_POPUP_MENU_HELPER_MAC_H_
+#define CONTENT_BROWSER_RENDERER_HOST_POPUP_MENU_HELPER_MAC_H_
 
 #include <vector>
 
@@ -48,4 +48,4 @@ class PopupMenuHelper : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(PopupMenuHelper);
 };
 
-#endif  // CONTENT_BROWSER_WEB_CONTENTS_POPUP_MENU_HELPER_MAC_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_POPUP_MENU_HELPER_MAC_H_
