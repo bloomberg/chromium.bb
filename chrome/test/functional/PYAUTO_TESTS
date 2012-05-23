@@ -710,6 +710,7 @@
     'chromeos': [
       'perf.BenchmarkPerfTest.testV8BenchmarkSuite',
       'perf.LiveWebappLoadTest.testNewTabGmail',
+      'perf.PageCyclerTest',
       'perf.ScrollTest.testGooglePlusScroll',
     ],
   },
