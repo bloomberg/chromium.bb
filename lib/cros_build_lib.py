@@ -418,10 +418,13 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       raise RunCommandError(msg, cmd_result)
   # TODO(sosa): is it possible not to use the catch-all Exception here?
   except OSError, e:
+    estr = str(e)
+    if e.errno == errno.EACCES:
+      estr += '; does the program need `chmod a+x`?'
     if not error_ok:
-      raise RunCommandError(str(e), CommandResult(cmd=cmd))
+      raise RunCommandError(estr, CommandResult(cmd=cmd))
     else:
-      Warning(str(e))
+      Warning(estr)
   except Exception, e:
     if not error_ok:
       raise

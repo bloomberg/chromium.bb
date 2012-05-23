@@ -325,7 +325,11 @@ class EBuild(object):
 
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
-    output = self._RunCommand([vers_script, srcdir]).strip()
+    try:
+      output = self._RunCommand([vers_script, srcdir]).strip()
+    except cros_build_lib.RunCommandError as e:
+      cros_build_lib.Die('Package %s chromeos-version.sh failed: %s' %
+                         (self._pkgname, e))
 
     if not output:
       cros_build_lib.Die('Package %s has a chromeos-version.sh script but '
