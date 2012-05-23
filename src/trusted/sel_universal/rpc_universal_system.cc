@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -60,20 +60,6 @@ class AddressMap {
 
 AddressMap GlobalAddressMap;
 
-
-uintptr_t MapShmem(nacl::DescWrapper* desc) {
-  void* addr;
-  size_t dummy_size;
-  int result = desc->Map(&addr, &dummy_size);
-  if (0 > result) {
-    NaClLog(LOG_ERROR, "error mapping shmem area\n");
-    return 0;
-  }
-
-  GlobalAddressMap.Add(desc->desc(), reinterpret_cast<uintptr_t>(addr));
-  return reinterpret_cast<uintptr_t>(addr);
-}
-
 }  // namespace
 
 bool HandlerSyncSocketCreate(NaClCommandLoop* ncl,
@@ -115,32 +101,6 @@ bool HandlerSyncSocketWrite(NaClCommandLoop* ncl,
   // TODO(robertm): eliminate use of NaClDesc in sel_universal and standardize
   //       on DescWrapper to eliminate the memory leak here
   factory.MakeGeneric(raw_desc)->Write(&value, sizeof value);
-  return true;
-}
-
-bool HandlerShmem(NaClCommandLoop* ncl, const vector<string>& args) {
-  if (args.size() < 4) {
-    NaClLog(LOG_ERROR, "not enough args\n");
-    return false;
-  }
-
-  const int size = ExtractInt32(args[3]);
-  nacl::DescWrapperFactory factory;
-  nacl::DescWrapper* desc = factory.MakeShm(size);
-  if (desc == NULL) {
-    NaClLog(LOG_ERROR, "could not create shm\n");
-    return false;
-  }
-
-  ncl->AddDesc(desc->desc(), args[1]);
-
-  uintptr_t addr = MapShmem(desc);
-  if (addr == 0) {
-    return false;
-  }
-  stringstream str;
-  str << "0x" << std::hex << addr;
-  ncl->SetVariable(args[2], str.str());
   return true;
 }
 
@@ -253,35 +213,6 @@ bool HandlerSaveToFile(NaClCommandLoop* ncl, const vector<string>& args) {
     return false;
   }
   fclose(fp);
-  return true;
-}
-
-// map a shared mem descriptor into memory and save address into var
-bool HandlerMap(NaClCommandLoop* ncl, const vector<string>& args) {
-  UNREFERENCED_PARAMETER(ncl);
-  if (args.size() < 3) {
-    NaClLog(LOG_ERROR, "not enough args\n");
-    return false;
-  }
-
-  NaClDesc* raw_desc = ExtractDesc(args[1], ncl);
-  if (raw_desc == NULL) {
-    NaClLog(LOG_ERROR, "cannot find desciptor %s\n", args[1].c_str());
-    return false;
-  }
-
-  nacl::DescWrapperFactory factory;
-  nacl::DescWrapper* desc = factory.MakeGeneric(raw_desc);
-
-  uintptr_t addr = MapShmem(desc);
-  if (addr == 0) {
-    return false;
-  }
-
-  NaClLog(1, "region mapped at %p\n", reinterpret_cast<void*>(addr));
-  stringstream str;
-  str << "0x" << std::hex << addr;
-  ncl->SetVariable(args[2], str.str());
   return true;
 }
 

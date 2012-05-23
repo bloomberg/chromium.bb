@@ -26,7 +26,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
-#include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
@@ -86,19 +85,14 @@ struct NaClDesc* MakeQuotaCommon(const uint8_t* file_id,
 
 namespace nacl {
 
-// Descriptor creation and manipulation sometimes requires additional state
-// (for instance, Effectors).  Therefore, we create an object that encapsulates
-// that state.
+// Descriptor creation and manipulation sometimes requires additional
+// state.  Therefore, we create an object that encapsulates that
+// state.
 class DescWrapperCommon {
   friend class DescWrapperFactory;
 
  public:
   typedef uint32_t RefCountType;
-
-  // Get a pointer to the effector.
-  struct NaClDescEffector* effp() {
-    return reinterpret_cast<struct NaClDescEffector*>(&eff_);
-  }
 
   // Inform clients that the object was successfully initialized.
   bool is_initialized() const { return is_initialized_; }
@@ -133,9 +127,6 @@ class DescWrapperCommon {
     NaClXMutexCtor(&ref_count_mu_);
   }
   ~DescWrapperCommon() {
-    if (is_initialized_) {
-      effp()->vtbl->Dtor(effp());
-    }
     NaClMutexDtor(&ref_count_mu_);
   }
 
@@ -144,8 +135,6 @@ class DescWrapperCommon {
 
   // Boolean to indicate the object was successfully initialized.
   bool is_initialized_;
-  // Effector for transferring descriptors.
-  struct NaClNrdXferEffector eff_;
   // The reference count and the mutex to protect it.
   RefCountType ref_count_;
   struct NaClMutex ref_count_mu_;
@@ -154,10 +143,6 @@ class DescWrapperCommon {
 };
 
 bool DescWrapperCommon::Init() {
-  // Set up the transfer effector.
-  if (!NaClNrdXferEffectorCtor(&eff_)) {
-    return false;
-  }
   // Successfully initialized.
   is_initialized_ = true;
   return true;
@@ -486,17 +471,6 @@ DescWrapper::~DescWrapper() {
   }
   NaClDescSafeUnref(desc_);
   desc_ = NULL;
-}
-
-int DescWrapper::Map(void** addr, size_t* size) {
-  return NaClDescMapDescriptor(desc_, common_data_->effp(), addr, size);
-}
-
-int DescWrapper::Unmap(void* start_addr, size_t len) {
-  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
-      Unmap(desc_,
-            common_data_->effp(),
-            start_addr, len);
 }
 
 ssize_t DescWrapper::Read(void* buf, size_t len) {

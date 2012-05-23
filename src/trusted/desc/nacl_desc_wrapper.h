@@ -109,15 +109,6 @@ class DescWrapper {
   // are obviously many more methods than a particular derived class
   // implements.
 
-  // Map a shared memory descriptor.
-  // Sets the address to the place mapped to and the size to the rounded result.
-  // Returns zero on success, negative NaCl ABI errno on failure.
-  int Map(void** addr, size_t* size);
-
-  // Unmaps a region of shared memory.
-  // Returns zero on success, negative NaCl ABI errno on failure.
-  int Unmap(void* start_addr, size_t len);
-
   // Read len bytes into buf.
   // Returns bytes read on success, negative NaCl ABI errno on failure.
   ssize_t Read(void* buf, size_t len);
