@@ -369,10 +369,6 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_user_agent',
       ],
       'sources': [
-        '../../../skia/ext/convolver_unittest.cc',
-        '../../../skia/ext/image_operations_unittest.cc',
-        '../../../skia/ext/platform_canvas_unittest.cc',
-        '../../../skia/ext/vector_canvas_unittest.cc',
         '../../appcache/manifest_parser_unittest.cc',
         '../../appcache/appcache_unittest.cc',
         '../../appcache/appcache_database_unittest.cc',
@@ -506,10 +502,6 @@
             'test_shell_pak',
             '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
-          'sources!': [
-             # TODO(port)
-            '../../../skia/ext/platform_canvas_unittest.cc',
-          ],
         }],
         ['chromeos==1', {
           'sources': [
@@ -535,16 +527,10 @@
             'image_decoder_unittest.h',
           ],
           'sources': [
-            '../../../skia/ext/skia_utils_mac_unittest.mm',
-            '../../../skia/ext/bitmap_platform_device_mac_unittest.cc',
           ],
         }],
         ['OS=="win"', {
           'msvs_disabled_warnings': [ 4800 ],
-        }, {  # else: OS!=win
-          'sources!': [
-            '../../../skia/ext/vector_canvas_unittest.cc',
-          ],
         }],
         ['os_posix == 1 and OS != "mac"', {
           'conditions': [

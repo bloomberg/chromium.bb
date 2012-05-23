@@ -1939,6 +1939,12 @@
         '../ash/test/test_launcher_delegate.cc',
         '../ash/test/test_launcher_delegate.h',
         '../ash/test/test_shell_delegate.cc',
+        '../skia/ext/bitmap_platform_device_mac_unittest.cc',
+        '../skia/ext/convolver_unittest.cc',
+        '../skia/ext/image_operations_unittest.cc',
+        '../skia/ext/platform_canvas_unittest.cc',
+        '../skia/ext/skia_utils_mac_unittest.mm',
+        '../skia/ext/vector_canvas_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
         '../tools/json_schema_compiler/test/additional_properties_unittest.cc',
@@ -2216,6 +2222,7 @@
         ['OS!="win" and OS!="mac"', {
           'sources!': [
             'browser/rlz/rlz_unittest.cc',
+            '../skia/ext/platform_canvas_unittest.cc',
           ],
         }],
         ['OS=="win"', {
@@ -2285,6 +2292,7 @@
             'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
             'browser/ui/views/first_run_search_engine_view_unittest.cc',
             'test/data/resource.rc',
+            '../skia/ext/vector_canvas_unittest.cc',
           ],
         }],
         ['OS=="android"', {
