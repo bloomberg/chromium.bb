@@ -232,6 +232,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidKeyBindingDescription[];
   extern const char kInvalidKeyBindingDictionary[];
   extern const char kInvalidKeyBindingMissingPlatform[];
+  extern const char kInvalidKeyBindingTooMany[];
   extern const char kInvalidKeyBindingUnknownPlatform[];
   extern const char kInvalidLaunchContainer[];
   extern const char kInvalidLaunchValue[];

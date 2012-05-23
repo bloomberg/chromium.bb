@@ -151,7 +151,7 @@ bool Command::Parse(DictionaryValue* command,
     std::string suggested_key_string;
     if (command->GetString(keys::kSuggestedKey, &suggested_key_string) &&
         !suggested_key_string.empty()) {
-      // If only a signle string is provided, it must be default for all.
+      // If only a single string is provided, it must be default for all.
       suggestions["default"] = suggested_key_string;
     } else {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(

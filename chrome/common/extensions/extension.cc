@@ -68,6 +68,10 @@ const int kPEMOutputColumns = 65;
 
 const char kOverrideExtentUrlPatternFormat[] = "chrome://%s/*";
 
+// The maximum number of commands (including page action/browser actions) an
+// extension can have.
+const size_t kMaxCommandsPerExtension = 4;
+
 // KEY MARKERS
 const char kKeyBeginHeaderMarker[] = "-----BEGIN";
 const char kKeyBeginFooterMarker[] = "-----END";
@@ -1384,6 +1388,13 @@ bool Extension::LoadCommands(string16* error) {
     DictionaryValue* commands = NULL;
     if (!manifest_->GetDictionary(keys::kCommands, &commands)) {
       *error = ASCIIToUTF16(errors::kInvalidCommandsKey);
+      return false;
+    }
+
+    if (commands->size() > kMaxCommandsPerExtension) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidKeyBindingTooMany,
+          base::IntToString(kMaxCommandsPerExtension));
       return false;
     }
 
