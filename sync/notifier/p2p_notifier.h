@@ -15,18 +15,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "jingle/notifier/base/notifier_options.h"
-#include "jingle/notifier/listener/push_client.h"
+#include "base/threading/non_thread_safe.h"
+#include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/syncable/model_type.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
-namespace buzz {
-class XmppTaskParentInterface;
-}  // namespace buzz
+namespace notifier {
+class PushClient;
+}  // namespace notifier
 
 namespace sync_notifier {
 
@@ -86,14 +82,14 @@ class P2PNotificationData {
 
 class P2PNotifier
     : public SyncNotifier,
-      public notifier::PushClient::Observer {
+      public notifier::PushClientObserver {
  public:
   // The |send_notification_target| parameter was added to allow us to send
   // self-notifications in some cases, but not others.  The value should be
   // either NOTIFY_ALL to send notifications to all clients, or NOTIFY_OTHERS
   // to send notifications to all clients except for the one that triggered the
   // notification.  See crbug.com/97780.
-  P2PNotifier(const notifier::NotifierOptions& notifier_options,
+  P2PNotifier(scoped_ptr<notifier::PushClient> push_client,
               P2PNotificationTarget send_notification_target);
 
   virtual ~P2PNotifier();
@@ -110,19 +106,10 @@ class P2PNotifier
   virtual void SendNotification(
       syncable::ModelTypeSet changed_types) OVERRIDE;
 
-  // PushClient::Delegate implementation.
+  // PushClientObserver implementation.
   virtual void OnNotificationStateChange(bool notifications_enabled) OVERRIDE;
   virtual void OnIncomingNotification(
       const notifier::Notification& notification) OVERRIDE;
-
-  // For testing.
-
-  void SimulateConnectForTest(
-      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
-
-  // Any notifications sent after this is called will be reflected,
-  // i.e. will be treated as an incoming notification also.
-  void ReflectSentNotificationsForTest();
 
   void SendNotificationDataForTest(
       const P2PNotificationData& notification_data);
@@ -130,10 +117,12 @@ class P2PNotifier
  private:
   void SendNotificationData(const P2PNotificationData& notification_data);
 
+  base::NonThreadSafe non_thread_safe_;
+
   ObserverList<SyncNotifierObserver> observer_list_;
 
-  // The XMPP push client.
-  notifier::PushClient push_client_;
+  // The push client.
+  scoped_ptr<notifier::PushClient> push_client_;
   // Our unique ID.
   std::string unique_id_;
   // Whether we have called UpdateCredentials() yet.
@@ -145,8 +134,8 @@ class P2PNotifier
   P2PNotificationTarget send_notification_target_;
 
   syncable::ModelTypeSet enabled_types_;
-  scoped_refptr<base::MessageLoopProxy> parent_message_loop_proxy_;
 };
 
 }  // namespace sync_notifier
+
 #endif  // SYNC_NOTIFIER_P2P_NOTIFIER_H_

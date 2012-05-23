@@ -26,6 +26,7 @@
 #include "grit/generated_resources.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "jingle/notifier/listener/push_client_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // The real guts of CloudPrintProxyBackend, to keep the public client API clean.
@@ -33,7 +34,7 @@ class CloudPrintProxyBackend::Core
     : public base::RefCountedThreadSafe<CloudPrintProxyBackend::Core>,
       public CloudPrintAuth::Client,
       public CloudPrintConnector::Client,
-      public notifier::PushClient::Observer {
+      public notifier::PushClientObserver {
  public:
   // It is OK for print_server_url to be empty. In this case system should
   // use system default (local) print server.
@@ -86,7 +87,7 @@ class CloudPrintProxyBackend::Core
   // CloudPrintConnector::Client implementation.
   virtual void OnAuthFailed() OVERRIDE;
 
-  // notifier::PushClient::Delegate implementation.
+  // notifier::PushClientObserver implementation.
   virtual void OnNotificationStateChange(
       bool notifications_enabled) OVERRIDE;
   virtual void OnIncomingNotification(
@@ -390,7 +391,7 @@ void CloudPrintProxyBackend::Core::InitNotifications(
   notifier_options.request_context_getter =
       g_service_process->GetServiceURLRequestContextGetter();
   notifier_options.auth_mechanism = "X-OAUTH2";
-  push_client_.reset(new notifier::PushClient(notifier_options));
+  push_client_ = notifier::PushClient::CreateDefault(notifier_options);
   push_client_->AddObserver(this);
   notifier::Subscription subscription;
   subscription.channel = kCloudPrintPushNotificationsSource;
