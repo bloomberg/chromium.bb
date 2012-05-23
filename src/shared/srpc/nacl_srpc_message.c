@@ -41,7 +41,7 @@
 # define NACL_ABI_EINVAL EINVAL
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #else
-# include "native_client/src/trusted/desc/nrd_xfer_effector.h"
+# include "native_client/src/trusted/desc/nacl_desc_base.h"
 # include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #endif
 
@@ -111,14 +111,6 @@ static ssize_t ImcRecvmsg(NaClSrpcMessageDesc desc,
 static const size_t kDescSize = sizeof(NaClSrpcMessageDesc);
 
 struct PortableDesc {
-#ifndef __native_client__
-  /*
-   * An interface class used to enable passing of descs in trusted
-   * code, such as the browser plugin.
-   */
-  struct NaClNrdXferEffector eff;
-  struct NaClDescEffector* effp;
-#endif
   NaClSrpcMessageDesc raw_desc;
 };
 
@@ -128,9 +120,6 @@ struct PortableDesc {
  */
 static int PortableDescCtor(struct PortableDesc* self,
                             NaClSrpcMessageDesc desc) {
-#ifndef __native_client__
-  self->effp = NULL;
-#endif  /* __native_client__ */
   if (kInvalidDesc == desc) {
     return 0;
   }
@@ -138,21 +127,12 @@ static int PortableDescCtor(struct PortableDesc* self,
   self->raw_desc = desc;
 #else
   self->raw_desc = NaClDescRef(desc);
-  if (!NaClNrdXferEffectorCtor(&self->eff)) {
-    self->raw_desc = kInvalidDesc;
-    return 0;
-  }
-  self->effp = (struct NaClDescEffector*) &self->eff;
 #endif  /* __native_client__ */
   return 1;
 }
 
 static void PortableDescDtor(struct PortableDesc* self) {
 #ifndef __native_client__
-  if (NULL != self->effp) {
-    self->effp->vtbl->Dtor(self->effp);
-  }
-  self->effp = NULL;
   NaClDescSafeUnref(self->raw_desc);
 #endif  /* __native_client__ */
   self->raw_desc = kInvalidDesc;
