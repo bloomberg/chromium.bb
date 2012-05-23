@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,8 @@ WebMenuItem::WebMenuItem(const WebKit::WebMenuItemInfo& item)
       has_directional_override(item.hasTextDirectionOverride),
       enabled(item.enabled),
       checked(item.checked) {
+  for (size_t i = 0; i < item.subMenuItems.size(); ++i)
+    submenu.push_back(WebMenuItem(item.subMenuItems[i]));
 }
 
 WebMenuItem::WebMenuItem(const WebMenuItem& item)
