@@ -1,0 +1,476 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
+
+#include <map>
+#include <string>
+#include "base/message_loop.h"
+#include "chromeos/dbus/ibus/ibus_text.h"
+#include "dbus/message.h"
+#include "dbus/mock_bus.h"
+#include "dbus/mock_object_proxy.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::Invoke;
+using ::testing::Return;
+using ::testing::_;
+
+namespace chromeos {
+
+// TODO(nona): Remove after complete libibus removal.
+using chromeos::ibus::IBusText;
+
+namespace {
+const char kServiceName[] = "org.freedesktop.IBus";
+const char kInputContextInterface[] = "org.freedesktop.IBus.InputContext";
+const char kObjectPath[] = "/org/freedesktop/IBus/InputContext_1010";
+
+// Signal names.
+const char kCommitTextSignal[] = "CommitText";
+const char kForwardKeyEventSignal[] = "ForwardKeyEvent";
+const char kHidePreeditTextSignal[] = "HidePreeditText";
+const char kShowPreeditTextSignal[] = "ShowPreeditText";
+const char kUpdatePreeditTextSignal[] = "UpdatePreeditText";
+
+// Method names.
+const char kFocusInMethod[] = "FocusIn";
+const char kFocusOutMethod[] = "FocusOut";
+const char kResetMethod[] = "Reset";
+const char kSetCapabilitiesMethod[] = "SetCapabilities";
+const char kSetCursorLocationMethod[] = "SetCursorLocation";
+const char kProcessKeyEventMethod[] = "ProcessKeyEvent";
+
+// Following variables are used in callback expectations.
+const uint32 kCapabilities = 12345;
+const int32 kCursorX = 30;
+const int32 kCursorY = 31;
+const int32 kCursorWidth = 32;
+const int32 kCursorHeight = 33;
+const uint32 kKeyval = 34;
+const uint32 kKeycode = 35;
+const uint32 kState = 36;
+const bool kIsKeyHandled = false;
+
+class MockCommitTextHandler {
+ public:
+  MOCK_METHOD1(Run, void(const IBusText& text));
+};
+
+class MockForwardKeyEventHandler {
+ public:
+  MOCK_METHOD3(Run, void(uint32 keyval, uint32 keycode, uint32 state));
+};
+
+class MockHidePreeditTextHandler {
+ public:
+  MOCK_METHOD0(Run, void());
+};
+
+class MockShowPreeditTextHandler {
+ public:
+  MOCK_METHOD0(Run, void());
+};
+
+class MockUpdatePreeditTextHandler {
+ public:
+  MOCK_METHOD3(Run, void(const IBusText& text, uint32 cursor_pos,
+                         bool visible));
+};
+
+class MockProcessKeyEventHandler {
+ public:
+  MOCK_METHOD1(Run, void(bool is_key_handled));
+};
+
+MATCHER_P(IBusTextEq, expected_text, "The expected IBusText does not match") {
+  // TODO(nona): Check attributes.
+  return (arg.text() == expected_text->text());
+}
+
+}  // namespace
+
+class IBusInputContextClientTest : public testing::Test {
+ public:
+  IBusInputContextClientTest() : response_(NULL) {}
+
+  virtual void SetUp() OVERRIDE {
+    // Create a mock bus.
+    dbus::Bus::Options options;
+    options.bus_type = dbus::Bus::SYSTEM;
+    mock_bus_ = new dbus::MockBus(options);
+
+    // Create a mock proxy.
+    mock_proxy_ = new dbus::MockObjectProxy(mock_bus_.get(),
+                                            kServiceName,
+                                            dbus::ObjectPath(kObjectPath));
+
+    // Create a client.
+    client_.reset(IBusInputContextClient::Create(
+        REAL_DBUS_CLIENT_IMPLEMENTATION));
+
+    // Set an expectation so mock_bus's GetObjectProxy() for the given service
+    // name and the object path will return mock_proxy_. The GetObjectProxy
+    // function is called in Initialized function.
+    EXPECT_CALL(*mock_bus_, GetObjectProxy(kServiceName,
+                                           dbus::ObjectPath(kObjectPath)))
+        .WillOnce(Return(mock_proxy_.get()));
+
+    // Set expectations so mock_proxy's ConnectToSignal will use
+    // OnConnectToSignal() to run the callback. The ConnectToSignal is called in
+    // Initialize function.
+    EXPECT_CALL(*mock_proxy_, ConnectToSignal(
+        kInputContextInterface, kCommitTextSignal, _, _))
+        .WillRepeatedly(
+            Invoke(this, &IBusInputContextClientTest::OnConnectToSignal));
+    EXPECT_CALL(*mock_proxy_, ConnectToSignal(
+        kInputContextInterface, kForwardKeyEventSignal, _, _))
+        .WillRepeatedly(
+            Invoke(this, &IBusInputContextClientTest::OnConnectToSignal));
+    EXPECT_CALL(*mock_proxy_, ConnectToSignal(
+        kInputContextInterface, kHidePreeditTextSignal, _, _))
+        .WillRepeatedly(
+            Invoke(this, &IBusInputContextClientTest::OnConnectToSignal));
+    EXPECT_CALL(*mock_proxy_, ConnectToSignal(
+        kInputContextInterface, kShowPreeditTextSignal, _, _))
+        .WillRepeatedly(
+            Invoke(this, &IBusInputContextClientTest::OnConnectToSignal));
+    EXPECT_CALL(*mock_proxy_, ConnectToSignal(
+        kInputContextInterface, kUpdatePreeditTextSignal, _, _))
+        .WillRepeatedly(
+            Invoke(this, &IBusInputContextClientTest::OnConnectToSignal));
+
+    // Call Initialize to create object proxy and connect signals.
+    client_->Initialize(mock_bus_.get(), dbus::ObjectPath(kObjectPath));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    EXPECT_TRUE(client_->IsConnected());
+    client_->ResetObjectProxy();
+    EXPECT_FALSE(client_->IsConnected());
+  }
+
+  // Handles FocusIn method call.
+  void OnFocusIn(dbus::MethodCall* method_call,
+                 int timeout_ms,
+                 const dbus::ObjectProxy::ResponseCallback& callback) {
+    EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
+    EXPECT_EQ(kFocusInMethod, method_call->GetMember());
+    dbus::MessageReader reader(method_call);
+    EXPECT_FALSE(reader.HasMoreData());
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+  }
+
+  // Handles FocusOut method call.
+  void OnFocusOut(dbus::MethodCall* method_call,
+                  int timeout_ms,
+                  const dbus::ObjectProxy::ResponseCallback& callback) {
+    EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
+    EXPECT_EQ(kFocusOutMethod, method_call->GetMember());
+    dbus::MessageReader reader(method_call);
+    EXPECT_FALSE(reader.HasMoreData());
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+  }
+
+  // Handles Reset method call.
+  void OnReset(dbus::MethodCall* method_call,
+               int timeout_ms,
+               const dbus::ObjectProxy::ResponseCallback& callback) {
+    EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
+    EXPECT_EQ(kResetMethod, method_call->GetMember());
+    dbus::MessageReader reader(method_call);
+    EXPECT_FALSE(reader.HasMoreData());
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+  }
+
+  // Handles SetCursorLocation method call.
+  void OnSetCursorLocation(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& callback) {
+    EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
+    EXPECT_EQ(kSetCursorLocationMethod, method_call->GetMember());
+    dbus::MessageReader reader(method_call);
+    int32 x, y, width, height;
+    EXPECT_TRUE(reader.PopInt32(&x));
+    EXPECT_TRUE(reader.PopInt32(&y));
+    EXPECT_TRUE(reader.PopInt32(&width));
+    EXPECT_TRUE(reader.PopInt32(&height));
+    EXPECT_FALSE(reader.HasMoreData());
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+  }
+
+  // Handles SetCapabilities method call.
+  void OnSetCapabilities(dbus::MethodCall* method_call,
+                         int timeout_ms,
+                         const dbus::ObjectProxy::ResponseCallback& callback) {
+    EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
+    EXPECT_EQ(kSetCapabilitiesMethod, method_call->GetMember());
+    uint32 capabilities;
+    dbus::MessageReader reader(method_call);
+    EXPECT_TRUE(reader.PopUint32(&capabilities));
+    EXPECT_EQ(kCapabilities, capabilities);
+    EXPECT_FALSE(reader.HasMoreData());
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+  }
+
+  // Handles ProcessKeyEvent method call.
+  void OnProcessKeyEvent(dbus::MethodCall* method_call,
+                         int timeout_ms,
+                         const dbus::ObjectProxy::ResponseCallback& callback) {
+    EXPECT_EQ(kInputContextInterface, method_call->GetInterface());
+    EXPECT_EQ(kProcessKeyEventMethod, method_call->GetMember());
+    uint32 keyval, keycode, state;
+    dbus::MessageReader reader(method_call);
+    EXPECT_TRUE(reader.PopUint32(&keyval));
+    EXPECT_TRUE(reader.PopUint32(&keycode));
+    EXPECT_TRUE(reader.PopUint32(&state));
+    EXPECT_FALSE(reader.HasMoreData());
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+  }
+
+ protected:
+  // The client to be tested.
+  scoped_ptr<IBusInputContextClient> client_;
+  // The mock bus.
+  scoped_refptr<dbus::MockBus> mock_bus_;
+  // The mock object proxy.
+  scoped_refptr<dbus::MockObjectProxy> mock_proxy_;
+  // Response returned by mock methods.
+  dbus::Response* response_;
+  // A message loop to emulate asynchronous behavior.
+  MessageLoop message_loop_;
+  // The map from signal to signal handler.
+  std::map<std::string, dbus::ObjectProxy::SignalCallback> signal_callback_map_;
+
+ private:
+  // Used to implement the mock proxy.
+  void OnConnectToSignal(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      const dbus::ObjectProxy::SignalCallback& signal_callback,
+      const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
+    signal_callback_map_[signal_name] = signal_callback;
+    const bool success = true;
+    message_loop_.PostTask(FROM_HERE, base::Bind(on_connected_callback,
+                                                 interface_name,
+                                                 signal_name,
+                                                 success));
+  }
+};
+
+TEST_F(IBusInputContextClientTest, CommitTextHandler) {
+  const char kSampleText[] = "Sample Text";
+  IBusText ibus_text;
+  ibus_text.set_text(kSampleText);
+
+  // Set handler expectations.
+  MockCommitTextHandler handler;
+  EXPECT_CALL(handler, Run(IBusTextEq(&ibus_text)));
+  client_->SetCommitTextHandler(base::Bind(&MockCommitTextHandler::Run,
+                                           base::Unretained(&handler)));
+  message_loop_.RunAllPending();
+
+  // Emit signal.
+  dbus::Signal signal(kInputContextInterface, kCommitTextSignal);
+  dbus::MessageWriter writer(&signal);
+  AppendIBusText(ibus_text, &writer);
+  ASSERT_FALSE(signal_callback_map_[kCommitTextSignal].is_null());
+  signal_callback_map_[kCommitTextSignal].Run(&signal);
+
+  // Unset the handler so expect not calling handler.
+  client_->UnsetCommitTextHandler();
+  signal_callback_map_[kCommitTextSignal].Run(&signal);
+}
+
+TEST_F(IBusInputContextClientTest, ForwardKeyEventHandlerTest) {
+  // Set handler expectations.
+  MockForwardKeyEventHandler handler;
+  EXPECT_CALL(handler, Run(kKeyval, kKeycode, kState));
+  client_->SetForwardKeyEventHandler(
+      base::Bind(&MockForwardKeyEventHandler::Run,
+                 base::Unretained(&handler)));
+  message_loop_.RunAllPending();
+
+  // Emit signal.
+  dbus::Signal signal(kInputContextInterface, kForwardKeyEventSignal);
+  dbus::MessageWriter writer(&signal);
+  writer.AppendUint32(kKeyval);
+  writer.AppendUint32(kKeycode);
+  writer.AppendUint32(kState);
+  ASSERT_FALSE(signal_callback_map_[kForwardKeyEventSignal].is_null());
+  signal_callback_map_[kForwardKeyEventSignal].Run(&signal);
+
+  // Unset the handler so expect not calling handler.
+  client_->UnsetForwardKeyEventHandler();
+  signal_callback_map_[kForwardKeyEventSignal].Run(&signal);
+}
+
+TEST_F(IBusInputContextClientTest, HidePreeditTextHandlerTest) {
+  // Set handler expectations.
+  MockHidePreeditTextHandler handler;
+  EXPECT_CALL(handler, Run());
+  client_->SetHidePreeditTextHandler(
+      base::Bind(&MockHidePreeditTextHandler::Run,
+                 base::Unretained(&handler)));
+  message_loop_.RunAllPending();
+
+  // Emit signal.
+  dbus::Signal signal(kInputContextInterface, kHidePreeditTextSignal);
+  ASSERT_FALSE(signal_callback_map_[kHidePreeditTextSignal].is_null());
+  signal_callback_map_[kHidePreeditTextSignal].Run(&signal);
+
+  // Unset the handler so expect not calling handler.
+  client_->UnsetHidePreeditTextHandler();
+  signal_callback_map_[kHidePreeditTextSignal].Run(&signal);
+}
+
+TEST_F(IBusInputContextClientTest, ShowPreeditTextHandlerTest) {
+  // Set handler expectations.
+  MockShowPreeditTextHandler handler;
+  EXPECT_CALL(handler, Run());
+  client_->SetShowPreeditTextHandler(
+      base::Bind(&MockShowPreeditTextHandler::Run,
+                 base::Unretained(&handler)));
+  message_loop_.RunAllPending();
+
+  // Emit signal.
+  dbus::Signal signal(kInputContextInterface, kShowPreeditTextSignal);
+  ASSERT_FALSE(signal_callback_map_[kShowPreeditTextSignal].is_null());
+  signal_callback_map_[kShowPreeditTextSignal].Run(&signal);
+
+  // Unset the handler so expect not calling handler.
+  client_->UnsetShowPreeditTextHandler();
+  signal_callback_map_[kShowPreeditTextSignal].Run(&signal);
+}
+
+TEST_F(IBusInputContextClientTest, UpdatePreeditTextHandlerTest) {
+  const uint32 kCursorPos = 20;
+  const bool kVisible = false;
+  const char kSampleText[] = "Sample Text";
+  IBusText ibus_text;
+  ibus_text.set_text(kSampleText);
+
+  // Set handler expectations.
+  MockUpdatePreeditTextHandler handler;
+  EXPECT_CALL(handler, Run(IBusTextEq(&ibus_text), kCursorPos, kVisible));
+  client_->SetUpdatePreeditTextHandler(
+      base::Bind(&MockUpdatePreeditTextHandler::Run,
+                 base::Unretained(&handler)));
+  message_loop_.RunAllPending();
+
+  // Emit signal.
+  dbus::Signal signal(kInputContextInterface, kUpdatePreeditTextSignal);
+  dbus::MessageWriter writer(&signal);
+  AppendIBusText(ibus_text, &writer);
+  writer.AppendUint32(kCursorPos);
+  writer.AppendBool(kVisible);
+  ASSERT_FALSE(signal_callback_map_[kUpdatePreeditTextSignal].is_null());
+  signal_callback_map_[kUpdatePreeditTextSignal].Run(&signal);
+
+  // Unset the handler so expect not calling handler.
+  client_->UnsetUpdatePreeditTextHandler();
+  signal_callback_map_[kUpdatePreeditTextSignal].Run(&signal);
+}
+
+TEST_F(IBusInputContextClientTest, FocusInTest) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+      .WillOnce(Invoke(this, &IBusInputContextClientTest::OnFocusIn));
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // Call FocusIn.
+  client_->FocusIn();
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusInputContextClientTest, FocusOutTest) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+      .WillOnce(Invoke(this, &IBusInputContextClientTest::OnFocusOut));
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // Call FocusOut.
+  client_->FocusOut();
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusInputContextClientTest, ResetTest) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+      .WillOnce(Invoke(this, &IBusInputContextClientTest::OnReset));
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // Call Reset.
+  client_->Reset();
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusInputContextClientTest, SetCapabilitiesTest) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+      .WillOnce(Invoke(this, &IBusInputContextClientTest::OnSetCapabilities));
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // Call SetCapabilities.
+  client_->SetCapabilities(kCapabilities);
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusInputContextClientTest, SetCursorLocationTest) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+      .WillOnce(Invoke(this, &IBusInputContextClientTest::OnSetCursorLocation));
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // Call SetCursorLocation.
+  client_->SetCursorLocation(kCursorX, kCursorY, kCursorWidth, kCursorHeight);
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusInputContextClientTest, OnProcessKeyEvent) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+      .WillOnce(Invoke(this, &IBusInputContextClientTest::OnProcessKeyEvent));
+  MockProcessKeyEventHandler callback;
+  EXPECT_CALL(callback, Run(kIsKeyHandled));
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendBool(kIsKeyHandled);
+  response_ = response.get();
+
+  // Call ProcessKeyEvent.
+  client_->ProcessKeyEvent(kKeyval,
+                           kKeycode,
+                           kState,
+                           base::Bind(&MockProcessKeyEventHandler::Run,
+                                      base::Unretained(&callback)));
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+}  // namespace chromeos
