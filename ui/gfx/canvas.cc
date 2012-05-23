@@ -272,7 +272,8 @@ void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
                  SkFloatToScalar(1.0f / bitmap_scale));
   canvas_->drawBitmap(bitmap,
                       SkFloatToScalar(x * bitmap_scale),
-                      SkFloatToScalar(y * bitmap_scale));
+                      SkFloatToScalar(y * bitmap_scale),
+                      &paint);
   canvas_->restore();
 }
 
@@ -315,7 +316,7 @@ void Canvas::DrawBitmapInt(const gfx::ImageSkia& image,
                        SkIntToScalar(dest_y + dest_h) };
 
   if (src_w == dest_w && src_h == dest_h &&
-      bitmap_scale == 1.0f && bitmap_scale == 1.0f) {
+      user_scale_x == 1.0f && user_scale_y == 1.0f && bitmap_scale == 1.0f) {
     // Workaround for apparent bug in Skia that causes image to occasionally
     // shift.
     SkIRect src_rect = { src_x, src_y, src_x + src_w, src_y + src_h };
