@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
  * Viewport class controls the way the image is displayed (scale, offset etc).
+ * @constructor
  */
 function Viewport() {
   this.imageBounds_ = new Rect();
@@ -24,16 +25,27 @@ function Viewport() {
  * Viewport modification.
  */
 
+/**
+ * @param {object} scaleControl The UI object responsible for scaling.
+ */
 Viewport.prototype.setScaleControl = function(scaleControl) {
   this.scaleControl_ = scaleControl;
 };
 
+/**
+ * @param {number} width Image width.
+ * @param {number} height Image height.
+ */
 Viewport.prototype.setImageSize = function(width, height) {
   this.imageBounds_ = new Rect(width, height);
   if (this.scaleControl_) this.scaleControl_.displayImageSize(width, height);
   this.invalidateCaches();
 };
 
+/**
+ * @param {number} width Screen width.
+ * @param {number} height Screen height.
+ */
 Viewport.prototype.setScreenSize = function(width, height) {
   this.screenBounds_ = new Rect(width, height);
   if (this.scaleControl_)
@@ -41,10 +53,20 @@ Viewport.prototype.setScreenSize = function(width, height) {
   this.invalidateCaches();
 };
 
+/**
+ * Set the size by an HTML element.
+ *
+ * @param {HTMLElement} frame The element acting as the "screen".
+ */
 Viewport.prototype.sizeByFrame = function(frame) {
   this.setScreenSize(frame.clientWidth, frame.clientHeight);
 };
 
+/**
+ * Set the size and scale to fit an HTML element.
+ *
+ * @param {HTMLElement} frame The element acting as the "screen".
+ */
 Viewport.prototype.sizeByFrameAndFit = function(frame) {
   var wasFitting = this.getScale() == this.getFittingScale();
   this.sizeByFrame(frame);
@@ -54,8 +76,15 @@ Viewport.prototype.sizeByFrameAndFit = function(frame) {
   }
 };
 
+/**
+ * @return {number} Scale
+ */
 Viewport.prototype.getScale = function() { return this.scale_ };
 
+/**
+ * @param {number} scale The new scale.
+ * @param {boolean} notify True if the change should be reflected in the UI.
+ */
 Viewport.prototype.setScale = function(scale, notify) {
   if (this.scale_ == scale) return;
   this.scale_ = scale;
@@ -63,6 +92,9 @@ Viewport.prototype.setScale = function(scale, notify) {
   this.invalidateCaches();
 };
 
+/**
+ * @return {number} Best scale to fit the current image into the current screen.
+ */
 Viewport.prototype.getFittingScale = function() {
   var scaleX = this.screenBounds_.width / this.imageBounds_.width;
   var scaleY = this.screenBounds_.height / this.imageBounds_.height;
@@ -71,16 +103,31 @@ Viewport.prototype.getFittingScale = function() {
   return Math.min(1 / this.getDevicePixelRatio(), scaleX, scaleY);
 };
 
+/**
+ * Set the scale to fit the image into the screen.
+ */
 Viewport.prototype.fitImage = function() {
   var scale = this.getFittingScale();
   if (this.scaleControl_) this.scaleControl_.setMinScale(scale);
   this.setScale(scale, true);
 };
 
-Viewport.prototype.getOffsetX = function () { return this.offsetX_ };
+/**
+ * @return {number} X-offset of the viewport.
+ */
+Viewport.prototype.getOffsetX = function() { return this.offsetX_ };
 
-Viewport.prototype.getOffsetY = function () { return this.offsetY_ };
+/**
+ * @return {number} Y-offset of the viewport.
+ */
+Viewport.prototype.getOffsetY = function() { return this.offsetY_ };
 
+/**
+ * Set the image offset in the viewport.
+ * @param {number} x X-offset.
+ * @param {number} y Y-offset.
+ * @param {boolean} ignoreClipping True if no clipping should be applied.
+ */
 Viewport.prototype.setOffset = function(x, y, ignoreClipping) {
   if (!ignoreClipping) {
     x = this.clampOffsetX_(x);
@@ -90,13 +137,6 @@ Viewport.prototype.setOffset = function(x, y, ignoreClipping) {
   this.offsetX_ = x;
   this.offsetY_ = y;
   this.invalidateCaches();
-};
-
-Viewport.prototype.setCenter = function(x, y, ignoreClipping) {
-  this.setOffset(
-      this.imageBounds_.width / 2 - x,
-      this.imageBounds_.height / 2 - y,
-      ignoreClipping);
 };
 
 /**
@@ -109,8 +149,9 @@ Viewport.prototype.setCenter = function(x, y, ignoreClipping) {
  * @param {function():number} scaleFunc returns the image to screen scale.
  * @param {function(number,number):boolean} hitFunc returns true if (x,y) is
  *                                                  in the valid region.
+ * @return {function} The closure to pan the image.
  */
-Viewport.prototype.createOffsetSetter = function (
+Viewport.prototype.createOffsetSetter = function(
     originalX, originalY, scaleFunc, hitFunc) {
   var originalOffsetX = this.offsetX_;
   var originalOffsetY = this.offsetY_;
@@ -157,6 +198,7 @@ Viewport.prototype.getScreenClipped = function() { return this.screenClipped_ };
  * A counter that is incremented with each viewport state change.
  * Clients that cache anything that depends on the viewport state should keep
  * track of this counter.
+ * @return {number} counter
  */
 Viewport.prototype.getCacheGeneration = function() { return this.generation_ };
 
@@ -176,18 +218,34 @@ Viewport.prototype.getImageBoundsOnScreen = function() {
  * Conversion between the screen and image coordinate spaces.
  */
 
+/**
+ * @param {number} size Size in screen coordinates.
+ * @return {number} Size in image coordinates.
+ */
 Viewport.prototype.screenToImageSize = function(size) {
   return size / this.getScale();
 };
 
+/**
+ * @param {number} x X in screen coordinates.
+ * @return {number} X in image coordinates.
+ */
 Viewport.prototype.screenToImageX = function(x) {
   return Math.round((x - this.imageOnScreen_.left) / this.getScale());
 };
 
+/**
+ * @param {number} y Y in screen coordinates.
+ * @return {number} Y in image coordinates.
+ */
 Viewport.prototype.screenToImageY = function(y) {
   return Math.round((y - this.imageOnScreen_.top) / this.getScale());
 };
 
+/**
+ * @param {Rect} rect Rectange in screen coordinates.
+ * @return {Rect} Rectange in image coordinates.
+ */
 Viewport.prototype.screenToImageRect = function(rect) {
   return new Rect(
       this.screenToImageX(rect.left),
@@ -196,18 +254,34 @@ Viewport.prototype.screenToImageRect = function(rect) {
       this.screenToImageSize(rect.height));
 };
 
+/**
+ * @param {number} size Size in image coordinates.
+ * @return {number} Size in screen coordinates.
+ */
 Viewport.prototype.imageToScreenSize = function(size) {
   return size * this.getScale();
 };
 
+/**
+ * @param {number} x X in image coordinates.
+ * @return {number} X in screen coordinates.
+ */
 Viewport.prototype.imageToScreenX = function(x) {
   return Math.round(this.imageOnScreen_.left + x * this.getScale());
 };
 
+/**
+ * @param {number} y Y in image coordinates.
+ * @return {number} Y in screen coordinates.
+ */
 Viewport.prototype.imageToScreenY = function(y) {
   return Math.round(this.imageOnScreen_.top + y * this.getScale());
 };
 
+/**
+ * @param {Rect} rect Rectange in image coordinates.
+ * @return {Rect} Rectange in screen coordinates.
+ */
 Viewport.prototype.imageToScreenRect = function(rect) {
   return new Rect(
       this.imageToScreenX(rect.left),
@@ -252,33 +326,47 @@ Viewport.prototype.getDeviceClipped = function() {
 };
 
 /**
- * @return {Boolean} True if some part of the image is clipped by the screen.
+ * @return {boolean} True if some part of the image is clipped by the screen.
  */
-Viewport.prototype.isClipped = function () {
+Viewport.prototype.isClipped = function() {
   return this.getMarginX_() < 0 || this.getMarginY_() < 0;
 };
 
 /**
- * Horizontal margin. Negative if the image is clipped horizontally.
+ * @return {number} Horizontal margin.
+ *   Negative if the image is clipped horizontally.
+ * @private
  */
 Viewport.prototype.getMarginX_ = function() {
   return Math.round(
-    (this.screenBounds_.width  - this.imageBounds_.width * this.scale_) / 2);
+    (this.screenBounds_.width - this.imageBounds_.width * this.scale_) / 2);
 };
 
 /**
- * Vertical margin. Negative if the image is clipped vertically.
+ * @return {number} Vertical margin.
+ *   Negative if the image is clipped vertically.
+ * @private
  */
 Viewport.prototype.getMarginY_ = function() {
   return Math.round(
     (this.screenBounds_.height - this.imageBounds_.height * this.scale_) / 2);
 };
 
+/**
+ * @param {number} x X-offset.
+ * @return {number} X-offset clamped to the valid range.
+ * @private
+ */
 Viewport.prototype.clampOffsetX_ = function(x) {
   var limit = Math.round(Math.max(0, -this.getMarginX_() / this.getScale()));
   return ImageUtil.clamp(-limit, x, limit);
 };
 
+/**
+ * @param {number} y Y-offset.
+ * @return {number} Y-offset clamped to the valid range.
+ * @private
+ */
 Viewport.prototype.clampOffsetY_ = function(y) {
   var limit = Math.round(Math.max(0, -this.getMarginY_() / this.getScale()));
   return ImageUtil.clamp(-limit, y, limit);
@@ -325,11 +413,17 @@ Viewport.prototype.update = function() {
   }
 };
 
-Viewport.prototype.addRepaintCallback = function (callback) {
+/**
+ * @param {function} callback Repaint callback.
+ */
+Viewport.prototype.addRepaintCallback = function(callback) {
   this.repaintCallbacks_.push(callback);
 };
 
-Viewport.prototype.repaint = function () {
+/**
+ * Repaint all clients.
+ */
+Viewport.prototype.repaint = function() {
   this.update();
   for (var i = 0; i != this.repaintCallbacks_.length; i++)
     this.repaintCallbacks_[i]();

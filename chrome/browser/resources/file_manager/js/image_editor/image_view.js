@@ -4,6 +4,9 @@
 
 /**
  * The overlay displaying the image.
+ * @param {HTMLElement} container The container element.
+ * @param {Viewport} viewport The viewport.
+ * @param {MetadataProvider} metadataProvider The metadataProvider.
  */
 function ImageView(container, viewport, metadataProvider) {
   this.container_ = container;
@@ -43,22 +46,64 @@ function ImageView(container, viewport, metadataProvider) {
   };
 }
 
+/**
+ * Duration of image editing transitions.
+ */
 ImageView.ANIMATION_DURATION = 180;
+
+/**
+ * A timeout for use with setTimeout when one wants to wait until the animation
+ * is done. Times 2 is added as a safe margin.
+ */
 ImageView.ANIMATION_WAIT_INTERVAL = ImageView.ANIMATION_DURATION * 2;
+
+/**
+ * If the user flips though images faster than this interval we do not apply
+ * the slide-in/slide-out transition.
+ */
 ImageView.FAST_SCROLL_INTERVAL = 300;
 
+/**
+ * Image load type: full resolution image loaded from cache.
+ */
 ImageView.LOAD_TYPE_CACHED_FULL = 0;
+
+/**
+ * Image load type: screeb resolution preview loaded from cache.
+ */
 ImageView.LOAD_TYPE_CACHED_SCREEN = 1;
+
+/**
+ * Image load type: image read from file.
+ */
 ImageView.LOAD_TYPE_IMAGE_FILE = 2;
+
+/**
+ * Image load type: video loaded.
+ */
 ImageView.LOAD_TYPE_VIDEO_FILE = 3;
+
+/**
+ * Image load type: error occurred.
+ */
 ImageView.LOAD_TYPE_ERROR = 4;
+
+/**
+ * The total number of load types.
+ */
 ImageView.LOAD_TYPE_TOTAL = 5;
 
 ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 
-// Draw below overlays with the default zIndex.
+/**
+ * Draw below overlays with the default zIndex.
+ * @return {number} Z-index
+ */
 ImageView.prototype.getZIndex = function() { return -1 };
 
+/**
+ * Draw the image on screen.
+ */
 ImageView.prototype.draw = function() {
   if (!this.contentCanvas_)  // Do nothing if the image content is not set.
     return;
@@ -85,7 +130,13 @@ ImageView.prototype.draw = function() {
   }
 };
 
-ImageView.prototype.getCursorStyle = function (x, y, mouseDown) {
+/**
+ * @param {number} x X pointer position.
+ * @param {number} y Y pointer position.
+ * @param {boolean} mouseDown True if mouse is down.
+ * @return {string} CSS cursor style.
+ */
+ImageView.prototype.getCursorStyle = function(x, y, mouseDown) {
   // Indicate that the image is draggable.
   if (this.viewport_.isClipped() &&
       this.viewport_.getScreenClipped().inside(x, y))
@@ -94,7 +145,12 @@ ImageView.prototype.getCursorStyle = function (x, y, mouseDown) {
   return null;
 };
 
-ImageView.prototype.getDragHandler = function (x, y) {
+/**
+ * @param {number} x X pointer position.
+ * @param {number} y Y pointer position.
+ * @return {function} The closure to call on drag.
+ */
+ImageView.prototype.getDragHandler = function(x, y) {
   var cursor = this.getCursorStyle(x, y);
   if (cursor == 'move') {
     // Return the handler that drags the entire image.
@@ -104,24 +160,45 @@ ImageView.prototype.getDragHandler = function (x, y) {
   return null;
 };
 
+/**
+ * @return {number} The cache generation.
+ */
 ImageView.prototype.getCacheGeneration = function() {
   return this.contentGeneration_;
 };
 
+/**
+ * Invalidate the caches to force redrawing the screen canvas.
+ */
 ImageView.prototype.invalidateCaches = function() {
   this.contentGeneration_++;
 };
 
+/**
+ * @return {HTMLCanvasElement} The content canvas element.
+ */
 ImageView.prototype.getCanvas = function() { return this.contentCanvas_ };
 
+/**
+ * @return {boolean} True if the a valid image is currently loaded.
+ */
 ImageView.prototype.hasValidImage = function() {
   return !this.preview_ && this.contentCanvas_ && this.contentCanvas_.width;
 };
 
+/**
+ * @return {HTMLVideoElement} The video element.
+ */
 ImageView.prototype.getVideo = function() { return this.videoElement_ };
 
+/**
+ * @return {HTMLCanvasElement} The cached thumbnail image.
+ */
 ImageView.prototype.getThumbnail = function() { return this.thumbnailCanvas_ };
 
+/**
+ * @return {number} The content revision number.
+ */
 ImageView.prototype.getContentRevision = function() {
   return this.contentRevision_;
 };
@@ -134,7 +211,7 @@ ImageView.prototype.getContentRevision = function() {
  * @param {HTMLCanvasElement} canvas Full resolution canvas.
  * @param {Rect} imageRect Rectangle in the full resolution canvas.
  */
-ImageView.prototype.paintDeviceRect = function (deviceRect, canvas, imageRect) {
+ImageView.prototype.paintDeviceRect = function(deviceRect, canvas, imageRect) {
   // Map screen canvas (0,0) to (deviceBounds.left, deviceBounds.top)
   var deviceBounds = this.viewport_.getDeviceClipped();
   deviceRect = deviceRect.shift(-deviceBounds.left, -deviceBounds.top);
@@ -147,7 +224,7 @@ ImageView.prototype.paintDeviceRect = function (deviceRect, canvas, imageRect) {
   imageRect = new Rect(imageRect.left * scaleX, imageRect.top * scaleY,
                        imageRect.width * scaleX, imageRect.height * scaleY);
   Rect.drawImage(
-      this.screenImage_.getContext("2d"), canvas, deviceRect, imageRect);
+      this.screenImage_.getContext('2d'), canvas, deviceRect, imageRect);
 };
 
 /**
@@ -188,15 +265,21 @@ ImageView.prototype.setupDeviceBuffer = function(canvas) {
 /**
  * @return {ImageData} A new ImageData object with a copy of the content.
  */
-ImageView.prototype.copyScreenImageData = function () {
-  return this.screenImage_.getContext("2d").getImageData(
+ImageView.prototype.copyScreenImageData = function() {
+  return this.screenImage_.getContext('2d').getImageData(
       0, 0, this.screenImage_.width, this.screenImage_.height);
 };
 
+/**
+ * @return {boolean} True if the image is currently being loaded.
+ */
 ImageView.prototype.isLoading = function() {
   return this.imageLoader_.isBusy();
 };
 
+/**
+ * Cancel the current image loading operation. The callbacks will be ignored.
+ */
 ImageView.prototype.cancelLoad = function() {
   this.imageLoader_.cancel();
 };
@@ -207,16 +290,16 @@ ImageView.prototype.cancelLoad = function() {
  * Loads the thumbnail first, then replaces it with the main image.
  * Takes into account the image orientation encoded in the metadata.
  *
- * @param {number} id Unique image id for caching purposes
- * @param {string|HTMLCanvasElement} source
- * @param {Object} metadata
+ * @param {number} id Unique image id for caching purposes.
+ * @param {string} url Image url.
+ * @param {Object} metadata Metadata.
  * @param {Object} slide Slide-in animation direction.
  * @param {function(number} opt_callback The parameter is the load type.
  */
 ImageView.prototype.load = function(
-    id, source, metadata, slide, opt_callback) {
+    id, url, metadata, slide, opt_callback) {
 
-  metadata = metadata|| {};
+  metadata = metadata || {};
 
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('DisplayTime'));
 
@@ -225,7 +308,7 @@ ImageView.prototype.load = function(
   this.contentID_ = id;
   this.contentRevision_ = -1;
 
-  var loadingVideo = FileType.getMediaType(source) == 'video';
+  var loadingVideo = FileType.getMediaType(url) == 'video';
   if (loadingVideo) {
     var video = this.document_.createElement('video');
     if (metadata.thumbnailURL) {
@@ -236,7 +319,7 @@ ImageView.prototype.load = function(
     video.addEventListener('error', onVideoLoad);
 
     // Do not try no stream when offline.
-    video.src = (navigator.onLine && metadata.streamingURL) || source;
+    video.src = (navigator.onLine && metadata.streamingURL) || url;
     video.load();
 
     function onVideoLoad() {
@@ -247,10 +330,10 @@ ImageView.prototype.load = function(
     }
     return;
   }
-  var readyContent = this.getReadyContent(id, source);
-  if (readyContent) {
+  var cached = this.contentCache_.getItem(id);
+  if (cached) {
     displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL, slide,
-        false /* no preview */, readyContent);
+        false /* no preview */, cached);
   } else {
     var cachedScreen = this.screenCache_.getItem(id);
     if (cachedScreen) {
@@ -265,7 +348,7 @@ ImageView.prototype.load = function(
           function(url, callback) { callback(metadata.thumbnailTransform); },
           displayThumbnail.bind(null, ImageView.LOAD_TYPE_IMAGE_FILE, slide));
     } else {
-      loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, slide, source,
+      loadMainImage(ImageView.LOAD_TYPE_IMAGE_FILE, slide, url,
           false /* no preview*/, 0 /* delay */);
     }
   }
@@ -290,8 +373,8 @@ ImageView.prototype.load = function(
         // We do not know the main image size, but chances are that it is large
         // enough. Show the thumbnail at the maximum possible scale.
         var bounds = self.viewport_.getScreenBounds();
-        var scale = Math.min (bounds.width / canvas.width,
-                              bounds.height / canvas.height);
+        var scale = Math.min(bounds.width / canvas.width,
+                             bounds.height / canvas.height);
         self.replace(canvas, slide,
             canvas.width * scale, canvas.height * scale, true /* preview */);
       } else {
@@ -304,7 +387,7 @@ ImageView.prototype.load = function(
       // Thumbnail image load failed, loading the main image immediately.
       mainImageLoadDelay = 0;
     }
-    loadMainImage(loadType, mainImageSlide, source,
+    loadMainImage(loadType, mainImageSlide, url,
         canvas.width != 0, mainImageLoadDelay);
   }
 
@@ -358,47 +441,44 @@ ImageView.prototype.load = function(
 };
 
 /**
- * Try to get the canvas from the content cache or from the source.
- *
- * @param {number} id Unique image id for caching purposes
- * @param {string|HTMLCanvasElement} source
- */
-ImageView.prototype.getReadyContent = function(id, source) {
-  if (source.constructor.name == 'HTMLCanvasElement')
-    return source;
-
-  return this.contentCache_.getItem(id);
-};
-
-/**
  * Prefetch an image.
  *
- * @param {number} id Unique image id for caching purposes
- * @param {string|HTMLCanvasElement} source
+ * @param {number} id Unique image id for caching purposes.
+ * @param {string} url The image url.
  */
-ImageView.prototype.prefetch = function(id, source) {
+ImageView.prototype.prefetch = function(id, url) {
   var self = this;
   function prefetchDone(canvas) {
     if (canvas.width)
       self.contentCache_.putItem(id, canvas);
   }
 
-  var cached = this.getReadyContent(id, source);
+  var cached = this.contentCache_.getItem(id);
   if (cached) {
     prefetchDone(cached);
-  } else if (FileType.getMediaType(source) == 'image') {
+  } else if (FileType.getMediaType(url) == 'image') {
     // Evict the LRU item before we allocate the new canvas to avoid unneeded
     // strain on memory.
     this.contentCache_.evictLRU();
 
     this.prefetchLoader_.load(
-        source,
+        url,
         this.localImageTransformFetcher_,
         prefetchDone,
         ImageView.ANIMATION_WAIT_INTERVAL);
   }
 };
 
+/**
+ *
+ * @param {HTMLCanvasElement|HTMLVideoElement} content The image element.
+ * @param {boolean} opt_reuseScreenCanvas True if it is OK to reuse the screen
+ *   resolution canvas.
+ * @param {number} opt_width Image width.
+ * @param {number} opt_height Image height.
+ * @param {boolean} opt_preview True if the image is a preview (not full res).
+ * @private
+ */
 ImageView.prototype.replaceContent_ = function(
     content, opt_reuseScreenCanvas, opt_width, opt_height, opt_preview) {
 
@@ -445,17 +525,27 @@ ImageView.prototype.replaceContent_ = function(
     for (var i = 0; i != this.contentCallbacks_.length; i++) {
       try {
         this.contentCallbacks_[i]();
-      } catch(e) {
+      } catch (e) {
         console.error(e);
       }
     }
   }
 };
 
+/**
+ * Add a listener for content changes.
+ * @param {function} callback Callback.
+ */
 ImageView.prototype.addContentCallback = function(callback) {
   this.contentCallbacks_.push(callback);
 };
 
+/**
+ * Update the cached thumbnail image.
+ *
+ * @param {HTMLCanvasElement} canvas The source canvas.
+ * @private
+ */
 ImageView.prototype.updateThumbnail_ = function(canvas) {
   ImageUtil.trace.resetTimer('thumb');
   var pixelCount = 10000;
@@ -472,9 +562,12 @@ ImageView.prototype.updateThumbnail_ = function(canvas) {
 /**
  * Replace the displayed image, possibly with slide-in animation.
  *
- * @param {HTMLCanvasElement|HTMLVideoElement} content
+ * @param {HTMLCanvasElement|HTMLVideoElement} content The image element.
  * @param {number} opt_slide Slide-in animation direction.
  *           <0 for right-to-left, > 0 for left-to-right, 0 for no animation.
+ * @param {number} opt_width Image width.
+ * @param {number} opt_height Image height.
+ * @param {boolean} opt_preview True if the image is a preview (not full res).
  */
 ImageView.prototype.replace = function(
     content, opt_slide, opt_width, opt_height, opt_preview) {
@@ -633,14 +726,31 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
 };
 
 
+/**
+ * Generic cache with a limited capacity and LRU eviction.
+ *
+ * @param {number} capacity Maximum number of cached item.
+ */
 ImageView.Cache = function(capacity) {
   this.capacity_ = capacity;
   this.map_ = {};
   this.order_ = [];
 };
 
+/**
+ * Fetch the item from the cache.
+ *
+ * @param {string} id The item ID.
+ * @return {object} The cached item.
+ */
 ImageView.Cache.prototype.getItem = function(id) { return this.map_[id] };
 
+/**
+ * Put the item into the cache.
+ * @param {string} id The item ID.
+ * @param {object} item The item object.
+ * @param {boolean} opt_keepLRU True if the LRU order should not be modified.
+ */
 ImageView.Cache.prototype.putItem = function(id, item, opt_keepLRU) {
   var pos = this.order_.indexOf(id);
 
@@ -664,6 +774,9 @@ ImageView.Cache.prototype.putItem = function(id, item, opt_keepLRU) {
     throw new Error('Exceeded cache capacity');
 };
 
+/**
+ * Evict the least recently used items.
+ */
 ImageView.Cache.prototype.evictLRU = function() {
   if (this.order_.length == this.capacity_) {
     var id = this.order_.shift();
