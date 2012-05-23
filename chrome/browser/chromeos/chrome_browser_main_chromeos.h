@@ -19,6 +19,10 @@ class SessionManagerObserver;
 class VideoPropertyWriter;
 }  // namespace chromeos
 
+namespace policy {
+class NetworkConfigurationUpdater;
+}  // namespace policy
+
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  public:
   explicit ChromeBrowserMainPartsChromeos(
@@ -52,6 +56,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::PowerStateOverride> power_state_override_;
   scoped_ptr<chromeos::VideoPropertyWriter> video_property_writer_;
   scoped_ptr<chromeos::ScreenDimmingObserver> screen_dimming_observer_;
+  scoped_ptr<policy::NetworkConfigurationUpdater> network_config_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

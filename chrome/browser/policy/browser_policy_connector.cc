@@ -41,7 +41,6 @@
 #include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/cros_user_policy_cache.h"
 #include "chrome/browser/policy/device_policy_cache.h"
-#include "chrome/browser/policy/network_configuration_updater.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
@@ -140,13 +139,6 @@ void BrowserPolicyConnector::Init() {
   }
 
   InitializeDevicePolicy();
-
-  if (command_line->HasSwitch(switches::kEnableONCPolicy)) {
-    network_configuration_updater_.reset(
-        new NetworkConfigurationUpdater(
-            managed_cloud_provider_.get(),
-            chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
-  }
 
   // Create the AppPackUpdater to start updating the cache. It requires the
   // system request context, which isn't available yet; therefore it is

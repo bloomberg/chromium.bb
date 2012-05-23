@@ -57,6 +57,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/network_configuration_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -390,6 +391,13 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
       profile()->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
   }
 
+  if (parsed_command_line().HasSwitch(switches::kEnableONCPolicy)) {
+    network_config_updater_.reset(
+        new policy::NetworkConfigurationUpdater(
+            g_browser_process->policy_service(),
+            chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+  }
+
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
   if (!parameters().ui_task)
@@ -496,6 +504,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Detach D-Bus clients before DBusThreadManager is shut down.
   power_button_observer_.reset();
   screen_dimming_observer_.reset();
+
+  // Delete the NetworkConfigurationUpdater while |g_browser_process| is still
+  // alive.
+  network_config_updater_.reset();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 }

@@ -434,11 +434,13 @@ policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
   DCHECK(CalledOnValidThread());
   if (!created_browser_policy_connector_) {
     DCHECK(browser_policy_connector_.get() == NULL);
-    created_browser_policy_connector_ = true;
 #if defined(ENABLE_CONFIGURATION_POLICY)
     browser_policy_connector_.reset(new policy::BrowserPolicyConnector());
     browser_policy_connector_->Init();
 #endif
+    // Init() should not reenter this function. Updating
+    // |created_browser_policy_connector_| here makes reentering hit the DCHECK.
+    created_browser_policy_connector_ = true;
   }
   return browser_policy_connector_.get();
 }

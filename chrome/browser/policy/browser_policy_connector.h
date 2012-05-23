@@ -26,9 +26,7 @@ class CloudPolicyDataStore;
 class CloudPolicyProvider;
 class CloudPolicySubsystem;
 class ConfigurationPolicyProvider;
-class NetworkConfigurationUpdater;
 class PolicyService;
-class PolicyServiceImpl;
 class UserPolicyTokenCache;
 
 // Manages the lifecycle of browser-global policy infrastructure, such as the
@@ -163,8 +161,6 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   scoped_ptr<CloudPolicyDataStore> device_data_store_;
   scoped_ptr<CloudPolicySubsystem> device_cloud_policy_subsystem_;
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
-
-  scoped_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
 #endif
 
   scoped_ptr<UserPolicyTokenCache> user_policy_token_cache_;
