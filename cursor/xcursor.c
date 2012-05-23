@@ -313,7 +313,7 @@ _XcursorReadFileHeader (XcursorFile *file)
 {
     XcursorFileHeader	head, *fileHeader;
     XcursorUInt		skip;
-    int			n;
+    unsigned int	n;
 
     if (!file)
         return NULL;
@@ -399,7 +399,7 @@ _XcursorFindBestSize (XcursorFileHeader *fileHeader,
 		      XcursorDim	size,
 		      int		*nsizesp)
 {
-    int		n;
+    unsigned int n;
     int		nsizes = 0;
     XcursorDim	bestSize = 0;
     XcursorDim	thisSize;
@@ -429,7 +429,7 @@ _XcursorFindImageToc (XcursorFileHeader	*fileHeader,
 		      XcursorDim	size,
 		      int		count)
 {
-    int			toc;
+    unsigned int	toc;
     XcursorDim		thisSize;
 
     if (!fileHeader)
