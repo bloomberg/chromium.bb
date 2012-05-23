@@ -25,6 +25,8 @@
  *
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,7 +40,6 @@ struct wl_shm_pool {
 	int refcount;
 	char *data;
 	int size;
-	int fd;
 };
 
 struct wl_shm_buffer {
@@ -57,7 +58,6 @@ shm_pool_unref(struct wl_shm_pool *pool)
 		return;
 
 	munmap(pool->data, pool->size);
-	close(pool->fd);
 	free(pool);
 }
 
@@ -160,17 +160,15 @@ shm_pool_resize(struct wl_client *client, struct wl_resource *resource,
 	struct wl_shm_pool *pool = resource->data;
 	void *data;
 
-	data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED,
-		    pool->fd, 0);
+	data = mremap(pool->data, pool->size, size, MREMAP_MAYMOVE);
 
 	if (data == MAP_FAILED) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FD,
-				       "failed mmap fd %d", pool->fd);
+				       "failed mremap");
 		return;
 	}
 
-	munmap(pool->data, pool->size);
 	pool->data = data;
 	pool->size = size;
 }
@@ -203,10 +201,10 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	pool->refcount = 1;
-	pool->fd = fd;
 	pool->size = size;
 	pool->data = mmap(NULL, size,
 			  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	close(fd);
 	if (pool->data == MAP_FAILED) {
 		wl_resource_post_error(resource,
 				       WL_SHM_ERROR_INVALID_FD,
