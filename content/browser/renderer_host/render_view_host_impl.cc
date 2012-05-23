@@ -964,55 +964,40 @@ bool RenderViewHostImpl::IsRenderView() const {
 void RenderViewHostImpl::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (!view)
-    return;
-
-  view->CreateNewWindow(route_id, params);
+  delegate_->CreateNewWindow(route_id, params);
 }
 
 void RenderViewHostImpl::CreateNewWidget(int route_id,
                                      WebKit::WebPopupType popup_type) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view)
-    view->CreateNewWidget(route_id, popup_type);
+  delegate_->CreateNewWidget(route_id, popup_type);
 }
 
 void RenderViewHostImpl::CreateNewFullscreenWidget(int route_id) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view)
-    view->CreateNewFullscreenWidget(route_id);
+  delegate_->CreateNewFullscreenWidget(route_id);
 }
 
 void RenderViewHostImpl::OnMsgShowView(int route_id,
                                        WindowOpenDisposition disposition,
                                        const gfx::Rect& initial_pos,
                                        bool user_gesture) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view) {
-    if (!is_swapped_out_)
-      view->ShowCreatedWindow(route_id, disposition, initial_pos, user_gesture);
-    Send(new ViewMsg_Move_ACK(route_id));
+  if (!is_swapped_out_) {
+    delegate_->ShowCreatedWindow(
+        route_id, disposition, initial_pos, user_gesture);
   }
+  Send(new ViewMsg_Move_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnMsgShowWidget(int route_id,
                                          const gfx::Rect& initial_pos) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view) {
-    if (!is_swapped_out_)
-      view->ShowCreatedWidget(route_id, initial_pos);
-    Send(new ViewMsg_Move_ACK(route_id));
-  }
+  if (!is_swapped_out_)
+    delegate_->ShowCreatedWidget(route_id, initial_pos);
+  Send(new ViewMsg_Move_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnMsgShowFullscreenWidget(int route_id) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view) {
-    if (!is_swapped_out_)
-      view->ShowCreatedFullscreenWidget(route_id);
-    Send(new ViewMsg_Move_ACK(route_id));
-  }
+  if (!is_swapped_out_)
+    delegate_->ShowCreatedFullscreenWidget(route_id);
+  Send(new ViewMsg_Move_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnMsgRunModal(int opener_id, IPC::Message* reply_msg) {
@@ -1215,10 +1200,6 @@ void RenderViewHostImpl::OnMsgDocumentOnLoadCompletedInMainFrame(
 
 void RenderViewHostImpl::OnMsgContextMenu(
     const content::ContextMenuParams& params) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (!view)
-    return;
-
   // Validate the URLs in |params|.  If the renderer can't request the URLs
   // directly, don't show them in the context menu.
   content::ContextMenuParams validated_params(params);
@@ -1233,7 +1214,7 @@ void RenderViewHostImpl::OnMsgContextMenu(
   FilterURL(policy, renderer_id, false, &validated_params.page_url);
   FilterURL(policy, renderer_id, true, &validated_params.frame_url);
 
-  view->ShowContextMenu(validated_params);
+  delegate_->ShowContextMenu(validated_params);
 }
 
 void RenderViewHostImpl::OnMsgToggleFullscreen(bool enter_fullscreen) {

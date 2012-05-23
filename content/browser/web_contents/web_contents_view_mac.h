@@ -13,7 +13,6 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/web_contents/web_contents_view_helper.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/size.h"
@@ -81,19 +80,6 @@ class WebContentsViewMac : public content::WebContentsView {
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
-  virtual void CreateNewWindow(
-      int route_id,
-      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
-  virtual void CreateNewWidget(int route_id,
-                               WebKit::WebPopupType popup_type) OVERRIDE;
-  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
-  virtual void ShowCreatedWindow(int route_id,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture) OVERRIDE;
-  virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos) OVERRIDE;
-  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,
@@ -114,9 +100,6 @@ class WebContentsViewMac : public content::WebContentsView {
  private:
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
-
-  // Common implementations of some WebContentsView methods.
-  WebContentsViewHelper web_contents_view_helper_;
 
   // The Cocoa NSView that lives in the view hierarchy.
   scoped_nsobject<WebContentsViewCocoa> cocoa_view_;

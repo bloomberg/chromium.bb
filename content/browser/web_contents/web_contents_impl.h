@@ -367,6 +367,21 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
   virtual void RequestToLockMouse(bool user_gesture) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
+  virtual void CreateNewWindow(
+      int route_id,
+      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
+  virtual void CreateNewWidget(int route_id,
+                               WebKit::WebPopupType popup_type) OVERRIDE;
+  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
+  virtual void ShowCreatedWindow(int route_id,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) OVERRIDE;
+  virtual void ShowCreatedWidget(int route_id,
+                                 const gfx::Rect& initial_pos) OVERRIDE;
+  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
+  virtual void ShowContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 
@@ -559,6 +574,25 @@ class CONTENT_EXPORT WebContentsImpl
   // this tab's RenderView for |instance|.
   int CreateOpenerRenderViews(content::SiteInstance* instance);
 
+  // Helper for CreateNewWidget/CreateNewFullscreenWidget.
+  void CreateNewWidget(int route_id,
+                       bool is_fullscreen,
+                       WebKit::WebPopupType popup_type);
+
+  // Helper for ShowCreatedWidget/ShowCreatedFullscreenWidget.
+  void ShowCreatedWidget(int route_id,
+                         bool is_fullscreen,
+                         const gfx::Rect& initial_pos);
+
+  // Finds the new RenderWidgetHost and returns it. Note that this can only be
+  // called once as this call also removes it from the internal map.
+  content::RenderWidgetHostView* GetCreatedWidget(int route_id);
+
+  // Finds the new WebContentsImpl by route_id, initializes it for
+  // renderer-initiated creation, and returns it. Note that this can only be
+  // called once as this call also removes it from the internal map.
+  WebContentsImpl* GetCreatedWindow(int route_id);
+
   // Misc non-view stuff -------------------------------------------------------
 
   // Helper functions for sending notifications.
@@ -592,6 +626,16 @@ class CONTENT_EXPORT WebContentsImpl
 
   // The corresponding view.
   scoped_ptr<content::WebContentsView> view_;
+
+  // Tracks created WebContentsImpl objects that have not been shown yet. They
+  // are identified by the route ID passed to CreateNewWindow.
+  typedef std::map<int, WebContentsImpl*> PendingContents;
+  PendingContents pending_contents_;
+
+  // These maps hold on to the widgets that we created on behalf of the renderer
+  // that haven't shown yet.
+  typedef std::map<int, content::RenderWidgetHostView*> PendingWidgetViews;
+  PendingWidgetViews pending_widget_views_;
 
   // A list of observers notified when page state changes. Weak references.
   // This MUST be listed above render_manager_ since at destruction time the

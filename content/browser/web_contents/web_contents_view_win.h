@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "base/win/win_util.h"
-#include "content/browser/web_contents/web_contents_view_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/win/window_impl.h"
@@ -71,19 +70,6 @@ class CONTENT_EXPORT WebContentsViewWin : public content::WebContentsView,
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
   // Implementation of RenderViewHostDelegate::View.
-  virtual void CreateNewWindow(
-      int route_id,
-      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
-  virtual void CreateNewWidget(int route_id,
-                               WebKit::WebPopupType popup_type) OVERRIDE;
-  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
-  virtual void ShowCreatedWindow(int route_id,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture) OVERRIDE;
-  virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos) OVERRIDE;
-  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,
@@ -139,9 +125,6 @@ class CONTENT_EXPORT WebContentsViewWin : public content::WebContentsView,
 
   // Used to close the tab after the stack has unwound.
   base::OneShotTimer<WebContentsViewWin> close_tab_timer_;
-
-  // Common implementations of some WebContentsView methods.
-  WebContentsViewHelper web_contents_view_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewWin);
 };

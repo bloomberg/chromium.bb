@@ -112,37 +112,6 @@ void WebContentsViewAndroid::GetViewBounds(gfx::Rect* out) const {
   NOTIMPLEMENTED();
 }
 
-void WebContentsViewAndroid::CreateNewWindow(
-    int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-  NOTIMPLEMENTED();
-}
-
-void WebContentsViewAndroid::CreateNewWidget(
-    int route_id, WebKit::WebPopupType popup_type) {
-  NOTIMPLEMENTED();
-}
-
-void WebContentsViewAndroid::CreateNewFullscreenWidget(int route_id) {
-  NOTIMPLEMENTED();
-}
-
-void WebContentsViewAndroid::ShowCreatedWindow(int route_id,
-                                           WindowOpenDisposition disposition,
-                                           const gfx::Rect& initial_pos,
-                                           bool user_gesture) {
-  NOTIMPLEMENTED();
-}
-
-void WebContentsViewAndroid::ShowCreatedWidget(
-    int route_id, const gfx::Rect& initial_pos) {
-  NOTIMPLEMENTED();
-}
-
-void WebContentsViewAndroid::ShowCreatedFullscreenWidget(int route_id) {
-  NOTIMPLEMENTED();
-}
-
 void WebContentsViewAndroid::ShowContextMenu(
     const content::ContextMenuParams& params) {
   NOTIMPLEMENTED();

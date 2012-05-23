@@ -320,58 +320,8 @@ gboolean WebContentsViewGtk::OnFocus(GtkWidget* widget,
   return TRUE;
 }
 
-void WebContentsViewGtk::CreateNewWindow(
-    int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-  web_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
-}
-
-void WebContentsViewGtk::CreateNewWidget(
-    int route_id, WebKit::WebPopupType popup_type) {
-  web_contents_view_helper_.CreateNewWidget(web_contents_,
-                                            route_id,
-                                            false,
-                                            popup_type);
-}
-
-void WebContentsViewGtk::CreateNewFullscreenWidget(int route_id) {
-  web_contents_view_helper_.CreateNewWidget(web_contents_,
-                                            route_id,
-                                            true,
-                                            WebKit::WebPopupTypeNone);
-}
-
-void WebContentsViewGtk::ShowCreatedWindow(int route_id,
-                                           WindowOpenDisposition disposition,
-                                           const gfx::Rect& initial_pos,
-                                           bool user_gesture) {
-  web_contents_view_helper_.ShowCreatedWindow(
-      web_contents_, route_id, disposition, initial_pos, user_gesture);
-}
-
-void WebContentsViewGtk::ShowCreatedWidget(
-    int route_id, const gfx::Rect& initial_pos) {
-  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
-                                              route_id,
-                                              false,
-                                              initial_pos);
-}
-
-void WebContentsViewGtk::ShowCreatedFullscreenWidget(int route_id) {
-  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
-                                              route_id,
-                                              true,
-                                              gfx::Rect());
-}
-
 void WebContentsViewGtk::ShowContextMenu(
     const content::ContextMenuParams& params) {
-  // Allow delegates to handle the context menu operation first.
-  if (web_contents()->GetDelegate() &&
-      web_contents()->GetDelegate()->HandleContextMenu(params)) {
-    return;
-  }
-
   if (delegate_.get())
     delegate_->ShowContextMenu(params);
   else

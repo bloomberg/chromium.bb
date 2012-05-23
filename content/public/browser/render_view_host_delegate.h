@@ -76,54 +76,9 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // Functions that can be routed directly to a view-specific class.
   class CONTENT_EXPORT View {
    public:
-    // The page is trying to open a new page (e.g. a popup window). The window
-    // should be created associated with the given route, but it should not be
-    // shown yet. That should happen in response to ShowCreatedWindow.
-    // |params.window_container_type| describes the type of RenderViewHost
-    // container that is requested -- in particular, the window.open call may
-    // have specified 'background' and 'persistent' in the feature string.
-    //
-    // The passed |params.frame_name| parameter is the name parameter that was
-    // passed to window.open(), and will be empty if none was passed.
-    //
-    // Note: this is not called "CreateWindow" because that will clash with
-    // the Windows function which is actually a #define.
-    virtual void CreateNewWindow(
-        int route_id,
-        const ViewHostMsg_CreateWindow_Params& params) = 0;
-
-    // The page is trying to open a new widget (e.g. a select popup). The
-    // widget should be created associated with the given route, but it should
-    // not be shown yet. That should happen in response to ShowCreatedWidget.
-    // |popup_type| indicates if the widget is a popup and what kind of popup it
-    // is (select, autofill...).
-    virtual void CreateNewWidget(int route_id,
-                                 WebKit::WebPopupType popup_type) = 0;
-
-    // Creates a full screen RenderWidget. Similar to above.
-    virtual void CreateNewFullscreenWidget(int route_id) = 0;
-
-    // Show a previously created page with the specified disposition and bounds.
-    // The window is identified by the route_id passed to CreateNewWindow.
-    //
-    // Note: this is not called "ShowWindow" because that will clash with
-    // the Windows function which is actually a #define.
-    virtual void ShowCreatedWindow(int route_id,
-                                   WindowOpenDisposition disposition,
-                                   const gfx::Rect& initial_pos,
-                                   bool user_gesture) = 0;
-
-    // Show the newly created widget with the specified bounds.
-    // The widget is identified by the route_id passed to CreateNewWidget.
-    virtual void ShowCreatedWidget(int route_id,
-                                   const gfx::Rect& initial_pos) = 0;
-
-    // Show the newly created full screen widget. Similar to above.
-    virtual void ShowCreatedFullscreenWidget(int route_id) = 0;
-
     // A context menu should be shown, to be built using the context information
     // provided in the supplied params.
-    virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
+    virtual void ShowContextMenu(const content::ContextMenuParams& params) {}
 
     // The user started dragging content of the specified type within the
     // RenderView. Contextual information about the dragged content is supplied
@@ -131,19 +86,19 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
     virtual void StartDragging(const WebDropData& drop_data,
                                WebKit::WebDragOperationsMask allowed_ops,
                                const SkBitmap& image,
-                               const gfx::Point& image_offset) = 0;
+                               const gfx::Point& image_offset) {}
 
     // The page wants to update the mouse cursor during a drag & drop operation.
     // |operation| describes the current operation (none, move, copy, link.)
-    virtual void UpdateDragCursor(WebKit::WebDragOperation operation) = 0;
+    virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
 
     // Notification that view for this delegate got the focus.
-    virtual void GotFocus() = 0;
+    virtual void GotFocus() {}
 
     // Callback to inform the browser that the page is returning the focus to
     // the browser's chrome. If reverse is true, it means the focus was
     // retrieved by doing a Shift-Tab.
-    virtual void TakeFocus(bool reverse) = 0;
+    virtual void TakeFocus(bool reverse) {}
 
    protected:
     virtual ~View() {}
@@ -411,6 +366,55 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Notification that the view has lost the mouse lock.
   virtual void LostMouseLock() {}
+
+  // The page is trying to open a new page (e.g. a popup window). The window
+  // should be created associated with the given route, but it should not be
+  // shown yet. That should happen in response to ShowCreatedWindow.
+  // |params.window_container_type| describes the type of RenderViewHost
+  // container that is requested -- in particular, the window.open call may
+  // have specified 'background' and 'persistent' in the feature string.
+  //
+  // The passed |params.frame_name| parameter is the name parameter that was
+  // passed to window.open(), and will be empty if none was passed.
+  //
+  // Note: this is not called "CreateWindow" because that will clash with
+  // the Windows function which is actually a #define.
+  virtual void CreateNewWindow(
+      int route_id,
+      const ViewHostMsg_CreateWindow_Params& params) {}
+
+  // The page is trying to open a new widget (e.g. a select popup). The
+  // widget should be created associated with the given route, but it should
+  // not be shown yet. That should happen in response to ShowCreatedWidget.
+  // |popup_type| indicates if the widget is a popup and what kind of popup it
+  // is (select, autofill...).
+  virtual void CreateNewWidget(int route_id,
+                               WebKit::WebPopupType popup_type) {}
+
+  // Creates a full screen RenderWidget. Similar to above.
+  virtual void CreateNewFullscreenWidget(int route_id) {}
+
+  // Show a previously created page with the specified disposition and bounds.
+  // The window is identified by the route_id passed to CreateNewWindow.
+  //
+  // Note: this is not called "ShowWindow" because that will clash with
+  // the Windows function which is actually a #define.
+  virtual void ShowCreatedWindow(int route_id,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) {}
+
+  // Show the newly created widget with the specified bounds.
+  // The widget is identified by the route_id passed to CreateNewWidget.
+  virtual void ShowCreatedWidget(int route_id,
+                                 const gfx::Rect& initial_pos) {}
+
+  // Show the newly created full screen widget. Similar to above.
+  virtual void ShowCreatedFullscreenWidget(int route_id) {}
+
+  // A context menu should be shown, to be built using the context information
+  // provided in the supplied params.
+  virtual void ShowContextMenu(const content::ContextMenuParams& params) {}
 
  protected:
   virtual ~RenderViewHostDelegate() {}

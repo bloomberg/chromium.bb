@@ -235,58 +235,8 @@ void WebContentsViewWin::GetViewBounds(gfx::Rect* out) const {
   *out = gfx::Rect(r);
 }
 
-void WebContentsViewWin::CreateNewWindow(
-    int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-  web_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
-}
-
-void WebContentsViewWin::CreateNewWidget(int route_id,
-                                         WebKit::WebPopupType popup_type) {
-  web_contents_view_helper_.CreateNewWidget(web_contents_,
-                                            route_id,
-                                            false,
-                                            popup_type);
-}
-
-void WebContentsViewWin::CreateNewFullscreenWidget(int route_id) {
-  web_contents_view_helper_.CreateNewWidget(web_contents_,
-                                            route_id,
-                                            true,
-                                            WebKit::WebPopupTypeNone);
-}
-
-void WebContentsViewWin::ShowCreatedWindow(int route_id,
-                                           WindowOpenDisposition disposition,
-                                           const gfx::Rect& initial_pos,
-                                           bool user_gesture) {
-  web_contents_view_helper_.ShowCreatedWindow(
-      web_contents_, route_id, disposition, initial_pos, user_gesture);
-}
-
-void WebContentsViewWin::ShowCreatedWidget(int route_id,
-                                           const gfx::Rect& initial_pos) {
-  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
-                                              route_id,
-                                              false,
-                                              initial_pos);
-}
-
-void WebContentsViewWin::ShowCreatedFullscreenWidget(int route_id) {
-  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
-                                              route_id,
-                                              true,
-                                              gfx::Rect());
-}
-
 void WebContentsViewWin::ShowContextMenu(
     const content::ContextMenuParams& params) {
-  // Allow WebContentsDelegates to handle the context menu operation first.
-  if (web_contents_->GetDelegate() &&
-      web_contents_->GetDelegate()->HandleContextMenu(params)) {
-    return;
-  }
-
   if (delegate_.get())
     delegate_->ShowContextMenu(params);
 }

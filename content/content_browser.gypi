@@ -702,8 +702,6 @@
     'browser/web_contents/web_contents_view_aura.h',
     'browser/web_contents/web_contents_view_gtk.cc',
     'browser/web_contents/web_contents_view_gtk.h',
-    'browser/web_contents/web_contents_view_helper.cc',
-    'browser/web_contents/web_contents_view_helper.h',
     'browser/web_contents/web_contents_view_mac.h',
     'browser/web_contents/web_contents_view_mac.mm',
     'browser/web_contents/web_contents_view_win.cc',

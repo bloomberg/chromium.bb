@@ -28,6 +28,7 @@
 #include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
@@ -72,6 +73,7 @@
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
 #include "ui/surface/io_surface_support_mac.h"
 #endif
 
@@ -136,6 +138,7 @@ using content::RenderViewHost;
 using content::RenderViewHostDelegate;
 using content::RenderViewHostImpl;
 using content::RenderWidgetHost;
+using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using content::ResourceDispatcherHostImpl;
@@ -320,6 +323,10 @@ WebContentsImpl::WebContentsImpl(
     registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                    content::Source<WebContents>(opener_));
   }
+
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 
 #if defined(ENABLE_JAVA_BRIDGE)
   java_bridge_dispatcher_host_manager_.reset(
@@ -1001,6 +1008,17 @@ void WebContentsImpl::Observe(int type,
       OnWebContentsDestroyed(
           content::Source<content::WebContents>(source).ptr());
       break;
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED: {
+      RenderWidgetHost* host = content::Source<RenderWidgetHost>(source).ptr();
+      for (PendingWidgetViews::iterator i = pending_widget_views_.begin();
+           i != pending_widget_views_.end(); ++i) {
+        if (host->GetView() == i->second) {
+          pending_widget_views_.erase(i);
+          break;
+        }
+      }
+      break;
+    }
     default:
       NOTREACHED();
   }
@@ -1085,6 +1103,191 @@ void WebContentsImpl::RequestToLockMouse(bool user_gesture) {
 void WebContentsImpl::LostMouseLock() {
   if (delegate_)
     delegate_->LostMouseLock();
+}
+
+void WebContentsImpl::CreateNewWindow(
+    int route_id,
+    const ViewHostMsg_CreateWindow_Params& params) {
+  if (delegate_ && !delegate_->ShouldCreateWebContents(
+          this, route_id, params.window_container_type, params.frame_name,
+          params.target_url)) {
+    return;
+  }
+
+  // We usually create the new window in the same BrowsingInstance (group of
+  // script-related windows), by passing in the current SiteInstance.  However,
+  // if the opener is being suppressed, we create a new SiteInstance in its own
+  // BrowsingInstance.
+  scoped_refptr<SiteInstance> site_instance =
+      params.opener_suppressed ?
+      SiteInstance::Create(GetBrowserContext()) :
+      GetSiteInstance();
+
+  // Create the new web contents. This will automatically create the new
+  // WebContentsView. In the future, we may want to create the view separately.
+  WebContentsImpl* new_contents =
+      new WebContentsImpl(GetBrowserContext(),
+                          site_instance,
+                          route_id,
+                          this,
+                          params.opener_suppressed ? NULL : this,
+                          NULL);
+  new_contents->set_opener_web_ui_type(GetWebUITypeForCurrentState());
+
+  if (!params.opener_suppressed) {
+    content::WebContentsView* new_view = new_contents->GetView();
+
+    // TODO(brettw): It seems bogus that we have to call this function on the
+    // newly created object and give it one of its own member variables.
+    new_view->CreateViewForWidget(new_contents->GetRenderViewHost());
+
+    // Save the created window associated with the route so we can show it
+    // later.
+    DCHECK_NE(MSG_ROUTING_NONE, route_id);
+    pending_contents_[route_id] = new_contents;
+  }
+
+  if (delegate_) {
+    delegate_->WebContentsCreated(
+        this, params.opener_frame_id, params.target_url, new_contents);
+  }
+
+  if (params.opener_suppressed) {
+    // When the opener is suppressed, the original renderer cannot access the
+    // new window.  As a result, we need to show and navigate the window here.
+    gfx::Rect initial_pos;
+    AddNewContents(
+        new_contents, params.disposition, initial_pos, params.user_gesture);
+
+    content::OpenURLParams open_params(params.target_url, content::Referrer(),
+                                       CURRENT_TAB,
+                                       content::PAGE_TRANSITION_LINK,
+                                       true /* is_renderer_initiated */);
+    new_contents->OpenURL(open_params);
+  }
+}
+
+void WebContentsImpl::CreateNewWidget(int route_id,
+                                      WebKit::WebPopupType popup_type) {
+  CreateNewWidget(route_id, false, popup_type);
+}
+
+void WebContentsImpl::CreateNewFullscreenWidget(int route_id) {
+  CreateNewWidget(route_id, true, WebKit::WebPopupTypeNone);
+}
+
+void WebContentsImpl::CreateNewWidget(int route_id,
+                                      bool is_fullscreen,
+                                      WebKit::WebPopupType popup_type) {
+  content::RenderProcessHost* process = GetRenderProcessHost();
+  RenderWidgetHostImpl* widget_host =
+      new RenderWidgetHostImpl(this, process, route_id);
+  RenderWidgetHostViewPort* widget_view =
+      RenderWidgetHostViewPort::CreateViewForWidget(widget_host);
+  if (!is_fullscreen) {
+    // Popups should not get activated.
+    widget_view->SetPopupType(popup_type);
+  }
+  // Save the created widget associated with the route so we can show it later.
+  pending_widget_views_[route_id] = widget_view;
+
+#if defined(OS_MACOSX)
+  // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
+  // to allow it to survive the trip without being hosted.
+  base::mac::NSObjectRetain(widget_view->GetNativeView());
+#endif
+}
+
+void WebContentsImpl::ShowCreatedWindow(int route_id,
+                                        WindowOpenDisposition disposition,
+                                        const gfx::Rect& initial_pos,
+                                        bool user_gesture) {
+  WebContentsImpl* contents = GetCreatedWindow(route_id);
+  if (contents)
+    AddNewContents(contents, disposition, initial_pos, user_gesture);
+}
+
+void WebContentsImpl::ShowCreatedWidget(int route_id,
+                                        const gfx::Rect& initial_pos) {
+  ShowCreatedWidget(route_id, false, initial_pos);
+}
+
+void WebContentsImpl::ShowCreatedFullscreenWidget(int route_id) {
+  ShowCreatedWidget(route_id, true, gfx::Rect());
+}
+
+void WebContentsImpl::ShowCreatedWidget(int route_id,
+                                        bool is_fullscreen,
+                                        const gfx::Rect& initial_pos) {
+  if (delegate_)
+    delegate_->RenderWidgetShowing();
+
+  RenderWidgetHostViewPort* widget_host_view =
+      RenderWidgetHostViewPort::FromRWHV(GetCreatedWidget(route_id));
+  if (!widget_host_view)
+    return;
+  if (is_fullscreen) {
+    widget_host_view->InitAsFullscreen(GetRenderWidgetHostView());
+  } else {
+    widget_host_view->InitAsPopup(GetRenderWidgetHostView(), initial_pos);
+  }
+  RenderWidgetHostImpl::From(widget_host_view->GetRenderWidgetHost())->Init();
+
+#if defined(OS_MACOSX)
+  // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's
+  // properly embedded (or purposefully ignored) we can release the retain we
+  // took in CreateNewWidget().
+  base::mac::NSObjectRelease(widget_host_view->GetNativeView());
+#endif
+}
+
+WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
+  PendingContents::iterator iter = pending_contents_.find(route_id);
+
+  // Certain systems can block the creation of new windows. If we didn't succeed
+  // in creating one, just return NULL.
+  if (iter == pending_contents_.end()) {
+    return NULL;
+  }
+
+  WebContentsImpl* new_contents = iter->second;
+  pending_contents_.erase(route_id);
+
+  if (!new_contents->GetRenderProcessHost()->HasConnection() ||
+      !new_contents->GetRenderViewHost()->GetView())
+    return NULL;
+
+  // TODO(brettw): It seems bogus to reach into here and initialize the host.
+  static_cast<RenderViewHostImpl*>(new_contents->GetRenderViewHost())->Init();
+  return new_contents;
+}
+
+RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int route_id) {
+  PendingWidgetViews::iterator iter = pending_widget_views_.find(route_id);
+  if (iter == pending_widget_views_.end()) {
+    DCHECK(false);
+    return NULL;
+  }
+
+  RenderWidgetHostView* widget_host_view = iter->second;
+  pending_widget_views_.erase(route_id);
+
+  RenderWidgetHost* widget_host = widget_host_view->GetRenderWidgetHost();
+  if (!widget_host->GetProcess()->HasConnection()) {
+    // The view has gone away or the renderer crashed. Nothing to do.
+    return NULL;
+  }
+
+  return widget_host_view;
+}
+
+void WebContentsImpl::ShowContextMenu(
+    const content::ContextMenuParams& params) {
+  // Allow WebContentsDelegates to handle the context menu operation first.
+  if (delegate_ && delegate_->HandleContextMenu(params))
+    return;
+
+  view_->ShowContextMenu(params);
 }
 
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {

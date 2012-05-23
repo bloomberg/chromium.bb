@@ -12,31 +12,6 @@ TestWebContentsView::TestWebContentsView() {
 TestWebContentsView::~TestWebContentsView() {
 }
 
-void TestWebContentsView::CreateNewWindow(
-    int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-}
-
-void TestWebContentsView::CreateNewWidget(int route_id,
-                                          WebKit::WebPopupType popup_type) {
-}
-
-void TestWebContentsView::CreateNewFullscreenWidget(int route_id) {
-}
-
-void TestWebContentsView::ShowCreatedWindow(int route_id,
-                                            WindowOpenDisposition disposition,
-                                            const gfx::Rect& initial_pos,
-                                            bool user_gesture) {
-}
-
-void TestWebContentsView::ShowCreatedWidget(int route_id,
-                                            const gfx::Rect& initial_pos) {
-}
-
-void TestWebContentsView::ShowCreatedFullscreenWidget(int route_id) {
-}
-
 void TestWebContentsView::ShowContextMenu(
     const ContextMenuParams& params) {
 }

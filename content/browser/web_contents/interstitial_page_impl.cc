@@ -84,20 +84,6 @@ class InterstitialPageImpl::InterstitialPageRVHViewDelegate
   explicit InterstitialPageRVHViewDelegate(InterstitialPageImpl* page);
 
   // RenderViewHostDelegate::View implementation:
-  virtual void CreateNewWindow(
-      int route_id,
-      const ViewHostMsg_CreateWindow_Params& params);
-  virtual void CreateNewWidget(int route_id,
-                               WebKit::WebPopupType popup_type);
-  virtual void CreateNewFullscreenWidget(int route_id);
-  virtual void ShowCreatedWindow(int route_id,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture);
-  virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos);
-  virtual void ShowCreatedFullscreenWidget(int route_id);
-  virtual void ShowContextMenu(const content::ContextMenuParams& params);
   virtual void StartDragging(const WebDropData& drop_data,
                              WebDragOperationsMask operations_allowed,
                              const SkBitmap& image,
@@ -626,6 +612,43 @@ gfx::Rect InterstitialPageImpl::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
 
+void InterstitialPageImpl::CreateNewWindow(
+    int route_id,
+    const ViewHostMsg_CreateWindow_Params& params) {
+  NOTREACHED() << "InterstitialPage does not support showing popups yet.";
+}
+
+void InterstitialPageImpl::CreateNewWidget(int route_id,
+                                           WebKit::WebPopupType popup_type) {
+  NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
+}
+
+void InterstitialPageImpl::CreateNewFullscreenWidget(int route_id) {
+  NOTREACHED()
+      << "InterstitialPage does not support showing full screen popups.";
+}
+
+void InterstitialPageImpl::ShowCreatedWindow(int route_id,
+                                             WindowOpenDisposition disposition,
+                                             const gfx::Rect& initial_pos,
+                                             bool user_gesture) {
+  NOTREACHED() << "InterstitialPage does not support showing popups yet.";
+}
+
+void InterstitialPageImpl::ShowCreatedWidget(int route_id,
+                                             const gfx::Rect& initial_pos) {
+  NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
+}
+
+void InterstitialPageImpl::ShowCreatedFullscreenWidget(int route_id) {
+  NOTREACHED()
+      << "InterstitialPage does not support showing full screen popups.";
+}
+
+void InterstitialPageImpl::ShowContextMenu(
+    const content::ContextMenuParams& params) {
+}
+
 void InterstitialPageImpl::Disable() {
   enabled_ = false;
 }
@@ -665,44 +688,6 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
 InterstitialPageImpl::InterstitialPageRVHViewDelegate::
     InterstitialPageRVHViewDelegate(InterstitialPageImpl* page)
     : interstitial_page_(page) {
-}
-
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::CreateNewWindow(
-    int route_id,
-    const ViewHostMsg_CreateWindow_Params& params) {
-  NOTREACHED() << "InterstitialPage does not support showing popups yet.";
-}
-
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::CreateNewWidget(
-    int route_id, WebKit::WebPopupType popup_type) {
-  NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
-}
-
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::
-    CreateNewFullscreenWidget(int route_id) {
-  NOTREACHED()
-      << "InterstitialPage does not support showing full screen popups.";
-}
-
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::ShowCreatedWindow(
-    int route_id, WindowOpenDisposition disposition,
-    const gfx::Rect& initial_pos, bool user_gesture) {
-  NOTREACHED() << "InterstitialPage does not support showing popups yet.";
-}
-
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::ShowCreatedWidget(
-    int route_id, const gfx::Rect& initial_pos) {
-  NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
-}
-
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::
-    ShowCreatedFullscreenWidget(int route_id) {
-  NOTREACHED()
-      << "InterstitialPage does not support showing full screen popups.";
-}
-
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::ShowContextMenu(
-    const content::ContextMenuParams& params) {
 }
 
 void InterstitialPageImpl::InterstitialPageRVHViewDelegate::StartDragging(

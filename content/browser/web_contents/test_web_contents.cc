@@ -194,4 +194,29 @@ void TestWebContents::SetHistoryLengthAndPrune(
   EXPECT_EQ(expect_set_history_length_and_prune_min_page_id_, min_page_id);
 }
 
+void TestWebContents::CreateNewWindow(
+    int route_id,
+    const ViewHostMsg_CreateWindow_Params& params) {
+}
+
+void TestWebContents::CreateNewWidget(int route_id,
+                                      WebKit::WebPopupType popup_type) {
+}
+
+void TestWebContents::CreateNewFullscreenWidget(int route_id) {
+}
+
+void TestWebContents::ShowCreatedWindow(int route_id,
+                                        WindowOpenDisposition disposition,
+                                        const gfx::Rect& initial_pos,
+                                        bool user_gesture) {
+}
+
+void TestWebContents::ShowCreatedWidget(int route_id,
+                                        const gfx::Rect& initial_pos) {
+}
+
+void TestWebContents::ShowCreatedFullscreenWidget(int route_id) {
+}
+
 }  // namespace content
