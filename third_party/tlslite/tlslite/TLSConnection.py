@@ -932,7 +932,7 @@ class TLSConnection(TLSRecordLayer):
     def handshakeServer(self, sharedKeyDB=None, verifierDB=None,
                         certChain=None, privateKey=None, reqCert=False,
                         sessionCache=None, settings=None, checker=None,
-                        reqCAs=None, tlsIntolerant=False):
+                        reqCAs=None, tlsIntolerant=0):
         """Perform a handshake in the role of server.
 
         This function performs an SSL or TLS handshake.  Depending on
@@ -1019,7 +1019,7 @@ class TLSConnection(TLSRecordLayer):
     def handshakeServerAsync(self, sharedKeyDB=None, verifierDB=None,
                              certChain=None, privateKey=None, reqCert=False,
                              sessionCache=None, settings=None, checker=None,
-                             reqCAs=None, tlsIntolerant=False):
+                             reqCAs=None, tlsIntolerant=0):
         """Start a server handshake operation on the TLS connection.
 
         This function returns a generator which behaves similarly to
@@ -1112,7 +1112,13 @@ class TLSConnection(TLSRecordLayer):
                   "Too old version: %s" % str(clientHello.client_version)):
                 yield result
 
-        if tlsIntolerant and clientHello.client_version > (3, 0):
+        #If tlsIntolerant is nonzero, reject certain TLS versions.
+        #1: reject all TLS versions.
+        #2: reject TLS 1.1 or higher.
+        #3: reject TLS 1.2 or higher.
+        if (tlsIntolerant == 1 and clientHello.client_version > (3, 0) or
+            tlsIntolerant == 2 and clientHello.client_version > (3, 1) or
+            tlsIntolerant == 3 and clientHello.client_version > (3, 2)):
             for result in self._sendError(\
                     AlertDescription.handshake_failure):
                 yield result

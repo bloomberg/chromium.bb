@@ -1,17 +1,17 @@
-diff --git a/third_party/tlslite/tlslite/TLSConnection.py b/third_party/tlslite/tlslite/TLSConnection.py
-index 7e38a23..02c7478 100644
---- a/third_party/tlslite/tlslite/TLSConnection.py
-+++ b/third_party/tlslite/tlslite/TLSConnection.py
-@@ -932,7 +932,7 @@ class TLSConnection(TLSRecordLayer):
+Index: third_party/tlslite/tlslite/TLSConnection.py
+===================================================================
+--- third_party/tlslite/tlslite/TLSConnection.py	(revision 134128)
++++ third_party/tlslite/tlslite/TLSConnection.py	(working copy)
+@@ -932,7 +932,7 @@
      def handshakeServer(self, sharedKeyDB=None, verifierDB=None,
                          certChain=None, privateKey=None, reqCert=False,
                          sessionCache=None, settings=None, checker=None,
 -                        reqCAs=None):
-+                        reqCAs=None, tlsIntolerant=False):
++                        reqCAs=None, tlsIntolerant=0):
          """Perform a handshake in the role of server.
  
          This function performs an SSL or TLS handshake.  Depending on
-@@ -1012,14 +1012,14 @@ class TLSConnection(TLSRecordLayer):
+@@ -1012,14 +1012,14 @@
          """
          for result in self.handshakeServerAsync(sharedKeyDB, verifierDB,
                  certChain, privateKey, reqCert, sessionCache, settings,
@@ -24,11 +24,11 @@ index 7e38a23..02c7478 100644
                               certChain=None, privateKey=None, reqCert=False,
                               sessionCache=None, settings=None, checker=None,
 -                             reqCAs=None):
-+                             reqCAs=None, tlsIntolerant=False):
++                             reqCAs=None, tlsIntolerant=0):
          """Start a server handshake operation on the TLS connection.
  
          This function returns a generator which behaves similarly to
-@@ -1036,14 +1036,15 @@ class TLSConnection(TLSRecordLayer):
+@@ -1036,14 +1036,15 @@
              verifierDB=verifierDB, certChain=certChain,
              privateKey=privateKey, reqCert=reqCert,
              sessionCache=sessionCache, settings=settings,
@@ -46,11 +46,17 @@ index 7e38a23..02c7478 100644
  
          self._handshakeStart(client=False)
  
-@@ -1111,6 +1112,11 @@ class TLSConnection(TLSRecordLayer):
+@@ -1111,6 +1112,17 @@
                    "Too old version: %s" % str(clientHello.client_version)):
                  yield result
  
-+        if tlsIntolerant and clientHello.client_version > (3, 0):
++        #If tlsIntolerant is nonzero, reject certain TLS versions.
++        #1: reject all TLS versions.
++        #2: reject TLS 1.1 or higher.
++        #3: reject TLS 1.2 or higher.
++        if (tlsIntolerant == 1 and clientHello.client_version > (3, 0) or
++            tlsIntolerant == 2 and clientHello.client_version > (3, 1) or
++            tlsIntolerant == 3 and clientHello.client_version > (3, 2)):
 +            for result in self._sendError(\
 +                    AlertDescription.handshake_failure):
 +                yield result
