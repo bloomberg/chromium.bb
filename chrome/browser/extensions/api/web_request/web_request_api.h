@@ -377,7 +377,7 @@ class ExtensionWebRequestEventRouter {
 
 class WebRequestAddEventListener : public SyncIOThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webRequest.addEventListener");
+  DECLARE_EXTENSION_FUNCTION_NAME("webRequestInternal.addEventListener");
 
  protected:
   virtual ~WebRequestAddEventListener() {}
@@ -388,7 +388,7 @@ class WebRequestAddEventListener : public SyncIOThreadExtensionFunction {
 
 class WebRequestEventHandled : public SyncIOThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webRequest.eventHandled");
+  DECLARE_EXTENSION_FUNCTION_NAME("webRequestInternal.eventHandled");
 
  protected:
   virtual ~WebRequestEventHandled() {}

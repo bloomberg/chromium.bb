@@ -145,6 +145,7 @@ class ExtensionAPIPermission {
     kWebNavigation,
     kWebRequest,
     kWebRequestBlocking,
+    kWebRequestInternal,
     kWebSocketProxyPrivate,
     kWebstorePrivate,
     kEnumBoundary

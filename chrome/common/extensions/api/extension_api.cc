@@ -445,6 +445,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_WEBNAVIGATION));
   RegisterSchema("webRequest", ReadFromResource(
       IDR_EXTENSION_API_JSON_WEBREQUEST));
+  RegisterSchema("webRequestInternal", ReadFromResource(
+      IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL));
   RegisterSchema("webSocketProxyPrivate", ReadFromResource(
       IDR_EXTENSION_API_JSON_WEBSOCKETPROXYPRIVATE));
   RegisterSchema("webstore", ReadFromResource(

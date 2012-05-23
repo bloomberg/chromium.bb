@@ -324,6 +324,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kTerminalPrivate, "terminalPrivate", 0, ExtensionPermissionMessage::kNone,
       kFlagCannotBeOptional);
   info->RegisterPermission(
+      kWebRequestInternal, "webRequestInternal", 0,
+      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
+  info->RegisterPermission(
       kWebSocketProxyPrivate, "webSocketProxyPrivate", 0,
       ExtensionPermissionMessage::kNone,
       kFlagCannotBeOptional);
@@ -876,6 +879,10 @@ void ExtensionPermissionSet::InitImplicitExtensionPermissions(
 
   if (!extension->devtools_url().is_empty())
     apis_.insert(ExtensionAPIPermission::kDevtools);
+
+  // The webRequest permission implies the internal version as well.
+  if (apis_.find(ExtensionAPIPermission::kWebRequest) != apis_.end())
+    apis_.insert(ExtensionAPIPermission::kWebRequestInternal);
 
   // Add the scriptable hosts.
   for (UserScriptList::const_iterator content_script =

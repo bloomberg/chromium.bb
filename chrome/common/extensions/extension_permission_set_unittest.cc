@@ -612,6 +612,7 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kEchoPrivate);
   skip.insert(ExtensionAPIPermission::kSystemPrivate);
   skip.insert(ExtensionAPIPermission::kTerminalPrivate);
+  skip.insert(ExtensionAPIPermission::kWebRequestInternal);
   skip.insert(ExtensionAPIPermission::kWebSocketProxyPrivate);
   skip.insert(ExtensionAPIPermission::kWebstorePrivate);
 

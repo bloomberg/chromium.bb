@@ -70,6 +70,7 @@
       <include name="IDR_EXTENSION_API_JSON_WEBNAVIGATION" file="extensions\api\web_navigation.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBREQUEST" file="extensions\api\web_request.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSOCKETPROXYPRIVATE" file="extensions\api\web_socket_proxy_private.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL" file="extensions\api\web_request_internal.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSTORE" file="extensions\api\webstore.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSTOREPRIVATE" file="extensions\api\webstore_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WINDOWS" file="extensions\api\windows.json" type="BINDATA" />

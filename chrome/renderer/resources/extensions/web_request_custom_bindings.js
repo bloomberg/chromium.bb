@@ -65,7 +65,7 @@ WebRequestEvent.prototype.addListener =
   // subEvent listener.
   chromeHidden.validate(Array.prototype.slice.call(arguments, 1),
                         this.extraArgSchemas_);
-  chrome.webRequest.addEventListener(
+  chromeHidden.internalAPIs.webRequestInternal.addEventListener(
       cb, opt_filter, opt_extraInfo, this.eventName_, subEventName);
 
   var subEvent = new chrome.Event(subEventName, this.argSchemas_);
@@ -76,10 +76,10 @@ WebRequestEvent.prototype.addListener =
       var requestId = arguments[0].requestId;
       try {
         var result = cb.apply(null, arguments);
-        chrome.webRequest.eventHandled(
+        chromeHidden.internalAPIs.webRequestInternal.eventHandled(
             eventName, subEventName, requestId, result);
       } catch (e) {
-        chrome.webRequest.eventHandled(
+        chromeHidden.internalAPIs.webRequestInternal.eventHandled(
             eventName, subEventName, requestId);
         throw e;
       }
@@ -90,7 +90,7 @@ WebRequestEvent.prototype.addListener =
       var details = arguments[0];
       var requestId = details.requestId;
       var handledCallback = function(response) {
-        chrome.webRequest.eventHandled(
+        chromeHidden.internalAPIs.webRequestInternal.eventHandled(
             eventName, subEventName, requestId, response);
       };
       cb.apply(null, [details, handledCallback]);
@@ -152,18 +152,6 @@ chromeHidden.registerCustomEvent('webRequest', WebRequestEvent);
 
 chromeHidden.registerCustomHook('webRequest', function(api) {
   var apiFunctions = api.apiFunctions;
-
-  apiFunctions.setHandleRequest('addEventListener', function() {
-    var args = Array.prototype.slice.call(arguments);
-    sendRequest(this.name, args, this.definition.parameters,
-                {forIOThread: true});
-  });
-
-  apiFunctions.setHandleRequest('eventHandled', function() {
-    var args = Array.prototype.slice.call(arguments);
-    sendRequest(this.name, args, this.definition.parameters,
-                {forIOThread: true});
-  });
 
   apiFunctions.setHandleRequest('handlerBehaviorChanged', function() {
     var args = Array.prototype.slice.call(arguments);

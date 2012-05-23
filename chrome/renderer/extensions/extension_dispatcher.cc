@@ -573,6 +573,8 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("types", IDR_TYPES_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webRequest", IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("webRequestInternal",
+                             IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
 }
 
