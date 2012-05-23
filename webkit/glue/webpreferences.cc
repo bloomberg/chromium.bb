@@ -78,6 +78,7 @@ WebPreferences::WebPreferences()
       show_composited_layer_borders(false),
       show_composited_layer_tree(false),
       show_fps_counter(false),
+      show_paint_rects(false),
       asynchronous_spell_checking_enabled(true),
       unified_textchecker_enabled(false),
       threaded_animation_enabled(false),
@@ -282,6 +283,10 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Display the current compositor tree as overlay if requested on
   // the command line
   settings->setShowPlatformLayerTree(show_composited_layer_tree);
+
+  // Display visualization of what has changed on the screen using an
+  // overlay of rects, if requested on the command line.
+  settings->setShowPaintRects(show_paint_rects);
 
   settings->setThreadedAnimationEnabled(threaded_animation_enabled);
 
