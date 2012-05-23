@@ -301,7 +301,16 @@ TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
   EXPECT_TRUE(result_->complete());
 }
 
-TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
+#if defined(OS_WIN)
+// See http://crbug.com/129264
+#define MAYBE_WriteSuccessWithoutQuotaLimitConcurrent \
+    DISABLED_WriteSuccessWithoutQuotaLimitConcurrent
+#else
+#define MAYBE_WriteSuccessWithoutQuotaLimitConcurrent \
+    WriteSuccessWithoutQuotaLimitConcurrent
+#endif
+
+TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithoutQuotaLimitConcurrent) {
   scoped_ptr<FileWriterDelegate> file_writer_delegate2;
   scoped_ptr<net::URLRequest> request2;
   scoped_ptr<Result> result2;
