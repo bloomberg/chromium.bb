@@ -1277,7 +1277,12 @@ bool NativeVirtualNetworkParser::ParseValue(PropertyIndex index,
   VirtualNetwork* virtual_network = static_cast<VirtualNetwork*>(network);
   switch (index) {
     case PROPERTY_INDEX_PROVIDER: {
-      DCHECK_EQ(value.GetType(), Value::TYPE_DICTIONARY);
+      // TODO(rkc): Figure out why is this ever not true and fix the root
+      // cause. 'value' comes to us all the way from the cros dbus call, the
+      // issue is likely on the cros side of things.
+      if (value.GetType() != Value::TYPE_DICTIONARY)
+        return false;
+
       const DictionaryValue& dict = static_cast<const DictionaryValue&>(value);
       for (DictionaryValue::key_iterator iter = dict.begin_keys();
            iter != dict.end_keys(); ++iter) {
