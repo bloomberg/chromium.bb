@@ -105,21 +105,18 @@ class IMEDetailedView : public TrayDetailsView,
 
   void AppendIMEProperties(const IMEPropertyInfoList& property_list) {
     property_map_.clear();
-    views::View* properties = new views::View;
-    properties->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 0, 0, 1));
     for (size_t i = 0; i < property_list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
       container->set_fixed_height(kTrayPopupItemHeight);
       container->AddLabel(
           property_list[i].name,
           property_list[i].selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
-      properties->AddChildView(container);
+      if (i == 0)
+        container->set_border(views::Border::CreateSolidSidedBorder(1, 0, 0, 0,
+        kBorderLightColor));
+      scroll_content()->AddChildView(container);
       property_map_[container] = property_list[i].key;
     }
-    properties->set_border(views::Border::CreateSolidSidedBorder(
-        0, 0, 1, 0, kBorderLightColor));
-    AddChildView(properties);
   }
 
   void AppendSettings() {
