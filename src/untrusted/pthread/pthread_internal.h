@@ -17,7 +17,7 @@ extern struct nacl_irt_sem __nc_irt_sem;
 
 extern int __nc_thread_initialized;
 
-int __nc_initialize_globals(void);
+void __nc_initialize_globals(void);
 
 void __nc_initialize_unjoinable_thread(struct nc_combined_tdb *tdb);
 

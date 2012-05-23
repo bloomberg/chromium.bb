@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7,14 +7,13 @@
 #include <unistd.h>
 
 #include "native_client/src/include/elf32.h"
+#include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 
 
 void __libc_init_array(void);
 void __libc_fini_array(void);
-
-void __pthread_initialize(void);
 
 int main(int argc, char **argv, char **envp);
 

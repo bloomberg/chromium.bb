@@ -9,11 +9,13 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_NACL_TLS_H
 #define NATIVE_CLIENT_SRC_UNTRUSTED_NACL_TLS_H
 
+void __pthread_initialize(void);
+
 /*
  * Allocates (using sbrk) and initializes the combined area for the
  * main thread.  Always called, whether or not pthreads is in use.
  */
-int __pthread_initialize_minimal(size_t tdb_size);
+void __pthread_initialize_minimal(size_t tdb_size);
 
 /*
  * Initializes the thread-local data of newlib (which achieves

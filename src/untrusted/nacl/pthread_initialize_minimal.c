@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -14,7 +14,7 @@
  * This initialization happens early in startup with or without libpthread.
  * It must make it safe for vanilla newlib code to run.
  */
-int __pthread_initialize_minimal(size_t tdb_size) {
+void __pthread_initialize_minimal(size_t tdb_size) {
   /* Adapt size for sbrk. */
   /* TODO(robertm): this is somewhat arbitrary - re-examine). */
   size_t combined_size = (__nacl_tls_combined_size(tdb_size) + 15) & ~15;
@@ -39,6 +39,4 @@ int __pthread_initialize_minimal(size_t tdb_size) {
    * Initialize newlib's thread-specific pointer.
    */
   __newlib_thread_init();
-
-  return 0;
 }

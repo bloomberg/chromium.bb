@@ -71,6 +71,10 @@ int __nc_memory_block_counter[2];
 
 /* Internal functions */
 
+static inline void nc_abort() {
+  while (1) *(volatile int *) 0 = 0;  /* Crash.  */
+}
+
 static inline nc_thread_descriptor_t *nc_get_tdb(void) {
   /*
    * Fetch the thread-specific data pointer.  This is usually just
@@ -225,24 +229,14 @@ static int nc_tdb_init(nc_thread_descriptor_t *tdb,
 }
 
 /* Initializes all globals except for the initial thread structure. */
-int __nc_initialize_globals(void) {
-  int retval = 0;
-
+void __nc_initialize_globals(void) {
   /*
    * Fetch the ABI tables from the IRT.  If we don't have these, all is lost.
    */
   __nc_initialize_interfaces(&irt_thread);
 
-  retval = pthread_mutex_init(&__nc_thread_management_lock, NULL);
-  if (retval) {
-    /* If the initialization fails we just fail the whole process */
-    /*
-     * TODO(gregoryd): check that the return value
-     * is actually checked somewhere
-     */
-
-    return retval;
-  }
+  if (pthread_mutex_init(&__nc_thread_management_lock, NULL) != 0)
+    nc_abort();
 
   /* Tell ThreadSanitizer to not generate happens-before arcs between uses of
      this mutex. Otherwise we miss to many real races.
@@ -250,15 +244,12 @@ int __nc_initialize_globals(void) {
      function. */
   ANNOTATE_NOT_HAPPENS_BEFORE_MUTEX(&__nc_thread_management_lock);
 
-  retval = pthread_cond_init(&__nc_last_thread_cond, NULL);
-  if (retval) {
-    return retval;
-  }
+  if (pthread_cond_init(&__nc_last_thread_cond, NULL) != 0)
+    nc_abort();
   STAILQ_INIT(&__nc_thread_memory_blocks[0]);
   STAILQ_INIT(&__nc_thread_memory_blocks[1]);
 
   __nc_thread_initialized = 1;
-  return 0;
 }
 
 #if defined(NACL_IN_IRT)
@@ -293,14 +284,14 @@ void __nc_initialize_unjoinable_thread(struct nc_combined_tdb *tdb) {
 /* Will be called from the library startup code,
  * which always happens on the application's main thread
  */
-int __pthread_initialize(void) {
+void __pthread_initialize(void) {
   __pthread_initialize_minimal(TDB_SIZE);
 
   struct nc_combined_tdb *tdb = (struct nc_combined_tdb *) nc_get_tdb();
   nc_tdb_init(&tdb->tdb, &tdb->basic_data);
   __nc_initial_thread_id = &tdb->basic_data;
 
-  return __nc_initialize_globals();
+  __nc_initialize_globals();
 }
 
 #endif
@@ -509,7 +500,7 @@ void pthread_exit (void* retval) {
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
   irt_thread.thread_exit(is_used);
-  while (1) *(volatile int *) 0 = 0;  /* Crash.  */
+  nc_abort();
 }
 
 int pthread_join(pthread_t thread_id, void **thread_return) {

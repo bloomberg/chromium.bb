@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18,9 +18,9 @@
  */
 
 __attribute__((weak))
-int __pthread_initialize(void) {
+void __pthread_initialize(void) {
   /*
    * All we need is to have the self pointer in the TDB.
    */
-  return __pthread_initialize_minimal(sizeof(void *));
+  __pthread_initialize_minimal(sizeof(void *));
 }

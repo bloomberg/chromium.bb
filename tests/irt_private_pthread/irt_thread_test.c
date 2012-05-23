@@ -13,9 +13,8 @@
 
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
+#include "native_client/src/untrusted/nacl/tls.h"
 
-
-void __pthread_initialize(void);
 
 __thread int tls_var = 123;
 

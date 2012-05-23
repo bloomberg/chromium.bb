@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,9 +12,9 @@
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
+#include "native_client/src/untrusted/nacl/tls.h"
 
 void __libc_init_array(void);
-void __pthread_initialize(void);
 
 /*
  * This is the true entry point for untrusted code.

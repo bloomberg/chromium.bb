@@ -15,7 +15,7 @@
  * This initialization happens early in startup with or without libpthread.
  * It must make it safe for vanilla newlib code to run.
  */
-int __pthread_initialize_minimal(size_t tdb_size) {
+void __pthread_initialize_minimal(size_t tdb_size) {
  /*
    * ld.so does most of the work for us, e.g.
    * allocating and initialzing the tls area.
@@ -39,6 +39,4 @@ int __pthread_initialize_minimal(size_t tdb_size) {
    * Initialize newlib's thread-specific pointer.
    */
   __newlib_thread_init();
-
-  return 0;
 }
