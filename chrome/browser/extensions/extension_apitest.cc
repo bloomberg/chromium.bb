@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -209,7 +210,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
       ui_test_utils::NavigateToURL(browser(), url);
 
   } else if (launch_platform_app) {
-    Browser::OpenApplication(
+    application_launch::OpenApplication(
         browser()->profile(),
         extension,
         extension_misc::LAUNCH_NONE,

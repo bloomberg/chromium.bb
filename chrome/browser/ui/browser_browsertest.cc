@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -1559,11 +1560,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* app_window =
-      Browser::OpenApplication(browser()->profile(),
-                               extension_app,
-                               extension_misc::LAUNCH_WINDOW,
-                               GURL(),
-                               NEW_WINDOW);
+      application_launch::OpenApplication(browser()->profile(),
+                                          extension_app,
+                                          extension_misc::LAUNCH_WINDOW,
+                                          GURL(),
+                                          NEW_WINDOW);
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP do not have extension_app set in

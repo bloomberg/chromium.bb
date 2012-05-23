@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -48,7 +49,7 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
 
     size_t browser_count = BrowserList::size();
 
-    Browser::OpenApplication(
+    application_launch::OpenApplication(
         browser()->profile(),
         extension,
         // Overriding manifest to open in a panel.

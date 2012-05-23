@@ -27,9 +27,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -544,11 +544,11 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
 
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
     // TODO(jamescook): Proper support for background tabs.
-    Browser::OpenApplication(
+    application_launch::OpenApplication(
         profile, extension, extension_misc::LAUNCH_TAB, GURL(url), disposition);
   } else if (disposition == NEW_WINDOW) {
     // Force a new window open.
-    Browser::OpenApplication(
+    application_launch::OpenApplication(
         profile, extension, extension_misc::LAUNCH_WINDOW, GURL(url),
         disposition);
   } else {
@@ -565,7 +565,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     if (browser)
       old_contents = browser->GetSelectedWebContents();
 
-    WebContents* new_contents = Browser::OpenApplication(
+    WebContents* new_contents = application_launch::OpenApplication(
         profile, extension, launch_container, GURL(url),
         old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);
 

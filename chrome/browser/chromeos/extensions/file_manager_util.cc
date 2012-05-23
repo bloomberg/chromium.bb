@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -470,7 +471,7 @@ void OpenFileBrowser(const FilePath& path,
           GetLaunchContainer(extension, ExtensionPrefs::LAUNCH_DEFAULT);
 
   content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
-  Browser::OpenApplication(
+  application_launch::OpenApplication(
       profile, extension, launch_container, GURL(url), NEW_FOREGROUND_TAB);
 }
 

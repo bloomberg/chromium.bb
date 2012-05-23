@@ -26,6 +26,7 @@
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -265,8 +266,8 @@ void BackgroundModeManager::LaunchBackgroundApplication(
   extension_misc::LaunchContainer launch_container =
       service->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_REGULAR);
-  Browser::OpenApplication(profile, extension, launch_container, GURL(),
-                           NEW_FOREGROUND_TAB);
+  application_launch::OpenApplication(profile, extension, launch_container,
+                                      GURL(), NEW_FOREGROUND_TAB);
 }
 
 bool BackgroundModeManager::IsBackgroundModeActiveForTest() {

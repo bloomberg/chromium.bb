@@ -102,6 +102,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
@@ -5595,8 +5596,8 @@ void TestingAutomationProvider::LaunchApp(
   // This observer will delete itself.
   new AppLaunchObserver(&old_contents->GetController(), this, reply_message,
                         launch_container);
-  Browser::OpenApplication(profile(), extension, launch_container, GURL(),
-                           CURRENT_TAB);
+  application_launch::OpenApplication(profile(), extension, launch_container,
+                                      GURL(), CURRENT_TAB);
 }
 
 // Sample JSON input: { "command": "SetAppLaunchType",

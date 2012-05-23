@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/extension_management_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -340,8 +340,8 @@ bool LaunchAppFunction::RunImpl() {
   extension_misc::LaunchContainer launch_container =
       service()->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_DEFAULT);
-  Browser::OpenApplication(profile(), extension, launch_container, GURL(),
-                           NEW_FOREGROUND_TAB);
+  application_launch::OpenApplication(profile(), extension, launch_container,
+                                      GURL(), NEW_FOREGROUND_TAB);
 #if !defined(OS_ANDROID)
   AppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_EXTENSION_API);

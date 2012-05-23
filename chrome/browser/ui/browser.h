@@ -112,8 +112,8 @@ class Browser : public TabStripModelDelegate,
   };
 
   // Distinguishes between browsers that host an app (opened from
-  // Browser::OpenApplication), and child browsers created by an app from
-  // Browser::CreateForApp (e.g. by windows.open or the extension API).
+  // ApplicationLauncher::OpenApplication), and child browsers created by an app
+  // from Browser::CreateForApp (e.g. by windows.open or the extension API).
   // TODO(stevenjb): This is currently only needed by the ash Launcher for
   // identifying child panels. Remove this once panels are no longer
   // implemented as Browsers, crbug.com/112198.
@@ -147,6 +147,14 @@ class Browser : public TabStripModelDelegate,
     // There are active downloads associated with this incognito profile
     // that would be canceled.
     DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE,
+  };
+
+  // Different types of action when web app info is available.
+  // OnDidGetApplicationInfo uses this to dispatch calls.
+  enum WebAppAction {
+    NONE,             // No action at all.
+    CREATE_SHORTCUT,  // Bring up create application shortcut dialog.
+    UPDATE_SHORTCUT   // Update icon for app shortcut.
   };
 
   struct CreateParams {
@@ -287,57 +295,6 @@ class Browser : public TabStripModelDelegate,
   // If there is already an existing active incognito session for the specified
   // |profile|, that session is re-used.
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
-
-  // Open |extension| in |container|, using |disposition| if container type is
-  // TAB. Returns the WebContents* that was created or NULL. If non-empty,
-  // |override_url| is used in place of the app launch url.
-  static content::WebContents* OpenApplication(
-      Profile* profile,
-      const extensions::Extension* extension,
-      extension_misc::LaunchContainer container,
-      const GURL& override_url,
-      WindowOpenDisposition disposition);
-
-#if defined(USE_ASH)
-  // Opens |url| in a new application panel window for the specified url.
-  static content::WebContents* OpenApplicationPanel(
-      Profile* profile,
-      const extensions::Extension* extension,
-      const GURL& url);
-#endif
-
-  // Opens a new application window for the specified url. If |as_panel|
-  // is true, the application will be opened as a Browser::Type::APP_PANEL in
-  // app panel window, otherwise it will be opened as as either
-  // Browser::Type::APP a.k.a. "thin frame" (if |extension| is NULL) or
-  // Browser::Type::EXTENSION_APP (if |extension| is non-NULL).
-  // If |app_browser| is not NULL, it is set to the browser that hosts the
-  // returned tab.
-  static content::WebContents* OpenApplicationWindow(
-      Profile* profile,
-      const extensions::Extension* extension,
-      extension_misc::LaunchContainer container,
-      const GURL& url,
-      Browser** app_browser);
-
-  // Open |url| in an app shortcut window.  If |update_shortcut| is true,
-  // update the name, description, and favicon of the shortcut.
-  // There are two kinds of app shortcuts: Shortcuts to a URL,
-  // and shortcuts that open an installed application.  This function
-  // is used to open the former.  To open the latter, use
-  // Browser::OpenApplicationWindow().
-  static content::WebContents* OpenAppShortcutWindow(Profile* profile,
-                                                     const GURL& url,
-                                                     bool update_shortcut);
-
-  // Open an application for |extension| using |disposition|.  Returns NULL if
-  // there are no appropriate existing browser windows for |profile|. If
-  // non-empty, |override_url| is used in place of the app launch url.
-  static content::WebContents* OpenApplicationTab(
-      Profile* profile,
-      const extensions::Extension* extension,
-      const GURL& override_url,
-      WindowOpenDisposition disposition);
 
   // Opens a new window and opens the bookmark manager.
   static void OpenBookmarkManagerWindow(Profile* profile);
@@ -852,6 +809,10 @@ class Browser : public TabStripModelDelegate,
 
   // Show the first run search engine bubble on the location bar.
   void ShowFirstRunBubble();
+
+  void set_pending_web_app_action(WebAppAction action) {
+    pending_web_app_action_ = action;
+  }
 
   ExtensionWindowController* extension_window_controller() const {
     return extension_window_controller_.get();
@@ -1410,14 +1371,6 @@ class Browser : public TabStripModelDelegate,
 
   // Stores the disposition type of the last blocked command.
   WindowOpenDisposition last_blocked_command_disposition_;
-
-  // Different types of action when web app info is available.
-  // OnDidGetApplicationInfo uses this to dispatch calls.
-  enum WebAppAction {
-    NONE,             // No action at all.
-    CREATE_SHORTCUT,  // Bring up create application shortcut dialog.
-    UPDATE_SHORTCUT   // Update icon for app shortcut.
-  };
 
   // Which deferred action to perform when OnDidGetApplicationInfo is notified
   // from a WebContents. Currently, only one pending action is allowed.

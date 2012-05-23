@@ -18,6 +18,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -71,7 +72,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
         test_data_dir_.AppendASCII("platform_apps").AppendASCII(name));
     EXPECT_TRUE(extension);
 
-    Browser::OpenApplication(
+    application_launch::OpenApplication(
         browser()->profile(),
         extension,
         extension_misc::LAUNCH_NONE,

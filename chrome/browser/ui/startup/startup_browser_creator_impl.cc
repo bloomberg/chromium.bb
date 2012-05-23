@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
@@ -397,8 +398,8 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
 
   RecordCmdLineAppHistogram();
 
-  WebContents* app_tab = Browser::OpenApplicationTab(profile, extension, GURL(),
-                                                     NEW_FOREGROUND_TAB);
+  WebContents* app_tab = application_launch::OpenApplicationTab(
+      profile, extension, GURL(), NEW_FOREGROUND_TAB);
   return (app_tab != NULL);
 }
 
@@ -425,7 +426,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
       return false;
 
     RecordCmdLineAppHistogram();
-    WebContents* tab_in_app_window = Browser::OpenApplication(
+    WebContents* tab_in_app_window = application_launch::OpenApplication(
         profile, extension, launch_container, GURL(), NEW_WINDOW);
     // Platform apps fire off a launch event which may or may not open a window.
     return (tab_in_app_window != NULL || extension->is_platform_app());
@@ -452,7 +453,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
         AppLauncherHandler::RecordAppLaunchType(
             extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY);
       }
-      WebContents* app_tab = Browser::OpenAppShortcutWindow(
+      WebContents* app_tab = application_launch::OpenAppShortcutWindow(
           profile,
           url,
           true);  // Update app info.

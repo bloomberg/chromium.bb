@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -320,8 +320,8 @@ void LaunchAppFromOmnibox(const AutocompleteMatch& match,
       service->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_REGULAR);
 
-  Browser::OpenApplication(profile, extension, launch_container, GURL(),
-                           disposition);
+  application_launch::OpenApplication(profile, extension, launch_container,
+                                      GURL(), disposition);
 }
 
 }  // namespace extensions
