@@ -41,6 +41,7 @@ class TestFileSystemQuotaUtil : public FileSystemQuotaUtil {
     NOTREACHED();
   }
   virtual int64 GetOriginUsageOnFileThread(
+      FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE {
     return usage_;

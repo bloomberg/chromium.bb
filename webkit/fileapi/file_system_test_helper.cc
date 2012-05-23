@@ -159,7 +159,7 @@ base::PlatformFileError FileSystemTestOriginHelper::SameFileUtilMove(
 
 int64 FileSystemTestOriginHelper::GetCachedOriginUsage() const {
   return file_system_context_->GetQuotaUtil(type_)->GetOriginUsageOnFileThread(
-      origin_, type_);
+      file_system_context_, origin_, type_);
 }
 
 int64 FileSystemTestOriginHelper::ComputeCurrentOriginUsage() const {

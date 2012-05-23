@@ -128,6 +128,7 @@ class SandboxMountPointProvider
   // Deletes the data on the origin and reports the amount of deleted data
   // to the quota manager via |proxy|.
   bool DeleteOriginDataOnFileThread(
+      FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type);
@@ -141,6 +142,7 @@ class SandboxMountPointProvider
       const std::string& host,
       std::set<GURL>* origins) OVERRIDE;
   virtual int64 GetOriginUsageOnFileThread(
+      FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;
   virtual void NotifyOriginWasAccessedOnIOThread(

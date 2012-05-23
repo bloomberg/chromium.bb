@@ -23,6 +23,8 @@ class QuotaManagerProxy;
 
 namespace fileapi {
 
+class FileSystemContext;
+
 // An abstract interface that provides common quota-related utility functions
 // for internal filesystem modules.  The main consumer of this class is
 // file_system_quota_client and quota_file_util.
@@ -67,8 +69,10 @@ class FileSystemQuotaUtil {
 
   // Called by quota client.
   // Returns the amount of data used for the origin for usage tracking.
-  virtual int64 GetOriginUsageOnFileThread(const GURL& origin_url,
-                                           fileapi::FileSystemType type) = 0;
+  virtual int64 GetOriginUsageOnFileThread(
+      fileapi::FileSystemContext* file_system_context,
+      const GURL& origin_url,
+      fileapi::FileSystemType type) = 0;
 
   // Called by quota file util.
   virtual void UpdateOriginUsageOnFileThread(quota::QuotaManagerProxy* proxy,

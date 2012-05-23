@@ -47,7 +47,8 @@ class FileSystemQuotaClient::GetOriginUsageTask : public QuotaThreadTask {
   virtual void RunOnTargetThread() OVERRIDE {
     FileSystemQuotaUtil* quota_util = file_system_context_->GetQuotaUtil(type_);
     if (quota_util)
-      fs_usage_ = quota_util->GetOriginUsageOnFileThread(origin_url_, type_);
+      fs_usage_ = quota_util->GetOriginUsageOnFileThread(
+          file_system_context_, origin_url_, type_);
   }
 
   virtual void Completed() OVERRIDE {
