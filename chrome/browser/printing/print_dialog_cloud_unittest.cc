@@ -317,7 +317,7 @@ class CloudPrintWebDialogDelegateTest : public testing::Test {
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(_));
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(NULL));
     delegate_.reset(new CloudPrintWebDialogDelegate(
-        mock_path, mock_flow_handler_.get(), std::string(), false));
+        mock_flow_handler_.get(), 100, 100, std::string(), true, false));
   }
 
   virtual void TearDown() {
@@ -333,6 +333,7 @@ class CloudPrintWebDialogDelegateTest : public testing::Test {
 };
 
 TEST_F(CloudPrintWebDialogDelegateTest, BasicChecks) {
+  EXPECT_EQ(ui::MODAL_TYPE_WINDOW, delegate_->GetDialogModalType());
   EXPECT_THAT(delegate_->GetDialogContentURL().spec(),
               StrEq(chrome::kChromeUICloudPrintResourcesURL));
   EXPECT_TRUE(delegate_->GetDialogTitle().empty());

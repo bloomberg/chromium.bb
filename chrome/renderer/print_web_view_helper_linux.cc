@@ -82,8 +82,7 @@ bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
     return false;
 
   // Tell the browser we've finished writing the file.
-  Send(new PrintHostMsg_TempFileForPrintingWritten(routing_id(),
-                                                   sequence_number));
+  Send(new PrintHostMsg_TempFileForPrintingWritten(sequence_number));
   return true;
 #else
   PrintHostMsg_DidPrintPage_Params printed_page_params;
