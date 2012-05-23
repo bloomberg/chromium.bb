@@ -8,17 +8,26 @@
  * at once.
  * Some of the properties:
  * {
- *   filesystem: size, modificationTime, icon
+ *   filesystem: size, modificationTime
  *   internal: presence
  *   gdata: pinned, present, hosted, editUrl, contentUrl, availableOffline
+ *   streaming: url
+ *
+ *   Following are not fetched for non-present gdata files.
+ *   media: artist, album, title, width, height, imageTransform, etc.
  *   thumbnail: url, transform
- *   media: artist, album, title
+ *
+ *   Following are always fetched from content, and so force the downloading
+ *   of remote gdata files. One should use this for required content metadata,
+ *   i.e. image orientation.
+ *   fetchedMedia: width, height, etc.
  * }
  *
  * Typical usages:
  * {
- *   cache.get([entry1, entry2], 'gdata', function(gdata) {
- *     if (gdata[0].pinned && gdata[1].pinned) alert("They are both pinned!");
+ *   cache.get([entry1, entry2], 'gdata|filesystem', function(metadata) {
+ *     if (metadata[0].gdata.pinned && metadata[1].filesystem.size == 0)
+ *       alert("Pinned and empty!");
  *   });
  *
  *   cache.set(entry, 'internal', {presence: 'deleted'});
@@ -30,9 +39,11 @@
  *   cache.get(entry, 'thumbnail', function(thumbnail) {
  *     img.src = thumbnail.url;
  *   });
+ *
+ *   var cached = cache.getCached(entry, 'filesystem');
+ *   var size = (cached && cached.size) || UNKNOWN_SIZE;
  * }
  *
- * TODO(dgozman): eviction.
  * @constructor
  */
 function MetadataCache() {
@@ -62,6 +73,14 @@ function MetadataCache() {
   this.observerId_ = 0;
 
   this.batchCount_ = 0;
+  this.totalCount_ = 0;
+
+  /**
+   * Time of first get query of the current batch. Items updated later than this
+   * will not be evicted.
+   * @private
+   */
+  this.lastBatchStart_ = new Date();
 }
 
 /**
@@ -83,13 +102,29 @@ MetadataCache.CHILDREN = 1;
 MetadataCache.DESCENDANTS = 2;
 
 /**
+ * Minimum number of items in cache to start eviction.
+ */
+MetadataCache.EVICTION_NUMBER = 1000;
+
+/**
  * @return {MetadataCache!} The cache with all providers.
  */
 MetadataCache.createFull = function() {
   var cache = new MetadataCache();
   cache.providers_.push(new FilesystemProvider());
   cache.providers_.push(new GDataProvider());
+  cache.providers_.push(new ContentProvider());
   return cache;
+};
+
+/**
+ * @return {boolean} Whether all providers are ready.
+ */
+MetadataCache.prototype.isInitialized = function() {
+  for (var index = 0; index < this.providers_.length; index++) {
+    if (!this.providers_[index].isInitialized()) return false;
+  }
+  return true;
 };
 
 /**
@@ -137,14 +172,33 @@ MetadataCache.prototype.get = function(items, type, callback) {
  * @param {Function(Object)} callback The callback.
  */
 MetadataCache.prototype.getOne = function(item, type, callback) {
+  if (type.indexOf('|') != -1) {
+    var types = type.split('|');
+    var result = {};
+    var typesLeft = types.length;
+
+    function onOneType(requestedType, metadata) {
+      result[requestedType] = metadata;
+      typesLeft--;
+      if (typesLeft == 0) callback(result);
+    }
+
+    for (var index = 0; index < types.length; index++) {
+      this.getOne(item, types[index], onOneType.bind(null, types[index]));
+    }
+    return;
+  }
+
   var url = this.itemToUrl_(item);
 
   // Passing entry to fetchers may save one round-trip to APIs.
   var fsEntry = item === url ? null : item;
   callback = callback || function() {};
 
-  if (!(url in this.cache_))
+  if (!(url in this.cache_)) {
     this.cache_[url] = this.createEmptyEntry_();
+    this.totalCount_++;
+  }
 
   var entry = this.cache_[url];
 
@@ -172,7 +226,7 @@ MetadataCache.prototype.getOne = function(item, type, callback) {
     var id = currentProvider.getId();
     var fetchedCallbacks = entry[id].callbacks;
     delete entry[id].callbacks;
-    entry[id].time = new Date();
+    entry.time = new Date();
     self.mergeProperties_(url, properties);
 
     for (var index = 0; index < fetchedCallbacks.length; index++) {
@@ -248,8 +302,10 @@ MetadataCache.prototype.set = function(items, type, values) {
   this.startBatchUpdates();
   for (var index = 0; index < items.length; index++) {
     var url = this.itemToUrl_(items[index]);
-    if (!(url in this.cache_))
+    if (!(url in this.cache_)) {
       this.cache_[url] = this.createEmptyEntry_();
+      this.totalCount_++;
+    }
     this.cache_[url].properties[type] = values[index];
     this.notifyObservers_(url, type);
   }
@@ -266,10 +322,16 @@ MetadataCache.prototype.clear = function(items, type) {
   if (!(items instanceof Array))
     items = [items];
 
+  var types = type.split('|');
+
   for (var index = 0; index < items.length; index++) {
     var url = this.itemToUrl_(items[index]);
-    if (url in this.cache_)
-      delete this.cache_[url].properties[type];
+    if (url in this.cache_) {
+      for (var j = 0; j < types.length; j++) {
+        var type = types[j];
+        delete this.cache_[url].properties[type];
+      }
+    }
   }
 };
 
@@ -322,6 +384,8 @@ MetadataCache.prototype.removeObserver = function(id) {
  */
 MetadataCache.prototype.startBatchUpdates = function() {
   this.batchCount_++;
+  if (this.batchCount_ == 1)
+    this.lastBatchStart_ = new Date();
 };
 
 /**
@@ -330,6 +394,8 @@ MetadataCache.prototype.startBatchUpdates = function() {
 MetadataCache.prototype.endBatchUpdates = function() {
   this.batchCount_--;
   if (this.batchCount_ != 0) return;
+  if (this.totalCount_ > MetadataCache.EVICTION_NUMBER)
+    this.evict_();
   for (var index = 0; index < this.observers_.length; index++) {
     var observer = this.observers_[index];
     var urls = [];
@@ -364,6 +430,37 @@ MetadataCache.prototype.notifyObservers_ = function(url, type) {
         observer.pending[url] = true;
       }
     }
+  }
+};
+
+/**
+ * Removes the oldest items from the cache.
+ * This method never removes the items from last batch.
+ * @private
+ */
+MetadataCache.prototype.evict_ = function() {
+  var toRemove = [];
+
+  // We leave only a half of items, so we will not call evict_ soon again.
+  var desiredCount = Math.round(MetadataCache.EVICTION_NUMBER / 2);
+  var removeCount = this.totalCount_ - desiredCount;
+  for (var url in this.cache_) {
+    if (this.cache_.hasOwnProperty(url) &&
+        this.cache_[url].time < this.lastBatchStart_) {
+      toRemove.push(url);
+    }
+  }
+
+  toRemove.sort(function(a, b) {
+    var aTime = this.cache_[a].time;
+    var bTime = this.cache_[b].time;
+    return aTime < bTime ? -1 : aTime > bTime ? 1 : 0;
+  });
+
+  removeCount = Math.min(removeCount, toRemove.length);
+  this.totalCount_ -= removeCount;
+  for (var index = 0; index < removeCount; index++) {
+    delete this.cache_[toRemove[index]];
   }
 };
 
@@ -437,6 +534,11 @@ MetadataProvider2.prototype.providesType = function(type) { return false; };
 MetadataProvider2.prototype.getId = function() { return ''; };
 
 /**
+ * @return {boolean} Whether provider is ready.
+ */
+MetadataProvider2.prototype.isInitialized = function() { return true; };
+
+/**
  * Fetches the metadata. It's suggested to return all the metadata this provider
  * can fetch at once.
  * @param {string} url File url.
@@ -453,15 +555,11 @@ MetadataProvider2.prototype.fetch = function(url, type, callback, opt_entry) {
 /**
  * Provider of filesystem metadata.
  * This provider returns the following objects:
- * filesystem: {
- *   size;
- *   modificationTime;
- *   icon - string describing icon type;
- * }
+ * filesystem: { size, modificationTime }
  * @constructor
  */
 function FilesystemProvider() {
-  MetadataProvider2.call(this, 'filesystem');
+  MetadataProvider2.call(this);
 }
 
 FilesystemProvider.prototype = {
@@ -526,10 +624,11 @@ FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
  * This provider returns the following objects:
  *     gdata: { pinned, hosted, present, dirty, editUrl, contentUrl }
  *     thumbnail: { url, transform }
+ *     streaming: { url }
  * @constructor
  */
 function GDataProvider() {
-  MetadataProvider2.call(this, 'gdata');
+  MetadataProvider2.call(this);
 
   // We batch metadata fetches into single API call.
   this.urls_ = [];
@@ -562,7 +661,8 @@ GDataProvider.prototype.supportsUrl = function(url) {
  * @return {boolean} Whether this provider provides this metadata.
  */
 GDataProvider.prototype.providesType = function(type) {
-  return type == 'gdata' || type == 'thumbnail';
+  return type == 'gdata' || type == 'thumbnail' ||
+      type == 'streaming' || type == 'media';
 };
 
 /**
@@ -648,11 +748,203 @@ GDataProvider.prototype.convert_ = function(data) {
     contentUrl: (data.contentUrl || '').replace(/\?.*$/gi, ''),
     editUrl: data.editUrl || ''
   };
+
+  if (!data.isPresent) {
+    // Block the local fetch for gdata files, which require downloading.
+    result.thumbnail = { url: '', transform: null };
+    result.media = {};
+  }
+
   if ('thumbnailUrl' in data) {
     result.thumbnail = {
       url: data.thumbnailUrl,
-      transform: ''
+      transform: null
+    };
+  }
+  if (data.isPresent && ('contentUrl' in data)) {
+    result.streaming = {
+      url: data.contentUrl.replace(/\?.*$/gi, '')
     };
   }
   return result;
+};
+
+
+/**
+ * Provider of content metadata.
+ * This provider returns the following objects:
+ * thumbnail: { url, transform }
+ * media: { artist, album, title, width, height, imageTransform, etc. }
+ * fetchedMedia: { same fields here }
+ * @constructor
+ */
+function ContentProvider() {
+  MetadataProvider2.call(this);
+
+  // Pass all URLs to the metadata reader until we have a correct filter.
+  this.urlFilter_ = /.*/;
+
+  var path = document.location.pathname;
+  var workerPath = document.location.origin +
+      path.substring(0, path.lastIndexOf('/') + 1) +
+      'js/metadata/metadata_dispatcher.js';
+
+  this.dispatcher_ = new Worker(workerPath);
+  this.dispatcher_.onmessage = this.onMessage_.bind(this);
+  this.dispatcher_.postMessage({verb: 'init'});
+
+  // Initialization is not complete until the Worker sends back the
+  // 'initialized' message.  See below.
+  this.initialized_ = false;
+
+  // Map from url to callback.
+  // Note that simultaneous requests for same url are handled in MetadataCache.
+  this.callbacks_ = {};
+}
+
+ContentProvider.prototype = {
+  __proto__: MetadataProvider2.prototype
+};
+
+/**
+ * @param {string} url The url.
+ * @return {boolean} Whether this provider supports the url.
+ */
+ContentProvider.prototype.supportsUrl = function(url) {
+  return url.match(this.urlFilter_);
+};
+
+/**
+ * @param {string} type The metadata type.
+ * @return {boolean} Whether this provider provides this metadata.
+ */
+ContentProvider.prototype.providesType = function(type) {
+  return type == 'thumbnail' || type == 'fetchedMedia' || type == 'media';
+};
+
+/**
+ * @return {string} Unique provider id.
+ */
+ContentProvider.prototype.getId = function() { return 'content'; };
+
+/**
+ * Fetches the metadata.
+ * @param {string} url File url.
+ * @param {string} type Requested metadata type.
+ * @param {Function(Object)} callback Callback expects a map from metadata type
+ *     to metadata value.
+ * @param {Entry=} opt_entry The file entry if present.
+ */
+ContentProvider.prototype.fetch = function(url, type, callback, opt_entry) {
+  if (opt_entry && opt_entry.isDirectory) {
+    callback({});
+    return;
+  }
+  this.callbacks_[url] = callback;
+  this.dispatcher_.postMessage({verb: 'request', arguments: [url]});
+};
+
+/**
+ * Dispatch a message from a metadata reader to the appropriate on* method.
+ * @param {Object} event The event.
+ * @private
+ */
+ContentProvider.prototype.onMessage_ = function(event) {
+  var data = event.data;
+
+  var methodName =
+      'on' + data.verb.substr(0, 1).toUpperCase() + data.verb.substr(1) + '_';
+
+  if (!(methodName in this)) {
+    console.log('Unknown message from metadata reader: ' + data.verb, data);
+    return;
+  }
+
+  this[methodName].apply(this, data.arguments);
+};
+
+/**
+ * @return {boolean} Whether provider is ready.
+ */
+ContentProvider.prototype.isInitialized = function() {
+  return this.initialized_;
+};
+
+/**
+ * Handles the 'initialized' message from the metadata reader Worker.
+ * @param {Object} regexp Regexp of supported urls.
+ * @private
+ */
+ContentProvider.prototype.onInitialized_ = function(regexp) {
+  this.urlFilter_ = regexp;
+
+  // Tests can monitor for this state with
+  // ExtensionTestMessageListener listener("worker-initialized");
+  // ASSERT_TRUE(listener.WaitUntilSatisfied());
+  // Automated tests need to wait for this, otherwise we crash in
+  // browser_test cleanup because the worker process still has
+  // URL requests in-flight.
+  chrome.test.sendMessage('worker-initialized');
+  this.initialized_ = true;
+};
+
+/**
+ * Handles the 'result' message from the worker.
+ * @param {string} url File url.
+ * @param {Object} metadata The metadata.
+ * @private
+ */
+ContentProvider.prototype.onResult_ = function(url, metadata) {
+  var callback = this.callbacks_[url];
+  delete this.callbacks_[url];
+
+  var result = {};
+
+  if ('thumbnailURL' in metadata) {
+    metadata.thumbnailTransform = metadata.thumbnailTransform || null;
+    result.thumbnail = {
+      url: metadata.thumbnailURL,
+      transform: metadata.thumbnailTransform
+    };
+    delete metadata.thumbnailURL;
+    delete metadata.thumbnailTransform;
+  }
+
+  for (var key in metadata) {
+    if (metadata.hasOwnProperty(key)) {
+      if (!('media' in result)) result.media = {};
+      result.media[key] = metadata[key];
+    }
+  }
+
+  if ('media' in result) {
+    result.fetchedMedia = result.media;
+  }
+
+  callback(result);
+};
+
+/**
+ * Handles the 'error' message from the worker.
+ * @param {string} url File url.
+ * @param {string} step Step failed.
+ * @param {string} error Error description.
+ * @param {Object?} metadata The metadata, if available.
+ * @private
+ */
+ContentProvider.prototype.onError_ = function(url, step, error, metadata) {
+  console.warn('metadata: ' + url + ': ' + step + ': ' + error);
+  metadata = metadata || {};
+  // Prevent asking for thumbnail again.
+  metadata.thumbnailURL = '';
+  this.onResult_(url, metadata);
+};
+
+/**
+ * Handles the 'log' message from the worker.
+ * @param {Array.<*>} arglist Log arguments.
+ * @private
+ */
+ContentProvider.prototype.onLog_ = function(arglist) {
+  console.log.apply(console, ['metadata:'].concat(arglist));
 };

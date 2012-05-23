@@ -10,4 +10,4 @@
 
 //<include src="audio_player.js"/>
 //<include src="media_controls.js"/>
-//<include src="../metadata/metadata_provider.js"/>
+//<include src="../metadata/metadata_cache.js"/>

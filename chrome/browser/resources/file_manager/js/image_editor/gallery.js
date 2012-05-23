@@ -23,7 +23,7 @@ RibbonClient.prototype.closeImage = function(item) {};
  *     {function(string)} onNameChange Called every time a selected
  *         item name changes (on rename and on selection change).
  *     {function} onClose
- *     {MetadataProvider} metadataProvider
+ *     {string} rootUrl
  *     {Array.<Object>} shareActions
  *     {string} readonlyDirName Directory name for readonly warning or null.
  *     {DirEntry} saveDirEntry Directory to save to.
@@ -33,6 +33,7 @@ function Gallery(container, context) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
   this.context_ = context;
+  this.context_.metadataProvider = new MetadataProvider(this.context_.rootUrl);
 
   var strf = context.displayStringFunction;
   this.displayStringFunction_ = function(id, formatArgs) {
@@ -1307,7 +1308,7 @@ Ribbon.Item.prototype.setThumbnail = function(metadata) {
     url = metadata.thumbnailURL;
     transform = metadata.thumbnailTransform;
   } else if (mediaType == 'image' &&
-      FileType.canUseImageUrlForPreview(metadata)) {
+      FileType.canUseImageUrlForPreview(metadata.width, metadata.height, 0)) {
     url = this.url_;
     transform = metadata.imageTransform;
   } else {

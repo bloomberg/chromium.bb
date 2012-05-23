@@ -179,14 +179,6 @@ LocalMetadataFetcher.prototype.onMessage_ = function(event) {
  */
 LocalMetadataFetcher.prototype.onInitialized_ = function(regexp) {
   this.urlFilter = regexp;
-
-  // Tests can monitor for this state with
-  // ExtensionTestMessageListener listener("worker-initialized");
-  // ASSERT_TRUE(listener.WaitUntilSatisfied());
-  // Automated tests need to wait for this, otherwise we crash in
-  // browser_test cleanup because the worker process still has
-  // URL requests in-flight.
-  chrome.test.sendMessage('worker-initialized');
   this.initialized_ = true;
 };
 

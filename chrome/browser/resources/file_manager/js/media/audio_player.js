@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function AudioPlayer(container, filesystemRootURL) {
   this.container_ = container;
-  this.metadataProvider_ = new MetadataProvider(filesystemRootURL);
+  this.metadataCache_ = MetadataCache.createFull();
   this.currentTrack_ = -1;
   this.playlistGeneration_ = 0;
 
@@ -52,6 +52,8 @@ function AudioPlayer(container, filesystemRootURL) {
   chrome.fileBrowserPrivate.getStrings(function(strings) {
     container.ownerDocument.title = strings['AUDIO_PLAYER_TITLE'];
     this.errorString_ = strings['AUDIO_ERROR'];
+    AudioPlayer.TrackInfo.DEFAULT_ARTIST =
+        strings['AUDIO_PLAYER_DEFAULT_ARTIST'];
   }.bind(this));
 }
 
@@ -140,15 +142,16 @@ AudioPlayer.prototype.select_ = function(newTrack) {
   this.fetchMetadata_(url, function(metadata) {
     var media = this.audioControls_.getMedia();
     // Do not try no stream when offline.
-    media.src = (navigator.onLine && metadata.streamingURL) || url;
+    media.src =
+        (navigator.onLine && metadata.streaming && metadata.streaming.url) ||
+        url;
     media.load();
     this.audioControls_.play();
   }.bind(this));
 };
 
 AudioPlayer.prototype.fetchMetadata_ = function(url, callback) {
-  this.metadataProvider_.fetch(
-      url,
+  this.metadataCache_.get(url, 'thumbnail|media|streaming',
       function(generation, metadata) {
         // Do nothing if another load happened since the metadata request.
         if (this.playlistGeneration_ == generation)
@@ -220,7 +223,7 @@ AudioPlayer.prototype.onError_ = function() {
       this.urls_[track],
       function(metadata) {
         metadata.error = true;
-        metadata.artist = this.errorString_;
+        metadata.media = { artist: this.errorString_ };
         this.displayMetadata_(track, metadata);
         this.scheduleAutoAdvance_();
       }.bind(this));
@@ -319,12 +322,14 @@ AudioPlayer.TrackInfo.prototype.getDefaultTitle = function() {
   return title;
 };
 
+AudioPlayer.TrackInfo.DEFAULT_ARTIST = 'Unknown Artist';
+
 AudioPlayer.TrackInfo.prototype.getDefaultArtist = function() {
-  return 'Unknown Artist';  // TODO(kaznacheev): i18n
+  return AudioPlayer.TrackInfo.DEFAULT_ARTIST;
 };
 
 /**
- * @param {Object} metadata The metadata object
+ * @param {Object} metadata The metadata object.
  * @param {HTMLElement} container The container for the tracks.
  */
 AudioPlayer.TrackInfo.prototype.setMetadata = function(metadata, container) {
@@ -332,14 +337,14 @@ AudioPlayer.TrackInfo.prototype.setMetadata = function(metadata, container) {
     this.art_.classList.add('blank');
     this.art_.classList.add('error');
     container.classList.remove('noart');
-  } else if (metadata.thumbnailURL) {
+  } else if (metadata.thumbnail && metadata.thumbnail.url) {
     this.img_.onload = function() {
       // Only display the image if the thumbnail loaded successfully.
       this.art_.classList.remove('blank');
       container.classList.remove('noart');
     }.bind(this);
-    this.img_.src = metadata.thumbnailURL;
+    this.img_.src = metadata.thumbnail.url;
   }
-  this.title_.textContent = metadata.title || this.getDefaultTitle();
-  this.artist_.textContent = metadata.artist || this.getDefaultArtist();
+  this.title_.textContent = metadata.media.title || this.getDefaultTitle();
+  this.artist_.textContent = metadata.media.artist || this.getDefaultArtist();
 };

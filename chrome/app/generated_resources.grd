@@ -11023,6 +11023,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_AUDIO_PLAYER_TITLE" desc="Title of the Audio Player window.">
         Audio Player
       </message>
+      <message name="IDS_FILE_BROWSER_AUDIO_PLAYER_DEFAULT_ARTIST" desc="In the Audio Player window, default artist name used when artist name is unknown.">
+        Unknown Artist
+      </message>
 
       <message name="IDS_FILE_BROWSER_FILE_ERROR_GENERIC" desc="In the File Manager, the error message when the file operation failed.">
         An error occurred (code: <ph name="ERROR_CODE">$1<ex>ABORT</ex></ph>).

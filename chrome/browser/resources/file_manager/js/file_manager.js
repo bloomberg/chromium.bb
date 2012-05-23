@@ -34,8 +34,6 @@ function FileManager(dialogDom) {
 
   this.commands_ = {};
 
-  this.thumbnailUrlCache_ = {};
-
   this.document_ = dialogDom.ownerDocument;
   this.dialogType_ = this.params_.type || FileManager.DialogType.FULL_PAGE;
 
@@ -268,12 +266,15 @@ FileManager.prototype = {
                      fileManager.volumeManager_);
     this.metadataCache_ = fileManager.metadataCache_;
 
-    this.filesystemChanngeHandler_ =
+    this.filesystemChangeHandler_ =
         fileManager.updateMetadataInUI_.bind(fileManager, 'filesystem');
-    this.gdataChanngeHandler_ =
+    this.thumbnailChangeHandler_ =
+        fileManager.updateMetadataInUI_.bind(fileManager, 'thumbnail');
+    this.gdataChangeHandler_ =
         fileManager.updateMetadataInUI_.bind(fileManager, 'gdata');
 
     this.filesystemObserverId_ = null;
+    this.thumbnailObserverId_ = null;
     this.gdataObserverId_ = null;
 
     // Holds the directories known to contain files with stale metadata
@@ -295,6 +296,8 @@ FileManager.prototype = {
 
     if (this.filesystemObserverId_)
       this.metadataCache_.removeObserver(this.filesystemObserverId_);
+    if (this.thumbnailObserverId_)
+      this.metadataCache_.removeObserver(this.thumbnailObserverId_);
     if (this.gdataObserverId_)
       this.metadataCache_.removeObserver(this.gdataObserverId_);
     this.filesystemObserverId_ = null;
@@ -306,7 +309,13 @@ FileManager.prototype = {
         entry,
         MetadataCache.CHILDREN,
         'filesystem',
-        this.filesystemChanngeHandler_);
+        this.filesystemChangeHandler_);
+
+    this.thumbnailObserverId_ = this.metadataCache_.addObserver(
+        entry,
+        MetadataCache.CHILDREN,
+        'thumbnail',
+        this.thumbnailChangeHandler_);
 
     if (DirectoryModel.getRootType(entry.fullPath) ==
         DirectoryModel.RootType.GDATA) {
@@ -314,7 +323,7 @@ FileManager.prototype = {
           entry,
           MetadataCache.CHILDREN,
           'gdata',
-          this.gdataChanngeHandler_);
+          this.gdataChangeHandler_);
     }
   };
 
@@ -436,6 +445,10 @@ FileManager.prototype = {
     this.initCommands_();
 
     this.metadataCache_ = MetadataCache.createFull();
+    // PyAuto tests monitor this state by polling this variable
+    this.__defineGetter__('workerInitialized_', function() {
+       return this.metadataCache_.isInitialized();
+    }.bind(this));
 
     this.dateFormatter_ = v8Intl.DateTimeFormat(
         {} /* default locale */,
@@ -504,14 +517,6 @@ FileManager.prototype = {
     this.directoryModel_.sortFileList(sortField, sortDirection);
 
     this.refocus();
-
-    this.metadataProvider_ =
-        new MetadataProvider(this.filesystem_.root.toURL());
-
-    // PyAuto tests monitor this state by polling this variable
-    this.__defineGetter__('workerInitialized_', function() {
-       return self.getMetadataProvider().isInitialized();
-    });
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE)
       this.initDataTransferOperations_();
@@ -1748,26 +1753,29 @@ FileManager.prototype = {
    * @param {function(HTMLElement)} opt_imageLoadCallback Callback called when
    *                                the image has been loaded before inserting
    *                                it into the DOM.
-   * @return {HTMLDivElement} Thumbnal box.
+   * @param {HTMLDivElement=} opt_box Existing box to render in.
+   * @return {HTMLDivElement} Thumbnail box.
    */
-  FileManager.prototype.renderThumbnailBox_ = function(entry, fill,
-                                                       opt_imageLoadCallback) {
-    var box = this.document_.createElement('div');
-    box.className = 'img-container';
-    var img = this.document_.createElement('img');
+  FileManager.prototype.renderThumbnailBox_ = function(
+      entry, fill, opt_imageLoadCallback, opt_box) {
     var self = this;
 
+    var box;
+    if (opt_box) {
+      box = opt_box;
+    } else {
+      box = this.document_.createElement('div');
+      box.className = 'img-container';
+    }
+    var img = box.querySelector('img') || this.document_.createElement('img');
+
     function onThumbnailURL(iconType, url, transform) {
-      self.thumbnailUrlCache_[entry.fullPath] = {
-        iconType: iconType,
-        url: url,
-        transform: transform
-      };
       img.onload = function() {
         self.centerImage_(img.style, img.width, img.height, fill);
         if (opt_imageLoadCallback)
           opt_imageLoadCallback(img, transform);
-        box.appendChild(img);
+        if (img.parentNode != box)
+          box.appendChild(img);
       };
       img.onerror = function() {
         // Use the default icon if we could not fetch the correct one.
@@ -1775,32 +1783,17 @@ FileManager.prototype = {
         transform = null;
         util.applyTransform(box, transform);
 
-        var cached = self.thumbnailUrlCache_[entry.fullPath];
-        if (!cached.failed) {
-          cached.failed = true;
-          // Failing to fetch a thumbnail likely means that the thumbnail URL
-          // is now stale. Request a refresh of the current directory, to get
-          // the new thumbnail URLs. Once the directory is refreshed, we'll get
-          // notified via onFileChanged event.
-          self.fileWatcher_.requestMetadataRefresh(entry);
-        }
+        // Failing to fetch a thumbnail likely means that the thumbnail URL
+        // is now stale. Request a refresh of the current directory, to get
+        // the new thumbnail URLs. Once the directory is refreshed, we'll get
+        // notified via onFileChanged event.
+        self.fileWatcher_.requestMetadataRefresh(entry);
       };
       img.src = url;
       util.applyTransform(box, transform);
     }
 
-    // TODO(dgozman): move to new metadata cache.
-    var cached = this.thumbnailUrlCache_[entry.fullPath];
-    // Don't reuse the cached URL if we are now retrying.
-    if (cached && !cached.failed)
-      onThumbnailURL(cached.iconType, cached.url, cached.transform);
-    else {
-      if (cached && cached.failed) {
-        delete cached.failed;
-        this.metadataProvider_.reset(entry.toURL());  // Clear the cache.
-      }
-      this.getThumbnailURL(entry, onThumbnailURL);
-    }
+    this.getThumbnailURL(entry, onThumbnailURL);
 
     return box;
   };
@@ -2109,8 +2102,10 @@ FileManager.prototype = {
     // We don't pass callback here. When new metadata arrives, we have an
     // observer registered to update the UI.
 
-    this.metadataCache_.clear(entries, 'filesystem');
-    this.metadataCache_.get(entries, 'filesystem', null);
+    // TODO(dgozman): refresh content metadata only when modificationTime
+    // changed.
+    this.metadataCache_.clear(entries, 'filesystem|thumbnail|media');
+    this.metadataCache_.get(entries, 'filesystem|thumbnail', null);
     if (this.isOnGData()) {
       this.metadataCache_.clear(entries, 'gdata');
       this.metadataCache_.get(entries, 'gdata', null);
@@ -2133,7 +2128,8 @@ FileManager.prototype = {
 
   FileManager.prototype.updateMetadataInUI_ = function(
       type, urls, properties) {
-    if (this.listType_ != FileManager.ListType.DETAIL) return;
+    var isDetail = this.listType_ == FileManager.ListType.DETAIL;
+    var isThumbnail = this.listType_ == FileManager.ListType.THUMBNAIL;
 
     var items = {};
     var entries = {};
@@ -2153,14 +2149,20 @@ FileManager.prototype = {
       var listItem = items[url];
       var entry = entries[url];
       var props = properties[index];
-      if (type == 'filesystem') {
+      if (type == 'filesystem' && isDetail) {
         this.updateDate_(listItem.querySelector('.date'), props);
         this.updateSize_(listItem.querySelector('.size'), entry, props);
       } else if (type == 'gdata') {
-        var offline = listItem.querySelector('.offline');
-        if (offline)  // This column is only present in full page mode.
-          this.updateOffline_(offline, props);
+        if (isDetail) {
+          var offline = listItem.querySelector('.offline');
+          if (offline)  // This column is only present in full page mode.
+            this.updateOffline_(offline, props);
+        }
         this.updateGDataStyle_(listItem, entry, props);
+      } else if (type == 'thumbnail' && isThumbnail) {
+        var box = listItem.querySelector('.img-container');
+        this.renderThumbnailBox_(entry, false /* fit, not fill */,
+                                 null /* callback */, box);
       }
     }
   };
@@ -2496,10 +2498,6 @@ FileManager.prototype = {
   FileManager.prototype.isOnGData = function() {
     return this.directoryModel_.getCurrentRootType() ==
            DirectoryModel.RootType.GDATA;
-  };
-
-  FileManager.prototype.getMetadataProvider = function() {
-    return this.metadataProvider_;
   };
 
   /**
@@ -3004,7 +3002,7 @@ FileManager.prototype = {
                     self.directoryModel_.getRootName()) :
                 null,
         saveDirEntry: readonly ? downloadsDir : currentDir,
-        metadataProvider: self.getMetadataProvider(),
+        rootUrl: self.filesystem_.root.toURL(),
         getShareActions: self.getShareActions_.bind(self),
         onNameChange: function(name) {
           self.document_.title = gallerySelection = name;
@@ -3168,24 +3166,30 @@ FileManager.prototype = {
       return;
 
     var iconType = FileType.getIcon(entry);
+    var metadataCache = this.metadataCache_;
 
     function returnStockIcon() {
-      callback(iconType, FileType.getPreviewArt(iconType));
+      callback(iconType, FileType.getPreviewArt(iconType), '');
     }
 
-    var self = this;
-    this.getMetadataProvider().fetch(entry.toURL(), function(metadata) {
-      if (metadata.thumbnailURL) {
-        callback(iconType, metadata.thumbnailURL,
-                 metadata.thumbnailTransform);
+    function tryUsingImageUrl() {
+      metadataCache.get(entry, 'filesystem|media', function(metadata) {
+        if (FileType.canUseImageUrlForPreview(
+                metadata.media.width,
+                metadata.media.height,
+                metadata.filesystem.size)) {
+          callback(iconType, entry.toURL(), metadata.media.imageTransform);
+        } else {
+          returnStockIcon();
+        }
+      });
+    }
+
+    metadataCache.get(entry, 'thumbnail', function(thumbnail) {
+      if (thumbnail) {
+        callback(iconType, thumbnail.url, thumbnail.transform);
       } else if (iconType == 'image') {
-        self.metadataCache_.get(entry, 'filesystem', function(filesystem) {
-          if (FileType.canUseImageUrlForPreview(metadata, filesystem.size)) {
-            callback(iconType, entry.toURL(), metadata.imageTransform);
-          } else {
-            returnStockIcon();
-          }
-        });
+        tryUsingImageUrl();
       } else {
         returnStockIcon();
       }
@@ -3381,17 +3385,6 @@ FileManager.prototype = {
     }
 
     this.updateOkButton_();
-
-    var newThumbnailUrlCache = {};
-    if (this.selection) {
-      var entries = this.selection.entries;
-      for (var i = 0; i < entries.length; i++) {
-        var path = entries[i].fullPath;
-        if (path in this.thumbnailUrlCache_)
-          newThumbnailUrlCache[path] = this.thumbnailUrlCache_[path];
-      }
-    }
-    this.thumbnailUrlCache_ = newThumbnailUrlCache;
 
     setTimeout(this.onSelectionChangeComplete_.bind(this, event), 0);
   };

@@ -239,14 +239,12 @@ FileType.MAX_PREVIEW_FILE_SIZE = 1 << 20; // 1 Mb
  * the image itself as a thumbnail. If the image is too large it hurts
  * the performance very much so we allow it only for moderately sized files.
  *
- * @param {Object} metadata From MetadataProvider.
- * @param {number} opt_size The file size to be used if the metadata does not
- *   contain fileSize.
+ * @param {number} width Image width.
+ * @param {number} height Image height.
+ * @param {number} fileSize The file size.
  * @return {boolean} Whether it is OK to use the image url for a preview.
  */
-FileType.canUseImageUrlForPreview = function(metadata, opt_size) {
-  var fileSize = metadata.fileSize || opt_size;
-  return ((fileSize && fileSize <= FileType.MAX_PREVIEW_FILE_SIZE) ||
-      (metadata.width && metadata.height &&
-      (metadata.width * metadata.height <= FileType.MAX_PREVIEW_PIXEL_COUNT)));
+FileType.canUseImageUrlForPreview = function(width, height, fileSize) {
+  return (fileSize && fileSize <= FileType.MAX_PREVIEW_FILE_SIZE) ||
+      (width && height && width * height <= FileType.MAX_PREVIEW_PIXEL_COUNT);
 };
