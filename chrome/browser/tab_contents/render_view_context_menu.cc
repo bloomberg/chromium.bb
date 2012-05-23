@@ -354,7 +354,8 @@ ExtensionMenuItem::List RenderViewContextMenu::GetRelevantExtensionItems(
     if (!ExtensionPatternMatch(item->document_url_patterns(), document_url))
       continue;
 
-    if (item->id().profile == profile || can_cross_incognito)
+    if (item->id().incognito == profile->IsOffTheRecord() ||
+        can_cross_incognito)
       result.push_back(*i);
   }
   return result;

@@ -173,6 +173,7 @@ bool ExtensionMenuManager::AddChildItem(const ExtensionMenuItem::Id& parent_id,
                                         ExtensionMenuItem* child) {
   ExtensionMenuItem* parent = GetItemById(parent_id);
   if (!parent || parent->type() != ExtensionMenuItem::NORMAL ||
+      parent->incognito() != child->incognito() ||
       parent->extension_id() != child->extension_id() ||
       ContainsKey(items_by_id_, child->id()))
     return false;
@@ -212,6 +213,7 @@ bool ExtensionMenuManager::ChangeParent(
   if ((parent_id && (child_id == *parent_id)) || !child ||
       (!new_parent && parent_id != NULL) ||
       (new_parent && (DescendantOf(new_parent, child_id) ||
+                      child->incognito() != new_parent->incognito() ||
                       child->extension_id() != new_parent->extension_id())))
     return false;
 
@@ -558,12 +560,11 @@ const SkBitmap& ExtensionMenuManager::GetIconForExtension(
 }
 
 ExtensionMenuItem::Id::Id()
-    : profile(NULL), extension_id(""), uid(0), string_uid("") {
+    : incognito(false), extension_id(""), uid(0), string_uid("") {
 }
 
-ExtensionMenuItem::Id::Id(Profile* profile,
-                          const std::string& extension_id)
-    : profile(profile), extension_id(extension_id), uid(0),
+ExtensionMenuItem::Id::Id(bool incognito, const std::string& extension_id)
+    : incognito(incognito), extension_id(extension_id), uid(0),
       string_uid("") {
 }
 
@@ -571,7 +572,7 @@ ExtensionMenuItem::Id::~Id() {
 }
 
 bool ExtensionMenuItem::Id::operator==(const Id& other) const {
-  return (profile == other.profile &&
+  return (incognito == other.incognito &&
           extension_id == other.extension_id &&
           uid == other.uid &&
           string_uid == other.string_uid);
@@ -582,9 +583,9 @@ bool ExtensionMenuItem::Id::operator!=(const Id& other) const {
 }
 
 bool ExtensionMenuItem::Id::operator<(const Id& other) const {
-  if (profile < other.profile)
+  if (incognito < other.incognito)
     return true;
-  if (profile == other.profile) {
+  if (incognito == other.incognito) {
     if (extension_id < other.extension_id)
       return true;
     if (extension_id == other.extension_id) {

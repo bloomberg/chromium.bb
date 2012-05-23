@@ -46,7 +46,7 @@ class ExtensionMenuManagerTest : public testing::Test {
   ExtensionMenuItem* CreateTestItem(Extension* extension) {
     ExtensionMenuItem::Type type = ExtensionMenuItem::NORMAL;
     ExtensionMenuItem::ContextList contexts(ExtensionMenuItem::ALL);
-    ExtensionMenuItem::Id id(NULL, extension->id());
+    ExtensionMenuItem::Id id(false, extension->id());
     id.uid = next_id_++;
     return new ExtensionMenuItem(id, "test", false, true, type, contexts);
   }
@@ -56,7 +56,7 @@ class ExtensionMenuManagerTest : public testing::Test {
                                           const std::string& string_id) {
     ExtensionMenuItem::Type type = ExtensionMenuItem::NORMAL;
     ExtensionMenuItem::ContextList contexts(ExtensionMenuItem::ALL);
-    ExtensionMenuItem::Id id(NULL, extension->id());
+    ExtensionMenuItem::Id id(false, extension->id());
     id.string_uid = string_id;
     return new ExtensionMenuItem(id, "test", false, true, type, contexts);
   }
@@ -119,7 +119,7 @@ TEST_F(ExtensionMenuManagerTest, AddGetRemoveItems) {
   ASSERT_EQ(2u, manager_.MenuItems(extension_id)->size());
 
   // Make sure removing a non-existent item returns false.
-  ExtensionMenuItem::Id id(NULL, extension->id());
+  ExtensionMenuItem::Id id(false, extension->id());
   id.uid = id3.uid + 50;
   ASSERT_FALSE(manager_.RemoveContextMenuItem(id));
 

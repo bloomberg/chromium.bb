@@ -211,7 +211,7 @@ bool ExtensionContextMenuFunction::GetParent(
     ExtensionMenuItem** result) {
   if (!properties.HasKey(kParentIdKey))
     return true;
-  ExtensionMenuItem::Id parent_id(profile(), extension_id());
+  ExtensionMenuItem::Id parent_id(profile()->IsOffTheRecord(), extension_id());
   Value* parent_id_value = NULL;
   if (properties.Get(kParentIdKey, &parent_id_value) &&
       !ParseID(parent_id_value, &parent_id))
@@ -236,7 +236,7 @@ bool CreateContextMenuFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &properties));
   EXTENSION_FUNCTION_VALIDATE(properties != NULL);
 
-  ExtensionMenuItem::Id id(profile(), extension_id());
+  ExtensionMenuItem::Id id(profile()->IsOffTheRecord(), extension_id());
   if (properties->HasKey(kIdKey)) {
     EXTENSION_FUNCTION_VALIDATE(properties->GetString(kIdKey,
                                                       &id.string_uid));
@@ -304,7 +304,7 @@ bool CreateContextMenuFunction::RunImpl() {
 
 bool UpdateContextMenuFunction::RunImpl() {
   bool radioItemUpdated = false;
-  ExtensionMenuItem::Id item_id(profile(), extension_id());
+  ExtensionMenuItem::Id item_id(profile()->IsOffTheRecord(), extension_id());
   Value* id_value = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &id_value));
   EXTENSION_FUNCTION_VALIDATE(ParseID(id_value, &item_id));
@@ -388,7 +388,7 @@ bool UpdateContextMenuFunction::RunImpl() {
 }
 
 bool RemoveContextMenuFunction::RunImpl() {
-  ExtensionMenuItem::Id id(profile(), extension_id());
+  ExtensionMenuItem::Id id(profile()->IsOffTheRecord(), extension_id());
   Value* id_value = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &id_value));
   EXTENSION_FUNCTION_VALIDATE(ParseID(id_value, &id));

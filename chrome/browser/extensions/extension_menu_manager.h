@@ -46,14 +46,14 @@ class ExtensionMenuItem {
     // Since the unique ID (uid or string_uid) is parsed from API arguments,
     // the normal usage is to set the uid or string_uid immediately after
     // construction.
-    Id(Profile* profile, const std::string& extension_id);
+    Id(bool incognito, const std::string& extension_id);
     ~Id();
 
     bool operator==(const Id& other) const;
     bool operator!=(const Id& other) const;
     bool operator<(const Id& other) const;
 
-    Profile* profile;
+    bool incognito;
     std::string extension_id;
     // Only one of uid or string_uid will be defined.
     int uid;
@@ -121,6 +121,7 @@ class ExtensionMenuItem {
   virtual ~ExtensionMenuItem();
 
   // Simple accessor methods.
+  bool incognito() const { return id_.incognito; }
   const std::string& extension_id() const { return id_.extension_id; }
   const std::string& title() const { return title_; }
   const List& children() { return children_; }
