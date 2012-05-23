@@ -669,6 +669,8 @@ bool ZygoteMain(const MainFunctionParams& params,
       LOG(ERROR) << "WARNING! This machine lacks support needed for the "
                     "Seccomp sandbox. Running renderers with Seccomp "
                     "sandboxing disabled.";
+      close(proc_fd_for_seccomp);
+      proc_fd_for_seccomp = -1;
     } else {
       VLOG(1) << "Enabling experimental Seccomp sandbox.";
       sandbox_flags |= kSandboxLinuxSeccomp;

@@ -4,6 +4,7 @@
 
 #include "content/zygote/zygote_linux.h"
 
+#include <fcntl.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -23,6 +24,7 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "content/common/chrome_descriptors.h"
+#include "content/common/seccomp_sandbox.h"
 #include "content/common/set_process_title.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
@@ -396,15 +398,13 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
   if (!child_pid) {
     // This is the child process.
 #if defined(SECCOMP_SANDBOX)
-    if (SeccompSandboxEnabled() && proc_fd_for_seccomp_ >= 0) {
-      // Try to open /proc/self/maps as the seccomp sandbox needs access to it
-      int proc_self_maps = openat(proc_fd_for_seccomp_, "self/maps", O_RDONLY);
-      if (proc_self_maps >= 0) {
-        SeccompSandboxSetProcSelfMaps(proc_self_maps);
+    if (proc_fd_for_seccomp_ >= 0) {
+      if (process_type == switches::kRendererProcess &&
+          SeccompSandboxEnabled()) {
+        SeccompSandboxSetProcFd(proc_fd_for_seccomp_);
       } else {
-        PLOG(ERROR) << "openat(/proc/self/maps)";
+        close(proc_fd_for_seccomp_);
       }
-      close(proc_fd_for_seccomp_);
       proc_fd_for_seccomp_ = -1;
     }
 #endif
