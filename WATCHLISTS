@@ -165,8 +165,11 @@
     'locale_settings': {
       'filepath': 'chrome/app/resources/locale_settings.*',
     },
-    'chromeos': {
+    'browser_chromeos': {
       'filepath': 'chrome/browser/chromeos/.*',
+    },
+    'chromeos': {
+      'filepath': 'chromeos/.*',
     },
     'chromeos_webui': {
       'filepath': 'chrome/browser/ui/webui/chromeos/.*|'\
@@ -343,6 +346,11 @@
                   '|content/common/.*speech.*'\
                   '|content/public/.*speech.*'
     },
+    'ui_resources': {
+      'filepath': 'ui/resources/.*'\
+                  '|ui/base/native_theme/resources/.*'\
+                  '|chrome/app/theme/.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -392,8 +400,11 @@
     'appcache': ['michaeln@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
     'locale_settings': ['finnur+watch@chromium.org'],
-    'chromeos': ['davemoore+watch@chromium.org', 'stevenjb+watch@chromium.org',
-                 'nkostylev+watch@chromium.org'],
+    'browser_chromeos': ['davemoore+watch@chromium.org',
+                         'stevenjb+watch@chromium.org',
+                         'nkostylev+watch@chromium.org'],
+    'chromeos' : ['oshima+watch@chromium.org',
+                  'stevenjb+watch@chromium.org'],
     'chromeos_webui': ['nkostylev+watch@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
     'remoting': ['alexeypa+watch@chromium.org',
@@ -470,5 +481,6 @@
                 'mad@chromium.org'],
     'speech': ['satish@chromium.org'],
     'installer': ['grt+watch@chromium.org'],
+    'ui_resources': ['oshima+watch@chromium.org'],
   },
 }
