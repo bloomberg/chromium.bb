@@ -229,6 +229,7 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
       last_indexed_page_id_(-1),
       allow_displaying_insecure_content_(false),
       allow_running_insecure_content_(false),
+      warned_about_insecure_content_(false),
       capture_timer_(false, false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   render_view->GetWebView()->setPermissionClient(this);
@@ -613,7 +614,10 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
        isHostInDomain(origin_host, kFacebookDotCom) ||
        isHostInDomain(origin_host, kTwitterDotCom) ||
        IsStrictSecurityHost(origin_host))) {
-    Send(new ChromeViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
+    if (!warned_about_insecure_content_) {
+      warned_about_insecure_content_ = true;
+      Send(new ChromeViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
+    }
     return false;
   }
 
