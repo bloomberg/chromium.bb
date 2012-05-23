@@ -39,7 +39,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
-#include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -391,34 +390,10 @@ int main(int  argc,
     putc('\n', stderr);
   }
 
-  if (NACL_DANGEROUS_STUFF_ENABLED) {
-    fprintf(stderr,
-            "WARNING WARNING WARNING WARNING"
-            " WARNING WARNING WARNING WARNING\n");
-    fprintf(stderr,
-            "WARNING\n");
-    fprintf(stderr,
-            "WARNING  Using a dangerous/debug configuration.\n");
-    fprintf(stderr,
-            "WARNING\n");
-    fprintf(stderr,
-            "WARNING WARNING WARNING WARNING"
-            " WARNING WARNING WARNING WARNING\n");
-  }
-
   if (debug_mode_bypass_acl_checks) {
     NaClInsecurelyBypassAllAclChecks();
   }
 
-#if NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
-  if (debug_mode_bypass_acl_checks == 0 &&
-      debug_mode_ignore_validator == 0) {
-    fprintf(stderr,
-            "ERROR: dangerous debug version of sel_ldr can only "
-            "be invoked with -a/-c options");
-    exit(-1);
-  }
-#endif
   /*
    * change stdout/stderr to log file now, so that subsequent error
    * messages will go there.  unfortunately, error messages that

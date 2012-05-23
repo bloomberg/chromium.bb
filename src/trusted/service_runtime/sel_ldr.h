@@ -42,7 +42,6 @@
 #include "native_client/src/trusted/interval_multiset/nacl_interval_range_tree.h"
 
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
-#include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"

@@ -396,7 +396,6 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
    */
   NaClFillEndOfTextRegion(nap);
 
-#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   NaClLog(2, "Validating image\n");
   subret = NaClValidateImage(nap);
   NaClPerfCounterMark(&time_load_file,
@@ -406,7 +405,6 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     ret = subret;
     goto done;
   }
-#endif
 
   NaClLog(2, "Initializing arch switcher\n");
   NaClInitSwitchToApp(nap);
