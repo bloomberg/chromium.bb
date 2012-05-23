@@ -1,8 +1,8 @@
 Core wayland protocol
 
  - We need rotation information in the output (multiples of 90
-   degress) and we'll need a way for a client to communicate that it
-   has rendered it's buffer according to the output rotation.  The
+   degrees) and we'll need a way for a client to communicate that it
+   has rendered its buffer according to the output rotation.  The
    goal is to be able to pageflip directly to the client buffer, and
    for that we need the client to render accordingly and the
    compositor needs to know that it did.
