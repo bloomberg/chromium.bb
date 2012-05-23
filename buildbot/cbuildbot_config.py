@@ -967,6 +967,10 @@ _firmware_release = _release.derive(
 #  boards=['x86-mario'],
 #)
 
+_factory_release.add_config('daisy-factory',
+  boards=['daisy'],
+)
+
 def _InjectDisplayPosition(config_source):
   """Add field to help buildbot masters order builders on the waterfall."""
   def _GetSortKey(items):
