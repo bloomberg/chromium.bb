@@ -12,4 +12,8 @@ originally based on tinycms, re-written by Mozilla for better security and
 performance.  This copy is a source-drop from Mozilla on March 13, 2012.
 
 Local Modifications:
-Some files only have license headers in the master branch. Added the same license headers to the versions brought down from the 'v4' branch.
+Some files only have license headers in the master branch.
+ - Added the same license headers to the versions brought down from the 'v4'
+   branch src URL qcms/tree/v4
+google.patch
+ - Add bgra output support. Apply with patch -p1 < google.patch

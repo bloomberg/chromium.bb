@@ -45,6 +45,11 @@ struct precache_output
 #define ALIGN __attribute__(( aligned (16) ))
 #endif
 
+typedef struct _qcms_format_type {
+	int r;
+	int b;
+} qcms_format_type;
+
 struct _qcms_transform {
 	float ALIGN matrix[3][4];
 	float *input_gamma_table_r;
@@ -88,7 +93,7 @@ struct _qcms_transform {
 	struct precache_output *output_table_g;
 	struct precache_output *output_table_b;
 
-	void (*transform_fn)(struct _qcms_transform *transform, unsigned char *src, unsigned char *dest, size_t length);
+	void (*transform_fn)(struct _qcms_transform *transform, unsigned char *src, unsigned char *dest, size_t length, struct _qcms_format_type output_format);
 };
 
 struct matrix {
@@ -280,18 +285,22 @@ qcms_bool set_rgb_colorants(qcms_profile *profile, qcms_CIE_xyY white_point, qcm
 void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
                                           unsigned char *src,
                                           unsigned char *dest,
-                                          size_t length);
+                                          size_t length,
+                                          qcms_format_type output_format);
 void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
                                           unsigned char *src,
                                           unsigned char *dest,
-                                          size_t length);
+                                          size_t length,
+                                          qcms_format_type output_format);
 void qcms_transform_data_rgb_out_lut_sse1(qcms_transform *transform,
                                           unsigned char *src,
                                           unsigned char *dest,
-                                          size_t length);
+                                          size_t length,
+                                          qcms_format_type output_format);
 void qcms_transform_data_rgba_out_lut_sse1(qcms_transform *transform,
                                           unsigned char *src,
                                           unsigned char *dest,
-                                          size_t length);
+                                          size_t length,
+                                          qcms_format_type output_format);
 
 extern qcms_bool qcms_supports_iccv4;

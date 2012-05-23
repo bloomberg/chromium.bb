@@ -102,6 +102,12 @@ typedef enum {
 	QCMS_DATA_GRAYA_8
 } qcms_data_type;
 
+/* Format of the output data for qcms_transform_data_type() */
+typedef enum {
+	QCMS_OUTPUT_RGBX,
+	QCMS_OUTPUT_BGRX
+} qcms_output_type;
+
 /* the names for the following two types are sort of ugly */
 typedef struct
 {
@@ -146,6 +152,7 @@ qcms_transform* qcms_transform_create(
 void qcms_transform_release(qcms_transform *);
 
 void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length);
+void qcms_transform_data_type(qcms_transform *transform, void *src, void *dest, size_t length, qcms_output_type type);
 
 void qcms_enable_iccv4();
 

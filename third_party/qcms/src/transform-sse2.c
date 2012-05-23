@@ -34,7 +34,8 @@ static const ALIGN float clampMaxValueX4[4] =
 void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
                                           unsigned char *src,
                                           unsigned char *dest,
-                                          size_t length)
+                                          size_t length,
+                                          qcms_format_type output_format)
 {
     unsigned int i;
     float (*mat)[4] = transform->matrix;
@@ -70,6 +71,8 @@ void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
 
     /* working variables */
     __m128 vec_r, vec_g, vec_b, result;
+    const int r_out = output_format.r;
+    const int b_out = output_format.b;
 
     /* CYA */
     if (!length)
@@ -114,9 +117,9 @@ void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
         src += 3;
 
         /* use calc'd indices to output RGB values */
-        dest[0] = otdata_r[output[0]];
-        dest[1] = otdata_g[output[1]];
-        dest[2] = otdata_b[output[2]];
+        dest[r_out] = otdata_r[output[0]];
+        dest[1]     = otdata_g[output[1]];
+        dest[b_out] = otdata_b[output[2]];
         dest += 3;
     }
 
@@ -137,15 +140,16 @@ void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
 
     _mm_store_si128((__m128i*)output, _mm_cvtps_epi32(result));
 
-    dest[0] = otdata_r[output[0]];
-    dest[1] = otdata_g[output[1]];
-    dest[2] = otdata_b[output[2]];
+    dest[r_out] = otdata_r[output[0]];
+    dest[1]     = otdata_g[output[1]];
+    dest[b_out] = otdata_b[output[2]];
 }
 
 void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
                                            unsigned char *src,
                                            unsigned char *dest,
-                                           size_t length)
+                                           size_t length,
+                                           qcms_format_type output_format)
 {
     unsigned int i;
     float (*mat)[4] = transform->matrix;
@@ -181,6 +185,8 @@ void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
 
     /* working variables */
     __m128 vec_r, vec_g, vec_b, result;
+    const int r_out = output_format.r;
+    const int b_out = output_format.b;
     unsigned char alpha;
 
     /* CYA */
@@ -231,9 +237,9 @@ void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
         src += 4;
 
         /* use calc'd indices to output RGB values */
-        dest[0] = otdata_r[output[0]];
-        dest[1] = otdata_g[output[1]];
-        dest[2] = otdata_b[output[2]];
+        dest[r_out] = otdata_r[output[0]];
+        dest[1]     = otdata_g[output[1]];
+        dest[b_out] = otdata_b[output[2]];
         dest += 4;
     }
 
@@ -256,7 +262,7 @@ void qcms_transform_data_rgba_out_lut_sse2(qcms_transform *transform,
 
     _mm_store_si128((__m128i*)output, _mm_cvtps_epi32(result));
 
-    dest[0] = otdata_r[output[0]];
-    dest[1] = otdata_g[output[1]];
-    dest[2] = otdata_b[output[2]];
+    dest[r_out] = otdata_r[output[0]];
+    dest[1]     = otdata_g[output[1]];
+    dest[b_out] = otdata_b[output[2]];
 }

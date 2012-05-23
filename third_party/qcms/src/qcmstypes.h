@@ -87,7 +87,12 @@ typedef unsigned __int64 uint64_t;
 #ifdef _WIN64
 typedef unsigned __int64 uintptr_t;
 #else
+#pragma warning(push)
+/* Disable benign redefinition of type warning 4142 */
+#pragma warning(disable:4142)
 typedef unsigned long uintptr_t;
+/* Restore warnings */
+#pragma warning(pop)
 #endif
 
 #elif defined (_AIX)
