@@ -5754,14 +5754,6 @@
    fun:_ZN7history33HistoryBackendTest_DeleteAll_Test8TestBodyEv
 }
 {
-   bug_127953
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9prerender19PrerenderDispatcherC1Ev
-   fun:_ZN6chrome27ChromeContentRendererClient19RenderThreadStartedEv
-   fun:_ZN16RenderThreadImpl4InitEv
-}
-{
    bug_128145a
    Memcheck:Leak
    fun:_Znw*

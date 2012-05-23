@@ -12,11 +12,14 @@
 
 namespace prerender {
 
-PrerenderDispatcher::PrerenderDispatcher() {
-  WebKit::WebPrerenderingSupport::initialize(new PrerenderingSupport());
+PrerenderDispatcher::PrerenderDispatcher()
+    : prerendering_support_(new PrerenderingSupport()) {
+  WebKit::WebPrerenderingSupport::initialize(prerendering_support_.get());
 }
 
 PrerenderDispatcher::~PrerenderDispatcher() {
+  if (prerendering_support_.get())
+    WebKit::WebPrerenderingSupport::shutdown();
 }
 
 bool PrerenderDispatcher::IsPrerenderURL(const GURL& url) const {
