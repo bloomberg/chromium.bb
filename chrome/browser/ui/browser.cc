@@ -3101,7 +3101,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
 
   // Show the tab if the window and tab was already active.
   if (GetSelectedWebContents() == source && window()->IsActive())
-    nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
+  nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
 
   nav_params.user_gesture = true;
   nav_params.override_encoding = params.override_encoding;
@@ -4787,7 +4787,7 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
   // Also notify RenderViewHostDelegate of the user gesture; this is
   // normally done in Browser::Navigate, but a reload bypasses Navigate.
   WebContents* tab = GetOrCloneTabForDisposition(disposition);
-  tab->GetRenderViewHost()->GetDelegate()->OnUserGesture();
+  tab->UserGestureDone();
   if (!tab->FocusLocationBarByDefault())
     tab->Focus();
   if (ignore_cache)

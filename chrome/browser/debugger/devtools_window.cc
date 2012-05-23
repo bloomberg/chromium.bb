@@ -226,7 +226,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
           ThemeServiceFactory::GetForProfile(profile_)));
   // There is no inspected_rvh in case of shared workers.
   if (inspected_rvh) {
-    WebContents* tab = inspected_rvh->GetDelegate()->GetAsWebContents();
+    WebContents* tab = WebContents::FromRenderViewHost(inspected_rvh);
     if (tab)
       inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
   }

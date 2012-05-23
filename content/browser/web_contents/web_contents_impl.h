@@ -224,9 +224,11 @@ class CONTENT_EXPORT WebContentsImpl
   virtual content::RendererPreferences* GetMutableRendererPrefs() OVERRIDE;
   virtual void SetNewTabStartTime(const base::TimeTicks& time) OVERRIDE;
   virtual base::TimeTicks GetNewTabStartTime() const OVERRIDE;
+  virtual void Close() OVERRIDE;
   virtual void OnCloseStarted() OVERRIDE;
   virtual bool ShouldAcceptDragAndDrop() const OVERRIDE;
   virtual void SystemDragEnded() OVERRIDE;
+  virtual void UserGestureDone() OVERRIDE;
   virtual void SetClosedByUserGesture(bool value) OVERRIDE;
   virtual bool GetClosedByUserGesture() const OVERRIDE;
   virtual double GetZoomLevel() const OVERRIDE;

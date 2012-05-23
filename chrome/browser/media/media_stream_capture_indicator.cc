@@ -15,8 +15,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -69,16 +69,15 @@ void MediaStreamCaptureIndicator::ExecuteCommand(int command_id) {
   DCHECK(command_id >= IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST &&
          command_id <= IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_LAST);
   int index = command_id - IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST;
-  WebContents* tab_content = tab_util::GetWebContentsByID(
+  WebContents* web_content = tab_util::GetWebContentsByID(
       tabs_[index].render_process_id, tabs_[index].render_view_id);
-  DCHECK(tab_content);
-  if (!tab_content || !tab_content->GetRenderViewHost() ||
-      !tab_content->GetRenderViewHost()->GetDelegate()) {
+  DCHECK(web_content);
+  if (!web_content) {
     NOTREACHED();
     return;
   }
 
-  tab_content->GetRenderViewHost()->GetDelegate()->Activate();
+  web_content->GetDelegate()->ActivateContents(web_content);
 }
 
 void MediaStreamCaptureIndicator::CaptureDevicesOpened(

@@ -46,9 +46,9 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui.h"
 #include "printing/backend/print_backend.h"
 #include "printing/metafile.h"
@@ -717,9 +717,10 @@ void PrintPreviewHandler::SendInitialSettings(
 
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
-  if (initiator_tab)
-    initiator_tab->web_contents()->GetRenderViewHost()->
-        GetDelegate()->Activate();
+  if (initiator_tab) {
+    WebContents* web_contents = initiator_tab->web_contents();
+    web_contents->GetDelegate()->ActivateContents(web_contents);
+  }
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       web_ui()->GetController());
   print_preview_ui->OnClosePrintPreviewTab();

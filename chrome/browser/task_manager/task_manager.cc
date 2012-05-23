@@ -31,9 +31,9 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -48,6 +48,7 @@ using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
 using content::ResourceRequestInfo;
+using content::WebContents;
 
 namespace {
 
@@ -1099,8 +1100,8 @@ void TaskManager::ActivateProcess(int index) {
   TabContentsWrapper* chosen_tab_contents =
       model_->GetResourceTabContents(index);
   if (chosen_tab_contents) {
-    chosen_tab_contents->web_contents()->GetRenderViewHost()->GetDelegate()->
-        Activate();
+    WebContents* web_contents = chosen_tab_contents->web_contents();
+    web_contents->GetDelegate()->ActivateContents(web_contents);
   }
 }
 

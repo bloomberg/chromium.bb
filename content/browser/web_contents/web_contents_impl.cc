@@ -1314,6 +1314,10 @@ base::TimeTicks WebContentsImpl::GetNewTabStartTime() const {
   return new_tab_start_time_;
 }
 
+void WebContentsImpl::Close() {
+  Close(GetRenderViewHost());
+}
+
 void WebContentsImpl::OnCloseStarted() {
   if (close_start_time_.is_null())
     close_start_time_ = base::TimeTicks::Now();
@@ -1336,6 +1340,10 @@ void WebContentsImpl::SystemDragEnded() {
     GetRenderViewHostImpl()->DragSourceSystemDragEnded();
   if (delegate_)
     delegate_->DragEnded();
+}
+
+void WebContentsImpl::UserGestureDone() {
+  OnUserGesture();
 }
 
 void WebContentsImpl::SetClosedByUserGesture(bool value) {

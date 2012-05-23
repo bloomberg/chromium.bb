@@ -29,9 +29,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/renderer_preferences.h"
 
 #if defined(OS_MACOSX)
@@ -294,8 +294,8 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
                        content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
   browser->window()->Show();
-  browser->GetSelectedWebContents()->GetRenderViewHost()->GetDelegate()->
-      Activate();
+  WebContents* web_contents = browser->GetSelectedWebContents();
+  web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 
 ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(

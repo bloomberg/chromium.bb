@@ -36,7 +36,6 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_util.h"
 
@@ -542,10 +541,8 @@ void Navigate(NavigateParams* params) {
       DCHECK(params->target_contents);
     }
 
-    if (user_initiated) {
-      params->target_contents->web_contents()->GetRenderViewHost()->
-          GetDelegate()->OnUserGesture();
-    }
+    if (user_initiated)
+      params->target_contents->web_contents()->UserGestureDone();
 
     InitializeExtraHeaders(params, params->target_contents->profile(),
                            &extra_headers);

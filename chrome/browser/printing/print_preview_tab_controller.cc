@@ -36,8 +36,8 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::NativeWebKeyboardEvent;
@@ -229,7 +229,8 @@ TabContentsWrapper* PrintPreviewTabController::GetOrCreatePreviewTab(
     return CreatePrintPreviewTab(initiator_tab);
 
   // Show the initiator tab holding the existing preview tab.
-  initiator_tab->web_contents()->GetRenderViewHost()->GetDelegate()->Activate();
+  WebContents* web_contents = initiator_tab->web_contents();
+  web_contents->GetDelegate()->ActivateContents(web_contents);
   return preview_tab;
 }
 

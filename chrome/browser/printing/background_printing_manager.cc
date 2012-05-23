@@ -15,8 +15,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -80,7 +80,8 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
       tab_controller->GetInitiatorTab(preview_tab);
   if (!initiator_tab)
     return;
-  initiator_tab->web_contents()->GetRenderViewHost()->GetDelegate()->Activate();
+  WebContents* web_contents = initiator_tab->web_contents();
+  web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 
 void BackgroundPrintingManager::Observe(

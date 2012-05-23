@@ -310,6 +310,10 @@ class WebContents : public PageNavigator {
   virtual void SetNewTabStartTime(const base::TimeTicks& time) = 0;
   virtual base::TimeTicks GetNewTabStartTime() const = 0;
 
+  // Tells the tab to close now. The tab will take care not to close until it's
+  // out of nested message loops.
+  virtual void Close() = 0;
+
   // Notification that tab closing has started.  This can be called multiple
   // times, subsequent calls are ignored.
   virtual void OnCloseStarted() = 0;
@@ -320,6 +324,11 @@ class WebContents : public PageNavigator {
   // A render view-originated drag has ended. Informs the render view host and
   // WebContentsDelegate.
   virtual void SystemDragEnded() = 0;
+
+  // Notification the user has made a gesture while focus was on the
+  // page. This is used to avoid uninitiated user downloads (aka carpet
+  // bombing), see DownloadRequestLimiter for details.
+  virtual void UserGestureDone() = 0;
 
   // Indicates if this tab was explicitly closed by the user (control-w, close
   // tab menu item...). This is false for actions that indirectly close the tab,
