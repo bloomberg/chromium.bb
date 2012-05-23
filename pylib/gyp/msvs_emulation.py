@@ -219,6 +219,8 @@ class MsvsSettings(object):
     """Updates include_dirs to expand VS specific paths, and adds the system
     include dirs used for platform SDK and similar."""
     includes = include_dirs + self.msvs_system_include_dirs[config]
+    includes.extend(self._Setting(
+      ('VCCLCompilerTool', 'AdditionalIncludeDirectories'), config, default=[]))
     return [self.ConvertVSMacros(p) for p in includes]
 
   def GetComputedDefines(self, config):
