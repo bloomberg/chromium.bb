@@ -2382,11 +2382,7 @@ void Browser::UpdateUIForNavigationInTab(TabContentsWrapper* contents,
   // navigating away from the new tab page.
   ScheduleUIUpdate(contents->web_contents(), content::INVALIDATE_TYPE_URL);
 
-  // Focus on the content if the content is active and it is user initated
-  // or if the window is active as well as the tab - or in other words:
-  // Don't focus when the user did not initate the navigation or the window
-  // and tab are not active.
-  if (contents_is_selected && (user_initiated || window()->IsActive()))
+  if (contents_is_selected)
     contents->web_contents()->Focus();
 }
 
@@ -3098,11 +3094,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   nav_params.referrer = params.referrer;
   nav_params.disposition = params.disposition;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
-
-  // Show the tab if the window and tab was already active.
-  if (GetSelectedWebContents() == source && window()->IsActive())
   nav_params.window_action = browser::NavigateParams::SHOW_WINDOW;
-
   nav_params.user_gesture = true;
   nav_params.override_encoding = params.override_encoding;
   nav_params.is_renderer_initiated = params.is_renderer_initiated;
