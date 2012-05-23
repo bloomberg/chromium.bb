@@ -22,6 +22,10 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #endif
 
 using content::BrowserThread;
@@ -76,8 +80,9 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
 
 }  // namespace
 
-PrintingMessageFilter::PrintingMessageFilter()
-    : print_job_manager_(g_browser_process->print_job_manager()) {
+PrintingMessageFilter::PrintingMessageFilter(int render_process_id)
+    : print_job_manager_(g_browser_process->print_job_manager()),
+      render_process_id_(render_process_id) {
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
@@ -155,7 +160,8 @@ void PrintingMessageFilter::OnAllocateTempFileForPrinting(
   }
 }
 
-void PrintingMessageFilter::OnTempFileForPrintingWritten(int sequence_number) {
+void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_view_id,
+                                                         int sequence_number) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SequenceToPathMap* map = &g_printing_file_descriptor_map.Get().map;
   SequenceToPathMap::iterator it = map->find(sequence_number);
@@ -165,12 +171,16 @@ void PrintingMessageFilter::OnTempFileForPrintingWritten(int sequence_number) {
     return;
   }
 
+  content::RenderViewHost* view = content::RenderViewHost::FromID(
+      render_process_id_, render_view_id);
+  content::WebContents* wc = view->GetDelegate()->GetAsWebContents();
   print_dialog_cloud::CreatePrintDialogForFile(
+      wc->GetBrowserContext(),
+      wc->GetView()->GetTopLevelNativeWindow(),
       it->second,
       string16(),
       string16(),
       std::string("application/pdf"),
-      true,
       false);
 
   // Erase the entry in the map.
