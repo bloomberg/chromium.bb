@@ -161,8 +161,7 @@ const char* const kTranslateScriptURL =
 const char* const kTranslateScriptHeader =
     "Google-Translate-Element-Mode: library";
 const char* const kReportLanguageDetectionErrorURL =
-    // TODO(palmer): bug 112236. Make this https://.
-    "http://translate.google.com/translate_error";
+    "https://translate.google.com/translate_error";
 const char* const kLanguageListFetchURL =
     "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl&hl=%s";
 const int kMaxRetryLanguageListFetch = 5;
