@@ -524,13 +524,13 @@ void ChromeBrowserMainPartsChromeos::SetupLowMemoryHeadroomFieldTrial() {
     int margin_200mb = trial->AppendGroup("200mb", kEnableProbability);
     if (trial->group() == disable) {
       LOG(WARNING) << "low_mem: Part of 'off' experiment";
-      chromeos::LowMemoryObserver::SetLowMemoryMargin(0);
+      chromeos::LowMemoryObserver::SetLowMemoryMargin(-1);
     } else if (trial->group() == margin_0mb) {
       LOG(WARNING) << "low_mem: Part of '0MB' experiment";
-      chromeos::LowMemoryObserver::SetLowMemoryMargin(50);
+      chromeos::LowMemoryObserver::SetLowMemoryMargin(0);
     } else if (trial->group() == margin_25mb) {
       LOG(WARNING) << "low_mem: Part of '25MB' experiment";
-      chromeos::LowMemoryObserver::SetLowMemoryMargin(50);
+      chromeos::LowMemoryObserver::SetLowMemoryMargin(25);
     } else if (trial->group() == margin_50mb) {
       LOG(WARNING) << "low_mem: Part of '50MB' experiment";
       chromeos::LowMemoryObserver::SetLowMemoryMargin(50);

@@ -53,11 +53,13 @@ const int kMessageFontSizeDelta = 1;
 const char kExperiment[] = "LowMemoryMargin";
 
 #define EXPERIMENT_CUSTOM_COUNTS(name, sample, min, max, buckets)          \
-    UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, buckets);          \
-    if (base::FieldTrialList::TrialExists(kExperiment))                    \
-      UMA_HISTOGRAM_CUSTOM_COUNTS(                                         \
-          base::FieldTrial::MakeName(name, kExperiment),                   \
-          sample, min, max, buckets);
+    {                                                                      \
+      UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, buckets);        \
+      if (base::FieldTrialList::TrialExists(kExperiment))                  \
+        UMA_HISTOGRAM_CUSTOM_COUNTS(                                       \
+            base::FieldTrial::MakeName(name, kExperiment),                 \
+            sample, min, max, buckets);                                    \
+    }
 
 }  // namespace
 

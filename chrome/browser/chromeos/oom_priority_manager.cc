@@ -51,15 +51,17 @@ namespace {
 // Name of the experiment to run.
 const char kExperiment[] = "LowMemoryMargin";
 
-#define EXPERIMENT_CUSTOM_COUNTS(name, sample, min, max, buckets)          \
-    UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, buckets);          \
-    if (base::FieldTrialList::TrialExists(kExperiment))                    \
-      UMA_HISTOGRAM_CUSTOM_COUNTS(                                         \
-          base::FieldTrial::MakeName(name, kExperiment),                   \
-          sample, min, max, buckets);
+#define EXPERIMENT_CUSTOM_COUNTS(name, sample, min, max, buckets)        \
+    {                                                                    \
+      UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, buckets);      \
+      if (base::FieldTrialList::TrialExists(kExperiment))                \
+        UMA_HISTOGRAM_CUSTOM_COUNTS(                                     \
+            base::FieldTrial::MakeName(name, kExperiment),               \
+            sample, min, max, buckets);                                  \
+    }
 
 // Record a size in megabytes, over a potential interval up to 32 GB.
-#define EXPERIMENT_HISTOGRAM_MEGABYTES(name, sample)                       \
+#define EXPERIMENT_HISTOGRAM_MEGABYTES(name, sample)                     \
     EXPERIMENT_CUSTOM_COUNTS(name, sample, 1, 32768, 50)
 
 // The default interval in seconds after which to adjust the oom_score_adj
