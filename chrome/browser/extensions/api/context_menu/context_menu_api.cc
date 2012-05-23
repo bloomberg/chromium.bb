@@ -29,6 +29,8 @@ const char kCheckedError[] =
     "Only items with type \"radio\" or \"checkbox\" can be checked";
 const char kDuplicateIDError[] =
     "Cannot create item with duplicate id *";
+const char kIdRequiredError[] = "Extensions using event pages must pass an "
+    "id parameter to chrome.contextMenus.create";
 const char kInvalidURLPatternError[] = "Invalid url pattern '*'";
 const char kInvalidValueError[] = "Invalid value for *";
 const char kInvalidTypeStringError[] = "Invalid type string '*'";
@@ -241,6 +243,10 @@ bool CreateContextMenuFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(properties->GetString(kIdKey,
                                                       &id.string_uid));
   } else {
+    if (GetExtension()->has_lazy_background_page()) {
+      error_ = kIdRequiredError;
+      return false;
+    }
     EXTENSION_FUNCTION_VALIDATE(properties->GetInteger(kGeneratedIdKey,
                                                        &id.uid));
   }

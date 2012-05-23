@@ -16,6 +16,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenus) {
   ASSERT_TRUE(RunExtensionTest("context_menus/basics")) << message_;
   ASSERT_TRUE(RunExtensionTest("context_menus/no_perms")) << message_;
   ASSERT_TRUE(RunExtensionTest("context_menus/item_ids")) << message_;
+  ASSERT_TRUE(RunExtensionTest("context_menus/event_page_item_ids"))
+      << message_;
 }
 
 // crbug.com/51436 -- creating context menus from multiple script contexts
