@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -28,6 +29,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -458,6 +461,53 @@ bool ExtensionBrowserTest::WaitForExtensionCrash(
       this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::NotificationService::AllSources());
   return (service->GetExtensionById(extension_id, true) == NULL);
+}
+
+void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,
+                                      const GURL& url,
+                                      bool newtab_process_should_equal_opener,
+                                      content::WebContents** newtab_result) {
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      contents->GetRenderViewHost(), L"",
+      L"window.open('" + UTF8ToWide(url.spec()) + L"');"));
+
+  // The above window.open call is not user-initiated, so it will create
+  // a popup window instead of a new tab in current window.
+  // The stop notification will come from the new tab.
+  observer.Wait();
+  content::NavigationController* controller =
+      content::Source<content::NavigationController>(observer.source()).ptr();
+  content::WebContents* newtab = controller->GetWebContents();
+  ASSERT_TRUE(newtab);
+  EXPECT_EQ(url, controller->GetLastCommittedEntry()->GetURL());
+  if (newtab_process_should_equal_opener)
+    EXPECT_EQ(contents->GetRenderProcessHost(), newtab->GetRenderProcessHost());
+  else
+    EXPECT_NE(contents->GetRenderProcessHost(), newtab->GetRenderProcessHost());
+
+  if (newtab_result)
+    *newtab_result = newtab;
+}
+
+void ExtensionBrowserTest::NavigateInRenderer(content::WebContents* contents,
+                                              const GURL& url) {
+  bool result = false;
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      contents->GetRenderViewHost(), L"",
+      L"window.addEventListener('unload', function() {"
+      L"    window.domAutomationController.send(true);"
+      L"}, false);"
+      L"window.location = '" + UTF8ToWide(url.spec()) + L"';",
+      &result));
+  ASSERT_TRUE(result);
+  observer.Wait();
+  EXPECT_EQ(url, contents->GetController().GetLastCommittedEntry()->GetURL());
 }
 
 void ExtensionBrowserTest::Observe(

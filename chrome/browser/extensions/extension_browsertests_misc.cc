@@ -649,44 +649,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   EXPECT_TRUE(result);
 }
 
-// Helper function for common code shared by the 3 WindowOpen tests below.
-static void WindowOpenHelper(Browser* browser, const GURL& start_url,
-                             const std::string& newtab_url,
-                             WebContents** newtab_result) {
-  ui_test_utils::NavigateToURL(browser, start_url);
-
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      browser->GetSelectedWebContents()->GetRenderViewHost(), L"",
-      L"window.open('" + UTF8ToWide(newtab_url) + L"');"));
-
-  // Now the active tab in last active window should be the new tab.
-  Browser* last_active_browser = BrowserList::GetLastActive();
-  EXPECT_TRUE(last_active_browser);
-  WebContents* newtab = last_active_browser->GetSelectedWebContents();
-  EXPECT_TRUE(newtab);
-  GURL expected_url = start_url.Resolve(newtab_url);
-  observer.Wait();
-  EXPECT_EQ(expected_url,
-            newtab->GetController().GetLastCommittedEntry()->GetURL());
-  if (newtab_result)
-    *newtab_result = newtab;
-}
-
 // Tests that an extension page can call window.open to an extension URL and
 // the new window has extension privileges.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
+  GURL start_url(std::string("chrome-extension://") +
+      last_loaded_extension_id_ + "/test.html");
+  ui_test_utils::NavigateToURL(browser(), start_url);
   WebContents* newtab;
-  ASSERT_NO_FATAL_FAILURE(WindowOpenHelper(
-      browser(),
-      GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
-           "/test.html"),
-      "newtab.html", &newtab));
+  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetSelectedWebContents(),
+                          start_url.Resolve("newtab.html"), true, &newtab));
 
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -700,11 +674,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
-  ASSERT_NO_FATAL_FAILURE(WindowOpenHelper(
-      browser(),
-      GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
-           "/test.html"),
-      "chrome-extension://thisissurelynotavalidextensionid/newtab.html", NULL));
+  GURL start_url(std::string("chrome-extension://") +
+      last_loaded_extension_id_ + "/test.html");
+  ui_test_utils::NavigateToURL(browser(), start_url);
+  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetSelectedWebContents(),
+      GURL("chrome-extension://thisissurelynotavalidextensionid/newtab.html"),
+      false, NULL));
 
   // If we got to this point, we didn't crash, so we're good.
 }
@@ -717,13 +692,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   WebContents* newtab;
-  ASSERT_NO_FATAL_FAILURE(WindowOpenHelper(
-      browser(),
-      GURL("about:blank"),
-      std::string("chrome-extension://") + last_loaded_extension_id_ +
-          "/newtab.html",
-      &newtab));
+  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetSelectedWebContents(),
+      GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
+          "/newtab.html"), false, &newtab));
 
   // Extension API should succeed.
   bool result = false;

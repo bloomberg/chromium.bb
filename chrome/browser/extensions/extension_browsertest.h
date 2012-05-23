@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 namespace extensions {
 class Extension;
@@ -135,6 +136,17 @@ class ExtensionBrowserTest
   // Wait for the specified extension to crash. Returns true if it really
   // crashed.
   bool WaitForExtensionCrash(const std::string& extension_id);
+
+  // Simulates a page calling window.open on an URL and waits for the
+  // navigation.
+  void OpenWindow(content::WebContents* contents,
+                  const GURL& url,
+                  bool newtab_process_should_equal_opener,
+                  content::WebContents** newtab_result);
+
+  // Simulates a page navigating itself to an URL and waits for the
+  // navigation.
+  void NavigateInRenderer(content::WebContents* contents, const GURL& url);
 
   // content::NotificationObserver
   virtual void Observe(int type,
