@@ -168,7 +168,7 @@ cr.define('options', function() {
       this.dismissible_ = ('dismissible' in device) ?
         device.dimissible : true;
 
-      var message = loadTimeData.getString('device.pairing');
+      var message = loadTimeData.getString(device.pairing);
       message = message.replace('%1', this.device_.name);
       instructionsEl.textContent = message;
 
