@@ -20,8 +20,6 @@ class Profile;
 
 namespace file_handler_util {
 
-void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id);
-
 // Gets read-write file access permission flags.
 int GetReadWritePermissions();
 // Gets read-only file access permission flags.

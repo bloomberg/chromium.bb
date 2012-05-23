@@ -35,13 +35,6 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Adds separator to drop-down list.
-     */
-    addSeparator: function() {
-      this.menu.addSeparator();
-    },
-
-    /**
      * Default item to fire on combobox click
      */
     get defaultItem() {

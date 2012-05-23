@@ -213,7 +213,6 @@ menu.chrome-menu > :not(hr) {
   padding-right: 20px;
 }
 
-
 menu.chrome-menu > :not(hr)[disabled] {
   background-color: rgb(255, 255, 255);
   color: rgb(153, 153, 153);

@@ -632,26 +632,6 @@ void ExecuteTasksFileBrowserFunction::OnTaskExecuted(bool success) {
   SendResponse(success);
 }
 
-SetDefaultTaskFileBrowserFunction::SetDefaultTaskFileBrowserFunction() {}
-
-SetDefaultTaskFileBrowserFunction::~SetDefaultTaskFileBrowserFunction() {}
-
-bool SetDefaultTaskFileBrowserFunction::RunImpl() {
-  // First param is task id that was to the extension with setDefaultTask call.
-  std::string task_id;
-  if (!args_->GetString(0, &task_id) || !task_id.size())
-    return false;
-
-  BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &file_handler_util::UpdateFileHandlerUsageStats,
-            profile_, task_id));
-
-  result_.reset(new base::FundamentalValue(true));
-  return true;
-}
-
 FileBrowserFunction::FileBrowserFunction() {
 }
 

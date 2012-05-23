@@ -113,19 +113,6 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.executeTask");
 };
 
-// Implements the chrome.fileBrowserPrivate.setDefaultTask method.
-class SetDefaultTaskFileBrowserFunction : public SyncExtensionFunction {
- public:
-  SetDefaultTaskFileBrowserFunction();
-  virtual ~SetDefaultTaskFileBrowserFunction();
-
- protected:
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.setDefaultTask");
-};
-
 // Parent class for the chromium extension APIs for the file dialog.
 class FileBrowserFunction
     : public AsyncExtensionFunction {

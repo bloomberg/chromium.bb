@@ -558,61 +558,33 @@ div.img-container > img {
   position: absolute;
 }
 
-/* Padding counterweights negative margins of items, thus eliminating scroll
-   bar when it's not needed. Max height is set to fit 8 items before showing
-   scroll bar. */
-#default-actions-list {
-  max-height: 328px;
-  padding: 1px 0;
-}
-
-#default-actions-list > li {
-  display: -webkit-box;
-}
-
-#default-actions-list > li > * {
-  display: block;
-  padding: 0 5px;
-}
-
-#default-actions-list > li > img {
-  height: 16px;
-  padding-top: 12px;
-}
-
-
 #list-container list > *,
-#list-container grid > *,
-#default-actions-list > * {
+#list-container grid > * {
   background-image: none;
   border-radius: 0;
   line-height: 30px;
 }
 
 #list-container list > [selected],
-#list-container grid > [selected],
-#default-actions-list > [selected] {
+#list-container grid > [selected] {
   background-color: rgb(203, 219, 241);
 }
 
-#list-container list > li.table-row[selected],
-#default-actions-list > li[selected] {
+#list-container list > li.table-row[selected] {
   border-top: 1px solid rgb(224, 233, 247);
 }
 
 #list-container list > .accepts[selected],
 #list-container grid > .accepts[selected],
 #list-container list > [selected]:hover,
-#list-container grid > [selected]:hover,
-#default-actions-list > [selected]:hover {
+#list-container grid > [selected]:hover {
   background-color: rgb(193, 211, 236);
 }
 
 #list-container list > .accepts,
 #list-container grid > .accepts,
 #list-container list > :hover,
-#list-container grid > :hover,
-#default-actions-list > :hover {
+#list-container grid > :hover {
   background-color: #f1f1f1;
 }
 
@@ -860,8 +832,7 @@ input.rename {
   opacity: 1 !important;
 }
 
-#list-container li.table-row,
-#default-actions-list li {
+#list-container li.table-row {
   border: none;
   border-top: 1px solid transparent;
   line-height: 39px;

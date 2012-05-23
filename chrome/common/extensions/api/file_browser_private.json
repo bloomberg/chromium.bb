@@ -388,23 +388,6 @@
         ]
       },
       {
-        "name": "setDefaultTask",
-        "description": "Sets default task.",
-        "parameters": [
-          {
-            "name": "taskId",
-            "type": "string",
-            "description": "The unique identifier of task to mark as default."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "optional": true,
-            "parameters": []
-          }
-        ]        
-      },
-      {
         "name": "getFileTasks",
         "description": "Gets the list of tasks that can be performed over selected files.",
         "parameters": [

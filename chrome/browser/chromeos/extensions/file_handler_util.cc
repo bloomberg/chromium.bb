@@ -76,6 +76,18 @@ int ExtractProcessFromExtensionId(const std::string& extension_id,
   return process->GetID();
 }
 
+// Update file handler usage stats.
+void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id) {
+  if (!profile || !profile->GetPrefs())
+    return;
+  DictionaryPrefUpdate prefs_usage_update(profile->GetPrefs(),
+      prefs::kLastUsedFileBrowserHandlers);
+  prefs_usage_update->SetWithoutPathExpansion(task_id,
+      new base::FundamentalValue(
+          static_cast<int>(base::Time::Now().ToInternalValue()/
+                           base::Time::kMicrosecondsPerSecond)));
+}
+
 URLPatternSet GetAllMatchingPatterns(const FileBrowserHandler* handler,
                                      const std::vector<GURL>& files_list) {
   URLPatternSet matching_patterns;
@@ -188,18 +200,6 @@ void SortLastUsedHandlerList(LastUsedHandlerList *list) {
 }
 
 }  // namespace
-
-// Update file handler usage stats.
-void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id) {
-  if (!profile || !profile->GetPrefs())
-    return;
-  DictionaryPrefUpdate prefs_usage_update(profile->GetPrefs(),
-      prefs::kLastUsedFileBrowserHandlers);
-  prefs_usage_update->SetWithoutPathExpansion(task_id,
-      new base::FundamentalValue(
-          static_cast<int>(base::Time::Now().ToInternalValue()/
-                           base::Time::kMicrosecondsPerSecond)));
-}
 
 int GetReadWritePermissions() {
   return kReadWriteFilePermissions;
@@ -634,6 +634,8 @@ void FileTaskExecutor::SetupPermissionsAndDispatchEvent(
     if (contents)
       details->SetInteger("tab_id", ExtensionTabUtil::GetTabId(contents));
   }
+
+  UpdateFileHandlerUsageStats(profile_, MakeTaskID(extension_id_, action_id_));
 
   std::string json_args;
   base::JSONWriter::Write(event_args.get(), &json_args);
