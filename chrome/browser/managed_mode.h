@@ -40,8 +40,8 @@ class ManagedMode : public BrowserList::Observer,
   static void LeaveManagedMode();
 
   // BrowserList::Observer implementation:
-  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
@@ -76,7 +76,7 @@ class ManagedMode : public BrowserList::Observer,
   // The managed profile. This is non-NULL only while we're entering
   // managed mode.
   const Profile* managed_profile_;
-  std::set<const Browser*> browsers_to_close_;
+  std::set<Browser*> browsers_to_close_;
   std::vector<EnterCallback> callbacks_;
 };
 

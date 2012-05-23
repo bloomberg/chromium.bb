@@ -48,9 +48,9 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   void Init(ExtensionToolbarModel* model);
 
   // BrowserList::Observer
-  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
 
 #if defined(TOOLKIT_VIEWS)
   virtual void OnNativeFocusChange(gfx::NativeView focused_before,
@@ -61,7 +61,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // Called from Observe() on BROWSER_WINDOW_READY (not a part of
   // BrowserList::Observer).
-  void OnBrowserWindowReady(const Browser* browser);
+  void OnBrowserWindowReady(Browser* browser);
 
   // TabStripModelObserver
   virtual void TabInsertedAt(TabContentsWrapper* contents, int index,
@@ -162,7 +162,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // Register ourselves to receive the various notifications we are interested
   // in for a browser.
-  void RegisterForBrowserNotifications(const Browser* browser);
+  void RegisterForBrowserNotifications(Browser* browser);
 
   // Register ourselves to receive the various notifications we are interested
   // in for a tab.

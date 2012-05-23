@@ -607,13 +607,13 @@ ProfileManager::BrowserListObserver::~BrowserListObserver() {
 }
 
 void ProfileManager::BrowserListObserver::OnBrowserAdded(
-    const Browser* browser) {}
+    Browser* browser) {}
 
 void ProfileManager::BrowserListObserver::OnBrowserRemoved(
-    const Browser* browser) {}
+    Browser* browser) {}
 
 void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
-    const Browser* browser) {
+    Browser* browser) {
   Profile* last_active = browser->profile();
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);

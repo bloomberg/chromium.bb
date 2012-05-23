@@ -38,12 +38,12 @@ class Observer : public BrowserList::Observer,
   }
 
   // BrowserList::Observer:
-  virtual void OnBrowserAdded(const Browser* browser) {}
-  virtual void OnBrowserRemoved(const Browser* browser) {
+  virtual void OnBrowserAdded(Browser* browser) {}
+  virtual void OnBrowserRemoved(Browser* browser) {
     [controller_ activeBrowserChangedTo:BrowserList::GetLastActive()];
   }
-  virtual void OnBrowserSetLastActive(const Browser* browser) {
-    [controller_ activeBrowserChangedTo:const_cast<Browser*>(browser)];
+  virtual void OnBrowserSetLastActive(Browser* browser) {
+    [controller_ activeBrowserChangedTo:browser];
   }
 
   // AvatarMenuModelObserver:

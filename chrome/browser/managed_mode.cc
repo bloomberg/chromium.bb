@@ -97,7 +97,7 @@ void ManagedMode::EnterManagedModeImpl(Profile* profile,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
                  content::NotificationService::AllSources());
-  for (std::set<const Browser*>::const_iterator i = browsers_to_close_.begin();
+  for (std::set<Browser*>::const_iterator i = browsers_to_close_.begin();
        i != browsers_to_close_.end(); ++i) {
     (*i)->window()->Close();
   }
@@ -114,7 +114,7 @@ void ManagedMode::LeaveManagedModeImpl() {
     SetInManagedMode(false);
 }
 
-void ManagedMode::OnBrowserAdded(const Browser* browser) {
+void ManagedMode::OnBrowserAdded(Browser* browser) {
   // Return early if we don't have any queued callbacks.
   if (callbacks_.empty())
     return;
@@ -123,7 +123,7 @@ void ManagedMode::OnBrowserAdded(const Browser* browser) {
     FinalizeEnter(false);
 }
 
-void ManagedMode::OnBrowserRemoved(const Browser* browser) {
+void ManagedMode::OnBrowserRemoved(Browser* browser) {
   // Return early if we don't have any queued callbacks.
   if (callbacks_.empty())
     return;

@@ -15,6 +15,11 @@
 class Browser;
 class FilePath;
 class PrefService;
+class Profile;
+
+namespace content {
+class PageNavigator;
+}
 
 // This class will try to detect if the profile is on a network share and if
 // this is the case notify the user with an info bubble.
@@ -32,10 +37,12 @@ class NetworkProfileBubble : public views::BubbleDelegateView,
   static bool ShouldCheckNetworkProfile(PrefService* prefs);
 
   // Shows the notification bubble using the provided |browser|.
-  static void ShowNotification(const Browser* browser);
+  static void ShowNotification(Browser* browser);
 
  private:
-  explicit NetworkProfileBubble(views::View* anchor);
+  NetworkProfileBubble(views::View* anchor,
+                       content::PageNavigator* navigator,
+                       Profile* profile);
   virtual ~NetworkProfileBubble();
 
   // views::BubbleDelegateView overrides:
@@ -57,6 +64,10 @@ class NetworkProfileBubble : public views::BubbleDelegateView,
   // the notification more than once per browser run.
   // This flag is not thread-safe and should only be accessed on the UI thread!
   static bool notification_shown_;
+
+  // Used for loading pages.
+  content::PageNavigator* navigator_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkProfileBubble);
 };

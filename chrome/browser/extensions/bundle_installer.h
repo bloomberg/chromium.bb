@@ -164,9 +164,9 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
                                          const std::string& error) OVERRIDE;
 
   // BrowserList::observer implementation:
-  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
 
   // Holds the Extensions used to generate the permission warnings.
   ExtensionList dummy_extensions_;

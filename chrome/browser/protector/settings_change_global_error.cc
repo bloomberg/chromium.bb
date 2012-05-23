@@ -204,7 +204,7 @@ void SettingsChangeGlobalError::BubbleViewCancelButtonPressed(
 }
 
 void SettingsChangeGlobalError::OnBrowserSetLastActive(
-    const Browser* browser) {
+    Browser* browser) {
   if (show_on_browser_activation_ && browser && browser->is_type_tabbed()) {
     // A tabbed browser window got activated, show the error bubble again.
     // Calling ShowBubble() immediately from here does not always work because

@@ -28,13 +28,13 @@ class BrowserList {
   class Observer {
    public:
     // Called immediately after a browser is added to the list
-    virtual void OnBrowserAdded(const Browser* browser) = 0;
+    virtual void OnBrowserAdded(Browser* browser) = 0;
 
     // Called immediately after a browser is removed from the list
-    virtual void OnBrowserRemoved(const Browser* browser) = 0;
+    virtual void OnBrowserRemoved(Browser* browser) = 0;
 
     // Called immediately after a browser is set active (SetLastActive)
-    virtual void OnBrowserSetLastActive(const Browser* browser) {}
+    virtual void OnBrowserSetLastActive(Browser* browser) {}
 
    protected:
     virtual ~Observer() {}

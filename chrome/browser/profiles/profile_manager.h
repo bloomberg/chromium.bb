@@ -319,9 +319,9 @@ class ProfileManager : public base::NonThreadSafe,
     virtual ~BrowserListObserver();
 
     // BrowserList::Observer implementation.
-    virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
-    virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
-    virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
+    virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
+    virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+    virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
 
    private:
     ProfileManager* profile_manager_;

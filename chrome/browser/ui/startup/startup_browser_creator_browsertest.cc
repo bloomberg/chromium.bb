@@ -103,13 +103,13 @@ class OpenURLsPopupObserver : public BrowserList::Observer {
  public:
   OpenURLsPopupObserver() : added_browser_(NULL) { }
 
-  virtual void OnBrowserAdded(const Browser* browser) {
+  virtual void OnBrowserAdded(Browser* browser) {
     added_browser_ = browser;
   }
 
-  virtual void OnBrowserRemoved(const Browser* browser) { }
+  virtual void OnBrowserRemoved(Browser* browser) { }
 
-  const Browser* added_browser_;
+  Browser* added_browser_;
 };
 
 // Test that when there is a popup as the active browser any requests to

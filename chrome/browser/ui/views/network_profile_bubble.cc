@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/network_profile_bubble_prefs.h"
 #include "chrome/browser/ui/views/event_utils.h"
@@ -82,21 +83,21 @@ class BrowserListObserver : public BrowserList::Observer {
   virtual ~BrowserListObserver();
 
   // Overridden from BrowserList::Observer:
-  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
-  virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserAdded(Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
 };
 
 BrowserListObserver::~BrowserListObserver() {
 }
 
-void BrowserListObserver::OnBrowserAdded(const Browser* browser) {
+void BrowserListObserver::OnBrowserAdded(Browser* browser) {
 }
 
-void BrowserListObserver::OnBrowserRemoved(const Browser* browser) {
+void BrowserListObserver::OnBrowserRemoved(Browser* browser) {
 }
 
-void BrowserListObserver::OnBrowserSetLastActive(const Browser* browser) {
+void BrowserListObserver::OnBrowserSetLastActive(Browser* browser) {
   NetworkProfileBubble::ShowNotification(browser);
   // No need to observe anymore.
   BrowserList::RemoveObserver(this);
@@ -190,12 +191,13 @@ bool NetworkProfileBubble::ShouldCheckNetworkProfile(PrefService* prefs) {
 }
 
 // static
-void NetworkProfileBubble::ShowNotification(const Browser* browser) {
+void NetworkProfileBubble::ShowNotification(Browser* browser) {
   views::View* anchor = NULL;
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (browser_view && browser_view->GetToolbarView())
     anchor = browser_view->GetToolbarView()->app_menu();
-  NetworkProfileBubble* bubble = new NetworkProfileBubble(anchor);
+  NetworkProfileBubble* bubble =
+      new NetworkProfileBubble(anchor, browser, browser->profile());
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->Show();
   notification_shown_ = true;
@@ -213,8 +215,12 @@ void NetworkProfileBubble::ShowNotification(const Browser* browser) {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkProfileBubble, private:
 
-NetworkProfileBubble::NetworkProfileBubble(views::View* anchor)
-    : BubbleDelegateView(anchor, views::BubbleBorder::TOP_RIGHT) {
+NetworkProfileBubble::NetworkProfileBubble(views::View* anchor,
+                                           content::PageNavigator* navigator,
+                                           Profile* profile)
+    : BubbleDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
+      navigator_(navigator),
+      profile_(profile) {
 }
 
 NetworkProfileBubble::~NetworkProfileBubble() {
@@ -268,23 +274,21 @@ gfx::Rect NetworkProfileBubble::GetAnchorRect() {
 
 void NetworkProfileBubble::LinkClicked(views::Link* source, int event_flags) {
   RecordUmaEvent(METRIC_LEARN_MORE_CLICKED);
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser) {
-    WindowOpenDisposition disposition =
-        event_utils::DispositionFromEventFlags(event_flags);
-    content::OpenURLParams params(
-        GURL("https://sites.google.com/a/chromium.org/dev/administrators/"
-             "common-problems-and-solutions#network_profile"),
-        content::Referrer(),
-        disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition,
-        content::PAGE_TRANSITION_LINK, false);
-    browser->OpenURL(params);
-    // If the user interacted with the bubble we don't reduce the number of
-    // warnings left.
-    PrefService* prefs = browser->profile()->GetPrefs();
-    int left_warnings = prefs->GetInteger(prefs::kNetworkProfileWarningsLeft);
-    prefs->SetInteger(prefs::kNetworkProfileWarningsLeft, ++left_warnings);
-  }
+  WindowOpenDisposition disposition =
+      event_utils::DispositionFromEventFlags(event_flags);
+  content::OpenURLParams params(
+      GURL("https://sites.google.com/a/chromium.org/dev/administrators/"
+            "common-problems-and-solutions#network_profile"),
+      content::Referrer(),
+      disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false);
+  navigator_->OpenURL(params);
+
+  // If the user interacted with the bubble we don't reduce the number of
+  // warnings left.
+  PrefService* prefs = profile_->GetPrefs();
+  int left_warnings = prefs->GetInteger(prefs::kNetworkProfileWarningsLeft);
+  prefs->SetInteger(prefs::kNetworkProfileWarningsLeft, ++left_warnings);
   GetWidget()->Close();
 }
 

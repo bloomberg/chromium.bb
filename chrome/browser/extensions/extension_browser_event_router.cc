@@ -126,12 +126,12 @@ ExtensionBrowserEventRouter::~ExtensionBrowserEventRouter() {
 #endif
 }
 
-void ExtensionBrowserEventRouter::OnBrowserAdded(const Browser* browser) {
+void ExtensionBrowserEventRouter::OnBrowserAdded(Browser* browser) {
   RegisterForBrowserNotifications(browser);
 }
 
 void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
-    const Browser* browser) {
+    Browser* browser) {
   if (!profile_->IsSameProfile(browser->profile()))
     return;
   // Start listening to TabStripModel events for this browser.
@@ -141,7 +141,7 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
   // notified when it is. If this is an existing window, this is a no-op that we
   // just do to reduce code complexity.
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      content::Source<const Browser>(browser));
+      content::Source<Browser>(browser));
 
   for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     RegisterForTabNotifications(
@@ -171,7 +171,7 @@ void ExtensionBrowserEventRouter::UnregisterForTabNotifications(
       content::Source<WebContents>(contents));
 }
 
-void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
+void ExtensionBrowserEventRouter::OnBrowserWindowReady(Browser* browser) {
   ListValue args;
 
   DCHECK(browser->extension_window_controller());
@@ -185,7 +185,7 @@ void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
   DispatchEvent(browser->profile(), events::kOnWindowCreated, json_args);
 }
 
-void ExtensionBrowserEventRouter::OnBrowserRemoved(const Browser* browser) {
+void ExtensionBrowserEventRouter::OnBrowserRemoved(Browser* browser) {
   if (!profile_->IsSameProfile(browser->profile()))
     return;
 
@@ -193,7 +193,7 @@ void ExtensionBrowserEventRouter::OnBrowserRemoved(const Browser* browser) {
   browser->tab_strip_model()->RemoveObserver(this);
 
   registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      content::Source<const Browser>(browser));
+      content::Source<Browser>(browser));
 
   DispatchSimpleBrowserEvent(browser->profile(),
                              ExtensionTabUtil::GetWindowId(browser),
@@ -216,7 +216,7 @@ void ExtensionBrowserEventRouter::ActiveWindowChanged(
 #endif
 
 void ExtensionBrowserEventRouter::OnBrowserSetLastActive(
-    const Browser* browser) {
+    Browser* browser) {
   Profile* window_profile = NULL;
   int window_id = extension_misc::kUnknownWindowId;
   if (browser && profile_->IsSameProfile(browser->profile())) {
@@ -565,7 +565,7 @@ void ExtensionBrowserEventRouter::Observe(
     registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::Source<WebContents>(contents));
   } else if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
-    const Browser* browser = content::Source<const Browser>(source).ptr();
+    Browser* browser = content::Source<Browser>(source).ptr();
     OnBrowserWindowReady(browser);
 #if defined(OS_MACOSX)
   } else if (type == content::NOTIFICATION_NO_KEY_WINDOW) {

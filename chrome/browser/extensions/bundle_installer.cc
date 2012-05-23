@@ -332,13 +332,13 @@ void BundleInstaller::OnExtensionInstallFailure(const std::string& id,
   ShowInstalledBubbleIfDone();
 }
 
-void BundleInstaller::OnBrowserAdded(const Browser* browser) {}
+void BundleInstaller::OnBrowserAdded(Browser* browser) {}
 
-void BundleInstaller::OnBrowserRemoved(const Browser* browser) {
+void BundleInstaller::OnBrowserRemoved(Browser* browser) {
   if (browser_ == browser)
     browser_ = NULL;
 }
 
-void BundleInstaller::OnBrowserSetLastActive(const Browser* browser) {}
+void BundleInstaller::OnBrowserSetLastActive(Browser* browser) {}
 
 }  // namespace extensions
