@@ -31,6 +31,7 @@
 #include <cairo.h>
 #include <sys/wait.h>
 #include <linux/input.h>
+#include <libgen.h>
 
 #include <wayland-client.h>
 #include <wayland-cursor.h>
@@ -205,6 +206,17 @@ panel_launcher_redraw_handler(struct widget *widget, void *data)
 	cairo_destroy(cr);
 }
 
+static int
+panel_launcher_motion_handler(struct widget *widget, struct input *input,
+			      uint32_t time, float x, float y, void *data)
+{
+	struct panel_launcher *launcher = data;
+
+	widget_set_tooltip(widget, basename((char *)launcher->path), x, y);
+
+	return POINTER_LEFT_PTR;
+}
+
 static void
 set_hex_color(cairo_t *cr, uint32_t color)
 {
@@ -251,6 +263,7 @@ panel_launcher_leave_handler(struct widget *widget,
 	struct panel_launcher *launcher = data;
 
 	launcher->focused = 0;
+	widget_destroy_tooltip(widget);
 	widget_schedule_redraw(widget);
 }
 
@@ -354,6 +367,8 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 				    panel_launcher_button_handler);
 	widget_set_redraw_handler(launcher->widget,
 				  panel_launcher_redraw_handler);
+	widget_set_motion_handler(launcher->widget,
+				  panel_launcher_motion_handler);
 }
 
 enum {
