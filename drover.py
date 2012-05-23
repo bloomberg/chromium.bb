@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,7 +29,7 @@ Example: %(app)s --merge 12345 --branch 187
 
 [Merge from trunk to milestone]
 --merge <revision> --milestone <milestone_num>
-Example: %(app)s -- merge 12345 --milestone 16
+Example: %(app)s --merge 12345 --milestone 16
 
 [Merge from trunk to local copy]
 --merge <revision> --local
