@@ -546,6 +546,8 @@
         '../third_party/skia/src/utils/SkBitSet.h',
         '../third_party/skia/src/utils/SkDeferredCanvas.cpp',
         '../third_party/skia/src/utils/SkMatrix44.cpp',
+        '../third_party/skia/include/utils/SkNWayCanvas.h',
+        '../third_party/skia/src/utils/SkNWayCanvas.cpp',
 
         '../third_party/skia/include/core/Sk64.h',
         '../third_party/skia/include/core/SkAdvancedTypefaceMetrics.h',
