@@ -70,7 +70,7 @@ class _DevToolsSocketRequest(object):
         and all relevant results for it have been obtained (i.e., this value is
         True only if all results for this request are known).
   """
-  def __init__(self, method, message_id):
+  def __init__(self, method, params, message_id):
     """Initialize.
 
     Args:
@@ -80,7 +80,7 @@ class _DevToolsSocketRequest(object):
     """
     self.method = method
     self.id = message_id
-    self.params = {}
+    self.params = params
     self.results = {}
     self.is_fulfilled = False
 
@@ -333,7 +333,7 @@ class _RemoteInspectorThread(threading.Thread):
         # Prepare the request list.
         for message_id, message in enumerate(messages):
           self._requests.append(
-              _DevToolsSocketRequest(message, message_id))
+              _DevToolsSocketRequest(message[0], message[1], message_id))
 
         # Send out each request.  Wait until each request is complete before
         # sending the next request.
@@ -731,11 +731,11 @@ class RemoteInspectorClient(object):
       }
     """
     HEAP_SNAPSHOT_MESSAGES = [
-      'Page.getResourceTree',
-      'Debugger.enable',
-      'Profiler.clearProfiles',
-      'Profiler.takeHeapSnapshot',
-      'Profiler.getProfile',
+      ('Page.getResourceTree', {}),
+      ('Debugger.enable', {}),
+      ('Profiler.clearProfiles', {}),
+      ('Profiler.takeHeapSnapshot', {}),
+      ('Profiler.getProfile', {}),
     ]
 
     self._current_heap_snapshot = []
@@ -797,6 +797,45 @@ class RemoteInspectorClient(object):
       time.sleep(0.1)
     return self._collected_heap_snapshot_data
 
+  def EvaluateJavaScript(self, expression):
+    """Evaluates a JavaScript expression and returns the result.
+
+    Sends a message containing the expression to the remote Chrome instance we
+    are connected to, and evaluates it in the context of the tab we are
+    connected to. Blocks until the result is available and returns it.
+
+    Returns:
+      A dictionary representing the result.
+    """
+    EVALUATE_MESSAGES = [
+      ('Runtime.evaluate', { 'expression': expression,
+                             'objectGroup': 'group',
+                             'returnByValue': True }),
+      ('Runtime.releaseObjectGroup', { 'objectGroup': 'group' })
+    ]
+
+    self._result = None
+    self._got_result = False
+
+    def HandleReply(reply_dict):
+      """Processes a reply message received from the remote Chrome instance.
+
+      Args:
+        reply_dict: A dictionary object representing the reply message received
+                    from the remote Chrome instance.
+      """
+      if 'result' in reply_dict and 'result' in reply_dict['result']:
+        self._result = reply_dict['result']['result']['value']
+        self._got_result = True
+
+    # Tell the remote inspector to evaluate the given expression, then wait
+    # until that information is available to return.
+    self._remote_inspector_thread.PerformAction(EVALUATE_MESSAGES,
+                                                HandleReply)
+    while not self._got_result:
+      time.sleep(0.1)
+    return self._result
+
   def GetMemoryObjectCounts(self):
     """Retrieves memory object count information.
 
@@ -808,7 +847,7 @@ class RemoteInspectorClient(object):
       }
     """
     MEMORY_COUNT_MESSAGES = [
-      'Memory.getDOMNodeCount',
+      ('Memory.getDOMNodeCount', {})
     ]
 
     self._event_listener_count = None
@@ -849,7 +888,7 @@ class RemoteInspectorClient(object):
   def CollectGarbage(self):
     """Forces a garbage collection."""
     COLLECT_GARBAGE_MESSAGES = [
-      'Profiler.collectGarbage',
+      ('Profiler.collectGarbage', {})
     ]
 
     # Tell the remote inspector to do a garbage collect.  We can return
@@ -869,7 +908,7 @@ class RemoteInspectorClient(object):
       self._logger.warning('Timeline monitoring already started.')
       return
     TIMELINE_MESSAGES = [
-      'Timeline.start',
+      ('Timeline.start', {})
     ]
 
     self._event_callback = event_callback
@@ -897,7 +936,7 @@ class RemoteInspectorClient(object):
       self._logger.warning('Timeline monitoring already stopped.')
       return
     TIMELINE_MESSAGES = [
-      'Timeline.stop',
+      ('Timeline.stop', {})
     ]
 
     # Tell the remote inspector to stop the timeline.  We can return
