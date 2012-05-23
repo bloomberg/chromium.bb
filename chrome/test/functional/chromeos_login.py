@@ -9,6 +9,7 @@ import sys
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import pyauto_errors
 
 
 sys.path.append('/usr/local')  # To make autotest libs importable.
@@ -53,7 +54,9 @@ class ChromeosLogin(pyauto.PyUITest):
 
   def testBadUsername(self):
     """Test that login fails when passed an invalid username."""
-    self.Login('doesnotexist@fakedomain.org', 'badpassword')
+    self.assertRaises(
+        pyauto_errors.LoginError,
+        lambda: self.Login('doesnotexist@fakedomain.org', 'badpassword'))
     login_info = self.GetLoginInfo()
     self.assertFalse(login_info['is_logged_in'],
                      msg='Login succeeded, with bad credentials.')
@@ -61,7 +64,9 @@ class ChromeosLogin(pyauto.PyUITest):
   def testBadPassword(self):
     """Test that login fails when passed an invalid password."""
     credentials = self._ValidCredentials()
-    self.Login(credentials['username'], 'badpassword')
+    self.assertRaises(
+        pyauto_errors.LoginError,
+        lambda: self.Login(credentials['username'], 'badpassword'))
     login_info = self.GetLoginInfo()
     self.assertFalse(login_info['is_logged_in'],
                      msg='Login succeeded, with bad credentials.')

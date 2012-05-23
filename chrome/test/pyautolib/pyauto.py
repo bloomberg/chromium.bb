@@ -85,6 +85,7 @@ import omnibox_info
 import plugins_info
 import prefs_info
 from pyauto_errors import JSONInterfaceError
+from pyauto_errors import LoginError
 from pyauto_errors import NTPThumbnailNotShownError
 import pyauto_utils
 import simplejson as json  # found in third_party
@@ -4129,19 +4130,22 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Waits until logged in and browser is ready.
     Should be displaying the login screen to work.
 
-    Returns:
-      An error string if an error occured.
-      None otherwise.
-
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
+      pyauto_errors.LoginError if the login fails.
     """
     observer_id = self._AddLoginEventObserver()
     ret = self.ExecuteJavascriptInOOBEWebUI("""
         chrome.send("completeLogin", ["%s", "%s"] );
         window.domAutomationController.send("success");""" %
         (username, password));
-    return self.GetNextEvent(observer_id).get('error_string')
+    try:
+      response = self.GetNextEvent(observer_id)
+    except JSONInterfaceError as e:
+      raise JSONInterfaceError(
+          str(e) + '\n Perhaps Chrome crashed or login is broken?')
+    if 'error_string' in response:
+      raise LoginError(response['error_string'])
 
   def Logout(self):
     """Log out from ChromeOS and wait for session_manager to come up.

@@ -8,11 +8,20 @@ class JavascriptRuntimeError(RuntimeError):
   """Represent an error raised by injected Javascript."""
   pass
 
+
 class JSONInterfaceError(RuntimeError):
   """Represent an error in the JSON ipc interface."""
   pass
 
+
 class NTPThumbnailNotShownError(RuntimeError):
-  """Represent an error from attempting to manipulate a NTP thumbnail that
-  is not visible to a real user."""
+  """Represent an error while attempting to manipulate a NTP thumbnail.
+
+  This is due to it not being visible to a real user.
+  """
+  pass
+
+
+class LoginError(RuntimeError):
+  """Represent an error during Chrome OS login."""
   pass
