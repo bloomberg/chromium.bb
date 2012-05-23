@@ -60,7 +60,7 @@ namespace content {
 CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
 
 // Special URL used to start a navigation to an error page.
-extern const char kUnreachableWebDataURL[];
+CONTENT_EXPORT extern const char kUnreachableWebDataURL[];
 
 // Special URL used to swap out a view being rendered by another process.
 extern const char kSwappedOutURL[];

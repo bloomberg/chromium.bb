@@ -319,6 +319,9 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(WebFrame* frame) {
 bool ContentSettingsObserver::IsWhitelistedForContentSettings(
     const WebSecurityOrigin& origin,
     const GURL& document_url) {
+  if (document_url == GURL(content::kUnreachableWebDataURL))
+    return true;
+
   if (origin.isUnique())
     return false;  // Uninitialized document?
 
