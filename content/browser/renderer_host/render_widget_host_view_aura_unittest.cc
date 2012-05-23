@@ -87,6 +87,12 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     if (view_)
       view_->Destroy();
     delete widget_host_;
+
+    browser_context_.reset();
+    test_stacking_client_.reset();
+    root_window_.reset();
+    aura::Env::DeleteInstance();
+
     message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
     message_loop_.RunAllPending();
   }

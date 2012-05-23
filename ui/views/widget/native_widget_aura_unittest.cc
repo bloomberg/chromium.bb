@@ -51,6 +51,7 @@ class NativeWidgetAuraTest : public testing::Test {
     message_loop_.RunAllPending();
     test_stacking_client_.reset();
     root_window_.reset();
+    aura::Env::DeleteInstance();
   }
 
  protected:
