@@ -51,6 +51,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
+#include "base/win/metro.h"
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 
@@ -938,6 +939,10 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
 bool ProfileManager::IsMultipleProfilesEnabled() {
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
+    return false;
+#endif
+#if defined(OS_WIN)
+  if (base::win::GetMetroModule())
     return false;
 #endif
   return !ManagedMode::IsInManagedMode();
