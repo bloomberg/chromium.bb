@@ -10,7 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/common/url_fetcher.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
@@ -118,7 +118,7 @@ class CloudPrintURLFetcher
 
  private:
   void StartRequestHelper(const GURL& url,
-                          content::URLFetcher::RequestType request_type,
+                          net::URLFetcher::RequestType request_type,
                           Delegate* delegate,
                           int max_retries,
                           const std::string& post_data_mime_type,
@@ -126,10 +126,10 @@ class CloudPrintURLFetcher
                           const std::string& additional_headers);
   void SetupRequestHeaders();
 
-  scoped_ptr<content::URLFetcher> request_;
+  scoped_ptr<net::URLFetcher> request_;
   Delegate* delegate_;
   int num_retries_;
-  content::URLFetcher::RequestType request_type_;
+  net::URLFetcher::RequestType request_type_;
   std::string additional_headers_;
   std::string post_data_mime_type_;
   std::string post_data_;

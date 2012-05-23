@@ -219,10 +219,10 @@ TestURLFetcherFactory::TestURLFetcherFactory()
 
 TestURLFetcherFactory::~TestURLFetcherFactory() {}
 
-content::URLFetcher* TestURLFetcherFactory::CreateURLFetcher(
+net::URLFetcher* TestURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
-    content::URLFetcher::RequestType request_type,
+    net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d) {
   TestURLFetcher* fetcher = new TestURLFetcher(id, url, d);
   fetchers_[id] = fetcher;
@@ -297,10 +297,10 @@ FakeURLFetcherFactory::FakeURLFetcherFactory(
 
 FakeURLFetcherFactory::~FakeURLFetcherFactory() {}
 
-content::URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
+net::URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
-    content::URLFetcher::RequestType request_type,
+    net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d) {
   FakeResponseMap::const_iterator it = fake_responses_.find(url);
   if (it == fake_responses_.end()) {
@@ -330,10 +330,10 @@ URLFetcherImplFactory::URLFetcherImplFactory() {}
 
 URLFetcherImplFactory::~URLFetcherImplFactory() {}
 
-content::URLFetcher* URLFetcherImplFactory::CreateURLFetcher(
+net::URLFetcher* URLFetcherImplFactory::CreateURLFetcher(
     int id,
     const GURL& url,
-    content::URLFetcher::RequestType request_type,
+    net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d) {
   return new URLFetcherImpl(url, request_type, d);
 }

@@ -81,10 +81,10 @@ class DummyURLFetcherFactory : public content::URLFetcherFactory {
    DummyURLFetcherFactory() {}
    virtual ~DummyURLFetcherFactory() {}
 
-   virtual content::URLFetcher* CreateURLFetcher(
+   virtual net::URLFetcher* CreateURLFetcher(
        int id,
        const GURL& url,
-       content::URLFetcher::RequestType request_type,
+       net::URLFetcher::RequestType request_type,
        net::URLFetcherDelegate* d) OVERRIDE {
      return new TestURLFetcher(id, url, d);
    }

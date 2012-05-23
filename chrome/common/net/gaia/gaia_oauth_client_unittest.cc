@@ -30,7 +30,7 @@ class MockOAuthFetcher : public TestURLFetcher {
                    int max_failure_count,
                    const GURL& url,
                    const std::string& results,
-                   content::URLFetcher::RequestType request_type,
+                   net::URLFetcher::RequestType request_type,
                    net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d),
       max_failure_count_(max_failure_count),
@@ -72,10 +72,10 @@ class MockOAuthFetcherFactory : public content::URLFetcherFactory,
         response_code_(net::HTTP_OK) {
   }
   ~MockOAuthFetcherFactory() {}
-  virtual content::URLFetcher* CreateURLFetcher(
+  virtual net::URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      content::URLFetcher::RequestType request_type,
+      net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) {
     return new MockOAuthFetcher(
         response_code_,

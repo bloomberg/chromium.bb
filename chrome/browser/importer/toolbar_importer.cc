@@ -214,7 +214,7 @@ void Toolbar5Importer::GetAuthenticationFromServer() {
   // Because the importer is started as the result of a user action which
   // explicitly requires authentication, sending cookies here is reasonable.
   token_fetcher_ = content::URLFetcher::Create(
-      url, content::URLFetcher::GET, this);
+      url, net::URLFetcher::GET, this);
   token_fetcher_->SetRequestContext(request_context_getter_.get());
   token_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   token_fetcher_->Start();
@@ -251,7 +251,7 @@ void Toolbar5Importer::GetBookmarkDataFromServer(const std::string& response) {
   // Because the importer is started as the result of a user action which
   // explicitly requires authentication, sending cookies here is reasonable.
   data_fetcher_ = content::URLFetcher::Create(
-      url, content::URLFetcher::GET, this);
+      url, net::URLFetcher::GET, this);
   data_fetcher_->SetRequestContext(request_context_getter_.get());
   data_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   data_fetcher_->Start();

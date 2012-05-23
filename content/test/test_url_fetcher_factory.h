@@ -54,14 +54,14 @@ class ScopedURLFetcherFactory : public base::NonThreadSafe {
 // might want to use the FakeURLFetcher and FakeURLFetcherFactory classes
 // below.
 
-class TestURLFetcher : public content::URLFetcher {
+class TestURLFetcher : public net::URLFetcher {
  public:
   TestURLFetcher(int id,
                  const GURL& url,
                  net::URLFetcherDelegate* d);
   virtual ~TestURLFetcher();
 
-  // content::URLFetcher implementation
+  // net::URLFetcher implementation
   virtual void SetUploadData(const std::string& upload_content_type,
                              const std::string& upload_content) OVERRIDE;
   virtual void SetChunkedUpload(
@@ -186,10 +186,10 @@ class TestURLFetcherFactory : public content::URLFetcherFactory,
   TestURLFetcherFactory();
   virtual ~TestURLFetcherFactory();
 
-  virtual content::URLFetcher* CreateURLFetcher(
+  virtual net::URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      content::URLFetcher::RequestType request_type,
+      net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) OVERRIDE;
   TestURLFetcher* GetFetcherByID(int id) const;
   void RemoveFetcherFromMap(int id);
@@ -248,10 +248,10 @@ class FakeURLFetcherFactory : public content::URLFetcherFactory,
   // NULL.
   // Otherwise, it will return a URLFetcher object which will respond with the
   // pre-baked response that the client has set by calling SetFakeResponse().
-  virtual content::URLFetcher* CreateURLFetcher(
+  virtual net::URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      content::URLFetcher::RequestType request_type,
+      net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) OVERRIDE;
 
   // Sets the fake response for a given URL.  If success is true we will serve
@@ -282,10 +282,10 @@ class URLFetcherImplFactory : public content::URLFetcherFactory {
   virtual ~URLFetcherImplFactory();
 
   // This method will create a real URLFetcher.
-  virtual content::URLFetcher* CreateURLFetcher(
+  virtual net::URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      content::URLFetcher::RequestType request_type,
+      net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) OVERRIDE;
 
 };

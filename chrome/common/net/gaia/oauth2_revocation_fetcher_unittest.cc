@@ -26,7 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using content::URLFetcher;
+using net::URLFetcher;
 using net::URLFetcherDelegate;
 using content::URLFetcherFactory;
 using net::ResponseCookies;

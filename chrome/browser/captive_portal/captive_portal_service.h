@@ -143,7 +143,7 @@ class CaptivePortalService : public ProfileKeyedService,
   //               Android, since it lacks the Browser class.
   void UpdateEnabledState();
 
-  // Takes a content::URLFetcher that has finished trying to retrieve the test
+  // Takes a net::URLFetcher that has finished trying to retrieve the test
   // URL, and returns a captive_portal::Result based on its result.
   // If the response is a 503 with a Retry-After header, |retry_after| is
   // populated accordingly.  Otherwise, it's set to base::TimeDelta().

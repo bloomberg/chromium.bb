@@ -245,7 +245,7 @@ std::string ProfileDownloader::GetProfilePictureURL() const {
 void ProfileDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
   user_entry_fetcher_.reset(content::URLFetcher::Create(
-      GURL(kUserEntryURL), content::URLFetcher::GET, this));
+      GURL(kUserEntryURL), net::URLFetcher::GET, this));
   user_entry_fetcher_->SetRequestContext(
       delegate_->GetBrowserProfile()->GetRequestContext());
   user_entry_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
@@ -309,7 +309,7 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
     VLOG(1) << "Fetching profile image from " << image_url;
     picture_url_ = image_url;
     profile_image_fetcher_.reset(content::URLFetcher::Create(
-        GURL(image_url), content::URLFetcher::GET, this));
+        GURL(image_url), net::URLFetcher::GET, this));
     profile_image_fetcher_->SetRequestContext(
         delegate_->GetBrowserProfile()->GetRequestContext());
     profile_image_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

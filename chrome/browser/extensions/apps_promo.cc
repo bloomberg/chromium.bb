@@ -358,7 +358,7 @@ void AppsPromoLogoFetcher::FetchLogo() {
   CHECK(promo_data_.logo.scheme() == chrome::kHttpsScheme);
 
   url_fetcher_.reset(content::URLFetcher::Create(
-      0, promo_data_.logo, content::URLFetcher::GET, this));
+      0, promo_data_.logo, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

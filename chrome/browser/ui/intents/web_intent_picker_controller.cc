@@ -559,10 +559,10 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
         info.average_rating);
 
     pending_async_count_++;
-    content::URLFetcher* icon_url_fetcher = content::URLFetcher::Create(
+    net::URLFetcher* icon_url_fetcher = content::URLFetcher::Create(
         0,
         info.icon_url,
-        content::URLFetcher::GET,
+        net::URLFetcher::GET,
         new URLFetcherTrampoline(
             base::Bind(
                 &WebIntentPickerController::OnExtensionIconURLFetchComplete,

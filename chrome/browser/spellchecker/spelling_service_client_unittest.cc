@@ -131,7 +131,7 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
   }
 
  private:
-  virtual content::URLFetcher* CreateURLFetcher(const GURL& url) {
+  virtual net::URLFetcher* CreateURLFetcher(const GURL& url) {
     EXPECT_EQ("https://www.googleapis.com/rpc", url.spec());
     fetcher_ = new TestSpellingURLFetcher(0, url, this,
                                           request_type_, request_text_,

@@ -198,8 +198,8 @@ void FeedbackUtil::SendFeedback(Profile* profile,
   else
     post_url = GURL(kFeedbackPostUrl);
 
-  content::URLFetcher* fetcher = content::URLFetcher::Create(
-      post_url, content::URLFetcher::POST,
+  net::URLFetcher* fetcher = content::URLFetcher::Create(
+      post_url, net::URLFetcher::POST,
       new FeedbackUtil::PostCleanup(profile, post_body, previous_delay));
   fetcher->SetRequestContext(profile->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);

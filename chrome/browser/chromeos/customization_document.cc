@@ -296,7 +296,7 @@ void ServicesCustomizationDocument::ReadFileInBackground(const FilePath& file) {
 void ServicesCustomizationDocument::StartFileFetch() {
   DCHECK(url_.is_valid());
   url_fetcher_.reset(content::URLFetcher::Create(
-      url_, content::URLFetcher::GET, this));
+      url_, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(
       ProfileManager::GetDefaultProfile()->GetRequestContext());
   url_fetcher_->Start();

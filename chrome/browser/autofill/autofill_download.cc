@@ -171,8 +171,8 @@ bool AutofillDownloadManager::StartRequest(
 
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
-  content::URLFetcher* fetcher = content::URLFetcher::Create(
-      fetcher_id_for_unittest_++, GURL(request_url), content::URLFetcher::POST,
+  net::URLFetcher* fetcher = content::URLFetcher::Create(
+      fetcher_id_for_unittest_++, GURL(request_url), net::URLFetcher::POST,
       this);
   url_fetchers_[fetcher] = request_data;
   fetcher->SetAutomaticallyRetryOn5xx(false);

@@ -171,7 +171,7 @@ class CaptivePortalServiceTest : public testing::Test {
   }
 
   // Calls the corresponding CaptivePortalService function.
-  void OnURLFetchComplete(content::URLFetcher* fetcher) {
+  void OnURLFetchComplete(net::URLFetcher* fetcher) {
     service()->OnURLFetchComplete(fetcher);
   }
 

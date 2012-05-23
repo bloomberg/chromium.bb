@@ -39,10 +39,10 @@ class TestingPolicyURLFetcherFactory : public content::URLFetcherFactory,
   explicit TestingPolicyURLFetcherFactory(EventLogger* logger);
   virtual ~TestingPolicyURLFetcherFactory();
 
-  virtual content::URLFetcher* CreateURLFetcher(
+  virtual net::URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      content::URLFetcher::RequestType request_type,
+      net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* delegate) OVERRIDE;
 
   LoggingWorkScheduler* scheduler();

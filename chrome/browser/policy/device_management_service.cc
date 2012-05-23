@@ -282,7 +282,7 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
   GURL GetURL(const std::string& server_url);
 
   // Configures the fetcher, setting up payload and headers.
-  void ConfigureRequest(content::URLFetcher* fetcher);
+  void ConfigureRequest(net::URLFetcher* fetcher);
 
  protected:
   // DeviceManagementRequestJob:
@@ -393,7 +393,7 @@ GURL DeviceManagementRequestJobImpl::GetURL(
 }
 
 void DeviceManagementRequestJobImpl::ConfigureRequest(
-    content::URLFetcher* fetcher) {
+    net::URLFetcher* fetcher) {
   std::string payload;
   CHECK(request_.SerializeToString(&payload));
   fetcher->SetUploadData(kPostContentType, payload);
@@ -510,8 +510,8 @@ DeviceManagementService::DeviceManagementService(
 
 void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job,
                                        bool bypass_proxy) {
-  content::URLFetcher* fetcher = content::URLFetcher::Create(
-      0, job->GetURL(server_url_), content::URLFetcher::POST, this);
+  net::URLFetcher* fetcher = content::URLFetcher::Create(
+      0, job->GetURL(server_url_), net::URLFetcher::POST, this);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DISABLE_CACHE |

@@ -13,18 +13,18 @@
 static content::URLFetcherFactory* g_factory = NULL;
 
 // static
-content::URLFetcher* content::URLFetcher::Create(
+net::URLFetcher* content::URLFetcher::Create(
     const GURL& url,
-    RequestType request_type,
+    net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d) {
   return new URLFetcherImpl(url, request_type, d);
 }
 
 // static
-content::URLFetcher* content::URLFetcher::Create(
+net::URLFetcher* content::URLFetcher::Create(
     int id,
     const GURL& url,
-    RequestType request_type,
+    net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d) {
   return g_factory ? g_factory->CreateURLFetcher(id, url, request_type, d) :
                      new URLFetcherImpl(url, request_type, d);

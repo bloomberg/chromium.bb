@@ -67,7 +67,7 @@ void SdchDictionaryFetcher::StartFetching() {
 
   DCHECK(context_.get());
   current_fetch_.reset(content::URLFetcher::Create(
-      fetch_queue_.front(), content::URLFetcher::GET, this));
+      fetch_queue_.front(), net::URLFetcher::GET, this));
   fetch_queue_.pop();
   current_fetch_->SetRequestContext(context_.get());
   current_fetch_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

@@ -234,7 +234,7 @@ net::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     net::URLFetcherDelegate* delegate) {
   net::URLFetcher* to_return = content::URLFetcher::Create(
       0, gaia_gurl,
-      body == "" ? content::URLFetcher::GET : content::URLFetcher::POST,
+      body == "" ? net::URLFetcher::GET : net::URLFetcher::POST,
       delegate);
   to_return->SetRequestContext(getter);
   to_return->SetUploadData("application/x-www-form-urlencoded", body);

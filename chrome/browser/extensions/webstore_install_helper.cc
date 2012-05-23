@@ -59,7 +59,7 @@ void WebstoreInstallHelper::Start() {
   if (!icon_url_.is_empty()) {
     CHECK(context_getter_);
     url_fetcher_.reset(content::URLFetcher::Create(
-        icon_url_, content::URLFetcher::GET, this));
+        icon_url_, net::URLFetcher::GET, this));
     url_fetcher_->SetRequestContext(context_getter_);
     url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                net::LOAD_DO_NOT_SEND_COOKIES);

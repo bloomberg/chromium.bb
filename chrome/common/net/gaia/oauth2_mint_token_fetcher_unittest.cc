@@ -57,10 +57,10 @@ public:
 
   MOCK_METHOD4(
       CreateURLFetcher,
-      content::URLFetcher* (int id,
-                            const GURL& url,
-                            URLFetcher::RequestType request_type,
-                            URLFetcherDelegate* d));
+      URLFetcher* (int id,
+                   const GURL& url,
+                   URLFetcher::RequestType request_type,
+                   URLFetcherDelegate* d));
 };
 
 class MockOAuth2MintTokenConsumer : public OAuth2MintTokenConsumer {

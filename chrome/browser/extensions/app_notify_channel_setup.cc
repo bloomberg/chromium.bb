@@ -34,7 +34,7 @@
 
 using base::StringPrintf;
 using content::BrowserThread;
-using content::URLFetcher;
+using net::URLFetcher;
 
 namespace {
 
@@ -147,7 +147,7 @@ URLFetcher* AppNotifyChannelSetup::CreateURLFetcher(
   CHECK(url.is_valid());
   URLFetcher::RequestType type =
       body.empty() ? URLFetcher::GET : URLFetcher::POST;
-  URLFetcher* fetcher = URLFetcher::Create(0, url, type, this);
+  URLFetcher* fetcher = content::URLFetcher::Create(0, url, type, this);
   fetcher->SetRequestContext(profile_->GetRequestContext());
   // Always set flags to neither send nor save cookies.
   fetcher->SetLoadFlags(

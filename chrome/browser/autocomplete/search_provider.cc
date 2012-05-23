@@ -535,10 +535,10 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     const TemplateURLRef& suggestions_url,
     const string16& text) {
   DCHECK(suggestions_url.SupportsReplacement());
-  content::URLFetcher* fetcher = content::URLFetcher::Create(id,
+  net::URLFetcher* fetcher = content::URLFetcher::Create(id,
       GURL(suggestions_url.ReplaceSearchTerms(text,
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
-      content::URLFetcher::GET, this);
+      net::URLFetcher::GET, this);
   fetcher->SetRequestContext(profile_->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->Start();

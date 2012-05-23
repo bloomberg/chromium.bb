@@ -60,7 +60,7 @@ class GaiaOAuthClient::Core
   int num_retries_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   GaiaOAuthClient::Delegate* delegate_;
-  scoped_ptr<content::URLFetcher> request_;
+  scoped_ptr<net::URLFetcher> request_;
 };
 
 void GaiaOAuthClient::Core::GetTokensFromAuthCode(
@@ -101,7 +101,7 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   delegate_ = delegate;
   num_retries_ = 0;
   request_.reset(content::URLFetcher::Create(
-      0, gaia_url_, content::URLFetcher::POST, this));
+      0, gaia_url_, net::URLFetcher::POST, this));
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);
   request_->SetMaxRetries(max_retries);

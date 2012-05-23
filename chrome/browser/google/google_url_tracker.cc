@@ -283,7 +283,7 @@ void GoogleURLTracker::StartFetchIfDesirable() {
 
   already_fetched_ = true;
   fetcher_.reset(content::URLFetcher::Create(fetcher_id_, GURL(fetch_url),
-                                             content::URLFetcher::GET, this));
+                                             net::URLFetcher::GET, this));
   ++fetcher_id_;
   // We don't want this fetch to set new entries in the cache or cookies, lest
   // we alarm the user.
@@ -300,7 +300,7 @@ void GoogleURLTracker::StartFetchIfDesirable() {
 
 void GoogleURLTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   // Delete the fetcher on this function's exit.
-  scoped_ptr<content::URLFetcher> clean_up_fetcher(fetcher_.release());
+  scoped_ptr<net::URLFetcher> clean_up_fetcher(fetcher_.release());
 
   // Don't update the URL if the request didn't succeed.
   if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200)) {

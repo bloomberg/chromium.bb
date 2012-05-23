@@ -12,6 +12,7 @@
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
+#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
@@ -31,7 +32,7 @@ void CloudPrintURLFetcher::StartGetRequest(
     int max_retries,
     const std::string& additional_headers) {
   StartRequestHelper(url,
-                     content::URLFetcher::GET,
+                     net::URLFetcher::GET,
                      delegate,
                      max_retries,
                      std::string(),
@@ -47,7 +48,7 @@ void CloudPrintURLFetcher::StartPostRequest(
     const std::string& post_data,
     const std::string& additional_headers) {
   StartRequestHelper(url,
-                     content::URLFetcher::POST,
+                     net::URLFetcher::POST,
                      delegate,
                      max_retries,
                      post_data_mime_type,
@@ -133,7 +134,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
 
 void CloudPrintURLFetcher::StartRequestHelper(
     const GURL& url,
-    content::URLFetcher::RequestType request_type,
+    net::URLFetcher::RequestType request_type,
     Delegate* delegate,
     int max_retries,
     const std::string& post_data_mime_type,
@@ -149,7 +150,7 @@ void CloudPrintURLFetcher::StartRequestHelper(
   request_->SetMaxRetries(max_retries);
   delegate_ = delegate;
   SetupRequestHeaders();
-  if (request_type == content::URLFetcher::POST) {
+  if (request_type == net::URLFetcher::POST) {
     request_->SetUploadData(post_data_mime_type, post_data);
   }
 

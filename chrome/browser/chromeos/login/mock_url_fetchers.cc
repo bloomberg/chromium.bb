@@ -23,7 +23,7 @@ ExpectCanceledFetcher::ExpectCanceledFetcher(
     bool success,
     const GURL& url,
     const std::string& results,
-    content::URLFetcher::RequestType request_type,
+    net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -49,7 +49,7 @@ GotCanceledFetcher::GotCanceledFetcher(
     bool success,
     const GURL& url,
     const std::string& results,
-    content::URLFetcher::RequestType request_type,
+    net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d) {
   set_url(url);
@@ -66,7 +66,7 @@ void GotCanceledFetcher::Start() {
 SuccessFetcher::SuccessFetcher(bool success,
                                const GURL& url,
                                const std::string& results,
-                               content::URLFetcher::RequestType request_type,
+                               net::URLFetcher::RequestType request_type,
                                net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d) {
   set_url(url);
@@ -83,7 +83,7 @@ void SuccessFetcher::Start() {
 FailFetcher::FailFetcher(bool success,
                          const GURL& url,
                          const std::string& results,
-                         content::URLFetcher::RequestType request_type,
+                         net::URLFetcher::RequestType request_type,
                          net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d) {
   set_url(url);
@@ -110,7 +110,7 @@ const char CaptchaFetcher::kUnlockUrl[] = "http://what.ever";
 CaptchaFetcher::CaptchaFetcher(bool success,
                                const GURL& url,
                                const std::string& results,
-                               content::URLFetcher::RequestType request_type,
+                               net::URLFetcher::RequestType request_type,
                                net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d) {
   set_url(url);
@@ -150,7 +150,7 @@ void CaptchaFetcher::Start() {
 HostedFetcher::HostedFetcher(bool success,
                              const GURL& url,
                              const std::string& results,
-                             content::URLFetcher::RequestType request_type,
+                             net::URLFetcher::RequestType request_type,
                              net::URLFetcherDelegate* d)
     : TestURLFetcher(0, url, d) {
   set_url(url);

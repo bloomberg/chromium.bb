@@ -122,7 +122,7 @@ void SpellingServiceClient::OnURLFetchComplete(
 }
 
 net::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {
-  return content::URLFetcher::Create(url, content::URLFetcher::POST, this);
+  return content::URLFetcher::Create(url, net::URLFetcher::POST, this);
 }
 
 bool SpellingServiceClient::ParseResponse(

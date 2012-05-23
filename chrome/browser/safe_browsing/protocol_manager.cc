@@ -153,8 +153,8 @@ void SafeBrowsingProtocolManager::GetFullHash(
     return;
   }
   GURL gethash_url = GetHashUrl();
-  content::URLFetcher* fetcher = content::URLFetcher::Create(
-      gethash_url, content::URLFetcher::POST, this);
+  net::URLFetcher* fetcher = content::URLFetcher::Create(
+      gethash_url, net::URLFetcher::POST, this);
   hash_requests_[fetcher] = check;
 
   std::string get_hash;
@@ -498,7 +498,7 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   GURL chunk_url = NextChunkUrl(next_chunk.url);
   request_type_ = CHUNK_REQUEST;
   request_.reset(content::URLFetcher::Create(
-      chunk_url, content::URLFetcher::GET, this));
+      chunk_url, net::URLFetcher::GET, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_);
   chunk_request_start_ = base::Time::Now();
@@ -539,7 +539,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
 
   GURL update_url = UpdateUrl();
   request_.reset(content::URLFetcher::Create(
-      update_url, content::URLFetcher::POST, this));
+      update_url, net::URLFetcher::POST, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("text/plain", list_data);
@@ -582,9 +582,9 @@ void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
   GURL report_url = SafeBrowsingHitUrl(malicious_url, page_url,
                                        referrer_url, is_subresource,
                                        threat_type);
-  content::URLFetcher* report = content::URLFetcher::Create(
+  net::URLFetcher* report = content::URLFetcher::Create(
       report_url,
-      post_data.empty() ? content::URLFetcher::GET : content::URLFetcher::POST,
+      post_data.empty() ? net::URLFetcher::GET : net::URLFetcher::POST,
       this);
   report->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   report->SetRequestContext(request_context_getter_);
@@ -598,8 +598,8 @@ void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
 void SafeBrowsingProtocolManager::ReportMalwareDetails(
     const std::string& report) {
   GURL report_url = MalwareDetailsUrl();
-  content::URLFetcher* fetcher = content::URLFetcher::Create(
-      report_url, content::URLFetcher::POST, this);
+  net::URLFetcher* fetcher = content::URLFetcher::Create(
+      report_url, net::URLFetcher::POST, this);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   fetcher->SetRequestContext(request_context_getter_);
   fetcher->SetUploadData("application/octet-stream", report);

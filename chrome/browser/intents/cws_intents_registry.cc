@@ -32,7 +32,7 @@ struct CWSIntentsRegistry::IntentsQuery {
   ~IntentsQuery();
 
   // Underlying URL request query.
-  scoped_ptr<content::URLFetcher> url_fetcher;
+  scoped_ptr<net::URLFetcher> url_fetcher;
 
   // The callback - invoked on completed retrieval.
   ResultsCallback callback;
@@ -142,7 +142,7 @@ void CWSIntentsRegistry::GetIntentServices(const string16& action,
   scoped_ptr<IntentsQuery> query(new IntentsQuery);
   query->callback = cb;
   query->url_fetcher.reset(content::URLFetcher::Create(
-      0, BuildQueryURL(action,mimetype), content::URLFetcher::GET, this));
+      0, BuildQueryURL(action,mimetype), net::URLFetcher::GET, this));
 
   if (query->url_fetcher.get() == NULL)
     return;

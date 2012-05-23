@@ -814,7 +814,7 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
       kLanguageListFetchURL,
       GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
   language_list_request_pending_.reset(content::URLFetcher::Create(
-      1, GURL(language_list_fetch_url), content::URLFetcher::GET, this));
+      1, GURL(language_list_fetch_url), net::URLFetcher::GET, this));
   language_list_request_pending_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                                net::LOAD_DO_NOT_SAVE_COOKIES);
   language_list_request_pending_->SetRequestContext(
@@ -836,7 +836,7 @@ void TranslateManager::RequestTranslateScript() {
       kTranslateScriptURL,
       GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
   translate_script_request_pending_.reset(content::URLFetcher::Create(
-      0, GURL(translate_script_url), content::URLFetcher::GET, this));
+      0, GURL(translate_script_url), net::URLFetcher::GET, this));
   translate_script_request_pending_->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
   translate_script_request_pending_->SetRequestContext(

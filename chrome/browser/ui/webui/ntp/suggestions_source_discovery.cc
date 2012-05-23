@@ -68,7 +68,7 @@ void SuggestionsSourceDiscovery::FetchItems(Profile* profile) {
 
   // TODO(beaudoin): Extract the URL to some preference. Use a better service.
   recommended_fetcher_.reset(content::URLFetcher::Create(
-      GURL(kDiscoveryBackendURL), content::URLFetcher::GET, this));
+      GURL(kDiscoveryBackendURL), net::URLFetcher::GET, this));
   recommended_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
   recommended_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

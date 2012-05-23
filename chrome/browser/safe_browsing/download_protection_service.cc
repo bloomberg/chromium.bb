@@ -680,7 +680,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
             << info_.download_url_chain.back();
     fetcher_.reset(content::URLFetcher::Create(0 /* ID used for testing */,
                                                GURL(kDownloadRequestUrl),
-                                               content::URLFetcher::POST,
+                                               net::URLFetcher::POST,
                                                this));
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     fetcher_->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
@@ -766,7 +766,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   scoped_refptr<SignatureUtil> signature_util_;
   scoped_refptr<SafeBrowsingService> sb_service_;
   const bool pingback_enabled_;
-  scoped_ptr<content::URLFetcher> fetcher_;
+  scoped_ptr<net::URLFetcher> fetcher_;
   bool finished_;
   ClientDownloadRequest::DownloadType type_;
   base::WeakPtrFactory<CheckClientDownloadRequest> timeout_weakptr_factory_;

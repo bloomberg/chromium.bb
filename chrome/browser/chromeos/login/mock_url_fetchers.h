@@ -28,7 +28,7 @@ class ExpectCanceledFetcher : public TestURLFetcher {
   ExpectCanceledFetcher(bool success,
                         const GURL& url,
                         const std::string& results,
-                        content::URLFetcher::RequestType request_type,
+                        net::URLFetcher::RequestType request_type,
                         net::URLFetcherDelegate* d);
   virtual ~ExpectCanceledFetcher();
 
@@ -46,7 +46,7 @@ class GotCanceledFetcher : public TestURLFetcher {
   GotCanceledFetcher(bool success,
                      const GURL& url,
                      const std::string& results,
-                     content::URLFetcher::RequestType request_type,
+                     net::URLFetcher::RequestType request_type,
                      net::URLFetcherDelegate* d);
   virtual ~GotCanceledFetcher();
 
@@ -61,7 +61,7 @@ class SuccessFetcher : public TestURLFetcher {
   SuccessFetcher(bool success,
                  const GURL& url,
                  const std::string& results,
-                 content::URLFetcher::RequestType request_type,
+                 net::URLFetcher::RequestType request_type,
                  net::URLFetcherDelegate* d);
   virtual ~SuccessFetcher();
 
@@ -76,7 +76,7 @@ class FailFetcher : public TestURLFetcher {
   FailFetcher(bool success,
               const GURL& url,
               const std::string& results,
-              content::URLFetcher::RequestType request_type,
+              net::URLFetcher::RequestType request_type,
               net::URLFetcherDelegate* d);
   virtual ~FailFetcher();
 
@@ -91,7 +91,7 @@ class CaptchaFetcher : public TestURLFetcher {
   CaptchaFetcher(bool success,
                  const GURL& url,
                  const std::string& results,
-                 content::URLFetcher::RequestType request_type,
+                 net::URLFetcher::RequestType request_type,
                  net::URLFetcherDelegate* d);
   virtual ~CaptchaFetcher();
 
@@ -114,7 +114,7 @@ class HostedFetcher : public TestURLFetcher {
   HostedFetcher(bool success,
                 const GURL& url,
                 const std::string& results,
-                content::URLFetcher::RequestType request_type,
+                net::URLFetcher::RequestType request_type,
                 net::URLFetcherDelegate* d);
   virtual ~HostedFetcher();
 

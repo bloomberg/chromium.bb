@@ -176,7 +176,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   GURL google_url_;
   GURL fetched_google_url_;
   base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_;
-  scoped_ptr<content::URLFetcher> fetcher_;
+  scoped_ptr<net::URLFetcher> fetcher_;
   int fetcher_id_;
   bool in_startup_sleep_;  // True if we're in the five-second "no fetching"
                            // period that begins at browser start.

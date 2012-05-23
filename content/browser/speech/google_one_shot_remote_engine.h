@@ -58,7 +58,7 @@ class CONTENT_EXPORT GoogleOneShotRemoteEngine
 
  private:
   SpeechRecognitionEngineConfig config_;
-  scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;
   scoped_ptr<AudioEncoder> encoder_;
 

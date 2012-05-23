@@ -26,7 +26,7 @@ class URLFetcherDelegate;
 class URLFetcherFactory;
 }  // namespace content
 
-class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher {
+class CONTENT_EXPORT URLFetcherImpl : public net::URLFetcher {
  public:
   // |url| is the URL to send the request to.
   // |request_type| is the type of request to make.
@@ -36,7 +36,7 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher {
                  net::URLFetcherDelegate* d);
   virtual ~URLFetcherImpl();
 
-  // content::URLFetcher implementation:
+  // net::URLFetcher implementation:
   virtual void SetUploadData(const std::string& upload_content_type,
                              const std::string& upload_content) OVERRIDE;
   virtual void SetChunkedUpload(

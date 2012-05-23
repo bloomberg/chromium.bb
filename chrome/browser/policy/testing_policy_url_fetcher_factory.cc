@@ -122,10 +122,10 @@ void TestingPolicyURLFetcherFactory::GetResponse(
   Intercept(auth_header, request_type, request, response);
 }
 
-content::URLFetcher* TestingPolicyURLFetcherFactory::CreateURLFetcher(
+net::URLFetcher* TestingPolicyURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
-    content::URLFetcher::RequestType request_type,
+    net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* delegate) {
   return new TestingPolicyURLFetcher(
       weak_ptr_factory_.GetWeakPtr(), url, delegate);

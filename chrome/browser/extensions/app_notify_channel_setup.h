@@ -125,7 +125,7 @@ class AppNotifyChannelSetup
   // Creates an instance of URLFetcher that does not send or save cookies.
   // The URLFether's method will be GET if body is empty, POST otherwise.
   // Caller owns the returned instance.
-  content::URLFetcher* CreateURLFetcher(
+  net::URLFetcher* CreateURLFetcher(
     const GURL& url, const std::string& body, const std::string& auth_token);
   void BeginLogin();
   void EndLogin(bool success);
@@ -158,7 +158,7 @@ class AppNotifyChannelSetup
   int return_route_id_;
   int callback_id_;
   base::WeakPtr<Delegate> delegate_;
-  scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_fetcher_;
   scoped_ptr<AppNotifyChannelUI> ui_;
   State state_;

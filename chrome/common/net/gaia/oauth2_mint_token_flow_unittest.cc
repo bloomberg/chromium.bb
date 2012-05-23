@@ -17,7 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::URLFetcher;
+using net::URLFetcher;
 using net::URLRequestStatus;
 using testing::_;
 using testing::StrictMock;

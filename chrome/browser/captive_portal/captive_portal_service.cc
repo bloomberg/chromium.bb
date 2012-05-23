@@ -352,7 +352,7 @@ void CaptivePortalService::UpdateEnabledState() {
   }
 }
 
-// Takes a content::URLFetcher that has finished trying to retrieve the test
+// Takes a net::URLFetcher that has finished trying to retrieve the test
 // URL, and returns a CaptivePortalService::Result based on its result.
 Result CaptivePortalService::GetCaptivePortalResultFromResponse(
     const net::URLFetcher* url_fetcher,

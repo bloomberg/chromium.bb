@@ -222,7 +222,7 @@ void HttpBridge::MakeAsynchronousPost() {
     return;
 
   fetch_state_.url_poster = content::URLFetcher::Create(
-      url_for_request_, content::URLFetcher::POST, this);
+      url_for_request_, net::URLFetcher::POST, this);
   fetch_state_.url_poster->SetRequestContext(context_getter_for_request_);
   fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);

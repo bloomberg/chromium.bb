@@ -78,8 +78,8 @@ ServiceGaiaAuthenticator::~ServiceGaiaAuthenticator() {}
 void ServiceGaiaAuthenticator::DoPost(const GURL& post_url,
                                       const std::string& post_body) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  content::URLFetcher* request = content::URLFetcher::Create(
-      post_url, content::URLFetcher::POST, this);
+  net::URLFetcher* request = content::URLFetcher::Create(
+      post_url, net::URLFetcher::POST, this);
   request->SetRequestContext(
       g_service_process->GetServiceURLRequestContextGetter());
   request->SetUploadData("application/x-www-form-urlencoded", post_body);

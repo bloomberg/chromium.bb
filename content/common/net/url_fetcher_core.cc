@@ -242,9 +242,9 @@ void URLFetcherCore::FileWriter::RemoveFile() {
 
 static bool g_interception_enabled = false;
 
-URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
+URLFetcherCore::URLFetcherCore(net::URLFetcher* fetcher,
                                const GURL& original_url,
-                               URLFetcher::RequestType request_type,
+                               net::URLFetcher::RequestType request_type,
                                net::URLFetcherDelegate* d)
     : fetcher_(fetcher),
       original_url_(original_url),
@@ -254,7 +254,7 @@ URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
           base::MessageLoopProxy::current()),
       request_(NULL),
       load_flags_(net::LOAD_NORMAL),
-      response_code_(URLFetcher::RESPONSE_CODE_INVALID),
+      response_code_(net::URLFetcher::RESPONSE_CODE_INVALID),
       buffer_(new net::IOBuffer(kBufferSize)),
       url_request_data_key_(NULL),
       was_fetched_via_proxy_(false),
@@ -407,7 +407,7 @@ void URLFetcherCore::SetFirstPartyForCookies(
 
 void URLFetcherCore::SetURLRequestUserData(
     const void* key,
-    const URLFetcher::CreateDataCallback& create_data_callback) {
+    const net::URLFetcher::CreateDataCallback& create_data_callback) {
   DCHECK(key);
   DCHECK(!create_data_callback.is_null());
   url_request_data_key_ = key;
@@ -638,7 +638,7 @@ void URLFetcherCore::OnReadCompleted(net::URLRequest* request,
 
   // See comments re: HEAD requests in ReadResponse().
   if ((!status.is_io_pending() && !waiting_on_write) ||
-      (request_type_ == URLFetcher::HEAD)) {
+      (request_type_ == net::URLFetcher::HEAD)) {
     status_ = status;
     ReleaseRequest();
 
@@ -701,7 +701,8 @@ void URLFetcherCore::ReadResponse() {
   // completed immediately, without trying to read any data back (all we care
   // about is the response code and headers, which we already have).
   int bytes_read = 0;
-  if (request_->status().is_success() && (request_type_ != URLFetcher::HEAD))
+  if (request_->status().is_success() &&
+      (request_type_ != net::URLFetcher::HEAD))
     request_->Read(buffer_, kBufferSize, &bytes_read);
   OnReadCompleted(request_.get(), bytes_read);
 }
@@ -743,15 +744,16 @@ void URLFetcherCore::StartURLRequest() {
   }
 
   switch (request_type_) {
-    case URLFetcher::GET:
+    case net::URLFetcher::GET:
       break;
 
-    case URLFetcher::POST:
-    case URLFetcher::PUT:
+    case net::URLFetcher::POST:
+    case net::URLFetcher::PUT:
       DCHECK(!upload_content_.empty() || is_chunked_upload_);
       DCHECK(!upload_content_type_.empty());
 
-      request_->set_method(request_type_ == URLFetcher::POST ? "POST" : "PUT");
+      request_->set_method(
+          request_type_ == net::URLFetcher::POST ? "POST" : "PUT");
       extra_request_headers_.SetHeader(net::HttpRequestHeaders::kContentType,
                                        upload_content_type_);
       if (!upload_content_.empty()) {
@@ -771,11 +773,11 @@ void URLFetcherCore::StartURLRequest() {
           &URLFetcherCore::InformDelegateUploadProgress);
       break;
 
-    case URLFetcher::HEAD:
+    case net::URLFetcher::HEAD:
       request_->set_method("HEAD");
       break;
 
-    case URLFetcher::DELETE_REQUEST:
+    case net::URLFetcher::DELETE_REQUEST:
       request_->set_method("DELETE");
       break;
 
@@ -928,7 +930,7 @@ void URLFetcherCore::NotifyMalformedContent() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (url_throttler_entry_ != NULL) {
     int status_code = response_code_;
-    if (status_code == URLFetcher::RESPONSE_CODE_INVALID) {
+    if (status_code == net::URLFetcher::RESPONSE_CODE_INVALID) {
       // The status code will generally be known by the time clients
       // call the |ReceivedContentWasMalformed()| function (which ends up
       // calling the current function) but if it's not, we need to assume

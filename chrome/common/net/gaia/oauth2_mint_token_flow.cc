@@ -23,7 +23,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
-using content::URLFetcher;
+using net::URLFetcher;
 using net::URLRequestContextGetter;
 using net::URLRequestStatus;
 

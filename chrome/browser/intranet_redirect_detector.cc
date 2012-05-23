@@ -81,8 +81,8 @@ void IntranetRedirectDetector::FinishSleep() {
     for (size_t j = 0; j < kNumCharsInHostnames; ++j)
       url_string += ('a' + base::RandInt(0, 'z' - 'a'));
     GURL random_url(url_string + '/');
-    content::URLFetcher* fetcher = content::URLFetcher::Create(
-        random_url, content::URLFetcher::HEAD, this);
+    net::URLFetcher* fetcher = content::URLFetcher::Create(
+        random_url, net::URLFetcher::HEAD, this);
     // We don't want these fetches to affect existing state in the profile.
     fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
                           net::LOAD_DO_NOT_SAVE_COOKIES |

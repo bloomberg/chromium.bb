@@ -136,7 +136,7 @@ net::URLFetcherDelegate* MakeContextDelegate(Del* delegate, Ctx* context) {
 }
 
 // Helper to start a url request using |fetcher| with the common flags.
-void StartFetch(content::URLFetcher* fetcher,
+void StartFetch(net::URLFetcher* fetcher,
                 net::URLRequestContextGetter* context_getter,
                 bool save_to_file) {
   fetcher->SetRequestContext(context_getter);
@@ -325,7 +325,7 @@ class CrxUpdateService : public ComponentUpdateService {
 
   scoped_ptr<Config> config_;
 
-  scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
 
   typedef std::vector<CrxUpdateItem*> UpdateItems;
   UpdateItems work_items_;
@@ -507,7 +507,7 @@ void CrxUpdateService::ProcessPendingItems() {
     context->id = item->id;
     context->installer = item->component.installer;
     url_fetcher_.reset(content::URLFetcher::Create(
-        0, item->crx_url, content::URLFetcher::GET,
+        0, item->crx_url, net::URLFetcher::GET,
         MakeContextDelegate(this, context)));
     StartFetch(url_fetcher_.get(), config_->RequestContext(), true);
     return;
@@ -568,7 +568,7 @@ void CrxUpdateService::ProcessPendingItems() {
                                                 query,
                                                 config_->ExtraRequestParams());
   url_fetcher_.reset(content::URLFetcher::Create(
-      0, GURL(full_query), content::URLFetcher::GET,
+      0, GURL(full_query), net::URLFetcher::GET,
       MakeContextDelegate(this, new UpdateContext())));
   StartFetch(url_fetcher_.get(), config_->RequestContext(), false);
 }

@@ -45,9 +45,9 @@ class URLFetcherCore
     : public base::RefCountedThreadSafe<URLFetcherCore>,
       public net::URLRequest::Delegate {
  public:
-  URLFetcherCore(URLFetcher* fetcher,
+  URLFetcherCore(net::URLFetcher* fetcher,
                  const GURL& original_url,
-                 URLFetcher::RequestType request_type,
+                 net::URLFetcher::RequestType request_type,
                  net::URLFetcherDelegate* d);
 
   // Starts the load.  It's important that this not happen in the constructor
@@ -294,10 +294,10 @@ class URLFetcherCore
   void InformDelegateDownloadDataInDelegateThread(
       scoped_ptr<std::string> download_data);
 
-  URLFetcher* fetcher_;              // Corresponding fetcher object
+  net::URLFetcher* fetcher_;         // Corresponding fetcher object
   GURL original_url_;                // The URL we were asked to fetch
   GURL url_;                         // The URL we eventually wound up at
-  URLFetcher::RequestType request_type_;  // What type of request is this?
+  net::URLFetcher::RequestType request_type_;  // What type of request is this?
   net::URLRequestStatus status_;     // Status of the request
   net::URLFetcherDelegate* delegate_;  // Object to notify on completion
   scoped_refptr<base::MessageLoopProxy> delegate_loop_proxy_;

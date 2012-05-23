@@ -62,7 +62,7 @@ class TemplateURLFetcher::RequestDelegate
  private:
   void AddSearchProvider();
 
-  scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<net::URLFetcher> url_fetcher_;
   TemplateURLFetcher* fetcher_;
   scoped_ptr<TemplateURL> template_url_;
   string16 keyword_;
@@ -86,7 +86,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     TemplateURLFetcherCallbacks* callbacks,
     ProviderType provider_type)
     : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(content::URLFetcher::Create(
-          osdd_url, content::URLFetcher::GET, this))),
+          osdd_url, net::URLFetcher::GET, this))),
       fetcher_(fetcher),
       keyword_(keyword),
       osdd_url_(osdd_url),

@@ -344,7 +344,7 @@ void ExtensionDownloader::StartUpdateCheck(ManifestFetchData* fetch_data) {
 
     current_manifest_fetch_.swap(scoped_fetch_data);
     manifest_fetcher_.reset(content::URLFetcher::Create(
-        kManifestFetcherId, fetch_data->full_url(), content::URLFetcher::GET,
+        kManifestFetcherId, fetch_data->full_url(), net::URLFetcher::GET,
         this));
     manifest_fetcher_->SetRequestContext(request_context_);
     manifest_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
@@ -556,7 +556,7 @@ void ExtensionDownloader::FetchUpdatedExtension(const std::string& id,
     }
   } else {
     extension_fetcher_.reset(content::URLFetcher::Create(
-        kExtensionFetcherId, url, content::URLFetcher::GET, this));
+        kExtensionFetcherId, url, net::URLFetcher::GET, this));
     extension_fetcher_->SetRequestContext(request_context_);
     extension_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                      net::LOAD_DO_NOT_SAVE_COOKIES |

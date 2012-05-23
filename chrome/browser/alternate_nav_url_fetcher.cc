@@ -192,7 +192,7 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
   DCHECK_EQ(NOT_STARTED, state_);
   state_ = IN_PROGRESS;
   fetcher_.reset(content::URLFetcher::Create(
-      GURL(alternate_nav_url_), content::URLFetcher::HEAD, this));
+      GURL(alternate_nav_url_), net::URLFetcher::HEAD, this));
   fetcher_->SetRequestContext(
       controller_->GetBrowserContext()->GetRequestContext());
 

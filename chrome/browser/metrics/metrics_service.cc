@@ -241,7 +241,7 @@ const int kSaveStateIntervalMinutes = 5;
 // Used to indicate that the response code is currently not set at all --
 // RESPONSE_CODE_INVALID can sometimes be returned in response to a request if,
 // e.g., the server is down.
-const int kNoResponseCode = content::URLFetcher::RESPONSE_CODE_INVALID - 1;
+const int kNoResponseCode = net::URLFetcher::RESPONSE_CODE_INVALID - 1;
 
 enum ResponseStatus {
   UNKNOWN_FAILURE,
@@ -1184,7 +1184,7 @@ void MetricsService::PrepareFetchWithStagedLog() {
   // Prepare the XML version.
   DCHECK(!current_fetch_xml_.get());
   current_fetch_xml_.reset(content::URLFetcher::Create(
-      GURL(server_url_xml_), content::URLFetcher::POST, this));
+      GURL(server_url_xml_), net::URLFetcher::POST, this));
   current_fetch_xml_->SetRequestContext(
       g_browser_process->system_request_context());
   current_fetch_xml_->SetUploadData(kMimeTypeXml,
@@ -1198,7 +1198,7 @@ void MetricsService::PrepareFetchWithStagedLog() {
   DCHECK(!current_fetch_proto_.get());
   if (log_manager_.has_staged_log_proto()) {
     current_fetch_proto_.reset(content::URLFetcher::Create(
-        GURL(server_url_proto_), content::URLFetcher::POST, this));
+        GURL(server_url_proto_), net::URLFetcher::POST, this));
     current_fetch_proto_->SetRequestContext(
         g_browser_process->system_request_context());
     current_fetch_proto_->SetUploadData(kMimeTypeProto,

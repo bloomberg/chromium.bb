@@ -126,7 +126,7 @@ class URLFetcherTest : public testing::Test,
 };
 
 void URLFetcherTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   fetcher_->Start();
@@ -364,7 +364,7 @@ class URLFetcherFileTest : public URLFetcherTest {
 };
 
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::POST, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::POST, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   fetcher_->SetUploadData("application/x-www-form-urlencoded",
@@ -380,7 +380,7 @@ void URLFetcherPostTest::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   previous_progress_ = 0;
@@ -398,7 +398,7 @@ void URLFetcherDownloadProgressTest::OnURLFetchDownloadProgress(
 }
 
 void URLFetcherDownloadProgressCancelTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   cancelled_ = false;
@@ -424,7 +424,7 @@ void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
 }
 
 void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::POST, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::POST, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   previous_progress_ = 0;
@@ -470,7 +470,7 @@ void URLFetcherSocketAddressTest::OnURLFetchComplete(
 }
 
 void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   start_time_ = Time::Now();
@@ -510,7 +510,7 @@ void URLFetcherProtectTest::OnURLFetchComplete(
 }
 
 void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   fetcher_->SetAutomaticallyRetryOn5xx(false);
@@ -573,7 +573,7 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
 }
 
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
   CancelTestURLRequestContextGetter* context_getter =
       new CancelTestURLRequestContextGetter(io_message_loop_proxy(),
                                             url);
@@ -627,7 +627,7 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
 
 void URLFetcherFileTest::CreateFetcherForFile(const GURL& url,
                                               const FilePath& file_path) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
 
@@ -637,7 +637,7 @@ void URLFetcherFileTest::CreateFetcherForFile(const GURL& url,
 }
 
 void URLFetcherFileTest::CreateFetcherForTempFile(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
 

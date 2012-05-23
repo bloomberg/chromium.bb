@@ -282,7 +282,7 @@ void SpellCheckHostImpl::DownloadDictionary() {
   }
   GURL url = GURL(std::string(kDownloadServerUrl) +
                   StringToLowerASCII(bdict_file));
-  fetcher_.reset(content::URLFetcher::Create(url, content::URLFetcher::GET,
+  fetcher_.reset(content::URLFetcher::Create(url, net::URLFetcher::GET,
                                 weak_ptr_factory_.GetWeakPtr()));
   fetcher_->SetRequestContext(request_context_getter_);
   fetcher_->SetLoadFlags(

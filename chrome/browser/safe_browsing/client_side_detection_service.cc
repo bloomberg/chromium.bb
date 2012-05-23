@@ -251,7 +251,7 @@ void ClientSideDetectionService::StartFetchModel() {
     // network if the model isn't in the cache.
     model_fetcher_.reset(content::URLFetcher::Create(
         0 /* ID used for testing */, GURL(kClientModelUrl),
-        content::URLFetcher::GET, this));
+        net::URLFetcher::GET, this));
     model_fetcher_->SetRequestContext(request_context_getter_.get());
     model_fetcher_->Start();
   }
@@ -302,9 +302,9 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
     return;
   }
 
-  content::URLFetcher* fetcher = content::URLFetcher::Create(
+  net::URLFetcher* fetcher = content::URLFetcher::Create(
       0 /* ID used for testing */, GURL(kClientReportPhishingUrl),
-      content::URLFetcher::POST, this);
+      net::URLFetcher::POST, this);
 
   // Remember which callback and URL correspond to the current fetcher object.
   ClientReportInfo* info = new ClientReportInfo;

@@ -70,7 +70,7 @@ net::URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
   bool empty_body = body.empty();
   net::URLFetcher* result = content::URLFetcher::Create(
       0, gaia_gurl,
-      empty_body ? content::URLFetcher::GET : content::URLFetcher::POST,
+      empty_body ? net::URLFetcher::GET : net::URLFetcher::POST,
       delegate);
   result->SetRequestContext(getter);
 

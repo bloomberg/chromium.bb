@@ -349,7 +349,7 @@ net::URLFetcher* ChromeToMobileService::CreateRequest(
   net::URLFetcher* request = content::URLFetcher::Create(
       data.type == SEARCH ? GetSearchURL(service_url) :
                             GetSubmitURL(service_url, data),
-      get ? content::URLFetcher::GET : content::URLFetcher::POST, this);
+      get ? net::URLFetcher::GET : net::URLFetcher::POST, this);
   request->SetRequestContext(profile_->GetRequestContext());
   request->SetMaxRetries(kMaxRetries);
   request->SetExtraRequestHeaders("Authorization: OAuth " +
@@ -397,7 +397,7 @@ void ChromeToMobileService::RequestAccountInfo() {
   }
 
   account_info_request_.reset(
-      content::URLFetcher::Create(url, content::URLFetcher::GET, this));
+      content::URLFetcher::Create(url, net::URLFetcher::GET, this));
   account_info_request_->SetRequestContext(profile_->GetRequestContext());
   account_info_request_->SetMaxRetries(kMaxRetries);
   // This request sends the user's cookie to check the cloud print service flag.
