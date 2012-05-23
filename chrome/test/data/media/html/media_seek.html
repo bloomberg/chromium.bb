@@ -53,8 +53,7 @@
 
       video.addEventListener("playing", playing);
       video.addEventListener("seeked",  seeked);
-      video.addEventListener("error",
-                             function() { end("Error loading media"); });
+      video.addEventListener("error", error);
       originalSrc = src;
       log("Running tests on " + originalSrc);
       log("Starting seek tests without browser caching:");
@@ -96,11 +95,11 @@
     }
 
     function seeked() {
-      delta = timer.stop();
+      delta = timer.stop() / 1000;
       switch (seekState) {
         case SeekTestCase.SHORT_SEEK:
           seekRecords[cacheState][SeekTestCase.SHORT_SEEK].push(delta);
-          log ("short seek in " + delta + "ms.")
+          log ("short seek in " + delta + "sec.")
           seekState = SeekTestCase.LONG_SEEK;
           timer.start();
           video.currentTime = video.duration - 1;
@@ -108,14 +107,14 @@
         // Seek to almost end of file (unbuffered area).
         case SeekTestCase.LONG_SEEK:
           seekRecords[cacheState][SeekTestCase.LONG_SEEK].push(delta);
-          log("long seek in " + delta + "ms.")
+          log("long seek in " + delta + "sec.")
           seekState = SeekTestCase.BUFFERED_SEEK;
           timer.start();
           video.currentTime = 1;
           break;
         case SeekTestCase.BUFFERED_SEEK:
           seekRecords[cacheState][SeekTestCase.BUFFERED_SEEK].push(delta);
-          log("buffered seek in " + delta + "ms.")
+          log("buffered seek in " + delta + "sec.")
           IterationTest();
           break;
         default:
@@ -127,6 +126,11 @@
       errorMsg = msg;
       endTest = true;
       log(msg);
+    }
+
+    function error(evt) {
+      end("Error loading media: " + evt.target + " " + evt.type + " " +
+          video.error.code);
     }
   </script>
 </html>

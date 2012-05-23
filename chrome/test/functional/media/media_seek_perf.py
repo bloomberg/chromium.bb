@@ -28,9 +28,8 @@ _TEST_HTML_PATH = os.path.join('media', 'html', 'media_seek.html')
 # Path under CNS root folder (pyauto_private/media).
 _TEST_VIDEOS = [os.path.join('dartmoor', 'dartmoor.ogg')]
 _TEST_VIDEOS.extend(os.path.join('crowd', name) for name in
-                    ['crowd2160.webm', 'crowd1080.webm', 'crowd360.webm',
-                     'crowd2160.ogv', 'crowd1080.ogv', 'crowd360.ogv',
-                     'crowd.wav'])
+                    ['crowd1080.webm', 'crowd1080.ogv', 'crowd360.webm',
+                     'crowd360.ogv', 'crowd.wav'])
 
 # Constraints to run tests on.
 _TESTS_TO_RUN = [
@@ -70,9 +69,6 @@ class SeekWorkerThread(worker_thread.WorkerThread):
     else:
       error_msg = self.GetDOMValue('errorMsg', unique_url)
 
-    if error_msg:
-      logging.error('Error while running the tests: %s.', error_msg)
-
     cached_states = self.GetDOMValue(
         "Object.keys(CachedState).join(',')", unique_url).split(',')
     seek_test_cases = self.GetDOMValue(
@@ -81,25 +77,38 @@ class SeekWorkerThread(worker_thread.WorkerThread):
     graph_name = series_name + '_' + os.path.basename(file_name)
     for state in cached_states:
       for seek_case in seek_test_cases:
-        if error_msg:
-          results = [-1]
+        values = self.GetDOMValue(
+            "seekRecords[CachedState.%s][SeekTestCase.%s].join(',')" %
+            (state, seek_case), unique_url)
+        if values:
+          results = [float(value) for value in values.split(',')]
         else:
-          results = [float(value) for value in self.GetDOMValue(
-              "seekRecords[CachedState.%s][SeekTestCase.%s].join(',')" %
-              (state, seek_case), unique_url).split(',')]
+          results = []
         pyauto_utils.PrintPerfResult('seek', '%s_%s_%s' %
                                      (state, seek_case, graph_name),
-                                     results, 'ms')
+                                     results, 'sec')
+
+    if error_msg:
+      logging.error('Error while running %s: %s.', graph_name, error_msg)
+      return False
+    else:
+      return True
 
 
 class MediaSeekPerfTest(cns_test_base.CNSTestBase):
   """PyAuto test container.  See file doc string for more information."""
 
+  def __init__(self, *args, **kwargs):
+    """Initialize the CNSTestBase with socket_timeout = 60 secs."""
+    cns_test_base.CNSTestBase.__init__(self, socket_timeout='60',
+                                       *args, **kwargs)
+
   def testMediaSeekPerformance(self):
     """Launches HTML test which plays each video and records seek stats."""
     tasks = cns_test_base.CreateCNSPerfTasks(_TESTS_TO_RUN, _TEST_VIDEOS)
-    worker_thread.RunWorkerThreads(self, SeekWorkerThread, tasks, _TEST_THREADS,
-                                   _TEST_HTML_PATH)
+    if worker_thread.RunWorkerThreads(self, SeekWorkerThread, tasks,
+                                      _TEST_THREADS, _TEST_HTML_PATH):
+      self.fail('Some tests failed to run as expected.')
 
 
 if __name__ == '__main__':
