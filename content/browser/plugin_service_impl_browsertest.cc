@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
       BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, channel_);
   }
 
-  // Client implementation.
+  // PluginProcessHost::Client implementation.
   virtual int ID() OVERRIDE { return 42; }
   virtual bool OffTheRecord() OVERRIDE { return false; }
   virtual content::ResourceContext* GetResourceContext() OVERRIDE {
@@ -64,25 +64,47 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
     ASSERT_TRUE(channel_->Connect());
   }
 
-  void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
+  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
     ASSERT_TRUE(info.mime_types.size());
     ASSERT_EQ(kNPAPITestPluginMimeType, info.mime_types[0].mime_type);
     set_plugin_info_called_ = true;
   }
 
-  MOCK_METHOD0(OnError, void());
+  virtual void OnError() OVERRIDE {
+    Fail();
+  }
 
-  // Listener implementation.
-  MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));
-  void OnChannelConnected(int32 peer_pid) OVERRIDE {
+  // IPC::Channel::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    Fail();
+    return false;
+  }
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE {
+    QuitMessageLoop();
+  }
+  virtual void OnChannelError() OVERRIDE {
+    Fail();
+  }
+#if defined(OS_POSIX)
+  virtual void OnChannelDenied() OVERRIDE {
+    Fail();
+  }
+  virtual void OnChannelListenError() OVERRIDE {
+    Fail();
+  }
+#endif
+
+ private:
+  void Fail() {
+    FAIL();
+    QuitMessageLoop();
+  }
+
+  void QuitMessageLoop() {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             MessageLoop::QuitClosure());
   }
-  MOCK_METHOD0(OnChannelError, void());
-  MOCK_METHOD0(OnChannelDenied, void());
-  MOCK_METHOD0(OnChannelListenError, void());
 
- private:
   content::ResourceContext* context_;
   IPC::Channel* channel_;
   bool set_plugin_info_called_;
@@ -106,7 +128,7 @@ class PluginServiceTest : public InProcessBrowserTest {
 // Try to open a channel to the test plugin. Minimal plugin process spawning
 // test for the PluginService interface.
 IN_PROC_BROWSER_TEST_F(PluginServiceTest, OpenChannelToPlugin) {
-  ::testing::StrictMock<MockPluginProcessHostClient> mock_client(
+  MockPluginProcessHostClient mock_client(
       browser()->profile()->GetResourceContext());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
