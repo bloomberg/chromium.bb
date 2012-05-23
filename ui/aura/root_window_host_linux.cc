@@ -407,7 +407,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       CWBackPixmap,
       &swa);
   static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
-      WindowDispatcherCreated(xwindow_, this);
+      AddDispatcherForWindow(this, xwindow_);
 
   prop_.reset(new ui::ViewProp(xwindow_, kRootWindowHostLinuxKey, this));
 
@@ -470,7 +470,7 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
 
 RootWindowHostLinux::~RootWindowHostLinux() {
   static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
-      WindowDispatcherDestroying(xwindow_);
+      RemoveDispatcherForWindow(xwindow_);
 
   UnConfineCursor();
 

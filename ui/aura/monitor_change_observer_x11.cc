@@ -52,15 +52,13 @@ MonitorChangeObserverX11::MonitorChangeObserverX11()
   XRRSelectInput(xdisplay_, x_root_window_, RRScreenChangeNotifyMask);
   int error_base_ignored;
   XRRQueryExtension(xdisplay_, &xrandr_event_base_, &error_base_ignored);
-  static_cast<DispatcherLinux*>(
-      Env::GetInstance()->GetDispatcher())->
-      WindowDispatcherCreated(x_root_window_, this);
+  static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
+      AddDispatcherForRootWindow(this);
 }
 
 MonitorChangeObserverX11::~MonitorChangeObserverX11() {
-  static_cast<DispatcherLinux*>(
-      Env::GetInstance()->GetDispatcher())->
-      WindowDispatcherDestroying(x_root_window_);
+  static_cast<DispatcherLinux*>(Env::GetInstance()->GetDispatcher())->
+      RemoveDispatcherForRootWindow(this);
 }
 
 bool MonitorChangeObserverX11::Dispatch(const base::NativeEvent& event) {
