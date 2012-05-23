@@ -5894,15 +5894,21 @@ void TestingAutomationProvider::RefreshPolicies(
 #endif
 }
 
-static int AccessArray(const int arr[], int index) {
-  return arr[index];
+static int AccessArray(const volatile int arr[], const volatile int *index) {
+  return arr[*index];
 }
 
 void TestingAutomationProvider::SimulateAsanMemoryBug(
     base::DictionaryValue* args, IPC::Message* reply_message) {
-  int testarray[41];
-  AccessArray(testarray, 42);
+  // This array is volatile not to let compiler optimize us out.
+  volatile int testarray[3] = {0, 0, 0};
+
+  // Send the reply while we can.
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+
+  // Cause Address Sanitizer to abort this process.
+  volatile int index = 5;
+  AccessArray(testarray, &index);
 }
 
 void TestingAutomationProvider::GetIndicesFromTab(

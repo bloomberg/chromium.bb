@@ -4031,6 +4031,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Address Sanitizer (if it was built it) will catch the bug and abort
     the process.
+    This method returns immediately before it actually causes a crash.
     """
     cmd_dict = { 'command': 'SimulateAsanMemoryBug' }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
