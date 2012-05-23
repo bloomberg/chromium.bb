@@ -268,7 +268,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const DownloadResourceHandler::OnStartedCallback& started_cb);
 
  private:
-  friend class ResourceDispatcherHostTest;
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,

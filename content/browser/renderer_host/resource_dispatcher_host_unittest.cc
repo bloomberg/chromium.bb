@@ -280,26 +280,44 @@ class TestUserData : public base::SupportsUserData::Data {
   bool* was_deleted_;
 };
 
-class DefersStartResourceThrottle : public content::ResourceThrottle {
+enum {
+  DEFER_NONE                = 0,
+  DEFER_STARTING_REQUEST    = 1 << 0,
+  DEFER_PROCESSING_RESPONSE = 1 << 1,
+};
+
+class GenericResourceThrottle : public content::ResourceThrottle {
  public:
-  virtual void WillStartRequest(bool* defer) {
-    *defer = true;
+  GenericResourceThrottle(int defer_flags) : defer_flags_(defer_flags) {
   }
+
+  virtual void WillStartRequest(bool* defer) {
+    if (defer_flags_ & DEFER_STARTING_REQUEST)
+      *defer = true;
+  }
+
+  virtual void WillProcessResponse(bool* defer) {
+    if (defer_flags_ & DEFER_PROCESSING_RESPONSE)
+      *defer = true;
+  }
+
+ private:
+  int defer_flags_;  // bit-wise union of DEFER_XXX flags.
 };
 
 class TestResourceDispatcherHostDelegate
     : public content::ResourceDispatcherHostDelegate {
  public:
   TestResourceDispatcherHostDelegate()
-      : defer_start_(false) {
+      : defer_flags_(DEFER_NONE) {
   }
 
   void set_url_request_user_data(base::SupportsUserData::Data* user_data) {
     user_data_.reset(user_data);
   }
 
-  void set_defer_start(bool value) {
-    defer_start_ = value;
+  void set_defer_flags(int value) {
+    defer_flags_ = value;
   }
 
   // ResourceDispatcherHostDelegate implementation:
@@ -312,15 +330,17 @@ class TestResourceDispatcherHostDelegate
       int route_id,
       bool is_continuation_of_transferred_request,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE {
-    const void* key = user_data_.get();
-    request->SetUserData(key, user_data_.release());
+    if (user_data_.get()) {
+      const void* key = user_data_.get();
+      request->SetUserData(key, user_data_.release());
+    }
 
-    if (defer_start_)
-      throttles->push_back(new DefersStartResourceThrottle());
+    if (defer_flags_ != DEFER_NONE)
+      throttles->push_back(new GenericResourceThrottle(defer_flags_));
   }
 
  private:
-  bool defer_start_;
+  int defer_flags_;
   scoped_ptr<base::SupportsUserData::Data> user_data_;
 };
 
@@ -397,10 +417,6 @@ class ResourceDispatcherHostTest : public testing::Test,
                        const GURL& url);
 
   void CancelRequest(int request_id);
-
-  void PauseRequest(int request_id);
-
-  void ResumeRequest(int request_id);
 
   void CompleteStartRequest(int request_id);
 
@@ -502,15 +518,6 @@ void ResourceDispatcherHostTest::MakeTestRequest(
 
 void ResourceDispatcherHostTest::CancelRequest(int request_id) {
   host_.CancelRequest(filter_->child_id(), request_id, false);
-}
-
-void ResourceDispatcherHostTest::PauseRequest(int request_id) {
-  // TODO(darin): Replace with a ResourceThrottle implementation.
-  host_.PauseRequest(filter_->child_id(), request_id, true);
-}
-
-void ResourceDispatcherHostTest::ResumeRequest(int request_id) {
-  host_.ResumeDeferredRequest(filter_->child_id(), request_id);
 }
 
 void ResourceDispatcherHostTest::CompleteStartRequest(int request_id) {
@@ -633,7 +640,7 @@ TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
 
   // Arrange to have requests deferred before starting.
   TestResourceDispatcherHostDelegate delegate;
-  delegate.set_defer_start(true);
+  delegate.set_defer_flags(DEFER_STARTING_REQUEST);
   delegate.set_url_request_user_data(new TestUserData(&was_deleted));
   host_.SetDelegate(&delegate);
 
@@ -657,9 +664,13 @@ TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
 TEST_F(ResourceDispatcherHostTest, PausedStartError) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
+  // Arrange to have requests deferred before processing response headers.
+  TestResourceDispatcherHostDelegate delegate;
+  delegate.set_defer_flags(DEFER_PROCESSING_RESPONSE);
+  host_.SetDelegate(&delegate);
+
   SetDelayedStartJobGeneration(true);
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_error());
-  PauseRequest(1);
   CompleteStartRequest(1);
 
   // flush all the pending requests
@@ -667,40 +678,6 @@ TEST_F(ResourceDispatcherHostTest, PausedStartError) {
   MessageLoop::current()->RunAllPending();
 
   EXPECT_EQ(0, host_.pending_requests());
-}
-
-TEST_F(ResourceDispatcherHostTest, PausedCancel) {
-  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
-
-  // Test cancel when paused after request start.
-  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_2());
-  PauseRequest(1);
-  CancelRequest(1);
-
-  // flush all the pending requests
-  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  MessageLoop::current()->RunAllPending();
-
-  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
-
-  ResourceIPCAccumulator::ClassifiedMessages msgs;
-  accum_.GetClassifiedMessages(&msgs);
-
-  ASSERT_EQ(1U, msgs.size());
-
-  // Check that request 1 got canceled.
-  ASSERT_EQ(2U, msgs[0].size());
-  ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
-  ASSERT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][1].type());
-
-  int request_id;
-  net::URLRequestStatus status;
-
-  PickleIterator iter(msgs[0][1]);
-  ASSERT_TRUE(IPC::ReadParam(&msgs[0][1], &iter, &request_id));
-  ASSERT_TRUE(IPC::ReadParam(&msgs[0][1], &iter, &status));
-
-  EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
 }
 
 // The host delegate acts as a second one so we can have some requests
