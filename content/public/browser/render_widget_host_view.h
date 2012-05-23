@@ -16,10 +16,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(TOOLKIT_GTK)
-class GdkEventButton;
-#endif
-
 class BrowserAccessibilityManager;
 
 namespace gfx {
