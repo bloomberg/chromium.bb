@@ -45,6 +45,8 @@ class DataTypeManager {
                          // all types were started.
     RETRY,               // Download failed due to a transient error and it
                          // is being retried.
+    CONFIGURE_BLOCKED,   // Configuration was blocked due to missing
+                         // passphrase.
     UNRECOVERABLE_ERROR  // We got an unrecoverable error during startup.
   };
 

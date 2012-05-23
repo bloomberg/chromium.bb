@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/fake_data_type_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -62,124 +63,6 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
   NigoriState last_nigori_state_;
 };
 
-// Fake DataTypeController implementation that simulates the state
-// machine of a typical asynchronous data type.
-//
-// TODO(akalin): Consider using subclasses of
-// {Frontend,NonFrontend,NewNonFrontend}DataTypeController instead, so
-// that we don't have to update this class if we change the expected
-// behavior of controllers. (It would be easier of the above classes
-// used delegation instead of subclassing for per-data-type
-// functionality.)
-class FakeDataTypeController : public DataTypeController {
- public:
-  explicit FakeDataTypeController(ModelType type)
-      : state_(NOT_RUNNING), type_(type) {}
-
-  // NOT_RUNNING -> MODEL_STARTING
-  virtual void Start(const StartCallback& start_callback) {
-    // A real data type would call |start_callback| with a BUSY status
-    // if Start() is called when not NOT_RUNNING, but we don't expect
-    // that to happen in these tests.
-    if (state_ != NOT_RUNNING) {
-      ADD_FAILURE();
-      return;
-    }
-    // We shouldn't have any pending callbacks.
-    if (!last_start_callback_.is_null()) {
-      ADD_FAILURE();
-      return;
-    }
-    last_start_callback_ = start_callback;
-    state_ = MODEL_STARTING;
-  }
-
-  // MODEL_STARTING -> ASSOCIATING
-  void StartModel() {
-    if (state_ != MODEL_STARTING) {
-      ADD_FAILURE();
-      return;
-    }
-    state_ = ASSOCIATING;
-  }
-
-  // MODEL_STARTING | ASSOCIATING -> RUNNING | DISABLED | NOT_RUNNING
-  // (depending on |result|)
-  void FinishStart(StartResult result) {
-    // We should have a callback from Start().
-    if (last_start_callback_.is_null()) {
-      ADD_FAILURE();
-      return;
-    }
-
-    // Set |state_| first below since the callback may call state().
-    SyncError error;
-    if (result <= OK_FIRST_RUN) {
-      state_ = RUNNING;
-    } else if (result == ASSOCIATION_FAILED) {
-      state_ = DISABLED;
-      error.Reset(FROM_HERE, "Association failed", type_);
-    } else {
-      state_ = NOT_RUNNING;
-      error.Reset(FROM_HERE, "Fake error", type_);
-    }
-    last_start_callback_.Run(result, error);
-    last_start_callback_.Reset();
-  }
-
-  // * -> NOT_RUNNING
-  virtual void Stop() {
-    state_ = NOT_RUNNING;
-    // The DTM still expects |last_start_callback_| to be called back.
-    if (!last_start_callback_.is_null()) {
-      SyncError error(FROM_HERE, "Fake error", type_);
-      last_start_callback_.Run(ABORTED, error);
-    }
-  }
-
-  virtual ModelType type() const {
-    return type_;
-  }
-
-  virtual std::string name() const {
-    return ModelTypeToString(type_);
-  }
-
-  // This isn't called by the DTM.
-  virtual browser_sync::ModelSafeGroup model_safe_group() const {
-    ADD_FAILURE();
-    return browser_sync::GROUP_PASSIVE;
-  }
-
-  virtual State state() const {
-    return state_;
-  }
-
-  virtual void OnUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) {
-    ADD_FAILURE() << message;
-  }
-
-  virtual void OnSingleDatatypeUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) {
-    ADD_FAILURE() << message;
- }
-
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) {
-    ADD_FAILURE() << message;
- }
-
- private:
-  virtual ~FakeDataTypeController() {}
-
-  State state_;
-  ModelType type_;
-  StartCallback last_start_callback_;
-};
 
 // Used by SetConfigureDoneExpectation.
 DataTypeManager::ConfigureStatus GetStatus(

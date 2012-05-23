@@ -2105,6 +2105,8 @@
         'browser/sync/glue/history_model_worker.h',
         'browser/sync/glue/http_bridge.cc',
         'browser/sync/glue/http_bridge.h',
+        'browser/sync/glue/model_association_manager.cc',
+        'browser/sync/glue/model_association_manager.h',
         'browser/sync/glue/model_associator.h',
         'browser/sync/glue/new_non_frontend_data_type_controller.cc',
         'browser/sync/glue/new_non_frontend_data_type_controller.h',
