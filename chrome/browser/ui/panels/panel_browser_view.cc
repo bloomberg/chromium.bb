@@ -20,9 +20,15 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#include "chrome/browser/ui/panels/taskbar_window_thumbnailer_win.h"
+#endif
 
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
@@ -44,6 +50,7 @@ PanelBrowserView::PanelBrowserView(Browser* browser, Panel* panel,
     mouse_pressed_(false),
     mouse_dragging_state_(NO_DRAGGING),
     is_drawing_attention_(false),
+    force_to_paint_as_inactive_(false),
     old_focused_view_(NULL) {
 }
 
@@ -521,7 +528,6 @@ void PanelBrowserView::UpdatePanelMinimizeRestoreButtonVisibility() {
   GetFrameView()->UpdateTitleBarMinimizeRestoreButtonVisibility();
 }
 
-
 #if defined(OS_WIN) && !defined(USE_AURA)
 void PanelBrowserView::UpdateWindowAttribute(int attribute_index,
                                              int attribute_value,
@@ -537,6 +543,47 @@ void PanelBrowserView::UpdateWindowAttribute(int attribute_index,
     ::SetWindowLong(native_window, attribute_index, expected_value);
 }
 #endif
+
+void PanelBrowserView::PanelExpansionStateChanging(
+    Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
+#if defined(OS_WIN) && !defined(USE_ASH)
+  // Live preview is only available since Windows 7.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+    return;
+
+  bool is_minimized = old_state != Panel::EXPANDED;
+  bool will_be_minimized = new_state != Panel::EXPANDED;
+  if (is_minimized == will_be_minimized)
+    return;
+
+  HWND native_window = GetNativeHandle();
+
+  if (!thumbnail_subclass_.get()) {
+    thumbnail_subclass_.reset(new ui::HWNDSubclass(native_window));
+    // thumbnailer_ is owned by thumbnail_subclass_.
+    thumbnailer_ = new TaskbarWindowThumbnailerWin(native_window);
+    thumbnail_subclass_->SetFilter(thumbnailer_);
+  }
+
+  // Cache the image at this point.
+  if (will_be_minimized) {
+    // If the panel is still active (we will deactivate the minimizd panel at
+    // later time), we need to paint it immediately as inactive so that we can
+    // take a snapshot of inactive panel.
+    if (focused_) {
+      force_to_paint_as_inactive_ = true;
+      ::RedrawWindow(native_window, NULL, NULL,
+                     RDW_NOCHILDREN | RDW_INVALIDATE | RDW_UPDATENOW);
+    }
+
+    thumbnailer_->Start();
+  } else {
+    force_to_paint_as_inactive_ = false;
+    thumbnailer_->Stop();
+  }
+
+#endif
+}
 
 // NativePanelTesting implementation.
 class NativePanelTestingWin : public NativePanelTesting {

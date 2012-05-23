@@ -3141,6 +3141,8 @@
         'browser/ui/panels/panel_utils_cocoa.mm',
         'browser/ui/panels/panel_window_controller_cocoa.h',
         'browser/ui/panels/panel_window_controller_cocoa.mm',
+        'browser/ui/panels/taskbar_window_thumbnailer_win.cc',
+        'browser/ui/panels/taskbar_window_thumbnailer_win.h',
         'browser/ui/pdf/pdf_tab_observer.cc',
         'browser/ui/pdf/pdf_tab_observer.h',
         'browser/ui/pdf/pdf_unsupported_feature.cc',

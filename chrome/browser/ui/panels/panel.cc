@@ -206,6 +206,7 @@ void Panel::SetPreviewMode(bool in_preview) {
 void Panel::SetExpansionState(ExpansionState new_state) {
   if (expansion_state_ == new_state)
     return;
+  native_panel_->PanelExpansionStateChanging(expansion_state_, new_state);
   expansion_state_ = new_state;
 
   manager()->OnPanelExpansionStateChanged(this);

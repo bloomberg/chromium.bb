@@ -68,6 +68,8 @@ class NativePanel {
   virtual void HandlePanelKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
   virtual void FullScreenModeChanged(bool is_full_screen) = 0;
+  virtual void PanelExpansionStateChanging(Panel::ExpansionState old_state,
+                                           Panel::ExpansionState new_state) = 0;
 
   virtual Browser* GetPanelBrowser() const = 0;
   virtual void DestroyPanelBrowser() = 0;
