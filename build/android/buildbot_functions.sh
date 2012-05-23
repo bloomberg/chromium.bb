@@ -232,13 +232,5 @@ function bb_run_tests {
 # Run APK tests on an actual device.
 function bb_run_apk_tests {
   echo "@@@BUILD_STEP Run APK Tests on actual hardware@@@"
-  tempfile=/tmp/tempfile-$$.txt
-  # Filter out STEP_FAILURES, we don't want REDNESS on test failures for now.
-  build/android/run_tests.py --xvfb --verbose --apk=True \
-    | sed 's/@@@STEP_FAILURE@@@//g' | tee $tempfile
-  happy_failure=$(cat $tempfile | grep RUNNER_FAILED | wc -l)
-  if [[ $happy_failure -eq 0 ]] ; then
-    echo "@@@STEP_WARNINGS@@@"
-  fi
-  rm -f $tempfile
+  build/android/run_tests.py --xvfb --verbose --apk=True
 }
