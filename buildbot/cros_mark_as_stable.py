@@ -201,7 +201,7 @@ class GitBranch(object):
     return branch in branches.split()
 
 
-def main():
+def main(argv):
   parser = optparse.OptionParser('cros_mark_as_stable OPTIONS packages')
   parser.add_option('--all', action='store_true',
                     help='Mark all packages as stable.')
@@ -330,7 +330,3 @@ def main():
       fh = open(options.drop_file, 'w')
       fh.write(' '.join(revved_packages))
       fh.close()
-
-
-if __name__ == '__main__':
-  main()

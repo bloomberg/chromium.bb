@@ -430,7 +430,7 @@ def ParseMaxRevision(revision_list):
   return max_revision.rpartition('@')[2]
 
 
-def main():
+def main(argv):
   usage_options = '|'.join(constants.VALID_CHROME_REVISIONS)
   usage = '%s OPTIONS [%s]' % (__file__, usage_options)
   parser = optparse.OptionParser(usage)
@@ -510,7 +510,3 @@ def main():
     cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),
                                            [chrome_version_atom])
     print 'CHROME_VERSION_ATOM=%s' % chrome_version_atom
-
-
-if __name__ == '__main__':
-  main()
