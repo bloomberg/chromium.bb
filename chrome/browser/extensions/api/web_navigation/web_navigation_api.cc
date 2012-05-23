@@ -17,8 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/navigation_details.h"
@@ -447,7 +447,7 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
   if (!tab_observer) {
     // If you hit this DCHECK(), please add reproduction steps to
     // http://crbug.com/109464.
-    DCHECK(details->source_web_contents->GetViewType() !=
+    DCHECK(chrome::GetViewType(details->source_web_contents) !=
            chrome::VIEW_TYPE_TAB_CONTENTS);
     return;
   }

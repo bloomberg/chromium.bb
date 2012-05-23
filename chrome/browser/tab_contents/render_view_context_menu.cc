@@ -50,10 +50,10 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
@@ -533,7 +533,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
 }
 
 void RenderViewContextMenu::InitMenu() {
-  content::ViewType view_type = source_web_contents_->GetViewType();
+  chrome::ViewType view_type = chrome::GetViewType(source_web_contents_);
   if (view_type == chrome::VIEW_TYPE_APP_SHELL) {
     AppendPlatformAppItems();
     return;

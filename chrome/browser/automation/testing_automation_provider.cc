@@ -111,13 +111,13 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -136,7 +136,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
@@ -2411,7 +2410,10 @@ void TestingAutomationProvider::GetBrowserInfo(
           render_view_host->GetRoutingID());
       item->Set("view", view);
       std::string type;
-      switch (render_view_host->GetDelegate()->GetRenderViewType()) {
+      WebContents* web_contents =
+          WebContents::FromRenderViewHost(render_view_host);
+      chrome::ViewType view_type = chrome::GetViewType(web_contents);
+      switch (view_type) {
         case chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
           type = "EXTENSION_BACKGROUND_PAGE";
           break;
@@ -2435,7 +2437,7 @@ void TestingAutomationProvider::GetBrowserInfo(
           break;
       }
       item->SetString("view_type", type);
-      item->SetString("url", render_view_host->GetDelegate()->GetURL().spec());
+      item->SetString("url", web_contents->GetURL().spec());
       item->SetBoolean("loaded", !render_view_host->IsLoading());
       extension_views->Append(item);
     }

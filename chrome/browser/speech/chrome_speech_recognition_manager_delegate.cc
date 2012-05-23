@@ -14,15 +14,15 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/common/chrome_view_type.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "grit/generated_resources.h"
@@ -35,6 +35,7 @@
 
 using content::BrowserThread;
 using content::SpeechRecognitionManager;
+using content::WebContents;
 
 namespace {
 const int kNoActiveBubble =
@@ -311,18 +312,20 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const content::RenderViewHost* render_view_host =
       content::RenderViewHost::FromID(render_process_id, render_view_id);
-
-  // For host delegates other than VIEW_TYPE_TAB_CONTENTS we can't reliably show
-  // a popup, including the speech input bubble. In these cases for privacy
-  // reasons we don't want to start recording if the user can't be properly
-  // notified. An example of this is trying to show the speech input bubble
-  // within an extension popup: http://crbug.com/92083. In these situations the
-  // speech input extension API should be used instead.
-
-  const bool allowed = (render_view_host != NULL &&
-                        render_view_host->GetDelegate() != NULL &&
-                        render_view_host->GetDelegate()->GetRenderViewType() ==
-                            chrome::VIEW_TYPE_TAB_CONTENTS);
+  bool allowed = false;
+  if (render_view_host) {
+    // For host delegates other than VIEW_TYPE_TAB_CONTENTS we can't reliably
+    // show a popup, including the speech input bubble. In these cases for
+    // privacy reasons we don't want to start recording if the user can't be
+    // properly notified. An example of this is trying to show the speech input
+    // bubble within an extension popup: http://crbug.com/92083. In these
+    // situations the speech input extension API should be used instead.
+    WebContents* web_contents =
+        WebContents::FromRenderViewHost(render_view_host);
+    chrome::ViewType view_type = chrome::GetViewType(web_contents);
+    if (view_type == chrome::VIEW_TYPE_TAB_CONTENTS)
+      allowed = true;
+  }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, session_id, allowed));
 }

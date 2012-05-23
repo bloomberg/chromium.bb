@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CHROME_VIEW_TYPE_H_
-#define CHROME_COMMON_CHROME_VIEW_TYPE_H_
+#ifndef CHROME_COMMON_VIEW_TYPE_H_
+#define CHROME_COMMON_VIEW_TYPE_H_
 #pragma once
-
-#include "content/public/common/view_type.h"
 
 namespace chrome {
 
@@ -16,8 +14,7 @@ namespace chrome {
 // TODO(aa): Remove this and teach those systems to keep track of their own
 // data.
 enum ViewType {
-  VIEW_TYPE_CHROME_START = content::VIEW_TYPE_CONTENT_END,
-
+  VIEW_TYPE_INVALID,
   VIEW_TYPE_APP_SHELL,
   VIEW_TYPE_BACKGROUND_CONTENTS,
   VIEW_TYPE_EXTENSION_BACKGROUND_PAGE,
@@ -43,4 +40,4 @@ extern const char kViewTypeTabContents[];
 
 }  // namespace chrome
 
-#endif  // CHROME_COMMON_CHROME_VIEW_TYPE_H_
+#endif  // CHROME_COMMON_VIEW_TYPE_H_

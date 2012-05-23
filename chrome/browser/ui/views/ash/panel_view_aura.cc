@@ -17,7 +17,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/common/chrome_view_type.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/site_instance.h"
@@ -107,7 +107,7 @@ void PanelHost::Init(const GURL& url) {
 
   web_contents_.reset(content::WebContents::Create(
       profile_, site_instance_.get(), MSG_ROUTING_NONE, NULL, NULL));
-  web_contents_->SetViewType(chrome::VIEW_TYPE_PANEL);
+  chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_PANEL);
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
 

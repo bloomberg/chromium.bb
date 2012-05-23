@@ -12,10 +12,10 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/view_type.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
@@ -59,7 +59,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
  public:
   ExtensionViewAccumulator(const std::string& extension_id,
                            int browser_window_id,
-                           content::ViewType view_type)
+                           chrome::ViewType view_type)
       : extension_id_(extension_id),
         browser_window_id_(browser_window_id),
         view_type_(view_type) {
@@ -94,12 +94,12 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
 
  private:
   // Returns true if |type| "isa" |match|.
-  static bool ViewTypeMatches(content::ViewType type, content::ViewType match) {
+  static bool ViewTypeMatches(chrome::ViewType type, chrome::ViewType match) {
     if (type == match)
       return true;
 
     // INVALID means match all.
-    if (match == content::VIEW_TYPE_INVALID)
+    if (match == chrome::VIEW_TYPE_INVALID)
       return true;
 
     return false;
@@ -107,7 +107,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
 
   std::string extension_id_;
   int browser_window_id_;
-  content::ViewType view_type_;
+  chrome::ViewType view_type_;
   std::vector<content::RenderView*> views_;
 };
 
@@ -117,7 +117,7 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
 std::vector<content::RenderView*> ExtensionHelper::GetExtensionViews(
     const std::string& extension_id,
     int browser_window_id,
-    content::ViewType view_type) {
+    chrome::ViewType view_type) {
   ExtensionViewAccumulator accumulator(
       extension_id, browser_window_id, view_type);
   content::RenderView::ForEach(&accumulator);
@@ -143,7 +143,7 @@ ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
       content::RenderViewObserverTracker<ExtensionHelper>(render_view),
       extension_dispatcher_(extension_dispatcher),
       pending_app_icon_requests_(0),
-      view_type_(content::VIEW_TYPE_INVALID),
+      view_type_(chrome::VIEW_TYPE_INVALID),
       browser_window_id_(-1) {
 }
 
@@ -369,7 +369,7 @@ void ExtensionHelper::OnGetApplicationInfo(int page_id) {
       routing_id(), page_id, app_info));
 }
 
-void ExtensionHelper::OnNotifyRendererViewType(content::ViewType type) {
+void ExtensionHelper::OnNotifyRendererViewType(chrome::ViewType type) {
   view_type_ = type;
 }
 

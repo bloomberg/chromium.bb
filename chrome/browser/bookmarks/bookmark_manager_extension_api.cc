@@ -21,10 +21,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/common/chrome_view_type.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -385,8 +384,9 @@ bool StartDragBookmarkManagerFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       GetNodesFromArguments(model, args_.get(), 0, &nodes));
 
-  if (render_view_host_->GetDelegate()->GetRenderViewType() ==
-      chrome::VIEW_TYPE_TAB_CONTENTS) {
+  WebContents* web_contents =
+      WebContents::FromRenderViewHost(render_view_host_);
+  if (chrome::GetViewType(web_contents) == chrome::VIEW_TYPE_TAB_CONTENTS) {
     WebContents* web_contents =
         dispatcher()->delegate()->GetAssociatedWebContents();
     CHECK(web_contents);
@@ -427,8 +427,9 @@ bool DropBookmarkManagerFunction::RunImpl() {
   else
     drop_index = drop_parent->child_count();
 
-  if (render_view_host_->GetDelegate()->GetRenderViewType() ==
-      chrome::VIEW_TYPE_TAB_CONTENTS) {
+  WebContents* web_contents =
+      WebContents::FromRenderViewHost(render_view_host_);
+  if (chrome::GetViewType(web_contents) == chrome::VIEW_TYPE_TAB_CONTENTS) {
     WebContents* web_contents =
         dispatcher()->delegate()->GetAssociatedWebContents();
     CHECK(web_contents);

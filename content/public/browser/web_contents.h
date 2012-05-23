@@ -14,7 +14,6 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/view_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -67,7 +66,8 @@ class WebContents : public PageNavigator {
 
   // Returns a WebContents that wraps the RenderViewHost, or NULL if the
   // render view host's delegate isn't a WebContents.
-  CONTENT_EXPORT static WebContents* FromRenderViewHost(RenderViewHost* rvh);
+  CONTENT_EXPORT static WebContents* FromRenderViewHost(
+      const RenderViewHost* rvh);
 
   virtual ~WebContents() {}
 
@@ -90,10 +90,6 @@ class WebContents : public PageNavigator {
   // Returns the user browser context associated with this WebContents (via the
   // NavigationController).
   virtual content::BrowserContext* GetBrowserContext() const = 0;
-
-  // Allows overriding the type of this tab.
-  virtual void SetViewType(content::ViewType type) = 0;
-  virtual content::ViewType GetViewType() const = 0;
 
   // Gets the URL that is currently being displayed, if there is one.
   virtual const GURL& GetURL() const = 0;

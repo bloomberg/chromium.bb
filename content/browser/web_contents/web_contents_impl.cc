@@ -252,7 +252,7 @@ WebContents* WebContents::Create(
       static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace));
 }
 
-WebContents* WebContents::FromRenderViewHost(RenderViewHost* rvh) {
+WebContents* WebContents::FromRenderViewHost(const RenderViewHost* rvh) {
   return rvh->GetDelegate()->GetAsWebContents();
 }
 
@@ -296,7 +296,6 @@ WebContentsImpl::WebContentsImpl(
           static_cast<int>(content::kMaximumZoomFactor * 100)),
       temporary_zoom_settings_(false),
       content_restrictions_(0),
-      view_type_(content::VIEW_TYPE_INVALID),
       color_chooser_(NULL) {
   render_manager_.Init(browser_context, site_instance, routing_id);
 
@@ -634,14 +633,6 @@ const NavigationController& WebContentsImpl::GetController() const {
 
 content::BrowserContext* WebContentsImpl::GetBrowserContext() const {
   return controller_.GetBrowserContext();
-}
-
-void WebContentsImpl::SetViewType(content::ViewType type) {
-  view_type_ = type;
-}
-
-content::ViewType WebContentsImpl::GetViewType() const {
-  return view_type_;
 }
 
 const GURL& WebContentsImpl::GetURL() const {
@@ -2068,10 +2059,6 @@ content::RendererPreferences WebContentsImpl::GetRendererPrefs(
 
 WebContents* WebContentsImpl::GetAsWebContents() {
   return this;
-}
-
-content::ViewType WebContentsImpl::GetRenderViewType() const {
-  return view_type_;
 }
 
 gfx::Rect WebContentsImpl::GetRootWindowResizerRect() const {

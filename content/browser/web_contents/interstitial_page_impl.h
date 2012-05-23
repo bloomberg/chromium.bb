@@ -98,7 +98,6 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual content::RendererPreferences GetRendererPrefs(
       content::BrowserContext* browser_context) const OVERRIDE;
   virtual webkit_glue::WebPreferences GetWebkitPrefs() OVERRIDE;
-  virtual content::ViewType GetRenderViewType() const OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
 
   // RenderWidgetHostDelegate implementation:

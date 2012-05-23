@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_details.h"
@@ -111,7 +111,7 @@ ShellWindow::ShellWindow(Profile* profile,
   contents_wrapper_.reset(new TabContentsWrapper(web_contents_));
   content::WebContentsObserver::Observe(web_contents_);
   web_contents_->SetDelegate(this);
-  web_contents_->SetViewType(chrome::VIEW_TYPE_APP_SHELL);
+  chrome::SetViewType(web_contents_, chrome::VIEW_TYPE_APP_SHELL);
   web_contents_->GetMutableRendererPrefs()->
       browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();

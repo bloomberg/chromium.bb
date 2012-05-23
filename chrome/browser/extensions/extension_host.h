@@ -13,12 +13,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/common/view_type.h"
 #include "content/public/browser/javascript_dialogs.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/view_type.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/extensions/extension_view.h"
@@ -68,7 +68,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   ExtensionHost(const extensions::Extension* extension,
                 content::SiteInstance* site_instance,
-                const GURL& url, content::ViewType host_type);
+                const GURL& url, chrome::ViewType host_type);
   virtual ~ExtensionHost();
 
 #if defined(TOOLKIT_VIEWS)
@@ -107,7 +107,7 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   Profile* profile() const { return profile_; }
 
-  content::ViewType extension_host_type() const { return extension_host_type_; }
+  chrome::ViewType extension_host_type() const { return extension_host_type_; }
   const GURL& GetURL() const;
 
   // ExtensionFunctionDispatcher::Delegate
@@ -243,7 +243,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 
   // The type of view being hosted.
-  content::ViewType extension_host_type_;
+  chrome::ViewType extension_host_type_;
 
   // The relevant WebContents associated with this ExtensionHost, if any.
   content::WebContents* associated_web_contents_;

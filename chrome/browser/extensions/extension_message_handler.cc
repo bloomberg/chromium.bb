@@ -7,10 +7,13 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/web_contents.h"
+
+using content::WebContents;
 
 ExtensionMessageHandler::ExtensionMessageHandler(
     content::RenderViewHost* render_view_host)
@@ -31,8 +34,10 @@ bool ExtensionMessageHandler::OnMessageReceived(
 }
 
 void ExtensionMessageHandler::RenderViewHostInitialized() {
+  WebContents* web_contents =
+      WebContents::FromRenderViewHost(render_view_host());
   Send(new ExtensionMsg_NotifyRenderViewType(
-      routing_id(), render_view_host()->GetDelegate()->GetRenderViewType()));
+      routing_id(), chrome::GetViewType(web_contents)));
 }
 
 void ExtensionMessageHandler::OnPostMessage(int port_id,

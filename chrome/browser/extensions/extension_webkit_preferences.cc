@@ -12,7 +12,7 @@
 namespace extension_webkit_preferences {
 
 void SetPreferences(const extensions::Extension* extension,
-                    content::ViewType render_view_type,
+                    chrome::ViewType render_view_type,
                     webkit_glue::WebPreferences* webkit_prefs) {
   if (!extension)
     return;

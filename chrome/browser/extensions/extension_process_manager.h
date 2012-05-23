@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "content/public/common/view_type.h"
+#include "chrome/common/view_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -56,10 +56,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
   virtual ExtensionHost* CreateViewHost(const extensions::Extension* extension,
                                         const GURL& url,
                                         Browser* browser,
-                                        content::ViewType view_type);
+                                        chrome::ViewType view_type);
   ExtensionHost* CreateViewHost(const GURL& url,
                                 Browser* browser,
-                                content::ViewType view_type);
+                                chrome::ViewType view_type);
   ExtensionHost* CreatePopupHost(const extensions::Extension* extension,
                                  const GURL& url,
                                  Browser* browser);
@@ -171,7 +171,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // We also keep a cache of the host's view type, because that information
   // is not accessible at registration/deregistration time.
   typedef std::map<content::RenderViewHost*,
-      content::ViewType> ExtensionRenderViews;
+      chrome::ViewType> ExtensionRenderViews;
   ExtensionRenderViews all_extension_views_;
 
   // Close the given |host| iff it's a background page.
@@ -179,7 +179,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Ensure browser object is not null except for certain situations.
   void EnsureBrowserWhenRequired(Browser* browser,
-                                 content::ViewType view_type);
+                                 chrome::ViewType view_type);
 
   // These are called when the extension transitions between idle and active.
   // They control the process of closing the background page when idle.

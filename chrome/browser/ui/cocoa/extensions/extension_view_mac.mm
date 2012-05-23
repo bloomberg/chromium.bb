@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/common/chrome_view_type.h"
+#include "chrome/common/view_type.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -67,7 +67,7 @@ void ExtensionViewMac::RenderViewCreated() {
     pending_background_.reset();
   }
 
-  content::ViewType host_type = extension_host_->extension_host_type();
+  chrome::ViewType host_type = extension_host_->extension_host_type();
   if (host_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
     gfx::Size min_size(ExtensionViewMac::kMinWidth,
                        ExtensionViewMac::kMinHeight);

@@ -6,7 +6,7 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/common/chrome_view_type.h"
+#include "chrome/common/view_type.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -164,7 +164,7 @@ void ExtensionView::RenderViewCreated() {
     pending_background_.reset();
   }
 
-  content::ViewType host_type = host_->extension_host_type();
+  chrome::ViewType host_type = host_->extension_host_type();
   if (host_type == chrome::VIEW_TYPE_EXTENSION_POPUP) {
     gfx::Size min_size(ExtensionPopup::kMinWidth,
                        ExtensionPopup::kMinHeight);

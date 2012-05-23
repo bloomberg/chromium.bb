@@ -66,6 +66,7 @@
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/common/child_process_logging.h"
@@ -1447,19 +1448,19 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
   DCHECK(!web_prefs->default_encoding.empty());
 
+  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+  chrome::ViewType view_type = chrome::GetViewType(web_contents);
   ExtensionService* service = profile->GetExtensionService();
   if (service) {
     const Extension* extension = service->extensions()->GetByID(
         rvh->GetSiteInstance()->GetSite().host());
     extension_webkit_preferences::SetPreferences(
-        extension, rvh->GetDelegate()->GetRenderViewType(), web_prefs);
+        extension, view_type, web_prefs);
   }
 
-  if (rvh->GetDelegate()->GetRenderViewType() ==
-      chrome::VIEW_TYPE_NOTIFICATION) {
+  if (view_type == chrome::VIEW_TYPE_NOTIFICATION) {
     web_prefs->allow_scripts_to_close_windows = true;
-  } else if (rvh->GetDelegate()->GetRenderViewType() ==
-             chrome::VIEW_TYPE_BACKGROUND_CONTENTS) {
+  } else if (view_type == chrome::VIEW_TYPE_BACKGROUND_CONTENTS) {
     // Disable all kinds of acceleration for background pages.
     // See http://crbug.com/96005 and http://crbug.com/96006
     web_prefs->force_compositing_mode = false;

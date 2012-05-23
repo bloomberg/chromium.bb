@@ -11,11 +11,13 @@
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
+#include "chrome/common/view_type.h"
 #include "chrome/common/web_apps.h"
-#include "content/public/common/view_type.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart
+
+IPC_ENUM_TRAITS(chrome::ViewType)
 
 // Parameters structure for ExtensionHostMsg_Request.
 IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
@@ -246,7 +248,7 @@ IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
 
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
-                    content::ViewType /* view_type */)
+                    chrome::ViewType /* view_type */)
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
 IPC_MESSAGE_CONTROL3(ExtensionMsg_UsingWebRequestAPI,

@@ -29,9 +29,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -801,13 +801,14 @@ void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
   for (std::set<RenderViewHost*>::const_iterator iter = views.begin();
        iter != views.end(); ++iter) {
     RenderViewHost* host = *iter;
-    int host_type = host->GetDelegate()->GetRenderViewType();
+    WebContents* web_contents = WebContents::FromRenderViewHost(host);
+    chrome::ViewType host_type = chrome::GetViewType(web_contents);
     if (host == deleting_rvh_ ||
         chrome::VIEW_TYPE_EXTENSION_POPUP == host_type ||
         chrome::VIEW_TYPE_EXTENSION_DIALOG == host_type)
       continue;
 
-    GURL url = host->GetDelegate()->GetURL();
+    GURL url = web_contents->GetURL();
     content::RenderProcessHost* process = host->GetProcess();
     result->push_back(
         ExtensionPage(url, process->GetID(), host->GetRoutingID(),

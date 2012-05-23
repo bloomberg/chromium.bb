@@ -628,10 +628,6 @@ void InterstitialPageImpl::DontCreateViewForTesting() {
   create_view_ = false;
 }
 
-content::ViewType InterstitialPageImpl::GetRenderViewType() const {
-  return content::VIEW_TYPE_INTERSTITIAL_PAGE;
-}
-
 gfx::Rect InterstitialPageImpl::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }

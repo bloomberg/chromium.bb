@@ -14,7 +14,6 @@
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/view_type.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
@@ -207,9 +206,6 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // not a WebContents, returns NULL. DEPRECATED: Be sure to include brettw or
   // jam as reviewers before you use this method. http://crbug.com/82582
   virtual content::WebContents* GetAsWebContents();
-
-  // Return type of RenderView which is attached with this object.
-  virtual content::ViewType GetRenderViewType() const = 0;
 
   // Return the rect where to display the resize corner, if any, otherwise
   // an empty rect.

@@ -3974,6 +3974,8 @@
         'browser/user_style_sheet_watcher.h',
         'browser/user_style_sheet_watcher_factory.cc',
         'browser/user_style_sheet_watcher_factory.h',
+        'browser/view_type_utils.cc',
+        'browser/view_type_utils.h',
         'browser/visitedlink/visitedlink_event_listener.cc',
         'browser/visitedlink/visitedlink_event_listener.h',
         'browser/visitedlink/visitedlink_master.cc',

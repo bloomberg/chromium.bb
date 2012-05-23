@@ -25,13 +25,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_id.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -416,7 +415,8 @@ AutomationId GetIdForTab(const TabContentsWrapper* tab) {
 AutomationId GetIdForExtensionView(
     const content::RenderViewHost* render_view_host) {
   AutomationId::Type type;
-  switch (render_view_host->GetDelegate()->GetRenderViewType()) {
+  WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
+  switch (chrome::GetViewType(web_contents)) {
     case chrome::VIEW_TYPE_EXTENSION_POPUP:
       type = AutomationId::kTypeExtensionPopup;
       break;

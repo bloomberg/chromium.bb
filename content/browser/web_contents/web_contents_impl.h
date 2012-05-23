@@ -151,8 +151,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual content::NavigationController& GetController() OVERRIDE;
   virtual const content::NavigationController& GetController() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
-  virtual void SetViewType(content::ViewType type) OVERRIDE;
-  virtual content::ViewType GetViewType() const OVERRIDE;
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual content::RenderWidgetHostView*
@@ -256,7 +254,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
-  virtual content::ViewType GetRenderViewType() const OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -723,9 +720,6 @@ class CONTENT_EXPORT WebContentsImpl
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
-
-  // Type of view this WebContents is displaying.
-  content::ViewType view_type_;
 
   // Color chooser that was opened by this tab.
   content::ColorChooser* color_chooser_;

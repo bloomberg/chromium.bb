@@ -17,7 +17,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/site_instance.h"
 
 using content::ChildProcessSecurityPolicy;

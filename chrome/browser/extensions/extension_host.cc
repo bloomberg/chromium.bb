@@ -29,9 +29,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -127,7 +127,7 @@ class ExtensionHost::ProcessCreationQueue {
 ExtensionHost::ExtensionHost(const extensions::Extension* extension,
                              SiteInstance* site_instance,
                              const GURL& url,
-                             content::ViewType host_type)
+                             chrome::ViewType host_type)
     : extension_(extension),
       extension_id_(extension->id()),
       profile_(Profile::FromBrowserContext(
@@ -144,7 +144,7 @@ ExtensionHost::ExtensionHost(const extensions::Extension* extension,
       profile_, site_instance, MSG_ROUTING_NONE, NULL, NULL));
   content::WebContentsObserver::Observe(host_contents_.get());
   host_contents_->SetDelegate(this);
-  host_contents_->SetViewType(host_type);
+  chrome::SetViewType(host_contents_.get(), host_type);
 
   prefs_tab_helper_.reset(new PrefsTabHelper(host_contents()));
 

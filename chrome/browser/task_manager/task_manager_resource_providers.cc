@@ -37,9 +37,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -49,10 +49,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
-#include "content/public/common/view_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -1208,8 +1206,10 @@ const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
 }
 
 bool TaskManagerExtensionProcessResource::IsBackground() const {
-  return render_view_host_->GetDelegate()->GetRenderViewType() ==
-      chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
+  WebContents* web_contents =
+      WebContents::FromRenderViewHost(render_view_host_);
+  chrome::ViewType view_type = chrome::GetViewType(web_contents);
+  return view_type == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1330,8 +1330,8 @@ bool TaskManagerExtensionProcessResourceProvider::
   // Don't add WebContents (those are handled by
   // TaskManagerTabContentsResourceProvider) or background contents (handled
   // by TaskManagerBackgroundResourceProvider).
-  content::ViewType view_type =
-      render_view_host->GetDelegate()->GetRenderViewType();
+  WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
+  chrome::ViewType view_type = chrome::GetViewType(web_contents);
   return (view_type != chrome::VIEW_TYPE_TAB_CONTENTS &&
           view_type != chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
 }

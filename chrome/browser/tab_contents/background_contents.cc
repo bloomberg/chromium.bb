@@ -9,8 +9,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -32,7 +32,8 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
   // TODO(rafaelw): Implement correct session storage.
   web_contents_.reset(WebContents::Create(
       profile_, site_instance, routing_id, NULL, NULL));
-  web_contents_->SetViewType(chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
+  chrome::SetViewType(
+      web_contents_.get(), chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());
 

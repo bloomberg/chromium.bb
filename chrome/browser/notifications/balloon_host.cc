@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -132,7 +132,7 @@ void BalloonHost::Init() {
       MSG_ROUTING_NONE,
       NULL,
       NULL));
-  web_contents_->SetViewType(chrome::VIEW_TYPE_NOTIFICATION);
+  chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_NOTIFICATION);
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
 
