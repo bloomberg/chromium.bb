@@ -574,8 +574,12 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
   g_broker_services = broker_services;
 
 // In non-official builds warn about dangerous uses of DuplicateHandle.
+  BOOL is_in_job = FALSE;
+#ifdef NACL_WIN64
+  CHECK(::IsProcessInJob(::GetCurrentProcess(), NULL, &is_in_job));
+#endif
 #ifndef OFFICIAL_BUILD
-  if (!g_iat_patch_duplicate_handle.is_patched()) {
+  if (!is_in_job && !g_iat_patch_duplicate_handle.is_patched()) {
     HMODULE module = NULL;
     wchar_t module_name[MAX_PATH];
     CHECK(::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
