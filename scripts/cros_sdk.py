@@ -105,13 +105,13 @@ def FetchRemoteTarballs(urls):
     # occasionally.
     # Finally, we do not use curl's --retry option since it generally doesn't
     # actually retry anything; code 18 for example, it will not retry on.
-    retriable_exits = frozenset([5, 6, 7, 15, 18, 22, 26, 28, 52])
+    retriable_exits = frozenset([5, 6, 7, 15, 18, 22, 26, 28, 52, 56])
     try:
       return cros_build_lib.RunCommandWithRetries(
           5, cmd, sleep=3, retry_on=retriable_exits, **kwargs)
     except cros_build_lib.RunCommandError, e:
       code = e.result.returncode
-      if e.returncode in (51, 58, 60):
+      if code in (51, 58, 60):
         # These are the return codes of failing certs as per 'man curl'.
         print 'Download failed with certificate error? Try "sudo c_rehash".'
       else:
