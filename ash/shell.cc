@@ -651,6 +651,10 @@ aura::RootWindow* Shell::GetRootWindow() {
 }
 
 void Shell::Init() {
+  // Install the custom factory first so that views::FocusManagers for Tray,
+  // Launcher, and WallPaper could be created by the factory.
+  views::FocusManagerFactory::Install(new AshFocusManagerFactory);
+
   aura::RootWindow* root_window = GetRootWindow();
   root_filter_ = new aura::shared::RootWindowEventFilter(root_window);
 #if !defined(OS_MACOSX)
@@ -760,8 +764,6 @@ void Shell::Init() {
   window_cycle_controller_.reset(new WindowCycleController);
   monitor_controller_.reset(new internal::MonitorController);
   screen_dimmer_.reset(new internal::ScreenDimmer);
-
-  views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 }
 
 aura::Window* Shell::GetContainer(int container_id) {
