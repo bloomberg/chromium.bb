@@ -77,12 +77,12 @@ BubbleGtk* BubbleGtk::Show(GtkWidget* anchor_widget,
                            const gfx::Rect* rect,
                            GtkWidget* content,
                            ArrowLocationGtk arrow_location,
-                           bool match_system_theme,
-                           bool grab_input,
+                           int attributeFlags,
                            GtkThemeService* provider,
                            BubbleDelegateGtk* delegate) {
-  BubbleGtk* bubble = new BubbleGtk(provider, match_system_theme);
-  bubble->Init(anchor_widget, rect, content, arrow_location, grab_input);
+  BubbleGtk* bubble = new BubbleGtk(provider,
+                                    attributeFlags & MATCH_SYSTEM_THEME);
+  bubble->Init(anchor_widget, rect, content, arrow_location, attributeFlags);
   bubble->set_delegate(delegate);
   return bubble;
 }
@@ -118,7 +118,7 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
                      const gfx::Rect* rect,
                      GtkWidget* content,
                      ArrowLocationGtk arrow_location,
-                     bool grab_input) {
+                     int attributeFlags) {
   // If there is a current grab widget (menu, other bubble, etc.), hide it.
   GtkWidget* current_grab_widget = gtk_grab_get_current();
   if (current_grab_widget)
@@ -131,10 +131,11 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
   rect_ = rect ? *rect : gtk_util::WidgetBounds(anchor_widget);
   preferred_arrow_location_ = arrow_location;
 
-  grab_input_ = grab_input;
+  grab_input_ = attributeFlags & GRAB_INPUT;
   // Using a TOPLEVEL window may cause placement issues with certain WMs but it
   // is necessary to be able to focus the window.
-  window_ = gtk_window_new(grab_input ? GTK_WINDOW_POPUP : GTK_WINDOW_TOPLEVEL);
+  window_ = gtk_window_new(attributeFlags & POPUP_WINDOW ?
+                           GTK_WINDOW_POPUP : GTK_WINDOW_TOPLEVEL);
 
   gtk_widget_set_app_paintable(window_, TRUE);
   // Resizing is handled by the program, not user.

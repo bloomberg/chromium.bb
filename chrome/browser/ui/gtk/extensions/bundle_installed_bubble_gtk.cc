@@ -100,8 +100,9 @@ void BundleInstalledBubbleGtk::ShowInternal(const BundleInstaller* bundle) {
                             &bounds,
                             bubble_content,
                             arrow_location,
-                            true,  // match_system_theme
-                            true,  // grab_input
+                            BubbleGtk::MATCH_SYSTEM_THEME |
+                                BubbleGtk::POPUP_WINDOW |
+                                BubbleGtk::GRAB_INPUT,
                             theme_provider,
                             this);
 }

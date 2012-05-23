@@ -73,8 +73,15 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
 
   BubbleGtk::ArrowLocationGtk arrow_location = !base::i18n::IsRTL() ?
       BubbleGtk::ARROW_LOCATION_TOP_LEFT : BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-  bubble_ = BubbleGtk::Show(anchor, &rect, content, arrow_location,
-      true /*match_system_theme*/, true /*grab_input*/, theme_service, this);
+  bubble_ = BubbleGtk::Show(anchor,
+                            &rect,
+                            content,
+                            arrow_location,
+                            BubbleGtk::MATCH_SYSTEM_THEME |
+                                BubbleGtk::POPUP_WINDOW |
+                                BubbleGtk::GRAB_INPUT,
+                            theme_service,
+                            this);
   DCHECK(bubble_);
 }
 

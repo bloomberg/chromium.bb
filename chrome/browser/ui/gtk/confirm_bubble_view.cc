@@ -146,8 +146,9 @@ void ConfirmBubbleView::Show() {
                             &rect,
                             content,
                             BubbleGtk::ARROW_LOCATION_NONE,
-                            true,  // match_system_theme
-                            true,  // grab_input
+                            BubbleGtk::MATCH_SYSTEM_THEME |
+                                BubbleGtk::POPUP_WINDOW |
+                                BubbleGtk::GRAB_INPUT,
                             theme_service,
                             this);  // error
 }

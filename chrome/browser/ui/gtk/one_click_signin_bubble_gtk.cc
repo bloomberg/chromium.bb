@@ -89,8 +89,9 @@ OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
   bubble_ =
       BubbleGtk::Show(app_menu_widget, &bounds, bubble_content,
                       arrow_location,
-                      true,  // match_system_theme
-                      true,  // grab_input
+                      BubbleGtk::MATCH_SYSTEM_THEME |
+                          BubbleGtk::POPUP_WINDOW |
+                          BubbleGtk::GRAB_INPUT,
                       theme_provider, this);
   gtk_widget_grab_focus(ok_button);
 }

@@ -59,6 +59,13 @@ class BubbleGtk : public content::NotificationObserver {
     ARROW_LOCATION_FLOAT,  // No arrow. Centered over the supplied rect.
   };
 
+  enum BubbleAttribute {
+    NONE = 0,
+    MATCH_SYSTEM_THEME = 1, // Matches system colors/themes when possible.
+    POPUP_WINDOW = 1 << 1, // Displays as popup instead of top-level window.
+    GRAB_INPUT = 1 << 2, // Causes bubble to grab keyboard/pointer input.
+  };
+
   // Show a bubble, pointing at the area |rect| (in coordinates relative to
   // |anchor_widget|'s origin). A bubble will try to fit on the screen, so it
   // can point to any edge of |rect|. If |rect| is NULL, the widget's entire
@@ -71,8 +78,7 @@ class BubbleGtk : public content::NotificationObserver {
                          const gfx::Rect* rect,
                          GtkWidget* content,
                          ArrowLocationGtk arrow_location,
-                         bool match_system_theme,
-                         bool grab_input,
+                         int attributeFlags,
                          GtkThemeService* provider,
                          BubbleDelegateGtk* delegate);
 
@@ -118,7 +124,7 @@ class BubbleGtk : public content::NotificationObserver {
             const gfx::Rect* rect,
             GtkWidget* content,
             ArrowLocationGtk arrow_location,
-            bool grab_input);
+            int attributeFlags);
 
   // Make the points for our polygon frame, either for fill (the mask), or for
   // when we stroke the border.

@@ -61,8 +61,9 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
                             &anchor_rect,
                             content,
                             BubbleGtk::ARROW_LOCATION_TOP_LEFT,
-                            true,  // match_system_theme
-                            true,  // grab_input
+                            BubbleGtk::MATCH_SYSTEM_THEME |
+                                BubbleGtk::POPUP_WINDOW |
+                                BubbleGtk::GRAB_INPUT,
                             GtkThemeService::GetFrom(profile_),
                             NULL);  // delegate
 

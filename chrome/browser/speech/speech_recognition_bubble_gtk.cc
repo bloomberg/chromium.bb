@@ -199,8 +199,7 @@ void SpeechRecognitionBubbleGtk::Show() {
                             &target_rect,
                             content,
                             BubbleGtk::ARROW_LOCATION_TOP_LEFT,
-                            false,  // match_system_theme
-                            true,  // grab_input
+                            BubbleGtk::POPUP_WINDOW | BubbleGtk::GRAB_INPUT,
                             theme_provider,
                             this);
 

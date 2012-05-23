@@ -252,9 +252,15 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkImage* anchor_image,
 
   BubbleGtk::ArrowLocationGtk arrow_location = base::i18n::IsRTL() ?
       BubbleGtk::ARROW_LOCATION_TOP_LEFT : BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
-  bubble_ = BubbleGtk::Show(GTK_WIDGET(anchor_image_), NULL, content,
-                arrow_location, true /*match_system_theme*/,
-                true /*grab_input*/, theme_service_, this /*delegate*/);
+  bubble_ = BubbleGtk::Show(GTK_WIDGET(anchor_image_),
+                            NULL,
+                            content,
+                            arrow_location,
+                            BubbleGtk::MATCH_SYSTEM_THEME |
+                                BubbleGtk::POPUP_WINDOW |
+                                BubbleGtk::GRAB_INPUT,
+                            theme_service_,
+                            this /*delegate*/);
   if (!bubble_) {
     NOTREACHED();
     return;

@@ -180,8 +180,7 @@ void ExtensionPopupGtk::ShowPopup() {
                             NULL,
                             host_->view()->native_view(),
                             arrow_location,
-                            false,  // match_system_theme
-                            true,   // grab_input
+                            BubbleGtk::POPUP_WINDOW | BubbleGtk::GRAB_INPUT,
                             GtkThemeService::GetFrom(browser_->profile()),
                             this);
 }
