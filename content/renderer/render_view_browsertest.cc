@@ -1290,3 +1290,52 @@ TEST_F(RenderViewImplTest, ContextMenu) {
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_ContextMenu::ID));
 }
+
+TEST_F(RenderViewImplTest, TestBackForward) {
+  LoadHTML("<div id=pagename>Page A</div>");
+  WebKit::WebHistoryItem page_a_item = GetMainFrame()->currentHistoryItem();
+  int was_page_a = -1;
+  string16 check_page_a =
+      ASCIIToUTF16(
+          "Number(document.getElementById('pagename').innerHTML == 'Page A')");
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
+  EXPECT_EQ(1, was_page_a);
+
+  LoadHTML("<div id=pagename>Page B</div>");
+  int was_page_b = -1;
+  string16 check_page_b =
+      ASCIIToUTF16(
+          "Number(document.getElementById('pagename').innerHTML == 'Page B')");
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
+  EXPECT_EQ(1, was_page_b);
+
+  LoadHTML("<div id=pagename>Page C</div>");
+  int was_page_c = -1;
+  string16 check_page_c =
+      ASCIIToUTF16(
+          "Number(document.getElementById('pagename').innerHTML == 'Page C')");
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
+  EXPECT_EQ(1, was_page_b);
+
+  WebKit::WebHistoryItem forward_item = GetMainFrame()->currentHistoryItem();
+  GoBack(GetMainFrame()->previousHistoryItem());
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
+  EXPECT_EQ(1, was_page_b);
+
+  GoForward(forward_item);
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
+  EXPECT_EQ(1, was_page_c);
+
+  GoBack(GetMainFrame()->previousHistoryItem());
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
+  EXPECT_EQ(1, was_page_b);
+
+  forward_item = GetMainFrame()->currentHistoryItem();
+  GoBack(page_a_item);
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
+  EXPECT_EQ(1, was_page_a);
+
+  GoForward(forward_item);
+  EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
+  EXPECT_EQ(1, was_page_b);
+}

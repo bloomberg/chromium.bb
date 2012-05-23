@@ -12,6 +12,7 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "content/test/mock_render_process.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
@@ -20,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/dom_storage/dom_storage_types.h"
+#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_LINUX) && !defined(USE_AURA)
@@ -79,7 +81,8 @@ int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
 
 namespace content {
 
-RenderViewTest::RenderViewTest() : view_(NULL) {
+RenderViewTest::RenderViewTest()
+    : view_(NULL) {
 }
 
 RenderViewTest::~RenderViewTest() {
@@ -122,6 +125,14 @@ void RenderViewTest::LoadHTML(const char* html) {
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   ProcessPendingMessages();
+}
+
+void RenderViewTest::GoBack(const WebKit::WebHistoryItem& item) {
+  GoToOffset(-1, item);
+}
+
+void RenderViewTest::GoForward(const WebKit::WebHistoryItem& item) {
+  GoToOffset(1, item);
 }
 
 void RenderViewTest::SetUp() {
@@ -462,6 +473,32 @@ void RenderViewTest::SendContentStateImmediately() {
 WebKit::WebWidget* RenderViewTest::GetWebWidget() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   return impl->webwidget();
+}
+
+void RenderViewTest::GoToOffset(int offset,
+                                const WebKit::WebHistoryItem& history_item) {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+
+  int history_list_length = impl->historyBackListCount() +
+                            impl->historyForwardListCount() + 1;
+  int pending_offset = offset + impl->history_list_offset();
+
+  ViewMsg_Navigate_Params navigate_params;
+  navigate_params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
+  navigate_params.transition = content::PAGE_TRANSITION_FORWARD_BACK;
+  navigate_params.current_history_list_length = history_list_length;
+  navigate_params.current_history_list_offset = impl->history_list_offset();
+  navigate_params.pending_history_list_offset = pending_offset;
+  navigate_params.page_id = impl->GetPageId() + offset;
+  navigate_params.state = webkit_glue::HistoryItemToString(history_item);
+  navigate_params.request_time = base::Time::Now();
+
+  ViewMsg_Navigate navigate_message(impl->GetRoutingID(), navigate_params);
+  OnMessageReceived(navigate_message);
+
+  // The load actually happens asynchronously, so we pump messages to process
+  // the pending continuation.
+  ProcessPendingMessages();
 }
 
 }  // namespace content

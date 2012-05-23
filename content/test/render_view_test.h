@@ -25,6 +25,7 @@ class MockRenderProcess;
 class RendererMainPlatformDelegate;
 
 namespace WebKit {
+class WebHistoryItem;
 class WebWidget;
 }
 
@@ -72,6 +73,12 @@ class RenderViewTest : public testing::Test {
 
   // Loads the given HTML into the main frame as a data: URL.
   void LoadHTML(const char* html);
+
+  // Navigates the main frame back or forward in session history and commits.
+  // The caller must capture a WebHistoryItem for the target page. This is
+  // available from the WebFrame.
+  void GoBack(const WebKit::WebHistoryItem& item);
+  void GoForward(const WebKit::WebHistoryItem& item);
 
   // Sends IPC messages that emulates a key-press event.
   int SendKeyEvent(MockKeyboard::Layout layout,
@@ -134,6 +141,9 @@ class RenderViewTest : public testing::Test {
   scoped_ptr<RendererMainPlatformDelegate> platform_;
   scoped_ptr<content::MainFunctionParams> params_;
   scoped_ptr<CommandLine> command_line_;
+
+ private:
+  void GoToOffset(int offset, const WebKit::WebHistoryItem& history_item);
 };
 
 }  // namespace content
