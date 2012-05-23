@@ -335,6 +335,47 @@ def CopyAndAugmentManifest(build_dir, output_dir, manifest_name,
   modified_manifest_file.close()
 
 
+# Copy the relevant CRT DLLs to |build_dir|. We copy DLLs from all versions
+# of VS installed to make sure we have the correct CRT version, unused DLLs
+# should not conflict with the others anyways.
+def CopyVisualStudioRuntimeDLLs(build_dir):
+  is_debug = os.path.basename(build_dir) == 'Debug'
+  if not is_debug and os.path.basename(build_dir) != 'Release':
+    print ("Warning: could not determine build configuration from "
+           "output directory, assuming Release build.")
+
+  crt_dlls = []
+  if is_debug:
+    crt_dlls = glob.glob(
+        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/"
+        "Debug_NonRedist/x86/Microsoft.*.DebugCRT/*.dll")
+  else:
+    crt_dlls = glob.glob(
+        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/x86/"
+        "Microsoft.*.CRT/*.dll")
+
+  # Also handle the case where someone is building using only winsdk and
+  # doesn't have Visual Studio installed.
+  if not crt_dlls:
+    # On a 64-bit system, 32-bit dlls are in SysWOW64 (don't ask).
+    if os.access("C:/Windows/SysWOW64", os.F_OK):
+      sys_dll_dir = "C:/Windows/SysWOW64"
+    else:
+      sys_dll_dir = "C:/Windows/System32"
+
+    if is_debug:
+      crt_dlls = glob.glob(os.path.join(sys_dll_dir, "msvc*0d.dll"))
+    else:
+      crt_dlls = glob.glob(os.path.join(sys_dll_dir, "msvc*0.dll"))
+
+  if not crt_dlls:
+    print ("Warning: could not find CRT DLLs to copy to build dir - target "
+           "may not run on a system that doesn't have those DLLs.")
+
+  for dll in crt_dlls:
+    shutil.copy(dll, build_dir)
+
+
 # Copies component build DLLs and generates required config files and manifests
 # in order for chrome.exe and setup.exe to be able to find those DLLs at
 # run-time.
@@ -350,24 +391,10 @@ def DoComponentBuildTasks(staging_dir, build_dir, current_version):
   if not os.path.exists(installer_dir):
     os.mkdir(installer_dir)
 
-  # Copy the relevant CRT DLLs to |build_dir|. We copy DLLs from all versions
-  # of VS installed to make sure we have the correct CRT version, unused DLLs
-  # should not conflict with the others anyways.
-  crt_dlls = []
-  if build_dir.endswith('Debug/'):
-    crt_dlls = glob.glob(
-        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/"
-        "Debug_NonRedist/x86/Microsoft.*.DebugCRT/*.dll")
-  elif build_dir.endswith('Release/'):
-    crt_dlls = glob.glob(
-        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/x86/"
-        "Microsoft.*.CRT/*.dll")
-  else:
-    print ("Warning: CRT DLLs not copied, could not determine build "
-           "configuration from output directory.")
-
-  for dll in crt_dlls:
-    shutil.copy(dll, build_dir)
+  # Copy the VS CRT DLLs to |build_dir|. This must be done before the general
+  # copy step below to ensure the CRT DLLs are added to the archive and marked
+  # as a dependency in the exe manifests generated below.
+  CopyVisualStudioRuntimeDLLs(build_dir)
 
   # Copy all the DLLs in |build_dir| to the version directory. Simultaneously
   # build a list of their names to mark them as dependencies of chrome.exe and
@@ -536,8 +563,8 @@ def _ParseOptions():
   options, args = parser.parse_args()
   if not options.build_dir:
     parser.error('You must provide a build dir.')
-  elif not options.build_dir.endswith('/'):
-    options.build_dir += '/'
+
+  options.build_dir = os.path.normpath(options.build_dir)
 
   if not options.staging_dir:
     parser.error('You must provide a staging dir.')
