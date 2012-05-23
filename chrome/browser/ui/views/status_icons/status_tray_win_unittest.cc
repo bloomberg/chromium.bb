@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/status_icons/status_tray_win.h"
+
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
-#include "chrome/browser/ui/views/status_icons/status_tray_win.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,9 +16,9 @@
 
 class SkBitmap;
 
-class MockStatusIconObserver : public StatusIcon::Observer {
+class MockStatusIconObserver : public StatusIconObserver {
  public:
-  MOCK_METHOD0(OnClicked, void());
+  MOCK_METHOD0(OnStatusIconClicked, void());
 };
 
 TEST(StatusTrayWinTest, CreateTray) {
@@ -45,7 +47,7 @@ TEST(StatusTrayWinTest, ClickOnIcon) {
   StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon());
   MockStatusIconObserver observer;
   icon->AddObserver(&observer);
-  EXPECT_CALL(observer, OnClicked());
+  EXPECT_CALL(observer, OnStatusIconClicked());
   // Mimic a click.
   tray.WndProc(NULL, icon->message_id(), icon->icon_id(), WM_LBUTTONDOWN);
   // Mimic a right-click - observer should not be called.

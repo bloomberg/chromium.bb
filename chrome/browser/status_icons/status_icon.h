@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_ICON_H_
 #pragma once
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
@@ -15,6 +16,8 @@ class SkBitmap;
 namespace ui {
 class MenuModel;
 }
+
+class StatusIconObserver;
 
 class StatusIcon {
  public:
@@ -40,29 +43,15 @@ class StatusIcon {
   // context menu. Passing NULL results in no menu at all.
   void SetContextMenu(ui::MenuModel* menu);
 
-  class Observer {
-   public:
-    virtual ~Observer() {}
-
-    // Called when the user clicks on the system tray icon. Clicks that result
-    // in the context menu being displayed will not be passed to this observer
-    // (i.e. if there's a context menu set on this status icon, and the user
-    // right clicks on the icon to display the context menu, OnClicked will not
-    // be called).
-    // Note: Chrome OS displays the context menu on left button clicks.
-    // This will only be fired for this platform if no context menu is present.
-    virtual void OnClicked() = 0;
-  };
-
   // Adds/Removes an observer for clicks on the status icon. If an observer is
   // registered, then left clicks on the status icon will result in the observer
   // being called, otherwise, both left and right clicks will display the
   // context menu (if any).
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(StatusIconObserver* observer);
+  void RemoveObserver(StatusIconObserver* observer);
 
   // Returns true if there are registered click observers.
-  bool HasObservers();
+  bool HasObservers() const;
 
   // Dispatches a click event to the observers.
   void DispatchClickEvent();
@@ -74,9 +63,11 @@ class StatusIcon {
   virtual void UpdatePlatformContextMenu(ui::MenuModel* model) = 0;
 
  private:
-  ObserverList<Observer> observers_;
+  ObserverList<StatusIconObserver> observers_;
+
   // Context menu, if any.
   scoped_ptr<ui::MenuModel> context_menu_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(StatusIcon);
 };
 

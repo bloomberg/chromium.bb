@@ -1,15 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/compiler_specific.h"
 #include "chrome/browser/status_icons/status_icon.h"
+
+#include "base/compiler_specific.h"
+#include "chrome/browser/status_icons/status_icon_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class MockStatusIconObserver : public StatusIcon::Observer {
+class MockStatusIconObserver : public StatusIconObserver {
  public:
-  MOCK_METHOD0(OnClicked, void());
+  MOCK_METHOD0(OnStatusIconClicked, void());
 };
 
 // Define pure virtual functions so we can test base class functionality.
@@ -29,8 +31,8 @@ TEST(StatusIconTest, ObserverAdd) {
   // Make sure that observers are invoked when we click items.
   TestStatusIcon icon;
   MockStatusIconObserver observer, observer2;
-  EXPECT_CALL(observer, OnClicked()).Times(2);
-  EXPECT_CALL(observer2, OnClicked());
+  EXPECT_CALL(observer, OnStatusIconClicked()).Times(2);
+  EXPECT_CALL(observer2, OnStatusIconClicked());
   icon.AddObserver(&observer);
   icon.DispatchClickEvent();
   icon.AddObserver(&observer2);
@@ -43,7 +45,7 @@ TEST(StatusIconTest, ObserverRemove) {
   // Make sure that observers are no longer invoked after they are removed.
   TestStatusIcon icon;
   MockStatusIconObserver observer;
-  EXPECT_CALL(observer, OnClicked());
+  EXPECT_CALL(observer, OnStatusIconClicked());
   icon.AddObserver(&observer);
   icon.DispatchClickEvent();
   icon.RemoveObserver(&observer);
