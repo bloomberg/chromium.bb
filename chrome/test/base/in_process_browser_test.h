@@ -137,6 +137,7 @@ class InProcessBrowserTest : public BrowserTestBase {
   virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
   // Returns the testing server. Guaranteed to be non-NULL.
+  const net::TestServer* test_server() const { return test_server_.get(); }
   net::TestServer* test_server() { return test_server_.get(); }
 
   // Creates a browser with a single tab (about:blank), waits for the tab to

@@ -634,21 +634,21 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     OpenDestURLWithJSImpl("RemoveLinkElementsAndNavigate()");
   }
 
-  void ClickToNextPageAfterPrerender(Browser* browser) {
+  void ClickToNextPageAfterPrerender() {
     ui_test_utils::WindowedNotificationObserver new_page_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
     RenderViewHost* render_view_host =
-        browser->GetSelectedWebContents()->GetRenderViewHost();
+        current_browser()->GetSelectedWebContents()->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         string16(),
         ASCIIToUTF16("ClickOpenLink()"));
     new_page_observer.Wait();
   }
 
-  void NavigateToNextPageAfterPrerender(Browser* browser) {
+  void NavigateToNextPageAfterPrerender() const {
     ui_test_utils::NavigateToURL(
-        browser,
+        current_browser(),
         test_server()->GetURL("files/prerender/prerender_page.html"));
   }
 
@@ -663,15 +663,15 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
   // Called after the prerendered page has been navigated to and then away from.
   // Navigates back through the history to the prerendered page.
-  void GoBackToPrerender(Browser* browser) {
+  void GoBackToPrerender() {
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
-    browser->GoBack(CURRENT_TAB);
+    current_browser()->GoBack(CURRENT_TAB);
     back_nav_observer.Wait();
     bool original_prerender_page = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser->GetSelectedWebContents()->GetRenderViewHost(), L"",
+        current_browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(IsOriginalPrerenderPage())",
         &original_prerender_page));
     EXPECT_TRUE(original_prerender_page);
@@ -680,14 +680,14 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   // Goes back to the page that was active before the prerender was swapped
   // in. This must be called when the prerendered page is the current page
   // in the active tab.
-  void GoBackToPageBeforePrerender(Browser* browser) {
-    WebContents* tab = browser->GetSelectedWebContents();
+  void GoBackToPageBeforePrerender() {
+    WebContents* tab = current_browser()->GetSelectedWebContents();
     ASSERT_TRUE(tab);
     EXPECT_FALSE(tab->IsLoading());
     ui_test_utils::WindowedNotificationObserver back_nav_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
-    browser->GoBack(CURRENT_TAB);
+    current_browser()->GoBack(CURRENT_TAB);
     back_nav_observer.Wait();
     bool js_result;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -697,13 +697,12 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(js_result);
   }
 
-  // Should be const but test_server()->GetURL(...) is not const.
-  void NavigateToURL(const std::string& dest_html_file) {
+  void NavigateToURL(const std::string& dest_html_file) const {
     GURL dest_url = test_server()->GetURL(dest_html_file);
     NavigateToURLImpl(dest_url, CURRENT_TAB);
   }
 
-  bool UrlIsInPrerenderManager(const std::string& html_file) {
+  bool UrlIsInPrerenderManager(const std::string& html_file) const {
     GURL dest_url = test_server()->GetURL(html_file);
     return (GetPrerenderManager()->FindEntry(dest_url) != NULL);
   }
@@ -712,7 +711,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
     return (GetPrerenderManager()->FindEntry(url) != NULL);
   }
 
-  bool UrlIsPendingInPrerenderManager(const std::string& html_file) {
+  bool UrlIsPendingInPrerenderManager(const std::string& html_file) const {
     GURL dest_url = test_server()->GetURL(html_file);
     return GetPrerenderManager()->IsPendingEntry(dest_url);
   }
@@ -796,10 +795,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
   }
 
   Browser* current_browser() const {
-    if (explicitly_set_browser_)
-      return explicitly_set_browser_;
-    else
-      return browser();
+    return explicitly_set_browser_ ? explicitly_set_browser_ : browser();
   }
 
   void IncreasePrerenderMemory() {
@@ -830,7 +826,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         replacement_text,
         &replacement_path));
 
-    net::TestServer* src_server = test_server();
+    const net::TestServer* src_server = test_server();
     scoped_ptr<net::TestServer> https_src_server;
     if (use_https_src_server_) {
       https_src_server.reset(
@@ -2097,8 +2093,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNavigateClickGoBack) {
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
-  ClickToNextPageAfterPrerender(current_browser());
-  GoBackToPrerender(current_browser());
+  ClickToNextPageAfterPrerender();
+  GoBackToPrerender();
 }
 
 // Disabled due to timeouts on commit queue.
@@ -2109,8 +2105,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
-  NavigateToNextPageAfterPrerender(current_browser());
-  GoBackToPrerender(current_browser());
+  NavigateToNextPageAfterPrerender();
+  GoBackToPrerender();
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickClickGoBack) {
@@ -2118,8 +2114,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickClickGoBack) {
                    FINAL_STATUS_USED,
                    1);
   OpenDestURLViaClick();
-  ClickToNextPageAfterPrerender(current_browser());
-  GoBackToPrerender(current_browser());
+  ClickToNextPageAfterPrerender();
+  GoBackToPrerender();
 }
 
 // Disabled due to timeouts on commit queue.
@@ -2130,8 +2126,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    FINAL_STATUS_USED,
                    1);
   OpenDestURLViaClick();
-  NavigateToNextPageAfterPrerender(current_browser());
-  GoBackToPrerender(current_browser());
+  NavigateToNextPageAfterPrerender();
+  GoBackToPrerender();
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewWindow) {
@@ -2178,7 +2174,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
                    FINAL_STATUS_USED,
                    1);
   NavigateToDestURL();
-  GoBackToPageBeforePrerender(current_browser());
+  GoBackToPageBeforePrerender();
 }
 
 // Checks that the control group works.  A JS alert cannot be detected in the
