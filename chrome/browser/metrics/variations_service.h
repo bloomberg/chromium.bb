@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/time.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
@@ -50,6 +51,7 @@ class VariationsService : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersion);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersionWildcards);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyDate);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ValidateStudy);
 
   // Store the given seed data to the given local prefs. Note that |seed_data|
   // is assumed to be the raw serialized protobuf data stored in a string. It
@@ -72,6 +74,11 @@ class VariationsService : public net::URLFetcherDelegate {
   // Checks whether |study| is applicable for the given date/time.
   static bool CheckStudyDate(const chrome_variations::Study& study,
                              const base::Time& date_time);
+
+  // Validates the sanity of |study| and computes the total probability.
+  static bool ValidateStudyAndComputeTotalProbability(
+      const chrome_variations::Study& study,
+      base::FieldTrial::Probability* total_probability);
 
   // Loads the Variations seed data from the given local prefs into |seed|. If
   // there is a problem with loading, the pref value is cleared and false is

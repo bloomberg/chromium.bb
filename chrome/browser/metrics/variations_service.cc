@@ -208,6 +208,42 @@ bool VariationsService::CheckStudyDate(const chrome_variations::Study& study,
   return true;
 }
 
+// static
+bool VariationsService::ValidateStudyAndComputeTotalProbability(
+    const chrome_variations::Study& study,
+    base::FieldTrial::Probability* total_probability) {
+  // At the moment, a missing default_experiment_name makes the study invalid.
+  if (study.default_experiment_name().empty()) {
+    DVLOG(1) << study.name() << " has no default experiment defined.";
+    return false;
+  }
+
+  const std::string& default_group_name = study.default_experiment_name();
+  base::FieldTrial::Probability divisor = 0;
+
+  bool found_default_group = false;
+  for (int i = 0; i < study.experiment_size(); ++i) {
+    if (study.experiment(i).name().empty()) {
+      DVLOG(1) << study.name() << " is missing experiment " << i << " name";
+      return false;
+    }
+    divisor += study.experiment(i).probability_weight();
+    if (study.experiment(i).name() == default_group_name)
+      found_default_group = true;
+  }
+
+  if (!found_default_group) {
+    DVLOG(1) << study.name() << " is missing default experiment in its "
+             << "experiment list";
+    // The default group was not found in the list of groups. This study is not
+    // valid.
+    return false;
+  }
+
+  *total_probability = divisor;
+  return true;
+}
+
 bool VariationsService::LoadTrialsSeedFromPref(
     PrefService* local_prefs,
     chrome_variations::TrialsSeed* seed) {
@@ -228,31 +264,12 @@ bool VariationsService::LoadTrialsSeedFromPref(
 
 void VariationsService::CreateTrialFromStudy(
     const chrome_variations::Study& study) {
+  base::FieldTrial::Probability total_probability = 0;
+  if (!ValidateStudyAndComputeTotalProbability(study, &total_probability))
+    return;
+
   if (!ShouldAddStudy(study))
     return;
-
-  // At the moment, a missing default_experiment_name makes the study invalid.
-  if (!study.has_default_experiment_name()) {
-    DVLOG(1) << study.name() << " has no default experiment defined.";
-    return;
-  }
-
-  const std::string& default_group_name = study.default_experiment_name();
-  base::FieldTrial::Probability divisor = 0;
-
-  bool found_default_group = false;
-  for (int i = 0; i < study.experiment_size(); ++i) {
-    divisor += study.experiment(i).probability_weight();
-    if (study.experiment(i).name() == default_group_name)
-      found_default_group = true;
-  }
-  if (!found_default_group) {
-    DVLOG(1) << study.name() << " is missing default experiment in it's "
-             << "experiment list";
-    // The default group was not found in the list of groups. This study is not
-    // valid.
-    return;
-  }
 
   const base::Time expiry_date =
       ConvertStudyDateToBaseTime(study.expiry_date());
@@ -261,8 +278,9 @@ void VariationsService::CreateTrialFromStudy(
 
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
-          study.name(), divisor, default_group_name, exploded_end_date.year,
-          exploded_end_date.month, exploded_end_date.day_of_month, NULL));
+          study.name(), total_probability, study.default_experiment_name(),
+          exploded_end_date.year, exploded_end_date.month,
+          exploded_end_date.day_of_month, NULL));
 
   if (study.has_consistency() &&
       study.consistency() == chrome_variations::Study_Consistency_PERMANENT) {
@@ -270,7 +288,7 @@ void VariationsService::CreateTrialFromStudy(
   }
 
   for (int i = 0; i < study.experiment_size(); ++i) {
-    if (study.experiment(i).name() != default_group_name) {
+    if (study.experiment(i).name() != study.default_experiment_name()) {
       trial->AppendGroup(study.experiment(i).name(),
                          study.experiment(i).probability_weight());
     }

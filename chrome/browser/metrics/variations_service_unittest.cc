@@ -44,8 +44,7 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
-    if (i < arraysize(study_channels))
-    {
+    if (i < arraysize(study_channels)) {
       study.add_channel(study_channels[i]);
       channel_added[i] = true;
     }
@@ -62,8 +61,7 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
-    if (i < arraysize(study_channels))
-    {
+    if (i < arraysize(study_channels)) {
       const int index = arraysize(study_channels) - i - 1;
       study.add_channel(study_channels[index]);
       channel_added[index] = true;
@@ -208,3 +206,39 @@ TEST(VariationsServiceTest, CheckStudyDate) {
     }
   }
 }
+
+TEST(VariationsServiceTest, ValidateStudy) {
+  chrome_variations::Study study;
+  study.set_default_experiment_name("def");
+
+  chrome_variations::Study_Experiment* experiment = study.add_experiment();
+  experiment->set_name("abc");
+  experiment->set_probability_weight(100);
+
+  chrome_variations::Study_Experiment* default_group = study.add_experiment();
+  default_group->set_name("def");
+  default_group->set_probability_weight(200);
+
+  base::FieldTrial::Probability total_probability = 0;
+  bool valid = VariationsService::ValidateStudyAndComputeTotalProbability(
+      study, &total_probability);
+  EXPECT_TRUE(valid);
+  EXPECT_EQ(300, total_probability);
+
+  study.clear_default_experiment_name();
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(study,
+      &total_probability);
+  EXPECT_FALSE(valid);
+
+  study.set_default_experiment_name("xyz");
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(study,
+      &total_probability);
+  EXPECT_FALSE(valid);
+
+  study.set_default_experiment_name("def");
+  default_group->clear_name();
+  valid = VariationsService::ValidateStudyAndComputeTotalProbability(study,
+      &total_probability);
+  EXPECT_FALSE(valid);
+}
+
