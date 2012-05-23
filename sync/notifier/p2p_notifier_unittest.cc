@@ -12,6 +12,7 @@
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/syncable/model_type.h"
@@ -25,11 +26,22 @@ using ::testing::_;
 using ::testing::Mock;
 using ::testing::StrictMock;
 
+class MyTestURLRequestContext : public TestURLRequestContext {
+ public:
+  MyTestURLRequestContext() : TestURLRequestContext(true) {
+    context_storage_.set_host_resolver(new net::HangingHostResolver());
+    Init();
+  }
+  virtual ~MyTestURLRequestContext() {}
+};
+
 class P2PNotifierTest : public testing::Test {
  protected:
   P2PNotifierTest() {
     notifier_options_.request_context_getter =
-        new TestURLRequestContextGetter(message_loop_.message_loop_proxy());
+        new TestURLRequestContextGetter(
+            message_loop_.message_loop_proxy(),
+            scoped_ptr<TestURLRequestContext>(new MyTestURLRequestContext()));
   }
 
   virtual ~P2PNotifierTest() {}

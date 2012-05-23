@@ -12,6 +12,7 @@
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/communicator/login_settings.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "talk/xmllite/xmlelement.h"
@@ -62,12 +63,23 @@ class FakeDelegate : public SingleLoginAttempt::Delegate {
   ServerInformation redirect_server_;
 };
 
+class MyTestURLRequestContext : public TestURLRequestContext {
+ public:
+  MyTestURLRequestContext() : TestURLRequestContext(true) {
+    context_storage_.set_host_resolver(new net::HangingHostResolver());
+    Init();
+  }
+  virtual ~MyTestURLRequestContext() {}
+};
+
 class SingleLoginAttemptTest : public ::testing::Test {
  protected:
   SingleLoginAttemptTest()
       : login_settings_(
           buzz::XmppClientSettings(),
-          new TestURLRequestContextGetter(base::MessageLoopProxy::current()),
+          new TestURLRequestContextGetter(
+              base::MessageLoopProxy::current(),
+              scoped_ptr<TestURLRequestContext>(new MyTestURLRequestContext())),
           ServerList(
               1,
               ServerInformation(

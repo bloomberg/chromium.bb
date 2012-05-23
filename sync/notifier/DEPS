@@ -1,6 +1,7 @@
 include_rules = [
   "+google/cacheinvalidation",
   "+jingle/notifier",
+  "+net/base/mock_host_resolver.h",
   "+net/url_request/url_request_context.h",
   "+net/url_request/url_request_test_util.h",
 

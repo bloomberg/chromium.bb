@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/test_completion_callback.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -16,31 +17,15 @@
 
 namespace {
 
-class ProxyTestURLRequestContextGetter : public TestURLRequestContextGetter {
+class MyTestURLRequestContext : public TestURLRequestContext {
  public:
-  ProxyTestURLRequestContextGetter()
-      : TestURLRequestContextGetter(base::MessageLoopProxy::current()),
-        set_context_members_(false) {}
-
-  // Override GetURLRequestContext to set the host resolver and proxy
-  // service (used by the unit tests).
-  virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
-    TestURLRequestContext* context =
-        TestURLRequestContextGetter::GetURLRequestContext();
-    if (!set_context_members_) {
-      context->set_host_resolver(new net::MockHostResolver());
-      context->set_proxy_service(net::ProxyService::CreateFixedFromPacResult(
-          "PROXY bad:99; PROXY maybe:80; DIRECT"));
-      set_context_members_ = true;
-    }
-    return context;
+  MyTestURLRequestContext() : TestURLRequestContext(true) {
+    context_storage_.set_proxy_service(
+        net::ProxyService::CreateFixedFromPacResult(
+            "PROXY bad:99; PROXY maybe:80; DIRECT"));
+    Init();
   }
-
- protected:
-  virtual ~ProxyTestURLRequestContextGetter() {}
-
- private:
-  bool set_context_members_;
+  virtual ~MyTestURLRequestContext() {}
 };
 
 }  // namespace
@@ -50,7 +35,9 @@ namespace notifier {
 class ProxyResolvingClientSocketTest : public testing::Test {
  protected:
   ProxyResolvingClientSocketTest()
-      : url_request_context_getter_(new ProxyTestURLRequestContextGetter()) {}
+      : url_request_context_getter_(new TestURLRequestContextGetter(
+            base::MessageLoopProxy::current(),
+            scoped_ptr<TestURLRequestContext>(new MyTestURLRequestContext))) {}
 
   virtual ~ProxyResolvingClientSocketTest() {}
 
@@ -61,7 +48,7 @@ class ProxyResolvingClientSocketTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  scoped_refptr<ProxyTestURLRequestContextGetter> url_request_context_getter_;
+  scoped_refptr<TestURLRequestContextGetter> url_request_context_getter_;
 };
 
 // TODO(sanjeevr): Fix this test on Linux.

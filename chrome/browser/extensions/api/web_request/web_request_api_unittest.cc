@@ -28,6 +28,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/auth.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -127,8 +128,9 @@ class ExtensionWebRequestTest : public testing::Test {
     network_delegate_.reset(new ChromeNetworkDelegate(
         event_router_.get(), NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_));
-    context_.reset(new TestURLRequestContext());
+    context_.reset(new TestURLRequestContext(true));
     context_->set_network_delegate(network_delegate_.get());
+    context_->Init();
   }
 
   MessageLoopForIO message_loop_;
@@ -444,8 +446,12 @@ class ExtensionWebRequestHeaderModificationTest :
     network_delegate_.reset(new ChromeNetworkDelegate(
         event_router_.get(), NULL, NULL, &profile_,
         CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_));
-    context_.reset(new TestURLRequestContext());
+    context_.reset(new TestURLRequestContext(true));
+    host_resolver_.reset(new net::MockHostResolver());
+    host_resolver_->rules()->AddSimulatedFailure("doesnotexist");
+    context_->set_host_resolver(host_resolver_.get());
     context_->set_network_delegate(network_delegate_.get());
+    context_->Init();
   }
 
   MessageLoopForIO message_loop_;
@@ -458,6 +464,7 @@ class ExtensionWebRequestHeaderModificationTest :
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
+  scoped_ptr<net::MockHostResolver> host_resolver_;
   scoped_ptr<TestURLRequestContext> context_;
 };
 
