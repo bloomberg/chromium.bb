@@ -1039,6 +1039,9 @@ bool TabStrip::ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) {
     if (tab_at(index)->x() == tab_at(index + 1)->x())
       return false;
 
+    if (tab_at(index)->x() > tab_at(index + 1)->x())
+      return true;  // Can happen during dragging.
+
     clip->SetRect(0, 0, tab_at(index + 1)->x() - tab_at(index)->x() +
                       stacked_tab_left_clip(),
                   tab_at(index)->height());
@@ -1047,6 +1050,10 @@ bool TabStrip::ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) {
     const gfx::Rect& previous_tab_bounds(tab_at(index - 1)->bounds());
     if (tab_bounds.x() == previous_tab_bounds.x())
       return false;
+
+    if (tab_bounds.x() < previous_tab_bounds.x())
+      return true;  // Can happen during dragging.
+
     if (previous_tab_bounds.right() + tab_h_offset() != tab_bounds.x()) {
       int x = previous_tab_bounds.right() - tab_bounds.x() -
           stacked_tab_right_clip();
