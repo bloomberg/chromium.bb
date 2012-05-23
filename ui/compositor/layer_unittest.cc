@@ -1195,13 +1195,13 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
   EXPECT_EQ("2.0 2.0", l1_delegate.ToScaleString());
 }
 
-// Tests layer::set_scale_canvas(false).
+// Tests layer::set_scale_content(false).
 TEST_F(LayerWithRealCompositorTest, MAYBE_NoScaleCanvas) {
   scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
                                           gfx::Rect(10, 20, 200, 220)));
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,
                                         gfx::Rect(10, 20, 140, 180)));
-  l1->set_scale_canvas(false);
+  l1->set_scale_content(false);
   root->Add(l1.get());
   TestLayerDelegate l1_delegate;
   l1_delegate.AddColor(SK_ColorWHITE);
@@ -1209,7 +1209,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_NoScaleCanvas) {
 
   GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
   GetCompositor()->SetRootLayer(root.get());
-  // Scale factor change is notified regardless of scale_canvas flag.
+  // Scale factor change is notified regardless of scale_content flag.
   EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
 
   RunPendingMessages();

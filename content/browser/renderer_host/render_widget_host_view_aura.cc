@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
+#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/image_transport_client.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
@@ -269,9 +270,9 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window_->SetParent(NULL);
-  // Don't scale the canvas on high density screen because
+  // Don't scale the contents on high density screen because
   // the renderer takes care of it.
-  window_->layer()->set_scale_canvas(false);
+  window_->layer()->set_scale_content(false);
   Show();
   Focus();
 }
@@ -452,7 +453,9 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   if (!container)
     return;
 
-  if (!output->initialize(size.width(), size.height(), true))
+  gfx::Size size_in_pixel = content::ConvertSizeToPixel(this, size);
+  if (!output->initialize(
+      size_in_pixel.width(), size_in_pixel.height(), true))
     return;
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -465,7 +468,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   scoped_callback_runner.Release();
   gl_helper->CopyTextureTo(container->texture_id(),
                            container->size(),
-                           size,
+                           size_in_pixel,
                            addr,
                            callback);
 }
@@ -478,6 +481,13 @@ void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
   // the UpdateRect/AcceleratedSurfaceBuffersSwapped messages so that we have
   // fewer inconsistent temporary states.
   needs_update_texture_ = true;
+
+  // Don't scale contents on high density screen when content is accelerated
+  // because renderer takes care of it.
+  // TODO(pkotwicz): Implement DIP backing store such that renderer always
+  // scales web contents.
+  window_->layer()->set_scale_content(
+      !host_->is_accelerated_compositing_active());
 }
 
 void RenderWidgetHostViewAura::UpdateExternalTexture() {
@@ -497,7 +507,9 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
       typedef std::vector<linked_ptr<ResizeLock> > ResizeLockList;
       ResizeLockList::iterator it = resize_locks_.begin();
       while (it != resize_locks_.end()) {
-        if ((*it)->expected_size() == container->size())
+        gfx::Size container_size = content::ConvertSizeToDIP(this,
+            container->size());
+        if ((*it)->expected_size() == container_size)
           break;
         ++it;
       }
@@ -529,19 +541,22 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params_in_pixel,
     int gpu_host_id) {
-  current_surface_ = params.surface_handle;
+  current_surface_ = params_in_pixel.surface_handle;
   UpdateExternalTexture();
 
   ui::Compositor* compositor = GetCompositor();
   if (!compositor) {
     // We have no compositor, so we have no way to display the surface.
     // Must still send the ACK.
-    RenderWidgetHostImpl::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
+    RenderWidgetHostImpl::AcknowledgeSwapBuffers(params_in_pixel.route_id,
+        gpu_host_id);
   } else {
-    gfx::Size surface_size =
-        image_transport_clients_[params.surface_handle]->size();
+    gfx::Size surface_size_in_pixel =
+        image_transport_clients_[params_in_pixel.surface_handle]->size();
+    gfx::Size surface_size = content::ConvertSizeToDIP(this,
+                                                       surface_size_in_pixel);
     window_->SchedulePaintInRect(gfx::Rect(surface_size));
 
     if (!resize_locks_.empty() && !compositor->DrawPending()) {
@@ -550,12 +565,12 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       // OnCompositingEnded(), because out-of-order execution in the GPU process
       // might corrupt the "front buffer" for the currently issued frame.
       RenderWidgetHostImpl::AcknowledgeSwapBuffers(
-          params.route_id, gpu_host_id);
+          params_in_pixel.route_id, gpu_host_id);
     } else {
       // Add sending an ACK to the list of things to do OnCompositingEnded
       on_compositing_ended_callbacks_.push_back(
           base::Bind(&RenderWidgetHostImpl::AcknowledgeSwapBuffers,
-                     params.route_id, gpu_host_id));
+                     params_in_pixel.route_id, gpu_host_id));
       if (!compositor->HasObserver(this))
         compositor->AddObserver(this);
     }
@@ -563,9 +578,9 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
-    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params_in_pixel,
     int gpu_host_id) {
-  current_surface_ = params.surface_handle;
+  current_surface_ = params_in_pixel.surface_handle;
   UpdateExternalTexture();
 
   ui::Compositor* compositor = GetCompositor();
@@ -573,18 +588,20 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     // We have no compositor, so we have no way to display the surface
     // Must still send the ACK
     RenderWidgetHostImpl::AcknowledgePostSubBuffer(
-        params.route_id, gpu_host_id);
+        params_in_pixel.route_id, gpu_host_id);
   } else {
-    gfx::Size surface_size =
-        image_transport_clients_[params.surface_handle]->size();
+    gfx::Size surface_size_in_pixel =
+        image_transport_clients_[params_in_pixel.surface_handle]->size();
 
     // Co-ordinates come in OpenGL co-ordinate space.
     // We need to convert to layer space.
-    window_->SchedulePaintInRect(gfx::Rect(
-        params.x,
-        surface_size.height() - params.y - params.height,
-        params.width,
-        params.height));
+    gfx::Rect rect_to_paint = content::ConvertRectToDIP(this, gfx::Rect(
+        params_in_pixel.x,
+        surface_size_in_pixel.height() - params_in_pixel.y -
+            params_in_pixel.height,
+        params_in_pixel.width,
+        params_in_pixel.height));
+    window_->SchedulePaintInRect(rect_to_paint);
 
     if (!resize_locks_.empty() && !compositor->DrawPending()) {
       // If we are waiting for the resize, fast-track the ACK.
@@ -592,12 +609,12 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
       // OnCompositingEnded(), because out-of-order execution in the GPU process
       // might corrupt the "front buffer" for the currently issued frame.
       RenderWidgetHostImpl::AcknowledgePostSubBuffer(
-          params.route_id, gpu_host_id);
+          params_in_pixel.route_id, gpu_host_id);
     } else {
       // Add sending an ACK to the list of things to do OnCompositingEnded
       on_compositing_ended_callbacks_.push_back(
           base::Bind(&RenderWidgetHostImpl::AcknowledgePostSubBuffer,
-                     params.route_id, gpu_host_id));
+                     params_in_pixel.route_id, gpu_host_id));
       if (!compositor->HasObserver(this))
         compositor->AddObserver(this);
     }
@@ -616,13 +633,13 @@ bool RenderWidgetHostViewAura::HasAcceleratedSurface(
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
-      int32 width,
-      int32 height,
+      int32 width_in_pixel,
+      int32 height_in_pixel,
       uint64* surface_handle,
       TransportDIB::Handle* shm_handle) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   scoped_refptr<ImageTransportClient> surface(factory->CreateTransportClient(
-        gfx::Size(width, height), surface_handle));
+        gfx::Size(width_in_pixel, height_in_pixel), surface_handle));
   if (!surface) {
     LOG(ERROR) << "Failed to create ImageTransportClient";
     return;

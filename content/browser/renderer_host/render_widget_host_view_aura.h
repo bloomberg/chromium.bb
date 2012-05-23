@@ -99,16 +99,16 @@ class RenderWidgetHostViewAura
       base::Callback<void(bool)> callback) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params_in_pixel,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfacePostSubBuffer(
-      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params_in_pixel,
       int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void AcceleratedSurfaceNew(
-      int32 width,
-      int32 height,
+      int32 width_in_pixel,
+      int32 height_in_pixel,
       uint64* surface_id,
       TransportDIB::Handle* surface_handle) OVERRIDE;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;

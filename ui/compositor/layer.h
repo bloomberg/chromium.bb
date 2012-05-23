@@ -198,10 +198,12 @@ class COMPOSITOR_EXPORT Layer :
   // Notifies the layer that the device scale factor has changed.
   void OnDeviceScaleFactorChanged(float device_scale_factor);
 
-  // Sets if the layer should scale the canvas before passing to
-  // |LayerDelegate::OnLayerPaint|. Set to false if the delegate
-  // handles scaling.
-  void set_scale_canvas(bool scale_canvas) { scale_canvas_ = scale_canvas; }
+  // Sets whether the layer should scale its content. If true, the canvas will
+  // be scaled in software rendering mode before it is passed to
+  // |LayerDelegate::OnPaint| and the texture will be scaled in accelerated
+  // mode. Set to false if the delegate handles scaling and the texture is
+  // the correct pixel size.
+  void set_scale_content(bool scale_content) { scale_content_ = scale_content; }
 
   // Sometimes the Layer is being updated by something other than SetCanvas
   // (e.g. the GPU process on UI_COMPOSITOR_IMAGE_TRANSPORT).
@@ -299,9 +301,9 @@ class COMPOSITOR_EXPORT Layer :
   bool web_layer_is_accelerated_;
   bool show_debug_borders_;
 
-  // If true, the layer scales the canvas using device scale factor
-  // before passing to LayerDelegate::OnLayerPaint.
-  bool scale_canvas_;
+  // If true, the layer scales the canvas and the texture with the device scale
+  // factor as appropriate. When true, the texture size is in DIP.
+  bool scale_content_;
 
   // A cached copy of |Compositor::device_scale_factor()|.
   float device_scale_factor_;

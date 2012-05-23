@@ -6,15 +6,16 @@
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 #pragma once
 
-#if defined(TOOLKIT_GTK)
-#include <gdk/gdk.h>
-#endif
-
+#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if defined(TOOLKIT_GTK)
+#include <gdk/gdk.h>
+#endif
 
 class BrowserAccessibilityManager;
 
