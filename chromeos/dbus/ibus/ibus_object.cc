@@ -26,7 +26,7 @@ IBusObjectReader::IBusObjectReader(const std::string& type_name,
 IBusObjectReader::~IBusObjectReader() {
 }
 
-bool IBusObjectReader::Init() {
+bool IBusObjectReader::InitWithoutAttachment() {
   DCHECK(original_reader_);
   DCHECK_EQ(IBUS_OBJECT_NOT_CHECKED, check_result_);
 
@@ -62,17 +62,37 @@ bool IBusObjectReader::Init() {
     return false;
   }
 
-  // IBus object has array object at the second element, which is used in
-  // attaching additional information.
-  // TODO(nona): Read mozc.candidates in attachement array.
+  return true;
+}
+
+bool IBusObjectReader::Init() {
+  if (!InitWithoutAttachment())
+    return false;
+
+  // Ignores attachment field.
   dbus::MessageReader array_reader(NULL);
   if (!contents_reader_->PopArray(&array_reader)) {
-    LOG(ERROR) << "Invalid object structure[" << type_name << "] "
-               << "can not find attachement array field.";
+    LOG(ERROR) << "Invalid object structure[" << type_name_ << "] "
+               << "can not find attachment array field.";
     return false;
   }
-  if (array_reader.HasMoreData()) {
-    LOG(ERROR) << "Reading attachement field is not implemented.";
+  DLOG_IF(WARNING, array_reader.HasMoreData())
+      << "Ignoring attachment field in " << type_name_ <<".";
+  check_result_ = IBUS_OBJECT_VALID;
+  return true;
+}
+
+bool IBusObjectReader::InitWithAttachmentReader(dbus::MessageReader* reader) {
+  DCHECK(reader);
+  if (!InitWithoutAttachment())
+    return false;
+
+  // IBus object has array object at the second element, which is used in
+  // attaching additional information.
+  if (!contents_reader_->PopArray(reader)) {
+    LOG(ERROR) << "Invalid object structure[" << type_name_ << "] "
+               << "can not find attachment array field.";
+    return false;
   }
   check_result_ = IBUS_OBJECT_VALID;
   return true;
@@ -214,16 +234,16 @@ void IBusObjectWriter::Init() {
   top_variant_writer_.reset(new dbus::MessageWriter(NULL));
   contents_writer_.reset(new dbus::MessageWriter(NULL));
 
-  const std::string ibus_signature = "(sav" + signature_ + ")";
+  const std::string ibus_signature = "(sa{sv}" + signature_ + ")";
   original_writer_->OpenVariant(ibus_signature, top_variant_writer_.get());
   top_variant_writer_->OpenStruct(contents_writer_.get());
 
   contents_writer_->AppendString(type_name_);
   dbus::MessageWriter header_array_writer(NULL);
 
-  // There is no case setting any attachement in ChromeOS, so setting empty
+  // There is no case setting any attachment in ChromeOS, so setting empty
   // array is enough.
-  contents_writer_->OpenArray("v", &header_array_writer);
+  contents_writer_->OpenArray("{sv}", &header_array_writer);
   contents_writer_->CloseContainer(&header_array_writer);
 }
 

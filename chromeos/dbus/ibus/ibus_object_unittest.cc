@@ -156,5 +156,59 @@ TEST(IBusObjectTest, PopAppendStringAsIBusText) {
   EXPECT_EQ(kSampleString, result_str);
 }
 
+TEST(IBusObjectTest, AttachmentTest) {
+  // The IBusObjectWriter does not support attachment field writing, so crate
+  // IBusObject with attachment field manually.
+  const char kSampleTypeName[] = "IBusObject Name";
+  const char kSampleDictKey[] = "Sample Key";
+  const char kSampleText[] = "SampleText";
+  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(message.get());
+
+  // Create IBusObject header.
+  dbus::MessageWriter top_variant_writer(NULL);
+  writer.OpenVariant("(sa{sv})", &top_variant_writer);
+  dbus::MessageWriter contents_writer(NULL);
+  top_variant_writer.OpenStruct(&contents_writer);
+  contents_writer.AppendString(kSampleTypeName);
+
+  // Write values into attachment field.
+  dbus::MessageWriter attachment_array_writer(NULL);
+  contents_writer.OpenArray("{sv}", &attachment_array_writer);
+  dbus::MessageWriter entry_writer(NULL);
+  attachment_array_writer.OpenDictEntry(&entry_writer);
+  entry_writer.AppendString(kSampleDictKey);
+  dbus::MessageWriter variant_writer(NULL);
+  entry_writer.OpenVariant("s",&variant_writer);
+  variant_writer.AppendString(kSampleText);
+
+  // Close all containers.
+  entry_writer.CloseContainer(&variant_writer);
+  attachment_array_writer.CloseContainer(&entry_writer);
+  contents_writer.CloseContainer(&attachment_array_writer);
+  top_variant_writer.CloseContainer(&contents_writer);
+  writer.CloseContainer(&top_variant_writer);
+
+  // Read with IBusObjectReader.
+  dbus::MessageReader reader(message.get());
+  IBusObjectReader ibus_object_reader(kSampleTypeName, &reader);
+  dbus::MessageReader attr_reader(NULL);
+  ASSERT_TRUE(ibus_object_reader.InitWithAttachmentReader(&attr_reader));
+  dbus::MessageReader dict_reader(NULL);
+
+  // Check the values.
+  ASSERT_TRUE(attr_reader.PopDictEntry(&dict_reader));
+  std::string key;
+  std::string value;
+
+  ASSERT_TRUE(dict_reader.PopString(&key));
+  EXPECT_EQ(kSampleDictKey, key);
+
+  dbus::MessageReader variant_reader(NULL);
+  ASSERT_TRUE(dict_reader.PopVariant(&variant_reader));
+  ASSERT_TRUE(variant_reader.PopString(&value));
+  EXPECT_EQ(kSampleText, value);
+}
+
 }  // namespace ibus
 }  // namespace chromeos

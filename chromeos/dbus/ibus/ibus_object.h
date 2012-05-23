@@ -23,7 +23,7 @@ namespace ibus {
 // The data structure of IBusObject is represented as variant in "(sav...)"
 // signatur. The IBusObject is constructed with two sections, header and
 // contents. The header section is represent as "sav" which contains type name
-// and attachement array. The contents section is corresponding to "..." in
+// and attachment array. The contents section is corresponding to "..." in
 // above signature, which can store arbitary type values including IBusObject.
 //
 // DATA STRUCTURE OVERVIEW:
@@ -32,7 +32,13 @@ namespace ibus {
 //   struct {  // Handle with contents_writer_/contents_reader_.
 //     // Header section
 //     string typename  // The type name of object, like "IBusText"
-//     array []  // attachement array.
+//     array [  // attachment array.
+//       dict_entry (
+//         string "mozc.candidates"  // The key in the dictionary entry.
+//         variant ...  // The value in the dictionary entry.
+//       )
+//       ...
+//     ]
 //
 //     // Contents section
 //     ...  // The contents area.
@@ -60,9 +66,9 @@ namespace ibus {
 //        }
 //   }
 //
-// The IBusObjectReader class provides reading IBusObject from dbus message.
-// This class checks the IBusObject header structure and type name before
-// reading contents.
+// The IBusObjectReader class provides reading IBusObject including attachment
+// field from dbus message. This class checks the IBusObject header structure
+// and type name before reading contents.
 //
 // EXAPMLE USAGE:
 //   // Craetes reader for IBusText
@@ -82,8 +88,13 @@ class CHROMEOS_EXPORT IBusObjectReader {
   virtual ~IBusObjectReader();
 
   // Reads IBusObject headers and checks if the type name is valid.
-  // Returns true on success.
+  // Returns true on success. Uses InitWitAttachmentReader instead if you want
+  // to read attachment field.
   bool Init();
+
+  // Reads IBusObject headers and checks if the type name is valid.
+  // Returns true and sets up reader for attachment reading on success.
+  bool InitWithAttachmentReader(dbus::MessageReader* reader);
 
   // Reads IBusOBject with |reader| and checks if the type name is valid.
   bool InitWithParentReader(dbus::MessageReader* reader);
@@ -118,6 +129,10 @@ class CHROMEOS_EXPORT IBusObjectReader {
     IBUS_OBJECT_NOT_CHECKED,  // Not checked yet.
   };
 
+  // Reads IBusObject headers without attachment and checks if the type name
+  // is valid.
+  bool InitWithoutAttachment();
+
   std::string type_name_;
   dbus::MessageReader* original_reader_;
   scoped_ptr<dbus::MessageReader> top_variant_reader_;
@@ -129,6 +144,8 @@ class CHROMEOS_EXPORT IBusObjectReader {
 
 // IBusObjectWriter class provides writing IBusObject to dbus message. This
 // class appends header section before appending contents values.
+// IBusObjectWriter does not support writing attachment field because writing
+// attachment field is not used in Chrome.
 //
 // EXAMPLE USAGE:
 //   // Creates writer for IBusText
