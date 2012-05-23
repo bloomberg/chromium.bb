@@ -2,26 +2,42 @@ define([ 'sprites/sources', 'sprites/transformers', 'sprites/renderers', 'util/e
     var FRAME_COUNT = 100;
     var TARGET_FRAMERATE = 30;
 
-    function generateFrames(transformer, frameCount, objectCount) {
-        var frames = [ ];
+    function frameGenerator(transformer, frameCount) {
+        // objectIndex => frameIndex => transform
+        var objectDatas = [ ];
+    
+        return function generateFrames(objectCount) {
+            // Generate frame data for new objects, if necessary
+            while (objectDatas.length < objectCount) {
+                var objectIndex = objectDatas.length;
+            
+                // frameIndex => transform
+                var transforms = [ ];
+                objectDatas.push(transforms);
 
-        var i, j;
-        for (i = 0; i < frameCount; ++i) {
-            var frame = [ ];
-            frames.push(frame);
-
-            for (j = 0; j < objectCount; ++j) {
-                frame.push(transformer(i, j));
+                for (var frameIndex = 0; frameIndex < FRAME_COUNT; ++frameIndex) {
+                    transforms.push(transformer(frameIndex, objectIndex));
+                }
             }
-        }
+        
+            // frameIndex => objectIndex => transform
+            // Transpose objectDatas, with `objectCount` transforms.
+            var frames = [ ];
+            for (var i = 0; i < FRAME_COUNT; ++i) {
+                var frame = [ ];
+                frames.push(frame);
+                for (var j = 0; j < objectCount; ++j) {
+                    frame.push(objectDatas[j][i]);
+                }
+            }
 
-        return frames;
+            return frames;
+        };
     }
 
-    function runTest(sourceData, objectCount, transformer, renderer, callback) {
+    function runTest(sourceData, frames, renderer, callback) {
         callback = ensureCallback(callback);
 
-        var frames = generateFrames(transformer, FRAME_COUNT, objectCount);
         var renderContext = renderer(sourceData, frames);
 
         renderContext.load(function (err) {
@@ -39,12 +55,13 @@ define([ 'sprites/sources', 'sprites/transformers', 'sprites/renderers', 'util/e
                 jsTime += jsEndTime - jsStartTime;
             }
 
-            function done(err, score) {
+            function done(err, results) {
                 renderContext.unload();
 
                 callback(null, {
                     js: jsTime,
-                    fps: score
+                    fps: results.score,
+                    raw: results
                 });
             }
 
@@ -68,6 +85,8 @@ define([ 'sprites/sources', 'sprites/transformers', 'sprites/renderers', 'util/e
 
         // (objectCount, { js, fps })
         var rawData = [ ];
+
+        var generateFrames = frameGenerator(transformer, FRAME_COUNT);
 
         function done() {
             var mostObjectsAboveThirtyFPS = -1;
@@ -95,7 +114,9 @@ define([ 'sprites/sources', 'sprites/transformers', 'sprites/renderers', 'util/e
 
             var m = (aboveData[0] - belowData[0]) / (aboveData[1].fps - belowData[1].fps);
             var objectCount = belowData[0] + m * (30 - belowData[1].fps);
-            var jsTime = belowData[0] + m * (30 - belowData[1].js);
+
+            m = (aboveData[1].js - belowData[1].js) / (aboveData[1].fps - belowData[1].fps);
+            var jsTime = belowData[1].js + m * (30 - belowData[1].fps);
 
             callback(null, {
                 objectCount: objectCount,
@@ -104,44 +125,57 @@ define([ 'sprites/sources', 'sprites/transformers', 'sprites/renderers', 'util/e
             });
         }
 
-        // Run the test in steps of 25 (0, 25, 50, 75),
-        // then in steps of 5 (20, 25, 30, 35)
-        // then in steps of 1 (25, 26, 27, 28)
-        var objectCountSteps = [ 1, 5, 25 ];
-        var objectCountStep = objectCountSteps.pop();
+        function nextNumberToTry(fpsResults, objectCount){
+            var factor = 1;
+            while( objectCount > 100 ){
+                factor *= 10;
+                objectCount = Math.floor(objectCount / 10);
+            }
+            
+            var testValue = objectCount*factor;
+            if( !Object.prototype.hasOwnProperty.call(fpsResults, testValue) ){
+                return testValue;
+            }
+            
+            testValue = (objectCount+1)*factor;
+            if( !Object.prototype.hasOwnProperty.call(fpsResults, testValue) ){
+                return testValue;
+            }
+            
+            testValue = (objectCount-1)*factor;
+            if( testValue <= 1 ){
+                return -1;
+            }
+            if( !Object.prototype.hasOwnProperty.call(fpsResults, testValue) ){
+                return testValue;
+            }
+            
+            return -1;
+        }
 
         function test(objectCount) {
-            if (Object.prototype.hasOwnProperty.call(fpsResults, objectCount)) {
-                // Already tested; let's say we're done here
+            //alert(objectCount);
+            if( objectCount === -1 ){
                 done();
                 return;
             }
 
-            runTest(sourceData, objectCount, transformer, renderer, function testDone(err, results) {
-                if (err) return callback(err);
+            var frames = generateFrames(objectCount);
 
+            runTest(sourceData, frames, renderer, function testDone(err, results) {
+                if (err) return callback(err);
                 fpsResults[objectCount] = results;
                 rawData.push([ objectCount, results ]);
-
-                if (results.fps < targetFramerate) {
-                    // Hit too low (too many objects); go back and lower step
-                    // FIXME This may infloop (I think)
-                    var nextObjectCountStep = objectCountSteps.length ? objectCountSteps.pop() : 1;
-                    var newObjectCount = Math.max(0, objectCount - objectCountStep + nextObjectCountStep);
-                    objectCountStep = nextObjectCountStep;
-                    test(newObjectCount);
-                } else if (results.fps > targetFramerate) {
-                    // Hit too high (too few objects); keep going
-                    var newObjectCount = objectCount + objectCountStep;
-                    test(newObjectCount);
-                } else {
-                    // Hit it exactly!  (Creepy.)
-                    done();
-                }
+                
+                var timePerObjectEstimate = 1/(objectCount*results.fps);
+                var estimatedMaxObjects = Math.floor(1/(targetFramerate * timePerObjectEstimate));
+                
+                var nextObjectCount = nextNumberToTry(fpsResults, estimatedMaxObjects);
+                test(nextObjectCount);
             });
         }
 
-        test(0);
+        test(10);
     }
 
     // source => renderer => transformer => test

@@ -36,6 +36,8 @@ define([ 'tests/performance', 'testDom', 'testRunner', 'tables', 'util/report', 
         function runPerformanceTests(callback) {
             callback = ensureCallback(callback);
 
+            window.scrollTo(0, 0);
+
             testRunner.run('performance', performance, {
                 done: function (err, results) {
                     allTestsDone(err, results);

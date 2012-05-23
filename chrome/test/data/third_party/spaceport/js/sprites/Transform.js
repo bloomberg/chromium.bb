@@ -20,7 +20,8 @@ define([ ], function () {
         var sin = Math.sin(this.rotation);
         this.matrix = [
             cos * this.scaleX, -sin, this.x,
-            sin, cos * this.scaleY, this.y
+            sin, cos * this.scaleY, this.y,
+            0, 0, 0  // Padding to pass as 3fv to WebGL
         ];
 
         this.cssTransform2d = '' +
@@ -35,6 +36,12 @@ define([ ], function () {
             'rotate(' + this.rotation + 'rad) ' +
             '';
     }
+
+    Transform.prototype.transformPointInto = function transformPointInto(x, y, out, offset) {
+        var m = this.matrix;
+        out[offset + 0] = m[0] * x + m[3] * y + m[2];
+        out[offset + 1] = m[1] * x + m[4] * y + m[5];
+    };
 
     return Transform;
 });

@@ -1,7 +1,7 @@
 define([ 'sprites/Transform' ], function (Transform) {
-    return function scale(frameIndex, objectIndex) {
-        var x = Math.cos((objectIndex + frameIndex * (objectIndex + 1)) / 100) * 200 + 100;
-        var y = Math.sin((objectIndex + frameIndex * (objectIndex + 1)) / 100) * 200 + 100;
+    return function translate(frameIndex, objectIndex) {
+        var x = Math.cos(1.2 * (objectIndex + frameIndex * (objectIndex + 1)) / 100) * 160 + 176;
+        var y = Math.sin((objectIndex + frameIndex * (objectIndex + 1)) / 100) * 160 + 176;
 
         return new Transform({
             x: x,

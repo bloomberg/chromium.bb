@@ -13,10 +13,14 @@ define([ ], function () {
                     css2dBackground: 'CSS3 2D transforms with CSS backgrounds',
                     css3dBackground: 'CSS3 3D transforms with CSS backgrounds',
                     //cssMatrixImg: 'CSSMatrix transforms with <img>',
+
                     canvasDrawImageFullClear: 'Canvas drawImage, full clear',
                     canvasDrawImageFullClearAlign: 'Canvas drawImage, full clear, pixel aligned',
                     canvasDrawImagePartialClear: 'Canvas drawImage, partial clear',
                     canvasDrawImagePartialClearAlign: 'Canvas drawImage, partial clear, pixel aligned',
+
+                    webGLDrawWithUniform: 'WebGL .drawArrays tris with uniforms',
+                    webGLBatchDraw: 'WebGL .drawArray tris with buffers',
 
                     $children: {
                         $title: 'Test type',

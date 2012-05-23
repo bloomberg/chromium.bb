@@ -60,7 +60,7 @@ table th, table td {
 }
 </style>
 
-<h1>HTML5 Game Benchmarks</h1>
+<h1>PerfMarks</h1>
 <p>Basic benchmarks to measure HTML5 performance and support for game related features.<p>
 
 <h2>Performance Tests</h2>
@@ -69,6 +69,20 @@ table th, table td {
 <p><label>Browser
     <select id="ua-browser">
         <option value="">Other...</option>
+
+		<optgroup label="Desktop">
+            <option>Firefox 3.6</option>
+            <option>Firefox 4-8</option>
+            <option>Firefox 9</option>
+            <option>Firefox 10</option>
+            <option>Google Chrome</option>
+            <option>IE7</option>
+            <option>IE8</option>
+            <option>IE9</option>
+            <option>IE10</option>
+            <option>Opera 11.x</option>
+            <option>Safari 5.1.5</option>
+        </optgroup>
 
         <optgroup label="Mobile">
             <option>Android Browser</option>
@@ -81,20 +95,6 @@ table th, table td {
             <option>Mobile Safari</option>
             <option>Opera Mobile</option>
         </optgroup>
-
-        <optgroup label="Desktop">
-            <option>Firefox 3.6</option>
-            <option>Firefox 4-8</option>
-            <option>Firefox 9</option>
-            <option>Firefox 10</option>
-            <option>Google Chrome</option>
-            <option>IE7</option>
-            <option>IE8</option>
-            <option>IE9</option>
-            <option>IE10</option>
-            <option>Opera 11.x</option>
-            <option>Safari</option>
-        </optgroup>
     </select>
 </label>
 <input type="text" id="ua-browser-custom">
@@ -104,11 +104,16 @@ table th, table td {
     <select id="ua-device-name">
         <option value="">Other...</option>
 
+		<optgroup label="Laptop Computers">
+			<option>Macbook Pro 2.8 Ghz Intel Core 2 Duo 8 GB 1067 MHz DDR3</option>
+		</optgroup>
+		
         <optgroup label="Android">
             <option>Amazon Kindle Fire</option>
             <option>Asus Eee Pad Transformer TF101</option>
 			<option>Asus Transformer Prime TF201</option>
             <option>HTC EVO 4G</option>
+            <option>HTC EVO 3D</option>
             <option>LG Optimus V</option>
             <option>Motorola Droid 2</option>
             <option>Motorola Droid</option>
@@ -148,6 +153,12 @@ table th, table td {
     <select id="ua-os">
         <option value="">Other...</option>
 
+		<optgroup label="Desktop">
+			<option>Mac OS X 10.6.8</option>
+			<option>Mac OS X 10.7.3</option>
+            <option>Windows 7</option>
+        </optgroup>
+
         <optgroup label="Android">
             <option>Android 2.2.2</option>
             <option>Android 2.2.3</option>
@@ -161,6 +172,7 @@ table th, table td {
             <option>Android 3.2.6</option>
             <option>Android 4.0.2</option>
             <option>Android 4.0.3</option>
+            <option>Android 4.0.4</option>
         </optgroup>
 
         <optgroup label="iOS">
@@ -169,17 +181,14 @@ table th, table td {
             <option>iOS 4.3.3</option>
             <option>iOS 4.3.5</option>
             <option>iOS 5.0.1</option>
-
+            <option>iOS 5.1</option>
+            <option>iOS 5.1.1</option>
         </optgroup>
 
         <optgroup label="Other Mobile">
             <option>Windows Phone 7.5</option>
             <option>Blackberry Playbook 1.0.8.6067</option>
             <option>Blackberry 7.0.0.261</option>
-        </optgroup>
-
-        <optgroup label="Desktop">
-            <option>Windows 7</option>
         </optgroup>
     </select>
 </label>
@@ -188,9 +197,9 @@ table th, table td {
 
 <p><label>Device type
     <select id="ua-type">
+		<option>Laptop</option>
         <option>Phone</option>
         <option>Tablet</option>
-        <option>Laptop</option>
         <option>Desktop</option>
     </select>
 </p>
@@ -198,6 +207,8 @@ table th, table td {
 <p><label>Other data <input type="text" id="ua-misc"></label></p>
 
 <p><button disabled id="upload-performance-tests">Run Tests and Upload Results</button></p>
+
+<p>This will upload test results to your <em>local web server</em>.  See <code>README.md</code> in the PerfMarks repository for details.</p>
 
 <ul>
 <li id="performance-sprites"><span class="name">Sprites</span>
