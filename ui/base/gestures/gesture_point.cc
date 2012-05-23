@@ -19,7 +19,8 @@ GesturePoint::GesturePoint()
       last_tap_time_(0.0),
       velocity_calculator_(
           GestureConfiguration::points_buffered_for_velocity()),
-      point_id_(-1) {
+      point_id_(-1),
+      touch_id_(-1) {
 }
 
 GesturePoint::~GesturePoint() {}

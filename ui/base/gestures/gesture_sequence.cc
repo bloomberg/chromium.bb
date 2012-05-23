@@ -165,6 +165,8 @@ GestureSequence::GestureSequence(GestureEventHelper* helper)
       flags_(0),
       pinch_distance_start_(0.f),
       pinch_distance_current_(0.f),
+      scroll_type_(ST_FREE),
+      three_finger_swipe_has_fired_(false),
       long_press_timer_(CreateTimer()),
       point_count_(0),
       helper_(helper) {
