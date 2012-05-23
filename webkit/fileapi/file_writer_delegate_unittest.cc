@@ -356,7 +356,16 @@ TEST_F(FileWriterDelegateTest, MAYBE_WriteSuccessWithoutQuotaLimitConcurrent) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, result2->status());
 }
 
-TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
+#if defined(OS_WIN)
+// See http://crbug.com/129264
+#define MAYBE_WritesWithQuotaAndOffset \
+    DISABLED_WritesWithQuotaAndOffset
+#else
+#define MAYBE_WritesWithQuotaAndOffset \
+    WritesWithQuotaAndOffset
+#endif
+
+TEST_F(FileWriterDelegateTest, MAYBE_WritesWithQuotaAndOffset) {
   const GURL kBlobURL("blob:failure-with-updated-quota");
   content_ = kData;
 
