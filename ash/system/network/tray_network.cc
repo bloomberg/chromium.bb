@@ -272,25 +272,71 @@ class NetworkDetailedView : public TrayDetailsView,
     delegate->GetAvailableNetworks(&list);
 
     network_map_.clear();
-    scroll_content()->RemoveAllChildViews(true);
+    std::set<std::string> new_service_paths;
+
+    bool needs_relayout = false;
     views::View* highlighted_view = NULL;
-    for (size_t i = 0; i < list.size(); i++) {
-      HoverHighlightView* container = new HoverHighlightView(this);
-      container->set_fixed_height(kTrayPopupItemHeight);
-      container->AddIconAndLabel(list[i].image,
-          list[i].description.empty() ? list[i].name : list[i].description,
-          list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
-      scroll_content()->AddChildView(container);
+
+    for (size_t i = 0; i < list.size(); ++i) {
+      std::map<std::string, HoverHighlightView*>::const_iterator it =
+          service_path_map_.find(list[i].service_path);
+      HoverHighlightView* container = NULL;
+      if (it == service_path_map_.end()) {
+        // Create a new view.
+        container = new HoverHighlightView(this);
+        container->set_fixed_height(kTrayPopupItemHeight);
+        container->AddIconAndLabel(list[i].image,
+            list[i].description.empty() ? list[i].name : list[i].description,
+            list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
+        scroll_content()->AddChildViewAt(container, i);
+        container->set_border(views::Border::CreateEmptyBorder(0,
+            kTrayPopupDetailsIconWidth, 0, 0));
+        needs_relayout = true;
+      } else {
+        container = it->second;
+        container->RemoveAllChildViews(true);
+        container->AddIconAndLabel(list[i].image,
+            list[i].description.empty() ? list[i].name : list[i].description,
+            list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
+        container->Layout();
+
+        // Reordering the view if necessary.
+        views::View* child = scroll_content()->child_at(i);
+        if (child != container) {
+          scroll_content()->ReorderChildView(container, i);
+          needs_relayout = true;
+        }
+      }
+
       if (list[i].highlight)
         highlighted_view = container;
-      container->set_border(views::Border::CreateEmptyBorder(0,
-          kTrayPopupDetailsIconWidth, 0, 0));
       network_map_[container] = list[i].service_path;
+      service_path_map_[list[i].service_path] = container;
+      new_service_paths.insert(list[i].service_path);
     }
-    scroll_content()->SizeToPreferredSize();
-    static_cast<views::View*>(scroller())->Layout();
-    if (highlighted_view)
-      scroll_content()->ScrollRectToVisible(highlighted_view->bounds());
+
+    std::set<std::string> remove_service_paths;
+    for (std::map<std::string, HoverHighlightView*>::const_iterator it =
+             service_path_map_.begin(); it != service_path_map_.end(); ++it) {
+      if (new_service_paths.find(it->first) == new_service_paths.end()) {
+        remove_service_paths.insert(it->first);
+        scroll_content()->RemoveChildView(it->second);
+        needs_relayout = true;
+      }
+    }
+
+    for (std::set<std::string>::const_iterator remove_it =
+             remove_service_paths.begin();
+         remove_it != remove_service_paths.end(); ++remove_it) {
+      service_path_map_.erase(*remove_it);
+    }
+
+    if (needs_relayout) {
+      scroll_content()->SizeToPreferredSize();
+      static_cast<views::View*>(scroller())->Layout();
+      if (highlighted_view)
+        scroll_content()->ScrollRectToVisible(highlighted_view->bounds());
+    }
 
     view_mobile_account_->SetVisible(false);
     setup_mobile_account_->SetVisible(false);
@@ -501,6 +547,7 @@ class NetworkDetailedView : public TrayDetailsView,
 
   user::LoginStatus login_;
   std::map<views::View*, std::string> network_map_;
+  std::map<std::string, HoverHighlightView*> service_path_map_;
   views::View* airplane_;
   TrayPopupHeaderButton* info_icon_;
   TrayPopupHeaderButton* button_wifi_;
