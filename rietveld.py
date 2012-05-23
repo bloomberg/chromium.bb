@@ -93,7 +93,7 @@ class Rietveld(object):
     """
     # content = 0 is the old file, 1 is the new file.
     content = 1
-    url = '/%s/image/%s/%s/%s' % (issue, patchset, item, content)
+    url = '/%s/binary/%s/%s/%s' % (issue, patchset, item, content)
     return self.get(url)
 
   def get_file_diff(self, issue, patchset, item):
