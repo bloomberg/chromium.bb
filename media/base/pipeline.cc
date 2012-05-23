@@ -16,12 +16,13 @@
 #include "base/string_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "media/base/audio_decoder.h"
+#include "media/base/audio_renderer.h"
 #include "media/base/clock.h"
 #include "media/base/composite_filter.h"
 #include "media/base/filter_collection.h"
-#include "media/base/filters.h"
 #include "media/base/media_log.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_renderer.h"
 
 namespace media {
 
@@ -61,6 +62,8 @@ media::PipelineStatus PipelineStatusNotification::status() {
 struct Pipeline::PipelineInitState {
   scoped_refptr<AudioDecoder> audio_decoder;
   scoped_refptr<VideoDecoder> video_decoder;
+  scoped_refptr<AudioRenderer> audio_renderer;
+  scoped_refptr<VideoRenderer> video_renderer;
   scoped_refptr<CompositeFilter> composite;
 };
 
@@ -1117,20 +1120,23 @@ bool Pipeline::InitializeAudioRenderer(
   if (!decoder)
     return false;
 
-  filter_collection_->SelectAudioRenderer(&audio_renderer_);
-  if (!audio_renderer_) {
+  filter_collection_->SelectAudioRenderer(
+      &pipeline_init_state_->audio_renderer);
+  if (!pipeline_init_state_->audio_renderer) {
     SetError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING);
     return false;
   }
 
-  pipeline_init_state_->composite->AddFilter(audio_renderer_);
+  pipeline_init_state_->composite->AddFilter(
+      pipeline_init_state_->audio_renderer);
 
-  audio_renderer_->Initialize(
+  pipeline_init_state_->audio_renderer->Initialize(
       decoder,
       base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnAudioUnderflow, this),
       base::Bind(&Pipeline::OnAudioTimeUpdate, this));
 
+  audio_renderer_ = pipeline_init_state_->audio_renderer;
   return true;
 }
 
@@ -1142,19 +1148,23 @@ bool Pipeline::InitializeVideoRenderer(
   if (!decoder)
     return false;
 
-  filter_collection_->SelectVideoRenderer(&video_renderer_);
-  if (!video_renderer_) {
+  filter_collection_->SelectVideoRenderer(
+      &pipeline_init_state_->video_renderer);
+  if (!pipeline_init_state_->video_renderer) {
     SetError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING);
     return false;
   }
 
-  pipeline_init_state_->composite->AddFilter(video_renderer_);
+  pipeline_init_state_->composite->AddFilter(
+      pipeline_init_state_->video_renderer);
 
-  video_renderer_->Initialize(
+  pipeline_init_state_->video_renderer->Initialize(
       decoder,
       base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnUpdateStatistics, this),
       base::Bind(&Pipeline::OnVideoTimeUpdate, this));
+
+  video_renderer_ = pipeline_init_state_->video_renderer;
   return true;
 }
 
