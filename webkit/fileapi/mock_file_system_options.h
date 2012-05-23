@@ -5,9 +5,6 @@
 #ifndef WEBKIT_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_
 #define WEBKIT_FILEAPI_MOCK_FILE_SYSTEM_OPTIONS_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_options.h"
 
 namespace fileapi {

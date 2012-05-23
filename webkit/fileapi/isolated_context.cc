@@ -17,7 +17,7 @@ static base::LazyInstance<IsolatedContext>::Leaky g_isolated_context =
 
 // static
 IsolatedContext* IsolatedContext::GetInstance() {
-  return &g_isolated_context.Get();
+  return g_isolated_context.Pointer();
 }
 
 std::string IsolatedContext::RegisterIsolatedFileSystem(

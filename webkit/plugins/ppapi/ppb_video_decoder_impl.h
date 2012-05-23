@@ -5,11 +5,9 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_VIDEO_DECODER_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_VIDEO_DECODER_IMPL_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/c/pp_var.h"

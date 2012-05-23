@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"

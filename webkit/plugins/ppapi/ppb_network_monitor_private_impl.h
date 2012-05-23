@@ -5,11 +5,8 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_NETWORK_MONITOR_PRIVATE_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_NETWORK_MONITOR_PRIVATE_IMPL_H_
 
-#include <list>
-#include <string>
-
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/compiler_specific.h"
 #include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_network_monitor_private_api.h"
