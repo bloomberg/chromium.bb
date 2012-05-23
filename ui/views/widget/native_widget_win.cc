@@ -2202,6 +2202,11 @@ gfx::Insets NativeWidgetWin::GetClientAreaInsets() const {
     return gfx::Insets(border_thickness, border_thickness, border_thickness,
                        border_thickness);
   }
+
+  // The hack below doesn't seem to be necessary when the standard frame is
+  // removed.
+  if (remove_standard_frame_)
+    return gfx::Insets();
   // This is weird, but highly essential. If we don't offset the bottom edge
   // of the client rect, the window client area and window area will match,
   // and when returning to glass rendering mode from non-glass, the client
