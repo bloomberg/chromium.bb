@@ -718,7 +718,12 @@ TEST_F(VectorCanvasTest, DiagonalLines) {
   EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("se-nw")));
 }
 
-TEST_F(VectorCanvasTest, PathEffects) {
+#if defined(OS_WIN)
+#define MAYBE_PathEffects DISABLED_PathEffects
+#else
+#define MAYBE_PathEffects PathEffects
+#endif
+TEST_F(VectorCanvasTest, MAYBE_PathEffects) {
   {
     SkPaint paint;
     SkScalar intervals[] = { 1, 1 };
