@@ -85,10 +85,17 @@ ASH_EXPORT extern const AcceleratorData kAcceleratorData[];
 ASH_EXPORT extern const size_t kAcceleratorDataLength;
 
 // Actions allowed while user is not signed in or screen is locked.
-ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtLoginScreen[];
+ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[];
 
-// The number of elements in kActionsAllowedAtLoginScreen.
-ASH_EXPORT extern const size_t kActionsAllowedAtLoginScreenLength;
+// The number of elements in kActionsAllowedAtLoginOrLockScreen.
+ASH_EXPORT extern const size_t kActionsAllowedAtLoginOrLockScreenLength;
+
+// Actions allowed while screen is locked (in addition to
+// kActionsAllowedAtLoginOrLockScreen).
+ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtLockScreen[];
+
+// The number of elements in kActionsAllowedAtLockScreen.
+ASH_EXPORT extern const size_t kActionsAllowedAtLockScreenLength;
 
 }  // namespace ash
 

@@ -189,8 +189,14 @@ AcceleratorController::~AcceleratorController() {
 }
 
 void AcceleratorController::Init() {
-  for (size_t i = 0; i < kActionsAllowedAtLoginScreenLength; ++i) {
-    actions_allowed_at_login_screen_.insert(kActionsAllowedAtLoginScreen[i]);
+  for (size_t i = 0; i < kActionsAllowedAtLoginOrLockScreenLength; ++i) {
+    actions_allowed_at_login_screen_.insert(
+        kActionsAllowedAtLoginOrLockScreen[i]);
+    actions_allowed_at_lock_screen_.insert(
+        kActionsAllowedAtLoginOrLockScreen[i]);
+  }
+  for (size_t i = 0; i < kActionsAllowedAtLockScreenLength; ++i) {
+    actions_allowed_at_lock_screen_.insert(kActionsAllowedAtLockScreen[i]);
   }
 
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
@@ -265,16 +271,20 @@ bool AcceleratorController::AcceleratorPressed(
   AcceleratorAction action = static_cast<AcceleratorAction>(it->second);
 
   ash::Shell* shell = ash::Shell::GetInstance();
+  bool at_login_screen = false;
 #if defined(OS_CHROMEOS)
-  bool at_login_screen = shell->IsScreenLocked() ||
-      (shell->delegate() && !shell->delegate()->IsUserLoggedIn());
-#else
-  bool at_login_screen = shell->IsScreenLocked();
-#endif //  OS_CHROMEOS
+  at_login_screen = (shell->delegate() && !shell->delegate()->IsUserLoggedIn());
+#endif
+  bool at_lock_screen = shell->IsScreenLocked();
 
   if (at_login_screen &&
       actions_allowed_at_login_screen_.find(action) ==
       actions_allowed_at_login_screen_.end()) {
+    return false;
+  }
+  if (at_lock_screen &&
+      actions_allowed_at_lock_screen_.find(action) ==
+      actions_allowed_at_lock_screen_.end()) {
     return false;
   }
 
