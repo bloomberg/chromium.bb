@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// VideoReader is a generic interface for a video stream reader. RtpVideoReader
-// and ProtobufVideoReader implement this interface for RTP and protobuf video
-// streams. VideoReader is used by ConnectionToHost to read video stream.
+// VideoReader is a generic interface used by ConnectionToHost to read
+// video stream. ProtobufVideoReader implements this interface for
+// protobuf video stream.
 
 #ifndef REMOTING_PROTOCOL_VIDEO_READER_H_
 #define REMOTING_PROTOCOL_VIDEO_READER_H_

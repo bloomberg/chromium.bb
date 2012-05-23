@@ -37,8 +37,6 @@ const char kDeprecatedHeightAttr[] = "height";
 
 const char kStreamTransport[] = "stream";
 const char kDatagramTransport[] = "datagram";
-const char kSrtpTransport[] = "srtp";
-const char kRtpDtlsTransport[] = "rtp-dtls";
 
 const char kVerbatimCodec[] = "verbatim";
 const char kVp8Codec[] = "vp8";
@@ -50,10 +48,6 @@ const char* GetTransportName(ChannelConfig::TransportType type) {
       return kStreamTransport;
     case ChannelConfig::TRANSPORT_DATAGRAM:
       return kDatagramTransport;
-    case ChannelConfig::TRANSPORT_SRTP:
-      return kSrtpTransport;
-    case ChannelConfig::TRANSPORT_RTP_DTLS:
-      return kRtpDtlsTransport;
   }
   NOTREACHED();
   return NULL;
@@ -77,7 +71,7 @@ const char* GetCodecName(ChannelConfig::Codec type) {
 
 // Format a channel configuration tag for chromotocol session description,
 // e.g. for video channel:
-//    <video transport="srtp" version="1" codec="vp8" />
+//    <video transport="stream" version="1" codec="vp8" />
 XmlElement* FormatChannelConfig(const ChannelConfig& config,
                                 const std::string& tag_name) {
   XmlElement* result = new XmlElement(
@@ -103,10 +97,6 @@ bool ParseTransportName(const std::string& value,
     *transport = ChannelConfig::TRANSPORT_STREAM;
   } else if (value == kDatagramTransport) {
     *transport = ChannelConfig::TRANSPORT_DATAGRAM;
-  } else if (value == kSrtpTransport) {
-    *transport = ChannelConfig::TRANSPORT_SRTP;
-  } else if (value == kRtpDtlsTransport) {
-    *transport = ChannelConfig::TRANSPORT_RTP_DTLS;
   } else {
     return false;
   }
@@ -172,7 +162,7 @@ ContentDescription* ContentDescription::Copy() const {
 //   <description xmlns="google:remoting">
 //     <control transport="stream" version="1" />
 //     <event transport="datagram" version="1" />
-//     <video transport="srtp" codec="vp8" version="1" />
+//     <video transport="stream" codec="vp8" version="1" />
 //     <authentication>
 //      Message created by Authenticator implementation.
 //     </authentication>

@@ -23,8 +23,6 @@ struct ChannelConfig {
   enum TransportType {
     TRANSPORT_STREAM,
     TRANSPORT_DATAGRAM,
-    TRANSPORT_SRTP,
-    TRANSPORT_RTP_DTLS,
   };
 
   enum Codec {

@@ -83,7 +83,6 @@ const char kMaxPortSwitchName[] = "max-port";
 const char kVideoSwitchValueVerbatim[] = "verbatim";
 const char kVideoSwitchValueZip[] = "zip";
 const char kVideoSwitchValueVp8[] = "vp8";
-const char kVideoSwitchValueVp8Rtp[] = "vp8rtp";
 
 }  // namespace
 
@@ -365,7 +364,6 @@ int main(int argc, char** argv) {
         CandidateSessionConfig::CreateDefault());
     config->mutable_video_configs()->clear();
 
-    ChannelConfig::TransportType transport = ChannelConfig::TRANSPORT_STREAM;
     ChannelConfig::Codec codec;
     if (video_codec == kVideoSwitchValueVerbatim) {
       codec = ChannelConfig::CODEC_VERBATIM;
@@ -373,15 +371,13 @@ int main(int argc, char** argv) {
       codec = ChannelConfig::CODEC_ZIP;
     } else if (video_codec == kVideoSwitchValueVp8) {
       codec = ChannelConfig::CODEC_VP8;
-    } else if (video_codec == kVideoSwitchValueVp8Rtp) {
-      transport = ChannelConfig::TRANSPORT_SRTP;
-      codec = ChannelConfig::CODEC_VP8;
     } else {
       LOG(ERROR) << "Unknown video codec: " << video_codec;
       return 1;
     }
     config->mutable_video_configs()->push_back(ChannelConfig(
-        transport, remoting::protocol::kDefaultStreamVersion, codec));
+        ChannelConfig::TRANSPORT_STREAM,
+        remoting::protocol::kDefaultStreamVersion, codec));
     simple_host.set_protocol_config(config.release());
   }
 

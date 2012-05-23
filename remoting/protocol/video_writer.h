@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// VideoWriter is a generic interface for a video stream writer. RtpVideoWriter
-// and ProtobufVideoWriter implement this interface for RTP and protobuf video
-// streams. VideoWriter is used by ConnectionToClient to write into the video
-// stream.
+// VideoWriter is a generic interface used by ConnectionToClient to
+// write into the video stream. ProtobufVideoWriter implements this
+// interface for protobuf video streams.
 
 #ifndef REMOTING_PROTOCOL_VIDEO_WRITER_H_
 #define REMOTING_PROTOCOL_VIDEO_WRITER_H_

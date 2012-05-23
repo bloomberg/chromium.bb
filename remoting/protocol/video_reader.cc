@@ -6,7 +6,6 @@
 
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/protobuf_video_reader.h"
-#include "remoting/protocol/rtp_video_reader.h"
 
 namespace remoting {
 namespace protocol {
@@ -17,9 +16,7 @@ VideoReader::~VideoReader() { }
 VideoReader* VideoReader::Create(base::MessageLoopProxy* message_loop,
                                  const SessionConfig& config) {
   const ChannelConfig& video_config = config.video_config();
-  if (video_config.transport == ChannelConfig::TRANSPORT_SRTP) {
-    return new RtpVideoReader(message_loop);
-  } else if (video_config.transport == ChannelConfig::TRANSPORT_STREAM) {
+  if (video_config.transport == ChannelConfig::TRANSPORT_STREAM) {
     if (video_config.codec == ChannelConfig::CODEC_VP8) {
       return new ProtobufVideoReader(VideoPacketFormat::ENCODING_VP8);
     } else if (video_config.codec == ChannelConfig::CODEC_ZIP) {
