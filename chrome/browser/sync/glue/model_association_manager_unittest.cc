@@ -81,7 +81,7 @@ TEST_F(ModelAssociationManagerTest, SimpleModelStart) {
   model_association_manager.StartAssociationAsync();
 
   EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
-            DataTypeController::MODEL_STARTING);
+            DataTypeController::MODEL_LOADED);
   GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
       DataTypeController::OK);
 }
@@ -109,7 +109,7 @@ TEST_F(ModelAssociationManagerTest, StopModelBeforeFinish) {
   model_association_manager.StartAssociationAsync();
 
   EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
-            DataTypeController::MODEL_STARTING);
+            DataTypeController::MODEL_LOADED);
   model_association_manager.Stop();
   EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
@@ -135,7 +135,7 @@ TEST_F(ModelAssociationManagerTest, StopAfterFinish) {
   model_association_manager.StartAssociationAsync();
 
   EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
-            DataTypeController::MODEL_STARTING);
+            DataTypeController::MODEL_LOADED);
   GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
       DataTypeController::OK);
 
@@ -167,7 +167,7 @@ TEST_F(ModelAssociationManagerTest, TypeFailModelAssociation) {
   model_association_manager.StartAssociationAsync();
 
   EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
-            DataTypeController::MODEL_STARTING);
+            DataTypeController::MODEL_LOADED);
   GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
       DataTypeController::ASSOCIATION_FAILED);
 }
@@ -195,9 +195,10 @@ TEST_F(ModelAssociationManagerTest, TypeReturnUnrecoverableError) {
   model_association_manager.StartAssociationAsync();
 
   EXPECT_EQ(GetController(controllers_, syncable::BOOKMARKS)->state(),
-            DataTypeController::MODEL_STARTING);
+            DataTypeController::MODEL_LOADED);
   GetController(controllers_, syncable::BOOKMARKS)->FinishStart(
       DataTypeController::UNRECOVERABLE_ERROR);
 }
 
 }  // namespace browser_sync
+

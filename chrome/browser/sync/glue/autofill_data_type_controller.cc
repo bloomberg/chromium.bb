@@ -44,11 +44,7 @@ void AutofillDataTypeController::Observe(
   DCHECK_EQ(chrome::NOTIFICATION_WEB_DATABASE_LOADED, notification_type);
   DCHECK_EQ(MODEL_STARTING, state());
   notification_registrar_.RemoveAll();
-  set_state(ASSOCIATING);
-  if (!StartAssociationAsync()) {
-    SyncError error(FROM_HERE, "Failed to post association task.", type());
-    StartDoneImpl(ASSOCIATION_FAILED, DISABLED, error);
-  }
+  OnModelLoaded();
 }
 
 AutofillDataTypeController::~AutofillDataTypeController() {

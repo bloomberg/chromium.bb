@@ -27,10 +27,10 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : profile_sync_factory_(profile_sync_factory),
+    : state_(NOT_RUNNING),
+      profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       profile_sync_service_(sync_service),
-      state_(NOT_RUNNING),
       abort_association_(false),
       abort_association_complete_(false, false),
       start_association_called_(true, false),
@@ -41,31 +41,51 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
   DCHECK(profile_sync_service_);
 }
 
-void NonFrontendDataTypeController::Start(const StartCallback& start_callback) {
+void NonFrontendDataTypeController::LoadModels(
+    const ModelLoadCallback& model_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!start_callback.is_null());
+  DCHECK(!model_load_callback.is_null());
   start_association_called_.Reset();
   start_models_failed_ = false;
   if (state_ != NOT_RUNNING) {
-    start_callback.Run(BUSY, SyncError());
+    model_load_callback.Run(type(), SyncError(FROM_HERE,
+                                              "Model already loaded",
+                                              type()));
     return;
   }
-
-  start_callback_ = start_callback;
-  abort_association_ = false;
 
   state_ = MODEL_STARTING;
   if (!StartModels()) {
     start_models_failed_ = true;
-    // If we are waiting for some external service to load before associating
-    // or we failed to start the models, we exit early.
+    // We failed to start the models. There is no point in waiting.
+    // Note: This code is deprecated. The only 2 datatypes here,
+    // passwords and typed urls, dont have any special loading. So if we
+    // get a false it means they failed.
     DCHECK(state_ == NOT_RUNNING || state_ == MODEL_STARTING
            || state_ == DISABLED);
+    model_load_callback.Run(type(), SyncError(FROM_HERE,
+                                              "Failed loading",
+                                              type()));
     return;
   }
+  state_ = MODEL_LOADED;
+
+  model_load_callback.Run(type(), SyncError());
+}
+
+void NonFrontendDataTypeController::OnModelLoaded() {
+  NOTREACHED();
+}
+
+void NonFrontendDataTypeController::StartAssociating(
+    const StartCallback& start_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!start_callback.is_null());
+  DCHECK_EQ(state_, MODEL_LOADED);
 
   // Kick off association on the thread the datatype resides on.
   state_ = ASSOCIATING;
+  start_callback_ = start_callback;
   if (!StartAssociationAsync()) {
     SyncError error(FROM_HERE, "Failed to post StartAssociation", type());
     StartDoneImpl(ASSOCIATION_FAILED, DISABLED, error);
@@ -194,10 +214,7 @@ void NonFrontendDataTypeController::Stop() {
       break;
     case MODEL_STARTING:
       state_ = STOPPING;
-      // If Stop() is called while Start() is waiting for the models to start,
-      // abort the start. We don't need to continue on since it means we haven't
-      // kicked off the association, and once we call StopModels, we never will.
-      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
+      NOTREACHED();
       return;
     case DISABLED:
       state_ = NOT_RUNNING;
@@ -257,10 +274,10 @@ void NonFrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
 }
 
 NonFrontendDataTypeController::NonFrontendDataTypeController()
-    : profile_sync_factory_(NULL),
+    : state_(NOT_RUNNING),
+      profile_sync_factory_(NULL),
       profile_(NULL),
       profile_sync_service_(NULL),
-      state_(NOT_RUNNING),
       abort_association_(false),
       abort_association_complete_(false, false),
       start_association_called_(true, false) {

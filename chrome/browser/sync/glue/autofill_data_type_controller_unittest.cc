@@ -101,6 +101,12 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
     last_start_error_ = error;
   }
 
+  void OnLoadFinished(syncable::ModelType type,
+                      SyncError error) {
+    EXPECT_FALSE(error.IsSet());
+    EXPECT_EQ(type, syncable::AUTOFILL);
+  }
+
   virtual void TearDown() {
     autofill_dtc_ = NULL;
     change_processor_ = NULL;
@@ -136,7 +142,10 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
       static_cast<FakeWebDataService*>(WebDataServiceFactory::GetForProfile(
           &profile_, Profile::EXPLICIT_ACCESS).get());
   web_db->LoadDatabase();
-  autofill_dtc_->Start(
+  autofill_dtc_->LoadModels(
+    base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
+               weak_ptr_factory_.GetWeakPtr()));
+  autofill_dtc_->StartAssociating(
       base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 
@@ -150,9 +159,9 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
 // state until the database in loaded, when it should try to start
 // association and fail (due to missing DB thread).
 TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
-  autofill_dtc_->Start(
-      base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
-                 weak_ptr_factory_.GetWeakPtr()));
+  autofill_dtc_->LoadModels(
+    base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
+               weak_ptr_factory_.GetWeakPtr()));
 
   EXPECT_EQ(DataTypeController::OK, last_start_result_);
   EXPECT_FALSE(last_start_error_.IsSet());
@@ -163,12 +172,14 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
           &profile_, Profile::EXPLICIT_ACCESS).get());
   web_db->LoadDatabase();
 
+  autofill_dtc_->StartAssociating(
+      base::Bind(&SyncAutofillDataTypeControllerTest::OnStartFinished,
+                 weak_ptr_factory_.GetWeakPtr()));
+
   EXPECT_EQ(DataTypeController::ASSOCIATION_FAILED, last_start_result_);
   EXPECT_TRUE(last_start_error_.IsSet());
-  // There's a TODO for
-  // NonFrontendDataTypeController::StartAssociationAsync() that, when
-  // done, will make this consistent with the previous test.
-  EXPECT_EQ(DataTypeController::DISABLED, autofill_dtc_->state());
+
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, autofill_dtc_->state());
 }
 
 }  // namespace

@@ -36,9 +36,7 @@ void AppNotificationDataTypeController::Observe(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(chrome::NOTIFICATION_APP_NOTIFICATION_MANAGER_LOADED, type);
   registrar_.RemoveAll();
-  DCHECK_EQ(state_, MODEL_STARTING);
-  state_ = ASSOCIATING;
-  Associate();
+  OnModelLoaded();
 }
 
 AppNotificationDataTypeController::~AppNotificationDataTypeController() {

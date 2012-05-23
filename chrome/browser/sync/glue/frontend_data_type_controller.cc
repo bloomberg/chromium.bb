@@ -34,16 +34,21 @@ FrontendDataTypeController::FrontendDataTypeController(
   DCHECK(sync_service);
 }
 
-void FrontendDataTypeController::Start(const StartCallback& start_callback) {
+void FrontendDataTypeController::LoadModels(
+    const ModelLoadCallback& model_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!start_callback.is_null());
+  DCHECK(!model_load_callback.is_null());
+
   if (state_ != NOT_RUNNING) {
-    start_callback.Run(BUSY, SyncError());
+    model_load_callback.Run(type(), SyncError(FROM_HERE,
+                                              "Model already running",
+                                              type()));
     return;
   }
 
-  start_callback_ = start_callback;
+  DCHECK(model_load_callback_.is_null());
 
+  model_load_callback_ = model_load_callback;
   state_ = MODEL_STARTING;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
@@ -53,6 +58,28 @@ void FrontendDataTypeController::Start(const StartCallback& start_callback) {
     return;
   }
 
+  OnModelLoaded();
+}
+
+void FrontendDataTypeController::OnModelLoaded() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!model_load_callback_.is_null());
+  DCHECK_EQ(state_, MODEL_STARTING);
+
+  state_ = MODEL_LOADED;
+  ModelLoadCallback model_load_callback = model_load_callback_;
+  model_load_callback_.Reset();
+  model_load_callback.Run(type(), SyncError());
+}
+
+void FrontendDataTypeController::StartAssociating(
+    const StartCallback& start_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!start_callback.is_null());
+  DCHECK(start_callback_.is_null());
+  DCHECK_EQ(state_, MODEL_LOADED);
+
+  start_callback_ = start_callback;
   state_ = ASSOCIATING;
   if (!Associate()) {
     // We failed to associate and are aborting.
@@ -71,7 +98,7 @@ void FrontendDataTypeController::Stop() {
   // If Stop() is called while Start() is waiting for the datatype model to
   // load, abort the start.
   if (prev_state == MODEL_STARTING) {
-    StartFailed(ABORTED, SyncError());
+    AbortModelLoad();
     // We can just return here since we haven't performed association if we're
     // still in MODEL_STARTING.
     return;
@@ -189,15 +216,20 @@ void FrontendDataTypeController::CleanUpState() {
   // Do nothing by default.
 }
 
+void FrontendDataTypeController::CleanUp() {
+  CleanUpState();
+  set_model_associator(NULL);
+  change_processor_.reset();
+}
+
 void FrontendDataTypeController::StartFailed(StartResult result,
                                              const SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (IsUnrecoverableResult(result))
     RecordUnrecoverableError(FROM_HERE, "StartFailed");
-  CleanUpState();
-  set_model_associator(NULL);
-  change_processor_.reset();
+
+  CleanUp();
   if (result == ASSOCIATION_FAILED) {
     state_ = DISABLED;
   } else {
@@ -211,6 +243,17 @@ void FrontendDataTypeController::StartFailed(StartResult result,
   StartCallback callback = start_callback_;
   start_callback_.Reset();
   callback.Run(result, error);
+}
+
+void FrontendDataTypeController::AbortModelLoad() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CleanUp();
+  state_ = NOT_RUNNING;
+  ModelLoadCallback model_load_callback = model_load_callback_;
+  model_load_callback_.Reset();
+  model_load_callback.Run(type(), SyncError(FROM_HERE,
+                                            "Aborted",
+                                            type()));
 }
 
 void FrontendDataTypeController::FinishStart(StartResult result) {

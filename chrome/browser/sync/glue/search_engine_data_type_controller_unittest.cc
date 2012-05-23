@@ -51,7 +51,6 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
         new SearchEngineDataTypeController(profile_sync_factory_.get(),
                                            test_util_.profile(),
                                            &service_);
-    SetStartExpectations();
   }
 
   virtual void TearDown() {
@@ -69,6 +68,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
 
   void SetStartExpectations() {
     // Ownership gets passed to caller of CreateGenericChangeProcessor.
+    EXPECT_CALL(model_load_callback_, Run(_, _));
     EXPECT_CALL(*profile_sync_factory_,
                 GetSyncableServiceForType(syncable::SEARCH_ENGINES)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
@@ -86,6 +86,15 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(service_, DeactivateDataType(syncable::SEARCH_ENGINES));
   }
 
+  void Start() {
+    search_engine_dtc_->LoadModels(
+        base::Bind(&ModelLoadCallbackMock::Run,
+                   base::Unretained(&model_load_callback_)));
+    search_engine_dtc_->StartAssociating(
+        base::Bind(&StartCallbackMock::Run,
+                   base::Unretained(&start_callback_)));
+  }
+
   // This also manages a BrowserThread and MessageLoop for us. Note that this
   // must be declared here as the destruction order of the BrowserThread
   // matters - we could leak if this is declared below.
@@ -96,9 +105,11 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
   scoped_ptr<FakeGenericChangeProcessor> change_processor_;
   FakeSyncableService syncable_service_;
   StartCallbackMock start_callback_;
+  ModelLoadCallbackMock model_load_callback_;
 };
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceReady) {
+  SetStartExpectations();
   // We want to start ready.
   PreloadTemplateURLService();
   SetActivateExpectations();
@@ -106,19 +117,21 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceReady) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
-  search_engine_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
   EXPECT_TRUE(syncable_service_.syncing());
 }
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
-  SetActivateExpectations();
-  EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
+  EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
+      WillOnce(MakeSharedChangeProcessor());
+
+  EXPECT_CALL(model_load_callback_, Run(_, _));
 
   EXPECT_FALSE(syncable_service_.syncing());
-  search_engine_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  search_engine_dtc_->LoadModels(
+      base::Bind(&ModelLoadCallbackMock::Run,
+                 base::Unretained(&model_load_callback_)));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
 
@@ -127,22 +140,22 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
       chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
       content::Source<TemplateURLService>(test_util_.model()),
       content::NotificationService::NoDetails());
-  EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
-  EXPECT_TRUE(syncable_service_.syncing());
+  EXPECT_EQ(DataTypeController::MODEL_LOADED, search_engine_dtc_->state());
 }
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, StartFirstRun) {
+  SetStartExpectations();
   PreloadTemplateURLService();
   SetActivateExpectations();
   change_processor_->set_sync_model_has_user_created_nodes(false);
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _));
 
-  search_engine_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_TRUE(syncable_service_.syncing());
 }
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
+  SetStartExpectations();
   PreloadTemplateURLService();
   SetStopExpectations();
   EXPECT_CALL(start_callback_,
@@ -150,8 +163,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
   syncable_service_.set_merge_data_and_start_syncing_error(
       SyncError(FROM_HERE, "Error", syncable::SEARCH_ENGINES));
 
-  search_engine_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_EQ(DataTypeController::DISABLED, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
   search_engine_dtc_->Stop();
@@ -161,19 +173,20 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
 
 TEST_F(SyncSearchEngineDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
+  SetStartExpectations();
   PreloadTemplateURLService();
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::UNRECOVERABLE_ERROR, _));
   // Set up association to fail with an unrecoverable error.
   change_processor_->set_sync_model_has_user_created_nodes_success(false);
 
-  search_engine_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
 }
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
+  SetStartExpectations();
   PreloadTemplateURLService();
   SetActivateExpectations();
   SetStopExpectations();
@@ -181,8 +194,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
-  search_engine_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_EQ(DataTypeController::RUNNING, search_engine_dtc_->state());
   EXPECT_TRUE(syncable_service_.syncing());
   search_engine_dtc_->Stop();
@@ -191,6 +203,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
 }
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, OnUnrecoverableError) {
+  SetStartExpectations();
   PreloadTemplateURLService();
   SetActivateExpectations();
   EXPECT_CALL(service_, OnUnrecoverableError(_, _)).
@@ -199,8 +212,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, OnUnrecoverableError) {
   SetStopExpectations();
 
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
-  search_engine_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   // This should cause search_engine_dtc_->Stop() to be called.
   search_engine_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
   test_util_.PumpLoop();

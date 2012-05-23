@@ -66,6 +66,7 @@ ModelAssociationManager::ModelAssociationManager(
     const DataTypeController::TypeMap* controllers,
     ModelAssociationResultProcessor* processor)
     : state_(IDLE),
+      currently_associating_(NULL),
       controllers_(controllers),
       result_processor_(processor),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -123,7 +124,7 @@ void ModelAssociationManager::Initialize(
 void ModelAssociationManager::StartAssociationAsync() {
   DCHECK_EQ(state_, INITIAILIZED_TO_CONFIGURE);
   state_ = CONFIGURING;
-  StartNextType();
+  LoadModelForNextType();
 }
 
 void ModelAssociationManager::ResetForReconfiguration() {
@@ -148,12 +149,18 @@ void ModelAssociationManager::Stop() {
   bool need_to_call_model_association_done = false;
   if (state_ == CONFIGURING) {
     state_ = ABORTED;
-    DCHECK_LT(0U, needs_start_.size());
-    needs_start_[0]->Stop();
+    DCHECK(currently_associating_ != NULL ||
+           needs_start_.size() > 0 ||
+           pending_model_load_.size() > 0 ||
+           waiting_to_associate_.size() > 0);
 
-    // By this point the datatype should have been stopped.
-    // And in the |TypeStartCallback| we would have set the state
-    // to idle.
+    if (currently_associating_) {
+      currently_associating_->Stop();
+    } else {
+      // DTCs in other lists would be stopped below.
+      state_ = IDLE;
+    }
+
     DCHECK_EQ(IDLE, state_);
 
     // We are in the midle of model association. We need to inform the caller
@@ -222,10 +229,9 @@ void ModelAssociationManager::TypeStartCallback(
 
   DCHECK(state_ == CONFIGURING);
 
-  DataTypeController* started_dtc = needs_start_[0];
-  DCHECK(needs_start_.size());
-  DCHECK_EQ(needs_start_[0], started_dtc);
-  needs_start_.erase(needs_start_.begin());
+  // We are done with this type. Clear it.
+  DataTypeController* started_dtc = currently_associating_;
+  currently_associating_ = NULL;
 
   if (result == DataTypeController::ASSOCIATION_FAILED) {
     failed_datatypes_info_.push_back(error);
@@ -244,7 +250,7 @@ void ModelAssociationManager::TypeStartCallback(
       result == DataTypeController::OK ||
       result == DataTypeController::OK_FIRST_RUN ||
       result == DataTypeController::ASSOCIATION_FAILED) {
-    StartNextType();
+    LoadModelForNextType();
     return;
   }
 
@@ -278,15 +284,65 @@ void ModelAssociationManager::TypeStartCallback(
   result_processor_->OnModelAssociationDone(configure_result);
 }
 
-void ModelAssociationManager::StartNextType() {
-  DCHECK(state_ == CONFIGURING);
-  // If there are any data types left to start, start the one at the
-  // front of the list.
+void ModelAssociationManager::LoadModelForNextType() {
   if (!needs_start_.empty()) {
     DVLOG(1) << "Starting " << needs_start_[0]->name();
+
+    DataTypeController* dtc = needs_start_[0];
+    needs_start_.erase(needs_start_.begin());
+    // Move from |needs_start_| to |pending_model_load_|.
+    pending_model_load_.push_back(dtc);
+    dtc->LoadModels(base::Bind(
+        &ModelAssociationManager::ModelLoadCallback,
+        weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  // If all controllers have their |LoadModels| invoked then pass onto
+  // |StartAssociatingNextType|.
+  StartAssociatingNextType();
+}
+
+void ModelAssociationManager::ModelLoadCallback(
+    syncable::ModelType type, SyncError error) {
+  DCHECK_EQ(state_, CONFIGURING);
+
+  for (std::vector<DataTypeController*>::iterator it =
+           pending_model_load_.begin();
+        it != pending_model_load_.end();
+        ++it) {
+    if ((*it)->type() == type) {
+      DataTypeController* dtc = *it;
+      pending_model_load_.erase(it);
+      if (!error.IsSet()) {
+        waiting_to_associate_.push_back(dtc);
+        StartAssociatingNextType();
+        } else {
+        // Treat it like a regular error.
+        DCHECK(currently_associating_ == NULL);
+        currently_associating_ = dtc;
+        TypeStartCallback(DataTypeController::ASSOCIATION_FAILED, error);
+      }
+     return;
+    }
+  }
+
+  NOTREACHED();
+}
+
+
+void ModelAssociationManager::StartAssociatingNextType() {
+  DCHECK_EQ(state_, CONFIGURING);
+  DCHECK_EQ(currently_associating_, static_cast<DataTypeController*>(NULL));
+  if (!waiting_to_associate_.empty()) {
+    DVLOG(1) << "Starting " << waiting_to_associate_[0]->name();
     TRACE_EVENT_BEGIN1("sync", "ModelAssociation",
-                       "DataType", ModelTypeToString(needs_start_[0]->type()));
-    needs_start_[0]->Start(base::Bind(
+                       "DataType",
+                       ModelTypeToString(waiting_to_associate_[0]->type()));
+    DataTypeController* dtc = waiting_to_associate_[0];
+    waiting_to_associate_.erase(waiting_to_associate_.begin());
+    currently_associating_ = dtc;
+    dtc->StartAssociating(base::Bind(
         &ModelAssociationManager::TypeStartCallback,
         weak_ptr_factory_.GetWeakPtr()));
     return;

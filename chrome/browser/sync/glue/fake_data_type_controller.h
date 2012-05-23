@@ -23,9 +23,12 @@ class FakeDataTypeController : public DataTypeController {
  public:
   explicit FakeDataTypeController(syncable::ModelType type);
 
-  virtual void Start(const StartCallback& start_callback) OVERRIDE;
+  virtual void LoadModels(
+      const ModelLoadCallback& model_load_callback) OVERRIDE;
 
-  void StartModel();
+  virtual void OnModelLoaded() OVERRIDE;
+
+  virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
 
   void FinishStart(StartResult result);
 
@@ -63,3 +66,4 @@ class FakeDataTypeController : public DataTypeController {
 
 }  // namespace browser_sync
 #endif  // CHROME_BROWSER_SYNC_GLUE_FAKE_DATA_TYPE_CONTROLLER_H__
+

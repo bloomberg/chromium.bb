@@ -43,7 +43,9 @@ class FrontendDataTypeController : public DataTypeController {
       ProfileSyncService* sync_service);
 
   // DataTypeController interface.
-  virtual void Start(const StartCallback& start_callback) OVERRIDE;
+  virtual void LoadModels(
+      const ModelLoadCallback& model_load_callback) OVERRIDE;
+  virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual syncable::ModelType type() const = 0;
   virtual browser_sync::ModelSafeGroup model_safe_group() const OVERRIDE;
@@ -72,15 +74,11 @@ class FrontendDataTypeController : public DataTypeController {
   //           models are ready. Refer to Start(_) implementation.
   virtual bool StartModels();
 
-  // Build sync components and associate models.
-  // Return value:
-  //   True - if association was successful. FinishStart should have been
-  //          invoked.
-  //   False - if association failed. StartFailed should have been invoked.
-  virtual bool Associate();
-
   // Datatype specific creation of sync components.
   virtual void CreateSyncComponents() = 0;
+
+  // DataTypeController interface.
+  virtual void OnModelLoaded() OVERRIDE;
 
   // Perform any DataType controller specific state cleanup before stopping
   // the datatype controller. The default implementation is a no-op.
@@ -107,10 +105,26 @@ class FrontendDataTypeController : public DataTypeController {
   State state_;
 
   StartCallback start_callback_;
+  ModelLoadCallback model_load_callback_;
+
   // TODO(sync): transition all datatypes to SyncableService and deprecate
   // AssociatorInterface.
   scoped_ptr<AssociatorInterface> model_associator_;
   scoped_ptr<ChangeProcessor> change_processor_;
+
+ private:
+  // Build sync components and associate models.
+  // Return value:
+  //   True - if association was successful. FinishStart should have been
+  //          invoked.
+  //   False - if association failed. StartFailed should have been invoked.
+  virtual bool Associate();
+
+  void AbortModelLoad();
+
+  // Clean up our state and state variables. Called in response
+  // to a failure or abort or stop.
+  void CleanUp();
 
   DISALLOW_COPY_AND_ASSIGN(FrontendDataTypeController);
 };

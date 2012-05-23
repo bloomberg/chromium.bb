@@ -266,9 +266,6 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
     FinishDownload(dtm, ModelTypeSet());
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm.state());
 
-    GetController(BOOKMARKS)->StartModel();
-    EXPECT_EQ(DataTypeManager::CONFIGURING, dtm.state());
-
     dtm.Stop();
     EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
   }

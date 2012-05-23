@@ -81,17 +81,62 @@ class ModelAssociationManager {
   bool GetControllersNeedingStart(
       std::vector<DataTypeController*>* needs_start);
 
-  // Callback passed to each data type controller on startup.
+  // Callback passed to each data type controller on starting association. This
+  // callback will be invoked when the model association is done.
   void TypeStartCallback(DataTypeController::StartResult result,
                          const SyncError& error);
-  void StartNextType();
+
+  // Callback that will be invoked when the models finish loading. This callback
+  // will be passed to |LoadModels| function.
+  void ModelLoadCallback(syncable::ModelType type, SyncError error);
+
+  // Calls the |LoadModels| method on the next controller waiting to start.
+  void LoadModelForNextType();
+
+  // Calls |StartAssociating| on the next available controller whose models are
+  // loaded.
+  void StartAssociatingNextType();
 
   State state_;
   syncable::ModelTypeSet desired_types_;
   std::list<SyncError> failed_datatypes_info_;
   std::map<syncable::ModelType, int> start_order_;
+
+  // This illustration explains the movement of one DTC through various lists.
+  // Consider a dataype, say, BOOKMARKS which is NOT_RUNNING and will be
+  // configured now.
+  // Initially all lists are empty. BOOKMARKS is in the |controllers_|
+  // map. Here is how the controller moves to various list
+  // (indicated by arrows). The first column is the method that causes the
+  // transition.
+  // Step 1 : |Initialize| - |controllers_| -> |needs_start_|
+  // Step 2 : |LoadModelForNextType| - |needs_start_| -> |pending_model_load_|
+  // Step 3 : |ModelLoadCallback| - |pending_model_load_| ->
+  //    |waiting_to_associate_|
+  // Step 4 : |StartAssociatingNextType| - |waiting_to_associate_| ->
+  //    |currently_associating_|
+  // Step 5 : |TypeStartCallback| - |currently_associating_| set to NULL.
+
+  // Controllers that need to be started during a config cycle.
   std::vector<DataTypeController*> needs_start_;
+
+  // Controllers that need to be stopped during a config cycle.
   std::vector<DataTypeController*> needs_stop_;
+
+  // Controllers whose |LoadModels| function has been invoked and that are
+  // waiting for their models to be loaded. Cotrollers will be moved from
+  // |needs_start_| to this list as their |LoadModels| method is invoked.
+  std::vector<DataTypeController*> pending_model_load_;
+
+  // Controllers whose models are loaded and are ready to do model
+  // association. Controllers will be moved from |pending_model_load_|
+  // list to this list as they finish loading their model.
+  std::vector<DataTypeController*> waiting_to_associate_;
+
+  // Controller currently doing model association.
+  DataTypeController* currently_associating_;
+
+  // Set of all registered controllers.
   const DataTypeController::TypeMap* controllers_;
   ModelAssociationResultProcessor* result_processor_;
   base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;

@@ -48,16 +48,17 @@ UIDataTypeController::~UIDataTypeController() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void UIDataTypeController::Start(const StartCallback& start_callback) {
+void UIDataTypeController::LoadModels(
+    const ModelLoadCallback& model_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!start_callback.is_null());
+  DCHECK(!model_load_callback.is_null());
   DCHECK(syncable::IsRealDataType(type_));
   if (state_ != NOT_RUNNING) {
-    start_callback.Run(BUSY, SyncError());
+    model_load_callback.Run(type(), SyncError(FROM_HERE,
+                                              "Model already loaded",
+                                              type()));
     return;
   }
-
-  start_callback_ = start_callback;
 
   // Since we can't be called multiple times before Stop() is called,
   // |shared_change_processor_| must be NULL here.
@@ -66,6 +67,7 @@ void UIDataTypeController::Start(const StartCallback& start_callback) {
       profile_sync_factory_->CreateSharedChangeProcessor();
   DCHECK(shared_change_processor_.get());
 
+  model_load_callback_ = model_load_callback;
   state_ = MODEL_STARTING;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
@@ -75,6 +77,29 @@ void UIDataTypeController::Start(const StartCallback& start_callback) {
     return;
   }
 
+  state_ = MODEL_LOADED;
+  model_load_callback_.Reset();
+  model_load_callback.Run(type(), SyncError());
+}
+
+void UIDataTypeController::OnModelLoaded() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!model_load_callback_.is_null());
+  DCHECK_EQ(state_, MODEL_STARTING);
+
+  state_ = MODEL_LOADED;
+  ModelLoadCallback model_load_callback = model_load_callback_;
+  model_load_callback_.Reset();
+  model_load_callback.Run(type(), SyncError());
+}
+
+void UIDataTypeController::StartAssociating(
+    const StartCallback& start_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!start_callback.is_null());
+  DCHECK_EQ(state_, MODEL_LOADED);
+
+  start_callback_ = start_callback;
   state_ = ASSOCIATING;
   Associate();
   // It's possible StartDone(..) resulted in a Stop() call, or that association
@@ -171,6 +196,21 @@ void UIDataTypeController::StartFailed(StartResult result,
   callback.Run(result, error);
 }
 
+void UIDataTypeController::AbortModelLoad() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  state_ = NOT_RUNNING;
+
+  if (shared_change_processor_.get()) {
+    shared_change_processor_ = NULL;
+  }
+
+  ModelLoadCallback model_load_callback = model_load_callback_;
+  model_load_callback_.Reset();
+  model_load_callback.Run(type(), SyncError(FROM_HERE,
+                                            "Aborted",
+                                            type()));
+}
+
 void UIDataTypeController::StartDone(StartResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -197,7 +237,7 @@ void UIDataTypeController::Stop() {
   // If Stop() is called while Start() is waiting for the datatype model to
   // load, abort the start.
   if (prev_state == MODEL_STARTING) {
-    StartFailed(ABORTED, SyncError());
+    AbortModelLoad();
     // We can just return here since we haven't performed association if we're
     // still in MODEL_STARTING.
     return;

@@ -48,7 +48,7 @@ void AutofillProfileDataTypeController::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   notification_registrar_.RemoveAll();
-  DoStartAssociationAsync();
+  OnModelLoaded();
 }
 
 void AutofillProfileDataTypeController::OnPersonalDataChanged() {
@@ -58,7 +58,7 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   web_data_service_ = WebDataServiceFactory::GetForProfile(
       profile(), Profile::IMPLICIT_ACCESS);
   if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
-    DoStartAssociationAsync();
+    OnModelLoaded();
   } else {
     notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
                                 content::NotificationService::AllSources());
@@ -102,18 +102,6 @@ void AutofillProfileDataTypeController::StopModels() {
   DCHECK(state() == STOPPING || state() == NOT_RUNNING);
   notification_registrar_.RemoveAll();
   personal_data_->RemoveObserver(this);
-}
-
-void AutofillProfileDataTypeController::DoStartAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), MODEL_STARTING);
-  set_state(ASSOCIATING);
-  if (!StartAssociationAsync()) {
-    SyncError error(FROM_HERE,
-                    "Failed to post association task.",
-                    type());
-    StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
-  }
 }
 
 }  // namepsace browser_sync

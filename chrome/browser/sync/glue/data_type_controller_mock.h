@@ -21,22 +21,12 @@ class StartCallbackMock {
                          const SyncError& error));
 };
 
-class DataTypeControllerMock : public DataTypeController {
+class ModelLoadCallbackMock {
  public:
-  DataTypeControllerMock();
+  ModelLoadCallbackMock();
+  virtual ~ModelLoadCallbackMock();
 
-  MOCK_METHOD1(Start, void(const StartCallback& start_callback));
-  MOCK_METHOD0(Stop, void());
-  MOCK_METHOD0(enabled, bool());
-  MOCK_CONST_METHOD0(type, syncable::ModelType());
-  MOCK_CONST_METHOD0(name, std::string());
-  MOCK_CONST_METHOD0(model_safe_group, browser_sync::ModelSafeGroup());
-  MOCK_CONST_METHOD0(state, State());
-  MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
-                                          const std::string&));
-
- private:
-  virtual ~DataTypeControllerMock();
+  MOCK_METHOD2(Run, void(syncable::ModelType, SyncError));
 };
 
 }  // namespace browser_sync

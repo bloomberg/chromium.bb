@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
 #include "chrome/browser/sync/glue/fake_data_type_controller.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -16,31 +19,26 @@ FakeDataTypeController::FakeDataTypeController(ModelType type)
 FakeDataTypeController::~FakeDataTypeController() {
 }
 
-// NOT_RUNNING -> MODEL_STARTING
-void FakeDataTypeController::Start(const StartCallback& start_callback) {
-  // A real data type would call |start_callback| with a BUSY status
-  // if Start() is called when not NOT_RUNNING, but we don't expect
-  // that to happen in these tests.
+// NOT_RUNNING ->MODEL_LOADED.
+void FakeDataTypeController::LoadModels(
+    const ModelLoadCallback& model_load_callback) {
   if (state_ != NOT_RUNNING) {
     ADD_FAILURE();
     return;
   }
-  // We shouldn't have any pending callbacks.
-  if (!last_start_callback_.is_null()) {
-    ADD_FAILURE();
-    return;
-  }
-  last_start_callback_ = start_callback;
-  state_ = MODEL_STARTING;
+  model_load_callback.Run(type(), SyncError());
+  state_ = MODEL_LOADED;
 }
 
-// MODEL_STARTING -> ASSOCIATING
-void FakeDataTypeController::StartModel() {
-  if (state_ != MODEL_STARTING) {
-    ADD_FAILURE();
-    return;
-  }
-  state_ = ASSOCIATING;
+void FakeDataTypeController::OnModelLoaded() {
+  NOTREACHED();
+}
+
+// MODEL_LOADED -> MODEL_STARTING.
+void FakeDataTypeController::StartAssociating(
+   const StartCallback& start_callback) {
+  last_start_callback_ = start_callback;
+  state_ = MODEL_STARTING;
 }
 
 // MODEL_STARTING | ASSOCIATING -> RUNNING | DISABLED | NOT_RUNNING

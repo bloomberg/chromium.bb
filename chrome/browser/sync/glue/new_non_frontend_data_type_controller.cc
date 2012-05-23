@@ -25,16 +25,18 @@ NewNonFrontendDataTypeController::NewNonFrontendDataTypeController(
                                     profile,
                                     sync_service) {}
 
-void NewNonFrontendDataTypeController::Start(
-    const StartCallback& start_callback) {
+void NewNonFrontendDataTypeController::LoadModels(
+    const ModelLoadCallback& model_load_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!start_callback.is_null());
+  DCHECK(!model_load_callback.is_null());
   if (state() != NOT_RUNNING) {
-    start_callback.Run(BUSY, SyncError());
+    model_load_callback.Run(type(), SyncError(FROM_HERE,
+                                              "Model already running",
+                                              type()));
     return;
   }
 
-  set_start_callback(start_callback);
+  set_state(MODEL_STARTING);
 
   // Since we can't be called multiple times before Stop() is called,
   // |shared_change_processor_| must be NULL here.
@@ -43,7 +45,7 @@ void NewNonFrontendDataTypeController::Start(
       profile_sync_factory()->CreateSharedChangeProcessor();
   DCHECK(shared_change_processor_.get());
 
-  set_state(MODEL_STARTING);
+  model_load_callback_ = model_load_callback;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
     // or we failed to start the models, we exit early.
@@ -51,8 +53,27 @@ void NewNonFrontendDataTypeController::Start(
     return;
   }
 
-  // Kick off association on the thread the datatype resides on.
+  OnModelLoaded();
+}
+
+void NewNonFrontendDataTypeController::OnModelLoaded() {
+  DCHECK_EQ(state_, MODEL_STARTING);
+  DCHECK(!model_load_callback_.is_null());
+  set_state(MODEL_LOADED);
+
+  ModelLoadCallback model_load_callback = model_load_callback_;
+  model_load_callback_.Reset();
+  model_load_callback.Run(type(), SyncError());
+}
+
+void NewNonFrontendDataTypeController::StartAssociating(
+    const StartCallback& start_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!start_callback.is_null());
+  DCHECK_EQ(state_, MODEL_LOADED);
   set_state(ASSOCIATING);
+
+  set_start_callback(start_callback);
   if (!StartAssociationAsync()) {
     SyncError error(FROM_HERE, "Failed to post StartAssociation", type());
     StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
@@ -79,7 +100,7 @@ void NewNonFrontendDataTypeController::Stop() {
   switch (state()) {
     case MODEL_STARTING:
       set_state(STOPPING);
-      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
+      AbortModelStarting();
       return;  // The datatype was never activated, we're done.
     case ASSOCIATING:
       set_state(STOPPING);
@@ -143,6 +164,16 @@ void NewNonFrontendDataTypeController::StartDoneImpl(
     StopLocalServiceAsync();
   }
   NonFrontendDataTypeController::StartDoneImpl(result, new_state, error);
+}
+
+void NewNonFrontendDataTypeController::AbortModelStarting() {
+  set_state(NOT_RUNNING);
+  StopModels();
+  ModelLoadCallback model_load_callback = model_load_callback_;
+  model_load_callback_.Reset();
+  model_load_callback.Run(type(), SyncError(FROM_HERE,
+                                            "ABORTED",
+                                            type()));
 }
 
 bool NewNonFrontendDataTypeController::StartAssociationAsync() {

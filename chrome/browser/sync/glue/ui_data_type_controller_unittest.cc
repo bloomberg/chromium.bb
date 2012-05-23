@@ -65,6 +65,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
   void SetStartExpectations() {
     // Ownership gets passed to caller of CreateGenericChangeProcessor.
     change_processor_.reset(new FakeGenericChangeProcessor());
+    EXPECT_CALL(model_load_callback_, Run(_, _));
     EXPECT_CALL(*profile_sync_factory_, GetSyncableServiceForType(type_)).
         WillOnce(Return(syncable_service_.AsWeakPtr()));
     EXPECT_CALL(*profile_sync_factory_, CreateSharedChangeProcessor()).
@@ -81,6 +82,15 @@ class SyncUIDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(profile_sync_service_, DeactivateDataType(type_));
   }
 
+  void Start() {
+    preference_dtc_->LoadModels(
+        base::Bind(&ModelLoadCallbackMock::Run,
+                   base::Unretained(&model_load_callback_)));
+    preference_dtc_->StartAssociating(
+        base::Bind(&StartCallbackMock::Run,
+                   base::Unretained(&start_callback_)));
+  }
+
   void PumpLoop() {
     message_loop_.RunAllPending();
   }
@@ -92,6 +102,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
   ProfileSyncServiceMock profile_sync_service_;
   const syncable::ModelType type_;
   StartCallbackMock start_callback_;
+  ModelLoadCallbackMock model_load_callback_;
   scoped_refptr<UIDataTypeController> preference_dtc_;
   scoped_ptr<FakeGenericChangeProcessor> change_processor_;
   FakeSyncableService syncable_service_;
@@ -106,8 +117,7 @@ TEST_F(SyncUIDataTypeControllerTest, Start) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
-  preference_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_EQ(DataTypeController::RUNNING, preference_dtc_->state());
   EXPECT_TRUE(syncable_service_.syncing());
 }
@@ -121,8 +131,7 @@ TEST_F(SyncUIDataTypeControllerTest, StartStop) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
-  preference_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_EQ(DataTypeController::RUNNING, preference_dtc_->state());
   EXPECT_TRUE(syncable_service_.syncing());
   preference_dtc_->Stop();
@@ -140,8 +149,7 @@ TEST_F(SyncUIDataTypeControllerTest, StartStopFirstRun) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
-  preference_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_EQ(DataTypeController::RUNNING, preference_dtc_->state());
   EXPECT_TRUE(syncable_service_.syncing());
   preference_dtc_->Stop();
@@ -161,8 +169,7 @@ TEST_F(SyncUIDataTypeControllerTest, StartAssociationFailed) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
-  preference_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_EQ(DataTypeController::DISABLED, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
   preference_dtc_->Stop();
@@ -181,8 +188,7 @@ TEST_F(SyncUIDataTypeControllerTest,
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
-  preference_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
 }
@@ -199,8 +205,7 @@ TEST_F(SyncUIDataTypeControllerTest, OnUnrecoverableError) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
-  preference_dtc_->Start(
-      base::Bind(&StartCallbackMock::Run, base::Unretained(&start_callback_)));
+  Start();
   EXPECT_TRUE(syncable_service_.syncing());
   preference_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();

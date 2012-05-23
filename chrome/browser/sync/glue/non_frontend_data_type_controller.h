@@ -45,7 +45,9 @@ class NonFrontendDataTypeController : public DataTypeController {
       ProfileSyncService* sync_service);
 
   // DataTypeController interface.
-  virtual void Start(const StartCallback& start_callback) OVERRIDE;
+  virtual void LoadModels(
+      const ModelLoadCallback& model_load_callback) OVERRIDE;
+  virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual syncable::ModelType type() const = 0;
   virtual browser_sync::ModelSafeGroup model_safe_group() const = 0;
@@ -65,6 +67,9 @@ class NonFrontendDataTypeController : public DataTypeController {
   NonFrontendDataTypeController();
 
   virtual ~NonFrontendDataTypeController();
+
+  // DataTypeController interface.
+  virtual void OnModelLoaded() OVERRIDE;
 
   // Start any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.
@@ -125,16 +130,6 @@ class NonFrontendDataTypeController : public DataTypeController {
   // Record causes of start failure. Called on UI thread.
   virtual void RecordStartFailure(StartResult result);
 
-  // Post the association task to the thread the datatype lives on.
-  // Note: this is performed on the frontend (UI) thread.
-  // Return value: True if task posted successfully, False otherwise.
-  //
-  // TODO(akalin): Callers handle false return values inconsistently;
-  // some set the state to NOT_RUNNING, and some set the state to
-  // DISABLED.  Move the error handling inside this function to be
-  // consistent.
-  virtual bool StartAssociationAsync();
-
   // Accessors and mutators used by derived classes.
   ProfileSyncComponentsFactory* profile_sync_factory() const;
   Profile* profile() const;
@@ -147,7 +142,21 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual ChangeProcessor* change_processor() const;
   virtual void set_change_processor(ChangeProcessor* change_processor);
 
+  State state_;
+  StartCallback start_callback_;
+  ModelLoadCallback model_load_callback_;
+
  private:
+  // Post the association task to the thread the datatype lives on.
+  // Note: this is performed on the frontend (UI) thread.
+  // Return value: True if task posted successfully, False otherwise.
+  //
+  // TODO(akalin): Callers handle false return values inconsistently;
+  // some set the state to NOT_RUNNING, and some set the state to
+  // DISABLED.  Move the error handling inside this function to be
+  // consistent.
+  virtual bool StartAssociationAsync();
+
   // Build sync components and associate models.
   // Note: this is performed on the datatype's thread.
   void StartAssociation();
@@ -168,9 +177,6 @@ class NonFrontendDataTypeController : public DataTypeController {
   Profile* const profile_;
   ProfileSyncService* const profile_sync_service_;
 
-  State state_;
-
-  StartCallback start_callback_;
   scoped_ptr<AssociatorInterface> model_associator_;
   scoped_ptr<ChangeProcessor> change_processor_;
 

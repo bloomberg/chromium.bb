@@ -36,8 +36,7 @@ void SearchEngineDataTypeController::Observe(
   DCHECK_EQ(chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED, type);
   registrar_.RemoveAll();
   DCHECK_EQ(state_, MODEL_STARTING);
-  state_ = ASSOCIATING;
-  Associate();
+  OnModelLoaded();
 }
 
 SearchEngineDataTypeController::~SearchEngineDataTypeController() {}

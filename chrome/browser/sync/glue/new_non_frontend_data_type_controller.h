@@ -22,7 +22,11 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
       Profile* profile,
       ProfileSyncService* sync_service);
 
-  virtual void Start(const StartCallback& start_callback) OVERRIDE;
+  // DataTypeController interface.
+  virtual void LoadModels(
+      const ModelLoadCallback& model_load_callback) OVERRIDE;
+  virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
+
   virtual void Stop() OVERRIDE;
 
  protected:
@@ -31,6 +35,9 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
   NewNonFrontendDataTypeController();
   virtual ~NewNonFrontendDataTypeController();
 
+  // DataTypeController interface.
+  virtual void OnModelLoaded() OVERRIDE;
+
   // Overrides of NonFrontendDataTypeController methods.
   virtual void StartDone(DataTypeController::StartResult result,
                          DataTypeController::State new_state,
@@ -38,9 +45,11 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
   virtual void StartDoneImpl(DataTypeController::StartResult result,
                              DataTypeController::State new_state,
                              const SyncError& error) OVERRIDE;
-  virtual bool StartAssociationAsync() OVERRIDE;
 
  private:
+  // This overrides the same method in |NonFrontendDataTypeController|.
+  virtual bool StartAssociationAsync() OVERRIDE;
+
   // Posted on the backend thread by StartAssociationAsync().
   void StartAssociationWithSharedChangeProcessor(
       const scoped_refptr<SharedChangeProcessor>& shared_change_processor);
@@ -56,6 +65,8 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
 
   // Calls local_service_->StopSyncing() and releases our references to it.
   void StopLocalService();
+
+  void AbortModelStarting();
 
   // Deprecated.
   virtual void CreateSyncComponents() OVERRIDE;

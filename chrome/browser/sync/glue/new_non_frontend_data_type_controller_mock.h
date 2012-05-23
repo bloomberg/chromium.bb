@@ -18,7 +18,11 @@ class NewNonFrontendDataTypeControllerMock
   NewNonFrontendDataTypeControllerMock();
 
   // DataTypeController mocks.
-  MOCK_METHOD1(Start, void(const StartCallback& start_callback));
+  MOCK_METHOD1(StartAssociating,
+                 void(const StartCallback& start_callback));
+  MOCK_METHOD1(LoadModels, void(const ModelLoadCallback& model_load_callback));
+  MOCK_METHOD0(OnModelLoaded, void());
+
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(enabled, bool());
   MOCK_CONST_METHOD0(type, syncable::ModelType());

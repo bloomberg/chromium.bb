@@ -45,8 +45,7 @@ void BookmarkDataTypeController::Observe(
   if (!DependentsLoaded())
     return;
   registrar_.RemoveAll();
-  state_ = ASSOCIATING;
-  Associate();
+  OnModelLoaded();
 }
 
 BookmarkDataTypeController::~BookmarkDataTypeController() {}

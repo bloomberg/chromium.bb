@@ -35,6 +35,8 @@ class DataTypeController
     MODEL_STARTING, // The controller is waiting on dependent services
                     // that need to be available before model
                     // association.
+    MODEL_LOADED,   // The model has finished loading and can start
+                    // associating now.
     ASSOCIATING,    // Model association is in progress.
     RUNNING,        // The controller is running and the data type is
                     // in sync with the cloud.
@@ -61,6 +63,9 @@ class DataTypeController
 
   typedef base::Callback<void(StartResult, const SyncError&)> StartCallback;
 
+  typedef base::Callback<void(syncable::ModelType,
+                              SyncError)> ModelLoadCallback;
+
   typedef std::map<syncable::ModelType,
                    scoped_refptr<DataTypeController> > TypeMap;
   typedef std::map<syncable::ModelType, DataTypeController::State> StateMap;
@@ -69,18 +74,21 @@ class DataTypeController
   // Public so unit tests can use this function as well.
   static bool IsUnrecoverableResult(StartResult result);
 
-  // Begins asynchronous start up of this data type.  Start up will
-  // wait for all other dependent services to be available, then
-  // proceed with model association and then change processor
-  // activation.  Upon completion, the start_callback will be invoked
-  // on the UI thread.  See the StartResult enum above for details on the
-  // possible start results.
-  virtual void Start(const StartCallback& start_callback) = 0;
+  // Begins asynchronous operation of loading the model to get it ready for
+  // model association. Once the models are loaded the callback will be invoked
+  // with the result. If the models are already loaded it is safe to call the
+  // callback right away. Else the callback needs to be stored and called when
+  // the models are ready.
+  virtual void LoadModels(const ModelLoadCallback& model_load_callback) = 0;
 
-  // Synchronously stops the data type.  If called after Start() is
-  // called but before the start callback is called, the start is
-  // aborted and the start callback is invoked with the ABORTED start
-  // result.
+  // Will start a potentially asynchronous operation to perform the
+  // model association. Once the model association is done the callback will
+  // be invoked.
+  virtual void StartAssociating(const StartCallback& start_callback) = 0;
+
+  // Synchronously stops the data type. If StartAssociating has already been
+  // called but is not done yet it will be aborted. Similarly if LoadModels
+  // has not completed it will also be aborted.
   virtual void Stop() = 0;
 
   // Unique model type for this data type controller.
@@ -108,6 +116,11 @@ class DataTypeController
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<DataTypeController>;
+
+  // If the DTC is waiting for models to load, once the models are
+  // loaded the datatype service will call this function on DTC to let
+  // us know that it is safe to start associating.
+  virtual void OnModelLoaded() = 0;
 
   virtual ~DataTypeController() {}
 

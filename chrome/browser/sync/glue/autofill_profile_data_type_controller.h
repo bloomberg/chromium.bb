@@ -50,8 +50,6 @@ class AutofillProfileDataTypeController
   virtual bool StartModels() OVERRIDE;
   virtual void StopModels() OVERRIDE;
 
-  void DoStartAssociationAsync();
-
  private:
   PersonalDataManager* personal_data_;
   scoped_refptr<WebDataService> web_data_service_;
