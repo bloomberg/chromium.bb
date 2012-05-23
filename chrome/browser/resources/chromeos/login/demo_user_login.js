@@ -21,8 +21,7 @@ onClick = function(e) {
  * Initializes the click handler.
  */
 initialize = function() {
-  $('logo').style.opacity = 1;
-  $('demo-login-text').style.opacity = 1;
+  $('page').style.opacity = 1;
   document.addEventListener('click', onClick);
 };
 

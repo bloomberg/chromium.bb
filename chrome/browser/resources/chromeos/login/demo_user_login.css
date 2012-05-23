@@ -10,6 +10,7 @@ body {
 }
 
 body {
+  background: #000;
   margin: 0;
   overflow: hidden;
   padding: 0;
@@ -18,9 +19,12 @@ body {
 #page {
   -webkit-box-align: center;
   -webkit-box-pack: center;
+  /* Delay the login screen for 2 seconds then fade it in. */
+  -webkit-transition: opacity 1s linear 2s;
   background: white;
   display: -webkit-box;
   height: 100%;
+  opacity: 0;
   position: absolute;
   width: 100%;
 }
@@ -30,15 +34,10 @@ body {
 }
 
 #logo {
-  -webkit-transition: opacity 1s linear;
-  opacity: 0;
   width: 150px;
 }
 
 #demo-login-text {
-  /* Delay the login text showing up till the logo has fully faded in */
-  -webkit-transition: opacity 1s linear 1s;
   font-size: 24px;
-  opacity: 0;
   padding-top: 80px;
 }
