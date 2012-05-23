@@ -278,14 +278,15 @@ scoped_refptr<webkit::ppapi::PluginModule>
   if (module)
     return module;
 
+  FilePath path(kBrowserPluginPath);
   scoped_refptr<PepperHungPluginFilter> hung_filter(
-      new PepperHungPluginFilter(FilePath(kBrowserPluginPath),
+      new PepperHungPluginFilter(path,
                                  render_view_->routing_id(),
                                  guest_process_id));
   // Create a new HostDispatcher for the proxying, and hook it to a new
   // PluginModule.
   module = new webkit::ppapi::PluginModule(kBrowserPluginName,
-                                           FilePath(kBrowserPluginPath),
+                                           path,
                                            registry);
   RenderThreadImpl::current()->browser_plugin_registry()->AddModule(
       guest_process_id, module);
