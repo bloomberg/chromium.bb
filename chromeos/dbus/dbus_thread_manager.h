@@ -39,6 +39,8 @@ class FlimflamNetworkClient;
 class FlimflamProfileClient;
 class FlimflamServiceClient;
 class GsmSMSClient;
+class IBusClient;
+class IBusInputContextClient;
 class ImageBurnerClient;
 class IntrospectableClient;
 class PowerManagerClient;
@@ -204,6 +206,14 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Returns the update engine client, owned by DBusThreadManager.  Do not
   // cache this pointer and use it after DBusThreadManager is shut down.
   virtual UpdateEngineClient* GetUpdateEngineClient() = 0;
+
+  // Returns the ibus client, owned by DBusThreadManager. Do not cache this
+  // pointer and use it after DBusThreadManager is shut down.
+  virtual IBusClient* GetIBusClient() = 0;
+
+  // Returns the ibus input context client, owned by DBusThreadManager. Do not
+  // cache this pointer and use it after DBusThreadManager is shut down.
+  virtual IBusInputContextClient* GetIBusInputContextClient() = 0;
 
   virtual ~DBusThreadManager();
 

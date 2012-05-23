@@ -34,6 +34,8 @@ class  MockFlimflamNetworkClient;
 class  MockFlimflamProfileClient;
 class  MockFlimflamServiceClient;
 class  MockGsmSMSClient;
+class  MockIBusClient;
+class  MockIBusInputContextClient;
 class  MockImageBurnerClient;
 class  MockIntrospectableClient;
 class  MockPowerManagerClient;
@@ -74,6 +76,8 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetSessionManagerClient, SessionManagerClient*(void));
   MOCK_METHOD0(GetSpeechSynthesizerClient, SpeechSynthesizerClient*(void));
   MOCK_METHOD0(GetUpdateEngineClient, UpdateEngineClient*(void));
+  MOCK_METHOD0(GetIBusClient, IBusClient*(void));
+  MOCK_METHOD0(GetIBusInputContextClient, IBusInputContextClient*(void));
 
   MockBluetoothAdapterClient* mock_bluetooth_adapter_client() {
     return mock_bluetooth_adapter_client_.get();
@@ -141,6 +145,12 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockUpdateEngineClient* mock_update_engine_client() {
     return mock_update_engine_client_.get();
   }
+  MockIBusClient* mock_ibus_client() {
+    return mock_ibus_client_.get();
+  }
+  MockIBusInputContextClient* mock_ibus_input_context_client() {
+    return mock_ibus_input_context_client_.get();
+  }
 
  private:
   scoped_ptr<MockBluetoothAdapterClient> mock_bluetooth_adapter_client_;
@@ -165,6 +175,8 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockSessionManagerClient> mock_session_manager_client_;
   scoped_ptr<MockSpeechSynthesizerClient> mock_speech_synthesizer_client_;
   scoped_ptr<MockUpdateEngineClient> mock_update_engine_client_;
+  scoped_ptr<MockIBusClient> mock_ibus_client_;
+  scoped_ptr<MockIBusInputContextClient> mock_ibus_input_context_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManager);
 };

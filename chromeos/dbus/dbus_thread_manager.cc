@@ -31,6 +31,8 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/speech_synthesizer_client.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/ibus/ibus_client.h"
+#include "chromeos/dbus/ibus/ibus_input_context_client.h"
 #include "dbus/bus.h"
 
 namespace chromeos {
@@ -148,6 +150,18 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     ibus_bus_ = new dbus::Bus(ibus_bus_options);
     ibus_address_ = ibus_address;
     VLOG(1) << "Connected to ibus-daemon: " << ibus_address;
+
+    DBusClientImplementationType client_type =
+        base::chromeos::IsRunningOnChromeOS() ? REAL_DBUS_CLIENT_IMPLEMENTATION
+                                              : STUB_DBUS_CLIENT_IMPLEMENTATION;
+
+    // Create the ibus client.
+    ibus_client_.reset(
+        IBusClient::Create(client_type, ibus_bus_.get()));
+
+    // Create the ibus input context client.
+    ibus_input_context_client_.reset(
+        IBusInputContextClient::Create(client_type));
   }
 
   // DBusThreadManager override.
@@ -270,6 +284,16 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return update_engine_client_.get();
   }
 
+  // DBusThreadManager override.
+  virtual IBusClient* GetIBusClient() OVERRIDE {
+    return ibus_client_.get();
+  }
+
+  // DBusThreadManager override.
+  virtual IBusInputContextClient* GetIBusInputContextClient() OVERRIDE {
+    return ibus_input_context_client_.get();
+  }
+
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   scoped_refptr<dbus::Bus> ibus_bus_;
@@ -295,6 +319,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;
+  scoped_ptr<IBusClient> ibus_client_;
+  scoped_ptr<IBusInputContextClient> ibus_input_context_client_;
 
   std::string ibus_address_;
 };
