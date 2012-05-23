@@ -36,6 +36,7 @@
 #include <cairo.h>
 #include <sys/mman.h>
 #include <sys/epoll.h>
+#include <sys/timerfd.h>
 
 #include <pixman.h>
 
@@ -169,6 +170,7 @@ struct window {
 
 struct widget {
 	struct window *window;
+	struct tooltip *tooltip;
 	struct wl_list child_list;
 	struct wl_list link;
 	struct rectangle allocation;
@@ -180,6 +182,7 @@ struct widget {
 	widget_button_handler_t button_handler;
 	void *user_data;
 	int opaque;
+	int tooltip_count;
 };
 
 struct input {
@@ -264,6 +267,16 @@ struct menu {
 	int current;
 	int count;
 	menu_func_t func;
+};
+
+struct tooltip {
+	struct widget *parent;
+	struct window *window;
+	struct widget *widget;
+	char *entry;
+	struct task tooltip_task;
+	int tooltip_fd;
+	float x, y;
 };
 
 struct shm_pool {
@@ -862,6 +875,8 @@ widget_create(struct window *window, void *data)
 	widget->allocation = window->allocation;
 	wl_list_init(&widget->child_list);
 	widget->opaque = 0;
+	widget->tooltip = NULL;
+	widget->tooltip_count = 0;
 
 	return widget;
 }
@@ -891,6 +906,11 @@ widget_destroy(struct widget *widget)
 {
 	struct display *display = widget->window->display;
 	struct input *input;
+
+	if (widget->tooltip) {
+		free(widget->tooltip);
+		widget->tooltip = NULL;
+	}
 
 	wl_list_for_each(input, &display->input_list, link) {
 		if (input->focus_widget == widget)
@@ -997,6 +1017,174 @@ struct wl_shell_surface *
 window_get_wl_shell_surface(struct window *window)
 {
 	return window->shell_surface;
+}
+
+static void
+tooltip_redraw_handler(struct widget *widget, void *data)
+{
+	cairo_t *cr;
+	const int32_t r = 3;
+	struct tooltip *tooltip = data;
+	int32_t width, height;
+	struct window *window = widget->window;
+
+	cr = cairo_create(window->cairo_surface);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
+	cairo_paint(cr);
+
+	width = window->allocation.width;
+	height = window->allocation.height;
+	rounded_rect(cr, 0, 0, width, height, r);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_source_rgba(cr, 0.0, 0.0, 0.4, 0.8);
+	cairo_fill(cr);
+
+	cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+	cairo_move_to(cr, 10, 16);
+	cairo_show_text(cr, tooltip->entry);
+	cairo_destroy(cr);
+}
+
+static cairo_text_extents_t
+get_text_extents(struct tooltip *tooltip)
+{
+	struct window *window;
+	cairo_t *cr;
+	cairo_text_extents_t extents;
+
+	/* we borrow cairo_surface from the parent cause tooltip's wasn't
+	 * created yet */
+	window = tooltip->widget->window->parent;
+	cr = cairo_create(window->cairo_surface);
+	cairo_text_extents(cr, tooltip->entry, &extents);
+	cairo_destroy(cr);
+
+	return extents;
+}
+
+static int
+window_create_tooltip(struct tooltip *tooltip)
+{
+	struct widget *parent = tooltip->parent;
+	struct display *display = parent->window->display;
+	struct window *window;
+	const int offset_y = 27;
+	const int margin = 3;
+	cairo_text_extents_t extents;
+
+	if (tooltip->widget)
+		return 0;
+
+	window = window_create_transient(display, parent->window, tooltip->x,
+					 tooltip->y + offset_y,
+					 WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
+	if (!window)
+		return -1;
+
+	tooltip->window = window;
+	tooltip->widget = window_add_widget(tooltip->window, tooltip);
+
+	extents = get_text_extents(tooltip);
+	widget_set_redraw_handler(tooltip->widget, tooltip_redraw_handler);
+	window_schedule_resize(window, extents.width + 20, 20 + margin * 2);
+
+	return 0;
+}
+
+void
+widget_destroy_tooltip(struct widget *parent)
+{
+	struct tooltip *tooltip = parent->tooltip;
+
+	parent->tooltip_count = 0;
+	if (!tooltip)
+		return;
+
+	if (tooltip->widget) {
+		widget_destroy(tooltip->widget);
+		window_destroy(tooltip->window);
+		tooltip->widget = NULL;
+		tooltip->window = NULL;
+	}
+
+	close(tooltip->tooltip_fd);
+	free(tooltip->entry);
+	free(tooltip);
+	parent->tooltip = NULL;
+}
+
+static void
+tooltip_func(struct task *task, uint32_t events)
+{
+	struct tooltip *tooltip =
+		container_of(task, struct tooltip, tooltip_task);
+	uint64_t exp;
+
+	read(tooltip->tooltip_fd, &exp, sizeof (uint64_t));
+	window_create_tooltip(tooltip);
+}
+
+#define TOOLTIP_TIMEOUT 500
+static int
+tooltip_timer_reset(struct tooltip *tooltip)
+{
+	struct itimerspec its;
+
+	its.it_interval.tv_sec = 0;
+	its.it_interval.tv_nsec = 0;
+	its.it_value.tv_sec = TOOLTIP_TIMEOUT / 1000;
+	its.it_value.tv_nsec = (TOOLTIP_TIMEOUT % 1000) * 1000 * 1000;
+	if (timerfd_settime(tooltip->tooltip_fd, 0, &its, NULL) < 0) {
+		fprintf(stderr, "could not set timerfd\n: %m");
+		return -1;
+	}
+
+	return 0;
+}
+
+int
+widget_set_tooltip(struct widget *parent, char *entry, float x, float y)
+{
+	struct tooltip *tooltip = parent->tooltip;
+
+	parent->tooltip_count++;
+	if (tooltip) {
+		tooltip->x = x;
+		tooltip->y = y;
+		tooltip_timer_reset(tooltip);
+		return 0;
+	}
+
+	/* the handler might be triggered too fast via input device motion, so
+	 * we need this check here to make sure tooltip is fully initialized */
+	if (parent->tooltip_count > 1)
+		return 0;
+
+        tooltip = malloc(sizeof *tooltip);
+        if (!tooltip)
+                return -1;
+
+	parent->tooltip = tooltip;
+	tooltip->parent = parent;
+	tooltip->widget = NULL;
+	tooltip->window = NULL;
+	tooltip->x = x;
+	tooltip->y = y;
+	tooltip->entry = strdup(entry);
+	tooltip->tooltip_fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC);
+	if (tooltip->tooltip_fd < 0) {
+		fprintf(stderr, "could not create timerfd\n: %m");
+		return -1;
+	}
+
+	tooltip->tooltip_task.run = tooltip_func;
+	display_watch_fd(parent->window->display, tooltip->tooltip_fd,
+			 EPOLLIN, &tooltip->tooltip_task);
+	tooltip_timer_reset(tooltip);
+
+	return 0;
 }
 
 static void

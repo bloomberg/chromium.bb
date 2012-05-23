@@ -306,8 +306,15 @@ window_set_title(struct window *window, const char *title);
 const char *
 window_get_title(struct window *window);
 
+int
+widget_set_tooltip(struct widget *parent, char *entry, float x, float y);
+
+void
+widget_destroy_tooltip(struct widget *parent);
+
 struct widget *
 widget_add_widget(struct widget *parent, void *data);
+
 void
 widget_destroy(struct widget *widget);
 void
