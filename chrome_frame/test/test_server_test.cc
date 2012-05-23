@@ -140,8 +140,12 @@ TEST_F(TestServerTest, TestServer) {
   test_server::FileResponse file("/file", source_path().Append(
       FILE_PATH_LITERAL("CFInstance.js")));
   server.AddResponse(&file);
-  test_server::RedirectResponse redir("/goog", "http://www.google.com/");
+  test_server::RedirectResponse redir("/redir", "http://localhost:1338/dest");
   server.AddResponse(&redir);
+
+  test_server::SimpleWebServer redirected_server(1338);
+  test_server::SimpleResponse dest("/dest", "Destination");
+  redirected_server.AddResponse(&dest);
 
   // We should never hit this, but it's our way to break out of the test if
   // things start hanging.
@@ -153,11 +157,11 @@ TEST_F(TestServerTest, TestServer) {
   UrlTaskChain fnf_task("http://localhost:1337/404", &quit_task);
   UrlTaskChain person_task("http://localhost:1337/person", &fnf_task);
   UrlTaskChain file_task("http://localhost:1337/file", &person_task);
-  UrlTaskChain goog_task("http://localhost:1337/goog", &file_task);
+  UrlTaskChain redir_task("http://localhost:1337/redir", &file_task);
 
   DWORD tid = 0;
   base::win::ScopedHandle worker(::CreateThread(
-      NULL, 0, FetchUrl, &goog_task, 0, &tid));
+      NULL, 0, FetchUrl, &redir_task, 0, &tid));
   loop.MessageLoop::Run();
 
   EXPECT_FALSE(quit_msg.hit_);
@@ -170,7 +174,7 @@ TEST_F(TestServerTest, TestServer) {
 
     EXPECT_TRUE(person_task.response().find("Guthrie") != std::string::npos);
     EXPECT_TRUE(file_task.response().find("function") != std::string::npos);
-    EXPECT_TRUE(goog_task.response().find("<title>") != std::string::npos);
+    EXPECT_TRUE(redir_task.response().find("Destination") != std::string::npos);
   } else {
     ::TerminateThread(worker, ~0);
   }
