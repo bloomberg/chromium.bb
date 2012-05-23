@@ -724,6 +724,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(ash::switches::kAshNotify),
   },
+  {
+    "enable-pinch",
+    IDS_FLAGS_ENABLE_PINCH_SCALE_NAME,
+    IDS_FLAGS_ENABLE_PINCH_SCALE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnablePinch),
+  },
 #endif  // defined(USE_ASH)
 };
 
