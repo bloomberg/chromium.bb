@@ -12,6 +12,7 @@
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
+#include "content/public/browser/speech_recognizer.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_grammar.h"
 #include "content/public/common/speech_recognition_result.h"
@@ -23,6 +24,7 @@ using content::SpeechRecognitionError;
 using content::SpeechRecognitionEventListener;
 using content::SpeechRecognitionGrammar;
 using content::SpeechRecognitionResult;
+using content::SpeechRecognizer;
 using media::AudioInputController;
 using media::AudioManager;
 using media::AudioParameters;
@@ -65,6 +67,41 @@ void KeepAudioControllerRefcountedForDtor(scoped_refptr<AudioInputController>) {
 }
 
 }  // namespace
+
+// TODO(primiano) Create(...) is transitional (until we fix speech input
+// extensions) and should be removed soon. The manager should be the only one
+// knowing the existence of SpeechRecognizer(Impl), thus the only one in charge
+// of instantiating it.
+SpeechRecognizer* SpeechRecognizer::Create(
+    SpeechRecognitionEventListener* listener,
+    int session_id,
+    const std::string& language,
+    const std::string& grammar,
+    net::URLRequestContextGetter* context_getter,
+    bool filter_profanities,
+    const std::string& hardware_info,
+    const std::string& origin_url) {
+  speech::SpeechRecognitionEngineConfig remote_engine_config;
+  remote_engine_config.language = language;
+  if (!grammar.empty())
+    remote_engine_config.grammars.push_back(SpeechRecognitionGrammar(grammar));
+  remote_engine_config.audio_sample_rate =
+      speech::SpeechRecognizerImpl::kAudioSampleRate;
+  remote_engine_config.audio_num_bits_per_sample =
+      speech::SpeechRecognizerImpl::kNumBitsPerAudioSample;
+  remote_engine_config.filter_profanities = filter_profanities;
+  remote_engine_config.hardware_info = hardware_info;
+  remote_engine_config.origin_url = origin_url;
+
+  // SpeechRecognizerImpl takes ownership of google_remote_engine.
+  speech::GoogleOneShotRemoteEngine* google_remote_engine =
+      new speech::GoogleOneShotRemoteEngine(context_getter);
+  google_remote_engine->SetConfig(remote_engine_config);
+
+  return new speech::SpeechRecognizerImpl(listener,
+                                          session_id,
+                                          google_remote_engine);
+}
 
 namespace speech {
 

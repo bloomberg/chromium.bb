@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chrome/browser/speech/speech_recognition_tray_icon_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
@@ -22,11 +23,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/speech_recognition_manager.h"
-#include "content/public/browser/speech_recognition_session_config.h"
-#include "content/public/browser/speech_recognition_session_context.h"
+#include "content/public/browser/speech_recognizer.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
 using content::SpeechRecognitionHypothesis;
@@ -55,6 +54,12 @@ const char kOnErrorEvent[] = "experimental.speechInput.onError";
 const char kOnResultEvent[] = "experimental.speechInput.onResult";
 const char kOnSoundStartEvent[] = "experimental.speechInput.onSoundStart";
 const char kOnSoundEndEvent[] = "experimental.speechInput.onSoundEnd";
+
+// Session id provided to the speech recognizer. Since only one extension can
+// be recording on the same time a constant value is enough as id.
+// TODO(primiano) this will not be valid anymore once speech input extension
+// will use the SpeechRecognitionManager and not the SpeechRecognizer directly.
+static const int kSpeechInputSessionId = 1;
 
 // Wrap an SpeechInputExtensionManager using scoped_refptr to avoid
 // assertion failures on destruction because of not using release().
@@ -152,10 +157,7 @@ SpeechInputExtensionManager::SpeechInputExtensionManager(Profile* profile)
     : profile_(profile),
       state_(kIdle),
       registrar_(new content::NotificationRegistrar),
-      speech_interface_(NULL),
-      is_recognition_in_progress_(false),
-      speech_recognition_session_id_(
-          SpeechRecognitionManager::kSessionIDInvalid) {
+      speech_interface_(NULL) {
   registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                   content::Source<Profile>(profile_));
 }
@@ -192,17 +194,11 @@ void SpeechInputExtensionManager::ShutdownOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Profile shutting down.";
 
-  // Note: Unretained(this) is safe, also if we are freed in the meanwhile.
-  // It is used by the SR manager just for comparing the raw pointer and remove
-  // the associated sessions.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&SpeechRecognitionManager::AbortAllSessionsForListener,
-                 base::Unretained(SpeechRecognitionManager::GetInstance()),
-                 base::Unretained(this)));
-
   base::AutoLock auto_lock(state_lock_);
   DCHECK(state_ != kShutdown);
   if (state_ != kIdle) {
+    DCHECK(notification_.get());
+    notification_->Hide();
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         base::Bind(&SpeechInputExtensionManager::ForceStopOnIOThread, this));
   }
@@ -249,7 +245,7 @@ void SpeechInputExtensionManager::OnRecognitionResult(
     int session_id,
     const content::SpeechRecognitionResult& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(session_id, speech_recognition_session_id_);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 
   // Stopping will start the disassociation with the extension.
   // Make a copy to report the results to the proper one.
@@ -292,13 +288,13 @@ void SpeechInputExtensionManager::SetRecognitionResultOnUIThread(
 }
 
 void SpeechInputExtensionManager::OnRecognitionStart(int session_id) {
-  DCHECK_EQ(session_id, speech_recognition_session_id_);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 }
 
 void SpeechInputExtensionManager::OnAudioStart(int session_id) {
   VLOG(1) << "OnAudioStart";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(session_id, speech_recognition_session_id_);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread,
@@ -306,16 +302,11 @@ void SpeechInputExtensionManager::OnAudioStart(int session_id) {
 }
 
 void SpeechInputExtensionManager::OnAudioEnd(int session_id) {
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 }
 
 void SpeechInputExtensionManager::OnRecognitionEnd(int session_id) {
-  // In the very exceptional case in which we requested a new recognition before
-  // the previous one ended, don't clobber the speech_recognition_session_id_.
-  if (speech_recognition_session_id_ == session_id) {
-    is_recognition_in_progress_ = false;
-    speech_recognition_session_id_ =
-        SpeechRecognitionManager::kSessionIDInvalid;
-  }
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 }
 
 void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
@@ -329,9 +320,21 @@ void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
   VLOG(1) << "State changed to recording";
   state_ = kRecording;
 
-  DCHECK(profile_);
-  profile_->GetPrefs()->SetBoolean(
-      prefs::kSpeechInputTrayNotificationShown, true);
+  const extensions::Extension* extension = profile_->GetExtensionService()->
+      GetExtensionById(extension_id_in_use_, true);
+  DCHECK(extension);
+
+  bool show_notification = !profile_->GetPrefs()->GetBoolean(
+      prefs::kSpeechInputTrayNotificationShown);
+
+  if (!notification_.get())
+    notification_ = new SpeechRecognitionTrayIconController();
+  notification_->Show(UTF8ToUTF16(extension->name()), show_notification);
+
+  if (show_notification) {
+    profile_->GetPrefs()->SetBoolean(
+        prefs::kSpeechInputTrayNotificationShown, true);
+  }
 
   VLOG(1) << "Sending start notification";
   content::NotificationService::current()->Notify(
@@ -343,13 +346,20 @@ void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
 void SpeechInputExtensionManager::OnRecognitionError(
     int session_id, const content::SpeechRecognitionError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(session_id, speech_recognition_session_id_);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
+
+  // Simply return in case of an ERROR_ABORTED, since it is not contemplated
+  // in the speech input extensions architecture.
+  if (error.code == content::SPEECH_RECOGNITION_ERROR_ABORTED)
+      return;
+
   VLOG(1) << "OnRecognitionError: " << error.code;
 
   base::AutoLock auto_lock(state_lock_);
   if (state_ == kShutdown)
     return;
 
+  // Release the recognizer object.
   GetSpeechInputExtensionInterface()->StopRecording(true);
 
   std::string event_error_code;
@@ -357,15 +367,6 @@ void SpeechInputExtensionManager::OnRecognitionError(
 
   switch (error.code) {
     case content::SPEECH_RECOGNITION_ERROR_NONE:
-      break;
-
-    case content::SPEECH_RECOGNITION_ERROR_ABORTED:
-      // ERROR_ABORTED is received whenever AbortSession is called on the
-      // manager. However, we want propagate the error only if it is triggered
-      // by an external cause (another recognition started, aborting us), thus
-      // only if it occurs while we are capturing audio.
-      if (state_ == kRecording)
-        event_error_code = kErrorCaptureError;
       break;
 
     case content::SPEECH_RECOGNITION_ERROR_AUDIO:
@@ -410,12 +411,12 @@ void SpeechInputExtensionManager::OnRecognitionError(
 
 void SpeechInputExtensionManager::OnEnvironmentEstimationComplete(
     int session_id) {
-  DCHECK_EQ(session_id, speech_recognition_session_id_);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 }
 
 void SpeechInputExtensionManager::OnSoundStart(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(session_id, speech_recognition_session_id_);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
   VLOG(1) << "OnSoundStart";
 
   std::string json_args;
@@ -427,6 +428,7 @@ void SpeechInputExtensionManager::OnSoundStart(int session_id) {
 
 void SpeechInputExtensionManager::OnSoundEnd(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
   VLOG(1) << "OnSoundEnd";
 
   std::string json_args;
@@ -468,6 +470,11 @@ void SpeechInputExtensionManager::DispatchError(
     base::AutoLock auto_lock(state_lock_);
     if (state_ == kShutdown)
       return;
+
+    if (state_ == kRecording) {
+      DCHECK(notification_.get());
+      notification_->Hide();
+    }
 
     extension_id = extension_id_in_use_;
     ResetToIdleState();
@@ -524,37 +531,23 @@ bool SpeechInputExtensionManager::Start(
       NOTREACHED();
   }
 
-  const extensions::Extension* extension = profile_->GetExtensionService()->
-      GetExtensionById(extension_id, true);
-  DCHECK(extension);
-  const string16& extension_name = UTF8ToUTF16(extension->name());
-
   extension_id_in_use_ = extension_id;
   VLOG(1) << "State changed to starting";
   state_ = kStarting;
 
-  // Checks if the security notification balloon has been already shown (only
-  // once for a profile). It is reset on DidStartReceivingAudioOnUIThread.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-      profile_->GetRequestContext();
-  const bool show_notification = !profile_->GetPrefs()->GetBoolean(
-       prefs::kSpeechInputTrayNotificationShown);
-
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::StartOnIOThread, this,
-                 url_request_context_getter, extension_name, language, grammar,
-                 filter_profanities, show_notification));
+                 profile_->GetRequestContext(), language, grammar,
+                 filter_profanities));
   return true;
 }
 
 void SpeechInputExtensionManager::StartOnIOThread(
-    scoped_refptr<net::URLRequestContextGetter> context_getter,
-    const string16& extension_name,
+    net::URLRequestContextGetter* context_getter,
     const std::string& language,
     const std::string& grammar,
-    bool filter_profanities,
-    bool show_notification) {
+    bool filter_profanities) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   VLOG(1) << "Requesting start (IO thread)";
 
@@ -565,12 +558,6 @@ void SpeechInputExtensionManager::StartOnIOThread(
   if (state_ == kShutdown)
     return;
 
-  // TODO(primiano) These two checks below could be avoided, since they are
-  // already handled in the speech recognition classes. However, since the
-  // speech input extensions tests are bypassing the manager, we need them to
-  // pass the tests. A complete unit test which puts all the pieces together,
-  // mocking just the endpoints (the audio input controller and the URL fetcher)
-  // should be written.
   if (!GetSpeechInputExtensionInterface()->HasAudioInputDevices()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -586,13 +573,9 @@ void SpeechInputExtensionManager::StartOnIOThread(
     return;
   }
 
-  GetSpeechInputExtensionInterface()->StartRecording(this,
-                                                     context_getter,
-                                                     extension_name,
-                                                     language,
-                                                     grammar,
-                                                     filter_profanities,
-                                                     show_notification);
+  GetSpeechInputExtensionInterface()->StartRecording(
+      this, context_getter, kSpeechInputSessionId, language, grammar,
+      filter_profanities);
 }
 
 bool SpeechInputExtensionManager::HasAudioInputDevices() {
@@ -619,7 +602,6 @@ void SpeechInputExtensionManager::IsRecordingOnIOThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   bool result = GetSpeechInputExtensionInterface()->IsCapturingAudio();
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::IsRecordingOnUIThread,
@@ -636,41 +618,20 @@ void SpeechInputExtensionManager::IsRecordingOnUIThread(
 void SpeechInputExtensionManager::StartRecording(
     content::SpeechRecognitionEventListener* listener,
     net::URLRequestContextGetter* context_getter,
-    const string16& extension_name,
+    int session_id,
     const std::string& language,
     const std::string& grammar,
-    bool filter_profanities,
-    bool show_notification) {
+    bool filter_profanities) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  content::SpeechRecognitionSessionContext context;
-  context.requested_by_page_element = false;
-  context.is_first_request_for_context = show_notification;
-  context.context_name = extension_name;
-
-  content::SpeechRecognitionSessionConfig config;
-  // config.is_one_shot = true; // TODO(primiano) Uncomment when CL2.0 lands.
-  config.language = language;
-  config.grammars.push_back(content::SpeechRecognitionGrammar(grammar));
-  config.initial_context = context;
-  config.url_request_context_getter = context_getter;
-  config.filter_profanities = filter_profanities;
-  config.event_listener = listener;
-
-  DCHECK(!is_recognition_in_progress_);
-  SpeechRecognitionManager& manager = *SpeechRecognitionManager::GetInstance();
-  speech_recognition_session_id_ =
-      manager.CreateSession(config);
-  DCHECK_NE(speech_recognition_session_id_,
-            SpeechRecognitionManager::kSessionIDInvalid);
-  is_recognition_in_progress_ = true;
-  manager.StartSession(speech_recognition_session_id_);
+  DCHECK(!recognizer_);
+  recognizer_ = content::SpeechRecognizer::Create(
+      listener, session_id, language, grammar, context_getter,
+      filter_profanities, "", "");
+  recognizer_->StartRecognition();
 }
 
 bool SpeechInputExtensionManager::HasValidRecognizer() {
-  if (!is_recognition_in_progress_)
-    return false;
-  return SpeechRecognitionManager::GetInstance()->IsCapturingAudio();
+  return !!recognizer_;
 }
 
 bool SpeechInputExtensionManager::Stop(const std::string& extension_id,
@@ -731,13 +692,13 @@ void SpeechInputExtensionManager::ForceStopOnIOThread() {
 }
 
 void SpeechInputExtensionManager::StopRecording(bool recognition_failed) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!is_recognition_in_progress_)
-    return;
-  DCHECK_NE(speech_recognition_session_id_,
-            SpeechRecognitionManager::kSessionIDInvalid);
-  SpeechRecognitionManager::GetInstance()->AbortSession(
-      speech_recognition_session_id_);
+  if (recognizer_) {
+    // Recognition is already cancelled in case of failure.
+    // Double-cancelling leads to assertion failures.
+    if (!recognition_failed)
+      recognizer_->AbortRecognition();
+    recognizer_.release();
+  }
 }
 
 void SpeechInputExtensionManager::StopSucceededOnUIThread() {
@@ -751,6 +712,9 @@ void SpeechInputExtensionManager::StopSucceededOnUIThread() {
   std::string extension_id = extension_id_in_use_;
   ResetToIdleState();
 
+  DCHECK(notification_.get());
+  notification_->Hide();
+
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_SPEECH_INPUT_RECORDING_STOPPED,
       // Guarded by the state_ == kShutdown check.
@@ -759,5 +723,18 @@ void SpeechInputExtensionManager::StopSucceededOnUIThread() {
 }
 
 void SpeechInputExtensionManager::OnAudioLevelsChange(int session_id,
-                                                      float volume,
-                                                      float noise_volume) {}
+                                                       float volume,
+                                                       float noise_volume) {
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&SpeechInputExtensionManager::SetInputVolumeOnUIThread,
+      this, volume));
+}
+
+void SpeechInputExtensionManager::SetInputVolumeOnUIThread(
+    float volume) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(notification_.get());
+  notification_->SetVUMeterVolume(volume);
+}

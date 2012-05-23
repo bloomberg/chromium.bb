@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_SESSION_CONTEXT_H_
 #pragma once
 
-#include "base/string16.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 
@@ -22,32 +21,18 @@ namespace content {
 // SpeechRecognitionManager::GetSessionContext and
 // SpeechRecognitionManager::LookupSessionByContext methods).
 struct CONTENT_EXPORT SpeechRecognitionSessionContext {
-  SpeechRecognitionSessionContext();
-  ~SpeechRecognitionSessionContext();
+  SpeechRecognitionSessionContext()
+      : render_process_id(0),
+        render_view_id(0),
+        render_request_id(0),
+        js_handle_id(0) {}
+  ~SpeechRecognitionSessionContext() {}
 
   int render_process_id;
   int render_view_id;
   int render_request_id;
   int js_handle_id;
-
-  // Determines whether recognition was requested by a page element (in which
-  // case its coordinates are passed in |element_rect|).
-  bool requested_by_page_element;
-
-  // The coordinates of the page element for placing the bubble (valid only when
-  // |requested_by_page_element| = true).
   gfx::Rect element_rect;
-
-  // Determines whether this is the first time that this context (identified by
-  // |context_name|) is requesting a recognition.
-  // TODO(primiano) This is really temporary, remove after CL1.12 which will
-  // refactor SpeechRecognitionPreferences and move this check entirely whithin
-  // chrome, without involving content.
-  bool is_first_request_for_context;
-
-  // A texual description of the context (website, extension name) that is
-  // requesting recognition, for prompting security notifications to the user.
-  string16 context_name;
 };
 
 }  // namespace content

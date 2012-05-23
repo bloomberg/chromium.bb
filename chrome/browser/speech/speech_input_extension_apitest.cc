@@ -23,10 +23,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace {
-const int kSessionIDForTests = 0;
-}
-
 // Mock class used to test the extension speech input API.
 class SpeechInputExtensionApiTest : public ExtensionApiTest,
                                     public SpeechInputExtensionInterface {
@@ -81,11 +77,10 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   virtual void StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      const string16& extension_name,
+      int session_id,
       const std::string& language,
       const std::string& grammar,
-      bool filter_profanities,
-      bool show_notification) OVERRIDE;
+      bool filter_profanities) OVERRIDE;
 
   virtual void StopRecording(bool recognition_failed) OVERRIDE;
 
@@ -112,7 +107,7 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   };
 
  private:
-  void ProvideResults();
+  void ProvideResults(int session_id);
 
   bool recording_devices_available_;
   bool recognizer_is_valid_;
@@ -136,11 +131,10 @@ SpeechInputExtensionApiTest::~SpeechInputExtensionApiTest() {
 void SpeechInputExtensionApiTest::StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      const string16& extension_name,
+      int session_id,
       const std::string& language,
       const std::string& grammar,
-      bool filter_profanities,
-      bool show_notification) {
+      bool filter_profanities) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   recognizer_is_valid_ = true;
 
@@ -149,7 +143,7 @@ void SpeechInputExtensionApiTest::StartRecording(
       FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::OnAudioStart,
                  GetManager(),
-                 kSessionIDForTests),
+                 session_id),
       base::TimeDelta());
 
   // Notify sound start in the input device.
@@ -157,14 +151,16 @@ void SpeechInputExtensionApiTest::StartRecording(
       FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::OnSoundStart,
                  GetManager(),
-                 kSessionIDForTests),
+                 session_id),
       base::TimeDelta());
 
   if (result_delay_ms_ != kDontDispatchCall) {
     // Dispatch the recognition results.
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&SpeechInputExtensionApiTest::ProvideResults, this),
+        base::Bind(&SpeechInputExtensionApiTest::ProvideResults,
+                   this,
+                   session_id),
         base::TimeDelta::FromMilliseconds(result_delay_ms_));
   }
 }
@@ -174,19 +170,18 @@ void SpeechInputExtensionApiTest::StopRecording(bool recognition_failed) {
   recognizer_is_valid_ = false;
 }
 
-void SpeechInputExtensionApiTest::ProvideResults() {
+void SpeechInputExtensionApiTest::ProvideResults(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (next_error_ != content::SPEECH_RECOGNITION_ERROR_NONE) {
     GetManager()->OnRecognitionError(
-        kSessionIDForTests, content::SpeechRecognitionError(next_error_));
+        session_id, content::SpeechRecognitionError(next_error_));
     return;
   }
 
-  GetManager()->OnSoundEnd(kSessionIDForTests);
-  GetManager()->OnAudioEnd(kSessionIDForTests);
-  GetManager()->OnRecognitionResult(kSessionIDForTests, next_result_);
-  GetManager()->OnRecognitionEnd(kSessionIDForTests);
+  GetManager()->OnSoundEnd(session_id);
+  GetManager()->OnAudioEnd(session_id);
+  GetManager()->OnRecognitionResult(session_id, next_result_);
 }
 
 // Every test should leave the manager in the idle state when finished.
