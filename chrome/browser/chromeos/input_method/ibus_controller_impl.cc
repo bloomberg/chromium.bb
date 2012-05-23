@@ -485,8 +485,14 @@ IBusControllerImpl::~IBusControllerImpl() {
         this);
 
     // Disconnect signals for the panel service as well.
-    IBusPanelService* ibus_panel_service = IBUS_PANEL_SERVICE(
-        g_object_get_data(G_OBJECT(ibus_), kPanelObjectKey));
+    // When Chrome is shutting down, g_object_get_data fails and returns NULL.
+    // TODO(nona): Investigate the reason of failure(crosbug.com/129142).
+    void* attached_data = g_object_get_data(G_OBJECT(ibus_), kPanelObjectKey);
+    if (!attached_data)
+      return;
+    if (!G_TYPE_CHECK_INSTANCE_TYPE(attached_data, IBUS_TYPE_PANEL_SERVICE))
+      return;
+    IBusPanelService* ibus_panel_service = IBUS_PANEL_SERVICE(attached_data);
     if (ibus_panel_service) {
       g_signal_handlers_disconnect_by_func(
           ibus_panel_service,
