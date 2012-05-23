@@ -68,7 +68,6 @@ void BlobStorageController::AppendBlobDataItem(
   // All the Blob items in the passing blob data are resolved and expanded into
   // a set of Data and File items.
 
-  DCHECK(item.length > 0);
   switch (item.type) {
     case BlobData::TYPE_DATA:
       // WebBlobData does not allow partial data.
