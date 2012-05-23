@@ -257,15 +257,16 @@ mode-buildbot-x86() {
 # mode-buildbot-arm-hw
 mode-buildbot-arm() {
   FAIL_FAST=false
-  local mode=$1
-  local qemuflags="${mode} -j8 -k do_not_run_tests=1"
+  local scons_mode=$1
+  local gyp_mode=$2
+  local qemuflags="${scons_mode} -j8 -k do_not_run_tests=1"
 
   clobber
 
-  gyp-arm-build Release
+  gyp-arm-build ${gyp_mode}
 
   # Sanity check
-  scons-stage "arm" "${mode}" "run_hello_world_test"
+  scons-stage "arm" "${scons_mode}" "run_hello_world_test"
 
   # Don't run the rest of the tests on qemu, only build them.
   # QEMU is too flaky for the main waterfall
@@ -291,7 +292,7 @@ mode-buildbot-arm() {
     "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0" \
     "toolchain_tests"
 
-  browser-tests "arm" "${mode},nacl_irt_test"
+  browser-tests "arm" "${scons_mode},nacl_irt_test"
   # Disabled for now as it broke when we switched to gold for final
   # linking. We may remove this permanently as it is not doing all that
   # much anyway.
@@ -334,17 +335,17 @@ mode-trybot-qemu() {
 }
 
 mode-buildbot-arm-dbg() {
-  mode-buildbot-arm "--mode=dbg-host,nacl"
+  mode-buildbot-arm "--mode=dbg-host,nacl" "Debug"
   archive-for-hw-bots $(NAME_ARM_UPLOAD) regular
 }
 
 mode-buildbot-arm-opt() {
-  mode-buildbot-arm "--mode=opt-host,nacl"
+  mode-buildbot-arm "--mode=opt-host,nacl" "Release"
   archive-for-hw-bots $(NAME_ARM_UPLOAD) regular
 }
 
 mode-buildbot-arm-try() {
-  mode-buildbot-arm "--mode=opt-host,nacl"
+  mode-buildbot-arm "--mode=opt-host,nacl" "Release"
   archive-for-hw-bots $(NAME_ARM_TRY_UPLOAD) try
 }
 
