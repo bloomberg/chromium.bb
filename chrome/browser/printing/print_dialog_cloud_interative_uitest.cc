@@ -16,8 +16,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -208,9 +208,8 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&internal_cloud_print_helpers::CreateDialogFullImpl,
-                   browser()->profile(), browser()->window()->GetNativeHandle(),
                    path_to_pdf, string16(), string16(),
-                   std::string("application/pdf"), false));
+                   std::string("application/pdf"), true, false));
   }
 
   bool handler_added_;
@@ -240,6 +239,9 @@ net::URLRequestJob* PrintDialogCloudTest::Factory(net::URLRequest* request,
 #define MAYBE_HandlersRegistered HandlersRegistered
 #endif
 IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, MAYBE_HandlersRegistered) {
+  BrowserList::SetLastActive(browser());
+  ASSERT_TRUE(BrowserList::GetLastActive());
+
   AddTestHandlers();
 
   TestController::GetInstance()->set_use_delegate(true);

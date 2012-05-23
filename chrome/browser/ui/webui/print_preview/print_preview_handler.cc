@@ -47,7 +47,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui.h"
 #include "printing/backend/print_backend.h"
@@ -548,11 +547,7 @@ void PrintPreviewHandler::OnSigninComplete(
 }
 
 void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
-  gfx::NativeWindow modal_parent =
-      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
   print_dialog_cloud::CreateCloudPrintSigninDialog(
-      web_ui()->GetWebContents()->GetBrowserContext(),
-      modal_parent,
       base::Bind(&PrintPreviewHandler::OnSigninComplete, AsWeakPtr()));
 }
 
@@ -571,16 +566,11 @@ void PrintPreviewHandler::HandlePrintWithCloudPrint() {
     return;
   }
   DCHECK_GT(data->size(), 0U);
-
-  gfx::NativeWindow modal_parent =
-      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
-  print_dialog_cloud::CreatePrintDialogForBytes(
-      web_ui()->GetWebContents()->GetBrowserContext(),
-      modal_parent,
-      data,
+  print_dialog_cloud::CreatePrintDialogForBytes(data,
       string16(print_preview_ui->initiator_tab_title()),
       string16(),
-      std::string("application/pdf"));
+      std::string("application/pdf"),
+      true);
 
   // Once the cloud print dialog comes up we're no longer in a background
   // printing situation.  Close the print preview.
