@@ -17,8 +17,11 @@ bool IsOffStoreInstallEnabled() {
 #if defined(USE_AURA)
   return true;
 #else
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableOffStoreExtensionInstall);
+  // Currently, we default to enabling off-store install.
+  std::string switch_value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnableOffStoreExtensionInstall);
+  return switch_value != "0";
 #endif
 }
 
