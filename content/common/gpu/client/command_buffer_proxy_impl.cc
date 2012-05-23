@@ -29,7 +29,8 @@ using gpu::Buffer;
 CommandBufferProxyImpl::CommandBufferProxyImpl(
     GpuChannelHost* channel,
     int route_id)
-    : channel_(channel),
+    : shared_state_(NULL),
+      channel_(channel),
       route_id_(route_id),
       flush_count_(0),
       last_put_offset_(-1) {
