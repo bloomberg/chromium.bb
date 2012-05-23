@@ -107,23 +107,23 @@ def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
     CopySectionFilesToStagingDir(config, 'METRO', staging_dir, build_dir)
 
 
-def CopySectionFilesToStagingDir(config, section, staging_dir, build_dir):
-  """Copies installer archive files specified in section to staging dir.
-  This method copies reads section from config file and copies all the files
-  specified to staging dir.
+def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir):
+  """Copies installer archive files specified in section from src_dir to
+  staging_dir. This method reads section from config and copies all the
+  files specified from src_dir to staging dir.
   """
   for option in config.options(section):
     if option.endswith('dir'):
       continue
 
-    dst = os.path.join(staging_dir, config.get(section, option))
-    files = glob.glob(os.path.join(build_dir, option))
-    if len(files) > 0 and not os.path.exists(dst):
-      os.makedirs(dst)
-    for file in files:
-      dst_file = os.path.join(dst, os.path.basename(file))
-      if not os.path.exists(dst_file):
-        shutil.copy(file, dst)
+    dst_dir = os.path.join(staging_dir, config.get(section, option))
+    src_paths = glob.glob(os.path.join(src_dir, option))
+    if src_paths and not os.path.exists(dst_dir):
+      os.makedirs(dst_dir)
+    for src_path in src_paths:
+      dst_path = os.path.join(dst_dir, os.path.basename(src_path))
+      if not os.path.exists(dst_path):
+        shutil.copy(src_path, dst_dir)
 
 def GenerateDiffPatch(options, orig_file, new_file, patch_file):
   if (options.diff_algorithm == "COURGETTE"):
@@ -139,13 +139,13 @@ def GetLZMAExec(build_dir):
                            "lzma_sdk", "Executable", "7za.exe")
   return lzma_exec
 
-def GetPrevVersion(build_dir, temp_dir, last_chrome_installer):
+def GetPrevVersion(build_dir, temp_dir, last_chrome_installer, output_name):
   if not last_chrome_installer:
     return ''
 
-  lzma_exec = GetLZMAExec(options.build_dir)
-  prev_archive_file = os.path.join(options.last_chrome_installer,
-                                   options.output_name + ARCHIVE_SUFFIX)
+  lzma_exec = GetLZMAExec(build_dir)
+  prev_archive_file = os.path.join(last_chrome_installer,
+                                   output_name + ARCHIVE_SUFFIX)
   cmd = [lzma_exec,
          'x',
          '-o"%s"' % temp_dir,
@@ -170,7 +170,7 @@ def MakeStagingDirectories(staging_dir):
   os.makedirs(temp_file_path)
   return (file_path, temp_file_path)
 
-def Readconfig(build_dir, input_file, current_version):
+def Readconfig(input_file, current_version):
   """Reads config information from input file after setting default value of
   global variabes.
   """
@@ -235,7 +235,7 @@ def CreateArchiveFile(options, staging_dir, current_version, prev_version):
   return compressed_archive_file
 
 
-def PrepareSetupExec(options, staging_dir, current_version, prev_version):
+def PrepareSetupExec(options, current_version, prev_version):
   """Prepares setup.exe for bundling in mini_installer based on options."""
   if options.setup_exe_format == "FULL":
     setup_file = SETUP_EXEC
@@ -479,12 +479,13 @@ def main(options):
   """
   current_version = BuildVersion(options.build_dir)
 
-  config = Readconfig(options.build_dir, options.input_file, current_version)
+  config = Readconfig(options.input_file, current_version)
 
   (staging_dir, temp_dir) = MakeStagingDirectories(options.staging_dir)
 
   prev_version = GetPrevVersion(options.build_dir, temp_dir,
-                                options.last_chrome_installer)
+                                options.last_chrome_installer,
+                                options.output_name)
 
   # Preferentially copy the files we can find from the output_dir, as
   # this is where we'll find the Syzygy-optimized executables when
@@ -514,7 +515,7 @@ def main(options):
   archive_file = CreateArchiveFile(options, staging_dir,
                                    current_build_number, prev_build_number)
 
-  setup_file = PrepareSetupExec(options, staging_dir,
+  setup_file = PrepareSetupExec(options,
                                 current_build_number, prev_build_number)
 
   CreateResourceInputFile(options.output_dir, options.setup_exe_format,
@@ -528,14 +529,14 @@ def _ParseOptions():
       help='Build directory. The paths in input_file are relative to this.')
   parser.add_option('--staging_dir',
       help='Staging directory where intermediate files and directories '
-           'will be created'),
+           'will be created')
   parser.add_option('-o', '--output_dir',
       help='The output directory where the archives will be written. '
             'Defaults to the build_dir.')
   parser.add_option('--resource_file_path',
       help='The path where the resource file will be output. '
            'Defaults to %s in the build directory.' %
-               MINI_INSTALLER_INPUT_FILE),
+               MINI_INSTALLER_INPUT_FILE)
   parser.add_option('-d', '--distribution',
       help='Name of Chromium Distribution. Optional.')
   parser.add_option('-s', '--skip_rebuild_archive',
@@ -560,7 +561,7 @@ def _ParseOptions():
   parser.add_option('--component_build', default='0',
       help='Whether this archive is packaging a component build.')
 
-  options, args = parser.parse_args()
+  options, _ = parser.parse_args()
   if not options.build_dir:
     parser.error('You must provide a build dir.')
 
