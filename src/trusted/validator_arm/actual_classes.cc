@@ -18,6 +18,16 @@ namespace nacl_arm_dec {
 //      N E W    C L A S S    D E C O D E R S
 // **************************************************************
 
+SafetyLevel DontCareInst::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList DontCareInst::defs(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return kCondsDontCare;
+}
+
 SafetyLevel MaybeSetsConds::safety(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
@@ -34,11 +44,23 @@ SafetyLevel NoPcAssignClassDecoder::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
+SafetyLevel NoPcAssignCondsDontCare::safety(const Instruction i) const {
+  if (defs(i).Contains(kRegisterPc)) {
+    return FORBIDDEN_OPERANDS;
+  }
+  return MAY_BE_SAFE;
+}
+
 RegisterList Defs12To15::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
-SafetyLevel Defs12To15RdRnRsRmNotPc::safety(const Instruction i) const {
+RegisterList Defs12To15CondsDontCare::defs(const Instruction i) const {
+  return RegisterList(kCondsDontCare).Add(d.reg(i));
+}
+
+SafetyLevel Defs12To15RdRnRsRmNotPc::safety(
+    const Instruction i) const {
   if (RegisterList(d.reg(i)).Add(n.reg(i)).Add(s.reg(i)).
       Add(m.reg(i)).Contains(kRegisterPc))
     return UNPREDICTABLE;

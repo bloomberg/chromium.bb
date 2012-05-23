@@ -33,6 +33,20 @@ namespace nacl_arm_dec {
 //      N E W    C L A S S    D E C O D E R S
 // **************************************************************
 
+// Defines a class decoder that we don't care about, and doesn't
+// change any general purpose registers.
+class DontCareInst : public ClassDecoder {
+ public:
+  inline DontCareInst() : ClassDecoder() {}
+  virtual ~DontCareInst() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(DontCareInst);
+};
+
 // Defines a class decoder that only worries about whether condition
 // flags (S - bit(20)) is set.
 class MaybeSetsConds : public ClassDecoder {
@@ -62,6 +76,19 @@ class NoPcAssignClassDecoder : public MaybeSetsConds {
   NACL_DISALLOW_COPY_AND_ASSIGN(NoPcAssignClassDecoder);
 };
 
+// Defines a default (assignment) class decoder where we don't
+// track if condition flags are updated.
+class NoPcAssignCondsDontCare : public DontCareInst {
+ public:
+  inline NoPcAssignCondsDontCare() : DontCareInst() {}
+  virtual ~NoPcAssignCondsDontCare() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(NoPcAssignCondsDontCare);
+};
+
 // Computes a value and stores in in Rd (bits 12-15). Doesn't
 // allow Rd=PC.
 class Defs12To15 : public NoPcAssignClassDecoder {
@@ -78,11 +105,29 @@ class Defs12To15 : public NoPcAssignClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15);
 };
 
+// Computes a value and stores in in Rd (bits 12-15). Doesn't
+// allow Rd=PC, and doesn't care about tracking condition flags.
+class Defs12To15CondsDontCare : public NoPcAssignCondsDontCare {
+ public:
+  inline Defs12To15CondsDontCare() {}
+  virtual ~Defs12To15CondsDontCare() {}
+
+  // We use the following Rd to capture the register being set.
+  static const RegDBits12To15Interface d;
+
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15CondsDontCare);
+};
+
 // Defs12To15 where registers Rn, Rd, Rs, and Rm are not Pc.
+//
 // Note: Some instructions may use other names for the registers,
 // but they have the same placement within the instruction, and
 // hence do not need a separate class decoder.
-class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
+class Defs12To15RdRnRsRmNotPc
+    : public Defs12To15 {
  public:
   // We use the following Rm, Rs, and Rn to capture the
   // registers that need checking.

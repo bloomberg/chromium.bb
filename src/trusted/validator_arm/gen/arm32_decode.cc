@@ -22,15 +22,16 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary4RegisterDualOp_instance_()
   , Binary4RegisterDualResult_instance_()
   , Binary4RegisterShiftedOp_instance_()
-  , BinaryRegisterImmediateTest_instance_()
   , Branch_instance_()
   , Breakpoint_instance_()
   , BxBlx_instance_()
   , CoprocessorOp_instance_()
   , DataProc_instance_()
   , Defs12To15_instance_()
+  , Defs12To15CondsDontCare_instance_()
   , Defs12To15RdRnRsRmNotPc_instance_()
   , Deprecated_instance_()
+  , DontCareInst_instance_()
   , EffectiveNoOp_instance_()
   , Forbidden_instance_()
   , LdrRegister_instance_()
@@ -44,7 +45,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LoadRegister_instance_()
   , LongMultiply_instance_()
   , MaskAddress_instance_()
-  , MaybeSetsConds_instance_()
   , MoveDoubleFromCoprocessor_instance_()
   , MoveFromCoprocessor_instance_()
   , MoveToStatusRegister_instance_()
@@ -61,8 +61,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRange_instance_()
   , Unary1RegisterImmediateOp_instance_()
-  , Unary2RegisterImmedShiftedOp_instance_()
-  , Unary2RegisterOp_instance_()
   , Unary3RegisterShiftedOp_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
@@ -171,11 +169,11 @@ const ClassDecoder& Arm32DecoderState::decode_dp_immed(
 
   if ((insn.Bits() & 0x01F00000) == 0x01500000 /* op(24:20) == 10101 */ &&
       true)
-    return BinaryRegisterImmediateTest_instance_;
+    return DontCareInst_instance_;
 
   if ((insn.Bits() & 0x01B00000) == 0x01300000 /* op(24:20) == 10x11 */ &&
       true)
-    return BinaryRegisterImmediateTest_instance_;
+    return DontCareInst_instance_;
 
   if ((insn.Bits() & 0x01E00000) == 0x00400000 /* op(24:20) == 0010x */ &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
@@ -307,54 +305,25 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
-      (insn.Bits() & 0x00000F80) != 0x00000000 /* op2(11:7) == ~00000 */ &&
-      (insn.Bits() & 0x00000060) == 0x00000000 /* op3(6:5) == 00 */)
-    return Unary2RegisterImmedShiftedOp_instance_;
+  if ((insn.Bits() & 0x01E00000) == 0x00200000 /* op1(24:20) == 0001x */)
+    return Defs12To15CondsDontCare_instance_;
 
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
-      (insn.Bits() & 0x00000F80) != 0x00000000 /* op2(11:7) == ~00000 */ &&
-      (insn.Bits() & 0x00000060) == 0x00000060 /* op3(6:5) == 11 */)
-    return Unary2RegisterImmedShiftedOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
-      (insn.Bits() & 0x00000F80) == 0x00000000 /* op2(11:7) == 00000 */ &&
-      (insn.Bits() & 0x00000060) == 0x00000000 /* op3(6:5) == 00 */)
-    return Unary2RegisterOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
-      (insn.Bits() & 0x00000F80) == 0x00000000 /* op2(11:7) == 00000 */ &&
-      (insn.Bits() & 0x00000060) == 0x00000060 /* op3(6:5) == 11 */)
-    return Unary2RegisterOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
-      true &&
-      (insn.Bits() & 0x00000060) == 0x00000020 /* op3(6:5) == 01 */)
-    return Unary2RegisterImmedShiftedOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
-      true &&
-      (insn.Bits() & 0x00000060) == 0x00000040 /* op3(6:5) == 10 */)
-    return Unary2RegisterImmedShiftedOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20) == 1111x */ &&
-      true &&
-      true)
-    return Unary2RegisterImmedShiftedOp_instance_;
-
-  if ((insn.Bits() & 0x01900000) == 0x01100000 /* op1(24:20) == 10xx1 */ &&
-      true &&
-      true)
-    return MaybeSetsConds_instance_;
-
-  if ((insn.Bits() & 0x01A00000) == 0x01800000 /* op1(24:20) == 11x0x */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20) == 1111x */)
     return Defs12To15_instance_;
 
-  if ((insn.Bits() & 0x01000000) == 0x00000000 /* op1(24:20) == 0xxxx */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00E00000) == 0x00C00000 /* op1(24:20) == x110x */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01600000) == 0x00600000 /* op1(24:20) == 0x11x */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01900000) == 0x01100000 /* op1(24:20) == 10xx1 */)
+    return DontCareInst_instance_;
+
+  if ((insn.Bits() & 0x01A00000) == 0x00000000 /* op1(24:20) == 00x0x */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x00C00000) == 0x00800000 /* op1(24:20) == x10xx */)
     return Defs12To15_instance_;
 
   // Catch any attempt to fall though ...

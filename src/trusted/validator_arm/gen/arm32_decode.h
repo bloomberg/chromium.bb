@@ -141,15 +141,16 @@ class Arm32DecoderState : DecoderState {
   const Binary4RegisterDualOp Binary4RegisterDualOp_instance_;
   const Binary4RegisterDualResult Binary4RegisterDualResult_instance_;
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
-  const BinaryRegisterImmediateTest BinaryRegisterImmediateTest_instance_;
   const Branch Branch_instance_;
   const Breakpoint Breakpoint_instance_;
   const BxBlx BxBlx_instance_;
   const CoprocessorOp CoprocessorOp_instance_;
   const DataProc DataProc_instance_;
   const Defs12To15 Defs12To15_instance_;
+  const Defs12To15CondsDontCare Defs12To15CondsDontCare_instance_;
   const Defs12To15RdRnRsRmNotPc Defs12To15RdRnRsRmNotPc_instance_;
   const Deprecated Deprecated_instance_;
+  const DontCareInst DontCareInst_instance_;
   const EffectiveNoOp EffectiveNoOp_instance_;
   const Forbidden Forbidden_instance_;
   const LdrRegister LdrRegister_instance_;
@@ -163,7 +164,6 @@ class Arm32DecoderState : DecoderState {
   const LoadRegister LoadRegister_instance_;
   const LongMultiply LongMultiply_instance_;
   const MaskAddress MaskAddress_instance_;
-  const MaybeSetsConds MaybeSetsConds_instance_;
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
   const MoveFromCoprocessor MoveFromCoprocessor_instance_;
   const MoveToStatusRegister MoveToStatusRegister_instance_;
@@ -180,8 +180,6 @@ class Arm32DecoderState : DecoderState {
   const TestIfAddressMasked TestIfAddressMasked_instance_;
   const Unary1RegisterBitRange Unary1RegisterBitRange_instance_;
   const Unary1RegisterImmediateOp Unary1RegisterImmediateOp_instance_;
-  const Unary2RegisterImmedShiftedOp Unary2RegisterImmedShiftedOp_instance_;
-  const Unary2RegisterOp Unary2RegisterOp_instance_;
   const Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;

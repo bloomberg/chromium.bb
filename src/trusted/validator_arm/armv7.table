@@ -128,6 +128,9 @@ class Store3RegisterOp : LoadStore3RegisterOp
 | "      10x10      -        ->msr_and_hints
 +--
 
+# Note: We track conditions flags on many of the class decoders
+# in this section, since they can be used to change the value of SP,
+# and we want to all masking to follow in the next instruction.
 +-- dp_reg (See Section A5.2.1)
 | op1(24:20) op2(11:7) op3(6:5)
 | 0000x      -         -        = Binary3RegisterImmedShiftedOp
@@ -136,7 +139,7 @@ class Store3RegisterOp : LoadStore3RegisterOp
                                      cccc0000000unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 0001x      -         -        = Binary3RegisterImmedShiftedOp
-                                     => Defs12To15
+                                     => Defs12To15CondsDontCare
                                      Eor_Rule_45_A1_P96
                                      cccc0000001unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
@@ -175,19 +178,19 @@ class Store3RegisterOp : LoadStore3RegisterOp
                                      cccc0000111unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 10001      -         -        = Binary2RegisterImmedShiftedTest
-                                     => MaybeSetsConds
+                                     => DontCareInst
                                      Tst_Rule_231_A1_P456
                                      cccc00010001nnnn0000iiiiitt0mmmm 
 | 10011      -         -        = Binary2RegisterImmedShiftedTest
-                                     => MaybeSetsConds
+                                     => DontCareInst
                                      Teq_Rule_228_A1_P450
                                      cccc00010011nnnn0000iiiiitt0mmmm
 | 10101      -         -        = Binary2RegisterImmedShiftedTest
-                                     => MaybeSetsConds
+                                     => DontCareInst
                                      Cmp_Rule_36_A1_P82
                                      cccc00010101nnnn0000iiiiitt0mmmm
 | 10111      -         -        = Binary2RegisterImmedShiftedTest
-                                     => MaybeSetsConds
+                                     => DontCareInst
                                      Cmn_Rule_33_A1_P76
                                      cccc00010111nnnn0000iiiiitt0mmmm
 | 1100x      -         -        = Binary3RegisterImmedShiftedOp
@@ -196,23 +199,29 @@ class Store3RegisterOp : LoadStore3RegisterOp
                                      cccc0001100unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 1101x      00000     00       = Unary2RegisterOp
+                                     => Defs12To15
                                      Mov_Rule_97_A1_P196
                                      cccc0001101udddd000000000000mmmm
                                      NotRdIsPcAndS
 | "          ~00000    00       = Unary2RegisterImmedShiftedOp
+                                    => Defs12To15
                                     Lsl_Rule_88_A1_P178
                                     cccc0001101u0000ddddiiiii000mmmm
                                     Imm5NotZero
 | "          -         01       = Unary2RegisterImmedShiftedOp
+                                    => Defs12To15
                                     Lsr_Rule_90_A1_P182
                                     cccc0001101u0000ddddiiiii010mmmm
 | "          -         10       = Unary2RegisterImmedShiftedOp
+                                    => Defs12To15
                                     Asr_Rule_14_A1_P40
                                     cccc0001101u0000ddddiiiii100mmmm
 | "          00000     11       = Unary2RegisterOp
+                                    => Defs12To15
                                     Rrx_Rule_141_A1_P282
                                     cccc0001101udddd000000000110mmmm
 | "          ~00000    11       = Unary2RegisterImmedShiftedOp
+                                    => Defs12To15
                                      Ror_Rule_139_A1_P278
                                      cccc0001101u0000ddddiiiii110mmmm
                                      Imm5NotZero
@@ -222,6 +231,7 @@ class Store3RegisterOp : LoadStore3RegisterOp
                                      cccc0001110unnnnddddiiiiitt0mmmm
                                      NotRdIsPcAndS
 | 1111x      -         -        = Unary2RegisterImmedShiftedOp
+                                     => Defs12To15
                                      Mvn_Rule_107_A1_P216
                                      cccc0001111u0000ddddiiiiitt0mmmm
                                      NotRdIsPcAndS
@@ -235,11 +245,13 @@ class Store3RegisterOp : LoadStore3RegisterOp
                            cccc0000001unnnnddddssss0tt1mmmm RegsNotPc
 | 0010x      -        = Binary4RegisterShiftedOp Sub_Rule_214_A1_P424
                            cccc0000010unnnnddddssss0tt1mmmm RegsNotPc
-| 0011x      -        = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc
+| 0011x      -        = Binary4RegisterShiftedOp
+                            => Defs12To15RdRnRsRmNotPc
                            Rsb_Rule_144_A1_P288
                            cccc0000011snnnnddddssss0tt1mmmm
                            RegsNotPc
-| 0100x      -        = Binary4RegisterShiftedOp => Defs12To15RdRnRsRmNotPc
+| 0100x      -        = Binary4RegisterShiftedOp
+                           => Defs12To15RdRnRsRmNotPc
                            Add_Rule_7_A1_P26 
                            cccc0000100snnnnddddssss0tt1mmmm
                            RegsNotPc
@@ -340,11 +352,14 @@ class Store3RegisterOp : LoadStore3RegisterOp
                            => TestIfAddressMasked
                            Tst_Rule_230_A1_P454
                            cccc00110001nnnn0000iiiiiiiiiiii
-| 10011      -        = BinaryRegisterImmediateTest Teq_Rule_227_A1_P448
+| 10011      -        = BinaryRegisterImmediateTest => DontCareInst
+                           Teq_Rule_227_A1_P448
                            cccc00110011nnnn0000iiiiiiiiiiii
-| 10101      -        = BinaryRegisterImmediateTest Cmp_Rule_35_A1_P80
+| 10101      -        = BinaryRegisterImmediateTest => DontCareInst
+                           Cmp_Rule_35_A1_P80
                            cccc00110101nnnn0000iiiiiiiiiiii
-| 10111      -        = BinaryRegisterImmediateTest Cmn_Rule_32_A1_P74
+| 10111      -        = BinaryRegisterImmediateTest => DontCareInst
+                           Cmn_Rule_32_A1_P74
                            cccc00110111nnnn0000iiiiiiiiiiii
 | 1100x      -        = Binary2RegisterImmediateOp Orr_Rule_113_A1_P228
                            cccc0011100unnnnddddiiiiiiiiiiii NotRdIsPcAndS

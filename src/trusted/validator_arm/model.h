@@ -78,19 +78,31 @@ class Register {
 // it can be added to any RegisterList with no effect.
 // Note that -1 or 32 can't be used here because C++ doesn't define a portable
 // meaning for such shift distances.
-const Register kRegisterNone(31);
+static const Register kRegisterNone(31);
 
 // The conditions (i.e. APSR N, Z, C, and V) are collectively modeled as r16.
 // These bits of the APSR register are separately tracked, so we can
 // test when any of the 4 bits (and hence conditional execution) is
 // affected. If you need to track other bits in the APSR, add them as
 // a separate register.
-const Register kConditions(16);
+static const uint32_t kConditionsIndex = 16;
+static const Register kConditions(kConditionsIndex);
 
 // Registers with special meaning in our model:
-const Register kRegisterPc(15);
-const Register kRegisterLink(14);
-const Register kRegisterStack(13);
+static const Register kRegisterPc(15);
+static const Register kRegisterLink(14);
+static const Register kRegisterStack(13);
+
+// For most class decoders, we don't care what the instruction does, other
+// than if it is safe, and what general purpose registers are changed.
+// Hence, we may have simplified the "defs" virtual of a class decoder
+// to always return kConditions (rather than accurately modeling if and
+// when it gets updated).
+//
+// Note: Do not add kCondsDontCareFlag to a RegisterList. Rather,
+// use the constant kCondsDontCare.
+static const uint32_t kCondsDontCareIndex = 17;
+static const Register kCondsDontCareFlag(kCondsDontCareIndex);
 
 // A collection of Registers.  Used to describe the side effects of operations.
 //
@@ -137,6 +149,12 @@ class RegisterList {
     return *this;
   }
 
+  // Removes a register from the register list.
+  inline RegisterList& Remove(const Register& r) {
+    bits_ &= ~r.BitMask();
+    return *this;
+  }
+
   // Unions this given register list into this.
   inline RegisterList& Union(const RegisterList& other) {
     bits_ |= other.bits_;
@@ -170,6 +188,14 @@ class RegisterList {
 // A list containing every possible register, even some we don't define.
 // Used exclusively as a bogus scary return value for forbidden instructions.
 static const RegisterList kRegisterListEverything(-1);
+
+// A special register list to communicate that we don't care about conditions
+// for the given class decoder. Note: This should only be added to register
+// lists returned from virtual ClassDecoder::defs, and only for actual
+// class decoders. It is used to communicate to class decoder testers
+// that the actual class decoder is not tracking conditions.
+static const RegisterList kCondsDontCare((1 << kConditionsIndex) |
+                                         (1 << kCondsDontCareIndex));
 
 // The number of bits in an ARM instruction.
 static const int kArm32InstSize = 32;
