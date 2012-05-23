@@ -81,9 +81,18 @@ class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
 
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+
+    api = self.mox.CreateMock(cros_lib.CommandResult)
+    api.returncode = 0
+    api.output = cbuildbot._REEXEC_API_VERSION
+    cros_lib.RunCommand(
+        [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
+        cwd=self.buildroot, redirect_stderr=True, redirect_stdout=True,
+        error_code_ok=True).AndReturn(api)
+
     result = self.mox.CreateMock(cros_lib.CommandResult)
     result.returncode = 0
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     cros_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
                         error_code_ok=True,
                         kill_timeout=mox.IgnoreArg()).AndReturn(result)
@@ -110,9 +119,18 @@ class RunBuildStagesTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
     if 'CHROMEOS_OFFICIAL' in os.environ:
       del os.environ['CHROMEOS_OFFICIAL']
 
+    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
+
+    api = self.mox.CreateMock(cros_lib.CommandResult)
+    api.returncode = 0
+    api.output = cbuildbot._REEXEC_API_VERSION
+    cros_lib.RunCommand(
+        [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
+        cwd=self.buildroot, redirect_stderr=True, redirect_stdout=True,
+        error_code_ok=True).AndReturn(api)
+
     result = self.mox.CreateMock(cros_lib.CommandResult)
     result.returncode = 0
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
     cros_lib.RunCommand(mox.IgnoreArg(), cwd=self.buildroot,
                         error_code_ok=True,
                         kill_timeout=mox.IgnoreArg()).AndReturn(result)
