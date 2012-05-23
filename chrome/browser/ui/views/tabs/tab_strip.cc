@@ -12,7 +12,6 @@
 #include <windowsx.h>
 #endif
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
-#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -40,6 +38,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/base/layout.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/view_model_utils.h"
@@ -84,6 +83,10 @@ static const int kMaxStackedCount = 4;
 
 // Padding between stacked tabs.
 static const int kStackedPadding = 6;
+
+// See UpdateLayoutTypeFromMouseEvent() for a description of these.
+const int kMouseMoveTimeMS = 200;
+const int kMouseMoveCountBeforeConsiderReal = 3;
 
 // Horizontal offset for the new tab button to bring it closer to the
 // rightmost tab.
@@ -507,7 +510,7 @@ void TabStrip::RemoveTabDelegate::HighlightCloseButton() {
   views::View* root_view = widget->GetRootView();
   views::View::ConvertPointFromScreen(root_view, &position);
   views::MouseEvent mouse_event(
-      ui::ET_MOUSE_MOVED, position.x(), position.y(), 0);
+      ui::ET_MOUSE_MOVED, position.x(), position.y(), ui::EF_IS_SYNTHESIZED);
   root_view->OnMouseMoved(mouse_event);
 }
 
@@ -528,7 +531,11 @@ TabStrip::TabStrip(TabStripController* controller)
       available_width_for_tabs_(-1),
       in_tab_close_(false),
       animation_container_(new ui::AnimationContainer()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)),
+      layout_type_(TAB_STRIP_LAYOUT_SHRINK),
+      adjust_layout_(false),
+      reset_to_shrink_on_release_(false),
+      mouse_move_count_(0) {
   Init();
 }
 
@@ -547,6 +554,27 @@ TabStrip::~TabStrip() {
   // The children (tabs) may callback to us from their destructor. Delete them
   // so that if they call back we aren't in a weird state.
   RemoveAllChildViews(true);
+}
+
+void TabStrip::SetLayoutType(TabStripLayoutType layout_type,
+                             bool adjust_layout) {
+  adjust_layout_ = adjust_layout;
+  if (layout_type == layout_type_)
+    return;
+
+  layout_type_ = layout_type;
+  if (layout_type_ == TAB_STRIP_LAYOUT_SHRINK) {
+    touch_layout_.reset();
+  } else {
+    touch_layout_.reset(new TouchTabStripLayout(
+                            Tab::GetStandardSize(),
+                            tab_h_offset(),
+                            kStackedPadding,
+                            kMaxStackedCount,
+                            &tabs_));
+  }
+  // Force a layout.
+  DoLayout();
 }
 
 gfx::Rect TabStrip::GetNewTabButtonBounds() {
@@ -993,6 +1021,11 @@ void TabStrip::ClickActiveTab(const BaseTab* tab) const {
     controller()->ClickActiveTab(index);
 }
 
+void TabStrip::OnMouseEventInTab(views::View* source,
+                                 const views::MouseEvent& event) {
+  UpdateLayoutTypeFromMouseEvent(source, event);
+}
+
 bool TabStrip::ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) {
   // Only touch layout needs to restrict the clip.
   if (!touch_layout_.get())
@@ -1127,17 +1160,6 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     active_tab->Paint(canvas);
 }
 
-void TabStrip::PaintClosingTabs(gfx::Canvas* canvas, int index) {
-  if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
-    return;
-
-  const std::vector<BaseTab*>& tabs = tabs_closing_map_[index];
-  for (std::vector<BaseTab*>::const_reverse_iterator i = tabs.rbegin();
-       i != tabs.rend(); ++i) {
-    (*i)->Paint(canvas);
-  }
-}
-
 std::string TabStrip::GetClassName() const {
   return kViewClassName;
 }
@@ -1270,6 +1292,11 @@ const views::View* TabStrip::GetViewByID(int view_id) const {
   return View::GetViewByID(view_id);
 }
 
+bool TabStrip::OnMousePressed(const views::MouseEvent& event) {
+  UpdateLayoutTypeFromMouseEvent(this, event);
+  return true;
+}
+
 bool TabStrip::OnMouseDragged(const views::MouseEvent&  event) {
   if (drag_controller_.get())
     drag_controller_->Drag();
@@ -1278,10 +1305,15 @@ bool TabStrip::OnMouseDragged(const views::MouseEvent&  event) {
 
 void TabStrip::OnMouseReleased(const views::MouseEvent& event) {
   EndDrag(false);
+  UpdateLayoutTypeFromMouseEvent(this, event);
 }
 
 void TabStrip::OnMouseCaptureLost() {
   EndDrag(true);
+}
+
+void TabStrip::OnMouseMoved(const views::MouseEvent& event) {
+  UpdateLayoutTypeFromMouseEvent(this, event);
 }
 
 void TabStrip::GetCurrentTabWidths(double* unselected_width,
@@ -1310,16 +1342,6 @@ void TabStrip::Init() {
     gfx::ImageSkia* drop_image = GetDropArrowImage(true);
     drop_indicator_width = drop_image->width();
     drop_indicator_height = drop_image->height();
-  }
-  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStackedTabStrip)) {
-    touch_layout_.reset(new TouchTabStripLayout(
-                            Tab::GetStandardSize(),
-                            tab_h_offset(),
-                            kStackedPadding,
-                            kMaxStackedCount,
-                            &tabs_));
   }
 }
 
@@ -1638,6 +1660,92 @@ void TabStrip::DestroyDragController() {
 
 TabDragController* TabStrip::ReleaseDragController() {
   return drag_controller_.release();
+}
+
+void TabStrip::PaintClosingTabs(gfx::Canvas* canvas, int index) {
+  if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
+    return;
+
+  const std::vector<BaseTab*>& tabs = tabs_closing_map_[index];
+  for (std::vector<BaseTab*>::const_reverse_iterator i = tabs.rbegin();
+       i != tabs.rend(); ++i) {
+    (*i)->Paint(canvas);
+  }
+}
+
+void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
+                                              const views::MouseEvent& event) {
+  if (!adjust_layout_ || ui::GetDisplayLayout() != ui::LAYOUT_TOUCH)
+    return;
+
+  // The following code attempts to switch to TAB_STRIP_LAYOUT_SHRINK when the
+  // mouse is used, and TAB_STRIP_LAYOUT_STACKED when a touch device is
+  // used. This is made problematic by windows generating mouse move events that
+  // do not clearly indicate the move is the result of a touch device. This
+  // assumes a real mouse is used if |kMouseMoveCountBeforeConsiderReal| mouse
+  // move events are received within the time window |kMouseMoveTimeMS|.
+  // At the time we get a mouse press we know whether its from a touch device
+  // or not, but we don't layout then else everything shifts. Instead we wait
+  // for the release.
+  //
+  // TODO(sky): revisit this when touch events are really plumbed through.
+
+  switch (event.type()) {
+    case ui::ET_MOUSE_PRESSED:
+      mouse_move_count_ = 0;
+      last_mouse_move_time_ = base::TimeTicks();
+      reset_to_shrink_on_release_ =
+          ((event.flags() & ui::EF_FROM_TOUCH) == 0);
+      break;
+
+    case ui::ET_MOUSE_MOVED: {
+      // Switch to shrink if the mouse enters and it's not a synthesized event.
+      // We ignore synthesized events as EF_FROM_TOUCH is not necessarily set
+      // correctly (highlighting the close button doesn't set the flags
+      // correctly).
+      gfx::Point location(event.location());
+      ConvertPointToView(source, this, &location);
+      if (location == last_mouse_move_location_)
+        return;  // Ignore spurious moves.
+      last_mouse_move_location_ = location;
+      if ((event.flags() & ui::EF_FROM_TOUCH) == 0 &&
+          (event.flags() & ui::EF_IS_SYNTHESIZED) == 0) {
+        if ((base::TimeTicks::Now() - last_mouse_move_time_).InMilliseconds() <
+            kMouseMoveTimeMS) {
+          if (mouse_move_count_++ == kMouseMoveCountBeforeConsiderReal) {
+            SetLayoutType(TAB_STRIP_LAYOUT_SHRINK, true);
+            // Don't notify the controller here. We only want to commit the
+            // change to other tabstrips on a release.
+          }
+        } else {
+          mouse_move_count_ = 1;
+          last_mouse_move_time_ = base::TimeTicks::Now();
+        }
+      } else {
+        last_mouse_move_time_ = base::TimeTicks();
+      }
+      break;
+    }
+
+    case ui::ET_MOUSE_RELEASED: {
+      gfx::Point location(event.location());
+      ConvertPointToView(source, this, &location);
+      last_mouse_move_location_ = location;
+
+      mouse_move_count_ = 0;
+      last_mouse_move_time_ = base::TimeTicks();
+
+      if ((event.flags() & ui::EF_FROM_TOUCH) == ui::EF_FROM_TOUCH)
+        SetLayoutType(TAB_STRIP_LAYOUT_STACKED, true);
+      else if (reset_to_shrink_on_release_)
+        SetLayoutType(TAB_STRIP_LAYOUT_SHRINK, true);
+      controller_->LayoutTypeMaybeChanged();
+      break;
+    }
+
+    default:
+      break;
+  }
 }
 
 void TabStrip::GetDesiredTabWidths(int tab_count,

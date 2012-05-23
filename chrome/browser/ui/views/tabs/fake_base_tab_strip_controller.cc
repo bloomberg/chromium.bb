@@ -107,3 +107,6 @@ void FakeBaseTabStripController::ClickActiveTab(int index) {
 bool FakeBaseTabStripController::IsIncognito() {
   return false;
 }
+
+void FakeBaseTabStripController::LayoutTypeMaybeChanged() {
+}

@@ -461,6 +461,7 @@ bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
 
 void Tab::OnMouseMoved(const views::MouseEvent& event) {
   hover_controller().SetLocation(event.location());
+  BaseTab::OnMouseMoved(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

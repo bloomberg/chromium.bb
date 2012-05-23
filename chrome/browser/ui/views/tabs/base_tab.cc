@@ -37,21 +37,20 @@ static const int kPulseDurationMs = 200;
 // How long the hover state takes.
 static const int kHoverDurationMs = 400;
 
-namespace {
-
 ////////////////////////////////////////////////////////////////////////////////
 // TabCloseButton
 //
 //  This is a Button subclass that causes middle clicks to be forwarded to the
 //  parent View by explicitly not handling them in OnMousePressed.
-class TabCloseButton : public views::ImageButton {
+class BaseTab::TabCloseButton : public views::ImageButton {
  public:
-  explicit TabCloseButton(views::ButtonListener* listener)
-      : views::ImageButton(listener) {
-  }
+  explicit TabCloseButton(BaseTab* tab) : views::ImageButton(tab), tab_(tab) {}
   virtual ~TabCloseButton() {}
 
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+    if (tab_->controller())
+      tab_->controller()->OnMouseEventInTab(this, event);
+
     bool handled = ImageButton::OnMousePressed(event);
     // Explicitly mark midle-mouse clicks as non-handled to ensure the tab
     // sees them.
@@ -66,14 +65,30 @@ class TabCloseButton : public views::ImageButton {
     parent()->OnMouseEntered(event);
   }
 
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE {
+    if (tab_->controller())
+      tab_->controller()->OnMouseEventInTab(this, event);
+    CustomButton::OnMouseMoved(event);
+  }
+
+  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE {
+    if (tab_->controller())
+      tab_->controller()->OnMouseEventInTab(this, event);
+    CustomButton::OnMouseReleased(event);
+  }
+
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
     CustomButton::OnMouseExited(event);
     parent()->OnMouseExited(event);
   }
 
  private:
+  BaseTab* tab_;
+
   DISALLOW_COPY_AND_ASSIGN(TabCloseButton);
 };
+
+namespace {
 
 // Draws the icon image at the center of |bounds|.
 void DrawIconCenter(gfx::Canvas* canvas,
@@ -287,6 +302,8 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
   if (!controller())
     return false;
 
+  controller()->OnMouseEventInTab(this, event);
+
   // Allow a right click from touch to drag, which corresponds to a long click.
   if (event.IsOnlyLeftMouseButton() ||
       (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
@@ -325,6 +342,8 @@ bool BaseTab::OnMouseDragged(const views::MouseEvent& event) {
 void BaseTab::OnMouseReleased(const views::MouseEvent& event) {
   if (!controller())
     return;
+
+  controller()->OnMouseEventInTab(this, event);
 
   // Notify the drag helper that we're done with any potential drag operations.
   // Clean up the drag helper, which is re-created on the next mouse press.
@@ -365,6 +384,11 @@ void BaseTab::OnMouseCaptureLost() {
 
 void BaseTab::OnMouseEntered(const views::MouseEvent& event) {
   hover_controller_.Show();
+}
+
+void BaseTab::OnMouseMoved(const views::MouseEvent& event) {
+  if (controller())
+    controller()->OnMouseEventInTab(this, event);
 }
 
 void BaseTab::OnMouseExited(const views::MouseEvent& event) {

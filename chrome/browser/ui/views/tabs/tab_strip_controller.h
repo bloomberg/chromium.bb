@@ -95,6 +95,9 @@ class TabStripController {
 
   // Returns true if the tab strip is in an incognito window.
   virtual bool IsIncognito() = 0;
+
+  // Invoked if the layout type might have changed.
+  virtual void LayoutTypeMaybeChanged() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

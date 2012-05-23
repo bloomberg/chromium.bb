@@ -91,6 +91,7 @@ class BaseTab : public ui::AnimationDelegate,
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
@@ -148,6 +149,7 @@ class BaseTab : public ui::AnimationDelegate,
  private:
   // The animation object used to swap the favicon with the sad tab icon.
   class FaviconCrashAnimation;
+  class TabCloseButton;
 
   // Set the temporary offset for the favicon. This is used during the crash
   // animation.

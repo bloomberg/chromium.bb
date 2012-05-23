@@ -56,7 +56,6 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_view_prefs.h"
 #include "chrome/browser/ui/network_profile_bubble_prefs.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
@@ -76,6 +75,11 @@
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "chrome/browser/ui/cocoa/presentation_mode_prefs.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/browser_view_prefs.h"
+#include "chrome/browser/ui/tabs/tab_strip_layout_type_prefs.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -136,6 +140,7 @@ void RegisterLocalState(PrefService* local_state) {
 
 #if defined(TOOLKIT_VIEWS)
   browser::RegisterBrowserViewPrefs(local_state);
+  browser::RegisterTabStripLayoutTypePrefs(local_state);
 #endif
 
 #if !defined(OS_ANDROID)

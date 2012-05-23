@@ -30,10 +30,10 @@ enum EventType {
 // |view| is the view receiving |event|. This function sends the event to all
 // the Views up the hierarchy that has |notify_enter_exit_on_child_| flag turned
 // on, but does not contain |sibling|.
-void NotifyEnterExitOfDescendeant(const MouseEvent& event,
-                                  EventType type,
-                                  View* view,
-                                  View* sibling) {
+void NotifyEnterExitOfDescendant(const MouseEvent& event,
+                                 EventType type,
+                                 View* view,
+                                 View* sibling) {
   for (View* p = view->parent(); p; p = p->parent()) {
     if (!p->notify_enter_exit_on_child())
       continue;
@@ -326,10 +326,10 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
   if (v && v != this) {
     if (v != mouse_move_handler_) {
       if (mouse_move_handler_ != NULL &&
-        (!mouse_move_handler_->notify_enter_exit_on_child() ||
-         !mouse_move_handler_->Contains(v))) {
+          (!mouse_move_handler_->notify_enter_exit_on_child() ||
+           !mouse_move_handler_->Contains(v))) {
         mouse_move_handler_->OnMouseExited(e);
-        NotifyEnterExitOfDescendeant(e, EVENT_EXIT, mouse_move_handler_, v);
+        NotifyEnterExitOfDescendant(e, EVENT_EXIT, mouse_move_handler_, v);
       }
       View* old_handler = mouse_move_handler_;
       mouse_move_handler_ = v;
@@ -337,7 +337,7 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
       if (!mouse_move_handler_->notify_enter_exit_on_child() ||
           !mouse_move_handler_->Contains(old_handler)) {
         mouse_move_handler_->OnMouseEntered(entered_event);
-        NotifyEnterExitOfDescendeant(entered_event, EVENT_ENTER, v,
+        NotifyEnterExitOfDescendant(entered_event, EVENT_ENTER, v,
             old_handler);
       }
     }
@@ -347,7 +347,7 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
       widget_->SetCursor(mouse_move_handler_->GetCursor(moved_event));
   } else if (mouse_move_handler_ != NULL) {
     mouse_move_handler_->OnMouseExited(e);
-    NotifyEnterExitOfDescendeant(e, EVENT_EXIT, mouse_move_handler_, v);
+    NotifyEnterExitOfDescendant(e, EVENT_EXIT, mouse_move_handler_, v);
     // On Aura the non-client area extends slightly outside the root view for
     // some windows.  Let the non-client cursor handling code set the cursor
     // as we do above.
@@ -359,7 +359,7 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
 void RootView::OnMouseExited(const MouseEvent& event) {
   if (mouse_move_handler_ != NULL) {
     mouse_move_handler_->OnMouseExited(event);
-    NotifyEnterExitOfDescendeant(event, EVENT_EXIT, mouse_move_handler_, NULL);
+    NotifyEnterExitOfDescendant(event, EVENT_EXIT, mouse_move_handler_, NULL);
     mouse_move_handler_ = NULL;
   }
 }

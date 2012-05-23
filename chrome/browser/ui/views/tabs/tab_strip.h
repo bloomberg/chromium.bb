@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/timer.h"
+#include "chrome/browser/ui/tabs/tab_strip_layout_type.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "ui/base/animation/animation_container.h"
@@ -56,6 +56,12 @@ class TabStrip : public views::View,
 
   explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
+
+  // Sets the layout type. If |adjust_layout| is true the layout type changes
+  // based on whether the user uses a mouse or touch device with the tabstrip.
+  // If |adjust_layout| is false the layout is fixed to |layout_type|.
+  void SetLayoutType(TabStripLayoutType layout_type, bool adjust_layout);
+  TabStripLayoutType layout_type() const { return layout_type_; }
 
   // Returns the bounds of the new tab button.
   gfx::Rect GetNewTabButtonBounds();
@@ -177,6 +183,8 @@ class TabStrip : public views::View,
   virtual BaseTab* GetTabAt(BaseTab* tab,
                             const gfx::Point& tab_in_tab_coordinates) OVERRIDE;
   virtual void ClickActiveTab(const BaseTab* tab) const OVERRIDE;
+  virtual void OnMouseEventInTab(views::View* source,
+                                 const views::MouseEvent& event) OVERRIDE;
   virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE;
 
   // MouseWatcherListener overrides:
@@ -214,9 +222,11 @@ class TabStrip : public views::View,
 
   // View overrides.
   virtual const views::View* GetViewByID(int id) const OVERRIDE;
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
 
  private:
   typedef std::map<int, std::vector<BaseTab*> > TabsClosingMap;
@@ -345,6 +355,11 @@ class TabStrip : public views::View,
 
   // Paints all the tabs in |tabs_closing_map_[index]|.
   void PaintClosingTabs(gfx::Canvas* canvas, int index);
+
+  // Invoked when a mouse event occurs over |source|. Potentially switches the
+  // layout type.
+  void UpdateLayoutTypeFromMouseEvent(views::View* source,
+                                      const views::MouseEvent& event);
 
   // -- Tab Resize Layout -----------------------------------------------------
 
@@ -484,9 +499,6 @@ class TabStrip : public views::View,
   // container. This is that animation container.
   scoped_refptr<ui::AnimationContainer> animation_container_;
 
-  // Used for stage 1 of new tab animation.
-  base::OneShotTimer<TabStrip> new_tab_timer_;
-
   scoped_ptr<views::MouseWatcher> mouse_watcher_;
 
   // The controller for a drag initiated from a Tab. Valid for the lifetime of
@@ -498,8 +510,26 @@ class TabStrip : public views::View,
   // Size we last layed out at.
   gfx::Size last_layout_size_;
 
+  TabStripLayoutType layout_type_;
+
+  // See description above SetLayoutType().
+  bool adjust_layout_;
+
   // Only used while in touch mode.
   scoped_ptr<TouchTabStripLayout> touch_layout_;
+
+  // If true the layout type is set to TAB_STRIP_LAYOUT_SHRINK when the mouse is
+  // released.
+  bool reset_to_shrink_on_release_;
+
+  // Location of the mouse at the time of the last move.
+  gfx::Point last_mouse_move_location_;
+
+  // Time of the last mouse move event.
+  base::TimeTicks last_mouse_move_time_;
+
+  // Number of mouse moves.
+  int mouse_move_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

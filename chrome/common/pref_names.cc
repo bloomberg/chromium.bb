@@ -1714,6 +1714,9 @@ const char kMediaCacheSize[] = "browser.media_cache_size";
 // fetch the correct value from the policy.
 const char kChromeOsReleaseChannel[] = "cros.system.releaseChannel";
 
+// Value of the enums in TabStrip::LayoutType as an int.
+const char kTabStripLayoutType[] = "tab_strip_layout_type";
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

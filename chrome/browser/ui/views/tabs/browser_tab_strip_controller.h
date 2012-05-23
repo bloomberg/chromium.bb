@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -70,6 +71,7 @@ class BrowserTabStripController : public TabStripController,
   virtual void CreateNewTab() OVERRIDE;
   virtual void ClickActiveTab(int index) OVERRIDE;
   virtual bool IsIncognito() OVERRIDE;
+  virtual void LayoutTypeMaybeChanged() OVERRIDE;
 
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContentsWrapper* contents,
@@ -137,6 +139,9 @@ class BrowserTabStripController : public TabStripController,
   // Adds a tab.
   void AddTab(TabContentsWrapper* contents, int index, bool is_active);
 
+  // Resets the tabstrips layout type from prefs.
+  void UpdateLayoutType();
+
   TabStripModel* model_;
 
   TabStrip* tabstrip_;
@@ -151,6 +156,8 @@ class BrowserTabStripController : public TabStripController,
 
   // Helper for performing tab selection as a result of dragging over a tab.
   HoverTabSelector hover_tab_selector_;
+
+  PrefChangeRegistrar local_pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTabStripController);
 };

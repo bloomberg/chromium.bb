@@ -6,8 +6,10 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -18,11 +20,14 @@
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/layout.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -31,7 +36,9 @@
 using content::UserMetricsAction;
 using content::WebContents;
 
-static TabRendererData::NetworkState TabContentsNetworkState(
+namespace {
+
+TabRendererData::NetworkState TabContentsNetworkState(
     WebContents* contents) {
   if (!contents || !contents->IsLoading())
     return TabRendererData::NETWORK_STATE_NONE;
@@ -39,6 +46,31 @@ static TabRendererData::NetworkState TabContentsNetworkState(
     return TabRendererData::NETWORK_STATE_WAITING;
   return TabRendererData::NETWORK_STATE_LOADING;
 }
+
+TabStripLayoutType DetermineTabStripLayout(PrefService* prefs,
+                                           bool* adjust_layout) {
+  *adjust_layout = false;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStackedTabStrip)) {
+    return TAB_STRIP_LAYOUT_STACKED;
+  }
+  if (ui::GetDisplayLayout() != ui::LAYOUT_TOUCH)
+    return TAB_STRIP_LAYOUT_SHRINK;
+#if defined(USE_ASH)
+  // TODO(sky): remove ifdef when event generation on aura is fixed.
+  return TAB_STRIP_LAYOUT_STACKED;
+#else
+  *adjust_layout = true;
+  switch (prefs->GetInteger(prefs::kTabStripLayoutType)) {
+    case TAB_STRIP_LAYOUT_STACKED:
+      return TAB_STRIP_LAYOUT_STACKED;
+    default:
+      return TAB_STRIP_LAYOUT_SHRINK;
+  }
+#endif
+}
+
+}  // namespace
 
 class BrowserTabStripController::TabContextMenuContents
     : public ui::SimpleMenuModel::Delegate {
@@ -143,6 +175,9 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
   notification_registrar_.Add(this,
       chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED,
       content::NotificationService::AllSources());
+
+  local_pref_registrar_.Init(g_browser_process->local_state());
+  local_pref_registrar_.Add(prefs::kTabStripLayoutType, this);
 }
 
 BrowserTabStripController::~BrowserTabStripController() {
@@ -157,6 +192,9 @@ BrowserTabStripController::~BrowserTabStripController() {
 
 void BrowserTabStripController::InitFromModel(TabStrip* tabstrip) {
   tabstrip_ = tabstrip;
+
+  UpdateLayoutType();
+
   // Walk the model, calling our insertion observer method for each item within
   // it.
   for (int i = 0; i < model_->count(); ++i)
@@ -322,6 +360,18 @@ bool BrowserTabStripController::IsIncognito() {
   return browser_->profile()->IsOffTheRecord();
 }
 
+void BrowserTabStripController::LayoutTypeMaybeChanged() {
+  bool adjust_layout = false;
+  TabStripLayoutType layout_type =
+      DetermineTabStripLayout(g_browser_process->local_state(), &adjust_layout);
+  if (!adjust_layout || layout_type == tabstrip_->layout_type())
+    return;
+
+  g_browser_process->local_state()->SetInteger(
+      prefs::kTabStripLayoutType,
+      static_cast<int>(tabstrip_->layout_type()));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
@@ -403,14 +453,28 @@ void BrowserTabStripController::TabBlockedStateChanged(
 void BrowserTabStripController::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED);
-  // Note that this notification may be fired during a model mutation and
-  // possibly before the tabstrip has processed the change.
-  // Here, we just re-layout each existing tab to reflect the change in its
-  // closeable state, and then schedule paint for entire tabstrip.
-  for (int i = 0; i < tabstrip_->tab_count(); ++i)
-    static_cast<BaseTab*>(tabstrip_->tab_at(i))->Layout();
-  tabstrip_->SchedulePaint();
+  switch (type) {
+    case chrome::NOTIFICATION_TAB_CLOSEABLE_STATE_CHANGED:
+      // Note that this notification may be fired during a model mutation and
+      // possibly before the tabstrip has processed the change.
+      // Here, we just re-layout each existing tab to reflect the change in its
+      // closeable state, and then schedule paint for entire tabstrip.
+      for (int i = 0; i < tabstrip_->tab_count(); ++i)
+        static_cast<BaseTab*>(tabstrip_->tab_at(i))->Layout();
+      tabstrip_->SchedulePaint();
+      break;
+
+    case chrome::NOTIFICATION_PREF_CHANGED:
+      if (*content::Details<std::string>(details).ptr() ==
+          prefs::kTabStripLayoutType) {
+        UpdateLayoutType();
+      }
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void BrowserTabStripController::SetTabRendererDataFromModel(
@@ -488,4 +552,11 @@ void BrowserTabStripController::AddTab(TabContentsWrapper* contents,
   TabRendererData data;
   SetTabRendererDataFromModel(contents->web_contents(), index, &data, NEW_TAB);
   tabstrip_->AddTabAt(index, data, is_active);
+}
+
+void BrowserTabStripController::UpdateLayoutType() {
+  bool adjust_layout = false;
+  TabStripLayoutType layout_type =
+      DetermineTabStripLayout(g_browser_process->local_state(), &adjust_layout);
+  tabstrip_->SetLayoutType(layout_type, adjust_layout);
 }

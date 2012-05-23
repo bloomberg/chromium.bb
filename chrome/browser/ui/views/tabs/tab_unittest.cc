@@ -47,6 +47,8 @@ class FakeTabController : public TabController {
     return NULL;
   }
   virtual void ClickActiveTab(const BaseTab* tab) const OVERRIDE {}
+  virtual void OnMouseEventInTab(views::View* source,
+                                 const views::MouseEvent& event) OVERRIDE {}
   virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE {
     return true;
   }
