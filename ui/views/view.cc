@@ -456,6 +456,12 @@ void View::SetPaintToLayer(bool paint_to_layer) {
   }
 }
 
+ui::Layer* View::RecreateLayer() {
+  ui::Layer* layer = AcquireLayer();
+  CreateLayer();
+  return layer;
+}
+
 // RTL positioning -------------------------------------------------------------
 
 gfx::Rect View::GetMirroredBounds() const {
@@ -1781,7 +1787,8 @@ void View::CreateLayer() {
   for (int i = 0, count = child_count(); i < count; ++i)
     child_at(i)->UpdateChildLayerVisibility(true);
 
-  layer_.reset(new ui::Layer());
+  layer_ = new ui::Layer();
+  layer_owner_.reset(layer_);
   layer_->set_delegate(this);
 #if !defined(NDEBUG)
   layer_->set_name(GetClassName());
@@ -1856,7 +1863,8 @@ void View::DestroyLayer() {
       new_parent->Add(children[i]);
   }
 
-  layer_.reset();
+  layer_ = NULL;
+  layer_owner_.reset();
 
   if (new_parent)
     ReorderLayers();

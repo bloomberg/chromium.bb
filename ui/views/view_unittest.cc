@@ -3160,6 +3160,22 @@ TEST_F(ViewLayerTest, ReorderUnderWidget) {
   EXPECT_EQ(c2->layer(), parent_layer->children()[0]);
 }
 
+// Verifies that the layer of a view can be acquired properly.
+TEST_F(ViewLayerTest, AcquireLayer) {
+  View* content = new View;
+  widget()->SetContentsView(content);
+  View* c1 = new View;
+  c1->SetPaintToLayer(true);
+  EXPECT_TRUE(c1->layer());
+  content->AddChildView(c1);
+
+  scoped_ptr<ui::Layer> layer(c1->AcquireLayer());
+  EXPECT_EQ(layer.get(), c1->layer());
+
+  layer.reset(c1->RecreateLayer());
+  EXPECT_NE(c1->layer(), layer.get());
+}
+
 #endif  // USE_AURA
 
 }  // namespace views

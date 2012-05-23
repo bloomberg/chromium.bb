@@ -20,6 +20,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/layer_owner.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/background.h"
@@ -96,6 +97,7 @@ class RootView;
 //
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT View : public ui::LayerDelegate,
+                          public ui::LayerOwner,
                           public ui::AcceleratorTarget {
  public:
   typedef std::vector<View*> Views;
@@ -278,8 +280,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Compositor.
   void SetPaintToLayer(bool paint_to_layer);
 
-  const ui::Layer* layer() const { return layer_.get(); }
-  ui::Layer* layer() { return layer_.get(); }
+  // Recreates a layer for the view and returns the old layer. After this call,
+  // the View no longer has a pointer to the old layer (so it won't be able to
+  // update the old layer or destroy it). The caller must free the returned
+  // layer.
+  ui::Layer* RecreateLayer() WARN_UNUSED_RESULT;
 
   // RTL positioning -----------------------------------------------------------
 
@@ -1412,7 +1417,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Accelerated painting ------------------------------------------------------
 
   bool paint_to_layer_;
-  scoped_ptr<ui::Layer> layer_;
 
   // Accelerators --------------------------------------------------------------
 

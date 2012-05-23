@@ -50,7 +50,6 @@ Window::Window(WindowDelegate* delegate)
     : type_(client::WINDOW_TYPE_UNKNOWN),
       owned_by_parent_(true),
       delegate_(delegate),
-      layer_(NULL),
       parent_(NULL),
       transient_parent_(NULL),
       visible_(false),
@@ -164,10 +163,6 @@ void Window::SetTransparent(bool transparent) {
   // Cannot change transparent flag after the window is initialized.
   DCHECK(!layer());
   transparent_ = transparent;
-}
-
-ui::Layer* Window::AcquireLayer() {
-  return layer_owner_.release();
 }
 
 RootWindow* Window::GetRootWindow() {

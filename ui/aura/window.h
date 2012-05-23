@@ -20,6 +20,7 @@
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/layer_owner.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
@@ -53,6 +54,7 @@ struct WindowProperty;
 // WindowDelegate.
 // TODO(beng): resolve ownership.
 class AURA_EXPORT Window : public ui::LayerDelegate,
+                           public ui::LayerOwner,
                            public ui::GestureConsumer {
  public:
   typedef std::vector<Window*> Windows;
@@ -98,17 +100,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   bool transparent() const { return transparent_; }
   void SetTransparent(bool transparent);
-
-  ui::Layer* layer() { return layer_; }
-  const ui::Layer* layer() const { return layer_; }
-
-  // Releases the Window's owning reference to its layer, and returns it.
-  // This is used when you need to animate the presentation of the Window just
-  // prior to destroying it. The window can be destroyed soon after calling this
-  // function, and the caller is then responsible for disposing of the layer
-  // once any animation completes. Note that layer() will remain valid until the
-  // end of ~Window().
-  ui::Layer* AcquireLayer();
 
   WindowDelegate* delegate() { return delegate_; }
 
@@ -415,14 +406,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   bool owned_by_parent_;
 
   WindowDelegate* delegate_;
-
-  // The Window will own its layer unless ownership is relinquished via a call
-  // to AcquireLayer(). After that moment |layer_| will still be valid but
-  // |layer_owner_| will be NULL. The reason for releasing ownership is that
-  // the client may wish to animate the window's layer beyond the lifetime of
-  // the window, e.g. fading it out when it is destroyed.
-  scoped_ptr<ui::Layer> layer_owner_;
-  ui::Layer* layer_;
 
   // The Window's parent.
   Window* parent_;
