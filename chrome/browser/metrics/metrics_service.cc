@@ -247,6 +247,7 @@ enum ResponseStatus {
   UNKNOWN_FAILURE,
   SUCCESS,
   BAD_REQUEST,  // Invalid syntax or log too large.
+  NO_RESPONSE,
   NUM_RESPONSE_STATUSES
 };
 
@@ -256,6 +257,8 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
       return SUCCESS;
     case 400:
       return BAD_REQUEST;
+    case net::URLFetcher::RESPONSE_CODE_INVALID:
+      return NO_RESPONSE;
     default:
       return UNKNOWN_FAILURE;
   }
