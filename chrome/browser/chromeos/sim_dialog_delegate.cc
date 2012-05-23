@@ -7,8 +7,6 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/web_dialog_view.h"
 #include "chrome/common/url_constants.h"
 #include "ui/views/view.h"
@@ -49,7 +47,7 @@ void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
                                    SimDialogMode mode) {
   views::Widget::CreateWindowWithParent(
       new WebDialogView(ProfileManager::GetDefaultProfileOrOffTheRecord(),
-                        BrowserList::GetLastActive(),
+                        NULL,
                         new SimDialogDelegate(mode)),
       owning_window)->Show();
 }
