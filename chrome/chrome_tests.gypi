@@ -2565,6 +2565,7 @@
         'browser/autofill/autofill_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
         'browser/autofill/autofill_popup_view_browsertest.cc',
+        'browser/automation/automation_misc_browsertest.cc',
         'browser/automation/automation_tab_helper_browsertest.cc',
         'browser/bookmarks/bookmark_extension_apitest.cc',
         'browser/bookmarks/bookmark_manager_extension_apitest.cc',

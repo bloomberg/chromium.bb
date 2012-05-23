@@ -961,6 +961,10 @@ IPC_MESSAGE_ROUTED1(AutomationMsg_HeapProfilerDump,
                     std::string /* reason */)
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 
+// Requests processing of the given mouse event.
+IPC_MESSAGE_ROUTED1(AutomationMsg_ProcessMouseEvent,
+                    AutomationMouseEvent)
+
 // Renderer -> browser messages.
 
 // Sent as a response to |AutomationMsg_Snapshot|.
@@ -979,6 +983,18 @@ IPC_MESSAGE_ROUTED2(AutomationMsg_WillPerformClientRedirect,
 // redirect.
 IPC_MESSAGE_ROUTED1(AutomationMsg_DidCompleteOrCancelClientRedirect,
                     int64 /* frame_id */)
+
+// Sent right before processing a mouse event at the given point.
+// This is needed in addition to AutomationMsg_ProcessMouseEventACK so that
+// the client knows where the event occurred even if the event causes a modal
+// dialog to appear which blocks further messages.
+IPC_MESSAGE_ROUTED1(AutomationMsg_WillProcessMouseEventAt,
+                    gfx::Point)
+
+// Sent when the automation mouse event has been processed.
+IPC_MESSAGE_ROUTED2(AutomationMsg_ProcessMouseEventACK,
+                    bool /* success */,
+                    std::string /* error message */)
 
 // YOUR NEW MESSAGE MIGHT NOT BELONG HERE.
 // This is the section for renderer -> browser automation messages. If it is

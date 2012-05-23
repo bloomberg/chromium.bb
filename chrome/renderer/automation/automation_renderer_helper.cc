@@ -7,15 +7,26 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "base/json/json_writer.h"
+#include "base/stringprintf.h"
+#include "base/string_split.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/common/automation_events.h"
 #include "chrome/common/automation_messages.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
@@ -106,6 +117,123 @@ void AutomationRendererHelper::OnSnapshotEntirePage() {
       routing_id(), success, png_data, error_msg));
 }
 
+namespace {
+
+scoped_ptr<base::Value> EvaluateScriptInFrame(WebFrame* web_frame,
+                                              const std::string& script) {
+  v8::HandleScope handle_scope;
+  v8::Local<v8::Value> result = v8::Local<v8::Value>::New(
+      web_frame->executeScriptAndReturnValue(
+          WebKit::WebScriptSource(UTF8ToUTF16(script))));
+  if (!result.IsEmpty()) {
+    v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
+    v8::Context::Scope context_scope(context);
+    scoped_ptr<content::V8ValueConverter> converter(
+        content::V8ValueConverter::create());
+    return scoped_ptr<base::Value>(converter->FromV8Value(result, context));
+  } else {
+    return scoped_ptr<base::Value>(base::Value::CreateNullValue());
+  }
+}
+
+WebFrame* FrameFromXPath(WebView* view, const string16& frame_xpath) {
+  WebFrame* frame = view->mainFrame();
+  if (frame_xpath.empty())
+    return frame;
+
+  std::vector<string16> xpaths;
+  base::SplitString(frame_xpath, '\n', &xpaths);
+  for (std::vector<string16>::const_iterator i = xpaths.begin();
+       frame && i != xpaths.end(); ++i) {
+    frame = frame->findChildByExpression(*i);
+  }
+  return frame;
+}
+
+bool EvaluateScriptChainHelper(
+    WebView* web_view,
+    const std::string& script,
+    const std::string& frame_xpath,
+    scoped_ptr<base::DictionaryValue>* result,
+    std::string* error_msg) {
+  WebFrame* web_frame = FrameFromXPath(web_view, UTF8ToUTF16(frame_xpath));
+  if (!web_frame) {
+    *error_msg = "Failed to locate frame by xpath: " + frame_xpath;
+    return false;
+  }
+  scoped_ptr<base::Value> script_value =
+      EvaluateScriptInFrame(web_frame, script);
+  base::DictionaryValue* dict;
+  if (!script_value.get() || !script_value->GetAsDictionary(&dict)) {
+    *error_msg = "Script did not return an object";
+    return false;
+  }
+  base::Value* error_value;
+  if (dict->Get("error", &error_value)) {
+    base::JSONWriter::Write(error_value, error_msg);
+    return false;
+  }
+  result->reset(static_cast<base::DictionaryValue*>(script_value.release()));
+  return true;
+}
+
+}  // namespace
+
+bool AutomationRendererHelper::EvaluateScriptChain(
+    const std::vector<ScriptEvaluationRequest>& script_chain,
+    scoped_ptr<base::DictionaryValue>* result,
+    std::string* error_msg) {
+  CHECK(!script_chain.empty());
+  WebView* web_view = render_view()->GetWebView();
+  scoped_ptr<base::DictionaryValue> temp_result;
+  for (size_t i = 0; i < script_chain.size(); ++i) {
+    std::string args_utf8 = "null";
+    if (temp_result.get())
+      base::JSONWriter::Write(temp_result.get(), &args_utf8);
+    std::string wrapper_script = base::StringPrintf(
+        "(function(){return %s\n}).apply(null, [%s])",
+        script_chain[i].script.c_str(), args_utf8.c_str());
+    if (!EvaluateScriptChainHelper(web_view, wrapper_script,
+                                   script_chain[i].frame_xpath,
+                                   &temp_result, error_msg)) {
+      return false;
+    }
+  }
+  std::string result_str;
+  base::JSONWriter::Write(temp_result.get(), &result_str);
+  result->reset(temp_result.release());
+  return true;
+}
+
+bool AutomationRendererHelper::ProcessMouseEvent(
+    const AutomationMouseEvent& event,
+    std::string* error_msg) {
+  WebView* web_view = render_view()->GetWebView();
+  if (!web_view) {
+    *error_msg = "Failed to process mouse event because webview does not exist";
+    return false;
+  }
+  WebKit::WebMouseEvent mouse_event = event.mouse_event;
+  if (!event.location_script_chain.empty()) {
+    scoped_ptr<base::DictionaryValue> result;
+    if (!EvaluateScriptChain(event.location_script_chain, &result, error_msg))
+      return false;
+    int x, y;
+    if (!result->GetInteger("x", &x) ||
+        !result->GetInteger("y", &y)) {
+      *error_msg = "Script did not return an (x,y) location";
+      return false;
+    }
+    mouse_event.x = x;
+    mouse_event.y = y;
+  }
+  Send(new AutomationMsg_WillProcessMouseEventAt(
+      routing_id(),
+      gfx::Point(mouse_event.x, mouse_event.y)));
+  web_view->handleInputEvent(mouse_event);
+  return true;
+}
+
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 void AutomationRendererHelper::OnHeapProfilerDump(const std::string& reason) {
   if (!::IsHeapProfilerRunning()) {
@@ -124,6 +252,7 @@ bool AutomationRendererHelper::OnMessageReceived(const IPC::Message& message) {
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
     IPC_MESSAGE_HANDLER(AutomationMsg_HeapProfilerDump, OnHeapProfilerDump)
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+    IPC_MESSAGE_HANDLER(AutomationMsg_ProcessMouseEvent, OnProcessMouseEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   if (!deserialize_success) {
@@ -148,4 +277,12 @@ void AutomationRendererHelper::DidCompleteClientRedirect(
     WebFrame* frame, const WebURL& from) {
   Send(new AutomationMsg_DidCompleteOrCancelClientRedirect(
       routing_id(), frame->identifier()));
+}
+
+void AutomationRendererHelper::OnProcessMouseEvent(
+    const AutomationMouseEvent& event) {
+  std::string error_msg;
+  bool success = ProcessMouseEvent(event, &error_msg);
+  Send(new AutomationMsg_ProcessMouseEventACK(
+      routing_id(), success, error_msg));
 }

@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/automation_constants.h"
+#include "chrome/common/automation_events.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/page_type.h"
@@ -144,6 +145,11 @@ IPC_STRUCT_BEGIN(AutomationURLRequest)
   IPC_STRUCT_MEMBER(int, load_flags) // see net/base/load_flags.h
 IPC_STRUCT_END()
 
+IPC_STRUCT_TRAITS_BEGIN(ScriptEvaluationRequest)
+  IPC_STRUCT_TRAITS_MEMBER(script)
+  IPC_STRUCT_TRAITS_MEMBER(frame_xpath)
+IPC_STRUCT_TRAITS_END()
+
 // Singly-included section for struct and custom IPC traits.
 #ifndef CHROME_COMMON_AUTOMATION_MESSAGES_H_
 #define CHROME_COMMON_AUTOMATION_MESSAGES_H_
@@ -190,6 +196,15 @@ namespace IPC {
 template <>
 struct ParamTraits<ContextMenuModel> {
   typedef ContextMenuModel param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+// Traits for AutomationMouseEvent structure to pack/unpack.
+template <>
+struct ParamTraits<AutomationMouseEvent> {
+  typedef AutomationMouseEvent param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

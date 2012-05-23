@@ -65,6 +65,7 @@
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings_types.h"
@@ -1859,6 +1860,72 @@ void PageSnapshotTaker::SendMessage(bool success,
           .SendError("Failed to take snapshot of page: " + error_msg);
     }
   }
+  delete this;
+}
+
+AutomationMouseEventProcessor::AutomationMouseEventProcessor(
+    RenderViewHost* render_view_host,
+    const AutomationMouseEvent& event,
+    const CompletionCallback& completion_callback,
+    const ErrorCallback& error_callback)
+    : RenderViewHostObserver(render_view_host),
+      completion_callback_(completion_callback),
+      error_callback_(error_callback),
+      has_point_(false) {
+  registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
+                 content::NotificationService::AllSources());
+  Send(new AutomationMsg_ProcessMouseEvent(routing_id(), event));
+}
+
+AutomationMouseEventProcessor::~AutomationMouseEventProcessor() {}
+
+void AutomationMouseEventProcessor::OnWillProcessMouseEventAt(
+    const gfx::Point& point) {
+  has_point_ = true;
+  point_ = point;
+}
+
+void AutomationMouseEventProcessor::OnProcessMouseEventACK(
+    bool success,
+    const std::string& error_msg) {
+  InvokeCallback(automation::Error(error_msg));
+}
+
+void AutomationMouseEventProcessor::RenderViewHostDestroyed(
+    RenderViewHost* host) {
+  InvokeCallback(automation::Error("The render view host was destroyed"));
+}
+
+bool AutomationMouseEventProcessor::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  bool msg_is_good = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(AutomationMouseEventProcessor, message, msg_is_good)
+    IPC_MESSAGE_HANDLER(AutomationMsg_WillProcessMouseEventAt,
+                        OnWillProcessMouseEventAt)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ProcessMouseEventACK,
+                        OnProcessMouseEventACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+  if (!msg_is_good) {
+    LOG(ERROR) << "Failed to deserialize an IPC message";
+  }
+  return handled;
+}
+
+void AutomationMouseEventProcessor::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  InvokeCallback(automation::Error(automation::kBlockedByModalDialog));
+}
+
+void AutomationMouseEventProcessor::InvokeCallback(
+    const automation::Error& error) {
+  if (has_point_)
+    completion_callback_.Run(point_);
+  else
+    error_callback_.Run(error);
   delete this;
 }
 

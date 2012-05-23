@@ -63,6 +63,8 @@
         'common/autofill_messages.h',
         'common/automation_constants.cc',
         'common/automation_constants.h',
+        'common/automation_events.cc',
+        'common/automation_events.h',
         'common/automation_id.cc',
         'common/automation_id.h',
         'common/automation_messages.cc',

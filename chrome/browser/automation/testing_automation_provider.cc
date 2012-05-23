@@ -113,6 +113,8 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/view_type_utils.h"
+#include "chrome/common/automation_constants.h"
+#include "chrome/common/automation_events.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
@@ -5422,6 +5424,56 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
   }
 }
 
+namespace {
+
+bool ReadScriptEvaluationRequestList(
+    base::Value* value,
+    std::vector<ScriptEvaluationRequest>* list,
+    std::string* error_msg) {
+  ListValue* request_list;
+  if (!value->GetAsList(&request_list))
+    return false;
+
+  for (size_t i = 0; i < request_list->GetSize(); ++i) {
+    DictionaryValue* request_dict;
+    if (!request_list->GetDictionary(i, &request_dict)) {
+      *error_msg = "Script evaluation request was not a dictionary";
+      return false;
+    }
+    ScriptEvaluationRequest request;
+    if (!request_dict->GetString("script", &request.script) ||
+        !request_dict->GetString("frame_xpath", &request.frame_xpath)) {
+      *error_msg = "Script evaluation request was invalid";
+      return false;
+    }
+    list->push_back(request);
+  }
+  return true;
+}
+
+void SendPointIfAlive(
+    base::WeakPtr<AutomationProvider> provider,
+    IPC::Message* reply_message,
+    const gfx::Point& point) {
+  if (provider) {
+    DictionaryValue dict;
+    dict.SetInteger("x", point.x());
+    dict.SetInteger("y", point.y());
+    AutomationJSONReply(provider.get(), reply_message).SendSuccess(&dict);
+  }
+}
+
+void SendErrorIfAlive(
+    base::WeakPtr<AutomationProvider> provider,
+    IPC::Message* reply_message,
+    const automation::Error& error) {
+  if (provider) {
+    AutomationJSONReply(provider.get(), reply_message).SendError(error);
+  }
+}
+
+}  // namespace
+
 void TestingAutomationProvider::ProcessWebMouseEvent(
     DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -5489,9 +5541,24 @@ void TestingAutomationProvider::ProcessWebMouseEvent(
   if (modifiers & automation::kMetaKeyMask)
     event.modifiers |= WebKit::WebInputEvent::MetaKey;
 
-  view->ForwardMouseEvent(event);
-  new InputEventAckNotificationObserver(this, reply_message, event.type,
-                                        1);
+  AutomationMouseEvent automation_event;
+  automation_event.mouse_event = event;
+  Value* location_script_chain_value;
+  if (args->Get("location_script_chain", &location_script_chain_value)) {
+    if (!ReadScriptEvaluationRequestList(
+            location_script_chain_value,
+            &automation_event.location_script_chain,
+            &error)) {
+      AutomationJSONReply(this, reply_message).SendError(error);
+      return;
+    }
+  }
+
+  new AutomationMouseEventProcessor(
+      view,
+      automation_event,
+      base::Bind(&SendPointIfAlive, AsWeakPtr(), reply_message),
+      base::Bind(&SendErrorIfAlive, AsWeakPtr(), reply_message));
 }
 
 namespace {

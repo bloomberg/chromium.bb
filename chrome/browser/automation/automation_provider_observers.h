@@ -51,8 +51,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host_observer.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
+struct AutomationMouseEvent;
 class AutomationProvider;
 class BalloonCollection;
 class Browser;
@@ -63,6 +66,10 @@ class Notification;
 class Profile;
 class SavePackage;
 class TranslateInfoBarDelegate;
+
+namespace automation {
+class Error;
+}
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
@@ -1299,6 +1306,54 @@ class PageSnapshotTaker : public TabEventObserver,
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSnapshotTaker);
+};
+
+// Processes automation mouse events and invokes a callback when processing
+// has completed.
+class AutomationMouseEventProcessor : public content::RenderViewHostObserver,
+                                      public content::NotificationObserver {
+ public:
+  typedef base::Callback<void(const gfx::Point&)> CompletionCallback;
+  typedef base::Callback<void(const automation::Error&)> ErrorCallback;
+
+  // Creates a new processor which immediately processes the given event.
+  // Either the |completion_callback| or |error_callback| will be called
+  // exactly once. After invoking the callback, this class will delete itself.
+  // The |completion_callback| will be given the point at which the mouse event
+  // occurred.
+  AutomationMouseEventProcessor(content::RenderViewHost* render_view_host,
+                                const AutomationMouseEvent& event,
+                                const CompletionCallback& completion_callback,
+                                const ErrorCallback& error_callback);
+  virtual ~AutomationMouseEventProcessor();
+
+ private:
+  // IPC message handlers.
+  virtual void OnWillProcessMouseEventAt(const gfx::Point& point);
+  virtual void OnProcessMouseEventACK(
+      bool success,
+      const std::string& error_msg);
+
+  // RenderViewHostObserver overrides.
+  virtual void RenderViewHostDestroyed(content::RenderViewHost* host) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // NotificationObserver overrides.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Helper method to invoke the appropriate callback. Uses the given error
+  // only if the operation failed. Deletes this.
+  void InvokeCallback(const automation::Error& error);
+
+  content::NotificationRegistrar registrar_;
+  CompletionCallback completion_callback_;
+  ErrorCallback error_callback_;
+  bool has_point_;
+  gfx::Point point_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationMouseEventProcessor);
 };
 
 class NTPInfoObserver : public content::NotificationObserver {
