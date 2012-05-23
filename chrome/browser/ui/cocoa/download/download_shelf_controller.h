@@ -19,6 +19,10 @@ class DownloadShelf;
 @class HyperlinkButtonCell;
 @class HoverButton;
 
+namespace content {
+class PageNavigator;
+}
+
 // A controller class that manages the download shelf for one window. It is
 // responsible for the behavior of the shelf itself (showing/hiding, handling
 // the link, layout) as well as for managing the download items it contains.
@@ -66,6 +70,9 @@ class DownloadShelf;
 
   // Delegate that handles resizing our view.
   id<ViewResizer> resizeDelegate_;
+
+  // Used for loading pages.
+  content::PageNavigator* navigator_;
 };
 
 - (id)initWithBrowser:(Browser*)browser

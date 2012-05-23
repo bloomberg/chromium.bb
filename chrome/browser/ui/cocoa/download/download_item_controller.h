@@ -18,6 +18,7 @@ class DownloadShelfContextMenuMac;
 
 namespace content {
 class DownloadItem;
+class PageNavigator;
 }
 
 namespace gfx {
@@ -72,7 +73,8 @@ class Font;
 
 // Takes ownership of |downloadModel|.
 - (id)initWithModel:(BaseDownloadItemModel*)downloadModel
-              shelf:(DownloadShelfController*)shelf;
+              shelf:(DownloadShelfController*)shelf
+          navigator:(content::PageNavigator*)navigator;
 
 // Updates the UI and menu state from |downloadModel|.
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel;

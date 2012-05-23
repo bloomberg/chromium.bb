@@ -19,7 +19,8 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
                                     public MenuGtk::Delegate {
  public:
   DownloadShelfContextMenuGtk(BaseDownloadItemModel* model,
-                              DownloadItemGtk* download_item);
+                              DownloadItemGtk* download_item,
+                              content::PageNavigator* navigator);
   virtual ~DownloadShelfContextMenuGtk();
 
   void Popup(GtkWidget* widget, GdkEventButton* event);

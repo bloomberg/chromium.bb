@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -171,6 +172,10 @@ DownloadShelfGtk::~DownloadShelfGtk() {
 
   // Make sure we're no longer an observer of the message loop.
   SetCloseOnMouseOut(false);
+}
+
+content::PageNavigator* DownloadShelfGtk::GetNavigator() {
+  return browser_;
 }
 
 void DownloadShelfGtk::DoAddDownload(BaseDownloadItemModel* download_model) {

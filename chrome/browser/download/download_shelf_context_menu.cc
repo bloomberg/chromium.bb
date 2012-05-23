@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -23,9 +24,11 @@ using extensions::Extension;
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {}
 
 DownloadShelfContextMenu::DownloadShelfContextMenu(
-    BaseDownloadItemModel* download_model)
+    BaseDownloadItemModel* download_model,
+    content::PageNavigator* navigator)
     : download_model_(download_model),
-      download_item_(download_model->download()) {
+      download_item_(download_model->download()),
+      navigator_(navigator) {
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
@@ -125,7 +128,8 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
       if (protection_service) {
         protection_service->ShowDetailsForDownload(
             DownloadProtectionService::DownloadInfo::FromDownloadItem(
-                *download_item_));
+                *download_item_),
+            navigator_);
       }
 #else
       // Should only be getting invoked if we are using safe browsing.

@@ -13,6 +13,10 @@
 
 class BaseDownloadItemModel;
 
+namespace content {
+class PageNavigator;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -24,7 +28,8 @@ class Widget;
 
 class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
  public:
-  explicit DownloadShelfContextMenuView(BaseDownloadItemModel* model);
+  DownloadShelfContextMenuView(BaseDownloadItemModel* model,
+                               content::PageNavigator* navigator);
   virtual ~DownloadShelfContextMenuView();
 
   // |rect| is the bounding area for positioning the menu in screen coordinates.

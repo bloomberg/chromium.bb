@@ -22,6 +22,10 @@ class Browser;
 class BrowserView;
 class DownloadItemView;
 
+namespace content {
+class PageNavigator;
+}
+
 namespace ui {
 class SlideAnimation;
 }
@@ -48,6 +52,10 @@ class DownloadShelfView : public views::AccessiblePaneView,
 
   // Sent from the DownloadItemView when the user opens an item.
   void OpenedDownload(DownloadItemView* view);
+
+  // Returns the relevant containing object that can load pages.
+  // i.e. the |browser_|.
+  content::PageNavigator* GetNavigator();
 
   // Implementation of View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;

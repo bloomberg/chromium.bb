@@ -23,6 +23,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/ui_localizer.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -73,8 +74,9 @@ void WidenView(NSView* view, CGFloat widthChange) {
 
 class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
  public:
-  DownloadShelfContextMenuMac(BaseDownloadItemModel* model)
-      : DownloadShelfContextMenu(model) { }
+  DownloadShelfContextMenuMac(BaseDownloadItemModel* model,
+                              content::PageNavigator* navigator)
+      : DownloadShelfContextMenu(model, navigator) { }
 
   using DownloadShelfContextMenu::ExecuteCommand;
   using DownloadShelfContextMenu::IsCommandIdChecked;
@@ -98,12 +100,14 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 @implementation DownloadItemController
 
 - (id)initWithModel:(BaseDownloadItemModel*)downloadModel
-              shelf:(DownloadShelfController*)shelf {
+              shelf:(DownloadShelfController*)shelf
+          navigator:(content::PageNavigator*)navigator {
   if ((self = [super initWithNibName:@"DownloadItem"
                               bundle:base::mac::FrameworkBundle()])) {
     // Must be called before [self view], so that bridge_ is set in awakeFromNib
     bridge_.reset(new DownloadItemMac(downloadModel, self));
-    menuBridge_.reset(new DownloadShelfContextMenuMac(downloadModel));
+    menuBridge_.reset(new DownloadShelfContextMenuMac(downloadModel,
+                                                      navigator));
 
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self

@@ -865,13 +865,14 @@ void DownloadProtectionService::RequestFinished(
 }
 
 void DownloadProtectionService::ShowDetailsForDownload(
-    const DownloadProtectionService::DownloadInfo& info) {
-  Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser && browser->is_type_tabbed());
-  content::OpenURLParams params(GURL(chrome::kDownloadScanningLearnMoreURL),
-                                content::Referrer(), NEW_FOREGROUND_TAB,
-                                content::PAGE_TRANSITION_TYPED, false);
-  browser->OpenURL(params);
+    const DownloadProtectionService::DownloadInfo& info,
+    content::PageNavigator* navigator) {
+  navigator->OpenURL(
+      content::OpenURLParams(GURL(chrome::kDownloadScanningLearnMoreURL),
+                             content::Referrer(),
+                             NEW_FOREGROUND_TAB,
+                             content::PAGE_TRANSITION_LINK,
+                             false));
 }
 
 namespace {

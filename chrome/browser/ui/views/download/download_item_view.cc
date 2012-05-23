@@ -570,8 +570,11 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
                  weak_ptr_factory_.GetWeakPtr()));
   views::View::ConvertPointToScreen(this, &point);
 
-  if (!context_menu_.get())
-    context_menu_.reset(new DownloadShelfContextMenuView(model_.get()));
+  if (!context_menu_.get()) {
+    context_menu_.reset(
+        new DownloadShelfContextMenuView(model_.get(),
+                                         parent_->GetNavigator()));
+  }
   context_menu_->Run(GetWidget()->GetTopLevelWidget(),
                      gfx::Rect(point, size));
   // We could be deleted now.

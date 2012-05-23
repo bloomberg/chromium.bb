@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -183,6 +184,10 @@ void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
 void DownloadShelfView::OpenedDownload(DownloadItemView* view) {
   if (CanAutoClose())
     mouse_watcher_.Start();
+}
+
+content::PageNavigator* DownloadShelfView::GetNavigator() {
+  return browser_;
 }
 
 gfx::Size DownloadShelfView::GetPreferredSize() {

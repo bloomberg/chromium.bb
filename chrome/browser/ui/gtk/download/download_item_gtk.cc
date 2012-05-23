@@ -896,8 +896,11 @@ void DownloadItemGtk::ShowPopupMenu(GtkWidget* button,
   if (complete_animation_.is_animating())
     complete_animation_.End();
 
-  if (!menu_.get())
-    menu_.reset(new DownloadShelfContextMenuGtk(download_model_.get(), this));
+  if (!menu_.get()) {
+    menu_.reset(new DownloadShelfContextMenuGtk(download_model_.get(),
+                                                this,
+                                                parent_shelf_->GetNavigator()));
+  }
   menu_->Popup(button, event);
 }
 

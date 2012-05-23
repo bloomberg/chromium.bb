@@ -7,12 +7,14 @@
 #include "base/logging.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/ui/gtk/download/download_item_gtk.h"
+#include "content/public/browser/page_navigator.h"
 #include "ui/gfx/point.h"
 
 DownloadShelfContextMenuGtk::DownloadShelfContextMenuGtk(
     BaseDownloadItemModel* model,
-    DownloadItemGtk* download_item)
-    : DownloadShelfContextMenu(model),
+    DownloadItemGtk* download_item,
+    content::PageNavigator* navigator)
+    : DownloadShelfContextMenu(model, navigator),
       download_item_gtk_(download_item) {
 }
 

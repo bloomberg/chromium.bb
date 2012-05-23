@@ -112,6 +112,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
     downloadItemControllers_.reset([[NSMutableArray alloc] init]);
 
     bridge_.reset(new DownloadShelfMac(browser, self));
+    navigator_ = browser;
   }
   return self;
 }
@@ -296,7 +297,9 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
 
   // Insert new item at the left.
   scoped_nsobject<DownloadItemController> controller(
-      [[DownloadItemController alloc] initWithModel:model shelf:self]);
+      [[DownloadItemController alloc] initWithModel:model
+                                              shelf:self
+                                          navigator:navigator_]);
 
   // Adding at index 0 in NSMutableArrays is O(1).
   [downloadItemControllers_ insertObject:controller.get() atIndex:0];

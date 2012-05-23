@@ -24,6 +24,7 @@ class SafeBrowsingService;
 
 namespace content {
 class DownloadItem;
+class PageNavigator;
 }
 
 namespace net {
@@ -98,7 +99,8 @@ class DownloadProtectionService {
   // Display more information to the user regarding the download specified by
   // |info|. This method is invoked when the user requests more information
   // about a download that was marked as malicious.
-  void ShowDetailsForDownload(const DownloadInfo& info);
+  void ShowDetailsForDownload(const DownloadInfo& info,
+                              content::PageNavigator* navigator);
 
   // Enables or disables the service.  This is usually called by the
   // SafeBrowsingService, which tracks whether any profile uses these services
