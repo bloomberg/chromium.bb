@@ -31,6 +31,7 @@
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/seccomp_sandbox.h"
 #include "content/common/unix_domain_socket_posix.h"
+#include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_linux.h"
@@ -441,6 +442,79 @@ static void PreSandboxInit() {
 }
 
 #if !defined(CHROMIUM_SELINUX)
+// Do nothing here
+static void SIGCHLDHandler(int signal) {
+}
+
+// The current process will become a process reaper like init.
+// We fork a child that will continue normally, when it dies, we can safely
+// exit.
+// We need to be careful we close the magic kZygoteIdFd properly in the parent
+// before this function returns.
+static bool CreateInitProcessReaper() {
+  int sync_fds[2];
+  // We want to use send, so we can't use a pipe
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sync_fds)) {
+    LOG(ERROR) << "Failed to create socketpair";
+    return false;
+  }
+
+  // We use normal fork, not the ForkDelegate in this case since we are not a
+  // true Zygote yet.
+  pid_t child_pid = fork();
+  if (child_pid == -1) {
+    (void) HANDLE_EINTR(close(sync_fds[0]));
+    (void) HANDLE_EINTR(close(sync_fds[1]));
+    return false;
+  }
+  if (child_pid) {
+    // We are the parent, assuming the role of an init process.
+    // The disposition for SIGCHLD cannot be SIG_IGN or wait() will only return
+    // once all of our childs are dead. Since we're init we need to reap childs
+    // as they come.
+    struct sigaction action;
+    memset(&action, 0, sizeof(action));
+    action.sa_handler = &SIGCHLDHandler;
+    CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
+
+    (void) HANDLE_EINTR(close(sync_fds[0]));
+    shutdown(sync_fds[1], SHUT_RD);
+    // This "magic" socket must only appear in one process.
+    (void) HANDLE_EINTR(close(content::kZygoteIdFd));
+    // Tell the child to continue
+    CHECK(HANDLE_EINTR(send(sync_fds[1], "C", 1, MSG_NOSIGNAL)) == 1);
+
+    for (;;) {
+      // Loop until we have reaped our one natural child
+      siginfo_t reaped_child_info;
+      pid_t reaped_child =
+        HANDLE_EINTR(waitid(P_ALL, 0, &reaped_child_info, WEXITED));
+      if (reaped_child == -1)
+        _exit(1);
+      if (reaped_child_info.si_pid == child_pid) {
+        int exit_code = 0;
+        // We're done waiting
+        if (reaped_child_info.si_code == CLD_EXITED) {
+          exit_code = reaped_child_info.si_status;
+        }
+        // Exit with the same exit code as our parent. This is most likely
+        // useless. _exit with 0 if we got signaled.
+        _exit(exit_code);
+      }
+    }
+  } else {
+    // The child needs to wait for the parent to close kZygoteIdFd to avoid a
+    // race condition
+    (void) HANDLE_EINTR(close(sync_fds[1]));
+    shutdown(sync_fds[0], SHUT_WR);
+    char should_continue;
+    if (HANDLE_EINTR(read(sync_fds[0], &should_continue, 1)) == 1)
+      return true;
+    else
+      return false;
+  }
+}
+
 // This will set the *using_suid_sandbox variable to true if the SUID sandbox
 // is enabled. This does not necessarily exclude other types of sandboxing.
 static bool EnterSandbox(bool* using_suid_sandbox) {
@@ -482,6 +556,15 @@ static bool EnterSandbox(bool* using_suid_sandbox) {
     if (reply != kMsgChrootSuccessful) {
       LOG(ERROR) << "Error code reply from chroot helper";
       return false;
+    }
+
+    if (getpid() == 1) {
+      // The setuid sandbox has created a new PID namespace and we need
+      // to assume the role of init.
+      if (!CreateInitProcessReaper()) {
+        LOG(ERROR) << "Error creating an init process to reap zombies";
+        return false;
+      }
     }
 
 #if !defined(OS_OPENBSD)
