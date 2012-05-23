@@ -53,13 +53,15 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
 WebDialogView::WebDialogView(Profile* profile,
                              Browser* browser,
                              WebDialogDelegate* delegate)
-    : WebDialogWebContentsDelegate(profile),
+    : ClientView(NULL, NULL),
+      WebDialogWebContentsDelegate(profile),
       initialized_(false),
       delegate_(delegate),
       dialog_controller_(new WebDialogController(this, profile, browser)),
       web_view_(new views::WebView(profile)) {
   web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);
+  set_contents_view(web_view_);
   SetLayoutManager(new views::FillLayout);
   // Pressing the ESC key will close the dialog.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -96,6 +98,15 @@ void WebDialogView::ViewHierarchyChanged(bool is_add,
     InitDialog();
 }
 
+bool WebDialogView::CanClose() {
+  bool close_dialog = true;
+  if (delegate_)
+    delegate_->OnCloseContents(web_view_->web_contents(),
+                               &close_dialog);
+
+  return close_dialog;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, views::WidgetDelegate implementation:
 
@@ -127,7 +138,7 @@ void WebDialogView::WindowClosing() {
     OnDialogClosed("");
 }
 
-views::View* WebDialogView::GetContentsView() {
+views::ClientView* WebDialogView::CreateClientView(views::Widget* widget) {
   return this;
 }
 

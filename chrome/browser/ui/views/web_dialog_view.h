@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "ui/gfx/size.h"
-#include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/client_view.h"
 
 class Browser;
 class WebDialogController;
@@ -42,7 +42,7 @@ class WebView;
 // TODO(beng): This class should not depend on Browser or Profile, only
 //             content::BrowserContext.
 class WebDialogView
-    : public views::View,
+    : public views::ClientView,
       public WebDialogWebContentsDelegate,
       public WebDialogDelegate,
       public views::WidgetDelegate,
@@ -56,13 +56,14 @@ class WebDialogView
   // For testing.
   content::WebContents* web_contents();
 
-  // Overridden from views::View:
+  // Overridden from views::ClientView:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator)
       OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
+  virtual bool CanClose() OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
   virtual bool CanResize() const OVERRIDE;
@@ -70,7 +71,7 @@ class WebDialogView
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual std::string GetWindowName() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
-  virtual views::View* GetContentsView() OVERRIDE;
+  virtual ClientView* CreateClientView(views::Widget* widget) OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;

@@ -137,9 +137,9 @@ void PrintPreviewTabDelegate::OnDialogClosed(
 }
 
 void PrintPreviewTabDelegate::OnCloseContents(WebContents* /* source */,
-                                              bool* /* out_close_dialog */) {
-  // Not used, returning dummy value.
-  NOTREACHED();
+                                              bool* out_close_dialog) {
+  if (out_close_dialog)
+    *out_close_dialog = true;
 }
 
 bool PrintPreviewTabDelegate::ShouldShowDialogTitle() const {

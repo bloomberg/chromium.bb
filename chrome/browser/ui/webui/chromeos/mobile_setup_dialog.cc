@@ -10,12 +10,14 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/webui/web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
+#include "ui/views/widget/widget.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -50,6 +52,7 @@ class MobileSetupDialogDelegate : public WebDialogDelegate {
       const content::ContextMenuParams& params) OVERRIDE;
 
  private:
+  gfx::NativeWindow dialog_window_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileSetupDialogDelegate);
 };
@@ -66,17 +69,18 @@ MobileSetupDialogDelegate* MobileSetupDialogDelegate::GetInstance() {
   return Singleton<MobileSetupDialogDelegate>::get();
 }
 
-MobileSetupDialogDelegate::MobileSetupDialogDelegate() {
+MobileSetupDialogDelegate::MobileSetupDialogDelegate() : dialog_window_(NULL) {
 }
 
 MobileSetupDialogDelegate::~MobileSetupDialogDelegate() {
 }
 
 void MobileSetupDialogDelegate::ShowDialog() {
-  browser::ShowWebDialog(NULL,
-                         ProfileManager::GetDefaultProfileOrOffTheRecord(),
-                         NULL,
-                         this);
+  dialog_window_ = browser::ShowWebDialog(
+      NULL,
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      NULL,
+      this);
 }
 
 ui::ModalType MobileSetupDialogDelegate::GetDialogModalType() const {
@@ -96,11 +100,7 @@ void MobileSetupDialogDelegate::GetWebUIMessageHandlers(
 }
 
 void MobileSetupDialogDelegate::GetDialogSize(gfx::Size* size) const {
-#if defined(POST_PORTAL)
   size->SetSize(850, 650);
-#else
-  size->SetSize(1100, 700);
-#endif
 }
 
 std::string MobileSetupDialogDelegate::GetDialogArgs() const {
@@ -108,11 +108,20 @@ std::string MobileSetupDialogDelegate::GetDialogArgs() const {
 }
 
 void MobileSetupDialogDelegate::OnDialogClosed(const std::string& json_retval) {
+  dialog_window_ = NULL;
 }
 
 void MobileSetupDialogDelegate::OnCloseContents(WebContents* source,
                                                 bool* out_close_dialog) {
-  *out_close_dialog = true;
+  if (!dialog_window_) {
+    *out_close_dialog = true;
+    return;
+  }
+
+  *out_close_dialog = browser::ShowQuestionMessageBox(
+      dialog_window_,
+      l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE),
+      l10n_util::GetStringUTF16(IDS_MOBILE_CANCEL_ACTIVATION));
 }
 
 bool MobileSetupDialogDelegate::ShouldShowDialogTitle() const {
