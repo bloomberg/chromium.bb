@@ -53,7 +53,7 @@ Layer::Layer()
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL),
-      scale_content_(true),
+      scale_canvas_(true),
       device_scale_factor_(1.0f) {
   CreateWebLayer();
 }
@@ -67,7 +67,7 @@ Layer::Layer(LayerType type)
       layer_updated_externally_(false),
       opacity_(1.0f),
       delegate_(NULL),
-      scale_content_(true),
+      scale_canvas_(true),
       device_scale_factor_(1.0f) {
   CreateWebLayer();
 }
@@ -340,7 +340,9 @@ void Layer::SendDamagedRects() {
           sk_damaged.width(),
           sk_damaged.height());
 
-      if (scale_content_ && web_layer_is_accelerated_) {
+      // TODO(pkotwicz): Remove this once we are no longer linearly upscaling
+      // web contents when DIP is enabled (crbug.com/127455).
+      if (web_layer_is_accelerated_) {
         damaged.Inset(-1, -1);
         damaged = damaged.Intersect(bounds_);
       }
@@ -388,14 +390,14 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
                           const WebKit::WebRect& clip) {
   TRACE_EVENT0("ui", "Layer::paintContents");
   gfx::Canvas canvas(web_canvas);
-  bool scale_content = scale_content_;
-  if (scale_content) {
+  bool scale_canvas = scale_canvas_;
+  if (scale_canvas) {
     canvas.sk_canvas()->scale(SkFloatToScalar(device_scale_factor_),
                               SkFloatToScalar(device_scale_factor_));
   }
   if (delegate_)
     delegate_->OnPaintLayer(&canvas);
-  if (scale_content)
+  if (scale_canvas)
     canvas.Restore();
 }
 
@@ -589,13 +591,13 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     WebKit::WebExternalTextureLayer texture_layer =
         web_layer_.to<WebKit::WebExternalTextureLayer>();
     texture_layer.setTextureId(should_draw ? texture_id : 0);
+    gfx::Size texture_size = texture_->size();
 
-    gfx::Size texture_size;
-    if (scale_content_)
-      texture_size = texture_->size();
-    else
-      texture_size = ConvertSizeToDIP(this, texture_->size());
-
+    // As WebKit does not support DIP, WebKit is told of coordinates in DIP
+    // as if they were pixel coordinates. The texture is scaled here via
+    // the setBounds call.
+    // TODO(pkotwicz): Fix this code to take in account textures with pixel
+    // sizes once WebKit understands DIP. http://crbug.com/127455
     gfx::Size size(std::min(bounds().width(), texture_size.width()),
                    std::min(bounds().height(), texture_size.height()));
     WebKit::WebFloatRect rect(

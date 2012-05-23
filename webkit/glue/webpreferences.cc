@@ -38,7 +38,6 @@ WebPreferences::WebPreferences()
       minimum_logical_font_size(6),
       default_device_scale_factor(1),
       default_encoding("ISO-8859-1"),
-      apply_default_device_scale_factor_in_compositor(false),
       javascript_enabled(true),
       web_security_enabled(true),
       javascript_can_open_windows_automatically(true),
@@ -199,8 +198,6 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setMinimumLogicalFontSize(minimum_logical_font_size);
   settings->setDefaultDeviceScaleFactor(default_device_scale_factor);
   settings->setDefaultTextEncodingName(ASCIIToUTF16(default_encoding));
-  settings->setApplyDefaultDeviceScaleFactorInCompositor(
-      apply_default_device_scale_factor_in_compositor);
   settings->setJavaScriptEnabled(javascript_enabled);
   settings->setWebSecurityEnabled(web_security_enabled);
   settings->setJavaScriptCanOpenWindowsAutomatically(
