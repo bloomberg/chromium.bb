@@ -729,8 +729,9 @@
      'linux': [
        'media.audio_latency_perf',
        'media.media_constrained_network_perf',
-       'media.media_stat_perf',
+       'media.media_scrub_perf',
        'media.media_seek_perf',
+       'media.media_stat_perf',
      ],
   },
 

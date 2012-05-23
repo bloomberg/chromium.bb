@@ -1,0 +1,152 @@
+<!-- Used by media_scrub_perf to record scrubbing perf metrics. -->
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <title>Scrubbing Tests</title>
+    <script src="utils.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <label for="src">Video src (direct link to media file):</label>
+    <input id="src" type="text" size="64">
+    <button onclick="startTest(document.querySelector('input').value);">
+      Start
+    </button>
+    <p>
+      <video controls></video><br>
+      Forward scrubbing time: <span id="forwardScrub"></span><br>
+      Backward scrubbing time: <span id="backwardScrub"></span><br>
+      Mixed scrubbing time: <span id="mixedScrub"></span><br>
+      <span id="logs"></span>
+    </p>
+  <script type="text/javascript">
+    // Number of seeks perf scrub.
+    var SCRUBS = 15;
+    // The delta between 2 scrubs in secs.
+    var SCRUB_DELTA = 0.1;
+    // Used by pyauto tests to store the scrubbing times.
+    var forwardScrubTime = backwardScrubTime = mixedScrubTime = 0;
+    // Used for each scrub test based on buffered area.
+    var startTime = endTime = scrubCount = 0;
+    // Used by PyAuto to log any error message.
+    var errorMsg = "";
+    // Used by PyAuto to indicate when the test is done.
+    var testDone = false;
+    // Timer used to measure scrubbing performance.
+    var timer = new Timer();
+    // Indicates the current scrubbing direction performed.
+    var currentDirection = null;
+
+    var Direction = {
+      FORWARD: 0,
+      BACKWARD: 1,
+      MIXED: 2
+    }
+
+    function log(text) {
+      logs.innerText += text + "\n";
+    }
+
+    function getAndClearElement(id) {
+      var elem = document.getElementById(id);
+      elem.innerText = "";
+      return elem;
+    }
+
+    function onCanplaythrough() {
+      startTime = video.buffered.start(0);
+      endTime = video.buffered.end(0);
+      log('Video duration: ' + video.duration + " secs");
+      log('Scrubbing area: (' + startTime + ", " + endTime + ")");
+      startNextScrubTest();
+    }
+
+    function startNextScrubTest() {
+      scrubCount = 0;
+      timer.start();
+      if (currentDirection == Direction.FORWARD) {
+        currentDirection = Direction.BACKWARD;
+        video.currentTime = endTime;
+      } else if (currentDirection == Direction.BACKWARD) {
+        currentDirection = Direction.MIXED;
+        video.currentTime = endTime;
+      } else if (currentDirection == Direction.MIXED) {
+        endTest();
+      } else {
+        currentDirection = Direction.FORWARD;
+        video.currentTime = startTime;
+      }
+    }
+
+    function seeked() {
+      ++scrubCount;
+      if (scrubCount == SCRUBS) {
+        logScrubTime();
+        startNextScrubTest();
+      } else {
+        video.currentTime = nextSeekLocation();
+      }
+    }
+
+    function nextSeekLocation() {
+      if (currentDirection == Direction.FORWARD)
+        return video.currentTime + SCRUB_DELTA;
+      else if (currentDirection == Direction.BACKWARD)
+        return video.currentTime - SCRUB_DELTA;
+      else {
+        var nextTime = (startTime + endTime) / 2;
+        if (scrubCount % 2)
+          startTime = nextTime;
+        else
+          endTime = nextTime;
+        return nextTime;
+      }
+    }
+
+    function logScrubTime() {
+      delta = Math.round(timer.stop(), 0);
+      var scrubElem = null;
+      if (currentDirection == Direction.FORWARD) {
+        scrubElem = getAndClearElement("forwardScrub");
+        forwardScrubTime = delta;
+      } else if (currentDirection == Direction.BACKWARD) {
+        scrubElem = getAndClearElement("backwardScrub");
+        backwardScrubTime = delta;
+      } else {
+        scrubElem = getAndClearElement("mixedScrub");
+        mixedScrubTime = delta;
+      }
+      scrubElem.innerText = delta + " ms";
+    }
+
+    function end(msg) {
+      errorMsg = msg;
+      log(msg);
+      endTest();
+    }
+
+    function endTest() {
+      testDone = true;
+    }
+
+    // Called by the PyAuto controller to initiate testing.
+    function startTest(src) {
+      video = document.querySelector("video");
+      logs = getAndClearElement("logs");
+      errorMsg = "";
+      testDone = false;
+      forwardScrubTime = backwardScrubTime = mixedScrubTime = 0;
+      currentDirection = null;
+
+      video.addEventListener("seeked",  seeked);
+      video.addEventListener("canplaythrough", onCanplaythrough);
+      video.addEventListener("error", function() {
+        end("Error loading media: " + video.error.code);
+      });
+      video.src = src;
+
+      if (window.domAutomationController)
+        window.domAutomationController.send(true);
+    }
+  </script>
+  </body>
+</html>
