@@ -213,10 +213,6 @@ function load() {
   $('send-report-button').onclick = sendReport;
   $('cancel-button').onclick = cancel;
 
-  var menuOffPattern = /(^\?|&)menu=off($|&)/;
-  var menuDisabled = menuOffPattern.test(window.location.search);
-  document.documentElement.setAttribute('hide-menu', menuDisabled);
-
   // Set default values for the possible parameters, and then parse the actual
   // values from the URL hash.
   var parameters = {

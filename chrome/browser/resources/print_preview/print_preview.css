@@ -15,23 +15,37 @@ body {
 /* Header */
 
 header {
+  -webkit-padding-end: 14px;
   -webkit-padding-start: 16px;
 }
 
 #print-preview #navbar-container {
+  -webkit-border-end: 1px solid rgb(198, 201, 206);
   -webkit-box-orient: vertical;
   -webkit-user-select: none;
+  background-color: #f1f1f1;
+  bottom: 0;
   display: -webkit-box;
+  /* We set both left and right for the sake of RTL. */
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
   width: 310px;
+  z-index: 2;
 }
 
-#print-preview #navbar-content-title {
-  cursor: default;
-  text-align: start;
+#navbar-content-title {
+  color: #333;
+  font-size: 200%;
+  font-weight: normal;
+  margin: 0;
+  padding-bottom: 14px;
+  padding-top: 13px;
+  text-shadow: white 0 1px 2px;
 }
 
 #print-header {
-  -webkit-padding-end: 14px;
   padding-bottom: 10px;
   padding-top: 10px;
 }
@@ -299,12 +313,18 @@ html[dir='rtl'] #decrement {
 
 /* PDF view */
 
-#print-preview #mainview {
+#mainview {
   -webkit-margin-start: 310px;
   -webkit-padding-start: 0;
   -webkit-user-select: none;
   background-color: #ccc;
+  bottom: 0;
+  left: 0;
   overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
 }
 
 #pdf-viewer {
