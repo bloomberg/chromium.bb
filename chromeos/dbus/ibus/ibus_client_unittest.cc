@@ -31,6 +31,11 @@ class MockCreateInputContextCallback {
   MOCK_METHOD1(Run, void(const dbus::ObjectPath& object_path));
 };
 
+class MockCreateInputContextErrorCallback {
+ public:
+  MOCK_METHOD0(Run, void());
+};
+
 class IBusClientTest : public testing::Test {
  public:
   IBusClientTest() : response_(NULL) {}
@@ -39,7 +44,8 @@ class IBusClientTest : public testing::Test {
   void OnCreateInputContext(
       dbus::MethodCall* method_call,
       int timeout_ms,
-      const dbus::ObjectProxy::ResponseCallback& callback) {
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
     dbus::MessageReader reader(method_call);
     std::string client_name;
     EXPECT_TRUE(reader.PopString(&client_name));
@@ -47,6 +53,22 @@ class IBusClientTest : public testing::Test {
     EXPECT_FALSE(reader.HasMoreData());
 
     message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
+  }
+
+  // Handles fail case of CreateInputContext method call.
+  void OnCreateInputContextFail(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
+    dbus::MessageReader reader(method_call);
+    std::string client_name;
+    EXPECT_TRUE(reader.PopString(&client_name));
+    EXPECT_EQ(kClientName, client_name);
+    EXPECT_FALSE(reader.HasMoreData());
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(error_callback,
+                                                 error_response_));
   }
 
  protected:
@@ -79,16 +101,19 @@ class IBusClientTest : public testing::Test {
 
   // Response returned by mock methods.
   dbus::Response* response_;
+  dbus::ErrorResponse* error_response_;
 };
 
 TEST_F(IBusClientTest, CreateInputContextTest) {
-  // Set expectations
+  // Set expectations.
   const dbus::ObjectPath kInputContextObjectPath =
       dbus::ObjectPath("some.object.path");
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
   MockCreateInputContextCallback callback;
   EXPECT_CALL(callback, Run(kInputContextObjectPath));
+  MockCreateInputContextErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run()).Times(0);
 
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -96,10 +121,86 @@ TEST_F(IBusClientTest, CreateInputContextTest) {
   writer.AppendObjectPath(kInputContextObjectPath);
   response_ = response.get();
 
-  // Call CreateInputContext
-  client_->CreateInputContext(kClientName,
-                              base::Bind(&MockCreateInputContextCallback::Run,
-                                         base::Unretained(&callback)));
+  // Call CreateInputContext.
+  client_->CreateInputContext(
+      kClientName,
+      base::Bind(&MockCreateInputContextCallback::Run,
+                 base::Unretained(&callback)),
+      base::Bind(&MockCreateInputContextErrorCallback::Run,
+                 base::Unretained(&error_callback)));
+
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusClientTest, CreateInputContext_NullResponseFail) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
+  MockCreateInputContextCallback callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
+  MockCreateInputContextErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run());
+
+  // Set NULL response.
+  response_ = NULL;
+
+  // Call CreateInputContext.
+  client_->CreateInputContext(
+      kClientName,
+      base::Bind(&MockCreateInputContextCallback::Run,
+                 base::Unretained(&callback)),
+      base::Bind(&MockCreateInputContextErrorCallback::Run,
+                 base::Unretained(&error_callback)));
+
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusClientTest, CreateInputContext_InvalidResponseFail) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
+  MockCreateInputContextCallback callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
+  MockCreateInputContextErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run());
+
+  // Create invalid(empty) response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // Call CreateInputContext.
+  client_->CreateInputContext(
+      kClientName,
+      base::Bind(&MockCreateInputContextCallback::Run,
+                 base::Unretained(&callback)),
+      base::Bind(&MockCreateInputContextErrorCallback::Run,
+                 base::Unretained(&error_callback)));
+
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusClientTest, CreateInputContext_MethodCallFail) {
+  // Set expectations
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContextFail));
+  MockCreateInputContextCallback callback;
+  EXPECT_CALL(callback, Run(_)).Times(0);
+  MockCreateInputContextErrorCallback error_callback;
+  EXPECT_CALL(error_callback, Run());
+
+  // The error response is not used in CreateInputContext.
+  error_response_ = NULL;
+
+  // Call CreateInputContext.
+  client_->CreateInputContext(
+      kClientName,
+      base::Bind(&MockCreateInputContextCallback::Run,
+                 base::Unretained(&callback)),
+      base::Bind(&MockCreateInputContextErrorCallback::Run,
+                 base::Unretained(&error_callback)));
 
   // Run the message loop.
   message_loop_.RunAllPending();

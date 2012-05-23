@@ -30,23 +30,34 @@ class IBusClientImpl : public IBusClient {
   // IBusClient override.
   virtual void CreateInputContext(
       const std::string& client_name,
-      const CreateInputContextCallback& callback) OVERRIDE {
+      const CreateInputContextCallback& callback,
+      const ErrorCallback& error_callback) OVERRIDE {
+    DCHECK(!callback.is_null());
+    DCHECK(!error_callback.is_null());
     dbus::MethodCall method_call(kIBusServiceInterface,
                                  kIBusBusCreateInputContextMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(client_name);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&IBusClientImpl::OnCreateInputContext,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+    proxy_->CallMethodWithErrorCallback(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&IBusClientImpl::OnCreateInputContext,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   error_callback),
+        base::Bind(&IBusClientImpl::OnCreateInputContextFail,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   error_callback));
   }
 
  private:
   // Handles responses of CreateInputContext method calls.
   void OnCreateInputContext(const CreateInputContextCallback& callback,
+                            const ErrorCallback& error_callback,
                             dbus::Response* response) {
     if (!response) {
-      LOG(ERROR) << "Cannot get input context: " << response->ToString();
+      LOG(ERROR) << "Cannot get input context: response is NULL.";
+      error_callback.Run();
       return;
     }
     dbus::MessageReader reader(response);
@@ -54,9 +65,16 @@ class IBusClientImpl : public IBusClient {
     if (!reader.PopObjectPath(&object_path)) {
       // The IBus message structure may be changed.
       LOG(ERROR) << "Invalid response: " << response->ToString();
+      error_callback.Run();
       return;
     }
     callback.Run(object_path);
+  }
+
+  // Handles error response of CreateInputContext method calls.
+  void OnCreateInputContextFail(const ErrorCallback& error_callback,
+                                dbus::ErrorResponse* response) {
+    error_callback.Run();
   }
 
   dbus::ObjectProxy* proxy_;
@@ -73,7 +91,8 @@ class IBusClientStubImpl : public IBusClient {
 
   virtual void CreateInputContext(
       const std::string& client_name,
-      const CreateInputContextCallback & callback) OVERRIDE {}
+      const CreateInputContextCallback & callback,
+      const ErrorCallback& error_callback) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IBusClientStubImpl);

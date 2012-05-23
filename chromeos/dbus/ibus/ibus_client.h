@@ -29,15 +29,17 @@ class CHROMEOS_EXPORT IBusClient {
  public:
   typedef base::Callback<void(const dbus::ObjectPath&)>
       CreateInputContextCallback;
+  typedef base::Callback<void()> ErrorCallback;
 
   virtual ~IBusClient();
 
   // Requests the ibus-daemon to create new input context. If succeeded,
   // |callback| will be called with an ObjectPath which is used in input context
-  // handling.
+  // handling. If failed, |error_callback| is called instead.
   virtual void CreateInputContext(
       const std::string& client_name,
-      const CreateInputContextCallback& callback) = 0;
+      const CreateInputContextCallback& callback,
+      const ErrorCallback& error_callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

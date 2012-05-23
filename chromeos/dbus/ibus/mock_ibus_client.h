@@ -17,9 +17,10 @@ class MockIBusClient : public IBusClient {
   MockIBusClient();
   virtual ~MockIBusClient();
 
-  MOCK_METHOD2(CreateInputContext,
+  MOCK_METHOD3(CreateInputContext,
                void(const std::string& client_name,
-                    const CreateInputContextCallback& callback));
+                    const CreateInputContextCallback& callback,
+                    const ErrorCallback& error_callback));
 };
 
 }  // namespace chromeos
