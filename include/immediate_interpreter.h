@@ -402,6 +402,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Is Tap-To-Click enabled
   BoolProperty tap_enable_;
+  // Allows Tap-To-Click to be paused
+  BoolProperty tap_paused_;
   // General time limit [s] for tap gestures
   DoubleProperty tap_timeout_;
   // General time limit [s] for time between taps.

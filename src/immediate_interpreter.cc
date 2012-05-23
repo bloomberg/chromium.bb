@@ -259,6 +259,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       pinch_guess_start_(-1.0),
       pinch_locked_(false),
       tap_enable_(prop_reg, "Tap Enable", false),
+      tap_paused_(prop_reg, "Tap Paused", false),
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
       inter_tap_timeout_(prop_reg, "Inter-Tap Timeout", 0.15),
       tap_drag_delay_(prop_reg, "Tap Drag Delay", 0.1),
@@ -1126,7 +1127,8 @@ void ImmediateInterpreter::UpdateTapState(
     unsigned* buttons_down,
     unsigned* buttons_up,
     stime_t* timeout) {
-  if (tap_to_click_state_ == kTtcIdle && !tap_enable_.val_)
+  if (tap_to_click_state_ == kTtcIdle && (!tap_enable_.val_ ||
+                                          tap_paused_.val_))
     return;
   Log("Entering UpdateTapState");
 

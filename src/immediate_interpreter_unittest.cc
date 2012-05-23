@@ -2517,22 +2517,36 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
     {C,{ 0.99, 0, 0, 0, NULL   }, .99, MkSet(),     0, kBL, kIdl, false }
   };
 
-  for (int iter = 0; iter < 3; ++iter) {
+  for (int iter = 0; iter < 5; ++iter) {
     for (size_t i = 0; i < arraysize(hwsgs_list); ++i) {
       string desc;
       stime_t disable_time = 0.0;
+      stime_t pause_time = 0.0;
       switch (iter) {
         case 0:  // test with tap enabled
           desc = StringPrintf("State %zu (tap enabled)", i);
           disable_time = -1;  // unreachable time
+          pause_time = -1;
           break;
         case 1:  // test with tap disabled during gesture
           desc = StringPrintf("State %zu (tap disabled during gesture)", i);
           disable_time = 0.02;
+          pause_time = -1;
           break;
         case 2:  // test with tap disabled before gesture (while Idle)
           desc = StringPrintf("State %zu (tap disabled while Idle)", i);
           disable_time = 0.00;
+          pause_time = -1;
+          break;
+        case 3:  // test with tap paused during gesture
+          desc = StringPrintf("State %zu (tap paused during gesture)", i);
+          disable_time = -1;
+          pause_time = 0.02;
+          break;
+        case 4:  // test with tap paused before gesture (while Idle)
+          desc = StringPrintf("State %zu (tap paused while Idle)", i);
+          disable_time = 0.00;
+          pause_time = -1;
           break;
       }
 
@@ -2554,6 +2568,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
         ii->motion_tap_prevent_timeout_.val_ = 0;
         ii->tap_drag_timeout_.val_ = 0.05;
         ii->tap_enable_.val_ = 1;
+        ii->tap_paused_.val_ = 0;
         ii->tap_move_dist_.val_ = 1.0;
         ii->tap_timeout_.val_ = 0.05;
         EXPECT_EQ(kIdl, ii->tap_to_click_state_);
@@ -2565,6 +2580,9 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
       // Disable tap in the middle of the gesture
       if (hwstate && hwstate->timestamp == disable_time)
         ii->tap_enable_.val_ = false;
+
+      if (hwstate && hwstate->timestamp == pause_time)
+        ii->tap_paused_.val_ = true;
 
       unsigned bdown = 0;
       unsigned bup = 0;
@@ -2578,6 +2596,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
       switch (iter) {
         case 0:  // tap should be enabled
         case 1:
+        case 3:
           EXPECT_EQ(hwsgs.expected_down, bdown) << desc;
           EXPECT_EQ(hwsgs.expected_up, bup) << desc;
           if (hwsgs.timeout)
@@ -2587,6 +2606,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
           EXPECT_EQ(hwsgs.expected_state, ii->tap_to_click_state_) << desc;
           break;
         case 2:  // tap should be disabled
+        case 4:
           EXPECT_EQ(0, bdown) << desc;
           EXPECT_EQ(0, bup) << desc;
           EXPECT_DOUBLE_EQ(-1.0, tm) << desc;
