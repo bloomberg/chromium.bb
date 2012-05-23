@@ -169,7 +169,7 @@ void RenderViewTest::SetUp() {
       false,
       1,
       WebKit::WebScreenInfo(),
-      false,
+      NULL,
       AccessibilityModeOff);
   view->AddRef();
   view_ = view;

@@ -97,6 +97,13 @@ class PepperPluginDelegateImpl
       const webkit::WebPluginInfo& webplugin_info,
       bool* pepper_plugin_was_registered);
 
+  // Creates a browser plugin instance given the process handle, and channel
+  // handle to access the guest renderer.
+  // If the plugin fails to initialize then return NULL.
+  scoped_refptr<webkit::ppapi::PluginModule> CreateBrowserPluginModule(
+      const IPC::ChannelHandle& channel_handle,
+      int guest_process_id);
+
   // Called by RenderView to tell us about painting events, these two functions
   // just correspond to the WillInitiatePaint, DidInitiatePaint and
   // DidFlushPaint hooks in RenderView.

@@ -92,6 +92,7 @@ class WebUIBindings;
 
 namespace content {
 class DocumentState;
+class GuestToEmbedderChannel;
 class NavigationState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
@@ -110,6 +111,7 @@ namespace webkit {
 
 namespace ppapi {
 class PluginInstance;
+class WebPluginImpl;
 }  // namespace ppapi
 
 }  // namespace webkit
@@ -200,7 +202,7 @@ class RenderViewImpl : public RenderWidget,
       bool swapped_out,
       int32 next_page_id,
       const WebKit::WebScreenInfo& screen_info,
-      bool guest,
+      content::GuestToEmbedderChannel* guest_to_embedder_channel,
       AccessibilityMode accessibility_mode);
 
   // Returns the RenderViewImpl containing the given WebView.
@@ -261,7 +263,25 @@ class RenderViewImpl : public RenderWidget,
   // Sets whether  the renderer should report load progress to the browser.
   void SetReportLoadProgressEnabled(bool enabled);
 
-  bool guest() const { return guest_; }
+  content::GuestToEmbedderChannel*
+      guest_to_embedder_channel() const { return guest_to_embedder_channel_; }
+  PP_Instance guest_pp_instance() const { return guest_pp_instance_; }
+  void set_guest_graphics_resource(const ppapi::HostResource& resource) {
+    guest_graphics_resource_ = resource;
+  }
+  const ppapi::HostResource& guest_graphics_resource() const {
+    return guest_graphics_resource_;
+  }
+
+  // Once the browser plugin embedder has connected to this guest, and is
+  // ready to paint, it informs the guest through GuestReady to begin
+  // compositing.
+  void GuestReady(PP_Instance instance);
+
+  webkit::ppapi::WebPluginImpl* CreateBrowserPlugin(
+      const IPC::ChannelHandle& channel_handle,
+      int guest_process_id,
+      const WebKit::WebPluginParams& params);
 
   void LoadNavigationErrorPage(
       WebKit::WebFrame* frame,
@@ -768,7 +788,7 @@ class RenderViewImpl : public RenderWidget,
                  bool swapped_out,
                  int32 next_page_id,
                  const WebKit::WebScreenInfo& screen_info,
-                 bool guest,
+                 content::GuestToEmbedderChannel* guest_to_embedder_channel,
                  AccessibilityMode accessibility_mode);
 
   // Do not delete directly.  This class is reference counted.
@@ -1345,8 +1365,22 @@ class RenderViewImpl : public RenderWidget,
   // DOM automation bindings are enabled.
   scoped_ptr<DomAutomationController> dom_automation_controller_;
 
-  // Indicates whether this RenderView is a guest of another RenderView.
-  bool guest_;
+  // Channel for communication with embedding renderer, if it exists.
+  scoped_refptr<content::GuestToEmbedderChannel> guest_to_embedder_channel_;
+
+  // The pepper instance identifer for this guest RenderView.
+  PP_Instance guest_pp_instance_;
+
+  // The ppapi::HostResource associated with the on-screen context for this
+  // guest RenderView.
+  ppapi::HostResource guest_graphics_resource_;
+
+  // This graphics context is initialized once GuestReady() is called.
+  WebGraphicsContext3DCommandBufferImpl* guest_uninitialized_context_;
+
+  // These are the attributes originally passed into createGraphicsContext3D
+  // before the guest_to_embedder_channel was ready.
+  WebKit::WebGraphicsContext3D::Attributes guest_attributes_;
 
   // The accessibility mode.
   AccessibilityMode accessibility_mode_;

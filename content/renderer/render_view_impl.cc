@@ -55,6 +55,7 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/renderer/browser_plugin/guest_to_embedder_channel.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
@@ -78,8 +79,8 @@
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
+#include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_constants.h"
-#include "content/renderer/browser_plugin/browser_plugin_placeholder.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -496,7 +497,7 @@ RenderViewImpl::RenderViewImpl(
     bool swapped_out,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
-    bool guest,
+    content::GuestToEmbedderChannel* guest_to_embedder_channel,
     AccessibilityMode accessibility_mode)
     : RenderWidget(WebKit::WebPopupTypeNone, screen_info, swapped_out),
       webkit_preferences_(webkit_prefs),
@@ -537,7 +538,9 @@ RenderViewImpl::RenderViewImpl(
 #if defined(OS_WIN)
       focused_plugin_id_(-1),
 #endif
-      guest_(guest),
+      guest_to_embedder_channel_(guest_to_embedder_channel),
+      guest_pp_instance_(0),
+      guest_uninitialized_context_(NULL),
       accessibility_mode_(accessibility_mode),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
   routing_id_ = routing_id;
@@ -575,7 +578,7 @@ RenderViewImpl::RenderViewImpl(
 
   // If this is a popup, we must wait for the CreatingNew_ACK message before
   // completing initialization.  Otherwise, we can finish it now.
-  if (opener_id_ == MSG_ROUTING_NONE) {
+  if (!guest_to_embedder_channel && opener_id_ == MSG_ROUTING_NONE) {
     did_show_ = true;
     CompleteInit(parent_hwnd);
   }
@@ -713,7 +716,7 @@ RenderViewImpl* RenderViewImpl::Create(
     bool swapped_out,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
-    bool guest,
+    content::GuestToEmbedderChannel* guest_to_embedder_channel,
     AccessibilityMode accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   return new RenderViewImpl(
@@ -730,7 +733,7 @@ RenderViewImpl* RenderViewImpl::Create(
       swapped_out,
       next_page_id,
       screen_info,
-      guest,
+      guest_to_embedder_channel,
       accessibility_mode);
 }
 
@@ -1600,7 +1603,7 @@ WebView* RenderViewImpl::createView(
       false,
       1,
       screen_info_,
-      guest_,
+      guest_to_embedder_channel_,
       accessibility_mode_);
   view->opened_by_user_gesture_ = params.user_gesture;
 
@@ -1657,6 +1660,18 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
     const WebGraphicsContext3D::Attributes& attributes) {
   if (!webview())
     return NULL;
+
+  if (guest_to_embedder_channel()) {
+    WebGraphicsContext3DCommandBufferImpl* context =
+        guest_to_embedder_channel()->CreateWebGraphicsContext3D(
+            this, attributes, false);
+    if (!guest_pp_instance()) {
+      guest_uninitialized_context_ = context;
+      guest_attributes_ = attributes;
+    }
+    return context;
+  }
+
   // The WebGraphicsContext3DInProcessImpl code path is used for
   // layout tests (though not through this code) as well as for
   // debugging and bringing up new ports.
@@ -2180,14 +2195,10 @@ void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
 
 WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
                                         const WebPluginParams& params) {
-  // The browser plugin is a special kind of pepper plugin
-  // that loads asynchronously. We first create a placeholder here.
-  // When a guest is ready to be displayed, we swap out the placeholder
-  // with the guest.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableBrowserPlugin) &&
       UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType)
-    return BrowserPluginPlaceholder::Create(this, frame, params);
+    return BrowserPlugin::Create(this, frame, params);
 
   WebPlugin* plugin = NULL;
   if (content::GetContentClient()->renderer()->OverrideCreatePlugin(
@@ -3698,6 +3709,30 @@ bool RenderViewImpl::IsEditableNode(const WebKit::WebNode& node) const {
   return is_editable_node;
 }
 
+void RenderViewImpl::GuestReady(PP_Instance instance) {
+  guest_pp_instance_ = instance;
+  if (guest_uninitialized_context_) {
+    bool success = guest_to_embedder_channel()->CreateGraphicsContext(
+        guest_uninitialized_context_,
+        guest_attributes_,
+        false,
+        this);
+    DCHECK(success);
+  }
+  CompleteInit(host_window_);
+}
+
+webkit::ppapi::WebPluginImpl* RenderViewImpl::CreateBrowserPlugin(
+    const IPC::ChannelHandle& channel_handle,
+    int guest_process_id,
+    const WebKit::WebPluginParams& params) {
+  scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
+      pepper_delegate_.CreateBrowserPluginModule(channel_handle,
+                                                 guest_process_id));
+  return new webkit::ppapi::WebPluginImpl(
+      pepper_module.get(), params, pepper_delegate_.AsWeakPtr());
+}
+
 WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
     WebKit::WebFrame* frame,
     const webkit::WebPluginInfo& info,
@@ -4791,6 +4826,8 @@ void RenderViewImpl::WillInitiatePaint() {
 void RenderViewImpl::DidInitiatePaint() {
   // Notify the pepper plugins that we've painted, and are waiting to flush.
   pepper_delegate_.ViewInitiatedPaint();
+  if (guest_to_embedder_channel())
+    guest_to_embedder_channel()->IssueSwapBuffers(guest_graphics_resource());
 }
 
 void RenderViewImpl::DidFlushPaint() {

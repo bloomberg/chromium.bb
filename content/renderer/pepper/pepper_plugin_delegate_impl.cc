@@ -34,6 +34,8 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/browser_plugin/browser_plugin_constants.h"
+#include "content/renderer/browser_plugin/browser_plugin_registry.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -253,6 +255,40 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   module = new webkit::ppapi::PluginModule(info->name, path,
                                            PepperPluginRegistry::GetInstance());
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
+  scoped_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper);
+  if (!dispatcher->Init(
+          channel_handle,
+          module->pp_module(),
+          webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
+          GetPreferences(),
+          hung_filter.get()))
+    return scoped_refptr<webkit::ppapi::PluginModule>();
+  module->InitAsProxied(dispatcher.release());
+  return module;
+}
+
+scoped_refptr<webkit::ppapi::PluginModule>
+    PepperPluginDelegateImpl::CreateBrowserPluginModule(
+        const IPC::ChannelHandle& channel_handle,
+        int guest_process_id) {
+  BrowserPluginRegistry* registry =
+      RenderThreadImpl::current()->browser_plugin_registry();
+  scoped_refptr<webkit::ppapi::PluginModule> module =
+      registry->GetModule(guest_process_id);
+  if (module)
+    return module;
+
+  scoped_refptr<PepperHungPluginFilter> hung_filter(
+      new PepperHungPluginFilter(FilePath(kBrowserPluginPath),
+                                 render_view_->routing_id(),
+                                 guest_process_id));
+  // Create a new HostDispatcher for the proxying, and hook it to a new
+  // PluginModule.
+  module = new webkit::ppapi::PluginModule(kBrowserPluginName,
+                                           FilePath(kBrowserPluginPath),
+                                           registry);
+  RenderThreadImpl::current()->browser_plugin_registry()->AddModule(
+      guest_process_id, module);
   scoped_ptr<HostDispatcherWrapper> dispatcher(new HostDispatcherWrapper);
   if (!dispatcher->Init(
           channel_handle,
