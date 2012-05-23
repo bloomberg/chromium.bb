@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2012 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -465,7 +465,22 @@ function embed_name(embed) {
 
 function ForcePluginLoadOnTimeout(elem, tester, timeout) {
   tester.log('Registering ForcePluginLoadOnTimeout (Bugs: NaCl 2428, Chrome 103588)');
-  setTimeout(function(){ ForceNaClPluginReload(elem, tester); }, timeout);
+
+  var started_loading = elem.readyState !== undefined;
+
+  // Remember that the plugin started loading - it may be unloaded by the time
+  // the callback fires.
+  elem.addEventListener('load', function() {
+    started_loading = true;
+  }, true);
+
+  // Check that the plugin has at least started to load after "timeout" seconds,
+  // otherwise reload the page.
+  setTimeout(function() {
+    if (!started_loading) {
+      ForceNaClPluginReload(elem, tester);
+    }
+  }, timeout);
 }
 
 function ForceNaClPluginReload(elem, tester) {
