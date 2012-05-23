@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,10 +19,11 @@ errors or positioning.  Most of that should be caught really fast anyways
 during any attempt to use a badly behaving script.
 """
 
+import generate_stubs as gs
 import re
 import StringIO
+import sys
 import unittest
-import generate_stubs as gs
 
 
 def _MakeSignature(return_type, name, params):
@@ -140,6 +141,19 @@ EXPORTS
       pattern = '\n  %s\n' % sig['name']
       self.assertTrue(re.search(pattern, contents),
                       msg='Expected match of "%s" in %s' % (pattern, contents))
+
+  def testQuietRun(self):
+    output = StringIO.StringIO()
+    gs.QuietRun([sys.executable,
+                 '-c', 'print "line 1 and suffix\\nline 2"'],
+                write_to=output)
+    self.assertEqual('line 1 and suffix\nline 2\n', output.getvalue())
+
+    output = StringIO.StringIO()
+    gs.QuietRun([sys.executable,
+                 '-c', 'print "line 1 and suffix\\nline 2"'],
+                 filter='line 1', write_to=output)
+    self.assertEqual('line 2\n', output.getvalue())
 
 
 class PosixStubWriterUnittest(unittest.TestCase):
