@@ -62,13 +62,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   void ResizeByMouse(const gfx::Point& mouse_location);
   void EndResizingByMouse(bool cancelled);
 
-  // Resizes the panel and sets the origin.
-  void OnPanelResizedByMouse(Panel* panel, const gfx::Rect& new_bounds);
-
-  // Resizes the panel. Explicitly setting the panel size will disable
-  // auto-size for the panel.
-  void ResizePanel(Panel* panel, const gfx::Size& new_size);
-
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
 

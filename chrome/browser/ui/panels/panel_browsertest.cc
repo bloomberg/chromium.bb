@@ -423,10 +423,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   EXPECT_EQ(previous_bounds.size(), panel->GetRestoredBounds().size());
   gfx::Size new_size(previous_bounds.size());
   new_size.Enlarge(5, 5);
-  panel_manager->ResizePanel(panel, new_size);
+  gfx::Rect new_bounds(previous_bounds.origin(), new_size);
+  panel->SetBounds(new_bounds);
   EXPECT_FALSE(panel->auto_resizable());
-  EXPECT_EQ(new_size, panel->GetBounds().size());
-  EXPECT_EQ(new_size, panel->GetRestoredBounds().size());
+  EXPECT_EQ(new_bounds.size(), panel->GetBounds().size());
+  EXPECT_EQ(new_bounds.size(), panel->GetRestoredBounds().size());
 
   // Turn back on auto-resize and verify that it works.
   ui_test_utils::WindowedNotificationObserver auto_resize_enabled(
@@ -455,19 +456,21 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ResizePanel) {
   EXPECT_EQ(original_bounds.size(), panel->GetRestoredBounds().size());
   gfx::Size new_size(original_bounds.size());
   new_size.Enlarge(5, 5);
-  panel_manager->ResizePanel(panel, new_size);
+  gfx::Rect new_bounds(original_bounds.origin(), new_size);
+  panel->SetBounds(new_bounds);
   EXPECT_FALSE(panel->auto_resizable());
-  EXPECT_EQ(new_size, panel->GetBounds().size());
-  EXPECT_EQ(new_size, panel->GetRestoredBounds().size());
+  EXPECT_EQ(new_bounds.size(), panel->GetBounds().size());
+  EXPECT_EQ(new_bounds.size(), panel->GetRestoredBounds().size());
 
   // Verify current height unaffected when panel is not expanded.
   panel->SetExpansionState(Panel::MINIMIZED);
   int original_height = panel->GetBounds().height();
   new_size.Enlarge(5, 5);
-  panel_manager->ResizePanel(panel, new_size);
-  EXPECT_EQ(new_size.width(), panel->GetBounds().width());
+  new_bounds.set_size(new_size);
+  panel->SetBounds(new_bounds);
+  EXPECT_EQ(new_bounds.size().width(), panel->GetBounds().width());
   EXPECT_EQ(original_height, panel->GetBounds().height());
-  EXPECT_EQ(new_size, panel->GetRestoredBounds().size());
+  EXPECT_EQ(new_bounds.size(), panel->GetRestoredBounds().size());
 
   panel->Close();
 }

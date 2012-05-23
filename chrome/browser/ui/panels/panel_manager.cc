@@ -217,19 +217,6 @@ void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
 
 }
 
-void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
-  PanelStrip* panel_strip = panel->panel_strip();
-  if (!panel_strip)
-    return;
-  panel_strip->ResizePanelWindow(panel, new_size);
-  panel->SetAutoResizable(false);
-}
-
-void PanelManager::OnPanelResizedByMouse(Panel* panel,
-                                         const gfx::Rect& new_bounds) {
-  panel->panel_strip()->OnPanelResizedByMouse(panel, new_bounds);
-}
-
 void PanelManager::MovePanelToStrip(
     Panel* panel,
     PanelStrip::Type new_layout,

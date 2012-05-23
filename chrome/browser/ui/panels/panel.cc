@@ -244,7 +244,10 @@ void Panel::ShowInactive() {
 
 void Panel::SetBounds(const gfx::Rect& bounds) {
   // Ignore bounds position as the panel manager controls all positioning.
-  manager()->ResizePanel(this, bounds.size());
+  if (!panel_strip_)
+    return;
+  panel_strip_->ResizePanelWindow(this, bounds.size());
+  SetAutoResizable(false);
 }
 
 // Close() may be called multiple times if the browser window is not ready to
@@ -342,6 +345,11 @@ void Panel::OnWindowAutoResized(const gfx::Size& preferred_window_size) {
   DCHECK(auto_resizable_);
   if (panel_strip_)
     panel_strip_->ResizePanelWindow(this, preferred_window_size);
+}
+
+void Panel::OnWindowResizedByMouse(const gfx::Rect& new_bounds) {
+  if (panel_strip_)
+    panel_strip_->OnPanelResizedByMouse(this, new_bounds);
 }
 
 void Panel::EnableWebContentsAutoResize(WebContents* web_contents) {

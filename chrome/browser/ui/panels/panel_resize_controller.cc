@@ -115,14 +115,14 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
     bounds.set_y(bounds_at_start_.bottom() - bounds.height());
 
   if (bounds != resizing_panel_->GetBounds())
-    panel_manager_->OnPanelResizedByMouse(resizing_panel_, bounds);
+    resizing_panel_->OnWindowResizedByMouse(bounds);
 }
 
 Panel* PanelResizeController::EndResizing(bool cancelled) {
   DCHECK(IsResizing());
 
   if (cancelled)
-    panel_manager_->OnPanelResizedByMouse(resizing_panel_, bounds_at_start_);
+    resizing_panel_->OnWindowResizedByMouse(bounds_at_start_);
 
   // Do a thorough cleanup.
   resizing_panel_->OnPanelEndUserResizing();

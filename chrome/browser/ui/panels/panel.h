@@ -196,6 +196,10 @@ class Panel : public BaseWindow,
   // get changed due to the contents being auto-resized.
   void OnWindowAutoResized(const gfx::Size& preferred_window_size);
 
+  // Resizes the panel and sets the origin. Invoked when the panel is resized
+  // via the mouse.
+  void OnWindowResizedByMouse(const gfx::Rect& new_bounds);
+
   // Sets minimum and maximum size for the panel.
   void SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size);
 
