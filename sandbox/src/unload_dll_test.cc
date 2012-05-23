@@ -41,12 +41,7 @@ SBOX_TESTS_COMMAND int SimpleOpenEvent(int argc, wchar_t **argv) {
 }
 
 // Flaky on windows, see http://crbug.com/80569.
-#if defined(OS_WIN)
-#define MAYBE_BaselineAvicapDll DISABLED_BaselineAvicapDll
-#else
-#define MAYBE_BaselineAvicapDll BaselineAvicapDll
-#endif
-TEST(UnloadDllTest, MAYBE_BaselineAvicapDll) {
+TEST(UnloadDllTest, DISABLED_BaselineAvicapDll) {
   TestRunner runner;
   runner.SetTestState(BEFORE_REVERT);
   runner.SetTimeout(2000);
@@ -61,7 +56,8 @@ TEST(UnloadDllTest, MAYBE_BaselineAvicapDll) {
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"UseOneDLL B avicap32.dll"));
 }
 
-TEST(UnloadDllTest, FLAKY_UnloadAviCapDllNoPatching) {
+// Flaky on windows, see http://crbug.com/80569.
+TEST(UnloadDllTest, DISABLED_UnloadAviCapDllNoPatching) {
   TestRunner runner;
   runner.SetTestState(BEFORE_REVERT);
   runner.SetTimeout(2000);
