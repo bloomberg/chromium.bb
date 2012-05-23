@@ -534,6 +534,9 @@ def _main():
   parser.add_option("-n", "--num_tests", type="int",
                     default=ChromeTests.LAYOUT_TESTS_DEFAULT_CHUNK_SIZE,
                     help="for layout tests: # of subtests per run.  0 for all.")
+  # TODO(thestig) Remove this if we can.
+  parser.add_option("", "--gtest_color", dest="gtest_color", default="no",
+                    help="dummy compatibility flag for sharding_supervisor.")
 
   options, args = parser.parse_args()
 

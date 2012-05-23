@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -54,6 +54,9 @@ def DetectNumCores():
     be found.
   """
   try:
+    # Override on some Chromium Valgrind bots.
+    if "CHROME_VALGRIND_NUMCPUS" in os.environ:
+      return int(os.environ["CHROME_VALGRIND_NUMCPUS"])
     # Linux, Unix, MacOS
     if hasattr(os, "sysconf"):
       if "SC_NPROCESSORS_ONLN" in os.sysconf_names:
