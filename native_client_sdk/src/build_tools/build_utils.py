@@ -52,6 +52,15 @@ def ChromeMajorVersion():
   return str(MAJOR)
 
 
+def ChromeRevision():
+  '''Extract chrome revision from svn.
+
+  Returns:
+    The Chrome revision as a string. e.g. "12345"
+  '''
+  return lastchange.FetchVersionInfo(None).revision
+
+
 #------------------------------------------------------------------------------
 # Parameters
 

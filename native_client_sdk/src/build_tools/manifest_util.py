@@ -174,6 +174,7 @@ class Archive(dict):
     # special case, self.checksum returns the sha1, not the checksum dict.
     if name == 'checksum':
       self.setdefault('checksum', {})['sha1'] = value
+      return
     return self.__setitem__(name, value)
 
   def GetChecksum(self, type='sha1'):

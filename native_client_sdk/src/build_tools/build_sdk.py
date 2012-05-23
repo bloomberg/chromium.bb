@@ -17,7 +17,6 @@ and whether it should upload an SDK to file storage (GSTORE)
 
 
 # std python includes
-import multiprocessing
 import optparse
 import os
 import platform
@@ -26,9 +25,10 @@ import sys
 
 # local includes
 import buildbot_common
+import build_updater
 import build_utils
-import lastchange
 import manifest_util
+from tests import test_server
 
 # Create the various paths of interest
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -53,65 +53,6 @@ import oshelpers
 GSTORE = 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
 MAKE = 'nacl_sdk/make_3_81/make.exe'
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
-
-
-def HTTPServerProcess(conn, serve_dir):
-  """Run a local httpserver with a randomly-chosen port.
-
-  This function assumes it is run as a child process using multiprocessing.
-
-  Args:
-    conn: A connection to the parent process. The child process sends
-        the local port, and waits for a message from the parent to
-        stop serving.
-    serve_dir: The directory to serve. All files are accessible through
-       http://localhost:<port>/path/to/filename.
-  """
-  import BaseHTTPServer
-  import SimpleHTTPServer
-
-  os.chdir(serve_dir)
-  httpd = BaseHTTPServer.HTTPServer(('', 0),
-                                    SimpleHTTPServer.SimpleHTTPRequestHandler)
-  conn.send(httpd.server_address[1])  # the chosen port number
-  httpd.timeout = 0.5  # seconds
-  running = True
-  while running:
-    httpd.handle_request()
-    if conn.poll():
-      running = conn.recv()
-  conn.close()
-
-
-class LocalHTTPServer(object):
-  """Class to start a local HTTP server as a child process."""
-
-  def __init__(self, serve_dir):
-    parent_conn, child_conn = multiprocessing.Pipe()
-    self.process = multiprocessing.Process(target=HTTPServerProcess,
-                                           args=(child_conn, serve_dir))
-    self.process.start()
-    if parent_conn.poll(10):  # wait 10 seconds
-      self.port = parent_conn.recv()
-    else:
-      raise Exception('Unable to launch HTTP server.')
-
-    self.conn = parent_conn
-
-  def Shutdown(self):
-    """Send a message to the child HTTP server process and wait for it to
-        finish."""
-    self.conn.send(False)
-    self.process.join()
-
-  def GetURL(self, rel_url):
-    """Get the full url for a file on the local HTTP server.
-
-    Args:
-      rel_url: A URL fragment to convert to a full URL. For example,
-          GetURL('foobar.baz') -> 'http://localhost:1234/foobar.baz'
-    """
-    return 'http://localhost:%d/%s' % (self.port, rel_url)
 
 
 def AddMakeBat(pepperdir, makepath):
@@ -501,64 +442,6 @@ def CopyExamples(pepperdir, toolchains):
   GenerateExamplesMakefile(os.path.join(SDK_EXAMPLE_DIR, 'Makefile'),
       out_makefile, examples)
 
-UPDATER_FILES = [
-  # launch scripts
-  ('build_tools/naclsdk', 'nacl_sdk/naclsdk'),
-  ('build_tools/naclsdk.bat', 'nacl_sdk/naclsdk.bat'),
-
-  # base manifest
-  ('build_tools/json/naclsdk_manifest0.json',
-      'nacl_sdk/sdk_cache/naclsdk_manifest2.json'),
-
-  # SDK tools
-  ('build_tools/sdk_tools/cacerts.txt', 'nacl_sdk/sdk_tools/cacerts.txt'),
-  ('build_tools/sdk_tools/sdk_update.py', 'nacl_sdk/sdk_tools/sdk_update.py'),
-  ('build_tools/manifest_util.py', 'nacl_sdk/sdk_tools/manifest_util.py'),
-  ('build_tools/sdk_tools/third_party/__init__.py',
-      'nacl_sdk/sdk_tools/third_party/__init__.py'),
-  ('build_tools/sdk_tools/third_party/fancy_urllib/__init__.py',
-      'nacl_sdk/sdk_tools/third_party/fancy_urllib/__init__.py'),
-  ('build_tools/sdk_tools/third_party/fancy_urllib/README',
-      'nacl_sdk/sdk_tools/third_party/fancy_urllib/README'),
-  ('LICENSE', 'nacl_sdk/sdk_tools/LICENSE'),
-  (CYGTAR, 'nacl_sdk/sdk_tools/cygtar.py'),
-]
-
-def CopyFiles(files):
-  for in_file, out_file in files:
-    if not os.path.isabs(in_file):
-      in_file = os.path.join(SDK_SRC_DIR, in_file)
-    out_file = os.path.join(OUT_DIR, out_file)
-    buildbot_common.MakeDir(os.path.dirname(out_file))
-    buildbot_common.CopyFile(in_file, out_file)
-
-def BuildUpdater():
-  buildbot_common.BuildStep('Create Updater')
-
-  # Build SDK directory
-  buildbot_common.RemoveDir(os.path.join(OUT_DIR, 'nacl_sdk'))
-
-  CopyFiles(UPDATER_FILES)
-
-  # Make zip
-  buildbot_common.RemoveFile(os.path.join(OUT_DIR, 'nacl_sdk.zip'))
-  buildbot_common.Run([sys.executable, oshelpers.__file__, 'zip',
-                       'nacl_sdk.zip'] +
-                      [out_file for in_file, out_file in UPDATER_FILES],
-                      cwd=OUT_DIR)
-
-  # Tar of all files under nacl_sdk/sdk_tools
-  sdktoolsdir = 'nacl_sdk/sdk_tools'
-  tarname = os.path.join(OUT_DIR, 'sdk_tools.tgz')
-  files_to_tar = [os.path.relpath(out_file, sdktoolsdir) for in_file, out_file
-                  in UPDATER_FILES if out_file.startswith(sdktoolsdir)]
-  buildbot_common.RemoveFile(tarname)
-  buildbot_common.Run([sys.executable, CYGTAR, '-C',
-      os.path.join(OUT_DIR, sdktoolsdir), '-czf', tarname] + files_to_tar,
-      cwd=NACL_DIR)
-  sys.stdout.write('\n')
-
-
 def main(args):
   parser = optparse.OptionParser()
   parser.add_option('--pnacl', help='Enable pnacl build.',
@@ -601,7 +484,7 @@ def main(args):
 
   pepper_ver = str(int(build_utils.ChromeMajorVersion()))
   pepper_old = str(int(build_utils.ChromeMajorVersion()) - 1)
-  clnumber = lastchange.FetchVersionInfo(None).revision
+  clnumber = build_utils.ChromeRevision()
   if options.release:
     pepper_ver = options.release
   print 'Building PEPPER %s at %s' % (pepper_ver, clnumber)
@@ -669,7 +552,7 @@ def main(args):
 
   # build sdk update
   if not skip_update:
-    BuildUpdater()
+    build_updater.BuildUpdater(OUT_DIR)
 
   # start local server sharing a manifest + the new bundle
   if not skip_test_updater and not skip_tar:
@@ -681,7 +564,7 @@ def main(args):
     server = None
     try:
       buildbot_common.BuildStep('Run local server')
-      server = LocalHTTPServer(SERVER_DIR)
+      server = test_server.LocalHTTPServer(SERVER_DIR)
 
       buildbot_common.BuildStep('Generate manifest')
       with open(tarfile, 'rb') as tarfile_stream:
@@ -710,9 +593,10 @@ def main(args):
 
       # use newly built sdk updater to pull this bundle
       buildbot_common.BuildStep('Update from local server')
-      updater_py = os.path.join(OUT_DIR, 'nacl_sdk', 'sdk_tools',
-          'sdk_update.py')
-      buildbot_common.Run([sys.executable, updater_py, '-U',
+      naclsdk_sh = os.path.join(OUT_DIR, 'nacl_sdk', 'naclsdk')
+      if platform == 'win':
+        naclsdk_sh += '.bat'
+      buildbot_common.Run([naclsdk_sh, '-U',
           server.GetURL(manifest_name), 'update', 'pepper_' + pepper_ver])
 
       # If we are testing examples, do it in the newly pulled directory.
