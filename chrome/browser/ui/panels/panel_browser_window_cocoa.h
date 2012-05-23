@@ -65,9 +65,6 @@ class PanelBrowserWindowCocoa : public NativePanel,
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
-  virtual void PanelExpansionStateChanging(
-      Panel::ExpansionState old_state,
-      Panel::ExpansionState new_state) OVERRIDE;
 
   // These sizes are in screen coordinates.
   virtual gfx::Size WindowSizeFromContentSize(

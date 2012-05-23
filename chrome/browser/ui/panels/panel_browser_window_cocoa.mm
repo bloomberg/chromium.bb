@@ -354,10 +354,6 @@ void PanelBrowserWindowCocoa::Observe(
   [controller_ updateWindowLevel];
 }
 
-void PanelBrowserWindowCocoa::PanelExpansionStateChanging(
-    Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
-}
-
 // NativePanelTesting implementation.
 class NativePanelTestingCocoa : public NativePanelTesting {
  public:

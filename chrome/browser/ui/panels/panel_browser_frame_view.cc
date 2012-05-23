@@ -437,8 +437,7 @@ void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   PaintState paint_state;
   if (panel_browser_view_->panel()->IsDrawingAttention())
     paint_state = PAINT_FOR_ATTENTION;
-  else if (panel_browser_view_->focused() &&
-           !panel_browser_view_->force_to_paint_as_inactive())
+  else if (panel_browser_view_->focused())
     paint_state = PAINT_AS_ACTIVE;
   else
     paint_state = PAINT_AS_INACTIVE;

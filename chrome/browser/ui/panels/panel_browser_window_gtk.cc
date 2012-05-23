@@ -577,10 +577,6 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
   return TRUE;
 }
 
-void PanelBrowserWindowGtk::PanelExpansionStateChanging(
-    Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
-}
-
 // NativePanelTesting implementation.
 class NativePanelTestingGtk : public NativePanelTesting {
  public:
