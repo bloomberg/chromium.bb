@@ -14,7 +14,7 @@ ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
 KSADMIN=/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin
 KSUPDATE=https://tools.google.com/service/update2
 KSPID=com.google.chrome_remote_desktop
-KSPVERSION=@@VERSION_SHORT@@
+KSPVERSION=@@VERSION_FULL@@
 
 trap onexit ERR
 
