@@ -110,15 +110,21 @@ void BluetoothGetDevicesWithServiceNameFunction::AddDeviceIfTrue(
 bool BluetoothGetDevicesWithServiceNameFunction::RunImpl() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  scoped_ptr<GetDevicesWithServiceName::Params> params(
-      GetDevicesWithServiceName::Params::Create(*args_));
-
   ListValue* matches = new ListValue;
   result_.reset(matches);
 
   BluetoothAdapter::DeviceList devices =
       GetMutableAdapter(profile())->GetDevices();
-  callbacks_pending_ = 0;
+  if (devices.empty()) {
+    SendResponse(true);
+    return true;
+  }
+
+  callbacks_pending_ = devices.size();
+  AddRef();  // Released in AddDeviceIfTrue when callbacks_pending_ == 0
+
+  scoped_ptr<GetDevicesWithServiceName::Params> params(
+      GetDevicesWithServiceName::Params::Create(*args_));
   for (BluetoothAdapter::DeviceList::iterator i = devices.begin();
       i != devices.end(); ++i) {
     (*i)->ProvidesServiceWithName(params->name,
@@ -126,13 +132,7 @@ bool BluetoothGetDevicesWithServiceNameFunction::RunImpl() {
                    this,
                    matches,
                    *i));
-    callbacks_pending_++;
   }
-
-  if (callbacks_pending_)
-    AddRef();  // Released in AddDeviceIfTrue when callbacks_pending_ == 0
-  else
-    SendResponse(true);
 
   return true;
 }
