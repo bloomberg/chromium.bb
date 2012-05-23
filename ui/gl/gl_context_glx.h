@@ -11,13 +11,14 @@
 #include "base/compiler_specific.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_export.h"
 
 namespace gfx {
 
 class GLSurface;
 
 // Encapsulates a GLX OpenGL context.
-class GLContextGLX : public GLContext {
+class GL_EXPORT GLContextGLX : public GLContext {
  public:
   explicit GLContextGLX(GLShareGroup* share_group);
 
