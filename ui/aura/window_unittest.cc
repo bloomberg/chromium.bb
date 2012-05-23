@@ -1354,7 +1354,8 @@ TEST_F(WindowObserverTest, PropertyChanged) {
             PropertyChangeInfoAndClear());
 
   // Sanity check to see if |PropertyChangeInfoAndClear| really clears.
-  EXPECT_EQ(PropertyChangeInfo(NULL, -3), PropertyChangeInfoAndClear());
+  EXPECT_EQ(PropertyChangeInfo(
+      reinterpret_cast<const void*>(NULL), -3), PropertyChangeInfoAndClear());
 }
 
 TEST_F(WindowTest, AcquireLayer) {
