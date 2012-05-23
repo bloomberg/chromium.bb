@@ -197,12 +197,12 @@ void PrintJob::Cancel() {
   is_canceling_ = false;
 }
 
-bool PrintJob::FlushJob(int timeout_ms) {
+bool PrintJob::FlushJob(base::TimeDelta timeout) {
   // Make sure the object outlive this message loop.
   scoped_refptr<PrintJob> handle(this);
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&PrintJob::Quit, quit_factory_.GetWeakPtr()), timeout_ms);
+      base::Bind(&PrintJob::Quit, quit_factory_.GetWeakPtr()), timeout);
 
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
   MessageLoop::current()->Run();

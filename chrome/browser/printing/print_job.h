@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ class PrintJob : public PrintJobWorkerOwner,
   // Synchronously wait for the job to finish. It is mainly useful when the
   // process is about to be shut down and we're waiting for the spooler to eat
   // our data.
-  bool FlushJob(int timeout_ms);
+  bool FlushJob(base::TimeDelta timeout);
 
   // Disconnects the PrintedPage source (PrintedPagesSource). It is done when
   // the source is being destroyed.

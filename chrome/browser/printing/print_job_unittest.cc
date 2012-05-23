@@ -128,7 +128,7 @@ TEST_F(PrintJobTest, SimplePrintLateInit) {
   job->Stop();
   job->Cancel();
   job->RequestMissingPages();
-  job->FlushJob(timeout_ms);
+  job->FlushJob(timeout);
   job->DisconnectSource();
   job->is_job_pending();
   job->document();
