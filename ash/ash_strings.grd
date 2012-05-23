@@ -204,8 +204,8 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the status tray.">
         Status tray
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP" desc="The label used for the help-and-settings item in the status tray.">
-        Settings and Help
+      <message name="IDS_ASH_STATUS_TRAY_SETTINGS" desc="The label used for the settings item in the status tray.">
+        Settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SHUT_DOWN" desc="The label used for the button in the status tray to shut down the system.">
         Shut down
@@ -259,7 +259,7 @@ This file contains the strings for ash.
         Disable Wi-Fi
       </message>
       <message name="IDS_ASH_STATUS_TRAY_OTHER_WIFI" desc="The label used for the item to display other Wi-Fi networks.">
-        Wi-Fi ...
+        Join other ...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ENABLE_MOBILE" desc="The label used for the item to enable cellular networks.">
         Enable mobile data

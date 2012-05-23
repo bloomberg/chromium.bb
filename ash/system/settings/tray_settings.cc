@@ -38,7 +38,7 @@ class SettingsView : public ash::internal::ActionableView {
     AddChildView(icon);
 
     string16 text = rb.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP);
+          IDS_ASH_STATUS_TRAY_SETTINGS);
     label_ = new views::Label(text);
     AddChildView(label_);
 
