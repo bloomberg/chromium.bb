@@ -453,6 +453,44 @@ TEST_F(EndToEndAsyncTest, BrokenMethodWithErrorCallback) {
   ASSERT_EQ(DBUS_ERROR_FAILED, error_names_[0]);
 }
 
+TEST_F(EndToEndAsyncTest, InvalidObjectPath) {
+  // Trailing '/' is only allowed for the root path.
+  const dbus::ObjectPath invalid_object_path("/org/chromium/TestObject/");
+
+  // Replace object proxy with new one.
+  object_proxy_ = bus_->GetObjectProxy("org.chromium.TestService",
+                                       invalid_object_path);
+
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  CallMethodWithErrorCallback(&method_call, timeout_ms);
+  WaitForErrors(1);
+
+  // Should fail because of the invalid path.
+  ASSERT_TRUE(response_strings_.empty());
+  ASSERT_EQ("", error_names_[0]);
+}
+
+TEST_F(EndToEndAsyncTest, InvalidServiceName) {
+  // Bus name cannot contain '/'.
+  const std::string invalid_service_name = ":1/2";
+
+  // Replace object proxy with new one.
+  object_proxy_ = bus_->GetObjectProxy(
+      invalid_service_name, dbus::ObjectPath("org.chromium.TestObject"));
+
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  CallMethodWithErrorCallback(&method_call, timeout_ms);
+  WaitForErrors(1);
+
+  // Should fail because of the invalid bus name.
+  ASSERT_TRUE(response_strings_.empty());
+  ASSERT_EQ("", error_names_[0]);
+}
+
 TEST_F(EndToEndAsyncTest, EmptyResponseCallback) {
   const char* kHello = "hello";
 

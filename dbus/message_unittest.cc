@@ -565,12 +565,12 @@ TEST(MessageTest, GetAndSetHeaders) {
   EXPECT_EQ(0U, message->GetSerial());
   EXPECT_EQ(0U, message->GetReplySerial());
 
-  message->SetDestination("org.chromium.destination");
-  message->SetPath(dbus::ObjectPath("/org/chromium/path"));
-  message->SetInterface("org.chromium.interface");
-  message->SetMember("member");
-  message->SetErrorName("org.chromium.error");
-  message->SetSender(":1.2");
+  EXPECT_TRUE(message->SetDestination("org.chromium.destination"));
+  EXPECT_TRUE(message->SetPath(dbus::ObjectPath("/org/chromium/path")));
+  EXPECT_TRUE(message->SetInterface("org.chromium.interface"));
+  EXPECT_TRUE(message->SetMember("member"));
+  EXPECT_TRUE(message->SetErrorName("org.chromium.error"));
+  EXPECT_TRUE(message->SetSender(":1.2"));
   message->SetSerial(123);
   message->SetReplySerial(456);
 
@@ -582,4 +582,34 @@ TEST(MessageTest, GetAndSetHeaders) {
   EXPECT_EQ(":1.2", message->GetSender());
   EXPECT_EQ(123U, message->GetSerial());
   EXPECT_EQ(456U, message->GetReplySerial());
+}
+
+TEST(MessageTest, SetInvalidHeaders) {
+  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  EXPECT_EQ("", message->GetDestination());
+  EXPECT_EQ(dbus::ObjectPath(""), message->GetPath());
+  EXPECT_EQ("", message->GetInterface());
+  EXPECT_EQ("", message->GetMember());
+  EXPECT_EQ("", message->GetErrorName());
+  EXPECT_EQ("", message->GetSender());
+
+  // Empty element between periods.
+  EXPECT_FALSE(message->SetDestination("org..chromium"));
+  // Trailing '/' is only allowed for the root path.
+  EXPECT_FALSE(message->SetPath(dbus::ObjectPath("/org/chromium/")));
+  // Interface name cannot contain '/'.
+  EXPECT_FALSE(message->SetInterface("org/chromium/interface"));
+  // Member name cannot begin with a digit.
+  EXPECT_FALSE(message->SetMember("1member"));
+  // Error name cannot begin with a period.
+  EXPECT_FALSE(message->SetErrorName(".org.chromium.error"));
+  // Disallowed characters.
+  EXPECT_FALSE(message->SetSender("?!#*"));
+
+  EXPECT_EQ("", message->GetDestination());
+  EXPECT_EQ(dbus::ObjectPath(""), message->GetPath());
+  EXPECT_EQ("", message->GetInterface());
+  EXPECT_EQ("", message->GetMember());
+  EXPECT_EQ("", message->GetErrorName());
+  EXPECT_EQ("", message->GetSender());
 }

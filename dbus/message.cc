@@ -249,40 +249,28 @@ std::string Message::ToString() {
   return headers + "\n" + ToStringInternal("", &reader);
 }
 
-void Message::SetDestination(const std::string& destination) {
-  const bool success = dbus_message_set_destination(raw_message_,
-                                                    destination.c_str());
-  CHECK(success) << "Unable to allocate memory";
+bool Message::SetDestination(const std::string& destination) {
+  return dbus_message_set_destination(raw_message_, destination.c_str());
 }
 
-void Message::SetPath(const ObjectPath& path) {
-  const bool success = dbus_message_set_path(raw_message_,
-                                             path.value().c_str());
-  CHECK(success) << "Unable to allocate memory";
+bool Message::SetPath(const ObjectPath& path) {
+  return dbus_message_set_path(raw_message_, path.value().c_str());
 }
 
-void Message::SetInterface(const std::string& interface) {
-  const bool success = dbus_message_set_interface(raw_message_,
-                                                  interface.c_str());
-  CHECK(success) << "Unable to allocate memory";
+bool Message::SetInterface(const std::string& interface) {
+  return dbus_message_set_interface(raw_message_, interface.c_str());
 }
 
-void Message::SetMember(const std::string& member) {
-  const bool success = dbus_message_set_member(raw_message_,
-                                               member.c_str());
-  CHECK(success) << "Unable to allocate memory";
+bool Message::SetMember(const std::string& member) {
+  return dbus_message_set_member(raw_message_, member.c_str());
 }
 
-void Message::SetErrorName(const std::string& error_name) {
-  const bool success = dbus_message_set_error_name(raw_message_,
-                                                   error_name.c_str());
-  CHECK(success) << "Unable to allocate memory";
+bool Message::SetErrorName(const std::string& error_name) {
+  return dbus_message_set_error_name(raw_message_, error_name.c_str());
 }
 
-void Message::SetSender(const std::string& sender) {
-  const bool success = dbus_message_set_sender(raw_message_,
-                                               sender.c_str());
-  CHECK(success) << "Unable to allocate memory";
+bool Message::SetSender(const std::string& sender) {
+  return dbus_message_set_sender(raw_message_, sender.c_str());
 }
 
 void Message::SetSerial(uint32 serial) {
@@ -345,8 +333,8 @@ MethodCall::MethodCall(const std::string& interface_name,
     : Message() {
   Init(dbus_message_new(DBUS_MESSAGE_TYPE_METHOD_CALL));
 
-  SetInterface(interface_name);
-  SetMember(method_name);
+  CHECK(SetInterface(interface_name));
+  CHECK(SetMember(method_name));
 }
 
 MethodCall::MethodCall() : Message() {
@@ -368,8 +356,8 @@ Signal::Signal(const std::string& interface_name,
     : Message() {
   Init(dbus_message_new(DBUS_MESSAGE_TYPE_SIGNAL));
 
-  SetInterface(interface_name);
-  SetMember(method_name);
+  CHECK(SetInterface(interface_name));
+  CHECK(SetMember(method_name));
 }
 
 Signal::Signal() : Message() {

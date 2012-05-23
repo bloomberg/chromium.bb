@@ -63,11 +63,11 @@ Response* ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
                                           int timeout_ms) {
   bus_->AssertOnDBusThread();
 
-  if (!bus_->Connect())
+  if (!bus_->Connect() ||
+      !method_call->SetDestination(service_name_) ||
+      !method_call->SetPath(object_path_))
     return NULL;
 
-  method_call->SetDestination(service_name_);
-  method_call->SetPath(object_path_);
   DBusMessage* request_message = method_call->raw_message();
 
   ScopedDBusError error;
@@ -108,15 +108,28 @@ void ObjectProxy::CallMethodWithErrorCallback(MethodCall* method_call,
                                               ErrorCallback error_callback) {
   bus_->AssertOnOriginThread();
 
-  method_call->SetDestination(service_name_);
-  method_call->SetPath(object_path_);
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+
+  if (!method_call->SetDestination(service_name_) ||
+      !method_call->SetPath(object_path_)) {
+    // In case of a failure, run the error callback with NULL.
+    DBusMessage* response_message = NULL;
+    base::Closure task = base::Bind(&ObjectProxy::RunResponseCallback,
+                                    this,
+                                    callback,
+                                    error_callback,
+                                    start_time,
+                                    response_message);
+    bus_->PostTaskToOriginThread(FROM_HERE, task);
+    return;
+  }
+
   // Increment the reference count so we can safely reference the
   // underlying request message until the method call is complete. This
   // will be unref'ed in StartAsyncMethodCall().
   DBusMessage* request_message = method_call->raw_message();
   dbus_message_ref(request_message);
 
-  const base::TimeTicks start_time = base::TimeTicks::Now();
   base::Closure task = base::Bind(&ObjectProxy::StartAsyncMethodCall,
                                   this,
                                   timeout_ms,

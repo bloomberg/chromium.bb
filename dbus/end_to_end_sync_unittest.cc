@@ -104,3 +104,35 @@ TEST_F(EndToEndSyncTest, BrokenMethod) {
       object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
   ASSERT_FALSE(response.get());
 }
+
+TEST_F(EndToEndSyncTest, InvalidObjectPath) {
+  // Trailing '/' is only allowed for the root path.
+  const dbus::ObjectPath invalid_object_path("/org/chromium/TestObject/");
+
+  // Replace object proxy with new one.
+  object_proxy_ = client_bus_->GetObjectProxy("org.chromium.TestService",
+                                              invalid_object_path);
+
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  scoped_ptr<dbus::Response> response(
+      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
+  ASSERT_FALSE(response.get());
+}
+
+TEST_F(EndToEndSyncTest, InvalidServiceName) {
+  // Bus name cannot contain '/'.
+  const std::string invalid_service_name = ":1/2";
+
+  // Replace object proxy with new one.
+  object_proxy_ = client_bus_->GetObjectProxy(
+      invalid_service_name, dbus::ObjectPath("org.chromium.TestObject"));
+
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  scoped_ptr<dbus::Response> response(
+      object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
+  ASSERT_FALSE(response.get());
+}

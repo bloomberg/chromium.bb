@@ -90,7 +90,7 @@ void ExportedObject::ExportMethod(const std::string& interface_name,
 void ExportedObject::SendSignal(Signal* signal) {
   // For signals, the object path should be set to the path to the sender
   // object, which is this exported object here.
-  signal->SetPath(object_path_);
+  CHECK(signal->SetPath(object_path_));
 
   // Increment the reference count so we can safely reference the
   // underlying signal message until the signal sending is complete. This
