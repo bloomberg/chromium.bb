@@ -18,21 +18,15 @@ del path
 from chromite.buildbot import constants
 
 
-def FindTarget(target, argv):
+def FindTarget(name):
+  target = os.path.basename(sys.argv[0])
   # Compatibility for badly named scripts that can't yet be fixed.
   if target.endswith('.py'):
-    target = os.path.splitext(target)[0]
-
-  # Turn the path into something we can import from the chromite tree.
-  target = target.split(os.sep)
-  target = target[target.index('chromite'):]
-  # Our bin dir is just scripts stuff.
-  if target[1] == 'bin':
-    target[1] = 'scripts'
-
-  module = __import__('.'.join(target))
+    target = target[:-3]
+  target = 'chromite.scripts.%s' % target
+  module = __import__(target)
   # __import__ gets us the root of the namespace import; walk our way up.
-  for attr in target[1:]:
+  for attr in target.split('.')[1:]:
     module = getattr(module, attr)
 
   if hasattr(module, 'main'):
@@ -40,7 +34,7 @@ def FindTarget(target, argv):
     # line, the allowed 'main' prototypes will change.  Thus we define the
     # FindTarget api to just return an invokable, allowing the consumer
     # to not know nor care about the specifics.
-    return functools.partial(module.main, argv)
+    return functools.partial(module.main, sys.argv[1:])
   return None
 
 
@@ -62,12 +56,11 @@ def _DefaultHandler(signum, frame):
 
 
 if __name__ == '__main__':
-  target = os.path.abspath(sys.argv[0])
-  name = os.path.basename(target)
-  target = FindTarget(target, sys.argv[1:])
+  name = os.path.basename(sys.argv[0])
+  target = FindTarget(name)
   if target is None:
     print >>sys.stderr, ("Internal error detected in wrapper.py: no main "
-                         "functor found in module %r." % (name,))
+                         "functor found in module %r." % (target,))
     sys.exit(100)
 
   # Set up basic logging information for all modules that use logging.
