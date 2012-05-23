@@ -48,7 +48,8 @@ class GaiaOAuthClient::Core
  public:
   Core(const OAuthProviderInfo& info,
        net::URLRequestContextGetter* request_context_getter)
-      : request_context_getter_(request_context_getter),
+      : provider_info_(info),
+        request_context_getter_(request_context_getter),
         delegate_(NULL) {
   }
 
