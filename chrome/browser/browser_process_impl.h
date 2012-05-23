@@ -154,6 +154,11 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_watchdog_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;
 
+  // Must be destroyed after |policy_service_| if StartTearDown() isn't invoked
+  // during an early shutdown.
+  bool created_browser_policy_connector_;
+  scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
+
   // Must be destroyed after |local_state_|.
   scoped_ptr<policy::PolicyService> policy_service_;
 
@@ -170,9 +175,6 @@ class BrowserProcessImpl : public BrowserProcess,
       extension_event_router_forwarder_;
 
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
-
-  bool created_browser_policy_connector_;
-  scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
 
   scoped_refptr<printing::PrintPreviewTabController>
       print_preview_tab_controller_;

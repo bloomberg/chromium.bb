@@ -126,10 +126,10 @@ using content::ResourceDispatcherHost;
 BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
     : created_metrics_service_(false),
       created_watchdog_thread_(false),
+      created_browser_policy_connector_(false),
       created_profile_manager_(false),
       created_local_state_(false),
       created_icon_manager_(false),
-      created_browser_policy_connector_(false),
       created_notification_ui_manager_(false),
       created_safe_browsing_service_(false),
       module_ref_count_(0),
