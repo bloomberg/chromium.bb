@@ -336,6 +336,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // the extension-based file picker on Aura. crbug.com/97424
   RegisterFunction<CancelFileDialogFunction>();
   RegisterFunction<ExecuteTasksFileBrowserFunction>();
+  RegisterFunction<SetDefaultTaskFileBrowserFunction>();
   RegisterFunction<FileDialogStringsFunction>();
   RegisterFunction<GetFileTasksFileBrowserFunction>();
   RegisterFunction<GetVolumeMetadataFunction>();

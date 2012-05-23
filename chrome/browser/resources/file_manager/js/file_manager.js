@@ -594,6 +594,8 @@ FileManager.prototype = {
     this.alert = new d.AlertDialog(this.dialogDom_);
     this.confirm = new d.ConfirmDialog(this.dialogDom_);
     this.prompt = new d.PromptDialog(this.dialogDom_);
+    this.defaultTaskPicker =
+        new cr.filebrowser.DefaultActionDialog(this.dialogDom_);
   };
 
   /**
@@ -2590,6 +2592,7 @@ FileManager.prototype = {
       }
     }
 
+    var defaultIdx = 0;
     this.taskItems_.hidden = dropDownItems.length == 0;
 
     if (dropDownItems.length > 1) {
@@ -2599,7 +2602,17 @@ FileManager.prototype = {
 
       for (var j = 0; j < dropDownItems.length; j++) {
         this.taskItems_.addDropDownItem(dropDownItems[j]);
+        if (dropDownItems[j].task.taskId == defaultTask.taskId) {
+          defaultIdx = j;
+        }
       }
+
+      this.taskItems_.addSeparator();
+      this.taskItems_.addDropDownItem({
+            label: str('CHANGE_DEFAULT_MENU_ITEM'),
+            items: dropDownItems,
+            defaultIdx: defaultIdx
+          });
     }
 
     selection.tasksList = tasksList;
@@ -2621,9 +2634,54 @@ FileManager.prototype = {
     }
   };
 
+  /**
+   * Task combobox handler.
+   *
+   * @param {Object} event Event containing task which was clicked.
+   */
   FileManager.prototype.onTaskItemClicked_ = function(event) {
-    this.dispatchFileTask_(event.item.task.taskId, this.selection.urls);
+    if (event.item.task) {
+      // Task field doesn't exist on change-default dropdown item.
+      this.dispatchFileTask_(event.item.task.taskId, this.selection.urls);
+    } else {
+      var extensions = [];
+
+      for (var i = 0; i < this.selection.urls.length; i++) {
+        var match = /\.(\w+)$/g.exec(this.selection.urls[i]);
+        if (match) {
+          var ext = match[1].toUpperCase();
+          if (extensions.indexOf(ext) == -1) {
+            extensions.push(ext);
+          }
+        }
+      }
+
+      var format = '';
+
+      if (extensions.length != 1) {
+        format = extensions[0];
+      }
+
+      // Change default was clicked. We should open "change default" dialog.
+      this.defaultTaskPicker.show(
+          strf('CHANGE_DEFAULT_CAPTION', format),
+          event.item.items, event.item.defaultIdx,
+          this.onDefaultTaskDone_.bind(this));
+    }
   };
+
+
+  /**
+   * Set's given task as default, when this task is applicable.
+   * @param {Object} task Task to set as default.
+   */
+  FileManager.prototype.onDefaultTaskDone_ = function(task) {
+    chrome.fileBrowserPrivate.setDefaultTask(task.taskId);
+
+    chrome.fileBrowserPrivate.getFileTasks(
+            this.selection.urls,
+            this.onTasksFound_.bind(this, this.selection));
+  }
 
   /**
    * Dispatches default task for the current selection. If tasks are not ready
