@@ -180,6 +180,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
                                         const std::string& security_info,
                                         const std::string& http_method,
+                                        const std::string& mime_type,
                                         ResourceType::Type resource_type);
 
   // Force cancels any pending requests for the given process.

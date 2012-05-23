@@ -453,6 +453,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
                                         const std::string& security_info,
                                         const std::string& http_request,
+                                        const std::string& mime_type,
                                         ResourceType::Type resource_type);
   void OnDidDisplayInsecureContent();
   void OnDidRunInsecureContent(const std::string& security_origin,

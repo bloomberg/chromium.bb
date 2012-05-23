@@ -1690,6 +1690,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& security_info,
     const std::string& http_method,
+    const std::string& mime_type,
     ResourceType::Type resource_type) {
   base::StatsCounter cache("WebKit.CacheHit");
   cache.Increment();
@@ -1702,7 +1703,8 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   content::DeserializeSecurityInfo(security_info, &cert_id, &cert_status,
                                    &security_bits, &connection_status);
   LoadFromMemoryCacheDetails details(url, GetRenderProcessHost()->GetID(),
-                                     cert_id, cert_status);
+                                     cert_id, cert_status, http_method,
+                                     mime_type, resource_type);
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_LOAD_FROM_MEMORY_CACHE,

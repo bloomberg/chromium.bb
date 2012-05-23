@@ -3323,6 +3323,7 @@ void RenderViewImpl::didLoadResourceFromMemoryCache(
       url,
       response.securityInfo(),
       request.httpMethod().utf8(),
+      response.mimeType().utf8(),
       ResourceType::FromTargetType(request.targetType())));
 }
 

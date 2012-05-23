@@ -1127,6 +1127,7 @@ void ResourceDispatcherHostImpl::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& security_info,
     const std::string& http_method,
+    const std::string& mime_type,
     ResourceType::Type resource_type) {
   if (!url.is_valid() || !(url.SchemeIs("http") || url.SchemeIs("https")))
     return;
