@@ -67,7 +67,7 @@ void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
   }
 }
 
-void LogToServer::OnClientAuthenticated(const std::string& jid) {
+void LogToServer::OnClientConnected(const std::string& jid) {
   DCHECK(CalledOnValidThread());
   LogSessionStateChange(true);
 }
@@ -76,9 +76,6 @@ void LogToServer::OnClientDisconnected(const std::string& jid) {
   DCHECK(CalledOnValidThread());
   LogSessionStateChange(false);
   connection_type_set_ = false;
-}
-
-void LogToServer::OnAccessDenied(const std::string& jid) {
 }
 
 void LogToServer::OnClientRouteChange(const std::string& jid,
@@ -90,9 +87,6 @@ void LogToServer::OnClientRouteChange(const std::string& jid,
     connection_type_ = route.type;
     connection_type_set_ = true;
   }
-}
-
-void LogToServer::OnShutdown() {
 }
 
 void LogToServer::Log(const ServerLogEntry& entry) {

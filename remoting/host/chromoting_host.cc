@@ -183,10 +183,6 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
   login_backoff_.Reset();
-}
-
-void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
-  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
   // Disconnect all other clients.
   // Iterate over a copy of the list of clients, to avoid mutating the list
@@ -203,6 +199,24 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
   DCHECK_EQ(clients_.size(), 1U);
   DCHECK(!recorder_.get());
 
+  // Notify observers that there is at least one authenticated client.
+  const std::string& jid = client->client_jid();
+
+  reject_authenticating_client_ = false;
+
+  authenticating_client_ = true;
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientAuthenticated(jid));
+  authenticating_client_ = false;
+
+  if (reject_authenticating_client_) {
+    client->Disconnect();
+  }
+}
+
+void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+
   // Then we create a ScreenRecorder passing the message loops that
   // it should run on.
   Encoder* encoder = CreateEncoder(client->connection()->session()->config());
@@ -217,20 +231,6 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
   recorder_->AddConnection(client->connection());
   recorder_->Start();
   desktop_environment_->OnSessionStarted();
-
-  // Notify observers that there is at least one authenticated client.
-  const std::string& jid = client->client_jid();
-
-  reject_authenticating_client_ = false;
-
-  authenticating_client_ = true;
-  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
-                    OnClientAuthenticated(jid));
-  authenticating_client_ = false;
-
-  if (reject_authenticating_client_) {
-    client->Disconnect();
-  }
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {

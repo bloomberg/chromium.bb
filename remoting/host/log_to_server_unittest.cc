@@ -62,6 +62,7 @@ TEST_F(LogToServerTest, SendNow) {
   route.type = protocol::TransportRoute::DIRECT;
   log_to_server_->OnClientRouteChange("client@domain.com/5678", "video", route);
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
+  log_to_server_->OnClientConnected("client@domain.com/5678");
   log_to_server_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
   message_loop_.Run();
 }
@@ -71,6 +72,7 @@ TEST_F(LogToServerTest, SendLater) {
   route.type = protocol::TransportRoute::DIRECT;
   log_to_server_->OnClientRouteChange("client@domain.com/5678", "video", route);
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
+  log_to_server_->OnClientConnected("client@domain.com/5678");
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
@@ -93,7 +95,9 @@ TEST_F(LogToServerTest, SendTwoEntriesLater) {
   route.type = protocol::TransportRoute::DIRECT;
   log_to_server_->OnClientRouteChange("client@domain.com/5678", "video", route);
   log_to_server_->OnClientAuthenticated("client@domain.com/5678");
-  log_to_server_->OnClientAuthenticated("client2@domain.com/6789");
+  log_to_server_->OnClientConnected("client@domain.com/5678");
+  log_to_server_->OnClientAuthenticated("client@domain.com/6789");
+  log_to_server_->OnClientConnected("client@domain.com/6789");
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())

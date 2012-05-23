@@ -49,14 +49,12 @@ class LogToServer : public base::NonThreadSafe,
       SignalStrategy::State state) OVERRIDE;
 
   // HostStatusObserver interface.
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
+  virtual void OnClientConnected(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-  virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
   virtual void OnClientRouteChange(
       const std::string& jid,
       const std::string& channel_name,
       const protocol::TransportRoute& route) OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
 
  private:
   void Log(const ServerLogEntry& entry);
