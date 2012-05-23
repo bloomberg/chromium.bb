@@ -586,6 +586,7 @@
   'PERFORMANCE': {
     'all': [
       'perf',
+      '-perf.WebPageReplayPageCyclerTest',  # Disable new test until vetted.
     ],
     'win': [
       '-perf.GPUPerfTest',  # Fails. Discuss with prachij@.
