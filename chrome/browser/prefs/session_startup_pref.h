@@ -62,6 +62,9 @@ struct SessionStartupPref {
   static bool TypeIsManaged(PrefService* prefs);
   static bool URLsAreManaged(PrefService* prefs);
 
+  // Whether the startup type has not been overridden from its default.
+  static bool TypeIsDefault(PrefService* prefs);
+
   // Converts an integer pref value to a SessionStartupPref::Type.
   static SessionStartupPref::Type PrefValueToType(int pref_value);
 
