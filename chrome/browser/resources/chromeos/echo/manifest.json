@@ -5,7 +5,7 @@
   "version": "0.0.2",
   "description": "Chrome OS ECHO Extension",
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; script-src 'self' https://apis.google.com; frame-src 'self' https://chromeos-registration.googleapis.com",
+  "content_security_policy": "default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self'; frame-src 'self' https://chromeos-registration.googleapis.com",
   "permissions": [
       "cookies",
       "echoPrivate",
@@ -14,12 +14,13 @@
   "default_locale": "en",
   "web_accessible_resources": [
     "main.html",
-    "main.js"
+    "main.js",
+    "style.css"
   ],
   "intents": {
     "https://crosecho.com/startEcho": [{
       "type" : ["application/vnd.chromeos.echo"],
-      "title" : "Initiate Chrome OS ECHO",
+      "title" : "",
       "path" : "main.html",
       "disposition" : "inline"
     }]
