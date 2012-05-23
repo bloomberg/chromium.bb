@@ -1338,6 +1338,7 @@
         'browser/password_manager/password_store_win_unittest.cc',
         'browser/password_manager/password_store_x_unittest.cc',
         'browser/plugin_finder_unittest.cc',
+        'browser/plugin_installer_unittest.cc',
         'browser/plugin_prefs_unittest.cc',
         'browser/policy/asynchronous_policy_loader_unittest.cc',
         'browser/policy/asynchronous_policy_provider_unittest.cc',
@@ -2354,6 +2355,7 @@
         ['enable_plugin_installation==0', {
           'sources!': [
             'browser/plugin_finder_unittest.cc',
+            'browser/plugin_installer_unittest.cc',
           ],
         }],
         ['enable_protector_service==0', {

@@ -33,6 +33,20 @@
       "application/x-java-bean,version=1.6",
       "application/x-java-vm"
     ],
+    "versions": [
+      {
+        "version": "6.0.310",
+        "status": "requires_authorization"
+      },
+      {
+        "version": "7",
+        "status": "out_of_date"
+      },
+      {
+        "version": "10.3",
+        "status": "requires_authorization"
+      }
+    ],
     "lang": "en-US",
     "name": "Java(TM)",
     "help_url": "https://support.google.com/chrome/?p=plugin_java",
@@ -46,6 +60,13 @@
       "audio/x-pn-realaudio-plugin",
       "audio/x-pn-realaudio"
     ],
+    "versions": [
+      {
+        "version": "15.0.2.71",
+        "status": "requires_authorization",
+        "reference": "http://service.real.com/realplayer/security/02062012_player/en/"
+      }
+    ],
     "lang": "en-US",
     "name": "RealPlayer",
     "help_url": "https://support.google.com/chrome/?p=plugin_real",
@@ -56,16 +77,29 @@
       "application/futuresplash",
       "application/x-shockwave-flash"
     ],
+    "versions": [
+      {
+        "version": "11.1.102",
+        "status": "up_to_date",
+        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-03.html"
+      }
+    ],
     "lang": "en-US",
     "name": "Adobe Flash Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
     "url": "http://get.adobe.com/flashplayer/",
-    "requires_authorization": false,
     "displayurl": true
   },
   "adobe-shockwave": {
     "mime_types": [
       "application/x-director"
+    ],
+    "versions": [
+      {
+        "version": "11.6.4.634",
+        "status": "requires_authorization",
+        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-02.html"
+      }
     ],
     "lang": "en-US",
     "name": "Adobe Shockwave Player",
@@ -81,11 +115,26 @@
       "application/vnd.adobe.xfdf",
       "application/vnd.fdf"
     ],
+    "versions": [
+      {
+        "version": "9.5.1",
+        "status": "requires_authorization",
+        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-08.html"
+      },
+      {
+        "version": "10",
+        "status": "out_of_date"
+      },
+      {
+        "version": "10.1.3",
+        "status": "up_to_date",
+        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-08.html"
+      }
+    ],
     "lang": "en-US",
     "name": "Adobe Reader",
     "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
-    "url": "http://ardownload.adobe.com/pub/adobe/reader/win/10.x/10.1.2/en_US/AdbeRdr1012_en_US.exe",
-    "requires_authorization": false
+    "url": "http://ardownload.adobe.com/pub/adobe/reader/win/10.x/10.1.3/en_US/AdbeRdr1013_en_US.exe"
   },
   "apple-quicktime": {
     "mime_types": [
@@ -139,6 +188,12 @@
       "video/x-m4v",
       "video/x-mpeg"
     ],
+    "versions": [
+      {
+        "version": "7.6.9",
+        "status": "requires_authorization"
+      }
+    ],
     "lang": "en-US",
     "name": "QuickTime Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_quicktime",
@@ -167,6 +222,12 @@
       "video/divx",
       "video/x-matroska"
     ],
+    "versions": [
+      {
+        "version": "1.4.3.4",
+        "status": "requires_authorization"
+      }
+    ],
     "lang": "en-US",
     "name": "DivX Web Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_divx",
@@ -177,9 +238,15 @@
       "application/x-silverlight",
       "application/x-silverlight-2"
     ],
+    "versions": [
+      {
+        "version": "4.1.10111.0",
+        "status": "up_to_date",
+        "reference": "http://support.microsoft.com/kb/2668562"
+      }
+    ],
     "lang": "en-US",
     "name": "Silverlight",
-    "url": "http://go.microsoft.com/fwlink/?LinkID=149156",
-    "requires_authorization": false
+    "url": "http://go.microsoft.com/fwlink/?LinkID=149156"
   }
 }

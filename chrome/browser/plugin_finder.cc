@@ -130,14 +130,35 @@ PluginInstaller* PluginFinder::CreateInstaller(
   DCHECK(success);
   bool display_url = false;
   plugin_dict->GetBoolean("displayurl", &display_url);
-  bool requires_authorization = true;
-  plugin_dict->GetBoolean("requires_authorization", &requires_authorization);
+
   PluginInstaller* installer = new PluginInstaller(identifier,
-                                                   GURL(url),
-                                                   GURL(help_url),
                                                    name,
                                                    display_url,
-                                                   requires_authorization);
+                                                   GURL(url),
+                                                   GURL(help_url));
+  ListValue* versions = NULL;
+  if (plugin_dict->GetList("versions", &versions)) {
+    for (ListValue::const_iterator it = versions->begin();
+         it != versions->end(); ++it) {
+      DictionaryValue* version_dict = NULL;
+      if (!(*it)->GetAsDictionary(&version_dict)) {
+        NOTREACHED();
+        continue;
+      }
+      std::string version;
+      success = version_dict->GetString("version", &version);
+      DCHECK(success);
+      std::string status_str;
+      success = version_dict->GetString("status", &status_str);
+      DCHECK(success);
+      PluginInstaller::SecurityStatus status =
+          PluginInstaller::SECURITY_STATUS_UP_TO_DATE;
+      success = PluginInstaller::ParseSecurityStatus(status_str, &status);
+      DCHECK(success);
+      installer->AddVersion(Version(version), status);
+    }
+  }
+
   installers_[identifier] = installer;
   return installer;
 }

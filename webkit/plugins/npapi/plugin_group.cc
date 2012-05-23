@@ -27,38 +27,6 @@ const char PluginGroup::kRealPlayerGroupName[] = "RealPlayer";
 const char PluginGroup::kSilverlightGroupName[] = "Silverlight";
 const char PluginGroup::kWindowsMediaPlayerGroupName[] = "Windows Media Player";
 
-VersionRange::VersionRange(const VersionRangeDefinition& definition)
-    : low_str(definition.version_matcher_low),
-      high_str(definition.version_matcher_high),
-      min_str(definition.min_version) {
-  if (!low_str.empty())
-    low.reset(Version::GetVersionFromString(low_str));
-  if (!high_str.empty())
-    high.reset(Version::GetVersionFromString(high_str));
-  if (!min_str.empty())
-    min.reset(Version::GetVersionFromString(min_str));
-}
-
-VersionRange::VersionRange(const VersionRange& other) {
-  InitFrom(other);
-}
-
-VersionRange& VersionRange::operator=(const VersionRange& other) {
-  InitFrom(other);
-  return *this;
-}
-
-VersionRange::~VersionRange() {}
-
-void VersionRange::InitFrom(const VersionRange& other) {
-  low_str = other.low_str;
-  high_str = other.high_str;
-  min_str = other.min_str;
-  low.reset(Version::GetVersionFromString(other.low_str));
-  high.reset(Version::GetVersionFromString(other.high_str));
-  min.reset(Version::GetVersionFromString(other.min_str));
-}
-
 PluginGroup::PluginGroup(const string16& group_name,
                          const string16& name_matcher,
                          const std::string& identifier)
@@ -71,7 +39,6 @@ void PluginGroup::InitFrom(const PluginGroup& other) {
   identifier_ = other.identifier_;
   group_name_ = other.group_name_;
   name_matcher_ = other.name_matcher_;
-  version_ranges_ = other.version_ranges_;
   web_plugin_infos_ = other.web_plugin_infos_;
 }
 
@@ -87,12 +54,9 @@ PluginGroup& PluginGroup::operator=(const PluginGroup& other) {
 /*static*/
 PluginGroup* PluginGroup::FromPluginGroupDefinition(
     const PluginGroupDefinition& definition) {
-  PluginGroup* group = new PluginGroup(ASCIIToUTF16(definition.name),
-                                       ASCIIToUTF16(definition.name_matcher),
-                                       definition.identifier);
-  for (size_t i = 0; i < definition.num_versions; ++i)
-    group->version_ranges_.push_back(VersionRange(definition.versions[i]));
-  return group;
+  return new PluginGroup(ASCIIToUTF16(definition.name),
+                                      ASCIIToUTF16(definition.name_matcher),
+                                      definition.identifier);
 }
 
 PluginGroup::~PluginGroup() { }
@@ -132,25 +96,7 @@ bool PluginGroup::Match(const WebPluginInfo& plugin) const {
     return false;
   }
 
-  if (version_ranges_.empty()) {
-    return true;
-  }
-
-  // There's at least one version range, the plugin's version must be in it.
-  scoped_ptr<Version> plugin_version(CreateVersionFromString(plugin.version));
-  if (plugin_version.get() == NULL) {
-    // No version could be extracted, assume we don't match the range.
-    return false;
-  }
-
-  // Match if the plugin is contained in any of the defined VersionRanges.
-  for (size_t i = 0; i < version_ranges_.size(); ++i) {
-    if (IsVersionInRange(*plugin_version, version_ranges_[i])) {
-      return true;
-    }
-  }
-  // None of the VersionRanges matched.
-  return false;
+  return true;
 }
 
 /* static */
@@ -208,41 +154,6 @@ string16 PluginGroup::GetGroupName() const {
 bool PluginGroup::ContainsPlugin(const FilePath& path) const {
   for (size_t i = 0; i < web_plugin_infos_.size(); ++i) {
     if (web_plugin_infos_[i].path == path)
-      return true;
-  }
-  return false;
-}
-
-/*static*/
-bool PluginGroup::IsVersionInRange(const Version& version,
-                                   const VersionRange& range) {
-  DCHECK(range.low.get() != NULL || range.high.get() == NULL)
-      << "Lower bound of version range must be defined.";
-  return (range.low.get() == NULL && range.high.get() == NULL) ||
-         (range.low->CompareTo(version) <= 0 &&
-             (range.high.get() == NULL || range.high->CompareTo(version) > 0));
-}
-
-/*static*/
-bool PluginGroup::IsPluginOutdated(const Version& plugin_version,
-                                   const VersionRange& version_range) {
-  if (IsVersionInRange(plugin_version, version_range)) {
-    if (version_range.min.get() &&
-        plugin_version.CompareTo(*version_range.min) < 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Returns true if the latest version of this plugin group is vulnerable.
-bool PluginGroup::IsVulnerable(const WebPluginInfo& plugin) const {
-  scoped_ptr<Version> version(CreateVersionFromString(plugin.version));
-  if (!version.get())
-    return false;
-
-  for (size_t i = 0; i < version_ranges_.size(); ++i) {
-    if (IsPluginOutdated(*version, version_ranges_[i]))
       return true;
   }
   return false;
