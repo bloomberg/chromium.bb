@@ -1,10 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/base/ime/text_input_client.h"
 #include "ui/views/ime/input_method_base.h"
-#include "ui/views/ime/text_input_type_tracker.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -50,14 +49,10 @@ void InputMethodBase::Init(Widget* widget) {
 
 void InputMethodBase::OnFocus() {
   widget_focused_ = true;
-  TextInputTypeTracker::GetInstance()->OnTextInputTypeChanged(
-      GetTextInputType(), widget_);
 }
 
 void InputMethodBase::OnBlur() {
   widget_focused_ = false;
-  TextInputTypeTracker::GetInstance()->OnTextInputTypeChanged(
-      GetTextInputType(), widget_);
 }
 
 views::View* InputMethodBase::GetFocusedView() const {
@@ -65,10 +60,6 @@ views::View* InputMethodBase::GetFocusedView() const {
 }
 
 void InputMethodBase::OnTextInputTypeChanged(View* view) {
-  if (IsViewFocused(view)) {
-    TextInputTypeTracker::GetInstance()->OnTextInputTypeChanged(
-        GetTextInputType(), widget_);
-  }
 }
 
 ui::TextInputClient* InputMethodBase::GetTextInputClient() const {
@@ -89,10 +80,6 @@ void InputMethodBase::OnWillChangeFocus(View* focused_before, View* focused) {
 }
 
 void InputMethodBase::OnDidChangeFocus(View* focused_before, View* focused) {
-  if (widget_focused_) {
-    TextInputTypeTracker::GetInstance()->OnTextInputTypeChanged(
-        GetTextInputType(), widget_);
-  }
 }
 
 bool InputMethodBase::IsViewFocused(View* view) const {
