@@ -1305,6 +1305,7 @@
         'browser/metrics/metrics_response_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
+        'browser/metrics/variations_service_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
         'browser/net/chrome_net_log_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
