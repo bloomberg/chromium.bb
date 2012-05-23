@@ -37,6 +37,8 @@ CreateAndLoadLogTask.prototype = {
    * ones, depending on whether or not we're currently viewing a log.
    */
   start: function() {
+    this.initialSecurityStripping_ =
+        SourceTracker.getInstance().getSecurityStripping();
     $(ExportView.USER_COMMENTS_TEXT_AREA_ID).value = this.userComments_;
     ExportView.getInstance().createLogDump_(this.onLogDumpCreated.bind(this),
                                             true);
@@ -48,7 +50,10 @@ CreateAndLoadLogTask.prototype = {
    * @param {string} logDumpText Log dump, as a string.
    */
   onLogDumpCreated: function(logDumpText) {
+    expectEquals(this.initialSecurityStripping_,
+                 SourceTracker.getInstance().getSecurityStripping());
     expectEquals('Log loaded.', log_util.loadLogFile(logDumpText, 'log.txt'));
+    expectFalse(SourceTracker.getInstance().getSecurityStripping());
 
     NetInternalsTest.expectStatusViewNodeVisible(LoadedStatusView.MAIN_BOX_ID);
 
@@ -120,6 +125,11 @@ function checkViewsAfterLogLoaded() {
   NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
 }
 
+function checkSecurityStripping(expectedValue) {
+  expectEquals(expectedValue,
+               SourceTracker.getInstance().getSecurityStripping());
+}
+
 /**
  * Exports a log dump to a string and loads it.  Makes sure no errors occur,
  * and checks visibility of tabs aftwards.  Does not actually save the log to a
@@ -129,6 +139,7 @@ function checkViewsAfterLogLoaded() {
  */
 TEST_F('NetInternalsTest', 'netInternalsExportImportDump', function() {
   expectFalse(g_browser.isDisabled());
+  expectTrue(SourceTracker.getInstance().getSecurityStripping());
   NetInternalsTest.expectStatusViewNodeVisible(CaptureStatusView.MAIN_BOX_ID);
 
   var taskQueue = new NetInternalsTest.TaskQueue(true);
@@ -163,6 +174,7 @@ TEST_F('NetInternalsTest', 'netInternalsStopCapturing', function() {
       NetInternalsTest.expectStatusViewNodeVisible.bind(
           null, HaltedStatusView.MAIN_BOX_ID));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
+  taskQueue.addFunctionTask(checkSecurityStripping.bind(null, true));
   taskQueue.run();
 
   // Simulate a click on the stop capturing button.
@@ -182,6 +194,7 @@ TEST_F('NetInternalsTest', 'netInternalsStopCapturingExportImport', function() {
       NetInternalsTest.expectStatusViewNodeVisible.bind(
           null, HaltedStatusView.MAIN_BOX_ID));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
+  taskQueue.addFunctionTask(checkSecurityStripping.bind(null, true));
   taskQueue.addTask(new CreateAndLoadLogTask('Detailed explanation.'));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
   taskQueue.run();
