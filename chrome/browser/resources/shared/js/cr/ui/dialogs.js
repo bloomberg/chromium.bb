@@ -201,7 +201,7 @@ cr.define('cr.ui.dialogs', function() {
     for (var i = 0; i < this.deactivatedNodes_.length; i++) {
       var node = this.deactivatedNodes_[i];
       if (this.tabIndexes_[i] === null)
-        node.removeAttribute('tabidex');
+        node.removeAttribute('tabindex');
       else
         node.setAttribute('tabindex', this.tabIndexes_[i]);
     }

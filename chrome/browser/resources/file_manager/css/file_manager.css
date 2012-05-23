@@ -446,18 +446,11 @@ div.root-eject:hover {
   padding-left: 22px;
 }
 
-/* button:hover and button[disabled]:hover rules must be override by placing
- * the following four rules after them.
- */
-div.detail-view {
-  background-image: url('../images/icon_list_view.png');
+/* When detail-view is not disabled (thus thumbnail view is disabled), push
+   it up a little, to make it's right glowing border visible while focused.*/
+button#detail-view:not([disabled]) {
+  z-index: 2;
 }
-
-div.thumbnail-view {
-  background-image: url('../images/icon_thumb_view.png');
-  margin-left: -1px;
-}
-
 
 button.settings {
   display: none;
