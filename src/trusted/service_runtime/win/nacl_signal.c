@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdlib.h>
@@ -114,7 +114,7 @@ static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
   }
 
   /* If we have handled the exception and are ready to return, do so */
-  if (NaClSignalHandlerFind(sig, ep) == NACL_SIGNAL_RETURN) {
+  if (NaClSignalHandlerFind(sig, ep->ContextRecord) == NACL_SIGNAL_RETURN) {
       return EXCEPTION_CONTINUE_EXECUTION;
   }
 

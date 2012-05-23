@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdlib.h>
@@ -16,8 +16,7 @@
  */
 void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
                                   const void *rawCtx) {
-  PEXCEPTION_POINTERS ep = (PEXCEPTION_POINTERS) rawCtx;
-  PCONTEXT winCtx = ep->ContextRecord;
+  const CONTEXT *winCtx = rawCtx;
 
   sigCtx->prog_ctr = winCtx->Rip;
   sigCtx->stack_ptr = winCtx->Rsp;
@@ -53,8 +52,7 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
  */
 void NaClSignalContextToHandler(void *rawCtx,
                                 const struct NaClSignalContext *sigCtx) {
-  PEXCEPTION_POINTERS ep = (PEXCEPTION_POINTERS) rawCtx;
-  PCONTEXT winCtx = ep->ContextRecord;
+  CONTEXT *winCtx = rawCtx;
 
   winCtx->Rip = sigCtx->prog_ctr;
   winCtx->Rsp = sigCtx->stack_ptr;
