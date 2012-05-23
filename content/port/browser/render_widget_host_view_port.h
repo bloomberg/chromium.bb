@@ -162,12 +162,12 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // too far ahead. They may all be zero, in which case no flow control is
   // enforced; this case is currently used for accelerated plugins.
   virtual void AcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params_in_pixel,
       int gpu_host_id) = 0;
   // Similar to above, except |params.(x|y|width|height)| define the region
   // of the surface that changed.
   virtual void AcceleratedSurfacePostSubBuffer(
-      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params_in_pixel,
       int gpu_host_id) = 0;
 
   // Release the accelerated surface temporarily. It will be recreated on the
@@ -221,8 +221,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
 
 #if defined(USE_AURA)
   virtual void AcceleratedSurfaceNew(
-      int32 width,
-      int32 height,
+      int32 width_in_pixel,
+      int32 height_in_pixel,
       uint64* surface_id,
       TransportDIB::Handle* surface_handle) = 0;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) = 0;
