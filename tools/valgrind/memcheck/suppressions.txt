@@ -5297,7 +5297,7 @@
    fun:_ZN7WebCore19CCSingleThreadProxy11doCompositeEv
 }
 {
-   bug_117427
+   bug_117427_a
    Memcheck:Leak
    fun:_Znw*
    ...
@@ -5305,6 +5305,16 @@
    fun:_ZN3net16HostResolverImpl11CacheResultERKNS_9HostCache3KeyEiRKNS_11AddressListEN4base9TimeDeltaE
    fun:_ZN3net16HostResolverImpl3Job16CompleteRequestsEiRKNS_11AddressListEN4base9TimeDeltaE
    fun:_ZN3net16HostResolverImpl3Job18OnProcTaskCompleteEiRKNS_11AddressListE
+}
+{
+   bug_117427_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net13ExpiringCacheINS_9HostCache3KeyENS1_5EntryEE3PutERKS2_RKS3_N4base9TimeTicksENS9_9TimeDeltaE
+   fun:_ZN3net9HostCache3SetERKNS0_3KeyEiRKNS_11AddressListEN4base9TimeTicksENS7_9TimeDeltaE
+   fun:_ZN3net20MockHostResolverBase11ResolveProcEmRKNS_12HostResolver11RequestInfoEPNS_11AddressListE
+   fun:_ZN3net20MockHostResolverBase10ResolveNowEm
 }
 {
    bug_118890_a

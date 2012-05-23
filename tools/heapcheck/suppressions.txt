@@ -1135,17 +1135,10 @@
    fun:MessageLoop::RunHandler
 }
 {
-   bug_83561b
-   Heapcheck:Leak
-   fun:ChromeTestSuite::Initialize
-   fun:::UnitTestTestSuite::Initialize
-   fun:base::TestSuite::Run
-}
-{
-   bug_83561c
+   bug_83561
    Heapcheck:Leak
    ...
-   fun:net::HostResolverImpl::Resolve
+   fun:net::*HostResolver*::Resolve
    fun:net::SingleRequestHostResolver::Resolve
    fun:net::TransportConnectJob::DoResolveHost
    fun:net::TransportConnectJob::DoLoop
@@ -1749,7 +1742,7 @@
    fun:sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
 }
 {
-   bug_117427
+   bug_117427_a
    Heapcheck:Leak
    fun:__gnu_cxx::new_allocator::allocate
    fun:std::_Rb_tree::_M_get_node
@@ -1762,6 +1755,19 @@
    fun:net::HostResolverImpl::CacheResult
    fun:net::HostResolverImpl::Job::CompleteRequests
    fun:net::HostResolverImpl::Job::OnProcTaskComplete
+}
+{
+   bug_117427_b
+   Heapcheck:Leak
+   ...
+   fun:std::_Rb_tree::_M_create_node
+   fun:std::_Rb_tree::_M_insert_
+   fun:std::_Rb_tree::_M_insert_unique
+   fun:std::map::insert
+   fun:net::ExpiringCache::Put
+   fun:net::HostCache::Set
+   fun:net::MockHostResolverBase::ResolveProc
+   fun:net::MockHostResolverBase::ResolveNow
 }
 {
    bug_118336
@@ -1849,4 +1855,11 @@
    fun:RefcountedProfileKeyedServiceFactory::GetServiceForProfile
    fun:RefcountedProfileKeyedServiceFactory::SetTestingFactoryAndUse
    fun:TestingProfile::CreateWebDataService
+}
+{
+   bug_129392
+   Heapcheck:Leak
+   fun:::ChromeTestSuiteInitializer::SetUpHostResolver
+   fun:::ChromeTestSuiteInitializer::OnTestStart
+   fun:testing::internal::TestEventRepeater::OnTestStart
 }
