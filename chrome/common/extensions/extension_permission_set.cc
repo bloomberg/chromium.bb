@@ -385,7 +385,8 @@ ExtensionAPIPermission* ExtensionPermissionsInfo::GetByID(
   return (i == id_map_.end()) ? NULL : i->second;
 }
 
-ExtensionAPIPermission* ExtensionPermissionsInfo::GetByName(std::string name) {
+ExtensionAPIPermission* ExtensionPermissionsInfo::GetByName(
+    const std::string& name) {
   NameMap::iterator i = name_map_.find(name);
   return (i == name_map_.end()) ? NULL : i->second;
 }

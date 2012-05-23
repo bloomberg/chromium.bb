@@ -234,7 +234,7 @@ class ExtensionPermissionsInfo {
 
   // Returns the permission with the given |name|, and NULL if none
   // exists.
-  ExtensionAPIPermission* GetByName(std::string name);
+  ExtensionAPIPermission* GetByName(const std::string& name);
 
   // Returns a set containing all valid api permission ids.
   ExtensionAPIPermissionSet GetAll();
