@@ -750,5 +750,20 @@ v8Intl.DateTimeFormat = function(locales, options) {
   };
 };
 
+/**
+ * @constructor
+ * @param {Array?} locales Unused in the mock.
+ * @param {Object} options Unused in the mock.
+ */
+v8Intl.Collator = function(locales, options) {
+  return {
+    compare: function(a, b) {
+      if (a > b) return 1;
+      if (a < b) return -1;
+      return 0;
+    }
+  };
+};
+
 return v8Intl;
 }());

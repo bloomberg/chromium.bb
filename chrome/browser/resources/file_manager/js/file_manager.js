@@ -44,9 +44,6 @@ function FileManager(dialogDom) {
       FileManager.DialogType.SELECT_OPEN_MULTI_FILE,
       FileManager.DialogType.FULL_PAGE]);
 
-  // TODO(dgozman): This will be changed to LocaleInfo.
-  this.locale_ = new v8Locale(navigator.language);
-
   this.initFileSystem_();
   this.volumeManager_ = VolumeManager.getInstance();
   this.initDom_();
@@ -451,15 +448,14 @@ FileManager.prototype = {
     }.bind(this));
 
     this.dateFormatter_ = v8Intl.DateTimeFormat(
-        {} /* default locale */,
+        [] /* default locale */,
         {year: 'numeric', month: 'short', day: 'numeric',
          hour: 'numeric', minute: 'numeric'});
     this.timeFormatter_ = v8Intl.DateTimeFormat(
-        {} /* default locale */,
+        [] /* default locale */,
         {hour: 'numeric', minute: 'numeric'});
 
-    this.collator_ = this.locale_.createCollator({
-      'numeric': true, 'ignoreCase': true, 'ignoreAccents': true});
+    this.collator_ = v8Intl.Collator([], {numeric: true, sensitivity: 'base'});
 
     // Optional list of file types.
     this.fileTypes_ = this.params_.typeList;
