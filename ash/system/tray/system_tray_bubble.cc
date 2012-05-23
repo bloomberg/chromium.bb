@@ -188,6 +188,30 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
     canvas->Restore();
   }
 
+  // Overridden from views::BubbleBorder.
+  // Override views::BubbleBorder to set the bubble on top of the anchor when
+  // it has no arrow.
+  virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
+                              const gfx::Size& contents_size) const OVERRIDE {
+    if (arrow_location() != NONE) {
+      return views::BubbleBorder::GetBounds(position_relative_to,
+                                            contents_size);
+    }
+
+    gfx::Size border_size(contents_size);
+    gfx::Insets insets;
+    GetInsets(&insets);
+    border_size.Enlarge(insets.width(), insets.height());
+
+    const int kArrowOverlap = 3;
+    int x = position_relative_to.x() +
+            position_relative_to.width() / 2 - border_size.width() / 2;
+    // Position the bubble on top of the anchor.
+    int y = position_relative_to.y() +
+            kArrowOverlap - border_size.height();
+    return gfx::Rect(x, y, border_size.width(), border_size.height());
+  }
+
   // Overridden from views::Border.
   virtual void Paint(const views::View& view,
                      gfx::Canvas* canvas) const OVERRIDE {
@@ -460,6 +484,8 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
   SystemTrayBubbleBorder* bubble_border = new SystemTrayBubbleBorder(
       bubble_view_, arrow_location, init_params.arrow_offset);
   bubble_view_->SetBubbleBorder(bubble_border);
+  // Recalculate with new border.
+  bubble_view_->SizeToContents();
 
   bubble_widget_->AddObserver(this);
 
@@ -499,12 +525,13 @@ gfx::Rect SystemTrayBubble::GetAnchorRect() const {
                    0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
       }
     } else if (anchor_type_ == ANCHOR_TYPE_BUBBLE) {
-      // TODO(jennyz): add left/right launcher support for notification bubble.
-      rect.Inset(
-          base::i18n::IsRTL() ? kShadowThickness - 1 : 0,
-          0,
-          base::i18n::IsRTL() ? 0 : kShadowThickness - 1,
-          0);
+      // For notification bubble to be achored with uber tray bubble,
+      // the anchor can include arrow on left or right, which should
+      // be deducted out from the anchor rect.
+      views::View* anchor_view = bubble_view()->anchor_view();
+      rect = anchor_view->GetScreenBounds();
+      gfx::Insets insets = anchor_view->GetInsets();
+      rect.Inset(insets);
     }
   }
   return rect;
