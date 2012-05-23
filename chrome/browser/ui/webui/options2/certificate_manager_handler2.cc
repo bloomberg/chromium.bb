@@ -976,6 +976,9 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
         cert_dict->SetBoolean(
             kUntrustedId,
             certificate_manager_model_->cert_db().IsUntrusted(cert));
+        // TODO(hshi): This should be determined by testing for PKCS #11
+        // CKA_EXTRACTABLE attribute. We may need to use the NSS function
+        // PK11_ReadRawAttribute to do that.
         cert_dict->SetBoolean(
             kExtractableId,
             !certificate_manager_model_->IsHardwareBacked(cert));

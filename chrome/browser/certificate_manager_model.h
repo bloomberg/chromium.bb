@@ -101,6 +101,8 @@ class CertificateManagerModel {
   bool Delete(net::X509Certificate* cert);
 
   // IsHardwareBacked returns true if |cert| is hardware backed.
+  // This function is only implemented for Chrome OS and always returns false
+  // for other platforms.
   bool IsHardwareBacked(const net::X509Certificate* cert) const;
 
  private:
