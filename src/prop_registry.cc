@@ -127,7 +127,8 @@ void DoubleProperty::CreatePropImpl() {
 }
 
 bool DoubleProperty::SetValue(::Value* value) {
-  if (value->GetType() != Value::TYPE_DOUBLE) {
+  if (value->GetType() != Value::TYPE_DOUBLE &&
+      value->GetType() != Value::TYPE_INTEGER) {
     return false;
   }
   FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
