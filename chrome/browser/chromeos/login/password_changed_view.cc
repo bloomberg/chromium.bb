@@ -52,6 +52,12 @@ int PasswordChangedView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
+bool PasswordChangedView::IsDialogButtonEnabled(ui::DialogButton button) const {
+  if (ui::DIALOG_BUTTON_OK == button)
+    return full_sync_radio_->checked() || !old_password_field_->text().empty();
+  return views::DialogDelegate::IsDialogButtonEnabled(button);
+}
+
 views::View* PasswordChangedView::GetInitiallyFocusedView() {
   DCHECK(old_password_field_);
   return old_password_field_;
@@ -181,6 +187,12 @@ void PasswordChangedView::ButtonPressed(Button* sender,
     old_password_field_->SetEnabled(true);
     old_password_field_->RequestFocus();
   }
+  GetDialogClientView()->UpdateDialogButtons();
+}
+
+void PasswordChangedView::ContentsChanged(views::Textfield* sender,
+                                          const string16& new_contents) {
+  GetDialogClientView()->UpdateDialogButtons();
 }
 
 bool PasswordChangedView::HandleKeyEvent(views::Textfield* sender,

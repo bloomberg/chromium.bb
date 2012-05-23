@@ -48,6 +48,7 @@ class PasswordChangedView : public views::DialogDelegateView,
   // views::DialogDelegate:
   virtual bool Accept() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
+  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
 
   // views::WidgetDelegate:
   virtual View* GetInitiallyFocusedView() OVERRIDE;
@@ -62,11 +63,10 @@ class PasswordChangedView : public views::DialogDelegateView,
                              const views::Event& event) OVERRIDE;
 
   // views::TextfieldController:
+  virtual void ContentsChanged(views::Textfield* sender,
+                               const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const views::KeyEvent& keystroke) OVERRIDE;
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) OVERRIDE {}
-
  protected:
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
