@@ -177,6 +177,7 @@ class TabStrip : public views::View,
   virtual BaseTab* GetTabAt(BaseTab* tab,
                             const gfx::Point& tab_in_tab_coordinates) OVERRIDE;
   virtual void ClickActiveTab(const BaseTab* tab) const OVERRIDE;
+  virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE;
 
   // MouseWatcherListener overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;

@@ -47,6 +47,9 @@ class FakeTabController : public TabController {
     return NULL;
   }
   virtual void ClickActiveTab(const BaseTab* tab) const OVERRIDE {}
+  virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE {
+    return true;
+  }
 
  private:
   TabStripSelectionModel selection_model_;

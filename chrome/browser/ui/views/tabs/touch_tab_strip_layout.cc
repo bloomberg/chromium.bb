@@ -156,7 +156,8 @@ void TouchTabStripLayout::MoveTab(int from,
 }
 
 bool TouchTabStripLayout::IsStacked(int index) const {
-  if (index == active_index() || tab_count() == mini_tab_count_)
+  if (index == active_index() || tab_count() == mini_tab_count_ ||
+      index < mini_tab_count_)
     return false;
   if (index > active_index())
     return ideal_x(index) != ideal_x(index - 1) + tab_offset();

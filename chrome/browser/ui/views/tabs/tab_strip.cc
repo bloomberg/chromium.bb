@@ -186,6 +186,44 @@ int newtab_button_asset_height() {
   return value;
 }
 
+// Amount to adjust the clip by when the tab is stacked before the active index.
+int stacked_tab_left_clip() {
+  static int value = -1;
+  if (value == -1) {
+    switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_ASH:
+      case ui::LAYOUT_DESKTOP:
+        value = 20;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = 26;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  return value;
+}
+
+// Amount to adjust the clip by when the tab is stacked after the active index.
+int stacked_tab_right_clip() {
+  static int value = -1;
+  if (value == -1) {
+    switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_ASH:
+      case ui::LAYOUT_DESKTOP:
+        value = 20;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = 26;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  return value;
+}
+
 // Animation delegate used when a dragged tab is released. When done sets the
 // dragging state to false.
 class ResetDraggingStateDelegate
@@ -953,6 +991,36 @@ void TabStrip::ClickActiveTab(const BaseTab* tab) const {
   int index = GetModelIndexOfBaseTab(tab);
   if (controller() && IsValidModelIndex(index))
     controller()->ClickActiveTab(index);
+}
+
+bool TabStrip::ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) {
+  // Only touch layout needs to restrict the clip.
+  if (!touch_layout_.get())
+    return true;
+
+  int index = GetModelIndexOfBaseTab(tab);
+  if (index == -1)
+    return true;  // Tab is closing, paint it all.
+
+  if (index < touch_layout_->active_index()) {
+    if (tab_at(index)->x() == tab_at(index + 1)->x())
+      return false;
+
+    clip->SetRect(0, 0, tab_at(index + 1)->x() - tab_at(index)->x() +
+                      stacked_tab_left_clip(),
+                  tab_at(index)->height());
+  } else if (index > touch_layout_->active_index() && index > 0) {
+    const gfx::Rect& tab_bounds(tab_at(index)->bounds());
+    const gfx::Rect& previous_tab_bounds(tab_at(index - 1)->bounds());
+    if (tab_bounds.x() == previous_tab_bounds.x())
+      return false;
+    if (previous_tab_bounds.right() + tab_h_offset() != tab_bounds.x()) {
+      int x = previous_tab_bounds.right() - tab_bounds.x() -
+          stacked_tab_right_clip();
+      clip->SetRect(x, 0, tab_bounds.width() - x, tab_bounds.height());
+    }
+  }
+  return true;
 }
 
 void TabStrip::MouseMovedOutOfHost() {

@@ -78,6 +78,11 @@ class TabController {
   // when already active/foreground).
   virtual void ClickActiveTab(const BaseTab* tab) const = 0;
 
+  // Returns true if |tab| needs to be painted. If false is returned the tab is
+  // not painted. If true is returned the tab should be painted and |clip| is
+  // set to the clip (if |clip| is empty means no clip).
+  virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) = 0;
+
  protected:
   virtual ~TabController() {}
 };

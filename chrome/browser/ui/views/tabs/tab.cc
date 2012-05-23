@@ -302,6 +302,16 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
   if (width() < GetMinimumUnselectedSize().width() && !data().mini)
     return;
 
+  gfx::Rect clip;
+  if (controller()) {
+    if (!controller()->ShouldPaintTab(this, &clip))
+      return;
+    if (!clip.IsEmpty()) {
+      canvas->Save();
+      canvas->ClipRect(clip);
+    }
+  }
+
   // See if the model changes whether the icons should be painted.
   const bool show_icon = ShouldShowIcon();
   const bool show_close_button = ShouldShowCloseBox();
@@ -329,6 +339,9 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
         rb.GetImageSkiaNamed(IDR_TAB_CLOSE),
         rb.GetImageSkiaNamed(IDR_TAB_CLOSE_MASK));
   }
+
+  if (!clip.IsEmpty())
+    canvas->Restore();
 }
 
 void Tab::Layout() {
