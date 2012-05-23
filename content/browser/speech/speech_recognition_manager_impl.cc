@@ -327,6 +327,12 @@ void SpeechRecognitionManagerImpl::AbortAllSessionsForListener(
 void SpeechRecognitionManagerImpl::DispatchEvent(int session_id,
                                                  FSMEvent event) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // There are some corner cases in which the session might be deleted (due to
+  // an EndRecognition event) between a request (e.g. Abort) and its dispatch.
+  if (!SessionExists(session_id))
+    return;
+
   const Session& session = GetSession(session_id);
   FSMState session_state = GetSessionState(session_id);
   DCHECK_LE(session_state, SESSION_STATE_MAX_VALUE);
