@@ -251,10 +251,10 @@ void NaClProcessHost::Launch(
 void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
   // Set process handle, if it was not set previously.
   // This is needed when NaCl process is launched with nacl-gdb.
-  if (process_->GetData().handle == base::kNullProcessHandle) {
+  if (!CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kNaClGdb).empty()) {
     base::ProcessHandle process;
-    DCHECK(!CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-        switches::kNaClGdb).empty());
+    DCHECK(process_->GetData().handle == base::kNullProcessHandle);
     if (base::OpenProcessHandleWithAccess(
             peer_pid,
             base::kProcessAccessDuplicateHandle |
