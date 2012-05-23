@@ -48,7 +48,8 @@ bool SerialGetPortsFunction::Respond() {
 }
 
 SerialOpenFunction::SerialOpenFunction()
-    : src_id_(-1) {}
+    : src_id_(-1),
+      event_notifier_(NULL) {}
 
 bool SerialOpenFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
