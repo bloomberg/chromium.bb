@@ -732,7 +732,7 @@ class Dtrace(ApiBase):
 
     # Arguments parsing.
     RE_CHDIR = re.compile(r'^\"(.+?)\"$')
-    RE_OPEN = re.compile(r'^\"(.+?)\", (\d+), (\d+)$')
+    RE_OPEN = re.compile(r'^\"(.+?)\", (\d+), (-?\d+)$')
     RE_RENAME = re.compile(r'^\"(.+?)\", \"(.+?)\"$')
 
     O_DIRECTORY = 0x100000
@@ -794,8 +794,10 @@ class Dtrace(ApiBase):
     def handle_open_nocancel(self, ppid, pid, function, args, result):
       return self.handle_open(ppid, pid, function, args, result)
 
-    def handle_open(self, _ppid, pid, _function, args, result):
-      args = self.RE_OPEN.match(args).groups()
+    def handle_open(self, _ppid, pid, function, args, result):
+      match = self.RE_OPEN.match(args)
+      assert match, (pid, function, args, result)
+      args = match.groups()
       flag = int(args[1])
       if self.O_DIRECTORY & flag == self.O_DIRECTORY:
         # Ignore directories.
