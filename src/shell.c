@@ -2133,8 +2133,11 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	}
 
 	switch (surface_type) {
-	case SHELL_SURFACE_TOPLEVEL:
 	case SHELL_SURFACE_TRANSIENT:
+		if (shsurf->transient.flags ==
+				WL_SHELL_SURFACE_TRANSIENT_INACTIVE)
+			break;
+	case SHELL_SURFACE_TOPLEVEL:
 	case SHELL_SURFACE_FULLSCREEN:
 	case SHELL_SURFACE_MAXIMIZED:
 		if (!shell->locked)
