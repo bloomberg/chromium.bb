@@ -235,6 +235,16 @@ cr.define('options', function() {
         });
       }
 
+      // The extension warnings (describing runtime issues).
+      if (extension.warnings) {
+        var panel = node.querySelector('.extension-warnings');
+        panel.hidden = false;
+        var list = panel.querySelector('ul');
+        extension.warnings.forEach(function(warning) {
+          list.appendChild(document.createElement('li')).innerText = warning;
+        });
+      }
+
       // The install warnings.
       if (extension.installWarnings) {
         var panel = node.querySelector('.install-warnings');

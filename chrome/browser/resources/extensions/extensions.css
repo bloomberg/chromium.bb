@@ -170,7 +170,8 @@ html[dir='rtl'] .extension-list-item {
 }
 
 .butter-bar,
-.install-warnings {
+.install-warnings,
+.extension-warnings {
   border-radius: 3px;
   margin-top: 5px;
   padding: 2px 5px;
@@ -180,11 +181,13 @@ html[dir='rtl'] .extension-list-item {
   background: rgb(255, 242, 153);
 }
 
-.install-warnings {
+.install-warnings,
+.extension-warnings {
   background: pink;
 }
 
-.install-warnings ul {
+.install-warnings ul,
+.extension-warnings ul {
   margin: 0;
 }
 

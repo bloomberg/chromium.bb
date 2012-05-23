@@ -160,20 +160,23 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       extension->browser_action() || extension->page_action());
 
   // Add warnings.
-  ListValue* warnings_list = new ListValue;
   if (warnings_set) {
     std::set<ExtensionWarningSet::WarningType> warnings;
     warnings_set->GetWarningsAffectingExtension(extension->id(), &warnings);
 
-    for (std::set<ExtensionWarningSet::WarningType>::const_iterator iter =
-             warnings.begin();
-         iter != warnings.end();
-         ++iter) {
-      string16 warning_string(ExtensionWarningSet::GetLocalizedWarning(*iter));
-      warnings_list->Append(Value::CreateStringValue(warning_string));
+    if (!warnings.empty()) {
+      ListValue* warnings_list = new ListValue;
+      for (std::set<ExtensionWarningSet::WarningType>::const_iterator iter =
+               warnings.begin();
+           iter != warnings.end();
+           ++iter) {
+        string16 warning_string(
+            ExtensionWarningSet::GetLocalizedWarning(*iter));
+        warnings_list->Append(Value::CreateStringValue(warning_string));
+      }
+      extension_data->Set("warnings", warnings_list);
     }
   }
-  extension_data->Set("warnings", warnings_list);
 
   // Add install warnings (these are not the same as warnings!).
   const std::vector<std::string>& install_warnings =
