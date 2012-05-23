@@ -265,6 +265,8 @@ def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
     if manifest.get('read_only'):
       make_writable(outdir, True)
     cmd = manifest['command']
+    # Ensure paths are correctly separated on windows.
+    cmd[0] = cmd[0].replace('/', os.path.sep)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     return subprocess.call(cmd, cwd=cwd)
   finally:
