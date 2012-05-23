@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -86,5 +86,9 @@ sources = ['access.c',
            'waitpid.c',
            ]
 
-libnosys = env.ComponentLibrary('libnosys', sources)
+libnosys = env.NaClSdkLibrary(
+    'libnosys',
+    sources,
+    # only enable shared versions of this library in the shared newlib case
+    no_shared_lib=not env.Bit('pnacl_shared_newlib'))
 env.AddLibraryToSdk(libnosys)

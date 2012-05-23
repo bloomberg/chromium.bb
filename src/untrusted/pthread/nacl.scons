@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,7 +23,11 @@ nc_objs = [env.ComponentObject(module, module + '.c')
            ] + [valgrind]
 
 # The public library relies on the IRT for crucial system services.
-libpthread = env.ComponentLibrary('libpthread', nc_objs + ['nc_init_irt.c'])
+libpthread = env.NaClSdkLibrary(
+  'libpthread',
+  nc_objs + ['nc_init_irt.c'],
+  # only enable shared versions of this library in the shared newlib case
+  no_shared_lib=not env.Bit('pnacl_shared_newlib'))
 env.AddLibraryToSdk(libpthread)
 
 # The private library rolls in those IRT components.

@@ -3410,8 +3410,13 @@ def NaClSharedLibrary(env, lib_name, *args, **kwargs):
 nacl_env.AddMethod(NaClSharedLibrary)
 
 def NaClSdkLibrary(env, lib_name, *args, **kwargs):
+  gen_shared = not env.Bit('nacl_disable_shared')
+  if 'no_shared_lib' in kwargs:
+    if kwargs['no_shared_lib']:
+      gen_shared = False
+    del kwargs['no_shared_lib']
   n = [env.ComponentLibrary(lib_name, *args, **kwargs)]
-  if not env.Bit('nacl_disable_shared'):
+  if gen_shared:
     n.append(NaClSharedLibrary(env, lib_name, *args, **kwargs))
   return n
 
