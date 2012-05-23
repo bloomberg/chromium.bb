@@ -25,6 +25,10 @@
 
 #include <stdint.h>
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 enum wl_cursor_type {
 	WL_CURSOR_BOTTOM_LEFT,
 	WL_CURSOR_BOTTOM_RIGHT,
@@ -74,5 +78,9 @@ wl_cursor_theme_get_cursor_by_name(struct wl_cursor_theme *theme,
 
 struct wl_buffer *
 wl_cursor_image_get_buffer(struct wl_cursor_image *image);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif
