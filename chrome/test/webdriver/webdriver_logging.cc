@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "build/build_config.h"
@@ -23,6 +24,28 @@ namespace webdriver {
 FileLog* FileLog::singleton_ = NULL;
 
 double start_time = 0;
+
+LogLevel LogLevelFromString(const std::string& name) {
+  // Default logging level is INFO.
+  LogLevel level = kInfoLogLevel;
+  const std::string upper_case_name = StringToUpperASCII(name);
+  if (upper_case_name == "OFF") {
+    level = kOffLogLevel;
+  } else if (upper_case_name == "SEVERE") {
+    level = kSevereLogLevel;
+  } else if (upper_case_name == "WARNING") {
+    level = kWarningLogLevel;
+  } else if (upper_case_name == "INFO" || upper_case_name == "CONFIG") {
+
+  } else if (upper_case_name == "FINE") {
+    level = kFineLogLevel;
+  } else if (upper_case_name == "FINER") {
+    level = kFinerLogLevel;
+  } else if (upper_case_name == "ALL" || upper_case_name == "FINEST") {
+    level = kAllLogLevel;
+  }
+  return level;
+}
 
 // static
 bool LogType::FromString(const std::string& name, LogType* log_type) {
@@ -99,6 +122,9 @@ void FileLog::Log(LogLevel level, const base::Time& time,
 
   const char* level_name = "UNKNOWN";
   switch (level) {
+    case kOffLogLevel:
+      level_name = "OFF";
+      break;
     case kSevereLogLevel:
       level_name = "SEVERE";
       break;

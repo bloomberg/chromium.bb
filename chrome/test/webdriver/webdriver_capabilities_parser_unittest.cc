@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/zip.h"
 #include "chrome/test/webdriver/webdriver_capabilities_parser.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;
@@ -257,6 +258,22 @@ TEST(CapabilitiesParser, ProxyFtpServerCapNullValue) {
   ASSERT_FALSE(parser.Parse());
   EXPECT_STREQ("http=localhost:8001",
       caps.command.GetSwitchValueASCII(switches::kProxyServer).c_str());
+}
+
+TEST(CapabilitiesParser, DriverLoggingCapString) {
+  Capabilities caps;
+  DictionaryValue dict;
+  DictionaryValue* options = new DictionaryValue();
+  dict.Set("loggingPrefs", options);
+  CapabilitiesParser parser(&dict, FilePath(), Logger(), &caps);
+
+  // A string as the driver logging level works.
+  options->SetString("driver", "INFO");
+  ASSERT_FALSE(parser.Parse());
+
+  // An integer (here, an enum LogLevel value) doesn't work.
+  options->SetInteger("driver", kInfoLogLevel);
+  ASSERT_TRUE(parser.Parse());
 }
 
 }  // namespace webdriver

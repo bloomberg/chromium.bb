@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/webdriver/webdriver_error.h"
+#include "chrome/test/webdriver/webdriver_logging.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 
 using base::DictionaryValue;
@@ -239,14 +240,14 @@ Error* CapabilitiesParser::ParseLoggingPrefs(const base::Value* option) {
 
     Value* level_value;
     logging_prefs->Get(*key_iter, &level_value);
-    int level;
-    if (!level_value->GetAsInteger(&level)) {
+    std::string level_name;
+    if (!level_value->GetAsString(&level_name)) {
       return CreateBadInputError(
           std::string("loggingPrefs.") + *key_iter,
-          Value::TYPE_INTEGER,
+          Value::TYPE_STRING,
           level_value);
     }
-    caps_->log_levels[log_type.type()] = static_cast<LogLevel>(level);
+    caps_->log_levels[log_type.type()] = LogLevelFromString(level_name);
   }
   return NULL;
 }
@@ -338,7 +339,7 @@ Error* CapabilitiesParser::ParseProxy(const base::Value* option) {
 }
 
 Error* CapabilitiesParser::ParseProxyAutoDetect(
-    const DictionaryValue* options){
+    const DictionaryValue* options) {
   const char kProxyAutoDetectKey[] = "autodetect";
   bool proxy_auto_detect = false;
   if (!options->GetBoolean(kProxyAutoDetectKey, &proxy_auto_detect))

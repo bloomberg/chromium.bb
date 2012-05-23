@@ -22,6 +22,7 @@ namespace webdriver {
 
 // WebDriver logging levels.
 enum LogLevel {
+  kOffLogLevel = 1200,
   kSevereLogLevel = 1000,
   kWarningLogLevel = 900,
   kInfoLogLevel = 800,
@@ -29,6 +30,9 @@ enum LogLevel {
   kFinerLogLevel = 400,
   kAllLogLevel = -1000
 };
+
+// |name| should be a webdriver log level, such as "INFO", "SEVERE", etc.
+LogLevel LogLevelFromString(const std::string& name);
 
 // Represents a type/source of a WebDriver log.
 class LogType {
