@@ -2753,7 +2753,10 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   bound_renderbuffer_ = NULL;
 
   if (have_context) {
-    copy_texture_CHROMIUM_->Destroy();
+    if (copy_texture_CHROMIUM_.get()) {
+      copy_texture_CHROMIUM_->Destroy();
+      copy_texture_CHROMIUM_.reset();
+    }
 
     if (current_program_) {
       program_manager()->UnuseProgram(shader_manager(), current_program_);
