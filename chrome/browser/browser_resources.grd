@@ -90,13 +90,13 @@
       <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PLUGINS_JS" file="resources\plugins.js" type="BINDATA" />
       <if expr="is_win">
-        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_win.json" type="BINDATA" />
+        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugins_win.json" type="BINDATA" />
       </if>
       <if expr="is_macosx">
-        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_mac.json" type="BINDATA" />
+        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugins_mac.json" type="BINDATA" />
       </if>
       <if expr="is_linux">
-        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugin_metadata\plugins_linux.json" type="BINDATA" />
+        <include name="IDR_PLUGIN_DB_JSON" file="resources\plugins_linux.json" type="BINDATA" />
       </if>
       <include name="IDR_POLICY_CSS" file="resources\policy.css" type="BINDATA"/>
       <include name="IDR_POLICY_HTML" file="resources\policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA"/>

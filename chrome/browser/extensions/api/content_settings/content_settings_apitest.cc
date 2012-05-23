@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   const char* kFooName = "Foo Plugin";
   const char* kBarName = "Bar Plugin";
   const webkit::npapi::PluginGroupDefinition kPluginDefinitions[] = {
-    { "foo", "Foo", kFooName },
+    { "foo", "Foo", kFooName, NULL, 0 },
   };
 
   webkit::npapi::MockPluginList plugin_list(kPluginDefinitions,

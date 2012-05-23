@@ -158,33 +158,30 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
                           &uses_default_content_setting);
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-  PluginInstaller::SecurityStatus plugin_status =
-      PluginInstaller::SECURITY_STATUS_UP_TO_DATE;
-  PluginInstaller* installer =
-      plugin_finder->FindPluginWithIdentifier(group->identifier());
-  if (installer)
-    plugin_status = installer->GetSecurityStatus(plugin);
   // Check if the plug-in is outdated.
-  if (plugin_status == PluginInstaller::SECURITY_STATUS_OUT_OF_DATE &&
-      !allow_outdated_plugins_.GetValue()) {
+  if (group->IsVulnerable(plugin) && !allow_outdated_plugins_.GetValue()) {
     if (allow_outdated_plugins_.IsManaged()) {
       status->value =
           ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed;
     } else {
-      status->value = ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked;
+      status->value =
+          ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked;
     }
     return;
   }
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
   // Check if the plug-in requires authorization.
-  if ((plugin_status ==
-           PluginInstaller::SECURITY_STATUS_REQUIRES_AUTHORIZATION ||
+  // TODO(bauerb): This should be a plain struct with the plug-in information.
+  PluginInstaller* installer =
+      plugin_finder->FindPluginWithIdentifier(group->identifier());
+  if (((installer && installer->requires_authorization()) ||
        PluginService::GetInstance()->IsPluginUnstable(plugin.path)) &&
       !always_authorize_plugins_.GetValue() &&
       plugin_setting != CONTENT_SETTING_BLOCK &&
       uses_default_content_setting) {
-    status->value = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
+    status->value =
+       ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
     return;
   }
 #endif

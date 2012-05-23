@@ -33,20 +33,6 @@
       "application/x-java-bean,version=1.6",
       "application/x-java-vm"
     ],
-    "versions": [
-      {
-        "version": "1.6.0.31",
-        "status": "requires_authorization"
-      },
-      {
-        "version": "1.7",
-        "status": "out_of_date"
-      },
-      {
-        "version": "1.7.0.3",
-        "status": "requires_authorization"
-      }
-    ],
     "lang": "en-US",
     "name": "Java(TM)",
     "help_url": "https://support.google.com/chrome/?p=plugin_java",
@@ -58,55 +44,15 @@
       "application/futuresplash",
       "application/x-shockwave-flash"
     ],
-    "versions": [
-      {
-        "version": "11.1.102",
-        "status": "up_to_date",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-03.html"
-      }
-    ],
     "lang": "en-US",
     "name": "Adobe Flash Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
     "url": "http://get.adobe.com/flashplayer/",
+    "requires_authorization": false,
     "displayurl": true
   },
   "redhat-icetea-java": {
     "mime_types": [
-    ],
-    "versions": [
-      {
-        "version": "1.8.13",
-        "status": "requires_authorization",
-        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
-      },
-      {
-        "version": "1.9",
-        "status": "out_of_date"
-      },
-      {
-        "version": "1.9.13",
-        "status": "requires_authorization",
-        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
-      },
-      {
-        "version": "1.10",
-        "status": "out_of_date"
-      },
-      {
-        "version": "1.10.6",
-        "status": "requires_authorization",
-        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
-      },
-      {
-        "version": "2",
-        "status": "out_of_date"
-      },
-      {
-        "version": "2.0.1",
-        "status": "requires_authorization",
-        "reference": "http://blog.fuseyism.com/index.php/2012/02/15/security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/"
-      }
     ],
     "lang": "en-US",
     "name": "IcedTea",

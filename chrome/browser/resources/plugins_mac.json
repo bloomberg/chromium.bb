@@ -33,31 +33,6 @@
       "application/x-java-bean,version=1.6",
       "application/x-java-vm"
     ],
-    "versions": [
-      {
-        "version": "12.8.0",
-        "status": "requires_authorization",
-        "comment": "Leopard"
-      },
-      {
-        "version": "13",
-        "status": "out_of_date"
-      },
-      {
-        "version": "13.5.0",
-        "status": "requires_authorization",
-        "comment": "Snow Leopard"
-      },
-      {
-        "version": "14",
-        "status": "out_of_date"
-      },
-      {
-        "version": "14.0.3",
-        "status": "requires_authorization",
-        "comment": "Lion"
-      }
-    ],
     "lang": "en-US",
     "name": "Java(TM)",
     "url": "http://java.com/en/download/apple_manual.jsp",
@@ -71,13 +46,6 @@
       "audio/x-pn-realaudio-plugin",
       "audio/x-pn-realaudio"
     ],
-    "versions": [
-      {
-        "version": "0",
-        "status": "requires_authorization",
-        "comment": "The Real Player plug-in for mac doesn't expose a version at all."
-      }
-    ],
     "lang": "en-US",
     "name": "RealPlayer",
     "url": "http://director.real.com/realplayer?type=rpsp_mac",
@@ -88,34 +56,38 @@
       "application/futuresplash",
       "application/x-shockwave-flash"
     ],
-    "versions": [
-      {
-        "version": "11.1.102",
-        "status": "up_to_date",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-03.html"
-      }
-    ],
     "lang": "en-US",
     "name": "Adobe Flash Player",
     "url": "http://get.adobe.com/flashplayer/",
     "help_url": "https://support.google.com/chrome/?p=plugin_flash",
+    "requires_authorization": false,
     "displayurl": true
   },
   "adobe-shockwave": {
     "mime_types": [
       "application/x-director"
     ],
-    "versions": [
-      {
-        "version": "11.6.4.634",
-        "status": "requires_authorization",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-02.html"
-      }
-    ],
     "lang": "en-US",
     "name": "Adobe Shockwave Player",
-    "url": "http://fpdownload.macromedia.com/get/shockwave/default/english/macosx/latest/Shockwave_Installer_Full_64bit.dmg",
-    "help_url": "https://support.google.com/chrome/?p=plugin_shockwave"
+    "url": "http://www.adobe.com/shockwave/download/",
+    "help_url": "https://support.google.com/chrome/?p=plugin_shockwave",
+    "displayurl": true
+  },
+  "adobe-reader": {
+    "mime_types": [
+      "application/pdf",
+      "application/vnd.adobe.x-mars",
+      "application/vnd.adobe.xdp+xml",
+      "application/vnd.adobe.xfd+xml",
+      "application/vnd.adobe.xfdf",
+      "application/vnd.fdf"
+    ],
+    "lang": "en-US",
+    "name": "Adobe Reader",
+    "url": "http://get.adobe.com/reader/",
+    "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
+    "requires_authorization": false,
+    "displayurl": true
   },
   "apple-quicktime": {
     "mime_types": [
@@ -169,12 +141,6 @@
       "video/x-m4v",
       "video/x-mpeg"
     ],
-    "versions": [
-      {
-        "version": "7.6.6",
-        "status": "requires_authorization"
-      }
-    ],
     "lang": "en-US",
     "name": "QuickTime Player",
     "url": "http://www.apple.com/quicktime/download/",
@@ -194,12 +160,6 @@
       "video/x-ms-wmv",
       "video/x-ms-wvx"
     ],
-    "versions": [
-      {
-        "version": "2.2.1",
-        "status": "requires_authorization"
-      }
-    ],
     "lang": "en-US",
     "name": "Flip4Mac",
     "url": "http://www.microsoft.com/download/en/confirmation.aspx?id=9442",
@@ -211,12 +171,6 @@
       "video/divx",
       "video/x-matroska"
     ],
-    "versions": [
-      {
-        "version": "2.2",
-        "status": "requires_authorization"
-      }
-    ],
     "lang": "en-US",
     "name": "DivX Web Player",
     "url": "http://www.divx.com/en/downloads/divx/mac",
@@ -227,16 +181,10 @@
       "application/x-silverlight",
       "application/x-silverlight-2"
     ],
-    "versions": [
-      {
-        "version": "4.1.10111.0",
-        "status": "up_to_date",
-        "reference": "http://support.microsoft.com/kb/2668562"
-      }
-    ],
     "lang": "en-US",
     "name": "Silverlight",
     "url": "http://go.microsoft.com/fwlink/?LinkID=149156",
+    "requires_authorization": false,
     "displayurl": true
   }
 }
