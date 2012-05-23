@@ -23,16 +23,19 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
-#include "ui/views/bubble/bubble_border.h"
-#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -93,6 +96,32 @@ namespace tray {
 enum ColorTheme {
   LIGHT,
   DARK,
+};
+
+class NetworkErrors {
+ public:
+  struct Message {
+    Message() : delegate(NULL) {}
+    Message(NetworkTrayDelegate* in_delegate,
+            const string16& in_title,
+            const string16& in_message,
+            const string16& in_link_text) :
+        delegate(in_delegate),
+        title(in_title),
+        message(in_message),
+        link_text(in_link_text) {}
+    NetworkTrayDelegate* delegate;
+    string16 title;
+    string16 message;
+    string16 link_text;
+  };
+  typedef std::map<TrayNetwork::ErrorType, Message> ErrorMap;
+
+  ErrorMap& messages() { return messages_; }
+  const ErrorMap& messages() const { return messages_; }
+
+ private:
+  ErrorMap messages_;
 };
 
 class NetworkTrayView : public TrayItemView {
@@ -564,12 +593,167 @@ class NetworkDetailedView : public TrayDetailsView,
   DISALLOW_COPY_AND_ASSIGN(NetworkDetailedView);
 };
 
+class NetworkErrorView : public views::View,
+                         public views::LinkListener {
+ public:
+  NetworkErrorView(TrayNetwork* tray,
+                   TrayNetwork::ErrorType error_type,
+                   const NetworkErrors::Message& error)
+      : tray_(tray),
+        error_type_(error_type) {
+    set_border(views::Border::CreateEmptyBorder(
+        kTrayPopupPaddingBetweenItems, kTrayPopupPaddingHorizontal,
+        kTrayPopupPaddingBetweenItems, kTrayPopupPaddingHorizontal));
+
+    const int msg_width = kTrayPopupWidth - kNotificationCloseButtonWidth -
+        kTrayPopupPaddingHorizontal - kNotificationIconWidth;
+
+    views::ImageView* icon = new views::ImageView;
+    icon->SetImage(ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        GetErrorIcon(error_type)));
+
+    int num_rows = 0;
+    views::Label* title = new views::Label(error.title);
+    title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
+    ++num_rows;
+
+    views::Label* message = new views::Label(error.message);
+    message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    message->SetMultiLine(true);
+    message->SizeToFit(msg_width);
+    ++num_rows;
+
+    views::Link* link = NULL;
+    if (!error.link_text.empty()) {
+      link = new views::Link(error.link_text);
+      link->set_listener(this);
+      link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      link->SetMultiLine(true);
+      link->SizeToFit(msg_width);
+      ++num_rows;
+    }
+
+    views::GridLayout* layout = new views::GridLayout(this);
+    SetLayoutManager(layout);
+
+    views::ColumnSet* columns = layout->AddColumnSet(0);
+
+    // Icon
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                       0 /* resize percent */,
+                       views::GridLayout::FIXED,
+                       kNotificationIconWidth, kNotificationIconWidth);
+
+    columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
+
+    // Title + message + link
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                       0 /* resize percent */,
+                       views::GridLayout::FIXED, msg_width, msg_width);
+
+    // Layout rows
+    layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
+
+    layout->StartRow(0, 0);
+    layout->AddView(icon, 1, num_rows);
+    layout->AddView(title);
+
+    layout->StartRow(0, 0);
+    layout->SkipColumns(1);
+    layout->AddView(message);
+
+    if (link) {
+      layout->StartRow(0, 0);
+      layout->SkipColumns(1);
+      layout->AddView(link);
+    }
+
+    layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
+
+  }
+
+  virtual ~NetworkErrorView() {
+  }
+
+  // Overridden from views::LinkListener.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
+    tray_->LinkClicked(error_type_);
+  }
+
+  TrayNetwork::ErrorType error_type() const { return error_type_; }
+
+ private:
+  int GetErrorIcon(TrayNetwork::ErrorType error_type) {
+    switch(error_type) {
+      case TrayNetwork::ERROR_CONNECT_FAILED:
+        return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
+      case TrayNetwork::ERROR_DATA_LOW:
+        return IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW;
+      case TrayNetwork::ERROR_DATA_NONE:
+        return IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE;
+    }
+    NOTREACHED();
+    return 0;
+  }
+
+  TrayNetwork* tray_;
+  TrayNetwork::ErrorType error_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkErrorView);
+};
+
+class NetworkNotificationView : public TrayNotificationView {
+ public:
+  explicit NetworkNotificationView(TrayNetwork* tray)
+      : tray_(tray) {
+    CreateView();
+  }
+
+  // Overridden from TrayNotificationView.
+  virtual void OnClose() OVERRIDE {
+    tray_->ClearNetworkError(network_error_view_->error_type());
+  }
+
+  // Overridden from views::View.
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+    tray_->PopupDetailedView(0, true);
+    return true;
+  }
+
+  void Update() {
+    RemoveAllChildViews(true);
+    CreateView();
+    Layout();
+    PreferredSizeChanged();
+    SchedulePaint();
+  }
+
+ private:
+  void CreateView() {
+    // Display the first (highest priority) error.
+    CHECK(!tray_->errors()->messages().empty());
+    NetworkErrors::ErrorMap::const_iterator iter =
+        tray_->errors()->messages().begin();
+    network_error_view_ =
+        new NetworkErrorView(tray_, iter->first, iter->second);
+    InitView(network_error_view_);
+  }
+
+  TrayNetwork* tray_;
+  tray::NetworkErrorView* network_error_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkNotificationView);
+};
+
 }  // namespace tray
 
 TrayNetwork::TrayNetwork()
     : tray_(NULL),
       default_(NULL),
-      detailed_(NULL) {
+      detailed_(NULL),
+      notification_(NULL),
+      errors_(new tray::NetworkErrors()) {
 }
 
 TrayNetwork::~TrayNetwork() {
@@ -593,6 +777,12 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
   return detailed_;
 }
 
+views::View* TrayNetwork::CreateNotificationView(user::LoginStatus status) {
+  CHECK(notification_ == NULL);
+  notification_ = new tray::NetworkNotificationView(this);
+  return notification_;
+}
+
 void TrayNetwork::DestroyTrayView() {
   tray_ = NULL;
 }
@@ -605,6 +795,10 @@ void TrayNetwork::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
+void TrayNetwork::DestroyNotificationView() {
+  notification_ = NULL;
+}
+
 void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
@@ -615,6 +809,39 @@ void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {
     default_->Update();
   if (detailed_)
     detailed_->Update();
+}
+
+void TrayNetwork::SetNetworkError(NetworkTrayDelegate* delegate,
+                                  ErrorType error_type,
+                                  const string16& title,
+                                  const string16& message,
+                                  const string16& link_text) {
+  errors_->messages()[error_type] =
+      tray::NetworkErrors::Message(delegate, title, message, link_text);
+  if (notification_)
+    notification_->Update();
+  else
+    ShowNotificationView();
+}
+
+void TrayNetwork::ClearNetworkError(ErrorType error_type) {
+  errors_->messages().erase(error_type);
+  if (errors_->messages().empty()) {
+    if (notification_)
+      HideNotificationView();
+    return;
+  }
+  if (notification_)
+    notification_->Update();
+  else
+    ShowNotificationView();
+}
+
+void TrayNetwork::LinkClicked(ErrorType error_type) {
+  tray::NetworkErrors::ErrorMap::const_iterator iter =
+      errors()->messages().find(error_type);
+  if (iter != errors()->messages().end() && iter->second.delegate)
+    iter->second.delegate->NotificationLinkClicked();
 }
 
 }  // namespace internal

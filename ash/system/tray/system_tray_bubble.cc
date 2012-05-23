@@ -48,6 +48,13 @@ const int kMinArrowOffset = 12;
 
 const int kAnimationDurationForPopupMS = 200;
 
+// Normally a detailed view is the same size as the default view. However,
+// when showing a detailed view directly (e.g. clicking on a notification),
+// we may not know the height of the default view, or the default view may
+// be too short, so we use this as a default and minimum height for any
+// detailed view.
+const int kDetailedBubbleMaxHeight = kTrayPopupItemHeight * 5;
+
 const SkColor kShadowColor = SkColorSetARGB(0xff, 0, 0, 0);
 
 void DrawBlurredShadowAroundView(gfx::Canvas* canvas,
@@ -263,13 +270,15 @@ namespace internal {
 
 // SystemTrayBubbleView
 
-SystemTrayBubbleView::SystemTrayBubbleView(views::View* anchor,
+SystemTrayBubbleView::SystemTrayBubbleView(
+    views::View* anchor,
     views::BubbleBorder::ArrowLocation arrow_location,
     SystemTrayBubble* host,
     bool can_activate)
     : views::BubbleDelegateView(anchor, arrow_location),
       host_(host),
-      can_activate_(can_activate) {
+      can_activate_(can_activate),
+      max_height_(0) {
   set_margin(0);
   set_parent_window(ash::Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_SettingBubbleContainer));
@@ -336,7 +345,10 @@ bool SystemTrayBubbleView::CanActivate() const {
 
 gfx::Size SystemTrayBubbleView::GetPreferredSize() {
   gfx::Size size = views::BubbleDelegateView::GetPreferredSize();
-  return gfx::Size(kTrayPopupWidth, size.height());
+  int height = size.height();
+  if (max_height_ != 0 && height > max_height_)
+    height = max_height_;
+  return gfx::Size(kTrayPopupWidth, height);
 }
 
 void SystemTrayBubbleView::OnMouseEntered(const views::MouseEvent& event) {
@@ -360,7 +372,8 @@ SystemTrayBubble::InitParams::InitParams(
       arrow_offset(
           (shelf_alignment == SHELF_ALIGNMENT_BOTTOM ?
                kArrowPaddingFromRight : kArrowPaddingFromBottom)
-          + kArrowWidth / 2) {
+          + kArrowWidth / 2),
+      max_height(0) {
 }
 
 // SystemTrayBubble
@@ -405,8 +418,10 @@ void SystemTrayBubble::UpdateView(
   CreateItemViews(Shell::GetInstance()->tray_delegate()->GetUserLoginStatus());
   bubble_widget_->GetContentsView()->Layout();
   // Make sure that the bubble is large enough for the default view.
-  if (bubble_type_ == BUBBLE_TYPE_DEFAULT)
+  if (bubble_type_ == BUBBLE_TYPE_DEFAULT) {
+    bubble_view_->set_max_height(0);  // Clear max height limit.
     bubble_view_->SizeToContents();
+  }
 }
 
 void SystemTrayBubble::InitView(const InitParams& init_params) {
@@ -428,6 +443,11 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
       init_params.anchor, arrow_location, this, init_params.can_activate);
   if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION)
     bubble_view_->set_close_on_deactivate(false);
+  int max_height = init_params.max_height;
+  if (bubble_type_ == BUBBLE_TYPE_DETAILED &&
+      max_height < kDetailedBubbleMaxHeight)
+    max_height = kDetailedBubbleMaxHeight;
+  bubble_view_->set_max_height(max_height);
 
   CreateItemViews(init_params.login_status);
 

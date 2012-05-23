@@ -177,10 +177,11 @@ SystemTray::SystemTray()
       background_(new internal::SystemTrayBackground),
       should_show_launcher_(false),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
-      ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(this,
-          0, kTrayBackgroundAlpha)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(this,
-          0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(
+          this, 0, kTrayBackgroundAlpha)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(
+          this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)),
+      default_bubble_height_(0) {
   tray_container_ = new internal::SystemTrayContainer;
   tray_container_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, 0));
@@ -323,7 +324,7 @@ void SystemTray::SetDetailedViewCloseDelay(int close_delay) {
 void SystemTray::HideDetailedView(SystemTrayItem* item) {
   if (item != detailed_item_)
     return;
-  bubble_.reset();
+  DestroyBubble();
   UpdateNotificationBubble();
 }
 
@@ -347,7 +348,7 @@ void SystemTray::HideNotificationView(SystemTrayItem* item) {
 }
 
 void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
-  bubble_.reset();
+  DestroyBubble();
 
   for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
       it != items_.end();
@@ -368,9 +369,14 @@ bool SystemTray::CloseBubbleForTest() const {
 
 // Private methods.
 
+void SystemTray::DestroyBubble() {
+  bubble_.reset();
+  detailed_item_ = NULL;
+}
+
 void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
   if (bubble == bubble_.get()) {
-    bubble_.reset();
+    DestroyBubble();
     UpdateNotificationBubble();  // State changed, re-create notifications.
     if (should_show_launcher_) {
       // No need to show the launcher if the mouse isn't over the status area
@@ -460,8 +466,13 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     init_params.login_status = delegate->GetUserLoginStatus();
     if (arrow_offset >= 0)
       init_params.arrow_offset = arrow_offset;
+    if (detailed)
+      init_params.max_height = default_bubble_height_;
     bubble_->InitView(init_params);
   }
+  // Save height of default view for creating detailed views directly.
+  if (!detailed)
+    default_bubble_height_ = bubble_->bubble_view()->height();
 
   if (detailed && items.size() > 0)
     detailed_item_ = items[0];
@@ -485,9 +496,23 @@ void SystemTray::UpdateNotificationBubble() {
     notification_bubble_.reset();
     return;
   }
-  notification_bubble_.reset(
-      new SystemTrayBubble(this, notification_items_,
-                           SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION));
+  if (bubble_.get() &&
+      bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DETAILED) {
+    // Skip notifications for any currently displayed detailed item.
+    std::vector<SystemTrayItem*> items;
+    for (std::vector<SystemTrayItem*>::iterator iter =
+             notification_items_.begin();
+         iter != notification_items_.end(); ++ iter) {
+      if (*iter != detailed_item_)
+        items.push_back(*iter);
+    }
+    notification_bubble_.reset(new SystemTrayBubble(
+        this, items, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION));
+  } else {
+    // Show all notifications.
+    notification_bubble_.reset(new SystemTrayBubble(
+        this, notification_items_, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION));
+  }
   views::View* anchor;
   SystemTrayBubble::AnchorType anchor_type;
   if (bubble_.get()) {

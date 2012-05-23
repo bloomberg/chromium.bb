@@ -160,6 +160,9 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   friend class internal::SystemTrayLayerAnimationObserver;
   friend class internal::SystemTrayBubble;
 
+  // Resets |bubble_| and clears any related state.
+  void DestroyBubble();
+
   // Called when the widget associated with |bubble| closes. |bubble| should
   // always == |bubble_|. This triggers destroying |bubble_| and hiding the
   // launcher if necessary.
@@ -252,6 +255,10 @@ class ASH_EXPORT SystemTray : public internal::ActionableView,
   internal::BackgroundAnimator hover_background_animator_;
   scoped_ptr<internal::SystemTrayLayerAnimationObserver>
       layer_animation_observer_;
+
+  // Keep track of the default view height so that when we create detailed
+  // views directly (e.g. from a notification) we know what height to use.
+  int default_bubble_height_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/notifications/system_notification.h"
 
 class Profile;
 
@@ -21,6 +20,8 @@ namespace chromeos {
 
 // The network message observer displays a system notification for network
 // messages.
+
+class NetworkMessageNotification;
 
 class NetworkMessageObserver
   : public NetworkLibrary::NetworkManagerObserver,
@@ -66,11 +67,11 @@ class NetworkMessageObserver
   CellularNetwork::DataLeft cellular_data_left_;
 
   // Notification for connection errors
-  SystemNotification notification_connection_error_;
+  scoped_ptr<NetworkMessageNotification> notification_connection_error_;
   // Notification for showing low data warning
-  SystemNotification notification_low_data_;
+  scoped_ptr<NetworkMessageNotification> notification_low_data_;
   // Notification for showing no data warning
-  SystemNotification notification_no_data_;
+  scoped_ptr<NetworkMessageNotification> notification_no_data_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMessageObserver);
 };

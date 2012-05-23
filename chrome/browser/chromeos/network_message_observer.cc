@@ -4,16 +4,21 @@
 
 #include "chrome/browser/chromeos/network_message_observer.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/network/network_observer.h"
+#include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"
+#include "chrome/browser/chromeos/notifications/system_notification.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -39,16 +44,105 @@ bool ShouldShowMobilePlanNotifications() {
 
 namespace chromeos {
 
-NetworkMessageObserver::NetworkMessageObserver(Profile* profile)
-    : notification_connection_error_(profile, "network_connection.chromeos",
-          IDR_NOTIFICATION_NETWORK_FAILED,
-          l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE)),
-      notification_low_data_(profile, "network_low_data.chromeos",
-          IDR_NOTIFICATION_BARS_CRITICAL,
-          l10n_util::GetStringUTF16(IDS_NETWORK_LOW_DATA_TITLE)),
-      notification_no_data_(profile, "network_no_data.chromeos",
-          IDR_NOTIFICATION_BARS_EMPTY,
-          l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE)) {
+class NetworkMessageNotification : public ash::NetworkTrayDelegate {
+ public:
+  NetworkMessageNotification(Profile* profile,
+                             ash::NetworkObserver::ErrorType error_type)
+      : error_type_(error_type) {
+    std::string id;
+    int icon_id = 0;
+    switch (error_type) {
+      case ash::NetworkObserver::ERROR_CONNECT_FAILED:
+        id = "network_connection.chromeos";
+        icon_id = IDR_NOTIFICATION_NETWORK_FAILED;
+        title_ = l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE);
+        break;
+      case ash::NetworkObserver::ERROR_DATA_LOW:
+        id = "network_low_data.chromeos";
+        icon_id = IDR_NOTIFICATION_BARS_CRITICAL;
+        title_ = l10n_util::GetStringUTF16(IDS_NETWORK_LOW_DATA_TITLE);
+        break;
+      case ash::NetworkObserver::ERROR_DATA_NONE:
+        id = "network_no_data.chromeos";
+        icon_id = IDR_NOTIFICATION_BARS_EMPTY;
+        title_ = l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE);
+        break;
+    }
+    LOG_IF(ERROR, id.empty()) << "Unexpected error type: " << error_type;
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAshNotify) && !id.empty()) {
+      system_notification_.reset(
+          new SystemNotification(profile, id, icon_id, title_));
+    }
+  }
+
+  // Overridden from ash::NetworkTrayDelegate:
+  virtual void NotificationLinkClicked() {
+    base::ListValue empty_value;
+    if (!callback_.is_null())
+      callback_.Run(&empty_value);
+  }
+
+  void Hide() {
+    if (system_notification_.get()) {
+      system_notification_->Hide();
+    } else {
+      ash::Shell::GetInstance()->tray()->network_observer()->
+          ClearNetworkError(error_type_);
+    }
+  }
+
+  void SetTitle(const string16& title) {
+    title_ = title;
+    if (system_notification_.get()) {
+      system_notification_->set_title(title);
+    }
+  }
+
+  void Show(const string16& message,
+            const string16& link_text,
+            const BalloonViewHost::MessageCallback& callback,
+            bool urgent, bool sticky) {
+    if (system_notification_.get()) {
+      system_notification_->Show(message, link_text, callback, urgent, sticky);
+    } else {
+      callback_ = callback;
+      ash::Shell::GetInstance()->tray()->network_observer()->
+          SetNetworkError(this, error_type_, title_, message, link_text);
+    }
+  }
+
+  void ShowAlways(const string16& message,
+                  const string16& link_text,
+                  const BalloonViewHost::MessageCallback& callback,
+                  bool urgent, bool sticky) {
+    if (system_notification_.get()) {
+      // Hide if already shown to force show it in case user has closed it.
+      if (system_notification_->visible())
+        system_notification_->Hide();
+    }
+    Show(message, link_text, callback, urgent, sticky);
+  }
+
+ private:
+  string16 title_;
+  scoped_ptr<SystemNotification> system_notification_;
+  ash::NetworkObserver::ErrorType error_type_;
+  BalloonViewHost::MessageCallback callback_;
+};
+
+NetworkMessageObserver::NetworkMessageObserver(Profile* profile) {
+  notification_connection_error_.reset(
+      new NetworkMessageNotification(
+          profile, ash::NetworkObserver::ERROR_CONNECT_FAILED));
+  notification_low_data_.reset(
+      new NetworkMessageNotification(
+          profile,
+          ash::NetworkObserver::ERROR_DATA_LOW));
+  notification_no_data_.reset(
+      new NetworkMessageNotification(
+          profile,
+          ash::NetworkObserver::ERROR_DATA_NONE));
   NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
   OnNetworkManagerChanged(netlib);
   // Note that this gets added as a NetworkManagerObserver,
@@ -61,9 +155,9 @@ NetworkMessageObserver::~NetworkMessageObserver() {
   netlib->RemoveNetworkManagerObserver(this);
   netlib->RemoveCellularDataPlanObserver(this);
   netlib->RemoveUserActionObserver(this);
-  notification_connection_error_.Hide();
-  notification_low_data_.Hide();
-  notification_no_data_.Hide();
+  notification_connection_error_->Hide();
+  notification_low_data_->Hide();
+  notification_no_data_->Hide();
 }
 
 // static
@@ -97,20 +191,20 @@ void NetworkMessageObserver::OpenMoreInfoPage(const ListValue* args) {
 }
 
 void NetworkMessageObserver::InitNewPlan(const CellularDataPlan* plan) {
-  notification_low_data_.Hide();
-  notification_no_data_.Hide();
+  notification_low_data_->Hide();
+  notification_no_data_->Hide();
   if (plan->plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
-    notification_no_data_.set_title(
+    notification_no_data_->SetTitle(
         l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_EXPIRED_TITLE,
                                    ASCIIToUTF16(plan->plan_name)));
-    notification_low_data_.set_title(
+    notification_low_data_->SetTitle(
         l10n_util::GetStringFUTF16(IDS_NETWORK_NEARING_EXPIRATION_TITLE,
                                    ASCIIToUTF16(plan->plan_name)));
   } else {
-    notification_no_data_.set_title(
+    notification_no_data_->SetTitle(
         l10n_util::GetStringFUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE,
                                    ASCIIToUTF16(plan->plan_name)));
-    notification_low_data_.set_title(
+    notification_low_data_->SetTitle(
         l10n_util::GetStringFUTF16(IDS_NETWORK_LOW_DATA_TITLE,
                                    ASCIIToUTF16(plan->plan_name)));
   }
@@ -118,10 +212,10 @@ void NetworkMessageObserver::InitNewPlan(const CellularDataPlan* plan) {
 
 void NetworkMessageObserver::ShowNeedsPlanNotification(
     const CellularNetwork* cellular) {
-  notification_no_data_.set_title(
+  notification_no_data_->SetTitle(
       l10n_util::GetStringFUTF16(IDS_NETWORK_NO_DATA_PLAN_TITLE,
                                  UTF8ToUTF16(cellular->name())));
-  notification_no_data_.Show(
+  notification_no_data_->Show(
       l10n_util::GetStringFUTF16(
           IDS_NETWORK_NO_DATA_PLAN_MESSAGE,
           UTF8ToUTF16(cellular->name())),
@@ -132,12 +226,12 @@ void NetworkMessageObserver::ShowNeedsPlanNotification(
 
 void NetworkMessageObserver::ShowNoDataNotification(
     CellularDataPlanType plan_type) {
-  notification_low_data_.Hide();  // Hide previous low data notification.
+  notification_low_data_->Hide();  // Hide previous low data notification.
   string16 message = plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
       TimeFormat::TimeRemaining(base::TimeDelta()) :
       l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_REMAINING_MESSAGE,
                                  ASCIIToUTF16("0"));
-  notification_no_data_.Show(message,
+  notification_no_data_->Show(message,
       l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
       base::Bind(&NetworkMessageObserver::OpenMobileSetupPage, AsWeakPtr()),
       false, false);
@@ -153,7 +247,7 @@ void NetworkMessageObserver::ShowLowDataNotification(
     message = l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_REMAINING_MESSAGE,
         UTF8ToUTF16(base::Int64ToString(remaining_mbytes)));
   }
-  notification_low_data_.Show(message,
+  notification_low_data_->Show(message,
       l10n_util::GetStringUTF16(IDS_NETWORK_MORE_INFO_MESSAGE),
       base::Bind(&NetworkMessageObserver::OpenMoreInfoPage, AsWeakPtr()),
       false, false);
@@ -208,13 +302,12 @@ void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
 
   // Show connection error notification if necessary.
   if (new_failed_network) {
-    // Hide if already shown to force show it in case user has closed it.
-    if (notification_connection_error_.visible())
-      notification_connection_error_.Hide();
-    notification_connection_error_.Show(l10n_util::GetStringFUTF16(
-        IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS,
-        UTF8ToUTF16(new_failed_network->name()),
-        UTF8ToUTF16(new_failed_network->GetErrorString())), false, false);
+    notification_connection_error_->ShowAlways(
+        l10n_util::GetStringFUTF16(
+            IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_DETAILS,
+            UTF8ToUTF16(new_failed_network->name()),
+            UTF8ToUTF16(new_failed_network->GetErrorString())),
+        string16(), BalloonViewHost::MessageCallback(), false, false);
   }
 }
 
@@ -278,7 +371,7 @@ void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* cros) {
 void NetworkMessageObserver::OnConnectionInitiated(NetworkLibrary* cros,
                                                    const Network* network) {
   // If user initiated any network connection, we hide the error notification.
-  notification_connection_error_.Hide();
+  notification_connection_error_->Hide();
 }
 
 void NetworkMessageObserver::SaveLastCellularInfo(

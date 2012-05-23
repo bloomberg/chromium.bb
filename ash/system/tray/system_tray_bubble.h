@@ -54,8 +54,11 @@ class SystemTrayBubbleView : public views::BubbleDelegateView {
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
 
+  void set_max_height(int height) { max_height_ = height; }
+
   SystemTrayBubble* host_;
   bool can_activate_;
+  int max_height_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleView);
 };
@@ -82,6 +85,7 @@ class SystemTrayBubble : public base::MessagePumpObserver,
     bool can_activate;
     ash::user::LoginStatus login_status;
     int arrow_offset;
+    int max_height;
   };
 
   SystemTrayBubble(ash::SystemTray* tray,
