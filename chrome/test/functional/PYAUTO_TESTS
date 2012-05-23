@@ -320,6 +320,8 @@
       '-browser.BrowserTest.testKillAndReloadSharedProcess',
       # crosbug.com/26669
       '-chromeos_file_browser',
+      # crbug.com/129469
+      '-chromeos_prefs.ChromeosPrefsTest.testCaptureUserPhoto',
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
       '-downloads.DownloadsTest.testDeclineDangerousDownload',

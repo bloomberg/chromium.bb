@@ -1,13 +1,17 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import os
+import sys
 import time
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+
+sys.path.append('/usr/local')  # Required to import autotest libs
+from autotest.cros import constants
 
 
 class ChromeosPrefsTest(pyauto.PyUITest):
@@ -21,18 +25,15 @@ class ChromeosPrefsTest(pyauto.PyUITest):
   def testAllUserImage(self):
     """Verify changing all available default user images in Change picture."""
 
-    # Defined in src/chrome/browser/chromeos/login/default_user_images.cc
-    images = []
-    for i in range(0, 19):
-      images.append(u'default:%d' % i)
-
-    for image in images:
-      logged_in_user = \
-          self.GetLocalStatePrefsInfo().Prefs(
-              ChromeosPrefsTest.k_logged_in_users)[0]
+    logged_in_user = constants.CREDENTIALS['$default'][0]
+    for i in range(19):
+      image = {
+          "index": i,
+          "path": ""
+      }
       user_images = {}
       user_images[logged_in_user] = image
-      self.SetLocalStatePrefs( ChromeosPrefsTest.k_user_images, user_images)
+      self.SetLocalStatePrefs(ChromeosPrefsTest.k_user_images, user_images)
       self.RestartBrowser(clear_profile=False)
       current_user_images = self.GetLocalStatePrefsInfo().Prefs(
           ChromeosPrefsTest.k_user_images)
@@ -43,9 +44,7 @@ class ChromeosPrefsTest(pyauto.PyUITest):
   def testCaptureUserPhoto(self):
     """Verify capturing/saving user photo works."""
 
-    logged_in_user = \
-        self.GetLocalStatePrefsInfo().Prefs(
-            ChromeosPrefsTest.k_logged_in_users)[0]
+    logged_in_user = constants.CREDENTIALS['$default'][0]
     # Defined in src/chrome/browser/chromeos/login/user_manager.cc
     expected_photo_name = logged_in_user + '.png'
 
