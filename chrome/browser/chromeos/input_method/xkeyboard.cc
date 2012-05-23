@@ -42,8 +42,8 @@ const char kSetxkbmapCommand[] = "/usr/bin/setxkbmap";
 // See the comment at ModifierKey in the .h file.
 ModifierKey kCustomizableKeys[] = {
   kSearchKey,
-  kLeftControlKey,
-  kLeftAltKey
+  kControlKey,
+  kAltKey
 };
 
 // A string for obtaining a mask value for Num Lock.
@@ -325,10 +325,10 @@ std::string XKeyboardImpl::CreateFullXkbLayoutName(
       case kSearchKey:
         target = &use_search_key_as_str;
         break;
-      case kLeftControlKey:
+      case kControlKey:
         target = &use_left_control_key_as_str;
         break;
-      case kLeftAltKey:
+      case kAltKey:
         target = &use_left_alt_key_as_str;
         break;
       default:
@@ -465,9 +465,9 @@ std::string XKeyboardImpl::ModifierKeyToString(ModifierKey key) {
   switch (key) {
     case kSearchKey:
       return "search";
-    case kLeftControlKey:
+    case kControlKey:
       return "leftcontrol";
-    case kLeftAltKey:
+    case kAltKey:
       return "leftalt";
     case kVoidKey:
       return "disabled";

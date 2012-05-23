@@ -217,10 +217,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              input_method::kSearchKey,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapControlKeyTo,
-                             input_method::kLeftControlKey,
+                             input_method::kControlKey,
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapAltKeyTo,
-                             input_method::kLeftAltKey,
+                             input_method::kAltKey,
                              PrefService::SYNCABLE_PREF);
   // We don't sync the following keyboard prefs since they are not user-
   // configurable.
@@ -678,11 +678,11 @@ void Preferences::UpdateModifierKeyMapping() {
             input_method::ModifierKey(search_remap)));
     modifier_map.push_back(
         input_method::ModifierKeyPair(
-            input_method::kLeftControlKey,
+            input_method::kControlKey,
             input_method::ModifierKey(control_remap)));
     modifier_map.push_back(
         input_method::ModifierKeyPair(
-            input_method::kLeftAltKey,
+            input_method::kAltKey,
             input_method::ModifierKey(alt_remap)));
     input_method_manager_->GetXKeyboard()->RemapModifierKeys(modifier_map);
   } else {

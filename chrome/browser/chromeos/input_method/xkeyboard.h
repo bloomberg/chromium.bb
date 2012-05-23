@@ -29,8 +29,8 @@ enum ModifierLockStatus {
 // TODO(yusukes): Remove this enum when crbug.com/115112 is implemented.
 enum ModifierKey {
   kSearchKey = 0,  // Customizable.
-  kLeftControlKey,  // Customizable.
-  kLeftAltKey,  // Customizable.
+  kControlKey,  // Customizable.
+  kAltKey,  // Customizable.
   kVoidKey,
   kCapsLockKey,
   // IMPORTANT: You should update kCustomizableKeys[] in .cc file, if you

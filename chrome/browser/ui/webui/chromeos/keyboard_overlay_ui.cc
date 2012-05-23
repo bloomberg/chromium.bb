@@ -47,8 +47,8 @@ struct ModifierToLabel {
   const char* label;
 } kModifierToLabels[] = {
   {chromeos::input_method::kSearchKey, "search"},
-  {chromeos::input_method::kLeftControlKey, "ctrl"},
-  {chromeos::input_method::kLeftAltKey, "alt"},
+  {chromeos::input_method::kControlKey, "ctrl"},
+  {chromeos::input_method::kAltKey, "alt"},
   {chromeos::input_method::kVoidKey, "disabled"},
   {chromeos::input_method::kCapsLockKey, "caps lock"},
 };
@@ -288,10 +288,9 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
   ModifierMap modifier_map;
   modifier_map[chromeos::input_method::kSearchKey] = static_cast<ModifierKey>(
       pref_service->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo));
-  modifier_map[chromeos::input_method::kLeftControlKey] =
-      static_cast<ModifierKey>(
-          pref_service->GetInteger(prefs::kLanguageXkbRemapControlKeyTo));
-  modifier_map[chromeos::input_method::kLeftAltKey] = static_cast<ModifierKey>(
+  modifier_map[chromeos::input_method::kControlKey] = static_cast<ModifierKey>(
+      pref_service->GetInteger(prefs::kLanguageXkbRemapControlKeyTo));
+  modifier_map[chromeos::input_method::kAltKey] = static_cast<ModifierKey>(
       pref_service->GetInteger(prefs::kLanguageXkbRemapAltKeyTo));
 
   DictionaryValue dict;

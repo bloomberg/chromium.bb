@@ -51,29 +51,29 @@ class XKeyboardTest : public testing::Test {
 
 // Returns a ModifierMap object that contains the following mapping:
 // - kSearchKey is mapped to |search|.
-// - kLeftControl key is mapped to |control|.
-// - kLeftAlt key is mapped to |alt|.
+// - kControl key is mapped to |control|.
+// - kAlt key is mapped to |alt|.
 ModifierMap GetMap(ModifierKey search, ModifierKey control, ModifierKey alt) {
   ModifierMap modifier_key;
   // Use the Search key as |search|.
   modifier_key.push_back(ModifierKeyPair(kSearchKey, search));
-  modifier_key.push_back(ModifierKeyPair(kLeftControlKey, control));
-  modifier_key.push_back(ModifierKeyPair(kLeftAltKey, alt));
+  modifier_key.push_back(ModifierKeyPair(kControlKey, control));
+  modifier_key.push_back(ModifierKeyPair(kAltKey, alt));
   return modifier_key;
 }
 
 // Checks |modifier_map| and returns true if the following conditions are met:
 // - kSearchKey is mapped to |search|.
-// - kLeftControl key is mapped to |control|.
-// - kLeftAlt key is mapped to |alt|.
+// - kControl key is mapped to |control|.
+// - kAlt key is mapped to |alt|.
 bool CheckMap(const ModifierMap& modifier_map,
               ModifierKey search, ModifierKey control, ModifierKey alt) {
   ModifierMap::const_iterator begin = modifier_map.begin();
   ModifierMap::const_iterator end = modifier_map.end();
   if ((std::count(begin, end, ModifierKeyPair(kSearchKey, search)) == 1) &&
       (std::count(begin, end,
-                  ModifierKeyPair(kLeftControlKey, control)) == 1) &&
-      (std::count(begin, end, ModifierKeyPair(kLeftAltKey, alt)) == 1)) {
+                  ModifierKeyPair(kControlKey, control)) == 1) &&
+      (std::count(begin, end, ModifierKeyPair(kAltKey, alt)) == 1)) {
     return true;
   }
   return false;
@@ -106,10 +106,10 @@ TEST_F(XKeyboardTest, TestCreateFullXkbLayoutNameBasic) {
   tmp_map.push_back(ModifierKeyPair(kSearchKey, kVoidKey));  // two search maps
   EXPECT_STREQ("", xkey_->CreateFullXkbLayoutName("us", tmp_map).c_str());
   tmp_map = GetMap(kVoidKey, kVoidKey, kVoidKey);
-  tmp_map.push_back(ModifierKeyPair(kLeftControlKey, kVoidKey));  // two ctrls
+  tmp_map.push_back(ModifierKeyPair(kControlKey, kVoidKey));  // two ctrls
   EXPECT_STREQ("", xkey_->CreateFullXkbLayoutName("us", tmp_map).c_str());
   tmp_map = GetMap(kVoidKey, kVoidKey, kVoidKey);
-  tmp_map.push_back(ModifierKeyPair(kLeftAltKey, kVoidKey));  // two alts.
+  tmp_map.push_back(ModifierKeyPair(kAltKey, kVoidKey));  // two alts.
   EXPECT_STREQ("", xkey_->CreateFullXkbLayoutName("us", tmp_map).c_str());
 
   // CreateFullXkbLayoutName should not accept invalid ModifierMaps.
@@ -182,10 +182,10 @@ TEST_F(XKeyboardTest, TestCreateFullXkbLayoutNameKeepCapsLock) {
                    GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
   EXPECT_STREQ("de(neo)+chromeos(search_leftcontrol_leftcontrol_keepralt)",
                xkey_->CreateFullXkbLayoutName(
-                   // The 1st kLeftControlKey should be ignored.
-                   "de(neo)", GetMap(kLeftControlKey,
-                                     kLeftControlKey,
-                                     kLeftControlKey)).c_str());
+                   // The 1st kControlKey should be ignored.
+                   "de(neo)", GetMap(kControlKey,
+                                     kControlKey,
+                                     kControlKey)).c_str());
   EXPECT_STREQ("gb(extd)+chromeos(disabled_disabled_disabled_keepralt)",
                xkey_->CreateFullXkbLayoutName(
                    "gb(extd)",
@@ -199,9 +199,9 @@ TEST_F(XKeyboardTest, TestCreateFullXkbLayoutNameKeepAlt) {
   EXPECT_STREQ("kr(kr104)+"
                "chromeos(leftcontrol_leftcontrol_leftcontrol_keepralt)",
                xkey_->CreateFullXkbLayoutName(
-                   "kr(kr104)", GetMap(kLeftControlKey,
-                                       kLeftControlKey,
-                                       kLeftControlKey)).c_str());
+                   "kr(kr104)", GetMap(kControlKey,
+                                       kControlKey,
+                                       kControlKey)).c_str());
 }
 
 // Tests if CreateFullXkbLayoutName and ExtractLayoutNameFromFullXkbLayoutName
