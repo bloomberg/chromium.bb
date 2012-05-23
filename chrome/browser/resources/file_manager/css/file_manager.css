@@ -1206,7 +1206,9 @@ body:not([type='saveas-file']):not([type='full-page'])
 }
 
 #gdata-settings {
+  overflow: hidden;
   text-align: left;
+  width: 54px;
 }
 
 #gdata-settings img {
