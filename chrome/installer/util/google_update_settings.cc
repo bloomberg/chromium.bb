@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -547,6 +548,22 @@ string16 GoogleUpdateSettings::GetUninstallCommandLine(bool system_install) {
   }
 
   return cmd_line;
+}
+
+Version GoogleUpdateSettings::GetGoogleUpdateVersion(bool system_install) {
+  const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  string16 version;
+  RegKey key;
+
+  if (key.Open(root_key,
+               google_update::kRegPathGoogleUpdate,
+               KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+      key.ReadValue(google_update::kRegGoogleUpdateVersion,
+                    &version) == ERROR_SUCCESS) {
+    return Version(UTF16ToUTF8(version));
+  }
+
+  return Version();
 }
 
 base::Time GoogleUpdateSettings::GetGoogleUpdateLastStartedAU(

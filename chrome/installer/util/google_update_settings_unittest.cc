@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_reg_util_win.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -613,6 +614,66 @@ TEST_P(GetUninstallCommandLine, TestRealValue) {
 }
 
 INSTANTIATE_TEST_CASE_P(GetUninstallCommandLineAtLevel, GetUninstallCommandLine,
+                        testing::Bool());
+
+// Test GoogleUpdateSettings::GetGoogleUpdateVersion at system- or user-level,
+// according to the param.
+class GetGoogleUpdateVersion : public GoogleUpdateSettingsTest,
+                               public testing::WithParamInterface<bool> {
+ protected:
+  static const wchar_t kDummyVersion[];
+
+  virtual void SetUp() OVERRIDE {
+    GoogleUpdateSettingsTest::SetUp();
+    system_install_ = GetParam();
+    root_key_ = system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  }
+
+  HKEY root_key_;
+  bool system_install_;
+};
+
+const wchar_t GetGoogleUpdateVersion::kDummyVersion[] = L"1.2.3.4";
+
+// Tests that GetGoogleUpdateVersion returns an empty string if there's no
+// Software\Google\Update key.
+TEST_P(GetGoogleUpdateVersion, TestNoKey) {
+  EXPECT_FALSE(
+      GoogleUpdateSettings::GetGoogleUpdateVersion(system_install_).IsValid());
+}
+
+// Tests that GetGoogleUpdateVersion returns an empty string if there's no
+// version value in the Software\Google\Update key.
+TEST_P(GetGoogleUpdateVersion, TestNoValue) {
+  RegKey(root_key_, google_update::kRegPathGoogleUpdate, KEY_SET_VALUE);
+  EXPECT_FALSE(
+      GoogleUpdateSettings::GetGoogleUpdateVersion(system_install_).IsValid());
+}
+
+// Tests that GetGoogleUpdateVersion returns an empty string if there's an
+// empty version value in the Software\Google\Update key.
+TEST_P(GetGoogleUpdateVersion, TestEmptyValue) {
+  RegKey(root_key_, google_update::kRegPathGoogleUpdate, KEY_SET_VALUE)
+      .WriteValue(google_update::kRegGoogleUpdateVersion, L"");
+  EXPECT_FALSE(
+      GoogleUpdateSettings::GetGoogleUpdateVersion(system_install_).IsValid());
+}
+
+// Tests that GetGoogleUpdateVersion returns the correct string if there's a
+// version value in the Software\Google\Update key.
+TEST_P(GetGoogleUpdateVersion, TestRealValue) {
+  RegKey(root_key_, google_update::kRegPathGoogleUpdate, KEY_SET_VALUE)
+      .WriteValue(google_update::kRegGoogleUpdateVersion, kDummyVersion);
+  Version expected(UTF16ToUTF8(kDummyVersion));
+  EXPECT_TRUE(expected.Equals(
+      GoogleUpdateSettings::GetGoogleUpdateVersion(system_install_)));
+  // Make sure that there's no value in the other level (user or system).
+  EXPECT_FALSE(
+      GoogleUpdateSettings::GetGoogleUpdateVersion(!system_install_)
+          .IsValid());
+}
+
+INSTANTIATE_TEST_CASE_P(GetGoogleUpdateVersionAtLevel, GetGoogleUpdateVersion,
                         testing::Bool());
 
 // Test values for use by the CollectStatsConsent test fixture.

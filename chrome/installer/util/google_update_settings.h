@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "base/version.h"
 #include "chrome/installer/util/util_constants.h"
 
 class BrowserDistribution;
@@ -219,6 +220,9 @@ class GoogleUpdateSettings {
   // Returns Google Update's uninstall command line, or an empty string if none
   // is found.
   static string16 GetUninstallCommandLine(bool system_install);
+
+  // Returns the version of Google Update that is installed.
+  static Version GetGoogleUpdateVersion(bool system_install);
 
   // Returns the time at which Google Update last started an automatic update
   // check, or the null time if this information isn't available.
