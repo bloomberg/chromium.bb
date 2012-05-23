@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -374,8 +375,14 @@ std::string PyUITestBase::_SendJSONRequest(int window_index,
     }
   } else {
     scoped_refptr<BrowserProxy> browser_proxy = GetBrowserWindow(window_index);
-    EXPECT_TRUE(browser_proxy.get());
-    if (browser_proxy.get()) {
+    if (!browser_proxy.get()) {
+      base::DictionaryValue error_dict;
+      std::string error_string = StringPrintf(
+          "No browser at windex=%d for %s", window_index, request.c_str());
+      LOG(WARNING) << error_string;
+      error_dict.SetString("error", error_string);
+      base::JSONWriter::Write(&error_dict, &response);
+    } else {
       time = base::TimeTicks::Now();
       if (!browser_proxy->SendJSONRequest(request, timeout, &response)) {
         LOG(WARNING) << "SendJSONRequest returned false after "

@@ -7,6 +7,7 @@ import unittest
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import pyauto_errors
 
 
 class PyAutoTest(pyauto.PyUITest):
@@ -33,6 +34,13 @@ class PyAutoTest(pyauto.PyUITest):
     for flag in self._EXTRA_CHROME_FLAGS:
       self.assertEqual(self.FindInPage(flag)['match_count'], 1,
                        msg='Missing expected Chrome flag "%s"' % flag)
+
+  def testCallOnInvalidWindow(self):
+    """Verify that exception is raised when a browser is missing/invalid."""
+    self.assertEqual(1, self.GetBrowserWindowCount())
+    self.assertRaises(
+        pyauto_errors.JSONInterfaceError,
+        lambda: self.FindInPage('some text', windex=1))  # invalid window
 
 
 if __name__ == '__main__':
