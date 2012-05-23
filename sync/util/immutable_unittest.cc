@@ -225,7 +225,13 @@ TEST_F(ImmutableTest, VectorSwapMemFnByRef) {
         "VectorSwapMemFnByRef");
 }
 
-TEST_F(ImmutableTest, Deque) {
+// http://crbug.com/129128
+#if defined(OS_WIN)
+#define MAYBE_Deque DISABLED_Deque
+#else
+#define MAYBE_Deque Deque
+#endif
+TEST_F(ImmutableTest, MAYBE_Deque) {
   RunTokenContainerTest<std::deque<Token>, Immutable<std::deque<Token> > >(
       "Deque");
 }
