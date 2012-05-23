@@ -73,6 +73,19 @@ typedef struct __nc_basic_thread_data {
   nc_thread_descriptor_t *tdb;
 } nc_basic_thread_data_t;
 
+/*
+ * This structure is allocated for all threads.  However, for threads
+ * created with pthread_create(), the basic_data field is not used,
+ * and a separate nc_basic_thread_data_t struct is allocated.  The
+ * initial thread, and threads created by the IRT's thread_create()
+ * interface, do use the basic_data field though.
+ * TODO(mseaborn): Clean this up to be more consistent.
+ */
+struct nc_combined_tdb {
+  nc_thread_descriptor_t tdb;
+  nc_basic_thread_data_t basic_data;
+};
+
 
 #define MEMORY_BLOCK_ALLOCATION_SIZE(real_size) \
   (sizeof(nc_thread_memory_block_t) + (real_size))

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10,7 +10,18 @@
 
 static int nacl_irt_thread_create(void *start_user_address, void *stack,
                                   void *thread_ptr) {
+#if defined(NACL_IN_IRT)
+  /*
+   * We want the first TLS to point to an unmapped location.  The
+   * thread_create() syscall rejects a zero argument for the first
+   * TLS, so use a non-zero value in the unmapped first 64k page.
+   */
+  void *user_tls = (void *) 0x1000;
+  return -NACL_SYSCALL(thread_create)(start_user_address, stack,
+                                      user_tls, thread_ptr);
+#else
   return -NACL_SYSCALL(thread_create)(start_user_address, stack, thread_ptr, 0);
+#endif
 }
 
 static void nacl_irt_thread_exit(int32_t *stack_flag) {

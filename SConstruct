@@ -3155,8 +3155,8 @@ nacl_irt_env = nacl_env.Clone(
     NACL_BUILD_FAMILY = 'UNTRUSTED_IRT',
 )
 
-# Since we don't build a whole libpthread for the IRT and thus we can
-# omit the directory, we must tell it how to find the pthread.h header.
+# Since we don't build src/untrusted/pthread/nacl.scons in
+# nacl_irt_env, we must tell the IRT how to find the pthread.h header.
 nacl_irt_env.Append(CPPPATH='${MAIN_DIR}/src/untrusted/pthread')
 
 # Map certain flag bits to suffices on the build output.  This needs to

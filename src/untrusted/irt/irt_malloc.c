@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #include "native_client/src/untrusted/irt/irt_private.h"
+#include "native_client/src/untrusted/pthread/pthread_internal.h"
 
 /*
  * These macros parameterize the dlmalloc code the way we want it.
@@ -44,7 +45,7 @@
  */
 #define MALLOC_FAILURE_ACTION   irt_malloc_failure()
 static void irt_malloc_failure(void) {
-  if (!irt_initialized) {
+  if (!__nc_thread_initialized) {
     static const char msg[] = "Memory allocation failure in IRT startup!\n";
     write(2, msg, sizeof msg - 1);
     _exit(-1);

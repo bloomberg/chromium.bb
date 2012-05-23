@@ -51,7 +51,8 @@ irt_common_interfaces = [
 irt_support_objs = [blob_env.ComponentObject(x) for x in
                     (irt_support_sources + irt_common_interfaces)]
 
-# The IRT code doesn't actually use most of pthreads, only mutex and cond calls.
+# We also get nc_init_private.c, nc_thread.c and nc_tsd.c via
+# #includes of .c files.
 irt_support_objs += [
     blob_env.ComponentObject(module,
                              '${MAIN_DIR}/src/untrusted/pthread/%s.c' % module)
@@ -61,6 +62,9 @@ irt_support_objs += [
 irt_support_objs += [
     blob_env.ComponentObject('sys_private',
                              '${MAIN_DIR}/src/untrusted/nacl/sys_private.c'),
+    blob_env.ComponentObject(
+        'dynamic_annotations.o',
+        '${MAIN_DIR}/src/untrusted/valgrind/dynamic_annotations.c'),
     ]
 
 if env.Bit('target_arm'):

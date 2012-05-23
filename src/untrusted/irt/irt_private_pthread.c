@@ -11,15 +11,6 @@
 #include "native_client/src/untrusted/nacl/tls.h"
 
 /*
- * This is used by the pthread mutex implementation.  It really doesn't
- * need a pthread_t it can do anything with, just a unique identifier for
- * the thread.  So using our TLS pointer works just fine.
- */
-pthread_t pthread_self(void) {
-  return __nacl_read_tp();
-}
-
-/*
  * libstdc++ makes minimal use of pthread_key_t stuff.
  */
 
@@ -32,4 +23,7 @@ static void irt_tsd_no_more_keys(void) {
   write(2, msg, sizeof msg - 1);
 }
 
-#include "native_client/src/untrusted/pthread/nc_tsd.c"
+#define NACL_IN_IRT
+
+#include "native_client/src/untrusted/pthread/nc_init_private.c"
+#include "native_client/src/untrusted/pthread/nc_thread.c"

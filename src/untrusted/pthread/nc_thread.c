@@ -38,8 +38,7 @@ static struct nacl_irt_thread irt_thread;
 
 static const uint32_t kStackAlignment = 32;
 
-#define TDB_SIZE \
-  (sizeof(nc_thread_descriptor_t) + sizeof(nc_basic_thread_data_t))
+#define TDB_SIZE (sizeof(struct nc_combined_tdb))
 
 static inline char* align(uint32_t offset, uint32_t alignment) {
   return (char*) ((offset + alignment - 1) & ~(alignment - 1));
@@ -48,7 +47,7 @@ static inline char* align(uint32_t offset, uint32_t alignment) {
 /* Thread management global variables */
 const int __nc_kMaxCachedMemoryBlocks = 50;
 
-static int __nc_thread_initialized;
+int __nc_thread_initialized;
 
 /* mutex used to synchronize thread management code */
 pthread_mutex_t  __nc_thread_management_lock;
@@ -60,7 +59,7 @@ static pthread_cond_t __nc_last_thread_cond;
 static pthread_t __nc_initial_thread_id;
 
 /* number of threads currently running in this NaCl module */
-int __nc_running_threads_counter;
+int __nc_running_threads_counter = 1;
 
 /* we have two queues of memory blocks - one for each type */
 STAILQ_HEAD(tailhead, entry) __nc_thread_memory_blocks[2];
@@ -225,26 +224,14 @@ static int nc_tdb_init(nc_thread_descriptor_t *tdb,
   return 0;
 }
 
-/* Will be called from the library startup code,
- * which always happens on the application's main thread
- */
-int __pthread_initialize(void) {
+/* Initializes all globals except for the initial thread structure. */
+int __nc_initialize_globals(void) {
   int retval = 0;
-  nc_thread_descriptor_t *tdb;
-  nc_basic_thread_data_t *basic_data;
-  /* allocate TLS+TDB area */
-  /* We allocate the basic data immediately after TDB */
-  __pthread_initialize_minimal(TDB_SIZE);
 
   /*
    * Fetch the ABI tables from the IRT.  If we don't have these, all is lost.
    */
   __nc_initialize_interfaces(&irt_thread);
-
-  /* At this point GS is already initialized */
-  tdb = nc_get_tdb();
-  basic_data = (nc_basic_thread_data_t *)(tdb + 1);
-  __nc_initial_thread_id = basic_data;
 
   retval = pthread_mutex_init(&__nc_thread_management_lock, NULL);
   if (retval) {
@@ -270,13 +257,53 @@ int __pthread_initialize(void) {
   STAILQ_INIT(&__nc_thread_memory_blocks[0]);
   STAILQ_INIT(&__nc_thread_memory_blocks[1]);
 
-  __nc_running_threads_counter = 1; /* the main thread */
-
-  /* Initialize the main thread TDB */
-  nc_tdb_init(tdb, basic_data);
   __nc_thread_initialized = 1;
-  return retval;
+  return 0;
 }
+
+#if defined(NACL_IN_IRT)
+
+/*
+ * This is used by the IRT for user threads.  We initialize all fields
+ * so that we get predictable behaviour in case some IRT code does an
+ * unsupported pthread operation on a user thread.
+ *
+ * We avoid using nc_tdb_init() because it creates a condvar which we
+ * do not need.
+ */
+void __nc_initialize_unjoinable_thread(struct nc_combined_tdb *tdb) {
+  tdb->tdb.tls_base = tdb;
+  tdb->tdb.joinable = 0;
+  tdb->tdb.join_waiting = 0;
+  tdb->tdb.stack_node = NULL;
+  tdb->tdb.tls_node = NULL;
+  tdb->tdb.start_func = NULL;
+  tdb->tdb.state = NULL;
+  tdb->basic_data.retval = NULL;
+  tdb->basic_data.status = THREAD_RUNNING;
+  pthread_cond_t condvar_init = PTHREAD_COND_INITIALIZER;
+  tdb->basic_data.join_condvar = condvar_init;
+
+  tdb->tdb.basic_data = &tdb->basic_data;
+  tdb->basic_data.tdb = &tdb->tdb;
+}
+
+#else
+
+/* Will be called from the library startup code,
+ * which always happens on the application's main thread
+ */
+int __pthread_initialize(void) {
+  __pthread_initialize_minimal(TDB_SIZE);
+
+  struct nc_combined_tdb *tdb = (struct nc_combined_tdb *) nc_get_tdb();
+  nc_tdb_init(&tdb->tdb, &tdb->basic_data);
+  __nc_initial_thread_id = &tdb->basic_data;
+
+  return __nc_initialize_globals();
+}
+
+#endif
 
 
 /* pthread functions */

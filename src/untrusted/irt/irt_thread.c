@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_private.h"
@@ -13,41 +14,26 @@
 #include "native_client/src/untrusted/nacl/tls.h"
 #include "native_client/src/untrusted/nacl/tls_params.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
+#include "native_client/src/untrusted/pthread/pthread_types.h"
 
-/*
- * This remains zero until we complete __pthread_initialize, below.
- */
-int irt_initialized;
 
-/*
- * Each thread has an IRT-private TLS area.
- * This is the "thread descriptor" part of that.
- */
-struct irt_private_tdb {
-  /*
-   * We use a union to reuse the same space for user_start initially,
-   * and then for self after thread startup, keeping this struct as
-   * small as possible.
-   */
-  union {
-    void *self;
-    void (*user_start)(void);
-  };
-  void *combined_area;
-};
-
-static struct irt_private_tdb *get_irt_tdb(void *thread_ptr) {
-  struct irt_private_tdb *tdb = (void *) ((uintptr_t) thread_ptr +
+static struct nc_combined_tdb *get_irt_tdb(void *thread_ptr) {
+  struct nc_combined_tdb *tdb = (void *) ((uintptr_t) thread_ptr +
                                           __nacl_tp_tdb_offset(sizeof(*tdb)));
   return tdb;
 }
 
+/* This is the inverse of get_irt_tdb(). */
+static void *get_malloc_block_from_tdb(struct nc_combined_tdb *tdb) {
+  return (void *) ((uintptr_t) tdb - __nacl_tp_tdb_offset(sizeof(*tdb)));
+}
+
 /*
- * This replaces __pthread_initialize_minimal from libnacl.
- * We set up our private TLS area with our irt_private_tdb structure.
+ * This replaces __pthread_initialize_minimal() from libnacl and
+ * __pthread_initialize() from libpthread.
  */
 void __pthread_initialize(void) {
-  struct irt_private_tdb *tdb;
+  struct nc_combined_tdb *tdb;
 
   /*
    * Allocate the area.  If malloc fails here, we'll crash before it returns.
@@ -59,15 +45,8 @@ void __pthread_initialize(void) {
    * Initialize TLS proper (i.e., __thread variable initializers).
    */
   void *tp = __nacl_tls_initialize_memory(combined_area, sizeof(*tdb));
-
-  /*
-   * Set up our "private TDB".  Only the "self" pointer actually matters
-   * here (and that only on some machines, like x86).  We'll never actually
-   * free this combined_area, but no reason not to store the pointer.
-   */
   tdb = get_irt_tdb(tp);
-  tdb->combined_area = combined_area;
-  tdb->self = tdb;
+  __nc_initialize_unjoinable_thread(tdb);
 
   /*
    * Now install it for later fetching.
@@ -80,18 +59,15 @@ void __pthread_initialize(void) {
    */
   __newlib_thread_init();
 
-  /*
-   * Mark that we are fully initialized, so malloc can fail gracefully.
-   */
-  irt_initialized = 1;
+  __nc_initialize_globals();
 }
 
 static void nacl_irt_thread_exit(int32_t *stack_flag) {
-  struct irt_private_tdb *tdb = get_irt_tdb(NACL_SYSCALL(second_tls_get)());
+  struct nc_combined_tdb *tdb = get_irt_tdb(NACL_SYSCALL(second_tls_get)());
 
   __nc_tsd_exit();
 
-  free(tdb->combined_area);
+  free(get_malloc_block_from_tdb(tdb));
 
   NACL_SYSCALL(thread_exit)(stack_flag);
   while (1) *(volatile int *) 0 = 0;  /* Crash.  */
@@ -102,14 +78,12 @@ static void nacl_irt_thread_exit(int32_t *stack_flag) {
  */
 static void irt_start_thread(void) {
   void *thread_ptr = NACL_SYSCALL(second_tls_get)();
-  struct irt_private_tdb *tdb = get_irt_tdb(thread_ptr);
+  struct nc_combined_tdb *tdb = get_irt_tdb(thread_ptr);
 
   /*
    * Fetch the user's start routine.
-   * Then set the self pointer, which occupies the same word.
    */
-  void (*user_start)(void) = tdb->user_start;
-  tdb->self = thread_ptr;
+  void (*user_start)(void) = (void (*)(void)) tdb->tdb.start_func;
 
   /*
    * Now do per-thread initialization for the IRT-private C library state.
@@ -129,7 +103,7 @@ static void irt_start_thread(void) {
 
 static int nacl_irt_thread_create(void *start_user_address, void *stack,
                                   void *thread_ptr) {
-  struct irt_private_tdb *tdb;
+  struct nc_combined_tdb *tdb;
 
   /*
    * Before we start the thread, allocate the IRT-private TLS area for it.
@@ -141,13 +115,12 @@ static int nacl_irt_thread_create(void *start_user_address, void *stack,
 
   void *irt_tp = __nacl_tls_initialize_memory(combined_area, sizeof(*tdb));
   tdb = get_irt_tdb(irt_tp);
-
+  __nc_initialize_unjoinable_thread(tdb);
   /*
-   * Store the whole TLS area so we can free it at thread exit,
-   * and the user's routine to be run.
+   * We overload the libpthread start_func field to store a function
+   * of a different type.
    */
-  tdb->combined_area = combined_area;
-  tdb->user_start = (void (*)(void)) (uintptr_t) start_user_address;
+  tdb->tdb.start_func = (void *(*)(void *)) (uintptr_t) start_user_address;
 
   int error = -NACL_SYSCALL(thread_create)(
       (void *) (uintptr_t) &irt_start_thread, stack, thread_ptr, irt_tp);
