@@ -41,5 +41,6 @@ const SkColor kHeaderTextColorHover = SkColorSetARGB(0xd3, 0, 0, 0);
 
 const int kTrayPopupWidth = 300;
 const int kNotificationCloseButtonWidth = 60;
+const int kNotificationIconWidth = 40;
 
 }  // namespace ash

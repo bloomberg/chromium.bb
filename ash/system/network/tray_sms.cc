@@ -38,7 +38,6 @@ namespace {
 const int kMessageListMinHeight = 200;
 // Top/bottom padding of the text items.
 const int kPaddingVertical = 10;
-const int kSmsIconWidth = 50;
 
 }  // namespace
 
@@ -255,7 +254,7 @@ class TraySms::SmsMessageView : public views::View,
         IDR_AURA_UBER_TRAY_SMS));
 
     int msg_width = kTrayPopupWidth - kNotificationCloseButtonWidth -
-        kTrayPopupPaddingHorizontal - kSmsIconWidth;
+        kTrayPopupPaddingHorizontal - kNotificationIconWidth;
 
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
@@ -263,15 +262,19 @@ class TraySms::SmsMessageView : public views::View,
     views::ColumnSet* columns = layout->AddColumnSet(0);
 
     // Icon
-    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                        0 /* resize percent */,
-                       views::GridLayout::FIXED, kSmsIconWidth, kSmsIconWidth);
+                       views::GridLayout::FIXED,
+                       kNotificationIconWidth, kNotificationIconWidth);
+
+    columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
 
     // Message
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                        0 /* resize percent */,
                        views::GridLayout::FIXED, msg_width, msg_width);
 
+    // Layout rows
     layout->AddPaddingRow(0, kPaddingVertical);
 
     layout->StartRow(0, 0);

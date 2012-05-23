@@ -131,9 +131,9 @@ class PowerStatusView : public views::View {
 
   explicit PowerStatusView(ViewType view_type) {
     status_label_ = new views::Label;
-    status_label_->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
+    status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     time_label_ = new views::Label;
-    time_label_->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
+    time_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
     icon_ = new views::ImageView;
 
@@ -199,6 +199,9 @@ class PowerStatusView : public views::View {
   }
 
   void LayoutNotificationView() {
+    const int msg_width = kTrayPopupWidth - kNotificationCloseButtonWidth -
+        kTrayPopupPaddingHorizontal - kNotificationIconWidth;
+
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
 
@@ -206,20 +209,23 @@ class PowerStatusView : public views::View {
 
     // Icon
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                       0, views::GridLayout::USE_PREF, 0, 0);
+                       0 /* resize percent */,
+                       views::GridLayout::FIXED,
+                       kNotificationIconWidth, kNotificationIconWidth);
 
     columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
 
     // Status + Time
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                       0, views::GridLayout::USE_PREF, 0, kLabelMinWidth);
+                       0 /* resize percent */,
+                       views::GridLayout::FIXED, msg_width, msg_width);
 
-    layout->AddPaddingRow(0, kPaddingVertical);
+    // Layout rows
+    layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
 
     layout->StartRow(0, 0);
-    layout->AddView(icon_, 1, 3);  // 3 rows for icon
+    layout->AddView(icon_, 1, 2);  // 2 rows for icon
     layout->AddView(status_label_);
-    layout->AddPaddingRow(0, kPaddingVertical/3);
 
     layout->StartRow(0, 0);
     layout->SkipColumns(1);
