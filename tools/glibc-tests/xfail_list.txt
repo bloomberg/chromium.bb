@@ -172,7 +172,6 @@ nptl/tst-fini1
 nptl/tst-flock1
 nptl/tst-popen1
 nptl/tst-sched1
-nptl/tst-sem5
 nptl/tst-signal4
 nptl/tst-signal5
 nptl/tst-stack2
