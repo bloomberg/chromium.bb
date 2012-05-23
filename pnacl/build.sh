@@ -3431,7 +3431,7 @@ driver-install-python() {
   StepBanner "DRIVER" "Installing driver adaptors to ${destdir}"
   mkdir -p "${destdir}"
   mkdir -p "${pydir}"
-  rm -f "${destdir}"/pnacl-*
+  rm -f "${destdir}"/pnacl-* "${destdir}"/wrapper-*
 
   spushd "${DRIVER_DIR}"
 
@@ -3458,7 +3458,7 @@ driver-install() {
   check-libmode ${libmode}
   local destdir="${INSTALL_ROOT}/${libmode}/bin"
 
-  driver-install-python "${destdir}" "pnacl-*.py"
+  driver-install-python "${destdir}" "pnacl-*.py" "wrapper-*.py"
 
   # Tell the driver the library mode
   echo "LIBMODE=${libmode}" > "${destdir}"/driver.conf

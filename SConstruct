@@ -3135,6 +3135,10 @@ nacl_env.PrependUnique(
     )
 
 if nacl_env.Bit('bitcode'):
+  # This helps with NaClSdkLibrary() where some libraries share object files
+  # between static and shared libs. Without it scons will complain.
+  # NOTE: this is a standard scons mechanism
+  nacl_env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME'] = 1
   # passing -O when linking requests LTO, which does additional global
   # optimizations at link time
   nacl_env.Append(LINKFLAGS=['-O3'])
@@ -3410,7 +3414,8 @@ def NaClSharedLibrary(env, lib_name, *args, **kwargs):
 nacl_env.AddMethod(NaClSharedLibrary)
 
 def NaClSdkLibrary(env, lib_name, *args, **kwargs):
-  gen_shared = not env.Bit('nacl_disable_shared')
+  gen_shared = (not env.Bit('nacl_disable_shared') or
+                env.Bit('pnacl_shared_newlib'))
   if 'no_shared_lib' in kwargs:
     if kwargs['no_shared_lib']:
       gen_shared = False

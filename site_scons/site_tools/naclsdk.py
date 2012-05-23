@@ -271,6 +271,9 @@ def _SetEnvForPnacl(env, root):
   pnacl_disass = binprefix + 'dis' + binext
   pnacl_strip = binprefix + 'strip' + binext
   pnacl_nmf = binprefix + 'nmf' + binext
+  pnacl_link_and_translate = os.path.join(subroot,
+                                          'bin',
+                                          'wrapper-link-and-translate') + binext
 
   # NOTE: XXX_flags start with space for easy concatenation
   # The flags generated here get baked into the commands (CC, CXX, LINK)
@@ -328,6 +331,25 @@ def _SetEnvForPnacl(env, root):
               GENNMF=pnacl_nmf,
               TRANSLATE=pnacl_translate + arch_flag + pnacl_translate_flags,
               )
+
+  if env.Bit('pnacl_shared_newlib'):
+    def shlibemitter(target, source, env):
+      """when building a .so also notify scons that we care about
+      the .pso which gets generated as a side-effect and which should
+      also be installed.
+      This is a not very well documented scons API.
+      """
+      if env.Bit('pnacl_generate_pexe'):
+        return (target, source)
+      assert len(target) == 1
+      lib = env.GetBuildPath(target[0])
+      assert lib.endswith(".so")
+      return (target + [lib[:-2] + 'pso'], source)
+
+    env.Replace(LINK=pnacl_link_and_translate + arch_flag + ' -dynamic',
+                SHLINK=pnacl_link_and_translate + arch_flag,
+                SHLIBEMITTER=shlibemitter)
+
 
   if env.Bit('built_elsewhere'):
     def FakeInstall(dest, source, env):
