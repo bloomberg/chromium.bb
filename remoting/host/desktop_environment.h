@@ -17,7 +17,6 @@
 namespace remoting {
 
 class Capturer;
-class ChromotingHost;
 class ChromotingHostContext;
 
 namespace protocol {
@@ -41,8 +40,6 @@ class DesktopEnvironment {
 
   virtual ~DesktopEnvironment();
 
-  void set_host(ChromotingHost* host) { host_ = host; }
-
   Capturer* capturer() const { return capturer_.get(); }
   EventExecutor* event_executor() const { return event_executor_.get(); }
   void OnSessionStarted();
@@ -52,9 +49,6 @@ class DesktopEnvironment {
   DesktopEnvironment(ChromotingHostContext* context,
                      scoped_ptr<Capturer> capturer,
                      scoped_ptr<EventExecutor> event_executor);
-
-  // The host that owns this DesktopEnvironment.
-  ChromotingHost* host_;
 
   // Host context used to make sure operations are run on the correct thread.
   // This is owned by the ChromotingHost.

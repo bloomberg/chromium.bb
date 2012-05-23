@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "remoting/host/capturer.h"
-#include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/event_executor.h"
 
@@ -79,8 +78,7 @@ DesktopEnvironment::DesktopEnvironment(
     ChromotingHostContext* context,
     scoped_ptr<Capturer> capturer,
     scoped_ptr<EventExecutor> event_executor)
-    : host_(NULL),
-      context_(context),
+    : context_(context),
       capturer_(capturer.Pass()),
       event_executor_(event_executor.Pass()) {
 }

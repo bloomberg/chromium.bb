@@ -81,7 +81,6 @@ ChromotingHost::ChromotingHost(
   DCHECK(signal_strategy);
   DCHECK(desktop_environment_);
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
-  desktop_environment_->set_host(this);
 }
 
 ChromotingHost::~ChromotingHost() {
