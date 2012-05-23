@@ -20,6 +20,7 @@
 #include "net/url_request/url_request.h"
 
 namespace net {
+class StreamListenSocketFactory;
 class URLRequestContextGetter;
 }
 
@@ -41,8 +42,8 @@ class DevToolsHttpHandlerImpl
 
   static bool SortPageListByTime(const PageInfo& info1, const PageInfo& info2);
 
-  DevToolsHttpHandlerImpl(const std::string& ip,
-                          int port,
+  // Takes ownership over |socket_factory|.
+  DevToolsHttpHandlerImpl(const net::StreamListenSocketFactory* socket_factory,
                           const std::string& frontend_url,
                           net::URLRequestContextGetter* request_context_getter,
                           DevToolsHttpHandlerDelegate* delegate);
@@ -93,9 +94,8 @@ class DevToolsHttpHandlerImpl
   void AcceptWebSocket(int connection_id,
                        const net::HttpServerRequestInfo& request);
 
-  std::string ip_;
-  int port_;
   std::string overridden_frontend_url_;
+  scoped_ptr<const net::StreamListenSocketFactory> socket_factory_;
   scoped_refptr<net::HttpServer> server_;
   typedef std::map<net::URLRequest*, int>
       RequestToSocketMap;

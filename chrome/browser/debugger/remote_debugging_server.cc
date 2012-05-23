@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "content/public/browser/devtools_http_handler.h"
+#include "net/base/tcp_listen_socket.h"
 
 RemoteDebuggingServer::RemoteDebuggingServer(Profile* profile,
                                              const std::string& ip,
@@ -19,12 +20,12 @@ RemoteDebuggingServer::RemoteDebuggingServer(Profile* profile,
 
   net::URLRequestContextGetter* request_context_getter =
       profile->GetRequestContext();
-  devtools_http_handler_ =
-      content::DevToolsHttpHandler::Start(ip,
-                                          port,
-                                          frontend_url,
-                                          request_context_getter,
-                                          new BrowserListTabContentsProvider());
+
+  devtools_http_handler_ = content::DevToolsHttpHandler::Start(
+      new net::TCPListenSocketFactory(ip, port),
+      frontend_url,
+      request_context_getter,
+      new BrowserListTabContentsProvider());
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {

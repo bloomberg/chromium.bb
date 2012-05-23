@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 
 namespace net {
+class StreamListenSocketFactory;
 class URLRequestContextGetter;
 }
 
@@ -41,10 +42,9 @@ class DevToolsHttpHandler {
   CONTENT_EXPORT static int GetFrontendResourceId(
       const std::string& name);
 
-  // Takes ownership over |delegate|.
+  // Takes ownership over |socket_factory| and |delegate|.
   CONTENT_EXPORT static DevToolsHttpHandler* Start(
-      const std::string& ip,
-      int port,
+      const net::StreamListenSocketFactory* socket_factory,
       const std::string& frontend_url,
       net::URLRequestContextGetter* request_context_getter,
       DevToolsHttpHandlerDelegate* delegate);
