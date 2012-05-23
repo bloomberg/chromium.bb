@@ -28,7 +28,6 @@
 #include <sys/vfs.h>
 #include <unistd.h>
 
-#include "init_process.h"
 #include "linux_util.h"
 #include "process_util.h"
 #include "suid_unsafe_environment_variables.h"
@@ -72,6 +71,168 @@ static void FatalError(const char *msg, ...) {
 #define SAFE_DIR "/proc/self/fdinfo"
 #define SAFE_DIR2 "/proc/self/fd"
 
+static bool SpawnChrootHelper() {
+  int sv[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1) {
+    perror("socketpair");
+    return false;
+  }
+
+  char *safedir = NULL;
+  struct stat sdir_stat;
+  if (!stat(SAFE_DIR, &sdir_stat) && S_ISDIR(sdir_stat.st_mode))
+    safedir = SAFE_DIR;
+  else
+    if (!stat(SAFE_DIR2, &sdir_stat) && S_ISDIR(sdir_stat.st_mode))
+      safedir = SAFE_DIR2;
+    else {
+      fprintf(stderr, "Could not find %s\n", SAFE_DIR2);
+      return false;
+    }
+
+  const pid_t pid = syscall(
+      __NR_clone, CLONE_FS | SIGCHLD, 0, 0, 0);
+
+  if (pid == -1) {
+    perror("clone");
+    close(sv[0]);
+    close(sv[1]);
+    return false;
+  }
+
+  if (pid == 0) {
+    // We share our files structure with an untrusted process. As a security in
+    // depth measure, we make sure that we can't open anything by mistake.
+    // TODO(agl): drop CAP_SYS_RESOURCE / use SECURE_NOROOT
+
+    const struct rlimit nofile = {0, 0};
+    if (setrlimit(RLIMIT_NOFILE, &nofile))
+      FatalError("Setting RLIMIT_NOFILE");
+
+    if (close(sv[1]))
+      FatalError("close");
+
+    // wait for message
+    char msg;
+    ssize_t bytes;
+    do {
+      bytes = read(sv[0], &msg, 1);
+    } while (bytes == -1 && errno == EINTR);
+
+    if (bytes == 0)
+      _exit(0);
+    if (bytes != 1)
+      FatalError("read");
+
+    // do chrooting
+    if (msg != kMsgChrootMe)
+      FatalError("Unknown message from sandboxed process");
+
+    // sanity check
+    if (chdir(safedir))
+      FatalError("Cannot chdir into /proc/ directory");
+
+    if (chroot(safedir))
+      FatalError("Cannot chroot into /proc/ directory");
+
+    if (chdir("/"))
+      FatalError("Cannot chdir to / after chroot");
+
+    const char reply = kMsgChrootSuccessful;
+    do {
+      bytes = write(sv[0], &reply, 1);
+    } while (bytes == -1 && errno == EINTR);
+
+    if (bytes != 1)
+      FatalError("Writing reply");
+
+    _exit(0);
+    // We now become a zombie. /proc/self/fd(info) is now an empty dir and we
+    // are chrooted there.
+    // Our (unprivileged) parent should not even be able to open "." or "/"
+    // since they would need to pass the ptrace() check. If our parent wait()
+    // for us, our root directory will completely disappear.
+  }
+
+  if (close(sv[0])) {
+    close(sv[1]);
+    perror("close");
+    return false;
+  }
+
+  // In the parent process, we install an environment variable containing the
+  // number of the file descriptor.
+  char desc_str[64];
+  int printed = snprintf(desc_str, sizeof(desc_str), "%u", sv[1]);
+  if (printed < 0 || printed >= (int)sizeof(desc_str)) {
+    fprintf(stderr, "Failed to snprintf\n");
+    return false;
+  }
+
+  if (setenv(kSandboxDescriptorEnvironmentVarName, desc_str, 1)) {
+    perror("setenv");
+    close(sv[1]);
+    return false;
+  }
+
+  // We also install an environment variable containing the pid of the child
+  char helper_pid_str[64];
+  printed = snprintf(helper_pid_str, sizeof(helper_pid_str), "%u", pid);
+  if (printed < 0 || printed >= (int)sizeof(helper_pid_str)) {
+    fprintf(stderr, "Failed to snprintf\n");
+    return false;
+  }
+
+  if (setenv(kSandboxHelperPidEnvironmentVarName, helper_pid_str, 1)) {
+    perror("setenv");
+    close(sv[1]);
+    return false;
+  }
+
+  return true;
+}
+
+static bool MoveToNewNamespaces() {
+  // These are the sets of flags which we'll try, in order.
+  const int kCloneExtraFlags[] = {
+    CLONE_NEWPID | CLONE_NEWNET,
+    CLONE_NEWPID,
+  };
+
+  for (size_t i = 0;
+       i < sizeof(kCloneExtraFlags) / sizeof(kCloneExtraFlags[0]);
+       i++) {
+    pid_t pid = syscall(__NR_clone, SIGCHLD | kCloneExtraFlags[i], 0, 0, 0);
+
+    if (pid > 0)
+      _exit(0);
+
+    if (pid == 0) {
+      if (kCloneExtraFlags[i] & CLONE_NEWPID) {
+        setenv("SBX_PID_NS", "", 1 /* overwrite */);
+      } else {
+        unsetenv("SBX_PID_NS");
+      }
+
+      if (kCloneExtraFlags[i] & CLONE_NEWNET) {
+        setenv("SBX_NET_NS", "", 1 /* overwrite */);
+      } else {
+        unsetenv("SBX_NET_NS");
+      }
+
+      break;
+    }
+
+    if (errno != EINVAL) {
+      perror("Failed to move to new PID namespace");
+      return false;
+    }
+  }
+
+  // If the system doesn't support NEWPID then we carry on anyway.
+  return true;
+}
+
 static bool DropRoot() {
   if (prctl(PR_SET_DUMPABLE, 0, 0, 0, 0)) {
     perror("prctl(PR_SET_DUMPABLE)");
@@ -105,251 +266,6 @@ static bool DropRoot() {
     return false;
   }
 
-  return true;
-}
-
-static int SpawnChrootHelper() {
-  int sv[2];
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1) {
-    perror("socketpair");
-    return -1;
-  }
-
-  char *safedir = NULL;
-  struct stat sdir_stat;
-  if (!stat(SAFE_DIR, &sdir_stat) && S_ISDIR(sdir_stat.st_mode))
-    safedir = SAFE_DIR;
-  else
-    if (!stat(SAFE_DIR2, &sdir_stat) && S_ISDIR(sdir_stat.st_mode))
-      safedir = SAFE_DIR2;
-    else {
-      fprintf(stderr, "Could not find %s\n", SAFE_DIR2);
-      return -1;
-    }
-
-  const pid_t pid = syscall(
-      __NR_clone, CLONE_FS | SIGCHLD, 0, 0, 0);
-
-  if (pid == -1) {
-    perror("clone");
-    close(sv[0]);
-    close(sv[1]);
-    return -1;
-  }
-
-  if (pid == 0) {
-    // We share our files structure with an untrusted process. As a security in
-    // depth measure, we make sure that we can't open anything by mistake.
-    // TODO(agl): drop CAP_SYS_RESOURCE / use SECURE_NOROOT
-
-    const struct rlimit nofile = {0, 0};
-    if (setrlimit(RLIMIT_NOFILE, &nofile))
-      FatalError("Setting RLIMIT_NOFILE");
-
-    if (close(sv[1]))
-      FatalError("close");
-
-    // wait for message
-    char msg;
-    ssize_t bytes;
-    do {
-      bytes = read(sv[0], &msg, 1);
-    } while (bytes == -1 && errno == EINTR);
-
-    if (bytes == 0)
-      _exit(0);
-    if (bytes != 1)
-      FatalError("read");
-
-    // do chrooting
-    errno = 0;
-    if (msg != kMsgChrootMe)
-      FatalError("Unknown message from sandboxed process");
-
-    // sanity check
-    if (chdir(safedir))
-      FatalError("Cannot chdir into /proc/ directory");
-
-    if (chroot(safedir))
-      FatalError("Cannot chroot into /proc/ directory");
-
-    if (chdir("/"))
-      FatalError("Cannot chdir to / after chroot");
-
-    const char reply = kMsgChrootSuccessful;
-    do {
-      bytes = write(sv[0], &reply, 1);
-    } while (bytes == -1 && errno == EINTR);
-
-    if (bytes != 1)
-      FatalError("Writing reply");
-
-    _exit(0);
-    // We now become a zombie. /proc/self/fd(info) is now an empty dir and we
-    // are chrooted there.
-    // Our (unprivileged) parent should not even be able to open "." or "/"
-    // since they would need to pass the ptrace() check. If our parent wait()
-    // for us, our root directory will completely disappear.
-  }
-
-  if (close(sv[0])) {
-    close(sv[1]);
-    perror("close");
-    return -1;
-  }
-
-  // In the parent process, we install an environment variable containing the
-  // number of the file descriptor.
-  char desc_str[64];
-  int printed = snprintf(desc_str, sizeof(desc_str), "%u", sv[1]);
-  if (printed < 0 || printed >= (int)sizeof(desc_str)) {
-    fprintf(stderr, "Failed to snprintf\n");
-    close(sv[1]);
-    return -1;
-  }
-
-  if (setenv(kSandboxDescriptorEnvironmentVarName, desc_str, 1)) {
-    perror("setenv");
-    close(sv[1]);
-    return -1;
-  }
-
-  // We also install an environment variable containing the pid of the child
-  char helper_pid_str[64];
-  printed = snprintf(helper_pid_str, sizeof(helper_pid_str), "%u", pid);
-  if (printed < 0 || printed >= (int)sizeof(helper_pid_str)) {
-    fprintf(stderr, "Failed to snprintf\n");
-    close(sv[1]);
-    return -1;
-  }
-
-  if (setenv(kSandboxHelperPidEnvironmentVarName, helper_pid_str, 1)) {
-    perror("setenv");
-    close(sv[1]);
-    return -1;
-  }
-
-  return sv[1];
-}
-
-static bool JailMe() {
-  int fd = SpawnChrootHelper();
-  if (fd < 0) {
-    return false;
-  }
-  if (!DropRoot()) {
-    close(fd);
-    return false;
-  }
-  ssize_t bytes;
-  char ch = kMsgChrootMe;
-  do {
-    errno = 0;
-    bytes = write(fd, &ch, 1);
-  } while (bytes == -1 && errno == EINTR);
-  if (bytes != 1) {
-    perror("write");
-    close(fd);
-    return false;
-  }
-  do {
-    errno = 0;
-    bytes = read(fd, &ch, 1);
-  } while (bytes == -1 && errno == EINTR);
-  close(fd);
-  if (bytes != 1) {
-    perror("read");
-    return false;
-  }
-  if (ch != kMsgChrootSuccessful) {
-    return false;
-  }
-  return true;
-}
-
-static bool MoveToNewNamespaces() {
-  // These are the sets of flags which we'll try, in order.
-  const int kCloneExtraFlags[] = {
-    CLONE_NEWPID | CLONE_NEWNET,
-    CLONE_NEWPID,
-  };
-
-  for (size_t i = 0;
-       i < sizeof(kCloneExtraFlags) / sizeof(kCloneExtraFlags[0]);
-       i++) {
-    pid_t pid = syscall(__NR_clone, SIGCHLD | kCloneExtraFlags[i], 0, 0, 0);
-
-    if (pid > 0)
-      _exit(0);
-
-    if (pid == 0) {
-      if (syscall(__NR_getpid) == 1) {
-        int fds[2];
-        char ch = 0;
-        if (pipe(fds)) {
-          perror("Failed to create pipe");
-          _exit(1);
-        }
-        pid = fork();
-        if (pid > 0) {
-          // The very first process in the new namespace takes on the
-          // role of the traditional "init" process. It must reap exit
-          // codes of daemon processes until the namespace is completely
-          // empty.
-          // We have to be careful that this "init" process doesn't
-          // provide a new attack surface. So, we also move it into
-          // a separate chroot and we drop all privileges. It does
-          // still need to access "/proc" and "/dev/null", though. So,
-          // we have to provide it with a file handles to these resources.
-          // These file handle are not accessible by any other processes in
-          // the sandbox and thus safe.
-          close(fds[0]);
-          int proc_fd = open("/proc", O_RDONLY | O_DIRECTORY);
-          int null_fd = open("/dev/null", O_RDWR);
-          if (!JailMe()) {
-            FatalError("Could not remove privileges from "
-                       "new \"init\" process");
-          }
-          SystemInitProcess(fds[1], pid, proc_fd, null_fd);
-        } else if (pid != 0) {
-          perror("Failed to fork");
-          _exit(1);
-        }
-        // Wait for the "init" process to complete initialization.
-        close(fds[1]);
-        errno = 0;
-        while (read(fds[0], &ch, 1) < 0 && errno == EINTR) {
-        }
-        close(fds[0]);
-        if (ch != ' ') {
-          // We'll likely never get here. If the "init" process fails, it's
-          // death typically takes everyone of its children with it.
-          FatalError("Failed to set up new \"init\" process inside sandbox");
-        }
-      }
-
-      if (kCloneExtraFlags[i] & CLONE_NEWPID) {
-        setenv("SBX_PID_NS", "", 1 /* overwrite */);
-      } else {
-        unsetenv("SBX_PID_NS");
-      }
-
-      if (kCloneExtraFlags[i] & CLONE_NEWNET) {
-        setenv("SBX_NET_NS", "", 1 /* overwrite */);
-      } else {
-        unsetenv("SBX_NET_NS");
-      }
-
-      break;
-    }
-
-    if (errno != EINVAL) {
-      perror("Failed to move to new PID namespace");
-      return false;
-    }
-  }
-
-  // If the system doesn't support NEWPID then we carry on anyway.
   return true;
 }
 
@@ -447,7 +363,7 @@ int main(int argc, char **argv) {
 
   if (!MoveToNewNamespaces())
     return 1;
-  if (SpawnChrootHelper() < 0)
+  if (!SpawnChrootHelper())
     return 1;
   if (!DropRoot())
     return 1;
