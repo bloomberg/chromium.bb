@@ -54,14 +54,19 @@ class FakeDataTypeController : public DataTypeController {
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
 
+  virtual void SetDelayModelLoad();
+
+  virtual void SimulateModelLoadFinishing();
+
  protected:
   virtual ~FakeDataTypeController();
 
-
  private:
   DataTypeController::State state_;
+  bool model_load_delayed_;
   syncable::ModelType type_;
   StartCallback last_start_callback_;
+  ModelLoadCallback model_load_callback_;
 };
 
 }  // namespace browser_sync

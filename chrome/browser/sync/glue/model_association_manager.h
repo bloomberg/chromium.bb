@@ -9,14 +9,15 @@
 #include <list>
 
 #include "base/memory/weak_ptr.h"
+#include "base/timer.h"
 
 #include "chrome/browser/sync/glue/data_type_manager.h"
 
 // |ModelAssociationManager| does the heavy lifting for doing the actual model
 // association. It instructs DataTypeControllers to load models, start
 // associating and stopping. Since the operations are async it uses an
-// interface to inform DTM the results of the operations.
-// This class is owned by DTM.
+// interface to inform DataTypeManager the results of the operations.
+// This class is owned by DataTypeManager.
 namespace browser_sync {
 
 class DataTypeController;
@@ -28,6 +29,12 @@ class ModelAssociationResultProcessor {
   virtual void OnModelAssociationDone(
       const DataTypeManager::ConfigureResult& result) = 0;
   virtual ~ModelAssociationResultProcessor() {}
+
+  // Called to let the |ModelAssociationResultProcessor| know that "delayed"
+  // types have finished loading and association should take place. (A delayed
+  // type here is a type that did not finish loading during the previous
+  // configure cycle.)
+  virtual void OnTypesLoaded() = 0;
 };
 
 // The class that is responsible for model association.
@@ -39,8 +46,8 @@ class ModelAssociationManager {
 
   // Initializes the state to do the model association in future. This
   // should be called before communicating with sync server. A subsequent call
-  // of Initialize is only allowed if the current configure cycle is completed,
-  // aborted or stopped.
+  // of Initialize is only allowed if the ModelAssociationManager has invoked
+  // |OnModelAssociationDone| on the |ModelAssociationResultProcessor|.
   void Initialize(syncable::ModelTypeSet desired_types);
 
   // Can be called at any time. Synchronously stops all datatypes.
@@ -54,7 +61,7 @@ class ModelAssociationManager {
   // It is valid to call this only when we are initialized to configure
   // but we have not started the configuration.(i.e., |Initialize| has
   // been called but |StartAssociationAsync| has not yet been called.)
-  // If we have started configuration then the DTM will wait until
+  // If we have started configuration then the DataTypeManager will wait until
   // the current configuration is done before processing the reconfigure
   // request. We goto IDLE state and clear all our internal state. It is
   // safe to do this as we have not started association on any DTCs.
@@ -63,6 +70,12 @@ class ModelAssociationManager {
   // Should only be called after Initialize.
   // Stops any disabled types.
   void StopDisabledTypes();
+
+  // This is used for TESTING PURPOSE ONLY. The test case can inspect
+  // and modify the timer.
+  // TODO(sync) : This would go away if we made this class be able to do
+  // Dependency injection. crbug.com/129212.
+   base::OneShotTimer<ModelAssociationManager>* GetTimerForTesting();
 
  private:
   enum State {
@@ -96,6 +109,15 @@ class ModelAssociationManager {
   // Calls |StartAssociating| on the next available controller whose models are
   // loaded.
   void StartAssociatingNextType();
+
+  // When a type fails to load or fails associating this method is invoked to
+  // do the book keeping and do the UMA reporting.
+  void AppendToFailedDatatypesAndLogError(
+      DataTypeController::StartResult result,
+      const SyncError& error);
+
+  syncable::ModelTypeSet GetTypesWaitingToLoad();
+
 
   State state_;
   syncable::ModelTypeSet desired_types_;
@@ -140,6 +162,7 @@ class ModelAssociationManager {
   const DataTypeController::TypeMap* controllers_;
   ModelAssociationResultProcessor* result_processor_;
   base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;
+  base::OneShotTimer<ModelAssociationManager> timer_;
   DISALLOW_COPY_AND_ASSIGN(ModelAssociationManager);
 };
 }  // namespace browser_sync

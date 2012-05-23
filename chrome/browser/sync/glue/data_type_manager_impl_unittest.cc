@@ -26,6 +26,7 @@ using syncable::ModelType;
 using syncable::ModelTypeSet;
 using syncable::ModelTypeToString;
 using syncable::BOOKMARKS;
+using syncable::APPS;
 using syncable::PASSWORDS;
 using syncable::PREFERENCES;
 using testing::_;
@@ -201,6 +202,52 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOne) {
   dtm.Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
 }
+
+// Set up a DTM with 2 controllers. configure it. One of them finishes loading
+// after the  timeout. Make sure eventually all are configured.
+TEST_P(SyncDataTypeManagerImplTest, ConfigureSlowLoadingType) {
+  AddController(BOOKMARKS);
+  AddController(APPS);
+
+  GetController(BOOKMARKS)->SetDelayModelLoad();
+
+  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::PARTIAL_SUCCESS);
+
+  syncable::ModelTypeSet types;
+  types.Put(BOOKMARKS);
+  types.Put(APPS);
+
+  Configure(&dtm, types);
+  EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
+
+  FinishDownload(dtm, ModelTypeSet());
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm.state());
+
+  base::OneShotTimer<ModelAssociationManager>* timer =
+    dtm.GetModelAssociationManagerForTesting()->GetTimerForTesting();
+
+  base::Closure task = timer->user_task();
+  timer->Stop();
+  task.Run();
+
+  SetConfigureDoneExpectation(DataTypeManager::OK);
+  GetController(APPS)->FinishStart(DataTypeController::OK);
+
+  SetConfigureStartExpectation();
+  GetController(BOOKMARKS)->SimulateModelLoadFinishing();
+
+  FinishDownload(dtm, ModelTypeSet());
+  GetController(BOOKMARKS)->SimulateModelLoadFinishing();
+
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm.state());
+
+  dtm.Stop();
+  EXPECT_EQ(DataTypeManager::STOPPED, dtm.state());
+}
+
 
 // Set up a DTM with a single controller, configure it, but stop it
 // before finishing the download.  It should still be safe to run the

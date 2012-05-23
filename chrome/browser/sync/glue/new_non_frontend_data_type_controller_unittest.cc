@@ -492,3 +492,4 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, OnUnrecoverableError) {
 }  // namespace
 
 }  // namespace browser_sync
+

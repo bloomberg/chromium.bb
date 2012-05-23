@@ -310,7 +310,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   browser_sync::DataTypeManager::ConfigureResult result(
       status,
       syncable::ModelTypeSet(),
-      errors);
+      errors,
+      syncable::ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_, _)).
       WillRepeatedly(
           DoAll(

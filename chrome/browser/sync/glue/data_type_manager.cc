@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,13 @@ DataTypeManager::ConfigureResult::ConfigureResult(ConfigureStatus status,
 DataTypeManager::ConfigureResult::ConfigureResult(
     ConfigureStatus status,
     TypeSet requested_types,
-    const std::list<SyncError>& error)
+    const std::list<SyncError>& failed_data_types,
+    syncable::ModelTypeSet waiting_to_start)
     : status(status),
       requested_types(requested_types),
-      errors(error) {
-  if (!error.empty()) {
+      failed_data_types(failed_data_types),
+      waiting_to_start(waiting_to_start) {
+  if (!failed_data_types.empty()) {
     DCHECK_NE(OK, status);
   }
 }

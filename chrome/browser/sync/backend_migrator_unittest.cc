@@ -83,7 +83,8 @@ class SyncBackendMigratorTest : public testing::Test {
       DataTypeManager::ConfigureResult result(
           status,
           requested_types,
-          errors);
+          errors,
+          syncable::ModelTypeSet());
       migrator_->OnConfigureDone(result);
     }
     message_loop_.RunAllPending();

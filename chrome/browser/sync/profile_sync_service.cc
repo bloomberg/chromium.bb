@@ -370,7 +370,7 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
 
 void ProfileSyncService::OnSyncConfigureDone(
     DataTypeManager::ConfigureResult result) {
-  if (failed_datatypes_handler_.UpdateFailedDatatypes(result.errors,
+  if (failed_datatypes_handler_.UpdateFailedDatatypes(result.failed_data_types,
           FailedDatatypesHandler::STARTUP)) {
     ReconfigureDatatypeManager();
   }
@@ -1448,8 +1448,9 @@ void ProfileSyncService::Observe(int type,
           configure_status_ != DataTypeManager::PARTIAL_SUCCESS) {
         // Something catastrophic had happened. We should only have one
         // error representing it.
-        DCHECK(result->errors.size() == 1);
-        SyncError error = result->errors.front();
+        DCHECK_EQ(result->failed_data_types.size(),
+                  static_cast<unsigned int>(1));
+        SyncError error = result->failed_data_types.front();
         DCHECK(error.IsSet());
         std::string message =
           "Sync configuration failed with status " +

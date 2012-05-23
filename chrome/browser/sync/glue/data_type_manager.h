@@ -59,11 +59,21 @@ class DataTypeManager {
                     TypeSet requested_types);
     ConfigureResult(ConfigureStatus status,
                     TypeSet requested_types,
-                    const std::list<SyncError>& errors);
+                    const std::list<SyncError>& failed_data_types,
+                    syncable::ModelTypeSet waiting_to_start);
     ~ConfigureResult();
     ConfigureStatus status;
     TypeSet requested_types;
-    std::list<SyncError> errors;
+
+    // These types encountered a failure in association.
+    std::list<SyncError> failed_data_types;
+
+    // List of types that failed to start association with in our alloted
+    // time period(see kDataTypeLoadWaitTimeInSeconds). We move
+    // forward here and allow these types to continue loading in the
+    // background. When these types are loaded DataTypeManager will
+    // be informed and another configured cycle will be started.
+    syncable::ModelTypeSet waiting_to_start;
   };
 
   virtual ~DataTypeManager() {}

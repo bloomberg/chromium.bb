@@ -14,20 +14,26 @@ using syncable::ModelType;
 namespace browser_sync {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
-      : state_(NOT_RUNNING), type_(type) {}
+      : state_(NOT_RUNNING), model_load_delayed_(false), type_(type) {}
 
 FakeDataTypeController::~FakeDataTypeController() {
 }
 
-// NOT_RUNNING ->MODEL_LOADED.
+// NOT_RUNNING ->MODEL_LOADED |MODEL_STARTING.
 void FakeDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   if (state_ != NOT_RUNNING) {
     ADD_FAILURE();
     return;
   }
-  model_load_callback.Run(type(), SyncError());
-  state_ = MODEL_LOADED;
+
+  if (model_load_delayed_ == false) {
+    model_load_callback.Run(type(), SyncError());
+    state_ = MODEL_LOADED;
+  } else {
+    model_load_callback_ = model_load_callback;
+    state_ = MODEL_STARTING;
+  }
 }
 
 void FakeDataTypeController::OnModelLoaded() {
@@ -38,7 +44,7 @@ void FakeDataTypeController::OnModelLoaded() {
 void FakeDataTypeController::StartAssociating(
    const StartCallback& start_callback) {
   last_start_callback_ = start_callback;
-  state_ = MODEL_STARTING;
+  state_ = ASSOCIATING;
 }
 
 // MODEL_STARTING | ASSOCIATING -> RUNNING | DISABLED | NOT_RUNNING
@@ -109,6 +115,15 @@ void FakeDataTypeController::RecordUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
   ADD_FAILURE() << message;
+}
+
+void FakeDataTypeController::SetDelayModelLoad() {
+  model_load_delayed_ = true;
+}
+
+void FakeDataTypeController::SimulateModelLoadFinishing() {
+  ModelLoadCallback model_load_callback = model_load_callback_;
+  model_load_callback.Run(type(), SyncError());
 }
 
 }  // namespace browser_sync

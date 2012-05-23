@@ -80,17 +80,16 @@ void DataTypeManagerImpl::ConfigureImpl(
   }
 
   last_requested_types_ = desired_types;
+  last_nigori_state_ = nigori_state;
   // Only proceed if we're in a steady state or blocked.
   if (state_ != STOPPED && state_ != CONFIGURED && state_ != BLOCKED) {
     DVLOG(1) << "Received configure request while configuration in flight. "
              << "Postponing until current configuration complete.";
     needs_reconfigure_ = true;
     last_configure_reason_ = reason;
-    last_nigori_state_ = nigori_state;
     return;
   }
 
-  model_association_manager_.Initialize(desired_types);
   Restart(reason, nigori_state);
 }
 
@@ -98,6 +97,7 @@ void DataTypeManagerImpl::Restart(
     sync_api::ConfigureReason reason,
     BackendDataTypeConfigurer::NigoriState nigori_state) {
   DVLOG(1) << "Restarting...";
+  model_association_manager_.Initialize(last_requested_types_);
   last_restart_time_ = base::Time::Now();
 
   DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == BLOCKED);
@@ -210,10 +210,9 @@ void DataTypeManagerImpl::DownloadReady(
 void DataTypeManagerImpl::OnModelAssociationDone(
     const DataTypeManager::ConfigureResult& result) {
   if (result.status == ABORTED || result.status == UNRECOVERABLE_ERROR) {
-    Abort(result.status, result.errors.size() >= 1 ?
-                         result.errors.front() :
+    Abort(result.status, result.failed_data_types.size() >= 1 ?
+                         result.failed_data_types.front() :
                          SyncError());
-
     return;
   }
 
@@ -223,8 +222,8 @@ void DataTypeManagerImpl::OnModelAssociationDone(
 
   if (result.status == CONFIGURE_BLOCKED) {
     failed_datatypes_info_.insert(failed_datatypes_info_.end(),
-                                  result.errors.begin(),
-                                  result.errors.end());
+                                  result.failed_data_types.begin(),
+                                  result.failed_data_types.end());
     SetBlockedAndNotify();
     return;
   }
@@ -232,13 +231,25 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   DCHECK(result.status == PARTIAL_SUCCESS || result.status == OK);
   state_ = CONFIGURED;
   failed_datatypes_info_.insert(failed_datatypes_info_.end(),
-                                result.errors.begin(),
-                                result.errors.end());
+                                result.failed_data_types.begin(),
+                                result.failed_data_types.end());
   ConfigureResult configure_result(result.status,
                                    result.requested_types,
-                                   failed_datatypes_info_);
+                                   failed_datatypes_info_,
+                                   result.waiting_to_start);
   NotifyDone(configure_result);
   failed_datatypes_info_.clear();
+}
+
+void DataTypeManagerImpl::OnTypesLoaded() {
+  if (state_ != CONFIGURED) {
+    // Ignore this. either we just started another configuration or
+    // we are in some sort of error.
+    return;
+  }
+
+  Restart(sync_api::CONFIGURE_REASON_RECONFIGURATION,
+          last_nigori_state_);
 }
 
 
@@ -288,7 +299,8 @@ void DataTypeManagerImpl::Abort(ConfigureStatus status,
     error_list.push_back(error);
   ConfigureResult result(status,
                          last_requested_types_,
-                         error_list);
+                         error_list,
+                         syncable::ModelTypeSet());
   NotifyDone(result);
 }
 

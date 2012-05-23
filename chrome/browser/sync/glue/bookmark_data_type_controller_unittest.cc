@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/test/test_browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -207,7 +206,6 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBusy) {
   bookmark_dtc_->LoadModels(
       base::Bind(&ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
-
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartOk) {
@@ -262,6 +260,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAborted) {
   bookmark_dtc_->LoadModels(
       base::Bind(&ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
+
   bookmark_dtc_->Stop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }
