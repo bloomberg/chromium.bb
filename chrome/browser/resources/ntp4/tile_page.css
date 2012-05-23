@@ -60,8 +60,13 @@
   -webkit-touch-callout: none;
   -webkit-user-drag: element;
   display: inline-block;
-  font-size: 1.2em;
   position: absolute;
+}
+
+/* NOTE: Dopplegangers nest themselves inside of other tiles, so don't
+ * accidentally double apply font-size to them. */
+.tile:not(.doppleganger) {
+  font-size: 1.2em;
 }
 
 /* Not real but not a doppleganger: show nothing. This state exists for a
