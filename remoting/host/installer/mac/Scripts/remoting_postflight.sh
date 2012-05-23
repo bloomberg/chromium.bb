@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Version = @@VERSION@@
+
 HELPERTOOLS=/Library/PrivilegedHelperTools
 NAME=org.chromium.chromoting
 CONFIG_FILE="$HELPERTOOLS/$NAME.json"
@@ -23,6 +25,8 @@ function onexit {
   logger An error occurred while launching the service
   exit 0
 }
+
+logger Running Chrome Remote Desktop postflight script @@VERSION@@
 
 # Create auth file (with correct owner and permissions) if it doesn't already
 # exist.

@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Version = @@VERSION@@
+
 HELPERTOOLS=/Library/PrivilegedHelperTools
 NAME=org.chromium.chromoting
 CONFIG_FILE="$HELPERTOOLS/$NAME.json"
@@ -18,6 +20,8 @@ function onexit {
   logger An error occurred while launching the service
   exit 0
 }
+
+logger Running Chrome Remote Desktop preflight script @@VERSION@@
 
 # If there is an _enabled file, rename it while upgrading.
 if [[ -f "$ENABLED_FILE" ]]; then

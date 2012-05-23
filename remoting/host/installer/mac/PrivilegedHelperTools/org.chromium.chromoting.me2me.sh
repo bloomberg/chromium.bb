@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Version = @@VERSION@@
+
 NAME=org.chromium.chromoting
 CONFIG_DIR=/Library/PrivilegedHelperTools
 HOST_EXE=$CONFIG_DIR/$NAME.me2me_host.app/Contents/MacOS/remoting_me2me_host
