@@ -17,6 +17,7 @@ multiprocess model instead of an asynchronous model.
 import codecs
 import copy
 import errno
+import gc
 import heapq
 import multiprocessing
 import os
@@ -24,6 +25,7 @@ import Queue
 import signal
 import sys
 import tempfile
+import threading
 import time
 import traceback
 
@@ -78,7 +80,6 @@ def Usage():
   print
   print "The --rebuild option rebuilds packages whenever their dependencies"
   print "are changed. This ensures that your build is correct."
-  sys.exit(1)
 
 
 # Global start time
@@ -1551,7 +1552,23 @@ class EmergeQueue(object):
 
 
 def main(argv):
+  try:
+    return real_main(argv)
+  finally:
+    # Work around multiprocessing sucking and not cleaning up after itself.
+    # http://bugs.python.org/issue4106;
+    # Step one; ensure GC is ran *prior* to the VM starting shutdown.
+    gc.collect()
+    # Step two; go looking for those threads and try to manually reap
+    # them if we can.
+    for x in threading.enumerate():
+      # Filter on the name, and ident; if ident is None, the thread
+      # wasn't started.
+      if x.name == 'QueueFeederThread' and x.ident is not None:
+        x.join(1)
 
+
+def real_main(argv):
   parallel_emerge_args = argv[:]
   deps = DepGraphGenerator()
   deps.Initialize(parallel_emerge_args)
@@ -1559,10 +1576,10 @@ def main(argv):
 
   if emerge.action is not None:
     argv = deps.ParseParallelEmergeArgs(argv)
-    sys.exit(emerge_main(argv))
+    return emerge_main(argv)
   elif not emerge.cmdline_packages:
     Usage()
-    sys.exit(1)
+    return 1
 
   # Unless we're in pretend mode, there's not much point running without
   # root access. We need to be able to install packages.
@@ -1572,7 +1589,7 @@ def main(argv):
   #       dependency cache. This is important for performance.
   if "--pretend" not in emerge.opts and portage.secpass < 2:
     print "parallel_emerge: superuser access is required."
-    sys.exit(1)
+    return 1
 
   if "--quiet" not in emerge.opts:
     cmdline_packages = " ".join(emerge.cmdline_packages)
@@ -1631,4 +1648,4 @@ def main(argv):
     os.execvp("sudo", args)
 
   print "Done"
-  sys.exit(0)
+  return 0
