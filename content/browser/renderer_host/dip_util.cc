@@ -14,11 +14,16 @@
 namespace content {
 
 float GetDIPScaleFactor(const RenderWidgetHostView* view) {
+// MacOS does not have an implementation of
+// Screen::GetMonitorNearestWindow
+// TODO(pkotwicz): Fix this. (crbug.com/129409).
+#if !defined(OS_MACOSX)
   if (gfx::Screen::IsDIPEnabled()) {
     gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(
         view ? view->GetNativeView() : NULL);
     return monitor.device_scale_factor();
   }
+#endif
   return 1.0f;
 }
 
