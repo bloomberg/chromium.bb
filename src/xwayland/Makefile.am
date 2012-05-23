@@ -5,15 +5,15 @@ AM_CPPFLAGS =					\
 	-DXSERVER_PATH='"@XSERVER_PATH@"'
 
 moduledir = @libdir@/weston
-module_LTLIBRARIES = xserver-launcher.la
+module_LTLIBRARIES = xwayland.la
 
-xserver_launcher = xserver-launcher.la
-xserver_launcher_la_LDFLAGS = -module -avoid-version
-xserver_launcher_la_LIBADD =			\
-	$(XSERVER_LAUNCHER_LIBS)		\
+xwayland = xwayland.la
+xwayland_la_LDFLAGS = -module -avoid-version
+xwayland_la_LIBADD =			\
+	$(XWAYLAND)			\
 	$(top_builddir)/shared/libshared.la
-xserver_launcher_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
-xserver_launcher_la_SOURCES =			\
+xwayland_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+xwayland_la_SOURCES =			\
 	window-manager.c			\
 	selection.c				\
 	launcher.c				\

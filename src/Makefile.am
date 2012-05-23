@@ -24,7 +24,7 @@ weston_SOURCES =				\
 	weston-launch.h				\
 	weston-egl-ext.h
 
-if ENABLE_XSERVER_LAUNCHER
+if ENABLE_XWAYLAND
 SUBDIRS = xwayland
 endif
 

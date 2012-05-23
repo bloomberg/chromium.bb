@@ -2912,7 +2912,7 @@ int main(int argc, char *argv[])
 
 	module_init = NULL;
 	if (xserver)
-		module_init = load_module("xserver-launcher.so",
+		module_init = load_module("xwayland.so",
 					  "weston_xserver_init",
 					  &xserver_module);
 	if (module_init && module_init(ec) < 0)
