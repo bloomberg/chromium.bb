@@ -229,7 +229,7 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
       last_indexed_page_id_(-1),
       allow_displaying_insecure_content_(false),
       allow_running_insecure_content_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      capture_timer_(false, false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   render_view->GetWebView()->setPermissionClient(this);
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
@@ -649,13 +649,11 @@ void ChromeRenderViewObserver::DidStartLoading() {
 }
 
 void ChromeRenderViewObserver::DidStopLoading() {
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ChromeRenderViewObserver::CapturePageInfo,
-                 weak_factory_.GetWeakPtr(), render_view()->GetPageId(), false),
+  CapturePageInfoLater(
+      false,  // preliminary_capture
       base::TimeDelta::FromMilliseconds(
           render_view()->GetContentStateImmediately() ?
-          0 : kDelayForCaptureMs));
+              0 : kDelayForCaptureMs));
 
   WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
   GURL osd_url = main_frame->document().openSearchDescriptionURL();
@@ -707,10 +705,8 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
   if (!is_new_navigation)
     return;
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ChromeRenderViewObserver::CapturePageInfo,
-                 weak_factory_.GetWeakPtr(), render_view()->GetPageId(), true),
+  CapturePageInfoLater(
+      true,  // preliminary_capture
       base::TimeDelta::FromMilliseconds(kDelayForForcedCaptureMs));
 }
 
@@ -750,16 +746,24 @@ void ChromeRenderViewObserver::DidHandleTouchEvent(const WebTouchEvent& event) {
     render_view()->GetRoutingID()));
 }
 
-void ChromeRenderViewObserver::CapturePageInfo(int load_id,
-                                               bool preliminary_capture) {
-  if (load_id != render_view()->GetPageId())
-    return;  // This capture call is no longer relevant due to navigation.
+void ChromeRenderViewObserver::CapturePageInfoLater(bool preliminary_capture,
+                                                    base::TimeDelta delay) {
+  capture_timer_.Start(
+      FROM_HERE,
+      delay,
+      base::Bind(&ChromeRenderViewObserver::CapturePageInfo,
+                 base::Unretained(this),
+                 preliminary_capture));
+}
+
+void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
+  int page_id = render_view()->GetPageId();
 
   // Skip indexing if this is not a new load.  Note that the case where
-  // load_id == last_indexed_page_id_ is more complicated, since we need to
+  // page_id == last_indexed_page_id_ is more complicated, since we need to
   // reindex if the toplevel URL has changed (such as from a redirect), even
   // though this may not cause the page id to be incremented.
-  if (load_id < last_indexed_page_id_)
+  if (page_id < last_indexed_page_id_)
     return;
 
   if (!render_view()->GetWebView())
@@ -783,9 +787,9 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   if (prerender::PrerenderHelper::IsPrerendering(render_view()))
     return;
 
-  bool same_page_id = last_indexed_page_id_ == load_id;
+  bool same_page_id = last_indexed_page_id_ == page_id;
   if (!preliminary_capture)
-    last_indexed_page_id_ = load_id;
+    last_indexed_page_id_ = page_id;
 
   // Get the URL for this page.
   GURL url(main_frame->document().url());
@@ -817,7 +821,7 @@ void ChromeRenderViewObserver::CapturePageInfo(int load_id,
   if (contents.size()) {
     // Send the text to the browser for indexing (the browser might decide not
     // to index, if the URL is HTTPS for instance) and language discovery.
-    Send(new ChromeViewHostMsg_PageContents(routing_id(), url, load_id,
+    Send(new ChromeViewHostMsg_PageContents(routing_id(), url, page_id,
                                             contents));
   }
 
