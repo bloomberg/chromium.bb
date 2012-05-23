@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/browser_plugin/browser_plugin_host.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -324,6 +325,8 @@ WebContentsImpl::WebContentsImpl(
   java_bridge_dispatcher_host_manager_.reset(
       new JavaBridgeDispatcherHostManager(this));
 #endif
+
+  browser_plugin_host_.reset(new content::BrowserPluginHost(this));
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -1147,6 +1150,11 @@ bool WebContentsImpl::NavigateToEntry(
       GetRenderViewHost(),
       dest_render_view_host,
       entry.GetURL());
+
+  // Tell BrowserPluginHost about the pending cross-process navigation.
+  // TODO(fsamuel): Remove this once this issue is addressed:
+  // https://code.google.com/p/chromium/issues/detail?id=128976
+  browser_plugin_host()->OnPendingNavigation(dest_render_view_host);
 
   // Used for page load time metrics.
   current_load_start_ = base::TimeTicks::Now();
@@ -2728,11 +2736,15 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   int32 max_page_id =
       GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
 
+  content::RenderProcessHost* embedder_render_process_host =
+      browser_plugin_host()->embedder_render_process_host();
+  int embedder_process_id =
+      embedder_render_process_host ? embedder_render_process_host->GetID() : -1;
   if (!static_cast<RenderViewHostImpl*>(
           render_view_host)->CreateRenderView(string16(),
                                               opener_route_id,
                                               max_page_id,
-                                              -1)) {
+                                              embedder_process_id)) {
     return false;
   }
 

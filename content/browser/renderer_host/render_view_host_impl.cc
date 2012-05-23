@@ -258,9 +258,10 @@ bool RenderViewHostImpl::CreateRenderView(const string16& frame_name,
           gfx::NativeViewFromId(GetNativeViewId()));
 #endif
 
-  if (embedder_process_id != -1)
+  if (embedder_process_id != -1) {
     params.embedder_channel_name =
         StringPrintf("%d.r%d", GetProcess()->GetID(), embedder_process_id);
+  }
 
   params.accessibility_mode =
       BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser() ?

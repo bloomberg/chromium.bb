@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/property_bag.h"
+#include "content/browser/browser_plugin/browser_plugin_host.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
@@ -135,6 +136,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
     return java_bridge_dispatcher_host_manager_.get();
+  }
+
+  content::BrowserPluginHost* browser_plugin_host() const {
+    return browser_plugin_host_.get();
   }
 
   // Like GetController from WebContents, but returns the concrete object.
@@ -608,6 +613,9 @@ class CONTENT_EXPORT WebContentsImpl
   // this WebContentsImpl.
   scoped_ptr<JavaBridgeDispatcherHostManager>
       java_bridge_dispatcher_host_manager_;
+
+  // Manages the browser plugin instances hosted by this WebContents.
+  scoped_ptr<content::BrowserPluginHost> browser_plugin_host_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
