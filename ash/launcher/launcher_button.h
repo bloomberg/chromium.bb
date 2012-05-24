@@ -53,9 +53,12 @@ class LauncherButton : public views::CustomButton {
    public:
     IconView();
     virtual ~IconView();
-    virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
+
     void set_icon_size(int icon_size) { icon_size_ = icon_size; }
     int icon_size() const { return icon_size_; }
+
+    // views::View overrides.
+    virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
 
    private:
     // Set to non-zero to force icons to be resized to fit within a square,
@@ -88,8 +91,13 @@ class LauncherButton : public views::CustomButton {
 
  private:
   class BarView;
-  // Updates the parts of the button to reflect the current state_. This may
-  // add or remove views, layout and paint.
+
+  // Returns true if the shelf is horizontal. If this returns false the shelf is
+  // vertical.
+  bool IsShelfHorizontal() const;
+
+  // Updates the parts of the button to reflect the current |state_| and
+  // alignment. This may add or remove views, layout and paint.
   void UpdateState();
 
   LauncherButtonHost* host_;

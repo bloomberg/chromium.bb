@@ -212,8 +212,8 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() {
     case SHELF_ALIGNMENT_LEFT:
       return gfx::Rect(bounds.x(), bounds.y(), width, bounds.height());
     case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Rect(bounds.right() - width, bounds.bottom() - height, width,
-                       height);
+      return gfx::Rect(bounds.right() - width, bounds.y(), width,
+                       bounds.height());
   }
   NOTREACHED();
   return gfx::Rect();

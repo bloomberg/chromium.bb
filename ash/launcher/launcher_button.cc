@@ -20,10 +20,11 @@
 #include "ui/views/controls/image_view.h"
 
 namespace {
-const int kBarHeight = 3;
+// Size of the bar. This is along the opposite axis of the shelf. For example,
+// if the shelf is aligned horizontally then this is the height of the bar.
+const int kBarSize = 3;
 const int kBarSpacing = 5;
-const int kIconHeight = 32;
-const int kIconWidth = 48;
+const int kIconSize = 32;
 const int kHopSpacing = 2;
 const int kActiveBarColor = 0xe6ffffff;
 const int kInactiveBarColor = 0x80ffffff;
@@ -88,13 +89,14 @@ class LauncherButton::BarView : public views::ImageView,
   DISALLOW_COPY_AND_ASSIGN(BarView);
 };
 
-LauncherButton::IconView::IconView() : icon_size_(kIconHeight) {
+LauncherButton::IconView::IconView() : icon_size_(kIconSize) {
 }
 
 LauncherButton::IconView::~IconView() {
 }
 
 bool LauncherButton::IconView::HitTest(const gfx::Point& l) const {
+  // Return false so that LauncherButton gets all the mouse events.
   return false;
 }
 
@@ -113,8 +115,6 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
       bar_(new BarView),
       state_(STATE_NORMAL) {
   set_accessibility_focusable(true);
-  bar_->SetHorizontalAlignment(views::ImageView::CENTER);
-  bar_->SetVerticalAlignment(views::ImageView::TRAILING);
   AddChildView(bar_);
 }
 
@@ -262,11 +262,25 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void LauncherButton::Layout() {
-  int image_x = (width() - icon_view_->width()) / 2;
-  int image_y = height() - (icon_view_->height() + kBarHeight + kBarSpacing);
+  int image_x, image_y;
 
-  if (ShouldHop(state_))
-    image_y -= kHopSpacing;
+  if (IsShelfHorizontal()) {
+    image_x = (width() - icon_view_->width()) / 2;
+    image_y = height() - (icon_view_->height() + kBarSize + kBarSpacing);
+    if (ShouldHop(state_))
+      image_y -= kHopSpacing;
+  } else {
+    image_y = (height() - icon_view_->height()) / 2;
+    if (host_->GetShelfAlignment() == SHELF_ALIGNMENT_LEFT) {
+      image_x = kBarSize + kBarSpacing;
+      if (ShouldHop(state_))
+        image_x += kHopSpacing;
+    } else {
+      image_x = width() - (icon_view_->width() + kBarSize + kBarSpacing);
+      if (ShouldHop(state_))
+        image_x -= kHopSpacing;
+    }
+  }
 
   icon_view_->SetPosition(gfx::Point(image_x, image_y));
   bar_->SetBounds(0, 0, width(), height());
@@ -284,7 +298,7 @@ void LauncherButton::Init() {
   // TODO: refactor the layers so each button doesn't require 2.
   icon_view_->SetPaintToLayer(true);
   icon_view_->SetFillsBoundsOpaquely(false);
-  icon_view_->SetSize(gfx::Size(kIconWidth, kIconHeight));
+  icon_view_->SetSize(gfx::Size(kIconSize, kIconSize));
   icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
   icon_view_->SetVerticalAlignment(views::ImageView::CENTER);
   AddChildView(icon_view_);
@@ -292,6 +306,10 @@ void LauncherButton::Init() {
 
 LauncherButton::IconView* LauncherButton::CreateIconView() {
   return new IconView;
+}
+
+bool LauncherButton::IsShelfHorizontal() const {
+  return host_->GetShelfAlignment() == SHELF_ALIGNMENT_BOTTOM;
 }
 
 void LauncherButton::UpdateState() {
@@ -302,14 +320,37 @@ void LauncherButton::UpdateState() {
     int bar_id;
     bar_->SetVisible(true);
 
-    if (state_ & STATE_ACTIVE || state_ & STATE_ATTENTION)
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
-    else if (state_ & STATE_HOVERED)
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
-    else
-      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
+    if (state_ & STATE_ACTIVE || state_ & STATE_ATTENTION) {
+      bar_id = IsShelfHorizontal() ? IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE :
+          IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_ACTIVE;
+    } else if (state_ & STATE_HOVERED) {
+      bar_id = IsShelfHorizontal() ? IDR_AURA_LAUNCHER_UNDERLINE_HOVER :
+          IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_HOVER;
+    } else {
+      bar_id = IsShelfHorizontal() ? IDR_AURA_LAUNCHER_UNDERLINE_RUNNING :
+          IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_RUNNING;
+    }
 
     bar_->SetImage(rb.GetImageNamed(bar_id).ToImageSkia());
+  }
+
+  switch (host_->GetShelfAlignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      bar_->SetHorizontalAlignment(views::ImageView::CENTER);
+      bar_->SetVerticalAlignment(views::ImageView::TRAILING);
+      break;
+    case SHELF_ALIGNMENT_LEFT:
+      bar_->SetHorizontalAlignment(
+          base::i18n::IsRTL() ? views::ImageView::TRAILING :
+                                views::ImageView::LEADING);
+      bar_->SetVerticalAlignment(views::ImageView::CENTER);
+      break;
+    case SHELF_ALIGNMENT_RIGHT:
+      bar_->SetHorizontalAlignment(
+          base::i18n::IsRTL() ? views::ImageView::LEADING :
+                                views::ImageView::TRAILING);
+      bar_->SetVerticalAlignment(views::ImageView::CENTER);
+      break;
   }
 
   Layout();
