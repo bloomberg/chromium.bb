@@ -21,8 +21,12 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <linux/input.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/uio.h>
 
 #include "compositor.h"
 #include "screenshooter-server-protocol.h"
@@ -206,6 +210,183 @@ screenshooter_binding(struct wl_seat *seat, uint32_t time,
 					screenshooter_exe, screenshooter_sigchld);
 }
 
+struct weston_recorder {
+	struct weston_output *output;
+	uint32_t *frame, *rect;
+	uint32_t total;
+	int fd;
+	struct wl_listener frame_listener;
+};
+
+static uint32_t *
+output_run(uint32_t *p, uint32_t delta, int run)
+{
+	int i;
+
+	while (run > 0) {
+		if (run <= 0xe0) {
+			*p++ = delta | ((run - 1) << 24);
+			break;
+		}
+
+		i = 24 - __builtin_clz(run);
+		*p++ = delta | ((i + 0xe0) << 24);
+		run -= 1 << (7 + i);
+	}
+
+	return p;
+}
+
+static void
+weston_recorder_frame_notify(struct wl_listener *listener, void *data)
+{
+	struct weston_recorder *recorder =
+		container_of(listener, struct weston_recorder, frame_listener);
+	struct weston_output *output = recorder->output;
+	uint32_t msecs = * (uint32_t *) data;
+	pixman_box32_t *r;
+	pixman_region32_t damage;
+	int i, j, k, n, width, height, run, stride;
+	uint32_t delta, prev, *d, *s, *p, next;
+	struct {
+		uint32_t msecs;
+		uint32_t nrects;
+	} header;
+	struct iovec v[2];
+
+	pixman_region32_init(&damage);
+	pixman_region32_intersect(&damage, &recorder->output->region,
+				  &recorder->output->previous_damage);
+
+	r = pixman_region32_rectangles(&damage, &n);
+	if (n == 0)
+		return;
+
+	header.msecs = msecs;
+	header.nrects = n;
+	v[0].iov_base = &header;
+	v[0].iov_len = sizeof header;
+	v[1].iov_base = r;
+	v[1].iov_len = n * sizeof *r;
+	recorder->total += writev(recorder->fd, v, 2);
+	stride = output->current->width;
+
+	for (i = 0; i < n; i++) {
+		width = r[i].x2 - r[i].x1;
+		height = r[i].y2 - r[i].y1;
+		glReadPixels(r[i].x1, output->current->height - r[i].y2,
+			     width, height,
+			     output->compositor->read_format,
+			     GL_UNSIGNED_BYTE, recorder->rect);
+
+		s = recorder->rect;
+		p = recorder->rect;
+		run = prev = 0; /* quiet gcc */
+		for (j = 0; j < height; j++) {
+			d = recorder->frame +
+				stride * (r[i].y2 - j - 1) + r[i].x1;
+			for (k = 0; k < width; k++) {
+				next = *s++;
+				delta = (next - *d) & 0x00ffffff;
+				*d++ = next;
+				if (run == 0 || delta == prev) {
+					run++;
+				} else {
+					p = output_run(p, prev, run);
+					run = 1;
+					prev = delta;
+				}
+			}
+		}
+
+		p = output_run(p, prev, run);
+
+		recorder->total += write(recorder->fd,
+					 recorder->rect,
+					 (p - recorder->rect) * 4);
+
+#if 0
+		fprintf(stderr,
+			"%dx%d at %d,%d rle from %d to %d bytes (%f) total %dM\n",
+			width, height, r[i].x1, r[i].y1,
+			width * height * 4, (int) (p - rect) * 4,
+			(float) (p - rect) / (width * height),
+			total / 1024 / 1024);
+#endif
+	}
+
+	pixman_region32_fini(&damage);
+}
+
+static void
+weston_recorder_create(struct weston_output *output, const char *filename)
+{
+	struct weston_recorder *recorder;
+	int stride, size;
+	struct { uint32_t width, height; } header;
+
+	recorder = malloc(sizeof *recorder);
+	recorder->output = output;
+
+	stride = output->current->width;
+	size = stride * 4 * output->current->height;
+	recorder->frame = malloc(size);
+	recorder->rect = malloc(size);
+	recorder->total = 0;
+	memset(recorder->frame, 0, size);
+
+	recorder->fd = open(filename,
+			    O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
+
+	header.width = output->current->width;
+	header.height = output->current->height;
+	recorder->total += write(recorder->fd, &header, sizeof header);
+
+	recorder->frame_listener.notify = weston_recorder_frame_notify;
+	wl_signal_add(&output->frame_signal, &recorder->frame_listener);
+	weston_output_damage(output);
+}
+
+static void
+weston_recorder_destroy(struct weston_recorder *recorder)
+{
+	wl_list_remove(&recorder->frame_listener.link);
+	close(recorder->fd);
+	free(recorder->frame);
+	free(recorder->rect);
+	free(recorder);
+}
+
+static void
+recorder_binding(struct wl_seat *seat, uint32_t time,
+		 uint32_t key, uint32_t button, uint32_t axis,
+		 int32_t state, void *data)
+{
+	struct weston_seat *ws = (struct weston_seat *) seat;
+	struct weston_compositor *ec = ws->compositor;
+	struct weston_output *output =
+		container_of(ec->output_list.next,
+			     struct weston_output, link);
+	struct wl_listener *listener;
+	struct weston_recorder *recorder;
+	static const char filename[] = "capture.wcap";
+
+	listener = wl_signal_get(&output->frame_signal,
+				 weston_recorder_frame_notify);
+	if (listener) {
+		recorder = container_of(listener, struct weston_recorder,
+					frame_listener);
+
+		fprintf(stderr, "stopping recorder, total file size %dM\n",
+			recorder->total / (1024 * 1024));
+
+		weston_recorder_destroy(recorder);
+	} else {
+		fprintf(stderr, "starting recorder, file %s\n", filename);
+		weston_recorder_create(output, filename);
+	}
+}
+
 static void
 screenshooter_destroy(struct wl_listener *listener, void *data)
 {
@@ -236,6 +417,8 @@ screenshooter_create(struct weston_compositor *ec)
 						shooter, bind_shooter);
 	weston_compositor_add_binding(ec, KEY_S, 0, 0, MODIFIER_SUPER,
 					screenshooter_binding, shooter);
+	weston_compositor_add_binding(ec, KEY_R, 0, 0, MODIFIER_SUPER,
+					recorder_binding, shooter);
 
 	shooter->destroy_listener.notify = screenshooter_destroy;
 	wl_signal_add(&ec->destroy_signal, &shooter->destroy_listener);

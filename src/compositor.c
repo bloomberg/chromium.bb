@@ -1082,6 +1082,8 @@ weston_output_finish_frame(struct weston_output *output, int msecs)
 		wl_display_get_event_loop(compositor->wl_display);
 	int fd;
 
+	wl_signal_emit(&output->frame_signal, &msecs);
+
 	if (output->repaint_needed) {
 		weston_output_repaint(output, msecs);
 		return;
@@ -2530,6 +2532,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	weston_output_move(output, x, y);
 	weston_output_damage(output);
 
+	wl_signal_init(&output->frame_signal);
 	wl_list_init(&output->frame_callback_list);
 	wl_list_init(&output->resource_list);
 

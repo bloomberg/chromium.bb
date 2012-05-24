@@ -124,6 +124,7 @@ struct weston_output {
 	struct weston_output_zoom zoom;
 	int dirty;
 	struct wl_list read_pixels_list;
+	struct wl_signal frame_signal;
 
 	char *make, *model;
 	uint32_t subpixel;
