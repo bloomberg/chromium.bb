@@ -19,6 +19,8 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/aura/event.h"
+#include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -413,12 +415,13 @@ SystemTrayBubble::SystemTrayBubble(
       bubble_type_(bubble_type),
       anchor_type_(ANCHOR_TYPE_TRAY),
       autoclose_delay_(0) {
+  if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION)
+    Shell::GetInstance()->AddRootWindowEventFilter(this);
 }
 
 SystemTrayBubble::~SystemTrayBubble() {
-  // The bubble may be closing without having been hidden first. So it may still
-  // be in the message-loop's observer list.
-  MessageLoopForUI::current()->RemoveObserver(this);
+  if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION)
+    Shell::GetInstance()->RemoveRootWindowEventFilter(this);
 
   DestroyItemViews();
   // Reset the host pointer in bubble_view_ in case its destruction is deferred.
@@ -665,36 +668,42 @@ void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
   }
 }
 
-base::EventStatus SystemTrayBubble::WillProcessEvent(
-    const base::NativeEvent& event) {
-  // Check if the user clicked outside of the bubble and close it if they did.
-  if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION &&
-      ui::EventTypeFromNative(event) == ui::ET_MOUSE_PRESSED) {
-    gfx::Point cursor_in_view = ui::EventLocationFromNative(event);
-    views::View::ConvertPointFromScreen(bubble_view_, &cursor_in_view);
-    if (!bubble_view_->HitTest(cursor_in_view)) {
-      bubble_widget_->Close();
-    }
-  }
-  return base::EVENT_CONTINUE;
+void SystemTrayBubble::ProcessLocatedEvent(const aura::LocatedEvent& event) {
+  DCHECK_NE(BUBBLE_TYPE_NOTIFICATION, bubble_type_);
+  gfx::Rect bounds = bubble_widget_->GetNativeWindow()->GetBoundsInRootWindow();
+  if (!bounds.Contains(event.root_location()))
+    bubble_widget_->Close();
 }
 
-void SystemTrayBubble::DidProcessEvent(const base::NativeEvent& event) {
+bool SystemTrayBubble::PreHandleKeyEvent(aura::Window* target,
+                                         aura::KeyEvent* event) {
+  return false;
+}
+
+bool SystemTrayBubble::PreHandleMouseEvent(aura::Window* target,
+                                           aura::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    ProcessLocatedEvent(*event);
+  return false;
+}
+
+ui::TouchStatus SystemTrayBubble::PreHandleTouchEvent(aura::Window* target,
+                                                      aura::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED)
+    ProcessLocatedEvent(*event);
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::GestureStatus SystemTrayBubble::PreHandleGestureEvent(
+    aura::Window* target,
+    aura::GestureEvent* event) {
+  return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 void SystemTrayBubble::OnWidgetClosing(views::Widget* widget) {
   CHECK_EQ(bubble_widget_, widget);
-  MessageLoopForUI::current()->RemoveObserver(this);
   bubble_widget_ = NULL;
   tray_->RemoveBubble(this);
-}
-
-void SystemTrayBubble::OnWidgetVisibilityChanged(views::Widget* widget,
-                                                 bool visible) {
-  if (!visible)
-    MessageLoopForUI::current()->RemoveObserver(this);
-  else
-    MessageLoopForUI::current()->AddObserver(this);
 }
 
 }  // namespace internal

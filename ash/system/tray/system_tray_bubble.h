@@ -9,12 +9,16 @@
 #include "ash/system/user/login_status.h"
 #include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/base_export.h"
-#include "base/message_pump_observer.h"
 #include "base/timer.h"
+#include "ui/aura/event_filter.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/widget/widget.h"
 
 #include <vector>
+
+namespace aura {
+class LocatedEvent;
+}
 
 namespace ash {
 
@@ -67,7 +71,7 @@ class SystemTrayBubbleView : public views::BubbleDelegateView {
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleView);
 };
 
-class SystemTrayBubble : public base::MessagePumpObserver,
+class SystemTrayBubble : public aura::EventFilter,
                          public views::Widget::Observer {
  public:
   enum BubbleType {
@@ -119,14 +123,22 @@ class SystemTrayBubble : public base::MessagePumpObserver,
  private:
   void CreateItemViews(user::LoginStatus login_status);
 
-  // Overridden from base::MessagePumpObserver.
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
+  // Closes the bubble if the event happened outside the bounds.
+  void ProcessLocatedEvent(const aura::LocatedEvent& event);
+
+  // Overridden from aura::EventFilter.
+  virtual bool PreHandleKeyEvent(aura::Window* target,
+                                 aura::KeyEvent* event) OVERRIDE;
+  virtual bool PreHandleMouseEvent(aura::Window* target,
+                                   aura::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
+                                              aura::TouchEvent* event) OVERRIDE;
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      aura::Window* target,
+      aura::GestureEvent* event) OVERRIDE;
+
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
-                                         bool visible) OVERRIDE;
 
   ash::SystemTray* tray_;
   SystemTrayBubbleView* bubble_view_;

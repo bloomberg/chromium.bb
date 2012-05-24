@@ -5,6 +5,9 @@
 #include "ash/wm/partial_screenshot_event_filter.h"
 
 #include "ash/wm/partial_screenshot_view.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {
@@ -41,6 +44,11 @@ bool PartialScreenshotEventFilter::PreHandleKeyEvent(
 
 bool PartialScreenshotEventFilter::PreHandleMouseEvent(
     aura::Window* target, aura::MouseEvent* event) {
+  if (view_) {
+    DCHECK_EQ(target, view_->GetWidget()->GetNativeWindow());
+    target->delegate()->OnMouseEvent(event);
+    return true;
+  }
   return false;  // Not handled.
 }
 
