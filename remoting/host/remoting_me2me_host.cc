@@ -567,6 +567,9 @@ int CALLBACK WinMain(HINSTANCE instance,
   info.dwICC = ICC_STANDARD_CLASSES;
   InitCommonControlsEx(&info);
 
+  // Mark the process as DPI-aware, so Windows won't scale coordinates in APIs.
+  SetProcessDPIAware();
+
   // CommandLine::Init() ignores the passed |argc| and |argv| on Windows getting
   // the command line from GetCommandLineW(), so we can safely pass NULL here.
   return main(0, NULL);
