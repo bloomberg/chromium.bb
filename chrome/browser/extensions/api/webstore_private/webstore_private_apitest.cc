@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_webstore_private_api.h"
+#include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,6 +31,8 @@
 using content::GpuFeatureType;
 
 namespace utils = extension_function_test_utils;
+
+namespace extensions {
 
 namespace {
 
@@ -464,3 +466,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstoreGetWebGLStatusTest, Blocked) {
   bool webgl_allowed = false;
   RunTest(webgl_allowed);
 }
+
+}  // namespace extensions

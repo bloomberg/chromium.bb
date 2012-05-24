@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
+#include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_chrome_auth_private_api.h"
 #include "chrome/browser/extensions/extension_debugger_api.h"
@@ -43,7 +44,6 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_web_socket_proxy_private_api.h"
-#include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/system/system_api.h"
 #include "chrome/browser/history/history_extension_api.h"
@@ -303,14 +303,14 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<IsAllowedFileSchemeAccessFunction>();
 
   // WebstorePrivate.
-  RegisterFunction<GetBrowserLoginFunction>();
-  RegisterFunction<GetStoreLoginFunction>();
-  RegisterFunction<SetStoreLoginFunction>();
-  RegisterFunction<InstallBundleFunction>();
-  RegisterFunction<BeginInstallWithManifestFunction>();
-  RegisterFunction<CompleteInstallFunction>();
-  RegisterFunction<SilentlyInstallFunction>();
-  RegisterFunction<GetWebGLStatusFunction>();
+  RegisterFunction<extensions::GetBrowserLoginFunction>();
+  RegisterFunction<extensions::GetStoreLoginFunction>();
+  RegisterFunction<extensions::SetStoreLoginFunction>();
+  RegisterFunction<extensions::InstallBundleFunction>();
+  RegisterFunction<extensions::BeginInstallWithManifestFunction>();
+  RegisterFunction<extensions::CompleteInstallFunction>();
+  RegisterFunction<extensions::SilentlyInstallFunction>();
+  RegisterFunction<extensions::GetWebGLStatusFunction>();
 
   // WebNavigation.
   RegisterFunction<extensions::GetFrameFunction>();

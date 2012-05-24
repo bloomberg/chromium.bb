@@ -503,6 +503,8 @@
         }],
         ['enable_extensions==1', {
           'sources': [
+            'browser/extensions/api/webstore_private/webstore_private_api.cc',
+            'browser/extensions/api/webstore_private/webstore_private_api.h',
             'browser/extensions/execute_code_in_tab_function.cc',
             'browser/extensions/execute_code_in_tab_function.h',
             'browser/extensions/extension_chrome_auth_private_api.cc',
@@ -537,8 +539,6 @@
             'browser/extensions/extension_test_api.h',
             'browser/extensions/extension_web_socket_proxy_private_api.cc',
             'browser/extensions/extension_web_socket_proxy_private_api.h',
-            'browser/extensions/extension_webstore_private_api.cc',
-            'browser/extensions/extension_webstore_private_api.h',
             'browser/extensions/settings/settings_api.cc',
             'browser/extensions/settings/settings_api.h',
             'browser/extensions/system/system_api.cc',

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBSTORE_PRIVATE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBSTORE_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_PRIVATE_WEBSTORE_PRIVATE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_PRIVATE_WEBSTORE_PRIVATE_API_H_
 #pragma once
 
 #include <string>
@@ -23,6 +23,8 @@ class ProfileSyncService;
 namespace content {
 class GpuDataManager;
 }
+
+namespace extensions {
 
 class WebstorePrivateApi {
  public:
@@ -253,4 +255,6 @@ class GetWebGLStatusFunction : public AsyncExtensionFunction,
   static bool IsWebGLAllowed(content::GpuDataManager* manager);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBSTORE_PRIVATE_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_PRIVATE_WEBSTORE_PRIVATE_API_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_webstore_private_api.h"
+#include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_vector.h"
@@ -38,7 +38,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::GpuDataManager;
-using extensions::BundleInstaller;
+
+namespace extensions {
 
 namespace {
 
@@ -636,3 +637,5 @@ bool GetWebGLStatusFunction::RunImpl() {
   }
   return true;
 }
+
+}  // namespace extensions
