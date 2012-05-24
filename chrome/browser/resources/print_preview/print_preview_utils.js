@@ -187,81 +187,19 @@ function pageSetToPageRanges(pageSet) {
 }
 
 /**
- * Constructs a url for getting a specific page.
- * @param {string} id The id of the preview data.
- * @param {number} pageNumber The number of the desired page.
- * @return {string} The constructed URL.
+ * Shows or hides an element.
+ * @param {Element} element Element to show or hide.
+ * @param {boolean} isVisible Whether the element should be visible or not.
  */
-function getPageSrcURL(id, pageNumber) {
-  return 'chrome://print/' + id + '/' + pageNumber + '/print.pdf';
+function setIsVisible(element, isVisible) {
+  element.style.display = isVisible ? '' : 'none';
 }
 
 /**
- * Returns a random integer within the specified range, |endPointA| and
- * |endPointB| are included.
- * @param {number} endPointA One end of the desired range.
- * @param {number} endPointB  The other end of the desired range.
- * @return {number} The random integer.
+ * @param {Array.<object>} array Array to check for item.
+ * @param {object} item Item to look for in array.
+ * @return {boolean} Whether the item is in the array.
  */
-function randomInteger(endPointA, endPointB) {
-  var from = Math.min(endPointA, endPointB);
-  var to = Math.max(endPointA, endPointB);
-  return Math.floor(Math.random() * (to - from + 1) + from);
-}
-
-// Number of points per inch.
-var POINTS_PER_INCH = 72;
-// Number of points per millimeter.
-var POINTS_PER_MILLIMETER = 2.83464567;
-
-/**
- * Converts |value| from inches to points.
- * @param {number} value The number in inches.
- * @return {number} |value| in points.
- */
-function convertInchesToPoints(value) {
-  return value * POINTS_PER_INCH;
-}
-
-/**
- * Converts |value| from points to inches.
- * @param {number} value The number in points.
- * @return {number} |value| in inches.
- */
-function convertPointsToInches(value) {
-  return value / POINTS_PER_INCH;
-}
-
-/**
- * Converts |value| from millimeters to points.
- * @param {number} value The number in millimeters.
- * @return {number} |value| in points.
- */
-function convertMillimetersToPoints(value) {
-  return value * POINTS_PER_MILLIMETER;
-}
-
-/**
- * Converts |value| from points to millimeters.
- * @param {number} value The number in points.
- * @return {number} |value| in millimeters.
- */
-function convertPointsToMillimeters(value) {
-  return value / POINTS_PER_MILLIMETER;
-}
-
-/**
- * Parses |numberFormat| and extracts the symbols used for the thousands point
- * and decimal point.
- * @param {string} numberFormat The formatted version of the number 12345678.
- * @return {!Array.<string>} The extracted symbols in the order
- *     [thousandsSymbol, decimalSymbol]]. For example
- *     parseNumberFormat("123,456.78") returns [",", "."].
- */
-function parseNumberFormat(numberFormat) {
-  if (!numberFormat)
-    numberFormat = '';
-  var regex = /^(\d+)(\W{0,1})(\d+)(\W{0,1})(\d+)$/;
-  var matches = numberFormat.match(regex) || ['', '', ',', '', '.'];
-  return [matches[2], matches[4]];
+function arrayContains(array, item) {
+  return array.indexOf(item) != -1;
 }

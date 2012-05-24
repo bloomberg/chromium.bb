@@ -1,92 +1,77 @@
 <!DOCTYPE html>
 <html i18n-values="dir:textdirection;" id="print-preview">
+
 <head>
-<meta charset="utf-8">
-<title i18n-content="title"></title>
-<link rel="icon" href="../../../app/theme/print_preview_favicon.png">
+  <meta charset="utf-8"/>
+  <title i18n-content="title"></title>
+  <link rel="icon" href="../../../app/theme/print_preview_favicon.png">
 
-<link rel="stylesheet" href="margins.css">
-<link rel="stylesheet" href="print_preview.css">
-<link rel="stylesheet" href="../shared/css/chrome_shared2.css">
-<link rel="stylesheet" href="../shared/css/throbber.css">
+  <link rel="stylesheet" href="print_preview.css"/>
+  <link rel="stylesheet" href="../shared/css/chrome_shared2.css"/>
+  <link rel="stylesheet" href="../shared/css/throbber.css"/>
+  <link rel="stylesheet" href="../shared/css/widgets.css"/>
+  <link rel="stylesheet" href="print_header.css"/>
+  <link rel="stylesheet" href="settings/copies_settings.css"/>
+  <link rel="stylesheet" href="settings/page_settings.css"/>
+  <link rel="stylesheet" href="previewarea/preview_area.css"/>
+  <link rel="stylesheet" href="previewarea/margin_control_container.css"/>
+  <link rel="stylesheet" href="previewarea/margin_control.css"/>
+  <link rel="stylesheet" href="../shared/css/overlay.css"/>
 
-<script src="chrome://resources/js/cr.js"></script>
-<script src="chrome://resources/js/event_tracker.js"></script>
-<script src="chrome://resources/js/local_strings.js"></script>
-<script src="chrome://resources/js/util.js"></script>
-<script src="chrome://print/print_preview.js"></script>
-<script src="chrome://print/strings.js"></script>
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/cr/event_target.js"></script>
+  <script src="chrome://resources/js/event_tracker.js"></script>
+  <script src="chrome://resources/js/local_strings.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+  <script src="chrome://print/print_preview.js"></script>
+  <script src="chrome://print/strings.js"></script>
+  <script src="chrome://resources/js/i18n_template.js"></script>
 </head>
+
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <div id="navbar-container">
     <header>
       <h1 id="navbar-content-title" i18n-content="title"></h1>
-      <div id="print-header">
-        <span id="print-summary"></span>
-        <div class="button-strip">
-          <button id="print-button" i18n-content="printButton" class="default">
-              </button>
-          <button id="cancel-button" i18n-content="cancelButton"></button>
-        </div>
-      </div>
+      <include src="print_header.html"/>
     </header>
     <div id="settings">
-      <div id="destination-option" class="two-column visible">
-        <h1 i18n-content="destinationLabel"></h1>
-        <div class="right-column">
-          <select id="printer-list"></select>
-        </div>
-      </div>
-      <include src="page_settings.html"></include>
-      <include src="copies_settings.html"></include>
-      <include src="layout_settings.html"></include>
-      <include src="color_settings.html"></include>
-      <include src="margin_settings.html"></include>
-      <include src="more_options.html"></include>
+      <include src="settings/destination_settings.html"/>
+      <include src="settings/page_settings.html"/>
+      <include src="settings/copies_settings.html"/>
+      <include src="settings/layout_settings.html"/>
+      <include src="settings/color_settings.html"/>
+      <include src="settings/margin_settings.html"/>
+      <include src="settings/other_options_settings.html"/>
+    </div>
+    <div id="link-container">
       <div>
-        <if expr="pp_ifdef('chromeos')">
-          <button id="system-dialog-link"
-              class="link-button preview-link-button"
-              i18n-content="cloudPrintDialogOption"></button>
-        </if>
-        <if expr="not pp_ifdef('chromeos')">
-          <button id="system-dialog-link"
-              class="link-button preview-link-button"
-              i18n-content="systemDialogOption"></button>
-        </if>
-        <div id="system-dialog-throbber" class="throbber" hidden></div>
+        <button id="cloud-print-dialog-link"
+            class="link-button navbar-link"
+            style="display: none;"
+            i18n-content="cloudPrintDialogOption"></button>
+        <button id="system-dialog-link"
+            class="link-button navbar-link"
+            style="display: none;"
+            i18n-content="systemDialogOption"></button>
+        <div id="dialog-throbber"
+            style="display: none;"
+            class="throbber"></div>
       </div>
-      <if expr="is_macosx">
-        <div>
-          <button id="open-pdf-in-preview-link"
-              class="link-button preview-link-button"
-              i18n-content="openPdfInPreviewOption"></button>
-          <div id="open-preview-app-throbber" class="throbber" hidden></div>
-        </div>
-      </if>
-    </div>
-  </div>
-  <div id="mainview">
-    <div id="overlay-layer" class="invisible">
-      <div id="messages">
-        <div id="dancing-dots-text" hidden>
-          <span id="loading"></span>
-          <span><span>.</span><span>.</span><span>.</span></span>
-        </div>
-        <div id="custom-message" hidden></div>
-        <div id="custom-message-with-dots"
-          class="message-with-dots" hidden></div>
-        <div id="error-action-area">
-          <button id="error-button" hidden></button>
-          <div id="native-print-dialog-throbber" class="throbber" hidden></div>
-        </div>
+      <div>
+        <button id="open-pdf-in-preview-link"
+            class="link-button navbar-link"
+            style="display: none;"
+            i18n-content="openPdfInPreviewOption"></button>
+        <div id="open-preview-app-throbber"
+            style="display: none;"
+            class="throbber"></div>
       </div>
     </div>
   </div>
-  <object id="dummy-viewer"
-      type="application/x-google-chrome-print-preview-pdf"
-      data="chrome://print/dummy.pdf"></object>
-  <script src="chrome://resources/js/i18n_template.js"></script>
-  <script src="chrome://resources/js/i18n_process.js"></script>
+  <include src="previewarea/preview_area.html"/>
+
+  <!-- HTML Templates -->
+  <include src="previewarea/margin_control.html"/>
 </body>
+
 </html>

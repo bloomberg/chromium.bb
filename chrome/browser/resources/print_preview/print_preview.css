@@ -7,9 +7,9 @@ html {
 }
 
 body {
+  display: -webkit-box;
   height: 100%;
   margin: 0;
-  overflow: hidden;
 }
 
 /* Header */
@@ -17,20 +17,16 @@ body {
 header {
   -webkit-padding-end: 14px;
   -webkit-padding-start: 16px;
+  background-color: #F1F1F1;
 }
 
 #print-preview #navbar-container {
   -webkit-border-end: 1px solid rgb(198, 201, 206);
   -webkit-box-orient: vertical;
   -webkit-user-select: none;
-  background-color: #f1f1f1;
-  bottom: 0;
+  background-color: white;
   display: -webkit-box;
-  /* We set both left and right for the sake of RTL. */
-  left: 0;
-  position: fixed;
-  right: 0;
-  top: 0;
+  position: relative;
   width: 310px;
   z-index: 2;
 }
@@ -45,25 +41,14 @@ header {
   text-shadow: white 0 1px 2px;
 }
 
-#print-header {
-  padding-bottom: 10px;
-  padding-top: 10px;
-}
-
-#print-summary {
-  color: rgb(83, 99, 125);
-  display: block;
-  min-height: 30px;
-}
-
 /* Settings */
 
 #settings {
-  -webkit-box-flex: 1;
   -webkit-box-shadow: inset 0 2px 2px rgba(0, 0, 0, .3);
   background: white;
   overflow-y: auto;
   padding-top: 2px;
+  width: 100%;
 }
 
 .two-column {
@@ -87,10 +72,10 @@ header {
 }
 
 .two-column h1 {
+  -webkit-padding-end: 16px;
   -webkit-padding-start: 16px;
   display: table-cell;
   font-size: 1.1em;
-  width: 86px;
 }
 
 .two-column.visible h1,
@@ -117,19 +102,20 @@ h1 {
   font-weight: 300;
 }
 
-.preview-link-button {
-  -webkit-padding-start: 16px;
+#print-preview .navbar-link {
+  -webkit-margin-start: 16px;
+  margin-top: 10px;
   outline: 0;
-  padding-top: 10px;
+  padding: 0;
   text-align: start;
   text-decoration: none;
 }
 
-.preview-link-button:hover:not(:disabled) {
+#print-preview .navbar-link:hover:not(:disabled) {
   text-decoration: underline;
 }
 
-.preview-link-button:disabled {
+#print-preview .navbar-link:disabled {
   color: rgba(0, 0, 0, .5);
   cursor: default;
   text-shadow: none;
@@ -241,148 +227,10 @@ label {
 
 /* Individual settings sections  */
 
-#print-pages-div {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-}
-
-#individual-pages {
-  -webkit-box-flex: 1;
-  -webkit-margin-start: 5px;
-  display: block;
-}
-
-#collate-option {
- -webkit-padding-start: 16px;
-  display: inline-block;
-}
-
-#copies {
-  position: relative;
-  width: 2.75em;
-}
-
-#copies.invalid {
-  background: rgb(255, 240, 240);
-  color: rgb(140, 20, 20);
-}
-
-#increment,
-#decrement {
-  -webkit-padding-end: 0;
-  -webkit-padding-start: 0;
-  font-weight: 600;
-  margin: 0;
-  min-width: 0;
-  position: relative;
-  width: 2em;
-}
-
-#increment:focus,
-#decrement:focus,
-#copies:focus {
-  z-index: 1;
-}
-
-#increment {
-  -webkit-margin-start: -5px;
-  border-radius: 0;
-}
-
-#decrement {
-  -webkit-margin-start: -5px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 3px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 3px;
-}
-
-html[dir='rtl'] #decrement {
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 0;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 0;
-}
-
-#system-dialog-link {
-  -webkit-margin-start: 16px;
-  margin-top: 10px;
-  padding: 0;
-}
-
-/* PDF view */
-
-#mainview {
-  -webkit-margin-start: 310px;
-  -webkit-padding-start: 0;
-  -webkit-user-select: none;
-  background-color: #ccc;
-  bottom: 0;
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 1;
-}
-
-#pdf-viewer {
-  /* pluginFadeInTransitionDuration = 200ms */
-  -webkit-transition: opacity 200ms linear;
-  /* pluginFadeInTransitionDelay = overlayFadeOutTransitionDuration = 100ms */
-  -webkit-transition-delay: 100ms;
-  height: 100%;
-  opacity: 1;
-  width: 100%;
-}
-
-#pdf-viewer.invisible {
-  /* pluginFadeOutTransitionDuration = 100ms */
-  -webkit-transition: opacity 100ms linear;
-  /* pluginFadeOutTransitionDelay = 250ms */
-  -webkit-transition-delay: 250ms;
-  opacity: 0;
-}
-
-#no-plugin {
-  padding: 20px;
-}
-
 /* TODO(estade): this should be in a shared location but I'm afraid of the
  * damage it could do. */
 [hidden] {
   display: none !important;
-}
-
-#overlay-layer {
-  -webkit-transition: opacity 200ms linear;
-  /* overlayFadeInTransitionDelay = pluginFadeOutTransitionDelay +
-   *     pluginFadeOutTransitionDuration = 350ms */
-  -webkit-transition-delay: 350ms;
-  -webkit-user-select: none;
-  background: #ccc;
-  height: 100%;
-  margin: 0;
-  opacity: 1;
-  position: absolute;
-  width: 100%;
-}
-
-#overlay-layer.invisible {
-  /* overlayFadeOutTransitionDuration = 100ms */
-  -webkit-transition: opacity 100ms linear;
-  opacity: 0;
-  pointer-events: none;
-}
-
-#messages {
-  color: #404040;
-  font-size: 1.1em;
-  position: relative;
-  text-align: center;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
-  top: 50%;
 }
 
 @-webkit-keyframes dancing-dots-jump {
@@ -395,26 +243,18 @@ html[dir='rtl'] #decrement {
   100% { top: 0; }
 }
 
-#loading {
-  -webkit-margin-end: -3px;
-}
-
-.message-with-dots span span {
+span.jumping-dots > span {
   -webkit-animation: dancing-dots-jump 1800ms infinite;
   padding: 1px;
   position: relative;
 }
 
-.message-with-dots span span:nth-child(2) {
+span.jumping-dots > span:nth-child(2) {
   -webkit-animation-delay: 100ms;
 }
 
-.message-with-dots span span:nth-child(3) {
+span.jumping-dots > span:nth-child(3) {
   -webkit-animation-delay: 300ms;
-}
-
-#error-action-area {
-  margin-top: 10px;
 }
 
 /* TODO(estade): unfork this code. */
@@ -430,4 +270,8 @@ html[dir='rtl'] #decrement {
 #print-preview .button-strip button {
   -webkit-margin-start: 4px;
   display: block;
+}
+
+#link-container {
+  -webkit-box-flex: 1;
 }

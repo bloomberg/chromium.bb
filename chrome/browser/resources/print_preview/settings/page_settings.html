@@ -1,0 +1,23 @@
+<div id="page-settings" class="two-column visible page-settings">
+  <h1 i18n-content="pagesLabel"></h1>
+  <div class="right-column">
+    <div class="radio"><label>
+      <input class="page-settings-all-radio" name="pages" checked type="radio">
+      <span i18n-content="optionAllPages"></span>
+    </label></div>
+    <div>
+      <div class="page-settings-print-pages-div">
+        <input class="page-settings-custom-radio"
+               name="pages"
+               type="radio"
+               i18n-values="aria-label:printPagesLabel;"/>
+        <input class="page-settings-custom-input"
+               type="text"
+               i18n-values="placeholder:examplePageRangeText"/>
+      </div>
+      <span class="page-settings-custom-hint hint suggestion"
+            aria-hidden="true"
+            aria-live="polite"></span>
+    </div>
+  </div>
+</div>

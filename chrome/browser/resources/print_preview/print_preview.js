@@ -2,1267 +2,916 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// require: cr/ui/print_preview_cloud.js
+// TODO(rltoscano): Might be a problem where might be in fetching destinations
+// state, then to file selection state, then cancel, which results in the
+// fetching destinations state being lost.
+
+// TODO(rltoscano): Move data/* into print_preview.data namespace
+
+// TODO(rltoscano): Handle case where cloud print is initial destination, but
+// cloud print is not enabled.
 
 var localStrings = new LocalStrings();
 
-// If useCloudPrint is true we attempt to connect to cloud print
-// and populate the list of printers with cloud print printers.
-var useCloudPrint = false;
-
-// Store the last selected printer index.
-var lastSelectedPrinterIndex = 0;
-
-// Used to disable some printing options when the preview is not modifiable.
-var previewModifiable = false;
-
-// Used to identify whether the printing frame has specific page size style.
-var hasPageSizeStyle = false;
-
-// Destination list special value constants.
-
-/** @const */ var MANAGE_CLOUD_PRINTERS = 'manageCloudPrinters';
-/** @const */ var MANAGE_LOCAL_PRINTERS = 'manageLocalPrinters';
-/** @const */ var SIGN_IN = 'signIn';
-/** @const */ var PRINT_TO_PDF = 'Save as PDF';
-/** @const */ var PRINT_WITH_CLOUD_PRINT = 'printWithCloudPrint';
-
-// State of the print preview settings.
-var printSettings = new PrintSettings();
-
-// Print ready data index.
-/** @const */ var PRINT_READY_DATA_INDEX = -1;
-
-// The name of the default or last used printer.
-var defaultOrLastUsedPrinterName = '';
-
-// True when a pending print preview request exists.
-var hasPendingPreviewRequest = false;
-
-// True when the first page is loaded in the plugin.
-var isFirstPageLoaded = false;
-
-// The ID of the last preview request.
-var lastPreviewRequestID = -1;
-
-// The ID of the initial preview request.
-var initialPreviewRequestID = -1;
-
-// True when a pending print file request exists.
-var hasPendingPrintDocumentRequest = false;
-
-// True when the complete metafile for the previewed doc is ready.
-var isPrintReadyMetafileReady = false;
-
-// True when preview tab is hidden.
-var isTabHidden = false;
-
-// True in kiosk mode where print preview can print automatically without
-// user intervention. See http://crbug.com/31395.
-var printAutomaticallyInKioskMode = false;
-
-// @type {print_preview.PrintHeader} Holds the print and cancel buttons.
-var printHeader;
-
-// @type {print_preview.PageSettings} Holds all the pages related settings.
-var pageSettings;
-
-// @type {print_preview.CopiesSettings} Holds all the copies related settings.
-var copiesSettings;
-
-// @type {print_preview.LayoutSettings} Holds all the layout related settings.
-var layoutSettings;
-
-// @type {print_preview.MarginSettings} Holds all the margin related settings.
-var marginSettings;
-
-// @type {print_preview.HeaderFooterSettings} Holds all the header footer
-//     related settings.
-var headerFooterSettings;
-
-// @type {print_preview.FitToPageSettings} Holds all the fit to page related
-//     settings.
-var fitToPageSettings;
-
-// @type {print_preview.MoreOptions} Holds the more options implementation.
-var moreOptions;
-
-// @type {print_preview.ColorSettings} Holds all the color related settings.
-var colorSettings;
-
-// @type {print_preview.PreviewArea} Holds information related to the preview
-//     area (on the right).
-var previewArea;
-
-// True if the user has click 'Advanced...' in order to open the system print
-// dialog.
-var showingSystemDialog = false;
-
-// True if the user has clicked 'Open PDF in Preview' option.
-var previewAppRequested = false;
-
-// The range of options in the printer dropdown controlled by cloud print.
-var firstCloudPrintOptionPos = 0;
-var lastCloudPrintOptionPos = firstCloudPrintOptionPos;
-
-// Store the current previewUid.
-var currentPreviewUid = '';
-
-// True if we need to generate draft preview data.
-var generateDraftData = true;
-
-// The last element clicked with the mouse.
-var lastClickedElement = null;
-
-// A dictionary of cloud printers that have been added to the printer
-// dropdown.
-var addedCloudPrinters = {};
-
-// The maximum number of cloud printers to allow in the dropdown.
-/** @const */ var maxCloudPrinters = 10;
-
-/** @const */ var MIN_REQUEST_ID = 0;
-/** @const */ var MAX_REQUEST_ID = 32000;
-
-// Names of all the custom events used.
-var customEvents = {
-  // Fired when the header footer option visibility changed.
-  HEADER_FOOTER_VISIBILITY_CHANGED: 'headerFooterVisibilityChanged',
-  // Fired when the mouse moves while a margin line is being dragged.
-  MARGIN_LINE_DRAG: 'marginLineDrag',
-  // Fired when a mousedown event occurs on a margin line.
-  MARGIN_LINE_MOUSE_DOWN: 'marginLineMouseDown',
-  // Fired when a margin textbox gains focus.
-  MARGIN_TEXTBOX_FOCUSED: 'marginTextboxFocused',
-  // Fired when a new preview might be needed because of margin changes.
-  MARGINS_MAY_HAVE_CHANGED: 'marginsMayHaveChanged',
-  // Fired when a pdf generation related error occurs.
-  PDF_GENERATION_ERROR: 'PDFGenerationError',
-  // Fired once the first page of the pdf document is loaded in the plugin.
-  PDF_LOADED: 'PDFLoaded',
-  // Fired when the selected printer capabilities change.
-  PRINTER_CAPABILITIES_UPDATED: 'printerCapabilitiesUpdated',
-  // Fired when the destination printer is changed.
-  PRINTER_SELECTION_CHANGED: 'printerSelectionChanged',
-  // Fired when the print button needs to be updated.
-  UPDATE_PRINT_BUTTON: 'updatePrintButton',
-  // Fired when the print summary needs to be updated.
-  UPDATE_SUMMARY: 'updateSummary'
-};
-
-/**
- * Window onload handler, sets up the page and starts print preview by getting
- * the printer list.
- */
-function onLoad() {
-  initialPreviewRequestID = randomInteger(MIN_REQUEST_ID, MAX_REQUEST_ID);
-  lastPreviewRequestID = initialPreviewRequestID;
-
-  previewArea = print_preview.PreviewArea.getInstance();
-  printHeader = print_preview.PrintHeader.getInstance();
-  document.addEventListener(customEvents.PDF_GENERATION_ERROR,
-                            cancelPendingPrintRequest);
-  document.addEventListener('click', setLastClickedElement);
-
-  if (!checkCompatiblePluginExists()) {
-    disableInputElementsInSidebar();
-    $('cancel-button').focus();
-    previewArea.displayErrorMessageWithButtonAndNotify(
-        localStrings.getString('noPlugin'),
-        localStrings.getString('launchNativeDialog'),
-        launchNativePrintDialog);
-    $('mainview').parentElement.removeChild($('dummy-viewer'));
-    return;
-  }
-
-  $('system-dialog-link').addEventListener('click', onSystemDialogLinkClicked);
-  if (cr.isMac) {
-    $('open-pdf-in-preview-link').addEventListener(
-        'click', onOpenPdfInPreviewLinkClicked);
-  }
-  $('mainview').parentElement.removeChild($('dummy-viewer'));
-
-  $('printer-list').disabled = true;
-
-  pageSettings = print_preview.PageSettings.getInstance();
-  copiesSettings = print_preview.CopiesSettings.getInstance();
-  layoutSettings = print_preview.LayoutSettings.getInstance();
-  marginSettings = print_preview.MarginSettings.getInstance();
-  headerFooterSettings = print_preview.HeaderFooterSettings.getInstance();
-  fitToPageSettings = print_preview.FitToPageSettings.getInstance();
-  moreOptions = print_preview.MoreOptions.getInstance();
-  colorSettings = print_preview.ColorSettings.getInstance();
-  $('printer-list').onchange = updateControlsWithSelectedPrinterCapabilities;
-
-  previewArea.showLoadingAnimation();
-  chrome.send('getInitialSettings');
-}
-
-/**
- * @param {object} initialSettings An object containing all the initial
- *     settings.
- */
-function setInitialSettings(initialSettings) {
-  setInitiatorTabTitle(initialSettings['initiatorTabTitle']);
-  previewModifiable = initialSettings['previewModifiable'];
-  if (previewModifiable) {
-    print_preview.MarginSettings.setNumberFormatAndMeasurementSystem(
-        initialSettings['numberFormat'],
-        initialSettings['measurementSystem']);
-    marginSettings.setLastUsedMargins(initialSettings);
-  }
-  printAutomaticallyInKioskMode =
-      initialSettings['printAutomaticallyInKioskMode'];
-  headerFooterSettings.setChecked(initialSettings['headerFooterEnabled']);
-  copiesSettings.previousDuplexMode = initialSettings['duplex'];
-  setDefaultPrinter(initialSettings['printerName'],
-                    initialSettings['cloudPrintData']);
-}
-
-/**
- * Disables the input elements in the sidebar.
- */
-function disableInputElementsInSidebar() {
-  var els = $('navbar-container').querySelectorAll('input, button, select');
-  for (var i = 0; i < els.length; i++) {
-    if (els[i] == printHeader.cancelButton)
-      continue;
-    els[i].disabled = true;
-  }
-}
-
-/**
- * Enables the input elements in the sidebar.
- */
-function enableInputElementsInSidebar() {
-  var els = $('navbar-container').querySelectorAll('input, button, select');
-  for (var i = 0; i < els.length; i++)
-    els[i].disabled = false;
-}
-
-/**
- * Keep track of the last element to receive a click.
- * @param {Event} e The click event.
- */
-function setLastClickedElement(e) {
-  lastClickedElement = e.target;
-}
-
-/**
- * Disables the controls in the sidebar, shows the throbber and instructs the
- * backend to open the native print dialog.
- */
-function onSystemDialogLinkClicked() {
-  if (showingSystemDialog)
-    return;
-  showingSystemDialog = true;
-  disableInputElementsInSidebar();
-  printHeader.disableCancelButton();
-  $('system-dialog-throbber').hidden = false;
-  chrome.send('showSystemDialog');
-}
-
-/**
- * Disables the controls in the sidebar, shows the throbber and instructs the
- * backend to open the pdf in native preview app. This is only for Mac.
- */
-function onOpenPdfInPreviewLinkClicked() {
-  if (previewAppRequested)
-    return;
-  previewAppRequested = true;
-  disableInputElementsInSidebar();
-  $('open-preview-app-throbber').hidden = false;
-  printHeader.disableCancelButton();
-  requestToPrintDocument();
-}
-
-/**
- * Similar to onSystemDialogLinkClicked(), but specific to the
- * 'Launch native print dialog' UI.
- */
-function launchNativePrintDialog() {
-  if (showingSystemDialog)
-    return;
-  showingSystemDialog = true;
-  previewArea.errorButton.disabled = true;
-  printHeader.disableCancelButton();
-  $('native-print-dialog-throbber').hidden = false;
-  chrome.send('showSystemDialog');
-}
-
-/**
- * Notifies listeners of |customEvents.PRINTER_SELECTION_CHANGED| event about
- * the current selected printer.
- */
-function dispatchPrinterSelectionChangedEvent() {
-  var customEvent = cr.Event(customEvents.PRINTER_SELECTION_CHANGED);
-  customEvent.selectedPrinter = getSelectedPrinterName();
-  document.dispatchEvent(customEvent);
-}
-
-/**
- * Gets the selected printer capabilities and updates the controls accordingly.
- */
-function updateControlsWithSelectedPrinterCapabilities() {
-  var printerList = $('printer-list');
-  var selectedIndex = printerList.selectedIndex;
-  if (selectedIndex < 0)
-    return;
-  if (cr.isMac)
-    $('open-pdf-in-preview-link').disabled = false;
-
-  var skip_refresh = false;
-  var selectedPrinterChanged = true;
-  var selectedValue = printerList.options[selectedIndex].value;
-  if (cloudprint.isCloudPrint(printerList.options[selectedIndex])) {
-    cloudprint.updatePrinterCaps(printerList.options[selectedIndex],
-                                 doUpdateCloudPrinterCapabilities);
-    skip_refresh = true;
-  } else if (selectedValue == SIGN_IN ||
-             selectedValue == MANAGE_CLOUD_PRINTERS ||
-             selectedValue == MANAGE_LOCAL_PRINTERS) {
-    printerList.selectedIndex = lastSelectedPrinterIndex;
-    chrome.send(selectedValue);
-    skip_refresh = true;
-    selectedPrinterChanged = false;
-  } else if (selectedValue == PRINT_TO_PDF ||
-             selectedValue == PRINT_WITH_CLOUD_PRINT) {
-    updateWithPrinterCapabilities({
-        'disableColorOption': true,
-        'setColorAsDefault': true,
-        'setDuplexAsDefault': false,
-        'printerColorModelForColor': print_preview.ColorSettings.COLOR,
-        'printerDefaultDuplexValue': copiesSettings.UNKNOWN_DUPLEX_MODE,
-        'disableCopiesOption': true});
-    if (cr.isChromeOS && selectedValue == PRINT_WITH_CLOUD_PRINT)
-      requestToPrintDocument();
-  } else {
-    // This message will call back to 'updateWithPrinterCapabilities'
-    // function.
-    chrome.send('getPrinterCapabilities', [selectedValue]);
-  }
-  if (selectedPrinterChanged)
-    dispatchPrinterSelectionChangedEvent();
-
-  if (!skip_refresh) {
-    lastSelectedPrinterIndex = selectedIndex;
-
-    // Regenerate the preview data based on selected printer settings.
-    // Do not reset the margins if no preview request has been made.
-    var resetMargins = lastPreviewRequestID != initialPreviewRequestID;
-    setDefaultValuesAndRegeneratePreview(resetMargins);
-  }
-}
-
-/**
- * Helper function to do the actual work of updating cloud printer
- * capabilities.
- * @param {Object} printer The printer object to set capabilities for.
- */
-function doUpdateCloudPrinterCapabilities(printer) {
-  var settings = {'disableColorOption': !cloudprint.supportsColor(printer),
-                  'setColorAsDefault': cloudprint.colorIsDefault(printer),
-                  'disableCopiesOption': true,
-                  'disableLandscapeOption': true};
-  updateWithPrinterCapabilities(settings);
-  var printerList = $('printer-list');
-  var selectedIndex = printerList.selectedIndex;
-  lastSelectedPrinterIndex = selectedIndex;
-
-  // Regenerate the preview data based on selected printer settings.
-  // Do not reset the margins if no preview request has been made.
-  var resetMargins = lastPreviewRequestID != initialPreviewRequestID;
-  setDefaultValuesAndRegeneratePreview(resetMargins);
-}
-
-/**
- * Notifies listeners of |customEvents.PRINTER_CAPABILITIES_UPDATED| about the
- * capabilities of the currently selected printer. It is called from C++ too.
- * @param {Object} settingInfo printer setting information.
- */
-function updateWithPrinterCapabilities(settingInfo) {
-  var customEvent = new cr.Event(customEvents.PRINTER_CAPABILITIES_UPDATED);
-  customEvent.printerCapabilities = settingInfo;
-  document.dispatchEvent(customEvent);
-}
-
-/**
- * Reloads the printer list.
- */
-function reloadPrintersList() {
-  $('printer-list').length = 0;
-  firstCloudPrintOptionPos = 0;
-  lastCloudPrintOptionPos = 0;
-  chrome.send('getPrinters');
-}
-
-/**
- * Turn on the integration of Cloud Print.
- * @param {string} cloudPrintURL The URL to use for cloud print servers.
- */
-function setUseCloudPrint(cloudPrintURL) {
-  useCloudPrint = true;
-  cloudprint.setBaseURL(cloudPrintURL);
-}
-
-/**
- * Take the PDF data handed to us and submit it to the cloud, closing the print
- * preview tab once the upload is successful.
- * @param {string} data Data to send as the print job.
- */
-function printToCloud(data) {
-  cloudprint.printToCloud(data, finishedCloudPrinting);
-}
-
-/**
- * Cloud print upload of the PDF file is finished, time to close the dialog.
- */
-function finishedCloudPrinting() {
-  closePrintPreviewTab();
-}
-
-/**
- * Updates the fit to page option state based on the print scaling option of
- * source pdf. PDF's have an option to enable/disable print scaling. When we
- * find out that the print scaling option is disabled for the source pdf, we
- * uncheck the fit to page checkbox. This function is called from C++ code.
- */
-function printScalingDisabledForSourcePDF() {
-  fitToPageSettings.onPrintScalingDisabled();
-}
-
-/**
- * Checks whether the specified settings are valid.
- *
- * @return {boolean} true if settings are valid, false if not.
- */
-function areSettingsValid() {
-  var selectedPrinter = getSelectedPrinterName();
-  return pageSettings.isPageSelectionValid() &&
-      marginSettings.areMarginSettingsValid() &&
-      (copiesSettings.isValid() || selectedPrinter == PRINT_TO_PDF ||
-       selectedPrinter == PRINT_WITH_CLOUD_PRINT);
-}
-
-/**
- * Creates an object based on the values in the printer settings.
- *
- * @return {Object} Object containing print job settings.
- */
-function getSettings() {
-  var deviceName = getSelectedPrinterName();
-  var printToPDF = deviceName == PRINT_TO_PDF;
-  var printWithCloudPrint = deviceName == PRINT_WITH_CLOUD_PRINT;
-
-  var settings =
-      {'deviceName': deviceName,
-       'pageRange': pageSettings.selectedPageRanges,
-       'duplex': copiesSettings.duplexMode,
-       'copies': copiesSettings.numberOfCopies,
-       'collate': copiesSettings.isCollated(),
-       'landscape': layoutSettings.isLandscape(),
-       'color': colorSettings.colorMode,
-       'printToPDF': printToPDF,
-       'printWithCloudPrint': printWithCloudPrint,
-       'isFirstRequest' : false,
-       'headerFooterEnabled': headerFooterSettings.hasHeaderFooter(),
-       'marginsType': marginSettings.selectedMarginsValue,
-       'requestID': -1,
-       'generateDraftData': generateDraftData,
-       'fitToPageEnabled': fitToPageSettings.hasFitToPage(),
-       'previewModifiable': previewModifiable};
-
-  if (marginSettings.isCustomMarginsSelected())
-    settings['marginsCustom'] = marginSettings.customMargins;
-
-  var printerList = $('printer-list');
-  var selectedPrinter = printerList.selectedIndex;
-  if (cloudprint.isCloudPrint(printerList.options[selectedPrinter])) {
-    settings['cloudPrintID'] =
-        printerList.options[selectedPrinter].value;
-  }
-  return settings;
-}
-
-/**
- * Creates an object based on the values in the printer settings.
- * Note: |lastPreviewRequestID| is being modified every time this function is
- * called. Only call this function when a preview request is actually sent,
- * otherwise (for example when debugging) call getSettings().
- *
- * @return {Object} Object containing print job settings.
- */
-function getSettingsWithRequestID() {
-  var settings = getSettings();
-  settings.requestID = generatePreviewRequestID();
-  settings.isFirstRequest = isFirstPreviewRequest();
-  return settings;
-}
-
-/**
- * @return {number} The next unused preview request id.
- */
-function generatePreviewRequestID() {
-  return ++lastPreviewRequestID;
-}
-
-/**
- * @return {boolean} True iff a preview has been requested.
- */
-function hasRequestedPreview() {
-  return lastPreviewRequestID != initialPreviewRequestID;
-}
-
-/**
- * @return {boolean} True if |lastPreviewRequestID| corresponds to the initial
- *     preview request.
- */
-function isFirstPreviewRequest() {
-  return lastPreviewRequestID == initialPreviewRequestID + 1;
-}
-
-/**
- * Checks if |previewResponseId| matches |lastPreviewRequestId|. Used to ignore
- * obsolete preview data responses.
- * @param {number} previewResponseId The id to check.
- * @return {boolean} True if previewResponseId reffers to the expected response.
- */
-function isExpectedPreviewResponse(previewResponseId) {
-  return lastPreviewRequestID == previewResponseId;
-}
-
-/**
- * Returns the name of the selected printer or the empty string if no
- * printer is selected.
- * @return {string} The name of the currently selected printer.
- */
-function getSelectedPrinterName() {
-  var printerList = $('printer-list');
-  var selectedPrinter = printerList.selectedIndex;
-  if (selectedPrinter < 0)
-    return '';
-  return printerList.options[selectedPrinter].value;
-}
-
-/**
- * Asks the browser to print the preview PDF based on current print
- * settings. If the preview is still loading, printPendingFile() will get
- * called once the preview loads.
- */
-function requestToPrintDocument() {
-  hasPendingPrintDocumentRequest = !isPrintReadyMetafileReady;
-  var selectedPrinterName = getSelectedPrinterName();
-  var printToPDF = selectedPrinterName == PRINT_TO_PDF;
-  var printWithCloudPrint = selectedPrinterName == PRINT_WITH_CLOUD_PRINT;
-  if (hasPendingPrintDocumentRequest) {
-    if (previewAppRequested) {
-      previewArea.showCustomMessage(
+<include src="component.js"/>
+
+cr.define('print_preview', function() {
+  'use strict';
+
+  /**
+   * Container class for Chromium's print preview.
+   * @constructor
+   * @extends {print_preview.Component}
+   */
+  function PrintPreview() {
+    print_preview.Component.call(this);
+
+    /**
+     * Used to communicate with Chromium's print system.
+     * @type {!print_preview.NativeLayer}
+     * @private
+     */
+    this.nativeLayer_ = new print_preview.NativeLayer();
+
+    /**
+     * Data store which holds print destinations.
+     * @type {!print_preview.DestinationStore}
+     * @private
+     */
+    this.destinationStore_ = new print_preview.DestinationStore();
+
+    /**
+     * Storage of the print ticket used to create the print job.
+     * @type {!print_preview.PrintTicketStore}
+     * @private
+     */
+    this.printTicketStore_ = new print_preview.PrintTicketStore(
+        this.destinationStore_);
+
+    /**
+     * Holds the print and cancel buttons and renders some document statistics.
+     * @type {!print_preview.PrintHeader}
+     * @private
+     */
+    this.printHeader_ = new print_preview.PrintHeader(
+        this.printTicketStore_, this.destinationStore_);
+    this.addChild(this.printHeader_);
+
+    /**
+     * Component that renders the print destination.
+     * @type {!print_preview.DestinationSettings}
+     * @private
+     */
+    this.destinationSettings_ = new print_preview.DestinationSettings(
+        this.destinationStore_);
+    this.addChild(this.destinationSettings_);
+
+    /**
+     * Component that renders UI for entering in page range.
+     * @type {!print_preview.PageSettings}
+     * @private
+     */
+    this.pageSettings_ = new print_preview.PageSettings(this.printTicketStore_);
+    this.addChild(this.pageSettings_);
+
+    /**
+     * Component that renders the copies settings.
+     * @type {!print_preview.CopiesSettings}
+     * @private
+     */
+    this.copiesSettings_ = new print_preview.CopiesSettings(
+        this.printTicketStore_);
+    this.addChild(this.copiesSettings_);
+
+    /**
+     * Component that renders the layout settings.
+     * @type {!print_preview.LayoutSettings}
+     * @private
+     */
+    this.layoutSettings_ = new print_preview.LayoutSettings(
+          this.printTicketStore_);
+    this.addChild(this.layoutSettings_);
+
+    /**
+     * Component that renders the color options.
+     * @type {!print_preview.ColorSettings}
+     * @private
+     */
+    this.colorSettings_ = new print_preview.ColorSettings(
+        this.printTicketStore_);
+    this.addChild(this.colorSettings_);
+
+    /**
+     * Component that renders a select box for choosing margin settings.
+     * @type {!print_preview.MarginSettings}
+     * @private
+     */
+    this.marginSettings_ = new print_preview.MarginSettings(
+        this.printTicketStore_);
+    this.addChild(this.marginSettings_);
+
+    /**
+     * Component that renders miscellaneous print options.
+     * @type {!print_preview.OtherOptionsSettings}
+     * @private
+     */
+    this.otherOptionsSettings_ = new print_preview.OtherOptionsSettings(
+        this.printTicketStore_);
+    this.addChild(this.otherOptionsSettings_);
+
+    /**
+     * Area of the UI that holds the print preview.
+     * @type {!print_preview.PreviewArea}
+     * @private
+     */
+    this.previewArea_ = new print_preview.PreviewArea(
+        this.destinationStore_, this.printTicketStore_, this.nativeLayer_);
+    this.addChild(this.previewArea_);
+
+    /**
+     * Interface to the Google Cloud Print API. Null if Google Cloud Print
+     * integration is disabled.
+     * @type {cloudprint.CloudPrintInterface}
+     * @private
+     */
+    this.cloudPrintInterface_ = null;
+
+    /**
+     * Whether in kiosk mode where print preview can print automatically without
+     * user intervention. See http://crbug.com/31395. Print will start when
+     * both the print ticket has been initialized, and an initial printer has
+     * been selected.
+     * @type {boolean}
+     * @private
+     */
+    this.isInKioskAutoPrintMode_ = false;
+
+    /**
+     * State of the print preview UI.
+     * @type {print_preview.PrintPreview.UiState_}
+     * @private
+     */
+    this.uiState_ = PrintPreview.UiState_.INITIALIZING;
+
+    /**
+     * Current state of fetching destinations.
+     * @type {print_preview.PrintPreview.FetchState_}
+     * @private
+     */
+    this.fetchState_ = PrintPreview.FetchState_.READY;
+
+    /**
+     * Whether document preview generation is in progress.
+     * @type {boolean}
+     * @private
+     */
+    this.isPreviewGenerationInProgress_ = true;
+
+    this.tracker.add(window, 'DOMContentLoaded', this.onWindowLoad_.bind(this));
+  };
+
+  /**
+   * States of the print preview.
+   * @enum {string}
+   * @private
+   */
+  PrintPreview.UiState_ = {
+    INITIALIZING: 'initializing',
+    READY: 'ready',
+    OPENING_PDF_PREVIEW: 'opening-pdf-preview',
+    OPENING_NATIVE_PRINT_DIALOG: 'opening-native-print-dialog',
+    PRINTING: 'printing',
+    FILE_SELECTION: 'file-selection',
+    CLOSING: 'closing',
+    ERROR: 'error'
+  };
+
+  /**
+   * Bitfield of the states of fetching destinations.
+   * @enum {number}
+   * @private
+   */
+  PrintPreview.FetchState_ = {
+    READY: 1,
+    LOCAL_DESTINATIONS: 2,
+    RECENT_CLOUD_DESTINATIONS: 4,
+    ALL_CLOUD_DESTINATIONS: 8
+  };
+
+  PrintPreview.prototype = {
+    __proto__: print_preview.Component.prototype,
+
+    /** @override */
+    decorateInternal: function() {
+      this.printHeader_.decorate($('print-header'));
+      this.destinationSettings_.decorate($('destination-settings'));
+      this.pageSettings_.decorate($('page-settings'));
+      this.copiesSettings_.decorate($('copies-settings'));
+      this.layoutSettings_.decorate($('layout-settings'));
+      this.colorSettings_.decorate($('color-settings'));
+      this.marginSettings_.decorate($('margin-settings'));
+      this.otherOptionsSettings_.decorate($('other-options-settings'));
+      this.previewArea_.decorate($('preview-area'));
+
+      setIsVisible($('cloud-print-dialog-link'), cr.isChromeOS);
+      setIsVisible($('system-dialog-link'), !cr.isChromeOS);
+      setIsVisible($('open-pdf-in-preview-link'), cr.isMac);
+    },
+
+    /** @override */
+    enterDocument: function() {
+      // Native layer events.
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET,
+          this.onInitialSettingsSet_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.CLOUD_PRINT_ENABLE,
+          this.onCloudPrintEnable_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET,
+          this.onLocalDestinationsSet_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.CAPABILITIES_SET,
+          this.onLocalDestinationCapabilitiesSet_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.DESTINATIONS_RELOAD,
+          this.onDestinationsReload_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.PRINT_TO_CLOUD,
+          this.onPrintToCloud_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.FILE_SELECTION_CANCEL,
+          this.onFileSelectionCancel_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.FILE_SELECTION_COMPLETE,
+          this.onFileSelectionComplete_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.SETTINGS_INVALID,
+          this.onSettingsInvalid_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.DISABLE_SCALING,
+          this.onDisableScaling_.bind(this));
+
+      this.tracker.add(
+          $('system-dialog-link'),
+          'click',
+          this.openSystemPrintDialog_.bind(this));
+      this.tracker.add(
+          $('cloud-print-dialog-link'),
+          'click',
+          this.openSystemPrintDialog_.bind(this));
+      this.tracker.add(
+          $('open-pdf-in-preview-link'),
+          'click',
+          this.onOpenPdfInPreviewLinkClick_.bind(this));
+
+      this.tracker.add(
+          this.previewArea_,
+          print_preview.PreviewArea.EventType.PREVIEW_GENERATION_IN_PROGRESS,
+          this.onPreviewGenerationInProgress_.bind(this));
+      this.tracker.add(
+          this.previewArea_,
+          print_preview.PreviewArea.EventType.PREVIEW_GENERATION_DONE,
+          this.onPreviewGenerationDone_.bind(this));
+      this.tracker.add(
+          this.previewArea_,
+          print_preview.PreviewArea.EventType.PREVIEW_GENERATION_FAIL,
+          this.onPreviewGenerationFail_.bind(this));
+      this.tracker.add(
+          this.previewArea_,
+          print_preview.PreviewArea.EventType.OPEN_SYSTEM_DIALOG_CLICK,
+          this.openSystemPrintDialog_.bind(this));
+
+      this.tracker.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+          this.onDestinationSelect_.bind(this));
+
+      this.tracker.add(
+          this.printHeader_,
+          print_preview.PrintHeader.EventType.PRINT_BUTTON_CLICK,
+          this.onPrintButtonClick_.bind(this));
+      this.tracker.add(
+          this.printHeader_,
+          print_preview.PrintHeader.EventType.CANCEL_BUTTON_CLICK,
+          this.onCancelButtonClick_.bind(this));
+
+      this.tracker.add(
+          this.destinationSettings_,
+          print_preview.DestinationSettings.EventType.MANAGE_PRINTERS_SELECT,
+          this.onManagePrinters_.bind(this));
+
+      this.tracker.add(window, 'keydown', this.onKeyDown_.bind(this));
+    },
+
+    /**
+     * Sets whether the controls in the print preview are enabled.
+     * @param {boolean} isEnabled Whether the controls in the print preview are
+     *     enabled.
+     * @private
+     */
+    setIsEnabled_: function(isEnabled) {
+      $('system-dialog-link').disabled = !isEnabled;
+      $('cloud-print-dialog-link').disabled = !isEnabled;
+      $('open-pdf-in-preview-link').disabled = !isEnabled;
+      this.printHeader_.isEnabled = isEnabled;
+      this.destinationSettings_.isEnabled = isEnabled;
+      this.pageSettings_.isEnabled = isEnabled;
+      this.copiesSettings_.isEnabled = isEnabled;
+      this.layoutSettings_.isEnabled = isEnabled;
+      this.colorSettings_.isEnabled = isEnabled;
+      this.marginSettings_.isEnabled = isEnabled;
+      this.otherOptionsSettings_.isEnabled = isEnabled;
+    },
+
+    /**
+     * Creates a local PDF print destination.
+     * @return {!print_preview.Destination} Created print destination.
+     * @private
+     */
+    createLocalPdfPrintDestination_: function() {
+      var dest = new print_preview.Destination(
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+          localStrings.getString('printToPDF'),
+          false /*isRecent*/,
+          true /*isLocal*/);
+      dest.capabilities = new print_preview.ChromiumCapabilities(
+          false /*hasCopiesCapability*/,
+          '1' /*defaultCopiesStr*/,
+          false /*hasCollateCapability*/,
+          false /*defaultIsCollateEnabled*/,
+          false /*hasDuplexCapability*/,
+          false /*defaultIsDuplexEnabled*/,
+          true /*hasOrientationCapability*/,
+          false /*defaultIsLandscapeEnabled*/,
+          true /*hasColorCapability*/,
+          true /*defaultIsColorEnabled*/);
+      return dest;
+    },
+
+    /**
+     * Creates a new "Print with Cloud Print" print destination. NOTE: this
+     * destination will appear as "Search for additional printers..." on
+     * Chrome OS.
+     * @return {!print_preview.Destination} Created print destination.
+     * @private
+     */
+    createPrintWithCloudPrintDestination_: function() {
+      var dest = new print_preview.Destination(
+          print_preview.Destination.GooglePromotedId.PRINT_WITH_CLOUD_PRINT,
+          localStrings.getString('printWithCloudPrint'),
+          false /*isRecent*/,
+          false /*isLocal*/);
+      dest.capabilities = new print_preview.ChromiumCapabilities(
+          false /*hasCopiesCapability*/,
+          '1' /*defaultCopiesStr*/,
+          false /*hasCollateCapability*/,
+          false /*defaultIsCollateEnabled*/,
+          false /*hasDuplexCapability*/,
+          false /*defaultIsDuplexEnabled*/,
+          true /*hasOrientationCapability*/,
+          false /*defaultIsLandscapeEnabled*/,
+          true /*hasColorCapability*/,
+          true /*defaultIsColorEnabled*/);
+      return dest;
+    },
+
+    /**
+     * Prints the document or launches a pdf preview on the local system.
+     * @param {boolean} isPdfPreview Whether to launch the pdf preview.
+     * @private
+     */
+    printDocumentOrOpenPdfPreview_: function(isPdfPreview) {
+      assert(this.uiState_ == PrintPreview.UiState_.READY,
+             'Print document request received when not in ready state: ' +
+                 this.uiState_);
+      if (isPdfPreview) {
+        this.uiState_ = PrintPreview.UiState_.OPENING_PDF_PREVIEW;
+      } else if (this.destinationStore_.selectedDestination.id ==
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+        this.uiState_ = PrintPreview.UiState_.FILE_SELECTION;
+      } else {
+        this.uiState_ = PrintPreview.UiState_.PRINTING;
+      }
+      this.setIsEnabled_(false);
+      if (this.printIfReady_() &&
+          ((this.destinationStore_.selectedDestination.isLocal &&
+            this.destinationStore_.selectedDestination.id !=
+                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) ||
+           this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW)) {
+        // Hide the dialog for now. The actual print command will be issued when
+        // the preview generation is done.
+        this.nativeLayer_.startHideDialog();
+      }
+    },
+
+    /**
+     * Attempts to print if needed and if ready.
+     * @return {boolean} Whether a print request was issued.
+     * @private
+     */
+    printIfReady_: function() {
+      if ((this.uiState_ == PrintPreview.UiState_.PRINTING ||
+              this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW ||
+              this.uiState_ == PrintPreview.UiState_.FILE_SELECTION ||
+              this.isInKioskAutoPrintMode_) &&
+          !this.isPreviewGenerationInProgress_ &&
+          this.destinationStore_.selectedDestination &&
+          this.destinationStore_.selectedDestination.capabilities) {
+        assert(this.printTicketStore_.isTicketValid(),
+               'Trying to print with invalid ticket');
+        this.nativeLayer_.startSaveDestinationAndTicket(
+            this.destinationStore_.selectedDestination,
+            this.printTicketStore_);
+        this.nativeLayer_.startPrint(
+            this.destinationStore_.selectedDestination,
+            this.printTicketStore_,
+            this.cloudPrintInterface_,
+            this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW);
+        return true;
+      } else {
+        return false;
+      }
+    },
+
+    /**
+     * Closes the print preview.
+     * @private
+     */
+    close_: function() {
+      this.exitDocument();
+      this.uiState_ = PrintPreview.UiState_.CLOSING;
+      this.nativeLayer_.startCloseDialog();
+    },
+
+    /**
+     * Opens the native system print dialog after disabling all controls.
+     * @private
+     */
+    openSystemPrintDialog_: function() {
+      assert(this.uiState_ == PrintPreview.UiState_.READY,
+             'Opening system dialog when not in ready state: ' + this.uiState_);
+      setIsVisible($('dialog-throbber'), true);
+      this.setIsEnabled_(false);
+      this.uiState_ = PrintPreview.UiState_.OPENING_NATIVE_PRINT_DIALOG;
+      this.nativeLayer_.startShowSystemDialog();
+    },
+
+    /**
+     * Window onload handler, sets up the page and starts print preview by
+     * getting the printer list.
+     * @private
+     */
+    onWindowLoad_: function() {
+      this.decorate($('print-preview'));
+      i18nTemplate.process(document, templateData);
+      if (!this.previewArea_.hasCompatiblePlugin) {
+        this.setIsEnabled_(false);
+      }
+      this.nativeLayer_.startGetInitialSettings();
+      this.nativeLayer_.startGetLocalDestinations();
+    },
+
+    /**
+     * Called when the native layer has initial settings to set. Sets the
+     * initial settings of the print preview and begins fetching print
+     * destinations.
+     * @param {cr.Event} event Contains the initial print preview settings
+     *     persisted through the session.
+     * @private
+     */
+    onInitialSettingsSet_: function(event) {
+      assert(this.uiState_ == PrintPreview.UiState_.INITIALIZING,
+             'Updating initial settings when not in initializing state: ' +
+                 this.uiState_);
+      this.uiState_ = PrintPreview.UiState_.READY;
+
+      this.isInKioskAutoPrintMode_ =
+          event.initialSettings.isInKioskAutoPrintMode;
+      this.destinationStore_.setInitialDestinationId(
+          event.initialSettings.initialDestinationId);
+      this.printTicketStore_.initialize(
+          event.initialSettings.isDocumentModifiable,
+          event.initialSettings.isDuplexEnabled,
+          event.initialSettings.isHeaderFooterEnabled,
+          event.initialSettings.marginsType,
+          event.initialSettings.customMargins,
+          event.initialSettings.thousandsDelimeter,
+          event.initialSettings.decimalDelimeter,
+          event.initialSettings.unitType);
+    },
+
+    /**
+     * Calls when the native layer enables Google Cloud Print integration.
+     * Fetches the user's cloud printers.
+     * @param {cr.Event} event Contains the base URL of the Google Cloud Print
+     *     service.
+     * @private
+     */
+    onCloudPrintEnable_: function(event) {
+      this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
+          event.baseCloudPrintUrl);
+      this.tracker.add(
+          this.cloudPrintInterface_,
+          cloudprint.CloudPrintInterface.EventType.SEARCH_DONE,
+          this.onCloudPrintSearchDone_.bind(this));
+      this.tracker.add(
+          this.cloudPrintInterface_,
+          cloudprint.CloudPrintInterface.EventType.PRINTER_DONE,
+          this.onCloudPrintPrinterDone_.bind(this));
+      this.tracker.add(
+          this.cloudPrintInterface_,
+          cloudprint.CloudPrintInterface.EventType.SUBMIT_DONE,
+          this.onCloudPrintSubmitDone_.bind(this));
+      this.tracker.add(
+          this.cloudPrintInterface_,
+          cloudprint.CloudPrintInterface.EventType.ERROR,
+          this.onCloudPrintError_.bind(this));
+
+      var printWithCloudPrintDest =
+          this.createPrintWithCloudPrintDestination_();
+      this.destinationStore_.insertDestination(printWithCloudPrintDest);
+
+      if (cr.isChromeOS) {
+        this.cloudPrintInterface_.search(true /*isRecent*/);
+        this.fetchState_ |= PrintPreview.FetchState_.RECENT_CLOUD_DESTINATIONS;
+      }
+    },
+
+    /**
+     * Called when the native layer gets local destinations. Adds local
+     * destination objects received from the operating system to the destination
+     * store. Also adds a save-as-pdf printer.
+     * @param {cr.Event} Contains the local destinations to set.
+     * @private
+     */
+    onLocalDestinationsSet_: function(event) {
+      var localDestinations = [];
+      for (var destInfo, i = 0; destInfo = event.destinationInfos[i]; i++) {
+        localDestinations.push(
+            print_preview.LocalDestinationParser.parse(destInfo));
+      }
+      localDestinations.push(this.createLocalPdfPrintDestination_());
+      this.destinationStore_.insertDestinations(localDestinations);
+      this.fetchState_ &= ~PrintPreview.FetchState_.LOCAL_DESTINATIONS;
+    },
+
+    /**
+     * Called when the native layer retrieves the capabilities for the selected
+     * local destination.
+     * @param {cr.Event} event Contains the capabilities of the local print
+     *     destination.
+     * @private
+     */
+    onLocalDestinationCapabilitiesSet_: function(event) {
+      // TODO(rltoscano): There may be a race condition here. This method is
+      // assumed to return capabilities for the currently selected printer. But
+      // between the time the local printer was selected and the capabilities
+      // were retrieved, the selected printer can change. One way to address
+      // this is to include the destination ID in the settingsInfo parameter.
+      var selectedDestination = this.destinationStore_.selectedDestination;
+      if (selectedDestination.isLocal) {
+        var capabilities = print_preview.LocalCapabilitiesParser.parse(
+            event.settingsInfo);
+        selectedDestination.capabilities = capabilities;
+        this.printTicketStore_.updateDestinationCapabilities(capabilities);
+        this.printIfReady_();
+      }
+    },
+
+    /**
+     * Called from native layer after the user was requested to sign in, and did
+     * so successfully.
+     * @private
+     */
+    onDestinationsReload_: function() {
+      this.destinationStore_.clear();
+      this.nativeLayer_.startGetLocalDestinations();
+      if (this.cloudPrintInterface_) {
+        // Fetch recent printers.
+        this.cloudPrintInterface_.search(true /*isRecent*/);
+        // Fetch the full printer list.
+        this.cloudPrintInterface_.search(false /*isRecent*/);
+      }
+      this.fetchState_ =
+          PrintPreview.FetchState_.LOCAL_DESTINATIONS |
+          PrintPreview.FetchState_.ALL_CLOUD_DESTINATIONS |
+          PrintPreview.FetchState_.RECENT_CLOUD_DESTINATIONS;
+    },
+
+    /**
+     * Called from the native layer when ready to print to Google Cloud Print.
+     * @param {cr.Event} event Contains the body to send in the HTTP request.
+     * @private
+     */
+    onPrintToCloud_: function(event) {
+      assert(this.uiState_ == PrintPreview.UiState_.PRINTING,
+             'Document ready to be sent to the cloud when not in printing ' +
+                 'state: ' + this.uiState_);
+      assert(this.cloudPrintInterface_ != null,
+             'Google Cloud Print is not enabled');
+      this.cloudPrintInterface_.submit(event.data);
+    },
+
+    /**
+     * Called from the native layer when the user cancels the save-to-pdf file
+     * selection dialog.
+     * @private
+     */
+    onFileSelectionCancel_: function() {
+      assert(this.uiState_ == PrintPreview.UiState_.FILE_SELECTION,
+             'File selection cancelled when not in file-selection state: ' +
+                 this.uiState_);
+      this.setIsEnabled_(true);
+      this.uiState_ = PrintPreview.UiState_.READY;
+    },
+
+    /**
+     * Called from the native layer when save-to-pdf file selection is complete.
+     * @private
+     */
+    onFileSelectionComplete_: function() {
+      assert(this.uiState_ == PrintPreview.UiState_.FILE_SELECTION,
+             'File selection completed when not in file-selection state: ' +
+                 this.uiState_);
+      this.previewArea_.showCustomMessage(
+          localStrings.getString('printingToPDFInProgress'));
+      this.uiState_ = PrintPreview.UiState_.PRINTING;
+    },
+
+    /**
+     * Called when the Google Cloud Print search API call completes. Adds
+     * destinations to the printer store and selects one if it matches the
+     * initial destination.
+     * @param {cr.Event} event Contains the new cloud destinations.
+     * @private
+     */
+    onCloudPrintSearchDone_: function(event) {
+      this.destinationStore_.insertDestinations(event.printers);
+      if (event.isRecent) {
+        this.fetchState_ &= ~PrintPreview.FetchState_.RECENT_CLOUD_DESTINATIONS;
+      } else {
+        this.fetchState_ &= ~PrintPreview.FetchState_.ALL_CLOUD_DESTINATIONS;
+      }
+    },
+
+    /**
+     * Called when the Google Cloud Print printer API call completes. Updates
+     * the UI with the newly received capabilities.
+     * @param {cr.Event} event Contains the destination returned in the printer
+     *     API call.
+     */
+    onCloudPrintPrinterDone_: function(event) {
+      var dest = this.destinationStore_.updateDestination(event.printer);
+      if (this.destinationStore_.selectedDestination == dest) {
+        this.printTicketStore_.updateDestinationCapabilities(dest.capabilities);
+        this.printIfReady_();
+      }
+    },
+
+    /**
+     * Called after successfully submitting a job to Google Cloud Print.
+     * @private
+     */
+    onCloudPrintSubmitDone_: function() {
+      assert(this.uiState_ == PrintPreview.UiState_.PRINTING,
+             'Submited job to Google Cloud Print but not in printing state ' +
+                 this.uiState_);
+      this.close_();
+    },
+
+    /**
+     * Called when there was an error communicating with Google Cloud print.
+     * Displays an error message in the print header.
+     * @param {cr.Event} event Contains the error message.
+     * @private
+     */
+    onCloudPrintError_: function(event) {
+      if (cr.isChromeOS && event.message == '403') {
+        this.nativeLayer_.startCloudPrintSignIn();
+      } else {
+        this.printHeader_.setErrorMessage(event.message);
+      }
+      this.fetchState_ &=
+            ~PrintPreview.FetchState_.RECENT_CLOUD_DESTINATIONS &
+            ~PrintPreview.FetchState_.ALL_CLOUD_DESTINATIONS;
+    },
+
+    /**
+     * Called when a new destination has been selected. Fetches the
+     * destination's capability list.
+     * @private
+     */
+    onDestinationSelect_: function() {
+      var destination = this.destinationStore_.selectedDestination;
+
+      // Fetch destination capabilities if necessary.
+      if (!destination.capabilities) {
+        if (destination.isLocal) {
+          this.nativeLayer_.startGetLocalDestinationCapabilities(
+              destination.id);
+        } else {
+          assert(this.cloudPrintInterface_ != null,
+                 'Selected destination is a cloud destination, but Google ' +
+                     'Cloud Print is not enabled');
+          this.cloudPrintInterface_.printer(destination.id);
+        }
+      } else {
+        this.printTicketStore_.updateDestinationCapabilities(
+            destination.capabilities);
+      }
+
+      this.printIfReady_();
+    },
+
+    /**
+     * Called when the preview area's preview generation is in progress.
+     * @private
+     */
+    onPreviewGenerationInProgress_: function() {
+      this.isPreviewGenerationInProgress_ = true;
+    },
+
+    /**
+     * Called when the preview area's preview generation is complete.
+     * @private
+     */
+    onPreviewGenerationDone_: function() {
+      this.isPreviewGenerationInProgress_ = false;
+      this.printIfReady_();
+    },
+
+    /**
+     * Called when the preview area's preview failed to load.
+     * @private
+     */
+    onPreviewGenerationFail_: function() {
+      this.isPreviewGenerationInProgress_ = false;
+      if (this.uiState_ == PrintPreview.UiState_.PRINTING) {
+        this.nativeLayer_.startCancelPendingPrint();
+      }
+    },
+
+    /**
+     * Called when the 'Open pdf in preview' link is clicked. Launches the pdf
+     * preview app.
+     * @private
+     */
+    onOpenPdfInPreviewLinkClick_: function() {
+      assert(this.uiState_ == PrintPreview.UiState_.READY,
+             'Trying to open pdf in preview when not in ready state: ' +
+                 this.uiState_);
+      setIsVisible($('open-preview-app-throbber'), true);
+      this.previewArea_.showCustomMessage(
           localStrings.getString('openingPDFInPreview'));
-    } else if (printToPDF) {
-      sendPrintDocumentRequest();
-    } else if (printWithCloudPrint) {
-      previewArea.showCustomMessage(
-          localStrings.getString('printWithCloudPrintWait'));
-      disableInputElementsInSidebar();
-    } else {
-      isTabHidden = true;
-      chrome.send('hidePreview');
-    }
-    return;
-  }
-
-  if (printToPDF || previewAppRequested) {
-    sendPrintDocumentRequest();
-  } else {
-    window.setTimeout(function() { sendPrintDocumentRequest(); }, 1000);
-  }
-}
-
-/**
- * Sends a message to cancel the pending print request.
- */
-function cancelPendingPrintRequest() {
-  if (isTabHidden)
-    chrome.send('cancelPendingPrintRequest');
-}
-
-/**
- * Sends a message to initiate print workflow.
- */
-function sendPrintDocumentRequest() {
-  var printerList = $('printer-list');
-  var printer = printerList[printerList.selectedIndex];
-  chrome.send('saveLastPrinter', [printer.value, cloudprint.getData(printer)]);
-
-  var settings = getSettings();
-  if (cr.isMac && previewAppRequested)
-    settings.OpenPDFInPreview = true;
-
-  chrome.send('print', [JSON.stringify(settings),
-                        cloudprint.getPrintTicketJSON(printer)]);
-}
-
-/**
- * Loads the selected preview pages.
- */
-function loadSelectedPages() {
-  pageSettings.updatePageSelection();
-  var pageSet = pageSettings.previouslySelectedPages;
-  var pageCount = pageSet.length;
-  if (pageCount == 0 || currentPreviewUid == '')
-    return;
-
-  cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
-  for (var i = 0; i < pageCount; i++)
-    onDidPreviewPage(pageSet[i] - 1, currentPreviewUid, lastPreviewRequestID);
-}
-
-/**
- * Updates the variables states for preview.
- */
-function updateStateForPreview() {
-  if (!isTabHidden)
-    previewArea.showLoadingAnimation();
-
-  if (!hasPendingPreviewRequest && previewModifiable &&
-      hasOnlyPageSettingsChanged()) {
-    loadSelectedPages();
-    generateDraftData = false;
-  } else {
-    hasPendingPreviewRequest = true;
-    generateDraftData = true;
-    pageSettings.updatePageSelection();
-  }
-
-  printSettings.save();
-  layoutSettings.updateState();
-  previewArea.resetState();
-  isPrintReadyMetafileReady = false;
-  isFirstPageLoaded = false;
-
-  var totalPageCount = pageSettings.totalPageCount;
-  if (!previewModifiable && totalPageCount > 0)
-    generateDraftData = false;
-}
-
-/**
- * Asks the browser to generate a preview PDF based on current print settings.
- */
-function requestPrintPreview() {
-  updateStateForPreview();
-  var totalPageCount = pageSettings.totalPageCount;
-  var pageCount = totalPageCount || -1;
-  chrome.send('getPreview', [JSON.stringify(getSettingsWithRequestID()),
-                             pageCount,
-                             previewModifiable]);
-}
-
-/**
- * Called from PrintPreviewUI::OnFileSelectionCancelled to notify the print
- * preview tab regarding the file selection cancel event.
- */
-function fileSelectionCancelled() {
-  printHeader.enableCancelButton();
-}
-
-/**
- * Called from PrintPreviewUI::OnFileSelectionCompleted to notify the print
- * preview tab regarding the file selection completed event.
- */
-function fileSelectionCompleted() {
-  // If the file selection is completed and the tab is not already closed it
-  // means that a pending print to pdf request exists.
-  disableInputElementsInSidebar();
-  previewArea.showCustomMessage(
-      localStrings.getString('printingToPDFInProgress'));
-}
-
-/**
- * Set the default printer. If there is one, generate a print preview.
- * @param {string} printerName Name of the default printer. Empty if none.
- * @param {string} cloudPrintData Cloud print related data to restore if
- *     the default printer is a cloud printer.
- */
-function setDefaultPrinter(printerName, cloudPrintData) {
-  // Add a placeholder value so the printer list looks valid.
-  addDestinationListOption('', '', true, true, true);
-  if (printerName) {
-    defaultOrLastUsedPrinterName = printerName;
-    if (cloudPrintData) {
-      cloudprint.setDefaultPrinter(printerName,
-                                   cloudPrintData,
-                                   addDestinationListOptionAtPosition,
-                                   doUpdateCloudPrinterCapabilities);
-    } else {
-      $('printer-list')[0].value = defaultOrLastUsedPrinterName;
-      updateControlsWithSelectedPrinterCapabilities();
-    }
-  }
-  chrome.send('getPrinters');
-}
-
-/**
- * Fill the printer list drop down.
- * Called from PrintPreviewHandler::SetupPrinterList().
- * @param {Array} printers Array of printer info objects.
- */
-function setPrinters(printers) {
-  var printerList = $('printer-list');
-  // Remove empty entry added by setDefaultPrinter.
-  if (printerList[0] && printerList[0].textContent == '')
-    printerList.remove(0);
-  for (var i = 0; i < printers.length; ++i) {
-    var isDefault = (printers[i].deviceName == defaultOrLastUsedPrinterName);
-    addDestinationListOption(printers[i].printerName, printers[i].deviceName,
-                             isDefault, false, false);
-  }
-
-  if (printers.length != 0)
-    addDestinationListOption('', '', false, true, true);
-
-  // Adding option for saving PDF to disk.
-  addDestinationListOption(localStrings.getString('printToPDF'),
-                           PRINT_TO_PDF,
-                           defaultOrLastUsedPrinterName == PRINT_TO_PDF,
-                           false,
-                           false);
-  addDestinationListOption('', '', false, true, true);
-  if (useCloudPrint) {
-    addDestinationListOption(localStrings.getString('printWithCloudPrint'),
-                             PRINT_WITH_CLOUD_PRINT,
-                             false,
-                             false,
-                             false);
-    addDestinationListOption('', '', false, true, true);
-  }
-  // Add options to manage printers.
-  if (!cr.isChromeOS) {
-    addDestinationListOption(localStrings.getString('managePrinters'),
-        MANAGE_LOCAL_PRINTERS, false, false, false);
-  } else if (useCloudPrint) {
-    // Fetch recent printers.
-    cloudprint.fetchPrinters(addDestinationListOptionAtPosition, false);
-    // Fetch the full printer list.
-    cloudprint.fetchPrinters(addDestinationListOptionAtPosition, true);
-    addDestinationListOption(localStrings.getString('managePrinters'),
-        MANAGE_CLOUD_PRINTERS, false, false, false);
-  }
-
-  printerList.disabled = false;
-
-  if (!hasRequestedPreview())
-    updateControlsWithSelectedPrinterCapabilities();
-}
-
-/**
- * Creates an option that can be added to the printer destination list.
- * @param {string} optionText specifies the option text content.
- * @param {string} optionValue specifies the option value.
- * @param {boolean} isDefault is true if the option needs to be selected.
- * @param {boolean} isDisabled is true if the option needs to be disabled.
- * @param {boolean} isSeparator is true if the option is a visual separator and
- *     needs to be disabled.
- * @return {Object} The created option.
- */
-function createDestinationListOption(optionText, optionValue, isDefault,
-    isDisabled, isSeparator) {
-  var option = document.createElement('option');
-  option.textContent = optionText;
-  option.value = optionValue;
-  option.selected = isDefault;
-  option.disabled = isSeparator || isDisabled;
-  // Adding attribute for improved accessibility.
-  if (isSeparator)
-    option.setAttribute('role', 'separator');
-  return option;
-}
-
-/**
- * Adds an option to the printer destination list.
- * @param {string} optionText specifies the option text content.
- * @param {string} optionValue specifies the option value.
- * @param {boolean} isDefault is true if the option needs to be selected.
- * @param {boolean} isDisabled is true if the option needs to be disabled.
- * @param {boolean} isSeparator is true if the option serves just as a
- *     separator.
- * @return {Object} The created option.
- */
-function addDestinationListOption(optionText, optionValue, isDefault,
-    isDisabled, isSeparator) {
-  var option = createDestinationListOption(optionText,
-                                           optionValue,
-                                           isDefault,
-                                           isDisabled,
-                                           isSeparator);
-  $('printer-list').add(option);
-  return option;
-}
-
-/**
- * Adds an option to the printer destination list at a specified position.
- * @param {number} position The index in the printer-list wher the option
-       should be created.
- * @param {string} optionText specifies the option text content.
- * @param {string} optionValue specifies the option value.
- * @param {boolean} isDefault is true if the option needs to be selected.
- * @param {boolean} isDisabled is true if the option needs to be disabled.
- * @param {boolean} isSeparator is true if the option is a visual separator and
- *     needs to be disabled.
- * @return {Object} The created option.
- */
-function addDestinationListOptionAtPosition(position,
-                                            optionText,
-                                            optionValue,
-                                            isDefault,
-                                            isDisabled,
-                                            isSeparator) {
-  var option = createDestinationListOption(optionText,
-                                           optionValue,
-                                           isDefault,
-                                           isDisabled,
-                                           isSeparator);
-  var printerList = $('printer-list');
-  var before = printerList[position];
-  printerList.add(option, before);
-  return option;
-}
-/**
- * Sets the color mode for the PDF plugin.
- * Called from PrintPreviewHandler::ProcessColorSetting().
- * @param {boolean} color is true if the PDF plugin should display in color.
- */
-function setColor(color) {
-  if (!previewArea.pdfPlugin)
-    return;
-
-  previewArea.pdfPlugin.grayscale(!color);
-  var printerList = $('printer-list');
-  cloudprint.setColor(printerList[printerList.selectedIndex], color);
-}
-
-/**
- * Display an error message when print preview fails.
- * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
- */
-function printPreviewFailed() {
-  previewArea.displayErrorMessageAndNotify(
-      localStrings.getString('previewFailed'));
-}
-
-/**
- * Display an error message when encountered invalid printer settings.
- * Called from PrintPreviewMessageHandler::OnInvalidPrinterSettings().
- */
-function invalidPrinterSettings() {
-  if (cr.isMac) {
-    if (previewAppRequested) {
-      $('open-preview-app-throbber').hidden = true;
-      previewArea.clearCustomMessageWithDots();
-      previewAppRequested = false;
-      hasPendingPrintDocumentRequest = false;
-      enableInputElementsInSidebar();
-    }
-    $('open-pdf-in-preview-link').disabled = true;
-  }
-  previewArea.displayErrorMessageAndNotify(
-      localStrings.getString('invalidPrinterSettings'));
-}
-
-/**
- * Called when the PDF plugin loads its document.
- */
-function onPDFLoad() {
-  if (previewModifiable) {
-    setPluginPreviewPageCount();
-  } else {
-    // If the source is pdf, print ready metafile is available only after
-    // loading the pdf in the plugin.
-    isPrintReadyMetafileReady = true;
-  }
-  // Instruct the plugin which page numbers to display in the page number
-  // indicator.
-  previewArea.pdfPlugin.setPageNumbers(
-      JSON.stringify(pageSettings.selectedPagesSet));
-  cr.dispatchSimpleEvent(document, customEvents.PDF_LOADED);
-  isFirstPageLoaded = true;
-  checkAndHideOverlayLayerIfValid();
-  sendPrintDocumentRequestIfNeeded();
-  if (printAutomaticallyInKioskMode)
-    printHeader.printButton.click();
-}
-
-function setPluginPreviewPageCount() {
-  previewArea.pdfPlugin.printPreviewPageCount(
-      pageSettings.previouslySelectedPages.length);
-}
-
-/**
- * Update the page count and check the page range.
- * Called from PrintPreviewUI::OnDidGetPreviewPageCount().
- * @param {number} pageCount The number of pages.
- * @param {number} previewResponseId The preview request id that resulted in
- *      this response.
- */
-function onDidGetPreviewPageCount(pageCount, previewResponseId) {
-  if (!isExpectedPreviewResponse(previewResponseId))
-    return;
-  pageSettings.updateState(pageCount);
-  if (!previewModifiable && pageSettings.requestPrintPreviewIfNeeded())
-    return;
-
-  cr.dispatchSimpleEvent(document, customEvents.UPDATE_SUMMARY);
-}
-
-/**
- * @param {{contentWidth: number, contentHeight: number, marginLeft: number,
- *          marginRight: number, marginTop: number, marginBottom: number,
- *          printableAreaX: number, printableAreaY: number,
- *          printableAreaWidth: number, printableAreaHeight: number}} pageLayout
- *          Specifies default page layout details in points.
- * @param {boolean} hasCustomPageSizeStyle Indicates whether the previewed
- *     document has a custom page size style.
- */
-function onDidGetDefaultPageLayout(pageLayout, hasCustomPageSizeStyle) {
-  hasPageSizeStyle = hasCustomPageSizeStyle;
-  marginSettings.currentDefaultPageLayout = new print_preview.PageLayout(
-      pageLayout.contentWidth,
-      pageLayout.contentHeight,
-      pageLayout.marginLeft,
-      pageLayout.marginTop,
-      pageLayout.marginRight,
-      pageLayout.marginBottom);
-  headerFooterSettings.checkAndHideHeaderFooterOption(
-      pageLayout, marginSettings.selectedMarginsValue);
-}
-
-/**
- * This function sends a request to hide the overlay layer only if there is no
- * pending print document request and we are not waiting for the print ready
- * metafile.
- */
-function checkAndHideOverlayLayerIfValid() {
-  var selectedPrinter = getSelectedPrinterName();
-  var printToDialog = selectedPrinter == PRINT_TO_PDF ||
-      selectedPrinter == PRINT_WITH_CLOUD_PRINT;
-  if ((printToDialog || !previewModifiable) &&
-      !isPrintReadyMetafileReady && hasPendingPrintDocumentRequest) {
-    return;
-  }
-  previewArea.hideOverlayLayer();
-}
-
-/**
- * Called when no pipelining previewed pages.
- * @param {string} previewUid Preview unique identifier.
- * @param {number} previewResponseId The preview request id that resulted in
- *     this response.
- */
-function reloadPreviewPages(previewUid, previewResponseId) {
-  if (!isExpectedPreviewResponse(previewResponseId))
-    return;
-
-  if (!previewModifiable)
-    previewArea.createOrReloadPDFPlugin(PRINT_READY_DATA_INDEX);
-  cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
-  checkAndHideOverlayLayerIfValid();
-  var pageSet = pageSettings.previouslySelectedPages;
-  for (var i = 0; i < pageSet.length; i++) {
-    previewArea.pdfPlugin.loadPreviewPage(
-        getPageSrcURL(previewUid, pageSet[i] - 1), i);
-  }
-
-  hasPendingPreviewRequest = false;
-  isPrintReadyMetafileReady = true;
-  previewArea.pdfLoaded = true;
-  sendPrintDocumentRequestIfNeeded();
-}
-
-/**
- * Notification that a print preview page has been rendered.
- * Check if the settings have changed and request a regeneration if needed.
- * Called from PrintPreviewUI::OnDidPreviewPage().
- * @param {number} pageNumber The page number, 0-based.
- * @param {string} previewUid Preview unique identifier.
- * @param {number} previewResponseId The preview request id that resulted in
- *     this response.
- */
-function onDidPreviewPage(pageNumber, previewUid, previewResponseId) {
-  if (!isExpectedPreviewResponse(previewResponseId))
-    return;
-
-  // Refactor
-  if (!previewModifiable)
-    return;
-
-  if (pageSettings.requestPrintPreviewIfNeeded())
-    return;
-
-  var pageIndex = pageSettings.previouslySelectedPages.indexOf(pageNumber + 1);
-  if (pageIndex == -1)
-    return;
-
-  currentPreviewUid = previewUid;
-  if (pageIndex == 0)
-    previewArea.createOrReloadPDFPlugin(pageNumber);
-
-  previewArea.pdfPlugin.loadPreviewPage(
-      getPageSrcURL(previewUid, pageNumber), pageIndex);
-
-  if (pageIndex + 1 == pageSettings.previouslySelectedPages.length) {
-    hasPendingPreviewRequest = false;
-    if (pageIndex != 0)
-      sendPrintDocumentRequestIfNeeded();
-  }
-}
-
-/**
- * Update the print preview when new preview data is available.
- * Create the PDF plugin as needed.
- * Called from PrintPreviewUI::PreviewDataIsAvailable().
- * @param {string} previewUid Preview unique identifier.
- * @param {number} previewResponseId The preview request id that resulted in
- *     this response.
- */
-function updatePrintPreview(previewUid, previewResponseId) {
-  if (!isExpectedPreviewResponse(previewResponseId))
-    return;
-
-  if (!previewModifiable) {
-    // If the preview is not modifiable the plugin has not been created yet.
-    currentPreviewUid = previewUid;
-    hasPendingPreviewRequest = false;
-    previewArea.createOrReloadPDFPlugin(PRINT_READY_DATA_INDEX);
-  } else {
-    isPrintReadyMetafileReady = true;
-  }
-
-  cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
-  if (previewModifiable)
-    sendPrintDocumentRequestIfNeeded();
-}
-
-/**
- * Checks to see if the requested print data is available for printing and
- * sends a print document request if needed.
- */
-function sendPrintDocumentRequestIfNeeded() {
-  if (!hasPendingPrintDocumentRequest || !isFirstPageLoaded)
-    return;
-
-  // If the selected printer is PRINT_TO_PDF or PRINT_WITH_CLOUD_PRINT or
-  // the preview source is not modifiable, we need the print ready data for
-  // printing. If the preview source is modifiable, we need to wait till all
-  // the requested pages are loaded in the plugin for printing.
-  var selectedPrinter = getSelectedPrinterName();
-  var printToDialog = selectedPrinter == PRINT_TO_PDF ||
-      selectedPrinter == PRINT_WITH_CLOUD_PRINT;
-  if (((printToDialog || !previewModifiable) && !isPrintReadyMetafileReady) ||
-      (previewModifiable && hasPendingPreviewRequest)) {
-    return;
-  }
-
-  hasPendingPrintDocumentRequest = false;
-
-  if (!areSettingsValid()) {
-    cancelPendingPrintRequest();
-    return;
-  }
-  sendPrintDocumentRequest();
-}
-
-/**
- * Check if only page selection has been changed since the last preview request
- * and is valid.
- * @return {boolean} true if the new page selection is valid.
- */
-function hasOnlyPageSettingsChanged() {
-  var tempPrintSettings = new PrintSettings();
-  tempPrintSettings.save();
-
-  return !!(printSettings.deviceName == tempPrintSettings.deviceName &&
-            printSettings.isLandscape == tempPrintSettings.isLandscape &&
-            printSettings.hasHeaderFooter ==
-                tempPrintSettings.hasHeaderFooter &&
-            pageSettings.hasPageSelectionChangedAndIsValid());
-}
-
-/**
- * Called either when there is a scroll event or when the plugin size changes.
- */
-function onPreviewPositionChanged() {
-  marginSettings.onPreviewPositionChanged();
-}
-
-/**
- * @return {boolean} true if a compatible pdf plugin exists.
- */
-function checkCompatiblePluginExists() {
-  var dummyPlugin = $('dummy-viewer');
-  var pluginInterface = [dummyPlugin.onload,
-                         dummyPlugin.goToPage,
-                         dummyPlugin.removePrintButton,
-                         dummyPlugin.loadPreviewPage,
-                         dummyPlugin.printPreviewPageCount,
-                         dummyPlugin.resetPrintPreviewUrl,
-                         dummyPlugin.onPluginSizeChanged,
-                         dummyPlugin.onScroll,
-                         dummyPlugin.pageXOffset,
-                         dummyPlugin.pageYOffset,
-                         dummyPlugin.setZoomLevel,
-                         dummyPlugin.setPageNumbers,
-                         dummyPlugin.setPageXOffset,
-                         dummyPlugin.setPageYOffset,
-                         dummyPlugin.getHorizontalScrollbarThickness,
-                         dummyPlugin.getVerticalScrollbarThickness,
-                         dummyPlugin.getPageLocationNormalized,
-                         dummyPlugin.getHeight,
-                         dummyPlugin.getWidth];
-
-  for (var i = 0; i < pluginInterface.length; i++) {
-    if (!pluginInterface[i])
-      return false;
-  }
-  return true;
-}
-
-/**
- * Sets the default values and sends a request to regenerate preview data.
- * Resets the margin options only if |resetMargins| is true.
- * @param {boolean} resetMargins True if margin settings should be resetted.
- */
-function setDefaultValuesAndRegeneratePreview(resetMargins) {
-  if (resetMargins)
-    marginSettings.resetMarginsIfNeeded();
-  pageSettings.resetState();
-  requestPrintPreview();
-}
-
-/**
- * Class that represents the state of the print settings.
- * @constructor
- */
-function PrintSettings() {
-  this.deviceName = '';
-  this.isLandscape = '';
-  this.hasHeaderFooter = '';
-}
-
-/**
- *  Takes a snapshot of the print settings.
- */
-PrintSettings.prototype.save = function() {
-  this.deviceName = getSelectedPrinterName();
-  this.isLandscape = layoutSettings.isLandscape();
-  this.hasHeaderFooter = headerFooterSettings.hasHeaderFooter();
-};
-
-/**
- * Updates the title of the print preview tab according to |initiatorTabTitle|.
- * @param {string} initiatorTabTitle The title of the initiator tab.
- */
-function setInitiatorTabTitle(initiatorTabTitle) {
-  if (initiatorTabTitle == '')
-    return;
-  document.title = localStrings.getStringF(
-      'printPreviewTitleFormat', initiatorTabTitle);
-}
-
-/**
- * Closes this print preview tab.
- */
-function closePrintPreviewTab() {
-  window.removeEventListener('keydown', onKeyDown);
-  chrome.send('closePrintPreviewTab');
-  chrome.send('DialogClose');
-}
-
-/**
- * Pass certain directional keyboard events to the PDF viewer.
- * @param {Event} e The keydown event.
- */
-function tryToHandleDirectionKeyDown(e) {
-  // Make sure the PDF plugin is there.
-  if (!previewArea.pdfPlugin)
-    return;
-
-  // We only care about: PageUp, PageDown, Left, Up, Right, Down.
-  if (!(e.keyCode == 33 || e.keyCode == 34 ||
-        (e.keyCode >= 37 && e.keyCode <= 40))) {
-    return;
-  }
-
-  // If the user is holding a modifier key, ignore.
-  if (e.metaKey || e.altKey || e.shiftKey || e.ctrlKey)
-    return;
-
-  // Don't handle the key event for these elements.
-  var tagName = document.activeElement.tagName;
-  if (tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'EMBED')
-    return;
-
-  // For the most part, if any div of header was the last clicked element,
-  // then the active element is the body. Starting with the last clicked
-  // element, and work up the DOM tree to see if any element has a scrollbar.
-  // If there exists a scrollbar, do not handle the key event here.
-  var element = document.activeElement;
-  if (element == document.body) {
-    if (lastClickedElement)
-      element = lastClickedElement;
-    while (element) {
-      if (element.scrollHeight > element.clientHeight)
+      this.printDocumentOrOpenPdfPreview_(true /*isPdfPreview*/);
+    },
+
+    /**
+     * Called when the print header's print button is clicked. Prints the
+     * document.
+     * @private
+     */
+    onPrintButtonClick_: function() {
+      assert(this.uiState_ == PrintPreview.UiState_.READY,
+             'Trying to print when not in ready state: ' + this.uiState_);
+      this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
+    },
+
+    /**
+     * Called when the print header's cancel button is clicked. Closes the
+     * print dialog.
+     * @private
+     */
+    onCancelButtonClick_: function() {
+      this.close_();
+    },
+
+    /**
+     * Consume escape key presses and ctrl + shift + p. Delegate everything else
+     * to the preview area.
+     * @param {KeyboardEvent} e The keyboard event.
+     * @private
+     */
+    onKeyDown_: function(e) {
+      // Escape key closes the dialog.
+      if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey &&
+          !e.metaKey) {
+        this.close_();
+        e.preventDefault();
         return;
-      element = element.parentElement;
+      }
+
+      // Ctrl + Shift + p / Mac equivalent.
+      if (e.keyCode == 80) {
+        if ((cr.isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
+            (!cr.isMac && e.shiftKey && e.ctrlKey && !e.altKey && !e.metaKey)) {
+          this.openSystemPrintDialog_();
+          e.preventDefault();
+          return;
+        }
+      }
+
+      // Pass certain directional keyboard events to the PDF viewer.
+      this.previewArea_.handleDirectionalKeyEvent(e);
+    },
+
+    /**
+     * Called when native layer receives invalid settings for a print request.
+     * @private
+     */
+    onSettingsInvalid_: function() {
+      this.uiState_ = PrintPreview.UiState_.ERROR;
+      this.previewArea_.showCustomMessage(
+          localStrings.getString('invalidPrinterSettings'));
+    },
+
+    /**
+     * Called when the native layer dispatches a DISABLE_SCALING event. Updates
+     * the print ticket.
+     * @private
+     */
+    onDisableScaling_: function() {
+      this.printTicketStore_.updateFitToPage(false);
+    },
+
+    /**
+     * Called when the user selects the "Manage printers..." option in the
+     * destination select.
+     * @private
+     */
+    onManagePrinters_: function() {
+      if (cr.isChromeOS) {
+        this.nativeLayer_.startManageCloudPrinters();
+      } else {
+        this.nativeLayer_.startManageLocalPrinters();
+      }
     }
-  }
+  };
 
-  // No scroll bar anywhere, or the active element is something else, like a
-  // button. Note: buttons have a bigger scrollHeight than clientHeight.
-  previewArea.pdfPlugin.sendKeyEvent(e.keyCode);
-  e.preventDefault();
-}
+  // Export
+  return {
+    PrintPreview: PrintPreview
+  };
+});
 
-/**
-  * Handle keyboard events.
-  * @param {KeyboardEvent} e The keyboard event.
-  */
-function onKeyDown(e) {
-  // Escape key closes the dialog.
-  if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
-    printHeader.disableCancelButton();
-    closePrintPreviewTab();
-    e.preventDefault();
-  }
-  // Ctrl + Shift + p / Mac equivalent.
-  if (e.keyCode == 80) {
-    if ((cr.isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
-        (!cr.isMac && e.shiftKey && e.ctrlKey && !e.altKey && !e.metaKey)) {
-      window.removeEventListener('keydown', onKeyDown);
-      onSystemDialogLinkClicked();
-      e.preventDefault();
-    }
-  }
+// Pull in all other scripts in a single shot.
+<include src="data/page_number_set.js"/>
+<include src="data/destination.js"/>
+<include src="data/local_parsers.js"/>
+<include src="data/cloud_parsers.js"/>
+<include src="data/chromium_capabilities.js"/>
+<include src="data/cloud_capabilities.js"/>
+<include src="data/destination_store.js"/>
+<include src="data/margins.js"/>
+<include src="data/document_info.js"/>
+<include src="data/printable_area.js"/>
+<include src="data/measurement_system.js"/>
+<include src="data/print_ticket_store.js"/>
+<include src="data/coordinate2d.js"/>
+<include src="data/size.js"/>
+<include src="data/capabilities_holder.js"/>
 
-  tryToHandleDirectionKeyDown(e);
-}
+<include src="data/ticket_items/ticket_item.js"/>
 
-window.addEventListener('DOMContentLoaded', onLoad);
-window.addEventListener('keydown', onKeyDown);
+<include src="data/ticket_items/custom_margins.js"/>
+<include src="data/ticket_items/collate.js"/>
+<include src="data/ticket_items/color.js"/>
+<include src="data/ticket_items/copies.js"/>
+<include src="data/ticket_items/duplex.js"/>
+<include src="data/ticket_items/header_footer.js"/>
+<include src="data/ticket_items/landscape.js"/>
+<include src="data/ticket_items/margins_type.js"/>
+<include src="data/ticket_items/page_range.js"/>
+<include src="data/ticket_items/fit_to_page.js"/>
 
-/// Pull in all other scripts in a single shot.
+<include src="native_layer.js"/>
 <include src="print_preview_animations.js"/>
-<include src="print_preview_cloud.js"/>
+<include src="cloud_print_interface.js"/>
 <include src="print_preview_utils.js"/>
 <include src="print_header.js"/>
-<include src="page_settings.js"/>
-<include src="copies_settings.js"/>
-<include src="header_footer_settings.js"/>
-<include src="fit_to_page_settings.js"/>
-<include src="layout_settings.js"/>
-<include src="color_settings.js"/>
-<include src="margin_settings.js"/>
-<include src="margin_textbox.js"/>
-<include src="margin_utils.js"/>
-<include src="margins_ui.js"/>
-<include src="margins_ui_pair.js"/>
-<include src="more_options.js"/>
-<include src="preview_area.js"/>
+
+<include src="settings/page_settings.js"/>
+<include src="settings/copies_settings.js"/>
+<include src="settings/layout_settings.js"/>
+<include src="settings/color_settings.js"/>
+<include src="settings/margin_settings.js"/>
+<include src="settings/destination_settings.js"/>
+<include src="settings/other_options_settings.js"/>
+
+<include src="previewarea/margin_control.js"/>
+<include src="previewarea/margin_control_container.js"/>
+<include src="previewarea/preview_area.js"/>
+<include src="preview_generator.js"/>
+
+var printPreview = new print_preview.PrintPreview();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,9 @@
  * @constructor
  * @extends {testing.Test}
  */
-function PrintPreviewUtilsUnitTest () {}
+function PrintPreviewUtilsUnitTest () {
+  testing.Test.call(this);
+}
 
 PrintPreviewUtilsUnitTest.prototype = {
   __proto__: testing.Test.prototype,
@@ -15,7 +17,7 @@ PrintPreviewUtilsUnitTest.prototype = {
   /** @inheritDoc */
   extraLibraries: [
     'print_preview_utils.js',
-  ],
+  ]
 };
 
 TEST_F('PrintPreviewUtilsUnitTest', 'IsInteger', function() {
@@ -112,22 +114,4 @@ TEST_F('PrintPreviewUtilsUnitTest', 'PageSetToPageRanges', function() {
   assertEquals(pageRanges[1].to, 9);
   assertEquals(pageRanges[2].from, 11);
   assertEquals(pageRanges[2].to, 11);
-});
-
-TEST_F('PrintPreviewUtilsUnitTest', 'ParseNumberFormat', function() {
-  assertTrue(areArraysEqual(['.', ','], parseNumberFormat('123.456,78')));
-  assertTrue(areArraysEqual(['.', '.'], parseNumberFormat('123.456.78')));
-  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('123,456.78')));
-  assertTrue(areArraysEqual([',', ','], parseNumberFormat('123,456,78')));
-  assertTrue(areArraysEqual([' ', ','], parseNumberFormat('123 456,78')));
-  assertTrue(areArraysEqual([' ', '.'], parseNumberFormat('123 456.78')));
-  assertTrue(areArraysEqual([' ', ' '], parseNumberFormat('123 456 78')));
-  assertTrue(areArraysEqual(['', ''], parseNumberFormat('123')));
-
-  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('abcdef')));
-  assertTrue(areArraysEqual([',', '.'], parseNumberFormat(null)));
-  assertTrue(areArraysEqual([',', '.'], parseNumberFormat(undefined)));
-  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('')));
-  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('1')));
-  assertTrue(areArraysEqual([',', '.'], parseNumberFormat('12')));
 });

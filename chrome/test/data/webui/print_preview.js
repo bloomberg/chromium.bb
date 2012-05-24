@@ -4,10 +4,29 @@
 
 /**
  * Test fixture for print preview WebUI testing.
- * @extends {testing.Test}
  * @constructor
+ * @extends {testing.Test}
  */
-function PrintPreviewWebUITest() {}
+function PrintPreviewWebUITest() {
+  testing.Test.call(this);
+  this.nativeLayer_ = null;
+  this.initialSettings_ = null;
+  this.localDestinationInfos_ = null;
+}
+
+/**
+ * Index of the Foo printer.
+ * @type {number}
+ * @const
+ */
+PrintPreviewWebUITest.FOO_INDEX = 0;
+
+/**
+ * Index of the Bar printer.
+ * @type {number}
+ * @const
+ */
+PrintPreviewWebUITest.BAR_INDEX = 1;
 
 PrintPreviewWebUITest.prototype = {
   __proto__: testing.Test.prototype,
@@ -20,89 +39,42 @@ PrintPreviewWebUITest.prototype = {
   browsePrintPreload: 'print_preview_hello_world_test.html',
 
   /**
-   * Register a mock handler to ensure expectations are met and print preview
-   * behaves correctly.
-   * @type {Function}
+   * Stub out low-level functionality like the NativeLayer and
+   * CloudPrintInterface.
    * @this {PrintPreviewWebUITest}
    * @override
    */
   preLoad: function() {
-    this.makeAndRegisterMockHandler(['getInitialSettings',
-                                     'getPrinters',
-                                     'getPreview',
-                                     'print',
-                                     'getPrinterCapabilities',
-                                     'showSystemDialog',
-                                     'morePrinters',
-                                     'signIn',
-                                     'addCloudPrinter',
-                                     'manageCloudPrinters',
-                                     'manageLocalPrinters',
-                                     'closePrintPreviewTab',
-                                     'hidePreview',
-                                     'cancelPendingPrintRequest',
-                                     'saveLastPrinter',
-                                    ]);
-
-    // Register stubs for methods expected to be called before tests
-    // run. Specific expectations can be made in the tests themselves.
-    this.mockHandler.stubs().getInitialSettings().
-        will(callFunction(function() {
-          setDefaultPrinter('FooDevice');
-        }));
-    this.mockHandler.stubs().getPrinterCapabilities(NOT_NULL).
-        will(callFunction(function() {
-          updateWithPrinterCapabilities({
-            disableColorOption: true,
-            setColorAsDefault: true,
-            disableCopiesOption: true,
-            printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
-          });
-        }));
-    var savedArgs = new SaveMockArguments();
-    this.mockHandler.stubs().getPreview(savedArgs.match(NOT_NULL)).
-        will(callFunctionWithSavedArgs(savedArgs, function(args) {
-          updatePrintPreview(1, JSON.parse(args[0]).requestID);
-        }));
-
-    this.mockHandler.stubs().getPrinters().
-        will(callFunction(function() {
-          setPrinters([{
-              printerName: 'FooName',
-              deviceName: 'FooDevice',
-            }, {
-              printerName: 'BarName',
-              deviceName: 'BarDevice',
-            },
-          ]);
-        }));
-
-    this.makeAndRegisterMockGlobals(['updateWithPrinterCapabilities']);
-    this.mockGlobals.stubs().updateWithPrinterCapabilities(
-        savedArgs.match(ANYTHING)).
-            will(callGlobalWithSavedArgs(
-                savedArgs, 'updateWithPrinterCapabilities'));
-
-    // Override checkCompatiblePluginExists to return a value consistent with
-    // the state being tested and stub out the pdf viewer if it doesn't exist,
-    // such as on non-official builds. When the plugin exists, use the real
-    // thing.
-    var self = this;
     window.addEventListener('DOMContentLoaded', function() {
-      if (!this.checkCompatiblePluginExists()) {
-        // TODO(scr) remove this after tests pass consistently.
-        console.info('no PDF Plugin; providing fake methods.');
-
-        // Initializing |previewArea| object here because we need to replace a
-        // method.
-        this.previewArea = print_preview.PreviewArea.getInstance();
-        this.previewArea.createOrReloadPDFPlugin =
-            self.createOrReloadPDFPlugin.bind(previewArea);
+      function NativeLayerStub() {
+        cr.EventTarget.call(this);
       }
+      NativeLayerStub.prototype = {
+        __proto__: cr.EventTarget.prototype,
+        startGetInitialSettings: function() {},
+        startGetLocalDestinations: function() {},
+        startGetLocalDestinationCapabilities: function(destinationId) {}
+      };
 
-      this.checkCompatiblePluginExists =
-          self.checkCompatiblePluginExists;
-    });
+      this.nativeLayer_ = new NativeLayerStub();
+      printPreview.nativeLayer_ = this.nativeLayer_;
+
+      function CloudPrintInterfaceStub() {
+        cr.EventTarget.call(this);
+      }
+      CloudPrintInterfaceStub.prototype = {
+        __proto__: cr.EventTarget.prototype,
+        search: function(isRecent) {}
+      };
+      var oldCpInterfaceEventType = cloudprint.CloudPrintInterface.EventType;
+      cloudprint.CloudPrintInterface = CloudPrintInterfaceStub;
+      cloudprint.CloudPrintInterface.EventType = oldCpInterfaceEventType;
+
+      print_preview.PreviewArea.prototype.checkPluginCompatibility_ =
+          function() {
+        return false;
+      };
+    }.bind(this));
   },
 
   /**
@@ -113,139 +85,105 @@ PrintPreviewWebUITest.prototype = {
   typedefCppFixture: null,
 
   /**
-   * Create the PDF plugin or reload the existing one. This function replaces
-   * createOrReloadPDFPlugin defined in
-   * chrome/browser/resources/print_preview/preview_area.js when there is no
-   * official pdf plugin so that the WebUI logic can be tested. It creates and
-   * attaches an HTMLDivElement to the |mainview| element with attributes and
-   * empty methods, which are used by testing and that would be provided by the
-   * HTMLEmbedElement when the PDF plugin exists.
-   * @param {number} srcDataIndex Preview data source index.
    * @this {PrintPreviewWebUITest}
+   * @override
    */
-  createOrReloadPDFPlugin: function(srcDataIndex) {
-    var pdfViewer = $('pdf-viewer');
-    if (pdfViewer)
-      return;
+  setUp: function() {
+    Mock4JS.clearMocksToVerify();
 
-    var previewUid = 1;
-    pdfViewer = document.createElement('div');
-    pdfViewer.setAttribute('id', 'pdf-viewer');
-    pdfViewer.setAttribute('type',
-                           'application/x-google-chrome-print-preview-pdf');
-    pdfViewer.setAttribute(
-        'src',
-        'chrome://print/' + previewUid + '/' + srcDataIndex + '/print.pdf');
-    pdfViewer.setAttribute('aria-live', 'polite');
-    pdfViewer.setAttribute('aria-atomic', 'true');
-    function fakeFunction() {}
-    pdfViewer.onload = fakeFunction;
-    pdfViewer.goToPage = fakeFunction;
-    pdfViewer.removePrintButton = fakeFunction;
-    pdfViewer.fitToHeight = fakeFunction;
-    pdfViewer.grayscale = fakeFunction;
-    pdfViewer.getZoomLevel = fakeFunction;
-    pdfViewer.setZoomLevel = fakeFunction;
-    pdfViewer.pageXOffset = fakeFunction;
-    pdfViewer.pageYOffset = fakeFunction;
-    pdfViewer.setPageNumbers = fakeFunction;
-    pdfViewer.setPageXOffset = fakeFunction;
-    pdfViewer.setPageYOffset = fakeFunction;
-    pdfViewer.getHeight = fakeFunction;
-    pdfViewer.getWidth = fakeFunction;
-    pdfViewer.getPageLocationNormalized = fakeFunction;
-    pdfViewer.onScroll = fakeFunction;
-    pdfViewer.onPluginSizeChanged = fakeFunction;
-    pdfViewer.getHorizontalScrollbarThickness = fakeFunction;
-    pdfViewer.getVerticalScrollbarThickness = fakeFunction;
-    $('mainview').appendChild(pdfViewer);
-    this.pdfPlugin_ = pdfViewer;
-    onPDFLoad();
-  },
-
-  /**
-   * Always return true so tests run on systems without plugin available.
-   * @return {boolean} Always true.
-   */
-  checkCompatiblePluginExists: function() {
-    return true;
-  },
+    this.initialSettings_ = new print_preview.NativeInitialSettings(
+      false /*isInKioskAutoPrintMode*/,
+      ',' /*thousandsDelimeter*/,
+      '.' /*decimalDelimeter*/,
+      1 /*unitType*/,
+      true /*isDocumentModifiable*/,
+      0 /*marginsType*/,
+      null /*customMargins*/,
+      true /*isDuplexEnabled*/,
+      false /*isHeaderFooterEnabled*/,
+      'FooDevice' /*initialDestinationId*/);
+    this.localDestinationInfos_ = [
+      { printerName: 'FooName', deviceName: 'FooDevice' },
+      { printerName: 'BarName', deviceName: 'BarDevice' }
+    ];
+  }
 };
 
 GEN('#include "chrome/test/data/webui/print_preview.h"');
 
-/**
- * The expected length of the |printer-list| element.
- * @type {number}
- * @const
- */
-var printerListMinLength = 2;
-
-/**
- * The expected index of the "foo" printer returned by the stubbed handler.
- * @type {number}
- * @const
- */
-var fooIndex = 0;
-
-/**
- * The expected index of the "bar" printer returned by the stubbed handler.
- * @type {number}
- * @const
- */
-var barIndex = 1;
-
-/**
- * The expected "Save as PDF" option text returned by the stubbed handler.
- * @type {string}
- * @const
- */
-var saveAsPDFOptionStr = 'Save as PDF';
-
 // Test some basic assumptions about the print preview WebUI.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterList', function() {
-  var printerList = $('printer-list');
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var printerList = $('destination-settings').
+      getElementsByClassName('destination-settings-select')[0];
   assertNotEquals(null, printerList);
-  assertGE(printerList.options.length, printerListMinLength);
-  expectEquals(fooIndex, printerList.selectedIndex);
-  expectEquals('FooName', printerList.options[fooIndex].text,
-               'fooIndex=' + fooIndex);
-  expectEquals('FooDevice', printerList.options[fooIndex].value,
-               'fooIndex=' + fooIndex);
-  expectEquals('BarName', printerList.options[barIndex].text,
-               'barIndex=' + barIndex);
-  expectEquals('BarDevice', printerList.options[barIndex].value,
-               'barIndex=' + barIndex);
+  assertGE(printerList.options.length, 2);
+  expectEquals(PrintPreviewWebUITest.FOO_INDEX, printerList.selectedIndex);
+  expectEquals('FooName',
+               printerList.options[PrintPreviewWebUITest.FOO_INDEX].text,
+               'fooIndex=' + PrintPreviewWebUITest.FOO_INDEX);
+  expectEquals('FooDevice',
+               printerList.options[PrintPreviewWebUITest.FOO_INDEX].value,
+               'fooIndex=' + PrintPreviewWebUITest.FOO_INDEX);
+  expectEquals('BarName',
+               printerList.options[PrintPreviewWebUITest.BAR_INDEX].text,
+               'barIndex=' + PrintPreviewWebUITest.BAR_INDEX);
+  expectEquals('BarDevice',
+               printerList.options[PrintPreviewWebUITest.BAR_INDEX].value,
+               'barIndex=' + PrintPreviewWebUITest.BAR_INDEX);
 });
 
 // Test that the printer list is structured correctly after calling
 // addCloudPrinters with an empty list.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloudEmpty', function() {
-  cloudprint.addCloudPrinters([], addDestinationListOptionAtPosition);
-  var printerList = $('printer-list');
-  assertNotEquals(null, printerList);
-});
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-// Test that the printer list is structured correctly after attempting to add
-// individual cloud printers until no more can be added.
-TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloud', function() {
-  var printerList = $('printer-list');
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var cloudPrintEnableEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CLOUD_PRINT_ENABLE);
+  cloudPrintEnableEvent.baseCloudPrintUrl = 'cloudprint url';
+  this.nativeLayer_.dispatchEvent(cloudPrintEnableEvent);
+
+  var searchDoneEvent =
+      new cr.Event(cloudprint.CloudPrintInterface.EventType.SEARCH_DONE);
+  searchDoneEvent.printers = [];
+  searchDoneEvent.isRecent = true;
+  searchDoneEvent.email = 'foo@chromium.org';
+  printPreview.cloudPrintInterface_.dispatchEvent(searchDoneEvent);
+
+  var printerList = $('destination-settings').
+      getElementsByClassName('destination-settings-select')[0];
   assertNotEquals(null, printerList);
-  var printer = new Object;
-  printer['name'] = 'FooCloud';
-  for (var i = 0; i < maxCloudPrinters; i++) {
-    printer['id'] = String(i);
-    cloudprint.addCloudPrinters([printer], addDestinationListOptionAtPosition);
-    expectEquals('FooCloud', printerList.options[i].text);
-    expectEquals(String(i), printerList.options[i].value);
-  }
-  cloudprint.addCloudPrinters([printer], addDestinationListOptionAtPosition);
-  expectNotEquals('FooCloud', printerList.options[i].text);
-  expectNotEquals(String(i), printerList.options[i].value);
-  for (var i = 0; i < maxCloudPrinters; i++) {
-    expectEquals('FooCloud', printerList.options[i].text);
-    expectEquals(String(i), printerList.options[i].value);
-  }
+  assertGE(printerList.options.length, 2);
+  expectEquals(PrintPreviewWebUITest.FOO_INDEX, printerList.selectedIndex);
+  expectEquals('FooName',
+               printerList.options[PrintPreviewWebUITest.FOO_INDEX].text,
+               'fooIndex=' + PrintPreviewWebUITest.FOO_INDEX);
+  expectEquals('FooDevice',
+               printerList.options[PrintPreviewWebUITest.FOO_INDEX].value,
+               'fooIndex=' + PrintPreviewWebUITest.FOO_INDEX);
+  expectEquals('BarName',
+               printerList.options[PrintPreviewWebUITest.BAR_INDEX].text,
+               'barIndex=' + PrintPreviewWebUITest.BAR_INDEX);
+  expectEquals('BarDevice',
+               printerList.options[PrintPreviewWebUITest.BAR_INDEX].value,
+               'barIndex=' + PrintPreviewWebUITest.BAR_INDEX);
 });
 
 /**
@@ -255,342 +193,549 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterListCloud', function() {
  */
 function checkSectionVisible(section, visible) {
   assertNotEquals(null, section);
-  expectEquals(section.classList.contains('visible'), visible,
-               'section=' + section);
+  expectEquals(
+      visible, section.classList.contains('visible'), 'section=' + section.id);
 }
 
-/**
- * Verify that |section| style display matches |value|.
- * @param {HTMLDivElement} section The section to check.
- * @param {string} value The expected display style value.
- */
-function checkSectionDisplayStyle(section, value) {
-  assertNotEquals(null, section);
-  expectEquals(section.style.display, value, 'section=' + section);
+function checkElementDisplayed(el, isDisplayed) {
+  assertNotEquals(null, el);
+  expectEquals(isDisplayed, el.style.display != 'none');
 }
 
 // Test that disabled settings hide the disabled sections.
 TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
-  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
-      will(callFunction(function() {
-        updateWithPrinterCapabilities({
-          disableColorOption: true,
-          setColorAsDefault: true,
-          disableCopiesOption: true,
-          disableLandscapeOption: true,
-          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
-        });
-      }));
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-  updateControlsWithSelectedPrinterCapabilities();
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
 
-  checkSectionVisible(layoutSettings.layoutOption_, false);
-  checkSectionVisible(colorSettings.colorOption_, false);
-  checkSectionVisible(copiesSettings.copiesOption_, false);
+  checkSectionVisible($('layout-settings'), true);
+  checkSectionVisible($('color-settings'), true);
+  checkSectionVisible($('copies-settings'), true);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': true,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkSectionVisible($('layout-settings'), false);
+  checkSectionVisible($('color-settings'), false);
+  checkSectionVisible($('copies-settings'), false);
 });
 
 // When the source is 'PDF' and 'Save as PDF' option is selected, we hide the
 // fit to page option.
-TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedHideFitToPageOption',
+TEST_F('PrintPreviewWebUITest',
+       'PrintToPDFSelectedHideFitToPageOption',
        function() {
-  var savedArgs = new SaveMockArguments();
-  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
-      will(callFunctionWithSavedArgs(savedArgs, function(args) {
-        updatePrintPreview(2, JSON.parse(args[0]).requestID);
-      }));
+  // Add PDF printer.
+  this.initialSettings_.isDocumentModifiable_ = false;
+  this.initialSettings_.initialDestinationId_ = 'Save as PDF';
+  this.localDestinationInfos_.push(
+      {printerName: 'Save as PDF', deviceName: 'Save as PDF'});
 
-  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
-      savedArgs.match(ANYTHING)).
-          will(callGlobalWithSavedArgs(
-              savedArgs, 'updateWithPrinterCapabilities'));
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-  setInitialSettings({previewModifiable: false});
-  var printerList = $('printer-list');
-  assertNotEquals(null, printerList, 'printerList');
-  assertGE(printerList.options.length, printerListMinLength);
-  for (var i = 0; i < printerList.options.length; i++) {
-    if (printerList.options[i].text == saveAsPDFOptionStr &&
-        printerList.options[i].value == saveAsPDFOptionStr) {
-      printerList.selectedIndex = i;
-      break;
-    }
-  }
-  updateControlsWithSelectedPrinterCapabilities();
-  checkSectionDisplayStyle(fitToPageSettings.fitToPageOption_, 'none');
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-fit-to-page'),
+      false);
 });
 
 // When the source is 'HTML', we always hide the fit to page option.
 TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLHideFitToPageOption', function() {
-  var savedArgs = new SaveMockArguments();
-  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
-      will(callFunctionWithSavedArgs(savedArgs, function(args) {
-        updatePrintPreview(2, JSON.parse(args[0]).requestID);
-      }));
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
-      savedArgs.match(ANYTHING)).
-          will(callGlobalWithSavedArgs(
-              savedArgs, 'updateWithPrinterCapabilities'));
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
 
-  setInitialSettings({previewModifiable: true});
-  var printerList = $('printer-list');
-  assertNotEquals(null, printerList, 'printerList');
-  assertGE(printerList.options.length, printerListMinLength);
-  updateControlsWithSelectedPrinterCapabilities();
-  checkSectionDisplayStyle(fitToPageSettings.fitToPageOption_, 'none');
-  expectTrue(fitToPageSettings.hasFitToPage());
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-fit-to-page'),
+      false);
 });
 
 // When the source is "PDF", depending on the selected destination printer, we
 // show/hide the fit to page option.
 TEST_F('PrintPreviewWebUITest', 'SourceIsPDFShowFitToPageOption', function() {
-  var savedArgs = new SaveMockArguments();
-  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
-      will(callFunctionWithSavedArgs(savedArgs, function(args) {
-        updatePrintPreview(2, JSON.parse(args[0]).requestID);
-      }));
+  this.initialSettings_.isDocumentModifiable_ = false;
 
-  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
-      savedArgs.match(ANYTHING)).
-          will(callGlobalWithSavedArgs(
-              savedArgs, 'updateWithPrinterCapabilities'));
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-  setInitialSettings({previewModifiable: false});
-  var printerList = $('printer-list');
-  assertNotEquals(null, printerList, 'printerList');
-  assertGE(printerList.options.length, printerListMinLength);
-  var saveAsPDFOptionSelected = false;
-  var selectedPrinterOption = printerList.options[printerList.selectedIndex];
-  if (selectedPrinterOption.text == saveAsPDFOptionStr &&
-      selectedPrinterOption.value == saveAsPDFOptionStr) {
-    saveAsPDFOptionSelected = true;
-  }
-  updateControlsWithSelectedPrinterCapabilities();
-  checkSectionDisplayStyle(fitToPageSettings.fitToPageOption_,
-                           saveAsPDFOptionSelected ? 'none' : 'block');
-  expectTrue(fitToPageSettings.hasFitToPage());
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-fit-to-page'),
+      true);
+  expectTrue(
+      $('other-options-settings').querySelector(
+          '.other-options-settings-fit-to-page-checkbox').checked);
 });
 
 // When the print scaling is disabled for the source "PDF", we show the fit
 // to page option but the state is unchecked by default.
 TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
-  var savedArgs = new SaveMockArguments();
-  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
-      will(callFunctionWithSavedArgs(savedArgs, function(args) {
-        updatePrintPreview(2, JSON.parse(args[0]).requestID);
-      }));
+  this.initialSettings_.isDocumentModifiable_ = false;
 
-  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
-      savedArgs.match(ANYTHING)).
-          will(callGlobalWithSavedArgs(
-              savedArgs, 'updateWithPrinterCapabilities'));
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-  setInitialSettings({previewModifiable: false});
-  var printerList = $('printer-list');
-  assertNotEquals(null, printerList, 'printerList');
-  assertGE(printerList.options.length, printerListMinLength);
-  var saveAsPDFOptionSelected = false;
-  var selectedPrinterOption = printerList.options[printerList.selectedIndex];
-  if (selectedPrinterOption.text == saveAsPDFOptionStr &&
-      selectedPrinterOption.value == saveAsPDFOptionStr) {
-    saveAsPDFOptionSelected = true;
-  }
-  updateControlsWithSelectedPrinterCapabilities();
-  printScalingDisabledForSourcePDF();
-  checkSectionDisplayStyle(fitToPageSettings.fitToPageOption_,
-                           saveAsPDFOptionSelected ? 'none' : 'block');
-  // Make sure the fit to page checkbox is unchecked.
-  expectFalse(fitToPageSettings.hasFitToPage());
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  // Indicate that the PDF does not support scaling by default.
+  cr.dispatchSimpleEvent(
+      this.nativeLayer_, print_preview.NativeLayer.EventType.DISABLE_SCALING);
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-fit-to-page'),
+      true);
+  expectFalse(
+      $('other-options-settings').querySelector(
+          '.other-options-settings-fit-to-page-checkbox').checked);
 });
 
 // Page layout has zero margins. Hide header and footer option.
-TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
+TEST_F('PrintPreviewWebUITest',
+       'PageLayoutHasNoMarginsHideHeaderFooter',
        function() {
-  setInitialSettings({previewModifiable: true});
-  onDidGetDefaultPageLayout({
-      contentWidth: 100, contentHeight: 200, marginLeft: 0, marginRight: 0,
-      marginTop: 0, marginBottom: 0, printableAreaX: 0, printableAreaY: 0,
-      printableAreaWidth: 100, printableAreaHeight: 200}, true);
-  checkSectionDisplayStyle(headerFooterSettings.headerFooterOption_, 'none');
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-header-footer'),
+      true);
+
+  printPreview.printTicketStore_.updateMarginsType(
+      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+  printPreview.printTicketStore_.updateCustomMargins(
+      new print_preview.Margins(0, 0, 0, 0));
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-header-footer'),
+      false);
 });
 
-// Page layout has non-zero margins. Show header and footer option.
-TEST_F('PrintPreviewWebUITest', 'PageLayoutHasMarginsShowHeaderFooter',
+// Page layout has half-inch margins. Show header and footer option.
+TEST_F('PrintPreviewWebUITest',
+       'PageLayoutHasMarginsShowHeaderFooter',
        function() {
-  setInitialSettings({previewModifiable: true});
-  onDidGetDefaultPageLayout({
-      contentWidth: 100, contentHeight: 200, marginLeft: 3, marginRight: 2,
-      marginTop: 4, marginBottom: 1, printableAreaX: 1, printableAreaY: 1,
-      printableAreaWidth: 103, printableAreaHeight: 203}, true);
-  checkSectionDisplayStyle(headerFooterSettings.headerFooterOption_, 'block');
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-header-footer'),
+      true);
+
+  printPreview.printTicketStore_.updateMarginsType(
+      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+  printPreview.printTicketStore_.updateCustomMargins(
+      new print_preview.Margins(36, 36, 36, 36));
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-header-footer'),
+      true);
 });
 
 // Page layout has zero top and bottom margins. Hide header and footer option.
-TEST_F('PrintPreviewWebUITest', 'ZeroTopAndBottomMarginsHideHeaderFooter',
+TEST_F('PrintPreviewWebUITest',
+       'ZeroTopAndBottomMarginsHideHeaderFooter',
        function() {
-  setInitialSettings({previewModifiable: true});
-  onDidGetDefaultPageLayout({
-      contentWidth: 100, contentHeight: 200, marginLeft: 3, marginRight: 2,
-      marginTop: 0, marginBottom: 0, printableAreaX: 1, printableAreaY: 1,
-      printableAreaWidth: 98, printableAreaHeight: 198}, false);
-  checkSectionDisplayStyle(headerFooterSettings.headerFooterOption_, 'none');
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-header-footer'),
+      true);
+
+  printPreview.printTicketStore_.updateMarginsType(
+      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+  printPreview.printTicketStore_.updateCustomMargins(
+      new print_preview.Margins(0, 36, 0, 36));
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-header-footer'),
+      false);
 });
 
-// Page layout has zero top and non-zero bottom margin. Show header and footer
+// Page layout has zero top and half-inch bottom margin. Show header and footer
 // option.
-TEST_F('PrintPreviewWebUITest', 'ZeroTopAndNonZeroBottomMarginShowHeaderFooter',
+TEST_F('PrintPreviewWebUITest',
+       'ZeroTopAndNonZeroBottomMarginShowHeaderFooter',
        function() {
-  setInitialSettings({previewModifiable: true});
-  onDidGetDefaultPageLayout({
-      contentWidth: 100, contentHeight: 200, marginLeft: 6, marginRight: 4,
-      marginTop: 0, marginBottom: 3, printableAreaX: 1, printableAreaY: 1,
-      printableAreaWidth: 103, printableAreaHeight: 208}, false);
-  checkSectionDisplayStyle(headerFooterSettings.headerFooterOption_, 'block');
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-header-footer'),
+      true);
+
+  printPreview.printTicketStore_.updateMarginsType(
+      print_preview.ticket_items.MarginsType.Value.CUSTOM);
+  printPreview.printTicketStore_.updateCustomMargins(
+      new print_preview.Margins(0, 36, 36, 36));
+
+  checkElementDisplayed(
+      $('other-options-settings').
+          querySelector('.other-options-settings-header-footer'),
+      true);
 });
 
 // Test that the color settings are set according to the printer capabilities.
 TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
-  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
-      will(callFunction(function() {
-        updateWithPrinterCapabilities({
-          disableColorOption: false,
-          setColorAsDefault: true,
-          disableCopiesOption: false,
-          disableLandscapeOption: false,
-          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
-        });
-      }));
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-  updateControlsWithSelectedPrinterCapabilities();
-  expectTrue(colorSettings.colorRadioButton.checked);
-  expectFalse(colorSettings.bwRadioButton.checked);
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
 
-  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
-      will(callFunction(function() {
-        updateWithPrinterCapabilities({
-          disableColorOption: false,
-          setColorAsDefault: false,
-          disableCopiesOption: false,
-          disableLandscapeOption: false,
-          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
-        });
-      }));
+  checkSectionVisible($('color-settings'), true);
 
-  updateControlsWithSelectedPrinterCapabilities();
-  expectFalse(colorSettings.colorRadioButton.checked);
-  expectTrue(colorSettings.bwRadioButton.checked);
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkSectionVisible($('color-settings'), true);
+
+  var colorOption = $('color-settings').getElementsByClassName(
+      'color-settings-color-option')[0];
+  var bwOption = $('color-settings').getElementsByClassName(
+      'color-settings-bw-option')[0];
+  expectTrue(colorOption.checked);
+  expectFalse(bwOption.checked);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': false,
+    'disableCopiesOption': false,
+    'disableLandscapeOption': false,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkSectionVisible($('color-settings'), true);
+  expectFalse(colorOption.checked);
+  expectTrue(bwOption.checked);
 });
 
 // Test to verify that duplex settings are set according to the printer
 // capabilities.
 TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
-  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
-      will(callFunction(function() {
-        updateWithPrinterCapabilities({
-          disableColorOption: false,
-          setColorAsDefault: false,
-          disableCopiesOption: false,
-          disableLandscapeOption: false,
-          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
-        });
-      }));
-  updateControlsWithSelectedPrinterCapabilities();
-  expectEquals(copiesSettings.duplexMode, print_preview.CopiesSettings.SIMPLEX);
-  expectEquals(copiesSettings.twoSidedOption_.hidden, false);
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  // Need to override test defaults for the initial settings, because initial
+  // duplex value needs to be unspecified.
+  initialSettingsSetEvent.initialSettings =
+      new print_preview.NativeInitialSettings(
+          false /*isInKioskAutoPrintMode*/,
+          ',' /*thousandsDelimeter*/,
+          '.' /*decimalDelimeter*/,
+          1 /*unitType*/,
+          true /*isDocumentModifiable*/,
+          0 /*marginsType*/,
+          null /*customMargins*/,
+          null /*isDuplexEnabled*/,
+          false /*isHeaderFooterEnabled*/,
+          'FooDevice' /*initialDestinationId*/);
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
+
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var copiesDiv = $('copies-settings');
+  var duplexDiv = copiesDiv.getElementsByClassName('copies-settings-duplex')[0];
+  var duplexCheckbox = copiesDiv.getElementsByClassName(
+      'copies-settings-duplex-checkbox')[0];
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': false,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkSectionVisible(copiesDiv, true);
+  expectFalse(duplexDiv.hidden);
+  expectFalse(duplexCheckbox.checked);
 
   // If the printer default duplex value is UNKNOWN_DUPLEX_MODE, hide the
   // two sided option.
-  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
-      will(callFunction(function() {
-        updateWithPrinterCapabilities({
-          disableColorOption: false,
-          setColorAsDefault: false,
-          disableCopiesOption: false,
-          disableLandscapeOption: false,
-          printerDefaultDuplexValue:
-            print_preview.CopiesSettings.UNKNOWN_DUPLEX_MODE,
-        });
-      }));
-  updateControlsWithSelectedPrinterCapabilities();
-  expectEquals(copiesSettings.duplexMode,
-               print_preview.CopiesSettings.UNKNOWN_DUPLEX_MODE);
-  expectEquals(copiesSettings.twoSidedOption_.hidden, true);
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': false,
+    'disableCopiesOption': false,
+    'disableLandscapeOption': false,
+    'printerDefaultDuplexValue': -1
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
 
-  this.mockHandler.expects(once()).getPrinterCapabilities('FooDevice').
-      will(callFunction(function() {
-        updateWithPrinterCapabilities({
-          disableColorOption: false,
-          setColorAsDefault: false,
-          disableCopiesOption: false,
-          disableLandscapeOption: false,
-          printerDefaultDuplexValue: print_preview.CopiesSettings.SIMPLEX,
-        });
-      }));
-  updateControlsWithSelectedPrinterCapabilities();
-  expectEquals(copiesSettings.twoSidedOption_.hidden, false);
-  expectEquals(copiesSettings.duplexMode, print_preview.CopiesSettings.SIMPLEX);
-  copiesSettings.twoSidedCheckbox.checked = true;
-  expectEquals(
-      copiesSettings.duplexMode, print_preview.CopiesSettings.LONG_EDGE);
+  checkSectionVisible(copiesDiv, true);
+  expectTrue(duplexDiv.hidden);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': false,
+    'disableCopiesOption': false,
+    'disableLandscapeOption': false,
+    'printerDefaultDuplexValue': 1
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  checkSectionVisible(copiesDiv, true);
+  expectFalse(duplexDiv.hidden);
+  expectTrue(duplexCheckbox.checked);
 });
 
 // Test that changing the selected printer updates the preview.
 TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
-  var savedArgs = new SaveMockArguments();
-  this.mockHandler.expects(once()).getPreview(savedArgs.match(ANYTHING)).
-      will(callFunctionWithSavedArgs(savedArgs, function(args) {
-        updatePrintPreview(2, JSON.parse(args[0]).requestID);
-      }));
 
-  this.mockGlobals.expects(once()).updateWithPrinterCapabilities(
-      savedArgs.match(ANYTHING)).
-          will(callGlobalWithSavedArgs(
-              savedArgs, 'updateWithPrinterCapabilities'));
+  var initialSettingsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
+  initialSettingsSetEvent.initialSettings = this.initialSettings_;
+  this.nativeLayer_.dispatchEvent(initialSettingsSetEvent);
 
-  var printerList = $('printer-list');
-  assertNotEquals(null, printerList, 'printerList');
-  assertGE(printerList.options.length, printerListMinLength);
-  expectEquals(fooIndex, printerList.selectedIndex,
-               'fooIndex=' + fooIndex);
-  var oldLastPreviewRequestID = lastPreviewRequestID;
-  ++printerList.selectedIndex;
-  updateControlsWithSelectedPrinterCapabilities();
-  expectNotEquals(oldLastPreviewRequestID, lastPreviewRequestID);
+  var localDestsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
+  localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
+  this.nativeLayer_.dispatchEvent(localDestsSetEvent);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': false,
+    'setColorAsDefault': true,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
+
+  var previewGenerator = mock(print_preview.PreviewGenerator);
+  printPreview.previewArea_.previewGenerator_ = previewGenerator.proxy();
+  previewGenerator.expects(once()).requestPreview();
+
+  var barDestination;
+  var destinations = printPreview.destinationStore_.destinations;
+  for (var destination, i = 0; destination = destinations[i]; i++) {
+    if (destination.id == 'BarDevice') {
+      barDestination = destination;
+      break;
+    }
+  }
+
+  printPreview.destinationStore_.selectDestination(barDestination);
+
+  var capsSetEvent =
+      new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
+  capsSetEvent.settingsInfo = {
+    'disableColorOption': true,
+    'setColorAsDefault': false,
+    'disableCopiesOption': true,
+    'disableLandscapeOption': true,
+    'printerDefaultDuplexValue': 0
+  };
+  this.nativeLayer_.dispatchEvent(capsSetEvent);
 });
 
-/**
- * Test fixture to test case when no PDF plugin exists.
- * @extends {PrintPreviewWebUITest}
- * @constructor
- */
-function PrintPreviewNoPDFWebUITest() {}
-
-PrintPreviewNoPDFWebUITest.prototype = {
-  __proto__: PrintPreviewWebUITest.prototype,
-
-  /**
-   * Provide a typedef for C++ to correspond to JS subclass.
-   * @type {?string}
-   * @override
-   */
-  typedefCppFixture: 'PrintPreviewWebUITest',
-
-  /**
-   * Always return false to simulate failure and check expected error condition.
-   * @return {boolean} Always false.
-   * @override
-   */
-  checkCompatiblePluginExists: function() {
-    return false;
-  },
-};
-
 // Test that error message is displayed when plugin doesn't exist.
-TEST_F('PrintPreviewNoPDFWebUITest', 'TestErrorMessage', function() {
-  var errorButton = $('error-button');
-  assertNotEquals(null, errorButton);
-  expectFalse(errorButton.disabled);
-  var errorText = $('custom-message');
-  assertNotEquals(null, errorText);
-  expectFalse(errorText.hidden);
+TEST_F('PrintPreviewWebUITest', 'TestNoPDFPluginErrorMessage', function() {
+  var previewAreaEl = $('preview-area');
+
+  var loadingMessageEl =
+      previewAreaEl.getElementsByClassName('preview-area-loading-message')[0];
+  expectEquals('none', loadingMessageEl.style.display);
+
+  var previewFailedMessageEl = previewAreaEl.getElementsByClassName(
+      'preview-area-preview-failed-message')[0];
+  expectEquals('none', previewFailedMessageEl.style.display);
+
+  var printFailedMessageEl =
+      previewAreaEl.getElementsByClassName('preview-area-print-failed')[0];
+  expectEquals('none', printFailedMessageEl.style.display);
+
+  var customMessageEl =
+      previewAreaEl.getElementsByClassName('preview-area-custom-message')[0];
+  expectEquals('', customMessageEl.style.display);
 });
