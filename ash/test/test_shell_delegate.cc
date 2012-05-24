@@ -60,7 +60,7 @@ void TestShellDelegate::OpenCrosh() {
 void TestShellDelegate::OpenMobileSetup() {
 }
 
-void TestShellDelegate::ShowKeyboardOverlay(ui::AcceleratorTarget* target) {
+void TestShellDelegate::ShowKeyboardOverlay() {
 }
 
 content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {

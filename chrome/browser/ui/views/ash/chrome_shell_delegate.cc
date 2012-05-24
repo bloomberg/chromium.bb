@@ -194,9 +194,9 @@ void ChromeShellDelegate::OpenMobileSetup() {
 #endif
 }
 
-void ChromeShellDelegate::ShowKeyboardOverlay(ui::AcceleratorTarget* target) {
+void ChromeShellDelegate::ShowKeyboardOverlay() {
 #if defined(OS_CHROMEOS)
-  KeyboardOverlayDialogView::ShowDialog(target);
+  KeyboardOverlayDialogView::ShowDialog();
 #endif
 }
 

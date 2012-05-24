@@ -369,6 +369,14 @@ function handleKeyEvent(e) {
   if (!getKeyboardOverlayId()) {
     return;
   }
+  var shortcutData = getShortcutData();
+  var action = getAction(String.fromCharCode(e.keyCode).toLowerCase(),
+                         modifiers);
+  if (e.keyCode == 27 ||  // Escape
+      shortcutData[action]) {
+    chrome.send('DialogClose');
+    return;
+  }
   update(modifiers);
   KeyboardOverlayAccessibilityHelper.maybeSpeakAllShortcuts(modifiers);
 }

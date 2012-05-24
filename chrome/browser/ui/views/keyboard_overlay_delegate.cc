@@ -6,9 +6,7 @@
 
 #include <algorithm>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/ui/views/web_dialog_view.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -70,8 +68,6 @@ std::string KeyboardOverlayDelegate::GetDialogArgs() const {
 
 void KeyboardOverlayDelegate::OnDialogClosed(
     const std::string& json_retval) {
-  // Re-enable Shift+Alt. crosbug.com/17208.
-  chromeos::input_method::InputMethodManager::GetInstance()->EnableHotkeys();
   delete this;
   return;
 }

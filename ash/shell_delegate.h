@@ -21,10 +21,6 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-class AcceleratorTarget;
-}
-
 namespace views {
 class Widget;
 }
@@ -79,7 +75,7 @@ class ASH_EXPORT ShellDelegate {
   virtual void OpenMobileSetup() = 0;
 
   // Shows the keyboard shortcut overlay.
-  virtual void ShowKeyboardOverlay(ui::AcceleratorTarget* target) = 0;
+  virtual void ShowKeyboardOverlay() = 0;
 
   // Get the current browser context. This will get us the current profile.
   virtual content::BrowserContext* GetCurrentBrowserContext() = 0;
