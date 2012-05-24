@@ -1229,7 +1229,15 @@ DirectoryModel.prototype.isGDataMounted_ = function() {
 DirectoryModel.prototype.onMountChanged_ = function() {
   this.updateRoots_();
 
-  if (this.getCurrentRootType() != DirectoryModel.RootType.GDATA)
+  var rootType = this.getCurrentRootType();
+
+  if ((rootType == DirectoryModel.RootType.ARCHIVE ||
+       rootType == DirectoryModel.RootType.REMOVABLE) &&
+      !this.volumeManager_.isMounted(this.getCurrentRootPath())) {
+    this.changeDirectory(this.getDefaultDirectory());
+  }
+
+  if (rootType != DirectoryModel.RootType.GDATA)
     return;
 
   var mounted = this.isGDataMounted_();
