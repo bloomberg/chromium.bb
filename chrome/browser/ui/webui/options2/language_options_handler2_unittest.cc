@@ -11,14 +11,12 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
-#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/ui/webui/options2/chromeos/cros_language_options_handler2.h"
 
 using chromeos::input_method::InputMethodDescriptor;
 using chromeos::input_method::InputMethodDescriptors;
 using chromeos::input_method::InputMethodManager;
-using chromeos::input_method::InputMethodWhitelist;
 using chromeos::input_method::MockInputMethodManager;
 
 namespace {
@@ -46,14 +44,11 @@ class LanguageOptionsHandlerTest : public testing::Test {
   InputMethodDescriptor GetDesc(const std::string& id,
                                 const std::string& raw_layout,
                                 const std::string& language_code) {
-    return InputMethodDescriptor(whitelist_,
-                                 id,
+    return InputMethodDescriptor(id,
                                  "",  // name
                                  raw_layout,
                                  language_code);
   }
-
-  const InputMethodWhitelist whitelist_;
 };
 
 }  // namespace

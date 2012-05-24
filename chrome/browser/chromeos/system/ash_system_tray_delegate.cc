@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/input_method/input_method_whitelist.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"

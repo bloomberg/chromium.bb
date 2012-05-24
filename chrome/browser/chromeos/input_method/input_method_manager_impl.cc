@@ -296,9 +296,8 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     return;
   }
 
-  const std::string virtual_layouts = JoinString(layouts, ',');
-  extra_input_methods_[id] = InputMethodDescriptor(
-      whitelist_, id, name, virtual_layouts, language);
+  const std::string layout = layouts.empty() ? "" : layouts[0];
+  extra_input_methods_[id] = InputMethodDescriptor(id, name, layout, language);
 
   if (!Contains(active_input_method_ids_, id)) {
     active_input_method_ids_.push_back(id);

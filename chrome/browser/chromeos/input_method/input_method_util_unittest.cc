@@ -45,8 +45,7 @@ class InputMethodUtilTest : public testing::Test {
   InputMethodDescriptor GetDesc(const std::string& id,
                                 const std::string& raw_layout,
                                 const std::string& language_code) {
-    return InputMethodDescriptor(whitelist_,
-                                 id,
+    return InputMethodDescriptor(id,
                                  "",
                                  raw_layout,
                                  language_code);

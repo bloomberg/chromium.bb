@@ -28,17 +28,5 @@ TEST_F(InputMethodWhitelistTest, TestInputMethodIdIsWhitelisted) {
   EXPECT_FALSE(whitelist_.InputMethodIdIsWhitelisted(""));
 }
 
-TEST_F(InputMethodWhitelistTest, TestXkbLayoutIsSupported) {
-  EXPECT_TRUE(whitelist_.XkbLayoutIsSupported("us"));
-  EXPECT_TRUE(whitelist_.XkbLayoutIsSupported("us(dvorak)"));
-  EXPECT_TRUE(whitelist_.XkbLayoutIsSupported("fr"));
-  EXPECT_FALSE(whitelist_.XkbLayoutIsSupported("us,"));
-  EXPECT_FALSE(whitelist_.XkbLayoutIsSupported("us,fr"));
-  EXPECT_FALSE(whitelist_.XkbLayoutIsSupported("xkb:us:dvorak:eng"));
-  EXPECT_FALSE(whitelist_.XkbLayoutIsSupported("mozc"));
-  EXPECT_FALSE(whitelist_.XkbLayoutIsSupported(","));
-  EXPECT_FALSE(whitelist_.XkbLayoutIsSupported(""));
-}
-
 }  // namespace input_method
 }  // namespace chromeos
