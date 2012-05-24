@@ -11,20 +11,11 @@
 # TODO(rkc): Figure out why does the sym linking break tests, eventually
 this_dir="$(realpath $(dirname $0))"
 [ -f "$this_dir/chrome" ] || cp "/opt/google/chrome/chrome" "$this_dir/chrome"
-ln -f -s "/opt/google/chrome/chrome.pak" "$this_dir/chrome.pak"
 [ -L "$this_dir/locales" ] || ln -f -s "/opt/google/chrome/locales" \
     "$this_dir/locales"
 [ -L "$this_dir/resources" ] || ln -f -s "/opt/google/chrome/resources" \
     "$this_dir/resources"
-ln -f -s "/opt/google/chrome/resources.pak" "$this_dir/resources.pak"
-ln -f -s "/opt/google/chrome/ui_resources_standard.pak" \
-    "$this_dir/ui_resources_standard.pak"
-ln -f -s "/opt/google/chrome/ui_resources_touch.pak" \
-    "$this_dir/ui_resources_touch.pak"
-ln -f -s "/opt/google/chrome/theme_resources_standard.pak" \
-    "$this_dir/theme_resources_standard.pak"
-ln -f -s "/opt/google/chrome/theme_resources_touch_1x.pak" \
-    "$this_dir/theme_resources_touch_1x.pak"
+ln -f -s /opt/google/chrome/*.pak "$this_dir/"
 
 mkdir -p "$this_dir/chromeos"
 ln -f -s "/opt/google/chrome/chromeos/libcros.so" \
