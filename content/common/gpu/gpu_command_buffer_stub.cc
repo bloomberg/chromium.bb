@@ -236,6 +236,7 @@ void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
 
 void GpuCommandBufferStub::OnInitialize(
     IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnInitialize");
   DCHECK(!command_buffer_.get());
 
   command_buffer_.reset(new gpu::CommandBufferService);
@@ -358,6 +359,7 @@ void GpuCommandBufferStub::OnInitialize(
 
 void GpuCommandBufferStub::OnSetGetBuffer(
     int32 shm_id, IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetGetBuffer");
   if (command_buffer_.get()) {
     command_buffer_->SetGetBuffer(shm_id);
   } else {
@@ -369,6 +371,7 @@ void GpuCommandBufferStub::OnSetGetBuffer(
 
 void GpuCommandBufferStub::OnSetSharedStateBuffer(
     int32 shm_id, IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetSharedStateBuffer");
   if (command_buffer_.get()) {
     command_buffer_->SetSharedStateBuffer(shm_id);
   } else {
@@ -381,6 +384,7 @@ void GpuCommandBufferStub::OnSetSharedStateBuffer(
 void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,
                                        uint32 parent_texture_id,
                                        IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetParent");
   GpuCommandBufferStub* parent_stub = NULL;
   if (parent_route_id != MSG_ROUTING_NONE) {
     parent_stub = channel_->LookupCommandBuffer(parent_route_id);
@@ -404,6 +408,7 @@ void GpuCommandBufferStub::OnSetParent(int32 parent_route_id,
 }
 
 void GpuCommandBufferStub::OnGetState(IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnGetState");
   if (command_buffer_.get()) {
     gpu::CommandBuffer::State state = command_buffer_->GetState();
     if (state.error == gpu::error::kLostContext &&
@@ -469,6 +474,7 @@ void GpuCommandBufferStub::OnRescheduled() {
 void GpuCommandBufferStub::OnCreateTransferBuffer(int32 size,
                                                   int32 id_request,
                                                   IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateTransferBuffer");
   if (command_buffer_.get()) {
     int32 id = command_buffer_->CreateTransferBuffer(size, id_request);
     GpuCommandBufferMsg_CreateTransferBuffer::WriteReplyParams(
@@ -484,6 +490,7 @@ void GpuCommandBufferStub::OnRegisterTransferBuffer(
     size_t size,
     int32 id_request,
     IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnRegisterTransferBuffer");
   base::SharedMemory shared_memory(transfer_buffer, false);
 
   if (command_buffer_.get()) {
@@ -502,6 +509,7 @@ void GpuCommandBufferStub::OnRegisterTransferBuffer(
 void GpuCommandBufferStub::OnDestroyTransferBuffer(
     int32 id,
     IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyTransferBuffer");
   if (command_buffer_.get()) {
     command_buffer_->DestroyTransferBuffer(id);
   } else {
@@ -513,6 +521,7 @@ void GpuCommandBufferStub::OnDestroyTransferBuffer(
 void GpuCommandBufferStub::OnGetTransferBuffer(
     int32 id,
     IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnGetTransferBuffer");
   if (command_buffer_.get()) {
     base::SharedMemoryHandle transfer_buffer = base::SharedMemoryHandle();
     uint32 size = 0;
@@ -559,6 +568,7 @@ void GpuCommandBufferStub::ReportState() {
 void GpuCommandBufferStub::OnCreateVideoDecoder(
     media::VideoCodecProfile profile,
     IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
   int decoder_route_id = channel_->GenerateRouteID();
   GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(
       reply_message, decoder_route_id);
@@ -570,11 +580,13 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
 }
 
 void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyVideoDecoder");
   channel_->RemoveRoute(decoder_route_id);
   video_decoders_.Remove(decoder_route_id);
 }
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetSurfaceVisible");
   DCHECK(surface_state_.get());
   surface_state_->visible = visible;
   surface_state_->last_used_time = base::TimeTicks::Now();
@@ -582,12 +594,14 @@ void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
 }
 
 void GpuCommandBufferStub::OnDiscardBackbuffer() {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDiscardBackbuffer");
   if (!surface_)
     return;
   surface_->SetBackbufferAllocation(false);
 }
 
 void GpuCommandBufferStub::OnEnsureBackbuffer() {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnEnsureBackbuffer");
   if (!surface_)
     return;
   surface_->SetBackbufferAllocation(true);
@@ -595,6 +609,9 @@ void GpuCommandBufferStub::OnEnsureBackbuffer() {
 
 void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
     bool has_callback) {
+  TRACE_EVENT0(
+      "gpu",
+      "GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback");
   client_has_memory_allocation_changed_callback_ = has_callback;
   channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
 }

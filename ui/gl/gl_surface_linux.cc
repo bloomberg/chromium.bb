@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_surface.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -265,6 +266,7 @@ NativeViewGLSurfaceOSMesa::~NativeViewGLSurfaceOSMesa() {
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     bool software,
     gfx::AcceleratedWidget window) {
+  TRACE_EVENT0("gpu", "GLSurface::CreateViewGLSurface");
   if (software)
     return NULL;
 
@@ -304,6 +306,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
     bool software,
     const gfx::Size& size) {
+  TRACE_EVENT0("gpu", "GLSurface::CreateOffscreenGLSurface");
   if (software)
     return NULL;
 

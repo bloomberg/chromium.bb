@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/scoped_generic_obj.h"
@@ -41,6 +42,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
     GLShareGroup* share_group,
     GLSurface* compatible_surface,
     GpuPreference gpu_preference) {
+  TRACE_EVENT0("gpu", "GLContext::CreateGLContext");
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
     case kGLImplementationAppleGL: {

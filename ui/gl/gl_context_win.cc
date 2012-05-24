@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_context.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
@@ -24,6 +25,7 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
     GLShareGroup* share_group,
     GLSurface* compatible_surface,
     GpuPreference gpu_preference) {
+  TRACE_EVENT0("gpu", "GLContext::CreateGLContext");
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLContext> context(new GLContextOSMesa(share_group));

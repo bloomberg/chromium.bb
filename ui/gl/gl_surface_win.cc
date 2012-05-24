@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_surface.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
@@ -174,6 +175,7 @@ bool NativeViewGLSurfaceOSMesa::PostSubBuffer(
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     bool software,
     gfx::AcceleratedWidget window) {
+  TRACE_EVENT0("gpu", "GLSurface::CreateViewGLSurface");
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(
@@ -212,6 +214,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
     bool software,
     const gfx::Size& size) {
+  TRACE_EVENT0("gpu", "GLSurface::CreateOffscreenGLSurface");
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
