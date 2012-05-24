@@ -500,6 +500,52 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   contents_ = wrapper;
 }
 
+- (void)setInlineDispositionFrameSize:(NSSize)inlineContentSize {
+  DCHECK(contents_);
+
+  // Compute container size to fit all elements, including padding.
+  NSSize containerSize = inlineContentSize;
+  containerSize.height += 2 * kFramePadding;
+  containerSize.width += 2 * kFramePadding + kFramePadding + kCloseButtonSize;
+
+  // Ensure minimum container width.
+  containerSize.width = std::max(kWindowWidth, containerSize.width);
+
+  // Retrieve views involved in resizing.
+  // TODO(groby): This relies on knowledge of internal views. Separate object
+  // creation from laying out objects in performLayoutWithModel: so this can
+  // just call performLayout:.
+  NSView* contentView = [[self window] contentView];
+  NSView* flippedView = [[contentView subviews] objectAtIndex:0];
+  NSView* webContentView = contents_->web_contents()->GetNativeView();
+
+  // Resize web contents.
+  [webContentView setFrameSize:inlineContentSize];
+
+  // Position close button.
+  NSRect buttonFrame = [closeButton_ frame];
+  buttonFrame.origin.x = containerSize.width - kFramePadding - kCloseButtonSize;
+  [closeButton_ setFrame:buttonFrame];
+
+  // Resize container views.
+  NSRect frame = NSMakeRect(0, 0, 0, 0);
+  frame.size = containerSize;
+  [contentView setFrame:frame];
+  [flippedView setFrame:frame];
+
+  // Resize and reposition dialog window.
+  frame.size = [[[self window] contentView] convertSize:containerSize
+                                                 toView:nil];
+  frame = [[self window] frameRectForContentRect:frame];
+
+  // Readjust window position to keep top in place and center horizontally.
+  NSRect windowFrame = [[self window] frame];
+  windowFrame.origin.x -= (NSWidth(frame) - NSWidth(windowFrame)) / 2.0;
+  windowFrame.origin.y -= (NSHeight(frame) - NSHeight(windowFrame));
+  windowFrame.size = frame.size;
+  [[self window] setFrame:windowFrame display:YES animate:NO];
+}
+
 // Pop up a new tab with the Chrome Web Store.
 - (IBAction)showChromeWebStore:(id)sender {
   DCHECK(picker_);
@@ -613,8 +659,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     return 0;
 
   // Determine a good size for the inline disposition window.
-  gfx::Size size = WebIntentPicker::GetDefaultInlineDispositionSize(
-      contents_->web_contents());
+  gfx::Size size = WebIntentPicker::GetMinInlineDispositionSize();
   NSRect frame = NSMakeRect(kFramePadding, offset, size.width(), size.height());
 
   [contents_->web_contents()->GetNativeView() setFrame:frame];

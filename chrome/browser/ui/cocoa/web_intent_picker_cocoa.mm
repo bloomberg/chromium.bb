@@ -213,6 +213,13 @@ void WebIntentPickerCocoa::OnExtensionInstallFailure(const std::string& id) {
   [sheet_controller_ stopThrobber];
 }
 
+void WebIntentPickerCocoa::OnInlineDispositionAutoResize(
+    const gfx::Size& size) {
+  DCHECK(sheet_controller_);
+  NSSize inline_content_size = NSMakeSize(size.width(), size.height());
+  [sheet_controller_ setInlineDispositionFrameSize:inline_content_size];
+}
+
 void WebIntentPickerCocoa::OnExtensionLinkClicked(const std::string& id) {
   DCHECK(delegate_);
   delegate_->OnExtensionLinkClicked(id);

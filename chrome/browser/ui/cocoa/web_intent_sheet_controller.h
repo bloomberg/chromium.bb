@@ -43,6 +43,9 @@ class WebIntentPickerModel;
 // Set the contents for inline disposition intents.
 - (void)setInlineDispositionTabContents:(TabContentsWrapper*)wrapper;
 
+// Set the size of the inline disposition view.
+- (void)setInlineDispositionFrameSize:(NSSize)size;
+
 - (void)performLayoutWithModel:(WebIntentPickerModel*)model;
 
 // Sets the action string of the picker, e.g.,
