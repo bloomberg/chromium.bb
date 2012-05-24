@@ -829,7 +829,6 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 }
 
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
-  DCHECK(!configuring_sync_);
   OpenSyncSetup(false);
 }
 
