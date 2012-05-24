@@ -11,10 +11,10 @@ vars = {
   "webkit_revision": "118384",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "8670",
+  "nacl_revision": "8699",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
-  "nacl_tools_revision": "8228",  # native_client/DEPS: tools_rev
+  "nacl_tools_revision": "8673",  # native_client/DEPS: tools_rev
 
   # These hashes need to be updated when nacl_toolchain_revision is changed.
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
