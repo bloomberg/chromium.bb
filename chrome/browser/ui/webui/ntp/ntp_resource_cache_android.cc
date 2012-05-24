@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 
+#include "base/memory/ref_counted_memory.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -19,6 +19,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
@@ -73,7 +74,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_NEW_TAB_4_HTML));
+      GetRawDataResource(IDR_NEW_TAB_4_HTML,
+                         ui::SCALE_FACTOR_NONE));
 
   const char* new_tab_link = kLearnMoreIncognitoUrl;
   string16 learnMoreLink = ASCIIToUTF16(

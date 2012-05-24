@@ -29,14 +29,15 @@
 #include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCookie.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginListBuilder.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCookie.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "ui/base/layout.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/webthread_impl.h"
@@ -369,7 +370,8 @@ WebData loadAudioSpatializationResource(WebKitPlatformSupportImpl* platform,
       is_resource_index_good) {
     const int kFirstAudioResourceIndex = IDR_AUDIO_SPATIALIZATION_T000_P000;
     base::StringPiece resource =
-        platform->GetDataResource(kFirstAudioResourceIndex + resource_index);
+        platform->GetDataResource(kFirstAudioResourceIndex + resource_index,
+                                  ui::SCALE_FACTOR_NONE);
     return WebData(resource.data(), resource.size());
   }
 #endif  // IDR_AUDIO_SPATIALIZATION_T000_P000
@@ -381,89 +383,108 @@ WebData loadAudioSpatializationResource(WebKitPlatformSupportImpl* platform,
 struct DataResource {
   const char* name;
   int id;
-  float scale_factor;
+  ui::ScaleFactor scale_factor;
 };
 
 const DataResource kDataResources[] = {
-  { "missingImage", IDR_BROKENIMAGE, 1.0 },
-  { "missingImage@2x", IDR_BROKENIMAGE, 2.0 },
+  { "missingImage", IDR_BROKENIMAGE, ui::SCALE_FACTOR_100P },
+  { "missingImage@2x", IDR_BROKENIMAGE, ui::SCALE_FACTOR_200P },
 #if defined(OS_ANDROID)
-  { "mediaFullscreen", IDR_MEDIA_FULLSCREEN_BUTTON, 1.0 },
+  { "mediaFullscreen", IDR_MEDIA_FULLSCREEN_BUTTON, ui::SCALE_FACTOR_100P },
 #endif
-  { "mediaPause", IDR_MEDIA_PAUSE_BUTTON, 1.0 },
-  { "mediaPlay", IDR_MEDIA_PLAY_BUTTON, 1.0 },
-  { "mediaPlayDisabled", IDR_MEDIA_PLAY_BUTTON_DISABLED, 1.0 },
-  { "mediaSoundDisabled", IDR_MEDIA_SOUND_DISABLED, 1.0 },
-  { "mediaSoundFull", IDR_MEDIA_SOUND_FULL_BUTTON, 1.0 },
-  { "mediaSoundNone", IDR_MEDIA_SOUND_NONE_BUTTON, 1.0 },
-  { "mediaSliderThumb", IDR_MEDIA_SLIDER_THUMB, 1.0 },
-  { "mediaVolumeSliderThumb", IDR_MEDIA_VOLUME_SLIDER_THUMB, 1.0 },
-  { "mediaplayerPause", IDR_MEDIAPLAYER_PAUSE_BUTTON, 1.0 },
-  { "mediaplayerPauseHover", IDR_MEDIAPLAYER_PAUSE_BUTTON_HOVER, 1.0 },
-  { "mediaplayerPauseDown", IDR_MEDIAPLAYER_PAUSE_BUTTON_DOWN, 1.0 },
-  { "mediaplayerPlay", IDR_MEDIAPLAYER_PLAY_BUTTON, 1.0 },
-  { "mediaplayerPlayHover", IDR_MEDIAPLAYER_PLAY_BUTTON_HOVER, 1.0 },
-  { "mediaplayerPlayDown", IDR_MEDIAPLAYER_PLAY_BUTTON_DOWN, 1.0 },
-  { "mediaplayerPlayDisabled", IDR_MEDIAPLAYER_PLAY_BUTTON_DISABLED, 1.0 },
-  { "mediaplayerSoundLevel3", IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON, 1.0 },
+  { "mediaPause", IDR_MEDIA_PAUSE_BUTTON, ui::SCALE_FACTOR_100P },
+  { "mediaPlay", IDR_MEDIA_PLAY_BUTTON, ui::SCALE_FACTOR_100P },
+  { "mediaPlayDisabled",
+    IDR_MEDIA_PLAY_BUTTON_DISABLED, ui::SCALE_FACTOR_100P },
+  { "mediaSoundDisabled", IDR_MEDIA_SOUND_DISABLED, ui::SCALE_FACTOR_100P },
+  { "mediaSoundFull", IDR_MEDIA_SOUND_FULL_BUTTON, ui::SCALE_FACTOR_100P },
+  { "mediaSoundNone", IDR_MEDIA_SOUND_NONE_BUTTON, ui::SCALE_FACTOR_100P },
+  { "mediaSliderThumb", IDR_MEDIA_SLIDER_THUMB, ui::SCALE_FACTOR_100P },
+  { "mediaVolumeSliderThumb",
+    IDR_MEDIA_VOLUME_SLIDER_THUMB, ui::SCALE_FACTOR_100P },
+  { "mediaplayerPause", IDR_MEDIAPLAYER_PAUSE_BUTTON, ui::SCALE_FACTOR_100P },
+  { "mediaplayerPauseHover",
+    IDR_MEDIAPLAYER_PAUSE_BUTTON_HOVER, ui::SCALE_FACTOR_100P },
+  { "mediaplayerPauseDown",
+    IDR_MEDIAPLAYER_PAUSE_BUTTON_DOWN, ui::SCALE_FACTOR_100P },
+  { "mediaplayerPlay", IDR_MEDIAPLAYER_PLAY_BUTTON, ui::SCALE_FACTOR_100P },
+  { "mediaplayerPlayHover",
+    IDR_MEDIAPLAYER_PLAY_BUTTON_HOVER, ui::SCALE_FACTOR_100P },
+  { "mediaplayerPlayDown",
+    IDR_MEDIAPLAYER_PLAY_BUTTON_DOWN, ui::SCALE_FACTOR_100P },
+  { "mediaplayerPlayDisabled",
+    IDR_MEDIAPLAYER_PLAY_BUTTON_DISABLED, ui::SCALE_FACTOR_100P },
+  { "mediaplayerSoundLevel3",
+    IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON, ui::SCALE_FACTOR_100P },
   { "mediaplayerSoundLevel3Hover",
-    IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON_HOVER, 1.0 },
+    IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON_HOVER, ui::SCALE_FACTOR_100P },
   { "mediaplayerSoundLevel3Down",
-    IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON_DOWN, 1.0 },
-  { "mediaplayerSoundLevel2", IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON, 1.0 },
+    IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON_DOWN, ui::SCALE_FACTOR_100P },
+  { "mediaplayerSoundLevel2",
+    IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON, ui::SCALE_FACTOR_100P },
   { "mediaplayerSoundLevel2Hover",
-    IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_HOVER, 1.0 },
+    IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_HOVER, ui::SCALE_FACTOR_100P },
   { "mediaplayerSoundLevel2Down",
-    IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_DOWN, 1.0 },
-  { "mediaplayerSoundLevel1", IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON, 1.0 },
+    IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_DOWN, ui::SCALE_FACTOR_100P },
+  { "mediaplayerSoundLevel1",
+    IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON, ui::SCALE_FACTOR_100P },
   { "mediaplayerSoundLevel1Hover",
-    IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_HOVER, 1.0 },
+    IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_HOVER, ui::SCALE_FACTOR_100P },
   { "mediaplayerSoundLevel1Down",
-    IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_DOWN, 1.0 },
-  { "mediaplayerSoundLevel0", IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON, 1.0 },
+    IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_DOWN, ui::SCALE_FACTOR_100P },
+  { "mediaplayerSoundLevel0",
+    IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON, ui::SCALE_FACTOR_100P },
   { "mediaplayerSoundLevel0Hover",
-    IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON_HOVER, 1.0 },
+    IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON_HOVER, ui::SCALE_FACTOR_100P },
   { "mediaplayerSoundLevel0Down",
-    IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON_DOWN, 1.0 },
-  { "mediaplayerSoundDisabled", IDR_MEDIAPLAYER_SOUND_DISABLED, 1.0 },
-  { "mediaplayerSliderThumb", IDR_MEDIAPLAYER_SLIDER_THUMB, 1.0 },
-  { "mediaplayerSliderThumbHover", IDR_MEDIAPLAYER_SLIDER_THUMB_HOVER, 1.0 },
-  { "mediaplayerSliderThumbDown", IDR_MEDIAPLAYER_SLIDER_THUMB_DOWN, 1.0 },
-  { "mediaplayerVolumeSliderThumb", IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB, 1.0 },
+    IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON_DOWN, ui::SCALE_FACTOR_100P },
+  { "mediaplayerSoundDisabled",
+    IDR_MEDIAPLAYER_SOUND_DISABLED, ui::SCALE_FACTOR_100P },
+  { "mediaplayerSliderThumb",
+    IDR_MEDIAPLAYER_SLIDER_THUMB, ui::SCALE_FACTOR_100P },
+  { "mediaplayerSliderThumbHover",
+    IDR_MEDIAPLAYER_SLIDER_THUMB_HOVER, ui::SCALE_FACTOR_100P },
+  { "mediaplayerSliderThumbDown",
+    IDR_MEDIAPLAYER_SLIDER_THUMB_DOWN, ui::SCALE_FACTOR_100P },
+  { "mediaplayerVolumeSliderThumb",
+    IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB, ui::SCALE_FACTOR_100P },
   { "mediaplayerVolumeSliderThumbHover",
-    IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_HOVER, 1.0 },
+    IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_HOVER, ui::SCALE_FACTOR_100P },
   { "mediaplayerVolumeSliderThumbDown",
-    IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DOWN, 1.0 },
+    IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DOWN, ui::SCALE_FACTOR_100P },
   { "mediaplayerVolumeSliderThumbDisabled",
-    IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DISABLED, 1.0 },
-  { "mediaplayerFullscreen", IDR_MEDIAPLAYER_FULLSCREEN_BUTTON, 1.0 },
+    IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DISABLED, ui::SCALE_FACTOR_100P },
+  { "mediaplayerFullscreen",
+    IDR_MEDIAPLAYER_FULLSCREEN_BUTTON, ui::SCALE_FACTOR_100P },
   { "mediaplayerFullscreenHover",
-    IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_HOVER, 1.0 },
-  { "mediaplayerFullscreenDown", IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DOWN, 1.0 },
+    IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_HOVER, ui::SCALE_FACTOR_100P },
+  { "mediaplayerFullscreenDown",
+    IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DOWN, ui::SCALE_FACTOR_100P },
   { "mediaplayerFullscreenDisabled",
-    IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DISABLED, 1.0 },
+    IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DISABLED, ui::SCALE_FACTOR_100P },
 #if defined(OS_MACOSX)
-  { "overhangPattern", IDR_OVERHANG_PATTERN, 1.0 },
+  { "overhangPattern", IDR_OVERHANG_PATTERN, ui::SCALE_FACTOR_100P },
 #endif
-  { "panIcon", IDR_PAN_SCROLL_ICON, 1.0 },
-  { "searchCancel", IDR_SEARCH_CANCEL, 1.0 },
-  { "searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED, 1.0 },
-  { "searchMagnifier", IDR_SEARCH_MAGNIFIER, 1.0 },
-  { "searchMagnifierResults", IDR_SEARCH_MAGNIFIER_RESULTS, 1.0 },
-  { "textAreaResizeCorner", IDR_TEXTAREA_RESIZER, 1.0 },
-  { "textAreaResizeCorner@2x", IDR_TEXTAREA_RESIZER, 2.0 },
-  { "tickmarkDash", IDR_TICKMARK_DASH, 1.0 },
-  { "inputSpeech", IDR_INPUT_SPEECH, 1.0 },
-  { "inputSpeechRecording", IDR_INPUT_SPEECH_RECORDING, 1.0 },
-  { "inputSpeechWaiting", IDR_INPUT_SPEECH_WAITING, 1.0 },
-  { "americanExpressCC", IDR_AUTOFILL_CC_AMEX, 1.0 },
-  { "dinersCC", IDR_AUTOFILL_CC_DINERS, 1.0 },
-  { "discoverCC", IDR_AUTOFILL_CC_DISCOVER, 1.0 },
-  { "genericCC", IDR_AUTOFILL_CC_GENERIC, 1.0 },
-  { "jcbCC", IDR_AUTOFILL_CC_JCB, 1.0 },
-  { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD, 1.0 },
-  { "soloCC", IDR_AUTOFILL_CC_SOLO, 1.0 },
-  { "visaCC", IDR_AUTOFILL_CC_VISA, 1.0 },
+  { "panIcon", IDR_PAN_SCROLL_ICON, ui::SCALE_FACTOR_100P },
+  { "searchCancel", IDR_SEARCH_CANCEL, ui::SCALE_FACTOR_100P },
+  { "searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED, ui::SCALE_FACTOR_100P },
+  { "searchMagnifier", IDR_SEARCH_MAGNIFIER, ui::SCALE_FACTOR_100P },
+  { "searchMagnifierResults",
+    IDR_SEARCH_MAGNIFIER_RESULTS, ui::SCALE_FACTOR_100P },
+  { "textAreaResizeCorner", IDR_TEXTAREA_RESIZER, ui::SCALE_FACTOR_100P },
+  { "textAreaResizeCorner@2x", IDR_TEXTAREA_RESIZER, ui::SCALE_FACTOR_200P },
+  { "tickmarkDash", IDR_TICKMARK_DASH, ui::SCALE_FACTOR_100P },
+  { "inputSpeech", IDR_INPUT_SPEECH, ui::SCALE_FACTOR_100P },
+  { "inputSpeechRecording", IDR_INPUT_SPEECH_RECORDING, ui::SCALE_FACTOR_100P },
+  { "inputSpeechWaiting", IDR_INPUT_SPEECH_WAITING, ui::SCALE_FACTOR_100P },
+  { "americanExpressCC", IDR_AUTOFILL_CC_AMEX, ui::SCALE_FACTOR_100P },
+  { "dinersCC", IDR_AUTOFILL_CC_DINERS, ui::SCALE_FACTOR_100P },
+  { "discoverCC", IDR_AUTOFILL_CC_DISCOVER, ui::SCALE_FACTOR_100P },
+  { "genericCC", IDR_AUTOFILL_CC_GENERIC, ui::SCALE_FACTOR_100P },
+  { "jcbCC", IDR_AUTOFILL_CC_JCB, ui::SCALE_FACTOR_100P },
+  { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD, ui::SCALE_FACTOR_100P },
+  { "soloCC", IDR_AUTOFILL_CC_SOLO, ui::SCALE_FACTOR_100P },
+  { "visaCC", IDR_AUTOFILL_CC_VISA, ui::SCALE_FACTOR_100P },
 };
 
 }  // namespace
@@ -484,8 +505,8 @@ WebData WebKitPlatformSupportImpl::loadResource(const char* name) {
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
     if (!strcmp(name, kDataResources[i].name)) {
       base::StringPiece resource =
-          GetImageResource(kDataResources[i].id,
-                           kDataResources[i].scale_factor);
+          GetDataResource(kDataResources[i].id,
+                          kDataResources[i].scale_factor);
       return WebData(resource.data(), resource.size());
     }
   }

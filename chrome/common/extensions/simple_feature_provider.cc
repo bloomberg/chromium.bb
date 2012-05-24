@@ -9,6 +9,7 @@
 #include "chrome/common/extensions/manifest_feature.h"
 #include "chrome/common/extensions/permission_feature.h"
 #include "grit/common_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
@@ -42,7 +43,7 @@ struct Static {
       int resource_id) {
     std::string manifest_features =
         ResourceBundle::GetSharedInstance().GetRawDataResource(
-            resource_id).as_string();
+            resource_id, ui::SCALE_FACTOR_NONE).as_string();
     int error_code = 0;
     std::string error_message;
     Value* value = base::JSONReader::ReadAndReturnError(

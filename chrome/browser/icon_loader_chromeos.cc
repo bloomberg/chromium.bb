@@ -16,6 +16,7 @@
 #include "grit/component_extension_resources.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -197,7 +198,7 @@ void IconLoader::ReadIcon() {
   int idr = icon_mapper.Get().Lookup(group_, icon_size_);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_refptr<base::RefCountedStaticMemory> bytes(
-      rb.LoadDataResourceBytes(idr));
+      rb.LoadDataResourceBytes(idr, ui::SCALE_FACTOR_100P));
   DCHECK(bytes.get());
   SkBitmap bitmap;
   if (!gfx::PNGCodec::Decode(bytes->front(), bytes->size(), &bitmap))

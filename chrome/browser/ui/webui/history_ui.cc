@@ -45,6 +45,7 @@
 #include "grit/theme_resources_standard.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::UserMetricsAction;
@@ -485,5 +486,6 @@ const GURL HistoryUI::GetHistoryURLWithSearchText(const string16& text) {
 // static
 base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_HISTORY_FAVICON);
+      LoadDataResourceBytes(IDR_HISTORY_FAVICON,
+                            ui::SCALE_FACTOR_100P);
 }

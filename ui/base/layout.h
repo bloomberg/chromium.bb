@@ -27,6 +27,21 @@ enum DisplayLayout {
 // the .pak file of theme resources to load.
 UI_EXPORT DisplayLayout GetDisplayLayout();
 
+// Supported UI scale factors for the platform. This is used as an index
+// into the array |kScaleFactorScales| which maps the enum value to a float.
+enum ScaleFactor {
+  SCALE_FACTOR_100P = 0,
+
+  // The scale factor used for unscaled binary data, the 1x (default) scale
+  // factor data packs.
+  SCALE_FACTOR_NONE = SCALE_FACTOR_100P,
+
+  SCALE_FACTOR_200P,
+};
+
+// Returns the float scale value for |scale_factor|.
+UI_EXPORT float GetScaleFactorScale(ScaleFactor scale_factor);
+
 }  // namespace ui
 
 #endif  // UI_BASE_LAYOUT_H_

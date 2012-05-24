@@ -427,7 +427,7 @@ void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
 
   const base::StringPiece gpu_blacklist_json(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_GPU_BLACKLIST));
+          IDR_GPU_BLACKLIST, ui::SCALE_FACTOR_NONE));
   GpuBlacklist* gpu_blacklist = GpuBlacklist::GetInstance();
   bool succeed = gpu_blacklist->LoadGpuBlacklist(
       gpu_blacklist_json.as_string(), GpuBlacklist::kCurrentOsOnly);
@@ -1303,7 +1303,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
     ResourceBundle::GetSharedInstance().AddDataPack(
-        resources_pack_path, ui::ResourceHandle::kScaleFactor100x);
+        resources_pack_path, ui::SCALE_FACTOR_100P);
 #endif  // defined(OS_MACOSX)
   }
 

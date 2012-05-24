@@ -17,6 +17,15 @@ ResourceDataDLL::ResourceDataDLL(HINSTANCE module) : module_(module) {
 ResourceDataDLL::~ResourceDataDLL() {
 }
 
+bool ResourceDataDLL::HasResource(uint16 resource_id) const {
+  void* data_ptr;
+  size_t data_size;
+  return base::win::GetDataResourceFromModule(module_,
+                                              resource_id,
+                                              &data_ptr,
+                                              &data_size);
+}
+
 bool ResourceDataDLL::GetStringPiece(uint16 resource_id,
                                      base::StringPiece* data) const {
   DCHECK(data);
@@ -48,8 +57,8 @@ ResourceHandle::TextEncodingType ResourceDataDLL::GetTextEncodingType() const {
   return BINARY;
 }
 
-float ResourceDataDLL::GetScaleFactor() const {
-  return 1.0;
+ScaleFactor ResourceDataDLL::GetScaleFactor() const {
+  return ui::SCALE_FACTOR_NONE;
 }
 
 }  // namespace ui

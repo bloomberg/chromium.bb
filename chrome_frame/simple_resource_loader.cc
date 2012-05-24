@@ -206,7 +206,7 @@ bool SimpleResourceLoader::LoadLocalePack(
     if (file_util::PathExists(resource_pack_path) &&
         file_util::PathExists(dll_path)) {
       scoped_ptr<ui::DataPack> cur_data_pack(
-          new ui::DataPack(ui::ResourceHandle::kScaleFactor100x));
+          new ui::DataPack(ui::SCALE_FACTOR_100P));
       if (!cur_data_pack->Load(resource_pack_path))
         continue;
 

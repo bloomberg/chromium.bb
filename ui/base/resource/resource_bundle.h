@@ -18,6 +18,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
+#include "ui/base/layout.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
@@ -69,7 +70,7 @@ class UI_EXPORT ResourceBundle {
     // |pack_path| will contain the complete default path for the pack file if
     // known or just the pack file name otherwise.
     virtual FilePath GetPathForResourcePack(const FilePath& pack_path,
-                                            float scale_factor) = 0;
+                                            ScaleFactor scale_factor) = 0;
 
     // Called before a locale pack file is loaded. Return the full path for
     // the pack file to continue loading or an empty value to cancel loading.
@@ -89,11 +90,13 @@ class UI_EXPORT ResourceBundle {
     // Return a static memory resource or NULL to attempt retrieval of the
     // default resource.
     virtual base::RefCountedStaticMemory* LoadDataResourceBytes(
-        int resource_id) = 0;
+        int resource_id,
+        ScaleFactor scale_factor) = 0;
 
     // Retrieve a raw data resource. Return true if a resource was provided or
     // false to attempt retrieval of the default resource.
     virtual bool GetRawDataResource(int resource_id,
+                                    ScaleFactor scale_factor,
                                     base::StringPiece* value) = 0;
 
     // Retrieve a localized string. Return true if a string was provided or
@@ -137,7 +140,7 @@ class UI_EXPORT ResourceBundle {
   // this value). |scale_factor| is the scale of images in this resource pak
   // relative to the images in the 1x resource pak. This method is not thread
   // safe! You should call it immediately after calling InitSharedInstance.
-  void AddDataPack(const FilePath& path, float scale_factor);
+  void AddDataPack(const FilePath& path, ScaleFactor scale_factor);
 
   // Changes the locale for an already-initialized ResourceBundle, returning the
   // name of the newly-loaded locale.  Future calls to get strings will return
@@ -181,13 +184,19 @@ class UI_EXPORT ResourceBundle {
   // Same as GetNativeImageNamed() except that RTL is not enabled.
   gfx::Image& GetNativeImageNamed(int resource_id);
 
-  // Loads the raw bytes of a data resource into |bytes|,
-  // without doing any processing or interpretation of
-  // the resource. Returns whether we successfully read the resource.
-  base::RefCountedStaticMemory* LoadDataResourceBytes(int resource_id) const;
+  // Loads the raw bytes of a data resource nearest the scale factor
+  // |scale_factor| into |bytes|, without doing any processing or interpretation
+  // of the resource. Use ResourceHandle::SCALE_FACTOR_NONE for non-image
+  // resources. Returns NULL if we fail to read the resource.
+  base::RefCountedStaticMemory* LoadDataResourceBytes(
+      int resource_id,
+      ScaleFactor scale_factor) const;
 
-  // Return the contents of a resource in a StringPiece given the resource id.
-  base::StringPiece GetRawDataResource(int resource_id) const;
+  // Return the contents of a resource in a StringPiece given the resource id
+  // nearest the scale factor |scale_factor|.
+  // Use ResourceHanlde::SCALE_FACTOR_NONE for non-image resources.
+  base::StringPiece GetRawDataResource(int resource_id,
+                                       ScaleFactor scale_factor) const;
 
   // Get a localized string given a message id.  Returns an empty
   // string if the message_id is not found.
@@ -213,6 +222,7 @@ class UI_EXPORT ResourceBundle {
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetRawDataResource);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetLocalizedString);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, DelegateGetFont);
+  FRIEND_TEST_ALL_PREFIXES(ResourceBundle, GetRawDataResource);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LoadDataResourceBytes);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LocaleDataPakExists);
 
@@ -230,8 +240,9 @@ class UI_EXPORT ResourceBundle {
   // Returns the locale that is loaded.
   std::string LoadLocaleResources(const std::string& pref_locale);
 
-  // Load test resources in given path.
-  void LoadTestResources(const FilePath& path);
+  // Load test resources in given paths. If either path is empty an empty
+  // resource pack is loaded.
+  void LoadTestResources(const FilePath& path, const FilePath& locale_path);
 
   // Unload the locale specific strings and prepares to load new ones. See
   // comments for ReloadLocaleResources().

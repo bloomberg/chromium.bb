@@ -20,6 +20,7 @@
 #endif  // defined(OS_WIN)
 
 namespace {
+
 // Helper function that determines whether we want to optimize the UI for touch.
 bool UseTouchOptimizedUI() {
   // If --touch-optimized-ui is specified and not set to "auto", then override
@@ -54,6 +55,9 @@ bool UseTouchOptimizedUI() {
   return false;
 #endif
 }
+
+const float kScaleFactorScales[] = {1.0, 2.0};
+
 }
 
 namespace ui {
@@ -73,6 +77,10 @@ DisplayLayout GetDisplayLayout() {
 #else
   return LAYOUT_DESKTOP;
 #endif
+}
+
+float GetScaleFactorScale(ScaleFactor scale_factor) {
+  return kScaleFactorScales[scale_factor];
 }
 
 }  // namespace ui

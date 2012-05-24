@@ -30,11 +30,11 @@ namespace ui {
 
 void ResourceBundle::LoadCommonResources() {
   AddDataPack(GetResourcesPakFilePath("chrome.pak"),
-              ResourceHandle::kScaleFactor100x);
+              SCALE_FACTOR_100P);
   AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
-              ResourceHandle::kScaleFactor100x);
+              SCALE_FACTOR_100P);
   AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
-              ResourceHandle::kScaleFactor100x);
+              SCALE_FACTOR_100P);
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "grit/common_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -91,7 +92,7 @@ void AppendJsTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   static const base::StringPiece jstemplate_src(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_JSTEMPLATE_JS));
+          IDR_JSTEMPLATE_JS, ui::SCALE_FACTOR_NONE));
 
   if (jstemplate_src.empty()) {
     NOTREACHED() << "Unable to get jstemplate src";
@@ -117,10 +118,10 @@ void AppendI18nTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   static const base::StringPiece i18n_template_src(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_I18N_TEMPLATE_JS));
+          IDR_I18N_TEMPLATE_JS, ui::SCALE_FACTOR_NONE));
   static const base::StringPiece i18n_template2_src(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_I18N_TEMPLATE2_JS));
+          IDR_I18N_TEMPLATE2_JS, ui::SCALE_FACTOR_NONE));
   const base::StringPiece* template_src = g_version2 ?
       &i18n_template2_src : &i18n_template_src;
 
@@ -140,7 +141,7 @@ void AppendI18nTemplateProcessHtml(std::string* output) {
 
   static const base::StringPiece i18n_process_src(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_I18N_PROCESS_JS));
+          IDR_I18N_PROCESS_JS, ui::SCALE_FACTOR_NONE));
 
   if (i18n_process_src.empty()) {
     NOTREACHED() << "Unable to get i18n process src";

@@ -21,8 +21,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/resource_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
-#include "grit/webkit_resources.h"
 #include "grit/webkit_chromium_resources.h"
+#include "grit/webkit_resources.h"
 #include "net/base/net_module.h"
 #include "net/url_request/url_request_file_job.h"
 #include "skia/ext/bitmap_platform_device.h"
@@ -669,13 +669,10 @@ string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
   return string16(localized, length);
 }
 
-base::StringPiece TestShellWebKitInit::GetDataResource(int resource_id) {
-  return base::StringPiece();
-}
-
 // TODO(tc): Convert this to using resources from test_shell.rc.
-base::StringPiece TestShellWebKitInit::GetImageResource(int resource_id,
-                                                        float scale_factor) {
+base::StringPiece TestShellWebKitInit::GetDataResource(
+    int resource_id,
+    ui::ScaleFactor scale_factor) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)

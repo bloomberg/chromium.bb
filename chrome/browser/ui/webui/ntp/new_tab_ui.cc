@@ -53,6 +53,8 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -355,7 +357,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
     scoped_refptr<base::RefCountedStaticMemory> resource_bytes(
         it->second.second ?
             ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-                it->second.second) :
+                it->second.second, ui::SCALE_FACTOR_NONE) :
             new base::RefCountedStaticMemory);
     SendResponse(request_id, resource_bytes);
     return;

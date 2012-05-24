@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/ui_resources.h"
 #include "net/base/mime_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -107,7 +108,8 @@ void WallpaperThumbnailSource::StartDataRequest(const std::string& path,
   if (idr != -1) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SendResponse(request_id, rb.LoadDataResourceBytes(idr));
+    SendResponse(request_id, rb.LoadDataResourceBytes(idr,
+        ui::SCALE_FACTOR_100P));
   }
 }
 

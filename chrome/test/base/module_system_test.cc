@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "chrome/renderer/native_handler.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #include <map>
@@ -98,7 +99,8 @@ void ModuleSystemTest::RegisterModule(const std::string& name,
 void ModuleSystemTest::RegisterModule(const std::string& name,
                                       int resource_id) {
   const std::string& code = ResourceBundle::GetSharedInstance().
-      GetRawDataResource(resource_id).as_string();
+      GetRawDataResource(resource_id,
+                         ui::SCALE_FACTOR_NONE).as_string();
   source_map_->RegisterModule(name, code);
 }
 

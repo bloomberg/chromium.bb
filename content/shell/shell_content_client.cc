@@ -52,16 +52,11 @@ string16 ShellContentClient::GetLocalizedString(int message_id) const {
   return string16();
 }
 
-base::StringPiece ShellContentClient::GetDataResource(int resource_id) const {
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
-}
-
-base::StringPiece ShellContentClient::GetImageResource(
+base::StringPiece ShellContentClient::GetDataResource(
     int resource_id,
-    float scale_factor) const {
-  // TODO(flackr): Pass scale_factor to ResourceBundle to get best matching
-  // image resource for the given scale factor.
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+    ui::ScaleFactor scale_factor) const {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+      resource_id, scale_factor);
 }
 
 #if defined(OS_WIN)

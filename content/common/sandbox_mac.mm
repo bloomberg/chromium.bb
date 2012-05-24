@@ -31,6 +31,7 @@ extern "C" {
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "grit/content_resources.h"
+#include "ui/base/layout.h"
 #include "ui/gl/gl_surface.h"
 #include "unicode/uchar.h"
 
@@ -363,7 +364,8 @@ NSString* LoadSandboxTemplate(int sandbox_type) {
   }
 
   base::StringPiece sandbox_definition =
-      content::GetContentClient()->GetDataResource(sandbox_profile_resource_id);
+      content::GetContentClient()->GetDataResource(
+          sandbox_profile_resource_id, ui::SCALE_FACTOR_NONE);
   if (sandbox_definition.empty()) {
     LOG(FATAL) << "Failed to load the sandbox profile (resource id "
                << sandbox_profile_resource_id << ")";
@@ -371,7 +373,8 @@ NSString* LoadSandboxTemplate(int sandbox_type) {
   }
 
   base::StringPiece common_sandbox_definition =
-      content::GetContentClient()->GetDataResource(IDR_COMMON_SANDBOX_PROFILE);
+      content::GetContentClient()->GetDataResource(
+          IDR_COMMON_SANDBOX_PROFILE, ui::SCALE_FACTOR_NONE);
   if (common_sandbox_definition.empty()) {
     LOG(FATAL) << "Failed to load the common sandbox profile";
     return nil;

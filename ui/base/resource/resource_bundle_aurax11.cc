@@ -35,20 +35,20 @@ void ResourceBundle::LoadCommonResources() {
   // TODO(oshima): Fix this where it is unintended.
 
   AddDataPack(GetResourcesPakFilePath("chrome.pak"),
-              ResourceHandle::kScaleFactor100x);
+              SCALE_FACTOR_100P);
 
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
     AddDataPack(GetResourcesPakFilePath("theme_resources_touch_1x.pak"),
-                ResourceHandle::kScaleFactor100x);
+                SCALE_FACTOR_100P);
     AddDataPack(GetResourcesPakFilePath("ui_resources_touch.pak"),
-                ResourceHandle::kScaleFactor100x);
+                SCALE_FACTOR_100P);
   } else {
     AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
-                ResourceHandle::kScaleFactor100x);
+                SCALE_FACTOR_100P);
     AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
-                ResourceHandle::kScaleFactor100x);
+                SCALE_FACTOR_100P);
     AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"),
-                ResourceHandle::kScaleFactor200x);
+                SCALE_FACTOR_200P);
   }
 }
 

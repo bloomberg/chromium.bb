@@ -8,10 +8,11 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
-#include "ui/base/resource/resource_handle.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/scoped_gobject.h"
+#include "ui/base/layout.h"
+#include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/image/image.h"
 
@@ -65,11 +66,11 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 
 void ResourceBundle::LoadCommonResources() {
   AddDataPack(GetResourcesPakFilePath("chrome.pak"),
-              ResourceHandle::kScaleFactor100x);
+              SCALE_FACTOR_100P);
   AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"),
-              ResourceHandle::kScaleFactor100x);
+              SCALE_FACTOR_100P);
   AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
-              ResourceHandle::kScaleFactor100x);
+              SCALE_FACTOR_100P);
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
@@ -89,7 +90,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
 
   if (image.IsEmpty()) {
     scoped_refptr<base::RefCountedStaticMemory> data(
-        LoadDataResourceBytes(resource_id));
+        LoadDataResourceBytes(resource_id, SCALE_FACTOR_100P));
     GdkPixbuf* pixbuf = LoadPixbuf(data.get(), rtl == RTL_ENABLED);
 
     if (!pixbuf) {
