@@ -127,9 +127,10 @@ class BluetoothDisconnectFunction : public SyncExtensionFunction {
 class BluetoothReadFunction : public AsyncAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.read")
+  BluetoothReadFunction();
 
  protected:
-  virtual ~BluetoothReadFunction() {}
+  virtual ~BluetoothReadFunction();
 
   // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
@@ -146,9 +147,10 @@ class BluetoothReadFunction : public AsyncAPIFunction {
 class BluetoothWriteFunction : public AsyncAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.write")
+  BluetoothWriteFunction();
 
  protected:
-  virtual ~BluetoothWriteFunction() {}
+  virtual ~BluetoothWriteFunction();
 
   // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;

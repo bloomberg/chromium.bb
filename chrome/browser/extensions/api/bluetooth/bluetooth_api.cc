@@ -364,6 +364,12 @@ bool BluetoothWriteFunction::Respond() {
 
 #endif
 
+BluetoothReadFunction::BluetoothReadFunction() {}
+BluetoothReadFunction::~BluetoothReadFunction() {}
+
+BluetoothWriteFunction::BluetoothWriteFunction() {}
+BluetoothWriteFunction::~BluetoothWriteFunction() {}
+
 bool BluetoothSetOutOfBandPairingDataFunction::RunImpl() {
   NOTREACHED() << "Not implemented yet";
   return false;
