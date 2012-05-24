@@ -351,6 +351,9 @@
                   '|ui/base/native_theme/resources/.*'\
                   '|chrome/app/theme/.*'
     },
+    'shell_window': {
+      'filepath': 'chrome/browser/ui/(views/|gtk/|cocoa/|)extensions/shell.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -482,5 +485,6 @@
     'speech': ['satish@chromium.org'],
     'installer': ['grt+watch@chromium.org'],
     'ui_resources': ['oshima+watch@chromium.org'],
+    'shell_window': ['jeremya+watch@chromium.org'],
   },
 }
