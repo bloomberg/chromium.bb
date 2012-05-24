@@ -558,7 +558,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       command_line.HasSwitch(switches::kEnableEncryptedMedia));
 
   WebRuntimeFeatures::enableWebAudio(
-      !command_line.HasSwitch(switches::kDisableWebAudio));
+      !command_line.HasSwitch(switches::kDisableWebAudio) &&
+      media::IsMediaLibraryInitialized());
 
   WebRuntimeFeatures::enablePushState(true);
 
