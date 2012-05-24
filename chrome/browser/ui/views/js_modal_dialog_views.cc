@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/js_modal_dialog_views.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "grit/generated_resources.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"

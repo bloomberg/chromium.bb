@@ -25,7 +25,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"

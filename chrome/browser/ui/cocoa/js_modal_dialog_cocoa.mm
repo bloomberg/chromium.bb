@@ -10,7 +10,7 @@
 #import "base/mac/cocoa_protocols.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"

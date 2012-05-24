@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
-#include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
+#include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
