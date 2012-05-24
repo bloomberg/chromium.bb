@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -47,12 +47,13 @@ class ChromeosVolume(pyauto.PyUITest):
     default_volume = self.GetPrivateInfo()['default_volume']
     assert default_volume.get(board_name), \
            'No volume settings available for %s.' % board_name
-    volume_dict = {u'volume': default_volume[board_name],
-                   u'is_mute': default_volume['is_mute']}
+    expected = {u'volume': default_volume[board_name],
+                u'is_mute': default_volume['is_mute']}
     volume = self.GetVolumeInfo()
-    self.assertEqual(volume, volume_dict, 
-        msg='Volume settings are set to %s, not matching with default ' \
-        'volume settings %s.' % (volume, volume_dict))
+    self.assertEqual(volume.get('is_mute'), expected.get('is_mute'))
+    self.assertAlmostEqual(volume.get('volume'), expected.get('volume'),
+        msg='Volume settings are set to %s, not matching with default '
+            'volume settings %s.' % (volume, expected))
 
   def testLoginLogoutVolume(self):
     """Test that volume settings are preserved after login and logout"""
@@ -60,13 +61,13 @@ class ChromeosVolume(pyauto.PyUITest):
     self._Login()
     after_login = self.GetVolumeInfo()
     self.assertEqual(before_login, after_login,
-        msg='Before login : %s and after login : %s, volume states are not '\
-        'matching' % (before_login, after_login))
+        msg='Before login : %s and after login : %s, volume states are not '
+            'matching' % (before_login, after_login))
     self.Logout()
     after_logout = self.GetVolumeInfo()
     self.assertEqual(after_login, after_logout,
-        msg='Before logout : %s and after logout : %s, volume states are not '\
-        'matching' % (after_login, after_logout))
+        msg='Before logout : %s and after logout : %s, volume states are not '
+            'matching' % (after_login, after_logout))
     # For successive tests
     self._Login()
 
