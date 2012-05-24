@@ -2034,8 +2034,6 @@
    bug_105525
    Memcheck:Leak
    ...
-   fun:ripr_Path
-   fun:ripc_DrawPath
    fun:CGContextDrawPath
    fun:CGContextFillPath
    fun:_NSDrawWindowBackgroundRegion
@@ -2290,8 +2288,7 @@
    fun:CGFontCreateGlyphBitmap8
    fun:create_missing_bitmaps
    fun:CGGlyphLockLockGlyphBitmaps
-   fun:ripc_RenderGlyphs
-   fun:ripc_DrawGlyphs
+   ...
    fun:draw_glyphs
    fun:CGContextShowGlyphs
    fun:_ZN9Offscreen5getCGERK19SkScalerContext_MacRK7SkGlyphbtPm
