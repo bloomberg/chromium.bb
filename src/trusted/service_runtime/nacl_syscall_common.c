@@ -1073,54 +1073,6 @@ int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
 }
 
 
-/*
- * NaClVmHoleOpeningMu() is called when we are about to open a hole in
- * untrusted address space on Windows, where we cannot atomically
- * remap pages.
- *
- * NaClVmHoleOpeningMu() must be called with the mutex nap->mu held.
- * NaClVmHoleClosingMu() must later be called to undo the effects of
- * this call.
- */
-static void NaClVmHoleOpeningMu(struct NaClApp *nap) {
-#if NACL_WINDOWS
-  /*
-   * Temporarily stop any of NaCl's threads from launching so that no
-   * trusted thread's stack will be allocated inside the mmap hole.
-   */
-  while (0 != nap->threads_launching) {
-    NaClXCondVarWait(&nap->cv, &nap->mu);
-  }
-  nap->vm_hole_may_exist = 1;
-
-  /*
-   * For safety, suspend all untrusted threads so that if another
-   * trusted thread (outside of our control) allocates memory that is
-   * placed into the mmap hole, untrusted code will not be able to
-   * write to that location.
-   */
-  NaClUntrustedThreadsSuspendAll(nap);
-#else
-  UNREFERENCED_PARAMETER(nap);
-#endif
-}
-
-/*
- * NaClVmHoleClosingMu() is the counterpart of NaClVmHoleOpeningMu().
- * It must be called with the mutex nap->mu held.
- */
-static void NaClVmHoleClosingMu(struct NaClApp *nap) {
-#if NACL_WINDOWS
-  NaClUntrustedThreadsResumeAll(nap);
-
-  nap->vm_hole_may_exist = 0;
-  NaClXCondVarBroadcast(&nap->cv);
-#else
-  UNREFERENCED_PARAMETER(nap);
-#endif
-}
-
-
 /* Warning: sizeof(nacl_abi_off_t)!=sizeof(off_t) on OSX */
 int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
                                 void                  *start,

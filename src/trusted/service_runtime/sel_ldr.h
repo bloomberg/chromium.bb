@@ -204,6 +204,7 @@ struct NaClApp {
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
 
+#if NACL_WINDOWS
   /*
    * invariant: !(vm_hole_may_exist && threads_launching != 0).
    * vm_hole_may_exist is set while mmap/munmap manipulates the memory
@@ -218,6 +219,7 @@ struct NaClApp {
    */
   int                       vm_hole_may_exist;
   int                       threads_launching;
+#endif
 
   /*
    * An array of NaCl syscall handlers. The length of the array must be
@@ -690,6 +692,10 @@ void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 void NaClVmHoleWaitToStartThread(struct NaClApp *nap);
 
 void NaClVmHoleThreadStackIsSafe(struct NaClApp *nap);
+
+void NaClVmHoleOpeningMu(struct NaClApp *nap);
+
+void NaClVmHoleClosingMu(struct NaClApp *nap);
 
 /*
  * More VM race detection.  In Windows, when we unmap or mmap over

@@ -173,8 +173,10 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
     goto cleanup_mu;
   }
 
+#if NACL_WINDOWS
   nap->vm_hole_may_exist = 0;
   nap->threads_launching = 0;
+#endif
 
   nap->syscall_table = table;
 
@@ -1638,37 +1640,6 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
   NaClLog(4, "Leaving NaClSecureCommandChannel\n");
 }
 
-
-void NaClVmHoleWaitToStartThread(struct NaClApp *nap) {
-  NaClXMutexLock(&nap->mu);
-
-  /* ensure no virtual memory hole may appear */
-  while (nap->vm_hole_may_exist) {
-    NaClXCondVarWait(&nap->cv, &nap->mu);
-  }
-
-  ++nap->threads_launching;
-  NaClXMutexUnlock(&nap->mu);
-  /*
-   * NB: Dropped lock, so many threads launching can starve VM
-   * operations.  If this becomes a problem in practice, we can use a
-   * reader/writer lock so that a waiting writer will block new
-   * readers.
-   */
-}
-
-void NaClVmHoleThreadStackIsSafe(struct NaClApp *nap) {
-  NaClXMutexLock(&nap->mu);
-
-  if (0 == --nap->threads_launching) {
-    /*
-     * Wake up the threads waiting to do VM operations.
-     */
-    NaClXCondVarBroadcast(&nap->cv);
-  }
-
-  NaClXMutexUnlock(&nap->mu);
-}
 
 /*
  * It is fine to have multiple I/O operations read from memory in Write

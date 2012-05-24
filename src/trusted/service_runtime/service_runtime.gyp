@@ -194,6 +194,12 @@
                 'win/nacl_signal.c',
                 'win/sel_addrspace_win.c',
                 'win/thread_suspension.c',
+                'win/vm_hole.c',
+              ],
+            }],
+            ['OS!="win"', {
+              'sources': [
+                'generic/vm_hole.c',
               ],
             }],
           ],

@@ -243,6 +243,11 @@ if env.Bit('mac'):
   else:
     raise Exception("Unsupported target")
 
+if env.Bit('windows'):
+  ldr_inputs += ['win/vm_hole.c']
+else:
+  ldr_inputs += ['generic/vm_hole.c']
+
 
 syscall_gen_flags = '-a ${TARGET_ARCHITECTURE} -s ${TARGET_SUBARCH}'
 
