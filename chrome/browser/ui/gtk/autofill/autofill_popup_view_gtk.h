@@ -62,14 +62,29 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   // Setup the pango layout to display the autofill results.
   void SetupLayout(const gfx::Rect& window_rect, const GdkColor& text_color);
 
+  // Draw the separator as the given |separator_rect|.
+  void DrawSeparator(cairo_t* cairo_context, const gfx::Rect& separator_rect);
+
+  // Draw the given autofill entry in |entry_rect|.
+  void DrawAutofillEntry(cairo_t* cairo_context,
+                         size_t index,
+                         int actual_content_height,
+                         const gfx::Rect& entry_rect);
+
   // Set the bounds of the popup to show, including the placement of it.
   void SetBounds();
 
   // Get width of popup needed by values.
   int GetPopupRequiredWidth();
 
+  // Get height of popup needed by values.
+  int GetPopupRequiredHeight();
+
   // Convert a y-coordinate to the closest line.
   int LineFromY(int y);
+
+  // Returns the rectangle containing the item at position |index| in the popup.
+  gfx::Rect GetRectForRow(size_t row, int width);
 
   GtkWidget* parent_;  // Weak reference.
   GtkWidget* window_;  // Strong reference.

@@ -36,6 +36,7 @@ AutofillExternalDelegate::AutofillExternalDelegate(
 void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id) {
   if (unique_id == WebAutofillClient::MenuItemIDAutofillOptions ||
       unique_id == WebAutofillClient::MenuItemIDClearForm ||
+      unique_id == WebAutofillClient::MenuItemIDSeparator ||
       unique_id == WebAutofillClient::MenuItemIDWarningMessage)
     return;
 
@@ -79,6 +80,12 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   std::vector<string16> l(labels);
   std::vector<string16> i(icons);
   std::vector<int> ids(unique_ids);
+
+  // Add a separator to go between the values and menu items.
+  v.push_back(string16());
+  l.push_back(string16());
+  i.push_back(string16());
+  ids.push_back(WebAutofillClient::MenuItemIDSeparator);
 
   DCHECK_GT(ids.size(), 0U);
   if (!autofill_query_field_.should_autocomplete) {
@@ -125,6 +132,14 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     l.push_back(string16());
     i.push_back(string16());
     ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
+  }
+
+  // Remove the separator if it is the last element.
+  if (*(ids.rbegin()) == WebAutofillClient::MenuItemIDSeparator) {
+    v.pop_back();
+    l.pop_back();
+    i.pop_back();
+    ids.pop_back();
   }
 
   // Send to display.

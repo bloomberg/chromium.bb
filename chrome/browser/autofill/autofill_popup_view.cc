@@ -121,6 +121,9 @@ bool AutofillPopupView::AcceptSelectedLine() {
   DCHECK_GE(selected_line_, 0);
   DCHECK_LT(selected_line_, static_cast<int>(autofill_values_.size()));
 
+  if (!CanAccept(autofill_unique_ids_[selected_line_]))
+    return false;
+
   return external_delegate()->DidAcceptAutofillSuggestions(
       autofill_values_[selected_line_],
       autofill_unique_ids_[selected_line_],
@@ -162,13 +165,6 @@ bool AutofillPopupView::RemoveSelectedLine() {
   return true;
 }
 
-bool AutofillPopupView::IsSeparatorIndex(int index) {
-  // TODO(csharp): Use WebAutofillClient::MenuItemIDSeparator instead.
-  // http://crbug.com/125001
-  return (index > 0 && autofill_unique_ids_[index - 1] >= 0 &&
-          autofill_unique_ids_[index] < 0);
-}
-
 int AutofillPopupView::GetIconResourceID(const string16& resource_name) {
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
     if (resource_name == ASCIIToUTF16(kDataResources[i].name))
@@ -176,6 +172,10 @@ int AutofillPopupView::GetIconResourceID(const string16& resource_name) {
   }
 
   return -1;
+}
+
+bool AutofillPopupView::CanAccept(int id) {
+  return id != WebAutofillClient::MenuItemIDSeparator;
 }
 
 bool AutofillPopupView::CanDelete(int id) {

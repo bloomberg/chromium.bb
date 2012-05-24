@@ -13,11 +13,14 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+
+using WebKit::WebAutofillClient;
 
 namespace {
 const GdkColor kBorderColor = GDK_COLOR_RGB(0xc7, 0xca, 0xce);
@@ -26,6 +29,9 @@ const GdkColor kTextColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 
 // The vertical height of each row in pixels.
 const int kRowHeight = 24;
+
+// The vertical height of a separator in pixels.
+const int kSeparatorHeight = 1;
 
 // The amount of minimum padding between the Autofill value and label in pixels.
 const int kMiddlePadding = 10;
@@ -47,9 +53,11 @@ gfx::Rect GetWindowRect(GdkWindow* window) {
                    gdk_window_get_height(window));
 }
 
-// Returns the rectangle containing the item at position |index| in the popup.
-gfx::Rect GetRectForRow(size_t index, int width) {
-  return gfx::Rect(0, (index * kRowHeight), width, kRowHeight);
+int GetRowHeight(int unique_id) {
+  if (unique_id == WebAutofillClient::MenuItemIDSeparator)
+    return kSeparatorHeight;
+
+  return kRowHeight;
 }
 
 }  // namespace
@@ -122,7 +130,7 @@ void AutofillPopupViewGtk::ResizePopup() {
   gtk_widget_set_size_request(
       window_,
       GetPopupRequiredWidth(),
-      kRowHeight * autofill_values().size());
+      GetPopupRequiredHeight());
 }
 
 gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
@@ -169,65 +177,10 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
     if (!line_rect.Intersects(damage_rect))
       continue;
 
-    if (IsSeparatorIndex(i)) {
-      int line_y = i * kRowHeight;
-
-      cairo_save(cr);
-      cairo_move_to(cr, 0, line_y);
-      cairo_line_to(cr, window_rect.width(), line_y);
-      cairo_stroke(cr);
-      cairo_restore(cr);
-    }
-
-    if (selected_line() == static_cast<int>(i)) {
-      gdk_cairo_set_source_color(cr, &kHoveredBackgroundColor);
-      cairo_rectangle(cr, line_rect.x(), line_rect.y(),
-                      line_rect.width(), line_rect.height());
-      cairo_fill(cr);
-    }
-
-    // Center the text within the line.
-    int content_y = std::max(
-        line_rect.y(),
-        line_rect.y() + ((kRowHeight - actual_content_height) / 2));
-
-    // Draw the value.
-    gtk_util::SetLayoutText(layout_, autofill_values()[i]);
-
-    cairo_save(cr);
-    cairo_move_to(cr, 0, content_y);
-    pango_cairo_show_layout(cr, layout_);
-    cairo_restore(cr);
-
-    // Draw the label.
-    int x_align_left = window_rect.width() -
-        font_.GetStringWidth(autofill_labels()[i]);
-
-    if (!autofill_icons()[i].empty())
-      x_align_left -= 2 * kIconPadding + kIconWidth;
-
-    gtk_util::SetLayoutText(layout_, autofill_labels()[i]);
-
-    cairo_save(cr);
-    cairo_move_to(cr, x_align_left, content_y);
-    pango_cairo_show_layout(cr, layout_);
-    cairo_restore(cr);
-
-    // Draw the icon, if one exists
-    if (!autofill_icons()[i].empty()) {
-      int icon = GetIconResourceID(autofill_icons()[i]);
-      DCHECK_NE(-1, icon);
-      int icon_y = line_rect.y() + ((kRowHeight - kIconHeight) / 2);
-
-      cairo_save(cr);
-      gtk_util::DrawFullImage(cr,
-                              window_,
-                              theme_service_->GetImageNamed(icon),
-                              window_rect.width() -
-                                (kIconPadding + kIconWidth),
-                              icon_y);
-      cairo_restore(cr);
-    }
+    if (autofill_unique_ids()[i] == WebAutofillClient::MenuItemIDSeparator)
+      DrawSeparator(cr, line_rect);
+    else
+      DrawAutofillEntry(cr, i, actual_content_height, line_rect);
   }
 
   cairo_destroy(cr);
@@ -237,6 +190,8 @@ gboolean AutofillPopupViewGtk::HandleExpose(GtkWidget* widget,
 
 gboolean AutofillPopupViewGtk::HandleMotion(GtkWidget* widget,
                                             GdkEventMotion* event) {
+  // TODO(csharp): Only select a line if the motion is still inside the popup.
+  // http://www.crbug.com/129559
   int line = LineFromY(event->y);
 
   SetSelectedLine(line);
@@ -293,6 +248,74 @@ void AutofillPopupViewGtk::SetupLayout(const gfx::Rect& window_rect,
   pango_attr_list_unref(attrs);
 }
 
+
+void AutofillPopupViewGtk::DrawSeparator(cairo_t* cairo_context,
+                                         const gfx::Rect& separator_rect) {
+  cairo_save(cairo_context);
+  cairo_move_to(cairo_context, 0, separator_rect.y());
+  cairo_line_to(cairo_context,
+                separator_rect.width(),
+                separator_rect.y() + separator_rect.height());
+  cairo_stroke(cairo_context);
+  cairo_restore(cairo_context);
+}
+
+void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
+                                             size_t index,
+                                             int actual_content_height,
+                                             const gfx::Rect& entry_rect) {
+  if (selected_line() == static_cast<int>(index)) {
+    gdk_cairo_set_source_color(cairo_context, &kHoveredBackgroundColor);
+    cairo_rectangle(cairo_context, entry_rect.x(), entry_rect.y(),
+                    entry_rect.width(), entry_rect.height());
+    cairo_fill(cairo_context);
+  }
+
+  // Center the text within the line.
+  int content_y = std::max(
+      entry_rect.y(),
+      entry_rect.y() + ((kRowHeight - actual_content_height) / 2));
+
+  // Draw the value.
+  gtk_util::SetLayoutText(layout_, autofill_values()[index]);
+
+  cairo_save(cairo_context);
+  cairo_move_to(cairo_context, 0, content_y);
+  pango_cairo_show_layout(cairo_context, layout_);
+  cairo_restore(cairo_context);
+
+  // Draw the label.
+  int x_align_left = entry_rect.width() -
+      font_.GetStringWidth(autofill_labels()[index]);
+
+  if (!autofill_icons()[index].empty())
+    x_align_left -= 2 * kIconPadding + kIconWidth;
+
+  gtk_util::SetLayoutText(layout_, autofill_labels()[index]);
+
+  cairo_save(cairo_context);
+  cairo_move_to(cairo_context, x_align_left, content_y);
+  pango_cairo_show_layout(cairo_context, layout_);
+  cairo_restore(cairo_context);
+
+  // Draw the icon, if one exists
+  if (!autofill_icons()[index].empty()) {
+    int icon = GetIconResourceID(autofill_icons()[index]);
+    DCHECK_NE(-1, icon);
+    int icon_y = entry_rect.y() + ((kRowHeight - kIconHeight) / 2);
+
+    cairo_save(cairo_context);
+    gtk_util::DrawFullImage(cairo_context,
+                            window_,
+                            theme_service_->GetImageNamed(icon),
+                            entry_rect.width() -
+                            (kIconPadding + kIconWidth),
+                            icon_y);
+    cairo_restore(cairo_context);
+  }
+}
+
+
 void AutofillPopupViewGtk::SetBounds() {
   gint origin_x, origin_y;
   gdk_window_get_origin(gtk_widget_get_window(parent_), &origin_x, &origin_y);
@@ -302,14 +325,14 @@ void AutofillPopupViewGtk::SetBounds() {
 
   int bottom_of_field = origin_y + element_bounds().y() +
       element_bounds().height();
-  int popup_size =  kRowHeight * autofill_values().size();
+  int popup_height =  GetPopupRequiredHeight();
 
   // Find the correct top position of the popup so that is doesn't go off
   // the screen.
   int top_of_popup = 0;
-  if (screen_height < bottom_of_field + popup_size) {
+  if (screen_height < bottom_of_field + popup_height) {
     // The popup must appear above the field.
-    top_of_popup = origin_y + element_bounds().y() - popup_size;
+    top_of_popup = origin_y + element_bounds().y() - popup_height;
   } else {
     // The popup can appear below the field.
     top_of_popup = bottom_of_field;
@@ -319,7 +342,7 @@ void AutofillPopupViewGtk::SetBounds() {
       origin_x + element_bounds().x(),
       top_of_popup,
       GetPopupRequiredWidth(),
-      popup_size);
+      popup_height);
 }
 
 int AutofillPopupViewGtk::GetPopupRequiredWidth() {
@@ -340,6 +363,35 @@ int AutofillPopupViewGtk::GetPopupRequiredWidth() {
   return popup_width;
 }
 
+int AutofillPopupViewGtk::GetPopupRequiredHeight() {
+  int popup_height = 0;
+
+  for (size_t i = 0; i < autofill_unique_ids().size(); ++i) {
+    popup_height += GetRowHeight(autofill_unique_ids()[i]);
+  }
+
+  return popup_height;
+}
+
 int AutofillPopupViewGtk::LineFromY(int y) {
-  return y / kRowHeight;
+  int current_height = 0;
+
+  for (size_t i = 0; i < autofill_unique_ids().size(); ++i) {
+    current_height += GetRowHeight(autofill_unique_ids()[i]);
+
+    if (y <= current_height)
+      return i;
+  }
+
+  // The y value goes beyond the popup so stop the selection at the last line.
+  return autofill_unique_ids().size() - 1;
+}
+
+gfx::Rect AutofillPopupViewGtk::GetRectForRow(size_t row, int width) {
+  int top = 0;
+  for (size_t i = 0; i < row; ++i) {
+    top += GetRowHeight(autofill_unique_ids()[i]);
+  }
+
+  return gfx::Rect(0, top, width, GetRowHeight(autofill_unique_ids()[row]));
 }

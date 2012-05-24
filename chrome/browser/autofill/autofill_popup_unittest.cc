@@ -52,9 +52,6 @@ class TestAutofillPopupView : public AutofillPopupView {
   bool RemoveSelectedLine() {
     return AutofillPopupView::RemoveSelectedLine();
   }
-  bool IsSeparatorIndex(int index) {
-    return AutofillPopupView::IsSeparatorIndex(index);
-  }
 
   MOCK_METHOD1(InvalidateRow, void(size_t));
   MOCK_METHOD0(HideInternal, void());
@@ -155,20 +152,4 @@ TEST_F(AutofillPopupViewUnitTest, RemoveLine) {
   EXPECT_CALL(*autofill_popup_view_, HideInternal());
   autofill_popup_view_->SetSelectedLine(0);
   EXPECT_TRUE(autofill_popup_view_->RemoveSelectedLine());
-}
-
-TEST_F(AutofillPopupViewUnitTest, IsSeparatorIndex) {
- // Set up the popup.
-  std::vector<string16> autofill_values(3, string16());
-  std::vector<int> autofill_ids;
-  autofill_ids.push_back(3);
-  autofill_ids.push_back(WebAutofillClient::MenuItemIDClearForm);
-  autofill_ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
-
-  autofill_popup_view_->Show(autofill_values, autofill_values, autofill_values,
-                             autofill_ids);
-
-  EXPECT_FALSE(autofill_popup_view_->IsSeparatorIndex(0));
-  EXPECT_TRUE(autofill_popup_view_->IsSeparatorIndex(1));
-  EXPECT_FALSE(autofill_popup_view_->IsSeparatorIndex(2));
 }
