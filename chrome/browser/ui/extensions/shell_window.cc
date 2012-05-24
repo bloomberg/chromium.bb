@@ -168,7 +168,7 @@ bool ShellWindow::ShouldSuppressDialogs() {
 void ShellWindow::WebIntentDispatch(
     content::WebContents* web_contents,
     content::WebIntentsDispatcher* intents_dispatcher) {
-  if (!web_intents::IsWebIntentsEnabled(profile_))
+  if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
     return;
 
   contents_wrapper_->web_intent_picker_controller()->SetIntentsDispatcher(

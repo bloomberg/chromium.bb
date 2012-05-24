@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_preference_api_constants.h"
 #include "chrome/browser/extensions/extension_preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -222,7 +223,9 @@ bool SetContentSettingFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       helpers::StringToContentSetting(setting_str, &setting));
   EXTENSION_FUNCTION_VALIDATE(
-      HostContentSettingsMap::IsSettingAllowedForType(setting, content_type));
+      HostContentSettingsMap::IsSettingAllowedForType(profile()->GetPrefs(),
+                                                      setting,
+                                                      content_type));
 
   ExtensionPrefsScope scope = kExtensionPrefsScopeRegular;
   if (details->HasKey(pref_keys::kScopeKey)) {

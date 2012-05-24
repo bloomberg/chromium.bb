@@ -28,7 +28,7 @@ void Browser::RegisterIntentHandlerHelper(WebContents* tab,
   if (!tcw || tcw->profile()->IsOffTheRecord())
     return;
 
-  if (!web_intents::IsWebIntentsEnabled(tcw->profile()))
+  if (!web_intents::IsWebIntentsEnabledForProfile(tcw->profile()))
     return;
 
   FaviconService* favicon_service =

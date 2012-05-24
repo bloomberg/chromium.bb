@@ -20,17 +20,12 @@ void RegisterUserPrefs(PrefService* user_prefs) {
                                   PrefService::SYNCABLE_PREF);
 }
 
-bool IsWebIntentsEnabled(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kWebIntentsEnabled);
+bool IsWebIntentsEnabled(PrefService* prefs) {
+  return prefs->GetBoolean(prefs::kWebIntentsEnabled);
 }
 
-bool IsWebIntentsEnabledInActiveBrowser() {
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    browser = *BrowserList::begin();
-  DCHECK(browser);
-
-  return IsWebIntentsEnabled(browser->profile());
+bool IsWebIntentsEnabledForProfile(Profile* profile) {
+  return IsWebIntentsEnabled(profile->GetPrefs());
 }
 
 }  // namespace web_intents

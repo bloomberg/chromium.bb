@@ -154,9 +154,11 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void ClearSettingsForOneType(ContentSettingsType content_type);
 
-  static bool IsValueAllowedForType(const base::Value* value,
+  static bool IsValueAllowedForType(PrefService* prefs,
+                                    const base::Value* value,
                                     ContentSettingsType content_type);
-  static bool IsSettingAllowedForType(ContentSetting setting,
+  static bool IsSettingAllowedForType(PrefService* prefs,
+                                      ContentSetting setting,
                                       ContentSettingsType content_type);
 
   // Detaches the HostContentSettingsMap from all Profile-related objects like

@@ -3614,7 +3614,7 @@ void Browser::RegisterIntentHandler(WebContents* tab,
 
 void Browser::WebIntentDispatch(
     WebContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
-  if (!web_intents::IsWebIntentsEnabled(profile_))
+  if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
     return;
 
   UMA_HISTOGRAM_COUNTS("WebIntents.Dispatch", 1);

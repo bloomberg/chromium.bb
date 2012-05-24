@@ -309,8 +309,9 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_MOUSE_LOCK_TAB_LABEL);
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  localized_strings->SetBoolean("enable_web_intents",
-                                web_intents::IsWebIntentsEnabled(profile));
+  localized_strings->SetBoolean(
+      "enable_web_intents",
+      web_intents::IsWebIntentsEnabledForProfile(profile));
   // TODO(marja): clean up the options UI after the decision on the session
   // restore changes has stabilized.
   localized_strings->SetBoolean(

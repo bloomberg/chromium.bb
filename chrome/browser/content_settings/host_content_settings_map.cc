@@ -225,7 +225,7 @@ void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSettingsType content_type,
     ContentSetting setting) {
   DCHECK(!ContentTypeHasCompoundValue(content_type));
-  DCHECK(IsSettingAllowedForType(setting, content_type));
+  DCHECK(IsSettingAllowedForType(prefs_, setting, content_type));
 
   base::Value* value = NULL;
   if (setting != CONTENT_SETTING_DEFAULT)
@@ -244,7 +244,7 @@ void HostContentSettingsMap::SetWebsiteSetting(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     base::Value* value) {
-  DCHECK(IsValueAllowedForType(value, content_type));
+  DCHECK(IsValueAllowedForType(prefs_, value, content_type));
   DCHECK(SupportsResourceIdentifier(content_type) ||
          resource_identifier.empty());
   for (ProviderIterator provider = content_settings_providers_.begin();
@@ -314,17 +314,19 @@ void HostContentSettingsMap::ClearSettingsForOneType(
 }
 
 bool HostContentSettingsMap::IsValueAllowedForType(
-    const base::Value* value, ContentSettingsType type) {
+    PrefService* prefs, const base::Value* value, ContentSettingsType type) {
   return IsSettingAllowedForType(
-      content_settings::ValueToContentSetting(value), type);
+      prefs, content_settings::ValueToContentSetting(value), type);
 }
 
 // static
 bool HostContentSettingsMap::IsSettingAllowedForType(
-    ContentSetting setting, ContentSettingsType content_type) {
+    PrefService* prefs,
+    ContentSetting setting,
+    ContentSettingsType content_type) {
   // Intents content settings are hidden behind a switch for now.
   if (content_type == CONTENT_SETTINGS_TYPE_INTENTS) {
-    if (!web_intents::IsWebIntentsEnabledInActiveBrowser())
+    if (!web_intents::IsWebIntentsEnabled(prefs))
       return false;
   }
 
