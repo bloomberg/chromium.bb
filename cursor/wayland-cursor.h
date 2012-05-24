@@ -29,21 +29,6 @@
 extern "C" {
 #endif
 
-enum wl_cursor_type {
-	WL_CURSOR_BOTTOM_LEFT,
-	WL_CURSOR_BOTTOM_RIGHT,
-	WL_CURSOR_BOTTOM,
-	WL_CURSOR_DRAGGING,
-	WL_CURSOR_LEFT_PTR,
-	WL_CURSOR_LEFT,
-	WL_CURSOR_RIGHT,
-	WL_CURSOR_TOP_LEFT,
-	WL_CURSOR_TOP_RIGHT,
-	WL_CURSOR_TOP,
-	WL_CURSOR_IBEAM,
-	WL_CURSOR_HAND1,
-};
-
 struct wl_cursor_theme;
 
 struct wl_cursor_image {
@@ -70,11 +55,7 @@ wl_cursor_theme_destroy(struct wl_cursor_theme *theme);
 
 struct wl_cursor *
 wl_cursor_theme_get_cursor(struct wl_cursor_theme *theme,
-			   enum wl_cursor_type type);
-
-struct wl_cursor *
-wl_cursor_theme_get_cursor_by_name(struct wl_cursor_theme *theme,
-				   const char *name);
+			   const char *name);
 
 struct wl_buffer *
 wl_cursor_image_get_buffer(struct wl_cursor_image *image);

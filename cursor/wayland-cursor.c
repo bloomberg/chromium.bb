@@ -305,23 +305,6 @@ wl_cursor_theme_destroy(struct wl_cursor_theme *theme)
 	free(theme);
 }
 
-/** Get the cursor for a given type from a cursor theme
- *
- * \param theme The cursor theme
- * \patam type The desired cursor type
- * \return The theme's cursor of the given type or %NULL if there is no
- * such cursor
- */
-WL_EXPORT struct wl_cursor *
-wl_cursor_theme_get_cursor(struct wl_cursor_theme *theme,
-			   enum wl_cursor_type type)
-{
-	if (type < theme->cursor_count)
-		return theme->cursors[type];
-
-	return NULL;
-}
-
 /** Get the cursor for a given name from a cursor theme
  *
  * \param theme The cursor theme
@@ -330,8 +313,8 @@ wl_cursor_theme_get_cursor(struct wl_cursor_theme *theme,
  * such cursor
  */
 WL_EXPORT struct wl_cursor *
-wl_cursor_theme_get_cursor_by_name(struct wl_cursor_theme *theme,
-				   const char *name)
+wl_cursor_theme_get_cursor(struct wl_cursor_theme *theme,
+			   const char *name)
 {
 	unsigned int i;
 	struct wl_cursor *cursor;
