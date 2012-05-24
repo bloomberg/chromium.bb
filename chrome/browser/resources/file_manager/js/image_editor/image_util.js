@@ -6,7 +6,9 @@
 // Namespace object for the utilities.
 function ImageUtil() {}
 
-// Performance trace.
+/**
+ * Performance trace.
+ */
 ImageUtil.trace = (function() {
   function PerformanceTrace() {
     this.lines_ = {};
@@ -51,11 +53,22 @@ ImageUtil.trace = (function() {
   return new PerformanceTrace();
 })();
 
-
+/**
+ * @param {number} min Minimum value.
+ * @param {number} value Value to adjust.
+ * @param {number} max Maximum value.
+ * @return {number} The closest to the |value| number in span [min, max].
+ */
 ImageUtil.clamp = function(min, value, max) {
   return Math.max(min, Math.min(max, value));
 };
 
+/**
+ * @param {number} min Minimum value.
+ * @param {number} value Value to check.
+ * @param {number} max Maximum value.
+ * @return {boolean} True if value is between
+ */
 ImageUtil.between = function(min, value, max) {
   return (value - min) * (value - max) <= 0;
 };
@@ -75,7 +88,7 @@ ImageUtil.between = function(min, value, max) {
  *   new Rect()             // empty rectangle.
  * @constructor
  */
-function Rect(args) {
+function Rect() {
   switch (arguments.length) {
     case 4:
       this.left = arguments[0];
@@ -125,6 +138,7 @@ function Rect(args) {
 }
 
 /**
+ * @param {number} factor Factor to scale.
  * @return {Rect} A rectangle with every dimension scaled.
  */
 Rect.prototype.scale = function(factor) {
@@ -136,6 +150,8 @@ Rect.prototype.scale = function(factor) {
 };
 
 /**
+ * @param {number} dx Difference in X.
+ * @param {number} dy Difference in Y.
  * @return {Rect} A rectangle shifted by (dx,dy), same size.
  */
 Rect.prototype.shift = function(dx, dy) {
@@ -143,6 +159,8 @@ Rect.prototype.shift = function(dx, dy) {
 };
 
 /**
+ * @param {number} x Coordinate of the left top corner.
+ * @param {number} y Coordinate of the left top corner.
  * @return {Rect} A rectangle with left==x and top==y, same size.
  */
 Rect.prototype.moveTo = function(x, y) {
@@ -150,6 +168,8 @@ Rect.prototype.moveTo = function(x, y) {
 };
 
 /**
+ * @param {number} dx Difference in X.
+ * @param {number} dy Difference in Y.
  * @return {Rect} A rectangle inflated by (dx, dy), same center.
  */
 Rect.prototype.inflate = function(dx, dy) {
@@ -158,13 +178,19 @@ Rect.prototype.inflate = function(dx, dy) {
 };
 
 /**
- * @return {Boolean} True if the point lies inside the rectange.
+ * @param {number} x Coordinate of the point.
+ * @param {number} y Coordinate of the point.
+ * @return {boolean} True if the point lies inside the rectange.
  */
 Rect.prototype.inside = function(x, y) {
   return this.left <= x && x < this.left + this.width &&
          this.top <= y && y < this.top + this.height;
 };
 
+/**
+ * @param {Rect} rect Rectangle to check.
+ * @return {boolean} True if this recangle intersects with the |rect|.
+ */
 Rect.prototype.intersects = function(rect) {
   return (this.left + this.width) > rect.left &&
          (rect.left + rect.width) > this.left &&
@@ -172,6 +198,10 @@ Rect.prototype.intersects = function(rect) {
          (rect.top + rect.height) > this.top;
 };
 
+/**
+ * @param {Rect} rect Rectangle to check.
+ * @return {boolean} True if this recangle containg the |rect|.
+ */
 Rect.prototype.contains = function(rect) {
   return (this.left <= rect.left) &&
          (rect.left + rect.width) <= (this.left + this.width) &&
@@ -179,6 +209,9 @@ Rect.prototype.contains = function(rect) {
          (rect.top + rect.height) <= (this.top + this.height);
 };
 
+/**
+ * @return {boolean} True if rectangle is empty.
+ */
 Rect.prototype.isEmpty = function() {
   return this.width == 0 || this.height == 0;
 };
@@ -186,6 +219,8 @@ Rect.prototype.isEmpty = function() {
 /**
  * Clamp the rectangle to the bounds by moving it.
  * Decrease the size only if necessary.
+ * @param {Rect} bounds Bounds.
+ * @return {Rect} Caclulated rectangle.
  */
 Rect.prototype.clamp = function(bounds) {
   var rect = new Rect(this);
@@ -193,7 +228,7 @@ Rect.prototype.clamp = function(bounds) {
   if (rect.width > bounds.width) {
     rect.left = bounds.left;
     rect.width = bounds.width;
-  } else if (rect.left < bounds.left){
+  } else if (rect.left < bounds.left) {
     rect.left = bounds.left;
   } else if (rect.left + rect.width >
              bounds.left + bounds.width) {
@@ -203,7 +238,7 @@ Rect.prototype.clamp = function(bounds) {
   if (rect.height > bounds.height) {
     rect.top = bounds.top;
     rect.height = bounds.height;
-  } else if (rect.top < bounds.top){
+  } else if (rect.top < bounds.top) {
     rect.top = bounds.top;
   } else if (rect.top + rect.height >
              bounds.top + bounds.height) {
@@ -213,6 +248,9 @@ Rect.prototype.clamp = function(bounds) {
   return rect;
 };
 
+/**
+ * @return {string} String representation.
+ */
 Rect.prototype.toString = function() {
   return '(' + this.left + ',' + this.top + '):' +
          '(' + (this.left + this.width) + ',' + (this.top + this.height) + ')';
@@ -223,6 +261,12 @@ Rect.prototype.toString = function() {
 
 /**
  * Draw the image in context with appropriate scaling.
+ * @param {CanvasRenderingContext2D} context Context to draw.
+ * @param {Image} image Image to draw.
+ * @param {Rect=} opt_dstRect Rectangle in the canvas
+ *                            (whole canvas by default).
+ * @param {Rect=} opt_srcRect Rectangle in the imsge
+ *                            (whole image by default).
  */
 Rect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
   opt_dstRect = opt_dstRect || new Rect(context.canvas);
@@ -236,6 +280,8 @@ Rect.drawImage = function(context, image, opt_dstRect, opt_srcRect) {
 
 /**
  * Draw a box around the rectangle.
+ * @param {CanvasRenderingContext2D} context Context to draw.
+ * @param {Rect} rect Rectangle.
  */
 Rect.outline = function(context, rect) {
   context.strokeRect(
@@ -244,6 +290,8 @@ Rect.outline = function(context, rect) {
 
 /**
  * Fill the rectangle.
+ * @param {CanvasRenderingContext2D} context Context to draw.
+ * @param {Rect} rect Rectangle.
  */
 Rect.fill = function(context, rect) {
   context.fillRect(rect.left, rect.top, rect.width, rect.height);
@@ -251,8 +299,11 @@ Rect.fill = function(context, rect) {
 
 /**
  * Fills the space between the two rectangles.
+ * @param {CanvasRenderingContext2D} context Context to draw.
+ * @param {Rect} inner Inner rectangle.
+ * @param {Rect} outer Outer rectangle.
  */
-Rect.fillBetween= function(context, inner, outer) {
+Rect.fillBetween = function(context, inner, outer) {
   var inner_right = inner.left + inner.width;
   var inner_bottom = inner.top + inner.height;
   var outer_right = outer.left + outer.width;
@@ -277,14 +328,23 @@ Rect.fillBetween= function(context, inner, outer) {
 
 /**
  * Circle class.
+ * @param {number} x X coordinate of circle center.
+ * @param {number} y Y coordinate of circle center.
+ * @param {number} r Radius.
+ * @constructor
  */
-
-function Circle(x, y, R) {
+function Circle(x, y, r) {
   this.x = x;
   this.y = y;
-  this.squaredR = R * R;
+  this.squaredR = r * r;
 }
 
+/**
+ * Check if the point is inside the circle.
+ * @param {number} x X coordinate of the point.
+ * @param {number} y Y coordinate of the point.
+ * @return {boolean} True if the point is inside.
+ */
 Circle.prototype.inside = function(x, y) {
   x -= this.x;
   y -= this.y;
@@ -294,10 +354,10 @@ Circle.prototype.inside = function(x, y) {
 /**
  * Copy an image applying scaling and rotation.
  *
- * @param {HTMLCanvasElement} dst destination
- * @param {HTMLCanvasElement|HTMLImageElement} src source
- * @param {number} scaleX
- * @param {number} scaleY
+ * @param {HTMLCanvasElement} dst Destination.
+ * @param {HTMLCanvasElement|HTMLImageElement} src Source.
+ * @param {number} scaleX Y scale transformation.
+ * @param {number} scaleY X scale transformation.
  * @param {number} angle (in radians)
  */
 ImageUtil.drawImageTransformed = function(dst, src, scaleX, scaleY, angle) {
@@ -310,43 +370,50 @@ ImageUtil.drawImageTransformed = function(dst, src, scaleX, scaleY, angle) {
   context.restore();
 };
 
-
-ImageUtil.deepCopy = function(obj) {
-  if (obj == null || typeof obj != 'object')
-    return obj;  // Copy built-in types as is.
-
-  var res;
-  if (obj.constructor.name == 'Array') {
-    // obj.constructor == Array would give a false negative if obj came
-    // from a different context.
-    res = [];
-    for (var i = 0; i != obj.length; i++) {
-      res[i] = ImageUtil.deepCopy(obj[i]);
-    }
-  } else {
-    res = {};
-    for (var p in obj) {
-      res[p] = ImageUtil.deepCopy(obj[p]);
-    }
-  }
-  return res;
+/**
+ * @param {*} value Structure.
+ * @return {*} Clone of the value.
+ */
+ImageUtil.deepCopy = function(value) {
+  return JSON.parse(JSON.stringify(obj));
 };
 
+/**
+ * Adds or removes an attribute to/from an HTML element.
+ * @param {HTMLElement} element To be applied to.
+ * @param {string} attribute Name of attribute.
+ * @param {boolean} on True if add, false if remove.
+ */
 ImageUtil.setAttribute = function(element, attribute, on) {
   if (on)
-    element.setAttribute(attribute, attribute);
+    element.setAttribute(attribute, '');
   else
     element.removeAttribute(attribute);
 };
 
-/*
+/**
+ * Adds or removes CSS class to/from an HTML element.
+ * @param {HTMLElement} element To be applied to.
+ * @param {string} className Name of CSS class.
+ * @param {boolean} on True if add, false if remove.
+ */
+ImageUtil.setClass = function(element, className, on) {
+  var cl = element.classList;
+  if (on)
+    cl.add(className);
+  else
+    cl.remove(className);
+};
+
+/**
  * ImageLoader loads an image from a given URL into a canvas in two steps:
  * 1. Loads the image into an HTMLImageElement.
  * 2. Copies pixels from HTMLImageElement to HTMLCanvasElement. This is done
  *    stripe-by-stripe to avoid freezing up the UI. The transform is taken into
  *    account.
+ * @param {HTMLDocument} document Owner document.
+ * @constructor
  */
-
 ImageUtil.ImageLoader = function(document) {
   this.document_ = document;
   this.image_ = null;
@@ -354,10 +421,10 @@ ImageUtil.ImageLoader = function(document) {
 };
 
 /**
- * @param {string} url
+ * @param {string} url Image URL.
  * @param {function(function(object))} transformFetcher function to get
  *    the image transform (which we need for the image orientation)
- * @param {function(HTMLCanvasElement} callback
+ * @param {function(HTMLCanvasElement)} callback To be called when loaded.
  * @param {number} opt_delay Load delay in milliseconds, useful to let the
  *        animations play out before the computation heavy image loading starts.
  */
@@ -405,18 +472,31 @@ ImageUtil.ImageLoader.prototype.load = function(
   }
 };
 
+/**
+ * @return {boolean} True if an image is loading.
+ */
 ImageUtil.ImageLoader.prototype.isBusy = function() {
   return !!this.callback_;
 };
 
+/**
+ * @param {string} url Image url.
+ * @return {boolean} True if loader loads this image.
+ */
 ImageUtil.ImageLoader.prototype.isLoading = function(url) {
   return this.isBusy() && (this.url_ == url);
 };
 
+/**
+ * @param {Function} callback To be called when the image loaded.
+ */
 ImageUtil.ImageLoader.prototype.setCallback = function(callback) {
   this.callback_ = callback;
 };
 
+/**
+ * Stops loading image.
+ */
 ImageUtil.ImageLoader.prototype.cancel = function() {
   if (!this.callback_) return;
   this.callback_ = null;
@@ -425,19 +505,24 @@ ImageUtil.ImageLoader.prototype.cancel = function() {
     this.timeout_ = null;
   }
   if (this.image_) {
-    this.image_.onload = function(){};
+    this.image_.onload = function() {};
     this.image_ = null;
   }
   this.generation_++;  // Silence the transform fetcher if it is in progress.
 };
 
+/**
+ * @param {HTMLImageElement} image Image to be transformed.
+ * @param {object} transform rransformation description to applay to the image.
+ * @private
+ */
 ImageUtil.ImageLoader.prototype.convertImage_ = function(image, transform) {
   var canvas = this.document_.createElement('canvas');
 
   if (transform.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
     canvas.width = image.height;
     canvas.height = image.width;
-  } else  {
+  } else {
     canvas.width = image.width;
     canvas.height = image.height;
   }
@@ -445,18 +530,25 @@ ImageUtil.ImageLoader.prototype.convertImage_ = function(image, transform) {
   var context = canvas.getContext('2d');
   context.save();
   context.translate(canvas.width / 2, canvas.height / 2);
-  context.rotate(transform.rotate90 * Math.PI/2);
+  context.rotate(transform.rotate90 * Math.PI / 2);
   context.scale(transform.scaleX, transform.scaleY);
 
-  var stripCount = Math.ceil(image.width * image.height / ( 1 << 21));
+  var stripCount = Math.ceil(image.width * image.height / (1 << 21));
   var step = Math.max(16, Math.ceil(image.height / stripCount)) & 0xFFFFF0;
 
   this.copyStrip_(context, image, 0, step);
 };
 
+/**
+ * @param {CanvasRenderingContext2D} context Context to draw.
+ * @param {HTMLImageElement} image Image to draw.
+ * @param {number} firstRow Number of the first pixel row to draw.
+ * @param {number} rowCount Count of pixel rows to draw.
+ * @private
+ */
 ImageUtil.ImageLoader.prototype.copyStrip_ = function(
     context, image, firstRow, rowCount) {
-  var lastRow = Math.min (firstRow + rowCount, image.height);
+  var lastRow = Math.min(firstRow + rowCount, image.height);
 
   context.drawImage(
       image, 0, firstRow, image.width, lastRow - firstRow,
@@ -480,10 +572,17 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
   }
 };
 
+/**
+ * @param {HTMLElement} element To remove children from.
+ */
 ImageUtil.removeChildren = function(element) {
   element.textContent = '';
 };
 
+/**
+ * @param {string} url "filesystem:" URL.
+ * @return {string} File name.
+ */
 ImageUtil.getFullNameFromUrl = function(url) {
   url = decodeURIComponent(url);
   if (url.indexOf('/') != -1)
@@ -492,6 +591,10 @@ ImageUtil.getFullNameFromUrl = function(url) {
     return url;
 };
 
+/**
+ * @param {string} name File name (with extension).
+ * @return {string} File name without extension.
+ */
 ImageUtil.getFileNameFromFullName = function(name) {
   var index = name.lastIndexOf('.');
   if (index != -1)
@@ -500,10 +603,20 @@ ImageUtil.getFileNameFromFullName = function(name) {
     return name;
 };
 
+/**
+ * @param {string} url "filesystem:" URL.
+ * @return {string} File name.
+ */
 ImageUtil.getFileNameFromUrl = function(url) {
   return ImageUtil.getFileNameFromFullName(ImageUtil.getFullNameFromUrl(url));
 };
 
+/**
+ * @param {string} fullName Original file name.
+ * @param {string} name New file name without extension.
+ * @return {string} New file name with base of |name| and extension of
+ *                  |fullName|.
+ */
 ImageUtil.replaceFileNameInFullName = function(fullName, name) {
   var index = fullName.lastIndexOf('.');
   if (index != -1)
@@ -512,6 +625,10 @@ ImageUtil.replaceFileNameInFullName = function(fullName, name) {
     return name;
 };
 
+/**
+ * @param {string} name File name.
+ * @return {string} File extension.
+ */
 ImageUtil.getExtensionFromFullName = function(name) {
   var index = name.lastIndexOf('.');
   if (index != -1)
@@ -520,10 +637,22 @@ ImageUtil.getExtensionFromFullName = function(name) {
     return '';
 };
 
+/**
+ * Metrics (from metrics.js) itnitialized by the File Manager from owner frame.
+ * @type {Object?}
+ */
 ImageUtil.metrics = null;
 
-ImageUtil.getMetricName = function(name) { return 'PhotoEditor.' + name }
+/**
+ * @param {string} name Local name.
+ * @return {string} Full name.
+ */
+ImageUtil.getMetricName = function(name) {
+  return 'PhotoEditor.' + name;
+};
 
-// Used for metrics reporting, keep in sync with the histogram description.
+/**
+ * Used for metrics reporting, keep in sync with the histogram description.
+ */
 ImageUtil.FILE_TYPES = ['jpg', 'png', 'gif', 'bmp', 'webp'];
 

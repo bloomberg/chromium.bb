@@ -224,8 +224,9 @@ Gallery.prototype.initDom_ = function() {
   this.errorBanner_.className = 'error-banner';
   this.errorWrapper_.appendChild(this.errorBanner_);
 
-  this.ribbon_ = new Ribbon(this.ribbonSpacer_,
+  this.ribbon_ = new Ribbon(this.document_,
       this, this.context_.metadataProvider, this.arrowLeft_, this.arrowRight_);
+  this.ribbonSpacer_.appendChild(this.ribbon_);
 
   this.editBar_  = doc.createElement('div');
   this.editBar_.className = 'edit-bar';
@@ -816,43 +817,60 @@ Gallery.prototype.cancelFading_ = function() {
 };
 
 /**
- * @param {HTMLElement} container
+ * @param {HTMLDocument} document
+ * @param {RibbonClient} client
+ * @param {MetadataProvider} metadataProvider
+ * @param {HTMLElement} arrowLeft
+ * @param {HTMLElement} arrowRight
+ * @constructor
+ */
+function Ribbon(document, client, metadataProvider, arrowLeft, arrowRight) {
+  var self = document.createElement('div');
+  Ribbon.decorate(self, client, metadataProvider, arrowLeft, arrowRight);
+  return self;
+}
+
+Ribbon.prototype.__proto__ = HTMLDivElement.prototype;
+
+/**
+ * @param {HTMLDivElement} self Element to decorate.
  * @param {RibbonClient} client
  * @param {MetadataProvider} metadataProvider
  * @param {HTMLElement} arrowLeft
  * @param {HTMLElement} arrowRight
  */
-function Ribbon(container, client, metadataProvider, arrowLeft, arrowRight) {
-  this.container_ = container;
-  this.document_ = container.ownerDocument;
-  this.client_ = client;
-  this.metadataProvider_ = metadataProvider;
+Ribbon.decorate = function(
+    self, client, metadataProvider, arrowLeft, arrowRight) {
+  self.__proto__ = Ribbon.prototype;
+  self.client_ = client;
+  self.metadataProvider_ = metadataProvider;
 
-  this.items_ = [];
-  this.selectedIndex_ = -1;
+  self.items_ = [];
+  self.selectedIndex_ = -1;
 
-  this.arrowLeft_ = arrowLeft;
-  this.arrowLeft_.
-      addEventListener('click', this.selectNext.bind(this, -1, null));
+  self.arrowLeft_ = arrowLeft;
+  self.arrowLeft_.
+      addEventListener('click', self.selectNext.bind(self, -1, null));
 
-  this.arrowRight_ = arrowRight;
-  this.arrowRight_.
-      addEventListener('click', this.selectNext.bind(this, 1, null));
+  self.arrowRight_ = arrowRight;
+  self.arrowRight_.
+      addEventListener('click', self.selectNext.bind(self, 1, null));
 
-  this.bar_ = this.document_.createElement('div');
-  this.bar_.className = 'ribbon';
-  this.container_.appendChild(this.bar_);
+  self.className = 'ribbon';
 }
 
 Ribbon.PAGING_SINGLE_ITEM_DELAY = 20;
 Ribbon.PAGING_ANIMATION_DURATION = 200;
 
+/**
+ * @return {Ribbon.Item?} The selected item.
+ */
 Ribbon.prototype.getSelectedItem = function () {
   return this.items_[this.selectedIndex_];
 };
 
 Ribbon.prototype.clear = function() {
-  this.bar_.textContent = '';
+  this.textContent = '';
   this.items_ = [];
   this.selectedIndex_ = -1;
   this.firstVisibleIndex_ = 0;
@@ -863,8 +881,8 @@ Ribbon.prototype.clear = function() {
 
 Ribbon.prototype.add = function(url) {
   var index = this.items_.length;
-  var selectClosure = this.select.bind(this, index, 0, null);
-  var item = new Ribbon.Item(index, url, this.document_, selectClosure);
+  var item = new Ribbon.Item(this.ownerDocument, index, url);
+  item.addEventListener('click', this.select.bind(this, index, 0, null));
   this.items_.push(item);
 };
 
@@ -990,13 +1008,13 @@ Ribbon.prototype.redraw = function() {
   }.bind(this);
 
   // TODO(dgozman): use margin instead of 2 here.
-  var itemWidth = this.bar_.clientHeight - 2;
+  var itemWidth = this.clientHeight - 2;
   var fullItems = Ribbon.ITEMS_COUNT;
   fullItems = Math.min(fullItems, this.items_.length);
   var right = Math.floor((fullItems - 1) / 2);
 
   var fullWidth = fullItems * itemWidth;
-  this.bar_.style.width = fullWidth + 'px';
+  this.style.width = fullWidth + 'px';
 
   var lastIndex = this.selectedIndex_ + right;
   lastIndex = Math.max(lastIndex, fullItems - 1);
@@ -1013,7 +1031,7 @@ Ribbon.prototype.redraw = function() {
     this.lastVisibleIndex_ = lastIndex;
   }
 
-  this.bar_.textContent = '';
+  this.textContent = '';
   var startIndex = Math.min(firstIndex, this.firstVisibleIndex_);
   var toRemove = [];
   // All the items except the first one treated equally.
@@ -1021,9 +1039,9 @@ Ribbon.prototype.redraw = function() {
        index <= Math.max(lastIndex, this.lastVisibleIndex_);
        ++index) {
     initThumbnail(index);
-    var box = this.items_[index].getBox();
+    var box = this.items_[index];
     box.style.marginLeft = '0';
-    this.bar_.appendChild(box);
+    this.appendChild(box);
     if (index < firstIndex || index > lastIndex) {
       toRemove.push(index);
     }
@@ -1031,14 +1049,14 @@ Ribbon.prototype.redraw = function() {
 
   var margin = itemWidth * Math.abs(firstIndex - this.firstVisibleIndex_);
   initThumbnail(startIndex);
-  var startBox = this.items_[startIndex].getBox();
+  var startBox = this.items_[startIndex];
   if (startIndex == firstIndex) {
     // Sliding to the right.
     startBox.style.marginLeft = -margin + 'px';
-    if (this.bar_.firstChild)
-      this.bar_.insertBefore(startBox, this.bar_.firstChild);
+    if (this.firstChild)
+      this.insertBefore(startBox, this.firstChild);
     else
-      this.bar_.appendChild(startBox);
+      this.appendChild(startBox);
     setTimeout(function() {
       startBox.style.marginLeft = '0';
     }, 0);
@@ -1047,26 +1065,20 @@ Ribbon.prototype.redraw = function() {
     // removed afterwards.
     toRemove.push(startIndex);
     startBox.style.marginLeft = '0';
-    if (this.bar_.firstChild)
-      this.bar_.insertBefore(startBox, this.bar_.firstChild);
+    if (this.firstChild)
+      this.insertBefore(startBox, this.firstChild);
     else
-      this.bar_.appendChild(startBox);
+      this.appendChild(startBox);
     setTimeout(function() {
       startBox.style.marginLeft = -margin + 'px';
     }, 0);
   }
 
-  if (firstIndex > 0 && this.selectedIndex_ != firstIndex) {
-    this.bar_.classList.add('fade-left');
-  } else {
-    this.bar_.classList.remove('fade-left');
-  }
+  ImageUtil.setClass(this, 'fade-left',
+      firstIndex > 0 && this.selectedIndex_ != firstIndex);
 
-  if (lastIndex < this.items_.length - 1 && this.selectedIndex_ != lastIndex) {
-    this.bar_.classList.add('fade-right');
-  } else {
-    this.bar_.classList.remove('fade-right');
-  }
+  ImageUtil.setClass(this, 'fade-right',
+      lastIndex < this.items_.length - 1 && this.selectedIndex_ != lastIndex);
 
   this.firstVisibleIndex_ = firstIndex;
   this.lastVisibleIndex_ = lastIndex;
@@ -1075,9 +1087,9 @@ Ribbon.prototype.redraw = function() {
     for (var i = 0; i < toRemove.length; i++) {
       var index = toRemove[i];
       if (index < this.firstVisibleIndex_ || index > this.lastVisibleIndex_) {
-        var box = this.items_[index].getBox();
-        if (box.parentNode == this.bar_)
-          this.bar_.removeChild(box);
+        var box = this.items_[index];
+        if (box.parentNode == this)
+          this.removeChild(box);
       }
     }
   }.bind(this), 200);
@@ -1120,28 +1132,33 @@ Ribbon.prototype.toggleDebugSlideshow = function() {
   }
 };
 
-Ribbon.Item = function(index, url, document, selectClosure) {
-  this.index_ = index;
-  this.url_ = url;
+Ribbon.Item = function(document, index, url) {
+  var self = document.createElement('div');
+  Ribbon.Item.decorate(self, index, url);
+  return self;
+};
 
-  this.box_ = document.createElement('div');
-  this.box_.className = 'ribbon-image';
-  this.box_.addEventListener('click', selectClosure);
+Ribbon.Item.prototype.__proto__ = HTMLDivElement.prototype;
 
-  this.wrapper_ = document.createElement('div');
-  this.wrapper_.className = 'image-wrapper';
-  this.box_.appendChild(this.wrapper_);
+Ribbon.Item.decorate = function(self, index, url, selectClosure) {
+  self.__proto__ = Ribbon.Item.prototype;
+  self.index_ = index;
+  self.url_ = url;
 
-  this.img_ = document.createElement('img');
-  this.wrapper_.appendChild(this.img_);
+  self.className = 'ribbon-image';
 
-  this.original_ = true;
-  this.nameForSaving_ = null;
+  var wrapper = self.ownerDocument.createElement('div');
+  wrapper.className = 'image-wrapper';
+  self.appendChild(wrapper);
+
+  var img = document.createElement('img');
+  wrapper.appendChild(img);
+
+  self.original_ = true;
+  self.nameForSaving_ = null;
 };
 
 Ribbon.Item.prototype.getIndex = function () { return this.index_ };
-
-Ribbon.Item.prototype.getBox = function () { return this.box_ };
 
 Ribbon.Item.prototype.isOriginal = function () { return this.original_ };
 
@@ -1157,11 +1174,11 @@ Ribbon.Item.prototype.hasNameForSaving = function() {
 };
 
 Ribbon.Item.prototype.isSelected = function() {
-  return this.box_.hasAttribute('selected');
+  return this.hasAttribute('selected');
 };
 
 Ribbon.Item.prototype.select = function(on) {
-  ImageUtil.setAttribute(this.box_, 'selected', on);
+  ImageUtil.setAttribute(this, 'selected', on);
 };
 
 Ribbon.Item.prototype.saveToFile = function(
@@ -1295,7 +1312,7 @@ Ribbon.Item.prototype.setNameForSaving = function(newName) {
 };
 
 Ribbon.Item.prototype.hasThumbnail = function() {
-  return this.img_.hasAttribute('src');
+  return !!this.querySelector('img[src]');
 };
 
 Ribbon.Item.prototype.setThumbnail = function(metadata) {
@@ -1332,9 +1349,10 @@ Ribbon.Item.prototype.setThumbnail = function(metadata) {
     }
   }
 
-  util.applyTransform(this.wrapper_, transform);
+  var wrapper = this.querySelector('.image-wrapper');
+  util.applyTransform(wrapper, transform);
 
-  var img = this.img_;
+  var img = this.querySelector('img');
 
   if (metadata.width && metadata.height) {
     var aspect = metadata.width / metadata.height;
@@ -1357,13 +1375,17 @@ Ribbon.Item.prototype.setThumbnail = function(metadata) {
 
   img.onerror = function() {
     // Use the default icon if we could not fetch the correct one.
-    util.applyTransform(this.wrapper_, null);
+    util.applyTransform(wrapper, null);
     img.src = FileType.getPreviewArt(mediaType);
-  }.bind(this);
+  };
 
   img.src = url;
 };
 
+/**
+ * @constructor
+ * @extends {ImageEditor.Mode}
+ */
 function ShareMode(editor, container, toolbar, shareActions,
                    onClick, actionCallback, displayStringFunction) {
   ImageEditor.Mode.call(this, 'share');
@@ -1400,12 +1422,18 @@ function ShareMode(editor, container, toolbar, shareActions,
 
 ShareMode.prototype = { __proto__: ImageEditor.Mode.prototype };
 
+/**
+ * Shows share mode UI.
+ */
 ShareMode.prototype.setUp = function() {
   ImageEditor.Mode.prototype.setUp.apply(this, arguments);
   ImageUtil.setAttribute(this.menu_, 'hidden', false);
   ImageUtil.setAttribute(this.button_, 'pressed', false);
 };
 
+/**
+ * Hides share mode UI.
+ */
 ShareMode.prototype.cleanUpUI = function() {
   ImageEditor.Mode.prototype.cleanUpUI.apply(this, arguments);
   ImageUtil.setAttribute(this.menu_, 'hidden', true);
