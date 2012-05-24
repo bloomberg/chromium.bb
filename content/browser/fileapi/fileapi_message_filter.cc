@@ -172,11 +172,6 @@ void FileAPIMessageFilter::UnregisterOperation(int request_id) {
 
 FileAPIMessageFilter::~FileAPIMessageFilter() {}
 
-void FileAPIMessageFilter::BadMessageReceived() {
-  content::RecordAction(UserMetricsAction("BadMessageTerminate_FAMF"));
-  BrowserMessageFilter::BadMessageReceived();
-}
-
 void FileAPIMessageFilter::OnOpen(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
     int64 requested_size, bool create) {
@@ -468,20 +463,12 @@ void FileAPIMessageFilter::OnAppendBlobDataItem(
     OnRemoveBlob(url);
     return;
   }
-  if (item.length == 0) {
-    BadMessageReceived();
-    return;
-  }
   blob_storage_context_->controller()->AppendBlobDataItem(url, item);
 }
 
 void FileAPIMessageFilter::OnAppendSharedMemory(
     const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size) {
   DCHECK(base::SharedMemory::IsHandleValid(handle));
-  if (!buffer_size) {
-    BadMessageReceived();
-    return;
-  }
 #if defined(OS_WIN)
   base::SharedMemory shared_memory(handle, true, peer_handle());
 #else
@@ -706,4 +693,3 @@ FileSystemOperationInterface* FileAPIMessageFilter::GetNewOperation(
   operations_.AddWithID(operation, request_id);
   return operation;
 }
-
