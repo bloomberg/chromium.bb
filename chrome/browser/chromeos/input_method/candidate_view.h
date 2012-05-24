@@ -26,7 +26,8 @@ class CandidateView : public views::View {
   // A width of 0 means that the column is resizable.
   void Init(int shortcut_column_width,
             int candidate_column_width,
-            int annotation_column_width);
+            int annotation_column_width,
+            int column_height);
 
   // Sets candidate text to the given text.
   void SetCandidateText(const string16& text);

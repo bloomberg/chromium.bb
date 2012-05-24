@@ -139,6 +139,8 @@ class CandidateWindowView : public views::View {
  private:
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, MozcUpdateCandidateTest);
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
+  FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest,
+                           DoNotChangeRowHeightWithLabelSwitchTest);
 
   // Initializes the candidate views if needed.
   void MaybeInitializeCandidateViews(
@@ -187,10 +189,10 @@ class CandidateWindowView : public views::View {
   // showing candidate number information like 2/19.
   InformationTextArea* footer_area_;
 
-  // Current columns width in |candidate_area_|.
-  int previous_shortcut_column_width_;
-  int previous_candidate_column_width_;
-  int previous_annotation_column_width_;
+  // Current columns size in |candidate_area_|.
+  gfx::Size previous_shortcut_column_size_;
+  gfx::Size previous_candidate_column_size_;
+  gfx::Size previous_annotation_column_size_;
 
   // The last cursor location.
   gfx::Rect cursor_location_;

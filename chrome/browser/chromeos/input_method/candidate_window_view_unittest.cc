@@ -673,5 +673,110 @@ TEST_F(InfolistWindowViewTest, ShouldUpdateViewTest) {
   }
 }
 
+TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
+  const size_t kPageSize = 10;
+  InputMethodLookupTable table;
+  InputMethodLookupTable no_shortcut_table;
+
+  const char kSampleCandidate1[] = "Sample String 1";
+  const char kSampleCandidate2[] = "\xE3\x81\x82";  // multi byte string.
+  const char kSampleCandidate3[] = ".....";
+
+  const char kSampleShortcut1[] = "1";
+  const char kSampleShortcut2[] = "b";
+  const char kSampleShortcut3[] = "C";
+
+  const char kSampleAnnotation1[] = "Sample Annotation 1";
+  const char kSampleAnnotation2[] = "\xE3\x81\x82"; // multi byte string.
+  const char kSampleAnnotation3[] = "......";
+
+  // For testing, we have to prepare empty widget.
+  // We should NOT manually free widget by default, otherwise double free will
+  // be occurred. So, we should instantiate widget class with "new" operation.
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  widget->Init(params);
+
+  CandidateWindowView candidate_window_view(widget);
+  candidate_window_view.Init();
+
+  // Create LookupTable object.
+  ClearInputMethodLookupTable(kPageSize, &table);
+  table.visible = true;
+  table.cursor_absolute_index = 0;
+  table.page_size = 3;
+  table.candidates.clear();
+  table.orientation = InputMethodLookupTable::kVertical;
+  table.labels.clear();
+  table.annotations.clear();
+
+  table.candidates.push_back(kSampleCandidate1);
+  table.candidates.push_back(kSampleCandidate2);
+  table.candidates.push_back(kSampleCandidate3);
+
+  table.labels.push_back(kSampleShortcut1);
+  table.labels.push_back(kSampleShortcut2);
+  table.labels.push_back(kSampleShortcut3);
+
+  table.annotations.push_back(kSampleAnnotation1);
+  table.annotations.push_back(kSampleAnnotation2);
+  table.annotations.push_back(kSampleAnnotation3);
+
+  no_shortcut_table = table;
+  no_shortcut_table.labels.clear();
+
+  int before_height = 0;
+
+  // Test for shortcut mode to no-shortcut mode.
+  // Initialize with a shortcut mode lookup table.
+  candidate_window_view.MaybeInitializeCandidateViews(table);
+  ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
+  before_height =
+      candidate_window_view.candidate_views_[0]->GetContentsBounds().height();
+  // Checks all entry have same row height.
+  for (size_t i = 1; i < candidate_window_view.candidate_views_.size(); ++i) {
+    const CandidateView* view = candidate_window_view.candidate_views_[i];
+    EXPECT_EQ(before_height, view->GetContentsBounds().height());
+  }
+
+  // Initialize with a no shortcut mode lookup table.
+  candidate_window_view.MaybeInitializeCandidateViews(no_shortcut_table);
+  ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
+  EXPECT_EQ(before_height,
+            candidate_window_view.candidate_views_[0]->GetContentsBounds()
+                .height());
+  // Checks all entry have same row height.
+  for (size_t i = 1; i < candidate_window_view.candidate_views_.size(); ++i) {
+    const CandidateView* view = candidate_window_view.candidate_views_[i];
+    EXPECT_EQ(before_height, view->GetContentsBounds().height());
+  }
+
+  // Test for no-shortcut mode to shortcut mode.
+  // Initialize with a no shortcut mode lookup table.
+  candidate_window_view.MaybeInitializeCandidateViews(no_shortcut_table);
+  ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
+  before_height =
+      candidate_window_view.candidate_views_[0]->GetContentsBounds().height();
+  // Checks all entry have same row height.
+  for (size_t i = 1; i < candidate_window_view.candidate_views_.size(); ++i) {
+    const CandidateView* view = candidate_window_view.candidate_views_[i];
+    EXPECT_EQ(before_height, view->GetContentsBounds().height());
+  }
+
+  // Initialize with a shortcut mode lookup table.
+  candidate_window_view.MaybeInitializeCandidateViews(table);
+  ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
+  EXPECT_EQ(before_height,
+            candidate_window_view.candidate_views_[0]->GetContentsBounds()
+                .height());
+  // Checks all entry have same row height.
+  for (size_t i = 1; i < candidate_window_view.candidate_views_.size(); ++i) {
+    const CandidateView* view = candidate_window_view.candidate_views_[i];
+    EXPECT_EQ(before_height, view->GetContentsBounds().height());
+  }
+
+  // We should call CloseNow method, otherwise this test will leak memory.
+  widget->CloseNow();
+}
 }  // namespace input_method
 }  // namespace chromeos

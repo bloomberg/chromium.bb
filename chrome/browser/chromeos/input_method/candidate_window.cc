@@ -243,10 +243,11 @@ views::Label* CreateAnnotationLabel(
   return annotation_label;
 }
 
-// Computes shortcut column width.
-int ComputeShortcutColumnWidth(
+// Computes shortcut column size.
+gfx::Size ComputeShortcutColumnSize(
     const InputMethodLookupTable& lookup_table) {
   int shortcut_column_width = 0;
+  int shortcut_column_height = 0;
   // Create the shortcut label. The label will be owned by
   // |wrapped_shortcut_label|, hence it's deleted when
   // |wrapped_shortcut_label| is deleted.
@@ -254,16 +255,18 @@ int ComputeShortcutColumnWidth(
   scoped_ptr<views::View> wrapped_shortcut_label(
       CreateWrappedShortcutLabel(shortcut_label, lookup_table.orientation));
 
-  // Compute the max width in shortcut labels.
-  // We'll create temporary shortcut labels, and choose the largest width.
+  // Compute the max width and height in shortcut labels.
+  // We'll create temporary shortcut labels, and choose the largest width and
+  // height.
   for (int i = 0; i < lookup_table.page_size; ++i) {
     shortcut_label->SetText(CreateShortcutText(i, lookup_table.orientation));
-    shortcut_column_width =
-        std::max(shortcut_column_width,
-                 wrapped_shortcut_label->GetPreferredSize().width());
+    gfx::Size text_size = wrapped_shortcut_label->GetPreferredSize();
+    shortcut_column_width = std::max(shortcut_column_width, text_size.width());
+    shortcut_column_height = std::max(shortcut_column_height,
+                                      text_size.height());
   }
 
-  return shortcut_column_width;
+  return gfx::Size(shortcut_column_width, shortcut_column_height);
 }
 
 // Computes the page index. For instance, if the page size is 9, and the
@@ -275,59 +278,68 @@ int ComputePageIndex(const InputMethodLookupTable& lookup_table) {
   return -1;
 }
 
-// Computes candidate column width.
-int ComputeCandidateColumnWidth(
+// Computes candidate column size.
+gfx::Size ComputeCandidateColumnSize(
     const InputMethodLookupTable& lookup_table) {
   int candidate_column_width = 0;
+  int candidate_column_height = 0;
   scoped_ptr<views::Label> candidate_label(
       CreateCandidateLabel(lookup_table.orientation));
 
   // Compute the start index of |lookup_table_|.
   const int current_page_index = ComputePageIndex(lookup_table);
   if (current_page_index < 0)
-    return 0;
+    return gfx::Size(0, 0);
   const size_t start_from = current_page_index * lookup_table.page_size;
 
-  // Compute the max width in candidate labels.
-  // We'll create temporary candidate labels, and choose the largest width.
+  // Compute the max width and height in candidate labels.
+  // We'll create temporary candidate labels, and choose the largest width and
+  // height.
   for (size_t i = 0; i + start_from < lookup_table.candidates.size(); ++i) {
     const size_t index = start_from + i;
 
     candidate_label->SetText(
         UTF8ToUTF16(lookup_table.candidates[index]));
-    candidate_column_width =
-        std::max(candidate_column_width,
-                 candidate_label->GetPreferredSize().width());
+    gfx::Size text_size = candidate_label->GetPreferredSize();
+    candidate_column_width = std::max(candidate_column_width,
+                                      text_size.width());
+    candidate_column_height = std::max(candidate_column_height,
+                                       text_size.height());
   }
 
-  return candidate_column_width;
+  return gfx::Size(candidate_column_width, candidate_column_height);
 }
 
-// Computes annotation column width.
-int ComputeAnnotationColumnWidth(const InputMethodLookupTable& lookup_table) {
+// Computes annotation column size.
+gfx::Size ComputeAnnotationColumnSize(
+    const InputMethodLookupTable& lookup_table) {
   int annotation_column_width = 0;
+  int annotation_column_height = 0;
   scoped_ptr<views::Label> annotation_label(
       CreateAnnotationLabel(lookup_table.orientation));
 
   // Compute the start index of |lookup_table_|.
   const int current_page_index = ComputePageIndex(lookup_table);
   if (current_page_index < 0)
-    return 0;
+    return gfx::Size(0, 0);
   const size_t start_from = current_page_index * lookup_table.page_size;
 
-  // Compute max width in annotation labels.
-  // We'll create temporary annotation labels, and choose the largest width.
+  // Compute max width and height in annotation labels.
+  // We'll create temporary annotation labels, and choose the largest width and
+  // height.
   for (size_t i = 0; i + start_from < lookup_table.annotations.size(); ++i) {
     const size_t index = start_from + i;
 
     annotation_label->SetText(
         UTF8ToUTF16(lookup_table.annotations[index]));
-    annotation_column_width =
-        std::max(annotation_column_width,
-                 annotation_label->GetPreferredSize().width());
+    gfx::Size text_size = annotation_label->GetPreferredSize();
+    annotation_column_width = std::max(annotation_column_width,
+                                       text_size.width());
+    annotation_column_height = std::max(annotation_column_height,
+                                        text_size.height());
   }
 
-  return annotation_column_width;
+  return gfx::Size(annotation_column_width, annotation_column_height);
 }
 
 }  // namespace
@@ -561,7 +573,8 @@ CandidateView::CandidateView(
 
 void CandidateView::Init(int shortcut_column_width,
                          int candidate_column_width,
-                         int annotation_column_width) {
+                         int annotation_column_width,
+                         int column_height) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);  // |this| owns |layout|.
 
@@ -612,9 +625,27 @@ void CandidateView::Init(int shortcut_column_width,
   layout->StartRow(0, 0);
   // |wrapped_shortcut_label|, |candidate_label_|, and |annotation_label_|
   // will be owned by |this|.
-  layout->AddView(wrapped_shortcut_label);
-  layout->AddView(candidate_label_);
-  layout->AddView(annotation_label_);
+  layout->AddView(wrapped_shortcut_label,
+                  1,  // Column span.
+                  1,  // Row span.
+                  views::GridLayout::FILL,  // Horizontal alignment.
+                  views::GridLayout::FILL,  // Vertical alignment.
+                  -1,  // Preferred width, not specified.
+                  column_height);  // Preferred height.
+  layout->AddView(candidate_label_,
+                  1,  // Column span.
+                  1,  // Row span.
+                  views::GridLayout::FILL,  // Horizontal alignment.
+                  views::GridLayout::FILL,  // Vertical alignment.
+                  -1,  // Preferred width, not specified.
+                  column_height);  // Preferred height.
+  layout->AddView(annotation_label_,
+                  1,  // Column span.
+                  1,  // Row span.
+                  views::GridLayout::FILL,  // Horizontal alignment.
+                  views::GridLayout::FILL,  // Vertical alignemnt.
+                  -1,  // Preferred width, not specified.
+                  column_height);  // Preferred height.
   if (orientation_ == InputMethodLookupTable::kVertical) {
     infolist_icon_ = new views::View;
     views::View* infolist_icon_wrapper = new views::View;
@@ -741,9 +772,9 @@ CandidateWindowView::CandidateWindowView(views::Widget* parent_frame)
       header_area_(NULL),
       candidate_area_(NULL),
       footer_area_(NULL),
-      previous_shortcut_column_width_(0),
-      previous_candidate_column_width_(0),
-      previous_annotation_column_width_(0),
+      previous_shortcut_column_size_(0, 0),
+      previous_candidate_column_size_(0, 0),
+      previous_annotation_column_size_(0, 0),
       is_suggestion_window_location_available_(false),
       was_candidate_window_open_(false) {
 }
@@ -1011,16 +1042,16 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   views::View* candidate_area_contents = candidate_area_->contents();
 
   // Current column width.
-  int shortcut_column_width = 0;
-  int candidate_column_width = 0;
-  int annotation_column_width = 0;
+  gfx::Size shortcut_column_size(0, 0);
+  gfx::Size candidate_column_size(0,0);
+  gfx::Size annotation_column_size(0, 0);
 
   // If orientation is horizontal, don't need to compute width,
   // because each label is left aligned.
   if (orientation == InputMethodLookupTable::kVertical) {
-    shortcut_column_width = ComputeShortcutColumnWidth(lookup_table);
-    candidate_column_width = ComputeCandidateColumnWidth(lookup_table);
-    annotation_column_width = ComputeAnnotationColumnWidth(lookup_table);
+    shortcut_column_size = ComputeShortcutColumnSize(lookup_table);
+    candidate_column_size = ComputeCandidateColumnSize(lookup_table);
+    annotation_column_size = ComputeAnnotationColumnSize(lookup_table);
   }
 
   // If the requested number of views matches the number of current views, and
@@ -1034,16 +1065,16 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   // and type "ni" with Pinyin input method.
   if (static_cast<int>(candidate_views_.size()) == page_size &&
       lookup_table_.orientation == orientation &&
-      previous_shortcut_column_width_ == shortcut_column_width &&
-      previous_candidate_column_width_ == candidate_column_width &&
-      previous_annotation_column_width_ == annotation_column_width) {
+      previous_shortcut_column_size_ == shortcut_column_size &&
+      previous_candidate_column_size_ == candidate_column_size &&
+      previous_annotation_column_size_ == annotation_column_size) {
     return;
   }
 
   // Update the previous column widths.
-  previous_shortcut_column_width_ = shortcut_column_width;
-  previous_candidate_column_width_ = candidate_column_width;
-  previous_annotation_column_width_ = annotation_column_width;
+  previous_shortcut_column_size_ = shortcut_column_size;
+  previous_candidate_column_size_ = candidate_column_size;
+  previous_annotation_column_size_ = annotation_column_size;
 
   // Clear the existing candidate_views if any.
   for (size_t i = 0; i < candidate_views_.size(); ++i) {
@@ -1080,6 +1111,11 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
                     kCandidateAreaInsets.bottom(),
                     kCandidateAreaInsets.right());
 
+  // Use maximum height for all rows in candidate area.
+  const int kColumnHeight = std::max(shortcut_column_size.height(),
+                                     std::max(candidate_column_size.height(),
+                                              annotation_column_size.height()));
+
   // Add views to the candidate area.
   if (orientation == InputMethodLookupTable::kHorizontal) {
     layout->StartRow(0, 0);
@@ -1087,15 +1123,22 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
 
   for (int i = 0; i < page_size; ++i) {
     CandidateView* candidate_row = new CandidateView(this, i, orientation);
-    candidate_row->Init(shortcut_column_width,
-                        candidate_column_width,
-                        annotation_column_width);
+    candidate_row->Init(shortcut_column_size.width(),
+                        candidate_column_size.width(),
+                        annotation_column_size.width(),
+                        kColumnHeight);
     candidate_views_.push_back(candidate_row);
     if (orientation == InputMethodLookupTable::kVertical) {
       layout->StartRow(0, 0);
     }
     // |candidate_row| will be owned by |candidate_area_contents|.
-    layout->AddView(candidate_row);
+    layout->AddView(candidate_row,
+                    1,  // Column span.
+                    1,  // Row span.
+                    views::GridLayout::CENTER,  // Horizontal alignment.
+                    views::GridLayout::CENTER,  // Vertical alignment.
+                    -1,  // Preferred width, not specified.
+                    kColumnHeight);  // Preferred height.
   }
 
   // Compute views size in |layout|.
