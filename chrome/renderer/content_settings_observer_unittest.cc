@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,14 +48,6 @@ TEST_F(ContentSettingsObserverTest, WhitelistedSchemes) {
   EXPECT_FALSE(ContentSettingsObserver::IsWhitelistedForContentSettings(
       WebSecurityOrigin::create(file_url),
       GURL("file:///dir/file")));
-
-  GURL ftp_url("ftp:///dir/");
-  EXPECT_TRUE(ContentSettingsObserver::IsWhitelistedForContentSettings(
-      WebSecurityOrigin::create(ftp_url),
-      GURL("ftp:///dir/")));
-  EXPECT_FALSE(ContentSettingsObserver::IsWhitelistedForContentSettings(
-      WebSecurityOrigin::create(ftp_url),
-      GURL("ftp:///dir/file")));
 
   GURL http_url =
       GURL("http://server.com/path");

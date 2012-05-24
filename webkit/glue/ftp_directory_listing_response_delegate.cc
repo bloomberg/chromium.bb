@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
+#include "webkit/glue/weburlresponse_extradata_impl.h"
 
 using net::FtpDirectoryListingEntry;
 
@@ -60,6 +61,12 @@ FtpDirectoryListingResponseDelegate::FtpDirectoryListingResponseDelegate(
     const WebURLResponse& response)
     : client_(client),
       loader_(loader) {
+  if (response.extraData()) {
+    // extraData can be NULL during tests.
+    WebURLResponseExtraDataImpl* extra_data =
+        static_cast<WebURLResponseExtraDataImpl*>(response.extraData());
+    extra_data->set_is_ftp_directory_listing(true);
+  }
   Init(response.url());
 }
 

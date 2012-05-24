@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/weburlresponse_extradata_impl.h"
 
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
@@ -312,6 +313,13 @@ void ContentSettingsObserver::ClearBlockedContentSettings() {
 }
 
 bool ContentSettingsObserver::IsWhitelistedForContentSettings(WebFrame* frame) {
+  // Whitelist ftp directory listings, as they require JavaScript to function
+  // properly.
+  webkit_glue::WebURLResponseExtraDataImpl* extra_data =
+      static_cast<webkit_glue::WebURLResponseExtraDataImpl*>(
+          frame->dataSource()->response().extraData());
+  if (extra_data && extra_data->is_ftp_directory_listing())
+    return true;
   return IsWhitelistedForContentSettings(frame->document().securityOrigin(),
                                          frame->document().url());
 }
@@ -337,14 +345,11 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
   if (EqualsASCII(origin.protocol(), chrome::kChromeInternalScheme))
     return true;
 
-  // If the scheme is ftp: or file:, an empty file name indicates a directory
-  // listing, which requires JavaScript to function properly.
-  const char* kDirProtocols[] = { chrome::kFtpScheme, chrome::kFileScheme };
-  for (size_t i = 0; i < arraysize(kDirProtocols); ++i) {
-    if (EqualsASCII(origin.protocol(), kDirProtocols[i])) {
-      return document_url.SchemeIs(kDirProtocols[i]) &&
-             document_url.ExtractFileName().empty();
-    }
+  // If the scheme is file:, an empty file name indicates a directory listing,
+  // which requires JavaScript to function properly.
+  if (EqualsASCII(origin.protocol(), chrome::kFileScheme)) {
+    return document_url.SchemeIs(chrome::kFileScheme) &&
+           document_url.ExtractFileName().empty();
   }
 
   return false;
