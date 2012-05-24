@@ -606,7 +606,6 @@
       '-perf.LiveGamePerfTest',  # Requires linux /proc/stat.
       '-perf.MemoryTest',  # Designed only for ChromeOS.
       '-perf.NetflixPerfTest',  # Netflix plugin not available.
-      '-perf.PageCyclerTest',  # Requires page cycler data files on QA bots.
       '-perf.YoutubePerfTest',  # AttributeError: AssertPlayingState.
     ],
     'mac': [
@@ -614,14 +613,12 @@
       '-perf.LiveGamePerfTest',  # Requires linux /proc/stat.
       '-perf.MemoryTest',  # Designed only for ChromeOS.
       '-perf.NetflixPerfTest',  # Netflix plugin not available.
-      '-perf.PageCyclerTest',  # Requires page cycler data files on QA bots.
       '-perf.YoutubePerfTest',  # AttributeError: AssertPlayingState.
     ],
     'linux': [
       '-perf.GPUPerfTest',  # Fails. Discuss with prachij@.
       '-perf.MemoryTest',  # Designed only for ChromeOS.
       '-perf.NetflixPerfTest',  # Netflix plugin not available.
-      '-perf.PageCyclerTest',  # Requires page cycler data files on QA bots.
       '-perf.WebGLTest',  # May not render WebGL; need to verify on QA bot.
       '-perf.YoutubePerfTest',  # AttributeError: AssertPlayingState.
     ],
