@@ -214,7 +214,7 @@ def main():
           ref_output.append(ref)
 
     if opts.diffable:
-      print '\n'.join('# ' + qualified_filename + r for r in ref_output)
+      print '\n'.join('# ' + qualified_filename + ' ' + r for r in ref_output)
     else:
       print '%s (initializer offset 0x%x size 0x%x)' % (qualified_filename,
                                                         addr, size)
