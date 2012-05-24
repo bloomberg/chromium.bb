@@ -110,7 +110,8 @@ WebPreferences::WebPreferences()
       default_tile_width(256),
       default_tile_height(256),
       max_untiled_layer_width(512),
-      max_untiled_layer_height(512) {
+      max_untiled_layer_height(512),
+      fixed_position_creates_stacking_context(false) {
   standard_font_family_map[kCommonScript] =
       ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] =
@@ -372,6 +373,9 @@ void WebPreferences::Apply(WebView* web_view) const {
       WebSize(default_tile_width, default_tile_height));
   settings->setMaxUntiledLayerSize(
       WebSize(max_untiled_layer_width, max_untiled_layer_height));
+
+  settings->setFixedPositionCreatesStackingContext(
+      fixed_position_creates_stacking_context);
 
   WebNetworkStateNotifier::setOnLine(is_online);
 }

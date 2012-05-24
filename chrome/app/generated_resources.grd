@@ -5432,6 +5432,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_WEBGL_DESCRIPTION" desc="Description for the flag to disable WebGL.">
         Enabling this option prevents web applications from accessing the WebGL API.
       </message>
+      <message name="IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME" desc="Name of the 'Fixed position creates stacking context' lab.">
+        Fixed position elements create stacking contexts.
+      </message>
+      <message name="IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_DESCRIPTION" desc="Description for the flag to make fixed position elements create stacking contexts.">
+        Enabling this option makes all fixed position elements create new CSS stacking contexts.
+      </message>
       <message name="IDS_FLAGS_ENABLE_HTTP_PIPELINING_NAME" desc="Title for the flag to enable HTTP pipelining">
         HTTP Pipelining
       </message>

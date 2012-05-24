@@ -574,6 +574,9 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.apply_default_device_scale_factor_in_compositor = true;
   }
 
+  prefs.fixed_position_creates_stacking_context =
+      command_line.HasSwitch(switches::kFixedPositionCreatesStackingContext);
+
   content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 
   return prefs;

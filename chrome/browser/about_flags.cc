@@ -245,6 +245,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableBrowserPlugin)
   },
+  {
+    "fixed-position-creates-stacking-context",
+    IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_NAME,
+    IDS_FLAGS_FIXED_POSITION_CREATES_STACKING_CONTEXT_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kFixedPositionCreatesStackingContext)
+  },
   // TODO(dspringer): When NaCl is on by default, remove this flag entry.
   {
     "enable-nacl",  // FLAGS:RECORD_UMA

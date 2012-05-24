@@ -127,6 +127,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   int default_tile_height;
   int max_untiled_layer_width;
   int max_untiled_layer_height;
+  bool fixed_position_creates_stacking_context;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
