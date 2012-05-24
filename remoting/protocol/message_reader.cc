@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -91,26 +92,23 @@ void MessageReader::OnDataReceived(net::IOBuffer* data, int data_size) {
 
   pending_messages_ += new_messages.size();
 
-  // TODO(lambroslambrou): MessageLoopProxy::current() will not work from the
-  // plugin thread if this code is compiled into a separate binary.  Fix this.
   for (std::vector<CompoundBuffer*>::iterator it = new_messages.begin();
        it != new_messages.end(); ++it) {
     message_received_callback_.Run(
         scoped_ptr<CompoundBuffer>(*it),
         base::Bind(&MessageReader::OnMessageDone, this,
-                   base::MessageLoopProxy::current()));
+                   base::ThreadTaskRunnerHandle::Get()));
   }
 }
 
 void MessageReader::OnMessageDone(
-    scoped_refptr<base::MessageLoopProxy> message_loop) {
-  if (!message_loop->BelongsToCurrentThread()) {
-    message_loop->PostTask(
-        FROM_HERE,
-        base::Bind(&MessageReader::OnMessageDone, this, message_loop));
-    return;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  if (task_runner->BelongsToCurrentThread()) {
+    ProcessDoneEvent();
+  } else {
+    task_runner->PostTask(
+        FROM_HERE, base::Bind(&MessageReader::ProcessDoneEvent, this));
   }
-  ProcessDoneEvent();
 }
 
 void MessageReader::ProcessDoneEvent() {

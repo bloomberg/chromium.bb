@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,7 @@ namespace protocol {
 VideoReader::~VideoReader() { }
 
 // static
-VideoReader* VideoReader::Create(base::MessageLoopProxy* message_loop,
-                                 const SessionConfig& config) {
+VideoReader* VideoReader::Create(const SessionConfig& config) {
   const ChannelConfig& video_config = config.video_config();
   if (video_config.transport == ChannelConfig::TRANSPORT_STREAM) {
     if (video_config.codec == ChannelConfig::CODEC_VP8) {

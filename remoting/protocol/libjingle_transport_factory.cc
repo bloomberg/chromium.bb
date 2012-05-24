@@ -4,7 +4,8 @@
 
 #include "remoting/protocol/libjingle_transport_factory.h"
 
-#include "base/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "jingle/glue/channel_socket_adapter.h"
 #include "jingle/glue/pseudotcp_adapter.h"
 #include "jingle/glue/utils.h"
@@ -103,7 +104,7 @@ LibjingleStreamTransport::~LibjingleStreamTransport() {
   DCHECK(!is_connected() || socket_.get() == NULL);
 
   if (channel_.get()) {
-    base::MessageLoopProxy::current()->DeleteSoon(
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
         FROM_HERE, channel_.release());
   }
 }
@@ -285,7 +286,7 @@ void LibjingleStreamTransport::NotifyConnectFailed() {
   // This method may be called in response to a libjingle signal, so
   // libjingle objects must be deleted asynchronously.
   if (channel_.get()) {
-    base::MessageLoopProxy::current()->DeleteSoon(
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
         FROM_HERE, channel_.release());
   }
 
@@ -316,12 +317,11 @@ LibjingleTransportFactory::LibjingleTransportFactory()
 LibjingleTransportFactory::~LibjingleTransportFactory() {
   // This method may be called in response to a libjingle signal, so
   // libjingle objects must be deleted asynchronously.
-  base::MessageLoopProxy::current()->DeleteSoon(
-      FROM_HERE, port_allocator_.release());
-  base::MessageLoopProxy::current()->DeleteSoon(
-      FROM_HERE, socket_factory_.release());
-  base::MessageLoopProxy::current()->DeleteSoon(
-      FROM_HERE, network_manager_.release());
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+  task_runner->DeleteSoon(FROM_HERE, port_allocator_.release());
+  task_runner->DeleteSoon(FROM_HERE, socket_factory_.release());
+  task_runner->DeleteSoon(FROM_HERE, network_manager_.release());
 }
 
 void LibjingleTransportFactory::SetTransportConfig(

@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/clipboard_filter.h"
@@ -18,10 +19,6 @@
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
-
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
 
 namespace pp {
 class Instance;
@@ -47,7 +44,8 @@ class VideoReader;
 class VideoStub;
 
 class ConnectionToHost : public SignalStrategy::Listener,
-                         public SessionManager::Listener {
+                         public SessionManager::Listener,
+                         public base::NonThreadSafe {
  public:
   enum State {
     CONNECTING,
@@ -64,8 +62,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
     virtual void OnConnectionState(State state, ErrorCode error) = 0;
   };
 
-  ConnectionToHost(base::MessageLoopProxy* message_loop,
-                   bool allow_nat_traversal);
+  ConnectionToHost(bool allow_nat_traversal);
   virtual ~ConnectionToHost();
 
   virtual void Connect(scoped_refptr<XmppProxy> xmpp_proxy,
@@ -122,7 +119,6 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   void SetState(State state, ErrorCode error);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
   bool allow_nat_traversal_;
 
   std::string host_jid_;

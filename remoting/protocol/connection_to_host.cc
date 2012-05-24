@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/message_loop_proxy.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/javascript_signal_strategy.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
@@ -28,10 +27,8 @@ namespace remoting {
 namespace protocol {
 
 ConnectionToHost::ConnectionToHost(
-    base::MessageLoopProxy* message_loop,
     bool allow_nat_traversal)
-    : message_loop_(message_loop),
-      allow_nat_traversal_(allow_nat_traversal),
+    : allow_nat_traversal_(allow_nat_traversal),
       event_callback_(NULL),
       client_stub_(NULL),
       clipboard_stub_(NULL),
@@ -89,12 +86,7 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
 }
 
 void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
-        FROM_HERE, base::Bind(&ConnectionToHost::Disconnect,
-                              base::Unretained(this), shutdown_task));
-    return;
-  }
+  DCHECK(CalledOnValidThread());
 
   CloseChannels();
 
@@ -118,7 +110,7 @@ const SessionConfig& ConnectionToHost::config() {
 
 void ConnectionToHost::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(event_callback_);
 
   if (state == SignalStrategy::CONNECTED) {
@@ -130,7 +122,7 @@ void ConnectionToHost::OnSignalStrategyStateChange(
 }
 
 void ConnectionToHost::OnSessionManagerReady() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
 
   // After SessionManager is initialized we can try to connect to the host.
   scoped_ptr<CandidateSessionConfig> candidate_config =
@@ -144,7 +136,7 @@ void ConnectionToHost::OnSessionManagerReady() {
 void ConnectionToHost::OnIncomingSession(
     Session* session,
     SessionManager::IncomingSessionResponse* response) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   // Client always rejects incoming sessions.
   *response = SessionManager::DECLINE;
 }
@@ -155,7 +147,7 @@ ConnectionToHost::State ConnectionToHost::state() const {
 
 void ConnectionToHost::OnSessionStateChange(
     Session::State state) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(event_callback_);
 
   switch (state) {
@@ -166,8 +158,7 @@ void ConnectionToHost::OnSessionStateChange(
       break;
 
     case Session::AUTHENTICATED:
-      video_reader_.reset(VideoReader::Create(
-          message_loop_, session_->config()));
+      video_reader_.reset(VideoReader::Create(session_->config()));
       video_reader_->Init(session_.get(), video_stub_, base::Bind(
           &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
 
@@ -242,7 +233,7 @@ void ConnectionToHost::CloseChannels() {
 }
 
 void ConnectionToHost::SetState(State state, ErrorCode error) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(CalledOnValidThread());
   // |error| should be specified only when |state| is set to FAILED.
   DCHECK(state == FAILED || error == OK);
 

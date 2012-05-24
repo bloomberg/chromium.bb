@@ -54,7 +54,7 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
   void OnRead(int result);
   void HandleReadResult(int result);
   void OnDataReceived(net::IOBuffer* data, int data_size);
-  void OnMessageDone(scoped_refptr<base::MessageLoopProxy> message_loop);
+  void OnMessageDone(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   void ProcessDoneEvent();
 
   net::Socket* socket_;

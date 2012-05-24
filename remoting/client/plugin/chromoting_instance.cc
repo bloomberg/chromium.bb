@@ -401,8 +401,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
 
-  host_connection_.reset(new protocol::ConnectionToHost(
-      context_.network_message_loop(), true));
+  host_connection_.reset(new protocol::ConnectionToHost(true));
   client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
                                      view_.get(), rectangle_decoder_.get(),
                                      base::Closure()));

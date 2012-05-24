@@ -13,10 +13,6 @@
 #include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/video_writer.h"
 
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
-
 namespace net {
 class StreamSocket;
 }  // namespace net
@@ -28,7 +24,7 @@ class Session;
 
 class ProtobufVideoWriter : public VideoWriter {
  public:
-  ProtobufVideoWriter(base::MessageLoopProxy* message_loop);
+  ProtobufVideoWriter();
   virtual ~ProtobufVideoWriter();
 
   // VideoWriter interface.

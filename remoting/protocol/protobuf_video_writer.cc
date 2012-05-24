@@ -14,7 +14,7 @@
 namespace remoting {
 namespace protocol {
 
-ProtobufVideoWriter::ProtobufVideoWriter(base::MessageLoopProxy* message_loop)
+ProtobufVideoWriter::ProtobufVideoWriter()
     : session_(NULL) {
 }
 
