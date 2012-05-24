@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -261,7 +262,7 @@ bool ContentSettingDecoration::AcceptsMousePress() {
 
 bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Get host. This should be shared on linux/win/osx medium-term.
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = browser::GetLastActiveBrowser();
   TabContentsWrapper* tabContents = browser->GetSelectedTabContentsWrapper();
   if (!tabContents)
     return true;

@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -101,7 +102,7 @@ bool PageActionDecoration::OnMousePressed(NSRect frame) {
 
     const GURL popup_url(page_action_->GetPopupUrl(current_tab_id_));
     [ExtensionPopupController showURL:popup_url
-                            inBrowser:BrowserList::GetLastActive()
+                            inBrowser:browser::GetLastActiveBrowser()
                            anchoredAt:anchor
                         arrowLocation:info_bubble::kTopRight
                               devMode:NO];

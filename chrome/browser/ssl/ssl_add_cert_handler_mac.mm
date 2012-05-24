@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
@@ -56,7 +56,7 @@ void SSLAddCertHandler::AskToAddCert() {
 
 - (void)askToAddCert {
   NSWindow* parentWindow = NULL;
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = browser::GetLastActiveBrowser();
   // TODO(snej): Can I get the Browser that issued the request?
   if (browser) {
     parentWindow = browser->window()->GetNativeHandle();

@@ -2614,6 +2614,8 @@
         'browser/ui/cocoa/keystone_infobar_delegate.mm',
         'browser/ui/cocoa/l10n_util.h',
         'browser/ui/cocoa/l10n_util.mm',
+        'browser/ui/cocoa/last_active_browser_cocoa.cc',
+        'browser/ui/cocoa/last_active_browser_cocoa.h',
         'browser/ui/cocoa/location_bar/autocomplete_text_field.h',
         'browser/ui/cocoa/location_bar/autocomplete_text_field.mm',
         'browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h',

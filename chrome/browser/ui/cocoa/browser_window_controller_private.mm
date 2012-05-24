@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
@@ -146,7 +146,7 @@ const CGFloat kLocBarBottomInset = 1;
 
   // Only save main window information to preferences.
   PrefService* prefs = browser_->profile()->GetPrefs();
-  if (!prefs || browser_ != BrowserList::GetLastActive())
+  if (!prefs || browser_ != browser::GetLastActiveBrowser())
     return;
 
   // Save the current work area, in flipped coordinates.

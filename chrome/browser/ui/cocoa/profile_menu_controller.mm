@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -40,7 +41,7 @@ class Observer : public BrowserList::Observer,
   // BrowserList::Observer:
   virtual void OnBrowserAdded(Browser* browser) {}
   virtual void OnBrowserRemoved(Browser* browser) {
-    [controller_ activeBrowserChangedTo:BrowserList::GetLastActive()];
+    [controller_ activeBrowserChangedTo:browser::GetLastActiveBrowser()];
   }
   virtual void OnBrowserSetLastActive(Browser* browser) {
     [controller_ activeBrowserChangedTo:browser];

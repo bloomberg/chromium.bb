@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/virtual_driver_install_helper.h"
@@ -121,7 +122,7 @@ Browser* CreateBrowser(Profile* profile) {
     Browser::NewEmptyWindow(profile);
   }
 
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = browser::GetLastActiveBrowser();
   CHECK(browser);
   return browser;
 }
@@ -714,7 +715,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // sheets) will not count as blocking the browser. But things like open/save
 // dialogs that are window modal will block the browser.
 - (BOOL)keyWindowIsNotModal {
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = browser::GetLastActiveBrowser();
   return [NSApp modalWindow] == nil && (!browser ||
          ![[browser->window()->GetNativeHandle() attachedSheet]
              isKindOfClass:[NSWindow class]]);
@@ -1097,7 +1098,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     return;
   }
 
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser = browser::GetLastActiveBrowser();
   // if no browser window exists then create one with no tabs to be filled in
   if (!browser) {
     browser = Browser::Create([self lastProfile]);

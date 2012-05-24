@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -189,7 +189,7 @@ bool KeystonePromotionInfoBarDelegate::Cancel() {
 
   if (status != kAutoupdateRegisterFailed &&
       [[KeystoneGlue defaultKeystoneGlue] needsPromotion]) {
-    Browser* browser = BrowserList::GetLastActive();
+    Browser* browser = browser::GetLastActiveBrowser();
     if (browser) {
       TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
 
