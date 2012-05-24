@@ -31,6 +31,8 @@ class PrerenderDispatcher : public content::RenderProcessObserver {
   bool IsPrerenderURL(const GURL & url) const;
 
  private:
+  friend class PrerenderDispatcherTest;
+
   void OnAddPrerenderURL(const GURL& url);
   void OnRemovePrerenderURL(const GURL& url);
 
