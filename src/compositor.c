@@ -2777,7 +2777,7 @@ load_module(const char *name, const char *entrypoint, void **handle)
 	void *module, *init;
 
 	if (name[0] != '/')
-		snprintf(path, sizeof path, MODULEDIR "/%s", name);
+		snprintf(path, sizeof path, "%s/%s", MODULEDIR, name);
 	else
 		snprintf(path, sizeof path, "%s", name);
 
