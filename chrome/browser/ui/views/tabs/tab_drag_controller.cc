@@ -1117,6 +1117,14 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
                        tabs[source_tab_index_]->width());
   mouse_offset_.set_x(new_x);
 
+  // Transfer ownership of us to the new tabstrip as well as making sure the
+  // window has mouse capture. This is important so that if activation changes
+  // the drag isn't prematurely canceled.
+  if (detach_into_browser_) {
+    attached_tabstrip_->GetWidget()->SetMouseCapture(attached_tabstrip_);
+    attached_tabstrip_->OwnDragController(this);
+  }
+
   // Redirect all mouse events to the TabStrip so that the tab that originated
   // the drag can safely be deleted.
   if (detach_into_browser_ || attached_tabstrip_ == source_tabstrip_) {
@@ -1127,6 +1135,13 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
 }
 
 void TabDragController::Detach() {
+  // Release ownership of the drag controller and mouse capture. When we
+  // reattach ownership is transfered.
+  if (detach_into_browser_) {
+    attached_tabstrip_->ReleaseDragController();
+    attached_tabstrip_->GetWidget()->ReleaseMouseCapture();
+  }
+
   mouse_move_direction_ = kMovedMouseLeft | kMovedMouseRight;
 
   // Prevent the WebContents HWND from being hidden by any of the model
@@ -1214,14 +1229,12 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
 
   Browser* browser = CreateBrowserForDrag(
       attached_tabstrip_, screen_point, &drag_bounds);
-  attached_tabstrip_->ReleaseDragController();
   Detach();
   BrowserView* dragged_browser_view =
       BrowserView::GetBrowserViewForBrowser(browser);
   dragged_browser_view->GetWidget()->SetVisibilityChangedAnimationsEnabled(
       false);
   Attach(dragged_browser_view->tabstrip(), gfx::Point());
-  attached_tabstrip_->OwnDragController(this);
   // TODO: come up with a cleaner way to do this.
   attached_tabstrip_->SetTabBoundsForDrag(drag_bounds);
 

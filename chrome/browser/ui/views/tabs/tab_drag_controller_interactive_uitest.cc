@@ -621,3 +621,39 @@ IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
   // browser() will have been destroyed, but browser2 should remain.
   ASSERT_EQ(1u, BrowserList::size());
 }
+
+// Creates two browsers, drags from first into the second in such a way that
+// no detaching should happen.
+IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
+                       DragDirectlyToSecondWindow) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Create another browser.
+  Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough that it attaches to browser2.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
+  ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
+                  ui_controls::LEFT, ui_controls::DOWN));
+
+  gfx::Point b2_location(5, 0);
+  views::View::ConvertPointToScreen(tab_strip2, &b2_location);
+  ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(b2_location));
+
+  // Should now be attached to tab_strip2.
+  ASSERT_TRUE(tab_strip2->IsDragSessionActive());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_TRUE(TabDragController::IsActive());
+
+  // Release the mouse, stopping the drag session.
+  ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
+                  ui_controls::LEFT, ui_controls::UP));
+  ASSERT_FALSE(tab_strip2->IsDragSessionActive());
+  ASSERT_FALSE(tab_strip->IsDragSessionActive());
+  ASSERT_FALSE(TabDragController::IsActive());
+  EXPECT_EQ("0 100", IDString(browser2->tab_strip_model()));
+  EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
+}
