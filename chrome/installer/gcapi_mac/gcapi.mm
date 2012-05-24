@@ -190,7 +190,7 @@ BOOL WriteMasterPrefs(const char* master_prefs_contents,
 }
 
 NSString* PathToFramework(NSString* app_path, NSDictionary* info_plist) {
-  NSString* version = [info_plist objectForKey:(NSString*)kCFBundleVersionKey];
+  NSString* version = [info_plist objectForKey:@"CFBundleShortVersionString"];
   if (!version)
     return nil;
   return [[[app_path
@@ -201,7 +201,7 @@ NSString* PathToFramework(NSString* app_path, NSDictionary* info_plist) {
 
 NSString* PathToInstallScript(NSString* app_path, NSDictionary* info_plist) {
   return [PathToFramework(app_path, info_plist) stringByAppendingPathComponent:
-      @"Contents/Resources/install.sh"];
+      @"Resources/install.sh"];
 }
 
 NSString* PathToKeystoneResources(
@@ -224,7 +224,7 @@ NSString* FindOrInstallKeystone(NSString* app_path, NSDictionary* info_plist) {
   @try {
     NSTask* task = [[[NSTask alloc] init] autorelease];
     [task setLaunchPath:ks_install];
-    [task setArguments:@[ks_tbz]];
+    [task setArguments:@[@"--install", ks_tbz]];
     [task launch];
     [task waitUntilExit];
     if ([task terminationStatus] == 0)
@@ -254,7 +254,7 @@ int GoogleChromeCompatibilityCheck(unsigned* reasons) {
   if (HasChromeTicket(kSystemTicket))
     local_reasons |= GCCC_ERROR_SYSTEMLEVELALREADYPRESENT;
 
-  if (HasChromeTicket(kUserTicket))
+  if (geteuid() != 0 && HasChromeTicket(kUserTicket))
     local_reasons |= GCCC_ERROR_USERLEVELALREADYPRESENT;
 
   if (![[NSFileManager defaultManager] isWritableFileAtPath:@"/Applications"])
@@ -286,8 +286,9 @@ int InstallGoogleChrome(const char* source_path,
     // Use install.sh from the Chrome app bundle to copy Chrome to its
     // destination.
     NSString* install_script = PathToInstallScript(app_path, info_plist);
-    if (!install_script)
+    if (!install_script) {
       return 0;
+    }
 
     @try {
       NSTask* task = [[[NSTask alloc] init] autorelease];
@@ -295,8 +296,9 @@ int InstallGoogleChrome(const char* source_path,
       [task setArguments:@[app_path, kChromeInstallPath]];
       [task launch];
       [task waitUntilExit];
-      if ([task terminationStatus] != 0)
+      if ([task terminationStatus] != 0) {
         return 0;
+      }
     }
     @catch (id exception) {
       return 0;
@@ -308,12 +310,12 @@ int InstallGoogleChrome(const char* source_path,
         [info_plist_brand respondsToSelector:@selector(UTF8String)])
       brand_code = [info_plist_brand UTF8String];
 
-    BOOL valid_brand_code = strlen(brand_code) == 4 &&
+    BOOL valid_brand_code = brand_code && strlen(brand_code) == 4 &&
         isbrandchar(brand_code[0]) && isbrandchar(brand_code[1]) &&
         isbrandchar(brand_code[2]) && isbrandchar(brand_code[3]);
 
     NSString* brand_path = nil;
-    if (brand_code && valid_brand_code)
+    if (valid_brand_code)
       brand_path = WriteBrandCode(brand_code);
 
     // Write master prefs.
