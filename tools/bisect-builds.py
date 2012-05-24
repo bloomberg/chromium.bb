@@ -24,7 +24,7 @@ DEPS_FILE= 'http://src.chromium.org/viewvc/chrome/trunk/src/DEPS?revision=%d'
 
 # WebKit Changelogs URL.
 WEBKIT_CHANGELOG_URL = 'http://trac.webkit.org/log/' \
-                       'trunk/?rev=%d&stop_rev=%d&verbose=on'
+                       'trunk/?rev=%d&stop_rev=%d&verbose=on&limit=10000'
 
 DONE_MESSAGE = 'You are probably looking for a change made after ' \
                '%d (known good), but no later than %d (first known bad).'
