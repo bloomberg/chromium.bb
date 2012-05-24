@@ -42,6 +42,31 @@ namespace {
 
 const wchar_t kReinstallCommand[] = L"ReinstallCommand";
 
+// Returns true if Chrome Metro is supported on this OS (Win 8 8370 or greater).
+// TODO(gab): Change this to a simple check for Win 8 once old Win8 builds
+// become irrelevant.
+bool IsChromeMetroSupported() {
+  OSVERSIONINFOEX min_version_info = {};
+  min_version_info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+  min_version_info.dwMajorVersion = 6;
+  min_version_info.dwMinorVersion = 2;
+  min_version_info.dwBuildNumber = 8370;
+  min_version_info.wServicePackMajor = 0;
+  min_version_info.wServicePackMinor = 0;
+
+  DWORDLONG condition_mask = 0;
+  VER_SET_CONDITION(condition_mask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+  VER_SET_CONDITION(condition_mask, VER_MINORVERSION, VER_GREATER_EQUAL);
+  VER_SET_CONDITION(condition_mask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+  VER_SET_CONDITION(condition_mask, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
+  VER_SET_CONDITION(condition_mask, VER_SERVICEPACKMINOR, VER_GREATER_EQUAL);
+
+  DWORD type_mask = VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER |
+      VER_SERVICEPACKMAJOR | VER_SERVICEPACKMINOR;
+
+  return VerifyVersionInfo(&min_version_info, type_mask, condition_mask) != 0;
+}
+
 // This class represents a single registry entry. The objective is to
 // encapsulate all the registry entries required for registering Chrome at one
 // place. This class can not be instantiated outside the class and the objects
@@ -92,7 +117,7 @@ class RegistryEntry {
     // TODO(grt): remove HasDelegateExecuteHandler when the exe is ever-present;
     // see also install_worker.cc's AddDelegateExecuteWorkItems.
     bool set_delegate_execute =
-        base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+        IsChromeMetroSupported() &&
         dist->GetDelegateExecuteHandlerData(&delegate_guid, NULL, NULL, NULL) &&
         InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe);
 
@@ -616,6 +641,10 @@ uint32 ConvertShellUtilShortcutOptionsToFileUtil(uint32 options) {
 // dev channel who hasn't been autoupdated or manually updated by then will have
 // to uninstall and reinstall Chrome to repair.  See http://crbug.com/124666 and
 // http://crbug.com/123994 for gory details.
+// This function is also used to remove DelegateExecute verb handler
+// registrations on builds for which Metro is no longer supported. This will
+// also become irrelevant sometime after Windows 8 RC (thus the aforementioned
+// removal date remains correct).
 void RemoveBadWindows8RegistrationIfNeeded(
     BrowserDistribution* dist,
     const string16& chrome_exe,
@@ -623,7 +652,8 @@ void RemoveBadWindows8RegistrationIfNeeded(
   string16 handler_guid;
 
   if (dist->GetDelegateExecuteHandlerData(&handler_guid, NULL, NULL, NULL) &&
-      !InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe)) {
+      (!InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe) ||
+       !IsChromeMetroSupported())) {
     // There's no need to rollback, so forgo the usual work item lists and just
     // remove the values from the registry.
     const HKEY root_key = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
