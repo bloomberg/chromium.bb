@@ -24,10 +24,6 @@ class ShellDevToolsDelegate;
 struct MainFunctionParams;
 }
 
-namespace views {
-class ViewsDelegate;
-}
-
 namespace ash {
 namespace shell {
 
@@ -65,7 +61,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 
   scoped_ptr<ui::Clipboard> clipboard_;
   content::ShellDevToolsDelegate* devtools_delegate_;
-  scoped_ptr<views::ViewsDelegate> views_delegate_;
   scoped_ptr<ash::shell::WindowWatcher> window_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
