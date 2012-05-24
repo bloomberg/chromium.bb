@@ -65,6 +65,17 @@ FingerViewController.prototype = {
       return "N/A";
     return JSON.stringify(this.entries[index]);
   },
+  getSnippet: function(begin, end) {
+    var snippet = {};
+    for (var key in this.log) {
+      if (!this.log.hasOwnProperty(key)) {
+        continue;
+      }
+      snippet[key] = this.log[key];
+    }
+    snippet.entries = snippet.entries.slice(begin, end);
+    return snippet;
+  },
   updateInput: function() {
     var lastPosDict = {};
     var segs = [];

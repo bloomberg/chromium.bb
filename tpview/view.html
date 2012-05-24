@@ -146,6 +146,13 @@ function end_stepForward() {
   }
 }
 
+function shrink() {
+  var values = $("#slider").slider("option", "values");
+  var snippet = finger_view_controller.getSnippet(values[0], values[1]);
+  $('#text_box').val(JSON.stringify(snippet, null, 2));
+  loadLogObj(snippet);
+}
+
 $(document).ready(function() {
   
   setup();
@@ -206,6 +213,9 @@ $(document).ready(function() {
       primary: "ui-icon-triangle-1-e"
     }
   }).click(end_stepForward);
+  $("#shrink").button({
+    text: true,
+  }).click(shrink);
 
   $(window).keypress(function (event) {
     switch (event.keyCode) {
@@ -220,6 +230,9 @@ $(document).ready(function() {
       break;
     case 104:  // 'h'
       begin_stepForward();
+      break;
+    case 115:  // 's'
+      shrink();
       break;
     }
   });
@@ -249,6 +262,7 @@ $(document).ready(function() {
 <button id="end_stepback">End Step Back</button>
 <button id="end_stepforward">End Step Forward</button>
 <div id="end_event"></div><br/>
+<button id="shrink">Shrink Range</button>
 </div>
 <div id="textdiv">
 <textarea rows="24" cols="80" id="text_box">Drag and drop a touchpad log file here.</textarea></div>
