@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/string16.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
 #include "base/win/windows_version.h"
