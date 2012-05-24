@@ -26,8 +26,20 @@ readonly TC_SRC_LLVM=${NACL_ROOT}/pnacl/src/upstream/llvm
 readonly TC_BUILD_LLVM=${NACL_ROOT}/pnacl/build/llvm
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-6}
 readonly PNACL_BIN=${NACL_ROOT}/toolchain/pnacl_linux_x86_64/newlib/bin
+readonly PNACL_SDK_DIR=${NACL_ROOT}/toolchain/pnacl_linux_x86_64/newlib/sdk
 readonly PNACL_SCRIPTS=${NACL_ROOT}/pnacl/scripts
 readonly PARSE_REPORT=${PNACL_SCRIPTS}/parse_llvm_testsuite_report.py
+
+ensure-sdk-exists() {
+    # a little crude but good enough for manual users of this script
+    if [ ! -d ${PNACL_SDK_DIR} ] ; then
+        echo
+        echo "ERROR: sdk dir does not seem to exist"
+        echo "ERROR: have you run 'pnacl/build.sh sdk newlib' ?"
+        echo
+        exit -1
+    fi
+}
 
 testsuite-prereq() {
   if [ $# -ne 1 ]; then
@@ -42,6 +54,9 @@ testsuite-run() {
     echo "Please specify arch"
     exit 1
   fi
+
+  ensure-sdk-exists
+
   local arch=$1
   mkdir -p ${LLVM_TESTSUITE_BUILD}
   pushd ${LLVM_TESTSUITE_BUILD}
