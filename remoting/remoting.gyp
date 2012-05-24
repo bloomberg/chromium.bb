@@ -1190,6 +1190,10 @@
         }, {  # else toolkit_uses_gtk!=1
           'sources!': [
             '*_gtk.cc',
+          ],
+        }],
+        ['OS!="linux"', {
+          'sources!': [
             'host/x_server_pixel_buffer.cc',
             'host/x_server_pixel_buffer.h',
           ],

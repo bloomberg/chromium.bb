@@ -1,13 +1,60 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "remoting/host/x_server_pixel_buffer.h"
 
-#include <gdk/gdk.h>
 #include <sys/shm.h>
 
 #include "base/logging.h"
+
+#if defined(TOOLKIT_GTK)
+#include <gdk/gdk.h>
+#else  // !defined(TOOLKIT_GTK)
+#include <X11/Xlib.h>
+#endif  // !defined(TOOLKIT_GTK)
+
+namespace {
+
+#if defined(TOOLKIT_GTK)
+// GDK sets error handler for Xlib errors, so we need to use it to
+// trap X errors when this code is compiled with GTK.
+void EnableXServerErrorTrap() {
+  gdk_error_trap_push();
+}
+
+int GetLastXServerError() {
+  return gdk_error_trap_pop();
+}
+
+#else  // !defined(TOOLKIT_GTK)
+
+static bool g_xserver_error_trap_enabled = false;
+static int g_last_xserver_error_code = 0;
+
+int XServerErrorHandler(Display* display, XErrorEvent* error_event) {
+  DCHECK(g_xserver_error_trap_enabled);
+  g_last_xserver_error_code = error_event->error_code;
+  return 0;
+}
+
+void EnableXServerErrorTrap() {
+  DCHECK(!g_xserver_error_trap_enabled);
+  XSetErrorHandler(&XServerErrorHandler);
+  g_xserver_error_trap_enabled = true;
+  g_last_xserver_error_code = 0;
+}
+
+int GetLastXServerError() {
+  DCHECK(g_xserver_error_trap_enabled);
+  XSetErrorHandler(NULL);
+  g_xserver_error_trap_enabled = false;
+  return g_last_xserver_error_code;
+}
+
+#endif  // !defined(TOOLKIT_GTK)
+
+}  // namespace
 
 namespace remoting {
 
@@ -79,10 +126,10 @@ void XServerPixelBuffer::InitShm(int screen) {
       shm_segment_info_->shmaddr = x_image_->data =
           reinterpret_cast<char*>(shmat(shm_segment_info_->shmid, 0, 0));
       if (x_image_->data != reinterpret_cast<char*>(-1)) {
-        gdk_error_trap_push();
+        EnableXServerErrorTrap();
         using_shm = XShmAttach(display_, shm_segment_info_);
         XSync(display_, False);
-        if (gdk_error_trap_pop() != 0)
+        if (GetLastXServerError() != 0)
           using_shm = false;
       }
     }
@@ -108,20 +155,20 @@ bool XServerPixelBuffer::InitPixmaps(int width, int height, int depth) {
   if (XShmPixmapFormat(display_) != ZPixmap)
     return false;
 
-  gdk_error_trap_push();
+  EnableXServerErrorTrap();
   shm_pixmap_ = XShmCreatePixmap(display_, root_window_,
                                  shm_segment_info_->shmaddr,
                                  shm_segment_info_,
                                  width, height, depth);
   XSync(display_, False);
-  if (gdk_error_trap_pop() != 0) {
+  if (GetLastXServerError() != 0) {
     // |shm_pixmap_| is not not valid because the request was not processed
     // by the X Server, so zero it.
     shm_pixmap_ = 0;
     return false;
   }
 
-  gdk_error_trap_push();
+  EnableXServerErrorTrap();
   XGCValues shm_gc_values;
   shm_gc_values.subwindow_mode = IncludeInferiors;
   shm_gc_values.graphics_exposures = False;
@@ -129,7 +176,7 @@ bool XServerPixelBuffer::InitPixmaps(int width, int height, int depth) {
                       GCSubwindowMode | GCGraphicsExposures,
                       &shm_gc_values);
   XSync(display_, False);
-  if (gdk_error_trap_pop() != 0) {
+  if (GetLastXServerError() != 0) {
     XFreePixmap(display_, shm_pixmap_);
     shm_pixmap_ = 0;
     shm_gc_ = 0;  // See shm_pixmap_ comment above.
@@ -142,9 +189,9 @@ bool XServerPixelBuffer::InitPixmaps(int width, int height, int depth) {
 void XServerPixelBuffer::Synchronize() {
   if (shm_segment_info_ && !shm_pixmap_) {
     // XShmGetImage can fail if the display is being reconfigured.
-    gdk_error_trap_push();
+    EnableXServerErrorTrap();
     XShmGetImage(display_, root_window_, x_image_, 0, 0, AllPlanes);
-    gdk_error_trap_pop();
+    GetLastXServerError();
   }
 }
 
