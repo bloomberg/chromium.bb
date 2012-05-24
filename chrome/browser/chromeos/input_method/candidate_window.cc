@@ -27,6 +27,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/events/event.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
@@ -434,57 +435,6 @@ class InformationTextArea : public HidableArea {
   DISALLOW_COPY_AND_ASSIGN(InformationTextArea);
 };
 
-class InfolistView;
-
-// InfolistWindowView is the main container of the infolist window UI.
-class InfolistWindowView : public views::View {
- public:
-  InfolistWindowView(views::Widget* parent_frame,
-                     views::Widget* candidate_window_frame);
-  virtual ~InfolistWindowView();
-  void Init();
-  void Show();
-  void DelayShow(unsigned int milliseconds);
-  void Hide();
-  void DelayHide(unsigned int milliseconds);
-  void UpdateCandidates(const InputMethodLookupTable& lookup_table);
-
-  void ResizeAndMoveParentFrame();
-
- protected:
-  // Override View::VisibilityChanged()
-  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
-
-  // Override View::OnBoundsChanged()
-  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-
- private:
-  // Called by show_hide_timer_
-  void OnShowHideTimer();
-
-  // The lookup table (candidates).
-  InputMethodLookupTable lookup_table_;
-
-  // The parent frame.
-  views::Widget* parent_frame_;
-
-  // The candidate window frame.
-  views::Widget* candidate_window_frame_;
-
-  // The infolist area is where the meanings and the usages of the words are
-  // rendered.
-  views::View* infolist_area_;
-  // The infolist views are used for rendering the meanings and the usages of
-  // the words.
-  std::vector<InfolistView*> infolist_views_;
-
-  bool visible_;
-
-  base::OneShotTimer<InfolistWindowView> show_hide_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(InfolistWindowView);
-};
-
 // InfolistRow renderes a row of a infolist.
 class InfolistView : public views::View {
  public:
@@ -493,11 +443,9 @@ class InfolistView : public views::View {
 
   void Init();
 
-  // Sets title text to the given text.
-  void SetTitleText(const string16& text);
-
-  // Sets description text to the given text.
-  void SetDescriptionText(const string16& text);
+  // Sets title text and description text.
+  void SetTitleAndDescriptionText(const string16& title,
+                                  const string16& description);
 
   // Selects the infolist row. Changes the appearance to make it look
   // like a selected candidate.
@@ -506,6 +454,11 @@ class InfolistView : public views::View {
   // Unselects the infolist row. Changes the appearance to make it look
   // like an unselected candidate.
   void Unselect();
+
+ protected:
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    return title_and_description_size_;
+  }
 
  private:
   // Notifies labels of their new background colors.  Called whenever the view's
@@ -522,6 +475,10 @@ class InfolistView : public views::View {
   views::Label* title_label_;
   // The description label.
   views::Label* description_label_;
+  // Whether the item is selected.
+  bool selected_;
+  // The size of the area which contains the title and the description.
+  gfx::Size title_and_description_size_;
 
   DISALLOW_COPY_AND_ASSIGN(InfolistView);
 };
@@ -1283,49 +1240,57 @@ InfolistView::InfolistView(
     InfolistWindowView* parent_infolist_window)
     : parent_infolist_window_(parent_infolist_window),
       title_label_(NULL),
-      description_label_(NULL) {
+      description_label_(NULL),
+      selected_(false) {
 }
 
 void InfolistView::Init() {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);  // |this| owns |layout|.
   title_label_ = new views::Label;
+  title_label_->SetPosition(gfx::Point(0, 0));
   title_label_->SetFont(
       title_label_->font().DeriveFont(kFontSizeDelta + 2));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  views::View* wrapped_title_label =
-      WrapWithPadding(title_label_, gfx::Insets(4, 7, 2, 4));
+  title_label_->set_border(
+      views::Border::CreateEmptyBorder(4, 7, 2, 4));
 
   description_label_ = new views::Label;
+  description_label_->SetPosition(gfx::Point(0, 0));
   description_label_->SetFont(
       description_label_->font().DeriveFont(kFontSizeDelta - 2));
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   description_label_->SetMultiLine(true);
-  views::View* wrapped_description_label =
-      WrapWithPadding(description_label_, gfx::Insets(2, 17, 4, 4));
-
-  // Initialize the column set with three columns.
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0, views::GridLayout::FIXED, 200, 0);
-
-  layout->StartRow(0, 0);
-  layout->AddView(wrapped_title_label);
-  layout->StartRow(0, 0);
-  layout->AddView(wrapped_description_label);
+  description_label_->set_border(
+      views::Border::CreateEmptyBorder(2, 17, 4, 4));
+  AddChildView(title_label_);
+  AddChildView(description_label_);
   UpdateLabelBackgroundColors();
 }
 
+void InfolistView::SetTitleAndDescriptionText(const string16& title,
+                                              const string16& description) {
+  if ((title_label_->text() == title) &&
+      (description_label_->text() == description)) {
+    return;
+  }
 
-void InfolistView::SetTitleText(const string16& text) {
-  title_label_->SetText(text);
-}
+  title_label_->SetText(title);
+  const gfx::Size title_size = title_label_->GetPreferredSize();
+  title_label_->SetSize(title_size);
 
-void InfolistView::SetDescriptionText(const string16& text) {
-  description_label_->SetText(text);
+  description_label_->SetText(description);
+  description_label_->SizeToFit(200);
+  const gfx::Size description_size = description_label_->size();
+  description_label_->SetPosition(gfx::Point(0, title_size.height()));
+
+  title_and_description_size_ =
+      gfx::Size(200, description_size.height() + title_size.height());
 }
 
 void InfolistView::Select() {
+  if (selected_) {
+    return;
+  }
+  selected_ = true;
   set_background(views::Background::CreateSolidBackground(
       kSelectedInfolistRowBackgroundColor));
   set_border(
@@ -1336,8 +1301,12 @@ void InfolistView::Select() {
 }
 
 void InfolistView::Unselect() {
+  if (!selected_) {
+    return;
+  }
+  selected_ = false;
   set_background(NULL);
-  set_border(NULL);
+  set_border(views::Border::CreateEmptyBorder(1, 1, 1, 1));
   UpdateLabelBackgroundColors();
   SchedulePaint();  // See comments at Select().
 }
@@ -1351,7 +1320,8 @@ void InfolistView::UpdateLabelBackgroundColors() {
 
 InfolistWindowView::InfolistWindowView(views::Widget* parent_frame,
                                        views::Widget* candidate_window_frame)
-    : parent_frame_(parent_frame),
+    : usages_(new mozc::commands::InformationList),
+      parent_frame_(parent_frame),
       candidate_window_frame_(candidate_window_frame),
       infolist_area_(NULL),
       visible_(false) {
@@ -1368,38 +1338,29 @@ InfolistWindowView::~InfolistWindowView() {
 }
 
 void InfolistWindowView::Init() {
-  // Set the background and the border of the view.
   set_background(
       views::Background::CreateSolidBackground(kDefaultBackgroundColor));
   set_border(views::Border::CreateSolidBorder(1, kFrameColor));
   infolist_area_ = new views::View;
 
-  // Set the window layout of the view
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical,
+                                                  0, 0, 0);
   SetLayoutManager(layout);  // |this| owns |layout|.
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0, views::GridLayout::USE_PREF, 0, 0);
-  layout->SetInsets(1, 1, 1, 1);
 
-  // Add the infolist area
-  layout->StartRow(0, 0);
-  views::Label* caption_label = NULL;
-  caption_label = new views::Label;
+  views::Label* caption_label = new views::Label;
   caption_label->SetFont(caption_label->font().DeriveFont(kFontSizeDelta - 2));
   caption_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   caption_label->SetText(
       l10n_util::GetStringUTF16(IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE));
-  views::View* wrapped_caption_label =
-      WrapWithPadding(caption_label, gfx::Insets(2, 2, 2, 2));
-  wrapped_caption_label->set_background(
+  caption_label->set_border(
+      views::Border::CreateEmptyBorder(2, 2, 2, 2));
+  caption_label->set_background(
       views::Background::CreateSolidBackground(kInfolistTitleBackgroundColor));
   caption_label->SetBackgroundColor(
-      wrapped_caption_label->background()->get_color());
-  layout->AddView(wrapped_caption_label);
+      caption_label->background()->get_color());
 
-  layout->StartRow(0, 0);
-  layout->AddView(infolist_area_);  // |infolist_area_| is owned by |this|.
+  AddChildView(caption_label);
+  AddChildView(infolist_area_);
 }
 
 void InfolistWindowView::Hide() {
@@ -1441,54 +1402,66 @@ void InfolistWindowView::OnShowHideTimer() {
   }
 }
 
+bool InfolistWindowView::ShouldUpdateView(
+    const mozc::commands::InformationList* old_usages,
+    const mozc::commands::InformationList* new_usages) {
+  if (old_usages->information_size() !=
+      new_usages->information_size()) {
+    return true;
+  }
+  for (int i = 0; i < old_usages->information_size(); ++i) {
+    if ((old_usages->information(i).title() !=
+        new_usages->information(i).title()) ||
+        (old_usages->information(i).description() !=
+        new_usages->information(i).description())) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void InfolistWindowView::UpdateCandidates(
     const InputMethodLookupTable& new_lookup_table) {
-  lookup_table_ = new_lookup_table;
-  if (!lookup_table_.mozc_candidates.has_usages()) {
+  if (!new_lookup_table.mozc_candidates.has_usages()) {
     return;
   }
-  const mozc::commands::InformationList& usages =
-      lookup_table_.mozc_candidates.usages();
-  if (usages.information_size() <= 0) {
-    return;
+  const mozc::commands::InformationList& new_usages =
+      new_lookup_table.mozc_candidates.usages();
+  const bool should_update = ShouldUpdateView(usages_.get(),
+                                              &new_usages);
+  if (should_update) {
+    usages_->CopyFrom(new_usages);
+    for (int i = infolist_views_.size(); i < usages_->information_size(); ++i) {
+      InfolistView* infolist_row = new InfolistView(this);
+      infolist_row->Init();
+      infolist_views_.push_back(infolist_row);
+    }
+    infolist_area_->RemoveAllChildViews(false);
+
+    views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical,
+                                                    0, 0, 0);
+    // |infolist_area_| owns |layout|.
+    infolist_area_->SetLayoutManager(layout);
+
+    for (int i = 0; i < usages_->information_size(); ++i) {
+      InfolistView* infolist_row = infolist_views_[i];
+      infolist_row->SetTitleAndDescriptionText(
+          UTF8ToUTF16(usages_->information(i).title()),
+          UTF8ToUTF16(usages_->information(i).description()));
+      infolist_row->Unselect();
+      infolist_area_->AddChildView(infolist_row);
+    }
   }
-  for (int i = infolist_views_.size(); i < usages.information_size(); ++i) {
-    InfolistView* infolist_row = new InfolistView(this);
-    infolist_row->Init();
-    infolist_views_.push_back(infolist_row);
-  }
-  infolist_area_->RemoveAllChildViews(false);
 
-  views::GridLayout* layout = new views::GridLayout(infolist_area_);
-  // |infolist_area_| owns |layout|.
-  infolist_area_->SetLayoutManager(layout);
-
-  // Initialize the column set.
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        0, views::GridLayout::USE_PREF, 0, 0);
-  layout->SetInsets(0, 0, 0, 0);
-
-  for (int i = 0; i < usages.information_size(); ++i) {
-    InfolistView* infolist_row = new InfolistView(this);
-    infolist_row->Init();
-    infolist_row->SetTitleText(
-        UTF8ToUTF16(usages.information(i).title()));
-    infolist_row->SetDescriptionText(
-        UTF8ToUTF16(usages.information(i).description()));
-    if (usages.has_focused_index() &&
-        (static_cast<int>(usages.focused_index()) == i)) {
+  for (int i = 0; i < new_usages.information_size(); ++i) {
+    InfolistView* infolist_row = infolist_views_[i];
+    if (new_usages.has_focused_index() &&
+        (static_cast<int>(new_usages.focused_index()) == i)) {
       infolist_row->Select();
     } else {
       infolist_row->Unselect();
     }
-    infolist_views_.push_back(infolist_row);
-    layout->StartRow(0, 0);
-    layout->AddView(infolist_row);
   }
-
-  layout->Layout(infolist_area_);
 }
 
 void InfolistWindowView::ResizeAndMoveParentFrame() {
@@ -1498,7 +1471,8 @@ void InfolistWindowView::ResizeAndMoveParentFrame() {
       parent_frame_->GetNativeView()).work_area();
   // The size.
   gfx::Rect frame_bounds = old_bounds;
-  frame_bounds.set_size(GetPreferredSize());
+  gfx::Size size = GetPreferredSize();
+  frame_bounds.set_size(size);
 
   gfx::Rect candidatewindow_bounds;
   if (candidate_window_frame_ != NULL) {
