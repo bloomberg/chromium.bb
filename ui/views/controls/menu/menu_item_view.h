@@ -305,6 +305,11 @@ class VIEWS_EXPORT MenuItemView : public View {
     requested_menu_position_ = menu_position;
   }
 
+  // Suppress the right margin if this is set to false.
+  void set_use_right_margin(bool use_right_margin) {
+    use_right_margin_ = use_right_margin;
+  }
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -470,6 +475,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   // position of the menu being shown.
   MenuPosition requested_menu_position_;
   MenuPosition actual_menu_position_;
+
+  // If set to false, the right margin will be removed for menu lines
+  // containing other elements.
+  bool use_right_margin_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuItemView);
 };

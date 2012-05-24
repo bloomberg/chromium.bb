@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "grit/native_theme_resources.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -33,6 +34,7 @@ const SkColor kEnabledMenuItemForegroundColor = kTextButtonEnabledColor;
 const SkColor kDisabledMenuItemForegroundColor = kTextButtonDisabledColor;
 const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 const SkColor kMenuSeparatorColor = SkColorSetRGB(0xDA, 0xDA, 0xDA);
+const SkColor kMenuSeparatorColorTouch = SkColorSetRGB(0xED, 0xED, 0xED);
 // Label:
 const SkColor kLabelEnabledColor = kTextButtonEnabledColor;
 const SkColor kLabelDisabledColor = kTextButtonDisabledColor;
@@ -104,7 +106,8 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
     case kColorId_FocusedMenuItemBackgroundColor:
       return kFocusedMenuItemBackgroundColor;
     case kColorId_MenuSeparatorColor:
-      return kMenuSeparatorColor;
+      return ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
+                 kMenuSeparatorColorTouch : kMenuSeparatorColor;
 
     // Label
     case kColorId_LabelEnabledColor:

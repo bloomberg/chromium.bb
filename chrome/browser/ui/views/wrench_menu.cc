@@ -29,6 +29,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
@@ -65,9 +66,15 @@ const SkColor kPushedBorderColor = SkColorSetARGB(72, 0, 0, 0);
 const SkColor kHotBackgroundColor = SkColorSetARGB(204, 255, 255, 255);
 const SkColor kBackgroundColor = SkColorSetARGB(102, 255, 255, 255);
 const SkColor kPushedBackgroundColor = SkColorSetARGB(13, 0, 0, 0);
+const SkColor kTouchBackgroundColor = SkColorSetARGB(247, 255, 255, 255);
+const SkColor kHotTouchBackgroundColor = SkColorSetARGB(247, 242, 242, 242);
+const SkColor kPushedTouchBackgroundColor = SkColorSetARGB(247, 235, 235, 235);
+
 
 // Horizontal padding on the edges of the buttons.
 const int kHorizontalPadding = 6;
+// Horizontal padding for a touch enabled menu.
+const int kHorizontalTouchPadding = 15;
 
 // Subclass of ImageButton whose preferred size includes the size of the border.
 class FullscreenButton : public ImageButton {
@@ -92,7 +99,10 @@ class FullscreenButton : public ImageButton {
 // insets, the actual painting is done in MenuButtonBackground.
 class MenuButtonBorder : public views::Border {
  public:
-  MenuButtonBorder() {}
+  MenuButtonBorder()
+    : horizontal_padding_(ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
+                              kHorizontalTouchPadding :
+                              kHorizontalPadding) {}
 
   virtual void Paint(const View& view, gfx::Canvas* canvas) const {
     // Painting of border is done in MenuButtonBackground.
@@ -100,12 +110,15 @@ class MenuButtonBorder : public views::Border {
 
   virtual void GetInsets(gfx::Insets* insets) const {
     insets->Set(MenuConfig::instance().item_top_margin,
-                kHorizontalPadding,
+                horizontal_padding_,
                 MenuConfig::instance().item_bottom_margin,
-                kHorizontalPadding);
+                horizontal_padding_);
   }
 
  private:
+  // The horizontal padding dependent on the layout.
+  const int horizontal_padding_;
+
   DISALLOW_COPY_AND_ASSIGN(MenuButtonBorder);
 };
 
@@ -144,6 +157,19 @@ class MenuButtonBackground : public views::Background {
         CustomButton::BS_NORMAL : static_cast<CustomButton*>(view)->state();
     int w = view->width();
     int h = view->height();
+    // Windows is drawing its own separators and we cannot use the touch button
+    // for that.
+#if !defined(OS_WIN)
+    if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
+      // Note: the right side of the button is always filled by the next button
+      // and / or the border of the menu.
+      canvas->FillRect(gfx::Rect(0, 0, 1, h),
+                       border_color(CustomButton::BS_NORMAL));
+      canvas->FillRect(gfx::Rect(1, 0, w - 1, h),
+                       touch_background_color(state));
+      return;
+    }
+#endif
     switch (TypeAdjustedForRTL()) {
       case LEFT_BUTTON:
         canvas->FillRect(gfx::Rect(1, 1, w, h - 2), background_color(state));
@@ -211,6 +237,14 @@ class MenuButtonBackground : public views::Background {
       case CustomButton::BS_HOT:    return kHotBackgroundColor;
       case CustomButton::BS_PUSHED: return kPushedBackgroundColor;
       default:                      return kBackgroundColor;
+    }
+  }
+
+  static SkColor touch_background_color(CustomButton::ButtonState state) {
+    switch (state) {
+      case CustomButton::BS_HOT:    return kHotTouchBackgroundColor;
+      case CustomButton::BS_PUSHED: return kPushedTouchBackgroundColor;
+      default:                      return kTouchBackgroundColor;
     }
   }
 
@@ -381,6 +415,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
 
 // Padding between the increment buttons and the reset button.
 static const int kZoomPadding = 6;
+static const int kTouchZoomPadding = 14;
 
 // ZoomView contains the various zoom controls: two buttons to increase/decrease
 // the zoom, a label showing the current zoom percent, and a button to go
@@ -433,8 +468,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     fullscreen_button_->set_tag(fullscreen_index);
     fullscreen_button_->SetImageAlignment(
         ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
+    int horizontal_padding = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
+                                 kHorizontalTouchPadding : kHorizontalPadding;
     fullscreen_button_->set_border(views::Border::CreateEmptyBorder(
-        0, kHorizontalPadding, 0, kHorizontalPadding));
+        0, horizontal_padding, 0, horizontal_padding));
     fullscreen_button_->set_background(
         new MenuButtonBackground(MenuButtonBackground::SINGLE_BUTTON));
     fullscreen_button_->SetAccessibleName(
@@ -454,11 +491,14 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     // The increment/decrement button are forced to the same width.
     int button_width = std::max(increment_button_->GetPreferredSize().width(),
                                 decrement_button_->GetPreferredSize().width());
-    int fullscreen_width = fullscreen_button_->GetPreferredSize().width();
+    int zoom_padding = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
+                           kTouchZoomPadding : kZoomPadding;
+    int fullscreen_width = fullscreen_button_->GetPreferredSize().width() +
+                           zoom_padding;
     // Returned height doesn't matter as MenuItemView forces everything to the
     // height of the menuitemview.
     return gfx::Size(button_width + zoom_label_width_ + button_width +
-                     kZoomPadding + fullscreen_width, 0);
+                     fullscreen_width, 0);
   }
 
   void Layout() {
@@ -479,9 +519,11 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     bounds.set_width(button_width);
     increment_button_->SetBoundsRect(bounds);
 
-    x += bounds.width() + kZoomPadding;
+    bool is_touch = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
+    x += bounds.width() + (is_touch ? 0 : kZoomPadding);
     bounds.set_x(x);
-    bounds.set_width(fullscreen_button_->GetPreferredSize().width());
+    bounds.set_width(fullscreen_button_->GetPreferredSize().width() +
+                     (is_touch ? kTouchZoomPadding : 0));
     fullscreen_button_->SetBoundsRect(bounds);
   }
 
@@ -837,7 +879,8 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
         DCHECK_EQ(IDC_PASTE, model->GetCommandIdAt(index + 2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_EDIT2));
         item->AddChildView(
-            new CutCopyPasteView(this, model, index, index + 1, index + 2));
+            new CutCopyPasteView(
+                this, model, index, index + 1, index + 2));
         i += 2;
         break;
 
@@ -880,6 +923,9 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
   MenuItemView* menu_item = parent->AppendMenuItemFromModel(model, index, id);
 
   if (menu_item) {
+    // Flush all buttons to the right side of the menu for touch menus.
+    menu_item->set_use_right_margin(
+        ui::GetDisplayLayout() != ui::LAYOUT_TOUCH);
     menu_item->SetVisible(model->IsVisibleAt(index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {

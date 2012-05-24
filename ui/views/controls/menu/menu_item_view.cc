@@ -89,7 +89,8 @@ MenuItemView::MenuItemView(MenuDelegate* delegate)
       top_margin_(-1),
       bottom_margin_(-1),
       requested_menu_position_(POSITION_BEST_FIT),
-      actual_menu_position_(requested_menu_position_) {
+      actual_menu_position_(requested_menu_position_),
+      use_right_margin_(true) {
   // NOTE: don't check the delegate for NULL, UpdateMenuPartSizes supplies a
   // NULL delegate.
   Init(NULL, 0, SUBMENU, delegate);
@@ -477,8 +478,8 @@ void MenuItemView::Layout() {
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
-    for (int i = child_count() - 1, x = width() - item_right_margin_; i >= 0;
-         --i) {
+    int x = width() - (use_right_margin_ ? item_right_margin_ : 0);
+    for (int i = child_count() - 1; i >= 0; --i) {
       View* child = child_at(i);
       int width = child->GetPreferredSize().width();
       child->SetBounds(x - width, 0, width, height());

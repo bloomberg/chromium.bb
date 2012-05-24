@@ -132,10 +132,15 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   void AddGlobalErrorMenuItems();
 
-  // Adds custom items to the menu. Deprecated in favor of a cross platform
-  // model for button items.
-  void CreateCutCopyPaste();
-  void CreateZoomFullscreen();
+  // Appends everything needed for the clipboard menu: a menu break, the
+  // clipboard menu content and the finalizing menu break. If the last break
+  // is not needed it can be suppressed by setting |append_final_separator|
+  // to false.
+  void CreateCutCopyPasteMenu(bool append_final_separator);
+
+  // Appends everything needed for the zoom menu: a menu break, then the zoom
+  // menu content and then another menu break.
+  void CreateZoomMenu();
 
   string16 GetSyncMenuLabel() const;
 

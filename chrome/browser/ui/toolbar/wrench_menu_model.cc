@@ -48,6 +48,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -427,6 +428,8 @@ WrenchMenuModel::WrenchMenuModel()
 }
 
 void WrenchMenuModel::Build() {
+  bool is_touch_menu = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
+
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
 #if defined(OS_CHROMEOS)
@@ -440,42 +443,13 @@ void WrenchMenuModel::Build() {
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                          bookmark_sub_menu_model_.get());
 
-  AddSeparator();
-#if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
-  // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
-  // layout for this menu item in Toolbar.xib. It does, however, use the
-  // command_id value from AddButtonItem() to identify this special item.
-  edit_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_EDIT, this));
-  edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
-  edit_menu_item_model_->AddGroupItemWithStringId(IDC_COPY, IDS_COPY);
-  edit_menu_item_model_->AddGroupItemWithStringId(IDC_PASTE, IDS_PASTE);
-  AddButtonItem(IDC_EDIT_MENU, edit_menu_item_model_.get());
-#else
-  // TODO(port): Move to the above.
-  CreateCutCopyPaste();
-#endif
+  // Append the full menu including separators. The final separator only gets
+  // appended when this is a touch menu - otherwise it would get added twice.
+  CreateCutCopyPasteMenu(is_touch_menu);
 
-  AddSeparator();
-#if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
-  // WARNING: See above comment.
-  zoom_menu_item_model_.reset(
-      new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
-  zoom_menu_item_model_->AddGroupItemWithStringId(
-      IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
-  zoom_menu_item_model_->AddButtonLabel(IDC_ZOOM_PERCENT_DISPLAY,
-                                        IDS_ZOOM_PLUS2);
-  zoom_menu_item_model_->AddGroupItemWithStringId(
-      IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);
-  zoom_menu_item_model_->AddSpace();
-  zoom_menu_item_model_->AddItemWithImage(
-      IDC_FULLSCREEN, IDR_FULLSCREEN_MENU_BUTTON);
-  AddButtonItem(IDC_ZOOM_MENU, zoom_menu_item_model_.get());
-#else
-  // TODO(port): Move to the above.
-  CreateZoomFullscreen();
-#endif
+  if (!is_touch_menu)
+    CreateZoomMenu();
 
-  AddSeparator();
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
@@ -484,7 +458,10 @@ void WrenchMenuModel::Build() {
   AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_TOOLS_MENU,
                          tools_menu_model_.get());
 
-  AddSeparator();
+  if (is_touch_menu)
+    CreateZoomMenu();
+  else
+    AddSeparator();
 
   AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
@@ -500,11 +477,15 @@ void WrenchMenuModel::Build() {
   }
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
-  AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
-  string16 num_background_pages = base::FormatNumber(
-      TaskManager::GetBackgroundPageCount());
-  AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(
-      IDS_VIEW_BACKGROUND_PAGES, num_background_pages));
+
+  if (!is_touch_menu) {
+    AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
+    string16 num_background_pages = base::FormatNumber(
+        TaskManager::GetBackgroundPageCount());
+    AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(
+        IDS_VIEW_BACKGROUND_PAGES, num_background_pages));
+  }
+
   if (browser_defaults::kShowUpgradeMenuItem)
     AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringUTF16(IDS_UPDATE_NOW));
   AddItem(IDC_VIEW_INCOMPATIBILITIES, l10n_util::GetStringUTF16(
@@ -516,11 +497,14 @@ void WrenchMenuModel::Build() {
           GetBitmapNamed(IDR_CONFLICT_MENU));
 #endif
 
-  AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
-  if (browser_defaults::kShowHelpMenuItemIcon) {
-    ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE),
-            *rb.GetBitmapNamed(IDR_HELP_MENU));
+  if (!is_touch_menu) {
+    AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
+
+    if (browser_defaults::kShowHelpMenuItemIcon) {
+      ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE),
+              *rb.GetBitmapNamed(IDR_HELP_MENU));
+    }
   }
 
   if (browser_defaults::kShowFeedbackMenuItem)
@@ -557,20 +541,59 @@ void WrenchMenuModel::AddGlobalErrorMenuItems() {
   }
 }
 
-void WrenchMenuModel::CreateCutCopyPaste() {
+void WrenchMenuModel::CreateCutCopyPasteMenu(bool append_final_separator) {
+  AddSeparator();
+
+#if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
+  // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
+  // layout for this menu item in Toolbar.xib. It does, however, use the
+  // command_id value from AddButtonItem() to identify this special item.
+  edit_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_EDIT, this));
+  edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
+  edit_menu_item_model_->AddGroupItemWithStringId(IDC_COPY, IDS_COPY);
+  edit_menu_item_model_->AddGroupItemWithStringId(IDC_PASTE, IDS_PASTE);
+  AddButtonItem(IDC_EDIT_MENU, edit_menu_item_model_.get());
+#else
   // WARNING: views/wrench_menu assumes these items are added in this order. If
   // you change the order you'll need to update wrench_menu as well.
   AddItemWithStringId(IDC_CUT, IDS_CUT);
   AddItemWithStringId(IDC_COPY, IDS_COPY);
   AddItemWithStringId(IDC_PASTE, IDS_PASTE);
+#endif
+
+  if (append_final_separator)
+    AddSeparator();
 }
 
-void WrenchMenuModel::CreateZoomFullscreen() {
+void WrenchMenuModel::CreateZoomMenu() {
+  // This menu needs to be enclosed by separators.
+  AddSeparator();
+
+#if defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
+  // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
+  // layout for this menu item in Toolbar.xib. It does, however, use the
+  // command_id value from AddButtonItem() to identify this special item.
+  zoom_menu_item_model_.reset(
+      new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
+  zoom_menu_item_model_->AddGroupItemWithStringId(
+      IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
+  zoom_menu_item_model_->AddButtonLabel(IDC_ZOOM_PERCENT_DISPLAY,
+                                        IDS_ZOOM_PLUS2);
+  zoom_menu_item_model_->AddGroupItemWithStringId(
+      IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);
+  zoom_menu_item_model_->AddSpace();
+  zoom_menu_item_model_->AddItemWithImage(
+      IDC_FULLSCREEN, IDR_FULLSCREEN_MENU_BUTTON);
+  AddButtonItem(IDC_ZOOM_MENU, zoom_menu_item_model_.get());
+#else
   // WARNING: views/wrench_menu assumes these items are added in this order. If
   // you change the order you'll need to update wrench_menu as well.
   AddItemWithStringId(IDC_ZOOM_MINUS, IDS_ZOOM_MINUS);
   AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
   AddItemWithStringId(IDC_FULLSCREEN, IDS_FULLSCREEN);
+#endif
+
+  AddSeparator();
 }
 
 void WrenchMenuModel::UpdateZoomControls() {
