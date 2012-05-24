@@ -492,11 +492,13 @@ void DeviceSettingsProvider::DecodeReportingPolicies(
           kReportDeviceBootMode,
           policy.device_reporting().report_boot_mode());
     }
-    if (policy.device_reporting().has_report_location()) {
-      new_values_cache->SetBoolean(
-          kReportDeviceLocation,
-          policy.device_reporting().report_location());
-    }
+    // Device location reporting needs to pass privacy review before it can be
+    // enabled. crosbug.com/24681
+    // if (policy.device_reporting().has_report_location()) {
+    //   new_values_cache->SetBoolean(
+    //       kReportDeviceLocation,
+    //       policy.device_reporting().report_location());
+    // }
   }
 }
 
