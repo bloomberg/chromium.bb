@@ -19,9 +19,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -233,11 +230,12 @@ bool PrintDialogGtk::UpdateSettings(const base::DictionaryValue& job_settings,
 }
 
 void PrintDialogGtk::ShowDialog(
+    gfx::NativeView parent_view,
     bool has_selection,
     const PrintingContextGtk::PrintSettingsCallback& callback) {
   callback_ = callback;
 
-  GtkWindow* parent = BrowserList::GetLastActive()->window()->GetNativeHandle();
+  GtkWindow* parent = GTK_WINDOW(gtk_widget_get_toplevel(parent_view));
   // TODO(estade): We need a window title here.
   dialog_ = gtk_print_unix_dialog_new(NULL, parent);
   g_signal_connect(dialog_, "delete-event",

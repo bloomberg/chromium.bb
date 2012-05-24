@@ -62,7 +62,7 @@ void PrintingContextGtk::AskUserForSettings(
     int max_pages,
     bool has_selection,
     const PrintSettingsCallback& callback) {
-  print_dialog_->ShowDialog(has_selection, callback);
+  print_dialog_->ShowDialog(parent_view, has_selection, callback);
 }
 
 PrintingContext::Result PrintingContextGtk::UseDefaultSettings() {

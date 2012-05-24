@@ -41,6 +41,7 @@ class PrintDialogGtk
                               const printing::PageRanges& ranges,
                               printing::PrintSettings* settings) OVERRIDE;
   virtual void ShowDialog(
+      gfx::NativeView parent_view,
       bool has_selection,
       const PrintingContextGtk::PrintSettingsCallback& callback) OVERRIDE;
   virtual void PrintDocument(const printing::Metafile* metafile,
