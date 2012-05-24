@@ -11,10 +11,7 @@ import optparse
 import os
 import sys
 
-import constants
-if __name__ == '__main__':
-  sys.path.insert(0, constants.SOURCE_ROOT)
-
+from chromite.buildbot import constants
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib

@@ -16,13 +16,12 @@ import sys
 import tempfile
 import unittest
 
-import constants
-if __name__ == '__main__':
-  sys.path.insert(0, constants.SOURCE_ROOT)
-
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
+from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
-from chromite.buildbot import cros_mark_as_stable
-from chromite.buildbot import cros_mark_chrome_as_stable
+from chromite.scripts import cros_mark_as_stable
+from chromite.scripts import cros_mark_chrome_as_stable
 
 # pylint: disable=W0212,R0904
 unstable_data = 'KEYWORDS=~x86 ~arm'

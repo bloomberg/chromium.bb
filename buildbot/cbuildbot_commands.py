@@ -528,7 +528,7 @@ def MarkChromeAsStable(buildroot,
     assert chrome_rev == constants.CHROME_REV_LOCAL, (
         'Cannot rev non-local with a chrome_root')
 
-  command = ['../../chromite/buildbot/cros_mark_chrome_as_stable',
+  command = ['../../chromite/bin/cros_mark_chrome_as_stable',
              '--tracking_branch=%s' % tracking_branch,
              '--boards=%s' % ':'.join(boards), ]
   if chrome_version:
@@ -574,7 +574,7 @@ def UprevPackages(buildroot, boards, overlays):
   chroot_overlays = [
       cros_build_lib.ReinterpretPathForChroot(path) for path in overlays ]
   cros_build_lib.RunCommand(
-      ['../../chromite/buildbot/cros_mark_as_stable', '--all',
+      ['../../chromite/bin/cros_mark_as_stable', '--all',
        '--boards=%s' % ':'.join(boards),
        '--overlays=%s' % ':'.join(chroot_overlays),
        '--drop_file=%s' % cros_build_lib.ReinterpretPathForChroot(
@@ -585,7 +585,7 @@ def UprevPackages(buildroot, boards, overlays):
 def UprevPush(buildroot, overlays, dryrun):
   """Pushes uprev changes to the main line."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
-  cmd = ['../../chromite/buildbot/cros_mark_as_stable',
+  cmd = ['../../chromite/bin/cros_mark_as_stable',
          '--srcroot=%s' % os.path.join(buildroot, 'src'),
          '--overlays=%s' % ':'.join(overlays)
         ]

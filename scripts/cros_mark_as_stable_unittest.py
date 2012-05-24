@@ -1,21 +1,22 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unit tests for cros_mark_as_stable.py."""
 
 import mox
+import os
 import sys
 import unittest
 
-import constants
-if __name__ == '__main__':
-  sys.path.insert(0, constants.SOURCE_ROOT)
-
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                '..', '..'))
+from chromite.buildbot import constants
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
-from chromite.buildbot import cros_mark_as_stable
+from chromite.scripts import cros_mark_as_stable
 
 
 # pylint: disable=W0212,R0904

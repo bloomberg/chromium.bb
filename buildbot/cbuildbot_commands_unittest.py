@@ -179,7 +179,7 @@ class CBuildBotTest(mox.MoxTestBase):
     """Test if we get None in revisions.pfq indicating Full Builds."""
     drop_file = commands._PACKAGE_FILE % {'buildroot': self._buildroot}
     cros_build_lib.RunCommand(
-        ['../../chromite/buildbot/cros_mark_as_stable', '--all',
+        ['../../chromite/bin/cros_mark_as_stable', '--all',
          '--boards=%s' % self._test_board,
          '--overlays=%s' % ':'.join(self._chroot_overlays),
          '--drop_file=%s' % cros_build_lib.ReinterpretPathForChroot(drop_file),

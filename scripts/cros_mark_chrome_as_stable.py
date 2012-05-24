@@ -23,14 +23,11 @@ import re
 import sys
 import time
 
-import constants
-if __name__ == '__main__':
-  sys.path.insert(0, constants.SOURCE_ROOT)
-
-from chromite.buildbot import cros_mark_as_stable
+from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib.cros_build_lib import RunCommand, Info, Warning
+from chromite.scripts import cros_mark_as_stable
 
 BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
 
