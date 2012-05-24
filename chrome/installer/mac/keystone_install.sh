@@ -675,8 +675,8 @@ main() {
   # likely fail for another reason and the user ticket will hang around until
   # something is eventually able to remove it.
   if [[ -z "${system_ticket}" ]] &&
-     ksadmin -S --print-tickets -P "${product_id}" >& /dev/null; then
-    ksadmin --delete -P "${product_id}" || true
+     ksadmin -S --print-tickets --productid "${product_id}" >& /dev/null; then
+    ksadmin --delete --productid "${product_id}" || true
     err "can't update on a user ticket when a system ticket is also present"
     exit 4
   fi
@@ -1061,7 +1061,7 @@ main() {
 
   local ksadmin_args=(
     --register
-    -P "${product_id}"
+    --productid "${product_id}"
     --version "${new_version_ks}"
     --xcpath "${installed_app}"
     --url "${update_url}"

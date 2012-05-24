@@ -18,18 +18,30 @@
 extern "C" {
 #endif
 
-// This function returns YES if Google Chrome should be offered.
-// If the return is NO, |reasons| explains why.  If you don't care for the
+// This function returns nonzero if Google Chrome should be offered.
+// If the return value is 0, |reasons| explains why.  If you don't care for the
 // reason, you can pass NULL for |reasons|.
-// |set_flag| indicates whether a flag should be set indicating that Chrome was
-// offered within the last six months; if passed NO, this method will not
-// set the flag even if Chrome can be offered.  If passed TRUE, this method
-// will set the flag only if Chrome can be offered.
-// |shell_mode| should be set to one of GCAPI_INVOKED_STANDARD_SHELL or
-// GCAPI_INVOKED_UAC_ELEVATION depending on whether this method is invoked
-// from an elevated or non-elevated process. TODO(thakis): This doesn't make
-// sense on mac, change comment.
 int GoogleChromeCompatibilityCheck(unsigned* reasons);
+
+// This function installs Google Chrome in the application folder and optionally
+// sets up the brand code and master prefs.
+// |source_path| Path to an uninstalled Google Chrome.app directory, for example
+//               in a mounted dmg, in file system representation.
+// |brand_code| If not NULL, a string containing the brand code Google Chrome
+//              should use. Has no effect if Google Chrome has an embedded brand
+//              code. Overwrites existing brand files.
+// |master_prefs_contents| If not NULL, the _contents_ of a master prefs file
+//                         Google Chrome should use. This is not a path.
+//                         Overwrites existing master pref files.
+// Returns nonzero if Google Chrome was successfully copied. If copying
+// succeeded but writing of master prefs, brand code, or other noncrucial
+// setup tasks fail, this still returns nonzero.
+// Returns 0 if the installation failed, for example if Google Chrome was
+// already installed, or no disk space was left.
+int InstallGoogleChrome(const char* source_path,
+                        const char* brand_code,
+                        const char* master_prefs_contents,
+                        unsigned master_prefs_contents_size);
 
 // This function launches Google Chrome after a successful install.
 int LaunchGoogleChrome();
