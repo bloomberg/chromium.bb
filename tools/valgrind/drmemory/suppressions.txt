@@ -264,6 +264,12 @@ name=http://crbug.com/101717 (4)
 *!scoped_ptr<_OBJECT_NAME_INFORMATION>::~scoped_ptr<_OBJECT_NAME_INFORMATION>
 *!sandbox::GetPathFromHandle
 
+WARNING
+name=http://code.google.com/p/drmemory/issues/detail?id=899 deleting bitmap which is probably safe
+system call NtGdiDeleteObjectApp
+*!skia::`anonymous namespace'::Bitmap::~Bitmap
+*!skia::`anonymous namespace'::Bitmap::`scalar deleting destructor'
+
 ############################
 # Real issues in Chromium
 
