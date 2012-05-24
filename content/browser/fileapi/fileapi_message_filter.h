@@ -68,8 +68,6 @@ class FileAPIMessageFilter : public content::BrowserMessageFilter {
  protected:
   virtual ~FileAPIMessageFilter();
 
-  virtual void BadMessageReceived() OVERRIDE;
-
  private:
   void OnOpen(int request_id,
               const GURL& origin_url,
