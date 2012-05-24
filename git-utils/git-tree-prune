@@ -3,8 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A tool for listing branches with closed and abandoned issues."""
+"""Lists branches with closed and abandoned issues."""
 
+import optparse
 import os
 import sys
 import urllib2
@@ -25,11 +26,11 @@ class Branch(git_cl.Changelist):
   def __init__(self, name):
     git_cl.Changelist.__init__(self, branchref=name)
     self._issue_status = None
-    
+
   def GetStatus(self):
     if not self._issue_status:
       if self.GetIssue():
-        try:        
+        try:
           issue_properties = self.RpcServer().get_issue_properties(
               self.GetIssue(), None)
           if issue_properties['closed']:
@@ -44,7 +45,12 @@ class Branch(git_cl.Changelist):
     return self._issue_status
 
 
-def main(argv):
+def main():
+  parser = optparse.OptionParser(usage=sys.modules['__main__'].__doc__)
+  options, args = parser.parse_args()
+  if args:
+    parser.error('Unsupported arg: %s' % args)
+
   branches = get_branches()
   filtered = { 'closed' : [],
                'pending' : [],
@@ -76,4 +82,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv[1:]))
+  sys.exit(main())
