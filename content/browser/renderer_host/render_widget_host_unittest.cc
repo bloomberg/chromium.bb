@@ -25,6 +25,7 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#include "ui/aura/env.h"
 #endif
 
 using base::TimeDelta;
@@ -309,6 +310,10 @@ class RenderWidgetHostTest : public testing::Test {
     delegate_.reset();
     process_ = NULL;
     browser_context_.reset();
+
+#if defined(USE_AURA)
+    aura::Env::DeleteInstance();
+#endif
 
     // Process all pending tasks to avoid leaks.
     MessageLoop::current()->RunAllPending();
