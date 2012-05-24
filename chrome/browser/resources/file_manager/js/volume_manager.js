@@ -46,7 +46,7 @@ VolumeManager.Error = {
   UNKNOWN: 'error_unknown',
   INTERNAL: 'error_internal',
   UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
-  UNSUPPORTED_FILESYSTEM: 'error_unsuported_filesystem',
+  UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
   INVALID_ARCHIVE: 'error_invalid_archive',
   LIBCROS_MISSING: 'error_libcros_missing',
   AUTHENTICATION: 'error_authentication',
@@ -213,6 +213,7 @@ VolumeManager.prototype.makeVolumeInfo_ = function(
    callback({
      mountPath: mountPath,
      error: error,
+     deviceType: metadata && metadata.deviceType,
      readonly: !!metadata && metadata.isReadOnly
    });
   }
@@ -312,6 +313,15 @@ VolumeManager.prototype.isUnreadable = function(mountPath) {
   var error = this.getMountError(mountPath);
   return error == VolumeManager.Error.UNKNOWN_FILESYSTEM ||
          error == VolumeManager.Error.UNSUPPORTED_FILESYSTEM;
+};
+
+/**
+ * @param {string} mountPath Volume mounted path.
+ * @return {string} Device type ('usb'|'sd'|'optical'|'mobile'|'unknown')
+ *   (as defined in chrome/browser/chromeos/disks/disk_mount_manager.cc).
+ */
+VolumeManager.prototype.getDeviceType = function(mountPath) {
+  return this.getVolumeInfo_(mountPath).deviceType;
 };
 
 /**

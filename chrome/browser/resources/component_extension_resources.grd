@@ -51,8 +51,11 @@
         <include name="IDR_FILE_MANAGER_BREADCRUMB_SEPARATOR_ICON" file="file_manager/images/breadcrumb-separator.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_SORT_ASC_ICON" file="file_manager/images/sort_asc.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_SORT_DESC_ICON" file="file_manager/images/sort_desc.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_REMOVABLE_28_ICON" file="file_manager/images/usb_source_28x28.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_GDATA_28_ICON" file="file_manager/images/gdata_28x28.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_USB_28_ICON" file="file_manager/images/device_usb_28x28.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_SD_28_ICON" file="file_manager/images/device_sd_28x28.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_HD_28_ICON" file="file_manager/images/device_hd_28x28.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_OPTICAL_28_ICON" file="file_manager/images/device_optical_28x28.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_GDRIVE_28_ICON" file="file_manager/images/gdrive_28x28.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_SEARCH_ICON" file="file_manager/images/icon_search.png" type="BINDATA" />
 
         <include name="IDR_FILE_MANAGER_COMMON_CHECK_NO_BOX" file="file_manager/images/common/check_no_box.png" type="BINDATA" />

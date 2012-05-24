@@ -7,11 +7,23 @@ function MockEventSource() {
 }
 
 /**
- * Add a listener. There is no remove.
+ * Add a listener.
  * @param {function} listener A callback function.
  */
 MockEventSource.prototype.addListener = function(listener) {
   this.listeners_.push(listener);
+};
+
+/**
+ * Remove a listener.
+ * @param {function} listener A callback function.
+ */
+MockEventSource.prototype.removeListener = function(listener) {
+  var index = this.listeners_.indexOf(listener);
+  if (index < 0)
+    console.warn('Cannot remove the listener');
+  else
+    this.listeners_.splice(index, 1);
 };
 
 /**
@@ -201,21 +213,33 @@ chrome.fileBrowserPrivate = {
 
   mountPoints_: [
     {
-      mountPath: '/removable/disk1-writeable',
-      type: 'device'
+      mountPath: 'removable/disk1-usb',
+      mountType: 'device'
     },
     {
-      mountPath: '/removable/disk2-readonly',
-      type: 'device'
+      mountPath: 'removable/disk2-sd',
+      mountType: 'device'
     },
     {
-      mountPath: '/removable/disk3-unsupported',
-      type: 'device',
+      mountPath: 'removable/disk3-optical',
+      mountType: 'device'
+    },
+    {
+      mountPath: 'removable/disk4-unknown',
+      mountType: 'device'
+    },
+    {
+      mountPath: 'removable/disk5-readonly',
+      mountType: 'device'
+    },
+    {
+      mountPath: 'removable/disk6-unsupported-readonly',
+      mountType: 'device',
       mountCondition: 'unsupported_filesystem'
     },
     {
-      mountPath: '/removable/disk4-unknown',
-      type: 'device',
+      mountPath: 'removable/disk7-unknown-readonly',
+      mountType: 'device',
       mountCondition: 'unknown_filesystem'
     }
   ],
@@ -250,8 +274,8 @@ chrome.fileBrowserPrivate = {
       }, 200);
       util.getOrCreateDirectory(filesystem.root, path, function() {
           chrome.fileBrowserPrivate.mountPoints_.push({
-            mountPath: path,
-            type: type
+            mountPath: path.substr(1),  // removed leading '/'
+            mountType: type
           });
           setTimeout(function() {
             chrome.fileBrowserPrivate.onMountCompleted.notify({
@@ -272,7 +296,8 @@ chrome.fileBrowserPrivate = {
   removeMount: function(sourceUrl) {
     var mountPath = chrome.fileBrowserPrivate.fileUrlToLocalPath_(sourceUrl);
     for (var i = 0; i != chrome.fileBrowserPrivate.mountPoints_.length; i++) {
-      if (mountPath == chrome.fileBrowserPrivate.mountPoints_[i].mountPath) {
+      if (mountPath ==
+          '/' + chrome.fileBrowserPrivate.mountPoints_[i].mountPath) {
         chrome.fileBrowserPrivate.mountPoints_.splice(i, 1);
         break;
       }
@@ -305,8 +330,8 @@ chrome.fileBrowserPrivate = {
       return urlLocalPath && urlLocalPath.indexOf(path) == 0;
     }
     if (urlStartsWith('/removable')) {
-      metadata.deviceType = 'usb';
-      if (urlStartsWith('/removable/disk2')) {
+      metadata.deviceType = urlLocalPath.split('-').pop();
+      if (urlLocalPath.indexOf('readonly') != -1) {
         metadata.isReadOnly = true;
       }
     } else if (urlStartsWith('/gdata')) {
@@ -617,7 +642,13 @@ chrome.fileBrowserPrivate = {
       SEARCH_NO_MATCHING_FILES: 'No files match <b>"$1"</b>',
 
       TIME_TODAY: 'Today $1',
-      TIME_YESTERDAY: 'Yesterday $1'
+      TIME_YESTERDAY: 'Yesterday $1',
+
+      DEFAULT_ACTION_LABEL: '(default)',
+      ASH: true,
+      DETAIL_VIEW_TOOLTIP: 'List view',
+      THUMBNAIL_VIEW_TOOLTIP: 'Thumbnail view',
+      textdirection: ''
     });
   }
 };
@@ -631,6 +662,10 @@ chrome.extension = {
    * @return {string} Usable url.
    */
   getURL: function(path) {
+    if (path.indexOf('external/') == 0) {
+      // Trick the volume manager asking for the external file system.
+      return path.replace('external/', 'file:///persistent/');
+    }
     return path || document.location.href;
   }
 };

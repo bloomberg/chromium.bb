@@ -1864,6 +1864,11 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'root-label';
 
+    div.setAttribute('type', rootType);
+    if (rootType == DirectoryModel.RootType.REMOVABLE)
+      div.setAttribute('subType',
+          this.volumeManager_.getDeviceType(entry.fullPath));
+
     div.textContent = this.getRootLabel_(entry.fullPath);
     li.appendChild(div);
 
@@ -2833,8 +2838,10 @@ FileManager.prototype = {
       tracker.start();
       this.resolveSelectResults_(urls, function(urls) {
         for (var index = 0; index < urls.length; ++index) {
-          var path = /^filesystem:[\w-]*:\/\/[\w]*\/external(\/.*)$/.
-              exec(urls[index])[1];
+          // TODO(kaznacheev): Incapsulate URL to path conversion.
+          var path =
+              /^filesystem:[\w-]*:\/\/[\w]*\/(external|persistent)(\/.*)$/.
+                  exec(urls[index])[2];
           if (!path)
             continue;
           path = decodeURIComponent(path);

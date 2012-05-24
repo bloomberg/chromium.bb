@@ -253,6 +253,7 @@ div.sidebar-splitter {
 #roots-list li.root-item {
   -webkit-box-align: center;
   display: -webkit-box;
+  line-height: 22px;  /* To accomodate for icons. */
   padding-left: 11px;
 }
 
@@ -270,22 +271,34 @@ li.root-item > .root-label {
   background-repeat: no-repeat;
 }
 
-.root-label[icon=downloads] {
+.root-label[type=downloads] {
   background-image: url('../images/downloads_28x28.png');
 }
 
-.root-label[icon=gdata] {
-  background-image: url('../images/gdata_28x28.png');
+.root-label[type=gdata] {
+  background-image: url('../images/gdrive_28x28.png');
 }
 
-.root-label[icon=archive] {
+.root-label[type=archive] {
   background-image: url('../images/archive_28x28.png');
 }
 
-.root-label[icon=removable],
-.root-label[icon=unreadable] {
-  background-image: url('../images/usb_source_28x28.png');
-  background-position: 0 -3px;
+.root-label[type=removable] {
+  background-image: url('../images/device_usb_28x28.png');
+}
+
+.root-label[type=removable][subType=sd] {
+  background-image: url('../images/device_sd_28x28.png');
+}
+
+.root-label[type=removable][subType=optical] {
+  background-image: url('../images/device_optical_28x28.png');
+}
+
+/* TODO(kaznacheev): consider a better icon for subType=unknown.
+   Also find out if we need an icon for subType=mobile */
+.root-label[type=removable][subType=unknown] {
+  background-image: url('../images/device_hd_28x28.png');
 }
 
 div.root-eject {
@@ -888,10 +901,6 @@ input.rename {
 
 .detail-icon[iconType='text'] {
   background-image: url(../images/filetype_text.png);
-}
-
-.detail-icon[iconType='unreadable'] {
-  background-image: url(../images/filetype_unreadable_device.png);
 }
 
 .detail-icon[iconType='video'] {
