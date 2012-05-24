@@ -516,7 +516,7 @@ def MODEhashtable(outdir, state):
       if in_size == out_size:
         continue
       # Otherwise, an exception will be raised.
-    print 'Mapping %s -> %s' % (outfile, infile)
+    print '%s -> %s' % (relfile, properties['sha-1'])
     run_test_from_archive.link_file(
         outfile, infile, run_test_from_archive.HARDLINK)
   return 0
