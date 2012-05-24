@@ -41,6 +41,23 @@ const FilePath::CharType kDocRoot[] =
 
 class ReferrerPolicyTest : public InProcessBrowserTest {
  public:
+   ReferrerPolicyTest() {}
+   virtual ~ReferrerPolicyTest() {}
+
+   virtual void SetUp() OVERRIDE {
+     test_server_.reset(new net::TestServer(net::TestServer::TYPE_HTTP,
+                                            net::TestServer::kLocalhost,
+                                            FilePath(kDocRoot)));
+     ASSERT_TRUE(test_server_->Start());
+     ssl_test_server_.reset(new net::TestServer(net::TestServer::TYPE_HTTPS,
+                                                net::TestServer::kLocalhost,
+                                                FilePath(kDocRoot)));
+     ASSERT_TRUE(ssl_test_server_->Start());
+
+     InProcessBrowserTest::SetUp();
+   }
+
+ protected:
   enum ExpectedReferrer {
     EXPECT_EMPTY_REFERRER,
     EXPECT_FULL_REFERRER,
@@ -66,6 +83,18 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     return ASCIIToUTF16(referrer);
   }
 
+  // Adds all possible titles to the TitleWatcher, so we don't time out
+  // waiting for the title if the test fails.
+  void AddAllPossibleTitles(const GURL& url,
+                            ui_test_utils::TitleWatcher* title_watcher) {
+    title_watcher->AlsoWaitForTitle(
+        GetExpectedTitle(url, EXPECT_EMPTY_REFERRER));
+    title_watcher->AlsoWaitForTitle(
+        GetExpectedTitle(url, EXPECT_FULL_REFERRER));
+    title_watcher->AlsoWaitForTitle(
+        GetExpectedTitle(url, EXPECT_ORIGIN_AS_REFERRER));
+  }
+
   // Navigates from a page with a given |referrer_policy| and checks that the
   // reported referrer matches the expectation.
   // Parameters:
@@ -80,31 +109,25 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   //  button:            If not WebMouseEvent::ButtonNone, click on the
   //                     link with the specified mouse button.
   //  expected_referrer: The kind of referrer to expect.
-  void RunReferrerTest(const std::string referrer_policy,
+  //
+  // Returns:
+  //  The URL of the first page navigated to.
+  GURL RunReferrerTest(const std::string referrer_policy,
                        bool start_on_https,
                        bool target_blank,
                        bool redirect,
                        bool opens_new_tab,
                        WebKit::WebMouseEvent::Button button,
                        ExpectedReferrer expected_referrer) {
-    net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                                net::TestServer::kLocalhost,
-                                FilePath(kDocRoot));
-    ASSERT_TRUE(test_server.Start());
-    net::TestServer ssl_test_server(net::TestServer::TYPE_HTTPS,
-                                    net::TestServer::kLocalhost,
-                                    FilePath(kDocRoot));
-    ASSERT_TRUE(ssl_test_server.Start());
-
     GURL start_url;
     net::TestServer* start_server =
-        start_on_https ? &ssl_test_server : &test_server;
+        start_on_https ? ssl_test_server_.get() : test_server_.get();
     start_url = start_server->GetURL(
         std::string("files/referrer-policy-start.html?") +
         "policy=" + referrer_policy +
-        "&port=" + base::IntToString(test_server.host_port_pair().port()) +
+        "&port=" + base::IntToString(test_server_->host_port_pair().port()) +
         "&ssl_port=" +
-            base::IntToString(ssl_test_server.host_port_pair().port()) +
+            base::IntToString(ssl_test_server_->host_port_pair().port()) +
         "&redirect=" + (redirect ? "true" : "false") +
         "&link=" +
             (button == WebKit::WebMouseEvent::ButtonNone ? "false" : "true") +
@@ -118,12 +141,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     ui_test_utils::TitleWatcher title_watcher(tab, expected_title);
 
     // Watch for all possible outcomes to avoid timeouts if something breaks.
-    title_watcher.AlsoWaitForTitle(
-        GetExpectedTitle(start_url, EXPECT_EMPTY_REFERRER));
-    title_watcher.AlsoWaitForTitle(
-        GetExpectedTitle(start_url, EXPECT_FULL_REFERRER));
-    title_watcher.AlsoWaitForTitle(
-        GetExpectedTitle(start_url, EXPECT_ORIGIN_AS_REFERRER));
+    AddAllPossibleTitles(start_url, &title_watcher);
 
     ui_test_utils::NavigateToURL(browser(), start_url);
 
@@ -142,13 +160,18 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     if (opens_new_tab) {
       tab_added_observer.Wait();
       tab = tab_added_observer.GetTab();
-      ASSERT_TRUE(tab != NULL);
+      EXPECT_TRUE(tab);
       ui_test_utils::WaitForLoadStop(tab);
       EXPECT_EQ(expected_title, tab->GetTitle());
     } else {
       EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
     }
+
+    return start_url;
   }
+
+  scoped_ptr<net::TestServer> test_server_;
+  scoped_ptr<net::TestServer> ssl_test_server_;
 };
 
 // The basic behavior of referrer policies is covered by layout tests in
@@ -343,4 +366,43 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, MAYBE_HttpsContextMenuRedirect) {
   RunReferrerTest("origin", true, false, true, true,
                   WebKit::WebMouseEvent::ButtonRight,
                   EXPECT_ORIGIN_AS_REFERRER);
+}
+
+// Tests history navigation actions: Navigate from A to B with a referrer
+// policy, then navigate to C, back to B, and reload.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
+  // Navigate from A to B.
+  GURL start_url = RunReferrerTest("origin", true, false, true, false,
+                                   WebKit::WebMouseEvent::ButtonLeft,
+                                   EXPECT_ORIGIN_AS_REFERRER);
+
+  // Navigate to C.
+  ui_test_utils::NavigateToURL(browser(), test_server_->GetURL(""));
+
+  string16 expected_title =
+      GetExpectedTitle(start_url, EXPECT_ORIGIN_AS_REFERRER);
+  content::WebContents* tab = browser()->GetSelectedWebContents();
+  scoped_ptr<ui_test_utils::TitleWatcher> title_watcher(
+      new ui_test_utils::TitleWatcher(tab, expected_title));
+
+  // Watch for all possible outcomes to avoid timeouts if something breaks.
+  AddAllPossibleTitles(start_url, title_watcher.get());
+
+  // Go back to B.
+  browser()->GoBack(CURRENT_TAB);
+  EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
+
+  title_watcher.reset(new ui_test_utils::TitleWatcher(tab, expected_title));
+  AddAllPossibleTitles(start_url, title_watcher.get());
+
+  // Reload to B.
+  browser()->Reload(CURRENT_TAB);
+  EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
+
+  title_watcher.reset(new ui_test_utils::TitleWatcher(tab, expected_title));
+  AddAllPossibleTitles(start_url, title_watcher.get());
+
+  // Shift-reload to B.
+  browser()->ReloadIgnoringCache(CURRENT_TAB);
+  EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 }
