@@ -469,8 +469,7 @@ DirectoryModel.prototype.rescan = function() {
   }).bind(this);
 
   if (this.runningScan_) {
-    if (!this.pendingScan_)
-      this.pendingScan_ = this.createScanner_(fileList, successCallback);
+    this.pendingScan_ = this.createScanner_(fileList, successCallback);
     return;
   }
 
