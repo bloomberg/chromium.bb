@@ -227,7 +227,10 @@ class CapturerMac : public Capturer {
   CGDisplayCreateImageFunc display_create_image_func_;
 
   // Power management assertion to prevent the screen from sleeping.
-  IOPMAssertionID power_assertion_id_;
+  IOPMAssertionID power_assertion_id_display_;
+
+  // Power management assertion to indicate that the user is active.
+  IOPMAssertionID power_assertion_id_user_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturerMac);
 };
@@ -239,7 +242,8 @@ CapturerMac::CapturerMac()
       pixel_format_(media::VideoFrame::RGB32),
       display_configuration_capture_event_(false, true),
       display_create_image_func_(NULL),
-      power_assertion_id_(kIOPMNullAssertionID) {
+      power_assertion_id_display_(kIOPMNullAssertionID),
+      power_assertion_id_user_(kIOPMNullAssertionID) {
 }
 
 CapturerMac::~CapturerMac() {
@@ -303,17 +307,24 @@ void CapturerMac::ReleaseBuffers() {
 }
 
 void CapturerMac::Start() {
-  // Create a power management assertion that wakes the display and prevents it
-  // from going to sleep on user idle.
+  // Create power management assertions to wake the display and prevent it from
+  // going to sleep on user idle.
   IOPMAssertionCreate(kIOPMAssertionTypeNoDisplaySleep,
                       kIOPMAssertionLevelOn,
-                      &power_assertion_id_);
+                      &power_assertion_id_display_);
+  IOPMAssertionCreate(CFSTR("UserIsActive"),
+                      kIOPMAssertionLevelOn,
+                      &power_assertion_id_user_);
 }
 
 void CapturerMac::Stop() {
-  if (power_assertion_id_ != kIOPMNullAssertionID) {
-    IOPMAssertionRelease(power_assertion_id_);
-    power_assertion_id_ = kIOPMNullAssertionID;
+  if (power_assertion_id_display_ != kIOPMNullAssertionID) {
+    IOPMAssertionRelease(power_assertion_id_display_);
+    power_assertion_id_display_ = kIOPMNullAssertionID;
+  }
+  if (power_assertion_id_user_ != kIOPMNullAssertionID) {
+    IOPMAssertionRelease(power_assertion_id_user_);
+    power_assertion_id_user_ = kIOPMNullAssertionID;
   }
 }
 
