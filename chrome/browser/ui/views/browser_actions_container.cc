@@ -151,6 +151,13 @@ void BrowserActionButton::ViewHierarchyChanged(
   MenuButton::ViewHierarchyChanged(is_add, parent, child);
 }
 
+bool BrowserActionButton::CanHandleAccelerators() const {
+  // View::CanHandleAccelerators() checks to see if the view is visible before
+  // allowing it to process accelerators. This is not appropriate for browser
+  // actions buttons, which can be hidden inside the overflow area.
+  return true;
+}
+
 void BrowserActionButton::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   panel_->OnBrowserActionExecuted(this);

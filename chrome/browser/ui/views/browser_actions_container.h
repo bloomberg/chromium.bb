@@ -81,6 +81,9 @@ class BrowserActionButton : public views::MenuButton,
   virtual bool IsPopup();
   virtual GURL GetPopupUrl();
 
+  // Overridden from views::View:
+  virtual bool CanHandleAccelerators() const OVERRIDE;
+
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
