@@ -763,13 +763,6 @@ void ChromeRenderViewObserver::CapturePageInfoLater(bool preliminary_capture,
 void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
   int page_id = render_view()->GetPageId();
 
-  // Skip indexing if this is not a new load.  Note that the case where
-  // page_id == last_indexed_page_id_ is more complicated, since we need to
-  // reindex if the toplevel URL has changed (such as from a redirect), even
-  // though this may not cause the page id to be incremented.
-  if (page_id < last_indexed_page_id_)
-    return;
-
   if (!render_view()->GetWebView())
     return;
 
@@ -789,6 +782,20 @@ void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
 
   // Don't index/capture pages that are being prerendered.
   if (prerender::PrerenderHelper::IsPrerendering(render_view()))
+    return;
+
+  // Retrieve the frame's full text (up to kMaxIndexChars), and pass it to the
+  // translate helper for language detection and possible translation.
+  string16 contents;
+  CaptureText(main_frame, &contents);
+  if (translate_helper_)
+    translate_helper_->PageCaptured(contents);
+
+  // Skip indexing if this is not a new load.  Note that the case where
+  // page_id == last_indexed_page_id_ is more complicated, since we need to
+  // reindex if the toplevel URL has changed (such as from a redirect), even
+  // though this may not cause the page id to be incremented.
+  if (page_id < last_indexed_page_id_)
     return;
 
   bool same_page_id = last_indexed_page_id_ == page_id;
@@ -817,14 +824,9 @@ void ChromeRenderViewObserver::CapturePageInfo(bool preliminary_capture) {
 
   TRACE_EVENT0("renderer", "ChromeRenderViewObserver::CapturePageInfo");
 
-  // Retrieve the frame's full text.
-  string16 contents;
-  CaptureText(main_frame, &contents);
-  if (translate_helper_)
-    translate_helper_->PageCaptured(contents);
   if (contents.size()) {
     // Send the text to the browser for indexing (the browser might decide not
-    // to index, if the URL is HTTPS for instance) and language discovery.
+    // to index, if the URL is HTTPS for instance).
     Send(new ChromeViewHostMsg_PageContents(routing_id(), url, page_id,
                                             contents));
   }
