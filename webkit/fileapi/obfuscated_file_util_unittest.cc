@@ -2141,3 +2141,56 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnRemove) {
                 ofu(), dir, true));
   ASSERT_EQ(0, ComputeTotalFileSize());
 }
+
+TEST_F(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
+  FileSystemPath file(CreatePathFromUTF8("file"));
+  base::PlatformFile file_handle;
+  bool created;
+
+  // Creating a file.
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->EnsureFileExists(
+                AllowUsageIncrease(PathCost(file))->context(),
+                file, &created));
+  ASSERT_TRUE(created);
+  ASSERT_EQ(0, ComputeTotalFileSize());
+
+  // Opening it, which shouldn't change the usage.
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateOrOpen(
+                AllowUsageIncrease(0)->context(), file,
+                base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
+                &file_handle, &created));
+  ASSERT_EQ(0, ComputeTotalFileSize());
+  EXPECT_TRUE(base::ClosePlatformFile(file_handle));
+
+  const int length = 33;
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(length)->context(), file, length));
+  ASSERT_EQ(length, ComputeTotalFileSize());
+
+  // Opening it with CREATE_ALWAYS flag, which should truncate the file size.
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateOrOpen(
+                AllowUsageIncrease(-length)->context(), file,
+                base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
+                &file_handle, &created));
+  ASSERT_EQ(0, ComputeTotalFileSize());
+  EXPECT_TRUE(base::ClosePlatformFile(file_handle));
+
+  // Extending the file again.
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->Truncate(
+                AllowUsageIncrease(length)->context(), file, length));
+  ASSERT_EQ(length, ComputeTotalFileSize());
+
+  // Opening it with TRUNCATED flag, which should truncate the file size.
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            ofu()->CreateOrOpen(
+                AllowUsageIncrease(-length)->context(), file,
+                base::PLATFORM_FILE_OPEN_TRUNCATED | base::PLATFORM_FILE_WRITE,
+                &file_handle, &created));
+  ASSERT_EQ(0, ComputeTotalFileSize());
+  EXPECT_TRUE(base::ClosePlatformFile(file_handle));
+}

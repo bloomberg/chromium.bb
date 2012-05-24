@@ -316,16 +316,35 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
     }
     return error;
   }
+
   if (file_flags & base::PLATFORM_FILE_CREATE)
     return base::PLATFORM_FILE_ERROR_EXISTS;
 
   FileInfo file_info;
-  if (!db->GetFileInfo(file_id, &file_info)) {
-    NOTREACHED();
-    return base::PLATFORM_FILE_ERROR_FAILED;
+  int64 delta = 0;
+  if (file_flags & (base::PLATFORM_FILE_CREATE_ALWAYS |
+                    base::PLATFORM_FILE_OPEN_TRUNCATED)) {
+    // The file exists and we're truncating.
+    base::PlatformFileInfo platform_file_info;
+    FilePath local_file_path;
+    base::PlatformFileError error = GetFileInfoInternal(
+        db, context, path.origin(), path.type(), file_id,
+        &file_info, &platform_file_info, &local_file_path);
+    if (error != base::PLATFORM_FILE_OK)
+      return error;
+    if (file_info.is_directory())
+      return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+    delta = -platform_file_info.size;
+    AllocateQuota(context, delta);
+  } else {
+    if (!db->GetFileInfo(file_id, &file_info)) {
+      NOTREACHED();
+      return base::PLATFORM_FILE_ERROR_FAILED;
+    }
+    if (file_info.is_directory())
+      return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   }
-  if (file_info.is_directory())
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+
   FileSystemPath underlying_path = DataPathToUnderlyingPath(
       path.origin(), path.type(), file_info.data_path);
   base::PlatformFileError error = underlying_file_util()->CreateOrOpen(
@@ -337,6 +356,10 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
     LOG(WARNING) << "Lost a backing file.";
     error = base::PLATFORM_FILE_ERROR_FAILED;
   }
+
+  // If truncating we need to update the usage.
+  if (error == base::PLATFORM_FILE_OK && delta)
+    UpdateUsage(context, path.origin(), path.type(), delta);
   return error;
 }
 
