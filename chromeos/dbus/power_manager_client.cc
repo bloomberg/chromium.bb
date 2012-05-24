@@ -52,6 +52,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     power_manager_proxy_->ConnectToSignal(
         power_manager::kPowerManagerInterface,
+        power_manager::kSetScreenPowerSignal,
+        base::Bind(&PowerManagerClientImpl::ScreenPowerSignalReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
         power_manager::kPowerSupplyPollSignal,
         base::Bind(&PowerManagerClientImpl::PowerSupplyPollReceived,
                    weak_ptr_factory_.GetWeakPtr()),
@@ -308,6 +316,22 @@ class PowerManagerClientImpl : public PowerManagerClient {
             << ": user initiated " << user_initiated;
     FOR_EACH_OBSERVER(Observer, observers_,
                       BrightnessChanged(brightness_level, user_initiated));
+  }
+
+  void ScreenPowerSignalReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    bool dbus_power_on = false;
+    bool dbus_all_displays = false;
+    if (reader.PopBool(&dbus_power_on) &&
+        reader.PopBool(&dbus_all_displays)) {
+      VLOG(1) << "Screen power set to " << dbus_power_on
+              << " for all displays " << dbus_all_displays;
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        ScreenPowerSet(dbus_power_on, dbus_all_displays));
+    } else {
+      LOG(ERROR) << "screen power signal had incorrect parameters: "
+                 << signal->ToString();
+    }
   }
 
   void PowerStateChangedSignalReceived(dbus::Signal* signal) {
