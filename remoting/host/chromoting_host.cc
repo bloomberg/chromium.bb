@@ -230,6 +230,9 @@ void ChromotingHost::OnSessionChannelsConnected(ClientSession* client) {
   recorder_->AddConnection(client->connection());
   recorder_->Start();
   desktop_environment_->OnSessionStarted();
+
+  FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
+                    OnClientConnected(client->client_jid()));
 }
 
 void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
