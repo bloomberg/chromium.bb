@@ -366,6 +366,7 @@ extern const char kEnableMemoryInfo[];
 
 extern const char kMetricsClientID[];
 extern const char kMetricsSessionID[];
+extern const char kMetricsLowEntropySource[];
 extern const char kMetricsClientIDTimestamp[];
 extern const char kMetricsReportingEnabled[];
 extern const char kMetricsInitialLogsXml[];

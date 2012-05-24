@@ -1077,6 +1077,10 @@ const char kRemoteDebuggingFrontend[]       = "remote-debugging-frontend";
 // Chrome and does nothing when directly passed to the browser.
 const char kRendererPrintPreview[]          = "renderer-print-preview";
 
+// Forces a reset of the one-time-randomized FieldTrials on this client, also
+// known as the Chrome Variations state.
+const char kResetVariationState[]           = "reset-variation-state";
+
 // Indicates the last session should be restored on startup. This overrides the
 // preferences value and is primarily intended for testing. The value of this
 // switch is the number of tabs to wait until loaded before 'load completed' is

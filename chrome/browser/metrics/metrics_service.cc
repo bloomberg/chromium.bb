@@ -149,6 +149,7 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -264,6 +265,17 @@ ResponseStatus ResponseCodeToStatus(int response_code) {
   }
 }
 
+// The argument used to generate a non-identifying entropy source. We want no
+// more than 13 bits of entropy, so use this max to return a number between 1
+// and 2^13 = 8192 as the entropy source.
+const uint32 kMaxEntropySize = (1 << 13);
+
+// Generates a new non-identifying entropy source used to seed persistent
+// activities.
+int GenerateLowEntropySource() {
+  return base::RandInt(1, kMaxEntropySize);
+}
+
 }
 
 // static
@@ -326,6 +338,7 @@ class MetricsMemoryDetails : public MemoryDetails {
 void MetricsService::RegisterPrefs(PrefService* local_state) {
   DCHECK(IsSingleThreaded());
   local_state->RegisterStringPref(prefs::kMetricsClientID, "");
+  local_state->RegisterIntegerPref(prefs::kMetricsLowEntropySource, 0);
   local_state->RegisterInt64Pref(prefs::kMetricsClientIDTimestamp, 0);
   local_state->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
   local_state->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
@@ -410,6 +423,7 @@ MetricsService::MetricsService()
     : recording_active_(false),
       reporting_active_(false),
       state_(INITIALIZED),
+      low_entropy_source_(0),
       idle_since_last_transmission_(false),
       next_window_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(self_ptr_factory_(this)),
@@ -448,6 +462,17 @@ void MetricsService::Stop() {
 
 std::string MetricsService::GetClientId() {
   return client_id_;
+}
+
+std::string MetricsService::GetEntropySource() {
+  // Note that client_id_ is empty if metrics reporting is not enabled. For
+  // metrics reporting-enabled users, we combine the client ID and low entropy
+  // source to get the final entropy source. This has two useful properties:
+  //  1) It makes the entropy source less identifiable for parties that do not
+  //     know the low entropy source.
+  //  2) It makes the final entropy source resettable.
+  CHECK(reporting_active() || client_id_.empty());
+  return client_id_ + base::IntToString(GetLowEntropySource());
 }
 
 void MetricsService::ForceClientIdCreation() {
@@ -870,6 +895,30 @@ void MetricsService::FinishedReceivingProfilerData() {
     state_ = INIT_TASK_DONE;
 }
 
+int MetricsService::GetLowEntropySource() {
+  // Note that the default value for the low entropy source and the default pref
+  // value are both zero, which is used to identify if the value has been set
+  // or not. Valid values start at 1.
+  if (low_entropy_source_)
+    return low_entropy_source_;
+
+  PrefService* pref = g_browser_process->local_state();
+  const CommandLine* command_line(CommandLine::ForCurrentProcess());
+  // Only try to load the value from prefs if the user did not request a reset.
+  // Otherwise, skip to generating a new value.
+  if (!command_line->HasSwitch(switches::kResetVariationState)) {
+    low_entropy_source_ = pref->GetInteger(prefs::kMetricsLowEntropySource);
+    if (low_entropy_source_)
+      return low_entropy_source_;
+  }
+
+  low_entropy_source_ = GenerateLowEntropySource();
+  pref->SetInteger(prefs::kMetricsLowEntropySource, low_entropy_source_);
+
+  return low_entropy_source_;
+}
+
+// static
 std::string MetricsService::GenerateClientID() {
   return guid::GenerateGUID();
 }

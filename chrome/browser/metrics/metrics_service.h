@@ -87,6 +87,12 @@ class MetricsService
   // recording is not currently running.
   std::string GetClientId();
 
+  // Returns the preferred entropy source used to seed persistent activities
+  // based on whether or not metrics reporting is permitted on this client. If
+  // it is permitted, this returns the client ID concatenated with the low
+  // entropy source. Otherwise, this just returns the low entropy source.
+  std::string GetEntropySource();
+
   // Force the client ID to be generated. This is useful in case it's needed
   // before recording.
   void ForceClientIdCreation();
@@ -192,6 +198,11 @@ class MetricsService
       content::ProcessType process_type) OVERRIDE;
   // Callback that moves the state to INIT_TASK_DONE.
   virtual void FinishedReceivingProfilerData() OVERRIDE;
+
+  // Returns the low entropy source for this client. This is a random value
+  // that is non-identifying amongst browser clients. This method will
+  // generate the entropy source value if it has not been called before.
+  int GetLowEntropySource();
 
   // When we start a new version of Chromium (different from our last run), we
   // need to discard the old crash stats so that we don't attribute crashes etc.
@@ -402,6 +413,9 @@ class MetricsService
 
   // The identifier that's sent to the server with the log reports.
   std::string client_id_;
+
+  // The non-identifying low entropy source value.
+  int low_entropy_source_;
 
   // Whether the MetricsService object has received any notifications since
   // the last time a transmission was sent.

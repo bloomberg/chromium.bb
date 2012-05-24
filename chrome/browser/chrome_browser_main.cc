@@ -565,12 +565,12 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
 #endif  // defined(OS_WIN)
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
-  // randomization. The client ID will be empty if the user has not opted
-  // to send metrics.
+  // randomization.
   MetricsService* metrics = browser_process_->metrics_service();
   if (IsMetricsReportingEnabled())
     metrics->ForceClientIdCreation();  // Needed below.
-  field_trial_list_.reset(new base::FieldTrialList(metrics->GetClientId()));
+  field_trial_list_.reset(
+      new base::FieldTrialList(metrics->GetEntropySource()));
 
   // Ensure any field trials specified on the command line are initialized.
   // Also stop the metrics service so that we don't pollute UMA.

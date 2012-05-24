@@ -1004,9 +1004,11 @@ const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
 const char kEnableOriginBoundCerts[] = "ssl.origin_bound_certs.enabled";
 const char kDisableSSLRecordSplitting[] = "ssl.ssl_record_splitting.disabled";
 
-// The metrics client GUID and session ID.
+// The metrics client GUID, entropy source and session ID.
 const char kMetricsClientID[] = "user_experience_metrics.client_id";
 const char kMetricsSessionID[] = "user_experience_metrics.session_id";
+const char kMetricsLowEntropySource[] =
+    "user_experience_metrics.low_entropy_source";
 
 // Date/time when the current metrics profile ID was created
 // (which hopefully corresponds to first run).
