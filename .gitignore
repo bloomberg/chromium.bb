@@ -11,6 +11,12 @@
 /svn
 /svn.bat
 /svnversion.bat
+/.codereview_upload_cookies
+/.gitconfig
+/.git_cl_description_backup
+/.last_codereview_email_address
+/.ssh
+/.subversion
 
 # Ignore locations where third-party tools are placed during bootstrapping.
 /python_bin
