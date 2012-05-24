@@ -134,6 +134,10 @@ class COMPOSITOR_EXPORT Layer :
   int background_blur() const { return background_blur_radius_; }
   void SetBackgroundBlur(int blur_radius);
 
+  // Invert the layer.
+  bool inverted() const { return inverted_; }
+  void SetInverted(bool inverted);
+
   // Return the target opacity if animator is running, or the current opacity
   // otherwise.
   float GetTargetOpacity() const;
@@ -290,6 +294,7 @@ class COMPOSITOR_EXPORT Layer :
 
   float opacity_;
   int background_blur_radius_;
+  bool inverted_;
 
   std::string name_;
 

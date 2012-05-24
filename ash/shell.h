@@ -53,6 +53,7 @@ namespace ash {
 
 class AcceleratorController;
 class DesktopBackgroundController;
+class HighContrastController;
 class Launcher;
 class NestedDispatcherController;
 class PowerButtonController;
@@ -237,9 +238,14 @@ class ASH_EXPORT Shell {
     return user_wallpaper_delegate_.get();
   }
 
+  HighContrastController* high_contrast_controller() {
+    return high_contrast_controller_.get();
+  }
+
   internal::MagnificationController* magnification_controller() {
     return magnification_controller_.get();
   }
+
   internal::ScreenDimmer* screen_dimmer() {
     return screen_dimmer_.get();
   }
@@ -348,6 +354,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::FocusCycler> focus_cycler_;
   scoped_ptr<internal::EventClientImpl> event_client_;
   scoped_ptr<internal::MonitorController> monitor_controller_;
+  scoped_ptr<HighContrastController> high_contrast_controller_;
   scoped_ptr<internal::MagnificationController> magnification_controller_;
   scoped_ptr<internal::ScreenDimmer> screen_dimmer_;
 

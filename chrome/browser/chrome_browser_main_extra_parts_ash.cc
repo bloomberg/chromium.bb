@@ -6,10 +6,12 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
+#include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/key_rewriter_event_filter.h"
 #include "ash/wm/property_util.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/views/ash/caps_lock_handler.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
@@ -75,6 +77,9 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
   shell->accelerator_controller()->SetVolumeControlDelegate(
       scoped_ptr<ash::VolumeControlDelegate>(new VolumeController).Pass());
+
+  ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(
+      chromeos::accessibility::IsHighContrastEnabled());
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests)) {

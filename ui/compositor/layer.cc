@@ -52,6 +52,7 @@ Layer::Layer()
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
+      inverted_(false),
       delegate_(NULL),
       scale_content_(true),
       device_scale_factor_(1.0f) {
@@ -66,6 +67,7 @@ Layer::Layer(LayerType type)
       fills_bounds_opaquely_(true),
       layer_updated_externally_(false),
       opacity_(1.0f),
+      inverted_(false),
       delegate_(NULL),
       scale_content_(true),
       device_scale_factor_(1.0f) {
@@ -194,8 +196,7 @@ void Layer::SetOpacity(float opacity) {
   GetAnimator()->SetOpacity(opacity);
 }
 
-void Layer::SetBackgroundBlur(int blur_radius)
-{
+void Layer::SetBackgroundBlur(int blur_radius) {
   WebKit::WebFilterOperations filters;
   if (blur_radius) {
 #if WEBKIT_HAS_NEW_WEBFILTEROPERATION_API
@@ -207,6 +208,22 @@ void Layer::SetBackgroundBlur(int blur_radius)
   web_layer_.setBackgroundFilters(filters);
 
   background_blur_radius_ = blur_radius;
+}
+
+void Layer::SetInverted(bool inverted) {
+  WebKit::WebFilterOperations filters;
+  if (inverted) {
+#if WEBKIT_HAS_NEW_WEBFILTEROPERATION_API
+    filters.append(WebKit::WebFilterOperation::createInvertFilter(1.0));
+#else
+    filters.append(WebKit::WebBasicComponentTransferFilterOperation(
+        WebKit::WebBasicComponentTransferFilterOperation::
+            BasicComponentTransferFilterTypeInvert, 1.0));
+#endif
+  }
+  web_layer_.setFilters(filters);
+
+  inverted_ = inverted;
 }
 
 float Layer::GetTargetOpacity() const {
