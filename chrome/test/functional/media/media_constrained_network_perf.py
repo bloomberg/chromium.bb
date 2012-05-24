@@ -6,9 +6,11 @@
 """Records metrics on playing media under constrained network conditions.
 
 Spins up a Constrained Network Server (CNS) and runs through a test matrix of
-bandwidth, latency, and packet loss settings.  Each run records a
-time-to-playback (TTP) and extra-play-percentage (EPP) metric in a format
-consumable by the Chromium perf bots.
+bandwidth, latency, and packet loss settings.  Tests running media files defined
+in _TEST_MEDIA_EPP record the extra-play-percentage (EPP) metric and the
+time-to-playback (TTP) metric in a format consumable by the Chromium perf bots.
+Other tests running media files defined in _TEST_MEDIA_NO_EPP record only the
+TTP metric.
 
 Since even a small number of different settings yields a large test matrix, the
 design is threaded... however PyAuto is not, so a global lock is used when calls
@@ -27,12 +29,12 @@ import pyauto_utils
 import cns_test_base
 import worker_thread
 
+# The network constraints used for measuring ttp and epp.
 # Previous tests with 2% and 5% packet loss resulted in inconsistent data. Thus
 # packet loss is not used often in perf tests. Tests with very low bandwidth,
 # such as 56K Dial-up resulted in very slow tests (about 8 mins to run each
 # test iteration). In addition, metrics for Dial-up would be out of range of the
 # other tests metrics, making the graphs hard to read.
-
 _TESTS_TO_RUN = [cns_test_base.Cable,
                  cns_test_base.Wifi,
                  cns_test_base.DSL,
@@ -50,23 +52,19 @@ _TEST_THREADS = 3
 # Number of times we run the same test to eliminate outliers.
 _TEST_ITERATIONS = 3
 
-# File name of video to collect metrics for and its duration (used for timeout).
-# TODO(dalecurtis): Should be set on the command line.
-_TEST_VIDEOS = ['roller.webm']
-_TEST_VIDEO_DURATION_SEC = 28.53
+# Media file names used for measuring epp and tpp.
+_TEST_MEDIA_EPP = ['roller.webm']
+_TEST_MEDIA_EPP.extend(os.path.join('crowd', name) for name in
+                        ['crowd360.ogv', 'crowd.wav', 'crowd.ogg'])
 
+# Media file names used for measuring tpp without epp.
+_TEST_MEDIA_NO_EPP = [os.path.join('dartmoor', 'dartmoor.ogg')]
+_TEST_MEDIA_NO_EPP.extend(os.path.join('crowd', name) for name in
+                           ['crowd1080.webm', 'crowd360.webm', 'crowd1080.ogv'])
 
-def Median(values):
-  """Returns the median for a list of values."""
-  if not values:
-    return None
-  values = sorted(values)
-  if len(values) % 2 == 1:
-    return values[len(values) / 2]
-  else:
-    lower = values[(len(values) / 2) - 1]
-    upper = values[len(values) / 2]
-    return (float(lower + upper)) / 2
+# Timeout values for epp and ttp tests in seconds.
+_TEST_EPP_TIMEOUT = 180
+_TEST_TTP_TIMEOUT = 20
 
 
 class CNSWorkerThread(worker_thread.WorkerThread):
@@ -118,18 +116,19 @@ class CNSWorkerThread(worker_thread.WorkerThread):
     It is assumed that a tab with the unique_url is already loaded.
     Args:
       unique_url: A unique identifier of the test page.
-      task: A (series_name, settings, file_name) tuple to run the test on.
+      task: A (series_name, settings, file_name, run_epp) tuple.
     Returns:
       True if the tests run as expected.
     """
     ttp_results = []
     epp_results = []
     # Build video source URL.  Values <= 0 mean the setting is disabled.
-    series_name, settings, file_name = task
+    series_name, settings, (file_name, run_epp) = task
     video_url = cns_test_base.GetFileURL(
         file_name, bandwidth=settings[0], latency=settings[1],
         loss=settings[2], new_port=True)
 
+    graph_name = series_name + '_' + os.path.basename(file_name)
     for iter_num in xrange(self._test_iterations):
       # Start the test!
       self.CallJavascriptFunc('startTest', [video_url], url=unique_url)
@@ -137,31 +136,32 @@ class CNSWorkerThread(worker_thread.WorkerThread):
       # Wait until the necessary metrics have been collected.
       self._metrics['epp'] = self._metrics['ttp'] = -1
       self.WaitUntil(self._HaveMetricOrError, args=['ttp', unique_url],
-                     retry_sleep=1, timeout=10, debug=False)
+                     retry_sleep=1, timeout=_TEST_EPP_TIMEOUT, debug=False)
       # Do not wait for epp if ttp is not available.
       if self._metrics['ttp'] >= 0:
         ttp_results.append(self._metrics['ttp'])
-        self.WaitUntil(
-            self._HaveMetricOrError, args=['epp', unique_url], retry_sleep=2,
-            timeout=_TEST_VIDEO_DURATION_SEC * 10, debug=False)
+        if run_epp:
+          self.WaitUntil(
+              self._HaveMetricOrError, args=['epp', unique_url], retry_sleep=2,
+              timeout=_TEST_EPP_TIMEOUT, debug=False)
 
-        if self._metrics['epp'] >= 0:
-          epp_results.append(self._metrics['epp'])
+          if self._metrics['epp'] >= 0:
+            epp_results.append(self._metrics['epp'])
 
-        logging.debug('Iteration:%d - Test %s ended with %d%% of the video '
-                      'played.', iter_num, series_name,
-                      self._GetVideoProgress(unique_url),)
+          logging.debug('Iteration:%d - Test %s ended with %d%% of the video '
+                        'played.', iter_num, graph_name,
+                        self._GetVideoProgress(unique_url),)
 
-        if self._metrics['ttp'] < 0 or self._metrics['epp'] < 0:
-          logging.error('Iteration:%d - Test %s failed to end gracefully due '
-                        'to time-out or error.\nVideo events fired:\n%s',
-                        iter_num, series_name, self._GetEventsLog(unique_url))
+      if self._metrics['ttp'] < 0 or (run_epp and self._metrics['epp'] < 0):
+        logging.error('Iteration:%d - Test %s failed to end gracefully due '
+                      'to time-out or error.\nVideo events fired:\n%s',
+                      iter_num, graph_name, self._GetEventsLog(unique_url))
 
     # End of iterations, print results,
-    logging.debug('TTP results: %s', ttp_results)
-    logging.debug('EPP results: %s', epp_results)
-    pyauto_utils.PrintPerfResult('epp', series_name, epp_results, '%')
-    pyauto_utils.PrintPerfResult('ttp', series_name, ttp_results, 'ms')
+    pyauto_utils.PrintPerfResult('ttp', graph_name, ttp_results, 'ms')
+
+    if run_epp:
+      pyauto_utils.PrintPerfResult('epp', graph_name, epp_results, '%')
 
     # Check if any of the tests failed to report the metrics.
     return len(ttp_results) == len(epp_results) == self._test_iterations
@@ -179,10 +179,10 @@ class MediaConstrainedNetworkPerfTest(cns_test_base.CNSTestBase):
       test_path: Path to HTML/JavaScript test code.
     """
     tasks = Queue.Queue()
-    tasks.put(('Dummy Test', [5000, 0, 0], _TEST_VIDEOS[0]))
+    tasks.put(('Dummy Test', [5000, 0, 0], (_TEST_MEDIA_EPP[0], True)))
     # Dummy test should successfully finish by passing all the tests.
     if worker_thread.RunWorkerThreads(self, CNSWorkerThread, tasks, 1,
-                                      test_path) > 0:
+                                      test_path):
       self.fail('Failed to run dummy test.')
 
   def testConstrainedNetworkPerf(self):
@@ -193,10 +193,13 @@ class MediaConstrainedNetworkPerfTest(cns_test_base.CNSTestBase):
     self._RunDummyTest(_TEST_HTML_PATH)
     logging.debug('Dummy test has finished. Starting real perf tests.')
 
-    # Spin up CNS worker threads.
-    tasks = cns_test_base.CreateCNSPerfTasks(_TESTS_TO_RUN, _TEST_VIDEOS)
-    worker_thread.RunWorkerThreads(self, CNSWorkerThread, tasks, _TEST_THREADS,
-                                   _TEST_HTML_PATH)
+    # Tests that wait for EPP metrics.
+    media_files = [(name, True) for name in _TEST_MEDIA_EPP]
+    media_files.extend((name, False) for name in _TEST_MEDIA_NO_EPP)
+    tasks = cns_test_base.CreateCNSPerfTasks(_TESTS_TO_RUN, media_files)
+    if worker_thread.RunWorkerThreads(self, CNSWorkerThread, tasks,
+                                      _TEST_THREADS, _TEST_HTML_PATH):
+      self.fail('Some tests failed to run as expected.')
 
 
 if __name__ == '__main__':
