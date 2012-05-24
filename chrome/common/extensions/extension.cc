@@ -1436,7 +1436,7 @@ bool Extension::LoadCommands(string16* error) {
         browser_action_command_.reset(binding.release());
       } else {
         if (command_name[0] != '_')  // All commands w/underscore are reserved.
-          named_commands_[command_name] = *binding.release();
+          named_commands_[command_name] = *binding.get();
       }
     }
   }
