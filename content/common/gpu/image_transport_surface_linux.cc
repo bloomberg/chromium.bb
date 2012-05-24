@@ -399,10 +399,8 @@ void EGLImageTransportSurface::OnResize(gfx::Size size) {
 
 bool EGLImageTransportSurface::SwapBuffers() {
   DCHECK(backbuffer_suggested_allocation_);
-  if (!frontbuffer_suggested_allocation_) {
-    previous_damage_rect_ = gfx::Rect(visible_size_);
+  if (!frontbuffer_suggested_allocation_)
     return true;
-  }
   front_surface_.swap(back_surface_);
   DCHECK_NE(front_surface_.get(), static_cast<EGLAcceleratedSurface*>(NULL));
   helper_->DeferToFence(base::Bind(
@@ -433,10 +431,12 @@ void EGLImageTransportSurface::SendBuffersSwapped() {
 bool EGLImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   DCHECK(backbuffer_suggested_allocation_);
-  if (!frontbuffer_suggested_allocation_) {
-    previous_damage_rect_ = gfx::Rect(visible_size_);
+  if (!frontbuffer_suggested_allocation_)
     return true;
-  }
+  // If we are recreating the frontbuffer with this swap, make sure we are
+  // drawing a full frame.
+  DCHECK(front_surface_.get() ||
+         (!x && !y && gfx::Size(width, height) == visible_size_));
   DCHECK_NE(back_surface_.get(), static_cast<EGLAcceleratedSurface*>(NULL));
   gfx::Size expected_size = back_surface_->size();
   bool surfaces_same_size = front_surface_.get() &&

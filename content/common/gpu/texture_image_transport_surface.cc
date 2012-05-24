@@ -211,10 +211,8 @@ void TextureImageTransportSurface::OnWillDestroyStub(
 
 bool TextureImageTransportSurface::SwapBuffers() {
   DCHECK(backbuffer_suggested_allocation_);
-  if (!frontbuffer_suggested_allocation_) {
-    previous_damage_rect_ = gfx::Rect(textures_[front_].size);
+  if (!frontbuffer_suggested_allocation_)
     return true;
-  }
   if (!parent_stub_) {
     LOG(ERROR) << "SwapBuffers failed because no parent stub.";
     return false;
@@ -236,10 +234,12 @@ bool TextureImageTransportSurface::SwapBuffers() {
 bool TextureImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   DCHECK(backbuffer_suggested_allocation_);
-  if (!frontbuffer_suggested_allocation_) {
-    previous_damage_rect_ = gfx::Rect(textures_[front_].size);
+  if (!frontbuffer_suggested_allocation_)
     return true;
-  }
+  // If we are recreating the frontbuffer with this swap, make sure we are
+  // drawing a full frame.
+  DCHECK(textures_[front_].info->service_id() ||
+         (!x && !y && gfx::Size(width, height) == textures_[back()].size));
   if (!parent_stub_) {
     LOG(ERROR) << "PostSubBuffer failed because no parent stub.";
     return false;
