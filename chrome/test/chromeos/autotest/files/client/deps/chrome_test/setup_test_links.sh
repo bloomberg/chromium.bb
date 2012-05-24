@@ -9,7 +9,7 @@
 # 'pyauto_dep' dependencies.
 
 # TODO(rkc): Figure out why does the sym linking break tests, eventually
-this_dir="$(realpath $(dirname $0))"
+this_dir="$(readlink -f $(dirname $0))"
 [ -f "$this_dir/chrome" ] || cp "/opt/google/chrome/chrome" "$this_dir/chrome"
 [ -L "$this_dir/locales" ] || ln -f -s "/opt/google/chrome/locales" \
     "$this_dir/locales"
@@ -24,8 +24,8 @@ ln -f -s "/opt/google/chrome/chromeos/libcros.so" \
 
 # Create links to resources from pyauto_dep.
 
-chrome_test_dep_dir=$(realpath "$this_dir/../../..")
-pyauto_dep_dir=$(realpath "$chrome_test_dep_dir/../pyauto_dep")
+chrome_test_dep_dir=$(readlink -f "$this_dir/../../..")
+pyauto_dep_dir=$(readlink -f "$chrome_test_dep_dir/../pyauto_dep")
 if [ ! -d "$pyauto_dep_dir" ]; then
     echo "'pyauto_dep' dependency is missing. Install it first." >&2
     exit 1
