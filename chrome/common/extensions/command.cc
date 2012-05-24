@@ -63,17 +63,23 @@ ui::Accelerator Command::ParseImpl(
       modifiers |= ui::EF_SHIFT_DOWN;
     } else if (tokens[i] == "Command" && platform_key == "mac") {
       // TODO(finnur): Implement for Mac.
+      // TODO(finnur): Reject Shift modifier if no Cmd/Opt (see below).
     } else if (tokens[i] == "Option" && platform_key == "mac") {
       // TODO(finnur): Implement for Mac.
-    } else if (tokens[i].size() == 1 &&
-               tokens[i][0] >= 'A' && tokens[i][0] <= 'Z') {
+    } else if (tokens[i].size() == 1) {
       if (key != ui::VKEY_UNKNOWN) {
         // Multiple key assignments.
         key = ui::VKEY_UNKNOWN;
         break;
       }
-
-      key = static_cast<ui::KeyboardCode>(ui::VKEY_A + (tokens[i][0] - 'A'));
+      if (tokens[i][0] >= 'A' && tokens[i][0] <= 'Z') {
+        key = static_cast<ui::KeyboardCode>(ui::VKEY_A + (tokens[i][0] - 'A'));
+      } else if (tokens[i][0] >= '0' && tokens[i][0] <= '9') {
+        key = static_cast<ui::KeyboardCode>(ui::VKEY_0 + (tokens[i][0] - '0'));
+      } else {
+        key = ui::VKEY_UNKNOWN;
+        break;
+      }
     } else {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidKeyBinding,
@@ -85,10 +91,13 @@ ui::Accelerator Command::ParseImpl(
   }
   bool ctrl = (modifiers & ui::EF_CONTROL_DOWN) != 0;
   bool alt = (modifiers & ui::EF_ALT_DOWN) != 0;
+  bool shift = (modifiers & ui::EF_SHIFT_DOWN) != 0;
   // We support Ctrl+foo, Alt+foo, Ctrl+Shift+foo, Alt+Shift+foo, but not
-  // Ctrl+Alt+foo. For a more detailed reason why we don't support Ctrl+Alt+foo:
+  // Ctrl+Alt+foo and not Shift+foo either. For a more detailed reason why we
+  // don't support Ctrl+Alt+foo see this article:
   // http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx.
-  if (key == ui::VKEY_UNKNOWN || (ctrl && alt)) {
+  if (key == ui::VKEY_UNKNOWN || (ctrl && alt) ||
+      ((platform_key != "mac") && shift && !ctrl && !alt)) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidKeyBinding,
         base::IntToString(index),

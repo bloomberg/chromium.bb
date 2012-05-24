@@ -25,6 +25,8 @@ TEST(CommandTest, ExtensionCommandParsing) {
       ui::Accelerator(ui::VKEY_F, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
   const ui::Accelerator alt_shift_f =
       ui::Accelerator(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
+  const ui::Accelerator ctrl_1 = ui::Accelerator(ui::VKEY_1,
+                                                 ui::EF_CONTROL_DOWN);
 
   const struct {
     bool expected_result;
@@ -44,19 +46,20 @@ TEST(CommandTest, ExtensionCommandParsing) {
     // Unsupported shortcuts/too many, or missing modifier.
     { false, none, "command", "A",                "description" },
     { false, none, "command", "F10",              "description" },
-    { false, none, "command", "Ctrl+1",           "description" },
     { false, none, "command", "Ctrl+F+G",         "description" },
     { false, none, "command", "Ctrl+Alt+Shift+G", "description" },
+    // Shift on its own is not supported.
+    { false, shift_f, "command", "Shift+F",       "description" },
+    { false, shift_f, "command", "F+Shift",       "description" },
     // Basic tests.
-    { true, ctrl_f,      "command", "Ctrl+F",       "description" },
-    { true, shift_f,     "command", "Shift+F",      "description" },
-    { true, alt_f,       "command", "Alt+F",        "description" },
+    { true, ctrl_f,       "command", "Ctrl+F",       "description" },
+    { true, alt_f,        "command", "Alt+F",        "description" },
     { true, ctrl_shift_f, "command", "Ctrl+Shift+F", "description" },
     { true, alt_shift_f,  "command", "Alt+Shift+F",  "description" },
+    { true, ctrl_1,       "command", "Ctrl+1",       "description" },
     // Order tests.
-    { true, ctrl_f,      "command", "F+Ctrl",       "description" },
-    { true, shift_f,     "command", "F+Shift",      "description" },
-    { true, alt_f,       "command", "F+Alt",        "description" },
+    { true, ctrl_f,       "command", "F+Ctrl",       "description" },
+    { true, alt_f,        "command", "F+Alt",        "description" },
     { true, ctrl_shift_f, "command", "F+Ctrl+Shift", "description" },
     { true, ctrl_shift_f, "command", "F+Shift+Ctrl", "description" },
     { true, alt_shift_f,  "command", "F+Alt+Shift",  "description" },
