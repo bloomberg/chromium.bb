@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 
 #include <string>
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/test_chrome_web_ui_controller_factory.h"
+#include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -72,7 +74,8 @@ void WebUIBrowserTest::AddLibrary(const FilePath& library_path) {
 }
 
 bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name) {
-  return RunJavascriptFunction(function_name, ConstValueVector());
+  ConstValueVector empty_args;
+  return RunJavascriptFunction(function_name, empty_args);
 }
 
 bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name,
@@ -112,7 +115,8 @@ bool WebUIBrowserTest::RunJavascriptTestF(bool is_async,
 }
 
 bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name) {
-  return RunJavascriptTest(test_name, ConstValueVector());
+  ConstValueVector empty_args;
+  return RunJavascriptTest(test_name, empty_args);
 }
 
 bool WebUIBrowserTest::RunJavascriptTest(const std::string& test_name,
@@ -139,7 +143,8 @@ bool WebUIBrowserTest::RunJavascriptTest(
 }
 
 bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name) {
-  return RunJavascriptAsyncTest(test_name, ConstValueVector());
+  ConstValueVector empty_args;
+  return RunJavascriptAsyncTest(test_name, empty_args);
 }
 
 bool WebUIBrowserTest::RunJavascriptAsyncTest(const std::string& test_name,
@@ -202,7 +207,6 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
       base::Bind(&ui_test_utils::RunMessageLoop),
       base::Bind(&MessageLoop::Quit,
                  base::Unretained(MessageLoopForUI::current())));
-
 }
 
 void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
@@ -395,20 +399,23 @@ string16 WebUIBrowserTest::BuildRunTestJSCall(
     bool is_async,
     const std::string& function_name,
     const WebUIBrowserTest::ConstValueVector& test_func_args) {
-  WebUIBrowserTest::ConstValueVector arguments;
-  base::FundamentalValue is_async_arg(is_async);
-  arguments.push_back(&is_async_arg);
-  StringValue function_name_arg(function_name);
-  arguments.push_back(&function_name_arg);
-  ListValue baked_argument_list;
-  WebUIBrowserTest::ConstValueVector::const_iterator arguments_iterator;
+  ConstValueVector arguments;
+  base::FundamentalValue* is_async_arg =
+      base::Value::CreateBooleanValue(is_async);
+  arguments.push_back(is_async_arg);
+  base::StringValue* function_name_arg =
+      base::Value::CreateStringValue(function_name);
+  arguments.push_back(function_name_arg);
+  base::ListValue* baked_argument_list = new base::ListValue();
+  ConstValueVector::const_iterator arguments_iterator;
   for (arguments_iterator = test_func_args.begin();
        arguments_iterator != test_func_args.end();
        ++arguments_iterator) {
-    baked_argument_list.Append(const_cast<Value*>(*arguments_iterator));
+    baked_argument_list->Append((*arguments_iterator)->DeepCopy());
   }
-  arguments.push_back(&baked_argument_list);
-  return content::WebUI::GetJavascriptCall(std::string("runTest"), arguments);
+  arguments.push_back(baked_argument_list);
+  return content::WebUI::GetJavascriptCall(std::string("runTest"),
+                                           arguments.get());
 }
 
 bool WebUIBrowserTest::RunJavascriptUsingHandler(
@@ -425,11 +432,12 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
   if (!function_name.empty()) {
     string16 called_function;
     if (is_test) {
-      called_function = BuildRunTestJSCall(
-          is_async, function_name, function_arguments);
+      called_function =
+          BuildRunTestJSCall(is_async, function_name, function_arguments);
     } else {
-      called_function = content::WebUI::GetJavascriptCall(function_name,
-                                                          function_arguments);
+      called_function =
+          content::WebUI::GetJavascriptCall(function_name,
+                                            function_arguments.get());
     }
     content.append(called_function);
   }
