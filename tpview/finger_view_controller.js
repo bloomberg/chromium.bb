@@ -146,13 +146,13 @@ FingerViewController.prototype = {
     unittest +=
         '  HardwareProperties hwprops = {\n' +
         '    ' + [hp.left, hp.top, hp.right, hp.bottom].join(', ') +
-        ' // left, top, right, bottom\n' +
+        ',  // left, top, right, bottom\n' +
         '    ' + [hp.xResolution, hp.yResolution, hp.xDpi, hp.yDpi].join(', ') +
-        ' // x res, y res, x DPI, y DPI\n' +
+        ',  // x res, y res, x DPI, y DPI\n' +
         '    ' + [hp.maxFingerCount, hp.maxTouchCount].join(', ') +
-        ' // max_fingers, max_touch\n' +
+        ',  // max_fingers, max_touch\n' +
         '    ' + [hp.supportsT5R2, hp.semiMt, hp.isButtonPad].join(', ') +
-        ' // t5r2, semi_mt, is_button_pad\n' +
+        '  // t5r2, semi_mt, is_button_pad\n' +
         '  };\n\n' +
         '  interpreter.SetHardwareProperties(hwprops);\n\n';
 
