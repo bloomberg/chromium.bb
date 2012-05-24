@@ -51,6 +51,10 @@ inline float DegToRad(float degrees) {
   return M_PI * degrees / 180.0;
 }
 
+// Combines two gesture objects, storing the result into *gesture.
+// Priority is given to button events first, then *gesture.
+// Also, |gesture| comes earlier in time than |addend|.
+void CombineGestures(Gesture* gesture, const Gesture* addend);
 }  // namespace gestures
 
 #endif  // GESTURES_UTIL_H_

@@ -23,7 +23,8 @@ OBJECTS=\
 	$(OBJDIR)/sensor_jump_filter_interpreter.o \
 	$(OBJDIR)/split_correcting_filter_interpreter.o \
 	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter.o \
-	$(OBJDIR)/t5r2_correcting_filter_interpreter.o
+	$(OBJDIR)/t5r2_correcting_filter_interpreter.o \
+	$(OBJDIR)/util.o
 
 TEST_OBJECTS=\
 	$(OBJDIR)/accel_filter_interpreter_unittest.o \

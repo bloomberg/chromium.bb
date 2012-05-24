@@ -20,7 +20,6 @@
 namespace gestures {
 
 class LookaheadFilterInterpreter : public Interpreter {
-  FRIEND_TEST(LookaheadFilterInterpreterTest, CombineGesturesTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, DrumrollTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateTest);
@@ -93,11 +92,6 @@ class LookaheadFilterInterpreter : public Interpreter {
                             stime_t now,
                             stime_t* timeout);
   bool ShouldSuppressResult(const Gesture* gesture, QState* node);
-
-  // Combines two gesture objects, storing the result into *gesture.
-  // Priority is given to button events first, then *gesture.
-  // Also, |gesture| comes earlier in time than |addend|.
-  static void CombineGestures(Gesture* gesture, const Gesture* addend);
 
   stime_t ExtraVariableDelay() const;
 
