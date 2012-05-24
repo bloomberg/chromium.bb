@@ -76,6 +76,94 @@ FingerViewController.prototype = {
     snippet.entries = snippet.entries.slice(begin, end);
     return snippet;
   },
+  getUnitTest: function(begin, end, interpreterName, testName) {
+    var hp = this.log.hardwareProperties;
+    var hardwareStates = '';
+    var fingerStates = '';
+    var fingerIndex = 0;
+    var hwstateIndex = 0;
+    for (var i = begin; i <= end; i++) {
+      if (this.entries[i].type != 'hardwareState') {
+        continue;
+      }
+      var hwstate = this.entries[i];
+      var fingers = hwstate.fingers;
+      for (var j = 0; j < fingers.length; j++) {
+        var fingerFields = [
+          fingers[j].touchMajor,
+          fingers[j].touchMinor,
+          fingers[j].widthMajor,
+          fingers[j].widthMinor,
+          fingers[j].pressure,
+          fingers[j].orientation,
+          fingers[j].positionX,
+          fingers[j].positionY,
+          fingers[j].trackingId,
+          fingers[j].flags
+        ].join(', ');
+        var index = j ? '' : '  // ' + fingerIndex;
+        fingerStates += [ '    { ', fingerFields, ' },', index, '\n' ].join('');
+      }
+
+      var hwstateFields = [
+        hwstate.timestamp,
+        hwstate.buttonsDown,
+        fingers.length,
+        hwstate.touchCount,
+        fingers.length ? '&fs[' + fingerIndex + ']' : 'NULL'
+      ].join(', ');
+
+      hardwareStates += [
+        '    { ', hwstateFields, ' },  // ', hwstateIndex, '\n'
+      ].join('');
+
+      fingerIndex += fingers.length;
+      hwstateIndex += 1;
+    }
+
+    // Declarations
+    unittest =
+        'TEST(' + interpreterName + 'Test, ' + testName + 'Test) {\n' +
+        '  ' + interpreterName + 'TestInterpreter* base_interpreter =\n' +
+        '      new ' + interpreterName + 'TestInterpreter;\n' +
+        '  ' + interpreterName + ' interpreter(NULL, base_interpreter);\n\n';
+
+    //  Finger States
+    unittest +=
+        '  FingerState fs[] = {\n' +
+        '    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags\n';
+    unittest += fingerStates;
+    unittest += '  };\n\n';
+
+    //  Hardware States
+    unittest +=
+        '  HardwareState hs[] = {\n' +
+        '    // time, buttons, finger count, touch count, fingers\n';
+    unittest += hardwareStates;
+    unittest += '  };\n\n';
+
+    // Hardware properties
+    unittest +=
+        '  HardwareProperties hwprops = {\n' +
+        '    ' + [hp.left, hp.top, hp.right, hp.bottom].join(', ') +
+        ' // left, top, right, bottom\n' +
+        '    ' + [hp.xResolution, hp.yResolution, hp.xDpi, hp.yDpi].join(', ') +
+        ' // x res, y res, x DPI, y DPI\n' +
+        '    ' + [hp.maxFingerCount, hp.maxTouchCount].join(', ') +
+        ' // max_fingers, max_touch\n' +
+        '    ' + [hp.supportsT5R2, hp.semiMt, hp.isButtonPad].join(', ') +
+        ' // t5r2, semi_mt, is_button_pad\n' +
+        '  };\n\n' +
+        '  interpreter.SetHardwareProperties(hwprops);\n\n';
+
+    // Interpreter loop
+    unittest +=
+        '  for (size_t i = 0; i < arraysize(hs); i++)\n' +
+        '    interpreter.SyncInterpret(&hs[i], NULL);\n' +
+        '}\n';
+
+    return unittest;
+  },
   updateInput: function() {
     var lastPosDict = {};
     var segs = [];

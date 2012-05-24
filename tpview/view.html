@@ -153,6 +153,16 @@ function shrink() {
   loadLogObj(snippet);
 }
 
+function generateUnittest() {
+  var interpreter_name = $('#unittest_interpreter').val();
+  var unittest_name = $('#unittest_testname').val();
+
+  var values = $('#slider').slider('option', 'values');
+  var unittest = finger_view_controller.getUnitTest(
+      values[0], values[1], interpreter_name, unittest_name);
+  $('#unittest_box').val(unittest);
+}
+
 $(document).ready(function() {
   
   setup();
@@ -216,6 +226,9 @@ $(document).ready(function() {
   $("#shrink").button({
     text: true,
   }).click(shrink);
+  $("#unittest").button({
+    text: true,
+  }).click(generateUnittest);
 
   $(window).keypress(function (event) {
     switch (event.keyCode) {
@@ -266,6 +279,12 @@ $(document).ready(function() {
 </div>
 <div id="textdiv">
 <textarea rows="24" cols="80" id="text_box">Drag and drop a touchpad log file here.</textarea></div>
+<div id="unittest_div">
+<input id="unittest_interpreter" value="InterpreterName"/>
+<input id="unittest_testname" value="TestName"/>
+<button id="unittest">Generate Unittest</button>
+<textarea rows="24" cols="80" id="unittest_box"></textarea>
+</div>
 
 </body>
 </html>
