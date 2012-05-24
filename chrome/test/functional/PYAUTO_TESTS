@@ -324,6 +324,10 @@
       '-chromeos_file_browser.ChromeosFileBrowserTest.testOpenMediaFiles',
       # crbug.com/129469
       '-chromeos_prefs.ChromeosPrefsTest.testCaptureUserPhoto',
+      # crosbug.com/31267
+      '-chromeos_security.ChromeosSecurity.testBundledCrxPermissions',
+      '-chromeos_security.ChromeosSecurity.testComponentExtensionPermissions',
+      '-chromeos_security.ChromeosSecurity.testNoUnexpectedExtensions',
       # Downloads panel stays even after declining a download.
       # crosbug.com/14728
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
