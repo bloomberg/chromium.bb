@@ -92,6 +92,12 @@ class DocumentsServiceInterface {
                             const std::string& directory_resource_id,
                             const GetDataCallback& callback) = 0;
 
+  // Fetches single entry metadata from server. The entry's resource id equals
+  // |resource_id|.
+  // Upon completion, invokes |callback| with results on the calling thread.
+  virtual void GetDocumentEntry(const std::string& resource_id,
+                                const GetDataCallback& callback) = 0;
+
   // Gets the account metadata from the server using the default account
   // metadata URL. Upon completion, invokes |callback| with results on the
   // calling thread.
@@ -193,6 +199,9 @@ class DocumentsService
                             const std::string& search_query,
                             const std::string& directory_resource_id,
                             const GetDataCallback& callback) OVERRIDE;
+  virtual void GetDocumentEntry(const std::string& resource_id,
+                                const GetDataCallback& callback) OVERRIDE;
+
   virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE;
   virtual void DeleteDocument(const GURL& document_url,
                               const EntryActionCallback& callback) OVERRIDE;

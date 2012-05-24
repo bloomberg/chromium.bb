@@ -119,6 +119,18 @@ void DocumentsService::GetDocuments(const GURL& url,
   StartOperationWithRetry(operation);
 }
 
+void DocumentsService::GetDocumentEntry(const std::string& resource_id,
+                                        const GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetDocumentEntryOperation* operation =
+      new GetDocumentEntryOperation(operation_registry_.get(),
+                                    profile_,
+                                    resource_id,
+                                    callback);
+  StartOperationWithRetry(operation);
+}
+
 void DocumentsService::GetAccountMetadata(const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

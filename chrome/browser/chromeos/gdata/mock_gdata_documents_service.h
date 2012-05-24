@@ -36,6 +36,8 @@ class MockDocumentsService : public DocumentsServiceInterface {
                                   const std::string& search_string,
                                   const std::string& directory_resource_id,
                                   const GetDataCallback& callback));
+  MOCK_METHOD2(GetDocumentEntry, void(const std::string& resource_id,
+                                      const GetDataCallback& callback));
   MOCK_METHOD1(GetAccountMetadata, void(const GetDataCallback& callback));
   MOCK_METHOD2(DeleteDocument, void(const GURL& document_url,
                                     const EntryActionCallback& callback));

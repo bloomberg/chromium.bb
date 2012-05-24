@@ -45,6 +45,7 @@ const char kIfMatchHeaderFormat[] = "If-Match: %s";
 // (handled with '/-/mine' part).
 const char kGetDocumentListURLForAllDocuments[] =
     "https://docs.google.com/feeds/default/private/full/-/mine";
+
 // URL requesting documents list in a particular directory specified by "%s"
 // that belong to the authenticated user only (handled with '/-/mine' part).
 const char kGetDocumentListURLForDirectoryFormat[] =
@@ -57,6 +58,10 @@ const char kGetChangesListURL[] =
 // Root document list url.
 const char kDocumentListRootURL[] =
     "https://docs.google.com/feeds/default/private/full";
+
+// URL requesting single document entry whose resource id is specified by "%s".
+const char kGetDocumentEntryURLFormat[] =
+    "https://docs.google.com/feeds/default/private/full/%s";
 
 // Metadata feed with things like user quota.
 const char kAccountMetadataURL[] =
@@ -522,6 +527,25 @@ GURL GetDocumentsOperation::GetURL() const {
                           kMaxDocumentsPerFeed,
                           start_changestamp_,
                           std::string());
+}
+
+//============================ GetDocumentEntryOperation =======================
+
+GetDocumentEntryOperation::GetDocumentEntryOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    const std::string& resource_id,
+    const GetDataCallback& callback)
+    : GetDataOperation(registry, profile, callback),
+      resource_id_(resource_id) {
+}
+
+GetDocumentEntryOperation::~GetDocumentEntryOperation() {}
+
+GURL GetDocumentEntryOperation::GetURL() const {
+  GURL result = GURL(base::StringPrintf(kGetDocumentEntryURLFormat,
+                                        net::EscapePath(resource_id_).c_str()));
+  return AddStandardUrlParams(result);
 }
 
 //========================= GetAccountMetadataOperation ========================

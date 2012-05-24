@@ -231,6 +231,28 @@ class GetDocumentsOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(GetDocumentsOperation);
 };
 
+//========================= GetDocumentEntryOperation ==========================
+
+// This class performs the operation for fetching a single document entry.
+class GetDocumentEntryOperation : public GetDataOperation {
+ public:
+  GetDocumentEntryOperation(GDataOperationRegistry* registry,
+                            Profile* profile,
+                            const std::string& resource_id,
+                            const GetDataCallback& callback);
+  virtual ~GetDocumentEntryOperation();
+
+ protected:
+  // Overridden from GetGdataOperation.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  // Resource id of the requested entry.
+  std::string resource_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetDocumentEntryOperation);
+};
+
 //========================= GetAccountMetadataOperation ========================
 
 // This class performs the operation for fetching account metadata.
