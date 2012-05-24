@@ -154,6 +154,9 @@
   "chrome/app/theme/theme_resources_touch_1x.grd": {
     "includes": [21000],
   },
+  "chrome/app/theme/theme_resources_touch_2x.grd": {
+    "includes": [21000],
+  },
   # This file is generated during the build.
   "chrome/browser/debugger/frontend/devtools_discovery_page_resources.grd": {
     "includes": [21500],
@@ -175,6 +178,9 @@
     "includes": [24000],
   },
   "ui/resources/ui_resources_touch.grd": {
+    "includes": [24000],
+  },
+  "ui/resources/ui_resources_touch_2x.grd": {
     "includes": [24000],
   },
   "ui/resources/ui_resources_2x.grd": {

@@ -72,5 +72,22 @@
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
+    {
+      'target_name': 'ui_resources_touch_2x',
+      'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_touch_2x',
+      },
+      'actions': [
+        {
+          'action_name': 'ui_resources_touch_2x',
+          'variables': {
+            'grit_grd_file': 'resources/ui_resources_touch_2x.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
+    },
   ],
 }
