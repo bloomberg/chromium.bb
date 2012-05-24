@@ -613,9 +613,6 @@ class CONTENT_EXPORT WebContentsImpl
   // WARNING: this needs to be deleted after NavigationController.
   base::PropertyBag property_bag_;
 
-  // Listen for notifications as well.
-  content::NotificationRegistrar registrar_;
-
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -778,6 +775,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Color chooser that was opened by this tab.
   content::ColorChooser* color_chooser_;
+
+  // This must be at the end, or else we might get notifications and use other
+  // member variables that are gone.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };
