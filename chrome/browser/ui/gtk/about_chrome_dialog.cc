@@ -12,8 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
@@ -53,6 +51,8 @@ const char* kEndLinkOss = "END_LINK_OSS";
 const char* kBeginLink = "BEGIN_LINK";
 const char* kEndLink = "END_LINK";
 
+const char* kPageNavigatorKey = "__PAGE_NAVIGATOR__";
+
 void OnResponse(GtkWidget* dialog, int response_id) {
   // We're done.
   gtk_widget_destroy(dialog);
@@ -71,9 +71,13 @@ GtkWidget* MakeMarkupLabel(const char* format, const std::string& str) {
 }
 
 void OnLinkButtonClick(GtkWidget* button, const char* url) {
-  BrowserList::GetLastActive()->OpenURL(OpenURLParams(
-      GURL(url), content::Referrer(), NEW_WINDOW, content::PAGE_TRANSITION_LINK,
-      false));
+  content::PageNavigator* navigator = reinterpret_cast<content::PageNavigator*>(
+      g_object_get_data(G_OBJECT(button), kPageNavigatorKey));
+  navigator->OpenURL(OpenURLParams(GURL(url),
+                                   content::Referrer(),
+                                   NEW_WINDOW,
+                                   content::PAGE_TRANSITION_LINK,
+                                   false));
 }
 
 const char* GetChromiumUrl() {
@@ -104,7 +108,9 @@ gboolean OnEventBoxExpose(GtkWidget* event_box,
 
 }  // namespace
 
-void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
+void ShowAboutDialogForProfile(GtkWindow* parent,
+                               Profile* profile,
+                               content::PageNavigator* navigator) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   static GdkPixbuf* background = rb.GetNativeImageNamed(
       IDR_ABOUT_BACKGROUND).ToGdkPixbuf();
@@ -215,6 +221,11 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
     first_link = swap;
   }
 
+  g_object_set_data(G_OBJECT(first_link), kPageNavigatorKey,
+                    reinterpret_cast<void*>(navigator));
+  g_object_set_data(G_OBJECT(second_link), kPageNavigatorKey,
+                    reinterpret_cast<void*>(navigator));
+
   g_signal_connect(chromium_url_appears_first ? first_link : second_link,
                    "clicked", G_CALLBACK(OnLinkButtonClick),
                    const_cast<char*>(GetChromiumUrl()));
@@ -268,8 +279,10 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_box_pack_start(GTK_BOX(tos_hbox), tos_link, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(tos_hbox), tos_chunk2, FALSE, FALSE, 0);
 
+  g_object_set_data(G_OBJECT(tos_link), kPageNavigatorKey,
+                    reinterpret_cast<void*>(navigator));
   g_signal_connect(tos_link, "clicked", G_CALLBACK(OnLinkButtonClick),
-    const_cast<char*>(chrome::kChromeUITermsURL));
+                   const_cast<char*>(chrome::kChromeUITermsURL));
   gtk_box_pack_start(GTK_BOX(vbox), tos_hbox, TRUE, TRUE, 0);
 #endif
 

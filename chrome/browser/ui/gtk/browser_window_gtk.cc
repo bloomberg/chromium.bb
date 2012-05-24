@@ -1046,7 +1046,7 @@ void BrowserWindowGtk::ToggleBookmarkBar() {
 }
 
 void BrowserWindowGtk::ShowAboutChromeDialog() {
-  ShowAboutDialogForProfile(window_, browser_->profile());
+  ShowAboutDialogForProfile(window_, browser_->profile(), browser_.get());
 }
 
 void BrowserWindowGtk::ShowUpdateChromeDialog() {
