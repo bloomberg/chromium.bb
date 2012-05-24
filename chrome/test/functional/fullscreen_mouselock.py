@@ -280,20 +280,19 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(lambda: self.IsFullscreenForTab()))
     self.assertTrue(self.WaitUntil(lambda: not self.IsMouseLocked()))
 
-  def testNoMouseLockInBrowserFS(self):
-    """Verify mouse lock can't be activated in browser fullscreen.
-
-    Later on when windowed-mode mouse lock is allowed, this test will adjust to
-    verify that mouse lock in browser fullscreen requires an allow prompt, even
-    when there is a content setting for Allow.
-    """
+  def testMouseLockInBrowserFS(self):
+    """Verify mouse lock in browser fullscreen requires allow prompt."""
     self._InitiateBrowserFullscreen()
     self._driver.set_script_timeout(2)
-    lock_result = self._driver.execute_script('lockMouse1AndSetLockResult()')
+    self._driver.execute_script('lockMouse1AndSetLockResult()')
+    # Bubble should display prompting to allow mouselock.
+    self.assertTrue(self.WaitUntil(self.IsMouseLockPermissionRequested))
+    self.AcceptCurrentFullscreenOrMouseLockRequest()
+
     # Waits until lock_result gets 'success' or 'failure'.
     lock_result = self._driver.execute_script('return lock_result')
-    self.assertEqual(
-        lock_result, 'failure', msg='Mouse is locked in browser fullscreen.')
+    self.assertEqual(lock_result, 'success',
+        msg='Mouse was not locked in browser fullscreen.')
 
   def testNoMouseLockWhenCancelFS(self):
     """Verify mouse lock breaks when canceling tab fullscreen.
