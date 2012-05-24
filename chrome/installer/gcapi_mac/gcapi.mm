@@ -211,8 +211,14 @@ NSString* PathToKeystoneResources(
 }
 
 NSString* FindOrInstallKeystone(NSString* app_path, NSDictionary* info_plist) {
-  NSString* ks_path = geteuid() == 0 ?
-      kSystemKsadminPath : [kUserKsadminPath stringByExpandingTildeInPath];
+  NSString* ks_path = kSystemKsadminPath;
+
+  // Use user Keystone only if system Keystone doesn't exist /
+  // isn't accessible.
+  if (geteuid() != 0 &&
+      ![[NSFileManager defaultManager] isExecutableFileAtPath:ks_path]) {
+    ks_path = [kUserKsadminPath stringByExpandingTildeInPath];
+  }
 
   // Always run install.py. It won't overwrite an existing keystone, but
   // it might update it or repair a broken existing installation.
