@@ -1810,8 +1810,9 @@ class BasePageCyclerTest(BasePerfTest):
   DEFAULT_USE_AUTO = True
 
   # Page Cycler lives in src/data/page_cycler rather than src/chrome/test/data
-  DATA_PATH = os.path.join(BasePerfTest.DataDir(), os.pardir, os.pardir,
-                           os.pardir, 'data', 'page_cycler')
+  DATA_PATH = os.path.abspath(
+      os.path.join(BasePerfTest.DataDir(), os.pardir, os.pardir,
+                   os.pardir, 'data', 'page_cycler'))
 
   def setUp(self):
     """Performs necessary setup work before running each test."""
@@ -1973,8 +1974,10 @@ class PageCyclerTest(BasePageCyclerTest):
       _PreReadDir(root, files)
 
   def StartUrl(self, test_name, iterations):
-    start_url = self.GetFileURLForDataPath(
-        self.DataPath(test_name), 'start.html?iterations=&d' % iterations)
+    # Must invoke GetFileURLForPath before appending parameters to the URL,
+    # otherwise those parameters will get quoted.
+    start_url = self.GetFileURLForPath(self.DataPath(test_name), 'start.html')
+    start_url += '?iterations=%d' % iterations
     if self.use_auto:
       start_url += '&auto=1'
     return start_url
