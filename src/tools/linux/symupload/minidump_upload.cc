@@ -71,6 +71,7 @@ static void Start(Options *options) {
                                          options->proxy_user_pwd,
                                          "",
                                          &response,
+                                         NULL,
                                          &error);
 
   if (success) {
