@@ -29,6 +29,7 @@
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
+class Browser;
 class Profile;
 
 namespace gfx {
@@ -63,7 +64,7 @@ class OmniboxViewGtk : public OmniboxView,
 
   OmniboxViewGtk(AutocompleteEditController* controller,
                  ToolbarModel* toolbar_model,
-                 Profile* profile,
+                 Browser* browser,
                  CommandUpdater* command_updater,
                  bool popup_window_mode,
                  GtkWidget* location_bar);
@@ -329,6 +330,9 @@ class OmniboxViewGtk : public OmniboxView,
 
   // Stop showing the instant suggest auto-commit animation.
   void StopAnimation();
+
+  // The Browser that contains this omnibox.
+  Browser* browser_;
 
   // The widget we expose, used for vertically centering the real text edit,
   // since the height will change based on the font / font size, etc.

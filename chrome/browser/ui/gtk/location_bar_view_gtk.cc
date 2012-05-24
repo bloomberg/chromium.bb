@@ -217,7 +217,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_widget_set_redraw_on_allocate(hbox_.get(), TRUE);
 
   // Now initialize the OmniboxViewGtk.
-  location_entry_.reset(new OmniboxViewGtk(this, toolbar_model_, profile,
+  location_entry_.reset(new OmniboxViewGtk(this, toolbar_model_, browser_,
       command_updater_, popup_window_mode_, hbox_.get()));
   location_entry_->Init();
 
