@@ -70,9 +70,11 @@ void SemiMtCorrectingFilterInterpreter::UpdateHistory(HardwareState* hwstate) {
     prev2_hwstate_.fingers = prev2_fingers_;
   }
   prev_hwstate_ = *hwstate;
-  std::copy(hwstate->fingers, hwstate->fingers + kMaxSemiMtFingers,
-            prev_fingers_);
-  prev_hwstate_.fingers = prev_fingers_;
+  if (hwstate->fingers) {
+    std::copy(hwstate->fingers, hwstate->fingers + kMaxSemiMtFingers,
+              prev_fingers_);
+    prev_hwstate_.fingers = prev_fingers_;
+  }
 }
 
 void SemiMtCorrectingFilterInterpreter::ClearHistory() {
