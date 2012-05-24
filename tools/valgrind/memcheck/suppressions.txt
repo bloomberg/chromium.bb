@@ -5798,6 +5798,12 @@
    fun:_ZN36RefcountedProfileKeyedServiceFactory23SetTestingFactoryAndUseEP7ProfilePF13scoped_refptrI29RefcountedProfileKeyedServiceES1_E
    fun:_ZN14TestingProfile20CreateWebDataServiceEv
 }
+{
+   bug_127931
+   Memcheck:Unaddressable
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
