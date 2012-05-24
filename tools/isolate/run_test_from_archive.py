@@ -268,7 +268,11 @@ def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
     # Ensure paths are correctly separated on windows.
     cmd[0] = cmd[0].replace('/', os.path.sep)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
-    return subprocess.call(cmd, cwd=cwd)
+    try:
+      return subprocess.call(cmd, cwd=cwd)
+    except OSError:
+      print >> sys.stderr, 'Failed to run %s; cwd=%s' % (cmd, cwd)
+      raise
   finally:
     # Save first, in case an exception occur in the following lines, then clean
     # up.
