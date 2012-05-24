@@ -95,10 +95,7 @@ void SetProxyConfigCallback(
 }
 
 SyncTest::SyncTest(TestType test_type)
-    : sync_server_(net::TestServer::TYPE_SYNC,
-                   net::TestServer::kLocalhost,
-                   FilePath()),
-      test_type_(test_type),
+    : test_type_(test_type),
       server_type_(SERVER_TYPE_UNDECIDED),
       num_clients_(-1),
       use_verifier_(true),
