@@ -81,6 +81,10 @@ const int kMinPreeditAreaWidth = 134;
 const int kInfolistShowDelayMilliSeconds = 500;
 // The milliseconds of the delay to hide the infolist window.
 const int kInfolistHideDelayMilliSeconds = 500;
+// The width of the infolist indicator icon in the candidate window.
+const int kInfolistIndicatorIconWidth = 4;
+// The padding size of the infolist indicator icon in the candidate window.
+const int kInfolistIndicatorIconPadding = 2;
 
 // VerticalCandidateLabel is used for rendering candidate text in
 // the vertical candidate window.
@@ -594,7 +598,7 @@ CandidateView::CandidateView(
       shortcut_label_(NULL),
       candidate_label_(NULL),
       annotation_label_(NULL),
-      infolist_label_(NULL),
+      infolist_icon_(NULL),
       infolist_icon_enabled_(false) {
 }
 
@@ -638,12 +642,10 @@ void CandidateView::Init(int shortcut_column_width,
                         0, column_type, annotation_column_width, 0);
 
   if (orientation_ == InputMethodLookupTable::kVertical) {
-    infolist_label_= new views::Label;
-    infolist_label_->SetFont(
-        infolist_label_->font().DeriveFont(kFontSizeDelta));
     column_set->AddPaddingColumn(0, 1);
-    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                          0, views::GridLayout::FIXED, 4, 0);
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                          views::GridLayout::FIXED, kInfolistIndicatorIconWidth,
+                          0);
     column_set->AddPaddingColumn(0, 2);
   } else {
     column_set->AddPaddingColumn(0, padding_column_width);
@@ -657,8 +659,22 @@ void CandidateView::Init(int shortcut_column_width,
   layout->AddView(candidate_label_);
   layout->AddView(annotation_label_);
   if (orientation_ == InputMethodLookupTable::kVertical) {
-    layout->AddView(WrapWithPadding(infolist_label_,
-                                    gfx::Insets(2, 0, 2, 0)));
+    infolist_icon_ = new views::View;
+    views::View* infolist_icon_wrapper = new views::View;
+    views::GridLayout* infolist_icon_layout =
+        new views::GridLayout(infolist_icon_wrapper);
+    // |infolist_icon_layout| is owned by |infolist_icon_wrapper|.
+    infolist_icon_wrapper->SetLayoutManager(infolist_icon_layout);
+    infolist_icon_layout->AddColumnSet(0)->AddColumn(
+        views::GridLayout::FILL, views::GridLayout::FILL,
+        0, views::GridLayout::FIXED, kInfolistIndicatorIconWidth, 0);
+    infolist_icon_layout->AddPaddingRow(0, kInfolistIndicatorIconPadding);
+    infolist_icon_layout->StartRow(1.0, 0);  // infolist_icon_ is resizable.
+    // |infolist_icon_| is owned by |infolist_icon_wrapper|.
+    infolist_icon_layout->AddView(infolist_icon_);
+    infolist_icon_layout->AddPaddingRow(0, kInfolistIndicatorIconPadding);
+    // |infolist_icon_wrapper| is owned by |this|.
+    layout->AddView(infolist_icon_wrapper);
   }
   UpdateLabelBackgroundColors();
 }
@@ -676,10 +692,10 @@ void CandidateView::SetAnnotationText(const string16& text) {
 }
 
 void CandidateView::SetInfolistIcon(bool enable) {
-  if (!infolist_label_ || (infolist_icon_enabled_ == enable))
+  if (!infolist_icon_ || (infolist_icon_enabled_ == enable))
     return;
   infolist_icon_enabled_ = enable;
-  infolist_label_->set_background(enable ?
+  infolist_icon_->set_background(enable ?
       views::Background::CreateSolidBackground(kSelectedRowFrameColor) : NULL);
   UpdateLabelBackgroundColors();
   SchedulePaint();
@@ -759,10 +775,6 @@ void CandidateView::UpdateLabelBackgroundColors() {
     shortcut_label_->SetBackgroundColor(color);
   candidate_label_->SetBackgroundColor(color);
   annotation_label_->SetBackgroundColor(color);
-  if (infolist_label_) {
-    infolist_label_->SetBackgroundColor(infolist_label_->background() ?
-        infolist_label_->background()->get_color() : color);
-  }
 }
 
 CandidateWindowView::CandidateWindowView(views::Widget* parent_frame)

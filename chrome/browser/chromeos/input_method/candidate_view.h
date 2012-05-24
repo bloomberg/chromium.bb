@@ -85,7 +85,7 @@ class CandidateView : public views::View {
   views::Label* annotation_label_;
 
   // The infolist icon.
-  views::Label* infolist_label_;
+  views::View* infolist_icon_;
   bool infolist_icon_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateView);
