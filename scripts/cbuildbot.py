@@ -1077,6 +1077,10 @@ def main(argv):
     print 'Tryjob submitted!'
     print ('Go to %s to view the status of your job.'
            % tryjob.GetTrybotWaterfallLink())
+    if options.debug:
+      print
+      print "Keep in mind that you had --debug enabled, thus nothing was"
+      print "actually submitted."
     sys.exit(0)
   elif (not options.buildbot and not options.remote_trybot
         and not options.resume and not options.local):
