@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/process_util.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/render_view_host_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -25,12 +25,9 @@ class RenderWidgetHostView;
 
 // The WebContentsView is an interface that is implemented by the platform-
 // dependent web contents views. The WebContents uses this interface to talk to
-// them. View-related messages will also get forwarded directly to this class
-// from RenderViewHost via RenderViewHostDelegate::View.
-class CONTENT_EXPORT WebContentsView
-    : public content::RenderViewHostDelegate::View {
+// them.
+class CONTENT_EXPORT WebContentsView {
  public:
-  WebContentsView() {}
   virtual ~WebContentsView() {}
 
   virtual void CreateView(const gfx::Size& initial_size) = 0;

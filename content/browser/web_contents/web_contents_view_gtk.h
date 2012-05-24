@@ -12,19 +12,25 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
+class WebContentsImpl;
+
 namespace content {
 
+class WebContents;
 class WebContentsViewDelegate;
 class WebDragDestDelegate;
 class WebDragDestGtk;
 class WebDragSourceGtk;
 
-class CONTENT_EXPORT WebContentsViewGtk : public WebContentsView {
+class CONTENT_EXPORT WebContentsViewGtk
+    : public WebContentsView,
+      public RenderViewHostDelegateView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
@@ -64,7 +70,7 @@ class CONTENT_EXPORT WebContentsViewGtk : public WebContentsView {
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
-  // Backend implementation of RenderViewHostDelegate::View.
+  // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,

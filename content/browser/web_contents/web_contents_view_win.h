@@ -11,19 +11,23 @@
 #include "base/timer.h"
 #include "base/win/win_util.h"
 #include "content/common/content_export.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/win/window_impl.h"
 
 class RenderWidgetHostViewWin;
 class WebDragDest;
 class WebContentsDragWin;
+class WebContentsImpl;
 
 namespace content {
 class WebContentsViewDelegate;
 }
 
 // An implementation of WebContentsView for Windows.
-class CONTENT_EXPORT WebContentsViewWin : public content::WebContentsView,
+class CONTENT_EXPORT WebContentsViewWin
+    : public content::WebContentsView,
+      public content::RenderViewHostDelegateView,
                                           public ui::WindowImpl {
  public:
   WebContentsViewWin(WebContentsImpl* web_contents,
@@ -70,7 +74,7 @@ class CONTENT_EXPORT WebContentsViewWin : public content::WebContentsView,
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
-  // Implementation of RenderViewHostDelegate::View.
+  // Implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,

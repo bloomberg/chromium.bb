@@ -6,9 +6,16 @@
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_ANDROID_H_
 #pragma once
 
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/web_contents_view.h"
 
-class WebContentsViewAndroid : public content::WebContentsView {
+namespace content {
+class WebContents;
+}
+
+class WebContentsViewAndroid
+    : public content::WebContentsView,
+      public content::RenderViewHostDelegateView {
  public:
   explicit WebContentsViewAndroid(content::WebContents* web_contents);
   virtual ~WebContentsViewAndroid();
@@ -39,7 +46,7 @@ class WebContentsViewAndroid : public content::WebContentsView {
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
-  // Backend implementation of RenderViewHostDelegate::View.
+  // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,

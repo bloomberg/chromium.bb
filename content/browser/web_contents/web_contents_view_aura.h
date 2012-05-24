@@ -9,9 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
+
+class WebContentsImpl;
 
 namespace aura {
 class Window;
@@ -24,6 +27,7 @@ class WebDragDestDelegate;
 
 class CONTENT_EXPORT WebContentsViewAura
     : public content::WebContentsView,
+      public content::RenderViewHostDelegateView,
       public aura::WindowDelegate,
       public aura::client::DragDropDelegate {
  public:
@@ -60,7 +64,7 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
-  // Overridden from RenderViewHostDelegate::View:
+  // Overridden from RenderViewHostDelegateView:
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,

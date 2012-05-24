@@ -67,9 +67,9 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // Set by individual tests.
   bool transition_cross_site;
 
-  // Allow mocking of the RenderViewHostDelegate::View.
-  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
-  void set_view_delegate(RenderViewHostDelegate::View* view) {
+  // Allow mocking of the RenderViewHostDelegateView.
+  virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
+  void set_delegate_view(RenderViewHostDelegateView* view) {
     delegate_view_override_ = view;
   }
 
@@ -106,7 +106,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
 
 
-  RenderViewHostDelegate::View* delegate_view_override_;
+  RenderViewHostDelegateView* delegate_view_override_;
 
   // Expectations for arguments of |SetHistoryLengthAndPrune()|.
   bool expect_set_history_length_and_prune_;

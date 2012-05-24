@@ -34,7 +34,8 @@ content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 
 content::WebContentsView*
     ShellContentBrowserClient::OverrideCreateWebContentsView(
-        content::WebContents* web_contents) {
+        content::WebContents* web_contents,
+        content::RenderViewHostDelegateView** render_view_host_delegate_view) {
   return NULL;
 }
 

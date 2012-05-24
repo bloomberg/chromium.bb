@@ -15,7 +15,6 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/base/javascript_message_type.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -28,7 +27,6 @@ struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewMsg_PostMessage_Params;
-struct WebDropData;
 
 namespace webkit_glue {
 struct WebPreferences;
@@ -49,6 +47,7 @@ namespace content {
 
 class BrowserContext;
 class RenderViewHost;
+class RenderViewHostDelegateView;
 class WebContents;
 struct ContextMenuParams;
 struct FileChooserParams;
@@ -72,38 +71,6 @@ struct RendererPreferences;
 // TODO(joi): See if we can hide most or all of this from chrome/.
 class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
  public:
-  // View ----------------------------------------------------------------------
-  // Functions that can be routed directly to a view-specific class.
-  class CONTENT_EXPORT View {
-   public:
-    // A context menu should be shown, to be built using the context information
-    // provided in the supplied params.
-    virtual void ShowContextMenu(const content::ContextMenuParams& params) {}
-
-    // The user started dragging content of the specified type within the
-    // RenderView. Contextual information about the dragged content is supplied
-    // by WebDropData.
-    virtual void StartDragging(const WebDropData& drop_data,
-                               WebKit::WebDragOperationsMask allowed_ops,
-                               const SkBitmap& image,
-                               const gfx::Point& image_offset) {}
-
-    // The page wants to update the mouse cursor during a drag & drop operation.
-    // |operation| describes the current operation (none, move, copy, link.)
-    virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
-
-    // Notification that view for this delegate got the focus.
-    virtual void GotFocus() {}
-
-    // Callback to inform the browser that the page is returning the focus to
-    // the browser's chrome. If reverse is true, it means the focus was
-    // retrieved by doing a Shift-Tab.
-    virtual void TakeFocus(bool reverse) {}
-
-   protected:
-    virtual ~View() {}
-  };
-
   // RendererManagerment -------------------------------------------------------
   // Functions for managing switching of Renderers. For WebContents, this is
   // implemented by the RenderViewHostManager.
@@ -135,7 +102,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Returns the current delegate associated with a feature. May return NULL if
   // there is no corresponding delegate.
-  virtual View* GetViewDelegate();
+  virtual RenderViewHostDelegateView* GetDelegateView();
   virtual RendererManagement* GetRendererManagementDelegate();
 
   // IPC::Channel::Listener implementation.

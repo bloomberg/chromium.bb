@@ -27,19 +27,6 @@ namespace webkit_glue {
 struct WebPreferences;
 }
 
-namespace content {
-class AccessTokenStore;
-class BrowserMainParts;
-class BrowserURLHandler;
-class RenderProcessHost;
-class SiteInstance;
-class SpeechRecognitionManagerDelegate;
-class WebContents;
-class WebContentsView;
-struct MainFunctionParams;
-struct ShowDesktopNotificationHostMsgParams;
-}
-
 namespace crypto {
 class CryptoModuleBlockingPasswordDelegate;
 }
@@ -66,13 +53,16 @@ class AccessTokenStore;
 class BrowserChildProcessHost;
 class BrowserContext;
 class BrowserMainParts;
+class BrowserURLHandler;
 class MediaObserver;
 class QuotaPermissionContext;
 class RenderProcessHost;
 class RenderViewHost;
+class RenderViewHostDelegateView;
 class ResourceContext;
 class SiteInstance;
 class SpeechInputManagerDelegate;
+class SpeechRecognitionManagerDelegate;
 class WebContents;
 class WebContentsView;
 class WebContentsViewDelegate;
@@ -101,9 +91,12 @@ class ContentBrowserClient {
       const MainFunctionParams& parameters) = 0;
 
   // Allows an embedder to return their own WebContentsView implementation.
-  // Return NULL to let the default one for the platform be created.
+  // Return NULL to let the default one for the platform be created. Otherwise
+  // |render_view_host_delegate_view| also needs to be provided, and it is
+  // owned by the embedder.
   virtual WebContentsView* OverrideCreateWebContentsView(
-      WebContents* web_contents) = 0;
+      WebContents* web_contents,
+      RenderViewHostDelegateView** render_view_host_delegate_view) = 0;
 
   // If content creates the WebContentsView implementation, it will ask the
   // embedder to return an (optional) delegate to customize it. The view will

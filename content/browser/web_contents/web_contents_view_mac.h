@@ -13,12 +13,14 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/gfx/size.h"
 
 @class FocusTracker;
 class SkBitmap;
+class WebContentsImpl;
 class WebContentsViewMac;
 @class WebDragDest;
 @class WebDragSource;
@@ -45,7 +47,9 @@ class Point;
 
 // Mac-specific implementation of the WebContentsView. It owns an NSView that
 // contains all of the contents of the tab and associated child views.
-class WebContentsViewMac : public content::WebContentsView {
+class WebContentsViewMac
+    : public content::WebContentsView,
+      public content::RenderViewHostDelegateView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
@@ -79,7 +83,7 @@ class WebContentsViewMac : public content::WebContentsView {
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
 
-  // Backend implementation of RenderViewHostDelegate::View.
+  // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,

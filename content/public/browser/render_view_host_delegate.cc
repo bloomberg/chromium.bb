@@ -9,7 +9,7 @@
 
 namespace content {
 
-RenderViewHostDelegate::View* RenderViewHostDelegate::GetViewDelegate() {
+RenderViewHostDelegateView* RenderViewHostDelegate::GetDelegateView() {
   return NULL;
 }
 

@@ -83,7 +83,7 @@ class CONTENT_EXPORT InterstitialPageImpl
                        const content::NotificationDetails& details) OVERRIDE;
 
   // RenderViewHostDelegate implementation:
-  virtual View* GetViewDelegate() OVERRIDE;
+  virtual content::RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual void RenderViewGone(content::RenderViewHost* render_view_host,
                               base::TerminationStatus status,
@@ -138,7 +138,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   content::NotificationRegistrar notification_registrar_;
 
  private:
-  class InterstitialPageRVHViewDelegate;
+  class InterstitialPageRVHDelegateView;
 
   // Disable the interstitial:
   // - if it is not yet showing, then it won't be shown.
@@ -202,7 +202,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   string16 original_web_contents_title_;
 
   // Our RenderViewHostViewDelegate, necessary for accelerators to work.
-  scoped_ptr<InterstitialPageRVHViewDelegate> rvh_view_delegate_;
+  scoped_ptr<InterstitialPageRVHDelegateView> rvh_delegate_view_;
 
   // Settings passed to the renderer.
   mutable content::RendererPreferences renderer_preferences_;

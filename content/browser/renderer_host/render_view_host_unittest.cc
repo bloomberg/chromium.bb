@@ -8,6 +8,7 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/test_web_contents.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
@@ -78,22 +79,9 @@ TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {
 }
 
 class MockDraggingRenderViewHostDelegateView
-    : public content::RenderViewHostDelegate::View {
+    : public content::RenderViewHostDelegateView {
  public:
   virtual ~MockDraggingRenderViewHostDelegateView() {}
-  virtual void CreateNewWindow(
-      int route_id,
-      const ViewHostMsg_CreateWindow_Params& params) {}
-  virtual void CreateNewWidget(int route_id,
-                               WebKit::WebPopupType popup_type) {}
-  virtual void CreateNewFullscreenWidget(int route_id) {}
-  virtual void ShowCreatedWindow(int route_id,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture) {}
-  virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos) {}
-  virtual void ShowCreatedFullscreenWidget(int route_id) {}
   virtual void ShowContextMenu(const content::ContextMenuParams& params) {}
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_ops,
@@ -122,37 +110,37 @@ class MockDraggingRenderViewHostDelegateView
 
 TEST_F(RenderViewHostTest, StartDragging) {
   TestWebContents* web_contents = contents();
-  MockDraggingRenderViewHostDelegateView view_delegate;
-  web_contents->set_view_delegate(&view_delegate);
+  MockDraggingRenderViewHostDelegateView delegate_view;
+  web_contents->set_delegate_view(&delegate_view);
 
   WebDropData drop_data;
   GURL file_url = GURL("file:///home/user/secrets.txt");
   drop_data.url = file_url;
   drop_data.html_base_url = file_url;
   test_rvh()->TestOnMsgStartDragging(drop_data);
-  EXPECT_EQ(GURL("about:blank"), view_delegate.drag_url());
-  EXPECT_EQ(GURL("about:blank"), view_delegate.html_base_url());
+  EXPECT_EQ(GURL("about:blank"), delegate_view.drag_url());
+  EXPECT_EQ(GURL("about:blank"), delegate_view.html_base_url());
 
   GURL http_url = GURL("http://www.domain.com/index.html");
   drop_data.url = http_url;
   drop_data.html_base_url = http_url;
   test_rvh()->TestOnMsgStartDragging(drop_data);
-  EXPECT_EQ(http_url, view_delegate.drag_url());
-  EXPECT_EQ(http_url, view_delegate.html_base_url());
+  EXPECT_EQ(http_url, delegate_view.drag_url());
+  EXPECT_EQ(http_url, delegate_view.html_base_url());
 
   GURL https_url = GURL("https://www.domain.com/index.html");
   drop_data.url = https_url;
   drop_data.html_base_url = https_url;
   test_rvh()->TestOnMsgStartDragging(drop_data);
-  EXPECT_EQ(https_url, view_delegate.drag_url());
-  EXPECT_EQ(https_url, view_delegate.html_base_url());
+  EXPECT_EQ(https_url, delegate_view.drag_url());
+  EXPECT_EQ(https_url, delegate_view.html_base_url());
 
   GURL javascript_url = GURL("javascript:alert('I am a bookmarklet')");
   drop_data.url = javascript_url;
   drop_data.html_base_url = http_url;
   test_rvh()->TestOnMsgStartDragging(drop_data);
-  EXPECT_EQ(javascript_url, view_delegate.drag_url());
-  EXPECT_EQ(http_url, view_delegate.html_base_url());
+  EXPECT_EQ(javascript_url, delegate_view.drag_url());
+  EXPECT_EQ(http_url, delegate_view.html_base_url());
 }
 
 TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {

@@ -158,10 +158,10 @@ void TestWebContents::ProceedWithCrossSiteNavigation() {
   rvh->SendShouldCloseACK(true);
 }
 
-RenderViewHostDelegate::View* TestWebContents::GetViewDelegate() {
+RenderViewHostDelegateView* TestWebContents::GetDelegateView() {
   if (delegate_view_override_)
     return delegate_view_override_;
-  return WebContentsImpl::GetViewDelegate();
+  return WebContentsImpl::GetDelegateView();
 }
 
 void TestWebContents::SetOpener(TestWebContents* opener) {

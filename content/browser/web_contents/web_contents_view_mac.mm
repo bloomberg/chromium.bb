@@ -57,9 +57,13 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 @end
 
 namespace content {
-WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
-                                       WebContentsViewDelegate* delegate) {
-  return new WebContentsViewMac(web_contents, delegate);
+WebContentsView* CreateWebContentsView(
+    WebContentsImpl* web_contents,
+    WebContentsViewDelegate* delegate,
+    RenderViewHostDelegateView** render_view_host_delegate_view) {
+  WebContentsViewMac* rv = new WebContentsViewMac(web_contents, delegate);
+  *render_view_host_delegate_view = rv;
+  return rv;
 }
 }
 

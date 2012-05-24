@@ -22,9 +22,13 @@ using content::WebContents;
 using content::WebContentsViewDelegate;
 
 namespace content {
-WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
-                                       WebContentsViewDelegate* delegate) {
-  return new WebContentsViewWin(web_contents, delegate);
+WebContentsView* CreateWebContentsView(
+    WebContentsImpl* web_contents,
+    WebContentsViewDelegate* delegate,
+    RenderViewHostDelegateView** render_view_host_delegate_view) {
+  WebContentsViewWin* rv = new WebContentsViewWin(web_contents, delegate);
+  *render_view_host_delegate_view = rv;
+  return rv;
 }
 }
 

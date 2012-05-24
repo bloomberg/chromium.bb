@@ -7,16 +7,18 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/public/browser/web_contents_view.h"
 
 namespace content {
 
-class TestWebContentsView : public WebContentsView {
+class TestWebContentsView : public WebContentsView,
+                            public RenderViewHostDelegateView {
  public:
   TestWebContentsView();
   virtual ~TestWebContentsView();
 
-  // RenderViewHostDelegate::View:
+  // RenderViewHostDelegateView:
   virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_ops,

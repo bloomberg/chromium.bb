@@ -9,9 +9,13 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 
 namespace content {
-WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
-                                       WebContentsViewDelegate* delegate) {
-  return new WebContentsViewAndroid(web_contents);
+WebContentsView* CreateWebContentsView(
+    WebContentsImpl* web_contents,
+    WebContentsViewDelegate* delegate,
+    RenderViewHostDelegateView** render_view_host_delegate_view) {
+  WebContentsViewAndroid* rv = new WebContentsViewAndroid(web_contents);
+  *render_view_host_delegate_view = rv;
+  return rv;
 }
 }
 

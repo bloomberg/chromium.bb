@@ -37,6 +37,7 @@
 #include "content/common/intents_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/color_chooser.h"
@@ -136,6 +137,7 @@ using content::NavigationEntryImpl;
 using content::OpenURLParams;
 using content::RenderViewHost;
 using content::RenderViewHostDelegate;
+using content::RenderViewHostDelegateView;
 using content::RenderViewHostImpl;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
@@ -274,6 +276,7 @@ WebContentsImpl::WebContentsImpl(
     : delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(
           this, browser_context, session_storage_namespace)),
+      render_view_host_delegate_view_(NULL),
       opener_(opener),
       ALLOW_THIS_IN_INITIALIZER_LIST(render_manager_(this, this, this)),
       is_loading_(false),
@@ -304,12 +307,16 @@ WebContentsImpl::WebContentsImpl(
   render_manager_.Init(browser_context, site_instance, routing_id);
 
   view_.reset(content::GetContentClient()->browser()->
-      OverrideCreateWebContentsView(this));
-  if (!view_.get()) {
+      OverrideCreateWebContentsView(this, &render_view_host_delegate_view_));
+  if (view_.get()) {
+    CHECK(render_view_host_delegate_view_);
+  } else {
     content::WebContentsViewDelegate* delegate =
         content::GetContentClient()->browser()->GetWebContentsViewDelegate(
             this);
-    view_.reset(CreateWebContentsView(this, delegate));
+    view_.reset(CreateWebContentsView(
+        this, delegate, &render_view_host_delegate_view_));
+    CHECK(render_view_host_delegate_view_);
   }
   CHECK(view_.get());
 
@@ -1287,7 +1294,7 @@ void WebContentsImpl::ShowContextMenu(
   if (delegate_ && delegate_->HandleContextMenu(params))
     return;
 
-  view_->ShowContextMenu(params);
+  render_view_host_delegate_view_->ShowContextMenu(params);
 }
 
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
@@ -2272,8 +2279,8 @@ void WebContentsImpl::NotifyDisconnected() {
       content::NotificationService::NoDetails());
 }
 
-RenderViewHostDelegate::View* WebContentsImpl::GetViewDelegate() {
-  return view_.get();
+RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {
+  return render_view_host_delegate_view_;
 }
 
 RenderViewHostDelegate::RendererManagement*

@@ -33,6 +33,7 @@
 #include "content/common/speech_recognition_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -70,6 +71,7 @@
 
 using base::TimeDelta;
 using content::NativeWebKeyboardEvent;
+using content::RenderViewHostDelegateView;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
@@ -751,7 +753,7 @@ void RenderViewHostImpl::SetWebUIProperty(const std::string& name,
 void RenderViewHostImpl::GotFocus() {
   RenderWidgetHostImpl::GotFocus();  // Notifies the renderer it got focus.
 
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view)
     view->GotFocus();
 }
@@ -1315,7 +1317,7 @@ void RenderViewHostImpl::OnMsgStartDragging(
     WebDragOperationsMask drag_operations_mask,
     const SkBitmap& image,
     const gfx::Point& image_offset) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (!view)
     return;
 
@@ -1347,7 +1349,7 @@ void RenderViewHostImpl::OnMsgStartDragging(
 }
 
 void RenderViewHostImpl::OnUpdateDragCursor(WebDragOperation current_op) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view)
     view->UpdateDragCursor(current_op);
 }
@@ -1360,7 +1362,7 @@ void RenderViewHostImpl::OnTargetDropACK() {
 }
 
 void RenderViewHostImpl::OnTakeFocus(bool reverse) {
-  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (view)
     view->TakeFocus(reverse);
 }

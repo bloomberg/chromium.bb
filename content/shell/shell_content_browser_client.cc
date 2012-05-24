@@ -32,7 +32,8 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 }
 
 WebContentsView* ShellContentBrowserClient::OverrideCreateWebContentsView(
-    WebContents* web_contents) {
+    WebContents* web_contents,
+    RenderViewHostDelegateView** render_view_host_delegate_view) {
   return NULL;
 }
 

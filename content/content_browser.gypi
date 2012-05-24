@@ -28,6 +28,7 @@
     '<(INTERMEDIATE_DIR)',
   ],
   'sources': [
+    'port/browser/render_view_host_delegate_view.h',
     'port/browser/render_widget_host_view_port.h',
     'public/browser/access_token_store.h',
     'public/browser/android_library_loader_hooks.h',

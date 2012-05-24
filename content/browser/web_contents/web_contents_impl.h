@@ -44,6 +44,7 @@ class ColorChooser;
 class DownloadItem;
 class JavaScriptDialogCreator;
 class RenderViewHost;
+class RenderViewHostDelegateView;
 class RenderViewHostImpl;
 class SiteInstance;
 class TestWebContents;
@@ -55,8 +56,10 @@ struct LoadNotificationDetails;
 
 // Factory function for the implementations that content knows about. Takes
 // ownership of |delegate|.
-WebContentsView* CreateWebContentsView(WebContentsImpl* web_contents,
-                                       WebContentsViewDelegate* delegate);
+WebContentsView* CreateWebContentsView(
+    WebContentsImpl* web_contents,
+    WebContentsViewDelegate* delegate,
+    RenderViewHostDelegateView** render_view_host_delegate_view);
 }
 
 namespace webkit_glue {
@@ -255,7 +258,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // RenderViewHostDelegate ----------------------------------------------------
 
-  virtual content::RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
+  virtual content::RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
   virtual content::RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -623,6 +626,11 @@ class CONTENT_EXPORT WebContentsImpl
 
   // The corresponding view.
   scoped_ptr<content::WebContentsView> view_;
+
+  // The view of the RVHD. Usually this is our WebContentsView implementation,
+  // but if an embedder uses a different WebContentsView, they'll need to
+  // provide this.
+  content::RenderViewHostDelegateView* render_view_host_delegate_view_;
 
   // Tracks created WebContentsImpl objects that have not been shown yet. They
   // are identified by the route ID passed to CreateNewWindow.

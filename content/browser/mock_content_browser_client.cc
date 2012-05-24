@@ -27,8 +27,11 @@ BrowserMainParts* MockContentBrowserClient::CreateBrowserMainParts(
 }
 
 WebContentsView* MockContentBrowserClient::OverrideCreateWebContentsView(
-    WebContents* web_contents) {
-  return new TestWebContentsView;
+    WebContents* web_contents,
+    RenderViewHostDelegateView** render_view_host_delegate_view) {
+  TestWebContentsView* rv = new TestWebContentsView;
+  *render_view_host_delegate_view = rv;
+  return rv;
 }
 
 WebContentsViewDelegate* MockContentBrowserClient::GetWebContentsViewDelegate(

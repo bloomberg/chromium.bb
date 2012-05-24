@@ -20,6 +20,7 @@
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_operation_notification_details.h"
@@ -44,6 +45,7 @@ using content::NavigationEntryImpl;
 using content::RenderViewHost;
 using content::RenderViewHostImpl;
 using content::RenderViewHostDelegate;
+using content::RenderViewHostDelegateView;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
@@ -78,12 +80,12 @@ void ResourceRequestHelper(ResourceDispatcherHostImpl* rdh,
 
 }  // namespace
 
-class InterstitialPageImpl::InterstitialPageRVHViewDelegate
-    : public RenderViewHostDelegate::View {
+class InterstitialPageImpl::InterstitialPageRVHDelegateView
+  : public content::RenderViewHostDelegateView {
  public:
-  explicit InterstitialPageRVHViewDelegate(InterstitialPageImpl* page);
+  explicit InterstitialPageRVHDelegateView(InterstitialPageImpl* page);
 
-  // RenderViewHostDelegate::View implementation:
+  // RenderViewHostDelegateView implementation:
   virtual void StartDragging(const WebDropData& drop_data,
                              WebDragOperationsMask operations_allowed,
                              const SkBitmap& image,
@@ -100,7 +102,7 @@ class InterstitialPageImpl::InterstitialPageRVHViewDelegate
  private:
   InterstitialPageImpl* interstitial_page_;
 
-  DISALLOW_COPY_AND_ASSIGN(InterstitialPageRVHViewDelegate);
+  DISALLOW_COPY_AND_ASSIGN(InterstitialPageRVHDelegateView);
 };
 
 
@@ -155,8 +157,8 @@ InterstitialPageImpl::InterstitialPageImpl(WebContents* web_contents,
       should_revert_web_contents_title_(false),
       web_contents_was_loading_(false),
       resource_dispatcher_host_notified_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(rvh_view_delegate_(
-          new InterstitialPageRVHViewDelegate(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(rvh_delegate_view_(
+          new InterstitialPageRVHDelegateView(this))),
       create_view_(true),
       delegate_(delegate) {
   InitInterstitialPageMap();
@@ -344,8 +346,8 @@ void InterstitialPageImpl::Observe(
   }
 }
 
-RenderViewHostDelegate::View* InterstitialPageImpl::GetViewDelegate() {
-  return rvh_view_delegate_.get();
+RenderViewHostDelegateView* InterstitialPageImpl::GetDelegateView() {
+  return rvh_delegate_view_.get();
 }
 
 const GURL& InterstitialPageImpl::GetURL() const {
@@ -685,12 +687,12 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
           action));
 }
 
-InterstitialPageImpl::InterstitialPageRVHViewDelegate::
-    InterstitialPageRVHViewDelegate(InterstitialPageImpl* page)
+InterstitialPageImpl::InterstitialPageRVHDelegateView::
+    InterstitialPageRVHDelegateView(InterstitialPageImpl* page)
     : interstitial_page_(page) {
 }
 
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::StartDragging(
+void InterstitialPageImpl::InterstitialPageRVHDelegateView::StartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask allowed_operations,
     const SkBitmap& image,
@@ -698,27 +700,27 @@ void InterstitialPageImpl::InterstitialPageRVHViewDelegate::StartDragging(
   NOTREACHED() << "InterstitialPage does not support dragging yet.";
 }
 
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::UpdateDragCursor(
+void InterstitialPageImpl::InterstitialPageRVHDelegateView::UpdateDragCursor(
     WebDragOperation) {
   NOTREACHED() << "InterstitialPage does not support dragging yet.";
 }
 
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::GotFocus() {
+void InterstitialPageImpl::InterstitialPageRVHDelegateView::GotFocus() {
 }
 
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::TakeFocus(
+void InterstitialPageImpl::InterstitialPageRVHDelegateView::TakeFocus(
     bool reverse) {
   if (!interstitial_page_->web_contents())
     return;
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(interstitial_page_->web_contents());
-  if (!web_contents->GetViewDelegate())
+  if (!web_contents->GetDelegateView())
     return;
 
-  web_contents->GetViewDelegate()->TakeFocus(reverse);
+  web_contents->GetDelegateView()->TakeFocus(reverse);
 }
 
-void InterstitialPageImpl::InterstitialPageRVHViewDelegate::OnFindReply(
+void InterstitialPageImpl::InterstitialPageRVHDelegateView::OnFindReply(
     int request_id, int number_of_matches, const gfx::Rect& selection_rect,
     int active_match_ordinal, bool final_update) {
 }
