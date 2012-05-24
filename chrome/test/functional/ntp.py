@@ -19,7 +19,7 @@ class NTPTest(pyauto.PyUITest):
     {u'title': u'Chrome Web Store'},
   ]
   if pyauto.PyUITest.IsChromeOS():
-    _EXPECTED_DEFAULT_APPS.append({u'title': u'File Manager'})
+    _EXPECTED_DEFAULT_APPS.append({u'title': u'Files'})
   else:
     _EXPECTED_DEFAULT_APPS.append({u'title': u'Cloud Print'})
 
