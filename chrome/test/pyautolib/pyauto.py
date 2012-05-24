@@ -2582,6 +2582,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       html content of a page as a string.
     """
     tempdir = tempfile.mkdtemp()
+    # Make it writable by chronos on chromeos
+    os.chmod(tempdir, 0777)
     filename = os.path.join(tempdir, 'content.html')
     cmd_dict = {  # Prepare command for the json interface
       'command': 'SaveTabContents',

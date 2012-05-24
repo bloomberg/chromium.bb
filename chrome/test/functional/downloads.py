@@ -98,6 +98,8 @@ class DownloadsTest(pyauto.PyUITest):
     os.lseek(fd, size, 0)
     os.write(fd, 'a')
     os.close(fd)
+    # Make it readable by chronos on chromeos
+    os.chmod(file_path, 0755)
     logging.debug('Created temporary file %s of size %d' % (file_path, size))
     self._DeleteAfterShutdown(file_path)
     return file_path
