@@ -667,6 +667,16 @@ index 9a6562b..ae3f628 100644
  	}
  }
  #endif
+@@ -815,7 +880,7 @@ void precache_release(struct precache_output *p)
+        }
+ }
+ 
+-#ifdef HAS_POSIX_MEMALIGN
++#ifdef HAVE_POSIX_MEMALIGN
+ static qcms_transform *transform_alloc(void)
+ {
+        qcms_transform *t;
+
 @@ -1262,7 +1327,17 @@ __attribute__((__force_align_arg_pointer__))
  #endif
  void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length)

@@ -880,7 +880,7 @@ void precache_release(struct precache_output *p)
 	}
 }
 
-#ifdef HAS_POSIX_MEMALIGN
+#ifdef HAVE_POSIX_MEMALIGN
 static qcms_transform *transform_alloc(void)
 {
 	qcms_transform *t;
