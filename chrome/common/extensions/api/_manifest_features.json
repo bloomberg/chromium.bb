@@ -52,7 +52,9 @@
   },
   "content_security_policy": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    // Platform apps have a restricted content security policy that cannot be
+    // overriden.
+    "extension_types": ["extension", "packaged_app"]
   },
   "content_scripts": {
     "channel": "stable",

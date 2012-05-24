@@ -84,6 +84,20 @@ const int kRSAKeySize = 1024;
 const char kDefaultContentSecurityPolicy[] =
     "script-src 'self' chrome-extension-resource:; object-src 'self'";
 
+#define PLATFORM_APP_LOCAL_CSP_SOURCES \
+    "'self' blob: data: filesystem: chrome-extension-resource:"
+const char kDefaultPlatformAppContentSecurityPolicy[] =
+    // Platform apps can only use local resources by default.
+   "default-src 'self' chrome-extension-resource:;"
+   // For remote resources, they can fetch them via XMLHttpRequest.
+   "connect-src *;"
+   // And serve them via blob:, data: or filesystem: URLs
+   "style-src " PLATFORM_APP_LOCAL_CSP_SOURCES " 'unsafe-inline';"
+   "img-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
+   "media-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
+   "frame-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
+   "font-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";";
+
 // Converts a normal hexadecimal string into the alphabet used by extensions.
 // We use the characters 'a'-'p' instead of '0'-'f' to avoid ever having a
 // completely numeric host, since some software interprets that as an IP
@@ -2484,7 +2498,9 @@ bool Extension::LoadContentSecurityPolicy(string16* error) {
     // Manifest version 2 introduced a default Content-Security-Policy.
     // TODO(abarth): Should we continue to let extensions override the
     //               default Content-Security-Policy?
-    content_security_policy_ = kDefaultContentSecurityPolicy;
+    content_security_policy_ = is_platform_app() ?
+        kDefaultPlatformAppContentSecurityPolicy :
+        kDefaultContentSecurityPolicy;
     CHECK(ContentSecurityPolicyIsSecure(content_security_policy_));
   }
   return true;

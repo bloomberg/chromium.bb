@@ -72,11 +72,6 @@ chrome.test.getConfig(function(config) {
     },
 
     function FAILS_remoteIframe() {
-      // TODO(mihaip): re-enable once remote iframe restrictions are
-      // implemented.
-      chrome.test.succeed();
-      return;
-
       var iframe = document.createElement('iframe');
       iframe.onload = function() {
         chrome.test.notifyFail('Remote iframe should not have loaded');
