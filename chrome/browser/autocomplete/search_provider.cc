@@ -639,6 +639,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   AddMatchToMap(input_.text(), input_.text(), verbatim_relevance,
                 AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
                 did_not_accept_default_suggestion, false, &map);
+  const size_t what_you_typed_size = map.size();
   if (!default_provider_suggest_text_.empty()) {
     AddMatchToMap(input_.text() + default_provider_suggest_text_,
                   input_.text(), verbatim_relevance + 1,
@@ -662,8 +663,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   AddNavigationResultsToMatches(keyword_navigation_results_, true);
   AddNavigationResultsToMatches(default_navigation_results_, false);
 
-  // Allow an additional match for "what you typed".
-  const size_t max_total_matches = kMaxMatches + 1;
+  // Allow an additional match for "what you typed" if it's present.
+  const size_t max_total_matches = kMaxMatches + what_you_typed_size;
   std::partial_sort(matches_.begin(),
       matches_.begin() + std::min(max_total_matches, matches_.size()),
       matches_.end(), &AutocompleteMatch::MoreRelevant);
