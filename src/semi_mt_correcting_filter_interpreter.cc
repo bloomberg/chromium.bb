@@ -114,6 +114,8 @@ void SemiMtCorrectingFilterInterpreter::SwapFingerPatternX(
             hwstate->fingers[1].position_x);
   current_pattern_ =
       static_cast<FingerPattern>(current_pattern_ ^ kSwapPositionX);
+  hwstate->fingers[0].flags |= GESTURES_FINGER_WARP_X;
+  hwstate->fingers[1].flags |= GESTURES_FINGER_WARP_X;
 }
 
 void SemiMtCorrectingFilterInterpreter::SwapFingerPatternY(
@@ -123,6 +125,8 @@ void SemiMtCorrectingFilterInterpreter::SwapFingerPatternY(
             hwstate->fingers[1].position_y);
   current_pattern_ =
       static_cast<FingerPattern>(current_pattern_ ^ kSwapPositionY);
+  hwstate->fingers[0].flags |= GESTURES_FINGER_WARP_Y;
+  hwstate->fingers[1].flags |= GESTURES_FINGER_WARP_Y;
 }
 
 void SemiMtCorrectingFilterInterpreter::UpdateFingerPattern(

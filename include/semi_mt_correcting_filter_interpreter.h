@@ -68,6 +68,7 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, MovingFingerTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest);
 
  public:
   SemiMtCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);

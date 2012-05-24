@@ -695,4 +695,58 @@ TEST(SemiMtCorrectingFilterInterpreterTest, TwoToOneJumpTest) {
     fs->flags &= ~kWarpFlags;
   }
 }
+
+TEST(SemiMtCorrectingFilterInterpreterTest, WarpOnSwapTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 73, 0, 3226, 2614, 24, 0 },  // 0
+    { 0, 0, 0, 0, 73, 0, 3264, 2637, 24, 0 },  // 1
+    { 0, 0, 0, 0, 92, 0, 3176, 4444, 24, 0 },  // 2
+    { 0, 0, 0, 0, 92, 0, 3332, 2669, 25, 0 },
+    { 0, 0, 0, 0, 93, 0, 3172, 4443, 24, 0 },  // 4
+    { 0, 0, 0, 0, 93, 0, 3272, 2725, 25, 0 },
+    { 0, 0, 0, 0, 95, 0, 3101, 4443, 24, 0 },  // 6
+    { 0, 0, 0, 0, 95, 0, 3273, 2759, 25, 0 },
+    { 0, 0, 0, 0, 97, 0, 3043, 4443, 24, 0 },  // 8
+    { 0, 0, 0, 0, 97, 0, 3268, 2763, 25, 0 },
+    { 0, 0, 0, 0, 101, 0, 3204, 4443, 24, 0 },  // 10
+    { 0, 0, 0, 0, 102, 0, 3200, 4443, 24, 0 },  // 11
+  };
+
+  HardwareState hs[] = {
+    // time, buttons, finger count, touch count, fingers
+    { 76.673715, 0, 1, 1, &fs[0] },  // 0
+    { 76.68619699999999, 0, 1, 1, &fs[1] },  // 1
+    { 76.712234, 0, 2, 2, &fs[2] },  // 2
+    { 76.736775, 0, 2, 2, &fs[4] },  // 3
+    { 76.760614, 0, 2, 2, &fs[6] },  // 4
+    { 76.785092, 0, 2, 2, &fs[8] },  // 5
+    { 76.808168, 0, 1, 1, &fs[10] },  // 6
+    { 76.820516, 0, 1, 1, &fs[11] },  // 7
+  };
+
+  HardwareProperties hwprops = {
+    1217, 1061, 5733, 4798,  // left, top, right, bottom
+    47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3,  // max_fingers, max_touch
+    false, true, true,  // t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = 1;
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    interpreter.SyncInterpret(&hs[i], NULL);
+    // fs[0] crosses fs[1] in hs[5], so WARP_X must be set
+    if (i == 5) {
+      EXPECT_EQ(hs[i].finger_cnt, 2);
+      EXPECT_NE(hs[i].fingers, reinterpret_cast<FingerState *>(NULL));
+      EXPECT_NE(hs[i].fingers[0].flags & GESTURES_FINGER_WARP_X, 0);
+    }
+  }
+}
 }  // namespace gestures
