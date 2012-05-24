@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,15 +38,15 @@ class GamepadService : public NotificationObserver {
 
  private:
   friend struct DefaultSingletonTraits<GamepadService>;
-  friend class base::RefCountedThreadSafe<GamepadService>;
   GamepadService();
   virtual ~GamepadService();
 
   // Called when a renderer that Start'd us is closed/crashes.
-  void Stop();
+  void Stop(const NotificationSource& source);
 
-  // Run on UI thread to receive notifications of renderer closes.
+  // Run on UI thread to receive/stop notifications of renderer closes.
   void RegisterForCloseNotification(RenderProcessHost* rph);
+  void UnregisterForCloseNotification(const NotificationSource& source);
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
@@ -60,7 +60,7 @@ class GamepadService : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   int num_readers_;
-  scoped_refptr<GamepadProvider> provider_;
+  scoped_ptr<GamepadProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadService);
 };

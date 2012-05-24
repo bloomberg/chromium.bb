@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,38 +16,39 @@
 
 namespace content {
 
-GamepadService::GamepadService() : num_readers_(0) {
+GamepadService::GamepadService() :
+    num_readers_(0),
+    provider_(new GamepadProvider) {
 }
 
 GamepadService::~GamepadService() {
 }
 
 GamepadService* GamepadService::GetInstance() {
-  return Singleton<GamepadService>::get();
+  return Singleton<GamepadService,
+                   LeakySingletonTraits<GamepadService> >::get();
 }
 
 void GamepadService::Start(
     GamepadDataFetcher* data_fetcher,
-    content::RenderProcessHost* associated_rph) {
+    RenderProcessHost* associated_rph) {
   num_readers_++;
-  if (!provider_)
-    provider_ = new GamepadProvider(data_fetcher);
   DCHECK(num_readers_ > 0);
+  provider_->SetDataFetcher(data_fetcher);
   provider_->Resume();
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       base::Bind(&GamepadService::RegisterForCloseNotification,
                  base::Unretained(this),
                  associated_rph));
 }
 
-void GamepadService::RegisterForCloseNotification(
-    content::RenderProcessHost* rph) {
+void GamepadService::RegisterForCloseNotification(RenderProcessHost* rph) {
   registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                 content::Source<content::RenderProcessHost>(rph));
+                 NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 Source<RenderProcessHost>(rph));
 }
 
 base::SharedMemoryHandle GamepadService::GetSharedMemoryHandle(
@@ -55,22 +56,34 @@ base::SharedMemoryHandle GamepadService::GetSharedMemoryHandle(
   return provider_->GetRendererSharedMemoryHandle(handle);
 }
 
-void GamepadService::Stop() {
+void GamepadService::Stop(const NotificationSource& source) {
   --num_readers_;
   DCHECK(num_readers_ >= 0);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GamepadService::UnregisterForCloseNotification,
+                 base::Unretained(this),
+                 source));
 
   if (num_readers_ == 0)
     provider_->Pause();
 }
 
+void GamepadService::UnregisterForCloseNotification(
+    const NotificationSource& source) {
+  registrar_.Remove(this, NOTIFICATION_RENDERER_PROCESS_CLOSED, source);
+}
+
 void GamepadService::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(type == NOTIFICATION_RENDERER_PROCESS_CLOSED);
+  BrowserThread::PostTask(
+      BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GamepadService::Stop, base::Unretained(this)));
+      base::Bind(&GamepadService::Stop, base::Unretained(this), source));
 }
 
 } // namespace content

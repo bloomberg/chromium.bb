@@ -46,7 +46,8 @@ class GamepadProviderTest : public testing::Test {
 #endif
     system_monitor_.reset(new base::SystemMonitor);
     mock_data_fetcher_ = new MockDataFetcher(test_data);
-    provider_ = new GamepadProvider(mock_data_fetcher_);
+    provider_.reset(new GamepadProvider);
+    provider_->SetDataFetcher(mock_data_fetcher_);
     return provider_.get();
   }
 
@@ -57,7 +58,7 @@ class GamepadProviderTest : public testing::Test {
   MessageLoop main_message_loop_;
   scoped_ptr<base::SystemMonitor> system_monitor_;
   MockDataFetcher* mock_data_fetcher_;
-  scoped_refptr<GamepadProvider> provider_;
+  scoped_ptr<GamepadProvider> provider_;
 };
 
 // Crashes. http://crbug.com/106163

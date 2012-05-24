@@ -23,10 +23,13 @@ class GamepadDataFetcher;
 struct GamepadHardwareBuffer;
 
 class CONTENT_EXPORT GamepadProvider :
-  public base::RefCountedThreadSafe<GamepadProvider>,
   public base::SystemMonitor::DevicesChangedObserver {
  public:
-  explicit GamepadProvider(GamepadDataFetcher* fetcher);
+  explicit GamepadProvider();
+  virtual ~GamepadProvider();
+
+  // Set the platform-specific data fetcher. Mostly used for testing.
+  void SetDataFetcher(GamepadDataFetcher* fetcher);
 
   base::SharedMemoryHandle GetRendererSharedMemoryHandle(
       base::ProcessHandle renderer_process);
@@ -40,12 +43,10 @@ class CONTENT_EXPORT GamepadProvider :
   virtual void OnDevicesChanged() OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<GamepadProvider>;
 
-  virtual ~GamepadProvider();
-
-  // Method for starting the polling, runs on polling_thread_.
-  void DoInitializePollingThread();
+  // Method for setting up the platform-specific data fetcher. Takes ownership
+  // of |fetcher|.
+  void DoInitializePollingThread(GamepadDataFetcher* fetcher);
 
   // Method for sending pause hints to the low-level data fetcher. Runs on
   // polling_thread_.
@@ -72,10 +73,6 @@ class CONTENT_EXPORT GamepadProvider :
   base::Lock devices_changed_lock_;
   bool devices_changed_;
 
-  // The Message Loop on which this object was created.
-  // Typically the I/O loop, but may be something else during testing.
-  scoped_ptr<GamepadDataFetcher> provided_fetcher_;
-
   // When polling_thread_ is running, members below are only to be used
   // from that thread.
   scoped_ptr<GamepadDataFetcher> data_fetcher_;
@@ -85,7 +82,6 @@ class CONTENT_EXPORT GamepadProvider :
   scoped_ptr<base::Thread> polling_thread_;
 
   static GamepadProvider* instance_;
-  base::WeakPtrFactory<GamepadProvider> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadProvider);
 };
