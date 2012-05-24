@@ -26,10 +26,12 @@ _TEST_HTML_PATH = os.path.join('media', 'html', 'media_seek.html')
 
 # The media files used for testing.
 # Path under CNS root folder (pyauto_private/media).
-_TEST_VIDEOS = [os.path.join('dartmoor', 'dartmoor.ogg')]
+_TEST_VIDEOS = [os.path.join('dartmoor', name) for name in
+                ['dartmoor2.ogg', 'dartmoor2.m4a', 'dartmoor2.mp3',
+                 'dartmoor2.wav']]
 _TEST_VIDEOS.extend(os.path.join('crowd', name) for name in
-                    ['crowd1080.webm', 'crowd1080.ogv', 'crowd360.webm',
-                     'crowd360.ogv', 'crowd.wav'])
+                    ['crowd1080.webm', 'crowd1080.ogv', 'crowd1080.mp4',
+                     'crowd360.webm', 'crowd360.ogv', 'crowd360.mp4'])
 
 # Constraints to run tests on.
 _TESTS_TO_RUN = [
