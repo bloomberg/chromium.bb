@@ -276,6 +276,12 @@ std::string JsonHostConfig::GetSerializedData() const {
 }
 
 - (void)readNewConfig {
+  if ([self restartPanelIfDifferentVersionInstalled]) {
+    // Don't read any new config if the version is mismatched.  Return control
+    // to the main run-loop instead, so the application can be terminated.
+    return;
+  }
+
   std::string file;
   if (!GetTemporaryConfigFilePath(&file)) {
     LOG(ERROR) << "Failed to get path of configuration data.";
@@ -516,6 +522,43 @@ std::string JsonHostConfig::GetSerializedData() const {
   [center postNotificationName:name
                         object:nil
                       userInfo:nil];
+}
+
+- (BOOL)restartPanelIfDifferentVersionInstalled {
+  NSBundle* this_bundle = [NSBundle bundleForClass:[self class]];
+  NSDictionary* this_plist = [this_bundle infoDictionary];
+  NSString* this_version = [this_plist objectForKey:@"CFBundleVersion"];
+
+  NSString* bundle_path = [this_bundle bundlePath];
+  NSString* plist_path =
+      [bundle_path stringByAppendingString:@"/Contents/Info.plist"];
+  NSDictionary* disk_plist =
+      [NSDictionary dictionaryWithContentsOfFile:plist_path];
+  NSString* disk_version = [disk_plist objectForKey:@"CFBundleVersion"];
+
+  if (disk_version == nil) {
+    LOG(ERROR) << "Failed to get installed version information";
+    [self showError];
+    return NO;
+  }
+
+  if ([this_version isEqualToString:disk_version]) {
+    return NO;
+  } else {
+    // Terminate and relaunch System Preferences.
+
+    // TODO(lambroslambrou): Improve this when System Preferences supports
+    // dynamic reloading of pref-panes.
+    NSTask* task = [[NSTask alloc] init];
+    NSArray* arguments = [NSArray arrayWithObjects:@"--relaunch-prefpane", nil];
+    [task setLaunchPath:[NSString stringWithUTF8String:kHelperTool]];
+    [task setArguments:arguments];
+    [task setStandardInput:[NSPipe pipe]];
+    [task launch];
+    [task release];
+    [NSApp terminate:nil];
+    return YES;
+  }
 }
 
 @end

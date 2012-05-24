@@ -107,4 +107,9 @@ class JsonHostConfig {
                          inputData:(const std::string&)input_data;
 - (BOOL)sendJobControlMessage:(const char*)launch_key;
 
+// Compare the version of the running pref-pane against the installed version.
+// If the versions are mismatched, return YES and restart the System
+// Preferences application, so the correct version of this pref-pane is loaded.
+- (BOOL)restartPanelIfDifferentVersionInstalled;
+
 @end
