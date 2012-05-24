@@ -48,7 +48,7 @@ def handle_single_schema(filename, dest_dir, root, root_namespace):
   schema = os.path.normpath(filename)
   schema_filename, schema_extension = os.path.splitext(schema)
   path, short_filename = os.path.split(schema_filename)
-  api_defs = load_schema(schema)
+  api_defs = json_schema.DeleteNocompileNodes(load_schema(schema))
 
   api_model = model.Model()
 

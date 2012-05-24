@@ -131,10 +131,9 @@ class Member(object):
   def process(self, callbacks):
     properties = {}
     name = self.node.GetName()
-    if self.node.GetProperty('OPTIONAL'):
-      properties['optional'] = True
-    if self.node.GetProperty('nodoc'):
-      properties['nodoc'] = True
+    for property_name in ('OPTIONAL', 'nodoc', 'nocompile'):
+      if self.node.GetProperty(property_name):
+        properties[property_name.lower()] = True
     is_function = False
     parameter_comments = {}
     for node in self.node.children:

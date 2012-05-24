@@ -45,6 +45,10 @@ namespace idl_basics {
 
     static void function13(EnumType type, Callback5 cb);
     static void function14(EnumType[] types);
+
+    // "switch" is a reserved word and should cause a C++ compile error if we
+    // emit code for this declaration.
+    [nocompile] static void function15(long switch);
   };
 
   interface Events {

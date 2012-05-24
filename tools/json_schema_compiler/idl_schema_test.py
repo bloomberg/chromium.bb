@@ -71,5 +71,11 @@ class IdlSchemaTest(unittest.TestCase):
                  'type': 'array'}]
     self.assertEquals(expected, getParams(schema, 'function14'))
 
+  def testNoCompile(self):
+    schema = self.idl_basics
+    func = getFunction(schema, 'function15')
+    self.assertTrue(func is not None)
+    self.assertTrue(func['nocompile'])
+
 if __name__ == '__main__':
   unittest.main()

@@ -16,6 +16,7 @@ class ExtensionIdltestApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionIdltestApiTest, BinaryData) {
+IN_PROC_BROWSER_TEST_F(ExtensionIdltestApiTest, IdlCompiler) {
   EXPECT_TRUE(RunExtensionSubtest("idltest/binary_data", "binary.html"));
+  EXPECT_TRUE(RunExtensionSubtest("idltest/nocompile", "nocompile.html"));
 };

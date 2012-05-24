@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from json_schema import CachedLoad
+import json_schema
 import json_schema_test
 import unittest
 
@@ -72,7 +72,8 @@ class JsonSchemaUnittest(unittest.TestCase):
       }
     ]
 
-    self.assertEquals(compiled, CachedLoad('test/json_schema_test.json'))
+    schema = json_schema.CachedLoad('test/json_schema_test.json')
+    self.assertEquals(compiled, json_schema.DeleteNocompileNodes(schema))
 
 if __name__ == '__main__':
   unittest.main()

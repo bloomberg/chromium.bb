@@ -33,8 +33,7 @@ def DeleteNocompileNodes(item):
 
 def Load(filename):
   with open(filename, 'r') as handle:
-    schemas = DeleteNocompileNodes(
-        json.loads(json_comment_eater.Nom(handle.read())))
+    schemas = json.loads(json_comment_eater.Nom(handle.read()))
   schema_util.PrefixSchemasWithNamespace(schemas)
   return schemas
 

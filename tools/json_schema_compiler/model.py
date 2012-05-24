@@ -140,6 +140,7 @@ class Function(object):
     self.description = json.get('description')
     self.callback = None
     self.parent = parent
+    self.nocompile = json.get('nocompile')
     for param in json['parameters']:
       if param.get('type') == 'function':
         if self.callback:

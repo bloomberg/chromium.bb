@@ -79,6 +79,8 @@ class SchemaBundleGenerator(object):
     c.Sblock("static void RegisterAll(ExtensionFunctionRegistry* registry) {")
     for namespace in self._model.namespaces.values():
       for function in namespace.functions.values():
+        if function.nocompile:
+          continue
         namespace_name = self.CapitalizeFirstLetter(namespace.name.replace(
             "experimental.", ""))
         function_name = namespace_name + self.CapitalizeFirstLetter(
