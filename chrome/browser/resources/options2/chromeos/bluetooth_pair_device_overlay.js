@@ -18,10 +18,6 @@ cr.define('options', function() {
     REMOTE_PIN_CODE: 'bluetoothRemotePinCode',
     REMOTE_PASSKEY: 'bluetoothRemotePasskey',
     CONFIRM_PASSKEY: 'bluetoothConfirmPasskey',
-    ERROR_NO_DEVICE: 'bluetoothErrorNoDevice',
-    ERROR_INCORRECT_PIN: 'bluetoothErrorIncorrectPin',
-    ERROR_CONNECTION_TIMEOUT: 'bluetoothErrorTimeout',
-    ERROR_CONNECTION_FAILED: 'bluetoothErrorConnectionFailed'
   };
 
   /**
@@ -37,7 +33,6 @@ cr.define('options', function() {
                   'bluetooth-pair-device-accept-button',
                   'bluetooth-pair-device-reject-button',
                   'bluetooth-pair-device-dismiss-button'];
-
 
   /**
    * Encapsulated handling of the Bluetooth device pairing page.
@@ -166,7 +161,7 @@ cr.define('options', function() {
       var instructionsEl = $('bluetooth-pairing-instructions');
       this.clearElement_(instructionsEl);
       this.dismissible_ = ('dismissible' in device) ?
-        device.dimissible : true;
+        device.dismissible : true;
 
       var message = loadTimeData.getString(device.pairing);
       message = message.replace('%1', this.device_.name);
@@ -350,6 +345,7 @@ cr.define('options', function() {
       }
     }
     BluetoothPairing.showDialog({name: name,
+                                 address: data.address,
                                  pairing: data.label,
                                  dismissible: false});
   };
