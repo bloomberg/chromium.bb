@@ -39,6 +39,8 @@ void WebBlobRegistryImpl::registerBlobURL(
       case WebBlobData::Item::TypeData: {
         // WebBlobData does not allow partial data items.
         DCHECK(!data_item.offset && data_item.length == -1);
+        if (data_item.data.size() == 0)
+          break;
         if (data_item.data.size() < kLargeThresholdBytes) {
           item.SetToData(data_item.data.data(), data_item.data.size());
           child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
@@ -64,12 +66,14 @@ void WebBlobRegistryImpl::registerBlobURL(
         break;
       }
       case WebBlobData::Item::TypeFile:
-        item.SetToFile(
-            webkit_glue::WebStringToFilePath(data_item.filePath),
-            static_cast<uint64>(data_item.offset),
-            static_cast<uint64>(data_item.length),
-            base::Time::FromDoubleT(data_item.expectedModificationTime));
-        child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
+        if (data_item.length) {
+          item.SetToFile(
+              webkit_glue::WebStringToFilePath(data_item.filePath),
+              static_cast<uint64>(data_item.offset),
+              static_cast<uint64>(data_item.length),
+              base::Time::FromDoubleT(data_item.expectedModificationTime));
+          child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
+        }
         break;
       case WebBlobData::Item::TypeBlob:
         if (data_item.length) {
@@ -77,8 +81,8 @@ void WebBlobRegistryImpl::registerBlobURL(
               data_item.blobURL,
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length));
+          child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
         }
-        child_thread_->Send(new BlobHostMsg_AppendBlobDataItem(url, item));
         break;
       default:
         NOTREACHED();

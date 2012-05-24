@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,11 +60,13 @@ BlobData::BlobData(const WebBlobData& data) {
         }
         break;
       case WebBlobData::Item::TypeFile:
-        AppendFile(
-            WebStringToFilePath(item.filePath),
-            static_cast<uint64>(item.offset),
-            static_cast<uint64>(item.length),
-            base::Time::FromDoubleT(item.expectedModificationTime));
+        if (item.length) {
+          AppendFile(
+              WebStringToFilePath(item.filePath),
+              static_cast<uint64>(item.offset),
+              static_cast<uint64>(item.length),
+              base::Time::FromDoubleT(item.expectedModificationTime));
+        }
         break;
       case WebBlobData::Item::TypeBlob:
         if (item.length) {
@@ -83,5 +85,36 @@ BlobData::BlobData(const WebBlobData& data) {
 }
 
 BlobData::~BlobData() {}
+
+void BlobData::AppendData(const char* data, size_t length) {
+  DCHECK(length > 0);
+  items_.push_back(Item());
+  items_.back().SetToData(data, length);
+}
+
+void BlobData::AppendFile(const FilePath& file_path, uint64 offset,
+                          uint64 length,
+                          const base::Time& expected_modification_time) {
+  DCHECK(length > 0);
+  items_.push_back(Item());
+  items_.back().SetToFile(file_path, offset, length,
+                          expected_modification_time);
+}
+
+void BlobData::AppendBlob(const GURL& blob_url, uint64 offset, uint64 length) {
+  DCHECK(length > 0);
+  items_.push_back(Item());
+  items_.back().SetToBlob(blob_url, offset, length);
+}
+
+int64 BlobData::GetMemoryUsage() const {
+  int64 memory = 0;
+  for (std::vector<Item>::const_iterator iter = items_.begin();
+       iter != items_.end(); ++iter) {
+    if (iter->type == TYPE_DATA)
+      memory += iter->data.size();
+  }
+  return memory;
+}
 
 }  // namespace webkit_blob
