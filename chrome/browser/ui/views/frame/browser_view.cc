@@ -1138,7 +1138,7 @@ void BrowserView::ShowPageInfo(Profile* profile,
                                const SSLStatus& ssl,
                                bool show_history) {
   browser::ShowPageInfoBubble(GetLocationBarView()->location_icon_view(),
-                              profile, url, ssl, show_history);
+                              profile, url, ssl, show_history, browser_.get());
 }
 
 void BrowserView::ShowWebsiteSettings(Profile* profile,

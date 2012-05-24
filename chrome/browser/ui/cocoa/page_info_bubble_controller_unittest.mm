@@ -51,9 +51,11 @@ class PageInfoBubbleControllerTest : public CocoaTest {
   void CreateBubble() {
     // The controller cleans up after itself when the window closes.
     controller_ =
-        [[PageInfoBubbleController alloc] initWithPageInfoModel:model_
-                                                  modelObserver:NULL
-                                                   parentWindow:test_window()];
+        [[PageInfoBubbleController alloc]
+            initWithPageInfoModel:model_
+                    modelObserver:NULL
+                     parentWindow:test_window()
+                        navigator:NULL];
     window_ = [controller_ window];
     [controller_ showWindow:nil];
   }

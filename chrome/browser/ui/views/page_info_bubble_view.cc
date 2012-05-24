@@ -105,14 +105,16 @@ PageInfoBubbleView::PageInfoBubbleView(views::View* anchor_view,
                                        Profile* profile,
                                        const GURL& url,
                                        const SSLStatus& ssl,
-                                       bool show_history)
+                                       bool show_history,
+                                       content::PageNavigator* navigator)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
                                             show_history, this)),
       cert_id_(ssl.cert_id),
       help_center_link_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(resize_animation_(this)),
-      animation_start_height_(0) {
+      animation_start_height_(0),
+      navigator_(navigator) {
 
   if (cert_id_ > 0) {
     scoped_refptr<net::X509Certificate> cert;
@@ -282,11 +284,11 @@ gfx::Rect PageInfoBubbleView::GetAnchorRect() {
 }
 
 void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
-  Browser* browser = BrowserList::GetLastActive();
-  OpenURLParams params(
-      GURL(chrome::kPageInfoHelpCenterURL), Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false);
-  browser->OpenURL(params);
+  navigator_->OpenURL(OpenURLParams(GURL(chrome::kPageInfoHelpCenterURL),
+                                    Referrer(),
+                                    NEW_FOREGROUND_TAB,
+                                    content::PAGE_TRANSITION_LINK,
+                                    false));
   // NOTE: The bubble closes automatically on deactivation as the link opens.
 }
 
@@ -452,9 +454,15 @@ void ShowPageInfoBubble(views::View* anchor_view,
                         Profile* profile,
                         const GURL& url,
                         const SSLStatus& ssl,
-                        bool show_history) {
+                        bool show_history,
+                        content::PageNavigator* navigator) {
   PageInfoBubbleView* page_info_bubble =
-      new PageInfoBubbleView(anchor_view, profile, url, ssl, show_history);
+      new PageInfoBubbleView(anchor_view,
+                             profile,
+                             url,
+                             ssl,
+                             show_history,
+                             navigator);
   views::BubbleDelegateView::CreateBubble(page_info_bubble);
   page_info_bubble->Show();
 }

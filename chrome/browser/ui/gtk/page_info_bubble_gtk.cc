@@ -40,7 +40,8 @@ class PageInfoBubbleGtk : public PageInfoModelObserver,
                     Profile* profile,
                     const GURL& url,
                     const SSLStatus& ssl,
-                    bool show_history);
+                    bool show_history,
+                    content::PageNavigator* navigator);
   virtual ~PageInfoBubbleGtk();
 
   // PageInfoModelObserver implementation.
@@ -85,6 +86,9 @@ class PageInfoBubbleGtk : public PageInfoModelObserver,
 
   Profile* profile_;
 
+  // Used for loading pages.
+  content::PageNavigator* navigator_;
+
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleGtk);
 };
 
@@ -92,7 +96,8 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
                                      Profile* profile,
                                      const GURL& url,
                                      const SSLStatus& ssl,
-                                     bool show_history)
+                                     bool show_history,
+                                     content::PageNavigator* navigator)
     : ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
                                             show_history, this)),
       url_(url),
@@ -100,7 +105,8 @@ PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
       parent_(parent),
       contents_(NULL),
       theme_service_(GtkThemeService::GetFrom(profile)),
-      profile_(profile) {
+      profile_(profile),
+      navigator_(navigator) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
 
@@ -228,10 +234,11 @@ void PageInfoBubbleGtk::OnViewCertLinkClicked(GtkWidget* widget) {
 }
 
 void PageInfoBubbleGtk::OnHelpLinkClicked(GtkWidget* widget) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
-  browser->OpenURL(OpenURLParams(
-      GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
+  navigator_->OpenURL(OpenURLParams(GURL(chrome::kPageInfoHelpCenterURL),
+                      content::Referrer(),
+                      NEW_FOREGROUND_TAB,
+                      content::PAGE_TRANSITION_LINK,
+                      false));
   bubble_->Close();
 }
 
@@ -243,8 +250,9 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
                         Profile* profile,
                         const GURL& url,
                         const SSLStatus& ssl,
-                        bool show_history) {
-  new PageInfoBubbleGtk(parent, profile, url, ssl, show_history);
+                        bool show_history,
+                        content::PageNavigator* navigator) {
+  new PageInfoBubbleGtk(parent, profile, url, ssl, show_history, navigator);
 }
 
 }  // namespace browser

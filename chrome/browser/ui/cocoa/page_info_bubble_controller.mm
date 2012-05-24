@@ -21,6 +21,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -158,14 +159,16 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
                         Profile* profile,
                         const GURL& url,
                         const SSLStatus& ssl,
-                        bool show_history) {
+                        bool show_history,
+                        content::PageNavigator* navigator) {
   PageInfoModelBubbleBridge* bridge = new PageInfoModelBubbleBridge();
   PageInfoModel* model =
       new PageInfoModel(profile, url, ssl, show_history, bridge);
   PageInfoBubbleController* controller =
       [[PageInfoBubbleController alloc] initWithPageInfoModel:model
                                                 modelObserver:bridge
-                                                 parentWindow:parent];
+                                                 parentWindow:parent
+                                                    navigator:navigator];
   bridge->set_controller(controller);
   [controller setCertID:ssl.cert_id];
   [controller showWindow:nil];
@@ -179,7 +182,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
 - (id)initWithPageInfoModel:(PageInfoModel*)model
               modelObserver:(PageInfoModelObserver*)bridge
-               parentWindow:(NSWindow*)parentWindow {
+               parentWindow:(NSWindow*)parentWindow
+                  navigator:(content::PageNavigator*)navigator {
   DCHECK(parentWindow);
 
   // Use an arbitrary height because it will be changed by the bridge.
@@ -196,6 +200,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
                          anchoredAt:NSZeroPoint])) {
     model_.reset(model);
     bridge_.reset(bridge);
+    navigator_ = navigator;
     [[self bubble] setArrowLocation:info_bubble::kTopLeft];
     [self performLayout];
   }
@@ -212,11 +217,11 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 }
 
 - (IBAction)showHelpPage:(id)sender {
-  Browser* browser = BrowserList::GetLastActive();
-  OpenURLParams params(
-      GURL(chrome::kPageInfoHelpCenterURL), Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false);
-  browser->OpenURL(params);
+  navigator_->OpenURL(OpenURLParams(GURL(chrome::kPageInfoHelpCenterURL),
+                                    Referrer(),
+                                    NEW_FOREGROUND_TAB,
+                                    content::PAGE_TRANSITION_LINK,
+                                    false));
 }
 
 // This will create the subviews for the page info window. The general layout

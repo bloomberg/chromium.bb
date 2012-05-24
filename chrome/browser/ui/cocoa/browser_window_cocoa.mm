@@ -501,7 +501,8 @@ void BrowserWindowCocoa::ShowPageInfo(Profile* profile,
                                       const GURL& url,
                                       const SSLStatus& ssl,
                                       bool show_history) {
-  browser::ShowPageInfoBubble(window(), profile, url, ssl, show_history);
+  browser::ShowPageInfoBubble(window(), profile, url, ssl, show_history,
+                              browser_);
 }
 
 void BrowserWindowCocoa::ShowWebsiteSettings(

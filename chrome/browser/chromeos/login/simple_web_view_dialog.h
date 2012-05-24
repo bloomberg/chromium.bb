@@ -11,6 +11,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "ui/views/controls/button/image_button.h"
@@ -40,6 +41,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
                             public LocationBarView::Delegate,
                             public ToolbarModelDelegate,
                             public CommandUpdater::CommandUpdaterDelegate,
+                            public content::PageNavigator,
                             public content::WebContentsDelegate {
  public:
   explicit SimpleWebViewDialog(Profile* profile);
@@ -58,6 +60,10 @@ class SimpleWebViewDialog : public views::ButtonListener,
   // Implements views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
+
+  // Implements content::PageNavigator:
+  virtual content::WebContents* OpenURL(
+      const content::OpenURLParams& params) OVERRIDE;
 
   // Implements content::WebContentsDelegate:
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;

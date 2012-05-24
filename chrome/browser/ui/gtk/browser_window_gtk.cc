@@ -1131,7 +1131,8 @@ void BrowserWindowGtk::ShowPageInfo(Profile* profile,
                                     const GURL& url,
                                     const SSLStatus& ssl,
                                     bool show_history) {
-  browser::ShowPageInfoBubble(window_, profile, url, ssl, show_history);
+  browser::ShowPageInfoBubble(window_, profile, url, ssl, show_history,
+                              browser_.get());
 }
 
 void BrowserWindowGtk::ShowWebsiteSettings(

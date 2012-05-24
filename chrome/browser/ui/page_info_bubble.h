@@ -12,6 +12,7 @@ class Profile;
 class GURL;
 
 namespace content {
+class PageNavigator;
 struct SSLStatus;
 }
 
@@ -21,7 +22,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
                         Profile* profile,
                         const GURL& url,
                         const content::SSLStatus& ssl,
-                        bool show_history);
+                        bool show_history,
+                        content::PageNavigator* navigator);
 
 }  // namespace browser
 

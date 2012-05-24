@@ -14,6 +14,7 @@
 #include "ui/views/controls/link_listener.h"
 
 namespace content {
+class PageNavigator;
 struct SSLStatus;
 }
 
@@ -25,7 +26,8 @@ class PageInfoBubbleView : public views::BubbleDelegateView,
                      Profile* profile,
                      const GURL& url,
                      const content::SSLStatus& ssl,
-                     bool show_history);
+                     bool show_history,
+                     content::PageNavigator* navigator);
   virtual ~PageInfoBubbleView();
 
   // Show the certificate dialog.
@@ -74,6 +76,9 @@ class PageInfoBubbleView : public views::BubbleDelegateView,
 
   // The height of the info bubble at the start of the resize animation.
   int animation_start_height_;
+
+  // Used for loading pages.
+  content::PageNavigator* navigator_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleView);
 };

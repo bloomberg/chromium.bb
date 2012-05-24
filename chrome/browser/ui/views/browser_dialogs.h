@@ -26,6 +26,7 @@ class TabContentsWrapper;
 class TemplateURL;
 
 namespace content {
+class PageNavigator;
 struct SSLStatus;
 }
 
@@ -62,7 +63,8 @@ void ShowPageInfoBubble(views::View* anchor_view,
                         Profile* profile,
                         const GURL& url,
                         const content::SSLStatus& ssl,
-                        bool show_history);
+                        bool show_history,
+                        content::PageNavigator* navigator);
 
 // Shows the about dialog. See AboutChromeView.
 views::Widget* ShowAboutChromeView(gfx::NativeWindow parent,

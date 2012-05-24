@@ -254,6 +254,13 @@ void SimpleWebViewDialog::NavigationStateChanged(
   }
 }
 
+content::WebContents* SimpleWebViewDialog::OpenURL(
+    const content::OpenURLParams& params) {
+  // As there are no Browsers right now, this could not actually ever work.
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 void SimpleWebViewDialog::LoadingStateChanged(WebContents* source) {
   bool is_loading = source->IsLoading();
   UpdateReload(is_loading, false);
@@ -286,7 +293,9 @@ void SimpleWebViewDialog::ShowPageInfo(content::WebContents* web_contents,
       new PageInfoBubbleView(
           location_bar_->location_icon_view(),
           location_bar_->profile(),
-          url, ssl, true);
+          url, ssl,
+          true,
+          this);
   page_info_bubble->set_parent_window(
       ash::Shell::GetInstance()->GetContainer(
           ash::internal::kShellWindowId_LockSystemModalContainer));

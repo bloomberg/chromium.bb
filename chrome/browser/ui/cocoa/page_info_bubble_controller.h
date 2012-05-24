@@ -11,6 +11,10 @@
 class PageInfoModel;
 class PageInfoModelObserver;
 
+namespace content {
+class PageNavigator;
+}
+
 // This NSWindowController subclass manages the InfoBubbleWindow and view that
 // are displayed when the user clicks the security lock icon.
 @interface PageInfoBubbleController : BaseBubbleController {
@@ -23,6 +27,9 @@ class PageInfoModelObserver;
 
   // The certificate ID for the page, 0 if the page is not over HTTPS.
   int certID_;
+
+  // Used for loading pages.
+  content::PageNavigator* navigator_;
 }
 
 @property(nonatomic, assign) int certID;
@@ -33,7 +40,9 @@ class PageInfoModelObserver;
 // cannot be nil.
 - (id)initWithPageInfoModel:(PageInfoModel*)model
               modelObserver:(PageInfoModelObserver*)bridge
-               parentWindow:(NSWindow*)parentWindow;
+               parentWindow:(NSWindow*)parentWindow
+                  navigator:(content::PageNavigator*)navigator;
+
 
 // Shows the certificate display window. Note that this will implicitly close
 // the bubble because the certificate window will become key. The certificate
