@@ -102,7 +102,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   // The results depend on the history backend being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
-  ui_test_utils::WaitForHistoryToLoad(browser());
+  ui_test_utils::WaitForHistoryToLoad(
+      browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS));
 
   LocationBar* location_bar = GetLocationBar();
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
@@ -264,7 +265,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, ExtensionAppProvider) {
 
   // The results depend on the history backend being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
-  ui_test_utils::WaitForHistoryToLoad(browser());
+  ui_test_utils::WaitForHistoryToLoad(
+      browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS));
 
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
 

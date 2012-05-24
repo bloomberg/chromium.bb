@@ -46,6 +46,7 @@ class CommandLine;
 class ExtensionAction;
 class FilePath;
 class GURL;
+class HistoryService;
 class MessageLoop;
 class Profile;
 class ScopedTempDir;
@@ -259,8 +260,8 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model);
 // Blocks until |service| finishes loading.
 void WaitForTemplateURLServiceToLoad(TemplateURLService* service);
 
-// Blocks until the |browser|'s history finishes loading.
-void WaitForHistoryToLoad(Browser* browser);
+// Blocks until the |history_service|'s history finishes loading.
+void WaitForHistoryToLoad(HistoryService* history_service);
 
 // Puts the native window for |browser| in |native_window|. Returns true on
 // success.

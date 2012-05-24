@@ -28,6 +28,7 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -724,9 +725,7 @@ void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {
   ASSERT_TRUE(service->loaded());
 }
 
-void WaitForHistoryToLoad(Browser* browser) {
-  HistoryService* history_service =
-      browser->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+void WaitForHistoryToLoad(HistoryService* history_service) {
   WindowedNotificationObserver history_loaded_observer(
       chrome::NOTIFICATION_HISTORY_LOADED,
       content::NotificationService::AllSources());
