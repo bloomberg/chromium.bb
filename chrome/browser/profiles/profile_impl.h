@@ -202,7 +202,6 @@ class ProfileImpl : public Profile,
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
   scoped_ptr<NetPrefObserver> net_pref_observer_;
-  scoped_ptr<BookmarkModel> bookmark_bar_model_;
 
 #if defined(ENABLE_PROMO_RESOURCE_SERVICE)
   scoped_refptr<PromoResourceService> promo_resource_service_;
@@ -218,11 +217,9 @@ class ProfileImpl : public Profile,
   scoped_refptr<content::SpeechRecognitionPreferences>
       speech_recognition_preferences_;
   scoped_ptr<GAIAInfoUpdateService> gaia_info_update_service_;
-  scoped_refptr<HistoryService> history_service_;
   scoped_ptr<FaviconService> favicon_service_;
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
-  bool history_service_created_;
   bool favicon_service_created_;
   bool clear_local_state_on_exit_;
 

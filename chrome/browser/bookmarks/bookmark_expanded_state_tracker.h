@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,9 @@ class BookmarkExpandedStateTracker : public BaseBookmarkModelObserver {
  public:
   typedef std::set<const BookmarkNode*> Nodes;
 
-  BookmarkExpandedStateTracker(Profile* profile, const char* path);
+  BookmarkExpandedStateTracker(Profile* profile,
+                               const char* path,
+                               BookmarkModel* bookmark_model);
   virtual ~BookmarkExpandedStateTracker();
 
   // The set of expanded nodes.
