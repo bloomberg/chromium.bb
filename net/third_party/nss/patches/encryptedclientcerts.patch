@@ -1,0 +1,390 @@
+diff -pu -r a/src/net/third_party/nss/ssl/ssl.h b/src/net/third_party/nss/ssl/ssl.h
+--- a/src/net/third_party/nss/ssl/ssl.h	2012-03-19 13:49:12.517522610 -0700
++++ b/src/net/third_party/nss/ssl/ssl.h	2012-03-19 13:49:29.507749795 -0700
+@@ -186,6 +186,7 @@ SSL_IMPORT PRFileDesc *SSL_ImportFD(PRFi
+ #define SSL_CBC_RANDOM_IV 23
+ #define SSL_ENABLE_OCSP_STAPLING       24 /* Request OCSP stapling (client) */
+ #define SSL_ENABLE_OB_CERTS            25 /* Enable origin bound certs.     */
++#define SSL_ENCRYPT_CLIENT_CERTS       26 /* Enable encrypted client certs. */
+ 
+ #ifdef SSL_DEPRECATED_FUNCTION 
+ /* Old deprecated function names */
+diff -pu -r a/src/net/third_party/nss/ssl/sslimpl.h b/src/net/third_party/nss/ssl/sslimpl.h
+--- a/src/net/third_party/nss/ssl/sslimpl.h	2012-03-19 13:49:12.557523144 -0700
++++ b/src/net/third_party/nss/ssl/sslimpl.h	2012-03-19 13:49:29.507749795 -0700
+@@ -350,6 +350,7 @@ typedef struct sslOptionsStr {
+     unsigned int cbcRandomIV            : 1;  /* 24 */
+     unsigned int enableOCSPStapling     : 1;  /* 25 */
+     unsigned int enableOBCerts          : 1;  /* 26 */
++    unsigned int encryptClientCerts     : 1;  /* 27 */
+ } sslOptions;
+ 
+ typedef enum { sslHandshakingUndetermined = 0,
+diff -pu -r a/src/net/third_party/nss/ssl/ssl3con.c b/src/net/third_party/nss/ssl/ssl3con.c
+--- a/src/net/third_party/nss/ssl/ssl3con.c	2012-03-19 13:49:12.527522744 -0700
++++ b/src/net/third_party/nss/ssl/ssl3con.c	2012-03-19 13:49:29.507749795 -0700
+@@ -2882,7 +2882,14 @@ ssl3_HandleChangeCipherSpecs(sslSocket *
+ 
+     ss->ssl3.prSpec  = ss->ssl3.crSpec;
+     ss->ssl3.crSpec  = prSpec;
+-    ss->ssl3.hs.ws   = wait_finished;
++
++    if (ss->sec.isServer &&
++	ss->opt.requestCertificate &&
++	ssl3_ExtensionNegotiated(ss, ssl_encrypted_client_certs)) {
++	ss->ssl3.hs.ws = wait_client_cert;
++    } else {
++	ss->ssl3.hs.ws = wait_finished;
++    }
+ 
+     SSL_TRC(3, ("%d: SSL3[%d] Set Current Read Cipher Suite to Pending",
+ 		SSL_GETPID(), ss->fd ));
+@@ -4898,10 +4905,11 @@ loser:
+ static SECStatus
+ ssl3_SendCertificateVerify(sslSocket *ss)
+ {
+-    SECStatus     rv		= SECFailure;
+-    PRBool        isTLS;
+-    SECItem       buf           = {siBuffer, NULL, 0};
+-    SSL3Hashes    hashes;
++    SECStatus      rv		= SECFailure;
++    PRBool         isTLS;
++    SECItem        buf		= {siBuffer, NULL, 0};
++    SSL3Hashes     hashes;
++    ssl3CipherSpec *spec;
+ 
+     PORT_Assert( ss->opt.noLocks || ssl_HaveXmitBufLock(ss));
+     PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss));
+@@ -4910,13 +4918,17 @@ ssl3_SendCertificateVerify(sslSocket *ss
+ 		SSL_GETPID(), ss->fd));
+ 
+     ssl_GetSpecReadLock(ss);
+-    rv = ssl3_ComputeHandshakeHashes(ss, ss->ssl3.pwSpec, &hashes, 0);
++    spec = ss->ssl3.pwSpec;
++    if (ssl3_ExtensionNegotiated(ss, ssl_encrypted_client_certs)) {
++	spec = ss->ssl3.cwSpec;
++    }
++    rv = ssl3_ComputeHandshakeHashes(ss, spec, &hashes, 0);
+     ssl_ReleaseSpecReadLock(ss);
+     if (rv != SECSuccess) {
+ 	goto done;	/* err code was set by ssl3_ComputeHandshakeHashes */
+     }
+ 
+-    isTLS = (PRBool)(ss->ssl3.pwSpec->version > SSL_LIBRARY_VERSION_3_0);
++    isTLS = (PRBool)(spec->version > SSL_LIBRARY_VERSION_3_0);
+     if (ss->ssl3.platformClientKey) {
+ #ifdef NSS_PLATFORM_CLIENT_AUTH
+ 	rv = ssl3_PlatformSignHashes(&hashes, ss->ssl3.platformClientKey,
+@@ -5924,6 +5936,10 @@ ssl3_SendClientSecondRound(sslSocket *ss
+ {
+     SECStatus rv;
+     PRBool sendClientCert;
++    PRBool sendEmptyCert;
++    int n = 0, i;
++    typedef SECStatus (*SendFunction)(sslSocket*);
++    SendFunction  send_funcs[5];
+ 
+     PORT_Assert( ss->opt.noLocks || ssl_HaveRecvBufLock(ss) );
+     PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss) );
+@@ -5970,35 +5986,40 @@ ssl3_SendClientSecondRound(sslSocket *ss
+ 
+     ssl_GetXmitBufLock(ss);		/*******************************/
+ 
+-    if (ss->ssl3.sendEmptyCert) {
+-	ss->ssl3.sendEmptyCert = PR_FALSE;
+-	rv = ssl3_SendEmptyCertificate(ss);
+-	/* Don't send verify */
+-	if (rv != SECSuccess) {
+-	    goto loser;	/* error code is set. */
+-    	}
+-    } else if (sendClientCert) {
+-	rv = ssl3_SendCertificate(ss);
+-	if (rv != SECSuccess) {
+-	    goto loser;	/* error code is set. */
+-    	}
+-    }
++    sendEmptyCert = ss->ssl3.sendEmptyCert;
++    ss->ssl3.sendEmptyCert = PR_FALSE;
+ 
+-    rv = ssl3_SendClientKeyExchange(ss);
+-    if (rv != SECSuccess) {
+-    	goto loser;	/* err is set. */
++    if (ssl3_ExtensionNegotiated(ss, ssl_encrypted_client_certs)) {
++	send_funcs[n++] = ssl3_SendClientKeyExchange;
++	send_funcs[n++] = ssl3_SendChangeCipherSpecs;
++	if (sendEmptyCert) {
++	    send_funcs[n++] = ssl3_SendEmptyCertificate;
++	}
++	if (sendClientCert) {
++	    send_funcs[n++] = ssl3_SendCertificate;
++	    send_funcs[n++] = ssl3_SendCertificateVerify;
++	}
++    } else {
++	if (sendEmptyCert) {
++	    send_funcs[n++] = ssl3_SendEmptyCertificate;
++	}
++	if (sendClientCert) {
++	    send_funcs[n++] = ssl3_SendCertificate;
++	}
++	send_funcs[n++] = ssl3_SendClientKeyExchange;
++	if (sendClientCert) {
++	    send_funcs[n++] = ssl3_SendCertificateVerify;
++	}
++	send_funcs[n++] = ssl3_SendChangeCipherSpecs;
+     }
+ 
+-    if (sendClientCert) {
+-	rv = ssl3_SendCertificateVerify(ss);
+-	if (rv != SECSuccess) {
+-	    goto loser;	/* err is set. */
+-        }
+-    }
++    PORT_Assert(n <= sizeof(send_funcs)/sizeof(send_funcs[0]));
+ 
+-    rv = ssl3_SendChangeCipherSpecs(ss);
+-    if (rv != SECSuccess) {
+-	goto loser;	/* err code was set. */
++    for (i = 0; i < n; i++) {
++	rv = send_funcs[i](ss);
++	if (rv != SECSuccess) {
++	    goto loser;	/* err code was set. */
++	}
+     }
+ 
+     /* XXX: If the server's certificate hasn't been authenticated by this
+@@ -6213,8 +6234,13 @@ ssl3_SendServerHelloSequence(sslSocket *
+ 	return rv;		/* err code is set. */
+     }
+ 
+-    ss->ssl3.hs.ws = (ss->opt.requestCertificate) ? wait_client_cert
+-                                               : wait_client_key;
++    if (ss->opt.requestCertificate &&
++	!ssl3_ExtensionNegotiated(ss, ssl_encrypted_client_certs)) {
++	ss->ssl3.hs.ws = wait_client_cert;
++    } else {
++	ss->ssl3.hs.ws = wait_client_key;
++    }
++
+     return SECSuccess;
+ }
+ 
+@@ -7458,7 +7484,11 @@ ssl3_HandleCertificateVerify(sslSocket *
+ 	desc    = isTLS ? decode_error : illegal_parameter;
+ 	goto alert_loser;	/* malformed */
+     }
+-    ss->ssl3.hs.ws = wait_change_cipher;
++    if (ssl3_ExtensionNegotiated(ss, ssl_encrypted_client_certs)) {
++	ss->ssl3.hs.ws = wait_finished;
++    } else {
++	ss->ssl3.hs.ws = wait_change_cipher;
++    }
+     return SECSuccess;
+ 
+ alert_loser:
+@@ -8358,7 +8388,11 @@ ssl3_HandleCertificate(sslSocket *ss, SS
+ 	}
+     } else {
+ server_no_cert:
+-	ss->ssl3.hs.ws = wait_client_key;
++	if (ssl3_ExtensionNegotiated(ss, ssl_encrypted_client_certs)) {
++	    ss->ssl3.hs.ws = wait_cert_verify;
++	} else {
++	    ss->ssl3.hs.ws = wait_client_key;
++	}
+     }
+ 
+     PORT_Assert(rv == SECSuccess);
+@@ -8968,6 +9002,8 @@ ssl3_HandleHandshakeMessage(sslSocket *s
+ 	if (type == finished) {
+ 	    sender = ss->sec.isServer ? sender_client : sender_server;
+ 	    rSpec  = ss->ssl3.crSpec;
++	} else if (ssl3_ExtensionNegotiated(ss, ssl_encrypted_client_certs)) {
++	    rSpec  = ss->ssl3.crSpec;
+ 	}
+ 	rv = ssl3_ComputeHandshakeHashes(ss, rSpec, &hashes, sender);
+     }
+diff -pu -r a/src/net/third_party/nss/ssl/ssl3ext.c b/src/net/third_party/nss/ssl/ssl3ext.c
+--- a/src/net/third_party/nss/ssl/ssl3ext.c	2012-03-19 12:50:32.610015524 -0700
++++ b/src/net/third_party/nss/ssl/ssl3ext.c	2012-03-19 13:49:29.507749795 -0700
+@@ -84,6 +84,12 @@ static SECStatus ssl3_ServerHandleNextPr
+ 			PRUint16 ex_type, SECItem *data);
+ static PRInt32 ssl3_ClientSendNextProtoNegoXtn(sslSocket *ss, PRBool append,
+ 					       PRUint32 maxBytes);
++static SECStatus ssl3_ServerHandleEncryptedClientCertsXtn(sslSocket *ss,
++    PRUint16 ex_type, SECItem *data);
++static SECStatus ssl3_ClientHandleEncryptedClientCertsXtn(sslSocket *ss,
++    PRUint16 ex_type, SECItem *data);
++static PRInt32 ssl3_SendEncryptedClientCertsXtn(sslSocket *ss,
++    PRBool append, PRUint32 maxBytes);
+ 
+ /*
+  * Write bytes.  Using this function means the SECItem structure
+@@ -240,6 +246,7 @@ static const ssl3HelloExtensionHandler c
+     { ssl_ec_point_formats_xtn,   &ssl3_HandleSupportedPointFormatsXtn },
+ #endif
+     { ssl_session_ticket_xtn,     &ssl3_ServerHandleSessionTicketXtn },
++    { ssl_encrypted_client_certs, &ssl3_ServerHandleEncryptedClientCertsXtn },
+     { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
+     { ssl_next_proto_nego_xtn,    &ssl3_ServerHandleNextProtoNegoXtn },
+     { ssl_ob_cert_xtn,            &ssl3_ServerHandleOBCertXtn },
+@@ -252,6 +259,7 @@ static const ssl3HelloExtensionHandler s
+     { ssl_server_name_xtn,        &ssl3_HandleServerNameXtn },
+     /* TODO: add a handler for ssl_ec_point_formats_xtn */
+     { ssl_session_ticket_xtn,     &ssl3_ClientHandleSessionTicketXtn },
++    { ssl_encrypted_client_certs, &ssl3_ClientHandleEncryptedClientCertsXtn },
+     { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
+     { ssl_next_proto_nego_xtn,    &ssl3_ClientHandleNextProtoNegoXtn },
+     { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
+@@ -279,6 +287,7 @@ ssl3HelloExtensionSender clientHelloSend
+     { ssl_ec_point_formats_xtn,   &ssl3_SendSupportedPointFormatsXtn },
+ #endif
+     { ssl_session_ticket_xtn,     &ssl3_SendSessionTicketXtn },
++    { ssl_encrypted_client_certs, &ssl3_SendEncryptedClientCertsXtn },
+     { ssl_next_proto_nego_xtn,    &ssl3_ClientSendNextProtoNegoXtn },
+     { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
+     { ssl_ob_cert_xtn,            &ssl3_SendOBCertXtn }
+@@ -1082,6 +1091,18 @@ ssl3_ClientHandleSessionTicketXtn(sslSoc
+     return SECSuccess;
+ }
+ 
++static SECStatus
++ssl3_ClientHandleEncryptedClientCertsXtn(sslSocket *ss, PRUint16 ex_type,
++	                                 SECItem *data)
++{
++    if (data->len != 0)
++	return SECFailure;
++
++    /* Keep track of negotiated extensions. */
++    ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
++    return SECSuccess;
++}
++
+ SECStatus
+ ssl3_ServerHandleSessionTicketXtn(sslSocket *ss, PRUint16 ex_type,
+                                   SECItem *data)
+@@ -1495,6 +1516,24 @@ loser:
+     return rv;
+ }
+ 
++static SECStatus
++ssl3_ServerHandleEncryptedClientCertsXtn(sslSocket *ss, PRUint16 ex_type,
++	                                 SECItem *data)
++{
++    SECStatus rv = SECSuccess;
++
++    if (data->len != 0)
++	return SECFailure;
++
++    if (ss->opt.encryptClientCerts) {
++	ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
++	rv = ssl3_RegisterServerHelloExtensionSender(
++	    ss, ex_type, ssl3_SendEncryptedClientCertsXtn);
++    }
++
++    return rv;
++}
++
+ /*
+  * Read bytes.  Using this function means the SECItem structure
+  * cannot be freed.  The caller is expected to call this function
+@@ -1694,6 +1733,33 @@ ssl3_SendRenegotiationInfoXtn(
+     return needed;
+ }
+ 
++static PRInt32
++ssl3_SendEncryptedClientCertsXtn(
++			sslSocket * ss,
++			PRBool      append,
++			PRUint32    maxBytes)
++{
++    PRInt32 needed;
++
++    if (!ss->opt.encryptClientCerts)
++	return 0;
++
++    needed = 4; /* two bytes of type and two of length. */
++    if (append && maxBytes >= needed) {
++	SECStatus rv;
++	rv = ssl3_AppendHandshakeNumber(ss, ssl_encrypted_client_certs, 2);
++	if (rv != SECSuccess)
++	    return -1;
++	rv = ssl3_AppendHandshakeNumber(ss, 0 /* length */, 2);
++	if (rv != SECSuccess)
++	    return -1;
++	ss->xtnData.advertised[ss->xtnData.numAdvertised++] =
++	    ssl_encrypted_client_certs;
++    }
++
++    return needed;
++}
++
+ /* This function runs in both the client and server.  */
+ static SECStatus
+ ssl3_HandleRenegotiationInfoXtn(sslSocket *ss, PRUint16 ex_type, SECItem *data)
+diff -pu -r a/src/net/third_party/nss/ssl/sslsock.c b/src/net/third_party/nss/ssl/sslsock.c
+--- a/src/net/third_party/nss/ssl/sslsock.c	2012-03-19 12:59:07.586991902 -0700
++++ b/src/net/third_party/nss/ssl/sslsock.c	2012-03-19 13:49:29.517749929 -0700
+@@ -188,6 +188,7 @@ static sslOptions ssl_defaults = {
+     PR_TRUE,    /* cbcRandomIV        */
+     PR_FALSE,   /* enableOCSPStapling */
+     PR_FALSE,   /* enableOBCerts */
++    PR_FALSE,   /* encryptClientCerts */
+ };
+ 
+ /*
+@@ -826,6 +827,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
+ 	ss->opt.enableOBCerts = on;
+ 	break;
+ 
++      case SSL_ENCRYPT_CLIENT_CERTS:
++	ss->opt.encryptClientCerts = on;
++	break;
++
+       default:
+ 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
+ 	rv = SECFailure;
+@@ -897,6 +902,8 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 wh
+     case SSL_CBC_RANDOM_IV:       on = ss->opt.cbcRandomIV;        break;
+     case SSL_ENABLE_OCSP_STAPLING: on = ss->opt.enableOCSPStapling; break;
+     case SSL_ENABLE_OB_CERTS:     on = ss->opt.enableOBCerts;      break;
++    case SSL_ENCRYPT_CLIENT_CERTS:
++                                  on = ss->opt.encryptClientCerts; break;
+ 
+     default:
+ 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
+@@ -959,6 +966,8 @@ SSL_OptionGetDefault(PRInt32 which, PRBo
+ 	on = ssl_defaults.enableOCSPStapling;
+ 	break;
+     case SSL_ENABLE_OB_CERTS:     on = ssl_defaults.enableOBCerts;      break;
++    case SSL_ENCRYPT_CLIENT_CERTS:
++                                  on = ssl_defaults.encryptClientCerts; break;
+ 
+     default:
+ 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
+@@ -1126,6 +1135,10 @@ SSL_OptionSetDefault(PRInt32 which, PRBo
+ 	ssl_defaults.enableOBCerts = on;
+ 	break;
+ 
++      case SSL_ENCRYPT_CLIENT_CERTS:
++	ssl_defaults.encryptClientCerts = on;
++	break;
++
+       default:
+ 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
+ 	return SECFailure;
+diff -pu -r a/src/net/third_party/nss/ssl/sslt.h b/src/net/third_party/nss/ssl/sslt.h
+--- a/src/net/third_party/nss/ssl/sslt.h	2012-03-19 12:50:32.610015524 -0700
++++ b/src/net/third_party/nss/ssl/sslt.h	2012-03-19 13:49:29.517749929 -0700
+@@ -214,10 +214,11 @@ typedef enum {
+ #endif
+     ssl_session_ticket_xtn           = 35,
+     ssl_next_proto_nego_xtn          = 13172,
++    ssl_encrypted_client_certs       = 13180,	/* not IANA assigned.  */
+     ssl_renegotiation_info_xtn       = 0xff01,	/* experimental number */
+     ssl_ob_cert_xtn                  = 13175	/* experimental number */
+ } SSLExtensionType;
+ 
+-#define SSL_MAX_EXTENSIONS             8
++#define SSL_MAX_EXTENSIONS             9
+ 
+ #endif /* __sslt_h_ */

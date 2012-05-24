@@ -38,7 +38,7 @@ type pin struct {
 	name         string
 	cert         *x509.Certificate
 	spkiHash     []byte
-	spkiHashFunc string // i.e. "sha1"
+	spkiHashFunc string  // i.e. "sha1"
 }
 
 // preloaded represents the information contained in the
@@ -59,7 +59,7 @@ type pinset struct {
 type hsts struct {
 	Name       string `json:"name"`
 	Subdomains bool   `json:"include_subdomains"`
-	Mode       string `json:"mode"`
+	Mode       string   `json:"mode"`
 	Pins       string `json:"pins"`
 	SNIOnly    bool   `json:"snionly"`
 }
@@ -283,21 +283,13 @@ func matchNames(name, v string) error {
 	if strings.HasSuffix(firstWord, ",") {
 		firstWord = firstWord[:len(firstWord)-1]
 	}
-	if strings.HasPrefix(firstWord, "*.") {
-		firstWord = firstWord[2:]
-	}
 	if pos := strings.Index(firstWord, "."); pos != -1 {
 		firstWord = firstWord[:pos]
 	}
 	if pos := strings.Index(firstWord, "-"); pos != -1 {
 		firstWord = firstWord[:pos]
 	}
-	if len(firstWord) == 0 {
-		return errors.New("first word of certificate name is empty")
-	}
-	firstWord = strings.ToLower(firstWord)
-	lowerV := strings.ToLower(v)
-	if !strings.HasPrefix(lowerV, firstWord) {
+	if !strings.HasPrefix(v, firstWord) {
 		return errors.New("the first word of the certificate name isn't a prefix of the variable name")
 	}
 
@@ -464,7 +456,7 @@ func toDNS(s string) (string, int) {
 		name += label
 		l += len(label) + 1
 	}
-	l += 1 // For the length of the root label.
+	l += 1  // For the length of the root label.
 
 	return name, l
 }

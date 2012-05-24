@@ -1878,38 +1878,6 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
   // we should also test that preferences are preserved.
 }
 
-#if defined(OS_POSIX)
-TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
-  FilePath source_data_dir = data_dir_.
-      AppendASCII("unpacked").
-      AppendASCII("symlinks_allowed");
-
-  // Paths to test data files.
-  FilePath source_manifest = source_data_dir.AppendASCII("manifest.json");
-  ASSERT_TRUE(file_util::PathExists(source_manifest));
-  FilePath source_icon = source_data_dir.AppendASCII("icon.png");
-  ASSERT_TRUE(file_util::PathExists(source_icon));
-
-  // Set up the temporary extension directory.
-  ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  FilePath extension_path = temp.path();
-  FilePath manifest = extension_path.Append(Extension::kManifestFilename);
-  FilePath icon_symlink = extension_path.AppendASCII("icon.png");
-  file_util::CopyFile(source_manifest, manifest);
-  file_util::CreateSymbolicLink(source_icon, icon_symlink);
-
-  // Load extension.
-  InitializeEmptyExtensionService();
-  extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
-  loop_.RunAllPending();
-
-  EXPECT_TRUE(GetErrors().empty());
-  ASSERT_EQ(1u, loaded_.size());
-  EXPECT_EQ(1u, service_->extensions()->size());
-}
-#endif
-
 TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
   InitializeEmptyExtensionService();
   FilePath theme_path = data_dir_

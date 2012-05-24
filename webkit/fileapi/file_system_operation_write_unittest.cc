@@ -234,7 +234,6 @@ TEST_F(FileSystemOperationWriteTest, TestWriteSuccess) {
 TEST_F(FileSystemOperationWriteTest, TestWriteZero) {
   GURL blob_url("blob:zero");
   scoped_refptr<webkit_blob::BlobData> blob_data(new webkit_blob::BlobData());
-  blob_data->AppendData("");
 
   TestURLRequestContext url_request_context;
   url_request_context.blob_storage_controller()->AddFinishedBlob(

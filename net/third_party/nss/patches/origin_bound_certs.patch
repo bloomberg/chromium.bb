@@ -1,0 +1,219 @@
+diff -up a/src/net/third_party/nss/ssl/ssl.h b/src/net/third_party/nss/ssl/ssl.h
+--- a/src/net/third_party/nss/ssl/ssl.h	2012-02-29 14:41:25.755295547 -0800
++++ b/src/net/third_party/nss/ssl/ssl.h	2012-02-29 16:45:47.368569394 -0800
+@@ -168,6 +168,7 @@ SSL_IMPORT PRFileDesc *SSL_ImportFD(PRFi
+  */
+ #define SSL_CBC_RANDOM_IV 23
+ #define SSL_ENABLE_OCSP_STAPLING       24 /* Request OCSP stapling (client) */
++#define SSL_ENABLE_OB_CERTS            25 /* Enable origin bound certs.     */
+ 
+ #ifdef SSL_DEPRECATED_FUNCTION 
+ /* Old deprecated function names */
+diff -up a/src/net/third_party/nss/ssl/ssl3ext.c b/src/net/third_party/nss/ssl/ssl3ext.c
+--- a/src/net/third_party/nss/ssl/ssl3ext.c	2012-02-28 20:34:50.114663722 -0800
++++ b/src/net/third_party/nss/ssl/ssl3ext.c	2012-02-29 17:05:21.684414824 -0800
+@@ -242,6 +242,7 @@ static const ssl3HelloExtensionHandler c
+     { ssl_session_ticket_xtn,     &ssl3_ServerHandleSessionTicketXtn },
+     { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
+     { ssl_next_proto_nego_xtn,    &ssl3_ServerHandleNextProtoNegoXtn },
++    { ssl_ob_cert_xtn,            &ssl3_ServerHandleOBCertXtn },
+     { -1, NULL }
+ };
+ 
+@@ -254,6 +255,7 @@ static const ssl3HelloExtensionHandler s
+     { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
+     { ssl_next_proto_nego_xtn,    &ssl3_ClientHandleNextProtoNegoXtn },
+     { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
++    { ssl_ob_cert_xtn,            &ssl3_ClientHandleOBCertXtn },
+     { -1, NULL }
+ };
+ 
+@@ -278,7 +280,8 @@ ssl3HelloExtensionSender clientHelloSend
+ #endif
+     { ssl_session_ticket_xtn,     &ssl3_SendSessionTicketXtn },
+     { ssl_next_proto_nego_xtn,    &ssl3_ClientSendNextProtoNegoXtn },
+-    { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn }
++    { ssl_cert_status_xtn,        &ssl3_ClientSendStatusRequestXtn },
++    { ssl_ob_cert_xtn,            &ssl3_SendOBCertXtn }
+     /* any extra entries will appear as { 0, NULL }    */
+ };
+ 
+@@ -1723,3 +1726,80 @@ ssl3_HandleRenegotiationInfoXtn(sslSocke
+     return rv;
+ }
+ 
++/* This sender is used by both the client and server. */
++PRInt32
++ssl3_SendOBCertXtn(sslSocket * ss, PRBool append,
++		   PRUint32 maxBytes)
++{
++    SECStatus rv;
++    PRUint32 extension_length;
++  
++    if (!ss)
++        return 0;
++    
++    if (!ss->opt.enableOBCerts)
++        return 0;
++
++    /* extension length = extension_type (2-bytes) +
++     * length(extension_data) (2-bytes) +
++     */
++
++    extension_length = 4;
++
++    if (append && maxBytes >= extension_length) {
++        /* extension_type */
++        rv = ssl3_AppendHandshakeNumber(ss, ssl_ob_cert_xtn, 2); 
++        if (rv != SECSuccess) return -1;
++        /* length of extension_data */
++        rv = ssl3_AppendHandshakeNumber(ss, extension_length - 4, 2); 
++        if (rv != SECSuccess) return -1;
++
++	if (!ss->sec.isServer) {
++	    TLSExtensionData *xtnData = &ss->xtnData;
++	    xtnData->advertised[xtnData->numAdvertised++] = ssl_ob_cert_xtn;
++	}
++    }
++
++    return extension_length;
++}
++
++SECStatus
++ssl3_ServerHandleOBCertXtn(sslSocket *ss, PRUint16 ex_type,
++			   SECItem *data)
++{
++    SECStatus rv;
++
++    /* Ignore the OBCert extension if it is disabled. */
++    if (!ss->opt.enableOBCerts)
++	return SECSuccess;
++
++    /* The echoed extension must be empty. */
++    if (data->len != 0)
++	return SECFailure;
++
++    /* Keep track of negotiated extensions. */
++    ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
++
++    rv = ssl3_RegisterServerHelloExtensionSender(ss, ex_type,
++						 ssl3_SendOBCertXtn);
++
++    return SECSuccess;
++}
++
++SECStatus
++ssl3_ClientHandleOBCertXtn(sslSocket *ss, PRUint16 ex_type,
++			   SECItem *data)
++{
++    /* If we didn't request this extension, then the server may not echo it. */
++    if (!ss->opt.enableOBCerts)
++	return SECFailure;
++
++    /* The echoed extension must be empty. */
++    if (data->len != 0)
++	return SECFailure;
++
++    /* Keep track of negotiated extensions. */
++    ss->xtnData.negotiated[ss->xtnData.numNegotiated++] = ex_type;
++
++    return SECSuccess;
++}
+diff -up a/src/net/third_party/nss/ssl/sslimpl.h b/src/net/third_party/nss/ssl/sslimpl.h
+--- a/src/net/third_party/nss/ssl/sslimpl.h	2012-02-28 20:34:50.114663722 -0800
++++ b/src/net/third_party/nss/ssl/sslimpl.h	2012-02-29 16:57:21.097919853 -0800
+@@ -349,6 +349,7 @@ typedef struct sslOptionsStr {
+     unsigned int enableFalseStart       : 1;  /* 23 */
+     unsigned int cbcRandomIV            : 1;  /* 24 */
+     unsigned int enableOCSPStapling     : 1;  /* 25 */
++    unsigned int enableOBCerts          : 1;  /* 26 */
+ } sslOptions;
+ 
+ typedef enum { sslHandshakingUndetermined = 0,
+@@ -1563,8 +1564,12 @@ extern SECStatus ssl3_ClientHandleSessio
+ 			PRUint16 ex_type, SECItem *data);
+ extern SECStatus ssl3_ClientHandleStatusRequestXtn(sslSocket *ss,
+ 			PRUint16 ex_type, SECItem *data);
++extern SECStatus ssl3_ClientHandleOBCertXtn(sslSocket *ss,
++			PRUint16 ex_type, SECItem *data);
+ extern SECStatus ssl3_ServerHandleSessionTicketXtn(sslSocket *ss,
+ 			PRUint16 ex_type, SECItem *data);
++extern SECStatus ssl3_ServerHandleOBCertXtn(sslSocket *ss,
++			PRUint16 ex_type, SECItem *data);
+ 
+ /* ClientHello and ServerHello extension senders.
+  * Note that not all extension senders are exposed here; only those that
+@@ -1580,6 +1585,8 @@ extern PRInt32 ssl3_ClientSendStatusRequ
+  */
+ extern PRInt32 ssl3_SendServerNameXtn(sslSocket *ss, PRBool append,
+                      PRUint32 maxBytes);
++extern PRInt32 ssl3_SendOBCertXtn(sslSocket *ss, PRBool append,
++			PRUint32 maxBytes);
+ 
+ /* Assigns new cert, cert chain and keys to ss->serverCerts
+  * struct. If certChain is NULL, tries to find one. Aborts if
+diff -up a/src/net/third_party/nss/ssl/sslsock.c b/src/net/third_party/nss/ssl/sslsock.c
+--- a/src/net/third_party/nss/ssl/sslsock.c	2012-02-29 14:41:25.755295547 -0800
++++ b/src/net/third_party/nss/ssl/sslsock.c	2012-02-29 17:03:16.272715683 -0800
+@@ -187,6 +187,7 @@ static sslOptions ssl_defaults = {
+     PR_FALSE,   /* enableFalseStart   */
+     PR_TRUE,    /* cbcRandomIV        */
+     PR_FALSE,   /* enableOCSPStapling */
++    PR_FALSE,   /* enableOBCerts */
+ };
+ 
+ sslSessionIDLookupFunc  ssl_sid_lookup;
+@@ -750,6 +751,10 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
+ 	ss->opt.enableOCSPStapling = on;
+ 	break;
+ 
++      case SSL_ENABLE_OB_CERTS:
++	ss->opt.enableOBCerts = on;
++	break;
++
+       default:
+ 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
+ 	rv = SECFailure;
+@@ -816,6 +821,7 @@ SSL_OptionGet(PRFileDesc *fd, PRInt32 wh
+     case SSL_ENABLE_FALSE_START:  on = ss->opt.enableFalseStart;   break;
+     case SSL_CBC_RANDOM_IV:       on = ss->opt.cbcRandomIV;        break;
+     case SSL_ENABLE_OCSP_STAPLING: on = ss->opt.enableOCSPStapling; break;
++    case SSL_ENABLE_OB_CERTS:     on = ss->opt.enableOBCerts;      break;
+ 
+     default:
+ 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
+@@ -873,6 +879,7 @@ SSL_OptionGetDefault(PRInt32 which, PRBo
+     case SSL_ENABLE_OCSP_STAPLING:
+ 	on = ssl_defaults.enableOCSPStapling;
+ 	break;
++    case SSL_ENABLE_OB_CERTS:     on = ssl_defaults.enableOBCerts;      break;
+ 
+     default:
+ 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
+@@ -1036,6 +1043,10 @@ SSL_OptionSetDefault(PRInt32 which, PRBo
+ 	ssl_defaults.enableOCSPStapling = on;
+ 	break;
+ 
++      case SSL_ENABLE_OB_CERTS:
++	ssl_defaults.enableOBCerts = on;
++	break;
++
+       default:
+ 	PORT_SetError(SEC_ERROR_INVALID_ARGS);
+ 	return SECFailure;
+diff -up a/src/net/third_party/nss/ssl/sslt.h b/src/net/third_party/nss/ssl/sslt.h
+--- a/src/net/third_party/nss/ssl/sslt.h	2012-02-28 19:26:04.057351342 -0800
++++ b/src/net/third_party/nss/ssl/sslt.h	2012-02-29 17:05:03.744171015 -0800
+@@ -205,9 +205,10 @@ typedef enum {
+ #endif
+     ssl_session_ticket_xtn           = 35,
+     ssl_next_proto_nego_xtn          = 13172,
+-    ssl_renegotiation_info_xtn       = 0xff01	/* experimental number */
++    ssl_renegotiation_info_xtn       = 0xff01,	/* experimental number */
++    ssl_ob_cert_xtn                  = 13175	/* experimental number */
+ } SSLExtensionType;
+ 
+-#define SSL_MAX_EXTENSIONS             7
++#define SSL_MAX_EXTENSIONS             8
+ 
+ #endif /* __sslt_h_ */
