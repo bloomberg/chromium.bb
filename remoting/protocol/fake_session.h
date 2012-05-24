@@ -135,7 +135,9 @@ class FakeSession : public Session {
   FakeSession();
   virtual ~FakeSession();
 
-  const StateChangeCallback& state_change_callback() { return callback_; }
+  const StateChangeCallback& state_change_callback() {
+    return state_change_callback_;
+  }
 
   void set_message_loop(MessageLoop* message_loop) {
     message_loop_ = message_loop;
@@ -173,7 +175,8 @@ class FakeSession : public Session {
   virtual void Close() OVERRIDE;
 
  public:
-  StateChangeCallback callback_;
+  StateChangeCallback state_change_callback_;
+  RouteChangeCallback route_change_callback_;
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
   SessionConfig config_;
   MessageLoop* message_loop_;

@@ -37,7 +37,8 @@ class ClientSessionTest : public testing::Test {
     protocol::MockSession* session = new MockSession();
     EXPECT_CALL(*session, jid()).WillRepeatedly(ReturnRef(client_jid_));
     EXPECT_CALL(*session, SetStateChangeCallback(_));
-
+    EXPECT_CALL(*session, SetRouteChangeCallback(_));
+    EXPECT_CALL(*session, Close());
     scoped_ptr<protocol::ConnectionToClient> connection(
         new protocol::ConnectionToClient(session));
     client_session_.reset(new ClientSession(
@@ -252,6 +253,7 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
 
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   client_session_->OnConnectionAuthenticated(client_session_->connection());
   client_session_->OnConnectionChannelsConnected(client_session_->connection());
@@ -271,6 +273,8 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
       client_session_->InjectMouseEvent(event);
     }
   }
+
+  DisconnectClientSession();
 }
 
 }  // namespace remoting

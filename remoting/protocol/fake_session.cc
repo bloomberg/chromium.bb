@@ -245,11 +245,11 @@ FakeUdpSocket* FakeSession::GetDatagramChannel(const std::string& name) {
 }
 
 void FakeSession::SetStateChangeCallback(const StateChangeCallback& callback) {
-  callback_ = callback;
+  state_change_callback_ = callback;
 }
 
 void FakeSession::SetRouteChangeCallback(const RouteChangeCallback& callback) {
-  NOTIMPLEMENTED();
+  route_change_callback_ = callback;
 }
 
 ErrorCode FakeSession::error() {

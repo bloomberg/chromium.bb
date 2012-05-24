@@ -78,6 +78,7 @@ class ScreenRecorderTest : public testing::Test {
 
     session_ = new MockSession();
     EXPECT_CALL(*session_, SetStateChangeCallback(_));
+    EXPECT_CALL(*session_, SetRouteChangeCallback(_));
     EXPECT_CALL(*session_, Close())
         .Times(AnyNumber());
     connection_.reset(new MockConnectionToClient(
@@ -171,6 +172,7 @@ TEST_F(ScreenRecorderTest, StartAndStop) {
 }
 
 TEST_F(ScreenRecorderTest, StopWithoutStart) {
+  EXPECT_CALL(capturer_, Stop());
   record_->Stop(base::Bind(&QuitMessageLoop, &message_loop_));
   message_loop_.Run();
 }
