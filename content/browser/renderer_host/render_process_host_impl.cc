@@ -78,8 +78,6 @@
 #include "content/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
-#include "content/browser/speech/input_tag_speech_dispatcher_host.h"
-#include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_host_impl.h"
@@ -115,6 +113,10 @@
 #if defined(OS_WIN)
 #include "base/synchronization/waitable_event.h"
 #include "content/common/font_cache_dispatcher_win.h"
+#endif
+
+#if defined(ENABLE_INPUT_SPEECH)
+#include "content/browser/speech/input_tag_speech_dispatcher_host.h"
 #endif
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -500,9 +502,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
                                               GetID(), browser_context));
 #if defined(ENABLE_INPUT_SPEECH)
   channel_->AddFilter(new speech::InputTagSpeechDispatcherHost(
-      GetID(), browser_context->GetRequestContext(),
-      browser_context->GetSpeechRecognitionPreferences()));
-  channel_->AddFilter(new speech::SpeechRecognitionDispatcherHost(
       GetID(), browser_context->GetRequestContext(),
       browser_context->GetSpeechRecognitionPreferences()));
 #endif

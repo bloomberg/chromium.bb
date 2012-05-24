@@ -87,7 +87,6 @@
 #include "content/renderer/renderer_accessibility.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
-#include "content/renderer/speech_recognition_dispatcher.h"
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_intents_host.h"
@@ -526,7 +525,6 @@ RenderViewImpl::RenderViewImpl(
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
       input_tag_speech_dispatcher_(NULL),
-      speech_recognition_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       media_stream_impl_(NULL),
@@ -5354,14 +5352,6 @@ WebKit::WebSpeechInputController* RenderViewImpl::speechInputController(
         new InputTagSpeechDispatcher(this, listener);
 #endif
   return input_tag_speech_dispatcher_;
-}
-
-WebKit::WebSpeechRecognizer* RenderViewImpl::speechRecognizer() {
-#if defined(ENABLE_INPUT_SPEECH)
-  if (!speech_recognition_dispatcher_)
-    speech_recognition_dispatcher_ = new SpeechRecognitionDispatcher(this);
-#endif
-  return speech_recognition_dispatcher_;
 }
 
 WebKit::WebDeviceOrientationClient* RenderViewImpl::deviceOrientationClient() {

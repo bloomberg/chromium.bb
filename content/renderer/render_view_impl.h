@@ -81,7 +81,6 @@ class RendererAccessibility;
 class RendererWebColorChooserImpl;
 class SkBitmap;
 class InputTagSpeechDispatcher;
-class SpeechRecognitionDispatcher;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
 struct ViewMsg_StopFinding_Params;
@@ -141,7 +140,6 @@ class WebPeerConnectionHandlerClient;
 class WebSocketStreamHandle;
 class WebSpeechInputController;
 class WebSpeechInputListener;
-class WebSpeechRecognizer;
 class WebStorageNamespace;
 class WebTouchEvent;
 class WebURLLoader;
@@ -465,7 +463,6 @@ class RenderViewImpl : public RenderWidget,
   virtual WebKit::WebGeolocationClient* geolocationClient();
   virtual WebKit::WebSpeechInputController* speechInputController(
       WebKit::WebSpeechInputListener* listener);
-  virtual WebKit::WebSpeechRecognizer* speechRecognizer();
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
   virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
   virtual void zoomLevelChanged();
@@ -1268,10 +1265,6 @@ class RenderViewImpl : public RenderWidget,
 
   // The speech dispatcher attached to this view, lazily initialized.
   InputTagSpeechDispatcher* input_tag_speech_dispatcher_;
-
-  // The speech recognition dispatcher attached to this view, lazily
-  // initialized.
-  SpeechRecognitionDispatcher* speech_recognition_dispatcher_;
 
   // Device orientation dispatcher attached to this view; lazily initialized.
   DeviceOrientationDispatcher* device_orientation_dispatcher_;

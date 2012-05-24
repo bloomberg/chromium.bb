@@ -62,11 +62,11 @@ class SpeechRecognitionManager {
   virtual SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const = 0;
 
-  // Looks-up an existing session from the context tuple
-  // {render_view_id, render_view_id, request_id}.
-  virtual int GetSession(int render_process_id,
-                         int render_view_id,
-                         int request_id) const = 0;
+  // Looks-up an existing session using a caller-provided matcher function.
+  virtual int LookupSessionByContext(
+      base::Callback<bool(
+          const content::SpeechRecognitionSessionContext&)> matcher)
+            const = 0;
 
   // Returns true if the OS reports existence of audio recording devices.
   virtual bool HasAudioInputDevices() = 0;

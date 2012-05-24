@@ -15,9 +15,11 @@ namespace content {
 // The context information required by clients of the SpeechRecognitionManager
 // and its delegates for mapping the recognition session to other browser
 // elements involved with it (e.g., the page element that requested the
-// recognition). The manager keeps this struct attached to the recognition
-// session during all the session lifetime, making its contents available to
-// clients (In this regard, see SpeechRecognitionManager::GetSessionContext and
+// recognition). The SpeechRecognitionManager is not aware of the content of
+// this struct and does NOT use it for its purposes. However the manager keeps
+// this struct "attached" to the recognition session during all the session
+// lifetime, making its contents available to clients (In this regard, see
+// SpeechRecognitionManager::GetSessionContext and
 // SpeechRecognitionManager::LookupSessionByContext methods).
 struct CONTENT_EXPORT SpeechRecognitionSessionContext {
   SpeechRecognitionSessionContext();
@@ -25,7 +27,8 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
 
   int render_process_id;
   int render_view_id;
-  int request_id;
+  int render_request_id;
+  int js_handle_id;
 
   // Determines whether recognition was requested by a page element (in which
   // case its coordinates are passed in |element_rect|).

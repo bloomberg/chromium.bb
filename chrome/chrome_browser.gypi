@@ -4504,8 +4504,7 @@
         }],
         ['input_speech==0', {
           'sources/': [
-            ['exclude', '^browser/speech/*speech_recognition*'],
-            ['exclude', '^browser/speech/*speech_input*'],
+            ['exclude', '^browser/speech/'],
           ],
         }],
         ['notifications==0', {

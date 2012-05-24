@@ -282,18 +282,20 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
                  this->AsWeakPtr(), session_id, EVENT_RECOGNITION_ENDED));
 }
 
-int SpeechRecognitionManagerImpl::GetSession(
-    int render_process_id, int render_view_id, int request_id) const {
+// TODO(primiano) After CL2: if we see that both InputTagDispatcherHost and
+// SpeechRecognitionDispatcherHost do the same lookup operations, implement the
+// lookup method directly here.
+int SpeechRecognitionManagerImpl::LookupSessionByContext(
+    Callback<bool(const SpeechRecognitionSessionContext&)> matcher) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   SessionsTable::const_iterator iter;
+  // Note: the callback (matcher) must NEVER perform non-const calls on us.
   for(iter = sessions_.begin(); iter != sessions_.end(); ++iter) {
     const int session_id = iter->first;
-    const SpeechRecognitionSessionContext& context = iter->second.context;
-    if (context.render_process_id == render_process_id &&
-        context.render_view_id == render_view_id &&
-        context.request_id == request_id) {
+    const Session& session = iter->second;
+    bool matches = matcher.Run(session.context);
+    if (matches)
       return session_id;
-    }
   }
   return kSessionIDInvalid;
 }

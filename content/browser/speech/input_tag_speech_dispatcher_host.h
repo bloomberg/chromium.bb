@@ -62,7 +62,7 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   virtual ~InputTagSpeechDispatcherHost();
 
   void OnStartRecognition(
-      const InputTagSpeechHostMsg_StartRecognition_Params& params);
+      const InputTagSpeechHostMsg_StartRecognition_Params &params);
   void OnCancelRecognition(int render_view_id, int request_id);
   void OnStopRecording(int render_view_id, int request_id);
 
@@ -71,6 +71,8 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
   content::SpeechRecognitionManager* manager();
 
   int render_process_id_;
+  bool may_have_pending_requests_;  // Set if we received any speech IPC request
+
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<content::SpeechRecognitionPreferences> recognition_preferences_;
 
