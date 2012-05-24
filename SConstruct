@@ -3142,6 +3142,8 @@ if nacl_env.Bit('bitcode'):
   # passing -O when linking requests LTO, which does additional global
   # optimizations at link time
   nacl_env.Append(LINKFLAGS=['-O3'])
+  if not nacl_env.Bit('nacl_glibc') and not nacl_env.Bit('pnacl_shared_newlib'):
+    nacl_env.Append(LINKFLAGS=['-static'])
 
   if nacl_env.Bit('translate_fast'):
     nacl_env.Append(LINKFLAGS=['-Xlinker', '-translate-fast'])
@@ -3484,7 +3486,7 @@ nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 
 if nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.AddBiasForPNaCl()
-
+  nacl_irt_env.Append(LINKFLAGS=['-static'])
 # All IRT code must avoid direct use of the TLS ABI register, which
 # is reserved for user TLS.  Instead, ensure all TLS accesses use a
 # call to __nacl_read_tp, which the IRT code overrides to segregate

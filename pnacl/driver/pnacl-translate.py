@@ -45,11 +45,12 @@ EXTRA_ENV = {
 
   'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : -l:crtbegin.o}',
   'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
-  'LIBGCC_EH': '${STATIC ? -l:libgcc_eh.a : ' +
-               # libgcc_s.so drags in "glibc.so"
-               # (it is likely overkill to link it when SHARED==1 also)
+  # static and dynamic newlib images link against the static libgcc_eh
+  'LIBGCC_EH': '${STATIC || NEWLIB_SHARED_EXPERIMENT && !SHARED ? ' +
+               '-l:libgcc_eh.a : ' +
+               # NOTE: libgcc_s.so drags in "glibc.so"
                # TODO(robertm): provide a "better" libgcc_s.so
-               '${NEWLIB_SHARED_EXPERIMENT ? : -l:libgcc_s.so.1}}',
+               ' ${NEWLIB_SHARED_EXPERIMENT ? : -l:libgcc_s.so.1}}',
 
   # List of user requested libraries (according to bitcode metadata).
   'NEEDED_LIBRARIES': '',   # Set by ApplyBitcodeConfig.
@@ -185,10 +186,6 @@ def main(argv):
   if env.getbool('SHARED'):
     env.set('PIC', '1')
 
-  if (env.getbool('LIBMODE_NEWLIB') and
-      not env.getbool('NEWLIB_SHARED_EXPERIMENT')):
-    env.set('STATIC', '1')
-
   if env.getbool('SHARED') and env.getbool('STATIC'):
     Log.Fatal('Cannot mix -static and -shared')
 
@@ -265,7 +262,6 @@ def main(argv):
         assert not env.getbool('PIC')
       else:
         assert env.getbool('LIBMODE_NEWLIB')
-        assert env.getbool('STATIC')
         assert not env.getbool('SHARED')
         # for static images we tolerate both PIC and non-PIC
     else:
@@ -300,6 +296,13 @@ def main(argv):
 
   if bcfile:
     ApplyBitcodeConfig(metadata, bctype)
+
+  # NOTE: we intentionally delay setting STATIC here to give user choices
+  #       preference but we should think about dropping the support for
+  #       the -static, -shared flags in the translator and have everything
+  #       be determined by bctype
+  if len(metadata['NeedsLibrary']) == 0 and not env.getbool('SHARED'):
+    env.set('STATIC', '1')
 
   assert output_type in ('so','nexe')
   RunLD(ofile, output)

@@ -98,6 +98,7 @@ EXTRA_ENV = {
   # For newlib, omit the -T flag (the builtin linker script works fine).
   'LD_SCRIPT_newlib_static': '',
   'LD_SCRIPT_newlib_shared': '',
+  'LD_SCRIPT_newlib_dynamic': '',
 
   # For glibc, the linker script is always explicitly specified.
   'LD_SCRIPT_glibc_static' : '${LD_EMUL}.x.static',
@@ -236,10 +237,6 @@ def main(argv):
 
   if output == '':
     output = pathtools.normalize('a.out')
-
-  # Default to -static for newlib
-  if env.getbool('LIBMODE_NEWLIB') and not env.getbool('SHARED'):
-    env.set('STATIC', '1')
 
   # Expand all parameters
   # This resolves -lfoo into actual filenames,

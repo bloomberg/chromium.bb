@@ -216,7 +216,6 @@ LDPatterns = [
 def main(argv):
   env.update(EXTRA_ENV)
   ParseArgs(argv, LDPatterns)
-
   # If the user passed -arch, then they want native output.
   arch_flag_given = GetArch() is not None
 
@@ -239,18 +238,6 @@ def main(argv):
     if env.getbool('SHARED'):
       Log.Fatal("-r and -shared may not be used together")
     env.set('STATIC', '0')
-
-  if (env.getbool('LIBMODE_NEWLIB') and
-      env.getbool('STDLIB') and
-      env.getbool('SHARED')):
-      Log.Fatal("Cannot generate shared objects with newlib-based toolchain")
-
-  # Default to -static for newlib.
-  if (env.getbool('LIBMODE_NEWLIB') and
-      not env.getbool('SHARED') and
-      not env.getbool('STATIC') and
-      not env.getbool('RELOCATABLE')):
-    env.set('STATIC', '1')
 
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')

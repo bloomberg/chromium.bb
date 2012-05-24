@@ -35,16 +35,18 @@ EXTRA_ENV = {
 
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
-  'SHARED'      : '0',    # Produce a shared library
   'STDINC'      : '1',    # Include standard headers (-nostdinc sets to 0)
   'STDLIB'      : '1',    # Include standard libraries (-nostdlib sets to 0)
   'DEFAULTLIBS' : '1',    # Link with default libraries
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
-  'STATIC'      : '0',    # -static
+  'SHARED'      : '0',    # Produce a shared library
+  'STATIC'      : '0',    # -static (default)
+  'DYNAMIC'     : '0',    # -dynamic
   'PIC'         : '0',    # Generate PIC
   'NEED_DASH_E' : '0',    # Used for stdin inputs, which must have an explicit
                           # type set (using -x) unless -E is specified.
 
+  'PTHREAD'     : '0',   # use pthreads?
   'INPUTS'      : '',    # Input files
   'OUTPUT'      : '',    # Output file
   'UNMATCHED'   : '',    # Unrecognized parameters
@@ -55,7 +57,7 @@ EXTRA_ENV = {
   'BIAS_X8664'  : '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
 
   'OPT_LEVEL'   : '0',
-  'CC_FLAGS'    : '-O${OPT_LEVEL} -fno-common ' +
+  'CC_FLAGS'    : '-O${OPT_LEVEL} -fno-common ${PTHREAD ? -pthreads}' +
                   '-nostdinc -DNACL_LINUX=1 ${BIAS_%BIAS%} ' +
                   '-ccc-host-triple le32-unknown-nacl',
 
@@ -119,6 +121,13 @@ EXTRA_ENV = {
     '-l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ' +
     '--start-group ${STDLIBS} --end-group',
 
+  'LD_ARGS_newlib_shared':
+    '-l:crti.bc -l:crtdummy.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
+
+  'LD_ARGS_newlib_dynamic':
+    '-l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ' +
+    '--start-group ${STDLIBS} --end-group',
+
   'LD_ARGS_glibc_shared':
     '-l:crti.bc -l:crtdummy.bc -l:crtbeginS.bc ${ld_inputs} ${STDLIBS}',
 
@@ -131,7 +140,8 @@ EXTRA_ENV = {
   'LIBSTDCPP' : '${IS_CXX ? -lstdc++ -lm }',
   'LIBC'      : '-lc',
   'LIBNACL'   : '${LIBMODE_NEWLIB ? -lnacl}',
-  'LIBPTHREAD': '', # Enabled by -pthreads
+  # Enabled/disabled by -pthreads
+  'LIBPTHREAD': '${PTHREAD? -lpthread}',
   'PNACL_ABI' : '-l:pnacl_abi.bc',
 
 
@@ -254,11 +264,11 @@ GCCPatterns = [
   ( '(-pedantic-errors)',     AddCCFlag),
   ( '(-g.*)',                 AddCCFlag),
 
-  ( '(-pthreads?)',           "env.append('CC_FLAGS', $0)\n"
-                              "env.set('LIBPTHREAD', '-lpthread')"),
+  ( '(-pthreads?)',           "env.set('PTHREAD', '1')"),
 
   ( '-shared',                "env.set('SHARED', '1')"),
   ( '-static',                "env.set('STATIC', '1')"),
+  ( '-dynamic',               "env.set('DYNAMIC', '1')"),
 
   ( ('-B','(.*)'),            AddBPrefix),
   ( ('-B(.+)'),               AddBPrefix),
@@ -350,14 +360,13 @@ def main(argv):
 
   libmode_newlib = env.getbool('LIBMODE_NEWLIB')
   is_shared = env.getbool('SHARED')
-  if libmode_newlib and is_shared and env.getbool('STDLIB'):
-      Log.Fatal("Can't produce dynamic objects with newlib.")
-
-  if libmode_newlib and not is_shared:
-    env.set('STATIC', '1')
 
   if env.getbool('STATIC') and env.getbool('SHARED'):
     Log.Fatal("Can't handle both -static and -shared")
+
+  # default to static
+  if not env.getbool('DYNAMIC') and not env.getbool('SHARED'):
+    env.set('STATIC', '1')
 
   # If -arch was given, we are compiling directly to native code
   compiling_to_native = GetArch() is not None
