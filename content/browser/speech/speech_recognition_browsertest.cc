@@ -130,12 +130,12 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
   virtual string16 GetAudioInputDeviceModel() OVERRIDE { return string16(); }
   virtual void ShowAudioInputSettings() OVERRIDE {}
 
-  virtual int LookupSessionByContext(
-      base::Callback<bool(
-          const content::SpeechRecognitionSessionContext&)> matcher)
-            const OVERRIDE {
-    bool matched = matcher.Run(session_ctx_);
-    return matched ? session_id_ : 0;
+  virtual int GetSession(int render_process_id,
+                         int render_view_id,
+                         int request_id) const OVERRIDE {
+    return session_ctx_.render_process_id == render_process_id &&
+           session_ctx_.render_view_id == render_view_id &&
+           session_ctx_.request_id == request_id;
   }
 
   virtual const SpeechRecognitionSessionConfig& GetSessionConfig(
