@@ -164,6 +164,70 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   EXPECT_TRUE(service_->ShouldPushChanges());
 }
 
+TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
+  DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
+  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
+
+  // We've never completed startup.
+  profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
+  // Make sure SigninManager doesn't think we're signed in (undoes the call to
+  // SetAuthenticatedUsername() in CreateSyncService()).
+  SigninManagerFactory::GetForProfile(profile_.get())->SignOut();
+
+  // Should not actually start, rather just clean things up and wait
+  // to be enabled.
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
+  service_->Initialize();
+  EXPECT_FALSE(service_->GetBackendForTest());
+
+  // Preferences should be back to defaults.
+  EXPECT_EQ(0, profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
+  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted));
+  Mock::VerifyAndClearExpectations(data_type_manager);
+
+  // Then start things up.
+  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(1);
+  EXPECT_CALL(*data_type_manager, state()).
+      WillOnce(Return(DataTypeManager::CONFIGURED)).
+      WillOnce(Return(DataTypeManager::CONFIGURED));
+  EXPECT_CALL(*data_type_manager, Stop()).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
+
+  service_->set_setup_in_progress(true);
+  service_->signin()->StartSignIn("test_user", "", "", "");
+  // NOTE: Unlike StartFirstTime, this test does not issue any auth tokens.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
+      content::Source<TokenService>(
+          TokenServiceFactory::GetForProfile(profile_.get())),
+      content::NotificationService::NoDetails());
+  service_->set_setup_in_progress(false);
+  service_->OnUserChoseDatatypes(
+      false, syncable::ModelTypeSet(syncable::BOOKMARKS));
+  // Backend should initialize using a bogus GAIA token for credentials.
+  EXPECT_TRUE(service_->ShouldPushChanges());
+}
+
+TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
+  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _)).Times(0);
+  profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
+
+  service_->Initialize();
+  // Sync should not start because there are no tokens yet.
+  EXPECT_FALSE(service_->ShouldPushChanges());
+  EXPECT_FALSE(service_->GetBackendForTest());
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
+      content::Source<TokenService>(
+          TokenServiceFactory::GetForProfile(profile_.get())),
+      content::NotificationService::NoDetails());
+  service_->set_setup_in_progress(false);
+  // Sync should not start because there are still no tokens.
+  EXPECT_FALSE(service_->ShouldPushChanges());
+  EXPECT_FALSE(service_->GetBackendForTest());
+}
+
 TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);

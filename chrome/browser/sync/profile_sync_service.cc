@@ -206,8 +206,12 @@ void ProfileSyncService::TryStart() {
     return;
   // Don't start the backend if the token service hasn't finished loading tokens
   // yet (if the backend is started before the sync token has been loaded,
-  // GetCredentials() will return bogus credentials).
-  if (IsSyncTokenAvailable() || token_service->TokensLoadedFromDB()) {
+  // GetCredentials() will return bogus credentials). On auto_start platforms
+  // (like ChromeOS) we don't start sync until tokens are loaded, because the
+  // user can be "signed in" on those platforms long before the tokens get
+  // loaded, and we don't want to generate spurious auth errors.
+  if (IsSyncTokenAvailable() ||
+      (!auto_start_enabled_ && token_service->TokensLoadedFromDB())) {
     if (HasSyncSetupCompleted() || auto_start_enabled_) {
       // If sync setup has completed we always start the backend.
       // If autostart is enabled, but we haven't completed sync setup, we try to
@@ -1549,6 +1553,12 @@ void ProfileSyncService::Observe(int type,
       // This notification gets fired when TokenService loads the tokens
       // from storage.
       if (IsSyncEnabledAndLoggedIn()) {
+        // Don't start up sync and generate an auth error on auto_start
+        // platforms as they have their own way to resolve TokenService errors.
+        // (crbug.com/128592).
+        if (auto_start_enabled_ && !IsSyncTokenAvailable())
+          break;
+
         // Initialize the backend if sync is enabled. If the sync token was
         // not loaded, GetCredentials() will generate invalid credentials to
         // cause the backend to generate an auth error (crbug.com/121755).
