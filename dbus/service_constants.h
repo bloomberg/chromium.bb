@@ -630,6 +630,8 @@ const char kHostNameProperty[] = "HostName";
 const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
 
 // Service property names.
+const char kEapRemoteCertificationProperty[] = "EAP.RemoteCertification";
+const char kEapSubjectMatchProperty[] = "EAP.SubjectMatch";
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
 const char kIPConfigProperty[] = "IPConfig";
 const char kPhysicalTechnologyProperty[] = "PhysicalTechnology";
