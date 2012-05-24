@@ -81,6 +81,10 @@ class ShellWindow : public content::NotificationObserver,
   virtual void RunFileChooser(
       content::WebContents* tab,
       const content::FileChooserParams& params) OVERRIDE;
+  virtual bool IsPopupOrPanel(
+      const content::WebContents* source) const OVERRIDE;
+  virtual void MoveContents(
+      content::WebContents* source, const gfx::Rect& pos) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

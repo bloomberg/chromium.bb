@@ -183,6 +183,16 @@ void ShellWindow::RunFileChooser(WebContents* tab,
   FileSelectHelper::RunFileChooser(tab, params);
 }
 
+bool ShellWindow::IsPopupOrPanel(const WebContents* source) const {
+  DCHECK(source == web_contents_);
+  return true;
+}
+
+void ShellWindow::MoveContents(WebContents* source, const gfx::Rect& pos) {
+  DCHECK(source == web_contents_);
+  extension_window_controller_->window()->SetBounds(pos);
+}
+
 void ShellWindow::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
