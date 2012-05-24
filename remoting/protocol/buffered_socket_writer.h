@@ -8,14 +8,10 @@
 #include <list>
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/non_thread_safe.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/socket.h"
-
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
 
 namespace net {
 class Socket;
@@ -33,12 +29,12 @@ namespace protocol {
 // on the thread that owns the socket. GetBufferChunks() and GetBufferSize()
 // can be used to throttle writes.
 
-class BufferedSocketWriterBase
-    : public base::RefCountedThreadSafe<BufferedSocketWriterBase> {
+class BufferedSocketWriterBase : public base::NonThreadSafe {
  public:
   typedef base::Callback<void(int)> WriteFailedCallback;
 
-  explicit BufferedSocketWriterBase(base::MessageLoopProxy* message_loop);
+  BufferedSocketWriterBase();
+  virtual ~BufferedSocketWriterBase();
 
   // Initializes the writer. Must be called on the thread that will be used
   // to access the socket in the future. |callback| will be called after each
@@ -63,12 +59,8 @@ class BufferedSocketWriterBase
   void Close();
 
  protected:
-  friend class base::RefCountedThreadSafe<BufferedSocketWriterBase>;
-
   class PendingPacket;
   typedef std::list<PendingPacket*> DataQueue;
-
-  virtual ~BufferedSocketWriterBase();
 
   DataQueue queue_;
   int buffer_size_;
@@ -80,11 +72,11 @@ class BufferedSocketWriterBase
   // Following three methods must be implemented in child classes.
   // GetNextPacket() returns next packet that needs to be written to the
   // socket. |buffer| must be set to NULL if there is nothing left in the queue.
-  virtual void GetNextPacket_Locked(net::IOBuffer** buffer, int* size) = 0;
-  virtual void AdvanceBufferPosition_Locked(int written) = 0;
+  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) = 0;
+  virtual void AdvanceBufferPosition(int written) = 0;
 
   // This method is called whenever there is an error writing to the socket.
-  virtual void OnError_Locked(int result) = 0;
+  virtual void OnError(int result) = 0;
 
  private:
   void DoWrite();
@@ -93,11 +85,7 @@ class BufferedSocketWriterBase
   // This method is called when an error is encountered.
   void HandleError(int result);
 
-  // Must be locked when accessing |socket_|, |queue_| and |buffer_size_|;
-  base::Lock lock_;
-
   net::Socket* socket_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
   WriteFailedCallback write_failed_callback_;
 
   bool write_pending_;
@@ -107,30 +95,27 @@ class BufferedSocketWriterBase
 
 class BufferedSocketWriter : public BufferedSocketWriterBase {
  public:
-  explicit BufferedSocketWriter(base::MessageLoopProxy* message_loop);
-
- protected:
-  virtual void GetNextPacket_Locked(net::IOBuffer** buffer, int* size) OVERRIDE;
-  virtual void AdvanceBufferPosition_Locked(int written) OVERRIDE;
-  virtual void OnError_Locked(int result) OVERRIDE;
-
- private:
+  BufferedSocketWriter();
   virtual ~BufferedSocketWriter();
 
+ protected:
+  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) OVERRIDE;
+  virtual void AdvanceBufferPosition(int written) OVERRIDE;
+  virtual void OnError(int result) OVERRIDE;
+
+ private:
   scoped_refptr<net::DrainableIOBuffer> current_buf_;
 };
 
 class BufferedDatagramWriter : public BufferedSocketWriterBase {
  public:
-  explicit BufferedDatagramWriter(base::MessageLoopProxy* message_loop);
+  BufferedDatagramWriter();
+  virtual ~BufferedDatagramWriter();
 
  protected:
-  virtual void GetNextPacket_Locked(net::IOBuffer** buffer, int* size) OVERRIDE;
-  virtual void AdvanceBufferPosition_Locked(int written) OVERRIDE;
-  virtual void OnError_Locked(int result) OVERRIDE;
-
- private:
-  virtual ~BufferedDatagramWriter();
+  virtual void GetNextPacket(net::IOBuffer** buffer, int* size) OVERRIDE;
+  virtual void AdvanceBufferPosition(int written) OVERRIDE;
+  virtual void OnError(int result) OVERRIDE;
 };
 
 }  // namespace protocol

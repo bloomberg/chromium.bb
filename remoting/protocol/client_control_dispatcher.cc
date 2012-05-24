@@ -11,7 +11,6 @@
 #include "remoting/base/constants.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/util.h"
 
@@ -21,17 +20,16 @@ namespace protocol {
 ClientControlDispatcher::ClientControlDispatcher()
     : ChannelDispatcherBase(kControlChannelName),
       client_stub_(NULL),
-      clipboard_stub_(NULL),
-      writer_(new BufferedSocketWriter(base::MessageLoopProxy::current())) {
+      clipboard_stub_(NULL) {
 }
 
 ClientControlDispatcher::~ClientControlDispatcher() {
-  writer_->Close();
+  writer_.Close();
 }
 
 void ClientControlDispatcher::OnInitialized() {
   // TODO(garykac): Set write failed callback.
-  writer_->Init(channel(), BufferedSocketWriter::WriteFailedCallback());
+  writer_.Init(channel(), BufferedSocketWriter::WriteFailedCallback());
   reader_.Init(channel(), base::Bind(
       &ClientControlDispatcher::OnMessageReceived, base::Unretained(this)));
 }
@@ -40,20 +38,20 @@ void ClientControlDispatcher::InjectClipboardEvent(
     const ClipboardEvent& event) {
   ControlMessage message;
   message.mutable_clipboard_event()->CopyFrom(event);
-  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 void ClientControlDispatcher::NotifyClientDimensions(
     const ClientDimensions& dimensions) {
   ControlMessage message;
   message.mutable_client_dimensions()->CopyFrom(dimensions);
-  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 void ClientControlDispatcher::ControlVideo(const VideoControl& video_control) {
   ControlMessage message;
   message.mutable_video_control()->CopyFrom(video_control);
-  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 void ClientControlDispatcher::OnMessageReceived(

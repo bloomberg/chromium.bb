@@ -6,13 +6,12 @@
 #define REMOTING_PROTOCOL_CLIENT_EVENT_DISPATCHER_H_
 
 #include "base/memory/ref_counted.h"
+#include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/input_stub.h"
 
 namespace remoting {
 namespace protocol {
-
-class BufferedSocketWriter;
 
 // ClientEventDispatcher manages the event channel on the client
 // side. It implements InputStub for outgoing input messages.
@@ -30,7 +29,7 @@ class ClientEventDispatcher : public ChannelDispatcherBase, public InputStub {
   virtual void OnInitialized() OVERRIDE;
 
  private:
-  scoped_refptr<BufferedSocketWriter> writer_;
+  BufferedSocketWriter writer_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientEventDispatcher);
 };

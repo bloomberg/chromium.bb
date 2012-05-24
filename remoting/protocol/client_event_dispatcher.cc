@@ -10,24 +10,22 @@
 #include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {
 namespace protocol {
 
 ClientEventDispatcher::ClientEventDispatcher()
-    : ChannelDispatcherBase(kEventChannelName),
-      writer_(new BufferedSocketWriter(base::MessageLoopProxy::current())) {
+    : ChannelDispatcherBase(kEventChannelName) {
 }
 
 ClientEventDispatcher::~ClientEventDispatcher() {
-  writer_->Close();
+  writer_.Close();
 }
 
 void ClientEventDispatcher::OnInitialized() {
   // TODO(garykac): Set write failed callback.
-  writer_->Init(channel(),
+  writer_.Init(channel(),
                 BufferedSocketWriter::WriteFailedCallback());
 }
 
@@ -37,14 +35,14 @@ void ClientEventDispatcher::InjectKeyEvent(const KeyEvent& event) {
   EventMessage message;
   message.set_sequence_number(base::Time::Now().ToInternalValue());
   message.mutable_key_event()->CopyFrom(event);
-  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 void ClientEventDispatcher::InjectMouseEvent(const MouseEvent& event) {
   EventMessage message;
   message.set_sequence_number(base::Time::Now().ToInternalValue());
   message.mutable_mouse_event()->CopyFrom(event);
-  writer_->Write(SerializeAndFrameMessage(message), base::Closure());
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
 }  // namespace protocol

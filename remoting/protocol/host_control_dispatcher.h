@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_HOST_CONTROL_DISPATCHER_H_
 
 #include "base/memory/ref_counted.h"
+#include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -18,7 +19,6 @@ class StreamSocket;
 namespace remoting {
 namespace protocol {
 
-class BufferedSocketWriter;
 class ControlMessage;
 class HostStub;
 class Session;
@@ -56,7 +56,7 @@ class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub {
   HostStub* host_stub_;
 
   ProtobufMessageReader<ControlMessage> reader_;
-  scoped_refptr<BufferedSocketWriter> writer_;
+  BufferedSocketWriter writer_;
 
   DISALLOW_COPY_AND_ASSIGN(HostControlDispatcher);
 };

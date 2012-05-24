@@ -15,8 +15,7 @@ namespace remoting {
 namespace protocol {
 
 ProtobufVideoWriter::ProtobufVideoWriter(base::MessageLoopProxy* message_loop)
-    : session_(NULL),
-      buffered_writer_(new BufferedSocketWriter(message_loop)) {
+    : session_(NULL) {
 }
 
 ProtobufVideoWriter::~ProtobufVideoWriter() {
@@ -42,14 +41,14 @@ void ProtobufVideoWriter::OnChannelReady(scoped_ptr<net::StreamSocket> socket) {
   DCHECK(!channel_.get());
   channel_ = socket.Pass();
   // TODO(sergeyu): Provide WriteFailedCallback for the buffered writer.
-  buffered_writer_->Init(
+  buffered_writer_.Init(
       channel_.get(), BufferedSocketWriter::WriteFailedCallback());
 
   initialized_callback_.Run(true);
 }
 
 void ProtobufVideoWriter::Close() {
-  buffered_writer_->Close();
+  buffered_writer_.Close();
   channel_.reset();
   if (session_) {
     session_->CancelChannelCreation(kVideoChannelName);
@@ -63,11 +62,11 @@ bool ProtobufVideoWriter::is_connected() {
 
 void ProtobufVideoWriter::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                              const base::Closure& done) {
-  buffered_writer_->Write(SerializeAndFrameMessage(*packet), done);
+  buffered_writer_.Write(SerializeAndFrameMessage(*packet), done);
 }
 
 int ProtobufVideoWriter::GetPendingPackets() {
-  return buffered_writer_->GetBufferChunks();
+  return buffered_writer_.GetBufferChunks();
 }
 
 }  // namespace protocol
