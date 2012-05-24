@@ -474,15 +474,14 @@ class Isolate_trace(IsolateBase):
     self._expect_no_tree()
     self._expect_results(['fail.py'], None, None)
     expected = 'Failing'
+    lines = out.strip().splitlines()
+    self.assertTrue(lines.pop(0).startswith('WARNING'))
+    self.assertTrue(lines.pop(0).startswith('WARNING'))
     if sys.platform == 'win32':
       # Includes spew from tracerpt.exe.
-      self.assertTrue(out.startswith(expected))
+      self.assertEquals(expected, lines[0], (lines, expected))
     else:
-      lines = out.strip().splitlines()
-      self.assertEquals(3, len(lines))
-      self.assertTrue(lines[0].startswith('WARNING'))
-      self.assertTrue(lines[1].startswith('WARNING'))
-      self.assertEquals(expected, lines[2])
+      self.assertEquals([expected], lines)
 
   def test_missing_trailing_slash(self):
     try:
