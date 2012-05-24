@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_browser_main_extra_parts_views.h"
+#include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 
+#include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews()
@@ -16,3 +18,11 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   if (!views::ViewsDelegate::views_delegate)
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 }
+
+namespace browser {
+
+void AddViewsToolkitExtraParts(ChromeBrowserMainParts* main_parts) {
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
+}
+
+}  // namespace browser

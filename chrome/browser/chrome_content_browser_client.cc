@@ -63,6 +63,7 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
@@ -121,10 +122,6 @@
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/chrome_browser_main_extra_parts_gtk.h"
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/chrome_browser_main_extra_parts_views.h"
 #endif
 
 #if defined(USE_AURA)
@@ -356,7 +353,7 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
+  browser::AddViewsToolkitExtraParts(main_parts);
 #endif
 
 #if defined(USE_ASH)
