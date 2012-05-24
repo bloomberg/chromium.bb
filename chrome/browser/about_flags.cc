@@ -238,6 +238,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kDisableExperimentalWebGL)
   },
+  {
+    "enable-browser-plugin",
+    IDS_FLAGS_ENABLE_BROWSER_PLUGIN_NAME,
+    IDS_FLAGS_ENABLE_BROWSER_PLUGIN_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableBrowserPlugin)
+  },
   // TODO(dspringer): When NaCl is on by default, remove this flag entry.
   {
     "enable-nacl",  // FLAGS:RECORD_UMA
