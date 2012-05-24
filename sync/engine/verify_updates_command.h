@@ -40,6 +40,7 @@ class VerifyUpdatesCommand : public ModelChangingSyncerCommand {
   };
   VerifyUpdateResult VerifyUpdate(syncable::WriteTransaction* trans,
                                   const SyncEntity& entry,
+                                  const syncable::ModelTypeSet& requested_types,
                                   const ModelSafeRoutingInfo& routes);
   DISALLOW_COPY_AND_ASSIGN(VerifyUpdatesCommand);
 };

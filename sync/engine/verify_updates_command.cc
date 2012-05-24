@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/location.h"
+#include "sync/engine/model_safe_worker.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_types.h"
@@ -20,6 +21,7 @@ namespace browser_sync {
 using syncable::WriteTransaction;
 
 using syncable::GET_BY_ID;
+using syncable::ModelTypeSet;
 using syncable::SYNCER;
 
 namespace {
@@ -97,6 +99,9 @@ SyncerError VerifyUpdatesCommand::ModelChangingExecuteImpl(
   const GetUpdatesResponse& updates = status->updates_response().get_updates();
   int update_count = updates.entries().size();
 
+  ModelTypeSet requested_types = browser_sync::GetRoutingInfoTypes(
+      session->routing_info());
+
   DVLOG(1) << update_count << " entries to verify";
   for (int i = 0; i < update_count; i++) {
     const SyncEntity& update =
@@ -107,6 +112,7 @@ SyncerError VerifyUpdatesCommand::ModelChangingExecuteImpl(
       continue;
 
     VerifyUpdateResult result = VerifyUpdate(&trans, update,
+                                             requested_types,
                                              session->routing_info());
     status->mutable_update_progress()->AddVerifyResult(result.value, update);
     status->increment_num_updates_downloaded_by(1);
@@ -121,6 +127,7 @@ SyncerError VerifyUpdatesCommand::ModelChangingExecuteImpl(
 
 VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
     syncable::WriteTransaction* trans, const SyncEntity& entry,
+    const ModelTypeSet& requested_types,
     const ModelSafeRoutingInfo& routes) {
   syncable::Id id = entry.id();
   VerifyUpdateResult result = {VERIFY_FAIL, GROUP_PASSIVE};
@@ -153,8 +160,16 @@ VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
   }
 
   if (VERIFY_UNDECIDED == result.value) {
-    if (deleted)
-      result.value = VERIFY_SUCCESS;
+    if (deleted) {
+      // For deletes the server could send tombostones for items that
+      // the client did not request. If so ignore those items.
+      if (IsRealDataType(placement_type) &&
+          !requested_types.Has(placement_type)) {
+        result.value = VERIFY_SKIP;
+      } else {
+        result.value = VERIFY_SUCCESS;
+      }
+    }
   }
 
   // If we have an existing entry, we check here for updates that break
