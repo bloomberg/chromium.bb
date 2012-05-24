@@ -51,12 +51,14 @@ static const char kDetailKey[] = "detail";
 static const char kDetailSeparators[] = "\n";
 
 static GoogleServiceAuthError CreateAuthError(URLRequestStatus status) {
-  CHECK(!status.is_success());
   if (status.status() == URLRequestStatus::CANCELED) {
     return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
   } else {
-    DLOG(WARNING) << "Could not reach Google Accounts servers: errno "
-                  << status.error();
+    // TODO(munjal): Improve error handling. Currently we return connection
+    // error for even application level errors. We need to either expand the
+    // GoogleServiceAuthError enum or create a new one to report better
+    // errors.
+    DLOG(WARNING) << "Server returned error: errno " << status.error();
     return GoogleServiceAuthError::FromConnectionError(status.error());
   }
 }
