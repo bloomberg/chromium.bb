@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
@@ -49,10 +50,11 @@ class SpeechRecognizerImpl;
 //    the catch-all snoop listener (optionally) provided by the delegate.
 class CONTENT_EXPORT SpeechRecognitionManagerImpl :
     public NON_EXPORTED_BASE(content::SpeechRecognitionManager),
+    public base::SupportsWeakPtr<SpeechRecognitionManagerImpl>,
     public content::SpeechRecognitionEventListener {
  public:
-  // Returns the current SpeechRecognitionManagerImpl. Can be called only after
-  // the RecognitionMnager has been created (by BrowserMainLoop).
+  // Returns the current SpeechRecognitionManagerImpl or NULL if the call is
+  // issued when it is not created yet or destroyed (by BrowserMainLoop).
   static SpeechRecognitionManagerImpl* GetInstance();
 
   // SpeechRecognitionManager implementation.

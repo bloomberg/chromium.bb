@@ -20,7 +20,6 @@
 #include "media/audio/audio_manager.h"
 
 using base::Callback;
-using base::Unretained;
 using content::BrowserMainLoop;
 using content::BrowserThread;
 using content::SpeechRecognitionError;
@@ -45,7 +44,6 @@ speech::SpeechRecognitionManagerImpl* g_speech_recognition_manager_impl;
 namespace speech {
 
 SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
-  DCHECK(g_speech_recognition_manager_impl);
   return g_speech_recognition_manager_impl;
 }
 
@@ -119,7 +117,7 @@ void SpeechRecognitionManagerImpl::StartSession(int session_id) {
     delegate_->CheckRecognitionIsAllowed(
         session_id,
         base::Bind(&SpeechRecognitionManagerImpl::RecognitionAllowedCallback,
-                   Unretained(this)));
+                   this->AsWeakPtr()));
 }
 
 void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
@@ -129,7 +127,7 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
   if (is_allowed) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                   Unretained(this), session_id, EVENT_START));
+                   this->AsWeakPtr(), session_id, EVENT_START));
   } else {
     sessions_.erase(session_id);
   }
@@ -141,8 +139,8 @@ void SpeechRecognitionManagerImpl::AbortSession(int session_id) {
     return;
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent, Unretained(this),
-                 session_id, EVENT_ABORT));
+      base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
+                 this->AsWeakPtr(), session_id, EVENT_ABORT));
 }
 
 void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
@@ -151,8 +149,8 @@ void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
     return;
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent, Unretained(this),
-                 session_id, EVENT_STOP_CAPTURE));
+      base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
+                 this->AsWeakPtr(), session_id, EVENT_STOP_CAPTURE));
 }
 
 // Here begins the SpeechRecognitionEventListener interface implementation,
@@ -230,8 +228,8 @@ void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
     listener->OnAudioEnd(session_id);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent, Unretained(this),
-                 session_id, EVENT_AUDIO_ENDED));
+      base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
+                 this->AsWeakPtr(), session_id, EVENT_AUDIO_ENDED));
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionResult(
@@ -280,8 +278,8 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
     listener->OnRecognitionEnd(session_id);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent, Unretained(this),
-                 session_id, EVENT_RECOGNITION_ENDED));
+      base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
+                 this->AsWeakPtr(), session_id, EVENT_RECOGNITION_ENDED));
 }
 
 // TODO(primiano) After CL2: if we see that both InputTagDispatcherHost and
@@ -327,6 +325,12 @@ void SpeechRecognitionManagerImpl::AbortAllSessionsForListener(
 void SpeechRecognitionManagerImpl::DispatchEvent(int session_id,
                                                  FSMEvent event) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // There are some corner cases in which the session might be deleted (due to
+  // an EndRecognition event) between a request (e.g. Abort) and its dispatch.
+  if (!SessionExists(session_id))
+    return;
+
   const Session& session = GetSession(session_id);
   FSMState session_state = GetSessionState(session_id);
   DCHECK_LE(session_state, SESSION_STATE_MAX_VALUE);
@@ -506,7 +510,7 @@ void SpeechRecognitionManagerImpl::ShowAudioInputSettings() {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&SpeechRecognitionManagerImpl::ShowAudioInputSettings,
-                   Unretained(this)));
+                   this->AsWeakPtr()));
     return;
   }
 

@@ -13,6 +13,8 @@
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 
+class SpeechRecognitionTrayIconController;
+
 namespace speech {
 
 // This is Chrome's implementation of the SpeechRecognitionManagerDelegate
@@ -69,7 +71,12 @@ class ChromeSpeechRecognitionManagerDelegate
   // (which is copied into |last_session_config_|). Used for "try again".
   void RestartLastSession();
 
+  // Lazy initializers for bubble and tray icon controller.
+  SpeechRecognitionBubbleController* GetBubbleController();
+  SpeechRecognitionTrayIconController* GetTrayIconController();
+
   scoped_refptr<SpeechRecognitionBubbleController> bubble_controller_;
+  scoped_refptr<SpeechRecognitionTrayIconController> tray_icon_controller_;
   scoped_refptr<OptionalRequestInfo> optional_request_info_;
   scoped_ptr<content::SpeechRecognitionSessionConfig> last_session_config_;
 
