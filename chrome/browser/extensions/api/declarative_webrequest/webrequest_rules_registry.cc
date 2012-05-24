@@ -36,7 +36,6 @@ WebRequestRulesRegistry::GetMatches(net::URLRequest* request,
     if (rule->conditions().IsFulfilled(*url_match, request, request_stage))
       result.insert(rule->id());
   }
-
   return result;
 }
 

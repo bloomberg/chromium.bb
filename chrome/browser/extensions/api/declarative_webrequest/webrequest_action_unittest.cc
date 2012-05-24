@@ -18,48 +18,52 @@ namespace keys = declarative_webrequest_constants;
 
 TEST(WebRequestActionTest, CreateAction) {
   std::string error;
+  bool bad_message = false;
   scoped_ptr<WebRequestAction> result;
 
   // Test wrong data type passed.
   error.clear();
   base::ListValue empty_list;
-  result = WebRequestAction::Create(empty_list, &error);
-  EXPECT_FALSE(error.empty());
+  result = WebRequestAction::Create(empty_list, &error, &bad_message);
+  EXPECT_TRUE(bad_message);
   EXPECT_FALSE(result.get());
 
   // Test missing instanceType element.
   base::DictionaryValue input;
   error.clear();
-  result = WebRequestAction::Create(input, &error);
-  EXPECT_FALSE(error.empty());
+  result = WebRequestAction::Create(input, &error, &bad_message);
+  EXPECT_TRUE(bad_message);
   EXPECT_FALSE(result.get());
 
   // Test wrong instanceType element.
   input.SetString(keys::kInstanceTypeKey, kUnknownActionType);
   error.clear();
-  result = WebRequestAction::Create(input, &error);
-  EXPECT_FALSE(error.empty());
+  result = WebRequestAction::Create(input, &error, &bad_message);
+  EXPECT_NE("", error);
   EXPECT_FALSE(result.get());
 
   // Test success
   input.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
   error.clear();
-  result = WebRequestAction::Create(input, &error);
-  EXPECT_TRUE(error.empty());
+  result = WebRequestAction::Create(input, &error, &bad_message);
+  EXPECT_EQ("", error);
+  EXPECT_FALSE(bad_message);
   ASSERT_TRUE(result.get());
   EXPECT_EQ(WebRequestAction::ACTION_CANCEL_REQUEST, result->GetType());
 }
 
 TEST(WebRequestActionTest, CreateActionSet) {
   std::string error;
+  bool bad_message = false;
   scoped_ptr<WebRequestActionSet> result;
 
   WebRequestActionSet::AnyVector input;
 
   // Test empty input.
   error.clear();
-  result = WebRequestActionSet::Create(input, &error);
-  EXPECT_TRUE(error.empty());
+  result = WebRequestActionSet::Create(input, &error, &bad_message);
+  EXPECT_TRUE(error.empty()) << error;
+  EXPECT_FALSE(bad_message);
   ASSERT_TRUE(result.get());
   EXPECT_TRUE(result->actions().empty());
 
@@ -74,8 +78,9 @@ TEST(WebRequestActionTest, CreateActionSet) {
   action1->Init(correct_action);
   input.push_back(action1);
   error.clear();
-  result = WebRequestActionSet::Create(input, &error);
-  EXPECT_TRUE(error.empty());
+  result = WebRequestActionSet::Create(input, &error, &bad_message);
+  EXPECT_TRUE(error.empty()) << error;
+  EXPECT_FALSE(bad_message);
   ASSERT_TRUE(result.get());
   ASSERT_EQ(1u, result->actions().size());
   EXPECT_EQ(WebRequestAction::ACTION_CANCEL_REQUEST,
@@ -87,8 +92,8 @@ TEST(WebRequestActionTest, CreateActionSet) {
   action2->Init(incorrect_action);
   input.push_back(action2);
   error.clear();
-  result = WebRequestActionSet::Create(input, &error);
-  EXPECT_FALSE(error.empty());
+  result = WebRequestActionSet::Create(input, &error, &bad_message);
+  EXPECT_NE("", error);
   EXPECT_FALSE(result.get());
 }
 

@@ -242,6 +242,14 @@
                 <a href="#type-declarativeWebRequest.RedirectToEmptyDocument">declarativeWebRequest.RedirectToEmptyDocument</a>
                 <ol>
                 </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.SetRequestHeader">declarativeWebRequest.SetRequestHeader</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.RemoveRequestHeader">declarativeWebRequest.RemoveRequestHeader</a>
+                <ol>
+                </ol>
               </li>
             </ol>
           </li>
@@ -430,6 +438,24 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                       <div>
           <dt>
             <a href="declarativeWebRequest.html#type-declarativeWebRequest.RedirectToEmptyDocument">declarativeWebRequest.RedirectToEmptyDocument</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.SetRequestHeader">declarativeWebRequest.SetRequestHeader</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.RemoveRequestHeader">declarativeWebRequest.RemoveRequestHeader</a>
           </dt>
           <dd class="todo">
             Undocumented.
@@ -742,6 +768,133 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.SetRequestHeader"></a>
+              <h4>declarativeWebRequest.SetRequestHeader</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Sets the request header of the specified name to the specified value. If a header with the specified name did not exist before, a new one is created. Header name comparison is always case-insensitive.  Each request header name occurs only once in each request.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>name</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>HTTP request header name.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>value</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>HTTP request header value.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.RemoveRequestHeader"></a>
+              <h4>declarativeWebRequest.RemoveRequestHeader</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Removes the request header of the specified name. Do not use SetRequestHeader and RemoveRequestHeader with the same header name on the same request. Each request header name occurs only once in each request.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>name</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>HTTP request header name (case-insensitive).</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
             </dl>
           </dd>
           <!-- OBJECT METHODS -->

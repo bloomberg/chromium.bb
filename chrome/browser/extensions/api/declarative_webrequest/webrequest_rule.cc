@@ -9,6 +9,11 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 
+namespace {
+const char kInvalidActionDatatype[] = "An action of a rule set had an invalid "
+    "structure that should have been caught by the JSON validator.";
+}  // namespace
+
 namespace extensions {
 
 WebRequestRule::WebRequestRule(
@@ -51,9 +56,16 @@ scoped_ptr<WebRequestRule> WebRequestRule::Create(
     return error_result.Pass();
   CHECK(conditions.get());
 
+  bool bad_message = false;
   scoped_ptr<WebRequestActionSet> actions =
-      WebRequestActionSet::Create(rule->actions, error);
-  if (!error->empty())
+      WebRequestActionSet::Create(rule->actions, error, &bad_message);
+  if (bad_message) {
+    // TODO(battre) Export concept of bad_message to caller, the extension
+    // should be killed in case it is true.
+    *error = kInvalidActionDatatype;
+    return error_result.Pass();
+  }
+  if (!error->empty() || bad_message)
     return error_result.Pass();
   CHECK(actions.get());
 

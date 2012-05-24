@@ -72,11 +72,13 @@ function navigateAndWait(url, callback) {
 //     webRequest API.
 // extraInfoSpec: the union of all desired extraInfoSpecs for the events.
 function expect(data, order, filter, extraInfoSpec) {
-  expectedEventData = data;
+  expectedEventData = data || [];
   capturedEventData = [];
   capturedUnexpectedData = [];
-  expectedEventOrder = order;
-  eventsCaptured = chrome.test.callbackAdded();
+  expectedEventOrder = order || [];
+  if (expectedEventData.length > 0) {
+    eventsCaptured = chrome.test.callbackAdded();
+  }
   tabAndFrameUrls = {};  // Maps "{tabId}-{frameId}" to the URL of the frame.
   frameIdMap = {"-1": -1};
   removeListeners();
@@ -238,13 +240,16 @@ function captureEvent(name, details, callback) {
       console.log("Expected: " + name + ": " + JSON.stringify(details));
     }
     capturedEventData.push({label: label, event: name, details: details});
+
+    // checkExpecations decrements the counter of pending events. We may only
+    // call it if an expected event has occurred.
+    checkExpectations();
   } else {
     if (logAllRequests) {
       console.log("NOT Expected: " + name + ": " + JSON.stringify(details));
     }
     capturedUnexpectedData.push({label: label, event: name, details: details});
   }
-  checkExpectations();
 
   if (callback) {
     window.setTimeout(callback, 0, retval);

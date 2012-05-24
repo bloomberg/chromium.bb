@@ -533,32 +533,45 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   if (!profile || helpers::HideRequestForURL(request->url()))
     return net::OK;
 
-  if (GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders))
-    return net::OK;
+  bool initialize_blocked_requests = false;
+
+  initialize_blocked_requests |=
+      ProcessDeclarativeRules(request, extensions::ON_BEFORE_SEND_HEADERS);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
                            keys::kOnBeforeSendHeaders, request,
                            &extra_info_spec);
-  if (listeners.empty())
-    return net::OK;
+  if (!listeners.empty() &&
+      !GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders)) {
+    ListValue args;
+    DictionaryValue* dict = new DictionaryValue();
+    ExtractRequestInfo(request, dict);
+    if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
+      dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(*headers));
+    args.Append(dict);
 
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
-  ExtractRequestInfo(request, dict);
-  if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
-    dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(*headers));
-  args.Append(dict);
+    initialize_blocked_requests |=
+        DispatchEvent(profile, request, listeners, args);
+  }
 
-  if (DispatchEvent(profile, request, listeners, args)) {
-    blocked_requests_[request->identifier()].event = kOnBeforeSendHeaders;
-    blocked_requests_[request->identifier()].callback = callback;
-    blocked_requests_[request->identifier()].request_headers = headers;
-    blocked_requests_[request->identifier()].net_log = &request->net_log();
+  if (!initialize_blocked_requests)
+    return net::OK;  // Nobody saw a reason for modifying the request.
+
+  blocked_requests_[request->identifier()].event = kOnBeforeSendHeaders;
+  blocked_requests_[request->identifier()].callback = callback;
+  blocked_requests_[request->identifier()].request_headers = headers;
+  blocked_requests_[request->identifier()].net_log = &request->net_log();
+
+  if (blocked_requests_[request->identifier()].num_handlers_blocking == 0) {
+    // If there are no blocking handlers, only the declarative rules tried
+    // to modify the request and we can respond synchronously.
+    return ExecuteDeltas(profile, request->identifier(),
+                         false /* call_callback*/);
+  } else {
     return net::ERR_IO_PENDING;
   }
-  return net::OK;
 }
 
 void ExtensionWebRequestEventRouter::OnSendHeaders(

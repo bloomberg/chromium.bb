@@ -10,6 +10,15 @@ var RedirectToTransparentImage =
     chrome.declarativeWebRequest.RedirectToTransparentImage;
 var RedirectToEmptyDocument =
     chrome.declarativeWebRequest.RedirectToEmptyDocument;
+var SetRequestHeader =
+    chrome.declarativeWebRequest.SetRequestHeader;
+var RemoveRequestHeader =
+    chrome.declarativeWebRequest.RemoveRequestHeader;
+
+// Constants as functions, not to be called until after runTests.
+function getURLEchoUserAgent() {
+  return getServerURL('echoheader?User-Agent');
+}
 
 function getURLHttpSimple() {
   return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html");
@@ -156,14 +165,59 @@ runTests([
       [ ["onCompleted"], ["onBeforeRedirect-1"], ["onBeforeRedirect-2"] ]);
 
     onRequest.addRules(
-      [ {'conditions': [
-             new RequestMatcher({'url': {'pathSuffix': "image.png"}})],
-         'actions': [new RedirectToTransparentImage()]},
-        {'conditions': [
-             new RequestMatcher({'url': {'pathSuffix': "frame.html"}})],
-         'actions': [new RedirectToEmptyDocument()]},
+      [ {conditions: [
+             new RequestMatcher({url: {pathSuffix: "image.png"}})],
+         actions: [new RedirectToTransparentImage()]},
+        {conditions: [
+             new RequestMatcher({url: {pathSuffix: "frame.html"}})],
+         actions: [new RedirectToEmptyDocument()]},
       ],
       function() {navigateAndWait(getURLHttpRedirectTest());}
     );
   },
+
+  function testSetRequestHeader() {
+    ignoreUnexpected = true;
+    expect();  // Used for initialization.
+    onRequest.addRules(
+      [{conditions: [new RequestMatcher()],
+        actions: [new SetRequestHeader({name: "User-Agent", value: "FoobarUA"})]
+       }],
+      function() {
+        // Check the page content for our modified User-Agent string.
+        navigateAndWait(getURLEchoUserAgent(), function() {
+          chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+            chrome.test.assertTrue(request.pass, "Request header was not set.");
+          });
+          chrome.tabs.executeScript(tabId,
+            {
+              code: "chrome.extension.sendRequest(" +
+                    "{pass: document.body.innerText.indexOf('FoobarUA') >= 0});"
+            });
+        });
+      });
+  },
+
+  function testRemoveRequestHeader() {
+    ignoreUnexpected = true;
+    expect();  // Used for initialization.
+    onRequest.addRules(
+      [{conditions: [new RequestMatcher()],
+        actions: [new RemoveRequestHeader({name: "user-AGENT"})]
+       }],
+      function() {
+        // Check the page content for our modified User-Agent string.
+        navigateAndWait(getURLEchoUserAgent(), function() {
+          chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+            chrome.test.assertTrue(request.pass, "User-Agent was not removed.");
+          });
+          chrome.tabs.executeScript(tabId,
+            {
+              code: "chrome.extension.sendRequest(" +
+                    "{pass: document.body.innerText.indexOf('Mozilla') == -1});"
+            });
+        });
+      });
+  },
+
   ]);

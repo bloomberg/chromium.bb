@@ -64,6 +64,40 @@
             "nodoc": true
           }
         }
+      },
+      {
+        "id": "declarativeWebRequest.SetRequestHeader",
+        "description": "Sets the request header of the specified name to the specified value. If a header with the specified name did not exist before, a new one is created. Header name comparison is always case-insensitive. Each request header name occurs only once in each request.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.SetRequestHeader"],
+            "nodoc": true
+          },
+          "name": {
+            "type": "string",
+            "description": "HTTP request header name."
+          },
+          "value": {
+            "type": "string",
+            "description": "HTTP request header value."
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.RemoveRequestHeader",
+        "description": "Removes the request header of the specified name. Do not use SetRequestHeader and RemoveRequestHeader with the same header name on the same request. Each request header name occurs only once in each request.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.RemoveRequestHeader"],
+            "nodoc": true
+          },
+          "name": {
+            "type": "string",
+            "description": "HTTP request header name (case-insensitive)."
+          }
+        }
       }
     ],
     "functions": [
@@ -79,7 +113,9 @@
             "declarativeWebRequest.CancelRequest",
             "declarativeWebRequest.RedirectRequest",
             "declarativeWebRequest.RedirectToTransparentImage",
-            "declarativeWebRequest.RedirectToEmptyDocument"
+            "declarativeWebRequest.RedirectToEmptyDocument",
+            "declarativeWebRequest.SetRequestHeader",
+            "declarativeWebRequest.RemoveRequestHeader"
           ]
         }
       }

@@ -12,9 +12,11 @@ const char kOnRequest[] = "declarativeWebRequest.onRequest";
 
 // Keys of dictionaries.
 const char kInstanceTypeKey[] = "instanceType";
+const char kNameKey[] = "name";
 const char kRedirectUrlKey[] = "redirectUrl";
 const char kResourceTypeKey[] = "resourceType";
 const char kUrlKey[] = "url";
+const char kValueKey[] = "value";
 
 // Values of dictionaries, in particular instance types
 const char kCancelRequestType[] = "declarativeWebRequest.CancelRequest";
@@ -23,7 +25,10 @@ const char kRedirectToEmptyDocumentType[] =
     "declarativeWebRequest.RedirectToEmptyDocument";
 const char kRedirectToTransparentImageType[] =
     "declarativeWebRequest.RedirectToTransparentImage";
+const char kRemoveRequestHeaderType[] =
+    "declarativeWebRequest.RemoveRequestHeader";
 const char kRequestMatcherType[] = "declarativeWebRequest.RequestMatcher";
+const char kSetRequestHeaderType[] = "declarativeWebRequest.SetRequestHeader";
 
 }  // namespace declarative_webrequest_constants
 }  // namespace extensions

@@ -46,6 +46,8 @@ class WebRequestAction {
     ACTION_REDIRECT_REQUEST,
     ACTION_REDIRECT_TO_TRANSPARENT_IMAGE,
     ACTION_REDIRECT_TO_EMPTY_DOCUMENT,
+    ACTION_SET_REQUEST_HEADER,
+    ACTION_REMOVE_REQUEST_HEADER,
   };
 
   WebRequestAction();
@@ -61,9 +63,12 @@ class WebRequestAction {
   // Factory method that instantiates a concrete WebRequestAction
   // implementation according to |json_action|, the representation of the
   // WebRequestAction as received from the extension API.
-  // Sets |error| and returns NULL in case of an error.
+  // Sets |error| and returns NULL in case of a semantic error that cannot
+  // be caught by schema validation. Sets |bad_message| and returns NULL
+  // in case the input is syntactically unexpected.
   static scoped_ptr<WebRequestAction> Create(const base::Value& json_action,
-                                             std::string* error);
+                                             std::string* error,
+                                             bool* bad_message);
 
   // Returns a description of the modification to |request| caused by this
   // action.
@@ -91,7 +96,8 @@ class WebRequestActionSet {
   // |actions| which represents the array of actions received from the
   // extension API.
   static scoped_ptr<WebRequestActionSet> Create(const AnyVector& actions,
-                                                std::string* error);
+                                                std::string* error,
+                                                bool* bad_message);
 
   // Returns a description of the modifications to |request| caused by the
   // |actions_| that can be executed at |request_stage|.
@@ -156,7 +162,7 @@ class WebRequestRedirectAction : public WebRequestAction {
 // Action that instructs to redirect a network request to a transparent image.
 class WebRequestRedirectToTransparentImageAction : public WebRequestAction {
  public:
-  explicit WebRequestRedirectToTransparentImageAction();
+  WebRequestRedirectToTransparentImageAction();
   virtual ~WebRequestRedirectToTransparentImageAction();
 
   // Implementation of WebRequestAction:
@@ -176,7 +182,7 @@ class WebRequestRedirectToTransparentImageAction : public WebRequestAction {
 // Action that instructs to redirect a network request to an empty document.
 class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
  public:
-  explicit WebRequestRedirectToEmptyDocumentAction();
+  WebRequestRedirectToEmptyDocumentAction();
   virtual ~WebRequestRedirectToEmptyDocumentAction();
 
   // Implementation of WebRequestAction:
@@ -190,6 +196,48 @@ class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectToEmptyDocumentAction);
+};
+
+// Action that instructs to set a request header.
+class WebRequestSetRequestHeaderAction : public WebRequestAction {
+ public:
+  WebRequestSetRequestHeaderAction(const std::string& name,
+                                   const std::string& value);
+  virtual ~WebRequestSetRequestHeaderAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  std::string name_;
+  std::string value_;
+  DISALLOW_COPY_AND_ASSIGN(WebRequestSetRequestHeaderAction);
+};
+
+// Action that instructs to remove a request header.
+class WebRequestRemoveRequestHeaderAction : public WebRequestAction {
+ public:
+  explicit WebRequestRemoveRequestHeaderAction(const std::string& name);
+  virtual ~WebRequestRemoveRequestHeaderAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  std::string name_;
+  DISALLOW_COPY_AND_ASSIGN(WebRequestRemoveRequestHeaderAction);
 };
 
 // TODO(battre) Implement further actions:
