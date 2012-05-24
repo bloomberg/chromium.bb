@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,14 @@
 // Listens for changes to the online state and manages sending
 // updates to each RenderProcess via RenderProcessHost IPC.
 class BrowserOnlineStateObserver
-    : public net::NetworkChangeNotifier::OnlineStateObserver {
+    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   BrowserOnlineStateObserver();
   virtual ~BrowserOnlineStateObserver();
 
-  // OnlineStateObserver implementation.
-  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
+  // ConnectionTypeObserver implementation.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserOnlineStateObserver);

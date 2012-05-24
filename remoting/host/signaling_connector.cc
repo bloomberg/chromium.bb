@@ -39,7 +39,7 @@ SignalingConnector::SignalingConnector(
       reconnect_attempts_(0),
       refreshing_oauth_token_(false) {
   DCHECK(!auth_failed_callback_.is_null());
-  net::NetworkChangeNotifier::AddOnlineStateObserver(this);
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   signal_strategy_->AddListener(this);
   ScheduleTryReconnect();
@@ -47,7 +47,7 @@ SignalingConnector::SignalingConnector(
 
 SignalingConnector::~SignalingConnector() {
   signal_strategy_->RemoveListener(this);
-  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
@@ -86,9 +86,10 @@ void SignalingConnector::OnIPAddressChanged() {
   ResetAndTryReconnect();
 }
 
-void SignalingConnector::OnOnlineStateChanged(bool online) {
+void SignalingConnector::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(CalledOnValidThread());
-  if (online) {
+  if (type != net::NetworkChangeNotifier::CONNECTION_NONE) {
     LOG(INFO) << "Network state changed to online.";
     ResetAndTryReconnect();
   }

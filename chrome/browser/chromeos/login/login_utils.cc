@@ -535,11 +535,12 @@ class JobRestartRequest
   base::OneShotTimer<JobRestartRequest> timer_;
 };
 
-class LoginUtilsImpl : public LoginUtils,
-                       public GaiaOAuthConsumer,
-                       public OAuthLoginVerifier::Delegate,
-                       public net::NetworkChangeNotifier::OnlineStateObserver,
-                       public base::SupportsWeakPtr<LoginUtilsImpl> {
+class LoginUtilsImpl
+    : public LoginUtils,
+      public GaiaOAuthConsumer,
+      public OAuthLoginVerifier::Delegate,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public base::SupportsWeakPtr<LoginUtilsImpl> {
  public:
   LoginUtilsImpl()
       : pending_requests_(false),
@@ -548,11 +549,11 @@ class LoginUtilsImpl : public LoginUtils,
         delegate_(NULL),
         job_restart_request_(NULL),
         should_restore_auth_session_(false) {
-    net::NetworkChangeNotifier::AddOnlineStateObserver(this);
+    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   }
 
   virtual ~LoginUtilsImpl() {
-    net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+    net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   }
 
   // LoginUtils implementation:
@@ -599,8 +600,9 @@ class LoginUtilsImpl : public LoginUtils,
                                             const std::string& auth) OVERRIDE;
   virtual void OnOAuthVerificationFailed(const std::string& user_name) OVERRIDE;
 
-  // net::NetworkChangeNotifier::OnlineStateObserver overrides.
-  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
+  // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   // Given the authenticated credentials from the cookie jar, try to exchange
   // fetch OAuth request, v1 and v2 tokens.
@@ -1230,10 +1232,10 @@ void LoginUtilsImpl::RestoreAuthenticationSession(Profile* user_profile) {
     should_restore_auth_session_ = false;
     KickStartAuthentication(user_profile);
   } else {
-    // Even if we're online we should wait till initial OnOnlineStateChanged()
-    // call. Otherwise starting fetchers too early may end up cancelling
-    // all request when initial network state is processed.
-    // See http://crbug.com/121643.
+    // Even if we're online we should wait till initial
+    // OnConnectionTypeChanged() call. Otherwise starting fetchers too early may
+    // end up cancelling all request when initial network connection type is
+    // processed. See http://crbug.com/121643.
     should_restore_auth_session_ = true;
   }
 }
@@ -1421,8 +1423,10 @@ void LoginUtilsImpl::OnOAuthVerificationSucceeded(
 }
 
 
-void LoginUtilsImpl::OnOnlineStateChanged(bool online) {
-  if (online && UserManager::Get()->IsUserLoggedIn()) {
+void LoginUtilsImpl::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
+      UserManager::Get()->IsUserLoggedIn()) {
     if (oauth_login_verifier_.get() &&
         !oauth_login_verifier_->is_done()) {
       // If we come online for the first time after successful offline login,

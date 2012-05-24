@@ -24,12 +24,12 @@ namespace remoting {
 // not connected it keeps trying to reconnect it until it is
 // connected. It limits connection attempt rate using exponential
 // backoff. It also monitors network state and reconnects signalling
-// whenever online state changes or IP address changes.
+// whenever connection type changes or IP address changes.
 class SignalingConnector
     : public base::SupportsWeakPtr<SignalingConnector>,
       public base::NonThreadSafe,
       public SignalStrategy::Listener,
-      public net::NetworkChangeNotifier::OnlineStateObserver,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public net::NetworkChangeNotifier::IPAddressObserver,
       public GaiaOAuthClient::Delegate {
  public:
@@ -67,8 +67,9 @@ class SignalingConnector
   // NetworkChangeNotifier::IPAddressObserver interface.
   virtual void OnIPAddressChanged() OVERRIDE;
 
-  // NetworkChangeNotifier::OnlineStateObserver interface.
-  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
+  // NetworkChangeNotifier::ConnectionTypeObserver interface.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   // GaiaOAuthClient::Delegate interface.
   virtual void OnRefreshTokenResponse(const std::string& user_email,

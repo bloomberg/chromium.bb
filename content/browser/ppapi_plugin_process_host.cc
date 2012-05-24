@@ -29,16 +29,16 @@ using content::ChildProcessHostImpl;
 
 class PpapiPluginProcessHost::PluginNetworkObserver
     : public net::NetworkChangeNotifier::IPAddressObserver,
-      public net::NetworkChangeNotifier::OnlineStateObserver {
+      public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   explicit PluginNetworkObserver(PpapiPluginProcessHost* process_host)
       : process_host_(process_host) {
     net::NetworkChangeNotifier::AddIPAddressObserver(this);
-    net::NetworkChangeNotifier::AddOnlineStateObserver(this);
+    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   }
 
   ~PluginNetworkObserver() {
-    net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+    net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
   }
 
@@ -49,13 +49,15 @@ class PpapiPluginProcessHost::PluginNetworkObserver
     // when I unplug and replug my network cable. Sending this notification when
     // "something" changes seems to make Flash reasonably happy, but seems
     // wrong. We should really be able to provide the real online state in
-    // OnOnlineStateChanged().
+    // OnConnectionTypeChanged().
     process_host_->Send(new PpapiMsg_SetNetworkState(true));
   }
 
-  // OnlineStateObserver implementation.
-  virtual void OnOnlineStateChanged(bool online) OVERRIDE {
-    process_host_->Send(new PpapiMsg_SetNetworkState(online));
+  // ConnectionTypeObserver implementation.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) {
+    process_host_->Send(new PpapiMsg_SetNetworkState(
+        type != net::NetworkChangeNotifier::CONNECTION_NONE));
   }
 
  private:

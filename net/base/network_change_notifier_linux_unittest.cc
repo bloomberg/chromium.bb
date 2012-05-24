@@ -119,21 +119,22 @@ class NetworkChangeNotifierLinuxTest : public testing::Test {
 
 namespace {
 
-class OfflineObserver : public NetworkChangeNotifier::OnlineStateObserver {
+class OfflineObserver : public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   OfflineObserver()
       : notification_count(0),
         last_online_value(true) {
-    NetworkChangeNotifier::AddOnlineStateObserver(this);
+    NetworkChangeNotifier::AddConnectionTypeObserver(this);
   }
 
   ~OfflineObserver() {
-    NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+    NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   }
 
-  virtual void OnOnlineStateChanged(bool online) OVERRIDE {
+  virtual void OnConnectionTypeChanged(
+      NetworkChangeNotifier::ConnectionType type) OVERRIDE {
     notification_count++;
-    last_online_value = online;
+    last_online_value = type != NetworkChangeNotifier::CONNECTION_NONE;
   }
 
   int notification_count;
@@ -142,23 +143,26 @@ class OfflineObserver : public NetworkChangeNotifier::OnlineStateObserver {
 
 TEST_F(NetworkChangeNotifierLinuxTest, Offline) {
   SendResponse(NM_STATE_DISCONNECTED);
-  EXPECT_TRUE(NetworkChangeNotifier::IsOffline());
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
 }
 
 TEST_F(NetworkChangeNotifierLinuxTest, Online) {
   SendResponse(NM_STATE_CONNECTED_GLOBAL);
-  EXPECT_FALSE(NetworkChangeNotifier::IsOffline());
-}
+  EXPECT_NE(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());}
 
 TEST_F(NetworkChangeNotifierLinuxTest, OfflineThenOnline) {
   OfflineObserver observer;
 
   SendResponse(NM_STATE_DISCONNECTED);
-  EXPECT_TRUE(NetworkChangeNotifier::IsOffline());
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
   EXPECT_EQ(0, observer.notification_count);
 
   SendSignal(NM_STATE_CONNECTED_GLOBAL);
-  EXPECT_FALSE(NetworkChangeNotifier::IsOffline());
+  EXPECT_NE(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
   EXPECT_EQ(1, observer.notification_count);
   EXPECT_TRUE(observer.last_online_value);
 }
@@ -167,16 +171,19 @@ TEST_F(NetworkChangeNotifierLinuxTest, MultipleStateChanges) {
   OfflineObserver observer;
 
   SendResponse(NM_STATE_CONNECTED_GLOBAL);
-  EXPECT_FALSE(NetworkChangeNotifier::IsOffline());
+  EXPECT_NE(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
   EXPECT_EQ(0, observer.notification_count);
 
   SendSignal(NM_STATE_DISCONNECTED);
-  EXPECT_TRUE(NetworkChangeNotifier::IsOffline());
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
   EXPECT_EQ(1, observer.notification_count);
   EXPECT_FALSE(observer.last_online_value);
 
   SendSignal(NM_STATE_CONNECTED_GLOBAL);
-  EXPECT_FALSE(NetworkChangeNotifier::IsOffline());
+  EXPECT_NE(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
   EXPECT_EQ(2, observer.notification_count);
   EXPECT_TRUE(observer.last_online_value);
 }
@@ -185,11 +192,13 @@ TEST_F(NetworkChangeNotifierLinuxTest, IgnoreContinuedOnlineState) {
   OfflineObserver observer;
 
   SendResponse(NM_STATE_CONNECTED_SITE);
-  EXPECT_FALSE(NetworkChangeNotifier::IsOffline());
+  EXPECT_NE(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
   EXPECT_EQ(0, observer.notification_count);
 
   SendSignal(NM_STATE_CONNECTED_GLOBAL);
-  EXPECT_FALSE(NetworkChangeNotifier::IsOffline());
+  EXPECT_NE(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
   EXPECT_EQ(0, observer.notification_count);
 }
 
@@ -197,24 +206,28 @@ TEST_F(NetworkChangeNotifierLinuxTest, IgnoreContinuedOfflineState) {
   OfflineObserver observer;
 
   SendResponse(NM_STATE_DISCONNECTING);
-  EXPECT_TRUE(NetworkChangeNotifier::IsOffline());
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
   EXPECT_EQ(0, observer.notification_count);
 
   SendSignal(NM_STATE_DISCONNECTED);
-  EXPECT_TRUE(NetworkChangeNotifier::IsOffline());
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
   EXPECT_EQ(0, observer.notification_count);
 }
 
 TEST_F(NetworkChangeNotifierLinuxTest, NullResponse) {
   RunOnNotifierThread(base::Bind(
       response_callback_, static_cast<dbus::Response*>(NULL)));
-  EXPECT_FALSE(NetworkChangeNotifier::IsOffline());
+  EXPECT_NE(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
 }
 
 TEST_F(NetworkChangeNotifierLinuxTest, EmptyResponse) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   RunOnNotifierThread(base::Bind(response_callback_, response.get()));
-  EXPECT_FALSE(NetworkChangeNotifier::IsOffline());
+  EXPECT_NE(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
 }
 
 TEST_F(NetworkChangeNotifierLinuxTest, InvalidResponse) {
@@ -222,7 +235,8 @@ TEST_F(NetworkChangeNotifierLinuxTest, InvalidResponse) {
   dbus::MessageWriter writer(response.get());
   writer.AppendUint16(20);  // Uint16 instead of the expected Uint32
   RunOnNotifierThread(base::Bind(response_callback_, response.get()));
-  EXPECT_FALSE(NetworkChangeNotifier::IsOffline());
+  EXPECT_NE(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::GetConnectionType());
 }
 
 }  // namespace

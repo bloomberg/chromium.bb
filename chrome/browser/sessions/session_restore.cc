@@ -80,7 +80,7 @@ static const int kInitialDelayTimerMS = 100;
 // This is not part of SessionRestoreImpl so that synchronous destruction
 // of SessionRestoreImpl doesn't have timing problems.
 class TabLoader : public content::NotificationObserver,
-                  public net::NetworkChangeNotifier::OnlineStateObserver,
+                  public net::NetworkChangeNotifier::ConnectionTypeObserver,
                   public base::RefCounted<TabLoader> {
  public:
   // Retrieves a pointer to the TabLoader instance shared between profiles, or
@@ -120,8 +120,9 @@ class TabLoader : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // net::NetworkChangeNotifier::OnlineStateObserver overrides.
-  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
+  // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   // Removes the listeners from the specified tab and removes the tab from
   // the set of tabs to load and list of tabs we're waiting to get a load
@@ -226,7 +227,7 @@ void TabLoader::StartLoading() {
     loading_ = true;
     LoadNextTab();
   } else {
-    net::NetworkChangeNotifier::AddOnlineStateObserver(this);
+    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   }
 #else
   loading_ = true;
@@ -246,7 +247,7 @@ TabLoader::TabLoader(base::TimeTicks restore_started)
 TabLoader::~TabLoader() {
   DCHECK((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
           tabs_loading_.empty() && tabs_to_load_.empty());
-  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   shared_tab_loader = NULL;
 }
 
@@ -369,8 +370,9 @@ void TabLoader::Observe(int type,
     this_retainer_ = NULL;
 }
 
-void TabLoader::OnOnlineStateChanged(bool online) {
-  if (online) {
+void TabLoader::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  if (type != net::NetworkChangeNotifier::CONNECTION_NONE) {
     if (!loading_) {
       loading_ = true;
       LoadNextTab();

@@ -43,7 +43,8 @@ class NetworkChangeNotifierChromeos
   virtual void SystemResumed() OVERRIDE;
 
   // NetworkChangeNotifier overrides.
-  virtual bool IsCurrentlyOffline() const OVERRIDE;
+  virtual net::NetworkChangeNotifier::ConnectionType
+      GetCurrentConnectionType() const OVERRIDE;
 
   // NetworkManagerObserver overrides:
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj) OVERRIDE;

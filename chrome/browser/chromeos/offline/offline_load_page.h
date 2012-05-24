@@ -33,8 +33,9 @@ namespace chromeos {
 // when no network is available and hides when some network (either
 // one of wifi, 3g or ethernet) becomes available.
 // It deletes itself when the interstitial page is closed.
-class OfflineLoadPage : public content::InterstitialPageDelegate,
-                        public net::NetworkChangeNotifier::OnlineStateObserver {
+class OfflineLoadPage
+    : public content::InterstitialPageDelegate,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // Passed a boolean indicating whether or not it is OK to proceed with the
   // page load.
@@ -64,8 +65,9 @@ class OfflineLoadPage : public content::InterstitialPageDelegate,
   virtual void OnProceed() OVERRIDE;
   virtual void OnDontProceed() OVERRIDE;
 
-  // net::NetworkChangeNotifier::OnlineStateObserver overrides.
-  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
+  // net::NetworkChangeNotifier::ConnectionTypeObserver overrides.
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   // Retrieves template strings of the offline page for app and
   // normal site.

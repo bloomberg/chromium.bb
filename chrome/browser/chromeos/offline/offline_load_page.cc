@@ -60,13 +60,13 @@ OfflineLoadPage::OfflineLoadPage(WebContents* web_contents,
       proceeded_(false),
       web_contents_(web_contents),
       url_(url) {
-  net::NetworkChangeNotifier::AddOnlineStateObserver(this);
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   interstitial_page_ = InterstitialPage::Create(web_contents, true, url, this);
 }
 
 OfflineLoadPage::~OfflineLoadPage() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
 void OfflineLoadPage::Show() {
@@ -200,12 +200,14 @@ void OfflineLoadPage::NotifyBlockingPageComplete(bool proceed) {
       BrowserThread::IO, FROM_HERE, base::Bind(callback_, proceed));
 }
 
-void OfflineLoadPage::OnOnlineStateChanged(bool online) {
+void OfflineLoadPage::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DVLOG(1) << "OnlineStateObserver notification received: state="
+  const bool online = type != net::NetworkChangeNotifier::CONNECTION_NONE;
+  DVLOG(1) << "ConnectionTypeObserver notification received: state="
            << (online ? "online" : "offline");
   if (online) {
-    net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+    net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
     interstitial_page_->Proceed();
   }
 }

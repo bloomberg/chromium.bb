@@ -83,8 +83,12 @@ void NetworkChangeNotifierChromeos::OnNetworkManagerChanged(
   UpdateNetworkState(cros);
 }
 
-bool NetworkChangeNotifierChromeos::IsCurrentlyOffline() const {
-  return !IsOnline(connection_state_);
+net::NetworkChangeNotifier::ConnectionType
+NetworkChangeNotifierChromeos::GetCurrentConnectionType() const {
+  // TODO(droger): Return something more detailed than CONNECTION_UNKNOWN.
+  return IsOnline(connection_state_) ?
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN :
+      net::NetworkChangeNotifier::CONNECTION_NONE;
 }
 
 void NetworkChangeNotifierChromeos::OnNetworkChanged(
@@ -205,7 +209,8 @@ void NetworkChangeNotifierChromeos::ReportOnlineStateChangeOnUIThread() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
-         &NetworkChangeNotifierChromeos::NotifyObserversOfOnlineStateChange));
+         &NetworkChangeNotifierChromeos::
+             NotifyObserversOfConnectionTypeChange));
 }
 
 // static
