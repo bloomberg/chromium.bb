@@ -368,7 +368,13 @@ class ChannelListenerWithOnConnectedSend : public IPC::Channel::Listener {
   int messages_left_;
 };
 
-TEST_F(IPCChannelTest, SendMessageInChannelConnected) {
+#if defined(OS_WIN)
+// Acting flakey in Windows. http://crbug.com/129595
+#define MAYBE_SendMessageInChannelConnected DISABLED_SendMessageInChannelConnected
+#else
+#define MAYBE_SendMessageInChannelConnected SendMessageInChannelConnected
+#endif
+TEST_F(IPCChannelTest, MAYBE_SendMessageInChannelConnected) {
   // This tests the case of a listener sending back an event in it's
   // OnChannelConnected handler.
 
