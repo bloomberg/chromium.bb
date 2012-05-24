@@ -399,6 +399,7 @@
         '../../database/database_util_unittest.cc',
         '../../database/quota_table_unittest.cc',
         '../../dom_storage/dom_storage_area_unittest.cc',
+        '../../dom_storage/dom_storage_cached_area_unittest.cc',
         '../../dom_storage/dom_storage_context_unittest.cc',
         '../../dom_storage/dom_storage_database_unittest.cc',
         '../../dom_storage/dom_storage_map_unittest.cc',

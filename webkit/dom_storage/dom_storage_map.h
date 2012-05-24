@@ -21,7 +21,7 @@ namespace dom_storage {
 class DomStorageMap
     : public base::RefCountedThreadSafe<DomStorageMap> {
  public:
-  DomStorageMap(size_t quota);
+  explicit DomStorageMap(size_t quota);
 
   unsigned Length() const;
   NullableString16 Key(unsigned index);
@@ -43,6 +43,8 @@ class DomStorageMap
   DomStorageMap* DeepCopy() const;
 
   size_t bytes_used() const { return bytes_used_; }
+  size_t quota() const { return quota_; }
+  void set_quota(size_t quota) { quota_ = quota; }
 
  private:
   friend class base::RefCountedThreadSafe<DomStorageMap>;

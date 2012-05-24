@@ -18,6 +18,8 @@
       'sources': [
         'dom_storage_area.cc',
         'dom_storage_area.h',
+        'dom_storage_cached_area.cc',
+        'dom_storage_cached_area.h',
         'dom_storage_context.cc',
         'dom_storage_context.h',
         'dom_storage_database.cc',
@@ -28,6 +30,7 @@
         'dom_storage_map.h',
         'dom_storage_namespace.cc',
         'dom_storage_namespace.h',
+        'dom_storage_proxy.h',
         'dom_storage_session.cc',
         'dom_storage_session.h',
         'dom_storage_task_runner.cc',
