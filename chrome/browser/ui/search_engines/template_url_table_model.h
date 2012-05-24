@@ -19,6 +19,10 @@ class SkBitmap;
 class TemplateURL;
 class TemplateURLService;
 
+namespace gfx {
+class ImageSkia;
+}
+
 // TemplateURLTableModel is the TableModel implementation used by
 // KeywordEditorView to show the keywords in a TableView.
 //
@@ -45,7 +49,7 @@ class TemplateURLTableModel : public ui::TableModel,
   // ui::TableModel overrides.
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column) OVERRIDE;
-  virtual SkBitmap GetIcon(int row) OVERRIDE;
+  virtual gfx::ImageSkia GetIcon(int row) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual bool HasGroups() OVERRIDE;
   virtual Groups GetGroups() OVERRIDE;

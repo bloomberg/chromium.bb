@@ -657,16 +657,16 @@ TreeView::NodeDetails* TreeView::GetNodeDetailsByTreeItem(HTREEITEM tree_item) {
 }
 
 HIMAGELIST TreeView::CreateImageList() {
-  std::vector<SkBitmap> model_images;
+  std::vector<gfx::ImageSkia> model_images;
   model_->GetIcons(&model_images);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   bool rtl = base::i18n::IsRTL();
   // Creates the default image list used for trees.
-  const SkBitmap* closed_icon = rb.GetImageNamed(
-      (rtl ? IDR_FOLDER_CLOSED_RTL : IDR_FOLDER_CLOSED)).ToSkBitmap();
-  const SkBitmap* opened_icon = rb.GetImageNamed(
-      (rtl ? IDR_FOLDER_OPEN_RTL : IDR_FOLDER_OPEN)).ToSkBitmap();
+  const gfx::ImageSkia* closed_icon = rb.GetImageNamed(
+      (rtl ? IDR_FOLDER_CLOSED_RTL : IDR_FOLDER_CLOSED)).ToImageSkia();
+  const gfx::ImageSkia* opened_icon = rb.GetImageNamed(
+      (rtl ? IDR_FOLDER_OPEN_RTL : IDR_FOLDER_OPEN)).ToImageSkia();
   int width = closed_icon->width();
   int height = closed_icon->height();
   DCHECK(opened_icon->width() == width && opened_icon->height() == height);

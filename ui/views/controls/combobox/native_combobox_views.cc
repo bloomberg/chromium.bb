@@ -57,7 +57,7 @@ NativeComboboxViews::NativeComboboxViews(Combobox* combobox)
     : combobox_(combobox),
       text_border_(new FocusableBorder()),
       disclosure_arrow_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_DISCLOSURE_ARROW).ToSkBitmap()),
+          IDR_DISCLOSURE_ARROW).ToImageSkia()),
       dropdown_open_(false),
       selected_index_(-1),
       content_width_(0),

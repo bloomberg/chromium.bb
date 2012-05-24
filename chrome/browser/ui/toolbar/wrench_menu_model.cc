@@ -281,14 +281,14 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
 }
 
 bool WrenchMenuModel::GetIconForCommandId(int command_id,
-                                          SkBitmap* icon) const {
+                                          gfx::ImageSkia* icon) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (command_id) {
     case IDC_UPGRADE_DIALOG: {
       if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-        *icon = *rb.GetNativeImageNamed(
+        *icon = *rb.GetImageNamed(
             UpgradeDetector::GetInstance()->GetIconResourceID(
-                UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON)).ToSkBitmap();
+                UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON)).ToImageSkia();
         return true;
       }
       return false;
@@ -301,7 +301,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
       if (error && error->HasCustomizedSyncMenuItem()) {
         int icon_id = error->MenuItemIconResourceID();
         if (icon_id) {
-          *icon = *rb.GetNativeImageNamed(icon_id).ToSkBitmap();
+          *icon = *rb.GetImageNamed(icon_id).ToImageSkia();
           return true;
         }
       }

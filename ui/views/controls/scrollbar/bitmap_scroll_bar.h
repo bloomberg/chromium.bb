@@ -18,8 +18,8 @@ class BitmapScrollBarThumb;
 //
 // BitmapScrollBar
 //
-//  A ScrollBar subclass that implements a scroll bar rendered using bitmaps
-//  that the user provides. There are bitmaps for the up and down buttons, as
+//  A ScrollBar subclass that implements a scroll bar rendered using images
+//  that the user provides. There are images for the up and down buttons, as
 //  well as for the thumb and track. This is intended for creating UIs that
 //  have customized, non-native appearances, like floating HUDs etc.
 //
@@ -30,7 +30,7 @@ class VIEWS_EXPORT BitmapScrollBar : public BaseScrollBar,
   BitmapScrollBar(bool horizontal, bool show_scroll_buttons);
   virtual ~BitmapScrollBar() { }
 
-  // A list of parts that the user may supply bitmaps for.
+  // A list of parts that the user may supply images for.
   enum ScrollBarPart {
     // The button used to represent scrolling up/left by 1 line.
     PREV_BUTTON = 0,

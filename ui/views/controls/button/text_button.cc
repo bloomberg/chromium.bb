@@ -90,28 +90,28 @@ TextButtonBorder::TextButtonBorder()
   set_normal_set(normal_set);
 
   BorderImageSet hot_set = {
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_LEFT_H).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_H).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_RIGHT_H).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_LEFT_H).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_CENTER_H).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_RIGHT_H).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_H).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_H).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_LEFT_H).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_H).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_RIGHT_H).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_LEFT_H).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_CENTER_H).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_RIGHT_H).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_H).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_H).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_H).ToImageSkia(),
   };
   set_hot_set(hot_set);
 
   BorderImageSet pushed_set = {
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_LEFT_P).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_P).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_RIGHT_P).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_LEFT_P).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_CENTER_P).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_RIGHT_P).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_P).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_P).ToSkBitmap(),
-    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_LEFT_P).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_P).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_RIGHT_P).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_LEFT_P).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_CENTER_P).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_RIGHT_P).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_P).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_P).ToImageSkia(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_P).ToImageSkia(),
   };
   set_pushed_set(pushed_set);
 }
@@ -514,7 +514,7 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     // canvas, we can not mirror the button by simply flipping the canvas as
     // doing this will mirror the text itself. Flipping the canvas will also
     // make the icons look wrong because icons are almost always represented as
-    // direction-insensitive bitmaps and such bitmaps should never be flipped
+    // direction-insensitive images and such images should never be flipped
     // horizontally.
     //
     // Due to the above, we must perform the flipping manually for RTL UIs.
@@ -668,18 +668,18 @@ TextButton::TextButton(ButtonListener* listener, const string16& text)
 TextButton::~TextButton() {
 }
 
-void TextButton::SetIcon(const SkBitmap& icon) {
+void TextButton::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
   SchedulePaint();
 }
 
-void TextButton::SetHoverIcon(const SkBitmap& icon) {
+void TextButton::SetHoverIcon(const gfx::ImageSkia& icon) {
   icon_hover_ = icon;
   has_hover_icon_ = true;
   SchedulePaint();
 }
 
-void TextButton::SetPushedIcon(const SkBitmap& icon) {
+void TextButton::SetPushedIcon(const gfx::ImageSkia& icon) {
   icon_pushed_ = icon;
   has_pushed_icon_ = true;
   SchedulePaint();
@@ -717,7 +717,7 @@ gfx::Size TextButton::GetPreferredSize() {
 void TextButton::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   TextButtonBase::PaintButton(canvas, mode);
 
-  const SkBitmap& icon = GetImageToPaint();
+  const gfx::ImageSkia& icon = GetImageToPaint();
 
   if (icon.width() > 0) {
     gfx::Rect text_bounds = GetTextBounds();
@@ -768,7 +768,7 @@ void TextButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
 gfx::Rect TextButton::GetTextBounds() const {
   int extra_width = 0;
 
-  const SkBitmap& icon = GetImageToPaint();
+  const gfx::ImageSkia& icon = GetImageToPaint();
   if (icon.width() > 0)
     extra_width = icon.width() + (text_.empty() ? 0 : icon_text_spacing_);
 
@@ -786,7 +786,7 @@ gfx::Rect TextButton::GetTextBounds() const {
   return bounds;
 }
 
-const SkBitmap& TextButton::GetImageToPaint() const {
+const gfx::ImageSkia& TextButton::GetImageToPaint() const {
   if (show_multiple_icon_states_) {
     if (has_hover_icon_ && (state() == BS_HOT))
       return icon_hover_;

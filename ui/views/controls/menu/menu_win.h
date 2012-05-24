@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,16 +50,16 @@ class MenuWin : public Menu {
   virtual void AddMenuItemWithIcon(int index,
                                    int item_id,
                                    const string16& label,
-                                   const SkBitmap& icon) OVERRIDE;
+                                   const gfx::ImageSkia& icon) OVERRIDE;
   virtual Menu* AddSubMenuWithIcon(int index,
                                    int item_id,
                                    const string16& label,
-                                   const SkBitmap& icon) OVERRIDE;
+                                   const gfx::ImageSkia& icon) OVERRIDE;
   virtual void AddSeparator(int index) OVERRIDE;
   virtual void EnableMenuItemByID(int item_id, bool enabled) OVERRIDE;
   virtual void EnableMenuItemAt(int index, bool enabled) OVERRIDE;
   virtual void SetMenuLabel(int item_id, const string16& label) OVERRIDE;
-  virtual bool SetIcon(const SkBitmap& icon, int item_id) OVERRIDE;
+  virtual bool SetIcon(const gfx::ImageSkia& icon, int item_id) OVERRIDE;
   virtual void RunMenuAt(int x, int y) OVERRIDE;
   virtual void Cancel() OVERRIDE;
   virtual int ItemCount() OVERRIDE;
@@ -75,7 +75,7 @@ class MenuWin : public Menu {
   virtual void AddMenuItemInternal(int index,
                                    int item_id,
                                    const string16& label,
-                                   const SkBitmap& icon,
+                                   const gfx::ImageSkia& icon,
                                    MenuItemType type) OVERRIDE;
 
  private:
@@ -87,7 +87,7 @@ class MenuWin : public Menu {
   void AddMenuItemInternal(int index,
                            int item_id,
                            const string16& label,
-                           const SkBitmap& icon,
+                           const gfx::ImageSkia& icon,
                            HMENU submenu,
                            MenuItemType type);
 

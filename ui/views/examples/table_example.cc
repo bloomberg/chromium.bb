@@ -8,7 +8,9 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -111,7 +113,7 @@ string16 TableExample::GetText(int row, int column_id) {
   return ASCIIToUTF16(cells[row % 5][column_id]);
 }
 
-SkBitmap TableExample::GetIcon(int row) {
+gfx::ImageSkia TableExample::GetIcon(int row) {
   return row % 2 ? icon1_ : icon2_;
 }
 

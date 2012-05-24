@@ -84,7 +84,7 @@ class HungPagesTableModel : public views::GroupTableModel {
   // Overridden from views::GroupTableModel:
   virtual int RowCount();
   virtual string16 GetText(int row, int column_id);
-  virtual SkBitmap GetIcon(int row);
+  virtual gfx::ImageSkia GetIcon(int row);
   virtual void SetObserver(ui::TableModelObserver* observer);
   virtual void GetGroupRangeForItem(int item, views::GroupRange* range);
 
@@ -188,7 +188,7 @@ string16 HungPagesTableModel::GetText(int row, int column_id) {
   return title;
 }
 
-SkBitmap HungPagesTableModel::GetIcon(int row) {
+gfx::ImageSkia HungPagesTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
   return tab_observers_[row]->favicon_tab_helper()->GetFavicon();
 }

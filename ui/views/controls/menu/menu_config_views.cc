@@ -5,10 +5,10 @@
 #include "ui/views/controls/menu/menu_config.h"
 
 #include "grit/ui_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/base/native_theme/native_theme_aura.h"
 
 namespace views {
@@ -25,8 +25,8 @@ MenuConfig* MenuConfig::Create() {
   config->item_left_margin = 8;
   config->arrow_to_edge_padding = 20;
   config->icon_to_label_padding = 4;
-  config->arrow_width = rb.GetImageNamed(IDR_MENU_ARROW).ToSkBitmap()->width();
-  const SkBitmap* check = rb.GetImageNamed(IDR_MENU_CHECK).ToSkBitmap();
+  config->arrow_width = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia()->width();
+  const gfx::ImageSkia* check = rb.GetImageNamed(IDR_MENU_CHECK).ToImageSkia();
   // Add 4 to force some padding between check and label.
   config->check_width = check->width() + 4;
   config->check_height = check->height();

@@ -91,7 +91,7 @@ bool MessageBoxView::IsCheckBoxSelected() {
   return checkbox_ ? checkbox_->checked() : false;
 }
 
-void MessageBoxView::SetIcon(const SkBitmap& icon) {
+void MessageBoxView::SetIcon(const gfx::ImageSkia& icon) {
   if (!icon_)
     icon_ = new ImageView();
   icon_->SetImage(icon);

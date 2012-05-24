@@ -29,7 +29,7 @@ ButtonExample::ButtonExample()
       icon_(NULL),
       count_(0) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  icon_ = rb.GetImageNamed(IDR_CLOSE_SA_H).ToSkBitmap();
+  icon_ = rb.GetImageNamed(IDR_CLOSE_SA_H).ToImageSkia();
 }
 
 ButtonExample::~ButtonExample() {
@@ -50,7 +50,8 @@ void ButtonExample::CreateExampleView(View* container) {
                           rb.GetImageNamed(IDR_CLOSE_H).ToImageSkia());
   image_button_->SetImage(ImageButton::BS_PUSHED,
                           rb.GetImageNamed(IDR_CLOSE_P).ToImageSkia());
-  image_button_->SetOverlayImage(rb.GetImageNamed(IDR_MENU_CHECK).ToSkBitmap());
+  image_button_->SetOverlayImage(rb.GetImageNamed(
+      IDR_MENU_CHECK).ToImageSkia());
   container->AddChildView(image_button_);
 }
 
@@ -80,7 +81,7 @@ void ButtonExample::ButtonPressed(Button* sender, const Event& event) {
       }
     } else if (event.IsAltDown()) {
       if (text_button_->HasIcon())
-        text_button_->SetIcon(SkBitmap());
+        text_button_->SetIcon(gfx::ImageSkia());
       else
         text_button_->SetIcon(*icon_);
     } else {

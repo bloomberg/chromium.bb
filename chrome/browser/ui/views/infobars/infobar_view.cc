@@ -104,7 +104,7 @@ views::MenuButton* InfoBarView::CreateMenuButton(
   menu_button->set_animate_on_state_change(false);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   menu_button->set_menu_marker(
-      rb.GetImageNamed(IDR_INFOBARBUTTON_MENU_DROPARROW).ToSkBitmap());
+      rb.GetImageNamed(IDR_INFOBARBUTTON_MENU_DROPARROW).ToImageSkia());
   menu_button->SetEnabledColor(SK_ColorBLACK);
   menu_button->SetHighlightColor(SK_ColorBLACK);
   menu_button->SetHoverColor(SK_ColorBLACK);

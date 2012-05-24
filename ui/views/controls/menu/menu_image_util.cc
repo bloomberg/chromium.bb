@@ -10,6 +10,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
@@ -29,7 +30,7 @@ const SkColor kRadioButtonIndicatorGradient0 = SkColorSetRGB(0, 0, 0);
 const SkColor kRadioButtonIndicatorGradient1 = SkColorSetRGB(0x83, 0x83, 0x83);
 const SkColor kIndicatorStroke = SkColorSetRGB(0, 0, 0);
 
-SkBitmap* CreateRadioButtonImage(bool selected) {
+gfx::ImageSkia* CreateRadioButtonImage(bool selected) {
   // + 2 (1px on each side) to cover rounding error.
   gfx::Canvas canvas(gfx::Size(kIndicatorSize + 2, kIndicatorSize + 2), false);
   canvas.Translate(gfx::Point(1, 1));
@@ -78,18 +79,18 @@ SkBitmap* CreateRadioButtonImage(bool selected) {
     canvas.sk_canvas()->drawCircle(radius, radius,
                                    kSelectedIndicatorSize / 2, paint);
   }
-  return new SkBitmap(canvas.ExtractBitmap());
+  return new gfx::ImageSkia(canvas.ExtractBitmap());
 }
 
-SkBitmap* GetRtlSubmenuArrowImage() {
-  static SkBitmap* kRtlArrow = NULL;
+gfx::ImageSkia* GetRtlSubmenuArrowImage() {
+  static gfx::ImageSkia* kRtlArrow = NULL;
   if (!kRtlArrow) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const SkBitmap* r = rb.GetImageNamed(IDR_MENU_ARROW).ToSkBitmap();
+    const gfx::ImageSkia* r = rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia();
     gfx::Canvas canvas(gfx::Size(r->width(), r->height()), false);
     canvas.Scale(-1, 1);
     canvas.DrawBitmapInt(*r, - r->width(), 0);
-    kRtlArrow = new SkBitmap(canvas.ExtractBitmap());
+    kRtlArrow = new gfx::ImageSkia(canvas.ExtractBitmap());
   }
   return kRtlArrow;
 }
@@ -98,17 +99,17 @@ SkBitmap* GetRtlSubmenuArrowImage() {
 
 namespace views {
 
-const SkBitmap* GetRadioButtonImage(bool selected) {
-  static const SkBitmap* kRadioOn = CreateRadioButtonImage(true);
-  static const SkBitmap* kRadioOff = CreateRadioButtonImage(false);
+const gfx::ImageSkia* GetRadioButtonImage(bool selected) {
+  static const gfx::ImageSkia* kRadioOn = CreateRadioButtonImage(true);
+  static const gfx::ImageSkia* kRadioOff = CreateRadioButtonImage(false);
 
   return selected ? kRadioOn : kRadioOff;
 }
 
-const SkBitmap* GetSubmenuArrowImage() {
+const gfx::ImageSkia* GetSubmenuArrowImage() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return base::i18n::IsRTL() ? GetRtlSubmenuArrowImage()
-                             : rb.GetImageNamed(IDR_MENU_ARROW).ToSkBitmap();
+                             : rb.GetImageNamed(IDR_MENU_ARROW).ToImageSkia();
 }
 
 }  // namespace views

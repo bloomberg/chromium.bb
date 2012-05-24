@@ -175,7 +175,7 @@ void FrameMaximizeButton::OnMouseCaptureLost() {
   ImageButton::OnMouseCaptureLost();
 }
 
-SkBitmap FrameMaximizeButton::GetImageToPaint() {
+gfx::ImageSkia FrameMaximizeButton::GetImageToPaint() {
   if (is_snap_enabled_) {
     int id = 0;
     if (frame_->GetWidget()->IsMaximized()) {

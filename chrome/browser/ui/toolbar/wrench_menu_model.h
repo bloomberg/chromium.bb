@@ -88,7 +88,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
   virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual bool GetIconForCommandId(int command_id,
-                                   SkBitmap* icon) const OVERRIDE;
+                                   gfx::ImageSkia* icon) const OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;

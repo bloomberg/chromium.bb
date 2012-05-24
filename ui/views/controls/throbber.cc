@@ -6,7 +6,7 @@
 
 #include "base/time.h"
 #include "grit/ui_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -23,7 +23,7 @@ Throbber::Throbber(int frame_time_ms,
       frames_(NULL),
       frame_time_(TimeDelta::FromMilliseconds(frame_time_ms)) {
   SetFrames(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_THROBBER).ToSkBitmap());
+      IDR_THROBBER).ToImageSkia());
 }
 
 Throbber::~Throbber() {
@@ -54,7 +54,7 @@ void Throbber::Stop() {
   SchedulePaint();  // Important if we're not painting while stopped
 }
 
-void Throbber::SetFrames(const SkBitmap* frames) {
+void Throbber::SetFrames(const gfx::ImageSkia* frames) {
   frames_ = frames;
   DCHECK(frames_->width() > 0 && frames_->height() > 0);
   DCHECK(frames_->width() % frames_->height() == 0);
@@ -140,7 +140,7 @@ CheckmarkThrobber::CheckmarkThrobber()
     : Throbber(kFrameTimeMs, false),
       checked_(false),
       checkmark_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_CHECKMARK).ToSkBitmap()) {
+          IDR_CHECKMARK).ToImageSkia()) {
 }
 
 void CheckmarkThrobber::SetChecked(bool checked) {

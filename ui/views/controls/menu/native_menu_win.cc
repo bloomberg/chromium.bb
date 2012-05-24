@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/win/wrapped_window_proc.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -252,7 +252,7 @@ class NativeMenuWin::MenuHostWindow {
 
       // Draw the icon after the label, otherwise it would be covered
       // by the label.
-      SkBitmap icon;
+      gfx::ImageSkia icon;
       if (data->native_menu_win->model_->GetIconAt(data->model_index, &icon)) {
         // We currently don't support items with both icons and checkboxes.
         DCHECK(type != ui::MenuModel::TYPE_CHECK);

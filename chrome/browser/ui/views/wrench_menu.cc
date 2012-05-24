@@ -929,7 +929,7 @@ MenuItemView* WrenchMenu::AppendMenuItem(MenuItemView* parent,
     menu_item->SetVisible(model->IsVisibleAt(index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
-      SkBitmap icon;
+      gfx::ImageSkia icon;
       if (model->GetIconAt(index, &icon))
         menu_item->SetIcon(icon);
     }

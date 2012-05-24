@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,11 +17,14 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
-class SkBitmap;
 
 namespace content {
 class NavigationEntry;
 class WebContents;
+}
+
+namespace gfx {
+class ImageSkia;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,7 +61,7 @@ class BackForwardMenuModel : public ui::MenuModel {
                                 ui::Accelerator* accelerator) const OVERRIDE;
   virtual bool IsItemCheckedAt(int index) const OVERRIDE;
   virtual int GetGroupIdAt(int index) const OVERRIDE;
-  virtual bool GetIconAt(int index, SkBitmap* icon) OVERRIDE;
+  virtual bool GetIconAt(int index, gfx::ImageSkia* icon) OVERRIDE;
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
       int index) const OVERRIDE;
   virtual bool IsEnabledAt(int index) const OVERRIDE;

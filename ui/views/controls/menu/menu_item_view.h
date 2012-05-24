@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "build/build_config.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 
 #if defined(OS_WIN)
@@ -134,7 +134,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView* AddMenuItemAt(int index,
                               int item_id,
                               const string16& label,
-                              const SkBitmap& icon,
+                              const gfx::ImageSkia& icon,
                               Type type);
 
   // Remove an item from the menu at a specified index.
@@ -163,7 +163,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   // The returned pointer is owned by this menu.
   MenuItemView* AppendSubMenuWithIcon(int item_id,
                                       const string16& label,
-                                      const SkBitmap& icon);
+                                      const gfx::ImageSkia& icon);
 
   // This is a convenience for standard text label menu items where the label
   // is provided with this call.
@@ -182,7 +182,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   // the menu, instead of relying on Windows.
   MenuItemView* AppendMenuItemWithIcon(int item_id,
                                        const string16& label,
-                                       const SkBitmap& icon);
+                                       const gfx::ImageSkia& icon);
 
   // Creates a menu item for the specified entry in the model and appends it as
   // a child. |index| should be offset by GetFirstItemIndex() before calling
@@ -194,7 +194,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,
                                    const string16& label,
-                                   const SkBitmap& icon,
+                                   const gfx::ImageSkia& icon,
                                    Type type);
 
   // Returns the view that contains child menu items. If the submenu has
@@ -234,13 +234,13 @@ class VIEWS_EXPORT MenuItemView : public View {
   void SetTooltip(const string16& tooltip, int item_id);
 
   // Sets the icon for the descendant identified by item_id.
-  void SetIcon(const SkBitmap& icon, int item_id);
+  void SetIcon(const gfx::ImageSkia& icon, int item_id);
 
   // Sets the icon of this menu item.
-  void SetIcon(const SkBitmap& icon);
+  void SetIcon(const gfx::ImageSkia& icon);
 
   // Returns the icon.
-  const SkBitmap& GetIcon() const { return icon_; }
+  const gfx::ImageSkia& GetIcon() const { return icon_; }
 
   // Sets the command id of this menu item.
   void SetCommand(int command) { command_ = command; }
@@ -436,7 +436,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   string16 title_;
 
   // Icon.
-  SkBitmap icon_;
+  gfx::ImageSkia icon_;
 
   // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_;

@@ -74,7 +74,7 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
     base::DictionaryValue* item = new base::DictionaryValue();
     item->SetInteger("id", id);
     item->SetString("label", model->GetLabelAt(i));
-    SkBitmap icon;
+    gfx::ImageSkia icon;
     if (model->GetIconAt(i, &icon))
       item->SetString("icon", web_ui_util::GetImageDataUrl(icon));
     if (id >= 0) {

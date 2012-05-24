@@ -9,12 +9,13 @@
 #include "base/string16.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
-class SkBitmap;
 
 namespace gfx {
 class Font;
+class ImageSkia;
 }
 
 namespace ui {
@@ -87,7 +88,7 @@ class UI_EXPORT MenuModel {
 
   // Gets the icon for the item at the specified index, returning true if there
   // is an icon, false otherwise.
-  virtual bool GetIconAt(int index, SkBitmap* icon) = 0;
+  virtual bool GetIconAt(int index, gfx::ImageSkia* icon) = 0;
 
   // Returns the model for a menu item with a line of buttons at |index|.
   virtual ButtonMenuItemModel* GetButtonMenuItemAt(int index) const = 0;

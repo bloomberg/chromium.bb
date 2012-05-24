@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,9 @@
 #include "ui/base/ui_export.h"
 #include "unicode/coll.h"
 
-class SkBitmap;
+namespace gfx {
+class ImageSkia;
+}
 
 namespace ui {
 
@@ -39,9 +41,9 @@ class UI_EXPORT TableModel {
 
   // Returns the small icon (16x16) that should be displayed in the first
   // column before the text. This is only used when the TableView was created
-  // with the ICON_AND_TEXT table type. Returns an isNull() bitmap if there is
-  // no bitmap.
-  virtual SkBitmap GetIcon(int row);
+  // with the ICON_AND_TEXT table type. Returns an isNull() image if there is
+  // no image.
+  virtual gfx::ImageSkia GetIcon(int row);
 
   // Returns the tooltip, if any, to show for a particular row.  If there are
   // multiple columns in the row, this will only be shown when hovering over

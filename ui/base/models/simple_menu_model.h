@@ -12,6 +12,10 @@
 #include "base/string16.h"
 #include "ui/base/models/menu_model.h"
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace ui {
 
 class ButtonMenuItemModel;
@@ -40,7 +44,8 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
     virtual string16 GetLabelForCommandId(int command_id) const;
     // Gets the icon for the item with the specified id, returning true if there
     // is an icon, false otherwise.
-    virtual bool GetIconForCommandId(int command_id, SkBitmap* icon) const;
+    virtual bool GetIconForCommandId(int command_id,
+                                     gfx::ImageSkia* icon) const;
 
     // Notifies the delegate that the item with the specified command id was
     // visually highlighted within the menu.
@@ -98,7 +103,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
       int index, int command_id, int string_id, MenuModel* model);
 
   // Sets the icon for the item at |index|.
-  void SetIcon(int index, const SkBitmap& icon);
+  void SetIcon(int index, const gfx::ImageSkia& icon);
 
   // Clears all items. Note that it does not free MenuModel of submenu.
   void Clear();
@@ -118,7 +123,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
                                 ui::Accelerator* accelerator) const OVERRIDE;
   virtual bool IsItemCheckedAt(int index) const OVERRIDE;
   virtual int GetGroupIdAt(int index) const OVERRIDE;
-  virtual bool GetIconAt(int index, SkBitmap* icon) OVERRIDE;
+  virtual bool GetIconAt(int index, gfx::ImageSkia* icon) OVERRIDE;
   virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
       int index) const OVERRIDE;
   virtual bool IsEnabledAt(int index) const OVERRIDE;

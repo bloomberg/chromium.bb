@@ -42,6 +42,7 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace {
 // Colors for the infobar.
@@ -407,12 +408,12 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
                            true));
 
   // Convert the model's icons from Skia to Cocoa.
-  std::vector<SkBitmap> skiaIcons;
+  std::vector<gfx::ImageSkia> skiaIcons;
   allowedTreeModel_->GetIcons(&skiaIcons);
   icons_.reset([[NSMutableArray alloc] init]);
-  for (std::vector<SkBitmap>::iterator it = skiaIcons.begin();
+  for (std::vector<gfx::ImageSkia>::iterator it = skiaIcons.begin();
        it != skiaIcons.end(); ++it) {
-    [icons_ addObject:gfx::SkBitmapToNSImage(*it)];
+    [icons_ addObject:gfx::SkBitmapToNSImage(*it->bitmap())];
   }
 
   // Default icon will be the last item in the array.

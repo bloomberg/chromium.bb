@@ -11,6 +11,10 @@
 #include "base/string16.h"
 #include "ui/views/view.h"
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace views {
 
 class Checkbox;
@@ -62,7 +66,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
 
   // Adds |icon| to the upper left of the message box or replaces the current
   // icon. To start out, the message box has no icon.
-  void SetIcon(const SkBitmap& icon);
+  void SetIcon(const gfx::ImageSkia& icon);
 
   // Adds a checkbox with the specified label to the message box if this is the
   // first call. Otherwise, it changes the label of the current checkbox. To

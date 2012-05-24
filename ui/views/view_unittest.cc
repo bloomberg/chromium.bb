@@ -1367,7 +1367,7 @@ class MockMenuModel : public ui::MenuModel {
       ui::Accelerator* accelerator));
   MOCK_CONST_METHOD1(IsItemCheckedAt, bool(int index));
   MOCK_CONST_METHOD1(GetGroupIdAt, int(int index));
-  MOCK_METHOD2(GetIconAt, bool(int index, SkBitmap* icon));
+  MOCK_METHOD2(GetIconAt, bool(int index, gfx::ImageSkia* icon));
   MOCK_CONST_METHOD1(GetButtonMenuItemAt, ui::ButtonMenuItemModel*(int index));
   MOCK_CONST_METHOD1(IsEnabledAt, bool(int index));
   MOCK_CONST_METHOD1(IsVisibleAt, bool(int index));

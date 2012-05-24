@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/base/models/table_model.h"
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
@@ -74,8 +74,8 @@ TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
 // Used for sorting.
 static icu::Collator* collator = NULL;
 
-SkBitmap TableModel::GetIcon(int row) {
-  return SkBitmap();
+gfx::ImageSkia TableModel::GetIcon(int row) {
+  return gfx::ImageSkia();
 }
 
 string16 TableModel::GetTooltip(int row) {

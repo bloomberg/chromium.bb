@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,12 +131,12 @@ int BackForwardMenuModel::GetGroupIdAt(int index) const {
   return false;
 }
 
-bool BackForwardMenuModel::GetIconAt(int index, SkBitmap* icon) {
+bool BackForwardMenuModel::GetIconAt(int index, gfx::ImageSkia* icon) {
   if (!ItemHasIcon(index))
     return false;
 
   if (index == GetItemCount() - 1) {
-    *icon = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    *icon = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_HISTORY_FAVICON);
   } else {
     NavigationEntry* entry = GetNavigationEntry(index);

@@ -56,7 +56,7 @@ MenuButton::MenuButton(ButtonListener* listener,
       listener_(menu_button_listener),
       show_menu_marker_(show_menu_marker),
       menu_marker_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_MENU_DROPARROW).ToSkBitmap()),
+          IDR_MENU_DROPARROW).ToImageSkia()),
       destroyed_flag_(NULL) {
   set_alignment(TextButton::ALIGN_LEFT);
 }

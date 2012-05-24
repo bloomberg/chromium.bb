@@ -8,11 +8,11 @@
 
 namespace {
 
-SkBitmap CreateTestBitmap(int width, int height) {
+gfx::ImageSkia CreateTestImage(int width, int height) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   bitmap.allocPixels();
-  return bitmap;
+  return gfx::ImageSkia(bitmap);
 }
 
 }  // namespace
@@ -35,8 +35,8 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ("5x15", button.GetPreferredSize().ToString());
 
   // Set a normal image.
-  gfx::ImageSkia normal_bitmap = CreateTestBitmap(10, 20);
-  button.SetImage(CustomButton::BS_NORMAL, &normal_bitmap);
+  gfx::ImageSkia normal_image = CreateTestImage(10, 20);
+  button.SetImage(CustomButton::BS_NORMAL, &normal_image);
 
   // Image uses normal image for painting.
   EXPECT_FALSE(button.GetImageToPaint().empty());
@@ -47,8 +47,8 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ("10x20", button.GetPreferredSize().ToString());
 
   // Set a pushed image.
-  gfx::ImageSkia pushed_bitmap = CreateTestBitmap(11, 21);
-  button.SetImage(CustomButton::BS_PUSHED, &pushed_bitmap);
+  gfx::ImageSkia pushed_image = CreateTestImage(11, 21);
+  button.SetImage(CustomButton::BS_PUSHED, &pushed_image);
 
   // By convention, preferred size doesn't change, even though pushed image
   // is bigger.
@@ -59,9 +59,9 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ(10, button.GetImageToPaint().width());
   EXPECT_EQ(20, button.GetImageToPaint().height());
 
-  // Set an overlay bitmap.
-  SkBitmap overlay_bitmap = CreateTestBitmap(12, 22);
-  button.SetOverlayImage(&overlay_bitmap);
+  // Set an overlay image.
+  gfx::ImageSkia overlay_image = CreateTestImage(12, 22);
+  button.SetOverlayImage(&overlay_image);
   EXPECT_EQ(12, button.overlay_image_.width());
   EXPECT_EQ(22, button.overlay_image_.height());
 
@@ -74,7 +74,7 @@ TEST_F(ImageButtonTest, Basics) {
   EXPECT_EQ(10, button.GetImageToPaint().width());
   EXPECT_EQ(20, button.GetImageToPaint().height());
 
-  // Reset the overlay bitmap.
+  // Reset the overlay image.
   button.SetOverlayImage(NULL);
   EXPECT_TRUE(button.overlay_image_.empty());
 }

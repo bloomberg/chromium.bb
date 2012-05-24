@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 class MenuControllerTest : public CocoaTest {
 };
@@ -75,7 +76,7 @@ class DynamicDelegate : public Delegate {
   DynamicDelegate() : icon_(NULL) {}
   virtual bool IsItemForCommandIdDynamic(int command_id) const { return true; }
   virtual string16 GetLabelForCommandId(int command_id) const { return label_; }
-  virtual bool GetIconForCommandId(int command_id, SkBitmap* icon) const {
+  virtual bool GetIconForCommandId(int command_id, gfx::ImageSkia* icon) const {
     if (icon_) {
       *icon = *icon_;
       return true;

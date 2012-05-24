@@ -38,7 +38,7 @@ class VIEWS_EXPORT MenuButton : public TextButton {
              bool show_menu_marker);
   virtual ~MenuButton();
 
-  void set_menu_marker(const SkBitmap* menu_marker) {
+  void set_menu_marker(const gfx::ImageSkia* menu_marker) {
     menu_marker_ = menu_marker;
   }
 
@@ -91,7 +91,7 @@ class VIEWS_EXPORT MenuButton : public TextButton {
 
   // The down arrow used to differentiate the menu button from normal
   // text buttons.
-  const SkBitmap* menu_marker_;
+  const gfx::ImageSkia* menu_marker_;
 
   // If non-null the destuctor sets this to true. This is set while the menu is
   // showing and used to detect if the menu was deleted while running.

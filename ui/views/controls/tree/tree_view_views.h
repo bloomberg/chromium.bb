@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_model.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
@@ -311,11 +311,11 @@ class VIEWS_EXPORT TreeView : public View,
   ui::TreeModel* model_;
 
   // Default icons for closed/open.
-  SkBitmap closed_icon_;
-  SkBitmap open_icon_;
+  gfx::ImageSkia closed_icon_;
+  gfx::ImageSkia open_icon_;
 
   // Icons from the model.
-  std::vector<SkBitmap> icons_;
+  std::vector<gfx::ImageSkia> icons_;
 
   // The root node.
   InternalNode root_;

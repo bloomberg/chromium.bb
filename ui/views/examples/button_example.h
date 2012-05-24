@@ -38,7 +38,7 @@ class ButtonExample : public ExampleBase, public ButtonListener {
   // Values used to modify the look and feel of the button.
   TextButton::TextAlignment alignment_;
   bool use_native_theme_border_;
-  const SkBitmap* icon_;
+  const gfx::ImageSkia* icon_;
 
   // The number of times the buttons are pressed.
   int count_;

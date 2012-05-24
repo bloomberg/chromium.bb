@@ -11,6 +11,7 @@
 #include "ui/base/models/table_model.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace gtk_tree {
 
@@ -351,10 +352,10 @@ TreeAdapter::TreeAdapter(Delegate* delegate, ui::TreeModel* tree_model)
                                    G_TYPE_POINTER);
   tree_model->AddObserver(this);
 
-  std::vector<SkBitmap> icons;
+  std::vector<gfx::ImageSkia> icons;
   tree_model->GetIcons(&icons);
   for (size_t i = 0; i < icons.size(); ++i) {
-    pixbufs_.push_back(gfx::GdkPixbufFromSkBitmap(icons[i]));
+    pixbufs_.push_back(gfx::GdkPixbufFromSkBitmap(*icons[i].bitmap()));
   }
 }
 

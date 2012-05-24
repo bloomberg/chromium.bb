@@ -41,7 +41,7 @@ views::SmoothedThrobber* CreateDefaultSmoothedThrobber() {
   views::SmoothedThrobber* throbber =
       new views::SmoothedThrobber(kThrobberFrameMs);
   throbber->SetFrames(
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_SPINNER));
+      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_SPINNER));
   throbber->set_start_delay_ms(kThrobberStartDelayMs);
   return throbber;
 }
@@ -49,7 +49,7 @@ views::SmoothedThrobber* CreateDefaultSmoothedThrobber() {
 views::Throbber* CreateDefaultThrobber() {
   views::Throbber* throbber = new views::Throbber(kThrobberFrameMs, false);
   throbber->SetFrames(
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_SPINNER));
+      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_SPINNER));
   return throbber;
 }
 

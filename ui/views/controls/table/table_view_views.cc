@@ -5,10 +5,10 @@
 #include "ui/views/controls/table/table_view_views.h"
 
 #include "base/i18n/rtl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model.h"
-#include "ui/gfx/canvas.h"
 #include "ui/base/native_theme/native_theme.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
@@ -249,7 +249,7 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
     }
     int text_x = kTextHorizontalPadding;
     if (table_type_ == ICON_AND_TEXT) {
-      SkBitmap image = model_->GetIcon(i);
+      gfx::ImageSkia image = model_->GetIcon(i);
       if (!image.isNull()) {
         int image_x = GetMirroredXWithWidthInView(text_x, image.width());
         canvas->DrawBitmapInt(

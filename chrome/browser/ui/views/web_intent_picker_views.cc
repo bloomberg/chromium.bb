@@ -144,20 +144,20 @@ class ThrobberNativeTextButton : public views::NativeTextButton {
   void StopThrobber();
 
   // Set the throbber bitmap to use. IDR_THROBBER is used by default.
-  void SetFrames(const SkBitmap* frames);
+  void SetFrames(const gfx::ImageSkia* frames);
 
  protected:
-  virtual const SkBitmap& GetImageToPaint() const OVERRIDE;
+  virtual const gfx::ImageSkia& GetImageToPaint() const OVERRIDE;
 
  private:
   // The timer callback to schedule painting this view.
   void Run();
 
-  // Bitmap that contains the throbber frames.
-  const SkBitmap* frames_;
+  // Image that contains the throbber frames.
+  const gfx::ImageSkia* frames_;
 
   // The currently displayed frame, given to GetImageToPaint.
-  mutable SkBitmap this_frame_;
+  mutable gfx::ImageSkia this_frame_;
 
   // How long one frame is displayed.
   base::TimeDelta frame_time_;
@@ -184,7 +184,7 @@ ThrobberNativeTextButton::ThrobberNativeTextButton(
       frame_count_(0),
       running_(false) {
   SetFrames(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_THROBBER).ToSkBitmap());
+      IDR_THROBBER).ToImageSkia());
 }
 
 ThrobberNativeTextButton::~ThrobberNativeTextButton() {
@@ -210,7 +210,7 @@ void ThrobberNativeTextButton::StopThrobber() {
   running_ = false;
 }
 
-void ThrobberNativeTextButton::SetFrames(const SkBitmap* frames) {
+void ThrobberNativeTextButton::SetFrames(const gfx::ImageSkia* frames) {
   frames_ = frames;
   DCHECK(frames_->width() > 0 && frames_->height() > 0);
   DCHECK(frames_->width() % frames_->height() == 0);
@@ -218,7 +218,7 @@ void ThrobberNativeTextButton::SetFrames(const SkBitmap* frames) {
   PreferredSizeChanged();
 }
 
-const SkBitmap& ThrobberNativeTextButton::GetImageToPaint() const {
+const gfx::ImageSkia& ThrobberNativeTextButton::GetImageToPaint() const {
   if (!running_)
     return NativeTextButton::GetImageToPaint();
 

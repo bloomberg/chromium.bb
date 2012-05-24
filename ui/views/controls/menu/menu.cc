@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/views/controls/menu/menu.h"
 
 #include "base/i18n/rtl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace views {
 
@@ -13,8 +13,8 @@ bool Menu::Delegate::IsRightToLeftUILayout() const {
   return base::i18n::IsRTL();
 }
 
-const SkBitmap& Menu::Delegate::GetEmptyIcon() const {
-  static const SkBitmap* empty_icon = new SkBitmap();
+const gfx::ImageSkia& Menu::Delegate::GetEmptyIcon() const {
+  static const gfx::ImageSkia* empty_icon = new gfx::ImageSkia();
   return *empty_icon;
 }
 
@@ -44,7 +44,7 @@ void Menu::AddMenuItem(int index,
   if (type == SEPARATOR)
     AddSeparator(index);
   else
-    AddMenuItemInternal(index, item_id, label, SkBitmap(), type);
+    AddMenuItemInternal(index, item_id, label, gfx::ImageSkia(), type);
 }
 
 Menu* Menu::AppendSubMenu(int item_id, const string16& label) {
@@ -52,12 +52,12 @@ Menu* Menu::AppendSubMenu(int item_id, const string16& label) {
 }
 
 Menu* Menu::AddSubMenu(int index, int item_id, const string16& label) {
-  return AddSubMenuWithIcon(index, item_id, label, SkBitmap());
+  return AddSubMenuWithIcon(index, item_id, label, gfx::ImageSkia());
 }
 
 Menu* Menu::AppendSubMenuWithIcon(int item_id,
                                   const string16& label,
-                                  const SkBitmap& icon) {
+                                  const gfx::ImageSkia& icon) {
   return AddSubMenuWithIcon(-1, item_id, label, icon);
 }
 
@@ -85,14 +85,14 @@ void Menu::AppendSeparator() {
 
 void Menu::AppendMenuItemWithIcon(int item_id,
                                   const string16& label,
-                                  const SkBitmap& icon) {
+                                  const gfx::ImageSkia& icon) {
   AddMenuItemWithIcon(-1, item_id, label, icon);
 }
 
 void Menu::AddMenuItemWithIcon(int index,
                                int item_id,
                                const string16& label,
-                               const SkBitmap& icon) {
+                               const gfx::ImageSkia& icon) {
   AddMenuItemInternal(index, item_id, label, icon, Menu::NORMAL);
 }
 

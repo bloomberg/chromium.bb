@@ -22,9 +22,9 @@ ImageView::ImageView()
 ImageView::~ImageView() {
 }
 
-void ImageView::SetImage(const SkBitmap& bm) {
+void ImageView::SetImage(const gfx::ImageSkia& img) {
   gfx::Size pref_size(GetPreferredSize());
-  image_ = bm;
+  image_ = img;
   if (pref_size != GetPreferredSize())
     PreferredSizeChanged();
   SchedulePaint();
@@ -34,12 +34,12 @@ void ImageView::SetImage(const gfx::ImageSkia* image_skia) {
   if (image_skia) {
     SetImage(*image_skia);
   } else {
-    SkBitmap t;
+    gfx::ImageSkia t;
     SetImage(t);
   }
 }
 
-const SkBitmap& ImageView::GetImage() {
+const gfx::ImageSkia& ImageView::GetImage() {
   return image_;
 }
 
@@ -119,7 +119,6 @@ void ImageView::OnPaint(gfx::Canvas* canvas) {
 
   if (image_bounds.size() != gfx::Size(image_.width(), image_.height())) {
     // Resize case
-    image_.buildMipMap(false);
     SkPaint paint;
     paint.setFilterBitmap(true);
     canvas->DrawBitmapInt(image_, 0, 0, image_.width(), image_.height(),

@@ -60,10 +60,10 @@ TreeView::TreeView()
   set_background(Background::CreateSolidBackground(SK_ColorWHITE));
   closed_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       (base::i18n::IsRTL() ? IDR_FOLDER_CLOSED_RTL
-                           : IDR_FOLDER_CLOSED)).ToSkBitmap();
+                           : IDR_FOLDER_CLOSED)).ToImageSkia();
   open_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       (base::i18n::IsRTL() ? IDR_FOLDER_OPEN_RTL
-                           : IDR_FOLDER_OPEN)).ToSkBitmap();
+                           : IDR_FOLDER_OPEN)).ToImageSkia();
   text_offset_ = closed_icon_.width() + kImagePadding + kImagePadding +
       kArrowRegionSize;
 }
@@ -639,7 +639,7 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
     PaintExpandControl(canvas, bounds, node->is_expanded());
 
   // Paint the icon.
-  SkBitmap icon;
+  gfx::ImageSkia icon;
   int icon_index = model_->GetIconIndex(node->model_node());
   if (icon_index != -1)
     icon = icons_[icon_index];

@@ -40,7 +40,7 @@ static MenuHostWindow* active_host_window = NULL;
 // The data of menu items needed to display.
 struct MenuWin::ItemData {
   string16 label;
-  SkBitmap icon;
+  gfx::ImageSkia icon;
   bool submenu;
 };
 
@@ -263,7 +263,7 @@ MenuWin::~MenuWin() {
 void MenuWin::AddMenuItemWithIcon(int index,
                                   int item_id,
                                   const string16& label,
-                                  const SkBitmap& icon) {
+                                  const gfx::ImageSkia& icon) {
   owner_draw_ = true;
   Menu::AddMenuItemWithIcon(index, item_id, label, icon);
 }
@@ -271,7 +271,7 @@ void MenuWin::AddMenuItemWithIcon(int index,
 Menu* MenuWin::AddSubMenuWithIcon(int index,
                                   int item_id,
                                   const string16& label,
-                                  const SkBitmap& icon) {
+                                  const gfx::ImageSkia& icon) {
   MenuWin* submenu = new MenuWin(this);
   submenus_.push_back(submenu);
   AddMenuItemInternal(index, item_id, label, icon, submenu->menu_, NORMAL);
@@ -305,7 +305,7 @@ void MenuWin::SetMenuLabel(int item_id, const string16& label) {
   SetMenuItemInfo(menu_, item_id, false, &mii);
 }
 
-bool MenuWin::SetIcon(const SkBitmap& icon, int item_id) {
+bool MenuWin::SetIcon(const gfx::ImageSkia& icon, int item_id) {
   if (!owner_draw_)
     owner_draw_ = true;
 
@@ -386,7 +386,7 @@ int MenuWin::ItemCount() {
 void MenuWin::AddMenuItemInternal(int index,
                                   int item_id,
                                   const string16& label,
-                                  const SkBitmap& icon,
+                                  const gfx::ImageSkia& icon,
                                   MenuItemType type) {
   AddMenuItemInternal(index, item_id, label, icon, NULL, type);
 }
@@ -394,7 +394,7 @@ void MenuWin::AddMenuItemInternal(int index,
 void MenuWin::AddMenuItemInternal(int index,
                                   int item_id,
                                   const string16& label,
-                                  const SkBitmap& icon,
+                                  const gfx::ImageSkia& icon,
                                   HMENU submenu,
                                   MenuItemType type) {
   DCHECK(type != SEPARATOR) << "Call AddSeparator instead!";

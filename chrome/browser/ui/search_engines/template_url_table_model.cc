@@ -20,6 +20,7 @@
 #include "ui/base/models/table_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia.h"
 
 // Group IDs used by TemplateURLTableModel.
 static const int kMainGroupID = 0;
@@ -49,7 +50,7 @@ class ModelEntry {
     return template_url_;
   }
 
-  SkBitmap GetIcon() {
+  gfx::ImageSkia GetIcon() {
     if (load_state_ == NOT_LOADED)
       LoadFavicon();
     if (!favicon_.isNull())
@@ -193,7 +194,7 @@ string16 TemplateURLTableModel::GetText(int row, int col_id) {
   return base::i18n::GetDisplayStringInLTRDirectionality(url->keyword());
 }
 
-SkBitmap TemplateURLTableModel::GetIcon(int row) {
+gfx::ImageSkia TemplateURLTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
   return entries_[row]->GetIcon();
 }

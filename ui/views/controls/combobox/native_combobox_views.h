@@ -79,7 +79,7 @@ class NativeComboboxViews : public views::View,
   FocusableBorder* text_border_;
 
   // The disclosure arrow next to the currently selected item from the list.
-  const SkBitmap* disclosure_arrow_;
+  const gfx::ImageSkia* disclosure_arrow_;
 
   // Responsible for showing the context menu.
   scoped_ptr<MenuRunner> dropdown_list_menu_runner_;

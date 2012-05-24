@@ -866,7 +866,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
   bad_data.SetFilename(FilePath(FILE_PATH_LITERAL("x")));
 #if defined(OS_WIN)
 #if defined(USE_AURA)
-  ui::OSExchangeData::CustomFormat fmt = ui::Clipboard::GetBitmapFormatType();
+  ui::OSExchangeData::CustomFormat fmt = ui::Clipboard::GetImageFormatType();
 #else
   ui::OSExchangeData::CustomFormat fmt = CF_BITMAP;
 #endif

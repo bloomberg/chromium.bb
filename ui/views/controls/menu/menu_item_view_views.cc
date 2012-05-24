@@ -45,13 +45,14 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // Render the check.
   if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const SkBitmap* check = rb.GetImageNamed(IDR_MENU_CHECK).ToSkBitmap();
+    const gfx::ImageSkia* check = rb.GetImageNamed(
+        IDR_MENU_CHECK).ToImageSkia();
     // Don't use config.check_width here as it's padded to force more padding.
     gfx::Rect check_bounds(icon_x, icon_y, check->width(), icon_height);
     AdjustBoundsForRTLUI(&check_bounds);
     canvas->DrawBitmapInt(*check, check_bounds.x(), check_bounds.y());
   } else if (type_ == RADIO) {
-    const SkBitmap* image =
+    const gfx::ImageSkia* image =
         GetRadioButtonImage(GetDelegate()->IsItemChecked(GetCommand()));
     gfx::Rect radio_bounds(icon_x,
                            top_margin +

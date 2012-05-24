@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,10 @@
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/examples/example_base.h"
+
+namespace gfx {
+class ImageSkia;
+}
 
 namespace views {
 class Checkbox;
@@ -38,7 +42,7 @@ class TableExample : public ExampleBase,
   // ui::TableModel:
   virtual int RowCount() OVERRIDE;
   virtual string16 GetText(int row, int column_id) OVERRIDE;
-  virtual SkBitmap GetIcon(int row) OVERRIDE;
+  virtual gfx::ImageSkia GetIcon(int row) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
   // TableViewObserver:

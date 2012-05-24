@@ -22,9 +22,9 @@
 #include "net/base/registry_controlled_domain.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 static const char kFileOriginNodeName[] = "file://";
 
@@ -709,12 +709,12 @@ CookiesTreeModel::~CookiesTreeModel() {}
 // TreeModel methods:
 // Returns the set of icons for the nodes in the tree. You only need override
 // this if you don't want to use the default folder icons.
-void CookiesTreeModel::GetIcons(std::vector<SkBitmap>* icons) {
-  icons->push_back(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+void CookiesTreeModel::GetIcons(std::vector<gfx::ImageSkia>* icons) {
+  icons->push_back(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_OMNIBOX_HTTP));
-  icons->push_back(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  icons->push_back(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_COOKIE_ICON));
-  icons->push_back(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  icons->push_back(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_COOKIE_STORAGE_ICON));
 }
 

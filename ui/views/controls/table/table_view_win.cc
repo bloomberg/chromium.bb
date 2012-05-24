@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "base/win/scoped_gdi_object.h"
 #include "skia/ext/skia_utils_win.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -24,6 +24,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/table/table_view_observer.h"
 
@@ -1225,7 +1226,7 @@ LRESULT TableView::OnCustomDraw(NMLVCUSTOMDRAW* draw_info) {
       LRESULT r = CDRF_DODEFAULT;
       // First let's take care of painting the right icon.
       if (table_type_ == ICON_AND_TEXT) {
-        SkBitmap image = model_->GetIcon(model_index);
+        gfx::ImageSkia image = model_->GetIcon(model_index);
         if (!image.isNull()) {
           // Get the rect that holds the icon.
           RECT icon_rect, client_rect;

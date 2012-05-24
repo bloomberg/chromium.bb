@@ -203,7 +203,7 @@ void MenuItemView::Cancel() {
 MenuItemView* MenuItemView::AddMenuItemAt(int index,
                                           int item_id,
                                           const string16& label,
-                                          const SkBitmap& icon,
+                                          const gfx::ImageSkia& icon,
                                           Type type) {
   DCHECK_NE(type, EMPTY);
   DCHECK_LE(0, index);
@@ -244,17 +244,17 @@ void MenuItemView::RemoveMenuItemAt(int index) {
 MenuItemView* MenuItemView::AppendMenuItem(int item_id,
                                            const string16& label,
                                            Type type) {
-  return AppendMenuItemImpl(item_id, label, SkBitmap(), type);
+  return AppendMenuItemImpl(item_id, label, gfx::ImageSkia(), type);
 }
 
 MenuItemView* MenuItemView::AppendSubMenu(int item_id,
                                           const string16& label) {
-  return AppendMenuItemImpl(item_id, label, SkBitmap(), SUBMENU);
+  return AppendMenuItemImpl(item_id, label, gfx::ImageSkia(), SUBMENU);
 }
 
 MenuItemView* MenuItemView::AppendSubMenuWithIcon(int item_id,
                                                   const string16& label,
-                                                  const SkBitmap& icon) {
+                                                  const gfx::ImageSkia& icon) {
   return AppendMenuItemImpl(item_id, label, icon, SUBMENU);
 }
 
@@ -268,19 +268,19 @@ MenuItemView* MenuItemView::AppendDelegateMenuItem(int item_id) {
 }
 
 void MenuItemView::AppendSeparator() {
-  AppendMenuItemImpl(0, string16(), SkBitmap(), SEPARATOR);
+  AppendMenuItemImpl(0, string16(), gfx::ImageSkia(), SEPARATOR);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemWithIcon(int item_id,
                                                    const string16& label,
-                                                   const SkBitmap& icon) {
+                                                   const gfx::ImageSkia& icon) {
   return AppendMenuItemImpl(item_id, label, icon, NORMAL);
 }
 
 MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
                                                     int index,
                                                     int id) {
-  SkBitmap icon;
+  gfx::ImageSkia icon;
   string16 label;
   MenuItemView::Type type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(index);
@@ -317,7 +317,7 @@ MenuItemView* MenuItemView::AppendMenuItemFromModel(ui::MenuModel* model,
 
 MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
                                                const string16& label,
-                                               const SkBitmap& icon,
+                                               const gfx::ImageSkia& icon,
                                                Type type) {
   const int index = submenu_ ? submenu_->child_count() : 0;
   return AddMenuItemAt(index, item_id, label, icon, type);
@@ -353,13 +353,13 @@ void MenuItemView::SetTooltip(const string16& tooltip, int item_id) {
   item->tooltip_ = tooltip;
 }
 
-void MenuItemView::SetIcon(const SkBitmap& icon, int item_id) {
+void MenuItemView::SetIcon(const gfx::ImageSkia& icon, int item_id) {
   MenuItemView* item = GetMenuItemByID(item_id);
   DCHECK(item);
   item->SetIcon(icon);
 }
 
-void MenuItemView::SetIcon(const SkBitmap& icon) {
+void MenuItemView::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
   SchedulePaint();
 }

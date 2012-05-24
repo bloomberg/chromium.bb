@@ -38,7 +38,7 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
 
  protected:
   // ImageButton overrides:
-  virtual SkBitmap GetImageToPaint() OVERRIDE;
+  virtual gfx::ImageSkia GetImageToPaint() OVERRIDE;
 
  private:
   class EscapeEventFilter;

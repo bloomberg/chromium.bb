@@ -6,7 +6,6 @@
 #define UI_VIEWS_CONTROLS_IMAGE_VIEW_H_
 #pragma once
 
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 
@@ -20,7 +19,7 @@ namespace views {
 //
 // ImageView class.
 //
-// An ImageView can display an image from an SkBitmap. If a size is provided,
+// An ImageView can display an image from an ImageSkia. If a size is provided,
 // the ImageView will resize the provided image to fit if it is too big or will
 // center the image if smaller. Otherwise, the preferred size matches the
 // provided image size.
@@ -37,17 +36,17 @@ class VIEWS_EXPORT ImageView : public View {
   ImageView();
   virtual ~ImageView();
 
-  // Set the bitmap that should be displayed.
-  void SetImage(const SkBitmap& bm);
+  // Set the image that should be displayed.
+  void SetImage(const gfx::ImageSkia& img);
 
   // Set the image that should be displayed from a pointer. Reset the image
   // if the pointer is NULL. The pointer contents is copied in the receiver's
-  // bitmap.
+  // image.
   void SetImage(const gfx::ImageSkia* image_skia);
 
-  // Returns the bitmap currently displayed or NULL of none is currently set.
-  // The returned bitmap is still owned by the ImageView.
-  const SkBitmap& GetImage();
+  // Returns the image currently displayed or NULL of none is currently set.
+  // The returned image is still owned by the ImageView.
+  const gfx::ImageSkia& GetImage();
 
   // Set the desired image size for the receiving ImageView.
   void SetImageSize(const gfx::Size& image_size);
@@ -93,8 +92,8 @@ class VIEWS_EXPORT ImageView : public View {
   // The actual image size.
   gfx::Size image_size_;
 
-  // The underlying bitmap.
-  SkBitmap image_;
+  // The underlying image.
+  gfx::ImageSkia image_;
 
   // Horizontal alignment.
   Alignment horiz_alignment_;

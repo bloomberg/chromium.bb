@@ -143,7 +143,7 @@ class CommonMenuModel : public ui::MenuModel {
     return 0;
   }
 
-  virtual bool GetIconAt(int index, SkBitmap* icon) OVERRIDE {
+  virtual bool GetIconAt(int index, gfx::ImageSkia* icon) OVERRIDE {
     return false;
   }
 

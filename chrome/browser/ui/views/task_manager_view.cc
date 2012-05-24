@@ -67,7 +67,7 @@ class TaskManagerTableModel : public views::GroupTableModel,
   // GroupTableModel.
   int RowCount() OVERRIDE;
   string16 GetText(int row, int column) OVERRIDE;
-  SkBitmap GetIcon(int row) OVERRIDE;
+  gfx::ImageSkia GetIcon(int row) OVERRIDE;
   void GetGroupRangeForItem(int item, views::GroupRange* range) OVERRIDE;
   void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
   virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
@@ -163,7 +163,7 @@ string16 TaskManagerTableModel::GetText(int row, int col_id) {
   }
 }
 
-SkBitmap TaskManagerTableModel::GetIcon(int row) {
+gfx::ImageSkia TaskManagerTableModel::GetIcon(int row) {
   return model_->GetResourceIcon(row);
 }
 

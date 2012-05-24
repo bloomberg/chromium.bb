@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -46,7 +45,7 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
 
   // Set an |image| to draw on top of the normal / hot / pushed image.
   // Pass NULL for no image.
-  void SetOverlayImage(const SkBitmap* image);
+  void SetOverlayImage(const gfx::ImageSkia* image);
 
   // Sets how the image is laid out within the button's bounds.
   void SetImageAlignment(HorizontalAlignment h_align,
@@ -65,16 +64,16 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
  protected:
   // Returns the image to paint. This is invoked from paint and returns a value
   // from images.
-  virtual SkBitmap GetImageToPaint();
+  virtual gfx::ImageSkia GetImageToPaint();
 
   // The images used to render the different states of this button.
-  SkBitmap images_[BS_COUNT];
+  gfx::ImageSkia images_[BS_COUNT];
 
   // The background image.
-  SkBitmap background_image_;
+  gfx::ImageSkia background_image_;
 
   // Image to draw on top of normal / hot / pushed image.  Usually empty.
-  SkBitmap overlay_image_;
+  gfx::ImageSkia overlay_image_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ImageButtonTest, Basics);
@@ -122,7 +121,7 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   // The parent class's images_ member is used for the current images,
   // and this array is used to hold the alternative images.
   // We swap between the two when toggling.
-  SkBitmap alternate_images_[BS_COUNT];
+  gfx::ImageSkia alternate_images_[BS_COUNT];
 
   // True if the button is currently toggled.
   bool toggled_;

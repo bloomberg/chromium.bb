@@ -4,9 +4,9 @@
 
 #include "ui/views/controls/glow_hover_controller.h"
 
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/view.h"
 
@@ -64,7 +64,7 @@ bool GlowHoverController::ShouldDraw() const {
 }
 
 void GlowHoverController::Draw(gfx::Canvas* canvas,
-                               const SkBitmap& mask_image) const {
+                               const gfx::ImageSkia& mask_image) const {
   if (!ShouldDraw())
     return;
 
@@ -96,7 +96,7 @@ void GlowHoverController::Draw(gfx::Canvas* canvas,
                                     location_.y() - radius,
                                     radius * 2, radius * 2), paint);
   }
-  SkBitmap result = SkBitmapOperations::CreateMaskedBitmap(
+  gfx::ImageSkia result = SkBitmapOperations::CreateMaskedBitmap(
       hover_canvas.ExtractBitmap(), mask_image);
   canvas->DrawBitmapInt(result, (view_->width() - mask_image.width()) / 2,
                         (view_->height() - mask_image.height()) / 2);

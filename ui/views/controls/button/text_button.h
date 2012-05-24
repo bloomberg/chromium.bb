@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
 #include "ui/views/border.h"
@@ -44,15 +44,15 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
 
  protected:
   struct BorderImageSet {
-    const SkBitmap* top_left;
-    const SkBitmap* top;
-    const SkBitmap* top_right;
-    const SkBitmap* left;
-    const SkBitmap* center;
-    const SkBitmap* right;
-    const SkBitmap* bottom_left;
-    const SkBitmap* bottom;
-    const SkBitmap* bottom_right;
+    const gfx::ImageSkia* top_left;
+    const gfx::ImageSkia* top;
+    const gfx::ImageSkia* top_right;
+    const gfx::ImageSkia* left;
+    const gfx::ImageSkia* center;
+    const gfx::ImageSkia* right;
+    const gfx::ImageSkia* bottom_left;
+    const gfx::ImageSkia* bottom;
+    const gfx::ImageSkia* bottom_right;
   };
 
   void Paint(const View& view,
@@ -320,9 +320,9 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   }
 
   // Sets the icon.
-  virtual void SetIcon(const SkBitmap& icon);
-  virtual void SetHoverIcon(const SkBitmap& icon);
-  virtual void SetPushedIcon(const SkBitmap& icon);
+  virtual void SetIcon(const gfx::ImageSkia& icon);
+  virtual void SetHoverIcon(const gfx::ImageSkia& icon);
+  virtual void SetPushedIcon(const gfx::ImageSkia& icon);
 
   bool HasIcon() const { return !icon_.empty(); }
 
@@ -348,9 +348,9 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) OVERRIDE;
 
  protected:
-  SkBitmap icon() const { return icon_; }
+  gfx::ImageSkia icon() const { return icon_; }
 
-  virtual const SkBitmap& GetImageToPaint() const;
+  virtual const gfx::ImageSkia& GetImageToPaint() const;
 
   // Overridden from NativeThemeDelegate:
   virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
@@ -365,14 +365,14 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   IconPlacement icon_placement_;
 
   // An icon displayed with the text.
-  SkBitmap icon_;
+  gfx::ImageSkia icon_;
 
   // An optional different version of the icon for hover state.
-  SkBitmap icon_hover_;
+  gfx::ImageSkia icon_hover_;
   bool has_hover_icon_;
 
   // An optional different version of the icon for pushed state.
-  SkBitmap icon_pushed_;
+  gfx::ImageSkia icon_pushed_;
   bool has_pushed_icon_;
 
   // Space between icon and text.

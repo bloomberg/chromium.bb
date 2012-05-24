@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 using base::SysUTF16ToNSString;
 using gfx::SkBitmapToNSImage;
@@ -71,10 +72,10 @@ using gfx::SkBitmapToNSImage;
               keyEquivalent:@""];
       [menuItem autorelease];
 
-      SkBitmap icon;
+      gfx::ImageSkia icon;
       // Icon (if it has one).
       if (model_->GetIconAt(menuID, &icon))
-        [menuItem setImage:SkBitmapToNSImage(icon)];
+        [menuItem setImage:SkBitmapToNSImage(*icon.bitmap())];
 
       // This will make it call our |-executeMenuItem:| method. We store the
       // |menuID| (or |menu_id|) in the tag.

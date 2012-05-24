@@ -445,7 +445,7 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
   std::map<int, GtkWidget*> radio_groups;
   GtkWidget* menu_item = NULL;
   for (int i = 0; i < model->GetItemCount(); ++i) {
-    SkBitmap icon;
+    gfx::ImageSkia icon;
     std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
         UTF16ToUTF8(model->GetLabelAt(i)));
     bool connect_to_activate = true;
@@ -876,7 +876,7 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
 
         gtk_menu_item_set_label(GTK_MENU_ITEM(widget), label.c_str());
         if (GTK_IS_IMAGE_MENU_ITEM(widget)) {
-          SkBitmap icon;
+          gfx::ImageSkia icon;
           if (model->GetIconAt(id, &icon)) {
             GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget),
