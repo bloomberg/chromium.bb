@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/experimental_font_settings.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/font_list_async.h"
@@ -26,6 +27,8 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/platform_font_win.h"
 #endif
+
+namespace fonts = extensions::api::experimental_font_settings;
 
 namespace {
 
@@ -50,26 +53,17 @@ const char kOnFontChanged[] = "experimental.fontSettings.onFontChanged";
 const char kOnMinimumFontSizeChanged[] =
     "experimental.fontSettings.onMinimumFontSizeChanged";
 
-// Format for font preference keys.
+// Format for font name preference paths.
 const char kWebKitFontPrefFormat[] = "webkit.webprefs.fonts.%s.%s";
 const char kWebKitFontPrefPrefix[] = "webkit.webprefs.fonts.";
 
-// Gets the font name preference path from |details| which contains key
-// |kGenericFamilyKey| and optionally |kScriptKey|.
-bool GetFontNamePrefPath(DictionaryValue* details, std::string* pref_path) {
-  std::string generic_family;
-  if (!details->GetString(kGenericFamilyKey, &generic_family))
-    return false;
-
-  std::string script;
-  if (!details->HasKey(kScriptKey))
-    script = prefs::kWebKitCommonScript;
-  else if (!details->GetString(kScriptKey, &script))
-    return false;
-  *pref_path = StringPrintf(kWebKitFontPrefFormat,
-                            generic_family.c_str(),
-                            script.c_str());
-  return true;
+// Gets the font name preference path for |generic_family| and |script|. If
+// |script| is NULL, uses prefs::kWebKitCommonScript.
+std::string GetFontNamePrefPath(const std::string& generic_family,
+                                const std::string* script) {
+  return StringPrintf(kWebKitFontPrefFormat,
+                      generic_family.c_str(),
+                      script ? script->c_str() : prefs::kWebKitCommonScript);
 }
 
 // Extracts the generic family and script from font name pref path |pref_path|.
@@ -255,11 +249,12 @@ bool ClearFontFunction::RunImpl() {
     return false;
   }
 
-  DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  scoped_ptr<fonts::ClearFont::Params> params(
+      fonts::ClearFont::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::string pref_path;
-  EXTENSION_FUNCTION_VALIDATE(GetFontNamePrefPath(details, &pref_path));
+  std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
+                                              params->details.script.get());
 
   // Ensure |pref_path| really is for a registered per-script font pref.
   EXTENSION_FUNCTION_VALIDATE(
@@ -273,12 +268,12 @@ bool ClearFontFunction::RunImpl() {
 }
 
 bool GetFontFunction::RunImpl() {
-  DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  scoped_ptr<fonts::GetFont::Params> params(
+      fonts::GetFont::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::string pref_path;
-  EXTENSION_FUNCTION_VALIDATE(GetFontNamePrefPath(details, &pref_path));
-
+  std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
+                                              params->details.script.get());
   PrefService* prefs = profile_->GetPrefs();
   const PrefService::Preference* pref =
       prefs->FindPreference(pref_path.c_str());
@@ -310,23 +305,22 @@ bool SetFontFunction::RunImpl() {
     return false;
   }
 
-  DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+  scoped_ptr<fonts::SetFont::Params> params(
+      fonts::SetFont::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::string pref_path;
-  EXTENSION_FUNCTION_VALIDATE(GetFontNamePrefPath(details, &pref_path));
-
-  std::string font_name;
-  EXTENSION_FUNCTION_VALIDATE(details->GetString(kFontNameKey, &font_name));
-
+  std::string pref_path = GetFontNamePrefPath(params->details.generic_family,
+                                              params->details.script.get());
   // Ensure |pref_path| really is for a registered font pref.
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 
   ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
-  prefs->SetExtensionControlledPref(extension_id(), pref_path.c_str(),
-                                    kExtensionPrefsScopeRegular,
-                                    Value::CreateStringValue(font_name));
+  prefs->SetExtensionControlledPref(
+      extension_id(),
+      pref_path.c_str(),
+      kExtensionPrefsScopeRegular,
+      Value::CreateStringValue(params->details.font_name));
   return true;
 }
 

@@ -19,6 +19,7 @@
         'chromium_code': 1,
         'json_schema_files': [
           'events.json',
+          'experimental_font_settings.json',
           'experimental_record.json',
           'permissions.json',
           'storage.json',
