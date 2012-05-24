@@ -132,7 +132,7 @@ void UnpackedInstaller::LoadFromCommandLine(const FilePath& path_in) {
   scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
       extension_path_,
       Extension::LOAD,
-      flags,
+      flags | Extension::FOLLOW_SYMLINKS_ANYWHERE,
       &error));
 
   if (!extension) {
@@ -195,7 +195,7 @@ void UnpackedInstaller::LoadWithFileAccess(bool allow_file_access) {
   scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
       extension_path_,
       Extension::LOAD,
-      flags,
+      flags | Extension::FOLLOW_SYMLINKS_ANYWHERE,
       &error));
 
   if (!extension) {
