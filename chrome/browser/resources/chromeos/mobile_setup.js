@@ -77,18 +77,6 @@ cr.define('mobile', function() {
         $('finalStatus').classList.add('hidden');
       });
 
-      $('cancelButton').addEventListener('click', function(e) {
-        if (self.state_ == MobileSetup.PLAN_ACTIVATION_DONE ||
-            self.state_ == MobileSetup.PLAN_ACTIVATION_ERROR) {
-          window.close();
-          return;
-        }
-        self.confirm_.show(
-          MobileSetup.localStrings_.getString('cancel_question'), function() {
-            window.close();
-        });
-      });
-
       this.changeState_({state: MobileSetup.PLAN_ACTIVATION_PAGE_LOADING});
       // Kick off activation process.
       chrome.send('startActivation');
@@ -225,8 +213,6 @@ cr.define('mobile', function() {
             $('closeButton').classList.remove('hidden');
           } else {
             $('closeButton').classList.add('hidden');
-            $('cancelButton').textContent =
-                MobileSetup.localStrings_.getString('close_button');
           }
           break;
         case MobileSetup.PLAN_ACTIVATION_ERROR:
@@ -244,8 +230,6 @@ cr.define('mobile', function() {
             $('closeButton').classList.remove('hidden');
           } else {
             $('closeButton').classList.add('hidden');
-            $('cancelButton').textContent =
-                MobileSetup.localStrings_.getString('close_button');
           }
           $('finalStatus').classList.remove('hidden');
           break;

@@ -478,8 +478,6 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                     l10n_util::GetStringUTF16(IDS_CANCEL));
   strings.SetString("ok_button",
                     l10n_util::GetStringUTF16(IDS_OK));
-  strings.SetString("cancel_question",
-                    l10n_util::GetStringUTF16(IDS_MOBILE_CANCEL_ACTIVATION));
   SetFontAndTextDirection(&strings);
 
   static const base::StringPiece html(
@@ -879,7 +877,21 @@ void MobileSetupHandler::EvaluateCellularNetwork(
       // Just ignore any changes until the OTASP retry timer kicks in.
       evaluating_ = false;
       return;
-    case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+    case PLAN_ACTIVATION_INITIATING_ACTIVATION: {
+      switch (network->activation_state()) {
+        case chromeos::ACTIVATION_STATE_ACTIVATED:
+        case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          new_state = PLAN_ACTIVATION_START;
+          break;
+        case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
+        case chromeos::ACTIVATION_STATE_ACTIVATING:
+          // Wait in this state until activation state changes.
+          break;
+        default:
+          break;
+      }
+      break;
+    }
     case PLAN_ACTIVATION_OTASP:
     case PLAN_ACTIVATION_TRYING_OTASP: {
       switch (network->activation_state()) {
