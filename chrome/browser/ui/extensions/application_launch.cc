@@ -27,6 +27,11 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_metrics.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
+#endif
+
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
 #include "chrome/browser/ui/views/ash/panel_view_aura.h"
@@ -82,6 +87,10 @@ WebContents* OpenApplication(Profile* profile,
   prefs->SetActiveBit(extension->id(), true);
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
+#if defined(OS_CHROMEOS)
+  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
+    chromeos::KioskModeMetrics::Get()->UserOpenedApp();
+#endif
 
   if (extension->is_platform_app()) {
     extensions::AppEventRouter::DispatchOnLaunchedEvent(profile, extension);

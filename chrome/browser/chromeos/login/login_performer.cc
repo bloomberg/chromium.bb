@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_metrics.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -120,6 +121,7 @@ void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
 void LoginPerformer::OnDemoUserLoginSuccess() {
   content::RecordAction(
       UserMetricsAction("Login_DemoUserLoginSuccess"));
+  KioskModeMetrics::Get()->SessionStarted();
 
   LoginStatusConsumer::OnDemoUserLoginSuccess();
 }

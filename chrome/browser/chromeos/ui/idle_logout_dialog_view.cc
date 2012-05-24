@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_metrics.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -54,6 +55,7 @@ KioskModeSettings* IdleLogoutSettingsProvider::GetKioskModeSettings() {
 }
 
 void IdleLogoutSettingsProvider::LogoutCurrentUser(IdleLogoutDialogView*) {
+  KioskModeMetrics::Get()->SessionEnded();
   DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
 }
 
