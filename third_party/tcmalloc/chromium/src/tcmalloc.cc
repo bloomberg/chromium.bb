@@ -178,13 +178,13 @@ using tcmalloc::StackTrace;
 using tcmalloc::Static;
 using tcmalloc::ThreadCache;
 
-// ---- Double free debug declarations
+// ---- Functions doing validation with an extra mark.
 static size_t ExcludeSpaceForMark(size_t size);
 static void AddRoomForMark(size_t* size);
 static void ExcludeMarkFromSize(size_t* new_size);
 static void MarkAllocatedRegion(void* ptr);
 static void ValidateAllocatedRegion(void* ptr, size_t cl);
-// ---- End Double free debug declarations
+// ---- End validation functions.
 
 DECLARE_int64(tcmalloc_sample_parameter);
 DECLARE_double(tcmalloc_release_rate);
@@ -950,7 +950,7 @@ static inline bool CheckCachedSizeClass(void *ptr) {
       cached_value == Static::pageheap()->GetDescriptor(p)->sizeclass;
 }
 
-static inline void* CheckedMallocResult(void *result) {
+static inline void* CheckMallocResult(void *result) {
   ASSERT(result == NULL || CheckCachedSizeClass(result));
   MarkAllocatedRegion(result);
   return result;
@@ -959,7 +959,7 @@ static inline void* CheckedMallocResult(void *result) {
 static inline void* SpanToMallocResult(Span *span) {
   Static::pageheap()->CacheSizeClass(span->start, 0);
   return
-      CheckedMallocResult(reinterpret_cast<void*>(span->start << kPageShift));
+      CheckMallocResult(reinterpret_cast<void*>(span->start << kPageShift));
 }
 
 static void* DoSampledAllocation(size_t size) {
@@ -1096,7 +1096,7 @@ inline void* do_malloc(size_t size) {
     } else {
       // The common case, and also the simplest.  This just pops the
       // size-appropriate freelist, after replenishing it if it's empty.
-      ret = CheckedMallocResult(heap->Allocate(size, cl));
+      ret = CheckMallocResult(heap->Allocate(size, cl));
     }
   } else {
     ret = do_malloc_pages(heap, size);
@@ -1156,7 +1156,15 @@ inline void do_free_with_callback(void* ptr, void (*invalid_free_fn)(void*)) {
     cl = span->sizeclass;
     Static::pageheap()->CacheSizeClass(p, cl);
   }
+  if (cl == 0) {
+    // Check to see if the object is in use.
+    CHECK_CONDITION_PRINT(span->location == Span::IN_USE,
+                          "Object was not in-use");
 
+    CHECK_CONDITION_PRINT(
+        span->start << kPageShift == reinterpret_cast<uintptr_t>(ptr),
+        "Pointer is not pointing to the start of a span");
+  }
   ValidateAllocatedRegion(ptr, cl);
 
   if (cl != 0) {
@@ -1276,7 +1284,7 @@ inline void* do_realloc(void* old_ptr, size_t new_size) {
 void* do_memalign(size_t align, size_t size) {
   ASSERT((align & (align - 1)) == 0);
   ASSERT(align > 0);
-  // Marked in CheckMallocResult(), which is also inside SpanToMallocResult(). 
+  // Marked in CheckMallocResult(), which is also inside SpanToMallocResult().
   AddRoomForMark(&size);
   if (size + align < size) return NULL;         // Overflow
 
@@ -1307,7 +1315,7 @@ void* do_memalign(size_t align, size_t size) {
     if (cl < kNumClasses) {
       ThreadCache* heap = ThreadCache::GetCache();
       size = Static::sizemap()->class_to_size(cl);
-      return CheckedMallocResult(heap->Allocate(size, cl));
+      return CheckMallocResult(heap->Allocate(size, cl));
     }
   }
 
@@ -1698,7 +1706,7 @@ extern "C" PERFTOOLS_DLL_DECL size_t tc_malloc_size(void* ptr) __THROW {
 
 #endif  // TCMALLOC_USING_DEBUGALLOCATION
 
-// ---Double free() debugging implementation -----------------------------------
+// --- Validation implementation with an extra mark ----------------------------
 // We will put a mark at the extreme end of each allocation block.  We make
 // sure that we always allocate enough "extra memory" that we can fit in the
 // mark, and still provide the requested usable region.  If ever that mark is
@@ -1741,22 +1749,11 @@ static void ValidateAllocatedRegion(void* ptr, size_t cl) {}
 #else  // TCMALLOC_VALIDATION
 
 static void DieFromDoubleFree() {
-  char* p = NULL;
-  p++;
-  *p += 1;  // Segv.
-}
-
-static size_t DieFromBadFreePointer(const void* unused) {
-  char* p = NULL;
-  p += 2;
-  *p += 2;  // Segv.
-  return 0;
+  Log(kCrash, __FILE__, __LINE__, "Attempt to double free");
 }
 
 static void DieFromMemoryCorruption() {
-  char* p = NULL;
-  p += 3;
-  *p += 3;  // Segv.
+  Log(kCrash, __FILE__, __LINE__, "Memory corrupted");
 }
 
 // We can either do byte marking, or whole word marking based on the following
@@ -1770,7 +1767,7 @@ static void DieFromMemoryCorruption() {
 typedef char MarkType;  // char saves memory... int is more complete.
 static const MarkType kAllocationMarkMask = static_cast<MarkType>(0x36);
 
-#else 
+#else
 
 typedef int MarkType;  // char saves memory... int is more complete.
 static const MarkType kAllocationMarkMask = static_cast<MarkType>(0xE1AB9536);
@@ -1793,9 +1790,9 @@ inline static size_t ExcludeSpaceForMark(size_t size) {
 }
 
 inline static MarkType* GetMarkLocation(void* ptr) {
-  size_t class_size = GetSizeWithCallback(ptr, DieFromBadFreePointer);
-  ASSERT(class_size % sizeof(kAllocationMarkMask) == 0);
-  size_t last_index = (class_size / sizeof(kAllocationMarkMask)) - 1;
+  size_t size = GetSizeWithCallback(ptr, &InvalidGetAllocatedSize);
+  ASSERT(size % sizeof(kAllocationMarkMask) == 0);
+  size_t last_index = (size / sizeof(kAllocationMarkMask)) - 1;
   return static_cast<MarkType*>(ptr) + last_index;
 }
 
