@@ -16,6 +16,10 @@ JavaBridgeDispatcherHostManager::JavaBridgeDispatcherHostManager(
 }
 
 JavaBridgeDispatcherHostManager::~JavaBridgeDispatcherHostManager() {
+  for (ObjectMap::iterator iter = objects_.begin(); iter != objects_.end();
+      ++iter) {
+    WebKit::WebBindings::releaseObject(iter->second);
+  }
   DCHECK_EQ(0U, instances_.size());
 }
 
