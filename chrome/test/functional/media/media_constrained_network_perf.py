@@ -55,12 +55,15 @@ _TEST_ITERATIONS = 3
 # Media file names used for measuring epp and tpp.
 _TEST_MEDIA_EPP = ['roller.webm']
 _TEST_MEDIA_EPP.extend(os.path.join('crowd', name) for name in
-                        ['crowd360.ogv', 'crowd.wav', 'crowd.ogg'])
+                       ['crowd360.ogv', 'crowd.wav', 'crowd.ogg'])
 
 # Media file names used for measuring tpp without epp.
-_TEST_MEDIA_NO_EPP = [os.path.join('dartmoor', 'dartmoor.ogg')]
+_TEST_MEDIA_NO_EPP = [os.path.join('dartmoor', name) for name in
+                      ['dartmoor2.ogg', 'dartmoor2.m4a', 'dartmoor2.mp3',
+                       'dartmoor2.wav']]
 _TEST_MEDIA_NO_EPP.extend(os.path.join('crowd', name) for name in
-                           ['crowd1080.webm', 'crowd360.webm', 'crowd1080.ogv'])
+                          ['crowd1080.webm', 'crowd1080.ogv', 'crowd1080.mp4',
+                           'crowd360.webm', 'crowd360.mp4'])
 
 # Timeout values for epp and ttp tests in seconds.
 _TEST_EPP_TIMEOUT = 180
