@@ -40,6 +40,7 @@ class CONTENT_EXPORT WebContentsViewWin : public content::WebContentsView,
     MESSAGE_HANDLER(base::win::kReflectedMessage, OnReflectedMessage)
     // Hacks for old ThinkPad touchpads/scroll points.
     MESSAGE_HANDLER(WM_NCCALCSIZE, OnNCCalcSize)
+    MESSAGE_HANDLER(WM_NCHITTEST, OnNCHitTest)
     MESSAGE_HANDLER(WM_HSCROLL, OnScroll)
     MESSAGE_HANDLER(WM_VSCROLL, OnScroll)
     MESSAGE_HANDLER(WM_SIZE, OnSize)
@@ -97,6 +98,8 @@ class CONTENT_EXPORT WebContentsViewWin : public content::WebContentsView,
   LRESULT OnReflectedMessage(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnNCCalcSize(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnNCHitTest(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnScroll(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);

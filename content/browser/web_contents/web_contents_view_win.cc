@@ -369,6 +369,11 @@ LRESULT WebContentsViewWin::OnNCCalcSize(
   return 0;
 }
 
+LRESULT WebContentsViewWin::OnNCHitTest(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  return HTTRANSPARENT;
+}
+
 LRESULT WebContentsViewWin::OnScroll(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   int scroll_type = LOWORD(wparam);
