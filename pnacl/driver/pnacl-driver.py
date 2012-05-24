@@ -364,8 +364,10 @@ def main(argv):
   if env.getbool('STATIC') and env.getbool('SHARED'):
     Log.Fatal("Can't handle both -static and -shared")
 
-  # default to static
-  if not env.getbool('DYNAMIC') and not env.getbool('SHARED'):
+  # default to static for newlib
+  if (env.getbool('LIBMODE_NEWLIB') and
+      not env.getbool('DYNAMIC') and
+      not env.getbool('SHARED')):
     env.set('STATIC', '1')
 
   # If -arch was given, we are compiling directly to native code
