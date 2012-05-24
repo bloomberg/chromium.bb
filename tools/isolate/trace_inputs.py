@@ -1194,6 +1194,9 @@ class LogmanTrace(ApiBase):
       '(process,img,file,fileio)',
       '-o', etl,
       '-ets',  # Send directly to kernel
+      # Values extracted out of thin air.
+      '-bs', '1024',
+      '-nb', '200', '512',
     ]
     logging.debug('Running: %s' % cmd_start)
     subprocess.check_call(
