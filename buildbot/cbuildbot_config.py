@@ -675,20 +675,21 @@ full.add_config('amd64-generic-full',
   boards=['amd64-generic'],
 )
 
-_config.add_raw_config('x86-generic-asan',
+incremental.add_config('x86-generic-asan',
   boards=['x86-generic'],
+  chroot_replace=True,
   profile='asan',
-  prebuilts=False,
-  useflags=['asan'],
-  build_type=constants.BUILD_FROM_SOURCE_TYPE,
+  trybot_list=True,
+  description='Build with Address Sanitizer',
 )
 
-_config.add_raw_config('amd64-generic-asan',
+incremental.add_config('amd64-generic-asan',
+  amd64,
   boards=['amd64-generic'],
+  chroot_replace=True,
   profile='asan',
-  prebuilts=False,
-  useflags=['asan'],
-  build_type=constants.BUILD_FROM_SOURCE_TYPE,
+  trybot_list=True,
+  description='Build with Address Sanitizer',
 )
 
 #
