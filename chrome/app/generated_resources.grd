@@ -12568,7 +12568,7 @@ Press any key to continue exploring.
     <!-- Imageburn Strings -->
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
-        Checking for updates...
+        Checking for updates
       </message>
       <message name="IDS_IMAGEBURN_HEADER_TITLE" desc="Title that is displayed on image burning webpage ">
         Create OS Recovery Media

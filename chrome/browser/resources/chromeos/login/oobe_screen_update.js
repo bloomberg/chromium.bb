@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,9 @@ cr.define('oobe', function() {
    */
   var UpdateScreen = cr.ui.define('div');
 
+  /** @const */ var ELLIPSIS = ['', '.', '..', '...'];
+  /** @const */ var ELLIPSIS_ANIMATION_TIMEOUT_MS = 1000;
+
   /**
    * Registers with Oobe.
    */
@@ -28,6 +31,14 @@ cr.define('oobe', function() {
 
     /** @inheritDoc */
     decorate: function() {
+    },
+
+    onBeforeShow: function(data) {
+      UpdateScreen.startEllipsisAnimation();
+    },
+
+    onBeforeHide: function() {
+      UpdateScreen.stopEllipsisAnimation();
     },
 
     /**
@@ -56,6 +67,23 @@ cr.define('oobe', function() {
       updateCancelHint.textContent =
           localStrings.getString('cancelledUpdateMessage');
       chrome.send('cancelUpdate');
+    },
+  };
+
+  var ellipsis_animation_active = false;
+
+  /**
+   * Updates number of dots in the ellipsis.
+   *
+   * @private
+   * @param {number} count Number of dots that should be shown.
+   */
+  function updateEllipsisAnimation_(count) {
+    $('update-checking-ellipsis').textContent = ELLIPSIS[count];
+    if (ellipsis_animation_active) {
+      window.setTimeout(function() {
+          updateEllipsisAnimation_((count + 1) % ELLIPSIS.length);
+        }, ELLIPSIS_ANIMATION_TIMEOUT_MS);
     }
   };
 
@@ -64,6 +92,21 @@ cr.define('oobe', function() {
    */
   UpdateScreen.enableUpdateCancel = function() {
     $('update-cancel-hint').hidden = false;
+  };
+
+  /**
+   * Starts animation for tail ellipses in "Checking for update..." label.
+   */
+  UpdateScreen.startEllipsisAnimation = function() {
+    ellipsis_animation_active = true;
+    updateEllipsisAnimation_(0);
+  };
+
+  /**
+   * Stops animation for tail ellipses in "Checking for update..." label.
+   */
+  UpdateScreen.stopEllipsisAnimation = function() {
+    ellipsis_animation_active = false;
   };
 
   return {

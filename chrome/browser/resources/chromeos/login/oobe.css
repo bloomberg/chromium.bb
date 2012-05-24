@@ -442,9 +442,36 @@ html[dir=rtl] #user-image-preview {
   visibility: visible;
 }
 
+#update div,
+#update #update-screen-curtain {
+  width: 32em;
+}
+
 #update div {
   margin: 6em auto;
-  width: 32em;
+}
+
+#update-screen-curtain p {
+  text-align: center;
+}
+
+#update #update-screen-curtain {
+  -webkit-box-align: start;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  margin: 9em auto;
+}
+
+#update #update-checking-ellipsis {
+  width: 16px;
+}
+
+html[dir=ltr] #update #update-checking-ellipsis {
+  text-align: left;
+}
+
+html[dir=rtl] #update #update-checking-ellipsis {
+  text-align: right;
 }
 
 #update #update-cancel-hint {

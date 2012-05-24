@@ -178,7 +178,7 @@ cr.define('cr.ui', function() {
     } else {
       message = localStrings.getString('downloadingTimeLeftSmall');
     }
-    $('update-estimated-time-left').innerText = message;
+    $('update-estimated-time-left').textContent = message;
   };
 
   /**
