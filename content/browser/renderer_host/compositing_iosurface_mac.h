@@ -53,6 +53,8 @@ class CompositingIOSurfaceMac {
 
   const gfx::Size& io_surface_size() const { return io_surface_size_; }
 
+  bool is_vsync_disabled() const { return is_vsync_disabled_; }
+
  private:
   // Vertex structure for use in glDraw calls.
   struct SurfaceVertex {
@@ -102,7 +104,8 @@ class CompositingIOSurfaceMac {
                           CGLContextObj cglContext,
                           GLuint shader_program_blit_rgb,
                           GLint blit_rgb_sampler_location,
-                          GLuint shader_program_white);
+                          GLuint shader_program_white,
+                          bool is_vsync_disabled);
 
   // Returns true if IOSurface is ready to render. False otherwise.
   bool MapIOSurfaceToTexture(uint64 io_surface_handle);
@@ -138,6 +141,8 @@ class CompositingIOSurfaceMac {
   GLuint shader_program_white_;
 
   SurfaceQuad quad_;
+
+  bool is_vsync_disabled_;
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_COMPOSITING_VIEW_MAC_H

@@ -147,11 +147,9 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
   }
 
   // Draw at beam vsync.
-  GLint swapInterval;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
-    swapInterval = 0;
-  else
-    swapInterval = 1;
+  bool is_vsync_disabled =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync);
+  GLint swapInterval = is_vsync_disabled ? 0 : 1;
   [glContext setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
   // Build shaders.
@@ -174,7 +172,8 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
                                      cglContext,
                                      shader_program_blit_rgb,
                                      blit_rgb_sampler_location,
-                                     shader_program_white);
+                                     shader_program_white,
+                                     is_vsync_disabled);
 }
 
 CompositingIOSurfaceMac::CompositingIOSurfaceMac(
@@ -183,7 +182,8 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
     CGLContextObj cglContext,
     GLuint shader_program_blit_rgb,
     GLint blit_rgb_sampler_location,
-    GLuint shader_program_white)
+    GLuint shader_program_white,
+    bool is_vsync_disabled)
     : io_surface_support_(io_surface_support),
       glContext_(glContext),
       cglContext_(cglContext),
@@ -191,7 +191,8 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
       texture_(0),
       shader_program_blit_rgb_(shader_program_blit_rgb),
       blit_rgb_sampler_location_(blit_rgb_sampler_location),
-      shader_program_white_(shader_program_white) {
+      shader_program_white_(shader_program_white),
+      is_vsync_disabled_(is_vsync_disabled) {
 }
 
 CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
