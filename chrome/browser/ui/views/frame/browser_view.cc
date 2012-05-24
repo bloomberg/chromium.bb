@@ -2335,8 +2335,8 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   //             required to make features like Duplicate Tab, Undo Close Tab,
   //             etc not result in sad tab.
   new_contents->web_contents()->DidBecomeSelected();
-  if (BrowserList::GetLastActive() == browser_ &&
-      !browser_->tab_strip_model()->closing_all() && GetWidget()->IsVisible()) {
+  if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
+      GetWidget()->IsVisible()) {
     // We only restore focus if our window is visible, to avoid invoking blur
     // handlers when we are eventually shown.
     new_contents->web_contents()->GetView()->RestoreFocus();
