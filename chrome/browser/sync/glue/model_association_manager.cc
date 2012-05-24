@@ -36,21 +36,21 @@ const int64 kDataTypeLoadWaitTimeInSeconds = 120;
 namespace {
 
 static const syncable::ModelType kStartOrder[] = {
-  syncable::NIGORI,  //  Listed for completeness.
-  syncable::BOOKMARKS,
+  syncable::NIGORI,               //  Listed for completeness.
+  syncable::BOOKMARKS,            //  UI thread datatypes.
   syncable::PREFERENCES,
-  syncable::AUTOFILL,
-  syncable::AUTOFILL_PROFILE,
-  syncable::EXTENSION_SETTINGS,
   syncable::EXTENSIONS,
-  syncable::APP_SETTINGS,
   syncable::APPS,
   syncable::THEMES,
-  syncable::TYPED_URLS,
-  syncable::PASSWORDS,
   syncable::SEARCH_ENGINES,
   syncable::SESSIONS,
   syncable::APP_NOTIFICATIONS,
+  syncable::AUTOFILL,             // Non-UI thread datatypes.
+  syncable::AUTOFILL_PROFILE,
+  syncable::EXTENSION_SETTINGS,
+  syncable::APP_SETTINGS,
+  syncable::TYPED_URLS,
+  syncable::PASSWORDS,
 };
 
 COMPILE_ASSERT(arraysize(kStartOrder) ==
