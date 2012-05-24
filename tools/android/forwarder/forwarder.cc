@@ -299,7 +299,7 @@ void* Server::ServerThread(void* arg) {
 bool Server::InitSocket(const char* arg) {
   char* endptr;
   int local_port = static_cast<int>(strtol(arg, &endptr, 10));
-  if (local_port <= 0)
+  if (local_port < 0)
     return false;
 
   if (*endptr != ':') {
@@ -333,6 +333,18 @@ bool Server::InitSocket(const char* arg) {
     return false;
   }
 
+  if (local_port == 0) {
+    socklen_t addrlen = sizeof(addr);
+    if (getsockname(socket_, reinterpret_cast<sockaddr*>(&addr), &addrlen)
+        != 0) {
+      perror("get listen address");
+      HANDLE_EINTR(close(socket_));
+      socket_ = -1;
+      return false;
+    }
+    local_port = ntohs(addr.sin_port);
+  }
+
   printf("Forwarding device port %d to host %s\n", local_port, forward_to_);
   return true;
 }
@@ -364,7 +376,8 @@ int main(int argc, char** argv) {
         argv[0],
         "<Device port>[:<Forward to port>:<Forward to address>] ...",
         "  <Forward to port> default is <Device port>\n"
-        "  <Forward to address> default is 127.0.0.1\n");
+        "  <Forward to address> default is 127.0.0.1\n"
+        "If <Device port> is 0, a port will by dynamically allocated.\n");
     return 0;
   }
 
