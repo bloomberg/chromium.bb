@@ -150,11 +150,11 @@ InfoBarDelegate* OutdatedPluginInfoBarDelegate::Create(
     PluginInstaller* installer) {
   string16 message;
   switch (installer->state()) {
-    case PluginInstaller::kStateIdle:
+    case PluginInstaller::INSTALLER_STATE_IDLE:
       message = l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT,
                                            installer->name());
       break;
-    case PluginInstaller::kStateDownloading:
+    case PluginInstaller::INSTALLER_STATE_DOWNLOADING:
       message = l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING,
                                            installer->name());
       break;
@@ -216,7 +216,7 @@ string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
 
 bool OutdatedPluginInfoBarDelegate::Accept() {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Update"));
-  if (installer()->state() != PluginInstaller::kStateIdle) {
+  if (installer()->state() != PluginInstaller::INSTALLER_STATE_IDLE) {
     NOTREACHED();
     return false;
   }
@@ -314,11 +314,11 @@ InfoBarDelegate* PluginInstallerInfoBarDelegate::Create(
   string16 message;
   const string16& plugin_name = installer->name();
   switch (installer->state()) {
-    case PluginInstaller::kStateIdle:
+    case PluginInstaller::INSTALLER_STATE_IDLE:
       message = l10n_util::GetStringFUTF16(
           IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT, plugin_name);
       break;
-    case PluginInstaller::kStateDownloading:
+    case PluginInstaller::INSTALLER_STATE_DOWNLOADING:
       message = l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOADING, plugin_name);
       break;
   }

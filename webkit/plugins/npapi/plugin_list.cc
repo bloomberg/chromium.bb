@@ -55,80 +55,36 @@ namespace npapi {
 
 // Note: If you change the plug-in definitions here, also update
 // chrome/browser/resources/plugins_*.json correspondingly!
-// In particular, the identifier and the update URLs need to be kept in sync.
+// In particular, the identifier needs to be kept in sync.
 
-// Some version ranges can be shared across operating systems. This should be
-// done where possible to avoid duplication.
-
-// This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb12-03.html
-// NOTE: We would like to go to the 4th component value but we cannot because
-// on some platforms, such as Linux, it is not available.
-static const VersionRangeDefinition kFlashVersionRange[] = {
-    { "", "", "11.1.102" }
-};
-// This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb12-02.html
-static const VersionRangeDefinition kShockwaveVersionRange[] = {
-    { "",  "", "11.6.4.634" }
-};
-// This is up to date with
-// http://support.microsoft.com/kb/2668562
-// http://technet.microsoft.com/en-us/security/Bulletin/MS12-016
-static const VersionRangeDefinition kSilverlightVersionRange[] = {
-    { "0", "5", "4.1.10111.0" },
-    { "5", "6", "" },
-};
-
-// Similarly, try and share the group definition for plug-ins that are
+// Try and share the group definition for plug-ins that are
 // very consistent across OS'es.
 #define kFlashDefinition { \
-    "adobe-flash-player", "Flash", "Shockwave Flash", kFlashVersionRange, \
-    arraysize(kFlashVersionRange) }
+    "adobe-flash-player", "Flash", "Shockwave Flash" }
 
 #define kShockwaveDefinition { \
     "adobe-shockwave", PluginGroup::kShockwaveGroupName, \
-    "Shockwave for Director", kShockwaveVersionRange, \
-    arraysize(kShockwaveVersionRange) }
+    "Shockwave for Director" }
 
 #define kSilverlightDefinition { \
-    "silverlight", PluginGroup::kSilverlightGroupName, "Silverlight", \
-    kSilverlightVersionRange, arraysize(kSilverlightVersionRange) }
+    "silverlight", PluginGroup::kSilverlightGroupName, "Silverlight" }
 
 #define kChromePdfDefinition { \
-    "google-chrome-pdf", "Chrome PDF Viewer", "Chrome PDF Viewer", NULL, 0 }
+    "google-chrome-pdf", "Chrome PDF Viewer", "Chrome PDF Viewer" }
 
 #define kGoogleTalkDefinition { \
-    "google-talk", "Google Talk", "Google Talk", NULL, 0 }
+    "google-talk", "Google Talk", "Google Talk" }
 
 #if defined(OS_MACOSX)
 // Plugin Groups for Mac.
-// Plugins are listed here as soon as vulnerabilities and solutions
-// (new versions) are published.
-static const VersionRangeDefinition kQuicktimeVersionRange[] = {
-    { "", "", "7.6.6" }
-};
-static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "0", "13.0", "12.8.0" },  // Leopard
-    { "13.0", "14.0", "13.5.0" },  // Snow Leopard
-    { "14.0", "", "14.0.3" }  // Lion
-};
-static const VersionRangeDefinition kFlip4MacVersionRange[] = {
-    { "", "", "2.2.1" }
-};
-// Note: The Adobe Reader browser plug-in is not supported in Chrome.
-// Note: The Real Player plugin for mac doesn't expose a version at all.
+
 static const PluginGroupDefinition kGroupDefinitions[] = {
   kFlashDefinition,
-  { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in",
-    kQuicktimeVersionRange, arraysize(kQuicktimeVersionRange) },
-  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java",
-    kJavaVersionRange, arraysize(kJavaVersionRange) },
+  { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in" },
+  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java" },
   kSilverlightDefinition,
-  { "flip4mac", "Flip4Mac", "Flip4Mac", kFlip4MacVersionRange,
-    arraysize(kFlip4MacVersionRange) },
-  { "divx-player", "DivX Plus Web Player", "DivX Plus Web Player",
-    NULL, 0 },
+  { "flip4mac", "Flip4Mac", "Flip4Mac" },
+  { "divx-player", "DivX Plus Web Player", "DivX Plus Web Player" },
   kShockwaveDefinition,
   kChromePdfDefinition,
   kGoogleTalkDefinition,
@@ -137,47 +93,20 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
 #elif defined(OS_WIN)
 // TODO(panayiotis): We should group "RealJukebox NS Plugin" with the rest of
 // the RealPlayer files.
-static const VersionRangeDefinition kQuicktimeVersionRange[] = {
-    { "", "", "7.6.9" }
-};
-static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "0", "7", "6.0.310" },  // "310" is not a typo.
-    { "7", "", "10.3" }  // JDK7u3 identifies itself as 10.3
-};
-// This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb12-08.html
-static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
-    { "10", "11", "10.1.3" },
-    { "0", "10", "9.5.1" }
-};
-static const VersionRangeDefinition kDivXVersionRange[] = {
-    { "", "", "1.4.3.4" }
-};
-// This is up to date with
-// http://service.real.com/realplayer/security/02062012_player/en/
-static const VersionRangeDefinition kRealPlayerVersionRange[] = {
-    { "", "", "15.0.2.71" }
-};
+
 static const PluginGroupDefinition kGroupDefinitions[] = {
   kFlashDefinition,
-  { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in",
-    kQuicktimeVersionRange, arraysize(kQuicktimeVersionRange) },
-  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java",
-    kJavaVersionRange, arraysize(kJavaVersionRange) },
-  { "adobe-reader", PluginGroup::kAdobeReaderGroupName, "Adobe Acrobat",
-    kAdobeReaderVersionRange, arraysize(kAdobeReaderVersionRange) },
+  { "apple-quicktime", PluginGroup::kQuickTimeGroupName, "QuickTime Plug-in" },
+  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java" },
+  { "adobe-reader", PluginGroup::kAdobeReaderGroupName, "Adobe Acrobat" },
   kSilverlightDefinition,
   kShockwaveDefinition,
-  { "divx-player", "DivX Player", "DivX Web Player", kDivXVersionRange,
-    arraysize(kDivXVersionRange) },
-  { "realplayer", PluginGroup::kRealPlayerGroupName, "RealPlayer",
-    kRealPlayerVersionRange, arraysize(kRealPlayerVersionRange) },
-  // These are here for grouping, no vulnerabilities known.
+  { "divx-player", "DivX Player", "DivX Web Player" },
+  { "realplayer", PluginGroup::kRealPlayerGroupName, "RealPlayer" },
   { "windows-media-player", PluginGroup::kWindowsMediaPlayerGroupName,
-    "Windows Media Player", NULL, 0 },
-  { "microsoft-office", "Microsoft Office", "Microsoft Office",
-    NULL, 0 },
-  { "nvidia-3d", "NVIDIA 3D", "NVIDIA 3D", NULL, 0 },
+    "Windows Media Player" },
+  { "microsoft-office", "Microsoft Office", "Microsoft Office" },
+  { "nvidia-3d", "NVIDIA 3D", "NVIDIA 3D" },
   kChromePdfDefinition,
   kGoogleTalkDefinition,
 };
@@ -191,29 +120,13 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
 };
 
 #else  // Most importantly, covers desktop Linux.
-static const VersionRangeDefinition kJavaVersionRange[] = {
-    { "0", "1.7", "1.6.0.31" },
-    { "1.7", "", "1.7.0.3" }
-};
-
-// Up to date with:
-// http://blog.fuseyism.com/index.php/2012/02/15/
-// security-icedtea6-1-8-13-1-9-13-1-10-6-and-icedtea-2-0-1-released/
-static const VersionRangeDefinition kRedhatIcedTeaVersionRange[] = {
-    { "0", "1.9", "1.8.13" },
-    { "1.9", "1.10", "1.9.13" },
-    { "1.10", "2", "1.10.6" },
-    { "2", "", "2.0.1" }
-};
 
 static const PluginGroupDefinition kGroupDefinitions[] = {
   // Flash on Linux is significant because there isn't yet a built-in Flash
   // plug-in on the Linux 64-bit version of Chrome.
   kFlashDefinition,
-  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java",
-    kJavaVersionRange, arraysize(kJavaVersionRange) },
-  { "redhat-icetea-java", "IcedTea", "IcedTea",
-    kRedhatIcedTeaVersionRange, arraysize(kRedhatIcedTeaVersionRange) },
+  { "java-runtime-environment", PluginGroup::kJavaGroupName, "Java" },
+  { "redhat-icetea-java", "IcedTea", "IcedTea" },
   kChromePdfDefinition,
   kGoogleTalkDefinition,
 };

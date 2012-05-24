@@ -123,12 +123,12 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
         routing_id_(routing_id) {
     DCHECK(installer);
     switch (installer->state()) {
-      case PluginInstaller::kStateIdle: {
+      case PluginInstaller::INSTALLER_STATE_IDLE: {
         observer->Send(new ChromeViewMsg_FoundMissingPlugin(routing_id_,
                                                             installer->name()));
         break;
       }
-      case PluginInstaller::kStateDownloading: {
+      case PluginInstaller::INSTALLER_STATE_DOWNLOADING: {
         DownloadStarted();
         break;
       }

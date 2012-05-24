@@ -36,6 +36,15 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+#include "chrome/browser/plugin_finder.h"
+#include "chrome/browser/plugin_installer.h"
+#else
+// Forward-declare PluginFinder. It's never actually used, but we pass a NULL
+// pointer instead.
+class PluginFinder;
+#endif
+
 using content::InterstitialPage;
 using content::OpenURLParams;
 using content::PluginService;
@@ -46,9 +55,6 @@ using webkit::npapi::PluginGroup;
 using webkit::WebPluginInfo;
 
 namespace {
-
-// Only launch Adobe Reader X or later.
-static const uint16 kMinReaderVersionToUse = 10;
 
 static const char kReaderUpdateUrl[] =
     "http://www.adobe.com/go/getreader_chrome";
@@ -252,9 +258,10 @@ class PDFUnsupportedFeatureInterstitial
 // PDFEnableAdobeReaderInfoBarDelegate.
 class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // |reader_group| is NULL if Adobe Reader isn't installed.
+  // |reader| is NULL if Adobe Reader isn't installed.
   PDFUnsupportedFeatureInfoBarDelegate(TabContentsWrapper* tab_contents,
-                                       const PluginGroup* reader_group);
+                                       const webkit::WebPluginInfo* reader,
+                                       PluginFinder* plugin_finder);
   virtual ~PDFUnsupportedFeatureInfoBarDelegate();
 
   // ConfirmInfoBarDelegate
@@ -280,10 +287,11 @@ class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 PDFUnsupportedFeatureInfoBarDelegate::PDFUnsupportedFeatureInfoBarDelegate(
     TabContentsWrapper* tab_contents,
-    const PluginGroup* reader_group)
+    const webkit::WebPluginInfo* reader,
+    PluginFinder* plugin_finder)
     : ConfirmInfoBarDelegate(tab_contents->infobar_tab_helper()),
       tab_contents_(tab_contents),
-      reader_installed_(!!reader_group),
+      reader_installed_(!!reader),
       reader_vulnerable_(false) {
   if (!reader_installed_) {
     content::RecordAction(
@@ -292,18 +300,18 @@ PDFUnsupportedFeatureInfoBarDelegate::PDFUnsupportedFeatureInfoBarDelegate(
   }
 
   content::RecordAction(UserMetricsAction("PDF_UseReaderInfoBarShown"));
-  const std::vector<WebPluginInfo>& plugins =
-      reader_group->web_plugin_infos();
-  DCHECK_EQ(plugins.size(), 1u);
-  reader_webplugininfo_ = plugins[0];
+  reader_webplugininfo_ = *reader;
 
-  reader_vulnerable_ = reader_group->IsVulnerable(reader_webplugininfo_);
-  if (!reader_vulnerable_) {
-    scoped_ptr<Version> version(PluginGroup::CreateVersionFromString(
-        reader_webplugininfo_.version));
-    reader_vulnerable_ =
-        version.get() && (version->components()[0] < kMinReaderVersionToUse);
-  }
+#if defined(ENABLE_PLUGIN_INSTALLATION)
+  PluginInstaller* installer =
+      plugin_finder->FindPluginWithIdentifier("adobe-reader");
+
+  reader_vulnerable_ =
+      installer->GetSecurityStatus(*reader) !=
+          PluginInstaller::SECURITY_STATUS_UP_TO_DATE;
+#else
+  NOTREACHED();
+#endif
 }
 
 PDFUnsupportedFeatureInfoBarDelegate::~PDFUnsupportedFeatureInfoBarDelegate() {
@@ -379,6 +387,7 @@ void PDFUnsupportedFeatureInfoBarDelegate::OnNo() {
 
 void GotPluginGroupsCallback(int process_id,
                              int routing_id,
+                             PluginFinder* plugin_finder,
                              const std::vector<PluginGroup>& groups) {
   WebContents* web_contents =
       tab_util::GetWebContentsByID(process_id, routing_id);
@@ -391,7 +400,6 @@ void GotPluginGroupsCallback(int process_id,
     return;
 
   string16 reader_group_name(ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
-
   // If the Reader plugin is disabled by policy, don't prompt them.
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(tab->profile());
   if (plugin_prefs->PolicyStatusForPlugin(reader_group_name) ==
@@ -399,29 +407,37 @@ void GotPluginGroupsCallback(int process_id,
     return;
   }
 
-  const PluginGroup* reader_group = NULL;
+  const webkit::WebPluginInfo* reader = NULL;
   for (size_t i = 0; i < groups.size(); ++i) {
     if (groups[i].GetGroupName() == reader_group_name) {
-      reader_group = &groups[i];
+      const std::vector<WebPluginInfo>& plugins =
+          groups[i].web_plugin_infos();
+      DCHECK_EQ(plugins.size(), 1u);
+      reader = &plugins[0];
       break;
     }
   }
 
   tab->infobar_tab_helper()->AddInfoBar(
-      new PDFUnsupportedFeatureInfoBarDelegate(tab, reader_group));
+      new PDFUnsupportedFeatureInfoBarDelegate(tab, reader, plugin_finder));
+}
+
+void GotPluginFinderCallback(int process_id,
+                             int routing_id,
+                             PluginFinder* plugin_finder) {
+  PluginService::GetInstance()->GetPluginGroups(
+      base::Bind(&GotPluginGroupsCallback, process_id, routing_id,
+                                           base::Unretained(plugin_finder)));
 }
 
 }  // namespace
 
 void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
-#if !defined(OS_WIN)
+#if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
   // Only works for Windows for now.  For Mac, we'll have to launch the file
   // externally since Adobe Reader doesn't work inside Chrome.
-  return;
+  PluginFinder::Get(base::Bind(&GotPluginFinderCallback,
+      tab->web_contents()->GetRenderProcessHost()->GetID(),
+      tab->web_contents()->GetRenderViewHost()->GetRoutingID()));
 #endif
-
-  PluginService::GetInstance()->GetPluginGroups(
-      base::Bind(&GotPluginGroupsCallback,
-          tab->web_contents()->GetRenderProcessHost()->GetID(),
-          tab->web_contents()->GetRenderViewHost()->GetRoutingID()));
 }

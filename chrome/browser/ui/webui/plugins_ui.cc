@@ -427,16 +427,17 @@ void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
     group_data->SetString("id", group.identifier());
     group_data->SetString("description", active_plugin->desc);
     group_data->SetString("version", active_plugin->version);
-    group_data->SetBoolean("critical", group.IsVulnerable(*active_plugin));
 
-    std::string update_url;
 #if defined(ENABLE_PLUGIN_INSTALLATION)
     PluginInstaller* installer =
         plugin_finder->FindPluginWithIdentifier(group.identifier());
-    if (installer)
-      update_url = installer->plugin_url().spec();
+    if (installer) {
+      bool out_of_date = installer->GetSecurityStatus(*active_plugin) ==
+                         PluginInstaller::SECURITY_STATUS_OUT_OF_DATE;
+      group_data->SetBoolean("critical", out_of_date);
+      group_data->SetString("update_url", installer->plugin_url().spec());
+    }
 #endif
-    group_data->SetString("update_url", update_url);
 
     std::string enabled_mode;
     if (all_plugins_enabled_by_policy) {
