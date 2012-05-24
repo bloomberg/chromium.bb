@@ -48,7 +48,13 @@ class ModulePpapi : public pp::Module {
 
     launch_nacl_process = reinterpret_cast<LaunchNaClProcessFunc>(
         private_interface_->LaunchSelLdr);
+    // TODO(mseaborn): Remove this get_urandom_fd global variable once
+    // the NaCl side no longer depends on it.
     get_urandom_fd = private_interface_->UrandomFD;
+
+#if NACL_LINUX || NACL_OSX
+    NaClSecureRngModuleSetUrandomFd(dup(private_interface_->UrandomFD()));
+#endif
 
     // In the plugin, we don't need high resolution time of day.
     NaClAllowLowResolutionTimeOfDay();
