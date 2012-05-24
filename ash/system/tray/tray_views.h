@@ -218,7 +218,7 @@ class TrayPopupHeaderButton : public views::ToggleImageButton {
 };
 
 // The 'special' looking row in the uber-tray popups. This is usually the bottom
-// row in the popups.
+// row in the popups, and has a fixed height.
 class SpecialPopupRow : public views::View {
  public:
   SpecialPopupRow();
@@ -233,6 +233,7 @@ class SpecialPopupRow : public views::View {
 
  private:
   // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
 
   views::View* content_;

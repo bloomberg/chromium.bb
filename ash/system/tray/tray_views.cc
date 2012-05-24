@@ -368,6 +368,9 @@ void TrayPopupHeaderButton::StateChanged() {
   SchedulePaint();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// SpecialPopupRow
+
 SpecialPopupRow::SpecialPopupRow()
     : content_(NULL),
       button_container_(NULL) {
@@ -421,6 +424,13 @@ void SpecialPopupRow::AddButton(TrayPopupHeaderButton* button) {
   button_container_->AddChildView(button);
 }
 
+gfx::Size SpecialPopupRow::GetPreferredSize() {
+  const int kFixedHeight = 55;
+  gfx::Size size = views::View::GetPreferredSize();
+  size.set_height(kFixedHeight);
+  return size;
+}
+
 void SpecialPopupRow::Layout() {
   views::View::Layout();
   gfx::Rect content_bounds = GetContentsBounds();
@@ -440,17 +450,6 @@ void SpecialPopupRow::Layout() {
   bounds = content_->bounds();
   bounds.set_width(button_container_->x());
   content_->SetBoundsRect(bounds);
-}
-
-void SetupLabelForTray(views::Label* label) {
-  label->SetFont(
-      label->font().DeriveFont(2, gfx::Font::BOLD));
-  label->SetAutoColorReadabilityEnabled(false);
-  label->SetEnabledColor(SK_ColorWHITE);
-  label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
-  label->SetShadowColors(SkColorSetARGB(64, 0, 0, 0),
-                         SkColorSetARGB(64, 0, 0, 0));
-  label->SetShadowOffset(0, 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -494,6 +493,17 @@ TrayNotificationView::~TrayNotificationView() {
 void TrayNotificationView::ButtonPressed(views::Button* sender,
                                          const views::Event& event) {
   OnClose();
+}
+
+void SetupLabelForTray(views::Label* label) {
+  label->SetFont(
+      label->font().DeriveFont(2, gfx::Font::BOLD));
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetEnabledColor(SK_ColorWHITE);
+  label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
+  label->SetShadowColors(SkColorSetARGB(64, 0, 0, 0),
+                         SkColorSetARGB(64, 0, 0, 0));
+  label->SetShadowOffset(0, 1);
 }
 
 }  // namespace internal

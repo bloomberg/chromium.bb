@@ -22,6 +22,8 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -90,8 +92,11 @@ class TrayPopupItemContainer : public views::View {
   explicit TrayPopupItemContainer(views::View* view) : hover_(false) {
     set_notify_enter_exit_on_child(true);
     set_border(view->border() ? views::Border::CreateEmptyBorder(0, 0, 0, 0) :
-                                NULL);
-    SetLayoutManager(new views::FillLayout);
+        views::Border::CreateSolidSidedBorder(1, 1, 0, 1, kBorderDarkColor));
+    views::BoxLayout* layout = new views::BoxLayout(
+        views::BoxLayout::kVertical, 0, 0, 0);
+    layout->set_spread_blank_space(true);
+    SetLayoutManager(layout);
     SetPaintToLayer(view->layer() != NULL);
     if (view->layer())
       SetFillsBoundsOpaquely(view->layer()->fills_bounds_opaquely());
@@ -155,39 +160,6 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
   virtual ~SystemTrayBubbleBorder() {}
 
  private:
-  void PaintChildBorder(gfx::Canvas* canvas) const {
-    gfx::Insets insets;
-    GetInsets(&insets);
-    canvas->Save();
-    canvas->Translate(gfx::Point(insets.left(), insets.top()));
-    views::View* last_view = NULL;
-    for (int i = 0; i < owner_->child_count(); i++) {
-      views::View* v = owner_->child_at(i);
-      if (!v->visible())
-        continue;
-
-      if (!v->border()) {
-        canvas->DrawLine(gfx::Point(v->x(), v->y() - 1),
-            gfx::Point(v->x() + v->width(), v->y() - 1),
-            !last_view || last_view->border() ? kBorderDarkColor :
-                                                kBorderLightColor);
-      } else if (last_view && !last_view->border()) {
-        canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
-            gfx::Point(v->x() + v->width() + 1, v->y() - 1),
-            kBorderDarkColor);
-      }
-
-      canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
-          gfx::Point(v->x() - 1, v->y() + v->height() + 1),
-          kBorderDarkColor);
-      canvas->DrawLine(gfx::Point(v->x() + v->width(), v->y() - 1),
-          gfx::Point(v->x() + v->width(), v->y() + v->height() + 1),
-          kBorderDarkColor);
-      last_view = v;
-    }
-    canvas->Restore();
-  }
-
   // Overridden from views::BubbleBorder.
   // Override views::BubbleBorder to set the bubble on top of the anchor when
   // it has no arrow.
@@ -219,8 +191,6 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
     GetInsets(&inset);
     DrawBlurredShadowAroundView(canvas, 0, owner_->height(), owner_->width(),
         inset);
-
-    PaintChildBorder(canvas);
 
     // Draw the bottom line.
     int y = owner_->height() + 1;
@@ -288,6 +258,27 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBorder);
 };
 
+// Implicit animation observer that deletes itself and the layer at the end of
+// the animation.
+class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
+ public:
+  explicit AnimationObserverDeleteLayer(ui::Layer* layer)
+      : layer_(layer) {
+  }
+
+  virtual ~AnimationObserverDeleteLayer() {
+  }
+
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    MessageLoopForUI::current()->DeleteSoon(FROM_HERE, this);
+  }
+
+ private:
+  scoped_ptr<ui::Layer> layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnimationObserverDeleteLayer);
+};
+
 }  // namespace
 
 namespace internal {
@@ -307,6 +298,8 @@ SystemTrayBubbleView::SystemTrayBubbleView(
   set_parent_window(ash::Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_SettingBubbleContainer));
   set_notify_enter_exit_on_child(true);
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(true);
 }
 
 SystemTrayBubbleView::~SystemTrayBubbleView() {
@@ -326,10 +319,7 @@ void SystemTrayBubbleView::UpdateAnchor() {
 
 void SystemTrayBubbleView::Init() {
   views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kVertical,
-                           kSystemTrayBubbleHorizontalInset,
-                           kSystemTrayBubbleVerticalInset,
-                           1);
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   layout->set_spread_blank_space(true);
   SetLayoutManager(layout);
   set_background(NULL);
@@ -349,18 +339,6 @@ gfx::Rect SystemTrayBubbleView::GetAnchorRect() {
         0, 0);
   }
   return rect;
-}
-
-void SystemTrayBubbleView::ChildPreferredSizeChanged(View* child) {
-  SizeToContents();
-}
-
-void SystemTrayBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
-  if (can_activate_) {
-    state->role = ui::AccessibilityTypes::ROLE_WINDOW;
-    state->name = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
-  }
 }
 
 bool SystemTrayBubbleView::CanActivate() const {
@@ -383,6 +361,28 @@ void SystemTrayBubbleView::OnMouseEntered(const views::MouseEvent& event) {
 void SystemTrayBubbleView::OnMouseExited(const views::MouseEvent& event) {
   if (host_)
     host_->RestartAutoCloseTimer();
+}
+
+void SystemTrayBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
+  if (can_activate_) {
+    state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+    state->name = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
+  }
+}
+
+void SystemTrayBubbleView::ChildPreferredSizeChanged(View* child) {
+  SizeToContents();
+}
+
+void SystemTrayBubbleView::ViewHierarchyChanged(bool is_add,
+                                                views::View* parent,
+                                                views::View* child) {
+  if (is_add && child == this) {
+    parent->SetPaintToLayer(true);
+    parent->SetFillsBoundsOpaquely(true);
+    parent->layer()->SetMasksToBounds(true);
+  }
 }
 
 // SystemTrayBubble::InitParams
@@ -434,6 +434,54 @@ SystemTrayBubble::~SystemTrayBubble() {
 void SystemTrayBubble::UpdateView(
     const std::vector<ash::SystemTrayItem*>& items,
     BubbleType bubble_type) {
+  DCHECK(bubble_type != BUBBLE_TYPE_NOTIFICATION);
+  DCHECK(bubble_type != bubble_type_);
+
+  const int kSwipeDelayMS = 300;
+  base::TimeDelta swipe_duration =
+      base::TimeDelta::FromMilliseconds(kSwipeDelayMS);
+  ui::Layer* layer = bubble_view_->RecreateLayer();
+  layer->SuppressPaint();
+
+  // When transitioning from detailed view to default view, animate the existing
+  // view (slide out towards the right).
+  if (bubble_type == BUBBLE_TYPE_DEFAULT) {
+    // Make sure the old view is visibile over the new view during the
+    // animation.
+    layer->parent()->StackAbove(layer, bubble_view_->layer());
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.AddObserver(new AnimationObserverDeleteLayer(layer));
+    settings.SetTransitionDuration(swipe_duration);
+    settings.SetTweenType(ui::Tween::EASE_IN);
+    ui::Transform transform;
+    transform.SetTranslateX(layer->bounds().width());
+    layer->SetTransform(transform);
+  }
+
+  {
+    // Add a shadow layer to make the old layer darker as the animation
+    // progresses.
+    ui::Layer* shadow = new ui::Layer(ui::LAYER_SOLID_COLOR);
+    shadow->SetColor(SK_ColorBLACK);
+    shadow->SetOpacity(0.01f);
+    shadow->SetBounds(layer->bounds());
+    layer->Add(shadow);
+    layer->StackAtTop(shadow);
+    {
+      // Animate the darkening effect a little longer than the swipe-in. This is
+      // to make sure the darkening animation does not end up finishing early,
+      // because the dark layer goes away at the end of the animation, and there
+      // is a brief moment when the old view is still visible, but it does not
+      // have the shadow layer on top.
+      ui::ScopedLayerAnimationSettings settings(shadow->GetAnimator());
+      settings.AddObserver(new AnimationObserverDeleteLayer(shadow));
+      settings.SetTransitionDuration(swipe_duration +
+                                     base::TimeDelta::FromMilliseconds(150));
+      settings.SetTweenType(ui::Tween::LINEAR);
+      shadow->SetOpacity(0.15f);
+    }
+  }
+
   DestroyItemViews();
   bubble_view_->RemoveAllChildViews(true);
 
@@ -445,6 +493,23 @@ void SystemTrayBubble::UpdateView(
   if (bubble_type_ == BUBBLE_TYPE_DEFAULT) {
     bubble_view_->set_max_height(0);  // Clear max height limit.
     bubble_view_->SizeToContents();
+  }
+
+  // When transitioning from default view to detailed view, animate the new
+  // view (slide in from the right).
+  if (bubble_type == BUBBLE_TYPE_DETAILED) {
+    ui::Layer* new_layer = bubble_view_->layer();
+    gfx::Rect bounds = new_layer->bounds();
+    ui::Transform transform;
+    transform.SetTranslateX(bounds.width());
+    new_layer->SetTransform(transform);
+    {
+      ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
+      settings.AddObserver(new AnimationObserverDeleteLayer(layer));
+      settings.SetTransitionDuration(swipe_duration);
+      settings.SetTweenType(ui::Tween::EASE_IN);
+      new_layer->SetTransform(ui::Transform());
+    }
   }
 }
 

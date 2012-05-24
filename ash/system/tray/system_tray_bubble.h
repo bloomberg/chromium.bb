@@ -46,13 +46,17 @@ class SystemTrayBubbleView : public views::BubbleDelegateView {
   // Overridden from views::BubbleDelegateView.
   virtual void Init() OVERRIDE;
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
-  // Overridden from views::View.
-  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
+
+  // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
 
   void set_max_height(int height) { max_height_ = height; }
 
