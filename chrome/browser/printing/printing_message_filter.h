@@ -30,7 +30,7 @@ class PrintJobManager;
 // renderer process on the IPC thread.
 class PrintingMessageFilter : public content::BrowserMessageFilter {
  public:
-  PrintingMessageFilter();
+  explicit PrintingMessageFilter(int render_process_id);
 
   // content::BrowserMessageFilter methods.
   virtual void OverrideThreadForMessage(
@@ -53,7 +53,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   // to fill in resulting PDF in renderer.
   void OnAllocateTempFileForPrinting(base::FileDescriptor* temp_file_fd,
                                      int* sequence_number);
-  void OnTempFileForPrintingWritten(int sequence_number);
+  void OnTempFileForPrintingWritten(int render_view_id, int sequence_number);
 #endif
 
   // Get the default print setting. The task is handled by the print
@@ -88,6 +88,8 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
                         bool* cancel);
 
   printing::PrintJobManager* print_job_manager_;
+
+  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingMessageFilter);
 };
