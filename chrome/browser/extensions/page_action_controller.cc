@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -17,27 +16,20 @@
 
 namespace extensions {
 
-PageActionController::PageActionController(TabContentsWrapper* tab_contents,
-                                           ExtensionTabHelper* tab_helper)
-    : tab_contents_(tab_contents),
-      tab_helper_(tab_helper) {
-  tab_helper->AddObserver(this);
-}
+PageActionController::PageActionController(TabContentsWrapper* tab_contents)
+    : tab_contents_(tab_contents) {}
 
-PageActionController::~PageActionController() {
-  tab_helper_->RemoveObserver(this);
-}
+PageActionController::~PageActionController() {}
 
 scoped_ptr<std::vector<ExtensionAction*> >
 PageActionController::GetCurrentActions() {
-  int tab_id = ExtensionTabUtil::GetTabId(tab_contents_->web_contents());
   const ExtensionSet* extensions = GetExtensionService()->extensions();
   scoped_ptr<std::vector<ExtensionAction*> > current_actions(
       new std::vector<ExtensionAction*>());
   for (ExtensionSet::const_iterator i = extensions->begin();
        i != extensions->end(); ++i) {
     ExtensionAction* action = (*i)->page_action();
-    if (action && action->GetIsVisible(tab_id))
+    if (action)
       current_actions->push_back(action);
   }
   return current_actions.Pass();
@@ -73,25 +65,6 @@ ActionBoxController::Action PageActionController::OnClicked(
   }
 
   return ACTION_NONE;
-}
-
-void PageActionController::OnPageActionStateChanged() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_ACTION_BOX_UPDATED,
-      content::Source<Profile>(tab_contents_->profile()),
-      content::Details<TabContentsWrapper>(tab_contents_));
-
-  // TODO(kalman): remove this, and all occurrences of
-  // NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED, when views and
-  // cocoa have been updated to not use it.
-  //
-  // Only tests care about them, and they only ever use AllSources, so it can
-  // safely be a bogus value.
-  ExtensionAction bogus_action("");
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-      content::Source<ExtensionAction>(&bogus_action),
-      content::Details<content::WebContents>(tab_contents_->web_contents()));
 }
 
 ExtensionService* PageActionController::GetExtensionService() {

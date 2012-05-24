@@ -11,7 +11,6 @@
 
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/action_box_controller.h"
-#include "chrome/browser/extensions/extension_tab_helper.h"
 
 class ExtensionService;
 class TabContentsWrapper;
@@ -19,11 +18,9 @@ class TabContentsWrapper;
 namespace extensions {
 
 // An ActionBoxController which corresponds to the page actions of an extension.
-class PageActionController : public ActionBoxController,
-                             public ExtensionTabHelper::Observer {
+class PageActionController : public ActionBoxController {
  public:
-  PageActionController(TabContentsWrapper* tab_contents,
-                       ExtensionTabHelper* tab_helper);
+  explicit PageActionController(TabContentsWrapper* tab_contents);
   virtual ~PageActionController();
 
   // ActionBoxController implementation.
@@ -32,16 +29,11 @@ class PageActionController : public ActionBoxController,
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) OVERRIDE;
 
-  // ExtensionTabHelper::Observer implementation.
-  virtual void OnPageActionStateChanged() OVERRIDE;
-
  private:
   // Gets the ExtensionService for |tab_contents_|.
   ExtensionService* GetExtensionService();
 
   TabContentsWrapper* tab_contents_;
-
-  ExtensionTabHelper* tab_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionController);
 };

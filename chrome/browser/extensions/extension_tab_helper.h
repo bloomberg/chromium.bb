@@ -40,15 +40,6 @@ class ExtensionTabHelper
       public AppNotifyChannelSetup::Delegate,
       public base::SupportsWeakPtr<ExtensionTabHelper> {
  public:
-  class Observer {
-   public:
-    // Called when the page action state (such as visibility, title) changes.
-    virtual void OnPageActionStateChanged() = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   explicit ExtensionTabHelper(TabContentsWrapper* wrapper);
   virtual ~ExtensionTabHelper();
 
@@ -65,10 +56,6 @@ class ExtensionTabHelper
   // request. The delegate is notified by way of OnDidGetApplicationInfo when
   // the data is available.
   void GetApplicationInfo(int32 page_id);
-
-  // Observer management.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   // App extensions ------------------------------------------------------------
 

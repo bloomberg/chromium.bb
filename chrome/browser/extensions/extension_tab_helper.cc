@@ -53,7 +53,7 @@ ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
     script_badge_controller_.reset(new ScriptBadgeController(wrapper));
   } else {
     script_executor_.reset(new ScriptExecutorImpl(wrapper->web_contents()));
-    action_box_controller_.reset(new PageActionController(wrapper, this));
+    action_box_controller_.reset(new PageActionController(wrapper));
   }
 }
 
@@ -66,24 +66,12 @@ void ExtensionTabHelper::CopyStateFrom(const ExtensionTabHelper& source) {
 }
 
 void ExtensionTabHelper::PageActionStateChanged() {
-  // TODO(kalman): replace this with just the Observer interface.
   web_contents()->NotifyNavigationStateChanged(
       content::INVALIDATE_TYPE_PAGE_ACTIONS);
-
-  FOR_EACH_OBSERVER(Observer, observers_, OnPageActionStateChanged());
 }
 
 void ExtensionTabHelper::GetApplicationInfo(int32 page_id) {
   Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
-}
-
-void ExtensionTabHelper::AddObserver(ExtensionTabHelper::Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ExtensionTabHelper::RemoveObserver(
-    ExtensionTabHelper::Observer* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {
