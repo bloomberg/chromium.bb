@@ -317,17 +317,23 @@ def CreateResourceInputFile(
 # |insert_before|.
 def CopyAndAugmentManifest(build_dir, output_dir, manifest_name,
                            inserted_string, insert_before):
-  manifest_file = open(
-      os.path.join(build_dir, manifest_name), 'r')
+  manifest_file = open(os.path.join(build_dir, manifest_name), 'r')
   manifest_lines = manifest_file.readlines()
   manifest_file.close()
 
-  insert_index = next((i for i, s in enumerate(manifest_lines)
-                       if s.find(insert_before) != -1), -1)
-  if insert_index == -1:
-    raise ValueError('could not find {0} in the manifest:\n{1}'.format(
+  insert_line = -1
+  insert_pos = -1
+  for i in xrange(len(manifest_lines)):
+    insert_pos = manifest_lines[i].find(insert_before)
+    if insert_pos != -1:
+      insert_line = i
+      break
+  if insert_line == -1:
+    raise ValueError('Could not find {0} in the manifest:\n{1}'.format(
         insert_before, ''.join(manifest_lines)))
-  manifest_lines.insert(insert_index, inserted_string)
+  old = manifest_lines[insert_line]
+  manifest_lines[insert_line] = (old[:insert_pos] + inserted_string +
+                                 old[insert_pos:])
 
   modified_manifest_file = open(
       os.path.join(output_dir, manifest_name), 'w')
@@ -435,13 +441,12 @@ def DoComponentBuildTasks(staging_dir, build_dir, current_version):
   exe_manifest_dependencies_list = []
   for name in dll_names:
     exe_manifest_dependencies_list.append(
-        "  <dependency>\n"
-        "    <dependentAssembly>\n"
-        "      <assemblyIdentity type='win32' name='chrome.{dll_name}'\n"
-        "          version='0.0.0.0' processorArchitecture='x86'\n"
-        "          language='*'/>\n"
-        "    </dependentAssembly>\n"
-        "  </dependency>\n".format(dll_name=name))
+        "<dependency>"
+        "<dependentAssembly>"
+        "<assemblyIdentity type='win32' name='chrome.{dll_name}' "
+        "version='0.0.0.0' processorArchitecture='x86' language='*'/>"
+        "</dependentAssembly>"
+        "</dependency>".format(dll_name=name))
 
   exe_manifest_dependencies = ''.join(exe_manifest_dependencies_list)
 
