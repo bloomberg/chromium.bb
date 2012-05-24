@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,17 @@
 //       the callstacks.
 
 #include <windows.h>
+
+#include "base/at_exit.h"
 #include "tools/memory_watcher/memory_watcher.h"
 #include "tools/memory_watcher/hotkey.h"
 
+class MemoryWatcherDumpKey;  // Defined below.
+
 static wchar_t* kDumpEvent = L"MemWatcher.DumpEvent";
+static base::AtExitManager* g_memory_watcher_exit_manager = NULL;
 static MemoryWatcher* g_memory_watcher = NULL;
+static MemoryWatcherDumpKey* g_hotkey_handler = NULL;
 static HANDLE g_dump_event = INVALID_HANDLE_VALUE;
 static HANDLE g_quit_event = INVALID_HANDLE_VALUE;
 static HANDLE g_watcher_thread = INVALID_HANDLE_VALUE;
@@ -35,19 +41,24 @@ class MemoryWatcherDumpKey : public HotKeyHandler {
   }
 };
 
-// Register ALT-CONTROL-D to Dump Memory stats.
-MemoryWatcherDumpKey hHotKeyHandler(MOD_ALT|MOD_CONTROL, 0x44);
-
 // Creates the global memory watcher.
 void CreateMemoryWatcher() {
+  g_memory_watcher_exit_manager = new base::AtExitManager();
   g_memory_watcher = new MemoryWatcher();
+  // Register ALT-CONTROL-D to Dump Memory stats.
+  g_hotkey_handler = new MemoryWatcherDumpKey(MOD_ALT|MOD_CONTROL, 0x44);
 }
 
 // Deletes the global memory watcher.
 void DeleteMemoryWatcher() {
+  if (g_hotkey_handler)
+    delete g_hotkey_handler;
+  g_hotkey_handler = NULL;
   if (g_memory_watcher)
     delete g_memory_watcher;
   g_memory_watcher = NULL;
+
+  // Intentionly leak g_memory_watcher_exit_manager.
 }
 
 // Thread for watching for key events.
