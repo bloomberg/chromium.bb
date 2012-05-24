@@ -85,7 +85,8 @@ void ChromeMockRenderThread::OnAllocateTempFileForPrinting(
   }
 }
 
-void ChromeMockRenderThread::OnTempFileForPrintingWritten(int browser_fd) {
+void ChromeMockRenderThread::OnTempFileForPrintingWritten(int render_view_id,
+                                                          int browser_fd) {
   close(browser_fd);
 }
 #endif  // defined(OS_CHROMEOS)

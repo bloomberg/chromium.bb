@@ -60,7 +60,7 @@ class ChromeMockRenderThread : public content::MockRenderThread {
 #if defined(OS_CHROMEOS)
   void OnAllocateTempFileForPrinting(base::FileDescriptor* renderer_fd,
                                      int* browser_fd);
-  void OnTempFileForPrintingWritten(int browser_fd);
+  void OnTempFileForPrintingWritten(int render_view_id, int browser_fd);
 #endif
 
   // PrintWebViewHelper expects default print settings.
