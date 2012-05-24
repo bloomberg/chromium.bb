@@ -626,6 +626,7 @@ function getPermittedChannels() {
   // Check for all required permissions of an API, whether their governing
   // feature is limited to a specific release channel.
   var requiredPermissions = module.documentation_permissions_required || [];
+  requiredPermissions.push(module.namespace);
   for (var i = 0; i < requiredPermissions.length; ++i) {
     var permissionName = requiredPermissions[i];
     var supportedChannel = (permissionFeatures[permissionName] || {}).channel ||
