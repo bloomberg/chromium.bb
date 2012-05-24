@@ -147,7 +147,7 @@
             "$t": "file:1_file_resource_id"
          },
          "id": {
-            "$t": "2_file_resource_id"
+            "$t": "1_file_resource_id"
          },
          "link": [ {
             "href": "https://file_link_alternate",
@@ -158,7 +158,7 @@
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://file_link_self/file:2_file_resource_id",
+            "href": "https://file_link_self/file:1_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
@@ -166,7 +166,7 @@
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
-            "href": "https://file_link_self/file:2_file_resource_id",
+            "href": "https://file_link_self/file:1_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          } ],

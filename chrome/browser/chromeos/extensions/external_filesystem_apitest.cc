@@ -48,6 +48,10 @@ const char kTestDirectory[] = "new_folder_entry.json";
 // Contains a folder named Folder that has a file File.aBc inside of it.
 const char kTestRootFeed[] = "remote_file_system_apitest_root_feed.json";
 
+// Contains metadata of the  document that will be "downloaded" in test.
+const char kTestDocumentToDownloadEntry[] =
+    "remote_file_system_apitest_document_to_download.json";
+
 // The ID of the file browser extension.
 const char kFileBrowserExtensionId[] = "ddammdhioacbehjngdmkjcjbnfginlla";
 
@@ -119,6 +123,12 @@ ACTION_P2(MockCreateDirectoryCallback, status, value) {
 ACTION_P2(MockGetDocumentsCallback, status, value) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(arg4, status, base::Passed(value)));
+}
+
+// Action used to mock expectations fo GetDocumentEntry.
+ACTION_P2(MockGetDocumentEntryCallback, status, value) {
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(arg1, status, base::Passed(value)));
 }
 
 // Creates a cache representation of the test file with predetermined content.
@@ -284,8 +294,18 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
   // Later in the test, file handler will try to open the same file on gdata
   // mount point. This time, DownloadFile should not be called because local
   // copy is already present in the cache.
+  scoped_ptr<base::Value> document_to_download_value(
+      LoadJSONFile(kTestDocumentToDownloadEntry));
   EXPECT_CALL(*mock_documents_service_,
-              DownloadFile(_, _, _, _, _))
+              GetDocumentEntry("file:1_file_resource_id", _))
+      .WillOnce(MockGetDocumentEntryCallback(gdata::HTTP_SUCCESS,
+                                             &document_to_download_value));
+
+  // We expect to download url defined in document entry returned by
+  // GetDocumentEntry mock implementation.
+  EXPECT_CALL(*mock_documents_service_,
+              DownloadFile(_, _, GURL("https://file_content_url_changed"),
+                           _, _))
       .WillOnce(MockDownloadFileCallback(gdata::HTTP_SUCCESS));
 
   // On exit, all operations in progress should be cancelled.

@@ -602,6 +602,18 @@ void DocumentEntry::FillRemainingFields() {
 }
 
 // static
+DocumentEntry* DocumentEntry::ExtractAndParse(
+    const base::Value& value) {
+  const base::DictionaryValue* as_dict = NULL;
+  base::DictionaryValue* entry_dict = NULL;
+  if (value.GetAsDictionary(&as_dict) &&
+      as_dict->GetDictionary(kEntryField, &entry_dict)) {
+    return DocumentEntry::CreateFrom(entry_dict);
+  }
+  return NULL;
+}
+
+// static
 DocumentEntry* DocumentEntry::CreateFrom(const base::Value* value) {
   base::JSONValueConverter<DocumentEntry> converter;
   scoped_ptr<DocumentEntry> entry(new DocumentEntry());

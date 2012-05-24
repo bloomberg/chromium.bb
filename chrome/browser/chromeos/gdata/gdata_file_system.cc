@@ -2245,16 +2245,74 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
   // If cache file is not found, try to download the file from the server
   // instead. This logic is rather complicated but here's how this works:
   //
+  // Retrieve fresh file metadata from server. We will extract file size and
+  // content url from there (we want to make sure used content url is not
+  // stale).
+  //
   // Check if we have enough space, based on the expected file size.
   // - if we don't have enough space, try to free up the disk space
   // - if we still don't have enough space, return "no space" error
   // - if we have enough space, start downloading the file from the server
-  int64 file_size = 0;
+  documents_service_->GetDocumentEntry(
+      resource_id,
+      base::Bind(&GDataFileSystem::OnGetDocumentEntry,
+                 ui_weak_ptr_,
+                 cache_file_path,
+                 GetFileFromCacheParams(params.virtual_file_path,
+                                        params.local_tmp_path,
+                                        params.content_url,
+                                        params.resource_id,
+                                        params.md5,
+                                        params.mime_type,
+                                        params.get_file_callback,
+                                        params.get_download_data_callback)));
+}
+
+void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
+                                         const GetFileFromCacheParams& params,
+                                         GDataErrorCode status,
+                                         scoped_ptr<base::Value> data) {
+  base::PlatformFileError error = GDataToPlatformError(status);
+
+  GDataEntry* fresh_entry = NULL;
+  if (error == base::PLATFORM_FILE_OK) {
+    scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
+    if (doc_entry.get()) {
+      fresh_entry =
+          GDataEntry::FromDocumentEntry(NULL, doc_entry.get(), root_.get());
+    }
+    if (!fresh_entry || !fresh_entry->AsGDataFile()) {
+      LOG(ERROR) << "Got invalid entry from server for " << params.resource_id;
+      error = base::PLATFORM_FILE_ERROR_FAILED;
+    }
+  }
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!params.get_file_callback.is_null()) {
+      params.get_file_callback.Run(error,
+                                   cache_file_path,
+                                   params.mime_type,
+                                   REGULAR_FILE);
+    }
+    return;
+  }
+
+  GURL content_url = fresh_entry->content_url();
+  int64 file_size = fresh_entry->file_info().size;
+
   {
-    base::AutoLock lock(lock_);  // To access the root directory.
-    GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
-    if (entry)
-      file_size = entry->file_info().size;
+    base::AutoLock lock(lock_);  // We're accessing the root.
+    GDataEntry* old_entry = root_->GetEntryByResourceId(params.resource_id);
+    GDataDirectory* entry_parent = old_entry ? old_entry->parent() : NULL;
+
+    if (entry_parent) {
+      DCHECK_EQ(fresh_entry->resource_id(), old_entry->resource_id());
+      DCHECK(fresh_entry->AsGDataFile());
+      DCHECK(old_entry->AsGDataFile());
+
+      entry_parent->RemoveEntry(old_entry);
+      entry_parent->AddEntry(fresh_entry);
+    }
   }
 
   bool* has_enough_space = new bool(false);
@@ -2267,6 +2325,7 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
       base::Bind(&GDataFileSystem::StartDownloadFileIfEnoughSpace,
                  ui_weak_ptr_,
                  params,
+                 content_url,
                  cache_file_path,
                  base::Owned(has_enough_space)));
 }
@@ -2296,6 +2355,7 @@ void GDataFileSystem::FreeDiskSpaceIfNeeded(bool* has_enough_space) {
 
 void GDataFileSystem::StartDownloadFileIfEnoughSpace(
     const GetFileFromCacheParams& params,
+    const GURL& content_url,
     const FilePath& cache_file_path,
     bool* has_enough_space) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2315,7 +2375,7 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
   documents_service_->DownloadFile(
       params.virtual_file_path,
       params.local_tmp_path,
-      params.content_url,
+      content_url,
       base::Bind(&GDataFileSystem::OnFileDownloaded,
                  ui_weak_ptr_,
                  params),
@@ -3339,19 +3399,7 @@ void GDataFileSystem::OnCopyDocumentCompleted(
     return;
   }
 
-  base::DictionaryValue* dict_value = NULL;
-  base::Value* entry_value = NULL;
-  if (data.get() && data->GetAsDictionary(&dict_value) && dict_value)
-    dict_value->Get("entry", &entry_value);
-
-  if (!entry_value) {
-    if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
-
-    return;
-  }
-
-  scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::CreateFrom(entry_value));
+  scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
   if (!doc_entry.get()) {
     if (!callback.is_null())
       callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());

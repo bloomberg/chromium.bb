@@ -297,6 +297,17 @@ class DocumentEntry : public FeedEntry {
   };
   virtual ~DocumentEntry();
 
+  // Extracts "entry" dictionary from the JSON value, and parse the contents,
+  // using CreateFrom(). Returns NULL on failure. The input JSON data, coming
+  // from the gdata server, looks like:
+  //
+  // {
+  //   "encoding": "UTF-8",
+  //   "entry": { ... },   // This function will extract this and parse.
+  //   "version": "1.0"
+  // }
+  static DocumentEntry* ExtractAndParse(const base::Value& value);
+
   // Creates document entry from parsed JSON Value.  You should call
   // this instead of instantiating JSONValueConverter by yourself
   // because this method does some post-process for some fields.  See

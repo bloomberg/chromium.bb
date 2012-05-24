@@ -145,6 +145,12 @@ void ContentSearchCallback(MessageLoop* message_loop,
   message_loop->Quit();
 }
 
+// Action used to set mock expecteations for GetDocuments.
+ACTION_P2(MockGetDocumentEntryCallback, status, value) {
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(arg1, status, base::Passed(value)));
+}
+
 }  // anonymous namespace
 
 namespace gdata {
@@ -932,6 +938,12 @@ class GDataFileSystemTest : public testing::Test {
     }
   }
 
+  void SetExpectationsForGetDocumentEntry(scoped_ptr<base::Value>* document,
+                                          const std::string& resource_id) {
+    EXPECT_CALL(*mock_doc_service_, GetDocumentEntry(resource_id, _))
+        .WillOnce(MockGetDocumentEntryCallback(gdata::HTTP_SUCCESS, document));
+  }
+
   // Used to wait for the result from an operation that involves file IO,
   // that runs on the blocking pool thread.
   void RunAllPendingForIO() {
@@ -1578,11 +1590,17 @@ TEST_F(GDataFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 
   const std::string remote_src_file_data = "Test file data";
   mock_doc_service_->set_file_data(new std::string(remote_src_file_data));
+
+  // Before Download starts metadata from server will be fetched.
+  // We will read content url from the result.
+  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
+
   // The file is obtained with the mock DocumentsService.
   EXPECT_CALL(*mock_doc_service_,
               DownloadFile(remote_src_file_path,
                            cache_file,
-                           GURL("https://file_content_url/"),
+                           GURL("https://file_content_url_changed/"),
                            _, _))
       .Times(1);
 
@@ -2923,11 +2941,16 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(2).WillRepeatedly(Return(file_size + kMinFreeSpace));
 
+  // Before Download starts metadata from server will be fetched.
+  // We will read content url from the result.
+  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
+
   // The file is obtained with the mock DocumentsService.
   EXPECT_CALL(*mock_doc_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
-                           GURL("https://file_content_url/"),
+                           GURL("https://file_content_url_changed/"),
                            _, _))
       .Times(1);
 
@@ -2961,12 +2984,17 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(2).WillRepeatedly(Return(0));
 
+  // Before Download starts metadata from server will be fetched.
+  // We will read content url from the result.
+  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
+
   // The file is not obtained with the mock DocumentsService, because of no
   // space.
   EXPECT_CALL(*mock_doc_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
-                           GURL("https://file_content_url/"),
+                           GURL("https://file_content_url_changed/"),
                            _, _))
       .Times(0);
 
@@ -3012,12 +3040,17 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_TRUE(CacheEntryExists("<resource_id>", "<md5>"));
   ASSERT_TRUE(CacheFileExists("<resource_id>", "<md5>"));
 
+  // Before Download starts metadata from server will be fetched.
+  // We will read content url from the result.
+  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
+
   // The file is obtained with the mock DocumentsService, because of we freed
   // up the space.
   EXPECT_CALL(*mock_doc_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
-                           GURL("https://file_content_url/"),
+                           GURL("https://file_content_url_changed/"),
                            _, _))
       .Times(1);
 
@@ -3062,11 +3095,16 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
       .WillOnce(Return(kMinFreeSpace - 1))
       .WillOnce(Return(kMinFreeSpace - 1));
 
+  // Before Download starts metadata from server will be fetched.
+  // We will read content url from the result.
+  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
+
   // The file is obtained with the mock DocumentsService.
   EXPECT_CALL(*mock_doc_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
-                           GURL("https://file_content_url/"),
+                           GURL("https://file_content_url_changed/"),
                            _, _))
       .Times(1);
 
@@ -3102,11 +3140,14 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
                    GDataFile::CACHE_STATE_PRESENT,
                    GDataRootDirectory::CACHE_TYPE_TMP);
 
+  // Make sure we don't fetch metadata for downloading file.
+  EXPECT_CALL(*mock_doc_service_, GetDocumentEntry(_, _)).Times(0);
+
   // Make sure we don't call downloads at all.
   EXPECT_CALL(*mock_doc_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
-                           GURL("https://file_content_url/"),
+                           GURL("https://file_content_url_changed/"),
                            _, _))
       .Times(0);
 
@@ -3159,12 +3200,17 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
   GDataFile* file = entry->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
 
+  // Before Download starts metadata from server will be fetched.
+  // We will read content url from the result.
+  scoped_ptr<base::Value> document(LoadJSONFile("document_to_download.json"));
+  SetExpectationsForGetDocumentEntry(&document, "file:2_file_resource_id");
+
   // The file is obtained with the mock DocumentsService, because it's not
   // stored in the cache.
   EXPECT_CALL(*mock_doc_service_,
               DownloadFile(file_in_root,
                            downloaded_file,
-                           GURL("https://file_content_url/"),
+                           GURL("https://file_content_url_changed/"),
                            _, _))
       .Times(1);
 

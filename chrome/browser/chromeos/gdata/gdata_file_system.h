@@ -1308,6 +1308,17 @@ class GDataFileSystem : public GDataFileSystemInterface,
                           const std::string& md5,
                           const FilePath& cache_file_path);
 
+  // Callback for |documents_service_->GetDocumentEntry|.
+  // It is called before file download. If GetDocumentEntry was successful,
+  // file download procedure is started for the file. The file is downloaded
+  // from the content url extracted from the fetched metadata to
+  // |cache_file_path|. Also, available space checks are done using file size
+  // from the fetched metadata.
+  void OnGetDocumentEntry(const FilePath& cache_file_path,
+                          const GetFileFromCacheParams& params,
+                          GDataErrorCode status,
+                          scoped_ptr<base::Value> data);
+
   // Frees up disk space to store the given number of bytes, while keeping
   // kMinFreSpace bytes on the disk, if needed.  |has_enough_space| is
   // updated to indicate if we have enough space.
@@ -1321,6 +1332,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Starts downloading a file if we have enough disk space indicated by
   // |has_enough_space|.
   void StartDownloadFileIfEnoughSpace(const GetFileFromCacheParams& params,
+                                      const GURL& content_url,
                                       const FilePath& cache_file_path,
                                       bool* has_enough_space);
 
