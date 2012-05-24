@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ ChromeProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
   // that code be moved to chrome/browser instead of being in net, so that it
   // can use BrowserThread instead of raw MessageLoop pointers? See bug 25354.
   base_service = net::ProxyService::CreateSystemProxyConfigService(
-      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE));
 #endif  // !defined(OS_CHROMEOS)
 

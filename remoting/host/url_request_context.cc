@@ -43,14 +43,14 @@ class ProxyConfigServiceDirect : public net::ProxyConfigService {
 
 net::ProxyConfigService* CreateSystemProxyConfigService(
     base::MessageLoopProxy* ui_message_loop_,
-    MessageLoop* io_message_loop,
+    base::SingleThreadTaskRunner* io_thread_task_runner,
     MessageLoopForIO* file_message_loop) {
   DCHECK(ui_message_loop_->BelongsToCurrentThread());
 
 #if defined(OS_WIN)
   return new net::ProxyConfigServiceWin();
 #elif defined(OS_MACOSX)
-  return new net::ProxyConfigServiceMac(io_message_loop);
+  return new net::ProxyConfigServiceMac(io_thread_task_runner);
 #elif defined(OS_CHROMEOS)
   NOTREACHED() << "ChromeOS is not a supported target for Chromoting host";
   return NULL;
@@ -118,7 +118,7 @@ URLRequestContextGetter::URLRequestContextGetter(
     MessageLoopForIO* file_message_loop)
     : io_message_loop_proxy_(io_message_loop->message_loop_proxy()) {
   proxy_config_service_.reset(CreateSystemProxyConfigService(
-      ui_message_loop, io_message_loop, file_message_loop));
+      ui_message_loop, io_message_loop_proxy_, file_message_loop));
 }
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {

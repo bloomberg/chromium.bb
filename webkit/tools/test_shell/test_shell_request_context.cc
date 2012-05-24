@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/default_server_bound_cert_store.h"
@@ -73,7 +74,7 @@ void TestShellRequestContext::Init(
   // Use the system proxy settings.
   scoped_ptr<net::ProxyConfigService> proxy_config_service(
       net::ProxyService::CreateSystemProxyConfigService(
-          MessageLoop::current(), NULL));
+          base::ThreadTaskRunnerHandle::Get(), NULL));
 #endif
   storage_.set_host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,

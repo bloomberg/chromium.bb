@@ -40,7 +40,7 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
   // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
   proxy_config_service_.reset(
       net::ProxyService::CreateSystemProxyConfigService(
-          io_loop_, file_loop_));
+          io_loop_->message_loop_proxy(), file_loop_));
 }
 
 ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {

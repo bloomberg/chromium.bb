@@ -164,7 +164,7 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
   DCHECK(g_service_process);
   proxy_config_service_.reset(
       net::ProxyService::CreateSystemProxyConfigService(
-          g_service_process->io_thread()->message_loop(),
+          g_service_process->io_thread()->message_loop_proxy(),
           g_service_process->file_thread()->message_loop()));
 }
 

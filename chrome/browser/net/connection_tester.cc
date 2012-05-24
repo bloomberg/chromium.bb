@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
@@ -213,7 +214,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
 #else
     config_service->reset(
         net::ProxyService::CreateSystemProxyConfigService(
-            MessageLoop::current(), NULL));
+            base::ThreadTaskRunnerHandle::Get(), NULL));
     return net::OK;
 #endif
   }
