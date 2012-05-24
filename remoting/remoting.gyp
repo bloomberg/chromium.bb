@@ -344,7 +344,7 @@
                 'BUNDLE_ID_HOST=<(bundle_prefix).<(host_name)',
                 'BUNDLE_ID_HOST_SERVICE=<(bundle_prefix).<(host_service_name)',
                 'BUNDLE_ID_HOST_UNINSTALLER=<(bundle_prefix).<(host_uninstaller_name)',
-                'DMG_VOLUME_NAME=<(host_name)',
+                'DMG_VOLUME_NAME=<(host_name) <(version_full)',
                 'DMG_FILE_NAME=<!(echo <(host_name) | sed "s/ //g")-<(version_full)',
               ],
               'inputs': [
