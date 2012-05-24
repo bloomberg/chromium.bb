@@ -32,7 +32,6 @@
 // remove when we no longer need to cast the DescWrapper below.
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
-#include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/plugin/manifest.h"
 
