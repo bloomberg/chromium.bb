@@ -203,6 +203,8 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
                         const NavigationControllerImpl& controller,
                         content::WebContentsDelegate* delegate,
                         NavigationController::ReloadType reload_type,
+                        const std::string& embedder_channel_name,
+                        int embedder_container_id,
                         ViewMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
   params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
@@ -222,6 +224,8 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
       entry.transferred_global_request_id().request_id;
   // Avoid downloading when in view-source mode.
   params->allow_download = !entry.IsViewSourceMode();
+  params->embedder_channel_name = embedder_channel_name;
+  params->embedder_container_id = embedder_container_id;
 
   if (delegate)
     delegate->AddNavigationHeaders(params->url, &params->extra_headers);
@@ -1369,17 +1373,19 @@ bool WebContentsImpl::NavigateToEntry(
       dest_render_view_host,
       entry.GetURL());
 
-  // Tell BrowserPluginHost about the pending cross-process navigation.
-  // TODO(fsamuel): Remove this once this issue is addressed:
-  // https://code.google.com/p/chromium/issues/detail?id=128976
-  browser_plugin_host()->OnPendingNavigation(dest_render_view_host);
-
   // Used for page load time metrics.
   current_load_start_ = base::TimeTicks::Now();
 
   // Navigate in the desired RenderViewHost.
+  std::string embedder_channel_name;
+  int embedder_container_id;
+  GetBrowserPluginEmbedderInfo(dest_render_view_host,
+                               &embedder_channel_name,
+                               &embedder_container_id);
   ViewMsg_Navigate_Params navigate_params;
   MakeNavigateParams(entry, controller_, delegate_, reload_type,
+                     embedder_channel_name,
+                     embedder_container_id,
                      &navigate_params);
   dest_render_view_host->Navigate(navigate_params);
 
@@ -2964,15 +2970,17 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   int32 max_page_id =
       GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
 
-  content::RenderProcessHost* embedder_render_process_host =
-      browser_plugin_host()->embedder_render_process_host();
-  int embedder_process_id =
-      embedder_render_process_host ? embedder_render_process_host->GetID() : -1;
+  std::string embedder_channel_name;
+  int embedder_container_id;
+  GetBrowserPluginEmbedderInfo(render_view_host,
+                               &embedder_channel_name,
+                               &embedder_container_id);
   if (!static_cast<RenderViewHostImpl*>(
           render_view_host)->CreateRenderView(string16(),
                                               opener_route_id,
                                               max_page_id,
-                                              embedder_process_id)) {
+                                              embedder_channel_name,
+                                              embedder_container_id)) {
     return false;
   }
 
@@ -3043,4 +3051,20 @@ void WebContentsImpl::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
 
 RenderViewHostImpl* WebContentsImpl::GetRenderViewHostImpl() {
   return static_cast<RenderViewHostImpl*>(GetRenderViewHost());
+}
+
+void WebContentsImpl::GetBrowserPluginEmbedderInfo(
+    content::RenderViewHost* render_view_host,
+    std::string* embedder_channel_name,
+    int* embedder_container_id) {
+  content::RenderProcessHost* embedder_render_process_host =
+      browser_plugin_host()->embedder_render_process_host();
+  *embedder_container_id = browser_plugin_host()->instance_id();
+  int embedder_process_id =
+      embedder_render_process_host ? embedder_render_process_host->GetID() : -1;
+  if (embedder_process_id != -1) {
+    *embedder_channel_name =
+        StringPrintf("%d.r%d", render_view_host->GetProcess()->GetID(),
+                     embedder_process_id);
+  }
 }

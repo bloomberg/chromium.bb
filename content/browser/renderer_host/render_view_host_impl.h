@@ -247,7 +247,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual bool CreateRenderView(const string16& frame_name,
                                 int opener_route_id,
                                 int32 max_page_id,
-                                int embedder_process_id);
+                                const std::string& embedder_channel_name,
+                                int embedder_container_id);
 
   base::TerminationStatus render_view_termination_status() const {
     return render_view_termination_status_;

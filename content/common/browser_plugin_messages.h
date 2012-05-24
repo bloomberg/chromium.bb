@@ -26,11 +26,10 @@
 // A renderer sends this to the browser process when it wants to
 // create a browser plugin.  The browser will create a guest renderer process
 // if necessary.
-IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_NavigateFromEmbedder,
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_NavigateFromEmbedder,
                     int /* plugin instance id*/,
                     long long /* frame id */,
-                    std::string /* src */,
-                    gfx::Size /* size */)
+                    std::string /* src */)
 
 // Initially before we create a guest renderer, browser plugin containers
 // have a placeholder called BrowserPlugin where each BrowserPlugin has a unique
@@ -54,11 +53,12 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_MapInstance,
                     PP_Instance /* instance */)
 
 // -----------------------------------------------------------------------------
-// These messages are from the browser process to the guest renderer.
+// These messages are from the embedder render process to the guest render
+// process.
 
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_CompleteNavigation,
-                     int /* guest_routing_id */,
-                     PP_Instance /* instance */)
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestReady,
+                     PP_Instance /* instance */,
+                     int /* embedder_container_id */)
 
 // -----------------------------------------------------------------------------
 // These messages are from the guest renderer to the browser process

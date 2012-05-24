@@ -39,7 +39,9 @@ class GuestToEmbedderChannel
     : public ppapi::proxy::Dispatcher,
       public base::RefCounted<GuestToEmbedderChannel> {
  public:
-  explicit GuestToEmbedderChannel(const std::string& embedder_channel_manager);
+  GuestToEmbedderChannel(
+      const std::string& embedder_channel_name,
+      const IPC::ChannelHandle& embedder_channel_handle);
 
   // This must be called before anything else. Returns true on success.
   bool InitChannel(const IPC::ChannelHandle& channel_handle);
@@ -69,6 +71,14 @@ class GuestToEmbedderChannel
   // Removes the guest with the given instance identifier from the
   // InstanceMap.
   void RemoveGuest(PP_Instance instance);
+
+  const std::string& embedder_channel_name() const {
+    return embedder_channel_name_;
+  }
+
+  const IPC::ChannelHandle& embedder_channel_handle() const {
+    return embedder_channel_handle_;
+  }
 
   // ppapi::proxy::Dispatcher implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -110,9 +120,11 @@ class GuestToEmbedderChannel
 
   void OnContextLost(PP_Instance instance);
 
+  void OnGuestReady(PP_Instance instance, int embedder_container_id);
+
   base::WeakPtr<RenderViewImpl> render_view_;
-  BrowserPluginChannelManager* channel_manager_;
   std::string embedder_channel_name_;
+  IPC::ChannelHandle embedder_channel_handle_;
   PepperProxyChannelDelegateImpl delegate_;
 
   InstanceMap render_view_instances_;

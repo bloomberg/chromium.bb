@@ -612,6 +612,10 @@ class CONTENT_EXPORT WebContentsImpl
 
   content::RenderViewHostImpl* GetRenderViewHostImpl();
 
+  void GetBrowserPluginEmbedderInfo(content::RenderViewHost* render_view_host,
+                                    std::string* embedder_channel_name,
+                                    int* embedder_container_id);
+
   // Stores random bits of data for others to associate with this object.
   // WARNING: this needs to be deleted after NavigationController.
   base::PropertyBag property_bag_;

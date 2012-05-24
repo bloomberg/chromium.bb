@@ -69,13 +69,10 @@ class BrowserPlugin {
                 const std::string& html_data);
   virtual ~BrowserPlugin();
 
-  // Parses the width, height, and source URL of the browser plugin
-  // from the element's attributes and outputs them. If not found, it outputs
-  // the defaults specified here as parameters.
-  void ParsePluginParameters(int default_width, int default_height,
-                             const std::string& default_src,
-                             gfx::Size* size,
-                             std::string* src);
+  // Parses the source URL of the browser plugin from the element's attributes
+  // and outputs them. If not found, it outputs the defaults specified here as
+  // parameters.
+  void ParseSrcAttribute(const std::string& default_src, std::string* src);
   // Replace the current guest with a new guest.
   void Replace(webkit::ppapi::WebPluginImpl* new_plugin);
 

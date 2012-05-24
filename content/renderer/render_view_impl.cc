@@ -26,6 +26,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/appcache/appcache_dispatcher.h"
+#include "content/common/browser_plugin_messages.h"
 #include "content/common/child_thread.h"
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"
@@ -55,6 +56,7 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/renderer/browser_plugin/browser_plugin_channel_manager.h"
 #include "content/renderer/browser_plugin/guest_to_embedder_channel.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools_agent.h"
@@ -775,6 +777,16 @@ void RenderViewImpl::SetReportLoadProgressEnabled(bool enabled) {
     load_progress_tracker_.reset(new LoadProgressTracker(this));
 }
 
+content::GuestToEmbedderChannel*
+    RenderViewImpl::GetGuestToEmbedderChannel() const {
+  return guest_to_embedder_channel_;
+}
+
+void RenderViewImpl::SetGuestToEmbedderChannel(
+    content::GuestToEmbedderChannel* channel) {
+  guest_to_embedder_channel_ = channel;
+}
+
 void RenderViewImpl::PluginCrashed(const FilePath& plugin_path) {
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path));
 }
@@ -950,6 +962,25 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
+  // If we don't have guest-to-embedder channel associated with this RenderView
+  // but we need one, grab one now.
+  if (!params.embedder_channel_name.empty() && !GetGuestToEmbedderChannel()) {
+    content::GuestToEmbedderChannel* embedder_channel =
+        RenderThreadImpl::current()->browser_plugin_channel_manager()->
+            GetChannelByName(params.embedder_channel_name);
+    DCHECK(embedder_channel);
+    SetGuestToEmbedderChannel(embedder_channel);
+    host_window_set_ = false;
+    // TODO(fsamuel): This is test code. Need to find a better way to tell
+    // a WebView to drop its context. This needs to change in
+    // GuestToEmbedderChannel::OnContextLost.
+    GetWebView()->loseCompositorContext(1);
+    RenderThreadImpl::current()->browser_plugin_channel_manager()->
+        ReportChannelToEmbedder(this,
+                                embedder_channel->embedder_channel_handle(),
+                                params.embedder_channel_name,
+                                params.embedder_container_id);
+  }
   MaybeHandleDebugURL(params.url);
   if (!webview())
     return;
@@ -1661,9 +1692,9 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
   if (!webview())
     return NULL;
 
-  if (guest_to_embedder_channel()) {
+  if (GetGuestToEmbedderChannel()) {
     WebGraphicsContext3DCommandBufferImpl* context =
-        guest_to_embedder_channel()->CreateWebGraphicsContext3D(
+        GetGuestToEmbedderChannel()->CreateWebGraphicsContext3D(
             this, attributes, false);
     if (!guest_pp_instance()) {
       guest_uninitialized_context_ = context;
@@ -3713,14 +3744,15 @@ bool RenderViewImpl::IsEditableNode(const WebKit::WebNode& node) const {
 void RenderViewImpl::GuestReady(PP_Instance instance) {
   guest_pp_instance_ = instance;
   if (guest_uninitialized_context_) {
-    bool success = guest_to_embedder_channel()->CreateGraphicsContext(
+    bool success = GetGuestToEmbedderChannel()->CreateGraphicsContext(
         guest_uninitialized_context_,
         guest_attributes_,
         false,
         this);
     DCHECK(success);
+    CompleteInit(host_window_);
+    guest_uninitialized_context_ = NULL;
   }
-  CompleteInit(host_window_);
 }
 
 webkit::ppapi::WebPluginImpl* RenderViewImpl::CreateBrowserPlugin(
@@ -4827,8 +4859,8 @@ void RenderViewImpl::WillInitiatePaint() {
 void RenderViewImpl::DidInitiatePaint() {
   // Notify the pepper plugins that we've painted, and are waiting to flush.
   pepper_delegate_.ViewInitiatedPaint();
-  if (guest_to_embedder_channel())
-    guest_to_embedder_channel()->IssueSwapBuffers(guest_graphics_resource());
+  if (GetGuestToEmbedderChannel())
+    GetGuestToEmbedderChannel()->IssueSwapBuffers(guest_graphics_resource());
 }
 
 void RenderViewImpl::DidFlushPaint() {

@@ -46,14 +46,12 @@ void BrowserPluginHostHelper::OnConnectToChannel(
 void BrowserPluginHostHelper::OnNavigateGuestFromEmbedder(
     int32 instance_id,
     long long frame_id,
-    const std::string& src,
-    const gfx::Size& size) {
+    const std::string& src) {
   browser_plugin_host_->NavigateGuestFromEmbedder(
       render_view_host(),
       instance_id,
       frame_id,
-      src,
-      size);
+      src);
 }
 
 void BrowserPluginHostHelper::OnResizeGuest(int width, int height) {

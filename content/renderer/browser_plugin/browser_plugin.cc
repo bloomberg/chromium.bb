@@ -16,6 +16,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ppapi/proxy/host_dispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
@@ -78,17 +79,15 @@ BrowserPlugin::BrowserPlugin(
 
   // By default we do not navigate and simply stay with an
   // about:blank placeholder.
-  gfx::Size size;
   std::string src;
-  ParsePluginParameters(0, 0, "", &size, &src);
+  ParseSrcAttribute("", &src);
 
   if (!src.empty()) {
     render_view->Send(new BrowserPluginHostMsg_NavigateFromEmbedder(
         render_view->GetRoutingID(),
         id_,
         frame->identifier(),
-        src,
-        size));
+        src));
   }
 }
 
@@ -96,26 +95,15 @@ BrowserPlugin::~BrowserPlugin() {
   Unregister(id_);
 }
 
-void BrowserPlugin::ParsePluginParameters(
-    int default_width,
-    int default_height,
+void BrowserPlugin::ParseSrcAttribute(
     const std::string& default_src,
-    gfx::Size* size,
     std::string* src) {
-  int width = default_width;
-  int height = default_height;
-
-  // Get the plugin parameters from the attributes vector
+  // Get the src attribute from the attributes vector
   for (unsigned i = 0; i < plugin_params_.attributeNames.size(); ++i) {
     std::string attributeName = plugin_params_.attributeNames[i].utf8();
-    if (LowerCaseEqualsASCII(attributeName, "width")) {
-      std::string attributeValue = plugin_params_.attributeValues[i].utf8();
-      CHECK(base::StringToInt(attributeValue, &width));
-    } else if (LowerCaseEqualsASCII(attributeName, "height")) {
-      std::string attributeValue = plugin_params_.attributeValues[i].utf8();
-      CHECK(base::StringToInt(attributeValue, &height));
-    } else if (LowerCaseEqualsASCII(attributeName, "src")) {
+    if (LowerCaseEqualsASCII(attributeName, "src")) {
       *src = plugin_params_.attributeValues[i].utf8();
+      break;
     }
   }
   // If we didn't find the attributes set or they're not sensible,
@@ -123,8 +111,6 @@ void BrowserPlugin::ParsePluginParameters(
   if (src->empty()) {
     *src = default_src;
   }
-
-  size->SetSize(width, height);
 }
 
 void BrowserPlugin::LoadGuest(
@@ -145,16 +131,15 @@ void BrowserPlugin::Replace(
   if (!new_plugin || !new_plugin->initialize(container))
     return;
 
-  // Clear the container's backing texture ID and the script objects.
+  // Clear the container's backing texture ID.
   if (plugin_)
     plugin_->instance()->BindGraphics(plugin_->instance()->pp_instance(), 0);
 
-  // Inform the browser process of the association between the browser plugin's
-  // instance ID and the pepper channel's PP_Instance identifier.
-  render_view()->Send(new BrowserPluginHostMsg_MapInstance(
-      render_view()->GetRoutingID(),
-      id_,
-      new_plugin->instance()->pp_instance()));
+  PP_Instance instance = new_plugin->instance()->pp_instance();
+  ppapi::proxy::HostDispatcher* dispatcher =
+      ppapi::proxy::HostDispatcher::GetForInstance(instance);
+  dispatcher->Send(new BrowserPluginMsg_GuestReady(instance, id_));
+
   // TODO(fsamuel): We should delay the swapping out of the current plugin
   // until after the guest's WebGraphicsContext3D has been initialized. That
   // way, we immediately have something to render onto the screen.

@@ -34,6 +34,12 @@ class BrowserPluginChannelManager
 
   void CreateRenderView(const ViewMsg_New_Params& params);
 
+  void ReportChannelToEmbedder(
+      RenderViewImpl* render_view,
+      const IPC::ChannelHandle& embedder_channel_handle,
+      const std::string& embedder_channel_name,
+      int embedder_container_id);
+
   // Get the GuestToEmbedderChannel associated with the given
   // embedder_channel_name.
   GuestToEmbedderChannel* GetChannelByName(
@@ -43,12 +49,13 @@ class BrowserPluginChannelManager
   // routing_id.
   void RemoveChannelByName(const std::string& embedder_channel_name);
 
+  void GuestReady(PP_Instance instance,
+                  const std::string& embedder_channel_name,
+                  int embedder_container_id);
+
  private:
   typedef std::map<std::string, scoped_refptr<GuestToEmbedderChannel> >
       EmbedderChannelNameToChannelMap;
-
-  void OnCompleteNavigation(int guest_routing_id,
-                            PP_Instance instance);
 
   void OnLoadGuest(int instance_id,
                    int guest_renderer_id,
@@ -60,10 +67,11 @@ class BrowserPluginChannelManager
   // Map from Host process ID to GuestToEmbedderChannel
   EmbedderChannelNameToChannelMap embedder_channels_;
 
-  // Map from Routing ID to RenderViewImpl that points to RenderViewImpl
-  // guests that have been constructed but don't have a PP_Instance and
-  // so they aren't yet ready to composite.
-  std::map<int, base::WeakPtr<RenderViewImpl> > pending_guests_;
+  // Map from <embedder_channel_name, embedder_container_id> to RenderViewImpl
+  // that points to RenderViewImpl guests that have been constructed but don't
+  // have a PP_Instance and so they aren't yet ready to composite.
+  std::map<std::pair<std::string, int>,
+           base::WeakPtr<RenderViewImpl> > pending_guests_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginChannelManager);
 };

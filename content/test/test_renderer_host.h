@@ -68,7 +68,8 @@ class RenderViewHostTester {
   virtual bool CreateRenderView(const string16& frame_name,
                                 int opener_route_id,
                                 int32 max_page_id,
-                                int embedder_process_id) = 0;
+                                const std::string& embedder_channel_name,
+                                int embedder_container_id) = 0;
 
   // Calls OnMsgNavigate on the RenderViewHost with the given information,
   // setting the rest of the parameters in the message to the "typical" values.

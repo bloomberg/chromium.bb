@@ -23,8 +23,7 @@ BrowserPluginHost::BrowserPluginHost(
     WebContentsImpl* web_contents)
     : WebContentsObserver(web_contents),
       embedder_render_process_host_(NULL),
-      instance_id_(0),
-      pending_render_view_host_(NULL) {
+      instance_id_(0) {
   // Listen to visibility changes so that an embedder hides its guests
   // as well.
   registrar_.Add(this,
@@ -56,19 +55,11 @@ void BrowserPluginHost::RegisterContainerInstance(
   guests_by_container_id_[container_id] = observer;
 }
 
-void BrowserPluginHost::OnPendingNavigation(RenderViewHost* dest_rvh) {
-  if (web_contents()->GetRenderViewHost() != dest_rvh) {
-    pending_render_view_host_ = dest_rvh;
-  }
-}
-
 bool BrowserPluginHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginHost, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateFromGuest,
                         OnNavigateFromGuest)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_MapInstance,
-                        OnMapInstance)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -78,8 +69,7 @@ void BrowserPluginHost::NavigateGuestFromEmbedder(
     RenderViewHost* render_view_host,
     int container_instance_id,
     long long frame_id,
-    const std::string& src,
-    const gfx::Size& size) {
+    const std::string& src) {
   BrowserPluginHost* guest_observer =
       GetGuestByContainerID(container_instance_id);
   WebContentsImpl* guest_web_contents =
@@ -100,11 +90,9 @@ void BrowserPluginHost::NavigateGuestFromEmbedder(
     guest_observer->set_embedder_render_process_host(
         render_view_host->GetProcess());
     guest_observer->set_instance_id(container_instance_id);
-    guest_observer->set_initial_size(size);
     RegisterContainerInstance(container_instance_id, guest_observer);
     AddGuest(guest_web_contents, frame_id);
   }
-
   GURL url(src);
   guest_observer->web_contents()->SetDelegate(guest_observer);
   guest_observer->web_contents()->GetController().LoadURL(
@@ -124,32 +112,6 @@ void BrowserPluginHost::OnNavigateFromGuest(
       Referrer(),
       PAGE_TRANSITION_AUTO_SUBFRAME,
       std::string());
-}
-
-// TODO(fsamuel): This handler is all kinds of bad and could be racy.
-// Between the time we set the pending_render_view_host and use it here,
-// the pending_render_view_host may no longer be valid and this message
-// may not go to the right place.
-// See https://code.google.com/p/chromium/issues/detail?id=128976.
-// The correct solution is probably to send
-// "BrowserPluginMsg_CompleteNavigation" over the pepper channel to the guest
-// and then have the guest send the browser "BrowserPluginHostMsg_ResizeGuest"
-// to resize appropriately.
-void BrowserPluginHost::OnMapInstance(int container_instance_id,
-                                      PP_Instance instance) {
-  BrowserPluginHost* guest_observer =
-      GetGuestByContainerID(container_instance_id);
-  WebContentsImpl* guest_web_contents =
-    static_cast<WebContentsImpl*>(guest_observer->web_contents());
-  RenderViewHost* rvh = guest_observer->pending_render_view_host() ?
-      guest_observer->pending_render_view_host() :
-          guest_web_contents->GetRenderViewHost();
-
-  guest_web_contents->GetView()->SizeContents(guest_observer->initial_size());
-
-  rvh->Send(new BrowserPluginMsg_CompleteNavigation(
-                rvh->GetRoutingID(),
-                instance));
 }
 
 void BrowserPluginHost::ConnectEmbedderToChannel(

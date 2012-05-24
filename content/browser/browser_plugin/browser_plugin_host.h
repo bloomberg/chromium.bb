@@ -26,8 +26,7 @@ class RenderProcessHost;
 // to manage the lifetime of its guests. It cleans up its guests
 // on navigation, crashes, and "hides" guests when it hides.
 // For the guest, BrowserPluginHost keeps track of its embedder,
-// its BrowserPlugin instance ID, and some initialization state
-// such as initial size.
+// and its BrowserPlugin instance ID.
 class BrowserPluginHost : public WebContentsObserver,
                           public NotificationObserver,
                           public WebContentsDelegate {
@@ -38,10 +37,6 @@ class BrowserPluginHost : public WebContentsObserver,
 
   virtual ~BrowserPluginHost();
 
-  // TODO(fsamuel): Remove this once BrowserPluginHost_MapInstance
-  // is removed.
-  void OnPendingNavigation(RenderViewHost* dest_rvh);
-
   void ConnectEmbedderToChannel(RenderViewHost* render_view_host,
                                 const IPC::ChannelHandle& handle);
 
@@ -51,12 +46,12 @@ class BrowserPluginHost : public WebContentsObserver,
   void NavigateGuestFromEmbedder(RenderViewHost* render_view_host,
                                  int container_instance_id,
                                  long long frame_id,
-                                 const std::string& src,
-                                 const gfx::Size& size);
+                                 const std::string& src);
 
   RenderProcessHost* embedder_render_process_host() const {
     return embedder_render_process_host_;
   }
+  int instance_id() const { return instance_id_; }
 
  private:
   typedef std::map<WebContentsImpl*, int64> GuestMap;
@@ -86,29 +81,12 @@ class BrowserPluginHost : public WebContentsObserver,
       RenderProcessHost* embedder_render_process_host) {
     embedder_render_process_host_ = embedder_render_process_host;
   }
-  int instance_id() const { return instance_id_; }
   void set_instance_id(int instance_id) { instance_id_ = instance_id; }
-  const gfx::Size& initial_size() const { return initial_size_; }
-  void set_initial_size(const gfx::Size& size) { initial_size_ = size; }
-  RenderViewHost* pending_render_view_host() const {
-    return pending_render_view_host_;
-  }
 
   void OnNavigateFromGuest(PP_Instance instance,
                            const std::string& src);
 
   void DestroyGuests();
-
-  // TODO(fsamuel): Replace BrowserPluginHost_MapInstance with a message
-  // over the GuestToEmbedderChannel that tells the guest to size itself
-  // and begin compositing. Currently we use the guest's routing ID to look
-  // up the appropriate guest in
-  // BrowserPluginChannelManager::OnCompleteNavigation. In order to bypass the
-  // need to grab a routing ID from the browser process, we can instead pass the
-  // container instance ID to the guest on ViewMsg_New. The container instance
-  // ID and the embedder channel name can then be used together to uniquely
-  // identify a guest RenderViewImpl within a render process.
-  void OnMapInstance(int container_instance_id, PP_Instance instance);
 
   // WebContentObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -132,18 +110,13 @@ class BrowserPluginHost : public WebContentsObserver,
   // A scoped container for notification registries.
   NotificationRegistrar registrar_;
   RenderProcessHost* embedder_render_process_host_;
+  std::string embedder_channel_name_;
   // An identifier that uniquely identifies a browser plugin container
   // within an embedder.
   int instance_id_;
   gfx::Size initial_size_;
   GuestMap guests_;
   ContainerInstanceMap guests_by_container_id_;
-  // TODO(fsamuel): This should not be exposed outside of WebContentsImpl
-  // because this can change at any time. Remove this, along with
-  // OnPendingNavigation once BrowserPluginHost_MapInstance is modified
-  // to be sent over the GuestToEmbedderChannel directly instead of through
-  // the browser process.
-  RenderViewHost* pending_render_view_host_;
 };
 
 }  // namespace content

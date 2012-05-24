@@ -23,9 +23,11 @@
 namespace content {
 
 GuestToEmbedderChannel::GuestToEmbedderChannel(
-    const std::string& embedder_channel_name)
+    const std::string& embedder_channel_name,
+    const IPC::ChannelHandle& embedder_channel_handle)
     : Dispatcher(NULL),
-      embedder_channel_name_(embedder_channel_name) {
+      embedder_channel_name_(embedder_channel_name),
+      embedder_channel_handle_(embedder_channel_handle) {
   SetSerializationRules(new BrowserPluginVarSerializationRules());
 }
 
@@ -52,6 +54,8 @@ bool GuestToEmbedderChannel::OnMessageReceived(const IPC::Message& message) {
                         OnHandleFilteredInputEvent)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPGraphics3D_ContextLost,
                         OnContextLost)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestReady,
+                        OnGuestReady)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -160,7 +164,7 @@ bool GuestToEmbedderChannel::CreateGraphicsContext(
 
   ppapi::HostResource resource;
   DCHECK(render_view->guest_pp_instance());
-  // TODO(fsamuel): Support child contexts.
+  // TODO(fsamuel): Support shared contexts.
   bool success = Send(new PpapiHostMsg_PPBGraphics3D_Create(
       ppapi::API_ID_PPB_GRAPHICS_3D,
       render_view->guest_pp_instance(),
@@ -204,14 +208,22 @@ void GuestToEmbedderChannel::RemoveGuest(PP_Instance instance) {
   render_view_instances_.erase(instance);
 }
 
-void GuestToEmbedderChannel::OnDidCreate(PP_Instance instance,
+void GuestToEmbedderChannel::OnDidCreate(
+    PP_Instance instance,
     const std::vector<std::string>& argn,
     const std::vector<std::string>& argv,
     PP_Bool* result) {
+  DCHECK(render_view_instances_.find(instance) == render_view_instances_.end());
+  RequestInputEvents(instance);
   *result = PP_TRUE;
 }
 
 void GuestToEmbedderChannel::OnDidDestroy(PP_Instance instance) {
+  InstanceMap::iterator it = render_view_instances_.find(instance);
+  DCHECK(it != render_view_instances_.end());
+  RenderViewImpl* render_view = it->second;
+  render_view->SetGuestToEmbedderChannel(NULL);
+  render_view->set_guest_pp_instance(0);
   RemoveGuest(instance);
 }
 
@@ -262,7 +274,8 @@ void GuestToEmbedderChannel::OnHandleFilteredInputEvent(
     PP_Instance instance,
     const ppapi::InputEventData& data,
     PP_Bool* result) {
-  DCHECK(render_view_instances_.find(instance) != render_view_instances_.end());
+  if (render_view_instances_.find(instance) == render_view_instances_.end())
+    return;
 
   RenderViewImpl* render_view = render_view_instances_[instance];
   scoped_ptr<WebKit::WebInputEvent> web_input_event(
@@ -274,7 +287,15 @@ void GuestToEmbedderChannel::OnHandleFilteredInputEvent(
 void GuestToEmbedderChannel::OnContextLost(PP_Instance instance) {
   DCHECK(render_view_instances_.find(instance) != render_view_instances_.end());
   RenderViewImpl* render_view = render_view_instances_[instance];
+    // TODO(fsamuel): This is test code. Need to find a better way to tell
+    // a WebView to drop its context.
   render_view->GetWebView()->loseCompositorContext(1);
+}
+
+void GuestToEmbedderChannel::OnGuestReady(PP_Instance instance,
+                                          int embedder_container_id) {
+  RenderThreadImpl::current()->browser_plugin_channel_manager()->
+      GuestReady(instance, embedder_channel_name(), embedder_container_id);
 }
 
 }  // namespace content

@@ -263,9 +263,12 @@ class RenderViewImpl : public RenderWidget,
   // Sets whether  the renderer should report load progress to the browser.
   void SetReportLoadProgressEnabled(bool enabled);
 
-  content::GuestToEmbedderChannel*
-      guest_to_embedder_channel() const { return guest_to_embedder_channel_; }
+  content::GuestToEmbedderChannel* GetGuestToEmbedderChannel() const;
+  void SetGuestToEmbedderChannel(content::GuestToEmbedderChannel* channel);
   PP_Instance guest_pp_instance() const { return guest_pp_instance_; }
+  void set_guest_pp_instance(PP_Instance instance) {
+    guest_pp_instance_ = instance;
+  }
   void set_guest_graphics_resource(const ppapi::HostResource& resource) {
     guest_graphics_resource_ = resource;
   }

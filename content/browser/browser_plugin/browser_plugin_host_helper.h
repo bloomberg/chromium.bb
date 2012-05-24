@@ -33,8 +33,7 @@ class BrowserPluginHostHelper : public RenderViewHostObserver {
   void OnConnectToChannel(const IPC::ChannelHandle& channel_handle);
   void OnNavigateGuestFromEmbedder(int container_instance_id,
                                    long long frame_id,
-                                   const std::string& src,
-                                   const gfx::Size& size);
+                                   const std::string& src);
   void OnResizeGuest(int width, int height);
 
   // RenderViewHostObserver implementation.
