@@ -281,14 +281,15 @@ void FullscreenController::OnDenyFullscreenPermission(
 }
 
 void FullscreenController::WindowFullscreenStateChanged() {
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&FullscreenController::NotifyFullscreenChange, this));
   bool exiting_fullscreen;
 #if defined(OS_MACOSX)
   exiting_fullscreen = !window_->InPresentationMode();
 #else
   exiting_fullscreen = !window_->IsFullscreen();
 #endif
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&FullscreenController::NotifyFullscreenChange,
+          this, !exiting_fullscreen));
   if (exiting_fullscreen)
     NotifyTabOfExitIfNecessary();
   if (exiting_fullscreen)
@@ -366,11 +367,11 @@ void FullscreenController::UpdateFullscreenExitBubbleContent() {
   window_->UpdateFullscreenExitBubbleContent(url, bubble_type);
 }
 
-void FullscreenController::NotifyFullscreenChange() {
+void FullscreenController::NotifyFullscreenChange(bool is_fullscreen) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_FULLSCREEN_CHANGED,
       content::Source<FullscreenController>(this),
-      content::NotificationService::NoDetails());
+      content::Details<bool>(&is_fullscreen));
 }
 
 void FullscreenController::NotifyMouseLockChange() {

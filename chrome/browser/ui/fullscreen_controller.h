@@ -99,7 +99,7 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   // Make the current tab exit fullscreen mode or mouse lock if it is in it.
   void ExitTabFullscreenOrMouseLockIfNecessary();
   void UpdateFullscreenExitBubbleContent();
-  void NotifyFullscreenChange();
+  void NotifyFullscreenChange(bool is_fullscreen);
   void NotifyMouseLockChange();
   ContentSetting GetFullscreenSetting(const GURL& url) const;
   ContentSetting GetMouseLockSetting(const GURL& url) const;

@@ -45,7 +45,7 @@ void DisplaySettingsProvider::AddFullScreenObserver(
     FullScreenObserver* observer) {
   full_screen_observers_.AddObserver(observer);
 
-  if (full_screen_observers_.size() == 1) {
+  if (full_screen_observers_.size() == 1 && NeedsPeriodicFullScreenCheck()) {
     full_screen_mode_timer_.Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(kFullScreenModeCheckIntervalMs),
         this, &DisplaySettingsProvider::CheckFullScreenMode);
@@ -149,8 +149,12 @@ void DisplaySettingsProvider::AdjustWorkAreaForAutoHidingDesktopBars() {
   }
 }
 
+bool DisplaySettingsProvider::NeedsPeriodicFullScreenCheck() const {
+  return true;
+}
+
 void DisplaySettingsProvider::CheckFullScreenMode() {
-  bool is_full_screen = IsFullScreenMode();
+  bool is_full_screen = IsFullScreen();
   if (is_full_screen == is_full_screen_)
     return;
   is_full_screen_ = is_full_screen;
@@ -158,6 +162,10 @@ void DisplaySettingsProvider::CheckFullScreenMode() {
   FOR_EACH_OBSERVER(FullScreenObserver,
                     full_screen_observers_,
                     OnFullScreenModeChanged(is_full_screen_));
+}
+
+bool DisplaySettingsProvider::IsFullScreen() const {
+  return IsFullScreenMode();
 }
 
 #if defined(USE_AURA)

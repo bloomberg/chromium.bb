@@ -125,8 +125,14 @@ class DisplaySettingsProvider {
   // testing code.
   virtual gfx::Rect GetWorkArea() const;
 
+  // Returns true if we need to perform fullscreen check periodically.
+  virtual bool NeedsPeriodicFullScreenCheck() const;
+
+  // Returns true if full screen or presentation mode in main screen is entered.
+  virtual bool IsFullScreen() const;
+
   // Callback to perform periodic check for full screen mode changes.
-  virtual void CheckFullScreenMode();
+  void CheckFullScreenMode();
 
   void OnAutoHidingDesktopBarChanged();
 
