@@ -55,6 +55,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
@@ -99,7 +100,7 @@ class DOMOperationObserver : public content::NotificationObserver,
  public:
   explicit DOMOperationObserver(RenderViewHost* render_view_host)
       : content::WebContentsObserver(
-            WebContents::FromRenderViewHost(render_view_host)),
+            render_view_host->GetDelegate()->GetAsWebContents()),
         did_respond_(false) {
     registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));

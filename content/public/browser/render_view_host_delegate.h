@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_DELEGATE_H_
 #pragma once
 
 #include <string>
@@ -67,6 +67,8 @@ struct RendererPreferences;
 //  may not be relevant to all users of RenderViewHost and we should consider
 //  exposing a more generic Send function on RenderViewHost and a response
 //  listener here to serve that need.
+//
+// TODO(joi): See if we can hide most or all of this from chrome/.
 class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
  public:
   // RendererManagerment -------------------------------------------------------
@@ -387,4 +389,4 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_DELEGATE_H_
