@@ -10,7 +10,9 @@ namespace gestures {
 
 LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
                                                    Interpreter* next)
-  : log_(prop_reg), logging_notify_(prop_reg, "Logging Notify", 0, this) {
+    : log_(prop_reg),
+      logging_notify_(prop_reg, "Logging Notify", 0, this),
+      logging_reset_(prop_reg, "Logging Reset", 0, this) {
   next_.reset(next);
   if (prop_reg)
     prop_reg->set_activity_log(&log_);
@@ -49,6 +51,8 @@ void LoggingFilterInterpreter::SetHardwareProperties(
 void LoggingFilterInterpreter::IntWasWritten(IntProperty* prop) {
   if (prop == &logging_notify_)
     log_.Dump("/var/log/touchpad_activity_log.txt");
+  if (prop == &logging_reset_)
+    log_.Clear();
 };
 
 }  // namespace gestures

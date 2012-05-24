@@ -20,6 +20,7 @@ namespace gestures {
 
 class LoggingFilterInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ActivityReplayTest, DISABLED_SimpleTest);
+  FRIEND_TEST(LoggingFilterInterpreterTest, ResetLogTest);
   FRIEND_TEST(LoggingFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:
@@ -43,6 +44,9 @@ class LoggingFilterInterpreter : public Interpreter, public PropertyDelegate {
   ActivityLog log_;
 
   IntProperty logging_notify_;
+
+  // Reset the log by setting the property value.
+  IntProperty logging_reset_;
 };
 
 }  // namespace gestures
