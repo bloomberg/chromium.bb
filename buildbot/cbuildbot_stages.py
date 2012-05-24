@@ -117,7 +117,7 @@ class CleanUpStage(bs.BuilderStage):
       commands.CleanUpMountPoints(self._build_root)
 
       tasks = [functools.partial(commands.BuildRootGitCleanup,
-                                 self._build_root),
+                                 self._build_root, self._options.debug),
                functools.partial(commands.WipeOldOutput, self._build_root),
                self._DeleteArchivedTrybotImages]
       if self._build_config['chroot_replace'] and self._options.build:

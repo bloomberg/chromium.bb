@@ -79,8 +79,14 @@ def ValidateClobber(buildroot):
 
 # =========================== Main Commands ===================================
 
-def BuildRootGitCleanup(buildroot):
-  """Put buildroot onto manifest branch. Delete branches created on last run."""
+def BuildRootGitCleanup(buildroot, debug_run):
+  """Put buildroot onto manifest branch. Delete branches created on last run.
+
+  Args:
+    buildroot: buildroot to clean up.
+    debug_run: whether the job is running with the --debug flag.  i.e., whether
+               it is not a production run.
+  """
   manifest_branch = 'remotes/m/' + cros_lib.GetManifestDefaultBranch(buildroot)
   tasks = [
     (False, [['git', 'am', '--abort'],
@@ -105,6 +111,16 @@ def BuildRootGitCleanup(buildroot):
             lock.write_lock()
             if os.path.isdir(cwd):
               shutil.rmtree(cwd)
+            # Delete the backing store as well for production jobs, because we
+            # want to make sure any corruption is wiped.  Don't do it for
+            # tryjobs so the error is visible and can be debugged.
+            if not debug_run:
+              relpath = os.path.relpath(cwd, buildroot)
+              projects_dir = os.path.join(buildroot, '.repo', 'projects')
+              repo_store = '%s.git' % os.path.join(projects_dir, relpath)
+              logging.warn('Deleting %s as well', repo_store)
+              if os.path.isdir(repo_store):
+                shutil.rmtree(repo_store)
             print '@@@STEP_WARNINGS@@@'
             return
 

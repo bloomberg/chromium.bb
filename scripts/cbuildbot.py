@@ -116,15 +116,6 @@ def _GetChromiteTrackingBranch():
   return cros_lib.GetPushBranch(cwd)[1]
 
 
-def _CheckBuildRootBranch(buildroot, tracking_branch):
-  """Make sure buildroot branch is the same as Chromite branch."""
-  manifest_branch = cros_lib.GetManifestDefaultBranch(buildroot)
-  if manifest_branch != tracking_branch:
-    cros_lib.Die('Chromite is not on same branch as buildroot checkout\n' +
-                 'Chromite is on branch %s.\n' % tracking_branch +
-                 'Buildroot checked out to %s\n' % manifest_branch)
-
-
 def AcquirePoolFromOptions(options):
   """Generate patch objects from passed in options.
 
@@ -162,12 +153,6 @@ def AcquirePoolFromOptions(options):
                                            remote_patches)
 
 
-def _IsIncrementalBuild(buildroot, clobber):
-  """Returns True if we are reusing an existing buildroot."""
-  repo_dir = os.path.join(buildroot, '.repo')
-  return not clobber and os.path.isdir(repo_dir)
-
-
 class Builder(object):
   """Parent class for all builder types.
 
@@ -202,10 +187,6 @@ class Builder(object):
     """Runs through the initialization steps of an actual build."""
     if self.options.resume:
       results_lib.LoadCheckpoint(self.options.buildroot)
-
-    # Check branch matching early.
-    if _IsIncrementalBuild(self.options.buildroot, self.options.clobber):
-      _CheckBuildRootBranch(self.options.buildroot, self.options.branch)
 
     self._RunStage(stages.CleanUpStage)
 

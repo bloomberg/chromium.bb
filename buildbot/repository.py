@@ -147,22 +147,38 @@ class RepoRepository(object):
     self._referenced_repo = referenced_repo
     self._manifest = manifest
     self._initialized = IsARepoRoot(self.directory)
-
     if not self._initialized and InARepoRepository(self.directory):
       raise ValueError('Given directory %s is not the root of a repository.'
                        % self.directory)
 
-    if depth is not None:
+    if depth is not None and referenced_repo is None:
       depth = int(depth)
-      if referenced_repo is not None or self._initialized:
-        # Depth can only be enforced during initialization.
-        depth = None
     self._depth = depth
 
-  def Initialize(self, extra_args=(), force=False):
-    """Initializes a repository."""
-    if self._initialized and not force:
-      raise SrcCheckOutException('Repo already initialized.')
+  def _SwitchToLocalManifest(self, local_manifest):
+    """Reinitializes the repository if the manifest has changed."""
+    logging.debug('Moving to manifest defined by %s', local_manifest)
+    # TODO: use upstream repo's manifest logic when we bump repo version.
+    manifest_path = self.GetRelativePath('.repo/manifest.xml')
+    os.unlink(manifest_path)
+    shutil.copyfile(local_manifest, manifest_path)
+
+  def Initialize(self, local_manifest=None, extra_args=()):
+    """Initializes a repository.  Optionally forces a local manifest.
+
+    Args:
+      local_manifest: The absolute path to a custom manifest to use.  This will
+                      replace .repo/manifest.xml.
+      extra_args: Extra args to pass to 'repo init'
+    """
+    if self._initialized:
+      # Remove .repo/manifests and .repo/manifests.git to work around bug where
+      # during branch switching repo init tries to rebase the manifest branch.
+      # TODO(rcui): crosbug.com/31241 - remove when that's fixed.
+      manifests_path = os.path.join(self.directory, '.repo', 'manifests')
+      for path in [manifests_path, '%s.git' % manifests_path]:
+        if os.path.isdir(path):
+          shutil.rmtree(path)
 
     # Base command.
     init_cmd = self._INIT_CMD + ['--manifest-url', self.repo_url]
@@ -173,11 +189,13 @@ class RepoRepository(object):
     if self._depth is not None:
       init_cmd.extend(['--depth', str(self._depth)])
     init_cmd.extend(extra_args)
-
     # Handle branch / manifest options.
-    if self.branch: init_cmd.extend(['--manifest-branch', self.branch])
+    if self.branch:
+      init_cmd.extend(['--manifest-branch', self.branch])
+
     cros_lib.RunCommand(init_cmd, cwd=self.directory, input='\n\ny\n')
-    self._initialized = True
+    if local_manifest and local_manifest != self.DEFAULT_MANIFEST:
+      self._SwitchToLocalManifest(local_manifest)
 
   @property
   def _ManifestConfig(self):
@@ -225,29 +243,6 @@ class RepoRepository(object):
     cros_lib.RunCommand(['git', 'config', '--file', self._ManifestConfig,
                          'repo.reference', self._referenced_repo])
 
-  def _ReinitializeIfNecessary(self, local_manifest):
-    """Reinitializes the repository if the manifest has changed."""
-    def _ShouldReinitialize():
-      if local_manifest != self.DEFAULT_MANIFEST:
-        return not filecmp.cmp(local_manifest, manifest_path)
-      else:
-        return not filecmp.cmp(default_manifest_path, manifest_path)
-
-    manifest_path = self.GetRelativePath('.repo/manifest.xml')
-    default_manifest_path = self.GetRelativePath('.repo/manifests/default.xml')
-    if not (local_manifest and _ShouldReinitialize()):
-      return
-
-    logging.debug('Moving to manifest defined by %s', local_manifest)
-    # If no manifest passed in, assume default.
-    if local_manifest == self.DEFAULT_MANIFEST:
-      self.Initialize(['--manifest-name=default.xml'], force=True)
-    else:
-      # The 10x speed up magic.
-      # TODO: get documentation as to *why* this is supposedly 10x faster.
-      os.unlink(manifest_path)
-      shutil.copyfile(local_manifest, manifest_path)
-
   def Sync(self, local_manifest=None, jobs=None, cleanup=True):
     """Sync/update the source.  Changes manifest if specified.
 
@@ -258,20 +253,15 @@ class RepoRepository(object):
         the manifest.
     """
     try:
-      force_repo_update = self._initialized
-      if not self._initialized:
-        self.Initialize(force=True)
-
-      self._ReinitializeIfNecessary(local_manifest)
-
+      # Always re-initialize to the current branch.
+      self.Initialize(local_manifest)
       # Fix existing broken mirroring configurations.
       self._EnsureMirroring()
 
-      if force_repo_update:
-        # selfupdate prior to sync'ing.  Repo's first sync is  the manifest.
-        # if we're deploying a new manifest that uses new repo functionality,
-        # we have to repo up to date else it would fail.
-        cros_lib.RunCommand(['repo', 'selfupdate'], cwd=self.directory)
+      # selfupdate prior to sync'ing.  Repo's first sync is  the manifest.
+      # if we're deploying a new manifest that uses new repo functionality,
+      # we have to repo up to date else it would fail.
+      cros_lib.RunCommand(['repo', 'selfupdate'], cwd=self.directory)
 
       if cleanup:
         configure_repo.FixBrokenExistingRepos(self.directory)
