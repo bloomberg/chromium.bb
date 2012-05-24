@@ -19,6 +19,10 @@ class NativePanelTestingWin;
 class Panel;
 class PanelBoundsAnimation;
 class PanelBrowserFrameView;
+class TaskbarWindowThumbnailerWin;
+namespace ui {
+class HWNDSubclass;
+}
 
 // A browser view that implements Panel specific behavior.
 class PanelBrowserView : public BrowserView,
@@ -32,6 +36,9 @@ class PanelBrowserView : public BrowserView,
   Panel* panel() const { return panel_.get(); }
   bool closed() const { return closed_; }
   bool focused() const { return focused_; }
+  bool force_to_paint_as_inactive() const {
+    return force_to_paint_as_inactive_;
+  }
 
   PanelBrowserFrameView* GetFrameView() const;
 
@@ -125,6 +132,9 @@ class PanelBrowserView : public BrowserView,
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() OVERRIDE;
+  virtual void PanelExpansionStateChanging(
+      Panel::ExpansionState old_state,
+      Panel::ExpansionState new_state) OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
@@ -175,11 +185,25 @@ class PanelBrowserView : public BrowserView,
   // Is the panel in highlighted state to draw people's attention?
   bool is_drawing_attention_;
 
+  // Should we force to paint the panel as inactive? This is needed when we need
+  // to capture the screenshot before an active panel goes minimized.
+  bool force_to_paint_as_inactive_;
+
   // The last view that had focus in the panel. This is saved so that focus can
   // be restored properly when a drag ends.
   views::View* old_focused_view_;
 
   content::NotificationRegistrar registrar_;
+
+#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+  // Used to provide custom taskbar thumbnail for Windows 7 and later.
+  // Note that once the subclass has been triggered, it should be kept alive
+  // for the live of the window.
+  scoped_ptr<ui::HWNDSubclass> thumbnail_subclass_;
+
+  // Weak, owned by thumbnail_subclass_.
+  TaskbarWindowThumbnailerWin* thumbnailer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserView);
 };
