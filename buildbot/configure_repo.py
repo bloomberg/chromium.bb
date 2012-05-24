@@ -5,9 +5,10 @@
 """Adjust a repo checkout's configuration, fixing/extending as needed"""
 
 import constants
+import os
 
 from chromite.lib import cros_build_lib
-
+from chromite.lib import osutils
 
 def FixExternalRepoPushUrls(buildroot):
   """Set up SSH push for cros remote."""
@@ -22,12 +23,16 @@ git config "remote.${REPO_REMOTE}.pushurl" "%s/${REPO_PROJECT}";
 
 
 def FixBrokenExistingRepos(buildroot):
-  """Ensure all git configurations are at least syncable."""
+  """Ensure all git configurations are at least syncable and sane."""
 
+  # Wipe pre-auto-gc hook; see chromium-os:31271
   cros_build_lib.RunCommand(
       ['repo', '--time', 'forall', '-c',
+      'rm -f .git/hooks/pre-auto-gc; '
       'git config --remove-section "url.%s" 2> /dev/null' %
       constants.GERRIT_SSH_URL], cwd=buildroot, error_ok=True)
+
+  osutils.SafeUnlink(os.path.join(buildroot, 'manifests.git/hooks/pre-auto-gc'))
 
 
 def SetupGerritRemote(buildroot):
