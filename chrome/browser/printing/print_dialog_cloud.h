@@ -12,55 +12,39 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string16.h"
-#include "ui/gfx/native_widget_types.h"
 
 class FilePath;
 class CommandLine;
-
-namespace content {
-class BrowserContext;
-}
 
 namespace print_dialog_cloud {
 
 // Creates a print dialog to print a file on disk.
 // Called on the FILE or UI thread. Even though this may start up a modal
 // dialog, it will return immediately. The dialog is handled asynchronously.
-// If non-NULL, |modal_parent| specifies a window that the print dialog is modal
-// to.
-void CreatePrintDialogForFile(content::BrowserContext* browser_context,
-                              gfx::NativeWindow modal_parent,
-                              const FilePath& path_to_file,
+void CreatePrintDialogForFile(const FilePath& path_to_file,
                               const string16& print_job_title,
                               const string16& print_ticket,
                               const std::string& file_type,
+                              bool modal,
                               bool delete_on_close);
 
 // Creates a print dialog to print data in RAM.
 // Called on the FILE or UI thread. Even though this may start up a modal
 // dialog, it will return immediately. The dialog is handled asynchronously.
-// If non-NULL, |modal_parent| specifies a window that the print dialog is modal
-// to.
-void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
-                               gfx::NativeWindow modal_parent,
-                               scoped_refptr<base::RefCountedBytes> data,
+void CreatePrintDialogForBytes(scoped_refptr<base::RefCountedBytes> data,
                                const string16& print_job_title,
                                const string16& print_ticket,
-                               const std::string& file_type);
+                               const std::string& file_type,
+                               bool modal);
 
 // Parse switches from command_line and display the print dialog as appropriate.
-// Uses the default profile.
 bool CreatePrintDialogFromCommandLine(const CommandLine& command_line);
 
 // Creates a dialog for signing into cloud print.
 // The dialog will call |callback| when complete.
 // Called on the UI thread. Even though this starts up a modal
 // dialog, it will return immediately. The dialog is handled asynchronously.
-// If non-NULL, |modal_parent| specifies a window that the print dialog is modal
-// to.
-void CreateCloudPrintSigninDialog(content::BrowserContext* browser_context,
-                                  gfx::NativeWindow modal_parent,
-                                  const base::Closure& callback);
+void CreateCloudPrintSigninDialog(const base::Closure& callback);
 
 }  // end namespace
 

@@ -356,8 +356,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_ScriptedPrint,
 IPC_SYNC_MESSAGE_CONTROL0_2(PrintHostMsg_AllocateTempFileForPrinting,
                             base::FileDescriptor /* temp file fd */,
                             int /* fd in browser*/)
-IPC_MESSAGE_CONTROL2(PrintHostMsg_TempFileForPrintingWritten,
-                     int /* render_view_id */,
+IPC_MESSAGE_CONTROL1(PrintHostMsg_TempFileForPrintingWritten,
                      int /* fd in browser */)
 #endif
 

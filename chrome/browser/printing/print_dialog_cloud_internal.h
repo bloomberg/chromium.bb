@@ -159,13 +159,13 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
 // is closed.
 class CloudPrintWebDialogDelegate : public WebDialogDelegate {
  public:
-  CloudPrintWebDialogDelegate(content::BrowserContext* browser_context,
-                              gfx::NativeWindow modal_parent,
-                              const FilePath& path_to_file,
+  CloudPrintWebDialogDelegate(const FilePath& path_to_file,
+                              int width, int height,
                               const std::string& json_arguments,
                               const string16& print_job_title,
                               const string16& print_ticket,
                               const std::string& file_type,
+                              bool modal,
                               bool delete_on_close,
                               bool close_after_signin,
                               const base::Closure& callback);
@@ -190,19 +190,18 @@ class CloudPrintWebDialogDelegate : public WebDialogDelegate {
   friend class ::CloudPrintWebDialogDelegateTest;
 
   // For unit testing.
-  CloudPrintWebDialogDelegate(const FilePath& path_to_file,
-                              CloudPrintFlowHandler* flow_handler,
+  CloudPrintWebDialogDelegate(CloudPrintFlowHandler* flow_handler,
+                              int width, int height,
                               const std::string& json_arguments,
+                              bool modal,
                               bool delete_on_close);
-  void Init(content::BrowserContext* browser_context,
-            const std::string& json_arguments);
+  void Init(int width, int height, const std::string& json_arguments);
 
   bool delete_on_close_;
   CloudPrintFlowHandler* flow_handler_;
-  gfx::NativeWindow modal_parent_;
+  bool modal_;
   mutable bool owns_flow_handler_;
   FilePath path_to_file_;
-  bool keep_alive_when_non_modal_;
 
   // The parameters needed to display a modal web dialog.
   WebDialogUI::WebDialogParams params_;
@@ -210,16 +209,13 @@ class CloudPrintWebDialogDelegate : public WebDialogDelegate {
   DISALLOW_COPY_AND_ASSIGN(CloudPrintWebDialogDelegate);
 };
 
-void CreateDialogFullImpl(content::BrowserContext* browser_context,
-                          gfx::NativeWindow modal_parent,
-                          const FilePath& path_to_file,
+void CreateDialogFullImpl(const FilePath& path_to_file,
                           const string16& print_job_title,
                           const string16& print_ticket,
                           const std::string& file_type,
+                          bool modal,
                           bool delete_on_close);
-void CreateDialogSigninImpl(content::BrowserContext* browser_context,
-                            gfx::NativeWindow modal_parent,
-                            const base::Closure& callback);
+void CreateDialogSigninImpl(const base::Closure& callback);
 
 void Delete(const FilePath& path_to_file);
 
