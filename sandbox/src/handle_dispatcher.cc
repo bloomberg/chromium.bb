@@ -53,7 +53,7 @@ bool HandleDispatcher::DuplicateHandleProxy(IPCInfo* ipc,
   base::win::ScopedHandle handle;
   if (!::DuplicateHandle(ipc->client_info->process, source_handle,
                          ::GetCurrentProcess(), handle.Receive(),
-                         0, FALSE, 0)) {
+                         0, FALSE, DUPLICATE_SAME_ACCESS)) {
     ipc->return_info.win32_result = ::GetLastError();
     return false;
   }
