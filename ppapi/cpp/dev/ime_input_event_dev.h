@@ -53,7 +53,7 @@ class IMEInputEvent_Dev : public InputEvent {
   IMEInputEvent_Dev(const InstanceHandle& instance,
                     PP_InputEvent_Type type,
                     PP_TimeTicks time_stamp,
-                    Var text,
+                    const Var& text,
                     const std::vector<uint32_t>& segment_offsets,
                     int32_t target_segment,
                     const std::pair<uint32_t, uint32_t>& selection);
