@@ -244,11 +244,12 @@ NSPasteboard* PasteboardFromType(
 }
 
 // Make a drag image from the drop data.
-NSImage* MakeDragImage(const std::vector<const BookmarkNode*>& nodes) {
+NSImage* MakeDragImage(BookmarkModel* model,
+                       const std::vector<const BookmarkNode*>& nodes) {
   if (nodes.size() == 1) {
     const BookmarkNode* node = nodes[0];
     return bookmark_pasteboard_helper_mac::DragImageForBookmark(
-        gfx::SkBitmapToNSImage(node->favicon()), node->GetTitle());
+        gfx::SkBitmapToNSImage(model->GetFavicon(node)), node->GetTitle());
   } else {
     // TODO(feldstein): Do something better than this. Should have badging
     // and a single drag image.
@@ -417,7 +418,7 @@ void StartDrag(Profile* profile,
                                            pressure:1.0];
 
   // TODO(avi): Do better than this offset.
-  NSImage* drag_image = MakeDragImage(nodes);
+  NSImage* drag_image = MakeDragImage(profile->GetBookmarkModel(), nodes);
   NSSize image_size = [drag_image size];
   position.x -= std::floor(image_size.width / 2);
   position.y -= std::floor(image_size.height / 5);
