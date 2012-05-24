@@ -34,7 +34,6 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -85,6 +84,21 @@ class NonActivatableSettingsBubble : public views::BubbleDelegateView {
  private:
   DISALLOW_COPY_AND_ASSIGN(NonActivatableSettingsBubble);
 };
+
+using ash::internal::TrayNetwork;
+
+int GetErrorIcon(TrayNetwork::ErrorType error_type) {
+  switch(error_type) {
+    case TrayNetwork::ERROR_CONNECT_FAILED:
+      return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
+    case TrayNetwork::ERROR_DATA_LOW:
+      return IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW;
+    case TrayNetwork::ERROR_DATA_NONE:
+      return IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE;
+  }
+  NOTREACHED();
+  return 0;
+}
 
 }  // namespace
 
@@ -601,76 +615,28 @@ class NetworkErrorView : public views::View,
                    const NetworkErrors::Message& error)
       : tray_(tray),
         error_type_(error_type) {
-    set_border(views::Border::CreateEmptyBorder(
-        kTrayPopupPaddingBetweenItems, kTrayPopupPaddingHorizontal,
-        kTrayPopupPaddingBetweenItems, kTrayPopupPaddingHorizontal));
+    SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
 
-    const int msg_width = kTrayPopupWidth - kNotificationCloseButtonWidth -
-        kTrayPopupPaddingHorizontal - kNotificationIconWidth;
-
-    views::ImageView* icon = new views::ImageView;
-    icon->SetImage(ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        GetErrorIcon(error_type)));
-
-    int num_rows = 0;
     views::Label* title = new views::Label(error.title);
     title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
-    ++num_rows;
+    AddChildView(title);
 
     views::Label* message = new views::Label(error.message);
     message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     message->SetMultiLine(true);
-    message->SizeToFit(msg_width);
-    ++num_rows;
+    message->SizeToFit(kTrayNotificationContentsWidth);
+    AddChildView(message);
 
-    views::Link* link = NULL;
     if (!error.link_text.empty()) {
-      link = new views::Link(error.link_text);
+      views::Link* link = new views::Link(error.link_text);
       link->set_listener(this);
       link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
       link->SetMultiLine(true);
-      link->SizeToFit(msg_width);
-      ++num_rows;
+      link->SizeToFit(kTrayNotificationContentsWidth);
+      AddChildView(link);
     }
-
-    views::GridLayout* layout = new views::GridLayout(this);
-    SetLayoutManager(layout);
-
-    views::ColumnSet* columns = layout->AddColumnSet(0);
-
-    // Icon
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                       0 /* resize percent */,
-                       views::GridLayout::FIXED,
-                       kNotificationIconWidth, kNotificationIconWidth);
-
-    columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
-
-    // Title + message + link
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                       0 /* resize percent */,
-                       views::GridLayout::FIXED, msg_width, msg_width);
-
-    // Layout rows
-    layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
-
-    layout->StartRow(0, 0);
-    layout->AddView(icon, 1, num_rows);
-    layout->AddView(title);
-
-    layout->StartRow(0, 0);
-    layout->SkipColumns(1);
-    layout->AddView(message);
-
-    if (link) {
-      layout->StartRow(0, 0);
-      layout->SkipColumns(1);
-      layout->AddView(link);
-    }
-
-    layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
-
   }
 
   virtual ~NetworkErrorView() {
@@ -684,19 +650,6 @@ class NetworkErrorView : public views::View,
   TrayNetwork::ErrorType error_type() const { return error_type_; }
 
  private:
-  int GetErrorIcon(TrayNetwork::ErrorType error_type) {
-    switch(error_type) {
-      case TrayNetwork::ERROR_CONNECT_FAILED:
-        return IDR_AURA_UBER_TRAY_NETWORK_FAILED;
-      case TrayNetwork::ERROR_DATA_LOW:
-        return IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW;
-      case TrayNetwork::ERROR_DATA_NONE:
-        return IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE;
-    }
-    NOTREACHED();
-    return 0;
-  }
-
   TrayNetwork* tray_;
   TrayNetwork::ErrorType error_type_;
 
@@ -706,8 +659,12 @@ class NetworkErrorView : public views::View,
 class NetworkNotificationView : public TrayNotificationView {
  public:
   explicit NetworkNotificationView(TrayNetwork* tray)
-      : tray_(tray) {
-    CreateView();
+      : TrayNotificationView(0),
+        tray_(tray) {
+    CreateErrorView();
+    InitView(network_error_view_);
+    SetIconImage(*ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        GetErrorIcon(network_error_view_->error_type())));
   }
 
   // Overridden from TrayNotificationView.
@@ -722,22 +679,20 @@ class NetworkNotificationView : public TrayNotificationView {
   }
 
   void Update() {
-    RemoveAllChildViews(true);
-    CreateView();
-    Layout();
-    PreferredSizeChanged();
-    SchedulePaint();
+    CreateErrorView();
+    UpdateViewAndImage(network_error_view_,
+                       *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                           GetErrorIcon(network_error_view_->error_type())));
   }
 
  private:
-  void CreateView() {
+  void CreateErrorView() {
     // Display the first (highest priority) error.
     CHECK(!tray_->errors()->messages().empty());
     NetworkErrors::ErrorMap::const_iterator iter =
         tray_->errors()->messages().begin();
     network_error_view_ =
         new NetworkErrorView(tray_, iter->first, iter->second);
-    InitView(network_error_view_);
   }
 
   TrayNetwork* tray_;

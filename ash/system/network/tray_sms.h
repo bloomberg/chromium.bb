@@ -6,13 +6,15 @@
 #define ASH_SYSTEM_NETWORK_TRAY_SMS_H
 #pragma once
 
-#include "ash/system/tray/tray_image_item.h"
+#include <string>
+
+#include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace ash {
 namespace internal {
 
-class TraySms : public TrayImageItem {
+class TraySms : public SystemTrayItem {
  public:
   TraySms();
   virtual ~TraySms();
@@ -26,15 +28,16 @@ class TraySms : public TrayImageItem {
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void DestroyNotificationView() OVERRIDE;
 
-  // Overridden from TrayImageItem.
-  virtual bool GetInitialVisibility() OVERRIDE;
-
  protected:
   class SmsDefaultView;
   class SmsDetailedView;
   class SmsMessageView;
   class SmsNotificationView;
   class SmsObserver;
+
+  // Gets the most recent message. Returns false if no messages or unable to
+  // retrieve the numebr and text from the message.
+  bool GetLatestMessage(size_t* index, std::string* number, std::string* text);
 
   // Called when sms messages have changed (by tray::SmsObserver).
   void Update(bool notify);

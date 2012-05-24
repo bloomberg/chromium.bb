@@ -455,7 +455,10 @@ void SpecialPopupRow::Layout() {
 ////////////////////////////////////////////////////////////////////////////////
 // TrayNotificationView
 
-TrayNotificationView::TrayNotificationView() {
+TrayNotificationView::TrayNotificationView(int icon_id) : icon_id_(icon_id) {
+}
+
+TrayNotificationView::~TrayNotificationView() {
 }
 
 void TrayNotificationView::InitView(views::View* contents) {
@@ -469,25 +472,71 @@ void TrayNotificationView::InitView(views::View* contents) {
                          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                              IDR_AURA_WINDOW_CLOSE));
 
-  int contents_width = kTrayPopupWidth - kNotificationCloseButtonWidth;
+  icon_ = new views::ImageView;
+  if (icon_id_ != 0) {
+    icon_->SetImage(
+        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id_));
+  }
+
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
-                     0, /* resize percent */
-                     views::GridLayout::FIXED,
-                     contents_width,
-                     contents_width);
+
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
+
+  // Icon
   columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
                      0, /* resize percent */
                      views::GridLayout::FIXED,
-                     kNotificationCloseButtonWidth,
-                     kNotificationCloseButtonWidth);
+                     kNotificationIconWidth, kNotificationIconWidth);
 
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
+
+  // Contents
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                     0, /* resize percent */
+                     views::GridLayout::FIXED,
+                     kTrayNotificationContentsWidth,
+                     kTrayNotificationContentsWidth);
+
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
+
+  // Close button
+  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                     0, /* resize percent */
+                     views::GridLayout::FIXED,
+                     kNotificationIconWidth, kNotificationIconWidth);
+
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
+
+  // Layout rows
+  layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
   layout->StartRow(0, 0);
+  layout->AddView(icon_);
   layout->AddView(contents);
   layout->AddView(close_button);
+  layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
 }
 
-TrayNotificationView::~TrayNotificationView() {
+void TrayNotificationView::SetIconImage(const SkBitmap& image) {
+  icon_->SetImage(image);
+  SchedulePaint();
+}
+
+void TrayNotificationView::UpdateView(views::View* new_contents) {
+  RemoveAllChildViews(true);
+  InitView(new_contents);
+  Layout();
+  PreferredSizeChanged();
+  SchedulePaint();
+}
+
+void TrayNotificationView::UpdateViewAndImage(views::View* new_contents,
+                                              const SkBitmap& image) {
+  RemoveAllChildViews(true);
+  InitView(new_contents);
+  icon_->SetImage(image);
+  Layout();
+  PreferredSizeChanged();
+  SchedulePaint();
 }
 
 void TrayNotificationView::ButtonPressed(views::Button* sender,

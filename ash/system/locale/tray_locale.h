@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ash/system/locale/locale_observer.h"
-#include "ash/system/tray/tray_image_item.h"
+#include "ash/system/tray/system_tray_item.h"
 
 namespace ash {
 namespace internal {
@@ -18,7 +18,7 @@ namespace tray {
 class LocaleNotificationView;
 }
 
-class TrayLocale : public TrayImageItem,
+class TrayLocale : public SystemTrayItem,
                    public LocaleObserver {
  public:
   TrayLocale();
@@ -26,7 +26,6 @@ class TrayLocale : public TrayImageItem,
 
  private:
   // Overridden from TrayImageItem.
-  virtual bool GetInitialVisibility() OVERRIDE;
   virtual views::View* CreateNotificationView(
       user::LoginStatus status) OVERRIDE;
   virtual void DestroyNotificationView() OVERRIDE;

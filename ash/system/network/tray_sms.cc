@@ -183,18 +183,17 @@ class TraySms::SmsMessageView : public views::View,
         l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_SMS_NUMBER,
                                    UTF8ToUTF16(number)));
     number_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    number_label_->SetFont(
+        number_label_->font().DeriveFont(0, gfx::Font::BOLD));
 
     message_label_ = new views::Label(UTF8ToUTF16(message));
     message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     message_label_->SetMultiLine(true);
 
-    int msg_width;
     if (view_type == VIEW_DETAILED)
-      msg_width = LayoutDetailedView();
+      LayoutDetailedView();
     else
-      msg_width = LayoutNotificationView();
-
-    message_label_->SizeToFit(msg_width);
+      LayoutNotificationView();
   }
 
   virtual ~SmsMessageView() {
@@ -208,14 +207,15 @@ class TraySms::SmsMessageView : public views::View,
   }
 
  private:
-  int LayoutDetailedView() {
+  void LayoutDetailedView() {
     views::ImageButton* close_button = new views::ImageButton(this);
     close_button->SetImage(views::CustomButton::BS_NORMAL,
         ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_AURA_WINDOW_CLOSE));
 
-    int msg_width = kTrayPopupWidth - kNotificationCloseButtonWidth -
+    int msg_width = kTrayPopupWidth - kNotificationIconWidth -
         kTrayPopupPaddingHorizontal * 2;
+    message_label_->SizeToFit(msg_width);
 
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
@@ -232,8 +232,7 @@ class TraySms::SmsMessageView : public views::View,
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                        0, /* resize percent */
                        views::GridLayout::FIXED,
-                       kNotificationCloseButtonWidth,
-                       kNotificationCloseButtonWidth);
+                       kNotificationIconWidth, kNotificationIconWidth);
 
 
     layout->AddPaddingRow(0, kPaddingVertical);
@@ -244,57 +243,20 @@ class TraySms::SmsMessageView : public views::View,
     layout->AddView(message_label_);
 
     layout->AddPaddingRow(0, kPaddingVertical);
-
-    return msg_width;
   }
 
-  int LayoutNotificationView() {
-    icon_ = new views::ImageView;
-    icon_->SetImage(ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_SMS));
-
-    int msg_width = kTrayPopupWidth - kNotificationCloseButtonWidth -
-        kTrayPopupPaddingHorizontal - kNotificationIconWidth;
-
-    views::GridLayout* layout = new views::GridLayout(this);
-    SetLayoutManager(layout);
-
-    views::ColumnSet* columns = layout->AddColumnSet(0);
-
-    // Icon
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                       0 /* resize percent */,
-                       views::GridLayout::FIXED,
-                       kNotificationIconWidth, kNotificationIconWidth);
-
-    columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
-
-    // Message
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                       0 /* resize percent */,
-                       views::GridLayout::FIXED, msg_width, msg_width);
-
-    // Layout rows
-    layout->AddPaddingRow(0, kPaddingVertical);
-
-    layout->StartRow(0, 0);
-    layout->AddView(icon_, 1, 2);  // 2 rows for icon
-    layout->AddView(number_label_);
-    layout->StartRow(0, 0);
-    layout->SkipColumns(1);
-    layout->AddView(message_label_);
-    layout->StartRow(0, 0);
-
-    layout->AddPaddingRow(0, kPaddingVertical);
-
-    return msg_width;
+  void LayoutNotificationView() {
+    SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+    AddChildView(number_label_);
+    message_label_->SizeToFit(kTrayNotificationContentsWidth);
+    AddChildView(message_label_);
   }
 
   TraySms* tray_;
   size_t index_;
   views::Label* number_label_;
   views::Label* message_label_;
-  views::ImageView* icon_;
 
   DISALLOW_COPY_AND_ASSIGN(SmsMessageView);
 };
@@ -367,18 +329,27 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
 class TraySms::SmsNotificationView : public TrayNotificationView {
  public:
   SmsNotificationView(TraySms* tray,
+                      size_t message_index,
                       const std::string& number,
-                      const std::string& text,
-                      size_t message_index)
-      : tray_(tray),
+                      const std::string& text)
+      : TrayNotificationView(IDR_AURA_UBER_TRAY_SMS),
+        tray_(tray),
         message_index_(message_index) {
-    SmsMessageView* message_view_ = new SmsMessageView(
-        tray_, SmsMessageView::VIEW_NOTIFICATION, message_index, number, text);
-    InitView(message_view_);
+    SmsMessageView* message_view = new SmsMessageView(
+        tray_, SmsMessageView::VIEW_NOTIFICATION, message_index_, number, text);
+    InitView(message_view);
+  }
+
+  void Update(size_t message_index,
+              const std::string& number,
+              const std::string& text) {
+    SmsMessageView* message_view = new SmsMessageView(
+        tray_, SmsMessageView::VIEW_NOTIFICATION, message_index_, number, text);
+    UpdateView(message_view);
   }
 
   // Overridden from views::View.
-  bool OnMousePressed(const views::MouseEvent& event) {
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     tray_->PopupDetailedView(0, true);
     return true;
   }
@@ -391,25 +362,19 @@ class TraySms::SmsNotificationView : public TrayNotificationView {
 
  private:
   TraySms* tray_;
-  SmsMessageView* message_view_;
   size_t message_index_;
 
   DISALLOW_COPY_AND_ASSIGN(SmsNotificationView);
 };
 
 TraySms::TraySms()
-    : TrayImageItem(IDR_AURA_UBER_TRAY_SMS),
-      default_(NULL),
+    : default_(NULL),
       detailed_(NULL),
       notification_(NULL) {
   sms_observer_.reset(new SmsObserver(this));
 }
 
 TraySms::~TraySms() {
-}
-
-bool TraySms::GetInitialVisibility() {
-  return !sms_observer()->messages().empty();
 }
 
 views::View* TraySms::CreateDefaultView(user::LoginStatus status) {
@@ -432,17 +397,10 @@ views::View* TraySms::CreateDetailedView(user::LoginStatus status) {
 
 views::View* TraySms::CreateNotificationView(user::LoginStatus status) {
   CHECK(notification_ == NULL);
-  const base::ListValue& messages = sms_observer()->messages();
-  if (messages.empty())
-    return NULL;
-  DictionaryValue* message;
-  size_t message_index = messages.GetSize() - 1;
-  if (!messages.GetDictionary(message_index, &message))
-    return NULL;
+  size_t index;
   std::string number, text;
-  if (!sms_observer()->GetMessageFromDictionary(message, &number, &text))
-    return NULL;
-  notification_ = new SmsNotificationView(this, number, text, message_index);
+  if (GetLatestMessage(&index, &number, &text))
+    notification_ = new SmsNotificationView(this, index, number, text);
   return notification_;
 }
 
@@ -458,26 +416,44 @@ void TraySms::DestroyNotificationView() {
   notification_ = NULL;
 }
 
+bool TraySms::GetLatestMessage(size_t* index,
+                               std::string* number,
+                               std::string* text) {
+  const base::ListValue& messages = sms_observer()->messages();
+  if (messages.empty())
+    return false;
+  DictionaryValue* message;
+  size_t message_index = messages.GetSize() - 1;
+  if (!messages.GetDictionary(message_index, &message))
+    return false;
+  if (!sms_observer()->GetMessageFromDictionary(message, number, text))
+    return false;
+  *index = message_index;
+  return true;
+}
+
 void TraySms::Update(bool notify) {
-  HideNotificationView();
   if (sms_observer()->messages().empty()) {
-    if (tray_view())
-      tray_view()->SetVisible(false);
     if (default_)
       default_->SetVisible(false);
     if (detailed_)
       HideDetailedView();
+    HideNotificationView();
   } else {
-    if (tray_view())
-      tray_view()->SetVisible(true);
     if (default_) {
       default_->SetVisible(true);
       default_->Update();
     }
     if (detailed_)
       detailed_->Update();
-    else if (notify)
+    if (notification_) {
+      size_t index;
+      std::string number, text;
+      if (GetLatestMessage(&index, &number, &text))
+        notification_->Update(index, number, text);
+    } else if (notify) {
       ShowNotificationView();
+    }
   }
 }
 

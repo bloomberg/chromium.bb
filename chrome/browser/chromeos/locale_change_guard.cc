@@ -65,8 +65,7 @@ void LocaleChangeGuard::OnLogin() {
 }
 
 void LocaleChangeGuard::RevertLocaleChange() {
-  if (note_ == NULL ||
-      profile_ == NULL ||
+  if (profile_ == NULL ||
       from_locale_.empty() ||
       to_locale_.empty()) {
     NOTREACHED();
@@ -191,8 +190,7 @@ void LocaleChangeGuard::Check() {
 }
 
 void LocaleChangeGuard::AcceptLocaleChange() {
-  if (note_ == NULL ||
-      profile_ == NULL ||
+  if (profile_ == NULL ||
       from_locale_.empty() ||
       to_locale_.empty()) {
     NOTREACHED();

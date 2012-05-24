@@ -42,8 +42,8 @@ extern const SkColor kHeaderTextColorNormal;
 extern const SkColor kHeaderTextColorHover;
 
 extern const int kTrayPopupWidth;
-extern const int kNotificationCloseButtonWidth;
 extern const int kNotificationIconWidth;
+extern const int kTrayNotificationContentsWidth;
 
 }  // namespace ash
 
