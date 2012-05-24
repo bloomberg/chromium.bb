@@ -588,7 +588,6 @@
           ],
           'dependencies': [
             'chrome.gyp:chrome_version_resources',
-            'chrome.gyp:installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
@@ -2237,7 +2236,6 @@
         ['OS=="win"', {
           'dependencies': [
             'chrome_version_resources',
-            'installer_util_strings',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
@@ -3145,7 +3143,6 @@
           ],
           'dependencies': [
             'chrome_version_resources',
-            'installer_util_strings',
             'security_tests',  # run time dependency
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../sandbox/sandbox.gyp:sandbox',
@@ -3439,7 +3436,6 @@
           ],
           'dependencies': [
             'chrome_version_resources',
-            'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [
@@ -3552,7 +3548,6 @@
         ['OS=="win"', {
           'dependencies': [
             'chrome_version_resources',
-            'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [
@@ -3942,7 +3937,6 @@
           ],
           'dependencies': [
             'chrome_version_resources',
-            'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [
@@ -4067,7 +4061,6 @@
           ],
           'dependencies': [
             'chrome_version_resources',
-            'installer_util_strings',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'conditions': [

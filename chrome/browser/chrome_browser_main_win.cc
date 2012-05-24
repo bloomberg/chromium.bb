@@ -35,16 +35,19 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "installer_util_strings/installer_util_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
+
 
 namespace {
 
@@ -74,6 +77,11 @@ int GetMinimumFontSize() {
                     &min_font_size);
   return min_font_size;
 }
+
+class TranslationDelegate : public installer::TranslationDelegate {
+ public:
+  virtual string16 GetLocalizedString(int installer_string_id) OVERRIDE;
+};
 
 }  // namespace
 
@@ -311,4 +319,29 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
     }
   }
   return false;
+}
+
+string16 TranslationDelegate::GetLocalizedString(int installer_string_id) {
+  int resource_id = 0;
+  switch (installer_string_id) {
+  // HANDLE_STRING is used by the DO_INSTALLER_STRING_MAPPING macro which is in
+  // the generated header installer_util_strings.h.
+#define HANDLE_STRING(base_id, chrome_id) \
+  case base_id: \
+    resource_id = chrome_id; \
+    break;
+  DO_INSTALLER_STRING_MAPPING
+#undef HANDLE_STRING
+  default:
+    NOTREACHED();
+  }
+  if (resource_id)
+    return l10n_util::GetStringUTF16(resource_id);
+  return string16();
+}
+
+// static
+void ChromeBrowserMainPartsWin::SetupInstallerUtilStrings() {
+  CR_DEFINE_STATIC_LOCAL(TranslationDelegate, delegate, ());
+  installer::SetTranslationDelegate(&delegate);
 }

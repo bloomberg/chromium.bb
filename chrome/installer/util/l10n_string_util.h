@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -16,11 +16,25 @@
 
 #include <string>
 
+#include "base/string16.h"
+
 namespace installer {
+
+class TranslationDelegate {
+ public:
+  virtual ~TranslationDelegate();
+  virtual string16 GetLocalizedString(int installer_string_id) = 0;
+};
+
+// If we're in Chrome, the installer strings aren't in the binary, but are in
+// the localized pak files.  A TranslationDelegate must be provided so we can
+// load these strings.
+void SetTranslationDelegate(TranslationDelegate* delegate);
 
 // Given a string base id, return the localized version of the string based on
 // the system language.  This is used for shortcuts placed on the user's
-// desktop.
+// desktop.  The string is retrieved from the TranslationDelegate if one has
+// been set.  Otherwise, the string is read from the binary's string table.
 std::wstring GetLocalizedString(int base_message_id);
 
 // Given the system language, return a url that points to the localized eula.

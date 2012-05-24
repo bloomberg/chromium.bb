@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -184,7 +184,8 @@ def WriteHeaderFile(translated_strings, out_filename):
   """Writes a .h file with resource ids.  This file can be included by the
   executable to refer to identifiers."""
   lines = []
-  do_languages_lines = ['#define DO_LANGUAGES']
+  do_languages_lines = ['\n#define DO_LANGUAGES']
+  installer_string_mapping_lines = ['\n#define DO_INSTALLER_STRING_MAPPING']
 
   # Write the values for how the languages ids are offset.
   seen_languages = set()
@@ -213,11 +214,14 @@ def WriteHeaderFile(translated_strings, out_filename):
     lines.append('#define %s_BASE %s_%s' % (string_id,
                                             string_id,
                                             translated_strings[0].language))
+    installer_string_mapping_lines.append('  HANDLE_STRING(%s_BASE, %s)'
+                                          % (string_id, string_id))
 
-  outfile = open(out_filename + '.h', 'wb')
+  outfile = open(out_filename, 'wb')
   outfile.write('\n'.join(lines))
-  outfile.write('\n#ifndef RC_INVOKED\n')
+  outfile.write('\n#ifndef RC_INVOKED')
   outfile.write(' \\\n'.join(do_languages_lines))
+  outfile.write(' \\\n'.join(installer_string_mapping_lines))
   # .rc files must end in a new line
   outfile.write('\n#endif  // ndef RC_INVOKED\n')
   outfile.close()
@@ -234,7 +238,7 @@ def main(argv):
   translated_strings = CollectTranslatedStrings(branding)
   kFilebase = os.path.join(argv[1], 'installer_util_strings')
   WriteRCFile(translated_strings, kFilebase)
-  WriteHeaderFile(translated_strings, kFilebase)
+  WriteHeaderFile(translated_strings, kFilebase + '.h')
   return 0
 
 

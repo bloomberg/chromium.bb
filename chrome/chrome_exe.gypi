@@ -451,7 +451,6 @@
             'chrome_dll',
             'chrome_version_resources',
             'installer_util',
-            'installer_util_strings',
             'image_pre_reader',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',

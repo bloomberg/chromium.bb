@@ -1,13 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file defines specific implementation of BrowserDistribution class for
-// Google Chrome.
+// This file defines utility functions for fetching localized resources.
 
-#include <algorithm>
+#include "chrome/installer/util/l10n_string_util.h"
 
 #include <atlbase.h>
+
+#include <algorithm>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -23,11 +24,23 @@ const installer::LanguageSelector& GetLanguageSelector() {
   return instance;
 }
 
+installer::TranslationDelegate* g_translation_delegate = NULL;
+
 }  // namespace
 
 namespace installer {
 
+TranslationDelegate::~TranslationDelegate() {
+}
+
+void SetTranslationDelegate(TranslationDelegate* delegate) {
+  g_translation_delegate = delegate;
+}
+
 std::wstring GetLocalizedString(int base_message_id) {
+  if (g_translation_delegate)
+    return g_translation_delegate->GetLocalizedString(base_message_id);
+
   std::wstring localized_string;
 
   int message_id = base_message_id + GetLanguageSelector().offset();

@@ -61,6 +61,10 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   // user level Chrome.
   static bool CheckMachineLevelInstall();
 
+  // Sets the TranslationDelegate which provides localized strings to
+  // installer_util.
+  static void SetupInstallerUtilStrings();
+
  private:
   scoped_ptr<chrome::MediaDeviceNotificationsWindowWin>
       media_device_notifications_window_;
