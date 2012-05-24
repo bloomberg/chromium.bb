@@ -646,7 +646,17 @@ TEST_PPAPI_NACL_VIA_HTTP(URLLoader_UntendedLoad)
 // URLRequestInfo tests.
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_CreateAndIsURLRequestInfo)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_CreateAndIsURLRequestInfo)
-TEST_PPAPI_NACL_VIA_HTTP(URLRequest_CreateAndIsURLRequestInfo)
+
+// Timing out on Windows. http://crbug.com/129571
+#if defined(OS_WIN)
+#define MAYBE_URLRequest_CreateAndIsURLRequestInfo \
+  FLAKY_URLRequest_CreateAndIsURLRequestInfo
+#else
+#define MAYBE_URLRequest_CreateAndIsURLRequestInfo \
+    URLRequest_CreateAndIsURLRequestInfo
+#endif
+TEST_PPAPI_NACL_VIA_HTTP(MAYBE_URLRequest_CreateAndIsURLRequestInfo)
+
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLRequest_SetProperty)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLRequest_SetProperty)
 TEST_PPAPI_NACL_VIA_HTTP(URLRequest_SetProperty)
