@@ -112,11 +112,11 @@ class TestGitCl(TestCase):
         'M\t.gitignore\n'),
       ((['git', 'config', 'branch.master.rietveldissue'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
-      ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
+      ((['git', 'log', '--pretty=format:%s%n%n%b', 'master..'],), 'foo'),
       ((['git', 'config', 'user.email'],), 'me@example.com'),
       ((['git', 'diff', '--no-ext-diff', '--stat', '-M', 'master...'],),
        '+dat'),
-      ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],), 'desc\n'),
+      ((['git', 'log', '--pretty=format:%s%n%n%b', 'master..'],), 'desc\n'),
     ]
 
   @staticmethod
@@ -345,7 +345,7 @@ class TestGitCl(TestCase):
          'M\t.gitignore\n'),
         ((['git', 'config', 'branch.master.rietveldissue'],), ''),
         ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
-        ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
+        ((['git', 'log', '--pretty=format:%s%n%n%b', 'master..'],), 'foo'),
         ((['git', 'config', 'user.email'],), 'me@example.com'),
         ((['git', 'diff', '--no-ext-diff', '--stat', '-M', 'master...'],),
          '+dat'),
@@ -354,7 +354,7 @@ class TestGitCl(TestCase):
   @staticmethod
   def _gerrit_upload_calls(description, reviewers):
     calls = [
-        ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],),
+        ((['git', 'log', '--pretty=format:%s%n%n%b', 'master..'],),
          description),
         ((['git', 'config', 'rietveld.cc'],), '')
         ]

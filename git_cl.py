@@ -51,9 +51,21 @@ def DieWithError(message):
   sys.exit(1)
 
 
+def QuoteCommand(command):
+  """Quotes command on Windows so it runs fine even with & and | in the string.
+  """
+  if sys.platform == 'win32':
+    def fix(arg):
+      if ('&' in arg or '|' in arg) and '"' not in arg:
+        arg = '"%s"' % arg
+      return arg
+    command = [fix(arg) for arg in command]
+  return command
+
+
 def RunCommand(args, error_ok=False, error_message=None, **kwargs):
   try:
-    return subprocess2.check_output(args, shell=False, **kwargs)
+    return subprocess2.check_output(QuoteCommand(args), **kwargs)
   except subprocess2.CalledProcessError, e:
     if not error_ok:
       DieWithError(
@@ -533,8 +545,7 @@ or verify this branch is set up to track another (via the --track argument to
       # If the change was never uploaded, use the log messages of all commits
       # up to the branch point, as git cl upload will prefill the description
       # with these log messages.
-      description = RunCommand(['git', 'log', '--pretty=format:%s%n%n%b',
-                                '%s...' % (upstream_branch)]).strip()
+      description = CreateDescriptionFromLog([upstream_branch + '..'])
 
     if not author:
       author = RunGit(['config', 'user.email']).strip() or None
@@ -879,7 +890,7 @@ def CreateDescriptionFromLog(args):
     log_args = [args[0] + '..' + args[1]]
   else:
     log_args = args[:]  # Hope for the best!
-  return RunGit(['log', '--pretty=format:%s\n\n%b'] + log_args)
+  return RunGit(['log', '--pretty=format:%s%n%n%b'] + log_args)
 
 
 def ConvertToInteger(inputval):
