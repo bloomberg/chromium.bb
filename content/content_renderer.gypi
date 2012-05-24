@@ -44,6 +44,8 @@
     'renderer/android/address_detector.h',
     'renderer/android/content_detector.cc',
     'renderer/android/content_detector.h',
+    'renderer/android/email_detector.cc',
+    'renderer/android/email_detector.h',
     'renderer/active_notification_tracker.cc',
     'renderer/active_notification_tracker.h',
     'renderer/device_orientation_dispatcher.cc',
