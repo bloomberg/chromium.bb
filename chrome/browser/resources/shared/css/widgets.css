@@ -139,13 +139,13 @@ html[dir='rtl'] input[type='checkbox']:checked::before {
 input[type='radio']:checked::before {
   background-color: #666;
   border-radius: 100%;
-  bottom: 25%;
+  bottom: 3px;
   content: '';
   display: block;
-  left: 25%;
+  left: 3px;
   position: absolute;
-  right: 25%;
-  top: 25%;
+  right: 3px;
+  top: 3px;
 }
 
 /* Hover **********************************************************************/
