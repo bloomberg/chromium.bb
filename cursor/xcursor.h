@@ -55,4 +55,8 @@ XcursorLibraryLoadImages (const char *file, const char *theme, int size);
 void
 XcursorImagesDestroy (XcursorImages *images);
 
+void
+xcursor_load_theme(const char *theme, int size,
+		    void (*load_callback)(XcursorImages *, void *),
+		    void *user_data);
 #endif

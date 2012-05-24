@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 
 /*
  * From libXcursor/include/X11/extensions/Xcursor.h
@@ -853,4 +854,110 @@ XcursorLibraryLoadImages (const char *file, const char *theme, int size)
 	fclose (f);
     }
     return images;
+}
+
+static void
+load_all_cursors_from_dir(const char *path, int size,
+			  void (*load_callback)(XcursorImages *, void *),
+			  void *user_data)
+{
+	FILE *f;
+	DIR *dir = opendir(path);
+	struct dirent *ent;
+	char *full;
+	XcursorImages *images;
+
+	if (!dir)
+		return;
+
+	ent = readdir(dir);
+	for(ent = readdir(dir); ent; ent = readdir(dir)) {
+#ifdef _DIRENT_HAVE_D_TYPE
+		if (ent->d_type != DT_REG && ent->d_type != DT_LNK)
+			continue;
+#endif
+
+		full = _XcursorBuildFullname(path, "", ent->d_name);
+		if (!full)
+			continue;
+
+		f = fopen(full, "r");
+		if (!f)
+			continue;
+
+		images = XcursorFileLoadImages(f, size);
+
+		if (images) {
+			XcursorImagesSetName(images, ent->d_name);
+			load_callback(images, user_data);
+		}
+
+		fclose (f);
+	}
+
+	closedir(dir);
+}
+
+/** Load all the cursor of a theme
+ *
+ * This function loads all the cursor images of a given theme and its
+ * inherited themes. Each cursor is loaded into an XcursorImages object
+ * which is passed to the caller's load callback. If a cursor appears
+ * more than once across all the inherited themes, the load callback
+ * will be called multiple times, with possibly different XcursorImages
+ * object which have the same name. The user is expected to destroy the
+ * XcursorImages objects passed to the callback with
+ * XcursorImagesDestroy().
+ *
+ * \param theme The name of theme that should be loaded
+ * \param size The desired size of the cursor images
+ * \param load_callback A callback function that will be called
+ * for each cursor loaded. The first parameter is the XcursorImages
+ * object representing the loaded cursor and the second is a pointer
+ * to data provided by the user.
+ * \param user_data The data that should be passed to the load callback
+ */
+void
+xcursor_load_theme(const char *theme, int size,
+		    void (*load_callback)(XcursorImages *, void *),
+		    void *user_data)
+{
+	char *full, *dir;
+	char *inherits = NULL;
+	const char *path, *i;
+
+	if (!theme)
+		theme = "default";
+
+	for (path = XcursorLibraryPath();
+	     path;
+	     path = _XcursorNextPath(path)) {
+		dir = _XcursorBuildThemeDir(path, theme);
+		if (!dir)
+			continue;
+
+		full = _XcursorBuildFullname(dir, "cursors", "");
+
+		if (full) {
+			load_all_cursors_from_dir(full, size, load_callback,
+						  user_data);
+			free(full);
+		}
+
+		if (!inherits) {
+			full = _XcursorBuildFullname(dir, "", "index.theme");
+			if (full) {
+				inherits = _XcursorThemeInherits(full);
+				free(full);
+			}
+		}
+
+		free(dir);
+	}
+
+	for (i = inherits; i; i = _XcursorNextPath(i))
+		xcursor_load_theme(i, size, load_callback, user_data);
+
+	if (inherits)
+		free(inherits);
 }

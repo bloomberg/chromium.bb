@@ -113,21 +113,6 @@ shm_pool_destroy(struct shm_pool *pool)
 }
 
 
-static const char *cursor_names[] = {
-	"bottom_left_corner",
-	"bottom_right_corner",
-	"bottom_side",
-	"grabbing",
-	"left_ptr",
-	"left_side",
-	"right_side",
-	"top_left_corner",
-	"top_right_corner",
-	"top_side",
-	"xterm",
-	"hand1",
-};
-
 struct wl_cursor_theme {
 	unsigned int cursor_count;
 	struct wl_cursor **cursors;
@@ -192,32 +177,25 @@ wl_cursor_destroy(struct wl_cursor *cursor)
 }
 
 static struct wl_cursor *
-load_cursor(struct wl_cursor_theme *theme, const char *name)
+wl_cursor_create_from_xcursor_images(XcursorImages *images,
+				     struct wl_cursor_theme *theme)
 {
-	XcursorImages *images;
 	struct wl_cursor *cursor;
 	struct cursor_image *image;
 	int i, size;
 
-	images = XcursorLibraryLoadImages(name, theme->name, theme->size);
-	if (!images)
-		return NULL;
-
 	cursor = malloc(sizeof *cursor);
-	if (!cursor) {
-		XcursorImagesDestroy(images);
+	if (!cursor)
 		return NULL;
-	}
 
 	cursor->image_count = images->nimage;
 	cursor->images = malloc(images->nimage * sizeof cursor->images[0]);
 	if (!cursor->images) {
-		XcursorImagesDestroy(images);
 		free(cursor);
 		return NULL;
 	}
 
-	cursor->name = strdup(name);
+	cursor->name = strdup(images->name);
 
 	for (i = 0; i < images->nimage; i++) {
 		image = malloc(sizeof *image);
@@ -239,9 +217,32 @@ load_cursor(struct wl_cursor_theme *theme, const char *name)
 		       images->images[i]->pixels, size);
 	}
 
-	XcursorImagesDestroy(images);
-
 	return cursor;
+}
+
+static void
+load_callback(XcursorImages *images, void *data)
+{
+	struct wl_cursor_theme *theme = data;
+	struct wl_cursor *cursor;
+
+	if (wl_cursor_theme_get_cursor(theme, images->name)) {
+		XcursorImagesDestroy(images);
+		return;
+	}
+
+	cursor = wl_cursor_create_from_xcursor_images(images, theme);
+
+	if (cursor) {
+		theme->cursor_count++;
+		theme->cursors =
+			realloc(theme->cursors,
+				theme->cursor_count * sizeof theme->cursors[0]);
+
+		theme->cursors[theme->cursor_count - 1] = cursor;
+	}
+
+	XcursorImagesDestroy(images);
 }
 
 /** Load a cursor theme to memory shared with the compositor
@@ -258,7 +259,6 @@ WL_EXPORT struct wl_cursor_theme *
 wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 {
 	struct wl_cursor_theme *theme;
-	unsigned int i;
 
 	theme = malloc(sizeof *theme);
 	if (!theme)
@@ -269,20 +269,13 @@ wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 
 	theme->name = strdup(name);
 	theme->size = size;
-	theme->cursor_count = ARRAY_LENGTH(cursor_names);
-
-	theme->cursors =
-		malloc(theme->cursor_count * sizeof theme->cursors[0]);
-	if (!theme->cursors) {
-		free(theme);
-		return NULL;
-	}
+	theme->cursor_count = 0;
+	theme->cursors = NULL;
 
 	theme->pool =
-		shm_pool_create(shm, theme->cursor_count * size * size * 4);
+		shm_pool_create(shm, size * size * 4);
 
-	for (i = 0; i < theme->cursor_count; i++)
-		theme->cursors[i] = load_cursor(theme, cursor_names[i]);
+	xcursor_load_theme(name, size, load_callback, theme);
 
 	return theme;
 }
@@ -317,23 +310,11 @@ wl_cursor_theme_get_cursor(struct wl_cursor_theme *theme,
 			   const char *name)
 {
 	unsigned int i;
-	struct wl_cursor *cursor;
 
 	for (i = 0; i < theme->cursor_count; i++) {
 		if (strcmp(name, theme->cursors[i]->name) == 0)
 			return theme->cursors[i];
 	}
 
-	cursor = load_cursor(theme, name);
-	if (!cursor)
-		return NULL;
-
-	theme->cursor_count++;
-	theme->cursors =
-		realloc(theme->cursors,
-			theme->cursor_count * sizeof theme->cursors[0]);
-
-	theme->cursors[theme->cursor_count - 1] = cursor;
-
-	return cursor;
+	return NULL;
 }
