@@ -643,6 +643,8 @@ class BasePerfTest(pyauto.PyUITest):
       A list of extra flags to pass to Chrome when it is launched.
     """
     flags = super(BasePerfTest, self).ExtraChromeFlags()
+    # Window size impacts a variety of perf tests, ensure consistency.
+    flags.append('--window-size=1024,768')
     if self._IsPGOMode():
       flags = flags + ['--renderer-clean-exit', '--no-sandbox']
     return flags
