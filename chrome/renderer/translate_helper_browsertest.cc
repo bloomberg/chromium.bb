@@ -311,7 +311,6 @@ TEST_F(ChromeRenderViewTest, TranslatablePage) {
   SendContentStateImmediately();
 
   LoadHTML("<html><body>A random page with random content.</body></html>");
-  ProcessPendingMessages();
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -323,7 +322,6 @@ TEST_F(ChromeRenderViewTest, TranslatablePage) {
   // Now the page specifies the META tag to prevent translation.
   LoadHTML("<html><head><meta name=\"google\" value=\"notranslate\"></head>"
            "<body>A random page with random content.</body></html>");
-  ProcessPendingMessages();
   message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -334,7 +332,6 @@ TEST_F(ChromeRenderViewTest, TranslatablePage) {
   // Try the alternate version of the META tag (content instead of value).
   LoadHTML("<html><head><meta name=\"google\" content=\"notranslate\"></head>"
            "<body>A random page with random content.</body></html>");
-  ProcessPendingMessages();
   message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -351,7 +348,6 @@ TEST_F(ChromeRenderViewTest, LanguageMetaTag) {
 
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"es\">"
            "</head><body>A random page with random content.</body></html>");
-  ProcessPendingMessages();
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -364,7 +360,6 @@ TEST_F(ChromeRenderViewTest, LanguageMetaTag) {
   LoadHTML("<html><head><meta http-equiv=\"content-language\" "
            "content=\" fr , es,en \">"
            "</head><body>A random page with random content.</body></html>");
-  ProcessPendingMessages();
   message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -377,7 +372,6 @@ TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
   SendContentStateImmediately();
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"zh\">"
            "</head><body>This page is in Chinese.</body></html>");
-  ProcessPendingMessages();
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -388,7 +382,6 @@ TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
 
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"fr\">"
            "</head><body>This page is in French.</body></html>");
-  ProcessPendingMessages();
   message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);

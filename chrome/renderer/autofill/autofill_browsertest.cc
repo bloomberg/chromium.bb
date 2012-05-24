@@ -40,7 +40,6 @@ TEST_F(ChromeRenderViewTest, SendForms) {
            "</form>");
 
   // Verify that "FormsSeen" sends the expected number of fields.
-  ProcessPendingMessages();
   const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -138,7 +137,6 @@ TEST_F(ChromeRenderViewTest, FillFormElement) {
            "</form>");
 
   // Verify that "FormsSeen" isn't sent, as there are too few fields.
-  ProcessPendingMessages();
   const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_EQ(static_cast<IPC::Message*>(NULL), message);

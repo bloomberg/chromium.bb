@@ -71,7 +71,8 @@ class RenderViewTest : public testing::Test {
   // false otherwise.
   bool ExecuteJavaScriptAndReturnIntValue(const string16& script, int* result);
 
-  // Loads the given HTML into the main frame as a data: URL.
+  // Loads the given HTML into the main frame as a data: URL and blocks until
+  // the navigation is committed.
   void LoadHTML(const char* html);
 
   // Navigates the main frame back or forward in session history and commits.
