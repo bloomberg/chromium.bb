@@ -97,6 +97,7 @@ class ExtensionAPIPermission {
     kUnknown = -1,
 
     // Real permissions.
+    kActiveTab,
     kAlarms,
     kAppNotifications,
     kBackground,

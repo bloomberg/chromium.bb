@@ -213,6 +213,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
 
   // Register extension permissions.
   info->RegisterPermission(
+      kActiveTab, "activeTab", 0,
+      ExtensionPermissionMessage::kNone, kFlagNone);
+  info->RegisterPermission(
       kAlarms, "alarms", 0,
       ExtensionPermissionMessage::kNone, kFlagNone);
   info->RegisterPermission(
