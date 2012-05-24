@@ -338,8 +338,8 @@ SandboxMountPointProvider::SandboxMountPointProvider(
 SandboxMountPointProvider::~SandboxMountPointProvider() {
   if (!file_task_runner_->RunsTasksOnCurrentThread()) {
     ObfuscatedFileUtil* sandbox_file_util = sandbox_file_util_.release();
-    if (!file_task_runner_->ReleaseSoon(FROM_HERE, sandbox_file_util))
-      sandbox_file_util->Release();
+    if (!file_task_runner_->DeleteSoon(FROM_HERE, sandbox_file_util))
+      delete sandbox_file_util;
   }
 }
 
@@ -367,7 +367,7 @@ void SandboxMountPointProvider::ValidateFileSystemRoot(
   file_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&ValidateRootOnFileThread,
-                 sandbox_file_util_,
+                 sandbox_file_util_.get(),
                  origin_url, type, old_base_path(), create,
                  base::Unretained(error_ptr)),
       base::Bind(&DidValidateFileSystemRoot,
@@ -386,7 +386,7 @@ SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
   if (!IsAllowedScheme(origin_url))
     return FilePath();
 
-  MigrateIfNeeded(sandbox_file_util_, old_base_path());
+  MigrateIfNeeded(sandbox_file_util_.get(), old_base_path());
 
   return sandbox_file_util_->GetDirectoryForOriginAndType(
       origin_url, type, create);
@@ -484,14 +484,14 @@ FilePath SandboxMountPointProvider::renamed_old_base_path() const {
 
 SandboxMountPointProvider::OriginEnumerator*
 SandboxMountPointProvider::CreateOriginEnumerator() const {
-  MigrateIfNeeded(sandbox_file_util_, old_base_path());
+  MigrateIfNeeded(sandbox_file_util_.get(), old_base_path());
   return new ObfuscatedOriginEnumerator(sandbox_file_util_.get());
 }
 
 FilePath SandboxMountPointProvider::GetBaseDirectoryForOriginAndType(
     const GURL& origin_url, fileapi::FileSystemType type, bool create) const {
 
-  MigrateIfNeeded(sandbox_file_util_, old_base_path());
+  MigrateIfNeeded(sandbox_file_util_.get(), old_base_path());
 
   return sandbox_file_util_->GetDirectoryForOriginAndType(
       origin_url, type, create);
@@ -502,7 +502,7 @@ bool SandboxMountPointProvider::DeleteOriginDataOnFileThread(
     QuotaManagerProxy* proxy,
     const GURL& origin_url,
     fileapi::FileSystemType type) {
-  MigrateIfNeeded(sandbox_file_util_, old_base_path());
+  MigrateIfNeeded(sandbox_file_util_.get(), old_base_path());
 
   int64 usage = GetOriginUsageOnFileThread(file_system_context,
                                            origin_url, type);

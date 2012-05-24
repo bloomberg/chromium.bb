@@ -11,7 +11,6 @@
 
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
-#include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "base/timer.h"
 #include "webkit/fileapi/file_system_directory_database.h"
@@ -37,15 +36,9 @@ class FileSystemOperationContext;
 // doing FSCK operations, if you find a loose backing file with no reference,
 // you may safely delete it.
 //
-// This class is RefCountedThreadSafe because it may gain a reference on the IO
-// thread, but must be deleted on the FILE thread because that's where
-// DropDatabases needs to be called.  References will be held by the
-// SandboxMountPointProvider [and the task it uses to drop the reference] and
-// SandboxMountPointProvider::GetFileSystemRootPathTask.  Without that last one,
-// we wouldn't need ref counting.
-class ObfuscatedFileUtil
-    : public FileSystemFileUtil,
-      public base::RefCountedThreadSafe<ObfuscatedFileUtil> {
+// This class must be deleted on the FILE thread, because that's where
+// DropDatabases needs to be called.
+class ObfuscatedFileUtil : public FileSystemFileUtil {
  public:
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.
@@ -66,6 +59,7 @@ class ObfuscatedFileUtil
   //     new ObfuscatedFileUtil(new NativeFileUtil());
   ObfuscatedFileUtil(const FilePath& file_system_directory,
                      FileSystemFileUtil* underlying_file_util);
+  virtual ~ObfuscatedFileUtil();
 
   virtual base::PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
@@ -197,13 +191,10 @@ class ObfuscatedFileUtil
   static int64 ComputeFilePathCost(const FilePath& path);
 
  private:
-  friend class base::RefCountedThreadSafe<ObfuscatedFileUtil>;
-
   typedef FileSystemDirectoryDatabase::FileId FileId;
   typedef FileSystemDirectoryDatabase::FileInfo FileInfo;
 
   friend class ObfuscatedFileEnumerator;
-  virtual ~ObfuscatedFileUtil();
 
   base::PlatformFileError GetFileInfoInternal(
       FileSystemDirectoryDatabase* db,

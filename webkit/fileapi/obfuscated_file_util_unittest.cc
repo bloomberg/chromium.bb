@@ -132,7 +132,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
         file_system_context_->GetFileUtil(type_));
 
     test_helper_.SetUp(file_system_context_.get(),
-                       obfuscated_file_util_.get());
+                       obfuscated_file_util_);
   }
 
   void TearDown() {
@@ -172,12 +172,12 @@ class ObfuscatedFileUtilTest : public testing::Test {
         new FileSystemTestOriginHelper(origin, type);
 
     helper->SetUp(file_system_context_.get(),
-                  obfuscated_file_util_.get());
+                  obfuscated_file_util_);
     return helper;
   }
 
   ObfuscatedFileUtil* ofu() {
-    return obfuscated_file_util_.get();
+    return obfuscated_file_util_;
   }
 
   const FilePath& test_directory() const {
@@ -597,7 +597,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
  private:
   ScopedTempDir data_dir_;
-  scoped_refptr<ObfuscatedFileUtil> obfuscated_file_util_;
+  ObfuscatedFileUtil* obfuscated_file_util_;
   scoped_refptr<quota::QuotaManager> quota_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;
   GURL origin_;

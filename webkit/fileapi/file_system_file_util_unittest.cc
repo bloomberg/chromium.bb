@@ -49,7 +49,7 @@ class FileSystemFileUtilTest : public testing::Test {
       bool copy) {
     ScopedTempDir base_dir;
     ASSERT_TRUE(base_dir.CreateUniqueTempDir());
-    scoped_refptr<ObfuscatedFileUtil> file_util(
+    scoped_ptr<ObfuscatedFileUtil> file_util(
         new ObfuscatedFileUtil(base_dir.path(), new NativeFileUtil()));
     FileSystemTestOriginHelper src_helper(src_origin, src_type);
     src_helper.SetUp(base_dir.path(),

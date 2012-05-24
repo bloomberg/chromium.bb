@@ -95,8 +95,6 @@ class CrosMountPointProvider
                               FilePath* virtual_path) OVERRIDE;
 
  private:
-  class GetFileSystemRootPathTask;
-
   // Representation of a mount point exposed by this external mount point
   // provider.
   struct MountPoint {

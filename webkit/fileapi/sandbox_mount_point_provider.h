@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -188,7 +189,7 @@ class SandboxMountPointProvider
 
   FileSystemOptions file_system_options_;
 
-  scoped_refptr<ObfuscatedFileUtil> sandbox_file_util_;
+  scoped_ptr<ObfuscatedFileUtil> sandbox_file_util_;
 
   // Acccessed only on the file thread.
   std::set<GURL> visited_origins_;
