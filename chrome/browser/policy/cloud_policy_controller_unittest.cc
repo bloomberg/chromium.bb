@@ -76,7 +76,7 @@ class CloudPolicyControllerTest : public testing::Test {
         temp_user_data_dir_.path().AppendASCII("CloudPolicyControllerTest"),
         false  /* wait_for_policy_fetch */));
     token_fetcher_.reset(new MockDeviceTokenFetcher(cache_.get()));
-    EXPECT_CALL(service_, StartJob(_)).Times(AnyNumber());
+    EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _)).Times(AnyNumber());
     data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
   }
 

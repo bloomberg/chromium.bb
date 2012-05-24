@@ -1345,6 +1345,7 @@
         'browser/policy/asynchronous_policy_test_base.cc',
         'browser/policy/asynchronous_policy_test_base.h',
         'browser/policy/auto_enrollment_client_unittest.cc',
+        'browser/policy/cloud_policy_client_unittest.cc',
         'browser/policy/cloud_policy_controller_unittest.cc',
         'browser/policy/cloud_policy_provider_unittest.cc',
         'browser/policy/cloud_policy_subsystem_unittest.cc',

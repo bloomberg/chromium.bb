@@ -28,11 +28,8 @@ using testing::Mock;
 using testing::_;
 
 ACTION_P(VerifyRegisterRequest, known_machine_id) {
-  ASSERT_TRUE(arg0);
-  ASSERT_TRUE(arg0->GetRequest());
-  ASSERT_TRUE(arg0->GetRequest()->has_register_request());
-  const em::DeviceRegisterRequest& request =
-      arg0->GetRequest()->register_request();
+  ASSERT_TRUE(arg6.has_register_request());
+  const em::DeviceRegisterRequest& request = arg6.register_request();
   if (known_machine_id) {
     EXPECT_TRUE(request.has_auto_enrolled());
     EXPECT_TRUE(request.auto_enrolled());
@@ -57,7 +54,7 @@ class DeviceTokenFetcherTest : public testing::Test {
     cache_.reset(new UserPolicyCache(
         temp_user_data_dir_.path().AppendASCII("DeviceTokenFetcherTest"),
         false  /* wait_for_policy_fetch */));
-    EXPECT_CALL(service_, StartJob(_)).Times(AnyNumber());
+    EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _)).Times(AnyNumber());
     data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
     data_store_->AddObserver(&observer_);
   }
@@ -89,7 +86,7 @@ class DeviceTokenFetcherTest : public testing::Test {
     EXPECT_CALL(service_,
                 CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
         .WillOnce(service_.SucceedJob(successful_registration_response_));
-    EXPECT_CALL(service_, StartJob(_))
+    EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _))
         .WillOnce(VerifyRegisterRequest(known_machine_id));
   }
 

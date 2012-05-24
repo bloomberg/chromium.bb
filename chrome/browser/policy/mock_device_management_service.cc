@@ -4,6 +4,10 @@
 
 #include "chrome/browser/policy/mock_device_management_service.h"
 
+#include "base/string_util.h"
+
+using testing::Action;
+
 namespace em = enterprise_management;
 
 namespace policy {
@@ -19,14 +23,33 @@ class MockDeviceManagementRequestJob : public DeviceManagementRequestJob {
         service_(service),
         status_(status),
         response_(response) {}
+  virtual ~MockDeviceManagementRequestJob() {}
 
  protected:
   virtual void Run() OVERRIDE {
-    service_->StartJob(this);
+    service_->StartJob(ExtractParameter(dm_protocol::kParamRequest),
+                       gaia_token_,
+                       ExtractParameter(dm_protocol::kParamOAuthToken),
+                       dm_token_,
+                       ExtractParameter(dm_protocol::kParamUserAffiliation),
+                       ExtractParameter(dm_protocol::kParamDeviceID),
+                       request_);
     callback_.Run(status_, response_);
   }
 
  private:
+  // Searches for a query parameter and returns the associated value.
+  const std::string& ExtractParameter(const std::string& name) const {
+    for (ParameterMap::const_iterator entry(query_params_.begin());
+         entry != query_params_.end();
+         ++entry) {
+      if (name == entry->first)
+        return entry->second;
+    }
+
+    return EmptyString();
+  }
+
   MockDeviceManagementService* service_;
   DeviceManagementStatus status_;
   enterprise_management::DeviceManagementResponse response_;
@@ -43,14 +66,14 @@ MockDeviceManagementService::MockDeviceManagementService()
 
 MockDeviceManagementService::~MockDeviceManagementService() {}
 
-testing::Action<MockDeviceManagementService::CreateJobFunction>
+Action<MockDeviceManagementService::CreateJobFunction>
     MockDeviceManagementService::SucceedJob(
         const enterprise_management::DeviceManagementResponse& response) {
   return CreateMockDeviceManagementRequestJob(this, DM_STATUS_SUCCESS,
                                               response);
 }
 
-testing::Action<MockDeviceManagementService::CreateJobFunction>
+Action<MockDeviceManagementService::CreateJobFunction>
     MockDeviceManagementService::FailJob(DeviceManagementStatus status) {
   const enterprise_management::DeviceManagementResponse dummy_response;
   return CreateMockDeviceManagementRequestJob(this, status, dummy_response);

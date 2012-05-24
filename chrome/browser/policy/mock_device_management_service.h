@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_POLICY_MOCK_DEVICE_MANAGEMENT_SERVICE_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,7 +23,15 @@ class MockDeviceManagementService : public DeviceManagementService {
       DeviceManagementRequestJob::JobType);
 
   MOCK_METHOD1(CreateJob, CreateJobFunction);
-  MOCK_METHOD1(StartJob, void(DeviceManagementRequestJob*));
+  MOCK_METHOD7(
+      StartJob,
+      void(const std::string& request_type,
+           const std::string& gaia_token,
+           const std::string& oauth_token,
+           const std::string& dm_token,
+           const std::string& user_affiliation,
+           const std::string& client_id,
+           const enterprise_management::DeviceManagementRequest& request));
 
   // Creates a gmock action that will make the job succeed.
   testing::Action<CreateJobFunction> SucceedJob(
