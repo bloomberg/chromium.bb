@@ -269,17 +269,6 @@ bool WebPluginImpl::isPrintScalingDisabled() {
   return instance_->IsPrintScalingDisabled();
 }
 
-// TODO(kmadhusu): This is a temporary interface to avoid the compile errors.
-// Remove this function after fixing crbug.com/85132.
-int WebPluginImpl::printBegin(const WebRect& content_area, int printer_dpi) {
-  WebRect printable_area(content_area);
-  WebSize paper_size(content_area.width, content_area.height);
-  WebPrintParams print_params (content_area, printable_area, paper_size,
-                               printer_dpi,
-                               WebKit::WebPrintScalingOptionSourceSize);
-  return printBegin(print_params);
-}
-
 int WebPluginImpl::printBegin(const WebPrintParams& print_params) {
   return instance_->PrintBegin(print_params);
 }

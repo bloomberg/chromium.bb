@@ -77,11 +77,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
   virtual bool supportsPaginatedPrint() OVERRIDE;
   virtual bool isPrintScalingDisabled() OVERRIDE;
 
-  // TODO(kmadhusu): Remove this function after fixing crbug.com/85132 and add
-  // OVERRIDE keyword to the overloaded function.
-  virtual int printBegin(const WebKit::WebRect& content_area,
-                         int printer_dpi);
-  virtual int printBegin(const WebKit::WebPrintParams& print_params);
+  virtual int printBegin(const WebKit::WebPrintParams& print_params) OVERRIDE;
   virtual bool printPage(int page_number, WebKit::WebCanvas* canvas) OVERRIDE;
   virtual void printEnd() OVERRIDE;
 
