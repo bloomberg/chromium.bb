@@ -32,11 +32,8 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowVisibilityAnimationTransition)
 using base::TimeDelta;
 
 namespace ash {
-namespace {
-const int kDefaultAnimationDurationForMenuMS = 150;
-}  // namespace
-
 namespace internal {
+
 DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationType,
                            kWindowVisibilityAnimationTypeKey,
                            WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
@@ -44,30 +41,21 @@ DEFINE_WINDOW_PROPERTY_KEY(int, kWindowVisibilityAnimationDurationKey, 0);
 DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationTransition,
                            kWindowVisibilityAnimationTransitionKey,
                            ANIMATE_BOTH);
-}  // namespace internal
 
-void SetWindowVisibilityAnimationType(aura::Window* window,
-                                      WindowVisibilityAnimationType type) {
-  window->SetProperty(internal::kWindowVisibilityAnimationTypeKey, type);
-}
+namespace {
 
-WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
-    aura::Window* window) {
-  return window->GetProperty(internal::kWindowVisibilityAnimationTypeKey);
-}
+const int kDefaultAnimationDurationForMenuMS = 150;
 
-void SetWindowVisibilityAnimationTransition(
-    aura::Window* window,
-    WindowVisibilityAnimationTransition transition) {
-  window->SetProperty(internal::kWindowVisibilityAnimationTransitionKey,
-                      transition);
-}
+const float kWindowAnimation_HideOpacity = 0.f;
+const float kWindowAnimation_ShowOpacity = 1.f;
+const float kWindowAnimation_TranslateFactor = -0.025f;
+const float kWindowAnimation_ScaleFactor = 1.05f;
+const float kWindowAnimation_MinimizeRotate = -5.f;
 
-void SetWindowVisibilityAnimationDuration(aura::Window* window,
-                                          const TimeDelta& duration) {
-  window->SetProperty(internal::kWindowVisibilityAnimationDurationKey,
-                      static_cast<int>(duration.ToInternalValue()));
-}
+const float kWindowAnimation_Vertical_TranslateY = 15.f;
+
+// Amount windows are scaled during workspace animations.
+const float kWorkspaceScale = .95f;
 
 base::TimeDelta GetWindowVisibilityAnimationDuration(aura::Window* window) {
   int duration =
@@ -86,20 +74,6 @@ bool HasWindowVisibilityAnimationTransition(
       internal::kWindowVisibilityAnimationTransitionKey);
   return (prop & transition) != 0;
 }
-
-namespace internal {
-namespace {
-
-const float kWindowAnimation_HideOpacity = 0.f;
-const float kWindowAnimation_ShowOpacity = 1.f;
-const float kWindowAnimation_TranslateFactor = -0.025f;
-const float kWindowAnimation_ScaleFactor = 1.05f;
-const float kWindowAnimation_MinimizeRotate = -5.f;
-
-const float kWindowAnimation_Vertical_TranslateY = 15.f;
-
-// Amount windows are scaled during workspace animations.
-const float kWorkspaceScale = .95f;
 
 // Gets/sets the WindowVisibilityAnimationType associated with a window.
 WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
@@ -499,9 +473,40 @@ bool AnimateHideWindow(aura::Window* window) {
 }
 
 }  // namespace
+}  // namespace internal
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowAnimation, public:
+// External interface
+
+void SetWindowVisibilityAnimationType(aura::Window* window,
+                                      WindowVisibilityAnimationType type) {
+  window->SetProperty(internal::kWindowVisibilityAnimationTypeKey, type);
+}
+
+WindowVisibilityAnimationType GetWindowVisibilityAnimationType(
+    aura::Window* window) {
+  return window->GetProperty(internal::kWindowVisibilityAnimationTypeKey);
+}
+
+void SetWindowVisibilityAnimationTransition(
+    aura::Window* window,
+    WindowVisibilityAnimationTransition transition) {
+  window->SetProperty(internal::kWindowVisibilityAnimationTransitionKey,
+                      transition);
+}
+
+void SetWindowVisibilityAnimationDuration(aura::Window* window,
+                                          const TimeDelta& duration) {
+  window->SetProperty(internal::kWindowVisibilityAnimationDurationKey,
+                      static_cast<int>(duration.ToInternalValue()));
+}
+
+ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
+    aura::Window* window) {
+  return new internal::HidingWindowAnimationObserver(window);
+}
+
+namespace internal {
 
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
   if (window->GetProperty(aura::client::kAnimationsDisabledKey) ||
@@ -519,10 +524,4 @@ bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
 }
 
 }  // namespace internal
-
-ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
-    aura::Window* window) {
-  return new internal::HidingWindowAnimationObserver(window);
-}
-
 }  // namespace ash
