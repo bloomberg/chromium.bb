@@ -46,7 +46,6 @@
 //<include src="../../shared/js/cr/ui/menu.js"/>
 //<include src="../../shared/js/cr/ui/menu_button.js"/>
 //<include src="../../shared/js/cr/ui/context_menu_handler.js"/>
-//
 //<include src="combobutton.js"/>
 //
 //<include src="util.js"/>
@@ -58,6 +57,7 @@
 //<include src="file_type.js"/>
 //<include src="file_transfer_controller.js"/>
 //<include src="metadata/metadata_cache.js"/>
+//<include src="default_action_dialog.js"/>
 // // For accurate load performance tracking place main.js should be
 // // the last include to include.
 //<include src="main.js"/>
